@@ -1,0 +1,26 @@
+{
+    "name": "shepherd-typescript",
+    "version": "0.1.0",
+    "description": "A TypeScript implementation of reversible agent execution traces.",
+    "type": "module",
+    "private": true,
+    "engines": {
+        "node": ">=24.0.0"
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "build:desktop": "pnpm build",
+        "format": "biome format --write .",
+        "lint": "biome check .",
+        "sync:version": "node scripts/sync-version-cli.ts",
+        "test": "node --test --experimental-test-coverage --test-coverage-branches=100 --test-coverage-functions=100 --test-coverage-lines=100 --test-coverage-include='src/**/*.ts' --test-coverage-include='scripts/sync-version.ts' --test-coverage-exclude='src/**/*.test.ts' 'src/**/*.test.ts' 'scripts/**/*.test.ts'",
+        "typecheck": "tsc --noEmit",
+        "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "2.5.6",
+        "@types/node": "24.13.3",
+        "typescript": "7.0.2",
+        "yaml": "2.9.0"
+    }
+}

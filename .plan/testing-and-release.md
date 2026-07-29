@@ -1,0 +1,296 @@
+# Testing, Verification, and Release Plan
+
+## Test strategy
+
+The testing pyramid is centered on shared laws and behavioral conformance:
+
+1. schema and canonicalization vectors;
+2. pure state-machine and property tests;
+3. package unit tests;
+4. cross-language conformance;
+5. storage and filesystem integration;
+6. platform security integration;
+7. provider contract integration;
+8. packaged end-to-end examples;
+9. recovery, fuzz, and performance suites.
+
+Unit test count is not a parity signal. The shared conformance suite is.
+
+## Conformance Test Kit
+
+The TCK is stored under `spec/fixtures` and runnable against:
+
+- TypeScript in-process API;
+- Python in-process API;
+- TypeScript CLI JSON;
+- Python CLI JSON;
+- optionally, pinned upstream `0.3.0` for compatible rows.
+
+Fixture groups:
+
+- canonical values and hashes;
+- record append/read;
+- cuts, slices, and projections;
+- task descriptors and grants;
+- effect lifecycle;
+- run outcomes;
+- workspace changesets;
+- settlement transitions;
+- permissions and placement resolution;
+- CLI identity selection;
+- export/import;
+- recovery and repair;
+- scope algebra;
+- replay divergence.
+
+Each fixture declares protocol version, required capability level, platforms,
+and expected structured error code.
+
+## Property and model-based testing
+
+### Trace properties
+
+- canonicalization is deterministic;
+- encode/decode preserves semantics;
+- equal semantics imply equal IDs;
+- different covered semantics change IDs;
+- append is atomic;
+- append intent is idempotent;
+- owner ordinals never repeat;
+- every non-root parent resolves;
+- a slice never invents a record;
+- projections are deterministic.
+
+### Settlement properties
+
+- at most one terminal settlement;
+- exact identity is required for mutation;
+- reads do not mutate;
+- selection requires unchanged basis;
+- apply accepts path-disjoint changes only;
+- discard preserves the target workspace;
+- retry after lost acknowledgment returns the original decision;
+- recovery cannot settle a different output accidentally.
+
+### Scope properties
+
+- fork initially equals parent;
+- child mutation does not change parent;
+- discard(child) leaves parent unchanged;
+- merge of a valid child produces the reference-model result;
+- sibling order does not matter when changes are disjoint;
+- nested authority is no stronger than parent authority;
+- failed fork publishes no usable child.
+
+### Effect properties
+
+- every outcome has exactly one prior intent;
+- denied intent has no materialized success outcome;
+- passive observation is trace-neutral;
+- irreversible effect is never labeled reversible;
+- compensation is idempotent or records why it is unsafe to retry;
+- interceptor decisions are totally ordered.
+
+Use `fast-check` in TypeScript and Hypothesis in Python, seeded from the same
+fixture manifest where practical.
+
+## Differential testing
+
+For every stable fixture:
+
+1. run in TypeScript and export canonical records;
+2. run in Python and export canonical records;
+3. normalize explicitly non-semantic receipts;
+4. compare semantic records, IDs, transitions, and error codes;
+5. have each implementation import and verify the other's export.
+
+For `0.3.0` compatibility rows, also execute the pinned upstream oracle and
+compare documented semantics. Do not compare unstable text formatting where
+structured output is available.
+
+## Filesystem matrix
+
+Test:
+
+- empty directories and existing Git repositories;
+- adopted Git HEAD and dirty worktrees;
+- files with spaces, Unicode, and long names;
+- binary and sparse files;
+- executable-bit changes;
+- symlinks, broken symlinks, and path escape attempts;
+- add/edit/delete and delete/recreate;
+- case-sensitive and case-insensitive filesystems;
+- concurrent external workspace changes;
+- control-plane tampering;
+- disk full, permission denied, and interrupted writes.
+
+Optimized carriers must pass the copy carrier's full contract.
+
+## Security testing
+
+Threats:
+
+- path traversal and symlink escape;
+- binding overlap or aliasing;
+- permission amplification;
+- command/argument injection into native helpers;
+- malicious model/tool payloads;
+- untrusted task synthesis;
+- secret persistence and export;
+- sandbox downgrade;
+- trace tampering;
+- replay of irreversible effects;
+- race conditions in settlement and handoff;
+- denial of service through unbounded events or blobs.
+
+Gates:
+
+- explicit `jail` fails closed;
+- `auto` fallback is recorded;
+- read-only roots reject writes at the OS boundary on supported platforms;
+- helper protocols accept structured data, not shell fragments;
+- generated code executes only inside a declared sandbox;
+- exports redact configured secret classes;
+- integrity verification detects modified canonical records;
+- security-sensitive errors are stable but do not leak secrets.
+
+## Recovery testing
+
+Inject process termination:
+
+- before and after blob write/rename;
+- before and after append transaction commit;
+- during world materialization;
+- before and after settlement compare-and-swap;
+- during child fork/publish/handoff;
+- during compensation;
+- during trace export/import;
+- while a live interceptor owns a decision lease.
+
+After restart, the system must classify state as complete, safely retryable,
+abandoned, or manual-recovery-required. It must never guess success.
+
+## Provider testing
+
+Every provider adapter passes a fake-server or fake-CLI contract:
+
+- request mapping;
+- streaming order;
+- tool-call intent/outcome correlation;
+- cancellation;
+- timeout;
+- rate limiting and retry classification;
+- usage;
+- raw response citation;
+- secret redaction;
+- provider/session checkpoint support;
+- cache identity where offered.
+
+Live tests are opt-in, budget-limited, and never required for the offline core
+suite. The static provider is required everywhere.
+
+## Performance plan
+
+Benchmarks:
+
+- append throughput and latency;
+- trace query/materialization;
+- fork/revert latency by backend;
+- disk/RAM per branch;
+- scaling by base world size;
+- scaling by changed suffix size;
+- K-way branch concurrency;
+- settlement on small and large changesets;
+- replay cold/warm provider behavior;
+- observer/interceptor overhead;
+- startup and CLI latency.
+
+Report median, p95, variance, environment, warmup, and sample count. Preserve raw
+results as versioned artifacts.
+
+Initial performance budgets are set only after a correct reference
+implementation is measured. Upstream numbers are comparison context, not this
+project's SLOs.
+
+## CI matrix
+
+Per pull request:
+
+- formatting/lint;
+- TypeScript typecheck and API checks;
+- Python strict typecheck and lint;
+- unit and property tests;
+- shared conformance;
+- cross-language export/import;
+- SQLite migration tests;
+- packaged npm and wheel smoke;
+- dependency and license scan.
+
+Platform lanes:
+
+- Linux current LTS Node + minimum Node;
+- macOS current + minimum supported;
+- Python minimum and current;
+- privileged Linux jail/overlay tests;
+- macOS Seatbelt/clonefile tests;
+- Windows or WSL detection/compatibility according to final policy.
+
+Scheduled:
+
+- live provider adapters;
+- long-running recovery/fault tests;
+- fuzzers;
+- large trace/storage tests;
+- benchmark trend detection;
+- upstream drift report.
+
+## Documentation verification
+
+- generate CLI reference from packaged binaries;
+- compile/run every code example;
+- test both languages' quickstarts offline;
+- validate every claimed capability against the parity manifest;
+- stamp docs with protocol/package version;
+- reject broken internal/external links;
+- maintain “shipped” and “planned” labels.
+
+## Release train
+
+Suggested sequence:
+
+- `0.1.0`: L0 trace/spec developer preview;
+- `0.2.0`: deterministic tasks/effects/runs;
+- `0.3.0`: retained workspace settlement alpha;
+- `0.4.0`: documented upstream `0.3.0` parity beta;
+- `0.5.0`: stable TypeScript SDK ergonomics;
+- `0.6.0`: scope substrate;
+- `0.7.0`: live observation/interception;
+- `0.8.0`: rewind/replay;
+- `0.9.0`: task-as-value meta-agent preview;
+- `1.0.0`: audited, migration-capable L4 core.
+
+These are project versions, not claims that project `0.3.0` equals upstream
+`0.3.0`; compatibility level must be stated separately.
+
+## Release gates
+
+Every release:
+
+- all required parity rows are green;
+- protocol compatibility report generated;
+- npm tarballs and Python wheels tested after packing;
+- changelog and migration guide present;
+- SBOM and provenance generated;
+- license and attribution verified;
+- security scan clean at the approved threshold;
+- docs deployed from the same tag;
+- rollback/yank procedure documented.
+
+Stable release additionally:
+
+- no silent protocol changes;
+- downgrade behavior known;
+- previous stable store migrates forward in CI;
+- supported prior client can read compatible records;
+- recovery drill passes;
+- public performance report exists.
