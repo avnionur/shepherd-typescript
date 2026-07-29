@@ -6,6 +6,7 @@ import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { createConfiguredRootWitness } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
 import { appendToTraceStore } from "./append.ts";
+import { DEFAULT_STORE_DATABASE_PATH, STORE_PRAGMA_SQL, STORE_TABLES } from "./constants.ts";
 import { TraceStoreError } from "./errors.ts";
 import { migrateTraceStore } from "./migrations.ts";
 import { readOwnerRecords, readStoredRecord } from "./read.ts";
@@ -32,17 +33,15 @@ export class SQLiteTraceStore implements Disposable {
      *
      * @public
      */
-    constructor(databasePath = ":memory:") {
+    constructor(databasePath = DEFAULT_STORE_DATABASE_PATH) {
         this.#database = new DatabaseSync(databasePath, {
-            defensive: true,
+            defensive: kernelProtocolConfig.store.defensive,
             timeout: kernelProtocolConfig.store.busyTimeoutMilliseconds,
         });
         try {
-            this.#database.exec(
-                `PRAGMA foreign_keys = ${Number(kernelProtocolConfig.store.foreignKeys)}`,
-            );
-            this.#database.exec(`PRAGMA journal_mode = ${kernelProtocolConfig.store.journalMode}`);
-            this.#database.exec(`PRAGMA synchronous = ${kernelProtocolConfig.store.synchronous}`);
+            this.#database.exec(STORE_PRAGMA_SQL.foreignKeys);
+            this.#database.exec(STORE_PRAGMA_SQL.journalMode);
+            this.#database.exec(STORE_PRAGMA_SQL.synchronous);
             this.#schemaVersion = migrateTraceStore(this.#database);
             this.#ensureRootWitness();
         } catch (error) {
@@ -140,7 +139,7 @@ export class SQLiteTraceStore implements Disposable {
         const { body, envelope } = createConfiguredRootWitness();
         this.#database
             .prepare(
-                `INSERT OR IGNORE INTO records(
+                `INSERT OR IGNORE INTO ${STORE_TABLES.records}(
                     record_id, digest, schema_ref, mode, witness_ref, caused_by_json, body_json
                  ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
             )

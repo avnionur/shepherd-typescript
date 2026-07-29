@@ -10,6 +10,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Security policy](../SECURITY.md) defines private reporting and the supported security boundary.
 - [Project structure](./project-structure.md) explains module ownership, dependency direction, and
   where new files belong.
+- [Protocol configuration](./protocol-configuration.md) defines validation, immutable snapshots,
+  migration-bound constants, and safe SQLite settings.
 - [Naming and licensing](./naming-and-licensing.md) records package identity, attribution, and
   publication boundaries.
 - [Canonical record contract](./canonical-records.md) defines accepted values, deterministic

@@ -10,6 +10,7 @@ import {
     decodeAppendReceipt,
     encodeAppendReceipt,
 } from "./codec.ts";
+import { STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import { AppendIntentConflictError, TraceStoreError } from "./errors.ts";
 import { readStoredRecord } from "./read.ts";
 import { assertStoredReceiptMatches } from "./receipt-integrity.ts";
@@ -24,11 +25,12 @@ export function appendToTraceStore(
     const normalizedRequest = normalizeStoreAppendRequest(request);
     const batch = normalizeAppendBatchDraft(normalizedRequest.batch);
     const batchDigest = createBatchDigest(batch);
-    database.exec("BEGIN IMMEDIATE");
+    database.exec(STORE_TRANSACTION_SQL.begin);
     try {
         const existingIntent = database
             .prepare(
-                "SELECT batch_digest, receipt_json FROM append_intents WHERE append_intent_id = ?",
+                `SELECT batch_digest, receipt_json FROM ${STORE_TABLES.appendIntents}
+                 WHERE append_intent_id = ?`,
             )
             .get(normalizedRequest.append_intent_id);
         if (existingIntent !== undefined) {
@@ -45,19 +47,19 @@ export function appendToTraceStore(
                 normalizedRequest.append_intent_id,
             );
             assertStoredReceiptMatches(database, receipt);
-            database.exec("COMMIT");
+            database.exec(STORE_TRANSACTION_SQL.commit);
             return receipt;
         }
 
         const knownRecordIds = new Set(
             database
-                .prepare("SELECT record_id FROM records")
+                .prepare(`SELECT record_id FROM ${STORE_TABLES.records}`)
                 .all()
                 .map((row) => String(row.record_id)),
         );
         const nextOwnerOrdinals = new Map(
             database
-                .prepare("SELECT owner_id, next_ordinal FROM owner_ordinals")
+                .prepare(`SELECT owner_id, next_ordinal FROM ${STORE_TABLES.ownerOrdinals}`)
                 .all()
                 .map((row) => [String(row.owner_id), Number(row.next_ordinal)] as const),
         );
@@ -69,23 +71,25 @@ export function appendToTraceStore(
         const receipt = createAppendReceipt(normalizedRequest.append_intent_id, plan);
         database
             .prepare(
-                `INSERT INTO append_intents(append_intent_id, batch_digest, receipt_json)
+                `INSERT INTO ${STORE_TABLES.appendIntents}(
+                    append_intent_id, batch_digest, receipt_json
+                 )
                  VALUES (?, ?, ?)`,
             )
             .run(normalizedRequest.append_intent_id, batchDigest, encodeAppendReceipt(receipt));
 
         const insertRecord = database.prepare(
-            `INSERT OR IGNORE INTO records(
+            `INSERT OR IGNORE INTO ${STORE_TABLES.records}(
                 record_id, digest, schema_ref, mode, witness_ref, caused_by_json, body_json
              ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         );
         const insertParent = database.prepare(
-            `INSERT OR IGNORE INTO record_parents(
+            `INSERT OR IGNORE INTO ${STORE_TABLES.recordParents}(
                 child_record_id, parent_record_id, parent_position
              ) VALUES (?, ?, ?)`,
         );
         const insertView = database.prepare(
-            `INSERT INTO record_views(
+            `INSERT INTO ${STORE_TABLES.recordViews}(
                 owner_id, owner_ordinal, record_id, append_intent_id, append_position
              ) VALUES (?, ?, ?, ?, ?)`,
         );
@@ -113,16 +117,16 @@ export function appendToTraceStore(
         }
 
         const setNextOrdinal = database.prepare(
-            `INSERT INTO owner_ordinals(owner_id, next_ordinal) VALUES (?, ?)
+            `INSERT INTO ${STORE_TABLES.ownerOrdinals}(owner_id, next_ordinal) VALUES (?, ?)
              ON CONFLICT(owner_id) DO UPDATE SET next_ordinal = excluded.next_ordinal`,
         );
         for (const [ownerId, [, lastOrdinal]] of plan.owner_ordinal_ranges) {
             setNextOrdinal.run(ownerId, lastOrdinal + 1);
         }
-        database.exec("COMMIT");
+        database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec("ROLLBACK");
+        database.exec(STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

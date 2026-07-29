@@ -1,57 +1,52 @@
 import { lstat, mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { assertSupportedProtocolCompatibility } from "../src/protocol/config-compatibility.ts";
+import type { ProtocolConfig } from "../src/protocol/config-types.ts";
+import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
+
 type ArtifactOptions = {
     readonly check?: boolean;
     readonly repositoryRoot: string;
-};
-
-type ProtocolConfig = {
-    readonly kernel: {
-        readonly append: {
-            readonly firstOwnerOrdinal: number;
-            readonly lastOwnerOrdinal: number;
-        };
-        readonly artifacts: {
-            readonly appendBatchDraftSchema: string;
-            readonly recordBodySchema: string;
-            readonly recordEnvelopeSchema: string;
-            readonly recordViewSchema: string;
-            readonly recordValues: string;
-        };
-        readonly recordModes: readonly string[];
-        readonly schemas: {
-            readonly appendBatchDraftId: string;
-            readonly dialect: string;
-            readonly recordBodyId: string;
-            readonly recordEnvelopeId: string;
-            readonly recordViewId: string;
-        };
-    };
-    readonly recordId: {
-        readonly hexLength: number;
-        readonly prefix: string;
-    };
 };
 
 /** Generates or checks protocol artifacts derived from `protocol.config.json`. */
 export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Promise<void> {
     const repositoryRoot = await realpath(options.repositoryRoot);
     const configPath = path.join(repositoryRoot, "protocol.config.json");
-    const config = JSON.parse(await readFile(configPath, "utf8")) as ProtocolConfig;
-    const artifacts = new Map<string, string>([
-        [config.kernel.artifacts.recordValues, renderRecordValues(config.kernel.recordModes)],
-        [config.kernel.artifacts.recordBodySchema, renderJson(recordBodySchema(config))],
-        [config.kernel.artifacts.recordEnvelopeSchema, renderJson(recordEnvelopeSchema(config))],
-        [config.kernel.artifacts.recordViewSchema, renderJson(recordViewSchema(config))],
-        [
-            config.kernel.artifacts.appendBatchDraftSchema,
-            renderJson(appendBatchDraftSchema(config)),
-        ],
-    ]);
-
-    for (const [relativePath, content] of artifacts) {
+    const config = parseProtocolConfig(JSON.parse(await readFile(configPath, "utf8")), {
+        enforceCompatibility: false,
+    });
+    const artifacts = [
+        {
+            content: renderRecordValues(config.kernel.recordModes),
+            relativePath: config.kernel.artifacts.recordValues,
+        },
+        {
+            content: renderJson(recordBodySchema(config)),
+            relativePath: config.kernel.artifacts.recordBodySchema,
+        },
+        {
+            content: renderJson(recordEnvelopeSchema(config)),
+            relativePath: config.kernel.artifacts.recordEnvelopeSchema,
+        },
+        {
+            content: renderJson(recordViewSchema(config)),
+            relativePath: config.kernel.artifacts.recordViewSchema,
+        },
+        {
+            content: renderJson(appendBatchDraftSchema(config)),
+            relativePath: config.kernel.artifacts.appendBatchDraftSchema,
+        },
+    ];
+    const resolvedArtifacts: { content: string; artifactPath: string; relativePath: string }[] = [];
+    for (const { content, relativePath } of artifacts) {
         const artifactPath = await resolveArtifactPath(repositoryRoot, relativePath);
+        resolvedArtifacts.push({ artifactPath, content, relativePath });
+    }
+    assertSupportedProtocolCompatibility(config);
+
+    for (const { artifactPath, content, relativePath } of resolvedArtifacts) {
         if (options.check) {
             if ((await readFile(artifactPath, "utf8")) !== content) {
                 throw new Error(`${relativePath} is not synchronized with protocol.config.json`);

@@ -16,6 +16,7 @@
         "store": {
             "appendIntentDigestAlgorithm": "sha256",
             "busyTimeoutMilliseconds": 5000,
+            "defensive": true,
             "foreignKeys": true,
             "journalMode": "WAL",
             "migrations": [
@@ -26,7 +27,8 @@
                 }
             ],
             "schemaVersion": 1,
-            "synchronous": "FULL"
+            "synchronous": "FULL",
+            "transactionMode": "IMMEDIATE"
         },
         "schemas": {
             "dialect": "https://json-schema.org/draft/2020-12/schema",

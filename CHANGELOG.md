@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-07-29
+
+### Defect Fixes
+
+- Added fail-closed validation for record hashes, owner ordinals, migration history,
+  root-witness data, schema identifiers, and SQLite durability settings.
+- Prevented unchecked protocol configuration values from reaching cryptographic and SQL
+  operations.
+- Required defensive SQLite mode, foreign keys, WAL journaling, FULL synchronization, and
+  IMMEDIATE append transactions.
+- Prevented kernel ABI v0, store schema v1, schema dialect, root witness, and durable hash
+  contracts from being redefined in place.
+- Prevented protocol artifact paths from colliding with protected repository files or each other.
+
+### Improvement
+
+- Shared one typed configuration parser between runtime loading and protocol artifact generation.
+- Defensively copied and deeply froze the active protocol configuration.
+- Centralized trace-store table, index, transaction, and PRAGMA constants.
+- Added immutable ABI and migration compatibility constants checked against the language-neutral
+  configuration before runtime or generator writes.
+- Split configuration models, section validation, and value readers into small documented
+  modules.
+
+### Impact
+
+Valid configurations retain the same record and storage behavior. Invalid, drifted, or weakened
+critical settings now fail before protocol generation, hashing, or SQLite side effects.
+
 ## [0.5.0] - 2026-07-29
 
 ### New Feature

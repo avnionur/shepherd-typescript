@@ -33,33 +33,22 @@ test("protocol artifacts generate deterministically and pass check mode", async 
     );
 });
 
-test("record-view schema derives a nonzero ordinal floor from configuration", async (context) => {
+test("protocol generation rejects ordinal drift without a new ABI", async (context) => {
     const repositoryRoot = await createTemporaryRepository(context);
     const sourceConfig = await readFile(sourceConfigUrl, "utf8");
-    const config = sourceConfig.replace('"firstOwnerOrdinal": 0', '"firstOwnerOrdinal": 5');
+    const config = sourceConfig.replaceAll('"firstOwnerOrdinal": 0', '"firstOwnerOrdinal": 5');
     await writeFile(path.join(repositoryRoot, "protocol.config.json"), config);
 
-    await synchronizeProtocolArtifacts({ repositoryRoot });
-
-    const schema = JSON.parse(
-        await readFile(
-            path.join(repositoryRoot, "spec/schemas/record-view-v0.schema.json"),
-            "utf8",
-        ),
-    ) as {
-        readonly properties: {
-            readonly owner_ordinal: {
-                readonly minimum: number;
-            };
-        };
-    };
-    assert.equal(schema.properties.owner_ordinal.minimum, 5);
+    await assert.rejects(
+        synchronizeProtocolArtifacts({ repositoryRoot }),
+        /store migration constants/,
+    );
 });
 
 test("protocol artifact generation rejects paths outside the repository", async (context) => {
     const sourceConfig = await readFile(sourceConfigUrl, "utf8");
 
-    for (const unsafePath of ["", path.join(tmpdir(), "artifact.ts"), "..", "../artifact.ts"]) {
+    for (const unsafePath of [path.join(tmpdir(), "artifact.ts"), "..", "../artifact.ts"]) {
         const repositoryRoot = await createTemporaryRepository(context);
         const config = sourceConfig.replace(
             '"src/protocol/values.generated.ts"',
@@ -72,6 +61,44 @@ test("protocol artifact generation rejects paths outside the repository", async 
             /unsafe protocol artifact path/,
         );
     }
+
+    const repositoryRoot = await createTemporaryRepository(context);
+    const emptyPathConfig = sourceConfig.replace('"src/protocol/values.generated.ts"', '""');
+    await writeFile(path.join(repositoryRoot, "protocol.config.json"), emptyPathConfig);
+    await assert.rejects(
+        synchronizeProtocolArtifacts({ repositoryRoot }),
+        /recordValues must be a non-empty/,
+    );
+});
+
+test("protocol artifact generation rejects protected and duplicate destinations", async (context) => {
+    const sourceConfig = await readFile(sourceConfigUrl, "utf8");
+    const protectedRoot = await createTemporaryRepository(context);
+    const packagePath = path.join(protectedRoot, "package.json");
+    await writeFile(packagePath, '{"preserved":true}\n');
+    await writeFile(
+        path.join(protectedRoot, "protocol.config.json"),
+        sourceConfig.replace('"src/protocol/values.generated.ts"', '"package.json"'),
+    );
+
+    await assert.rejects(
+        synchronizeProtocolArtifacts({ repositoryRoot: protectedRoot }),
+        /artifact destinations/,
+    );
+    assert.equal(await readFile(packagePath, "utf8"), '{"preserved":true}\n');
+
+    const duplicateRoot = await createTemporaryRepository(context);
+    await writeFile(
+        path.join(duplicateRoot, "protocol.config.json"),
+        sourceConfig.replace(
+            '"spec/schemas/record-view-v0.schema.json"',
+            '"spec/schemas/record-body-v0.schema.json"',
+        ),
+    );
+    await assert.rejects(
+        synchronizeProtocolArtifacts({ repositoryRoot: duplicateRoot }),
+        /destinations must be unique/,
+    );
 });
 
 test("protocol artifact generation rejects parent and artifact symlinks", async (context) => {

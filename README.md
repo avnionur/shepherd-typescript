@@ -12,7 +12,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.5.0` provides a versioned trace-record contract and a durable SQLite trace store:
+Version `0.5.1` provides a versioned trace-record contract and a durable SQLite trace store:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -25,6 +25,7 @@ Version `0.5.0` provides a versioned trace-record contract and a durable SQLite 
 - append-intent idempotency, conflict detection, and rollback-safe retry;
 - exact-record and ordered owner-path reads;
 - configured root-witness bootstrap through `ROOT_WITNESS_ID`;
+- fail-closed, immutable protocol configuration with centralized store constants;
 - descriptor-safe closed draft validation, immutable body snapshots, and record views outside
   semantic identity;
 - JSON Schema contracts and pinned cross-language fixtures;
@@ -128,7 +129,8 @@ Release versions are configured in `release-config.yaml`. After changing the ver
 
 Protocol modes, identifier shape, append defaults, and generated schemas are configured in
 `protocol.config.json`. Run `pnpm generate:protocol` after changing them; `pnpm verify` rejects
-stale generated artifacts.
+stale generated artifacts. Critical hash, ordinal, migration, root-witness, and SQLite durability
+settings are validated before runtime or generator side effects.
 
 ## Contributing and security
 
@@ -148,6 +150,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Record body and envelope contract](./docs/record-envelope.md)
 - [Append planning contract](./docs/append-planning.md)
 - [SQLite trace store](./docs/sqlite-trace-store.md)
+- [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
 

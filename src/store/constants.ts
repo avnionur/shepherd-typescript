@@ -1,0 +1,34 @@
+import { kernelProtocolConfig } from "../protocol/config.ts";
+
+/** Default SQLite target for an ephemeral trace store. */
+export const DEFAULT_STORE_DATABASE_PATH = ":memory:";
+
+/** Stable table identifiers in the versioned trace-store schema. */
+export const STORE_TABLES = Object.freeze({
+    appendIntents: "append_intents",
+    migrations: "schema_migrations",
+    ownerOrdinals: "owner_ordinals",
+    recordParents: "record_parents",
+    recordViews: "record_views",
+    records: "records",
+});
+
+/** Stable index identifiers in the versioned trace-store schema. */
+export const STORE_INDEXES = Object.freeze({
+    parentsByParent: "record_parents_by_parent",
+    viewsByRecord: "record_views_by_record",
+});
+
+/** Transaction commands derived from validated store configuration. */
+export const STORE_TRANSACTION_SQL = Object.freeze({
+    begin: `BEGIN ${kernelProtocolConfig.store.transactionMode}`,
+    commit: "COMMIT",
+    rollback: "ROLLBACK",
+});
+
+/** SQLite PRAGMA commands derived from validated store configuration. */
+export const STORE_PRAGMA_SQL = Object.freeze({
+    foreignKeys: `PRAGMA foreign_keys = ${Number(kernelProtocolConfig.store.foreignKeys)}`,
+    journalMode: `PRAGMA journal_mode = ${kernelProtocolConfig.store.journalMode}`,
+    synchronous: `PRAGMA synchronous = ${kernelProtocolConfig.store.synchronous}`,
+});

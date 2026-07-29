@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-29
 
-Current version: `0.5.0`
+Current version: `0.5.1`
 
 Current level: L0 — canonical model
 
@@ -29,6 +29,7 @@ with deterministic semantic-record canonicalization and content-addressed identi
 - [x] Add canonical cross-language fixture vectors.
 - [x] Implement append drafts, parent validation, and owner ordinals.
 - [x] Implement the SQLite trace store and atomic append batches.
+- [x] Validate critical protocol/store configuration and centralize fixed storage constants.
 - [ ] Begin the native Python implementation against the same fixtures.
 
 ## Verification required for this slice

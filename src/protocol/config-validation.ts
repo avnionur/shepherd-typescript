@@ -1,0 +1,188 @@
+import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
+import {
+    readArtifacts,
+    readRecordIdConfig,
+    readRootWitness,
+    readSchemas,
+} from "./config-sections.ts";
+import {
+    type NonEmptyReadonlyArray,
+    type ProtocolConfig,
+    SECURE_HASH_ALGORITHMS,
+    STORE_JOURNAL_MODES,
+    STORE_SYNCHRONOUS_LEVELS,
+    STORE_TRANSACTION_MODES,
+    type StoreMigrationConfig,
+} from "./config-types.ts";
+import {
+    deepFreeze,
+    readArray,
+    readEnum,
+    readNonEmptyString,
+    readNonNegativeInteger,
+    readObject,
+    readPositiveInteger,
+    readRequiredTrue,
+    readSafeInteger,
+    readUniqueStrings,
+    sameStrings,
+} from "./config-value-readers.ts";
+
+type ParseProtocolConfigOptions = {
+    readonly enforceCompatibility?: boolean;
+    readonly expectedRecordModes?: readonly string[];
+};
+
+/** Validates, copies, and deeply freezes an untrusted protocol configuration. */
+export function parseProtocolConfig(
+    value: unknown,
+    options: ParseProtocolConfigOptions = {},
+): ProtocolConfig {
+    const root = readObject(value, ["kernel", "recordId"], "protocol configuration");
+    const recordId = readRecordIdConfig(root.recordId);
+    const kernel = readKernelConfig(root.kernel);
+    if (
+        options.expectedRecordModes !== undefined &&
+        !sameStrings(kernel.recordModes, options.expectedRecordModes)
+    ) {
+        throw new TypeError("kernel.recordModes is not synchronized with generated constants");
+    }
+    const config = { kernel, recordId };
+    if (options.enforceCompatibility !== false) {
+        assertSupportedProtocolCompatibility(config);
+    }
+    return deepFreeze(config);
+}
+
+function readKernelConfig(value: unknown): ProtocolConfig["kernel"] {
+    const kernel = readObject(
+        value,
+        [
+            "abiVersion",
+            "append",
+            "artifacts",
+            "canonicalVersion",
+            "recordKind",
+            "recordModes",
+            "rootWitness",
+            "schemas",
+            "store",
+        ],
+        "kernel",
+    );
+    const append = readOrdinalBounds(kernel.append, "kernel.append");
+    const recordModes = readUniqueStrings(kernel.recordModes, "kernel.recordModes");
+    return {
+        abiVersion: readNonEmptyString(kernel.abiVersion, "kernel.abiVersion"),
+        append,
+        artifacts: readArtifacts(kernel.artifacts),
+        canonicalVersion: readNonEmptyString(kernel.canonicalVersion, "kernel.canonicalVersion"),
+        recordKind: readNonEmptyString(kernel.recordKind, "kernel.recordKind"),
+        recordModes,
+        rootWitness: readRootWitness(kernel.rootWitness, recordModes),
+        schemas: readSchemas(kernel.schemas),
+        store: readStoreConfig(kernel.store, append),
+    };
+}
+
+function readStoreConfig(
+    value: unknown,
+    append: ProtocolConfig["kernel"]["append"],
+): ProtocolConfig["kernel"]["store"] {
+    const store = readObject(
+        value,
+        [
+            "appendIntentDigestAlgorithm",
+            "busyTimeoutMilliseconds",
+            "defensive",
+            "foreignKeys",
+            "journalMode",
+            "migrations",
+            "schemaVersion",
+            "synchronous",
+            "transactionMode",
+        ],
+        "kernel.store",
+    );
+    const migrations = readMigrations(store.migrations);
+    const schemaVersion = readPositiveInteger(store.schemaVersion, "kernel.store.schemaVersion");
+    let latestMigration = migrations[0];
+    for (const migration of migrations) {
+        latestMigration = migration;
+    }
+    if (latestMigration.version !== schemaVersion) {
+        throw new TypeError("kernel.store.schemaVersion must match the latest migration");
+    }
+    if (
+        latestMigration.firstOwnerOrdinal !== append.firstOwnerOrdinal ||
+        latestMigration.lastOwnerOrdinal !== append.lastOwnerOrdinal
+    ) {
+        throw new TypeError("kernel.append ordinal bounds require a matching store migration");
+    }
+    return {
+        appendIntentDigestAlgorithm: readEnum(
+            store.appendIntentDigestAlgorithm,
+            SECURE_HASH_ALGORITHMS,
+            "kernel.store.appendIntentDigestAlgorithm",
+        ),
+        busyTimeoutMilliseconds: readNonNegativeInteger(
+            store.busyTimeoutMilliseconds,
+            "kernel.store.busyTimeoutMilliseconds",
+        ),
+        defensive: readRequiredTrue(store.defensive, "kernel.store.defensive"),
+        foreignKeys: readRequiredTrue(store.foreignKeys, "kernel.store.foreignKeys"),
+        journalMode: readEnum(store.journalMode, STORE_JOURNAL_MODES, "kernel.store.journalMode"),
+        migrations,
+        schemaVersion,
+        synchronous: readEnum(
+            store.synchronous,
+            STORE_SYNCHRONOUS_LEVELS,
+            "kernel.store.synchronous",
+        ),
+        transactionMode: readEnum(
+            store.transactionMode,
+            STORE_TRANSACTION_MODES,
+            "kernel.store.transactionMode",
+        ),
+    };
+}
+
+function readMigrations(value: unknown): NonEmptyReadonlyArray<StoreMigrationConfig> {
+    const migrations = readArray(value, "kernel.store.migrations").map((migrationValue, index) => {
+        const path = `kernel.store.migrations[${index}]`;
+        const migration = readObject(
+            migrationValue,
+            ["firstOwnerOrdinal", "lastOwnerOrdinal", "version"],
+            path,
+        );
+        return {
+            ...readOrdinalBounds(migration, path),
+            version: readPositiveInteger(migration.version, `${path}.version`),
+        };
+    });
+    const [firstMigration, ...remainingMigrations] = migrations;
+    if (firstMigration === undefined) {
+        throw new TypeError("kernel.store.migrations must not be empty");
+    }
+    for (const [index, migration] of migrations.entries()) {
+        if (migration.version !== index + 1) {
+            throw new TypeError("kernel.store.migrations must be contiguous from version 1");
+        }
+    }
+    return [firstMigration, ...remainingMigrations];
+}
+
+function readOrdinalBounds(value: unknown, path: string): ProtocolConfig["kernel"]["append"] {
+    const bounds = readObject(value, ["firstOwnerOrdinal", "lastOwnerOrdinal"], path, true);
+    const firstOwnerOrdinal = readNonNegativeInteger(
+        bounds.firstOwnerOrdinal,
+        `${path}.firstOwnerOrdinal`,
+    );
+    const lastOwnerOrdinal = readSafeInteger(bounds.lastOwnerOrdinal, `${path}.lastOwnerOrdinal`);
+    if (lastOwnerOrdinal < firstOwnerOrdinal || lastOwnerOrdinal >= Number.MAX_SAFE_INTEGER) {
+        throw new TypeError(
+            `${path}.lastOwnerOrdinal must be at least the first ordinal and leave a safe next ordinal`,
+        );
+    }
+    return { firstOwnerOrdinal, lastOwnerOrdinal };
+}

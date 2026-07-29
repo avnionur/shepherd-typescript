@@ -5,6 +5,7 @@ import { assertNonEmptyString } from "../record/guards.ts";
 import { createRecordBodySnapshot } from "../record/snapshot.ts";
 import type { RecordBody, RecordEnvelope, RecordId, RecordMode } from "../record/types.ts";
 import { validateRecordEnvelope } from "../record/validation.ts";
+import { STORE_TABLES } from "./constants.ts";
 import type { OwnerRecord, RetainedRecord } from "./types.ts";
 
 /** Reads one semantic record and every owner-local view. */
@@ -15,7 +16,7 @@ export function readStoredRecord(
     const row = database
         .prepare(
             `SELECT record_id, digest, schema_ref, mode, witness_ref, caused_by_json, body_json
-             FROM records WHERE record_id = ?`,
+             FROM ${STORE_TABLES.records} WHERE record_id = ?`,
         )
         .get(recordId);
     if (row === undefined) {
@@ -24,7 +25,7 @@ export function readStoredRecord(
     const record = decodeRecordRow(row);
     const views = database
         .prepare(
-            `SELECT owner_id, owner_ordinal FROM record_views
+            `SELECT owner_id, owner_ordinal FROM ${STORE_TABLES.recordViews}
              WHERE record_id = ? ORDER BY owner_id, owner_ordinal`,
         )
         .all(recordId)
@@ -39,8 +40,8 @@ export function readOwnerRecords(database: DatabaseSync, ownerId: string): reado
             .prepare(
                 `SELECT r.record_id, r.digest, r.schema_ref, r.mode, r.witness_ref,
                         r.caused_by_json, r.body_json, v.owner_id, v.owner_ordinal
-                 FROM record_views v
-                 JOIN records r ON r.record_id = v.record_id
+                 FROM ${STORE_TABLES.recordViews} v
+                 JOIN ${STORE_TABLES.records} r ON r.record_id = v.record_id
                  WHERE v.owner_id = ?
                  ORDER BY v.owner_ordinal`,
             )

@@ -2,6 +2,7 @@ import type { DatabaseSync } from "node:sqlite";
 
 import type { RecordId } from "../record/types.ts";
 import { encodeAppendReceipt } from "./codec.ts";
+import { STORE_TABLES } from "./constants.ts";
 import { TraceStoreError } from "./errors.ts";
 import type { AppendReceipt } from "./types.ts";
 
@@ -10,8 +11,8 @@ export function assertStoredReceiptMatches(database: DatabaseSync, receipt: Appe
     const rows = database
         .prepare(
             `SELECT v.append_position, v.owner_id, v.owner_ordinal, v.record_id, r.caused_by_json
-             FROM record_views v
-             JOIN records r ON r.record_id = v.record_id
+             FROM ${STORE_TABLES.recordViews} v
+             JOIN ${STORE_TABLES.records} r ON r.record_id = v.record_id
              WHERE v.append_intent_id = ?
              ORDER BY v.append_position`,
         )

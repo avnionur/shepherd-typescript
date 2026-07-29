@@ -1,6 +1,8 @@
 import type { DatabaseSync } from "node:sqlite";
 
+import { KERNEL_ABI_V0_CONTRACT } from "../protocol/compatibility-constants.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
+import { STORE_INDEXES, STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import { UnsupportedStoreSchemaError } from "./errors.ts";
 
 type Migration = {
@@ -18,7 +20,7 @@ const migrations: readonly Migration[] = [
     {
         version: 1,
         createSql: () => `
-            CREATE TABLE records (
+            CREATE TABLE ${STORE_TABLES.records} (
                 record_id TEXT PRIMARY KEY,
                 digest TEXT NOT NULL CHECK (record_id = digest),
                 schema_ref TEXT NOT NULL,
@@ -28,49 +30,49 @@ const migrations: readonly Migration[] = [
                 body_json TEXT NOT NULL
             ) STRICT;
 
-            CREATE TABLE record_parents (
+            CREATE TABLE ${STORE_TABLES.recordParents} (
                 child_record_id TEXT NOT NULL,
                 parent_record_id TEXT NOT NULL,
                 parent_position INTEGER NOT NULL CHECK (parent_position >= 0),
                 PRIMARY KEY (child_record_id, parent_position),
-                FOREIGN KEY (child_record_id) REFERENCES records(record_id),
-                FOREIGN KEY (parent_record_id) REFERENCES records(record_id)
+                FOREIGN KEY (child_record_id) REFERENCES ${STORE_TABLES.records}(record_id),
+                FOREIGN KEY (parent_record_id) REFERENCES ${STORE_TABLES.records}(record_id)
             ) STRICT;
 
-            CREATE INDEX record_parents_by_parent
-                ON record_parents(parent_record_id);
+            CREATE INDEX ${STORE_INDEXES.parentsByParent}
+                ON ${STORE_TABLES.recordParents}(parent_record_id);
 
-            CREATE TABLE append_intents (
+            CREATE TABLE ${STORE_TABLES.appendIntents} (
                 append_intent_id TEXT PRIMARY KEY,
                 batch_digest TEXT NOT NULL,
                 receipt_json TEXT NOT NULL
             ) STRICT;
 
-            CREATE TABLE owner_ordinals (
+            CREATE TABLE ${STORE_TABLES.ownerOrdinals} (
                 owner_id TEXT PRIMARY KEY CHECK (owner_id <> ''),
                 next_ordinal INTEGER NOT NULL CHECK (
-                    next_ordinal >= ${kernelProtocolConfig.store.migrations[0].firstOwnerOrdinal}
-                    AND next_ordinal <= ${kernelProtocolConfig.store.migrations[0].lastOwnerOrdinal + 1}
+                    next_ordinal >= ${KERNEL_ABI_V0_CONTRACT.store.migrations[0].firstOwnerOrdinal}
+                    AND next_ordinal <= ${KERNEL_ABI_V0_CONTRACT.store.migrations[0].lastOwnerOrdinal + 1}
                 )
             ) STRICT;
 
-            CREATE TABLE record_views (
+            CREATE TABLE ${STORE_TABLES.recordViews} (
                 owner_id TEXT NOT NULL CHECK (owner_id <> ''),
                 owner_ordinal INTEGER NOT NULL CHECK (
-                    owner_ordinal >= ${kernelProtocolConfig.store.migrations[0].firstOwnerOrdinal}
-                    AND owner_ordinal <= ${kernelProtocolConfig.store.migrations[0].lastOwnerOrdinal}
+                    owner_ordinal >= ${KERNEL_ABI_V0_CONTRACT.store.migrations[0].firstOwnerOrdinal}
+                    AND owner_ordinal <= ${KERNEL_ABI_V0_CONTRACT.store.migrations[0].lastOwnerOrdinal}
                 ),
                 record_id TEXT NOT NULL,
                 append_intent_id TEXT NOT NULL,
                 append_position INTEGER NOT NULL CHECK (append_position >= 0),
                 PRIMARY KEY (owner_id, owner_ordinal),
                 UNIQUE (append_intent_id, append_position),
-                FOREIGN KEY (record_id) REFERENCES records(record_id),
-                FOREIGN KEY (append_intent_id) REFERENCES append_intents(append_intent_id)
+                FOREIGN KEY (record_id) REFERENCES ${STORE_TABLES.records}(record_id),
+                FOREIGN KEY (append_intent_id) REFERENCES ${STORE_TABLES.appendIntents}(append_intent_id)
             ) STRICT;
 
-            CREATE INDEX record_views_by_record
-                ON record_views(record_id);
+            CREATE INDEX ${STORE_INDEXES.viewsByRecord}
+                ON ${STORE_TABLES.recordViews}(record_id);
         `,
     },
 ];
@@ -124,12 +126,12 @@ export function migrateTraceStore(database: DatabaseSync): number {
         kernelProtocolConfig.store.schemaVersion,
     );
     database.exec(`
-        CREATE TABLE IF NOT EXISTS schema_migrations (
+        CREATE TABLE IF NOT EXISTS ${STORE_TABLES.migrations} (
             version INTEGER PRIMARY KEY
         ) STRICT;
     `);
     const row = database
-        .prepare("SELECT COALESCE(MAX(version), 0) AS version FROM schema_migrations")
+        .prepare(`SELECT COALESCE(MAX(version), 0) AS version FROM ${STORE_TABLES.migrations}`)
         .get() as { readonly version: number };
     const currentVersion = row.version;
     if (currentVersion > kernelProtocolConfig.store.schemaVersion) {
@@ -142,20 +144,20 @@ export function migrateTraceStore(database: DatabaseSync): number {
         if (migration.version <= currentVersion) {
             continue;
         }
-        database.exec("BEGIN IMMEDIATE");
+        database.exec(STORE_TRANSACTION_SQL.begin);
         try {
             database.exec(migration.createSql());
             database
-                .prepare("INSERT INTO schema_migrations(version) VALUES (?)")
+                .prepare(`INSERT INTO ${STORE_TABLES.migrations}(version) VALUES (?)`)
                 .run(migration.version);
-            database.exec("COMMIT");
+            database.exec(STORE_TRANSACTION_SQL.commit);
         } catch (error) {
-            database.exec("ROLLBACK");
+            database.exec(STORE_TRANSACTION_SQL.rollback);
             throw error;
         }
     }
     const migrated = database
-        .prepare("SELECT COALESCE(MAX(version), 0) AS version FROM schema_migrations")
+        .prepare(`SELECT COALESCE(MAX(version), 0) AS version FROM ${STORE_TABLES.migrations}`)
         .get() as { readonly version: number };
     return migrated.version;
 }

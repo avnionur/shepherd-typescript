@@ -1,52 +1,15 @@
 import { readFileSync } from "node:fs";
-
-type ProtocolConfig = {
-    readonly kernel: KernelProtocolConfig;
-    readonly recordId: RecordIdConfig;
-};
-
-type KernelProtocolConfig = {
-    readonly abiVersion: string;
-    readonly append: {
-        readonly firstOwnerOrdinal: number;
-        readonly lastOwnerOrdinal: number;
-    };
-    readonly canonicalVersion: string;
-    readonly recordKind: string;
-    readonly recordModes: readonly string[];
-    readonly store: {
-        readonly appendIntentDigestAlgorithm: string;
-        readonly busyTimeoutMilliseconds: number;
-        readonly foreignKeys: boolean;
-        readonly journalMode: string;
-        readonly migrations: readonly [
-            {
-                readonly firstOwnerOrdinal: number;
-                readonly lastOwnerOrdinal: number;
-                readonly version: number;
-            },
-        ];
-        readonly schemaVersion: number;
-        readonly synchronous: string;
-    };
-    readonly rootWitness: {
-        readonly body: Readonly<Record<string, unknown>>;
-        readonly mode: string;
-        readonly schemaRef: string;
-        readonly witnessRef: string;
-    };
-};
-
-type RecordIdConfig = {
-    readonly algorithm: string;
-    readonly hexLength: number;
-    readonly prefix: string;
-};
+import type { KernelProtocolConfig, ProtocolConfig, RecordIdConfig } from "./config-types.ts";
+import { parseProtocolConfig } from "./config-validation.ts";
+import { RECORD_MODES } from "./values.generated.ts";
 
 /** Location of the protocol configuration relative to this source or built module. */
 export const protocolConfigUrl = new URL("../../protocol.config.json", import.meta.url);
 
-const protocolConfig = JSON.parse(readFileSync(protocolConfigUrl, "utf8")) as ProtocolConfig;
+const protocolConfig: ProtocolConfig = parseProtocolConfig(
+    JSON.parse(readFileSync(protocolConfigUrl, "utf8")),
+    { expectedRecordModes: RECORD_MODES },
+);
 
 /** Runtime kernel ABI and canonicalization configuration. */
 export const kernelProtocolConfig: KernelProtocolConfig = protocolConfig.kernel;

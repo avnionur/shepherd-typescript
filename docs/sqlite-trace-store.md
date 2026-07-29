@@ -12,9 +12,11 @@ Implementation:
 ordered causal parents, owner-local views, owner ordinal state, and append-intent receipts in one
 SQLite database. Construction accepts a file path or uses an in-memory database by default.
 
-The adapter uses Node 24's built-in synchronous SQLite API. It enables configured foreign-key,
-journal, synchronization, timeout, and defensive settings before applying migrations. The
-current schema version is available through `schemaVersion`.
+The adapter uses Node 24's built-in synchronous SQLite API. It enables validated foreign-key,
+journal, synchronization, timeout, transaction, and defensive settings before applying
+migrations. Unsafe values are rejected while loading
+[protocol configuration](./protocol-configuration.md). The current schema version is available
+through `schemaVersion`.
 
 ## Append transaction
 
