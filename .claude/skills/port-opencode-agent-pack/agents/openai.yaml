@@ -1,0 +1,4 @@
+interface:
+  display_name: "Port OpenCode Agent Pack"
+  short_description: "Port OpenCode packs safely into Cognia"
+  default_prompt: "Use $port-opencode-agent-pack to port this OpenCode agent package into a validated Cognia pack."

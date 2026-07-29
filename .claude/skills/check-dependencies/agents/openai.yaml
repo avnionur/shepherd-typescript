@@ -1,0 +1,4 @@
+interface:
+  display_name: "Check Dependencies"
+  short_description: "Audit package versions and compatibility"
+  default_prompt: "Use $check-dependencies to audit Cognia package.json files for Electron, Pi agent, desktop, and renderer compatibility."

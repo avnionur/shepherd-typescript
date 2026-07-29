@@ -1,0 +1,4 @@
+interface:
+  display_name: "Preserve Capabilities"
+  short_description: "Prevent regressions during features and fixes"
+  default_prompt: "Use $preserve-capabilities to protect existing behavior while making this change."
