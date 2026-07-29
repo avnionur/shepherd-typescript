@@ -54,7 +54,7 @@ test("SQLiteTraceStore atomically appends and reopens retained records", async (
     store.close();
 
     const reopened = new SQLiteTraceStore(databasePath);
-    assert.equal(reopened.schemaVersion, 2);
+    assert.equal(reopened.schemaVersion, 3);
     assert.deepEqual(
         reopened.readOwner("run:alpha").map(({ body }) => body.operation),
         ["task.started", "task.completed"],

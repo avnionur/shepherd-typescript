@@ -8,6 +8,7 @@ export const DEFAULT_STORE_DATABASE_PATH = ":memory:";
 export const STORE_TABLES = Object.freeze({
     appendIntents: "append_intents",
     blobs: "blobs",
+    cuts: "trace_cuts",
     migrations: "schema_migrations",
     ownerOrdinals: "owner_ordinals",
     recordParents: "record_parents",

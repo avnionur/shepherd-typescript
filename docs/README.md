@@ -24,6 +24,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   idempotency, retained reads, and lifecycle behavior.
 - [Content-addressed blob storage](./blob-storage.md) defines binary identity, crash-safe
   publication, durable receipts, verified reads, and integrity reports.
+- [Trace cuts and causal slices](./trace-queries.md) defines immutable owner-prefix addresses,
+  causal closure, mode filtering, visibility, anchors, and witness support.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

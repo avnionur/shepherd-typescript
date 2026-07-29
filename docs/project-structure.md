@@ -48,7 +48,7 @@ The runtime areas are intentionally shallow:
   snapshots, and generated literal values;
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
-  retained reads, and blob metadata.
+  retained reads, immutable cuts, graph-shaped slices, and blob metadata.
 
 ## Module rules
 

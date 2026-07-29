@@ -1,7 +1,7 @@
 import { deepFreeze } from "./config-value-readers.ts";
 
 /**
- * Immutable compatibility contract implemented by kernel ABI v0 and store schema v2.
+ * Immutable compatibility contract implemented by kernel ABI v0 and store schema v3.
  *
  * These values define historical identities. They are intentionally code constants:
  * changing the active protocol requires adding a new ABI or migration contract.
@@ -17,6 +17,17 @@ export const KERNEL_ABI_V0_CONTRACT = deepFreeze({
         recordViewSchema: "spec/schemas/record-view-v0.schema.json",
     },
     canonicalVersion: "shepherd.kernel.canonical.v2",
+    queries: {
+        closurePolicies: ["include_external_anchors", "visible_only"],
+        cutAppendIntentPrefix: "cut:",
+        cutSchemaRef: "kernel.cut.owner-prefix.v1",
+        defaultClosurePolicy: "include_external_anchors",
+        defaultModeFilter: "both",
+        defaultVisibilityProfile: "payload",
+        modeFilters: ["both", "captures_only", "declarations_only"],
+        visibilityProfiles: ["payload", "shape_only", "full_internal"],
+        witnessSchemaRef: "kernel.witness.v1",
+    },
     recordId: {
         algorithm: "sha256",
         hexLength: 64,
@@ -71,7 +82,12 @@ export const KERNEL_ABI_V0_CONTRACT = deepFreeze({
                 lastOwnerOrdinal: 9_007_199_254_740_990,
                 version: 2,
             },
+            {
+                firstOwnerOrdinal: 0,
+                lastOwnerOrdinal: 9_007_199_254_740_990,
+                version: 3,
+            },
         ],
-        schemaVersion: 2,
+        schemaVersion: 3,
     },
 } as const);

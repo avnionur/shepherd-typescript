@@ -5,24 +5,25 @@ import { UnsupportedStoreSchemaError } from "../../src/index.ts";
 import { validateMigrationRegistry } from "../../src/store/migrations.ts";
 
 test("migration registry versions are contiguous and match configured support", () => {
-    assert.doesNotThrow(() => validateMigrationRegistry([1, 2], 2));
+    assert.doesNotThrow(() => validateMigrationRegistry([1, 2, 3], 3));
     assert.throws(() => validateMigrationRegistry([1, 3], 3), UnsupportedStoreSchemaError);
-    assert.throws(() => validateMigrationRegistry([1, 2, 3], 2), UnsupportedStoreSchemaError);
-    assert.throws(() => validateMigrationRegistry([], 2), UnsupportedStoreSchemaError);
+    assert.throws(() => validateMigrationRegistry([1, 2, 3, 4], 3), UnsupportedStoreSchemaError);
+    assert.throws(() => validateMigrationRegistry([], 3), UnsupportedStoreSchemaError);
     assert.throws(
         () =>
-            validateMigrationRegistry([1, 2], 2, [
+            validateMigrationRegistry([1, 2, 3], 3, [
                 { firstOwnerOrdinal: 0, lastOwnerOrdinal: 1, version: 2 },
             ]),
         UnsupportedStoreSchemaError,
     );
     assert.throws(
         () =>
-            validateMigrationRegistry([1, 2], 2, [
+            validateMigrationRegistry([1, 2, 3], 3, [
                 { firstOwnerOrdinal: 0, lastOwnerOrdinal: 1, version: 1 },
                 { firstOwnerOrdinal: 1, lastOwnerOrdinal: 2, version: 2 },
+                { firstOwnerOrdinal: 1, lastOwnerOrdinal: 2, version: 3 },
             ]),
         UnsupportedStoreSchemaError,
     );
-    assert.throws(() => validateMigrationRegistry([1, 2], 2, []), UnsupportedStoreSchemaError);
+    assert.throws(() => validateMigrationRegistry([1, 2, 3], 3, []), UnsupportedStoreSchemaError);
 });

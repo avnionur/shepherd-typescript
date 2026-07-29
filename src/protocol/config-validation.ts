@@ -63,6 +63,7 @@ function readKernelConfig(value: unknown): ProtocolConfig["kernel"] {
             "append",
             "artifacts",
             "canonicalVersion",
+            "queries",
             "recordKind",
             "recordModes",
             "rootWitness",
@@ -78,11 +79,75 @@ function readKernelConfig(value: unknown): ProtocolConfig["kernel"] {
         append,
         artifacts: readArtifacts(kernel.artifacts),
         canonicalVersion: readNonEmptyString(kernel.canonicalVersion, "kernel.canonicalVersion"),
+        queries: readQueryConfig(kernel.queries),
         recordKind: readNonEmptyString(kernel.recordKind, "kernel.recordKind"),
         recordModes,
         rootWitness: readRootWitness(kernel.rootWitness, recordModes),
         schemas: readSchemas(kernel.schemas),
         store: readStoreConfig(kernel.store, append),
+    };
+}
+
+function readQueryConfig(value: unknown): ProtocolConfig["kernel"]["queries"] {
+    const query = readObject(
+        value,
+        [
+            "closurePolicies",
+            "cutAppendIntentPrefix",
+            "cutSchemaRef",
+            "defaultClosurePolicy",
+            "defaultModeFilter",
+            "defaultVisibilityProfile",
+            "modeFilters",
+            "visibilityProfiles",
+            "witnessSchemaRef",
+        ],
+        "kernel.queries",
+    );
+    const closurePolicies = readUniqueStrings(
+        query.closurePolicies,
+        "kernel.queries.closurePolicies",
+    );
+    const modeFilters = readUniqueStrings(query.modeFilters, "kernel.queries.modeFilters");
+    const visibilityProfiles = readUniqueStrings(
+        query.visibilityProfiles,
+        "kernel.queries.visibilityProfiles",
+    );
+    const defaultClosurePolicy = readNonEmptyString(
+        query.defaultClosurePolicy,
+        "kernel.queries.defaultClosurePolicy",
+    );
+    const defaultModeFilter = readNonEmptyString(
+        query.defaultModeFilter,
+        "kernel.queries.defaultModeFilter",
+    );
+    const defaultVisibilityProfile = readNonEmptyString(
+        query.defaultVisibilityProfile,
+        "kernel.queries.defaultVisibilityProfile",
+    );
+    if (
+        !closurePolicies.includes(defaultClosurePolicy) ||
+        !modeFilters.includes(defaultModeFilter) ||
+        !visibilityProfiles.includes(defaultVisibilityProfile)
+    ) {
+        throw new TypeError("kernel query defaults must belong to their configured value sets");
+    }
+    return {
+        closurePolicies,
+        cutAppendIntentPrefix: readNonEmptyString(
+            query.cutAppendIntentPrefix,
+            "kernel.queries.cutAppendIntentPrefix",
+        ),
+        cutSchemaRef: readNonEmptyString(query.cutSchemaRef, "kernel.queries.cutSchemaRef"),
+        defaultClosurePolicy,
+        defaultModeFilter,
+        defaultVisibilityProfile,
+        modeFilters,
+        visibilityProfiles,
+        witnessSchemaRef: readNonEmptyString(
+            query.witnessSchemaRef,
+            "kernel.queries.witnessSchemaRef",
+        ),
     };
 }
 

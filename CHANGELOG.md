@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-07-29
+
+### New Feature
+
+- Added atomic publication, verified reads, and immutable resolution for owner-prefix trace cuts.
+- Added owner-prefix and transitive causal-closure slices with configured mode filters, visibility
+  profiles, closure policies, direct edges, external anchors, and root-closed witness support.
+- Added store schema v3 with automatic migration for the verified cut resolver index.
+
+### Improvement
+
+- Added fail-closed, descriptor-safe validation for cut specifications, query options, and causal
+  root arrays.
+- Added exact cut-publication verification across the direct cause, publisher occurrence, append
+  intent, and addressed owner ordinal, with mutation-free conflict handling.
+- Preserved every owner occurrence of shared semantic records in causal slices and rejected
+  orphaned owner views instead of returning truncated results.
+- Added immutable ABI configuration for cut publication, witness schemas, query modes, visibility,
+  and closure policies.
+- Added public-seam tests for reopen, later-append isolation, idempotent and conflicting cut
+  publication, filtered graphs, hidden payloads, witness evidence, corruption, and malformed input.
+
+### Impact
+
+TypeScript applications can retain stable execution checkpoints and inspect deterministic causal
+subgraphs without exposing filtered payloads or mutating trace history.
+
 ## [0.6.0] - 2026-07-29
 
 ### New Feature

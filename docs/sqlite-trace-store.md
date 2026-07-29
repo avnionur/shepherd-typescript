@@ -65,6 +65,11 @@ Schema v2 adds content-addressed blob metadata and storage receipts. Existing sc
 upgrade without rewriting semantic records. Blob filesystem behavior is documented in
 [Content-addressed blob storage](./blob-storage.md).
 
+Schema v3 adds published trace-cut resolver entries. Cut publication remains authoritative through
+its semantic record; the table is a verified resolver index. Existing schema-v2 stores upgrade
+without rewriting records or receipts. Query behavior is documented in
+[Trace cuts and causal slices](./trace-queries.md).
+
 The database and read decoder both enforce configured owner-ordinal bounds and non-empty owner
 identifiers. This prevents externally modified rows from bypassing the public `RecordView`
 contract.
@@ -74,6 +79,7 @@ Append and read operations after closure throw `TraceStoreError`.
 
 ## Current boundary
 
-This slice provides exact-ID and owner-path reads plus content-addressed external blob storage.
-Cut and slice queries, whole-graph integrity scans, orphan collection, and remote-store
-abstractions remain planned TypeScript trace-kernel work.
+This slice provides exact-ID, owner-path, immutable-cut, and causal-closure reads plus
+content-addressed external blob storage. Execution-history projections, whole-graph integrity
+scans, orphan collection, and remote-store abstractions remain planned TypeScript trace-kernel
+work.

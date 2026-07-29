@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-29
 
-Current version: `0.6.0`
+Current version: `0.7.0`
 
 Current level: L0 — canonical model
 
@@ -10,8 +10,8 @@ Current level: L0 — canonical model
 
 Phase 0 governance and repository foundations are established. Phase 1 trace-kernel work is in
 progress: canonical records, envelopes, append planning, SQLite durability, content-addressed blob
-storage, storage receipts, and blob integrity verification are implemented; graph queries and
-recovery work remain.
+storage, storage receipts, blob integrity verification, immutable cuts, and causal-slice queries
+are implemented; projections and recovery work remain.
 
 ## Progress
 
@@ -34,7 +34,8 @@ recovery work remain.
 - [x] Validate critical protocol/store configuration and centralize fixed storage constants.
 - [x] Implement content-addressed blob storage, integrity verification, and storage receipts.
 - [x] Verify blob receipt recovery across an actual child-process crash.
-- [ ] Implement trace cuts and causal-slice queries.
+- [x] Implement trace cuts and causal-slice queries.
+- [ ] Implement execution-history projections.
 
 ## Verification required for this slice
 
@@ -46,7 +47,7 @@ recovery work remain.
 
 ## Next slice
 
-Implement TypeScript trace-cut and causal-slice queries over the retained record graph.
+Implement TypeScript execution-history projections over immutable trace slices.
 
 ## Notes
 

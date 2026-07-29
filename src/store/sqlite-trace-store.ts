@@ -10,16 +10,24 @@ import { appendToTraceStore } from "./append.ts";
 import { resolveBlobDirectory } from "./blob-options.ts";
 import { putStoredBlob, readStoredBlob, verifyStoredBlobs } from "./blobs.ts";
 import { DEFAULT_STORE_DATABASE_PATH, STORE_PRAGMA_SQL, STORE_TABLES } from "./constants.ts";
+import { publishStoredCut, readStoredCut } from "./cuts.ts";
 import { TraceStoreError } from "./errors.ts";
 import { migrateTraceStore } from "./migrations.ts";
 import { readOwnerRecords, readStoredRecord } from "./read.ts";
+import { readCausalClosureSlice, readOwnerPrefixSlice } from "./slices.ts";
 import type {
     AppendReceipt,
     BlobId,
     BlobIntegrityReport,
     BlobStorageReceipt,
+    CausalClosureOptions,
+    Cut,
+    CutId,
+    CutSpec,
     OwnerRecord,
     RetainedRecord,
+    Slice,
+    SliceReadOptions,
     SQLiteTraceStoreOptions,
     StoreAppendRequest,
 } from "./types.ts";
@@ -184,6 +192,100 @@ export class SQLiteTraceStore implements Disposable {
         this.#assertOpen();
         assertNonEmptyString(ownerId, "ownerId");
         return readOwnerRecords(this.#database, ownerId);
+    }
+
+    /**
+     * Publishes an immutable address through one retained owner-path occurrence.
+     *
+     * Publication appends a semantic cut record and its resolver index atomically.
+     *
+     * @param spec - Closed cut publication request.
+     * @returns The durable cut address.
+     * @throws {TraceStoreError} If the target occurrence is absent or the store is closed.
+     * @throws {TypeError} If the request is malformed.
+     *
+     * @public
+     */
+    publishCut(spec: CutSpec): Cut {
+        this.#assertOpen();
+        return publishStoredCut(this.#database, spec);
+    }
+
+    /**
+     * Reads and verifies one published cut.
+     *
+     * @param cutId - Stable published cut identifier.
+     * @returns The verified durable cut.
+     * @throws {TraceStoreError} If the cut is absent, corrupt, or the store is closed.
+     * @throws {TypeError} If the identifier is malformed.
+     *
+     * @public
+     */
+    readCut(cutId: CutId): Cut {
+        this.#assertOpen();
+        return readStoredCut(this.#database, cutId);
+    }
+
+    /**
+     * Reads an owner path through an inclusive ordinal.
+     *
+     * @param ownerId - Stable trace-owner identifier.
+     * @param through - Inclusive owner ordinal.
+     * @param options - Mode and visibility selection.
+     * @returns An immutable graph-shaped slice.
+     * @throws {TraceStoreError} If retained owner-path evidence is corrupt or the store is closed.
+     * @throws {TypeError} If the owner, ordinal, or options are malformed.
+     *
+     * @public
+     */
+    readOwnerPrefix(ownerId: string, through: number, options: SliceReadOptions = {}): Slice {
+        this.#assertOpen();
+        return readOwnerPrefixSlice(this.#database, ownerId, through, options);
+    }
+
+    /**
+     * Resolves a published cut without including later owner-path records.
+     *
+     * @param cutId - Stable published cut identifier.
+     * @param options - Mode and visibility selection.
+     * @returns An immutable graph-shaped slice addressed by the cut.
+     * @throws {TraceStoreError} If the cut is absent, corrupt, or the store is closed.
+     * @throws {TypeError} If the cut identifier or options are malformed.
+     *
+     * @public
+     */
+    resolveCut(cutId: CutId, options: SliceReadOptions = {}): Slice {
+        this.#assertOpen();
+        const cut = readStoredCut(this.#database, cutId);
+        return readOwnerPrefixSlice(
+            this.#database,
+            cut.target_owner_id,
+            cut.through_owner_ordinal,
+            options,
+            cut,
+        );
+    }
+
+    /**
+     * Reads the transitive causal closure of one or more retained root records.
+     *
+     * Causal traversal occurs before mode filtering. Direct omitted parents become anchors under
+     * the configured default policy, and witness support is closed independently to the root.
+     *
+     * @param rootRecordIds - Records from which causal traversal begins.
+     * @param options - Mode, visibility, and anchor policy.
+     * @returns An immutable graph-shaped slice.
+     * @throws {TraceStoreError} If a root, parent, or witness is absent or corrupt.
+     * @throws {TypeError} If the request options or identifiers are malformed.
+     *
+     * @public
+     */
+    readCausalClosure(
+        rootRecordIds: readonly RecordId[],
+        options: CausalClosureOptions = {},
+    ): Slice {
+        this.#assertOpen();
+        return readCausalClosureSlice(this.#database, rootRecordIds, options);
     }
 
     /**

@@ -13,7 +13,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.6.0` provides a versioned trace-record contract and a durable SQLite trace store:
+Version `0.7.0` provides a versioned trace-record contract and a durable SQLite trace store:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -27,6 +27,9 @@ Version `0.6.0` provides a versioned trace-record contract and a durable SQLite 
 - exact-record and ordered owner-path reads;
 - content-addressed blob writes, verified reads, and durable storage receipts;
 - complete registered-blob integrity reports with corruption classification;
+- immutable published owner-prefix cuts with verified resolution;
+- causal-closure and owner-prefix slices with mode filters, visibility, anchors, and witness
+  support;
 - configured root-witness bootstrap through `ROOT_WITNESS_ID`;
 - fail-closed, immutable protocol configuration with centralized store constants;
 - descriptor-safe closed draft validation, immutable body snapshots, and record views outside
@@ -110,6 +113,14 @@ store.readOwner("run:example");
 const blobReceipt = store.putBlob(new TextEncoder().encode("retained output"));
 store.readBlob(blobReceipt.blob_id);
 store.verifyBlobs();
+
+const cut = store.publishCut({
+    cut_id: "cut:example",
+    target_owner_id: "run:example",
+    through_record_id: receipt.record_ids[0],
+});
+store.resolveCut(cut.cut_id);
+store.readCausalClosure(receipt.record_ids);
 ```
 
 Only JSON-compatible semantic values are accepted. Undefined object properties are omitted;
@@ -158,15 +169,16 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Append planning contract](./docs/append-planning.md)
 - [SQLite trace store](./docs/sqlite-trace-store.md)
 - [Content-addressed blob storage](./docs/blob-storage.md)
+- [Trace cuts and causal slices](./docs/trace-queries.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
 
 ## Status
 
-Phase 0 governance and the Phase 1 canonical record, append planning, SQLite durability, and blob
-storage contracts are implemented. The next TypeScript slice adds trace cuts and causal-slice
-queries.
+Phase 0 governance and the Phase 1 canonical record, append planning, SQLite durability, blob
+storage, trace-cut, and causal-slice contracts are implemented. The next TypeScript slice adds
+execution-history projections.
 
 ## Attribution
 

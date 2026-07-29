@@ -108,7 +108,7 @@ test("protocol configuration rejects invalid append and migration bounds", () =>
             firstMigrationOf(config).version = 2;
         },
         (config) => {
-            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 3;
+            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 4;
         },
         (config) => {
             firstMigrationOf(config).firstOwnerOrdinal = 1;
@@ -234,6 +234,35 @@ test("protocol configuration rejects invalid root witnesses and JSON bodies", ()
     ]);
 });
 
+test("protocol configuration rejects invalid or drifted query contracts", () => {
+    assertInvalid([
+        (config) => {
+            queryConfigOf(config).closurePolicies = [];
+        },
+        (config) => {
+            queryConfigOf(config).modeFilters = ["both", "both"];
+        },
+        (config) => {
+            queryConfigOf(config).visibilityProfiles = ["payload", 1];
+        },
+        (config) => {
+            queryConfigOf(config).defaultClosurePolicy = "unknown";
+        },
+        (config) => {
+            queryConfigOf(config).defaultModeFilter = "unknown";
+        },
+        (config) => {
+            queryConfigOf(config).defaultVisibilityProfile = "unknown";
+        },
+        (config) => {
+            queryConfigOf(config).cutSchemaRef = "";
+        },
+        (config) => {
+            queryConfigOf(config).witnessSchemaRef = "changed.witness.v1";
+        },
+    ]);
+});
+
 test("protocol configuration rejects invalid schema, artifact, and object shapes", () => {
     assertInvalid([
         (config) => {
@@ -269,6 +298,10 @@ function assertInvalid(mutations: readonly Mutation[]): void {
         mutate(config);
         assert.throws(() => parseProtocolConfig(config), TypeError);
     }
+}
+
+function queryConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "kernel"), "queries");
 }
 
 function objectAt(value: Record<string, unknown>, key: string): Record<string, unknown> {

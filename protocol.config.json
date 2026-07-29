@@ -11,6 +11,17 @@
             "lastOwnerOrdinal": 9007199254740990
         },
         "canonicalVersion": "shepherd.kernel.canonical.v2",
+        "queries": {
+            "closurePolicies": ["include_external_anchors", "visible_only"],
+            "cutAppendIntentPrefix": "cut:",
+            "cutSchemaRef": "kernel.cut.owner-prefix.v1",
+            "defaultClosurePolicy": "include_external_anchors",
+            "defaultModeFilter": "both",
+            "defaultVisibilityProfile": "payload",
+            "modeFilters": ["both", "captures_only", "declarations_only"],
+            "visibilityProfiles": ["payload", "shape_only", "full_internal"],
+            "witnessSchemaRef": "kernel.witness.v1"
+        },
         "recordKind": "record",
         "recordModes": ["capture", "declaration"],
         "store": {
@@ -38,9 +49,14 @@
                     "firstOwnerOrdinal": 0,
                     "lastOwnerOrdinal": 9007199254740990,
                     "version": 2
+                },
+                {
+                    "firstOwnerOrdinal": 0,
+                    "lastOwnerOrdinal": 9007199254740990,
+                    "version": 3
                 }
             ],
-            "schemaVersion": 2,
+            "schemaVersion": 3,
             "synchronous": "FULL",
             "transactionMode": "IMMEDIATE"
         },

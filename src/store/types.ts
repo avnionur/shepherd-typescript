@@ -114,3 +114,126 @@ export type BlobIntegrityReport = {
     /** Whether every registered blob passed verification. */
     readonly ok: boolean;
 };
+
+/** Stable identifier for one published immutable trace cut. */
+export type CutId = string;
+
+/** Configured record-mode selection applied to traversal records. */
+export type ModeFilter = "both" | "captures_only" | "declarations_only";
+
+/** Payload disclosure level for a graph-shaped trace read. */
+export type VisibilityProfile = "full_internal" | "payload" | "shape_only";
+
+/** Whether omitted causal parents are represented as anchors. */
+export type ClosurePolicy = "include_external_anchors" | "visible_only";
+
+/** Input used to publish an immutable owner-prefix cut. */
+export type CutSpec = {
+    /** Optional append intent; defaults from the configured cut prefix and ID. */
+    readonly append_intent_id?: AppendIntentId;
+    /** Additional causes for the retained cut-publication record. */
+    readonly caused_by_record_ids?: readonly RecordId[];
+    /** Stable caller-selected cut identity. */
+    readonly cut_id: CutId;
+    /** Owner receiving the cut-publication record; defaults to the target owner. */
+    readonly publisher_owner_id?: TraceOwnerId;
+    /** Owner path addressed by the cut. */
+    readonly target_owner_id: TraceOwnerId;
+    /** Record occurrence through which the owner prefix is retained. */
+    readonly through_record_id: RecordId;
+    /** Witness for the cut-publication record; defaults to the configured root witness. */
+    readonly witness_ref?: RecordId;
+};
+
+/** Durable immutable address of an owner-path prefix. */
+export type Cut = {
+    /** Record that semantically publishes this cut. */
+    readonly created_by_record_id: RecordId;
+    /** Stable cut identity. */
+    readonly cut_id: CutId;
+    /** Owner containing the publication record. */
+    readonly publisher_owner_id: TraceOwnerId;
+    /** Owner path addressed by the cut. */
+    readonly target_owner_id: TraceOwnerId;
+    /** Retained ordinal of the addressed occurrence. */
+    readonly through_owner_ordinal: OwnerOrdinal;
+    /** Record at the addressed owner position. */
+    readonly through_record_id: RecordId;
+};
+
+/** Visibility-filtered record shape without its semantic body. */
+export type RecordShape = {
+    /** Verified retained envelope. */
+    readonly envelope: RecordEnvelope;
+    /** Stable reason why the body is unavailable. */
+    readonly hidden_reason: "payload_hidden";
+    /** Selected owner-local occurrence, when one exists. */
+    readonly view?: RecordView;
+};
+
+/** One selected payload-visible record occurrence. */
+export type SliceRecord = {
+    /** Canonical semantic body. */
+    readonly body: RecordBody;
+    /** Verified retained envelope. */
+    readonly envelope: RecordEnvelope;
+    /** Selected owner-local occurrence, when one exists. */
+    readonly view?: RecordView;
+};
+
+/** Visible placeholder for a direct causal parent omitted from a slice. */
+export type ExternalAnchor = {
+    /** Stable reason the parent is not selected. */
+    readonly hidden_reason: "outside_slice";
+    /** Omitted direct parent record. */
+    readonly ref: RecordId;
+};
+
+/** Visible placeholder for witness support whose payload is hidden. */
+export type WitnessAnchor = {
+    /** Stable reason the witness payload is unavailable. */
+    readonly hidden_reason: "hidden_by_visibility";
+    /** Shape visible without the witness body. */
+    readonly visible_shape: {
+        readonly schema_ref: string;
+        readonly witness_ref: RecordId | "";
+    };
+    /** Retained witness record identity. */
+    readonly witness_ref: RecordId;
+};
+
+/** Shared options for owner-prefix and published-cut reads. */
+export type SliceReadOptions = {
+    /** Traversal-record mode filter. */
+    readonly mode_filter?: ModeFilter;
+    /** Payload disclosure profile. */
+    readonly visibility_profile?: VisibilityProfile;
+};
+
+/** Options for a causal-closure read. */
+export type CausalClosureOptions = SliceReadOptions & {
+    /** Whether direct omitted parents appear as anchors. */
+    readonly closure_policy?: ClosurePolicy;
+};
+
+/** Immutable graph-shaped trace read. */
+export type Slice = {
+    /** Direct selected-record causal edges in deterministic order. */
+    readonly causal_edges: readonly (readonly [RecordId, RecordId])[];
+    /** Direct causal parents outside the selected set. */
+    readonly external_anchors: readonly ExternalAnchor[];
+    /** Applied traversal-record mode filter. */
+    readonly mode_filter: ModeFilter;
+    /** Selected record IDs on each owner path. */
+    readonly owner_paths: Readonly<Record<TraceOwnerId, readonly RecordId[]>>;
+    /** Published cut that addressed this read, when applicable. */
+    readonly read_address?: Cut;
+    /** Selected payload records or payload-hidden shapes keyed by identity. */
+    readonly visible_records_by_id: Readonly<Record<RecordId, RecordShape | SliceRecord>>;
+    /** Supporting witness records keyed by identity when payload-visible. */
+    readonly visible_witnesses_by_id: Readonly<Record<RecordId, SliceRecord>>;
+    /** Applied disclosure profile. */
+    readonly visibility_profile: VisibilityProfile;
+    /** Supporting witness placeholders when shape-only. */
+    readonly witness_anchors: readonly WitnessAnchor[];
+};

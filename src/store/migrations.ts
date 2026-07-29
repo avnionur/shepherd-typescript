@@ -99,6 +99,27 @@ const migrations: readonly Migration[] = [
             ) STRICT;
         `,
     },
+    {
+        version: 3,
+        createSql: () => `
+            CREATE TABLE ${STORE_TABLES.cuts} (
+                cut_id TEXT PRIMARY KEY CHECK (cut_id <> ''),
+                target_owner_id TEXT NOT NULL CHECK (target_owner_id <> ''),
+                through_record_id TEXT NOT NULL,
+                through_owner_ordinal INTEGER NOT NULL CHECK (
+                    through_owner_ordinal >= ${KERNEL_ABI_V0_CONTRACT.store.migrations[2].firstOwnerOrdinal}
+                    AND through_owner_ordinal <= ${KERNEL_ABI_V0_CONTRACT.store.migrations[2].lastOwnerOrdinal}
+                ),
+                publisher_owner_id TEXT NOT NULL CHECK (publisher_owner_id <> ''),
+                created_by_record_id TEXT NOT NULL UNIQUE,
+                append_intent_id TEXT NOT NULL UNIQUE,
+                FOREIGN KEY (through_record_id) REFERENCES ${STORE_TABLES.records}(record_id),
+                FOREIGN KEY (created_by_record_id) REFERENCES ${STORE_TABLES.records}(record_id),
+                FOREIGN KEY (append_intent_id)
+                    REFERENCES ${STORE_TABLES.appendIntents}(append_intent_id)
+            ) STRICT;
+        `,
+    },
 ];
 
 /**

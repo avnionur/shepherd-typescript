@@ -53,3 +53,20 @@ _Avoid_: Storage parent, path predecessor
 **Trace Store**:
 A durable adapter that atomically retains semantic records and owner-local views.
 _Avoid_: Event bus, record planner
+
+**Cut**:
+An immutable published read address through one retained occurrence on an owner path.
+_Avoid_: Mutable cursor, latest position
+
+**Slice**:
+An immutable graph-shaped read containing selected records, owner paths, direct causal edges,
+boundary anchors, and supporting witness evidence.
+_Avoid_: Record list, database page
+
+**External Anchor**:
+A visible reference to a direct causal parent omitted from a slice.
+_Avoid_: Synthetic parent, transitive edge
+
+**Witness Anchor**:
+A shape-only reference to supporting witness evidence whose payload is hidden.
+_Avoid_: Missing witness, replacement witness

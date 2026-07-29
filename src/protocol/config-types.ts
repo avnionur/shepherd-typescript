@@ -60,6 +60,17 @@ export type KernelProtocolConfig = {
         readonly recordViewSchema: string;
     };
     readonly canonicalVersion: string;
+    readonly queries: {
+        readonly closurePolicies: readonly string[];
+        readonly cutAppendIntentPrefix: string;
+        readonly cutSchemaRef: string;
+        readonly defaultClosurePolicy: string;
+        readonly defaultModeFilter: string;
+        readonly defaultVisibilityProfile: string;
+        readonly modeFilters: readonly string[];
+        readonly visibilityProfiles: readonly string[];
+        readonly witnessSchemaRef: string;
+    };
     readonly recordKind: string;
     readonly recordModes: readonly string[];
     readonly rootWitness: {
