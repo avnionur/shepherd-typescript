@@ -23,6 +23,9 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (config.kernel.store.appendIntentDigestAlgorithm !== expected.appendIntentDigestAlgorithm) {
         throw new TypeError("append intent digest requires a new store migration");
     }
+    if (!sameJson(config.kernel.store.blobs, expected.store.blobs)) {
+        throw new TypeError("blob identity and filesystem constants require a new store migration");
+    }
     if (!sameJson(config.kernel.schemas, expected.schemas)) {
         throw new TypeError("kernel schema constants do not match the implemented ABI");
     }

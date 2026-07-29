@@ -8,6 +8,7 @@ implementation documentation, and forward-looking plans.
 ├── src/                    Public TypeScript runtime
 │   ├── index.ts            Package export boundary
 │   ├── append/             Append drafts, validation, and pure planning
+│   ├── blob/               Binary identity and crash-safe filesystem objects
 │   ├── canonical/          Deterministic semantic encoding and hashing
 │   ├── protocol/           Runtime configuration and generated literals
 │   ├── record/             Record types, envelopes, guards, and snapshots
@@ -30,6 +31,7 @@ implementation documentation, and forward-looking plans.
 ```text
 public exports → append area → record area → canonical area → protocol configuration
 public exports → store area → append and record areas
+public exports → store area → blob filesystem and identity
 build/release scripts → repository configuration
 tests → public exports
 ```
@@ -40,12 +42,13 @@ they exercise the same public seam as consumers.
 The runtime areas are intentionally shallow:
 
 - `append/` owns draft wire-shape validation, parent resolution, and ordinal planning;
+- `blob/` owns configured binary identity and content-addressed filesystem durability;
 - `canonical/` owns language-neutral semantic encoding and unversioned record hashing;
 - `protocol/` owns typed configuration models, fail-closed validation, immutable runtime
   snapshots, and generated literal values;
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
-- `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts, and
-  retained reads.
+- `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
+  retained reads, and blob metadata.
 
 ## Module rules
 

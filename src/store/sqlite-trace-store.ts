@@ -1,16 +1,28 @@
 import { DatabaseSync } from "node:sqlite";
 
+import { BlobFilesystem } from "../blob/filesystem.ts";
 import { canonicalizeRecord } from "../canonical/canonical-record.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { createConfiguredRootWitness } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
 import { appendToTraceStore } from "./append.ts";
+import { resolveBlobDirectory } from "./blob-options.ts";
+import { putStoredBlob, readStoredBlob, verifyStoredBlobs } from "./blobs.ts";
 import { DEFAULT_STORE_DATABASE_PATH, STORE_PRAGMA_SQL, STORE_TABLES } from "./constants.ts";
 import { TraceStoreError } from "./errors.ts";
 import { migrateTraceStore } from "./migrations.ts";
 import { readOwnerRecords, readStoredRecord } from "./read.ts";
-import type { AppendReceipt, OwnerRecord, RetainedRecord, StoreAppendRequest } from "./types.ts";
+import type {
+    AppendReceipt,
+    BlobId,
+    BlobIntegrityReport,
+    BlobStorageReceipt,
+    OwnerRecord,
+    RetainedRecord,
+    SQLiteTraceStoreOptions,
+    StoreAppendRequest,
+} from "./types.ts";
 
 /**
  * Synchronous SQLite-backed content-addressed trace store.
@@ -21,6 +33,8 @@ import type { AppendReceipt, OwnerRecord, RetainedRecord, StoreAppendRequest } f
  * @public
  */
 export class SQLiteTraceStore implements Disposable {
+    readonly #blobFilesystem: BlobFilesystem;
+    readonly #cleanupBlobDirectory: () => void;
     readonly #database: DatabaseSync;
     #closed = false;
     readonly #schemaVersion: number;
@@ -29,15 +43,30 @@ export class SQLiteTraceStore implements Disposable {
      * Opens or creates a trace-store database.
      *
      * @param databasePath - SQLite file path, or `:memory:` for an ephemeral store.
+     * @param options - Optional external blob-directory configuration.
      * @throws {UnsupportedStoreSchemaError} If the database schema is newer than supported.
+     * @throws {TypeError} If options or the blob-directory shape are invalid.
+     * @throws {Error} If SQLite or durable blob-directory setup fails.
      *
      * @public
      */
-    constructor(databasePath = DEFAULT_STORE_DATABASE_PATH) {
-        this.#database = new DatabaseSync(databasePath, {
-            defensive: kernelProtocolConfig.store.defensive,
-            timeout: kernelProtocolConfig.store.busyTimeoutMilliseconds,
-        });
+    constructor(databasePath = DEFAULT_STORE_DATABASE_PATH, options: SQLiteTraceStoreOptions = {}) {
+        const blobDirectory = resolveBlobDirectory(databasePath, options);
+        this.#cleanupBlobDirectory = blobDirectory.cleanup;
+        let blobFilesystem: BlobFilesystem;
+        let database: DatabaseSync;
+        try {
+            blobFilesystem = new BlobFilesystem(blobDirectory.path);
+            database = new DatabaseSync(databasePath, {
+                defensive: kernelProtocolConfig.store.defensive,
+                timeout: kernelProtocolConfig.store.busyTimeoutMilliseconds,
+            });
+        } catch (error) {
+            this.#cleanupBlobDirectory();
+            throw error;
+        }
+        this.#blobFilesystem = blobFilesystem;
+        this.#database = database;
         try {
             this.#database.exec(STORE_PRAGMA_SQL.foreignKeys);
             this.#database.exec(STORE_PRAGMA_SQL.journalMode);
@@ -46,6 +75,7 @@ export class SQLiteTraceStore implements Disposable {
             this.#ensureRootWitness();
         } catch (error) {
             this.#database.close();
+            this.#cleanupBlobDirectory();
             throw error;
         }
     }
@@ -74,6 +104,54 @@ export class SQLiteTraceStore implements Disposable {
     append(request: StoreAppendRequest): AppendReceipt {
         this.#assertOpen();
         return appendToTraceStore(this.#database, request);
+    }
+
+    /**
+     * Durably retains binary content and its storage receipt.
+     *
+     * Equal bytes are deduplicated by their configured content digest. Blob bytes become visible
+     * only after a matching SQLite receipt commits.
+     *
+     * @param content - Binary content to retain.
+     * @returns A frozen content identity and byte-length receipt.
+     * @throws {BlobIntegrityError} If existing bytes or metadata disagree with the digest.
+     * @throws {TraceStoreError} If the store is closed.
+     * @throws {TypeError} If content is not a `Uint8Array`.
+     *
+     * @public
+     */
+    putBlob(content: Uint8Array): BlobStorageReceipt {
+        this.#assertOpen();
+        return putStoredBlob(this.#database, this.#blobFilesystem, content);
+    }
+
+    /**
+     * Reads binary content after verifying its durable receipt and digest.
+     *
+     * @param blobId - Configured content-addressed blob identifier.
+     * @returns A fresh byte array, or `undefined` when no durable receipt exists.
+     * @throws {BlobIntegrityError} If retained bytes or metadata are missing or corrupt.
+     * @throws {TraceStoreError} If the store is closed.
+     * @throws {TypeError} If the blob identifier is malformed.
+     *
+     * @public
+     */
+    readBlob(blobId: BlobId): Uint8Array | undefined {
+        this.#assertOpen();
+        return readStoredBlob(this.#database, this.#blobFilesystem, blobId);
+    }
+
+    /**
+     * Verifies every registered blob receipt and filesystem object.
+     *
+     * @returns A frozen report ordered by blob identifier.
+     * @throws {TraceStoreError} If the store is closed.
+     *
+     * @public
+     */
+    verifyBlobs(): BlobIntegrityReport {
+        this.#assertOpen();
+        return verifyStoredBlobs(this.#database, this.#blobFilesystem);
     }
 
     /**
@@ -117,6 +195,7 @@ export class SQLiteTraceStore implements Disposable {
         if (!this.#closed) {
             this.#database.close();
             this.#closed = true;
+            this.#cleanupBlobDirectory();
         }
     }
 

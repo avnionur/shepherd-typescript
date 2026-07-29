@@ -13,7 +13,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.5.2` provides a versioned trace-record contract and a durable SQLite trace store:
+Version `0.6.0` provides a versioned trace-record contract and a durable SQLite trace store:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -25,6 +25,8 @@ Version `0.5.2` provides a versioned trace-record contract and a durable SQLite 
 - atomic SQLite append transactions with numbered migrations;
 - append-intent idempotency, conflict detection, and rollback-safe retry;
 - exact-record and ordered owner-path reads;
+- content-addressed blob writes, verified reads, and durable storage receipts;
+- complete registered-blob integrity reports with corruption classification;
 - configured root-witness bootstrap through `ROOT_WITNESS_ID`;
 - fail-closed, immutable protocol configuration with centralized store constants;
 - descriptor-safe closed draft validation, immutable body snapshots, and record views outside
@@ -104,6 +106,10 @@ const receipt = store.append({
 
 store.readRecord(receipt.record_ids[0]);
 store.readOwner("run:example");
+
+const blobReceipt = store.putBlob(new TextEncoder().encode("retained output"));
+store.readBlob(blobReceipt.blob_id);
+store.verifyBlobs();
 ```
 
 Only JSON-compatible semantic values are accepted. Undefined object properties are omitted;
@@ -151,15 +157,16 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Record body and envelope contract](./docs/record-envelope.md)
 - [Append planning contract](./docs/append-planning.md)
 - [SQLite trace store](./docs/sqlite-trace-store.md)
+- [Content-addressed blob storage](./docs/blob-storage.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
 
 ## Status
 
-Phase 0 governance and the Phase 1 canonical record, append planning, and SQLite durability
-contracts are implemented. The next TypeScript slice adds content-addressed blob storage,
-integrity verification, and storage receipts.
+Phase 0 governance and the Phase 1 canonical record, append planning, SQLite durability, and blob
+storage contracts are implemented. The next TypeScript slice adds trace cuts and causal-slice
+queries.
 
 ## Attribution
 

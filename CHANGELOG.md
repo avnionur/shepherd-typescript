@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-07-29
+
+### New Feature
+
+- Added configured content-addressed binary storage with durable blob receipts.
+- Added `putBlob`, `readBlob`, and `verifyBlobs` to the SQLite trace store.
+- Added integrity classification for missing, malformed, size-mismatched, digest-mismatched, and
+  receipt-mismatched blob content.
+- Added store schema v2 with automatic migration from schema v1.
+
+### Improvement
+
+- Added exclusive temporary-file publication, file flushing, hard-link deduplication, and
+  recursive supported-platform directory flushing.
+- Added internal byte snapshots, final-object verification, and fail-closed rejection of symlinked
+  or non-directory blob paths.
+- Added fail-closed blob identity, fanout, directory, flush, receipt-version, and migration
+  configuration.
+- Added public-seam tests for reopen, retry after receipt failure, corruption, symlink containment,
+  migration, lifecycle, malformed inputs, and child-process crash recovery.
+
+### Impact
+
+TypeScript applications can durably retain and verify binary artifacts without placing their bytes
+inside semantic trace rows. Existing schema-v1 stores migrate automatically.
+
 ## [0.5.2] - 2026-07-29
 
 ### Defect Fixes

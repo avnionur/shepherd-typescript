@@ -1,7 +1,7 @@
 import { deepFreeze } from "./config-value-readers.ts";
 
 /**
- * Immutable compatibility contract implemented by kernel ABI v0 and store schema v1.
+ * Immutable compatibility contract implemented by kernel ABI v0 and store schema v2.
  *
  * These values define historical identities. They are intentionally code constants:
  * changing the active protocol requires adding a new ABI or migration contract.
@@ -51,13 +51,27 @@ export const KERNEL_ABI_V0_CONTRACT = deepFreeze({
             "https://avnionur.github.io/shepherd-typescript/schemas/record-view-v0.schema.json",
     },
     store: {
+        blobs: {
+            digestAlgorithm: "sha256",
+            directorySuffix: ".blobs",
+            fanoutCharacters: 2,
+            fsync: true,
+            hexLength: 64,
+            idPrefix: "sha256:",
+            receiptVersion: 1,
+        },
         migrations: [
             {
                 firstOwnerOrdinal: 0,
                 lastOwnerOrdinal: 9_007_199_254_740_990,
                 version: 1,
             },
+            {
+                firstOwnerOrdinal: 0,
+                lastOwnerOrdinal: 9_007_199_254_740_990,
+                version: 2,
+            },
         ],
-        schemaVersion: 1,
+        schemaVersion: 2,
     },
 } as const);

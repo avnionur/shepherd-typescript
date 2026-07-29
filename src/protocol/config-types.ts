@@ -20,9 +20,21 @@ export type StoreMigrationConfig = {
 /** Readonly sequence containing at least one value. */
 export type NonEmptyReadonlyArray<T> = readonly [T, ...T[]];
 
+/** Validated content-addressed blob-store configuration. */
+export type BlobProtocolConfig = {
+    readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
+    readonly directorySuffix: string;
+    readonly fanoutCharacters: number;
+    readonly fsync: true;
+    readonly hexLength: number;
+    readonly idPrefix: string;
+    readonly receiptVersion: number;
+};
+
 /** Validated trace-store protocol configuration. */
 export type StoreProtocolConfig = {
     readonly appendIntentDigestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
+    readonly blobs: BlobProtocolConfig;
     readonly busyTimeoutMilliseconds: number;
     readonly defensive: true;
     readonly foreignKeys: true;

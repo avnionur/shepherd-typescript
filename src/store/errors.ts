@@ -18,3 +18,10 @@ export class AppendIntentConflictError extends TraceStoreError {}
  * @public
  */
 export class UnsupportedStoreSchemaError extends TraceStoreError {}
+
+/**
+ * Raised when durable blob bytes disagree with their storage receipt.
+ *
+ * @public
+ */
+export class BlobIntegrityError extends TraceStoreError {}

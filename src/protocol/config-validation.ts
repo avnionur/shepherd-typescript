@@ -1,6 +1,7 @@
 import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
 import {
     readArtifacts,
+    readBlobConfig,
     readRecordIdConfig,
     readRootWitness,
     readSchemas,
@@ -93,6 +94,7 @@ function readStoreConfig(
         value,
         [
             "appendIntentDigestAlgorithm",
+            "blobs",
             "busyTimeoutMilliseconds",
             "defensive",
             "foreignKeys",
@@ -125,6 +127,7 @@ function readStoreConfig(
             SECURE_HASH_ALGORITHMS,
             "kernel.store.appendIntentDigestAlgorithm",
         ),
+        blobs: readBlobConfig(store.blobs),
         busyTimeoutMilliseconds: readNonNegativeInteger(
             store.busyTimeoutMilliseconds,
             "kernel.store.busyTimeoutMilliseconds",

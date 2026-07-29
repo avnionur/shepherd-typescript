@@ -2,7 +2,12 @@ import type { DatabaseSync } from "node:sqlite";
 
 import { KERNEL_ABI_V0_CONTRACT } from "../protocol/compatibility-constants.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
-import { STORE_INDEXES, STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
+import {
+    BLOB_STORAGE_RECEIPT_VERSION,
+    STORE_INDEXES,
+    STORE_TABLES,
+    STORE_TRANSACTION_SQL,
+} from "./constants.ts";
 import { UnsupportedStoreSchemaError } from "./errors.ts";
 
 type Migration = {
@@ -73,6 +78,25 @@ const migrations: readonly Migration[] = [
 
             CREATE INDEX ${STORE_INDEXES.viewsByRecord}
                 ON ${STORE_TABLES.recordViews}(record_id);
+        `,
+    },
+    {
+        version: 2,
+        createSql: () => `
+            CREATE TABLE ${STORE_TABLES.blobs} (
+                blob_id TEXT PRIMARY KEY,
+                byte_length INTEGER NOT NULL CHECK (byte_length >= 0)
+            ) STRICT;
+
+            CREATE TABLE ${STORE_TABLES.storageReceipts} (
+                blob_id TEXT PRIMARY KEY,
+                storage_key TEXT NOT NULL UNIQUE,
+                byte_length INTEGER NOT NULL CHECK (byte_length >= 0),
+                receipt_version INTEGER NOT NULL CHECK (
+                    receipt_version = ${BLOB_STORAGE_RECEIPT_VERSION}
+                ),
+                FOREIGN KEY (blob_id) REFERENCES ${STORE_TABLES.blobs}(blob_id)
+            ) STRICT;
         `,
     },
 ];

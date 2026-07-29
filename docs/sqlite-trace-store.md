@@ -9,8 +9,9 @@ Implementation:
 ## Scope
 
 `SQLiteTraceStore` is the first durable trace-kernel adapter. It retains canonical records,
-ordered causal parents, owner-local views, owner ordinal state, and append-intent receipts in one
-SQLite database. Construction accepts a file path or uses an in-memory database by default.
+ordered causal parents, owner-local views, owner ordinal state, append-intent receipts, and blob
+storage receipts in SQLite. Construction accepts a file path or uses an in-memory database by
+default.
 
 The adapter uses Node 24's built-in synchronous SQLite API. It enables validated foreign-key,
 journal, synchronization, timeout, transaction, and defensive settings before applying
@@ -60,6 +61,10 @@ Opening an existing database applies every pending migration; opening a database
 schema or a mismatched migration registry throws
 `UnsupportedStoreSchemaError`. A failed migration rolls back its schema-version marker.
 
+Schema v2 adds content-addressed blob metadata and storage receipts. Existing schema-v1 databases
+upgrade without rewriting semantic records. Blob filesystem behavior is documented in
+[Content-addressed blob storage](./blob-storage.md).
+
 The database and read decoder both enforce configured owner-ordinal bounds and non-empty owner
 identifiers. This prevents externally modified rows from bypassing the public `RecordView`
 contract.
@@ -69,6 +74,6 @@ Append and read operations after closure throw `TraceStoreError`.
 
 ## Current boundary
 
-This slice provides exact-ID and owner-path reads. Cut and slice queries, integrity scans, external
-blob storage, storage receipts, and remote-store abstractions remain planned TypeScript trace
-kernel work.
+This slice provides exact-ID and owner-path reads plus content-addressed external blob storage.
+Cut and slice queries, whole-graph integrity scans, orphan collection, and remote-store
+abstractions remain planned TypeScript trace-kernel work.

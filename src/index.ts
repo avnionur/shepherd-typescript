@@ -34,6 +34,7 @@ export {
 export { validateRecordEnvelope } from "./record/validation.ts";
 export {
     AppendIntentConflictError,
+    BlobIntegrityError,
     TraceStoreError,
     UnsupportedStoreSchemaError,
 } from "./store/errors.ts";
@@ -41,7 +42,12 @@ export { SQLiteTraceStore } from "./store/sqlite-trace-store.ts";
 export type {
     AppendIntentId,
     AppendReceipt,
+    BlobId,
+    BlobIntegrityIssue,
+    BlobIntegrityReport,
+    BlobStorageReceipt,
     OwnerRecord,
     RetainedRecord,
+    SQLiteTraceStoreOptions,
     StoreAppendRequest,
 } from "./store/types.ts";

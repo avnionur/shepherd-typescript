@@ -1,3 +1,4 @@
+import { KERNEL_ABI_V0_CONTRACT } from "../protocol/compatibility-constants.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
 
 /** Default SQLite target for an ephemeral trace store. */
@@ -6,12 +7,17 @@ export const DEFAULT_STORE_DATABASE_PATH = ":memory:";
 /** Stable table identifiers in the versioned trace-store schema. */
 export const STORE_TABLES = Object.freeze({
     appendIntents: "append_intents",
+    blobs: "blobs",
     migrations: "schema_migrations",
     ownerOrdinals: "owner_ordinals",
     recordParents: "record_parents",
     recordViews: "record_views",
     records: "records",
+    storageReceipts: "storage_receipts",
 });
+
+/** Version of filesystem blob receipts stored by schema migration two. */
+export const BLOB_STORAGE_RECEIPT_VERSION = KERNEL_ABI_V0_CONTRACT.store.blobs.receiptVersion;
 
 /** Stable index identifiers in the versioned trace-store schema. */
 export const STORE_INDEXES = Object.freeze({

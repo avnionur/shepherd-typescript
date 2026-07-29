@@ -7,6 +7,8 @@ import {
     readJsonObject,
     readNonEmptyString,
     readObject,
+    readPositiveInteger,
+    readRequiredTrue,
     readSafeInteger,
 } from "./config-value-readers.ts";
 
@@ -26,6 +28,66 @@ export function readRecordIdConfig(value: unknown): ProtocolConfig["recordId"] {
         algorithm,
         hexLength,
         prefix,
+    };
+}
+
+/** Validates the content-addressed blob identifier and filesystem contract. */
+export function readBlobConfig(value: unknown): ProtocolConfig["kernel"]["store"]["blobs"] {
+    const config = readObject(
+        value,
+        [
+            "digestAlgorithm",
+            "directorySuffix",
+            "fanoutCharacters",
+            "fsync",
+            "hexLength",
+            "idPrefix",
+            "receiptVersion",
+        ],
+        "kernel.store.blobs",
+    );
+    const digestAlgorithm = readEnum(
+        config.digestAlgorithm,
+        SECURE_HASH_ALGORITHMS,
+        "kernel.store.blobs.digestAlgorithm",
+    );
+    const hexLength = readSafeInteger(config.hexLength, "kernel.store.blobs.hexLength");
+    if (hexLength !== createHash(digestAlgorithm).digest("hex").length) {
+        throw new TypeError(
+            "kernel.store.blobs.hexLength must match the configured hash algorithm",
+        );
+    }
+    const idPrefix = readNonEmptyString(config.idPrefix, "kernel.store.blobs.idPrefix");
+    if (idPrefix !== `${digestAlgorithm}:`) {
+        throw new TypeError(
+            "kernel.store.blobs.idPrefix must identify the configured hash algorithm",
+        );
+    }
+    const fanoutCharacters = readPositiveInteger(
+        config.fanoutCharacters,
+        "kernel.store.blobs.fanoutCharacters",
+    );
+    if (fanoutCharacters >= hexLength) {
+        throw new TypeError("kernel.store.blobs.fanoutCharacters must be shorter than the digest");
+    }
+    const directorySuffix = readNonEmptyString(
+        config.directorySuffix,
+        "kernel.store.blobs.directorySuffix",
+    );
+    if (pathIsUnsafe(directorySuffix)) {
+        throw new TypeError("kernel.store.blobs.directorySuffix must be a simple path suffix");
+    }
+    return {
+        digestAlgorithm,
+        directorySuffix,
+        fanoutCharacters,
+        fsync: readRequiredTrue(config.fsync, "kernel.store.blobs.fsync"),
+        hexLength,
+        idPrefix,
+        receiptVersion: readPositiveInteger(
+            config.receiptVersion,
+            "kernel.store.blobs.receiptVersion",
+        ),
     };
 }
 
@@ -118,4 +180,8 @@ export function readRootWitness(
         schemaRef: readNonEmptyString(root.schemaRef, "kernel.rootWitness.schemaRef"),
         witnessRef: "",
     };
+}
+
+function pathIsUnsafe(value: string): boolean {
+    return !/^\.[a-z0-9._-]+$/iu.test(value);
 }

@@ -62,3 +62,55 @@ export type RetainedRecord = {
  * @public
  */
 export type OwnerRecord = PlannedRecord;
+
+/**
+ * Content-addressed identity of one retained binary value.
+ *
+ * @public
+ */
+export type BlobId = string;
+
+/**
+ * Durable result returned after blob bytes and metadata are retained.
+ *
+ * @public
+ */
+export type BlobStorageReceipt = {
+    /** Content-addressed blob identity. */
+    readonly blob_id: BlobId;
+    /** Exact number of retained bytes. */
+    readonly byte_length: number;
+};
+
+/**
+ * Filesystem configuration for a SQLite trace store.
+ *
+ * @public
+ */
+export type SQLiteTraceStoreOptions = {
+    /** Blob root directory. Defaults beside a file database or to an owned temporary directory. */
+    readonly blobDirectory?: string;
+};
+
+/** Classified integrity failure for one durable blob receipt. */
+export type BlobIntegrityIssue = {
+    /** Blob whose bytes or receipt failed verification. */
+    readonly blob_id: BlobId;
+    /** Stable failure classification. */
+    readonly kind:
+        | "digest_mismatch"
+        | "missing"
+        | "not_regular_file"
+        | "receipt_mismatch"
+        | "size_mismatch";
+};
+
+/** Complete integrity scan result for durable blob receipts. */
+export type BlobIntegrityReport = {
+    /** Number of registered blobs examined. */
+    readonly checked_blob_count: number;
+    /** Frozen issues in blob-identifier order. */
+    readonly issues: readonly BlobIntegrityIssue[];
+    /** Whether every registered blob passed verification. */
+    readonly ok: boolean;
+};

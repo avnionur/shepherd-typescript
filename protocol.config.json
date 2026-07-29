@@ -15,6 +15,15 @@
         "recordModes": ["capture", "declaration"],
         "store": {
             "appendIntentDigestAlgorithm": "sha256",
+            "blobs": {
+                "digestAlgorithm": "sha256",
+                "directorySuffix": ".blobs",
+                "fanoutCharacters": 2,
+                "fsync": true,
+                "hexLength": 64,
+                "idPrefix": "sha256:",
+                "receiptVersion": 1
+            },
             "busyTimeoutMilliseconds": 5000,
             "defensive": true,
             "foreignKeys": true,
@@ -24,9 +33,14 @@
                     "firstOwnerOrdinal": 0,
                     "lastOwnerOrdinal": 9007199254740990,
                     "version": 1
+                },
+                {
+                    "firstOwnerOrdinal": 0,
+                    "lastOwnerOrdinal": 9007199254740990,
+                    "version": 2
                 }
             ],
-            "schemaVersion": 1,
+            "schemaVersion": 2,
             "synchronous": "FULL",
             "transactionMode": "IMMEDIATE"
         },

@@ -113,7 +113,8 @@ Begin with SQLite in WAL mode:
 - compatible with a later remote store abstraction.
 
 Persist blobs in a content-addressed object directory, not inside trace rows.
-Use atomic temp-file, fsync, rename, and directory-fsync rules where supported.
+Use exclusive temp-file, file-fsync, hard-link publication, verification, and directory-fsync
+rules where supported.
 Record filesystem durability limitations by platform.
 
 Recommended logical tables:
@@ -143,7 +144,9 @@ backward-only local-parent resolution, known-parent checks, semantic envelope cr
 owner-local ordinal allocation. The implemented
 [SQLite trace store](../docs/sqlite-trace-store.md) adds migrations, atomic append durability,
 append-intent idempotency, serialized owner ordinals, exact-record reads, and owner-path reads.
-Cuts, slices, integrity scans, blobs, and remote storage remain future kernel work.
+Cuts, slices, whole-graph integrity scans, orphan collection, and remote storage remain future
+kernel work. Content-addressed filesystem blobs, durable storage receipts, and registered-blob
+integrity reports are implemented.
 
 ## Task model
 

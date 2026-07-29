@@ -19,6 +19,7 @@ test("protocol configuration validates and freezes every critical section", () =
 
     assert.equal(parsed.recordId.algorithm, "sha256");
     assert.equal(parsed.kernel.store.transactionMode, "IMMEDIATE");
+    assert.equal(parsed.kernel.store.blobs.fanoutCharacters, 2);
     assert.equal(parsed.kernel.store.defensive, true);
     assert.equal(Object.isFrozen(parsed), true);
     assert.equal(Object.isFrozen(parsed.kernel.store), true);
@@ -107,7 +108,7 @@ test("protocol configuration rejects invalid append and migration bounds", () =>
             firstMigrationOf(config).version = 2;
         },
         (config) => {
-            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 2;
+            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 3;
         },
         (config) => {
             firstMigrationOf(config).firstOwnerOrdinal = 1;
@@ -150,6 +151,41 @@ test("protocol configuration rejects weakened or unsafe store settings", () => {
         },
         (config) => {
             objectAt(objectAt(config, "kernel"), "store").transactionMode = "DEFERRED";
+        },
+        (config) => {
+            blobConfigOf(config).digestAlgorithm = "md5";
+        },
+        (config) => {
+            blobConfigOf(config).digestAlgorithm = "sha512";
+            blobConfigOf(config).hexLength = 128;
+            blobConfigOf(config).idPrefix = "sha512:";
+        },
+        (config) => {
+            blobConfigOf(config).hexLength = 63;
+        },
+        (config) => {
+            blobConfigOf(config).idPrefix = "blob:";
+        },
+        (config) => {
+            blobConfigOf(config).fanoutCharacters = 0;
+        },
+        (config) => {
+            blobConfigOf(config).fanoutCharacters = 64;
+        },
+        (config) => {
+            blobConfigOf(config).fsync = false;
+        },
+        (config) => {
+            blobConfigOf(config).directorySuffix = "../blobs";
+        },
+        (config) => {
+            blobConfigOf(config).directorySuffix = ".blob\u0000s";
+        },
+        (config) => {
+            blobConfigOf(config).receiptVersion = 0;
+        },
+        (config) => {
+            blobConfigOf(config).receiptVersion = 2;
         },
     ]);
 });
@@ -249,4 +285,8 @@ function firstMigrationOf(config: Record<string, unknown>): Record<string, unkno
         throw new Error("test fixture must contain a migration");
     }
     return migration;
+}
+
+function blobConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "kernel"), "store").blobs as Record<string, unknown>;
 }

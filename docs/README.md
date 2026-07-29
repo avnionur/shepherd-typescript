@@ -22,6 +22,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   resolution, body snapshots, and owner-local ordinal allocation.
 - [SQLite trace store](./sqlite-trace-store.md) defines migrations, atomic append transactions,
   idempotency, retained reads, and lifecycle behavior.
+- [Content-addressed blob storage](./blob-storage.md) defines binary identity, crash-safe
+  publication, durable receipts, verified reads, and integrity reports.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd
