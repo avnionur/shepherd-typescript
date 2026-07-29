@@ -1,12 +1,12 @@
-import { canonicalizeRecord, type SemanticRecord } from "./canonical-record.ts";
-import { kernelProtocolConfig, recordIdConfig } from "./protocol-config.ts";
+import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
+import { kernelProtocolConfig, recordIdConfig } from "../protocol/config.ts";
 import {
     RECORD_MODES,
     type RecordBody,
     type RecordEnvelopeDraft,
     type RecordId,
     type RecordMode,
-} from "./record-types.ts";
+} from "./types.ts";
 
 /**
  * Validates a value as a canonical record body.
@@ -26,6 +26,9 @@ export function validateRecordBody(value: unknown): asserts value is RecordBody 
 export function assertNonEmptyString(value: unknown, path: string): asserts value is string {
     if (typeof value !== "string" || value.length === 0) {
         throw new TypeError(`${path} must be a non-empty string`);
+    }
+    if (/[\uD800-\uDFFF]/u.test(value)) {
+        throw new TypeError(`${path} must contain valid Unicode without lone surrogates`);
     }
 }
 

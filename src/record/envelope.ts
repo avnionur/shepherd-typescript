@@ -1,15 +1,15 @@
 import { createHash } from "node:crypto";
 
-import { canonicalizeRecord, type SemanticRecord } from "./canonical-record.ts";
-import { kernelProtocolConfig, recordIdConfig } from "./protocol-config.ts";
+import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
+import { kernelProtocolConfig, recordIdConfig } from "../protocol/config.ts";
 import {
     assertNonEmptyString,
     assertRecordId,
     assertRecordMode,
     assertWitnessRules,
     validateRecordBody,
-} from "./record-guards.ts";
-import type { RecordBody, RecordEnvelope, RecordEnvelopeDraft } from "./record-types.ts";
+} from "./guards.ts";
+import type { RecordBody, RecordEnvelope, RecordEnvelopeDraft } from "./types.ts";
 
 /**
  * Creates a content-addressed record envelope from semantic input.

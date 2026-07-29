@@ -21,6 +21,10 @@ type EnvelopeSchema = AnySchemaObject & {
 
 type ProtocolConfiguration = {
     readonly kernel: {
+        readonly append: {
+            readonly firstOwnerOrdinal: number;
+            readonly lastOwnerOrdinal: number;
+        };
         readonly abiVersion: string;
         readonly canonicalVersion: string;
         readonly recordModes: readonly string[];
@@ -48,6 +52,10 @@ type RecordFixture = {
 
 const bodySchema = readJson("../spec/schemas/record-body-v0.schema.json") as AnySchemaObject;
 const envelopeSchema = readJson("../spec/schemas/record-envelope-v0.schema.json") as EnvelopeSchema;
+const appendBatchSchema = readJson(
+    "../spec/schemas/append-batch-draft-v0.schema.json",
+) as AnySchemaObject;
+const recordViewSchema = readJson("../spec/schemas/record-view-v0.schema.json") as AnySchemaObject;
 const protocolConfig = readJson("../protocol.config.json") as ProtocolConfiguration;
 const fixture = readJson("./fixtures/kernel-record-envelope-v0.json") as RecordFixture;
 
@@ -56,6 +64,68 @@ test("published schemas are valid JSON Schema 2020-12 documents", () => {
 
     assert.equal(validator.validateSchema(bodySchema), true, validator.errorsText());
     assert.equal(validator.validateSchema(envelopeSchema), true, validator.errorsText());
+    assert.equal(validator.validateSchema(appendBatchSchema), true, validator.errorsText());
+    assert.equal(validator.validateSchema(recordViewSchema), true, validator.errorsText());
+});
+
+test("published append and view schemas enforce their wire shapes", () => {
+    const validator = new Ajv2020({ strict: true });
+    validator.addSchema(bodySchema);
+    const validateBatch = validator.compile(appendBatchSchema);
+    const validateView = validator.compile(recordViewSchema);
+    const validId = `sha256:${"1".repeat(64)}`;
+    const validBatch = {
+        groups: [
+            {
+                owner_id: "run:alpha",
+                caused_by_record_ids: [validId],
+                records: [
+                    {
+                        append_local_id: "started",
+                        body: { operation: "task.started" },
+                        caused_by_local_refs: [],
+                        mode: "capture",
+                        schema_ref: "example.task-event.v1",
+                        witness_ref: validId,
+                    },
+                ],
+            },
+        ],
+    };
+
+    assert.equal(validateBatch(validBatch), true, validator.errorsText(validateBatch.errors));
+    assert.equal(validateView({ owner_id: "run:alpha", owner_ordinal: 0 }), true);
+    assert.equal(validateBatch({ ...validBatch, extra: true }), false);
+    assert.equal(
+        validateBatch({
+            groups: [{ ...validBatch.groups[0], owner_id: "" }],
+        }),
+        false,
+    );
+    assert.equal(
+        validateBatch({
+            groups: [
+                {
+                    ...validBatch.groups[0],
+                    records: [{ ...validBatch.groups[0]?.records[0], witness_ref: "" }],
+                },
+            ],
+        }),
+        false,
+    );
+    assert.equal(validateView({ owner_id: "", owner_ordinal: 0 }), false);
+    assert.equal(validateView({ owner_id: "run:alpha", owner_ordinal: -1 }), false);
+    assert.equal(validateView({ owner_id: "run:alpha", owner_ordinal: 0, extra: true }), false);
+    assert.equal(
+        (recordViewSchema.properties as Record<string, { minimum?: number }>).owner_ordinal
+            ?.minimum,
+        protocolConfig.kernel.append.firstOwnerOrdinal,
+    );
+    assert.equal(
+        (recordViewSchema.properties as Record<string, { maximum?: number }>).owner_ordinal
+            ?.maximum,
+        protocolConfig.kernel.append.lastOwnerOrdinal,
+    );
 });
 
 test("published schemas accept the pinned record vectors", () => {

@@ -16,6 +16,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   encoding, identifiers, and error behavior.
 - [Record body and envelope contract](./record-envelope.md) defines kernel ABI v0 semantic
   identity, causality, validation, and cross-language fixtures.
+- [Append planning contract](./append-planning.md) defines append drafts, causal-parent
+  resolution, body snapshots, and owner-local ordinal allocation.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

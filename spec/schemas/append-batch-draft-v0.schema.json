@@ -1,0 +1,97 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/append-batch-draft-v0.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Kernel AppendBatchDraft v0",
+    "description": "Ordered owner groups prepared for a future atomic append.",
+    "type": "object",
+    "required": [
+        "groups"
+    ],
+    "properties": {
+        "groups": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/appendGroup"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "appendGroup": {
+            "type": "object",
+            "required": [
+                "owner_id",
+                "records"
+            ],
+            "properties": {
+                "owner_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "caused_by_record_ids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/recordId"
+                    }
+                },
+                "records": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/appendRecord"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "appendRecord": {
+            "type": "object",
+            "required": [
+                "body",
+                "mode",
+                "schema_ref",
+                "witness_ref"
+            ],
+            "properties": {
+                "append_local_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "body": {
+                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/record-body-v0.schema.json"
+                },
+                "caused_by_record_ids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/recordId"
+                    }
+                },
+                "caused_by_local_refs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "mode": {
+                    "enum": [
+                        "capture",
+                        "declaration"
+                    ]
+                },
+                "schema_ref": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "witness_ref": {
+                    "$ref": "#/$defs/recordId"
+                }
+            },
+            "additionalProperties": false
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+    }
+}

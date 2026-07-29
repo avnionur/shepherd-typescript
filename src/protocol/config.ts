@@ -7,6 +7,10 @@ type ProtocolConfig = {
 
 type KernelProtocolConfig = {
     readonly abiVersion: string;
+    readonly append: {
+        readonly firstOwnerOrdinal: number;
+        readonly lastOwnerOrdinal: number;
+    };
     readonly canonicalVersion: string;
     readonly recordKind: string;
     readonly recordModes: readonly string[];
@@ -25,7 +29,7 @@ type RecordIdConfig = {
 };
 
 /** Location of the protocol configuration relative to this source or built module. */
-export const protocolConfigUrl = new URL("../protocol.config.json", import.meta.url);
+export const protocolConfigUrl = new URL("../../protocol.config.json", import.meta.url);
 
 const protocolConfig = JSON.parse(readFileSync(protocolConfigUrl, "utf8")) as ProtocolConfig;
 

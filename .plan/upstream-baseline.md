@@ -32,6 +32,9 @@ The baseline uses primary upstream sources:
 - [Shepherd2 kernel ABI v0](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/shepherd2/docs/kernel-abi-v0.md);
 - [Shepherd2 canonical implementation](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/shepherd2/src/shepherd2/kernel/canonical.py);
 - [Shepherd2 kernel golden vectors](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/shepherd2/tests/golden/kernel_abi_v0.json);
+- [Shepherd2 kernel append types](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/shepherd2/src/shepherd2/kernel/facts.py);
+- [Shepherd2 SQLite trace store](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/shepherd2/src/shepherd2/trace_store.py);
+- [Shepherd2 trace-store conformance tests](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/shepherd2/tests/test_trace_store_conformance.py);
 - [paper v3](https://arxiv.org/html/2605.10913v3).
 
 At capture time, the workspace manifest identifies release `0.3.0`, requires Python 3.11 or

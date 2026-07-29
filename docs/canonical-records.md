@@ -1,6 +1,6 @@
 # Canonical Record Contract
 
-Implementation: [`src/canonical-record.ts`](../src/canonical-record.ts). Public exports:
+Implementation: [`src/canonical/canonical-record.ts`](../src/canonical/canonical-record.ts). Public exports:
 [`src/index.ts`](../src/index.ts). Tests:
 [`test/canonical-record.test.ts`](../test/canonical-record.test.ts).
 

@@ -7,13 +7,10 @@ implementation documentation, and forward-looking plans.
 .
 ├── src/                    Public TypeScript runtime
 │   ├── index.ts            Package export boundary
-│   ├── canonical-record.ts Canonical encoding and record identifiers
-│   ├── protocol-config.ts  Typed runtime configuration loader
-│   ├── protocol-values.generated.ts Generated protocol literal types
-│   ├── record-types.ts     Record body and envelope vocabulary
-│   ├── record-envelope.ts  Versioned record identity creation
-│   ├── record-guards.ts    Shared record field and body guards
-│   └── record-validation.ts Untrusted envelope verification
+│   ├── append/             Append drafts, validation, and pure planning
+│   ├── canonical/          Deterministic semantic encoding and hashing
+│   ├── protocol/           Runtime configuration and generated literals
+│   └── record/             Record types, envelopes, guards, and snapshots
 ├── test/                   Public-seam unit tests and fixture assets
 ├── spec/                   Language-neutral JSON Schema contracts
 ├── scripts/                Build and release utilities
@@ -30,13 +27,20 @@ implementation documentation, and forward-looking plans.
 ## Dependency direction
 
 ```text
-public exports → record modules → canonical record module → protocol configuration
+public exports → append area → record area → canonical area → protocol configuration
 build/release scripts → repository configuration
 tests → public exports
 ```
 
 Runtime modules must not import build scripts or planning documents. Tests use `src/index.ts` so
 they exercise the same public seam as consumers.
+
+The runtime areas are intentionally shallow:
+
+- `append/` owns draft wire-shape validation, parent resolution, and ordinal planning;
+- `canonical/` owns language-neutral semantic encoding and unversioned record hashing;
+- `protocol/` owns typed runtime configuration and generated literal values;
+- `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
 
 ## Module rules
 
@@ -48,6 +52,7 @@ they exercise the same public seam as consumers.
 - Public types and functions require JSDoc with behavior, parameters, results, and failure modes.
 - Unit tests and their assets live under `test/` and describe externally observable behavior
   through `src/index.ts`.
+- Pure planning modules do not perform storage I/O; adapters commit their outputs atomically.
 
 ## Documentation ownership
 

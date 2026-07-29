@@ -1,6 +1,6 @@
 {
     "name": "@avnionur/shepherd-typescript",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "packageManager": "pnpm@10.32.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
     "license": "MIT",
@@ -26,14 +26,14 @@
         "node": ">=24.0.0"
     },
     "scripts": {
-        "build": "tsc -p tsconfig.build.json && node scripts/copy-runtime-config.ts",
+        "build": "node scripts/clean-build.ts && tsc -p tsconfig.build.json && node scripts/copy-runtime-config.ts",
         "build:desktop": "pnpm build",
         "check:protocol": "node scripts/generate-protocol-artifacts-cli.ts --check",
         "format": "biome format --write .",
         "generate:protocol": "node scripts/generate-protocol-artifacts-cli.ts",
         "lint": "biome check .",
         "sync:version": "node scripts/sync-version-cli.ts",
-        "test": "node --test --experimental-test-coverage --test-coverage-branches=100 --test-coverage-functions=100 --test-coverage-lines=100 --test-coverage-include=\"src/**/*.ts\" --test-coverage-include=\"scripts/sync-version.ts\" --test-coverage-include=\"scripts/generate-protocol-artifacts.ts\" \"test/**/*.test.ts\"",
+        "test": "node --test --experimental-test-coverage --test-coverage-branches=100 --test-coverage-functions=100 --test-coverage-lines=100 --test-coverage-include=\"src/**/*.ts\" --test-coverage-include=\"scripts/build-output.ts\" --test-coverage-include=\"scripts/sync-version.ts\" --test-coverage-include=\"scripts/generate-protocol-artifacts.ts\" \"test/**/*.test.ts\"",
         "typecheck": "tsc --noEmit",
         "verify": "pnpm check:protocol && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
     },

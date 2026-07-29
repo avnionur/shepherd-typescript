@@ -12,13 +12,17 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.3.0` provides the first versioned trace-record contract:
+Version `0.4.0` provides a versioned trace-record contract and pure append planning:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
 - domain-separated canonical v2 record identifiers;
 - ordered causal-parent and witness identity;
 - runtime body and envelope validation;
+- append batches with backward-only local causal references;
+- known-parent validation and owner-local ordinal allocation;
+- descriptor-safe closed draft validation, immutable body snapshots, and record views outside
+  semantic identity;
 - JSON Schema contracts and pinned cross-language fixtures;
 - Node-native TypeScript execution and tests.
 
@@ -38,7 +42,12 @@ pnpm install
 ## API
 
 ```ts
-import { canonicalizeRecord, createRecordEnvelope, createRecordId } from "./src/index.ts";
+import {
+    canonicalizeRecord,
+    createRecordEnvelope,
+    createRecordId,
+    planAppendBatch,
+} from "./src/index.ts";
 
 const record = { operation: "task.started", ordinal: 1 };
 
@@ -55,6 +64,19 @@ createRecordEnvelope({
     witness_ref: "sha256:<64 lowercase hexadecimal characters>",
 });
 // { record_id, digest, schema_ref, mode, witness_ref, caused_by_record_ids }
+
+planAppendBatch({
+    groups: [{
+        owner_id: "run:example",
+        records: [{
+            body: { operation: "task.started" },
+            mode: "capture",
+            schema_ref: "example.task-event.v1",
+            witness_ref: "sha256:<64 lowercase hexadecimal characters>",
+        }],
+    }],
+});
+// { records, causal_edges, owner_ordinal_ranges, next_owner_ordinals }
 ```
 
 Only JSON-compatible semantic values are accepted. Undefined object properties are omitted;
@@ -79,8 +101,9 @@ builds declarations and JavaScript into `dist/`.
 Release versions are configured in `release-config.yaml`. After changing the version, run
 `pnpm sync:version` to update every configured JSON manifest.
 
-Protocol modes, identifier shape, and generated schemas are configured in `protocol.config.json`.
-Run `pnpm generate:protocol` after changing them; `pnpm verify` rejects stale generated artifacts.
+Protocol modes, identifier shape, append defaults, and generated schemas are configured in
+`protocol.config.json`. Run `pnpm generate:protocol` after changing them; `pnpm verify` rejects
+stale generated artifacts.
 
 ## Contributing and security
 
@@ -98,13 +121,14 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Pinned upstream baseline](./.plan/upstream-baseline.md)
 - [Canonical record contract](./docs/canonical-records.md)
 - [Record body and envelope contract](./docs/record-envelope.md)
+- [Append planning contract](./docs/append-planning.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
 
 ## Status
 
-Phase 0 governance and the first Phase 1 record contract are implemented. The next slice defines
-append drafts, parent validation, and owner-local ordinal rules.
+Phase 0 governance and the first Phase 1 record and append-planning contracts are implemented. The
+next slice adds the SQLite trace store and atomic append transactions.
 
 ## Attribution
 

@@ -1,13 +1,13 @@
-import { canonicalizeRecord, type SemanticRecord } from "./canonical-record.ts";
-import { createRecordEnvelope } from "./record-envelope.ts";
+import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
+import { createRecordEnvelope } from "./envelope.ts";
 import {
     assertNonEmptyString,
     assertRecordId,
     assertRecordMode,
     assertString,
     validateRecordBody,
-} from "./record-guards.ts";
-import type { RecordBody, RecordEnvelope, RecordMode } from "./record-types.ts";
+} from "./guards.ts";
+import type { RecordBody, RecordEnvelope, RecordMode } from "./types.ts";
 
 /**
  * Validates an envelope and verifies its identity against a record body.

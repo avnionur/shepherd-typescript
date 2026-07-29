@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-07-29
+
+### New Feature
+
+- Added pure append-batch planning with canonical body snapshots and versioned record envelopes.
+- Added backward-only append-local references, known-parent validation, duplicate-cause
+  rejection, and ordered causal-edge output.
+- Added independent owner-local ordinal allocation, inclusive ranges, and record views outside
+  semantic identity.
+- Added generated JSON Schema contracts for append batch drafts and record views.
+- Added closed, descriptor-safe runtime draft validation and deeply frozen planned record
+  snapshots.
+
+### Improvement
+
+- Organized runtime modules into `append`, `canonical`, `protocol`, and `record` areas behind the
+  unchanged public entry point.
+- Added validated build-output cleanup so moved modules cannot leave stale duplicate package
+  artifacts.
+
+### Impact
+
+TypeScript can now validate and deterministically prepare records for an atomic trace-store
+transaction without coupling semantic identity to owner placement or storage.
+
 ## [0.3.0] - 2026-07-29
 
 ### New Feature

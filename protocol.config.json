@@ -6,18 +6,26 @@
     },
     "kernel": {
         "abiVersion": "shepherd.kernel.abi.v0",
+        "append": {
+            "firstOwnerOrdinal": 0,
+            "lastOwnerOrdinal": 9007199254740990
+        },
         "canonicalVersion": "shepherd.kernel.canonical.v2",
         "recordKind": "record",
         "recordModes": ["capture", "declaration"],
         "schemas": {
             "dialect": "https://json-schema.org/draft/2020-12/schema",
+            "appendBatchDraftId": "https://avnionur.github.io/shepherd-typescript/schemas/append-batch-draft-v0.schema.json",
             "recordBodyId": "https://avnionur.github.io/shepherd-typescript/schemas/record-body-v0.schema.json",
-            "recordEnvelopeId": "https://avnionur.github.io/shepherd-typescript/schemas/record-envelope-v0.schema.json"
+            "recordEnvelopeId": "https://avnionur.github.io/shepherd-typescript/schemas/record-envelope-v0.schema.json",
+            "recordViewId": "https://avnionur.github.io/shepherd-typescript/schemas/record-view-v0.schema.json"
         },
         "artifacts": {
-            "recordValues": "src/protocol-values.generated.ts",
+            "appendBatchDraftSchema": "spec/schemas/append-batch-draft-v0.schema.json",
+            "recordValues": "src/protocol/values.generated.ts",
             "recordBodySchema": "spec/schemas/record-body-v0.schema.json",
-            "recordEnvelopeSchema": "spec/schemas/record-envelope-v0.schema.json"
+            "recordEnvelopeSchema": "spec/schemas/record-envelope-v0.schema.json",
+            "recordViewSchema": "spec/schemas/record-view-v0.schema.json"
         },
         "rootWitness": {
             "schemaRef": "kernel.witness.root.v1",

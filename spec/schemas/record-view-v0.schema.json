@@ -1,0 +1,24 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/record-view-v0.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Kernel RecordView v0",
+    "description": "Owner-local record placement outside semantic record identity.",
+    "type": "object",
+    "required": [
+        "owner_id",
+        "owner_ordinal"
+    ],
+    "properties": {
+        "owner_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "owner_ordinal": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740990
+        }
+    },
+    "additionalProperties": false
+}

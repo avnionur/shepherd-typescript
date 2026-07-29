@@ -1,8 +1,8 @@
-import type { SemanticRecord } from "./canonical-record.ts";
-import { kernelProtocolConfig } from "./protocol-config.ts";
-import type { RECORD_MODES } from "./protocol-values.generated.ts";
+import type { SemanticRecord } from "../canonical/canonical-record.ts";
+import { kernelProtocolConfig } from "../protocol/config.ts";
+import type { RECORD_MODES } from "../protocol/values.generated.ts";
 
-export { RECORD_MODES } from "./protocol-values.generated.ts";
+export { RECORD_MODES } from "../protocol/values.generated.ts";
 
 /**
  * The frozen Shepherd kernel ABI implemented by this package.

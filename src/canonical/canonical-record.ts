@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { recordIdConfig } from "./protocol-config.ts";
+import { recordIdConfig } from "../protocol/config.ts";
 
 /**
  * A scalar value accepted by the canonical semantic record format.

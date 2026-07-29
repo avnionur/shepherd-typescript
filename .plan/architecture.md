@@ -137,6 +137,11 @@ Recommended logical tables:
 - repeated unequal append intent returns an idempotency conflict;
 - projections are disposable and reproducible from canonical records.
 
+The pure [append planning contract](../docs/append-planning.md) now implements draft validation,
+backward-only local-parent resolution, known-parent checks, semantic envelope creation, and
+owner-local ordinal allocation. Atomic durability, append-intent idempotency, and concurrent
+ordinal serialization remain responsibilities of the next SQLite store slice.
+
 ## Task model
 
 TypeScript cannot reproduce a Python decorator's runtime signature reflection

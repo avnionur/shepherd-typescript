@@ -1,9 +1,9 @@
 # Record Body and Envelope Contract
 
 Implementation:
-[`src/record-envelope.ts`](../src/record-envelope.ts),
-[`src/record-validation.ts`](../src/record-validation.ts), and
-[`src/record-types.ts`](../src/record-types.ts). Public exports:
+[`src/record/envelope.ts`](../src/record/envelope.ts),
+[`src/record/validation.ts`](../src/record/validation.ts), and
+[`src/record/types.ts`](../src/record/types.ts). Public exports:
 [`src/index.ts`](../src/index.ts). Tests:
 [`test/record-envelope.test.ts`](../test/record-envelope.test.ts).
 
