@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { canonicalizeRecord, createRecordId, type SemanticRecord } from "./index.ts";
+import { canonicalizeRecord, createRecordId, type SemanticRecord } from "../src/index.ts";
 
 test("canonicalizeRecord sorts object keys recursively", () => {
     const record: SemanticRecord = {

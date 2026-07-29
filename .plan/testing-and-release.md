@@ -18,7 +18,7 @@ Unit test count is not a parity signal. The shared conformance suite is.
 
 ## Conformance Test Kit
 
-The TCK is stored under `spec/fixtures` and runnable against:
+The TCK is stored under `test/fixtures` and runnable against:
 
 - TypeScript in-process API;
 - Python in-process API;

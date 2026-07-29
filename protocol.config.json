@@ -1,6 +1,38 @@
 {
     "recordId": {
         "algorithm": "sha256",
-        "prefix": "sha256:"
+        "prefix": "sha256:",
+        "hexLength": 64
+    },
+    "kernel": {
+        "abiVersion": "shepherd.kernel.abi.v0",
+        "canonicalVersion": "shepherd.kernel.canonical.v2",
+        "recordKind": "record",
+        "recordModes": ["capture", "declaration"],
+        "schemas": {
+            "dialect": "https://json-schema.org/draft/2020-12/schema",
+            "recordBodyId": "https://avnionur.github.io/shepherd-typescript/schemas/record-body-v0.schema.json",
+            "recordEnvelopeId": "https://avnionur.github.io/shepherd-typescript/schemas/record-envelope-v0.schema.json"
+        },
+        "artifacts": {
+            "recordValues": "src/protocol-values.generated.ts",
+            "recordBodySchema": "spec/schemas/record-body-v0.schema.json",
+            "recordEnvelopeSchema": "spec/schemas/record-envelope-v0.schema.json"
+        },
+        "rootWitness": {
+            "schemaRef": "kernel.witness.root.v1",
+            "mode": "capture",
+            "witnessRef": "",
+            "body": {
+                "active_binding_refs": [],
+                "actor_ref": "kernel:root",
+                "authority_refs": [],
+                "containment": "full",
+                "provenance_policy_refs": [],
+                "semantic_environment_refs": [],
+                "substrate_ref": "kernel",
+                "visibility_policy_refs": []
+            }
+        }
     }
 }

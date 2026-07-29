@@ -20,8 +20,11 @@ pnpm build:desktop
 ## Development rules
 
 - Test behavior through the public entry point in `src/index.ts`.
+- Keep unit tests and test assets under `test/`.
 - Preserve existing capabilities and assertions on every changed path.
 - Keep modules cohesive and avoid hard-coded static configuration.
+- Regenerate protocol artifacts with `pnpm generate:protocol` after changing
+  `protocol.config.json`.
 - Use strict, erasable TypeScript without `any` or inline imports.
 - Document every public TypeScript API with JSDoc.
 - Keep implemented contracts in `docs/` and unfinished work in `.plan/`.

@@ -1,0 +1,98 @@
+{
+    "abi_version": "shepherd.kernel.abi.v0",
+    "canonical_version": "shepherd.kernel.canonical.v2",
+    "source": {
+        "repository": "https://github.com/shepherd-agents/shepherd",
+        "revision": "d45074e0099d9ccafeed4a233702ad68ff8a2fa6",
+        "path": "shepherd2/tests/golden/kernel_abi_v0.json"
+    },
+    "records": [
+        {
+            "name": "root_witness_record",
+            "digest": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777",
+            "input": {
+                "body": {
+                    "active_binding_refs": [],
+                    "actor_ref": "kernel:root",
+                    "authority_refs": [],
+                    "containment": "full",
+                    "provenance_policy_refs": [],
+                    "semantic_environment_refs": [],
+                    "substrate_ref": "kernel",
+                    "visibility_policy_refs": []
+                },
+                "caused_by": [],
+                "kind": "record",
+                "mode": "capture",
+                "schema_ref": "kernel.witness.root.v1",
+                "witness": ""
+            }
+        },
+        {
+            "name": "capture_record",
+            "digest": "sha256:3d1a2264d4c0272117b4d5434b2b28fd50e639c46a61a761e6e5c8092fa9077b",
+            "input": {
+                "body": {
+                    "name": "alpha",
+                    "value": 1
+                },
+                "caused_by": [],
+                "kind": "record",
+                "mode": "capture",
+                "schema_ref": "example.kernel.item.v1",
+                "witness": "sha256:8872c210b2476cb0a9c2ab06d303d39d785393b761c0a24c3172317c19ba4bf1"
+            }
+        },
+        {
+            "name": "declaration_record",
+            "digest": "sha256:001522dc69433a2a8be8f41d45cd30fb6ee6f55d7dbce33538c1388ebf53adc9",
+            "input": {
+                "body": {
+                    "name": "alpha",
+                    "value": 1
+                },
+                "caused_by": [],
+                "kind": "record",
+                "mode": "declaration",
+                "schema_ref": "example.kernel.item.v1",
+                "witness": "sha256:8872c210b2476cb0a9c2ab06d303d39d785393b761c0a24c3172317c19ba4bf1"
+            }
+        },
+        {
+            "name": "ordered_parent_record",
+            "digest": "sha256:2520d192bc07334adf50f780d5879c05aee4d16930d2e0557341a9a2fc419310",
+            "input": {
+                "body": {
+                    "name": "alpha",
+                    "value": 1
+                },
+                "caused_by": [
+                    "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+                    "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+                ],
+                "kind": "record",
+                "mode": "capture",
+                "schema_ref": "example.kernel.item.v1",
+                "witness": "sha256:8872c210b2476cb0a9c2ab06d303d39d785393b761c0a24c3172317c19ba4bf1"
+            }
+        },
+        {
+            "name": "reversed_parent_record",
+            "digest": "sha256:1cf6c8e9bc28c1ca8d344e0a4cd2c39321c953426c7a1b6d33b8bb7ffa024b2f",
+            "input": {
+                "body": {
+                    "name": "alpha",
+                    "value": 1
+                },
+                "caused_by": [
+                    "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+                    "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+                ],
+                "kind": "record",
+                "mode": "capture",
+                "schema_ref": "example.kernel.item.v1",
+                "witness": "sha256:8872c210b2476cb0a9c2ab06d303d39d785393b761c0a24c3172317c19ba4bf1"
+            }
+        }
+    ]
+}

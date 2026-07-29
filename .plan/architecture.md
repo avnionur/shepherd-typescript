@@ -34,48 +34,56 @@ settlement, and meta-agent operations.
 - JSON Schema 2020-12 documents for persistent/wire data;
 - normative Markdown state-machine definitions;
 - canonical JSON rules;
-- digest test vectors;
 - golden trace graphs;
 - settlement transition fixtures;
 - compatibility manifests;
 - error codes and retry classifications.
 
-Use a versioned envelope:
+Executable digest and conformance vectors live with test assets under
+`test/fixtures/`.
+
+The versioned ABI keeps the semantic body separate from its envelope:
 
 ```ts
-interface RecordEnvelope<TBody extends RecordBody = RecordBody> {
-  protocolVersion: string;
-  recordId: string;
-  ownerId: string;
-  ownerOrdinal: number;
-  parentRecordIds: readonly string[];
-  body: TBody;
-  semanticDigest: string;
-  storageReceipts: readonly StorageReceipt[];
+type RecordBody = SemanticRecord;
+
+interface RecordEnvelope {
+  record_id: string;
+  digest: string;
+  schema_ref: string;
+  mode: "capture" | "declaration";
+  witness_ref: string;
+  caused_by_record_ids: readonly string[];
+}
+
+interface RecordView {
+  owner_id: string;
+  owner_ordinal: number;
 }
 ```
 
-The semantic digest excludes storage receipts, local paths, insertion
-timestamps, and backend-specific metadata. This ensures storage movement does
-not change semantic identity.
+ABI and canonical versions are external protocol constants. The semantic digest
+excludes record views, storage receipts, local paths, insertion timestamps, and
+backend-specific metadata. This ensures storage movement and placement at
+multiple owner paths do not change semantic identity.
 
 ### Canonical encoding
 
-Before implementation, choose and freeze one encoding profile:
+Kernel record ABI v0 adopts the implemented
+[canonical record contract](../docs/canonical-records.md):
 
-- UTF-8;
-- object keys sorted lexicographically;
-- no insignificant whitespace;
-- integers only for protocol counters and byte counts;
-- timestamps normalized to RFC 3339 UTC with a defined precision;
-- binary content represented by content digest and explicit media type;
-- absent values omitted, never conflated with `null`;
-- arrays retain order;
-- Unicode normalization policy declared;
-- SHA-256 initially, with an algorithm prefix such as `sha256:<hex>`.
+- UTF-8 compact JSON;
+- recursive UTF-16 code-unit object-key ordering;
+- ECMAScript finite-number serialization;
+- ordered arrays;
+- absent object values omitted and distinct from `null`;
+- supplied Unicode preserved without normalization and lone surrogates rejected;
+- SHA-256 identifiers with the configured `sha256:` prefix.
 
-RFC 8785 JSON Canonicalization is a strong default, provided both languages'
-libraries pass identical vectors.
+Kernel record identity additionally prefixes canonical bytes with
+`shepherd.kernel.canonical.v2\n`. Future schemas must separately freeze
+counter, timestamp, and binary-content representations before using them in
+semantic bodies.
 
 ## Trace kernel
 

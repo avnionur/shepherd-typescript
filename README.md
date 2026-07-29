@@ -12,13 +12,14 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.2.0` provides the first trace-kernel primitive and the repository governance baseline:
+Version `0.3.0` provides the first versioned trace-record contract:
 
 - deterministic recursive object-key ordering;
-- stable array ordering;
-- omission of undefined object properties;
-- rejection of unsupported or cyclic values;
-- configured SHA-256 content identifiers;
+- kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
+- domain-separated canonical v2 record identifiers;
+- ordered causal-parent and witness identity;
+- runtime body and envelope validation;
+- JSON Schema contracts and pinned cross-language fixtures;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
@@ -37,7 +38,7 @@ pnpm install
 ## API
 
 ```ts
-import { canonicalizeRecord, createRecordId } from "./src/index.ts";
+import { canonicalizeRecord, createRecordEnvelope, createRecordId } from "./src/index.ts";
 
 const record = { operation: "task.started", ordinal: 1 };
 
@@ -46,6 +47,14 @@ canonicalizeRecord(record);
 
 createRecordId(record);
 // sha256:<digest>
+
+createRecordEnvelope({
+    body: { operation: "task.started" },
+    mode: "capture",
+    schema_ref: "example.task-event.v1",
+    witness_ref: "sha256:<64 lowercase hexadecimal characters>",
+});
+// { record_id, digest, schema_ref, mode, witness_ref, caused_by_record_ids }
 ```
 
 Only JSON-compatible semantic values are accepted. Undefined object properties are omitted;
@@ -58,6 +67,7 @@ cycles are rejected.
 pnpm test
 pnpm typecheck
 pnpm lint
+pnpm check:protocol
 pnpm build
 pnpm verify
 ```
@@ -68,6 +78,9 @@ builds declarations and JavaScript into `dist/`.
 
 Release versions are configured in `release-config.yaml`. After changing the version, run
 `pnpm sync:version` to update every configured JSON manifest.
+
+Protocol modes, identifier shape, and generated schemas are configured in `protocol.config.json`.
+Run `pnpm generate:protocol` after changing them; `pnpm verify` rejects stale generated artifacts.
 
 ## Contributing and security
 
@@ -84,13 +97,14 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Progress tracker](./.plan/tracker.md)
 - [Pinned upstream baseline](./.plan/upstream-baseline.md)
 - [Canonical record contract](./docs/canonical-records.md)
+- [Record body and envelope contract](./docs/record-envelope.md)
+- [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
 
 ## Status
 
-Phase 0 governance and automation are implemented alongside the first Phase 1 canonical-record
-primitive. The next slice defines versioned `RecordBody` and `RecordEnvelope` schemas with
-cross-language fixtures.
+Phase 0 governance and the first Phase 1 record contract are implemented. The next slice defines
+append drafts, parent validation, and owner-local ordinal rules.
 
 ## Attribution
 

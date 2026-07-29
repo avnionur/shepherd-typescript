@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-07-29
+
+### New Feature
+
+- Added kernel ABI v0 `RecordBody`, `RecordEnvelope`, and draft types with comprehensive JSDoc.
+- Added domain-separated canonical v2 record identity creation and runtime body/envelope
+  validation.
+- Added generated language-neutral JSON Schema contracts, strict schema conformance tests, and
+  pinned cross-language golden vectors.
+- Moved all unit tests and fixture assets under `test/`.
+
+### Impact
+
+TypeScript can now produce and verify record envelopes that match the pinned upstream kernel
+vectors while keeping path and storage metadata outside semantic identity.
+
 ## [0.2.0] - 2026-07-29
 
 ### New Feature

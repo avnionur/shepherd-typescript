@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-29
 
-Current version: `0.2.0`
+Current version: `0.3.0`
 
 Current level: L0 — canonical model
 
@@ -25,8 +25,8 @@ with deterministic semantic-record canonicalization and content-addressed identi
 - [x] Pin exact upstream development and release revisions with compatibility evidence.
 - [x] Resolve npm, CLI, Python naming, MIT licensing, and upstream attribution.
 - [x] Add cross-platform CI, security automation, and contribution policies.
-- [ ] Define the versioned record body and envelope schemas.
-- [ ] Add canonical cross-language fixture vectors.
+- [x] Define the versioned record body and envelope schemas.
+- [x] Add canonical cross-language fixture vectors.
 - [ ] Implement append drafts, parent validation, and owner ordinals.
 - [ ] Implement the SQLite trace store and atomic append batches.
 - [ ] Begin the native Python implementation against the same fixtures.
@@ -41,8 +41,8 @@ with deterministic semantic-record canonicalization and content-addressed identi
 
 ## Next slice
 
-Define the versioned `RecordBody` and `RecordEnvelope` contract, then add canonical cross-language
-fixture vectors.
+Implement append drafts, parent validation, and owner-local ordinal rules against the versioned
+record contract.
 
 ## Notes
 

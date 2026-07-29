@@ -1,0 +1,57 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/record-envelope-v0.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Kernel RecordEnvelope v0",
+    "description": "Stable semantic identity and ordered causality for one retained record.",
+    "type": "object",
+    "required": [
+        "record_id",
+        "digest",
+        "schema_ref",
+        "mode",
+        "witness_ref",
+        "caused_by_record_ids"
+    ],
+    "properties": {
+        "record_id": {
+            "$ref": "#/$defs/recordId"
+        },
+        "digest": {
+            "$ref": "#/$defs/recordId"
+        },
+        "schema_ref": {
+            "type": "string",
+            "minLength": 1
+        },
+        "mode": {
+            "enum": [
+                "capture",
+                "declaration"
+            ]
+        },
+        "witness_ref": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/recordId"
+                },
+                {
+                    "const": ""
+                }
+            ]
+        },
+        "caused_by_record_ids": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/recordId"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+    }
+}

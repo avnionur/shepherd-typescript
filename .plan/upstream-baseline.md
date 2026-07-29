@@ -29,11 +29,19 @@ The baseline uses primary upstream sources:
 - [source tree at the shipped tag revision](https://github.com/shepherd-agents/shepherd/tree/a8196d4c453514836d06bd2fece91a03cdc37107);
 - [workspace manifest at the pinned development revision](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/pyproject.toml);
 - [license at the pinned development revision](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/LICENSE);
+- [Shepherd2 kernel ABI v0](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/shepherd2/docs/kernel-abi-v0.md);
+- [Shepherd2 canonical implementation](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/shepherd2/src/shepherd2/kernel/canonical.py);
+- [Shepherd2 kernel golden vectors](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/shepherd2/tests/golden/kernel_abi_v0.json);
 - [paper v3](https://arxiv.org/html/2605.10913v3).
 
 At capture time, the workspace manifest identifies release `0.3.0`, requires Python 3.11 or
 newer, and lists the Shepherd, kernel-reference, `vcs-core`, and `commons-vcs` workspaces. The
 upstream repository license is MIT.
+
+The TypeScript fixture copies the root, capture, declaration, and ordered-parent inputs and
+digests from the pinned Shepherd2 golden file. The TypeScript implementation is independent code;
+the fixture preserves its upstream revision and source path, and `NOTICE` records the applicable
+MIT attribution.
 
 The hosted [`0.3.0` roadmap](https://docs.shepherd-agents.ai/roadmap/) was also reviewed on the
 capture date. Its URL is live and mutable, so it is supporting context rather than revision-pinned

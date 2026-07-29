@@ -14,6 +14,10 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   publication boundaries.
 - [Canonical record contract](./canonical-records.md) defines accepted values, deterministic
   encoding, identifiers, and error behavior.
+- [Record body and envelope contract](./record-envelope.md) defines kernel ABI v0 semantic
+  identity, causality, validation, and cross-language fixtures.
+- [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
+  schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd
   revisions and the evidence boundary for parity claims.
 

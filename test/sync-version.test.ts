@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { parseReleaseConfig, synchronizeVersions } from "./sync-version.ts";
+import { parseReleaseConfig, synchronizeVersions } from "../scripts/sync-version.ts";
 
 test("parseReleaseConfig accepts ordinary YAML formatting", () => {
     assert.deepEqual(
