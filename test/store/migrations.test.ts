@@ -93,6 +93,8 @@ test("SQLiteTraceStore close is idempotent and guards every operation", () => {
     assert.throws(() => store.readCut("cut:closed"), TraceStoreError);
     assert.throws(() => store.readOwnerPrefix("run:alpha", 0), TraceStoreError);
     assert.throws(() => store.resolveCut("cut:closed"), TraceStoreError);
+    assert.throws(() => store.projectExecution("cut:closed"), TraceStoreError);
+    assert.throws(() => store.projectEffectiveHistory("cut:closed"), TraceStoreError);
     assert.throws(() => store.readCausalClosure([]), TraceStoreError);
     assert.throws(
         () =>

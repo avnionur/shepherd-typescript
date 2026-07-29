@@ -1,5 +1,10 @@
 import { readFileSync } from "node:fs";
-import type { KernelProtocolConfig, ProtocolConfig, RecordIdConfig } from "./config-types.ts";
+import type {
+    KernelProtocolConfig,
+    ProjectionProtocolConfig,
+    ProtocolConfig,
+    RecordIdConfig,
+} from "./config-types.ts";
 import { parseProtocolConfig } from "./config-validation.ts";
 import { RECORD_MODES } from "./values.generated.ts";
 
@@ -13,6 +18,9 @@ const protocolConfig: ProtocolConfig = parseProtocolConfig(
 
 /** Runtime kernel ABI and canonicalization configuration. */
 export const kernelProtocolConfig: KernelProtocolConfig = protocolConfig.kernel;
+
+/** Runtime contracts for disposable projections over trace slices. */
+export const projectionProtocolConfig: ProjectionProtocolConfig = protocolConfig.projections;
 
 /** Runtime record-identifier configuration loaded from the protocol configuration file. */
 export const recordIdConfig: RecordIdConfig = protocolConfig.recordId;

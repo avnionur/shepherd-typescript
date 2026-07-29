@@ -1,4 +1,5 @@
 import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
+import { readProjectionConfig } from "./config-projections.ts";
 import {
     readArtifacts,
     readBlobConfig,
@@ -39,16 +40,17 @@ export function parseProtocolConfig(
     value: unknown,
     options: ParseProtocolConfigOptions = {},
 ): ProtocolConfig {
-    const root = readObject(value, ["kernel", "recordId"], "protocol configuration");
+    const root = readObject(value, ["kernel", "projections", "recordId"], "protocol configuration");
     const recordId = readRecordIdConfig(root.recordId);
     const kernel = readKernelConfig(root.kernel);
+    const projections = readProjectionConfig(root.projections, kernel.queries);
     if (
         options.expectedRecordModes !== undefined &&
         !sameStrings(kernel.recordModes, options.expectedRecordModes)
     ) {
         throw new TypeError("kernel.recordModes is not synchronized with generated constants");
     }
-    const config = { kernel, recordId };
+    const config = { kernel, projections, recordId };
     if (options.enforceCompatibility !== false) {
         assertSupportedProtocolCompatibility(config);
     }

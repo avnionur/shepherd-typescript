@@ -26,6 +26,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   publication, durable receipts, verified reads, and integrity reports.
 - [Trace cuts and causal slices](./trace-queries.md) defines immutable owner-prefix addresses,
   causal closure, mode filtering, visibility, anchors, and witness support.
+- [Execution-history projections](./execution-history-projections.md) defines lifecycle folds,
+  parent relations, active children, parent-published data, and projection compatibility.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

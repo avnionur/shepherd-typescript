@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-07-29
+
+### New Feature
+
+- Added configured, immutable execution lifecycle projections over published trace cuts.
+- Added parent-owned relation folds with latest-transition child selection and strict child-cut
+  resolution for effective history.
+- Added parent-published semantic data to disposable effective-history projections.
+
+### Improvement
+
+- Added fail-closed projection compatibility checks for query modes, payload visibility, malformed
+  lifecycle evidence, relation transitions, publications, missing child cuts, duplicate slices,
+  and child-cut target mismatches.
+- Added immutable projection protocol configuration and compatibility constants for lifecycle
+  schemas, relation kinds, publication schemas, and slice requirements.
+- Added public-seam unit tests for lifecycle states, relation transitions, cut isolation, reopen,
+  child resolution and target validation, malformed evidence, configuration drift, and
+  closed-store behavior.
+- Documented the projection boundary, upstream frontier-to-cut normalization, public APIs, module
+  ownership, and trace-kernel vocabulary.
+
+### Impact
+
+TypeScript applications can reconstruct reproducible root and child execution history from
+retained Shepherd records without persisting mutable derived state.
+
 ## [0.7.0] - 2026-07-29
 
 ### New Feature

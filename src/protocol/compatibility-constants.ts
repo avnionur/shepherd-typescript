@@ -91,3 +91,19 @@ export const KERNEL_ABI_V0_CONTRACT = deepFreeze({
         schemaVersion: 3,
     },
 } as const);
+
+/** Immutable execution-history projection contract implemented by schema-library v1. */
+export const EXECUTION_HISTORY_PROJECTION_V1_CONTRACT = deepFreeze({
+    activeRelationKinds: ["spawned", "adopted"],
+    executionSchemas: {
+        completed: "shepherd2.execution.completed.v1",
+        created: "shepherd2.execution.created.v1",
+        failed: "shepherd2.execution.failed.v1",
+        started: "shepherd2.execution.started.v1",
+    },
+    modeRequirement: "both",
+    payloadVisibilityProfiles: ["payload", "full_internal"],
+    publishedRecordSchemaRef: "shepherd2.runtime.published_fact.v1",
+    relationKinds: ["spawned", "adopted", "abandoned"],
+    relationSchemaRef: "shepherd2.execution_relation.created.v1",
+} as const);

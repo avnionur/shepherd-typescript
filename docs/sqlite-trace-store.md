@@ -70,6 +70,12 @@ its semantic record; the table is a verified resolver index. Existing schema-v2 
 without rewriting records or receipts. Query behavior is documented in
 [Trace cuts and causal slices](./trace-queries.md).
 
+Execution projections are disposable reads and therefore add no schema migration. The
+`projectExecution(cutId)` and `projectEffectiveHistory(cutId)` facades resolve payload-visible,
+both-mode slices at verified immutable cuts and fold the configured lifecycle and relation
+schemas. Effective-history reads strictly resolve every active child address. Projection behavior
+is documented in [Execution-history projections](./execution-history-projections.md).
+
 The database and read decoder both enforce configured owner-ordinal bounds and non-empty owner
 identifiers. This prevents externally modified rows from bypassing the public `RecordView`
 contract.
@@ -79,7 +85,6 @@ Append and read operations after closure throw `TraceStoreError`.
 
 ## Current boundary
 
-This slice provides exact-ID, owner-path, immutable-cut, and causal-closure reads plus
-content-addressed external blob storage. Execution-history projections, whole-graph integrity
-scans, orphan collection, and remote-store abstractions remain planned TypeScript trace-kernel
-work.
+This slice provides exact-ID, owner-path, immutable-cut, causal-closure, execution, and
+effective-history reads plus content-addressed external blob storage. Whole-graph integrity scans,
+orphan collection, and remote-store abstractions remain planned TypeScript trace-kernel work.

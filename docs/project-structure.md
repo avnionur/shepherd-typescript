@@ -10,6 +10,7 @@ implementation documentation, and forward-looking plans.
 │   ├── append/             Append drafts, validation, and pure planning
 │   ├── blob/               Binary identity and crash-safe filesystem objects
 │   ├── canonical/          Deterministic semantic encoding and hashing
+│   ├── projection/         Disposable execution, relation, and history folds
 │   ├── protocol/           Runtime configuration and generated literals
 │   ├── record/             Record types, envelopes, guards, and snapshots
 │   └── store/              SQLite migrations, transactions, codecs, and reads
@@ -32,6 +33,7 @@ implementation documentation, and forward-looking plans.
 public exports → append area → record area → canonical area → protocol configuration
 public exports → store area → append and record areas
 public exports → store area → blob filesystem and identity
+public exports → projection area → immutable store slice types
 build/release scripts → repository configuration
 tests → public exports
 ```
@@ -46,6 +48,7 @@ The runtime areas are intentionally shallow:
 - `canonical/` owns language-neutral semantic encoding and unversioned record hashing;
 - `protocol/` owns typed configuration models, fail-closed validation, immutable runtime
   snapshots, and generated literal values;
+- `projection/` owns pure disposable execution, relation, and effective-history folds;
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, and blob metadata.

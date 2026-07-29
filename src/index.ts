@@ -18,6 +18,20 @@ export {
     type SemanticScalar,
     type SemanticValue,
 } from "./canonical/canonical-record.ts";
+export { projectExecution } from "./projection/execution.ts";
+export { projectEffectiveHistory } from "./projection/history.ts";
+export {
+    activeExecutionRelations,
+    projectExecutionRelations,
+} from "./projection/relations.ts";
+export type {
+    EffectiveChild,
+    EffectiveHistory,
+    Execution,
+    ExecutionRelation,
+    ExecutionStatus,
+    PublishedRecord,
+} from "./projection/types.ts";
 export { createRecordEnvelope } from "./record/envelope.ts";
 export { validateRecordBody } from "./record/guards.ts";
 export { ROOT_WITNESS_ID } from "./record/root-witness.ts";
@@ -35,6 +49,7 @@ export { validateRecordEnvelope } from "./record/validation.ts";
 export {
     AppendIntentConflictError,
     BlobIntegrityError,
+    ProjectionCompatibilityError,
     TraceStoreError,
     UnsupportedStoreSchemaError,
 } from "./store/errors.ts";

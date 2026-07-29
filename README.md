@@ -13,7 +13,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.7.0` provides a versioned trace-record contract and a durable SQLite trace store:
+Version `0.8.0` provides a versioned trace-record contract and a durable SQLite trace store:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -30,6 +30,7 @@ Version `0.7.0` provides a versioned trace-record contract and a durable SQLite 
 - immutable published owner-prefix cuts with verified resolution;
 - causal-closure and owner-prefix slices with mode filters, visibility, anchors, and witness
   support;
+- configured execution lifecycle, relation, published-data, and effective-history projections;
 - configured root-witness bootstrap through `ROOT_WITNESS_ID`;
 - fail-closed, immutable protocol configuration with centralized store constants;
 - descriptor-safe closed draft validation, immutable body snapshots, and record views outside
@@ -121,6 +122,10 @@ const cut = store.publishCut({
 });
 store.resolveCut(cut.cut_id);
 store.readCausalClosure(receipt.record_ids);
+
+// For a cut whose owner uses the configured Shepherd lifecycle schemas:
+store.projectExecution(cut.cut_id);
+store.projectEffectiveHistory(cut.cut_id);
 ```
 
 Only JSON-compatible semantic values are accepted. Undefined object properties are omitted;
@@ -170,6 +175,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [SQLite trace store](./docs/sqlite-trace-store.md)
 - [Content-addressed blob storage](./docs/blob-storage.md)
 - [Trace cuts and causal slices](./docs/trace-queries.md)
+- [Execution-history projections](./docs/execution-history-projections.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -177,8 +183,8 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 ## Status
 
 Phase 0 governance and the Phase 1 canonical record, append planning, SQLite durability, blob
-storage, trace-cut, and causal-slice contracts are implemented. The next TypeScript slice adds
-execution-history projections.
+storage, trace-cut, causal-slice, and execution-history projection contracts are implemented. The
+next TypeScript slice adds whole-store trace integrity verification and recovery diagnostics.
 
 ## Attribution
 

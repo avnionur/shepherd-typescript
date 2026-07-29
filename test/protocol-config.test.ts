@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { KERNEL_ABI_V0_CONTRACT } from "../src/protocol/compatibility-constants.ts";
+import {
+    EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
+    KERNEL_ABI_V0_CONTRACT,
+} from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
 type Mutation = (config: Record<string, unknown>) => void;
@@ -24,8 +27,11 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(parsed), true);
     assert.equal(Object.isFrozen(parsed.kernel.store), true);
     assert.equal(Object.isFrozen(parsed.kernel.store.migrations), true);
+    assert.equal(parsed.projections.executionHistory.modeRequirement, "both");
+    assert.equal(Object.isFrozen(parsed.projections.executionHistory), true);
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT), true);
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT.store.migrations), true);
+    assert.equal(Object.isFrozen(EXECUTION_HISTORY_PROJECTION_V1_CONTRACT), true);
     assert.notEqual(
         parsed.kernel.rootWitness.body,
         objectAt(objectAt(config, "kernel"), "rootWitness").body,
@@ -263,6 +269,45 @@ test("protocol configuration rejects invalid or drifted query contracts", () => 
     ]);
 });
 
+test("protocol configuration rejects invalid or drifted projection contracts", () => {
+    assertInvalid([
+        (config) => {
+            projectionConfigOf(config).modeRequirement = "captures_only";
+        },
+        (config) => {
+            projectionConfigOf(config).modeRequirement = "unknown";
+        },
+        (config) => {
+            projectionConfigOf(config).payloadVisibilityProfiles = [];
+        },
+        (config) => {
+            projectionConfigOf(config).payloadVisibilityProfiles = ["payload", "unknown"];
+        },
+        (config) => {
+            projectionConfigOf(config).relationKinds = ["spawned", "spawned"];
+        },
+        (config) => {
+            projectionConfigOf(config).activeRelationKinds = ["unknown"];
+        },
+        (config) => {
+            projectionConfigOf(config).publishedRecordSchemaRef = "";
+        },
+        (config) => {
+            projectionConfigOf(config).relationSchemaRef = "changed.relation.v1";
+        },
+        (config) => {
+            objectAt(projectionConfigOf(config), "executionSchemas").completed = "";
+        },
+        (config) => {
+            objectAt(projectionConfigOf(config), "executionSchemas").created =
+                "changed.execution.created.v1";
+        },
+        (config) => {
+            objectAt(config, "projections").extra = true;
+        },
+    ]);
+});
+
 test("protocol configuration rejects invalid schema, artifact, and object shapes", () => {
     assertInvalid([
         (config) => {
@@ -302,6 +347,10 @@ function assertInvalid(mutations: readonly Mutation[]): void {
 
 function queryConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(objectAt(config, "kernel"), "queries");
+}
+
+function projectionConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "projections"), "executionHistory");
 }
 
 function objectAt(value: Record<string, unknown>, key: string): Record<string, unknown> {

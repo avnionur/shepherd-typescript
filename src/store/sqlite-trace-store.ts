@@ -2,6 +2,11 @@ import { DatabaseSync } from "node:sqlite";
 
 import { BlobFilesystem } from "../blob/filesystem.ts";
 import { canonicalizeRecord } from "../canonical/canonical-record.ts";
+import { historyProjectionReadOptions } from "../projection/compatibility.ts";
+import { projectExecution } from "../projection/execution.ts";
+import { projectEffectiveHistory } from "../projection/history.ts";
+import { activeExecutionRelations, projectExecutionRelations } from "../projection/relations.ts";
+import type { EffectiveHistory, Execution } from "../projection/types.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { createConfiguredRootWitness } from "../record/root-witness.ts";
@@ -264,6 +269,63 @@ export class SQLiteTraceStore implements Disposable {
             options,
             cut,
         );
+    }
+
+    /**
+     * Projects one execution lifecycle at an immutable published cut.
+     *
+     * @param cutId - Cut addressing the execution owner prefix.
+     * @returns A frozen, reproducible execution value.
+     * @throws {ProjectionCompatibilityError} If configured projection requirements cannot be met.
+     * @throws {TraceStoreError} If retained cut or lifecycle evidence is absent or corrupt.
+     * @throws {TypeError} If the cut identifier is malformed.
+     *
+     * @public
+     */
+    projectExecution(cutId: CutId): Execution {
+        this.#assertOpen();
+        const cut = readStoredCut(this.#database, cutId);
+        const slice = readOwnerPrefixSlice(
+            this.#database,
+            cut.target_owner_id,
+            cut.through_owner_ordinal,
+            historyProjectionReadOptions(),
+            cut,
+        );
+        return projectExecution(slice, cut.target_owner_id, cut);
+    }
+
+    /**
+     * Projects effective execution history at immutable root and child cuts.
+     *
+     * Active child relations resolve their published child cuts. Abandoned relations remain
+     * visible in retained history but do not select an effective child.
+     *
+     * @param cutId - Cut addressing the root execution owner prefix.
+     * @returns Frozen root, relation, child, and parent-publication projections.
+     * @throws {ProjectionCompatibilityError} If configured projection requirements cannot be met.
+     * @throws {TraceStoreError} If a required cut or retained record is absent or corrupt.
+     * @throws {TypeError} If the cut identifier is malformed.
+     *
+     * @public
+     */
+    projectEffectiveHistory(cutId: CutId): EffectiveHistory {
+        this.#assertOpen();
+        const rootCut = readStoredCut(this.#database, cutId);
+        const rootSlice = readOwnerPrefixSlice(
+            this.#database,
+            rootCut.target_owner_id,
+            rootCut.through_owner_ordinal,
+            historyProjectionReadOptions(),
+            rootCut,
+        );
+        const relations = projectExecutionRelations(rootSlice, rootCut.target_owner_id);
+        const childSlices = activeExecutionRelations(relations).flatMap((relation) =>
+            relation.child_cut_id === null
+                ? []
+                : [this.resolveCut(relation.child_cut_id, historyProjectionReadOptions())],
+        );
+        return projectEffectiveHistory(rootSlice, rootCut.target_owner_id, childSlices);
     }
 
     /**

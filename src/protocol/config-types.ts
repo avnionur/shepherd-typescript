@@ -96,8 +96,30 @@ export type RecordIdConfig = {
     readonly prefix: string;
 };
 
+/** Configured execution-history projection contract. */
+export type ExecutionHistoryProjectionConfig = {
+    readonly activeRelationKinds: readonly string[];
+    readonly executionSchemas: {
+        readonly completed: string;
+        readonly created: string;
+        readonly failed: string;
+        readonly started: string;
+    };
+    readonly modeRequirement: string;
+    readonly payloadVisibilityProfiles: NonEmptyReadonlyArray<string>;
+    readonly publishedRecordSchemaRef: string;
+    readonly relationKinds: readonly string[];
+    readonly relationSchemaRef: string;
+};
+
+/** Validated disposable projection configuration. */
+export type ProjectionProtocolConfig = {
+    readonly executionHistory: ExecutionHistoryProjectionConfig;
+};
+
 /** Complete validated language-neutral protocol configuration. */
 export type ProtocolConfig = {
     readonly kernel: KernelProtocolConfig;
+    readonly projections: ProjectionProtocolConfig;
     readonly recordId: RecordIdConfig;
 };

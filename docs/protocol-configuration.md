@@ -12,8 +12,8 @@ typed section/value modules. Configuration source:
 
 `protocol.config.json` is the language-neutral source for record identity, kernel versions,
 ordinal bounds, schema/artifact locations, the root witness, query modes/policies, blob
-identity/layout, and trace-store behavior. Runtime code and protocol artifact generation use the
-same parser.
+identity/layout, trace-store behavior, and execution-history projection contracts. Runtime code
+and protocol artifact generation use the same parser.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -41,6 +41,8 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   receipt version match the immutable migration contract;
 - cut schema and append-intent prefix, witness schema, mode filters, visibility profiles, closure
   policies, and their defaults match the immutable ABI contract;
+- execution lifecycle and relation schemas, relation transitions, active transitions, publication
+  schema, required mode, and payload visibility match immutable projection-v1 constants;
 - root-witness mode, reference, body, schema reference, and JSON values are valid;
 - schema identifiers are unique absolute URLs, use the supported JSON Schema 2020-12 dialect,
   and match ABI v0;

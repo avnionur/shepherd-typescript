@@ -1,4 +1,7 @@
-import { KERNEL_ABI_V0_CONTRACT } from "./compatibility-constants.ts";
+import {
+    EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
+    KERNEL_ABI_V0_CONTRACT,
+} from "./compatibility-constants.ts";
 import type { ProtocolConfig } from "./config-types.ts";
 import { sameStrings } from "./config-value-readers.ts";
 
@@ -47,6 +50,9 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     if (!sameJson(config.kernel.rootWitness, expected.rootWitness)) {
         throw new TypeError("root witness constants do not match the implemented ABI");
+    }
+    if (!sameJson(config.projections.executionHistory, EXECUTION_HISTORY_PROJECTION_V1_CONTRACT)) {
+        throw new TypeError("execution-history projection constants require a new projection");
     }
 }
 

@@ -4,6 +4,22 @@
         "prefix": "sha256:",
         "hexLength": 64
     },
+    "projections": {
+        "executionHistory": {
+            "activeRelationKinds": ["spawned", "adopted"],
+            "executionSchemas": {
+                "completed": "shepherd2.execution.completed.v1",
+                "created": "shepherd2.execution.created.v1",
+                "failed": "shepherd2.execution.failed.v1",
+                "started": "shepherd2.execution.started.v1"
+            },
+            "modeRequirement": "both",
+            "payloadVisibilityProfiles": ["payload", "full_internal"],
+            "publishedRecordSchemaRef": "shepherd2.runtime.published_fact.v1",
+            "relationKinds": ["spawned", "adopted", "abandoned"],
+            "relationSchemaRef": "shepherd2.execution_relation.created.v1"
+        }
+    },
     "kernel": {
         "abiVersion": "shepherd.kernel.abi.v0",
         "append": {

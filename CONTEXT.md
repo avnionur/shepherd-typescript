@@ -70,3 +70,21 @@ _Avoid_: Synthetic parent, transitive edge
 **Witness Anchor**:
 A shape-only reference to supporting witness evidence whose payload is hidden.
 _Avoid_: Missing witness, replacement witness
+
+**Execution Projection**:
+A disposable lifecycle value folded from configured records on an immutable execution-owner
+prefix.
+_Avoid_: Mutable run row, authoritative execution state
+
+**Execution Relation**:
+A parent-owned retained transition describing a spawned, adopted, or abandoned child execution.
+_Avoid_: Child process handle, storage foreign key
+
+**Effective History**:
+A disposable root projection containing retained relation transitions, active child-cut
+projections, and parent-published semantic data.
+_Avoid_: Raw record list, mutable run tree
+
+**Published Record**:
+Schema-defined parent-owned data exposed by an effective-history projection.
+_Avoid_: Log message, unretained event

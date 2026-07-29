@@ -25,3 +25,10 @@ export class UnsupportedStoreSchemaError extends TraceStoreError {}
  * @public
  */
 export class BlobIntegrityError extends TraceStoreError {}
+
+/**
+ * Raised when a trace slice cannot satisfy a projection's declared requirements.
+ *
+ * @public
+ */
+export class ProjectionCompatibilityError extends TypeError {}
