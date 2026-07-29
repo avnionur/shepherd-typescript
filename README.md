@@ -12,7 +12,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.1.3` provides the first trace-kernel primitive:
+Version `0.2.0` provides the first trace-kernel primitive and the repository governance baseline:
 
 - deterministic recursive object-key ordering;
 - stable array ordering;
@@ -69,6 +69,12 @@ builds declarations and JavaScript into `dist/`.
 Release versions are configured in `release-config.yaml`. After changing the version, run
 `pnpm sync:version` to update every configured JSON manifest.
 
+## Contributing and security
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development and review requirements and
+[SECURITY.md](./SECURITY.md) for private vulnerability reporting and the supported security
+boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md).
+
 ## Documentation
 
 - [Documentation index](./docs/README.md)
@@ -82,8 +88,9 @@ Release versions are configured in `release-config.yaml`. After changing the ver
 
 ## Status
 
-Phase 0 repository foundation is in progress, with the first Phase 1 canonical-record primitive
-implemented. The next slice completes the remaining Phase 0 baseline decisions and CI foundation.
+Phase 0 governance and automation are implemented alongside the first Phase 1 canonical-record
+primitive. The next slice defines versioned `RecordBody` and `RecordEnvelope` schemas with
+cross-language fixtures.
 
 ## Attribution
 

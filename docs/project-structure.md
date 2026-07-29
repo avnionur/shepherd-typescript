@@ -10,6 +10,7 @@ implementation documentation, and forward-looking plans.
 │   ├── canonical-record.ts Canonical encoding and record identifiers
 │   └── protocol-config.ts  Typed runtime configuration loader
 ├── scripts/                Build and release utilities
+├── .github/                CI, security automation, and contribution templates
 ├── docs/                   Implemented contracts and contributor guidance
 ├── .plan/                  Research, roadmap, decisions, and progress tracker
 ├── project.config.json     CLI and Python ecosystem identity

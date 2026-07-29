@@ -1,0 +1,41 @@
+name: Bug report
+description: Report reproducible incorrect behavior.
+title: "bug: "
+labels: ["bug"]
+body:
+    - type: markdown
+      attributes:
+          value: Do not report security vulnerabilities here. Use the private security advisory link.
+    - type: textarea
+      id: behavior
+      attributes:
+          label: Observed behavior
+          description: Describe what happened and include the exact error.
+      validations:
+          required: true
+    - type: textarea
+      id: expected
+      attributes:
+          label: Expected behavior
+      validations:
+          required: true
+    - type: textarea
+      id: reproduction
+      attributes:
+          label: Minimal reproduction
+          description: Include commands, inputs, and the smallest relevant code.
+      validations:
+          required: true
+    - type: input
+      id: version
+      attributes:
+          label: Version or commit
+      validations:
+          required: true
+    - type: input
+      id: environment
+      attributes:
+          label: Environment
+          description: Include operating system, Node.js, pnpm, and TypeScript versions.
+      validations:
+          required: true

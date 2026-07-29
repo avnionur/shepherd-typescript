@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-29
 
-Current version: `0.1.3`
+Current version: `0.2.0`
 
 Current level: L0 — canonical model
 
@@ -24,7 +24,7 @@ with deterministic semantic-record canonicalization and content-addressed identi
 - [x] Organize implemented documentation and document the public API with JSDoc.
 - [x] Pin exact upstream development and release revisions with compatibility evidence.
 - [x] Resolve npm, CLI, Python naming, MIT licensing, and upstream attribution.
-- [ ] Add CI, security, and contribution policies.
+- [x] Add cross-platform CI, security automation, and contribution policies.
 - [ ] Define the versioned record body and envelope schemas.
 - [ ] Add canonical cross-language fixture vectors.
 - [ ] Implement append drafts, parent validation, and owner ordinals.
@@ -41,8 +41,8 @@ with deterministic semantic-record canonicalization and content-addressed identi
 
 ## Next slice
 
-Continue Phase 0 by adding the initial CI, security, and contribution policies. Then define the
-versioned `RecordBody` and `RecordEnvelope` contract.
+Define the versioned `RecordBody` and `RecordEnvelope` contract, then add canonical cross-language
+fixture vectors.
 
 ## Notes
 
@@ -50,6 +50,8 @@ versioned `RecordBody` and `RecordEnvelope` contract.
   the Keep a Changelog and Semantic Versioning format used here.
 - Registry names are selected but are not reserved until publication succeeds.
 - npm publication remains disabled until package exports and consumer compatibility checks pass.
+- Private vulnerability reporting must be enabled in the GitHub repository settings before the
+  first public release.
 - The upstream lock records provenance only; executable upstream conformance fixtures remain a
   later acceptance requirement.
 - Completion includes shipped, substrate, paper-level, and operational capabilities; incomplete

@@ -1,0 +1,32 @@
+name: Feature request
+description: Propose a capability or protocol change.
+title: "feature: "
+labels: ["enhancement"]
+body:
+    - type: textarea
+      id: problem
+      attributes:
+          label: Problem
+          description: Describe the user or protocol problem without prescribing an implementation.
+      validations:
+          required: true
+    - type: textarea
+      id: proposal
+      attributes:
+          label: Proposed behavior
+          description: Describe observable behavior, invariants, and compatibility level.
+      validations:
+          required: true
+    - type: textarea
+      id: evidence
+      attributes:
+          label: Acceptance evidence
+          description: Describe tests or fixtures that would prove completion.
+      validations:
+          required: true
+    - type: textarea
+      id: risks
+      attributes:
+          label: Security and compatibility risks
+      validations:
+          required: true
