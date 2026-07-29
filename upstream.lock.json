@@ -1,0 +1,11 @@
+{
+    "repository": "https://github.com/shepherd-agents/shepherd",
+    "capturedAt": "2026-07-29",
+    "main": {
+        "revision": "d45074e0099d9ccafeed4a233702ad68ff8a2fa6"
+    },
+    "release": {
+        "tag": "v0.3.0",
+        "revision": "a8196d4c453514836d06bd2fece91a03cdc37107"
+    }
+}

@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-29
 
-Current version: `0.1.1`
+Current version: `0.1.2`
 
 Current level: L0 — canonical model
 
@@ -22,7 +22,7 @@ with deterministic semantic-record canonicalization and content-addressed identi
 - [x] Test every exported runtime function.
 - [x] Add README, changelog, version configuration, and `.gitignore`.
 - [x] Organize implemented documentation and document the public API with JSDoc.
-- [ ] Pin an exact upstream revision and compatibility evidence.
+- [x] Pin exact upstream development and release revisions with compatibility evidence.
 - [ ] Resolve package naming and licensing.
 - [ ] Add CI, security, and contribution policies.
 - [ ] Define the versioned record body and envelope schemas.
@@ -41,9 +41,8 @@ with deterministic semantic-record canonicalization and content-addressed identi
 
 ## Next slice
 
-Complete Phase 0 by pinning an upstream revision, resolving package naming and licensing, and
-adding the initial CI, security, and contribution policies. Then define the versioned
-`RecordBody` and `RecordEnvelope` contract.
+Continue Phase 0 by resolving package naming and licensing and adding the initial CI, security,
+and contribution policies. Then define the versioned `RecordBody` and `RecordEnvelope` contract.
 
 ## Notes
 
@@ -52,3 +51,7 @@ adding the initial CI, security, and contribution policies. Then define the vers
 - Package and CLI naming remain provisional until the naming decision in
   `decisions-and-risks.md` is resolved.
 - npm publication remains disabled until package naming and licensing are resolved.
+- The upstream lock records provenance only; executable upstream conformance fixtures remain a
+  later acceptance requirement.
+- Completion includes shipped, substrate, paper-level, and operational capabilities; incomplete
+  upstream source is not the stopping boundary.

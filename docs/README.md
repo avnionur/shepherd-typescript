@@ -9,6 +9,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   where new files belong.
 - [Canonical record contract](./canonical-records.md) defines accepted values, deterministic
   encoding, identifiers, and error behavior.
+- [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd
+  revisions and the evidence boundary for parity claims.
 
 ## Documentation rules
 

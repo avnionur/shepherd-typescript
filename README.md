@@ -11,7 +11,7 @@ Current examples import the source entry point for repository development only.
 
 ## Current capability
 
-Version `0.1.1` provides the first trace-kernel primitive:
+Version `0.1.2` provides the first trace-kernel primitive:
 
 - deterministic recursive object-key ordering;
 - stable array ordering;
@@ -74,6 +74,7 @@ Release versions are configured in `release-config.yaml`. After changing the ver
 - [Project structure](./docs/project-structure.md)
 - [Implementation plan](./.plan/README.md)
 - [Progress tracker](./.plan/tracker.md)
+- [Pinned upstream baseline](./.plan/upstream-baseline.md)
 - [Canonical record contract](./docs/canonical-records.md)
 - [Changelog](./CHANGELOG.md)
 

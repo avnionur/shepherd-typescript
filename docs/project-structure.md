@@ -13,6 +13,7 @@ implementation documentation, and forward-looking plans.
 ├── docs/                   Implemented contracts and contributor guidance
 ├── .plan/                  Research, roadmap, decisions, and progress tracker
 ├── protocol.config.json    Language-neutral protocol constants
+├── upstream.lock.json      Pinned upstream development and release revisions
 └── release-config.yaml     Repository version source
 ```
 

@@ -6,7 +6,8 @@ Research snapshot: 2026-07-29
 
 Target repository state at snapshot: empty package directory
 
-Primary upstream baseline: Shepherd `0.3.0`, plus the paper and upstream `main`
+Primary upstream baseline: Shepherd `v0.3.0` at `a8196d4c453514836d06bd2fece91a03cdc37107`,
+development revision `d45074e0099d9ccafeed4a233702ad68ff8a2fa6`, and paper v3
 
 ## Purpose
 
@@ -28,6 +29,25 @@ execution into durable, inspectable, governed data:
 
 The implementation must preserve those semantics across TypeScript and Python.
 Matching method names without matching invariants is not parity.
+
+## Completion mandate
+
+The upstream repository is incomplete and actively evolving. This project does not stop when it
+matches the code currently present upstream. “Complete” means implementing and proving the full
+target in explicit layers:
+
+1. shipped `0.3.0` settlement behavior;
+2. the trace, world, scope, and execution substrate represented by pinned upstream development;
+3. paper-level observation, interception, replay, supervision, task rewriting, and meta-agent
+   operations;
+4. production-grade recovery, security enforcement, cross-language interoperability, packaging,
+   and release behavior.
+
+When upstream code does not implement a target capability, the paper, formal model, documented
+semantics, and project invariants define the design inputs. The capability must receive a
+language-neutral contract and executable acceptance tests before TypeScript and Python
+implementation. Upstream incompleteness must be reported, not inherited as this project's
+completion boundary.
 
 ## The key research finding
 
@@ -111,6 +131,8 @@ record and public API must declare a protocol/compatibility version.
 
 ## Planning documents
 
+- [Upstream compatibility baseline](./upstream-baseline.md) — exact Git revisions, evidence scope,
+  compatibility boundaries, and drift procedure.
 - [Research notes](./research-notes.md) — source audit, upstream evolution, and
   facts that shape the implementation.
 - [Parity matrix](./parity-matrix.md) — the feature contract across upstream
@@ -170,7 +192,6 @@ The project is complete only when:
 
 ## Immediate next step
 
-Execute Phase 0 in the roadmap: pin an upstream revision, record package names,
-choose the compatibility/versioning policy, scaffold the monorepo, and turn the
-invariants above into language-neutral schemas and failing conformance tests
-before implementing runtime behavior.
+Continue Phase 0 in the roadmap: resolve package names and licensing, choose the supported-runtime
+and compatibility policy, add repository governance and CI, and turn the invariants above into
+language-neutral schemas and failing conformance tests before implementing more runtime behavior.

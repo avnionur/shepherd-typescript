@@ -2,6 +2,10 @@
 
 Research date: 2026-07-29
 
+Pinned development revision: `d45074e0099d9ccafeed4a233702ad68ff8a2fa6`
+
+Pinned shipped revision: `v0.3.0` at `a8196d4c453514836d06bd2fece91a03cdc37107`
+
 ## Sources reviewed
 
 Primary sources:
@@ -13,8 +17,9 @@ Primary sources:
 - [Concept documentation](https://docs.shepherd-agents.ai/concepts/)
 - [CLI reference](https://docs.shepherd-agents.ai/reference/cli/)
 - [Roadmap](https://docs.shepherd-agents.ai/roadmap/)
-- [Upstream repository](https://github.com/shepherd-agents/shepherd/tree/main)
-- [Upstream Python workspace manifest](https://raw.githubusercontent.com/shepherd-agents/shepherd/main/pyproject.toml)
+- [Pinned upstream repository](https://github.com/shepherd-agents/shepherd/tree/d45074e0099d9ccafeed4a233702ad68ff8a2fa6)
+- [Pinned Python workspace manifest](https://github.com/shepherd-agents/shepherd/blob/d45074e0099d9ccafeed4a233702ad68ff8a2fa6/pyproject.toml)
+- [Compatibility baseline and evidence scope](./upstream-baseline.md)
 
 Supporting concept pages:
 
