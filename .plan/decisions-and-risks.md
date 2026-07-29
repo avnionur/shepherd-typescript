@@ -2,14 +2,13 @@
 
 ## Adopted planning decisions
 
-### D-001: Spec-first, dual native implementations
+### D-001: Spec-first TypeScript implementation
 
-Use one language-neutral protocol and conformance suite. Implement TypeScript
-and Python natively.
+Use one language-neutral protocol and conformance suite. Implement the complete product natively
+in TypeScript.
 
-Reason: a subprocess wrapper would not provide a real TypeScript runtime and
-would make deployment, cancellation, streaming, and type safety depend on
-Python.
+Reason: TypeScript must own deployment, cancellation, streaming, persistence, and type safety.
+Upstream Python behavior may inform compatibility tests but is not a runtime dependency.
 
 ### D-002: Separate compatibility levels
 
@@ -24,15 +23,15 @@ surfaces, while upstream `main` is undergoing architectural convergence.
 Canonical semantic identity is independent of storage receipts and local
 metadata.
 
-Reason: cross-language verification and shared-prefix traces require stable
-identity across stores and platforms.
+Reason: portable verification and shared-prefix traces require stable identity across stores,
+processes, and platforms.
 
 ### D-004: SQLite reference store
 
 Use SQLite plus a content-addressed blob directory for the first durable store.
 
-Reason: atomicity, idempotency, portability, introspection, and good Node/Python
-support. Remote stores remain adapters behind the kernel contract.
+Reason: atomicity, idempotency, portability, introspection, and Node support. Remote stores remain
+adapters behind the kernel contract.
 
 ### D-005: Runtime schemas are the security surface
 
@@ -67,11 +66,9 @@ identities.
 No build uses moving upstream `main` as a compatibility dependency. Drift is
 reviewed through scheduled reports.
 
-### D-011: Distinct cross-ecosystem identity
+### D-011: Distinct npm and CLI identity
 
-Use `@avnionur/shepherd-typescript` for npm, `shepherd-ts` for the CLI,
-`shepherd-typescript` for the Python distribution, and `shepherd_ts` for the
-Python import.
+Use `@avnionur/shepherd-typescript` for npm and `shepherd-ts` for the CLI.
 
 Do not expose an unscoped `shepherd` compatibility alias without a separate
 legal, ecosystem-conflict, and migration review. The README must continue to
@@ -84,25 +81,21 @@ copyright and license notices for copied or substantially derived material.
 Verify paper prose, diagrams, trademarks, logos, and brand assets separately
 before reuse.
 
+### D-013: Python is an upstream oracle only
+
+Do not build or publish a native Python implementation. Use the pinned upstream Python package
+only in optional compatibility tests where it exposes relevant shipped behavior.
+
+Reason: the project goal is a complete TypeScript implementation. Language-neutral schemas and
+fixtures protect protocol stability without expanding the deliverable into a second runtime.
+
 ## Decisions required before coding
-
-### Q-002: Python scope
-
-Choose one:
-
-1. native reimplementation of the planned shared protocol;
-2. maintained compatibility fork/adapter of upstream Python;
-3. Python is only an oracle during TypeScript development.
-
-This plan assumes option 1 because the request asks for both languages and
-cross-language identity. It is the highest-effort option.
 
 ### Q-004: Supported runtimes
 
 Recommended initial support:
 
 - Node current LTS and the immediately preceding active LTS;
-- Python 3.11+ to align with upstream;
 - Linux and macOS;
 - Windows via WSL until native permission enforcement has a credible design.
 
@@ -144,8 +137,8 @@ over a protocol-compatible core, with a migration mapping document.
 | TypeScript type erasure weakens grants | Security mismatch | Runtime schemas/descriptors are authoritative |
 | Node cannot provide syscall jail directly | Advisory behavior mistaken for enforcement | Native helper/container adapter; honest placement metadata |
 | Atomic agent + process + filesystem fork is platform-specific | Paper parity blocked | Adapter contract; distinguish atomic vs reconstructive forks |
-| Cross-language serialization diverges | Trace IDs incompatible | Canonical vectors before runtime work; differential CI |
-| SQLite drivers differ in transaction behavior | Recovery bugs | Transaction law suite and kill tests in both languages |
+| Protocol serialization changes silently | Trace IDs incompatible | Canonical vectors before runtime work; compatibility CI |
+| SQLite behavior differs across Node/platform versions | Recovery bugs | Transaction law suite and platform kill tests |
 | Git semantics leak into trace semantics | Fragile model and poor portability | Typed trace kernel independent of Git; carrier abstraction |
 | Symlink/path alias escapes grants | Sandbox breakout | Canonical roots, OS enforcement, adversarial filesystem tests |
 | Live interception races materialization | Unsafe actions land before denial | Durable intent, explicit decision lease, fail policy |
@@ -195,7 +188,7 @@ On a schedule:
 
 Pause a phase rather than weakening guarantees when:
 
-- canonical cross-language identity cannot be reproduced;
+- canonical identity cannot be reproduced across supported Node versions and platforms;
 - a jail cannot prove fail-closed behavior;
 - a settlement transition can produce two winners;
 - replay cannot distinguish irreversible effects;

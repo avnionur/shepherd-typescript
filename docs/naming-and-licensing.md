@@ -10,16 +10,15 @@ affiliated with or endorsed by the upstream Shepherd Authors.
 | Repository and display name | Shepherd TypeScript |
 | npm package | `@avnionur/shepherd-typescript` |
 | CLI executable | `shepherd-ts` |
-| Python distribution | `shepherd-typescript` |
-| Python import | `shepherd_ts` |
 
-The npm name is configured in `package.json`. CLI and Python names are configured in
-`project.config.json`. No unscoped `shepherd` package or executable compatibility alias is
-authorized. A future alias requires a separate legal, ecosystem-conflict, and migration review.
+The npm name is configured in `package.json`, and the CLI name is configured in
+`project.config.json`. This repository does not build or publish a Python implementation. No
+unscoped `shepherd` package or executable compatibility alias is authorized. A future alias
+requires a separate legal, ecosystem-conflict, and migration review.
 
 An npm registry query returned no public package for `@avnionur/shepherd-typescript` on 2026-07-29.
-No indexed PyPI result was found for `shepherd-typescript`. These observations do not reserve either
-name; availability and account permissions must be checked again immediately before publication.
+This observation does not reserve the name; availability and account permissions must be checked
+again immediately before publication.
 
 ## License
 

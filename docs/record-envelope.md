@@ -82,7 +82,7 @@ record requires a configured content identifier as its witness reference.
 from the supplied body. It rejects extra or missing fields, malformed identifiers, unsupported
 modes, invalid root witnesses, and identity mismatches.
 
-Normative JSON Schema 2020-12 documents live in `spec/schemas/`. Cross-language golden vectors
+Normative JSON Schema 2020-12 documents live in `spec/schemas/`. Implementation-neutral golden vectors
 live in `test/fixtures/kernel-record-envelope-v0.json` and retain their pinned upstream revision
 and source path.
 

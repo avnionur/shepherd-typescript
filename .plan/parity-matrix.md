@@ -7,8 +7,8 @@ Legend:
 - **P2**: required for substrate and paper parity;
 - **P3**: maturity, ecosystem, or advanced research feature.
 
-“Complete” means the row has shared conformance fixtures and passes in both
-languages where applicable.
+“Complete” means the row has conformance fixtures and passes through the TypeScript public seam
+and any applicable pinned upstream-oracle comparison.
 
 ## Core semantic surface
 
@@ -47,7 +47,7 @@ languages where applicable.
 | Durable run ledger | shipped | required | P0 | restart persistence tests |
 | Success/failure/exhausted/cancelled outcomes | documented | required | P0 | exhaustive state fixtures |
 | Artifacts and usage | documented | required | P1 | persistence and export fixtures |
-| Content-addressed record identity | vNext reference | explicit sharing | P0 | TS/Python hash vectors |
+| Content-addressed record identity | vNext reference | explicit sharing | P0 | canonical hash vectors |
 | Atomic append batches | vNext reference | required | P0 | crash/fault injection |
 | Idempotent append intent | vNext reference | required | P0 | retry conflict tests |
 | Owner/cut/slice addressing | vNext reference | graph access | P1 | projection fixtures |
@@ -129,8 +129,8 @@ languages where applicable.
 
 ## Parity reporting rules
 
-- A feature is not marked complete from unit tests alone; its conformance row
-  must pass in both language lanes.
+- A feature is not marked complete from unit tests alone; its TypeScript conformance row must pass
+  through the production public seam.
 - Platform features may be complete only for named platforms.
 - Provider features are reported independently per provider.
 - Paper parity must never be inferred from `0.3.0` API parity.

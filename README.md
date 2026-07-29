@@ -2,9 +2,10 @@
 
 An independent TypeScript implementation of Shepherd's reversible agent execution model.
 
-The project is being built from a language-neutral protocol so TypeScript and Python can produce
-and verify the same execution records. It is an early implementation and is not affiliated with
-the upstream Shepherd authors.
+The project is being built as a complete TypeScript implementation over a language-neutral
+protocol. Upstream Python behavior is used as a compatibility oracle where applicable; a native
+Python package is not a project deliverable. This project is not affiliated with the upstream
+Shepherd authors.
 
 Naming and MIT licensing are defined, but publication remains disabled until package exports,
 consumer compatibility, and release checks are complete. Current examples import the source entry
@@ -12,7 +13,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.5.1` provides a versioned trace-record contract and a durable SQLite trace store:
+Version `0.5.2` provides a versioned trace-record contract and a durable SQLite trace store:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -28,7 +29,7 @@ Version `0.5.1` provides a versioned trace-record contract and a durable SQLite 
 - fail-closed, immutable protocol configuration with centralized store constants;
 - descriptor-safe closed draft validation, immutable body snapshots, and record views outside
   semantic identity;
-- JSON Schema contracts and pinned cross-language fixtures;
+- JSON Schema contracts and pinned implementation-neutral fixtures;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
@@ -157,8 +158,8 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 ## Status
 
 Phase 0 governance and the Phase 1 canonical record, append planning, and SQLite durability
-contracts are implemented. The next slice begins native Python parity against the shared protocol
-fixtures.
+contracts are implemented. The next TypeScript slice adds content-addressed blob storage,
+integrity verification, and storage receipts.
 
 ## Attribution
 

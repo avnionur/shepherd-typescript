@@ -29,7 +29,8 @@ settlement, and meta-agent operations.
 
 ## Shared protocol
 
-`spec/` is authoritative for both implementations. It contains:
+`spec/` is authoritative for the TypeScript implementation, portable exports, and
+upstream-oracle fixtures. It contains:
 
 - JSON Schema 2020-12 documents for persistent/wire data;
 - normative Markdown state-machine definitions;
@@ -105,7 +106,7 @@ semantic bodies.
 
 Begin with SQLite in WAL mode:
 
-- portable across Node and Python;
+- portable across supported Node versions and operating systems;
 - transactional;
 - suitable for append-intent uniqueness;
 - easy to inspect and recover;
@@ -146,9 +147,7 @@ Cuts, slices, integrity scans, blobs, and remote storage remain future kernel wo
 
 ## Task model
 
-TypeScript cannot reproduce a Python decorator's runtime signature reflection
-using types alone. Use an explicit runtime task descriptor with inferred static
-types:
+Use an explicit runtime task descriptor with inferred static types:
 
 ```ts
 const writeNote = task({
@@ -165,9 +164,8 @@ const writeNote = task({
 Optional decorator syntax may be added later, but it must lower to the same
 descriptor.
 
-Python can offer `@task`, but it must also compile to the same descriptor
-schema. The descriptor digest includes the behavioral instruction, schemas,
-grant surface, declared effect families, and compatibility version.
+The descriptor digest includes the behavioral instruction, schemas, grant surface, declared
+effect families, and compatibility version.
 
 Task forms:
 
@@ -377,16 +375,15 @@ payload citations.
 Never store secrets in semantic trace bodies. Persist secret references or
 redacted metadata and define export redaction policies.
 
-## Cross-language interoperability
+## Protocol interoperability
 
-Required compatibility directions:
+Required compatibility behaviors:
 
-- TS writes, Python reads and verifies;
-- Python writes, TS reads and verifies;
-- either language continues a terminal-free trace slice;
-- either language inspects and settles an eligible retained output;
+- TypeScript exports and reimports records without semantic changes;
+- a fresh TypeScript process verifies and continues a terminal-free trace slice;
+- a fresh TypeScript process inspects and settles an eligible retained output;
 - unknown future record bodies round-trip without semantic corruption;
-- error codes and state transitions are stable across languages.
+- error codes and state transitions are stable across supported runtime versions.
 
 Generate model types from schemas where practical, but keep handwritten domain
 types at the public API boundary. Generated types do not replace semantic
@@ -410,22 +407,6 @@ validation.
 | `@scope/shepherd` | stable convenience facade |
 
 Names are placeholders until the naming decision is resolved.
-
-## Python packages
-
-Mirror semantic layers, not necessarily npm package count. Python should expose
-an ergonomic facade and reuse shared fixtures:
-
-- kernel/store;
-- effects;
-- tasks;
-- workspace;
-- runtime;
-- providers;
-- sandbox;
-- CLI;
-- export/testkit;
-- `shepherd`-compatible facade in an explicitly named compatibility mode.
 
 ## Dependency direction
 

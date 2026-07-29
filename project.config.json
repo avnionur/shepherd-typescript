@@ -2,9 +2,5 @@
     "cli": {
         "executable": "shepherd-ts",
         "compatibilityAliases": []
-    },
-    "python": {
-        "distribution": "shepherd-typescript",
-        "import": "shepherd_ts"
     }
 }

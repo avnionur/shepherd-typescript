@@ -2,14 +2,15 @@
 
 Last updated: 2026-07-29
 
-Current version: `0.5.1`
+Current version: `0.5.2`
 
 Current level: L0 — canonical model
 
 ## Current position
 
-Phase 0 repository foundation is in progress. The first Phase 1 technical slice was started early
-with deterministic semantic-record canonicalization and content-addressed identifiers.
+Phase 0 governance and repository foundations are established. Phase 1 trace-kernel work is in
+progress: canonical records, envelopes, append planning, and SQLite durability are implemented;
+blob storage, integrity verification, receipts, graph queries, and recovery work remain.
 
 ## Progress
 
@@ -23,14 +24,14 @@ with deterministic semantic-record canonicalization and content-addressed identi
 - [x] Add README, changelog, version configuration, and `.gitignore`.
 - [x] Organize implemented documentation and document the public API with JSDoc.
 - [x] Pin exact upstream development and release revisions with compatibility evidence.
-- [x] Resolve npm, CLI, Python naming, MIT licensing, and upstream attribution.
+- [x] Resolve npm and CLI naming, MIT licensing, and upstream attribution.
 - [x] Add cross-platform CI, security automation, and contribution policies.
 - [x] Define the versioned record body and envelope schemas.
-- [x] Add canonical cross-language fixture vectors.
+- [x] Add canonical implementation-neutral fixture vectors.
 - [x] Implement append drafts, parent validation, and owner ordinals.
 - [x] Implement the SQLite trace store and atomic append batches.
 - [x] Validate critical protocol/store configuration and centralize fixed storage constants.
-- [ ] Begin the native Python implementation against the same fixtures.
+- [ ] Implement content-addressed blob storage, integrity verification, and storage receipts.
 
 ## Verification required for this slice
 
@@ -42,8 +43,8 @@ with deterministic semantic-record canonicalization and content-addressed identi
 
 ## Next slice
 
-Begin the native Python package against the shared canonical-record, envelope, and append-planning
-fixtures, then add SQLite conformance against TypeScript.
+Implement the TypeScript content-addressed blob store, integrity verification, and durable storage
+receipts, including crash-safe filesystem tests.
 
 ## Notes
 
@@ -57,3 +58,5 @@ fixtures, then add SQLite conformance against TypeScript.
   later acceptance requirement.
 - Completion includes shipped, substrate, paper-level, and operational capabilities; incomplete
   upstream source is not the stopping boundary.
+- TypeScript is the sole implementation target. Upstream Python is a behavioral oracle only, not
+  a package planned for this repository.

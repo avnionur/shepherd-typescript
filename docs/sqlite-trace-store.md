@@ -70,5 +70,5 @@ Append and read operations after closure throw `TraceStoreError`.
 ## Current boundary
 
 This slice provides exact-ID and owner-path reads. Cut and slice queries, integrity scans, external
-blob storage, storage receipts, remote-store abstractions, and Python parity remain planned trace
+blob storage, storage receipts, and remote-store abstractions remain planned TypeScript trace
 kernel work.

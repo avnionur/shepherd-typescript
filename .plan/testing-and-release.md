@@ -7,7 +7,7 @@ The testing pyramid is centered on shared laws and behavioral conformance:
 1. schema and canonicalization vectors;
 2. pure state-machine and property tests;
 3. package unit tests;
-4. cross-language conformance;
+4. upstream-oracle and protocol conformance;
 5. storage and filesystem integration;
 6. platform security integration;
 7. provider contract integration;
@@ -21,9 +21,7 @@ Unit test count is not a parity signal. The shared conformance suite is.
 The TCK is stored under `test/fixtures` and runnable against:
 
 - TypeScript in-process API;
-- Python in-process API;
 - TypeScript CLI JSON;
-- Python CLI JSON;
 - optionally, pinned upstream `0.3.0` for compatible rows.
 
 Fixture groups:
@@ -91,18 +89,17 @@ and expected structured error code.
 - compensation is idempotent or records why it is unsafe to retry;
 - interceptor decisions are totally ordered.
 
-Use `fast-check` in TypeScript and Hypothesis in Python, seeded from the same
-fixture manifest where practical.
+Use `fast-check` in TypeScript, seeded from the fixture manifest where practical.
 
 ## Differential testing
 
 For every stable fixture:
 
-1. run in TypeScript and export canonical records;
-2. run in Python and export canonical records;
+1. run through the TypeScript public seam and export canonical records;
+2. reopen and import the export in a fresh TypeScript process;
 3. normalize explicitly non-semantic receipts;
 4. compare semantic records, IDs, transitions, and error codes;
-5. have each implementation import and verify the other's export.
+5. where an upstream-compatible behavior exists, compare it with the pinned Python oracle.
 
 For `0.3.0` compatibility rows, also execute the pinned upstream oracle and
 compare documented semantics. Do not compare unstable text formatting where
@@ -218,19 +215,17 @@ Per pull request:
 
 - formatting/lint;
 - TypeScript typecheck and API checks;
-- Python strict typecheck and lint;
 - unit and property tests;
 - shared conformance;
-- cross-language export/import;
+- export/import compatibility;
 - SQLite migration tests;
-- packaged npm and wheel smoke;
+- packaged npm smoke;
 - dependency and license scan.
 
 Platform lanes:
 
 - Linux current LTS Node + minimum Node;
 - macOS current + minimum supported;
-- Python minimum and current;
 - privileged Linux jail/overlay tests;
 - macOS Seatbelt/clonefile tests;
 - Windows or WSL detection/compatibility according to final policy.
@@ -248,7 +243,7 @@ Scheduled:
 
 - generate CLI reference from packaged binaries;
 - compile/run every code example;
-- test both languages' quickstarts offline;
+- test the TypeScript quickstart offline;
 - validate every claimed capability against the parity manifest;
 - stamp docs with protocol/package version;
 - reject broken internal/external links;
@@ -256,21 +251,22 @@ Scheduled:
 
 ## Release train
 
-Suggested sequence:
+Release numbers follow Semantic Versioning from the current package version; capability milestones
+do not reserve version numbers in advance. Promote releases in this order:
 
-- `0.1.0`: L0 trace/spec developer preview;
-- `0.2.0`: deterministic tasks/effects/runs;
-- `0.3.0`: retained workspace settlement alpha;
-- `0.4.0`: documented upstream `0.3.0` parity beta;
-- `0.5.0`: stable TypeScript SDK ergonomics;
-- `0.6.0`: scope substrate;
-- `0.7.0`: live observation/interception;
-- `0.8.0`: rewind/replay;
-- `0.9.0`: task-as-value meta-agent preview;
-- `1.0.0`: audited, migration-capable L4 core.
+1. complete the L0 trace-kernel developer preview;
+2. add deterministic tasks, effects, and runs;
+3. deliver retained workspace settlement alpha;
+4. reach documented upstream `0.3.0` compatibility beta;
+5. stabilize TypeScript SDK ergonomics;
+6. add the scope substrate;
+7. add live observation and interception;
+8. add rewind and replay;
+9. preview task-as-value meta-agents;
+10. release an audited, migration-capable L4 core.
 
-These are project versions, not claims that project `0.3.0` equals upstream
-`0.3.0`; compatibility level must be stated separately.
+Every release states its compatibility level separately. A project version matching an upstream
+version does not imply compatibility by number alone.
 
 ## Release gates
 
@@ -278,7 +274,7 @@ Every release:
 
 - all required parity rows are green;
 - protocol compatibility report generated;
-- npm tarballs and Python wheels tested after packing;
+- npm tarballs tested after packing;
 - changelog and migration guide present;
 - SBOM and provenance generated;
 - license and attribution verified;

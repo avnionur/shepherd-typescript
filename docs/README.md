@@ -17,7 +17,7 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Canonical record contract](./canonical-records.md) defines accepted values, deterministic
   encoding, identifiers, and error behavior.
 - [Record body and envelope contract](./record-envelope.md) defines kernel ABI v0 semantic
-  identity, causality, validation, and cross-language fixtures.
+  identity, causality, validation, and implementation-neutral fixtures.
 - [Append planning contract](./append-planning.md) defines append drafts, causal-parent
   resolution, body snapshots, and owner-local ordinal allocation.
 - [SQLite trace store](./sqlite-trace-store.md) defines migrations, atomic append transactions,

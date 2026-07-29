@@ -1,8 +1,8 @@
 # Implementation Roadmap
 
-This roadmap is capability-gated rather than date-driven. Each phase ends with
-observable behavior and conformance evidence. Parallel language work begins only
-after the relevant shared contract is stable enough to avoid duplicating churn.
+This roadmap is capability-gated rather than date-driven. Each phase ends with observable
+TypeScript behavior and conformance evidence. Language-neutral contracts remain stable protocol
+boundaries, not commitments to a second implementation.
 
 ## Phase 0 — Baseline, identity, and repository foundation
 
@@ -14,7 +14,7 @@ Work:
   behavioral fixtures;
 - record `shepherd-ai==0.3.0` as the first installed behavior oracle;
 - decide project/package/CLI names and upstream compatibility namespace;
-- choose Node and Python support windows;
+- choose the Node and TypeScript support windows;
 - create monorepo layout, package manager, build orchestration, linting,
   formatting, type checks, changelog, and CI;
 - add `LICENSE`, upstream attribution, security policy, contribution guide, and
@@ -33,7 +33,7 @@ Exit criteria:
 
 ## Phase 1 — Canonical specification and trace kernel
 
-Goal: produce identical, durable records in TypeScript and Python.
+Goal: produce deterministic, durable records in TypeScript.
 
 Work:
 
@@ -41,7 +41,7 @@ Work:
   receipts, operations, and errors;
 - freeze canonical JSON and digest rules;
 - build shared golden vectors;
-- implement SQLite schema and migrations in both languages;
+- implement the SQLite schema and migrations in TypeScript;
 - implement atomic append batches;
 - implement append-intent idempotency and conflict detection;
 - implement owner-local ordinals and parent validation;
@@ -52,8 +52,8 @@ Work:
 
 Exit criteria:
 
-- TS and Python produce the same IDs for all golden vectors;
-- each reads and verifies the other's store/export;
+- TypeScript produces the expected IDs for all golden vectors;
+- TypeScript exports, imports, and verifies versioned trace data without changing identity;
 - atomicity and idempotency property suites pass;
 - a killed process cannot leave a falsely committed record;
 - store verification can diagnose intentional corruption.
@@ -64,21 +64,21 @@ Goal: run deterministic tasks as durable executions.
 
 Work:
 
-- implement runtime task descriptors and Python decorator lowering;
+- implement runtime task descriptors and ergonomic TypeScript builders;
 - implement input/output schemas and artifact locks;
 - implement task registry, version registration, and resolution;
 - implement effect intent/outcome records and correlation;
 - implement ordered handlers;
 - implement run outcomes: success, failure, exhaustion, cancellation;
 - implement artifacts and usage;
-- implement budgets and `AbortSignal`/Python cancellation semantics;
+- implement budgets and `AbortSignal` cancellation semantics;
 - implement deterministic static provider;
 - implement offline task execution without workspace access;
 - generate trace inspection views.
 
 Exit criteria:
 
-- same task fixture has equivalent TS and Python run traces;
+- repeated execution of the same deterministic task fixture produces equivalent TypeScript traces;
 - instruction, schema, or grants alter task identity;
 - malformed task/model outputs fail as structured outcomes;
 - cancellation and budget exhaustion preserve a valid partial trace;
@@ -109,7 +109,7 @@ Exit criteria:
 - `select` refuses after the workspace basis moves;
 - concurrent settlements yield exactly one winner;
 - `discard` leaves the parent and user workspace unchanged;
-- TS-created outputs can be inspected and settled by Python and vice versa.
+- TypeScript-created outputs can be reopened, inspected, and settled after process restart.
 
 Milestone: **L1-alpha**, the minimal end-to-end Shepherd settlement experience.
 
@@ -250,7 +250,7 @@ Exit criteria:
 - only the intended suffix diverges in deterministic tests;
 - replay never re-materializes an irreversible effect without policy approval;
 - unsupported process checkpointing is reported accurately;
-- cross-language replay of shared fixtures works.
+- replay of imported, version-compatible fixtures works.
 
 ## Phase 9 — Task-as-value meta-agents
 
@@ -349,7 +349,7 @@ Every implementation issue should state:
 
 - compatibility level and parity-matrix row;
 - normative schema/state transition;
-- TypeScript and Python impact;
+- TypeScript API and runtime impact;
 - platform/provider scope;
 - security/reversibility implications;
 - conformance fixture to add;

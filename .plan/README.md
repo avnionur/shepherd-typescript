@@ -1,4 +1,4 @@
-# Shepherd TypeScript and Python Implementation Plan
+# Shepherd TypeScript Implementation Plan
 
 Status: planning baseline
 
@@ -11,9 +11,9 @@ development revision `d45074e0099d9ccafeed4a233702ad68ff8a2fa6`, and paper v3
 
 ## Purpose
 
-This directory defines a build plan for a native TypeScript implementation of
-Shepherd and a compatible Python implementation, backed by one language-neutral
-behavioral specification.
+This directory defines a build plan for a complete native TypeScript implementation of Shepherd,
+backed by a language-neutral behavioral specification. Upstream Python is an evidence source and
+behavioral oracle where applicable, not a second implementation target.
 
 Shepherd is not merely an agent loop. Its defining capability is to turn agent
 execution into durable, inspectable, governed data:
@@ -27,8 +27,8 @@ execution into durable, inspectable, governed data:
 - a **retained output** holds proposed world changes until an explicit,
   consume-once settlement decision.
 
-The implementation must preserve those semantics across TypeScript and Python.
-Matching method names without matching invariants is not parity.
+The TypeScript implementation must preserve those semantics at its public API and durable protocol
+boundaries. Matching method names without matching invariants is not parity.
 
 ## Completion mandate
 
@@ -40,14 +40,13 @@ target in explicit layers:
 2. the trace, world, scope, and execution substrate represented by pinned upstream development;
 3. paper-level observation, interception, replay, supervision, task rewriting, and meta-agent
    operations;
-4. production-grade recovery, security enforcement, cross-language interoperability, packaging,
-   and release behavior.
+4. production-grade recovery, security enforcement, protocol interoperability, packaging, and
+   release behavior.
 
 When upstream code does not implement a target capability, the paper, formal model, documented
 semantics, and project invariants define the design inputs. The capability must receive a
-language-neutral contract and executable acceptance tests before TypeScript and Python
-implementation. Upstream incompleteness must be reported, not inherited as this project's
-completion boundary.
+language-neutral contract and executable acceptance tests before TypeScript implementation.
+Upstream incompleteness must be reported, not inherited as this project's completion boundary.
 
 ## The key research finding
 
@@ -70,14 +69,14 @@ levels, not claimed as one undifferentiated milestone.
 | Level | Meaning | Exit signal |
 | --- | --- | --- |
 | L0 | Canonical model | Schemas, state machines, hashes, fixtures, and terminology are frozen |
-| L1 | Shipped parity | The documented Shepherd `0.3.0` settlement loop works in both languages |
+| L1 | Shipped parity | The documented Shepherd `0.3.0` settlement loop works in TypeScript |
 | L2 | Substrate parity | Scopes, content-addressed traces, fork/merge/discard, and durable children work |
 | L3 | Paper parity | Live observation/interception, rewind/replay, task-as-value supervision, and rewriting work |
 | L4 | Operational maturity | Security enforcement, recovery, performance, compatibility, and releases meet production gates |
 
 ## Recommended product shape
 
-Build a monorepo with one specification and two native implementations:
+Build a TypeScript monorepo around one versioned specification:
 
 ```text
 .
@@ -98,22 +97,18 @@ Build a monorepo with one specification and two native implementations:
 │   ├── cli/
 │   ├── export/
 │   └── testkit/
-├── python/                       # native Python implementation
-│   ├── packages/
-│   └── tests/
 ├── integration/
 │   ├── conformance/
-│   ├── cross-language/
+│   ├── upstream-oracle/
 │   └── platform/
 ├── examples/
 ├── docs/
 └── .plan/
 ```
 
-TypeScript is the primary new product surface. Python is a first-class
-implementation and compatibility oracle, not a TypeScript subprocess
-dependency. Both implementations read the same fixtures and emit the same
-canonical wire records.
+TypeScript is the sole product implementation. The pinned upstream Python package may be invoked
+only by opt-in compatibility tests as an external behavioral oracle; it is never a runtime
+dependency or package produced by this repository.
 
 ## Source-of-truth policy
 
@@ -135,8 +130,8 @@ record and public API must declare a protocol/compatibility version.
   compatibility boundaries, and drift procedure.
 - [Research notes](./research-notes.md) — source audit, upstream evolution, and
   facts that shape the implementation.
-- [Parity matrix](./parity-matrix.md) — the feature contract across upstream
-  `0.3.0`, the paper, Python, and TypeScript.
+- [Parity matrix](./parity-matrix.md) — the feature contract across upstream `0.3.0`, the paper,
+  and TypeScript.
 - [Target architecture](./architecture.md) — package boundaries, data model,
   state machines, interoperability, and platform strategy.
 - [Implementation roadmap](./implementation-roadmap.md) — phased work,
@@ -149,8 +144,8 @@ record and public API must declare a protocol/compatibility version.
 ## Non-negotiable invariants
 
 1. **Append-only evidence:** committed trace records are immutable.
-2. **Deterministic identity:** the same canonical semantic record has the same
-   digest in TypeScript and Python.
+2. **Deterministic identity:** the same canonical semantic record always has the same digest,
+   independent of process or platform.
 3. **Intent precedes outcome:** an external action cannot acquire a recorded
    outcome without a durable intent.
 4. **No invisible settlement:** retained work never reaches the user's
@@ -168,8 +163,8 @@ record and public API must declare a protocol/compatibility version.
     effects are never falsely described as rolled back.
 11. **Crash recoverability:** interrupted append, materialization, and
     settlement operations can be diagnosed and repaired idempotently.
-12. **Compatibility is tested:** “Python parity” and “paper parity” are labels
-    earned by executable suites.
+12. **Compatibility is tested:** shipped, substrate, and paper parity labels are earned by
+    executable TypeScript suites and pinned oracle evidence where applicable.
 
 ## Definition of done
 
@@ -177,9 +172,10 @@ The project is complete only when:
 
 - every row marked required in the parity matrix is implemented or explicitly
   version-fenced;
-- both language implementations pass the same golden and property fixtures;
-- cross-language traces can be read, verified, and continued without changing
-  semantic identity;
+- the TypeScript implementation passes the golden, property, integration, and compatibility
+  fixtures;
+- versioned traces can be exported, imported, verified, and continued without changing semantic
+  identity;
 - Linux and macOS platform gates pass, and Windows behavior is accurately
   documented and tested as native, WSL, or unsupported;
 - crash recovery and concurrent settlement tests pass;
@@ -192,6 +188,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 0 in the roadmap: resolve package names and licensing, choose the supported-runtime
-and compatibility policy, add repository governance and CI, and turn the invariants above into
-language-neutral schemas and failing conformance tests before implementing more runtime behavior.
+Continue Phase 1 in the roadmap by implementing content-addressed blob storage, integrity
+verification, and durable storage receipts in TypeScript.

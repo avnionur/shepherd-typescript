@@ -18,7 +18,7 @@ implementation documentation, and forward-looking plans.
 ├── .github/                CI, security automation, and contribution templates
 ├── docs/                   Implemented contracts and contributor guidance
 ├── .plan/                  Research, roadmap, decisions, and progress tracker
-├── project.config.json     CLI and Python ecosystem identity
+├── project.config.json     CLI ecosystem identity
 ├── protocol.config.json    Language-neutral protocol constants
 ├── CONTEXT.md              Trace-kernel domain vocabulary
 ├── upstream.lock.json      Pinned upstream development and release revisions
@@ -68,7 +68,7 @@ The runtime areas are intentionally shallow:
 | `README.md` | Entry point, installation, current capability, and navigation |
 | `docs/` | Implemented behavior and repository structure |
 | `spec/` | Language-neutral, versioned wire schemas |
-| `test/` | Unit tests and cross-language conformance fixtures |
+| `test/` | Unit tests and implementation-neutral conformance fixtures |
 | `CONTEXT.md` | Canonical trace-kernel domain terms |
 | `.plan/` | Research, architecture proposals, roadmap, risks, and tracking |
 | `CHANGELOG.md` | Versioned user-visible changes |

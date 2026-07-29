@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-07-29
+
+### Defect Fixes
+
+- Corrected the implementation plan, roadmap, architecture, parity matrix, testing strategy, and
+  tracker so TypeScript is the sole product implementation target.
+- Removed native Python implementation and parity work from planned deliverables.
+- Removed unused Python distribution and import-name metadata from project configuration.
+- Replaced the stale Python next step with TypeScript content-addressed blob storage, integrity
+  verification, and storage receipts.
+
+### Impact
+
+Project scope now consistently reflects the goal of fully implementing Shepherd in TypeScript.
+Upstream Python remains an optional compatibility oracle rather than a package produced here.
+
 ## [0.5.1] - 2026-07-29
 
 ### Defect Fixes
