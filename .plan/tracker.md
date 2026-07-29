@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-29
 
-Current version: `0.1.0`
+Current version: `0.1.1`
 
 Current level: L0 — canonical model
 
@@ -21,6 +21,7 @@ with deterministic semantic-record canonicalization and content-addressed identi
 - [x] Implement configured SHA-256 record identifiers.
 - [x] Test every exported runtime function.
 - [x] Add README, changelog, version configuration, and `.gitignore`.
+- [x] Organize implemented documentation and document the public API with JSDoc.
 - [ ] Pin an exact upstream revision and compatibility evidence.
 - [ ] Resolve package naming and licensing.
 - [ ] Add CI, security, and contribution policies.

@@ -1,6 +1,6 @@
 {
     "name": "shepherd-typescript",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
     "type": "module",
     "private": true,
@@ -8,7 +8,7 @@
         "node": ">=24.0.0"
     },
     "scripts": {
-        "build": "tsc -p tsconfig.build.json",
+        "build": "tsc -p tsconfig.build.json && node scripts/copy-runtime-config.ts",
         "build:desktop": "pnpm build",
         "format": "biome format --write .",
         "lint": "biome check .",

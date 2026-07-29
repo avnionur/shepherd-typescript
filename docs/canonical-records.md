@@ -1,5 +1,9 @@
 # Canonical Record Contract
 
+Implementation: [`src/canonical-record.ts`](../src/canonical-record.ts). Public exports:
+[`src/index.ts`](../src/index.ts). Tests:
+[`src/canonical-record.test.ts`](../src/canonical-record.test.ts).
+
 ## Purpose
 
 Canonical records provide deterministic semantic identity. Equivalent records must serialize to

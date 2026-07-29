@@ -69,6 +69,7 @@ test("canonicalizeRecord follows ECMAScript number and UTF-16 key serialization"
 });
 
 test("canonicalizeRecord rejects lone Unicode surrogates", () => {
+    assert.equal(canonicalizeRecord({ value: "😀" }), '{"value":"😀"}');
     assert.throws(() => canonicalizeRecord({ value: "\uD800" }), /valid Unicode/);
     assert.throws(() => canonicalizeRecord({ "\uDC00": true }), /valid Unicode/);
 });

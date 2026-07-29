@@ -1,14 +1,33 @@
 import { createHash } from "node:crypto";
 
-import protocolConfig from "../protocol.config.json" with { type: "json" };
+import { recordIdConfig } from "./protocol-config.ts";
 
-/** A scalar value accepted by the canonical semantic record format. */
+/**
+ * A scalar value accepted by the canonical semantic record format.
+ *
+ * Numbers must be finite. Strings must contain well-formed Unicode.
+ *
+ * @public
+ */
 export type SemanticScalar = boolean | null | number | string;
 
-/** A value accepted by the canonical semantic record format. */
+/**
+ * Any recursively representable value accepted in a semantic record.
+ *
+ * Arrays must be dense data arrays without accessors or custom properties.
+ *
+ * @public
+ */
 export type SemanticValue = SemanticRecord | SemanticScalar | readonly SemanticValue[];
 
-/** A semantic record whose undefined object properties are omitted. */
+/**
+ * A plain object containing semantic values.
+ *
+ * Properties whose value is `undefined` are omitted during canonicalization.
+ * Symbol and accessor properties are rejected.
+ *
+ * @public
+ */
 export type SemanticRecord = {
     readonly [key: string]: SemanticValue | undefined;
 };
@@ -18,17 +37,40 @@ export type SemanticRecord = {
  *
  * Object keys are sorted recursively, array order is preserved, undefined
  * object properties are omitted, and unsupported JSON values are rejected.
+ *
+ * @param record - The plain semantic record to serialize.
+ * @returns The record encoded as deterministic, whitespace-free JSON.
+ * @throws {TypeError} If the record contains unsupported values, malformed
+ * Unicode, accessors, custom array properties, or cycles.
+ *
+ * @example
+ * ```ts
+ * canonicalizeRecord({ operation: "task.started", ordinal: 1 });
+ * // '{"operation":"task.started","ordinal":1}'
+ * ```
+ *
+ * @public
  */
 export function canonicalizeRecord(record: SemanticRecord): string {
     return JSON.stringify(normalizeValue(record, new WeakSet<object>(), "$"));
 }
 
-/** Creates a content-addressed identifier from a canonical semantic record. */
+/**
+ * Creates a stable content-addressed identifier from a semantic record.
+ *
+ * The digest algorithm and identifier prefix come from `protocol.config.json`.
+ *
+ * @param record - The semantic record whose canonical representation is hashed.
+ * @returns The configured algorithm prefix followed by the hexadecimal digest.
+ * @throws {TypeError} If `record` cannot be canonicalized.
+ *
+ * @public
+ */
 export function createRecordId(record: SemanticRecord): string {
-    const digest = createHash(protocolConfig.recordId.algorithm)
+    const digest = createHash(recordIdConfig.algorithm)
         .update(canonicalizeRecord(record), "utf8")
         .digest("hex");
-    return `${protocolConfig.recordId.prefix}${digest}`;
+    return `${recordIdConfig.prefix}${digest}`;
 }
 
 function normalizeValue(value: SemanticValue, seen: WeakSet<object>, path: string): unknown {
@@ -154,7 +196,7 @@ function enterContainer(value: object, seen: WeakSet<object>, path: string): voi
 }
 
 function assertWellFormedString(value: string, path: string): void {
-    if (!value.isWellFormed()) {
+    if (/[\uD800-\uDFFF]/u.test(value)) {
         throw new TypeError(`${path} must contain valid Unicode without lone surrogates`);
     }
 }
