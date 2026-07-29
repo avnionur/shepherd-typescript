@@ -1,9 +1,25 @@
 {
-    "name": "shepherd-typescript",
-    "version": "0.1.2",
+    "name": "@avnionur/shepherd-typescript",
+    "version": "0.1.3",
     "description": "A TypeScript implementation of reversible agent execution traces.",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/avnionur/shepherd-typescript.git"
+    },
+    "homepage": "https://github.com/avnionur/shepherd-typescript#readme",
+    "bugs": {
+        "url": "https://github.com/avnionur/shepherd-typescript/issues"
+    },
     "type": "module",
     "private": true,
+    "files": [
+        "dist/src",
+        "dist/protocol.config.json",
+        "README.md",
+        "LICENSE",
+        "NOTICE"
+    ],
     "engines": {
         "node": ">=24.0.0"
     },

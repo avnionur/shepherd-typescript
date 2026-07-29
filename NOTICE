@@ -1,0 +1,16 @@
+Shepherd TypeScript
+Copyright (c) 2026 Shepherd TypeScript contributors
+
+This is an independent implementation and is not affiliated with or endorsed by
+the Shepherd Authors.
+
+The design and compatibility plan are informed by Shepherd:
+https://github.com/shepherd-agents/shepherd
+
+Shepherd is distributed under the MIT License:
+Copyright (c) 2026 Shepherd Authors
+
+Copies or substantial derivatives of upstream material must retain the
+applicable upstream copyright and license notice. Paper prose, diagrams, brand
+assets, and other non-code materials require separate license verification
+before reuse.

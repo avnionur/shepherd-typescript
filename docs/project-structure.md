@@ -12,6 +12,7 @@ implementation documentation, and forward-looking plans.
 ├── scripts/                Build and release utilities
 ├── docs/                   Implemented contracts and contributor guidance
 ├── .plan/                  Research, roadmap, decisions, and progress tracker
+├── project.config.json     CLI and Python ecosystem identity
 ├── protocol.config.json    Language-neutral protocol constants
 ├── upstream.lock.json      Pinned upstream development and release revisions
 └── release-config.yaml     Repository version source

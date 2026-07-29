@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-29
 
-Current version: `0.1.2`
+Current version: `0.1.3`
 
 Current level: L0 — canonical model
 
@@ -23,7 +23,7 @@ with deterministic semantic-record canonicalization and content-addressed identi
 - [x] Add README, changelog, version configuration, and `.gitignore`.
 - [x] Organize implemented documentation and document the public API with JSDoc.
 - [x] Pin exact upstream development and release revisions with compatibility evidence.
-- [ ] Resolve package naming and licensing.
+- [x] Resolve npm, CLI, Python naming, MIT licensing, and upstream attribution.
 - [ ] Add CI, security, and contribution policies.
 - [ ] Define the versioned record body and envelope schemas.
 - [ ] Add canonical cross-language fixture vectors.
@@ -41,16 +41,15 @@ with deterministic semantic-record canonicalization and content-addressed identi
 
 ## Next slice
 
-Continue Phase 0 by resolving package naming and licensing and adding the initial CI, security,
-and contribution policies. Then define the versioned `RecordBody` and `RecordEnvelope` contract.
+Continue Phase 0 by adding the initial CI, security, and contribution policies. Then define the
+versioned `RecordBody` and `RecordEnvelope` contract.
 
 ## Notes
 
 - `CLAUDE.md` is not present. A repository-specific `template/changelog-template.md` now captures
   the Keep a Changelog and Semantic Versioning format used here.
-- Package and CLI naming remain provisional until the naming decision in
-  `decisions-and-risks.md` is resolved.
-- npm publication remains disabled until package naming and licensing are resolved.
+- Registry names are selected but are not reserved until publication succeeds.
+- npm publication remains disabled until package exports and consumer compatibility checks pass.
 - The upstream lock records provenance only; executable upstream conformance fixtures remain a
   later acceptance requirement.
 - Completion includes shipped, substrate, paper-level, and operational capabilities; incomplete

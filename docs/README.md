@@ -7,6 +7,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 
 - [Project structure](./project-structure.md) explains module ownership, dependency direction, and
   where new files belong.
+- [Naming and licensing](./naming-and-licensing.md) records package identity, attribution, and
+  publication boundaries.
 - [Canonical record contract](./canonical-records.md) defines accepted values, deterministic
   encoding, identifiers, and error behavior.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

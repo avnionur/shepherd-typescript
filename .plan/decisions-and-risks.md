@@ -67,22 +67,24 @@ identities.
 No build uses moving upstream `main` as a compatibility dependency. Drift is
 reviewed through scheduled reports.
 
+### D-011: Distinct cross-ecosystem identity
+
+Use `@avnionur/shepherd-typescript` for npm, `shepherd-ts` for the CLI,
+`shepherd-typescript` for the Python distribution, and `shepherd_ts` for the
+Python import.
+
+Do not expose an unscoped `shepherd` compatibility alias without a separate
+legal, ecosystem-conflict, and migration review. The README must continue to
+identify this as an independent implementation.
+
+### D-012: MIT license with upstream attribution
+
+License original repository work under MIT. Preserve applicable upstream
+copyright and license notices for copied or substantially derived material.
+Verify paper prose, diagrams, trademarks, logos, and brand assets separately
+before reuse.
+
 ## Decisions required before coding
-
-### Q-001: Project and package names
-
-Resolve:
-
-- npm scope and package names;
-- Python distribution/import name;
-- CLI executable name;
-- whether a `shepherd` compatibility alias is legally and operationally
-  appropriate;
-- README wording that clearly identifies the project as an independent
-  implementation unless upstream authorizes otherwise.
-
-Recommended default: use a distinct project name and offer Shepherd protocol/API
-compatibility as a mode.
 
 ### Q-002: Python scope
 
@@ -94,14 +96,6 @@ Choose one:
 
 This plan assumes option 1 because the request asks for both languages and
 cross-language identity. It is the highest-effort option.
-
-### Q-003: License
-
-Upstream is MIT. Decide whether this project is MIT and preserve upstream
-copyright/license notices for copied or substantially derived material.
-
-Do not copy paper prose, diagrams, brand assets, or documentation wholesale
-merely because the code is MIT; verify the applicable license for each asset.
 
 ### Q-004: Supported runtimes
 

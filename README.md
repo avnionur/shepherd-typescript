@@ -6,12 +6,13 @@ The project is being built from a language-neutral protocol so TypeScript and Py
 and verify the same execution records. It is an early implementation and is not affiliated with
 the upstream Shepherd authors.
 
-Publication is intentionally disabled while Phase 0 package naming and licensing are unresolved.
-Current examples import the source entry point for repository development only.
+Naming and MIT licensing are defined, but publication remains disabled until package exports,
+consumer compatibility, and release checks are complete. Current examples import the source entry
+point for repository development only.
 
 ## Current capability
 
-Version `0.1.2` provides the first trace-kernel primitive:
+Version `0.1.3` provides the first trace-kernel primitive:
 
 - deterministic recursive object-key ordering;
 - stable array ordering;
@@ -72,6 +73,7 @@ Release versions are configured in `release-config.yaml`. After changing the ver
 
 - [Documentation index](./docs/README.md)
 - [Project structure](./docs/project-structure.md)
+- [Naming and licensing](./docs/naming-and-licensing.md)
 - [Implementation plan](./.plan/README.md)
 - [Progress tracker](./.plan/tracker.md)
 - [Pinned upstream baseline](./.plan/upstream-baseline.md)
@@ -89,3 +91,6 @@ The design is informed by the MIT-licensed
 [Shepherd project](https://github.com/shepherd-agents/shepherd) and its
 [research paper](https://arxiv.org/abs/2605.10913). Compatibility claims are tracked explicitly;
 paper-level behavior is not yet implemented.
+
+Original repository work is available under the [MIT License](./LICENSE). See [NOTICE](./NOTICE)
+for upstream attribution and reuse boundaries.

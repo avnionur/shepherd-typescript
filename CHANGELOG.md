@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-07-29
+
+### Improvement
+
+- Selected distinct npm, CLI, Python distribution, and Python import names.
+- Licensed original repository work under MIT and added explicit upstream attribution and reuse
+  boundaries.
+- Documented registry observations and the remaining package-publication gates.
+- Added an explicit npm package allowlist that excludes internal settings, plans, tests, and
+  repository tooling.
+
+### Impact
+
+Project identity and licensing are resolved without claiming affiliation or enabling premature
+publication.
+
 ## [0.1.2] - 2026-07-29
 
 ### Improvement
