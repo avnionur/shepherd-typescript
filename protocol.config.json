@@ -13,6 +13,21 @@
         "canonicalVersion": "shepherd.kernel.canonical.v2",
         "recordKind": "record",
         "recordModes": ["capture", "declaration"],
+        "store": {
+            "appendIntentDigestAlgorithm": "sha256",
+            "busyTimeoutMilliseconds": 5000,
+            "foreignKeys": true,
+            "journalMode": "WAL",
+            "migrations": [
+                {
+                    "firstOwnerOrdinal": 0,
+                    "lastOwnerOrdinal": 9007199254740990,
+                    "version": 1
+                }
+            ],
+            "schemaVersion": 1,
+            "synchronous": "FULL"
+        },
         "schemas": {
             "dialect": "https://json-schema.org/draft/2020-12/schema",
             "appendBatchDraftId": "https://avnionur.github.io/shepherd-typescript/schemas/append-batch-draft-v0.schema.json",

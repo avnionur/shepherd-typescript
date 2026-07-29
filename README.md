@@ -12,7 +12,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.4.0` provides a versioned trace-record contract and pure append planning:
+Version `0.5.0` provides a versioned trace-record contract and a durable SQLite trace store:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -21,6 +21,10 @@ Version `0.4.0` provides a versioned trace-record contract and pure append plann
 - runtime body and envelope validation;
 - append batches with backward-only local causal references;
 - known-parent validation and owner-local ordinal allocation;
+- atomic SQLite append transactions with numbered migrations;
+- append-intent idempotency, conflict detection, and rollback-safe retry;
+- exact-record and ordered owner-path reads;
+- configured root-witness bootstrap through `ROOT_WITNESS_ID`;
 - descriptor-safe closed draft validation, immutable body snapshots, and record views outside
   semantic identity;
 - JSON Schema contracts and pinned cross-language fixtures;
@@ -47,6 +51,8 @@ import {
     createRecordEnvelope,
     createRecordId,
     planAppendBatch,
+    ROOT_WITNESS_ID,
+    SQLiteTraceStore,
 } from "./src/index.ts";
 
 const record = { operation: "task.started", ordinal: 1 };
@@ -77,6 +83,25 @@ planAppendBatch({
     }],
 });
 // { records, causal_edges, owner_ordinal_ranges, next_owner_ordinals }
+
+using store = new SQLiteTraceStore("trace.sqlite");
+const receipt = store.append({
+    append_intent_id: "append:example:1",
+    batch: {
+        groups: [{
+            owner_id: "run:example",
+            records: [{
+                body: { operation: "task.started" },
+                mode: "capture",
+                schema_ref: "example.task-event.v1",
+                witness_ref: ROOT_WITNESS_ID,
+            }],
+        }],
+    },
+});
+
+store.readRecord(receipt.record_ids[0]);
+store.readOwner("run:example");
 ```
 
 Only JSON-compatible semantic values are accepted. Undefined object properties are omitted;
@@ -122,13 +147,15 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Canonical record contract](./docs/canonical-records.md)
 - [Record body and envelope contract](./docs/record-envelope.md)
 - [Append planning contract](./docs/append-planning.md)
+- [SQLite trace store](./docs/sqlite-trace-store.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
 
 ## Status
 
-Phase 0 governance and the first Phase 1 record and append-planning contracts are implemented. The
-next slice adds the SQLite trace store and atomic append transactions.
+Phase 0 governance and the Phase 1 canonical record, append planning, and SQLite durability
+contracts are implemented. The next slice begins native Python parity against the shared protocol
+fixtures.
 
 ## Attribution
 

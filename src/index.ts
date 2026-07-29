@@ -20,6 +20,7 @@ export {
 } from "./canonical/canonical-record.ts";
 export { createRecordEnvelope } from "./record/envelope.ts";
 export { validateRecordBody } from "./record/guards.ts";
+export { ROOT_WITNESS_ID } from "./record/root-witness.ts";
 export {
     KERNEL_ABI_VERSION,
     KERNEL_CANONICAL_VERSION,
@@ -31,3 +32,16 @@ export {
     type RecordMode,
 } from "./record/types.ts";
 export { validateRecordEnvelope } from "./record/validation.ts";
+export {
+    AppendIntentConflictError,
+    TraceStoreError,
+    UnsupportedStoreSchemaError,
+} from "./store/errors.ts";
+export { SQLiteTraceStore } from "./store/sqlite-trace-store.ts";
+export type {
+    AppendIntentId,
+    AppendReceipt,
+    OwnerRecord,
+    RetainedRecord,
+    StoreAppendRequest,
+} from "./store/types.ts";

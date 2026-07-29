@@ -12,10 +12,8 @@ Implementation:
 
 `planAppendBatch(batch, state)` is a pure planning boundary. It validates ordered append drafts,
 creates versioned record envelopes, resolves causal parents, and assigns owner-local views. It
-does not write to storage or claim atomic durability.
-
-The following SQLite slice will persist one returned plan, its records, and its updated ordinal
-state in a single transaction.
+does not write to storage or claim atomic durability. The
+[SQLite trace store](./sqlite-trace-store.md) consumes the plan inside one durable transaction.
 
 ## Draft structure
 

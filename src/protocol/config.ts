@@ -14,6 +14,21 @@ type KernelProtocolConfig = {
     readonly canonicalVersion: string;
     readonly recordKind: string;
     readonly recordModes: readonly string[];
+    readonly store: {
+        readonly appendIntentDigestAlgorithm: string;
+        readonly busyTimeoutMilliseconds: number;
+        readonly foreignKeys: boolean;
+        readonly journalMode: string;
+        readonly migrations: readonly [
+            {
+                readonly firstOwnerOrdinal: number;
+                readonly lastOwnerOrdinal: number;
+                readonly version: number;
+            },
+        ];
+        readonly schemaVersion: number;
+        readonly synchronous: string;
+    };
     readonly rootWitness: {
         readonly body: Readonly<Record<string, unknown>>;
         readonly mode: string;

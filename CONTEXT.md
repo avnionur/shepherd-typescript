@@ -29,6 +29,14 @@ _Avoid_: Global sequence, record version
 An ordered collection of owner-local record drafts intended to be retained as one atomic change.
 _Avoid_: Record list, transaction log
 
+**Append Intent**:
+A stable idempotency key naming one requested atomic append.
+_Avoid_: Transaction ID, record ID
+
+**Append Receipt**:
+The durable result associated with a committed append intent.
+_Avoid_: Storage record, append response
+
 **Append-Local Reference**:
 A batch-scoped name through which a later draft cites a record drafted earlier in the same batch.
 _Avoid_: Temporary record ID, forward reference
@@ -41,3 +49,7 @@ _Avoid_: Context digest, permission string
 **Causal Parent**:
 A record cited by another record as an ordered semantic cause.
 _Avoid_: Storage parent, path predecessor
+
+**Trace Store**:
+A durable adapter that atomically retains semantic records and owner-local views.
+_Avoid_: Event bus, record planner

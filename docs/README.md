@@ -18,6 +18,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   identity, causality, validation, and cross-language fixtures.
 - [Append planning contract](./append-planning.md) defines append drafts, causal-parent
   resolution, body snapshots, and owner-local ordinal allocation.
+- [SQLite trace store](./sqlite-trace-store.md) defines migrations, atomic append transactions,
+  idempotency, retained reads, and lifecycle behavior.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

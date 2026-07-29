@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-07-29
+
+### New Feature
+
+- Added a synchronous SQLite trace store with numbered migrations, configured WAL durability,
+  foreign-key enforcement, and explicit lifecycle management.
+- Added atomic batch persistence for semantic records, ordered causal edges, owner-local views,
+  and serialized owner ordinals.
+- Added append-intent idempotency with durable receipts, equal replay, conflicting retry
+  detection, persisted-receipt validation, and rollback-safe reuse after failed transactions.
+- Added exact-record and ordered owner-path reads plus the configured `ROOT_WITNESS_ID` bootstrap
+  export.
+
+### Improvement
+
+- Organized persistence code under `src/store/` and its public-seam tests under `test/store/`.
+- Enforced configured owner-ordinal bounds at both the SQLite schema and record-view decoder.
+- Added fail-closed migration registry, versioned schema bounds, and configured schema-version
+  parity checks.
+- Reconciled replay receipts against durable append positions, record views, and causal data.
+- Documented the storage contract, schema lifecycle, identity boundary, and remaining kernel work.
+
+### Impact
+
+TypeScript applications can now durably retain and reopen atomic execution-trace batches without
+coupling semantic record identity to owner-local placement.
+
 ## [0.4.0] - 2026-07-29
 
 ### New Feature

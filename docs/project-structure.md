@@ -10,7 +10,8 @@ implementation documentation, and forward-looking plans.
 │   ├── append/             Append drafts, validation, and pure planning
 │   ├── canonical/          Deterministic semantic encoding and hashing
 │   ├── protocol/           Runtime configuration and generated literals
-│   └── record/             Record types, envelopes, guards, and snapshots
+│   ├── record/             Record types, envelopes, guards, and snapshots
+│   └── store/              SQLite migrations, transactions, codecs, and reads
 ├── test/                   Public-seam unit tests and fixture assets
 ├── spec/                   Language-neutral JSON Schema contracts
 ├── scripts/                Build and release utilities
@@ -28,6 +29,7 @@ implementation documentation, and forward-looking plans.
 
 ```text
 public exports → append area → record area → canonical area → protocol configuration
+public exports → store area → append and record areas
 build/release scripts → repository configuration
 tests → public exports
 ```
@@ -41,6 +43,8 @@ The runtime areas are intentionally shallow:
 - `canonical/` owns language-neutral semantic encoding and unversioned record hashing;
 - `protocol/` owns typed runtime configuration and generated literal values;
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
+- `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts, and
+  retained reads.
 
 ## Module rules
 

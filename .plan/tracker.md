@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-29
 
-Current version: `0.4.0`
+Current version: `0.5.0`
 
 Current level: L0 — canonical model
 
@@ -28,7 +28,7 @@ with deterministic semantic-record canonicalization and content-addressed identi
 - [x] Define the versioned record body and envelope schemas.
 - [x] Add canonical cross-language fixture vectors.
 - [x] Implement append drafts, parent validation, and owner ordinals.
-- [ ] Implement the SQLite trace store and atomic append batches.
+- [x] Implement the SQLite trace store and atomic append batches.
 - [ ] Begin the native Python implementation against the same fixtures.
 
 ## Verification required for this slice
@@ -41,8 +41,8 @@ with deterministic semantic-record canonicalization and content-addressed identi
 
 ## Next slice
 
-Implement the SQLite trace store, schema migrations, and atomic append transactions using the
-pure append plan.
+Begin the native Python package against the shared canonical-record, envelope, and append-planning
+fixtures, then add SQLite conformance against TypeScript.
 
 ## Notes
 
