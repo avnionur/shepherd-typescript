@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2026-08-02
+
+### Improvement
+
+- Reworked the main README around the complete TypeScript paper-coverage target, the four runtime
+  primitives, explicit L0–L4 status, current-versus-planned behavior, and attributed links to the
+  upstream teaser image and video.
+- Added a section-by-section paper-v3 coverage map with implementation ownership and acceptance
+  evidence for every main section and appendix.
+- Closed planning gaps for proof-envelope claim handling, trajectory compression, experimental
+  protocol fidelity, paper limitations, and future-work classification.
+
+### Impact
+
+Readers can distinguish the current trace-kernel release from the full paper target and audit every
+coverage claim against a named TypeScript phase and verification seam.
+
 ## [0.10.0] - 2026-08-02
 
 ### New Feature

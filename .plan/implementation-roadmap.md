@@ -75,6 +75,9 @@ Work:
 - implement deterministic static provider;
 - implement offline task execution without workspace access;
 - generate trace inspection views.
+- implement the Appendix B typed-effect reference machine and proof-envelope classifier;
+- validate configured profile, strength, lowering, sidecar, and pinned theorem-artifact metadata;
+- keep unsupported, incomplete, live, and extension traces at an honest non-proof claim level.
 
 Exit criteria:
 
@@ -83,6 +86,8 @@ Exit criteria:
 - malformed task/model outputs fail as structured outcomes;
 - cancellation and budget exhaustion preserve a valid partial trace;
 - observer-free deterministic runs are byte-for-byte reproducible.
+- proof-envelope classification matches reference vectors and fails closed on missing or stale
+  evidence without implying that the production runtime is formally verified.
 
 ## Phase 3 — Workspaces, retained outputs, and basic settlement
 
@@ -288,7 +293,11 @@ Work:
 - implement inject, handoff, and discard/restart policies;
 - build a counterfactual optimization example that edits a workflow and replays
   only affected suffixes;
+- build the Appendix D trajectory-compression workflow with fork-point/hint output, suffix
+  restoration, no-prune handling, verifier gating, and a bounded best-of-N control;
 - build a Tree-RL adapter over synthetic and small reproducible rollouts;
+- version the Appendix E supervision and Appendix F CRO prompts, schemas, tools, handoff records,
+  dataset selections, budgets, costs, and seeds;
 - record evaluation inputs, versions, costs, and seeds;
 - compare to simple baselines;
 - publish limitations and avoid claiming reproduction of upstream headline
@@ -297,6 +306,8 @@ Work:
 Exit criteria:
 
 - each use case is reproducible offline or with clearly gated provider access;
+- the runtime-supervision, CRO, trajectory-compression, and Tree-RL applications expose their
+  protocol and artifact manifests;
 - causal fork/replay behavior is visible in exported traces;
 - evaluations have stable scripts and artifact manifests;
 - performance and quality claims are scoped to measured results.

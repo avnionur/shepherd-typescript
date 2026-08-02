@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-02
 
-Current version: `0.10.0`
+Current version: `0.10.1`
 
 Current level: L0 — canonical model
 
@@ -39,6 +39,8 @@ recovery diagnosis and native trace interchange are also implemented; orphan col
 - [x] Implement execution-history projections.
 - [x] Implement whole-store trace integrity verification and append recovery diagnostics.
 - [x] Implement identity-preserving native trace export and import with conformance fixtures.
+- [x] Audit every paper-v3 section and close plan gaps for proof envelopes, trajectory compression,
+  experiment protocols, limitations, and future-work classification.
 
 ## Verification required for this slice
 

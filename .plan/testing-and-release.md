@@ -39,7 +39,9 @@ Fixture groups:
 - export/import;
 - recovery and repair;
 - scope algebra;
-- replay divergence.
+- replay divergence;
+- proof-envelope classification and sidecar validation;
+- research-application protocol and artifact manifests.
 
 Each fixture declares protocol version, required capability level, platforms,
 and expected structured error code.
@@ -88,6 +90,13 @@ and expected structured error code.
 - irreversible effect is never labeled reversible;
 - compensation is idempotent or records why it is unsafe to retry;
 - interceptor decisions are totally ordered.
+
+### Formal-claim properties
+
+- unsupported or incomplete traces never receive a stronger envelope by inference;
+- profile and strength are accepted only with their configured evidence;
+- content-addressed sidecars and pinned theorem metadata fail on drift;
+- TypeScript conformance is not reported as a formal proof of excluded runtime behavior.
 
 Use `fast-check` in TypeScript, seeded from the fixture manifest where practical.
 
@@ -200,7 +209,8 @@ Benchmarks:
 - settlement on small and large changesets;
 - replay cold/warm provider behavior;
 - observer/interceptor overhead;
-- startup and CLI latency.
+- startup and CLI latency;
+- trajectory-compression suffix cost and bounded best-of-N controls;
 
 Report median, p95, variance, environment, warmup, and sample count. Preserve raw
 results as versioned artifacts.
@@ -248,6 +258,7 @@ Scheduled:
 - stamp docs with protocol/package version;
 - reject broken internal/external links;
 - maintain “shipped” and “planned” labels.
+- validate the section-by-section paper coverage map against the pinned paper revision.
 
 ## Release train
 

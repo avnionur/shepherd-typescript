@@ -130,8 +130,12 @@ record and public API must declare a protocol/compatibility version.
   compatibility boundaries, and drift procedure.
 - [Research notes](./research-notes.md) — source audit, upstream evolution, and
   facts that shape the implementation.
+- [README site and media research](./readme-site-media-research.md) — first-party positioning,
+  exact media links, benchmark attribution, and reuse constraints.
 - [Parity matrix](./parity-matrix.md) — the feature contract across upstream `0.3.0`, the paper,
   and TypeScript.
+- [Paper coverage map](./paper-coverage.md) — section-by-section ownership, evidence, formal-claim
+  boundaries, experiments, limitations, and future-work classification for paper v3.
 - [Target architecture](./architecture.md) — package boundaries, data model,
   state machines, interoperability, and platform strategy.
 - [Implementation roadmap](./implementation-roadmap.md) — phased work,
@@ -172,6 +176,8 @@ The project is complete only when:
 
 - every row marked required in the parity matrix is implemented or explicitly
   version-fenced;
+- every main-paper and appendix row in the paper coverage map has the required TypeScript
+  implementation, evidence, or explicit future-work classification;
 - the TypeScript implementation passes the golden, property, integration, and compatibility
   fixtures;
 - versioned traces can be exported, imported, verified, and continued without changing semantic

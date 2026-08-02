@@ -1,11 +1,56 @@
 # Shepherd TypeScript
 
-An independent TypeScript implementation of Shepherd's reversible agent execution model.
+An independent, native TypeScript implementation of Shepherd's reversible agent execution model,
+with complete coverage of the paper's programming model and research applications as the target.
 
-The project is being built as a complete TypeScript implementation over a language-neutral
-protocol. Upstream Python behavior is used as a compatibility oracle where applicable; a native
-Python package is not a project deliverable. This project is not affiliated with the upstream
-Shepherd authors.
+The implementation is built over a language-neutral protocol. Upstream Python behavior is a pinned
+compatibility oracle where applicable, not a runtime dependency or a second deliverable. This
+project is not affiliated with the upstream Shepherd authors.
+
+[Paper coverage](./.plan/paper-coverage.md) ·
+[Parity matrix](./.plan/parity-matrix.md) ·
+[Implementation roadmap](./.plan/implementation-roadmap.md)
+
+[Paper](https://arxiv.org/abs/2605.10913) ·
+[PDF](https://arxiv.org/pdf/2605.10913) ·
+[Upstream project](https://shepherd-agents.ai/) ·
+[Blog](https://shepherd-agents.ai/blog/) ·
+[Docs](https://docs.shepherd-agents.ai/) ·
+[Upstream code](https://github.com/shepherd-agents/shepherd) ·
+[Experiments](https://github.com/shepherd-agents/shepherd-experiments)
+
+[![Original Shepherd paper teaser: a meta-agent creates, observes, intercepts, reverts, and forks a worker trace](https://shepherd-agents.ai/assets/teaser.png)](https://shepherd-agents.ai/assets/teaser.mp4)
+
+_Watch the [original Shepherd teaser video](https://shepherd-agents.ai/assets/teaser.mp4). The image,
+video, and results shown above belong to the upstream paper project; they explain the target and
+are not benchmark claims for this TypeScript implementation._
+
+## What this project covers
+
+Shepherd makes agent execution durable, inspectable, and transformable. Four primitives define the
+paper's programming model:
+
+| Primitive | TypeScript target |
+| --- | --- |
+| **Task** | A typed, substitutable agent value that can be passed, returned, revised, or synthesized |
+| **Effect** | A typed intent/outcome boundary that can be observed, intercepted, replayed, or compensated |
+| **Scope** | An isolated agent-and-environment region with `emit`, `fork`, `merge`, and `discard` |
+| **Trace** | An immutable, content-addressed execution graph that supports historical access, rewind, and suffix replay |
+
+Complete coverage includes the paper's runtime supervisor, counterfactual replay optimization,
+meta-agent-guided Tree-RL, trajectory compression, performance protocol, and formal proof-envelope
+claim boundary. Every area has an owner and acceptance evidence in the
+[section-by-section coverage map](./.plan/paper-coverage.md).
+
+Coverage is earned in explicit levels so planned behavior is never presented as shipped:
+
+| Level | Meaning | Status |
+| --- | --- | --- |
+| L0 | Canonical schemas, identities, trace storage, and projections | In progress |
+| L1 | Documented Shepherd `0.3.0` settlement behavior | Planned |
+| L2 | Scope and versioned-world substrate parity | Planned |
+| L3 | Paper programming-model parity | Planned |
+| L4 | Production security, recovery, performance, packaging, and releases | Planned |
 
 Naming and MIT licensing are defined, but publication remains disabled until package exports,
 consumer compatibility, and release checks are complete. Current examples import the source entry
@@ -13,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.10.0` provides a versioned trace-record contract and a durable SQLite trace store:
+Version `0.10.1` provides a versioned trace-record contract and a durable SQLite trace store:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -176,6 +221,8 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Project structure](./docs/project-structure.md)
 - [Naming and licensing](./docs/naming-and-licensing.md)
 - [Implementation plan](./.plan/README.md)
+- [Paper coverage map](./.plan/paper-coverage.md)
+- [Compatibility and parity matrix](./.plan/parity-matrix.md)
 - [Progress tracker](./.plan/tracker.md)
 - [Pinned upstream baseline](./.plan/upstream-baseline.md)
 - [Canonical record contract](./docs/canonical-records.md)
@@ -193,16 +240,22 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 
 ## Status
 
-Phase 0 governance and the Phase 1 canonical record, append planning, SQLite durability, blob
-storage, trace-cut, causal-slice, execution-history projection, integrity, recovery, and native
-interchange contracts are implemented. The next TypeScript slice adds verified orphan collection.
+The project is currently at L0. Phase 0 governance and the Phase 1 canonical record, append
+planning, SQLite durability, blob storage, trace-cut, causal-slice, execution-history projection,
+integrity, recovery, and native interchange contracts are implemented. Task/effect execution,
+settlement, scopes, live supervision, replay, and the paper applications remain planned. The next
+TypeScript slice adds verified orphan collection.
 
 ## Attribution
 
 The design is informed by the MIT-licensed
 [Shepherd project](https://github.com/shepherd-agents/shepherd) and its
-[research paper](https://arxiv.org/abs/2605.10913). Compatibility claims are tracked explicitly;
-paper-level behavior is not yet implemented.
+[research paper](https://arxiv.org/abs/2605.10913), _Shepherd: Enabling Programmable Meta-Agents
+via Reversible Agentic Execution Traces_, by Simon Yu, Derek Chong, Ananjan Nandi, Dilara Soylu,
+Jiuding Sun, Christopher D. Manning, and Weiyan Shi. Compatibility claims are tracked explicitly;
+complete paper-level behavior is the project target, not a claim about the current release. The
+[paper coverage map](./.plan/paper-coverage.md) records the implementation and evidence required
+before that claim can be made.
 
 Original repository work is available under the [MIT License](./LICENSE). See [NOTICE](./NOTICE)
 for upstream attribution and reuse boundaries.

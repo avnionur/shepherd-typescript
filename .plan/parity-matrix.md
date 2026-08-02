@@ -109,7 +109,30 @@ and any applicable pinned upstream-oracle comparison.
 | Handoff/redirect | experimental/case study | case study | P2 | ownership transition test |
 | Discard/revert worker | experimental/case study | case study | P2 | restart-from-clean-fork test |
 | Counterfactual replay optimizer | experiment | case study | P3 | reproducible small benchmark |
+| Trajectory compression | experiment | case study | P3 | fork-point/hint schema, verifier gate, and best-of-N control |
 | Tree-RL fork integration | experiment | case study | P3 | adapter and synthetic rollout test |
+
+## Formal assurance and claim boundaries
+
+| Capability | Upstream/paper surface | Priority | Planned proof |
+| --- | --- | --- | --- |
+| Executable typed-effect trace machine | paper Appendix B reference core | P2 | cross-check TypeScript transitions against pinned reference vectors |
+| Proof-envelope profiles and strengths | paper Appendix B | P2 | configured profile/strength schema and complete classifier fixtures |
+| Static-fragment lowering evidence | paper Appendix B | P2 | valid and invalid Core-0/Core-A lowering manifests |
+| Core-0H sidecar validation | paper Appendix B | P2 | content-addressed two-phase-handler sidecar fixtures |
+| Pinned theorem-artifact metadata | paper Appendix B | P2 | artifact digest/name drift gate against the configured baseline |
+| Fail-closed claim classification | paper Appendix B | P2 | live, incomplete, unsupported, and extension traces never overclaim |
+| Runtime/formal non-claim boundary | paper Appendix B | P2 | public envelope reports excluded production surfaces explicitly |
+
+## Paper experiments and reporting
+
+| Capability | Paper surface | Priority | Planned proof |
+| --- | --- | --- | --- |
+| Runtime-supervision protocol fidelity | Appendix E | P3 | versioned observation/action schemas, prompts, tools, budgets, and seeds |
+| CRO protocol fidelity | Appendix F | P3 | proposer tools, lineage, targeted-eval, handoff, cost, and result artifacts |
+| TypeScript-owned performance report | §4 and Appendix C | P3 | raw, reproducible platform/backend benchmarks without inherited claims |
+| Paper limitation reporting | Appendix A.1 | P3 | supervisor cost, proof-of-existence, and replay-coupling disclosures |
+| Paper future-work register | Appendix A.2 | P3 | interpretability, continual learning, post-training, and safety rows remain classified |
 
 ## CLI
 
