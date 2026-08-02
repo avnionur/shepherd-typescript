@@ -118,3 +118,24 @@ export const EXECUTION_HISTORY_PROJECTION_V1_CONTRACT = deepFreeze({
     relationKinds: ["spawned", "adopted", "abandoned"],
     relationSchemaRef: "shepherd2.execution_relation.created.v1",
 } as const);
+
+/** Immutable task descriptor and artifact-lock contract implemented by task protocol v1. */
+export const TASK_PROTOCOL_V1_CONTRACT = deepFreeze({
+    artifactLockVersion: 1,
+    artifacts: {
+        artifactLockSchema: "spec/schemas/task-artifact-lock-v1.schema.json",
+        descriptorSchema: "spec/schemas/task-descriptor-v1.schema.json",
+    },
+    compatibilityVersion: "shepherd.tasks.v1",
+    descriptorVersion: 1,
+    digestAlgorithm: "sha256",
+    digestPrefix: "sha256:",
+    hexLength: 64,
+    schemas: {
+        artifactLockId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/task-artifact-lock-v1.schema.json",
+        descriptorId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/task-descriptor-v1.schema.json",
+    },
+    taskIdPrefix: "task:sha256:",
+} as const);

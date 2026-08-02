@@ -130,9 +130,42 @@ export type ProjectionProtocolConfig = {
     readonly executionHistory: ExecutionHistoryProjectionConfig;
 };
 
+/** Validated task descriptor and artifact-lock protocol configuration. */
+export type TaskProtocolConfig = {
+    /** Wire version for exact task artifact locks. */
+    readonly artifactLockVersion: number;
+    /** Generated language-neutral task artifacts. */
+    readonly artifacts: {
+        /** Repository-relative task artifact-lock schema destination. */
+        readonly artifactLockSchema: string;
+        /** Repository-relative task descriptor schema destination. */
+        readonly descriptorSchema: string;
+    };
+    /** Compatibility namespace included in task identity. */
+    readonly compatibilityVersion: string;
+    /** Wire version for canonical task descriptors. */
+    readonly descriptorVersion: number;
+    /** Hash algorithm used for task and schema identities. */
+    readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
+    /** Prefix used for task artifact and schema digests. */
+    readonly digestPrefix: string;
+    /** Exact lowercase hexadecimal digest length. */
+    readonly hexLength: number;
+    /** Published task schema identifiers. */
+    readonly schemas: {
+        /** Absolute task artifact-lock schema identifier. */
+        readonly artifactLockId: string;
+        /** Absolute task descriptor schema identifier. */
+        readonly descriptorId: string;
+    };
+    /** Prefix used for stable logical task identifiers. */
+    readonly taskIdPrefix: string;
+};
+
 /** Complete validated language-neutral protocol configuration. */
 export type ProtocolConfig = {
     readonly kernel: KernelProtocolConfig;
     readonly projections: ProjectionProtocolConfig;
     readonly recordId: RecordIdConfig;
+    readonly tasks: TaskProtocolConfig;
 };

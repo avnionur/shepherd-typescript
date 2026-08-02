@@ -91,3 +91,18 @@ export type {
     VisibilityProfile,
     WitnessAnchor,
 } from "./store/types.ts";
+export { task } from "./task/descriptor.ts";
+export {
+    type InferTaskSchema,
+    type InferTaskSchemaShape,
+    schema,
+    type TaskSchema,
+    type TaskSchemaFactory,
+    type TaskSchemaShape,
+} from "./task/schema.ts";
+export type {
+    TaskArtifact,
+    TaskArtifactLock,
+    TaskDefinition,
+    TaskDescriptor,
+} from "./task/types.ts";

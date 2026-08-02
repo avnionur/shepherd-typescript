@@ -1,0 +1,45 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/task-artifact-lock-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Task Artifact Lock v1",
+    "description": "Exact content-addressed citation for one immutable task artifact revision.",
+    "type": "object",
+    "required": [
+        "artifact_digest",
+        "artifact_lock_version",
+        "compatibility_version",
+        "descriptor_version",
+        "schema_digest",
+        "task_id",
+        "task_version"
+    ],
+    "properties": {
+        "artifact_digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "artifact_lock_version": {
+            "const": 1
+        },
+        "compatibility_version": {
+            "const": "shepherd.tasks.v1"
+        },
+        "descriptor_version": {
+            "const": 1
+        },
+        "schema_digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "task_id": {
+            "type": "string",
+            "pattern": "^task:sha256:[0-9a-f]{64}$"
+        },
+        "task_version": {
+            "type": "string",
+            "minLength": 1
+        }
+    },
+    "additionalProperties": false
+}

@@ -1,0 +1,106 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/task-descriptor-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Task Descriptor v1",
+    "description": "Canonical behavioral contract for one bodyless task version.",
+    "type": "object",
+    "required": [
+        "compatibility_version",
+        "descriptor_version",
+        "input_schema",
+        "instruction",
+        "name",
+        "output_schema",
+        "task_version"
+    ],
+    "properties": {
+        "compatibility_version": {
+            "const": "shepherd.tasks.v1"
+        },
+        "descriptor_version": {
+            "const": 1
+        },
+        "input_schema": {
+            "$ref": "#/$defs/taskSchema"
+        },
+        "instruction": {
+            "type": "string",
+            "minLength": 1
+        },
+        "name": {
+            "type": "string",
+            "minLength": 1
+        },
+        "output_schema": {
+            "$ref": "#/$defs/taskSchema"
+        },
+        "task_version": {
+            "type": "string",
+            "minLength": 1
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "taskSchema": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "type"
+                    ],
+                    "properties": {
+                        "type": {
+                            "const": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "type"
+                    ],
+                    "properties": {
+                        "type": {
+                            "const": "null"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "additionalProperties",
+                        "properties",
+                        "required",
+                        "type"
+                    ],
+                    "properties": {
+                        "additionalProperties": {
+                            "const": false
+                        },
+                        "properties": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/$defs/taskSchema"
+                            }
+                        },
+                        "required": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "uniqueItems": true
+                        },
+                        "type": {
+                            "const": "object"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        }
+    }
+}

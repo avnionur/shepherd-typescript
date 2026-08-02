@@ -13,7 +13,8 @@ typed section/value modules. Configuration source:
 `protocol.config.json` is the language-neutral source for record identity, kernel versions,
 ordinal bounds, schema/artifact locations, the root witness, query modes/policies, blob
 identity/layout, trace-store behavior, and execution-history projection contracts. Runtime code
-and protocol artifact generation use the same parser.
+and protocol artifact generation use the same parser. The task section also fixes descriptor and
+artifact-lock versions, hashing, identity prefixes, schema IDs, and generated artifact paths.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -49,6 +50,9 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   and match ABI v0;
 - artifact destinations are unique, repository-contained, and match the fixed generated-file
   locations before any write begins.
+- task compatibility, descriptor, and artifact-lock versions, digest contract, task-ID prefix,
+  schema identifiers, and generated descriptor/lock paths match immutable task-protocol-v1
+  constants.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,
 root-witness identity, or current ordinal bounds requires a new ABI or migration contract.

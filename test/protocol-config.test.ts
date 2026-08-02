@@ -5,6 +5,7 @@ import { test } from "node:test";
 import {
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
+    TASK_PROTOCOL_V1_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -33,6 +34,9 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT), true);
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT.store.migrations), true);
     assert.equal(Object.isFrozen(EXECUTION_HISTORY_PROJECTION_V1_CONTRACT), true);
+    assert.equal(parsed.tasks.compatibilityVersion, "shepherd.tasks.v1");
+    assert.equal(Object.isFrozen(parsed.tasks), true);
+    assert.equal(Object.isFrozen(TASK_PROTOCOL_V1_CONTRACT), true);
     assert.notEqual(
         parsed.kernel.rootWitness.body,
         objectAt(objectAt(config, "kernel"), "rootWitness").body,
@@ -379,6 +383,47 @@ test("protocol configuration rejects invalid schema, artifact, and object shapes
     assert.throws(() => parseProtocolConfig(null), /must be an object/);
 });
 
+test("protocol configuration rejects invalid or drifted task contracts", () => {
+    assertInvalid([
+        (config) => {
+            taskConfigOf(config).artifactLockVersion = 0;
+        },
+        (config) => {
+            taskConfigOf(config).descriptorVersion = 2;
+        },
+        (config) => {
+            taskConfigOf(config).compatibilityVersion = "";
+        },
+        (config) => {
+            taskConfigOf(config).digestAlgorithm = "md5";
+        },
+        (config) => {
+            taskConfigOf(config).digestPrefix = "";
+        },
+        (config) => {
+            taskConfigOf(config).hexLength = 63;
+        },
+        (config) => {
+            taskConfigOf(config).taskIdPrefix = "task:";
+        },
+        (config) => {
+            objectAt(taskConfigOf(config), "schemas").descriptorId = "relative";
+        },
+        (config) => {
+            objectAt(taskConfigOf(config), "artifacts").descriptorSchema = "";
+        },
+        (config) => {
+            objectAt(taskConfigOf(config), "artifacts").descriptorSchema = objectAt(
+                objectAt(config, "kernel"),
+                "artifacts",
+            ).recordBodySchema;
+        },
+        (config) => {
+            taskConfigOf(config).extra = true;
+        },
+    ]);
+});
+
 function assertInvalid(mutations: readonly Mutation[]): void {
     for (const mutate of mutations) {
         const config = structuredClone(validConfig);
@@ -417,4 +462,8 @@ function firstMigrationOf(config: Record<string, unknown>): Record<string, unkno
 
 function blobConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(objectAt(config, "kernel"), "store").blobs as Record<string, unknown>;
+}
+
+function taskConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(config, "tasks");
 }

@@ -107,3 +107,20 @@ _Avoid_: Database dump, ATIF trajectory, mutable backup
 **Blob Orphan**:
 A store-layout filesystem object without durable blob metadata and a matching storage receipt.
 _Avoid_: Unowned semantic record, corrupt registered blob, disposable projection
+
+**Task Descriptor**:
+An immutable bodyless behavioral contract containing a logical identity, instruction, and runtime
+input/output schemas.
+_Avoid_: Prompt template, executable task run, registry alias
+
+**Task Schema**:
+A JSON Schema document paired with inferred TypeScript types and runtime validation.
+_Avoid_: Type-only annotation, unchecked model-output hint
+
+**Task Artifact**:
+The canonical, compatibility-versioned semantic value from which exact task identity is derived.
+_Avoid_: Mutable function object, registry entry
+
+**Task Artifact Lock**:
+A frozen exact citation containing task identity/version and the canonical artifact/schema digests.
+_Avoid_: Mutable task selector, execution permission, package lockfile

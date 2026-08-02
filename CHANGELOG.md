@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-08-02
+
+### New Feature
+
+- Added immutable, versioned bodyless task descriptors with inferred runtime input/output schemas.
+- Added configured task, artifact, and schema identities with frozen exact artifact locks.
+- Added generated task descriptor and artifact-lock JSON Schemas plus an independent conformance
+  fixture.
+
+### Improvement
+
+- Extended fail-closed protocol configuration and generated-artifact validation to the task
+  protocol.
+- Added public-seam validation, identity-drift, schema-conformance, configuration, and packaging
+  coverage with complete runtime source coverage.
+
+### Impact
+
+TypeScript applications can define and validate stable task contracts and persist exact task
+artifact citations before task registration, effects, providers, or execution are introduced.
+
 ## [0.11.0] - 2026-08-02
 
 ### New Feature

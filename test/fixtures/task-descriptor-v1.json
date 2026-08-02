@@ -1,0 +1,31 @@
+{
+    "artifact": {
+        "compatibility_version": "shepherd.tasks.v1",
+        "descriptor_version": 1,
+        "input_schema": {
+            "additionalProperties": false,
+            "properties": {
+                "topic": {
+                    "type": "string"
+                }
+            },
+            "required": ["topic"],
+            "type": "object"
+        },
+        "instruction": "Write one note about the topic.",
+        "name": "writeNote",
+        "output_schema": {
+            "type": "null"
+        },
+        "task_version": "1.0.0"
+    },
+    "artifact_lock": {
+        "artifact_digest": "sha256:d2132783491a862e165c34c4e1a212cebadb040efaaa1334e3e4fe2aee7630e9",
+        "artifact_lock_version": 1,
+        "compatibility_version": "shepherd.tasks.v1",
+        "descriptor_version": 1,
+        "schema_digest": "sha256:90af3164eb3a8c2d33746029ed83ac88273597a135720c53abd64fa050b777f8",
+        "task_id": "task:sha256:f12c0e0bcae1e3a62b993770a933a0c4b87e462fe09488651ba13385e359c824",
+        "task_version": "1.0.0"
+    }
+}

@@ -4,6 +4,23 @@
         "prefix": "sha256:",
         "hexLength": 64
     },
+    "tasks": {
+        "artifactLockVersion": 1,
+        "artifacts": {
+            "artifactLockSchema": "spec/schemas/task-artifact-lock-v1.schema.json",
+            "descriptorSchema": "spec/schemas/task-descriptor-v1.schema.json"
+        },
+        "compatibilityVersion": "shepherd.tasks.v1",
+        "descriptorVersion": 1,
+        "digestAlgorithm": "sha256",
+        "digestPrefix": "sha256:",
+        "hexLength": 64,
+        "schemas": {
+            "artifactLockId": "https://avnionur.github.io/shepherd-typescript/schemas/task-artifact-lock-v1.schema.json",
+            "descriptorId": "https://avnionur.github.io/shepherd-typescript/schemas/task-descriptor-v1.schema.json"
+        },
+        "taskIdPrefix": "task:sha256:"
+    },
     "projections": {
         "executionHistory": {
             "activeRelationKinds": ["spawned", "adopted"],

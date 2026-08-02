@@ -4,6 +4,7 @@ import type {
     ProjectionProtocolConfig,
     ProtocolConfig,
     RecordIdConfig,
+    TaskProtocolConfig,
 } from "./config-types.ts";
 import { parseProtocolConfig } from "./config-validation.ts";
 import { RECORD_MODES } from "./values.generated.ts";
@@ -24,3 +25,6 @@ export const projectionProtocolConfig: ProjectionProtocolConfig = protocolConfig
 
 /** Runtime record-identifier configuration loaded from the protocol configuration file. */
 export const recordIdConfig: RecordIdConfig = protocolConfig.recordId;
+
+/** Runtime task descriptor, schema, and artifact-lock protocol configuration. */
+export const taskProtocolConfig: TaskProtocolConfig = protocolConfig.tasks;

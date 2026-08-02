@@ -149,6 +149,9 @@ Content-addressed filesystem blobs, durable storage receipts, immutable cuts, ca
 configured execution-history projections, registered-blob integrity reports, whole-store
 verification, append recovery diagnosis, native trace interchange, and verified blob-orphan
 collection are implemented.
+Configured bodyless task descriptors, strict input/output schemas, canonical task artifacts, and
+exact artifact locks are implemented as the first Phase 2 capability. Registration, grants,
+effects, and execution remain planned.
 
 ## Task model
 

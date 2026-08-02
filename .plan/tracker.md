@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-02
 
-Current version: `0.11.0`
+Current version: `0.12.0`
 
 Current level: L0 — canonical model
 
@@ -13,7 +13,8 @@ complete: canonical records, envelopes, append planning, SQLite durability, cont
 storage, storage receipts, blob integrity verification, immutable cuts, and causal-slice queries
 and configured execution-history projections are implemented. Whole-store verification and append
 recovery diagnosis, native trace interchange, and verified blob-orphan collection are also
-implemented.
+implemented. Phase 2 has started with configured bodyless task descriptors, runtime input/output
+schemas, and exact artifact locks.
 
 ## Progress
 
@@ -41,6 +42,7 @@ implemented.
 - [x] Implement whole-store trace integrity verification and append recovery diagnostics.
 - [x] Implement identity-preserving native trace export and import with conformance fixtures.
 - [x] Implement inspect-first verified blob-orphan collection without deleting retained evidence.
+- [x] Implement configured bodyless task descriptors, input/output schemas, and artifact locks.
 - [x] Audit every paper-v3 section and close plan gaps for proof envelopes, trajectory compression,
   experiment protocols, limitations, and future-work classification.
 
@@ -54,7 +56,8 @@ implemented.
 
 ## Next slice
 
-Implement configured, versioned task descriptors with input/output schemas and artifact locks.
+Implement durable task registration, version conflict detection, and exact artifact-lock
+resolution.
 
 ## Notes
 

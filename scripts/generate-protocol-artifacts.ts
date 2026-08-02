@@ -4,6 +4,10 @@ import path from "node:path";
 import { assertSupportedProtocolCompatibility } from "../src/protocol/config-compatibility.ts";
 import type { ProtocolConfig } from "../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
+import {
+    renderTaskArtifactLockSchema,
+    renderTaskDescriptorSchema,
+} from "./task-protocol-schemas.ts";
 import { renderTraceArchiveSchema } from "./trace-archive-schema.ts";
 
 type ArtifactOptions = {
@@ -42,6 +46,14 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
         {
             content: renderJson(renderTraceArchiveSchema(config)),
             relativePath: config.kernel.artifacts.traceArchiveSchema,
+        },
+        {
+            content: renderJson(renderTaskDescriptorSchema(config)),
+            relativePath: config.tasks.artifacts.descriptorSchema,
+        },
+        {
+            content: renderJson(renderTaskArtifactLockSchema(config)),
+            relativePath: config.tasks.artifacts.artifactLockSchema,
         },
     ];
     const resolvedArtifacts: { content: string; artifactPath: string; relativePath: string }[] = [];

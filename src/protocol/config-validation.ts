@@ -7,6 +7,7 @@ import {
     readRootWitness,
     readSchemas,
 } from "./config-sections.ts";
+import { readTaskConfig } from "./config-tasks.ts";
 import {
     type NonEmptyReadonlyArray,
     type ProtocolConfig,
@@ -40,7 +41,11 @@ export function parseProtocolConfig(
     value: unknown,
     options: ParseProtocolConfigOptions = {},
 ): ProtocolConfig {
-    const root = readObject(value, ["kernel", "projections", "recordId"], "protocol configuration");
+    const root = readObject(
+        value,
+        ["kernel", "projections", "recordId", "tasks"],
+        "protocol configuration",
+    );
     const recordId = readRecordIdConfig(root.recordId);
     const kernel = readKernelConfig(root.kernel);
     const projections = readProjectionConfig(root.projections, kernel.queries);
@@ -50,7 +55,7 @@ export function parseProtocolConfig(
     ) {
         throw new TypeError("kernel.recordModes is not synchronized with generated constants");
     }
-    const config = { kernel, projections, recordId };
+    const config = { kernel, projections, recordId, tasks: readTaskConfig(root.tasks) };
     if (options.enforceCompatibility !== false) {
         assertSupportedProtocolCompatibility(config);
     }

@@ -9,12 +9,13 @@ implementation documentation, and forward-looking plans.
 │   ├── index.ts            Package export boundary
 │   ├── append/             Append drafts, validation, and pure planning
 │   ├── blob/               Binary identity and crash-safe filesystem objects
-│   ├── canonical/          Deterministic semantic encoding and hashing
+│   ├── canonical/          Deterministic semantic encoding, hashing, and snapshots
 │   ├── interchange/        Native archive encoding, validation, and import storage
 │   ├── projection/         Disposable execution, relation, and history folds
 │   ├── protocol/           Runtime configuration and generated literals
 │   ├── record/             Record types, envelopes, guards, and snapshots
-│   └── store/              SQLite migrations, transactions, codecs, and reads
+│   ├── store/              SQLite migrations, transactions, codecs, and reads
+│   └── task/               Bodyless descriptors, runtime schemas, and artifact locks
 ├── test/                   Public-seam unit tests and fixture assets
 ├── spec/                   Language-neutral JSON Schema contracts
 ├── scripts/                Build and release utilities
@@ -36,6 +37,7 @@ public exports → store area → append and record areas
 public exports → store area → blob filesystem and identity
 public exports → interchange area → store, record, blob, and protocol areas
 public exports → projection area → immutable store slice types
+public exports → task area → canonical identity and protocol configuration
 build/release scripts → repository configuration
 tests → public exports
 ```
@@ -48,7 +50,8 @@ The runtime areas are intentionally shallow:
 - `append/` owns draft wire-shape validation, parent resolution, and ordinal planning;
 - `blob/` owns configured binary identity, content-addressed filesystem durability, and safe
   orphan discovery/deletion;
-- `canonical/` owns language-neutral semantic encoding and unversioned record hashing;
+- `canonical/` owns language-neutral semantic encoding, unversioned record hashing, and immutable
+  semantic snapshots;
 - `interchange/` owns native archive encoding, decoding, staging, and validated storage transfer;
 - `protocol/` owns typed configuration models, fail-closed validation, immutable runtime
   snapshots, and generated literal values;
@@ -57,6 +60,8 @@ The runtime areas are intentionally shallow:
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
   recovery and orphan-collection diagnostics.
+- `task/` owns bodyless descriptor construction, inferred runtime schemas, validation snapshots,
+  canonical task artifacts, and exact artifact locks.
 
 ## Module rules
 

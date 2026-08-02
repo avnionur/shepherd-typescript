@@ -34,6 +34,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   verification, classified defects, and read-only append recovery diagnosis.
 - [Native trace interchange](./trace-interchange.md) defines deterministic full-store export,
   staged pristine-store import, version compatibility, and conformance fixtures.
+- [Task descriptors](./task-descriptors.md) defines bodyless task contracts, inferred runtime
+  schemas, content identity, and exact artifact locks.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd
