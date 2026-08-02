@@ -36,6 +36,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   staged pristine-store import, version compatibility, and conformance fixtures.
 - [Task descriptors](./task-descriptors.md) defines bodyless task contracts, inferred runtime
   schemas, content identity, and exact artifact locks.
+- [Task registry](./task-registry.md) defines durable exact version registration, idempotency,
+  conflict detection, migration, and verified resolution.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

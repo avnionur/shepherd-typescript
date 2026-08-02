@@ -14,7 +14,8 @@ typed section/value modules. Configuration source:
 ordinal bounds, schema/artifact locations, the root witness, query modes/policies, blob
 identity/layout, trace-store behavior, and execution-history projection contracts. Runtime code
 and protocol artifact generation use the same parser. The task section also fixes descriptor and
-artifact-lock versions, hashing, identity prefixes, schema IDs, and generated artifact paths.
+artifact-lock versions, hashing, identity prefixes, schema IDs, generated artifact paths, and the
+task registry's SQLite durability and migration contract.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -53,6 +54,8 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
 - task compatibility, descriptor, and artifact-lock versions, digest contract, task-ID prefix,
   schema identifiers, and generated descriptor/lock paths match immutable task-protocol-v1
   constants.
+- task-registry migrations are non-empty and contiguous, their latest version matches configured
+  support, and defensive SQLite, foreign-key, WAL, FULL, and IMMEDIATE settings remain enabled.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,
 root-witness identity, or current ordinal bounds requires a new ABI or migration contract.
@@ -65,6 +68,10 @@ SQLite table and index identifiers are versioned implementation constants, not d
 configuration. Transaction and PRAGMA commands are assembled once from validated configuration in
 [`src/store/constants.ts`](../src/store/constants.ts). Store modules consume those constants
 instead of repeating identifiers or interpolating unchecked values.
+
+Task-registry table names and SQL commands are centralized separately in
+[`src/task/registry-constants.ts`](../src/task/registry-constants.ts), while migration versions
+and SQLite behavior are loaded from the validated task protocol configuration.
 
 The current durability contract permits WAL journaling, FULL synchronization, IMMEDIATE
 transactions, defensive mode, and foreign-key enforcement. Weakening one of these values is a

@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.12.0` provides versioned task and trace-record contracts with a durable SQLite trace
+Version `0.13.0` provides versioned task and trace-record contracts with durable SQLite task and trace
 store:
 
 - deterministic recursive object-key ordering;
@@ -87,6 +87,8 @@ store:
 - JSON Schema contracts and pinned implementation-neutral fixtures;
 - immutable bodyless task descriptors with inferred runtime input/output schemas and exact
   content-addressed artifact locks;
+- durable exact task-version registration, idempotent replay, conflict detection, and verified
+  resolution across registry restarts;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
@@ -112,6 +114,7 @@ import {
     planAppendBatch,
     ROOT_WITNESS_ID,
     schema,
+    SQLiteTaskRegistry,
     SQLiteTraceStore,
     task,
 } from "./src/index.ts";
@@ -125,6 +128,13 @@ const writeNote = task({
 });
 writeNote.parseInput({ topic: "Shepherd" });
 writeNote.artifactLock;
+
+using taskRegistry = new SQLiteTaskRegistry("tasks.sqlite");
+const registration = taskRegistry.register(writeNote);
+taskRegistry.resolve({
+    taskId: registration.artifactLock.task_id,
+    version: registration.artifactLock.task_version,
+});
 
 const record = { operation: "task.started", ordinal: 1 };
 
@@ -253,6 +263,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Store integrity and append recovery](./docs/store-integrity-and-recovery.md)
 - [Native trace interchange](./docs/trace-interchange.md)
 - [Task descriptors](./docs/task-descriptors.md)
+- [Task registry](./docs/task-registry.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -262,10 +273,10 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 The project is currently at L0. Phase 0 governance and the Phase 1 canonical record, append
 planning, SQLite durability, blob storage, trace-cut, causal-slice, execution-history projection,
 integrity, recovery, native interchange, and blob-orphan collection contracts are implemented.
-Phase 2 has started with bodyless task descriptors, runtime schemas, and artifact locks. Task
-registration/execution, effects, settlement, scopes, live supervision, replay, and the paper
-applications remain planned. The next TypeScript slice adds durable task registration and exact
-artifact-lock resolution.
+Phase 2 now includes bodyless task descriptors, runtime schemas, artifact locks, and durable exact
+task registration. Task execution, effects, settlement, scopes, live supervision, replay, and the
+paper applications remain planned. The next TypeScript slice adds effect intent/outcome records
+and correlation.
 
 ## Attribution
 

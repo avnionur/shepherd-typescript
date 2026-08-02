@@ -42,20 +42,20 @@ artifact lock contains:
 - a separate digest of the input/output schema pair.
 
 All hashes and prefixes come from `protocol.config.json`. Artifact property order and task object
-schema declaration order do not affect identity. The lock is a citation, not a registry alias: a
-later registry must reject one logical name/version resolving to conflicting artifact digests.
+schema declaration order do not affect identity. The lock is a citation, not a registry alias. The
+implemented [`SQLiteTaskRegistry`](./task-registry.md) rejects one logical name/version resolving
+to conflicting artifact digests.
 
 Normative wire schemas are generated at
 [`spec/schemas/task-descriptor-v1.schema.json`](../spec/schemas/task-descriptor-v1.schema.json) and
 [`spec/schemas/task-artifact-lock-v1.schema.json`](../spec/schemas/task-artifact-lock-v1.schema.json).
 The independent fixture is
 [`test/fixtures/task-descriptor-v1.json`](../test/fixtures/task-descriptor-v1.json).
-JSON Schema validates the wire shape; a future artifact decoder must additionally verify that each
-object schema's required fields equal its property keys and recompute every configured digest.
+JSON Schema validates the wire shape. Task-registry decoding additionally verifies that each
+object schema's required fields equal its property keys and recomputes every configured digest.
 
 ## Current boundary
 
-This slice defines bodyless task contracts and validation only. It does not execute a task,
-register versions, resolve aliases, grant workspace authority, declare effect families, or deliver
-the task to a model. Those operations require separate durable and enforcement boundaries; merely
-constructing a descriptor never executes code or grants authority.
+Constructing a descriptor never executes code or grants authority. Registration is a separate
+durable operation; aliases, execution, workspace grants, effect families, and model delivery
+remain outside this descriptor boundary.

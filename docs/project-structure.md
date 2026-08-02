@@ -15,7 +15,7 @@ implementation documentation, and forward-looking plans.
 │   ├── protocol/           Runtime configuration and generated literals
 │   ├── record/             Record types, envelopes, guards, and snapshots
 │   ├── store/              SQLite migrations, transactions, codecs, and reads
-│   └── task/               Bodyless descriptors, runtime schemas, and artifact locks
+│   └── task/               Descriptors, runtime schemas, locks, and durable registration
 ├── test/                   Public-seam unit tests and fixture assets
 ├── spec/                   Language-neutral JSON Schema contracts
 ├── scripts/                Build and release utilities
@@ -42,8 +42,10 @@ build/release scripts → repository configuration
 tests → public exports
 ```
 
-Runtime modules must not import build scripts or planning documents. Tests use `src/index.ts` so
-they exercise the same public seam as consumers.
+Runtime modules must not import build scripts or planning documents. Public behavior tests use
+`src/index.ts` so they exercise the same seam as consumers. Narrow migration-registry invariant
+tests may import the internal migration validator directly because malformed compiled registries
+cannot be constructed through a public runtime seam.
 
 The runtime areas are intentionally shallow:
 
@@ -61,7 +63,8 @@ The runtime areas are intentionally shallow:
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
   recovery and orphan-collection diagnostics.
 - `task/` owns bodyless descriptor construction, inferred runtime schemas, validation snapshots,
-  canonical task artifacts, and exact artifact locks.
+  canonical task artifacts, exact artifact locks, and the independently migrated SQLite task
+  registry.
 
 ## Module rules
 

@@ -5,6 +5,7 @@ import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import { taskProtocolConfig } from "../protocol/config.ts";
 import { type TaskSchema, taskSchemaMetadata } from "./schema.ts";
 import type { TaskArtifact, TaskArtifactLock, TaskDefinition, TaskDescriptor } from "./types.ts";
+import { assertTaskText, readTaskDataObject } from "./validation.ts";
 
 /**
  * Creates an immutable, content-addressed bodyless task descriptor.
@@ -41,18 +42,7 @@ export function task<I extends TaskSchema<unknown>, O extends TaskSchema<unknown
         output_schema: outputMetadata.document,
         task_version: values.version,
     }) as TaskArtifact;
-    const artifactLock = createCanonicalSnapshot({
-        artifact_digest: digest(artifact),
-        artifact_lock_version: taskProtocolConfig.artifactLockVersion,
-        compatibility_version: taskProtocolConfig.compatibilityVersion,
-        descriptor_version: taskProtocolConfig.descriptorVersion,
-        schema_digest: digest({
-            input_schema: inputMetadata.document,
-            output_schema: outputMetadata.document,
-        }),
-        task_id: `${taskProtocolConfig.taskIdPrefix}${digestHex({ name: values.name })}`,
-        task_version: values.version,
-    }) as TaskArtifactLock;
+    const artifactLock = createTaskArtifactLock(artifact);
     return Object.freeze({
         artifact,
         artifactLock,
@@ -68,49 +58,33 @@ export function task<I extends TaskSchema<unknown>, O extends TaskSchema<unknown
     });
 }
 
+/** Derives the exact configured lock for a validated canonical task artifact. @internal */
+export function createTaskArtifactLock(artifact: TaskArtifact): TaskArtifactLock {
+    return createCanonicalSnapshot({
+        artifact_digest: digest(artifact),
+        artifact_lock_version: taskProtocolConfig.artifactLockVersion,
+        compatibility_version: taskProtocolConfig.compatibilityVersion,
+        descriptor_version: taskProtocolConfig.descriptorVersion,
+        schema_digest: digest({
+            input_schema: artifact.input_schema,
+            output_schema: artifact.output_schema,
+        }),
+        task_id: `${taskProtocolConfig.taskIdPrefix}${digestHex({ name: artifact.name })}`,
+        task_version: artifact.task_version,
+    }) as TaskArtifactLock;
+}
+
 function readDefinition<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
     definition: TaskDefinition<I, O>,
 ): TaskDefinition<I, O> {
-    if (
-        definition === null ||
-        typeof definition !== "object" ||
-        Array.isArray(definition) ||
-        (Object.getPrototypeOf(definition) !== Object.prototype &&
-            Object.getPrototypeOf(definition) !== null) ||
-        Object.getOwnPropertySymbols(definition).length > 0
-    ) {
-        throw new TypeError("task definition must be a plain data object");
-    }
-    const descriptors = Object.getOwnPropertyDescriptors(definition);
     const keys = ["input", "instruction", "name", "output", "version"];
-    if (Object.keys(descriptors).sort().join("\0") !== keys.join("\0")) {
-        throw new TypeError("task definition must contain exactly its declared fields");
-    }
-    const values = Object.create(null) as Record<string, unknown>;
-    for (const key of keys) {
-        const descriptor = descriptors[key];
-        /* node:coverage disable */
-        if (descriptor === undefined) {
-            throw new TypeError(`task definition ${key} disappeared during validation`);
-        }
-        /* node:coverage enable */
-        if (!("value" in descriptor)) {
-            throw new TypeError(`task definition ${key} must be a data property`);
-        }
-        values[key] = descriptor.value;
-    }
-    assertText(values.name, "task name");
-    assertText(values.version, "task version");
-    assertText(values.instruction, "task instruction");
+    const values = readTaskDataObject(definition, keys, "task definition");
+    assertTaskText(values.name, "task name");
+    assertTaskText(values.version, "task version");
+    assertTaskText(values.instruction, "task instruction");
     taskSchemaMetadata(values.input as I);
     taskSchemaMetadata(values.output as O);
     return values as TaskDefinition<I, O>;
-}
-
-function assertText(value: unknown, subject: string): asserts value is string {
-    if (typeof value !== "string" || value.length === 0 || /[\uD800-\uDFFF]/u.test(value)) {
-        throw new TypeError(`${subject} must be a non-empty well-formed string`);
-    }
 }
 
 function digest(value: SemanticRecord): string {

@@ -93,6 +93,11 @@ export type {
 } from "./store/types.ts";
 export { task } from "./task/descriptor.ts";
 export {
+    TaskRegistryError,
+    TaskVersionConflictError,
+    UnsupportedTaskRegistrySchemaError,
+} from "./task/registry-errors.ts";
+export {
     type InferTaskSchema,
     type InferTaskSchemaShape,
     schema,
@@ -100,9 +105,12 @@ export {
     type TaskSchemaFactory,
     type TaskSchemaShape,
 } from "./task/schema.ts";
+export { SQLiteTaskRegistry } from "./task/sqlite-task-registry.ts";
 export type {
+    ExactTaskReference,
     TaskArtifact,
     TaskArtifactLock,
     TaskDefinition,
     TaskDescriptor,
+    TaskRegistration,
 } from "./task/types.ts";

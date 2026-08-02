@@ -124,3 +124,11 @@ _Avoid_: Mutable function object, registry entry
 **Task Artifact Lock**:
 A frozen exact citation containing task identity/version and the canonical artifact/schema digests.
 _Avoid_: Mutable task selector, execution permission, package lockfile
+
+**Task Registration**:
+A durable association between one exact logical task ID/version and one verified immutable artifact.
+_Avoid_: Latest-version alias, executable task run, mutable descriptor
+
+**Task Registry**:
+A durable adapter that registers immutable task versions and resolves exact verified registrations.
+_Avoid_: Task executor, package registry, mutable alias table

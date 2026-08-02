@@ -37,6 +37,22 @@ export type TaskArtifactLock = {
     readonly task_version: string;
 };
 
+/** Exact selector for one registered task artifact version. */
+export type ExactTaskReference = {
+    /** Stable content-addressed logical task identity. */
+    readonly taskId: string;
+    /** Exact caller-declared task version. */
+    readonly version: string;
+};
+
+/** Durable registry result containing a canonical artifact and its verified lock. */
+export type TaskRegistration = {
+    /** Canonical task artifact retained by the registry. */
+    readonly artifact: TaskArtifact;
+    /** Recomputed and verified exact artifact lock. */
+    readonly artifactLock: TaskArtifactLock;
+};
+
 /** Definition accepted by the bodyless task descriptor builder. */
 export type TaskDefinition<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>> = {
     /** Input schema used for static inference and runtime validation. */

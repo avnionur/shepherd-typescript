@@ -35,6 +35,9 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT.store.migrations), true);
     assert.equal(Object.isFrozen(EXECUTION_HISTORY_PROJECTION_V1_CONTRACT), true);
     assert.equal(parsed.tasks.compatibilityVersion, "shepherd.tasks.v1");
+    assert.equal(parsed.tasks.registry.schemaVersion, 1);
+    assert.equal(parsed.tasks.registry.transactionMode, "IMMEDIATE");
+    assert.equal(Object.isFrozen(parsed.tasks.registry.migrations), true);
     assert.equal(Object.isFrozen(parsed.tasks), true);
     assert.equal(Object.isFrozen(TASK_PROTOCOL_V1_CONTRACT), true);
     assert.notEqual(
@@ -421,6 +424,42 @@ test("protocol configuration rejects invalid or drifted task contracts", () => {
         (config) => {
             taskConfigOf(config).extra = true;
         },
+        (config) => {
+            taskRegistryConfigOf(config).busyTimeoutMilliseconds = -1;
+        },
+        (config) => {
+            taskRegistryConfigOf(config).defaultDatabasePath = "";
+        },
+        (config) => {
+            taskRegistryConfigOf(config).defensive = false;
+        },
+        (config) => {
+            taskRegistryConfigOf(config).foreignKeys = false;
+        },
+        (config) => {
+            taskRegistryConfigOf(config).journalMode = "DELETE";
+        },
+        (config) => {
+            taskRegistryConfigOf(config).migrations = [];
+        },
+        (config) => {
+            taskRegistryConfigOf(config).migrations = [2];
+        },
+        (config) => {
+            taskRegistryConfigOf(config).migrations = [1, 2];
+        },
+        (config) => {
+            taskRegistryConfigOf(config).schemaVersion = 0;
+        },
+        (config) => {
+            taskRegistryConfigOf(config).schemaVersion = 2;
+        },
+        (config) => {
+            taskRegistryConfigOf(config).synchronous = "NORMAL";
+        },
+        (config) => {
+            taskRegistryConfigOf(config).transactionMode = "DEFERRED";
+        },
     ]);
 });
 
@@ -466,4 +505,8 @@ function blobConfigOf(config: Record<string, unknown>): Record<string, unknown> 
 
 function taskConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(config, "tasks");
+}
+
+function taskRegistryConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(taskConfigOf(config), "registry");
 }

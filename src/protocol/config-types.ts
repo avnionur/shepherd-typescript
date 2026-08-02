@@ -151,6 +151,27 @@ export type TaskProtocolConfig = {
     readonly digestPrefix: string;
     /** Exact lowercase hexadecimal digest length. */
     readonly hexLength: number;
+    /** SQLite durability and migration contract for task registration. */
+    readonly registry: {
+        /** Time SQLite waits for a competing registry writer. */
+        readonly busyTimeoutMilliseconds: number;
+        /** Default registry database target. */
+        readonly defaultDatabasePath: string;
+        /** Whether SQLite defensive mode is enabled. */
+        readonly defensive: true;
+        /** Whether SQLite foreign-key enforcement is enabled. */
+        readonly foreignKeys: true;
+        /** Configured durable SQLite journal mode. */
+        readonly journalMode: (typeof STORE_JOURNAL_MODES)[number];
+        /** Contiguous implemented registry migration versions. */
+        readonly migrations: NonEmptyReadonlyArray<number>;
+        /** Latest supported task-registry schema version. */
+        readonly schemaVersion: number;
+        /** Configured durable SQLite synchronization level. */
+        readonly synchronous: (typeof STORE_SYNCHRONOUS_LEVELS)[number];
+        /** Transaction mode used to serialize registrations. */
+        readonly transactionMode: (typeof STORE_TRANSACTION_MODES)[number];
+    };
     /** Published task schema identifiers. */
     readonly schemas: {
         /** Absolute task artifact-lock schema identifier. */
