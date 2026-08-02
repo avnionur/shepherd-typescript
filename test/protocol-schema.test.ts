@@ -56,6 +56,9 @@ const appendBatchSchema = readJson(
     "../spec/schemas/append-batch-draft-v0.schema.json",
 ) as AnySchemaObject;
 const recordViewSchema = readJson("../spec/schemas/record-view-v0.schema.json") as AnySchemaObject;
+const traceArchiveSchema = readJson(
+    "../spec/schemas/trace-archive-v1.schema.json",
+) as AnySchemaObject;
 const protocolConfig = readJson("../protocol.config.json") as ProtocolConfiguration;
 const fixture = readJson("./fixtures/kernel-record-envelope-v0.json") as RecordFixture;
 
@@ -66,6 +69,18 @@ test("published schemas are valid JSON Schema 2020-12 documents", () => {
     assert.equal(validator.validateSchema(envelopeSchema), true, validator.errorsText());
     assert.equal(validator.validateSchema(appendBatchSchema), true, validator.errorsText());
     assert.equal(validator.validateSchema(recordViewSchema), true, validator.errorsText());
+    assert.equal(validator.validateSchema(traceArchiveSchema), true, validator.errorsText());
+});
+
+test("published trace archive schema accepts the conformance fixture", () => {
+    const validator = new Ajv2020({ strict: true });
+    validator.addSchema(bodySchema);
+    validator.addSchema(envelopeSchema);
+    const validateArchive = validator.compile(traceArchiveSchema);
+    const archive = readJson("./fixtures/trace-archive-v1.json");
+
+    assert.equal(validateArchive(archive), true, validator.errorsText(validateArchive.errors));
+    assert.equal(validateArchive({ ...(archive as object), format_version: 2 }), false);
 });
 
 test("published append and view schemas enforce their wire shapes", () => {

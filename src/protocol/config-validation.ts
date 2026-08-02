@@ -65,6 +65,7 @@ function readKernelConfig(value: unknown): ProtocolConfig["kernel"] {
             "append",
             "artifacts",
             "canonicalVersion",
+            "interchange",
             "queries",
             "recordKind",
             "recordModes",
@@ -81,12 +82,32 @@ function readKernelConfig(value: unknown): ProtocolConfig["kernel"] {
         append,
         artifacts: readArtifacts(kernel.artifacts),
         canonicalVersion: readNonEmptyString(kernel.canonicalVersion, "kernel.canonicalVersion"),
+        interchange: readInterchangeConfig(kernel.interchange),
         queries: readQueryConfig(kernel.queries),
         recordKind: readNonEmptyString(kernel.recordKind, "kernel.recordKind"),
         recordModes,
         rootWitness: readRootWitness(kernel.rootWitness, recordModes),
         schemas: readSchemas(kernel.schemas),
         store: readStoreConfig(kernel.store, append),
+    };
+}
+
+function readInterchangeConfig(value: unknown): ProtocolConfig["kernel"]["interchange"] {
+    const interchange = readObject(
+        value,
+        ["blobEncoding", "format", "formatVersion"],
+        "kernel.interchange",
+    );
+    if (interchange.blobEncoding !== "base64") {
+        throw new TypeError("kernel.interchange.blobEncoding must be base64");
+    }
+    return {
+        blobEncoding: "base64",
+        format: readNonEmptyString(interchange.format, "kernel.interchange.format"),
+        formatVersion: readPositiveInteger(
+            interchange.formatVersion,
+            "kernel.interchange.formatVersion",
+        ),
     };
 }
 

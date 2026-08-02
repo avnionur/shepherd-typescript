@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-08-02
+
+### New Feature
+
+- Added deterministic `exportTrace()` archives containing canonical records, owner views, append
+  intents, published cuts, and content-addressed blobs.
+- Added staged `importTrace()` for identity-preserving transfer into pristine stores.
+- Added a generated native trace archive v1 JSON Schema and implementation-neutral conformance
+  fixture.
+
+### Improvement
+
+- Configured and compatibility-locked archive format, version, and blob encoding constants.
+- Preserved idempotent append replay and owner-ordinal continuation across process restart and
+  archive transfer.
+- Made target integrity and pristine-state validation concurrency-safe and archive view ordering
+  independent.
+- Added fail-closed tests for incompatible versions, malformed bodies, dangling references,
+  corrupt receipts, invalid blobs, non-pristine targets, and target transaction rollback.
+- Added child-process transfer/reopen coverage and a cut-bearing conformance fixture covering all
+  retained archive areas.
+
+### Impact
+
+TypeScript applications can move a complete verified trace store between processes without
+changing semantic identities, owner addresses, append replay behavior, cuts, or blob content.
+
 ## [0.9.0] - 2026-08-02
 
 ### New Feature

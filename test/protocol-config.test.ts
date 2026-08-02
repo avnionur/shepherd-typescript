@@ -269,6 +269,26 @@ test("protocol configuration rejects invalid or drifted query contracts", () => 
     ]);
 });
 
+test("protocol configuration rejects invalid or drifted interchange contracts", () => {
+    assertInvalid([
+        (config) => {
+            interchangeConfigOf(config).blobEncoding = "hex";
+        },
+        (config) => {
+            interchangeConfigOf(config).format = "";
+        },
+        (config) => {
+            interchangeConfigOf(config).format = "changed.trace.archive";
+        },
+        (config) => {
+            interchangeConfigOf(config).formatVersion = 0;
+        },
+        (config) => {
+            interchangeConfigOf(config).formatVersion = 2;
+        },
+    ]);
+});
+
 test("protocol configuration rejects invalid or drifted projection contracts", () => {
     assertInvalid([
         (config) => {
@@ -351,6 +371,10 @@ function queryConfigOf(config: Record<string, unknown>): Record<string, unknown>
 
 function projectionConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(objectAt(config, "projections"), "executionHistory");
+}
+
+function interchangeConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "kernel"), "interchange");
 }
 
 function objectAt(value: Record<string, unknown>, key: string): Record<string, unknown> {

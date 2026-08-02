@@ -82,6 +82,11 @@ commit, and retained state requiring manual recovery. These read-only diagnostic
 migration and are documented in
 [Store integrity and append recovery](./store-integrity-and-recovery.md).
 
+`exportTrace()` serializes one verified store snapshot into deterministic native archive JSON.
+`importTrace()` stages and verifies an archive before atomically publishing its SQLite state into
+a pristine store. Records, views, intents, cuts, and blobs preserve their identities. The
+interchange boundary is documented in [Native trace interchange](./trace-interchange.md).
+
 The database and read decoder both enforce configured owner-ordinal bounds and non-empty owner
 identifiers. This prevents externally modified rows from bypassing the public `RecordView`
 contract.
@@ -92,6 +97,6 @@ Append and read operations after closure throw `TraceStoreError`.
 ## Current boundary
 
 This slice provides exact-ID, owner-path, immutable-cut, causal-closure, execution, and
-effective-history reads, content-addressed external blob storage, whole-store integrity scans, and
-append recovery diagnosis. Orphan collection, trace interchange, and remote-store abstractions
-remain planned TypeScript trace-kernel work.
+effective-history reads, content-addressed external blob storage, whole-store integrity scans,
+append recovery diagnosis, and native trace interchange. Orphan collection and remote-store
+abstractions remain planned TypeScript trace-kernel work.

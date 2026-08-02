@@ -2,6 +2,9 @@ import { DatabaseSync } from "node:sqlite";
 
 import { BlobFilesystem } from "../blob/filesystem.ts";
 import { canonicalizeRecord } from "../canonical/canonical-record.ts";
+import { exportTraceArchive } from "../interchange/export.ts";
+import { importTraceArchive } from "../interchange/import.ts";
+import type { TraceImportReceipt } from "../interchange/types.ts";
 import { historyProjectionReadOptions } from "../projection/compatibility.ts";
 import { projectExecution } from "../projection/execution.ts";
 import { projectEffectiveHistory } from "../projection/history.ts";
@@ -171,6 +174,51 @@ export class SQLiteTraceStore implements Disposable {
     verifyIntegrity(): TraceIntegrityReport {
         this.#assertOpen();
         return verifyTraceStoreIntegrity(this.#database, this.#blobFilesystem);
+    }
+
+    /**
+     * Exports every verified retained record, view, intent, cut, and blob.
+     *
+     * @returns Deterministic JSON using the configured native trace-archive format.
+     * @throws {TraceStoreError} If the store is closed or fails integrity verification.
+     * @throws {Error} If SQLite or blob storage cannot complete the read-only export.
+     *
+     * @example
+     * ```ts
+     * const archiveJson = store.exportTrace();
+     * const parsedArchive = JSON.parse(archiveJson);
+     * ```
+     *
+     * @public
+     */
+    exportTrace(): string {
+        this.#assertOpen();
+        return exportTraceArchive(this.#database, this.#blobFilesystem);
+    }
+
+    /**
+     * Imports a complete native trace archive into a pristine store.
+     *
+     * The archive is fully staged and verified before one SQLite transaction publishes its
+     * retained state. Semantic record identities and owner ordinals are preserved exactly.
+     *
+     * @param archiveJson - Versioned native archive JSON returned by `exportTrace()`.
+     * @returns Frozen counts for every imported retained-state area.
+     * @throws {TraceStoreError} If the store is closed or is not pristine.
+     * @throws {TypeError} If the archive is malformed, incompatible, or internally inconsistent.
+     * @throws {Error} If SQLite or blob storage cannot publish the validated archive.
+     *
+     * @example
+     * ```ts
+     * const receipt = targetStore.importTrace(sourceStore.exportTrace());
+     * console.log(receipt.imported_record_count);
+     * ```
+     *
+     * @public
+     */
+    importTrace(archiveJson: string): TraceImportReceipt {
+        this.#assertOpen();
+        return importTraceArchive(this.#database, this.#blobFilesystem, archiveJson);
     }
 
     /**

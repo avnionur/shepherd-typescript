@@ -10,6 +10,7 @@ implementation documentation, and forward-looking plans.
 │   ├── append/             Append drafts, validation, and pure planning
 │   ├── blob/               Binary identity and crash-safe filesystem objects
 │   ├── canonical/          Deterministic semantic encoding and hashing
+│   ├── interchange/        Native archive encoding, validation, and import storage
 │   ├── projection/         Disposable execution, relation, and history folds
 │   ├── protocol/           Runtime configuration and generated literals
 │   ├── record/             Record types, envelopes, guards, and snapshots
@@ -33,6 +34,7 @@ implementation documentation, and forward-looking plans.
 public exports → append area → record area → canonical area → protocol configuration
 public exports → store area → append and record areas
 public exports → store area → blob filesystem and identity
+public exports → interchange area → store, record, blob, and protocol areas
 public exports → projection area → immutable store slice types
 build/release scripts → repository configuration
 tests → public exports
@@ -46,6 +48,7 @@ The runtime areas are intentionally shallow:
 - `append/` owns draft wire-shape validation, parent resolution, and ordinal planning;
 - `blob/` owns configured binary identity and content-addressed filesystem durability;
 - `canonical/` owns language-neutral semantic encoding and unversioned record hashing;
+- `interchange/` owns native archive encoding, decoding, staging, and validated storage transfer;
 - `protocol/` owns typed configuration models, fail-closed validation, immutable runtime
   snapshots, and generated literal values;
 - `projection/` owns pure disposable execution, relation, and effective-history folds;

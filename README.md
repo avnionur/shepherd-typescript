@@ -13,7 +13,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.9.0` provides a versioned trace-record contract and a durable SQLite trace store:
+Version `0.10.0` provides a versioned trace-record contract and a durable SQLite trace store:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -32,6 +32,7 @@ Version `0.9.0` provides a versioned trace-record contract and a durable SQLite 
   support;
 - configured execution lifecycle, relation, published-data, and effective-history projections;
 - whole-store integrity verification and read-only append recovery diagnosis;
+- deterministic native trace export and validated pristine-store import without identity changes;
 - configured root-witness bootstrap through `ROOT_WITNESS_ID`;
 - fail-closed, immutable protocol configuration with centralized store constants;
 - descriptor-safe closed draft validation, immutable body snapshots, and record views outside
@@ -117,6 +118,10 @@ store.readBlob(blobReceipt.blob_id);
 store.verifyBlobs();
 store.verifyIntegrity();
 store.diagnoseAppend("append:example:1");
+const archiveJson = store.exportTrace();
+
+using importedStore = new SQLiteTraceStore("imported.sqlite");
+importedStore.importTrace(archiveJson);
 
 const cut = store.publishCut({
     cut_id: "cut:example",
@@ -153,10 +158,11 @@ builds declarations and JavaScript into `dist/`.
 Release versions are configured in `release-config.yaml`. After changing the version, run
 `pnpm sync:version` to update every configured JSON manifest.
 
-Protocol modes, identifier shape, append defaults, and generated schemas are configured in
-`protocol.config.json`. Run `pnpm generate:protocol` after changing them; `pnpm verify` rejects
-stale generated artifacts. Critical hash, ordinal, migration, root-witness, and SQLite durability
-settings are validated before runtime or generator side effects.
+Protocol modes, identifier shape, append defaults, interchange versions, and generated schemas are
+configured in `protocol.config.json`. After changing them, run `pnpm generate:protocol`; the
+`pnpm verify` command rejects stale generated artifacts. Critical hash, ordinal, migration,
+root-witness, and SQLite durability settings are validated before runtime or generator side
+effects.
 
 ## Contributing and security
 
@@ -180,6 +186,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Trace cuts and causal slices](./docs/trace-queries.md)
 - [Execution-history projections](./docs/execution-history-projections.md)
 - [Store integrity and append recovery](./docs/store-integrity-and-recovery.md)
+- [Native trace interchange](./docs/trace-interchange.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -187,8 +194,8 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 ## Status
 
 Phase 0 governance and the Phase 1 canonical record, append planning, SQLite durability, blob
-storage, trace-cut, causal-slice, and execution-history projection contracts are implemented. The
-next TypeScript slice adds identity-preserving trace export and import.
+storage, trace-cut, causal-slice, execution-history projection, integrity, recovery, and native
+interchange contracts are implemented. The next TypeScript slice adds verified orphan collection.
 
 ## Attribution
 

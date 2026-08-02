@@ -1,0 +1,109 @@
+{
+    "append_intents": [
+        {
+            "append_intent_id": "intent:fixture",
+            "batch_digest": "d531c23ec7d3f82fd4088cb4d366ea46c1bf2f22e690a621d98afa3094894469",
+            "receipt_json": "{\"append_intent_id\":\"intent:fixture\",\"causal_edges\":[],\"owner_ordinal_ranges\":[[\"run:fixture\",[0,0]]],\"record_ids\":[\"sha256:2253b7151bc38ba6b5d2cd1265e478b505ba91669a3060622e8cb51063570cf5\"]}"
+        },
+        {
+            "append_intent_id": "intent:fixture-cut",
+            "batch_digest": "f72bca1273b8dfcbc5aa1ec834ec7951b56131dfbacc72d28a5ab45e9e91d54b",
+            "receipt_json": "{\"append_intent_id\":\"intent:fixture-cut\",\"causal_edges\":[[\"sha256:2253b7151bc38ba6b5d2cd1265e478b505ba91669a3060622e8cb51063570cf5\",\"sha256:db8837ba53e0fa823e9553380e754b2b1c97cd448c4666ac4088a2fafe1a37df\"]],\"owner_ordinal_ranges\":[[\"run:fixture\",[1,1]]],\"record_ids\":[\"sha256:db8837ba53e0fa823e9553380e754b2b1c97cd448c4666ac4088a2fafe1a37df\"]}"
+        }
+    ],
+    "blobs": [
+        {
+            "blob_id": "sha256:5e4b1c31c9941d072b8515b104d5ac43ab98eaf29b9e9971ced073e438f18a27",
+            "byte_length": 12,
+            "content_base64": "Zml4dHVyZSBibG9i"
+        }
+    ],
+    "canonical_version": "shepherd.kernel.canonical.v2",
+    "cuts": [
+        {
+            "append_intent_id": "intent:fixture-cut",
+            "created_by_record_id": "sha256:db8837ba53e0fa823e9553380e754b2b1c97cd448c4666ac4088a2fafe1a37df",
+            "cut_id": "cut:fixture",
+            "publisher_owner_id": "run:fixture",
+            "target_owner_id": "run:fixture",
+            "through_owner_ordinal": 0,
+            "through_record_id": "sha256:2253b7151bc38ba6b5d2cd1265e478b505ba91669a3060622e8cb51063570cf5"
+        }
+    ],
+    "format": "shepherd.trace.archive",
+    "format_version": 1,
+    "kernel_abi_version": "shepherd.kernel.abi.v0",
+    "record_views": [
+        {
+            "append_intent_id": "intent:fixture",
+            "append_position": 0,
+            "owner_id": "run:fixture",
+            "owner_ordinal": 0,
+            "record_id": "sha256:2253b7151bc38ba6b5d2cd1265e478b505ba91669a3060622e8cb51063570cf5"
+        },
+        {
+            "append_intent_id": "intent:fixture-cut",
+            "append_position": 0,
+            "owner_id": "run:fixture",
+            "owner_ordinal": 1,
+            "record_id": "sha256:db8837ba53e0fa823e9553380e754b2b1c97cd448c4666ac4088a2fafe1a37df"
+        }
+    ],
+    "records": [
+        {
+            "body": {
+                "future_field": {
+                    "enabled": true
+                },
+                "sequence": [1, "two"]
+            },
+            "envelope": {
+                "caused_by_record_ids": [],
+                "digest": "sha256:2253b7151bc38ba6b5d2cd1265e478b505ba91669a3060622e8cb51063570cf5",
+                "mode": "capture",
+                "record_id": "sha256:2253b7151bc38ba6b5d2cd1265e478b505ba91669a3060622e8cb51063570cf5",
+                "schema_ref": "example.fixture.v1",
+                "witness_ref": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777"
+            }
+        },
+        {
+            "body": {
+                "active_binding_refs": [],
+                "actor_ref": "kernel:root",
+                "authority_refs": [],
+                "containment": "full",
+                "provenance_policy_refs": [],
+                "semantic_environment_refs": [],
+                "substrate_ref": "kernel",
+                "visibility_policy_refs": []
+            },
+            "envelope": {
+                "caused_by_record_ids": [],
+                "digest": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777",
+                "mode": "capture",
+                "record_id": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777",
+                "schema_ref": "kernel.witness.root.v1",
+                "witness_ref": ""
+            }
+        },
+        {
+            "body": {
+                "cut_id": "cut:fixture",
+                "publisher_owner_id": "run:fixture",
+                "target_owner_id": "run:fixture",
+                "through_owner_ordinal": 0,
+                "through_record_id": "sha256:2253b7151bc38ba6b5d2cd1265e478b505ba91669a3060622e8cb51063570cf5"
+            },
+            "envelope": {
+                "caused_by_record_ids": [
+                    "sha256:2253b7151bc38ba6b5d2cd1265e478b505ba91669a3060622e8cb51063570cf5"
+                ],
+                "digest": "sha256:db8837ba53e0fa823e9553380e754b2b1c97cd448c4666ac4088a2fafe1a37df",
+                "mode": "capture",
+                "record_id": "sha256:db8837ba53e0fa823e9553380e754b2b1c97cd448c4666ac4088a2fafe1a37df",
+                "schema_ref": "kernel.cut.owner-prefix.v1",
+                "witness_ref": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777"
+            }
+        }
+    ]
+}

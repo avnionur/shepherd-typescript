@@ -55,7 +55,7 @@ and any applicable pinned upstream-oracle comparison.
 | Live trace subscription | not public complete | explicit | P2 | backpressure/reconnect tests |
 | Arbitrary rewind | not public API | explicit | P2 | byte-equivalence tests |
 | Suffix replay | deferred | explicit | P2 | deterministic and provider-cache tests |
-| Export/import | upstream package exists | useful | P1 | ATIF/JSONL round trips |
+| Export/import | upstream package exists | useful | P1 | native archive v1 round trips implemented; ATIF follows runtime records |
 
 ## Worlds, scopes, and settlement
 

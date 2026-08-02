@@ -1,9 +1,10 @@
 # Shared Protocol Specification
 
-This directory contains language-neutral protocol artifacts shared by the TypeScript and planned
-native Python implementations.
+This directory contains language-neutral protocol artifacts implemented by the TypeScript
+package and suitable for independent compatibility implementations.
 
 - `schemas/` contains JSON Schema 2020-12 wire contracts.
+- `schemas/trace-archive-v1.schema.json` defines lossless native trace interchange.
 
 Runtime implementations must validate the semantic rules that JSON Schema cannot express, such as
 `record_id == digest`, versioned digest input, root-witness constraints, parent existence,

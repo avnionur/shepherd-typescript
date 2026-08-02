@@ -98,3 +98,8 @@ _Avoid_: Repair result, database dump
 A read-only classification stating whether an append intent is committed, safe to retry, or
 requires manual recovery.
 _Avoid_: Automatic repair, inferred success
+
+**Trace Archive**:
+A versioned, identity-preserving native interchange document containing complete retained store
+state.
+_Avoid_: Database dump, ATIF trajectory, mutable backup

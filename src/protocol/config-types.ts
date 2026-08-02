@@ -58,8 +58,14 @@ export type KernelProtocolConfig = {
         readonly recordEnvelopeSchema: string;
         readonly recordValues: string;
         readonly recordViewSchema: string;
+        readonly traceArchiveSchema: string;
     };
     readonly canonicalVersion: string;
+    readonly interchange: {
+        readonly blobEncoding: "base64";
+        readonly format: string;
+        readonly formatVersion: number;
+    };
     readonly queries: {
         readonly closurePolicies: readonly string[];
         readonly cutAppendIntentPrefix: string;
@@ -85,6 +91,7 @@ export type KernelProtocolConfig = {
         readonly recordBodyId: string;
         readonly recordEnvelopeId: string;
         readonly recordViewId: string;
+        readonly traceArchiveId: string;
     };
     readonly store: StoreProtocolConfig;
 };

@@ -4,6 +4,7 @@ import path from "node:path";
 import { assertSupportedProtocolCompatibility } from "../src/protocol/config-compatibility.ts";
 import type { ProtocolConfig } from "../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
+import { renderTraceArchiveSchema } from "./trace-archive-schema.ts";
 
 type ArtifactOptions = {
     readonly check?: boolean;
@@ -37,6 +38,10 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
         {
             content: renderJson(appendBatchDraftSchema(config)),
             relativePath: config.kernel.artifacts.appendBatchDraftSchema,
+        },
+        {
+            content: renderJson(renderTraceArchiveSchema(config)),
+            relativePath: config.kernel.artifacts.traceArchiveSchema,
         },
     ];
     const resolvedArtifacts: { content: string; artifactPath: string; relativePath: string }[] = [];

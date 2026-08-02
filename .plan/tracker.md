@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-02
 
-Current version: `0.9.0`
+Current version: `0.10.0`
 
 Current level: L0 — canonical model
 
@@ -12,7 +12,7 @@ Phase 0 governance and repository foundations are established. Phase 1 trace-ker
 progress: canonical records, envelopes, append planning, SQLite durability, content-addressed blob
 storage, storage receipts, blob integrity verification, immutable cuts, and causal-slice queries
 and configured execution-history projections are implemented. Whole-store verification and append
-recovery diagnosis are also implemented; trace interchange and orphan collection remain.
+recovery diagnosis and native trace interchange are also implemented; orphan collection remains.
 
 ## Progress
 
@@ -38,6 +38,7 @@ recovery diagnosis are also implemented; trace interchange and orphan collection
 - [x] Implement trace cuts and causal-slice queries.
 - [x] Implement execution-history projections.
 - [x] Implement whole-store trace integrity verification and append recovery diagnostics.
+- [x] Implement identity-preserving native trace export and import with conformance fixtures.
 
 ## Verification required for this slice
 
@@ -49,7 +50,7 @@ recovery diagnosis are also implemented; trace interchange and orphan collection
 
 ## Next slice
 
-Implement identity-preserving, versioned trace export and import with conformance fixtures.
+Implement verified orphan collection without deleting reachable retained evidence.
 
 ## Notes
 

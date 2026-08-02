@@ -101,6 +101,7 @@ export function readArtifacts(value: unknown): ProtocolConfig["kernel"]["artifac
             "recordEnvelopeSchema",
             "recordValues",
             "recordViewSchema",
+            "traceArchiveSchema",
         ],
         "kernel.artifacts",
     );
@@ -122,6 +123,10 @@ export function readArtifacts(value: unknown): ProtocolConfig["kernel"]["artifac
             artifacts.recordViewSchema,
             "kernel.artifacts.recordViewSchema",
         ),
+        traceArchiveSchema: readNonEmptyString(
+            artifacts.traceArchiveSchema,
+            "kernel.artifacts.traceArchiveSchema",
+        ),
     };
 }
 
@@ -129,7 +134,14 @@ export function readArtifacts(value: unknown): ProtocolConfig["kernel"]["artifac
 export function readSchemas(value: unknown): ProtocolConfig["kernel"]["schemas"] {
     const schemas = readObject(
         value,
-        ["appendBatchDraftId", "dialect", "recordBodyId", "recordEnvelopeId", "recordViewId"],
+        [
+            "appendBatchDraftId",
+            "dialect",
+            "recordBodyId",
+            "recordEnvelopeId",
+            "recordViewId",
+            "traceArchiveId",
+        ],
         "kernel.schemas",
     );
     const validated = {
@@ -144,12 +156,14 @@ export function readSchemas(value: unknown): ProtocolConfig["kernel"]["schemas"]
             "kernel.schemas.recordEnvelopeId",
         ),
         recordViewId: readAbsoluteUrl(schemas.recordViewId, "kernel.schemas.recordViewId"),
+        traceArchiveId: readAbsoluteUrl(schemas.traceArchiveId, "kernel.schemas.traceArchiveId"),
     };
     const schemaIds = [
         validated.appendBatchDraftId,
         validated.recordBodyId,
         validated.recordEnvelopeId,
         validated.recordViewId,
+        validated.traceArchiveId,
     ];
     if (new Set(schemaIds).size !== schemaIds.length) {
         throw new TypeError("kernel schema identifiers must be unique");

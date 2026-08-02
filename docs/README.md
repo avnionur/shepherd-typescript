@@ -30,6 +30,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   parent relations, active children, parent-published data, and projection compatibility.
 - [Store integrity and append recovery](./store-integrity-and-recovery.md) defines whole-store
   verification, classified defects, and read-only append recovery diagnosis.
+- [Native trace interchange](./trace-interchange.md) defines deterministic full-store export,
+  staged pristine-store import, version compatibility, and conformance fixtures.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

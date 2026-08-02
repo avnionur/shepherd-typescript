@@ -27,6 +27,11 @@
             "lastOwnerOrdinal": 9007199254740990
         },
         "canonicalVersion": "shepherd.kernel.canonical.v2",
+        "interchange": {
+            "blobEncoding": "base64",
+            "format": "shepherd.trace.archive",
+            "formatVersion": 1
+        },
         "queries": {
             "closurePolicies": ["include_external_anchors", "visible_only"],
             "cutAppendIntentPrefix": "cut:",
@@ -81,14 +86,16 @@
             "appendBatchDraftId": "https://avnionur.github.io/shepherd-typescript/schemas/append-batch-draft-v0.schema.json",
             "recordBodyId": "https://avnionur.github.io/shepherd-typescript/schemas/record-body-v0.schema.json",
             "recordEnvelopeId": "https://avnionur.github.io/shepherd-typescript/schemas/record-envelope-v0.schema.json",
-            "recordViewId": "https://avnionur.github.io/shepherd-typescript/schemas/record-view-v0.schema.json"
+            "recordViewId": "https://avnionur.github.io/shepherd-typescript/schemas/record-view-v0.schema.json",
+            "traceArchiveId": "https://avnionur.github.io/shepherd-typescript/schemas/trace-archive-v1.schema.json"
         },
         "artifacts": {
             "appendBatchDraftSchema": "spec/schemas/append-batch-draft-v0.schema.json",
             "recordValues": "src/protocol/values.generated.ts",
             "recordBodySchema": "spec/schemas/record-body-v0.schema.json",
             "recordEnvelopeSchema": "spec/schemas/record-envelope-v0.schema.json",
-            "recordViewSchema": "spec/schemas/record-view-v0.schema.json"
+            "recordViewSchema": "spec/schemas/record-view-v0.schema.json",
+            "traceArchiveSchema": "spec/schemas/trace-archive-v1.schema.json"
         },
         "rootWitness": {
             "schemaRef": "kernel.witness.root.v1",

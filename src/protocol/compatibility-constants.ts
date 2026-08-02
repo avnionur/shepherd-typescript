@@ -15,8 +15,14 @@ export const KERNEL_ABI_V0_CONTRACT = deepFreeze({
         recordEnvelopeSchema: "spec/schemas/record-envelope-v0.schema.json",
         recordValues: "src/protocol/values.generated.ts",
         recordViewSchema: "spec/schemas/record-view-v0.schema.json",
+        traceArchiveSchema: "spec/schemas/trace-archive-v1.schema.json",
     },
     canonicalVersion: "shepherd.kernel.canonical.v2",
+    interchange: {
+        blobEncoding: "base64",
+        format: "shepherd.trace.archive",
+        formatVersion: 1,
+    },
     queries: {
         closurePolicies: ["include_external_anchors", "visible_only"],
         cutAppendIntentPrefix: "cut:",
@@ -60,6 +66,8 @@ export const KERNEL_ABI_V0_CONTRACT = deepFreeze({
             "https://avnionur.github.io/shepherd-typescript/schemas/record-envelope-v0.schema.json",
         recordViewId:
             "https://avnionur.github.io/shepherd-typescript/schemas/record-view-v0.schema.json",
+        traceArchiveId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/trace-archive-v1.schema.json",
     },
     store: {
         blobs: {

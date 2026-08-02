@@ -26,7 +26,8 @@ export function verifyTraceStoreIntegrity(
     }
 }
 
-function scanTraceStoreIntegrity(
+/** Scans retained state inside a transaction owned by the caller. */
+export function scanTraceStoreIntegrity(
     database: DatabaseSync,
     filesystem: BlobFilesystem,
 ): TraceIntegrityReport {
