@@ -37,8 +37,9 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   version and current ordinal contract, and exactly match immutable historical descriptors;
 - defensive SQLite mode and foreign keys remain enabled;
 - journal, synchronization, and transaction modes belong to the durability-safe closed sets;
-- blob hashing, identifier length/prefix, fanout, directory suffix, filesystem flushing, and
-  receipt version match the immutable migration contract;
+- blob hashing, identifier length/prefix, fanout, directory suffix, filesystem flushing, receipt
+  version, orphan-collection modes/default, and temporary-file prefix match the immutable
+  contract;
 - cut schema and append-intent prefix, witness schema, mode filters, visibility profiles, closure
   policies, and their defaults match the immutable ABI contract;
 - execution lifecycle and relation schemas, relation transitions, active transitions, publication

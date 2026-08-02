@@ -103,3 +103,7 @@ _Avoid_: Automatic repair, inferred success
 A versioned, identity-preserving native interchange document containing complete retained store
 state.
 _Avoid_: Database dump, ATIF trajectory, mutable backup
+
+**Blob Orphan**:
+A store-layout filesystem object without durable blob metadata and a matching storage receipt.
+_Avoid_: Unowned semantic record, corrupt registered blob, disposable projection

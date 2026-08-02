@@ -2,17 +2,18 @@
 
 Last updated: 2026-08-02
 
-Current version: `0.10.1`
+Current version: `0.11.0`
 
 Current level: L0 — canonical model
 
 ## Current position
 
-Phase 0 governance and repository foundations are established. Phase 1 trace-kernel work is in
-progress: canonical records, envelopes, append planning, SQLite durability, content-addressed blob
+Phase 0 governance and repository foundations are established. Phase 1 trace-kernel work is
+complete: canonical records, envelopes, append planning, SQLite durability, content-addressed blob
 storage, storage receipts, blob integrity verification, immutable cuts, and causal-slice queries
 and configured execution-history projections are implemented. Whole-store verification and append
-recovery diagnosis and native trace interchange are also implemented; orphan collection remains.
+recovery diagnosis, native trace interchange, and verified blob-orphan collection are also
+implemented.
 
 ## Progress
 
@@ -39,6 +40,7 @@ recovery diagnosis and native trace interchange are also implemented; orphan col
 - [x] Implement execution-history projections.
 - [x] Implement whole-store trace integrity verification and append recovery diagnostics.
 - [x] Implement identity-preserving native trace export and import with conformance fixtures.
+- [x] Implement inspect-first verified blob-orphan collection without deleting retained evidence.
 - [x] Audit every paper-v3 section and close plan gaps for proof envelopes, trajectory compression,
   experiment protocols, limitations, and future-work classification.
 
@@ -52,7 +54,7 @@ recovery diagnosis and native trace interchange are also implemented; orphan col
 
 ## Next slice
 
-Implement verified orphan collection without deleting reachable retained evidence.
+Implement configured, versioned task descriptors with input/output schemas and artifact locks.
 
 ## Notes
 

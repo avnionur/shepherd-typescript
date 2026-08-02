@@ -82,6 +82,29 @@ export type BlobStorageReceipt = {
     readonly byte_length: number;
 };
 
+/** Operation applied to discovered unregistered blob-store objects. */
+export type BlobOrphanCollectionMode = "delete" | "inspect";
+
+/** Options controlling safe blob-orphan inspection or deletion. */
+export type BlobOrphanCollectionOptions = {
+    /** Collection behavior. Defaults to the configured non-destructive inspection mode. */
+    readonly mode?: BlobOrphanCollectionMode;
+};
+
+/** Frozen result of one lock-protected blob-orphan collection pass. */
+export type BlobOrphanCollectionReport = {
+    /** Unregistered content-addressed objects deleted during this pass. */
+    readonly deleted_blob_ids: readonly BlobId[];
+    /** Abandoned temporary files deleted during this pass. */
+    readonly deleted_temporary_file_count: number;
+    /** Applied configured collection behavior. */
+    readonly mode: BlobOrphanCollectionMode;
+    /** Unregistered content-addressed objects discovered during this pass. */
+    readonly orphan_blob_ids: readonly BlobId[];
+    /** Abandoned temporary files discovered during this pass. */
+    readonly orphan_temporary_file_count: number;
+};
+
 /**
  * Filesystem configuration for a SQLite trace store.
  *

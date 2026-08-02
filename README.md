@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.10.1` provides a versioned trace-record contract and a durable SQLite trace store:
+Version `0.11.0` provides a versioned trace-record contract and a durable SQLite trace store:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -72,6 +72,7 @@ Version `0.10.1` provides a versioned trace-record contract and a durable SQLite
 - exact-record and ordered owner-path reads;
 - content-addressed blob writes, verified reads, and durable storage receipts;
 - complete registered-blob integrity reports with corruption classification;
+- inspect-first, lock-protected collection of unregistered blob objects and temporary files;
 - immutable published owner-prefix cuts with verified resolution;
 - causal-closure and owner-prefix slices with mode filters, visibility, anchors, and witness
   support;
@@ -161,6 +162,7 @@ store.readOwner("run:example");
 const blobReceipt = store.putBlob(new TextEncoder().encode("retained output"));
 store.readBlob(blobReceipt.blob_id);
 store.verifyBlobs();
+store.collectBlobOrphans();
 store.verifyIntegrity();
 store.diagnoseAppend("append:example:1");
 const archiveJson = store.exportTrace();
@@ -230,6 +232,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Append planning contract](./docs/append-planning.md)
 - [SQLite trace store](./docs/sqlite-trace-store.md)
 - [Content-addressed blob storage](./docs/blob-storage.md)
+- [Blob orphan collection](./docs/blob-orphan-collection.md)
 - [Trace cuts and causal slices](./docs/trace-queries.md)
 - [Execution-history projections](./docs/execution-history-projections.md)
 - [Store integrity and append recovery](./docs/store-integrity-and-recovery.md)
@@ -242,9 +245,10 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 
 The project is currently at L0. Phase 0 governance and the Phase 1 canonical record, append
 planning, SQLite durability, blob storage, trace-cut, causal-slice, execution-history projection,
-integrity, recovery, and native interchange contracts are implemented. Task/effect execution,
-settlement, scopes, live supervision, replay, and the paper applications remain planned. The next
-TypeScript slice adds verified orphan collection.
+integrity, recovery, native interchange, and blob-orphan collection contracts are implemented.
+Task/effect execution, settlement, scopes, live supervision, replay, and the paper applications
+remain planned. The next TypeScript slice adds versioned task descriptors, schemas, and artifact
+locks.
 
 ## Attribution
 

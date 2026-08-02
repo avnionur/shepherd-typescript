@@ -24,6 +24,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   idempotency, retained reads, and lifecycle behavior.
 - [Content-addressed blob storage](./blob-storage.md) defines binary identity, crash-safe
   publication, durable receipts, verified reads, and integrity reports.
+- [Blob orphan collection](./blob-orphan-collection.md) defines inspect-first, lock-protected
+  cleanup of unregistered objects without deleting retained evidence.
 - [Trace cuts and causal slices](./trace-queries.md) defines immutable owner-prefix addresses,
   causal closure, mode filtering, visibility, anchors, and witness support.
 - [Execution-history projections](./execution-history-projections.md) defines lifecycle folds,

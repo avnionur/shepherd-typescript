@@ -71,6 +71,8 @@ export const KERNEL_ABI_V0_CONTRACT = deepFreeze({
     },
     store: {
         blobs: {
+            collectionModes: ["inspect", "delete"],
+            defaultCollectionMode: "inspect",
             digestAlgorithm: "sha256",
             directorySuffix: ".blobs",
             fanoutCharacters: 2,
@@ -78,6 +80,7 @@ export const KERNEL_ABI_V0_CONTRACT = deepFreeze({
             hexLength: 64,
             idPrefix: "sha256:",
             receiptVersion: 1,
+            temporaryFilePrefix: ".tmp-",
         },
         migrations: [
             {

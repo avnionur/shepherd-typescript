@@ -48,13 +48,16 @@
         "store": {
             "appendIntentDigestAlgorithm": "sha256",
             "blobs": {
+                "collectionModes": ["inspect", "delete"],
+                "defaultCollectionMode": "inspect",
                 "digestAlgorithm": "sha256",
                 "directorySuffix": ".blobs",
                 "fanoutCharacters": 2,
                 "fsync": true,
                 "hexLength": 64,
                 "idPrefix": "sha256:",
-                "receiptVersion": 1
+                "receiptVersion": 1,
+                "temporaryFilePrefix": ".tmp-"
             },
             "busyTimeoutMilliseconds": 5000,
             "defensive": true,

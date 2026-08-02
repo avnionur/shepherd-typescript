@@ -144,10 +144,11 @@ backward-only local-parent resolution, known-parent checks, semantic envelope cr
 owner-local ordinal allocation. The implemented
 [SQLite trace store](../docs/sqlite-trace-store.md) adds migrations, atomic append durability,
 append-intent idempotency, serialized owner ordinals, exact-record reads, and owner-path reads.
-Orphan collection and remote storage remain future kernel work.
+Remote storage remains future kernel work.
 Content-addressed filesystem blobs, durable storage receipts, immutable cuts, causal slices,
 configured execution-history projections, registered-blob integrity reports, whole-store
-verification, append recovery diagnosis, and native trace interchange are implemented.
+verification, append recovery diagnosis, native trace interchange, and verified blob-orphan
+collection are implemented.
 
 ## Task model
 

@@ -87,6 +87,11 @@ migration and are documented in
 a pristine store. Records, views, intents, cuts, and blobs preserve their identities. The
 interchange boundary is documented in [Native trace interchange](./trace-interchange.md).
 
+`collectBlobOrphans()` uses the same immediate write lock as blob publication. It defaults to
+inspection, verifies registered content, and deletes only unregistered filesystem objects when
+explicitly requested. The safety boundary is documented in
+[Blob orphan collection](./blob-orphan-collection.md).
+
 The database and read decoder both enforce configured owner-ordinal bounds and non-empty owner
 identifiers. This prevents externally modified rows from bypassing the public `RecordView`
 contract.
@@ -98,5 +103,5 @@ Append and read operations after closure throw `TraceStoreError`.
 
 This slice provides exact-ID, owner-path, immutable-cut, causal-closure, execution, and
 effective-history reads, content-addressed external blob storage, whole-store integrity scans,
-append recovery diagnosis, and native trace interchange. Orphan collection and remote-store
-abstractions remain planned TypeScript trace-kernel work.
+append recovery diagnosis, native trace interchange, and verified blob-orphan collection.
+Remote-store abstractions remain planned TypeScript trace-kernel work.

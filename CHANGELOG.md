@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-08-02
+
+### New Feature
+
+- Added inspect-first `collectBlobOrphans()` with explicit deletion mode and frozen candidate and
+  deletion reports.
+- Added configured collection modes, non-destructive default, and temporary-file naming contract.
+
+### Improvement
+
+- Serialized blob publication and orphan collection through the same immediate SQLite write lock.
+- Verified every registered blob before collection and rejected unsafe or unexpected store-layout
+  objects without deleting database evidence.
+- Added public-seam, child-process, concurrency, corruption, symlink, lifecycle, and configuration
+  tests with complete coverage.
+
+### Impact
+
+TypeScript applications can inspect and remove crash-abandoned blob objects without racing active
+writers or deleting registered content, semantic records, append evidence, or cuts.
+
 ## [0.10.1] - 2026-08-02
 
 ### Improvement

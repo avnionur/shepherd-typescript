@@ -22,6 +22,10 @@ export type NonEmptyReadonlyArray<T> = readonly [T, ...T[]];
 
 /** Validated content-addressed blob-store configuration. */
 export type BlobProtocolConfig = {
+    /** Closed orphan-maintenance operation names. */
+    readonly collectionModes: readonly string[];
+    /** Non-destructive orphan-maintenance default. */
+    readonly defaultCollectionMode: string;
     readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
     readonly directorySuffix: string;
     readonly fanoutCharacters: number;
@@ -29,6 +33,8 @@ export type BlobProtocolConfig = {
     readonly hexLength: number;
     readonly idPrefix: string;
     readonly receiptVersion: number;
+    /** Prefix reserved for unpublished temporary filesystem objects. */
+    readonly temporaryFilePrefix: string;
 };
 
 /** Validated trace-store protocol configuration. */

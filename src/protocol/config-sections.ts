@@ -10,6 +10,7 @@ import {
     readPositiveInteger,
     readRequiredTrue,
     readSafeInteger,
+    readUniqueStrings,
 } from "./config-value-readers.ts";
 
 /** Validates the configured content-addressed identifier contract. */
@@ -36,6 +37,8 @@ export function readBlobConfig(value: unknown): ProtocolConfig["kernel"]["store"
     const config = readObject(
         value,
         [
+            "collectionModes",
+            "defaultCollectionMode",
             "digestAlgorithm",
             "directorySuffix",
             "fanoutCharacters",
@@ -43,6 +46,7 @@ export function readBlobConfig(value: unknown): ProtocolConfig["kernel"]["store"
             "hexLength",
             "idPrefix",
             "receiptVersion",
+            "temporaryFilePrefix",
         ],
         "kernel.store.blobs",
     );
@@ -77,7 +81,29 @@ export function readBlobConfig(value: unknown): ProtocolConfig["kernel"]["store"
     if (pathIsUnsafe(directorySuffix)) {
         throw new TypeError("kernel.store.blobs.directorySuffix must be a simple path suffix");
     }
+    const collectionModes = readUniqueStrings(
+        config.collectionModes,
+        "kernel.store.blobs.collectionModes",
+    );
+    const defaultCollectionMode = readNonEmptyString(
+        config.defaultCollectionMode,
+        "kernel.store.blobs.defaultCollectionMode",
+    );
+    if (!collectionModes.includes(defaultCollectionMode)) {
+        throw new TypeError(
+            "kernel.store.blobs.defaultCollectionMode must belong to collectionModes",
+        );
+    }
+    const temporaryFilePrefix = readNonEmptyString(
+        config.temporaryFilePrefix,
+        "kernel.store.blobs.temporaryFilePrefix",
+    );
+    if (pathIsUnsafe(temporaryFilePrefix)) {
+        throw new TypeError("kernel.store.blobs.temporaryFilePrefix must be a simple prefix");
+    }
     return {
+        collectionModes,
+        defaultCollectionMode,
         digestAlgorithm,
         directorySuffix,
         fanoutCharacters,
@@ -88,6 +114,7 @@ export function readBlobConfig(value: unknown): ProtocolConfig["kernel"]["store"
             config.receiptVersion,
             "kernel.store.blobs.receiptVersion",
         ),
+        temporaryFilePrefix,
     };
 }
 

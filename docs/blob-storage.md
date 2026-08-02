@@ -28,9 +28,11 @@ Blob publication follows this order:
 5. verify the final file, remove the temporary name, and flush the fanout directory;
 6. commit blob metadata and a versioned storage receipt in one SQLite transaction.
 
-The file precedes its receipt. A crash or database failure can therefore leave an unregistered
-filesystem object, but cannot expose a receipt for missing bytes. Retrying equal content verifies
-the existing object and commits the receipt. Automatic orphan collection remains future work.
+The writer acquires the configured immediate SQLite transaction before filesystem publication.
+The file still precedes its receipt, so a crash or database failure can leave an unregistered
+filesystem object but cannot expose a receipt for missing bytes. Retrying equal content verifies
+the existing object and commits the receipt. Lock-protected cleanup is documented in
+[Blob orphan collection](./blob-orphan-collection.md).
 Windows flushes file content but does not provide the directory-fsync operation used on supported
 POSIX filesystems.
 
@@ -62,6 +64,6 @@ contract.
 
 Tests cover injected receipt-transaction failure, malformed and symlinked paths, mutable caller
 buffers, corrupt files and metadata, and temporary-file cleanup. A child-process crash test holds
-the SQLite write lock, waits until the child has published and flushed the filesystem object, then
-kills the child before receipt commit. Reopening proves the orphan is invisible and an equal retry
-recovers it without replacing its bytes.
+the SQLite write lock after publishing and flushing the filesystem object, then is killed before
+receipt commit. Reopening proves the orphan is inspectable but invisible to registered reads, and
+an equal retry recovers it without replacing its bytes.

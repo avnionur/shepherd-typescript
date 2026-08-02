@@ -90,6 +90,7 @@ test("SQLiteTraceStore close is idempotent and guards every operation", () => {
     assert.throws(() => store.putBlob(new Uint8Array()), TraceStoreError);
     assert.throws(() => store.readBlob(`sha256:${"1".repeat(64)}`), TraceStoreError);
     assert.throws(() => store.verifyBlobs(), TraceStoreError);
+    assert.throws(() => store.collectBlobOrphans(), TraceStoreError);
     assert.throws(() => store.diagnoseAppend("intent:closed"), TraceStoreError);
     assert.throws(() => store.verifyIntegrity(), TraceStoreError);
     assert.throws(() => store.exportTrace(), TraceStoreError);

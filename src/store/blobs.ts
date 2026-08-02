@@ -22,9 +22,9 @@ export function putStoredBlob(
     }
     const snapshot = new Uint8Array(content);
     const blobId = createBlobId(snapshot);
-    const { storageKey } = filesystem.put(blobId, snapshot);
     database.exec(STORE_TRANSACTION_SQL.begin);
     try {
+        const { storageKey } = filesystem.put(blobId, snapshot);
         database
             .prepare(
                 `INSERT OR IGNORE INTO ${STORE_TABLES.blobs}(blob_id, byte_length) VALUES (?, ?)`,

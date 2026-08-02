@@ -17,6 +17,7 @@ import type { RecordId } from "../record/types.ts";
 import { appendToTraceStore } from "./append.ts";
 import { diagnoseStoredAppend } from "./append-recovery.ts";
 import { resolveBlobDirectory } from "./blob-options.ts";
+import { collectStoredBlobOrphans } from "./blob-orphans.ts";
 import { putStoredBlob, readStoredBlob, verifyStoredBlobs } from "./blobs.ts";
 import { DEFAULT_STORE_DATABASE_PATH, STORE_PRAGMA_SQL, STORE_TABLES } from "./constants.ts";
 import { publishStoredCut, readStoredCut } from "./cuts.ts";
@@ -30,6 +31,8 @@ import type {
     AppendReceipt,
     BlobId,
     BlobIntegrityReport,
+    BlobOrphanCollectionOptions,
+    BlobOrphanCollectionReport,
     BlobStorageReceipt,
     CausalClosureOptions,
     Cut,
@@ -267,6 +270,34 @@ export class SQLiteTraceStore implements Disposable {
     verifyBlobs(): BlobIntegrityReport {
         this.#assertOpen();
         return verifyStoredBlobs(this.#database, this.#blobFilesystem);
+    }
+
+    /**
+     * Inspects or deletes filesystem objects that have no durable blob registration.
+     *
+     * Collection holds the configured store write lock, first verifies every registered blob,
+     * and never removes registered content. Inspection is the configured default.
+     *
+     * @param options - Optional configured collection mode.
+     * @returns A frozen report of discovered and deleted objects.
+     * @throws {BlobIntegrityError} If registered content is corrupt or storage is unsafe.
+     * @throws {TraceStoreError} If the store is closed.
+     * @throws {TypeError} If options are malformed or select an unsupported mode.
+     * @throws {Error} If SQLite or the filesystem cannot complete collection.
+     *
+     * @example
+     * ```ts
+     * const inspection = store.collectBlobOrphans();
+     * if (inspection.orphan_blob_ids.length > 0) {
+     *     store.collectBlobOrphans({ mode: "delete" });
+     * }
+     * ```
+     *
+     * @public
+     */
+    collectBlobOrphans(options: BlobOrphanCollectionOptions = {}): BlobOrphanCollectionReport {
+        this.#assertOpen();
+        return collectStoredBlobOrphans(this.#database, this.#blobFilesystem, options);
     }
 
     /**

@@ -35,7 +35,10 @@ export class BlobFilesystem {
     put(blobId: BlobId, content: Uint8Array): StoredBlobFile {
         const { directory, filePath, storageKey } = this.#location(blobId);
         this.#ensureStorageDirectory(directory);
-        const temporaryPath = path.join(directory, `.tmp-${randomUUID()}`);
+        const temporaryPath = path.join(
+            directory,
+            `${kernelProtocolConfig.store.blobs.temporaryFilePrefix}${randomUUID()}`,
+        );
         try {
             const descriptor = openSync(temporaryPath, "wx", 0o600);
             try {
@@ -90,6 +93,17 @@ export class BlobFilesystem {
     /** Returns the deterministic relative storage key for a blob identifier. */
     storageKey(blobId: BlobId): string {
         return this.#location(blobId).storageKey;
+    }
+
+    /**
+     * Returns the canonical store-controlled root for lock-protected maintenance.
+     *
+     * @returns Canonical absolute blob-root path.
+     *
+     * @internal
+     */
+    rootPath(): string {
+        return this.#root;
     }
 
     #ensureStorageDirectory(directory: string): void {

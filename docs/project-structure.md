@@ -46,7 +46,8 @@ they exercise the same public seam as consumers.
 The runtime areas are intentionally shallow:
 
 - `append/` owns draft wire-shape validation, parent resolution, and ordinal planning;
-- `blob/` owns configured binary identity and content-addressed filesystem durability;
+- `blob/` owns configured binary identity, content-addressed filesystem durability, and safe
+  orphan discovery/deletion;
 - `canonical/` owns language-neutral semantic encoding and unversioned record hashing;
 - `interchange/` owns native archive encoding, decoding, staging, and validated storage transfer;
 - `protocol/` owns typed configuration models, fail-closed validation, immutable runtime
@@ -55,7 +56,7 @@ The runtime areas are intentionally shallow:
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
-  recovery diagnostics.
+  recovery and orphan-collection diagnostics.
 
 ## Module rules
 

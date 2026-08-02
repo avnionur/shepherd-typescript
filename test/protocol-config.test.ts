@@ -23,6 +23,7 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.recordId.algorithm, "sha256");
     assert.equal(parsed.kernel.store.transactionMode, "IMMEDIATE");
     assert.equal(parsed.kernel.store.blobs.fanoutCharacters, 2);
+    assert.equal(parsed.kernel.store.blobs.defaultCollectionMode, "inspect");
     assert.equal(parsed.kernel.store.defensive, true);
     assert.equal(Object.isFrozen(parsed), true);
     assert.equal(Object.isFrozen(parsed.kernel.store), true);
@@ -192,6 +193,27 @@ test("protocol configuration rejects weakened or unsafe store settings", () => {
         },
         (config) => {
             blobConfigOf(config).receiptVersion = 2;
+        },
+        (config) => {
+            blobConfigOf(config).collectionModes = [];
+        },
+        (config) => {
+            blobConfigOf(config).collectionModes = ["inspect", "delete", "archive"];
+        },
+        (config) => {
+            blobConfigOf(config).defaultCollectionMode = "unknown";
+        },
+        (config) => {
+            blobConfigOf(config).defaultCollectionMode = "delete";
+        },
+        (config) => {
+            blobConfigOf(config).temporaryFilePrefix = "";
+        },
+        (config) => {
+            blobConfigOf(config).temporaryFilePrefix = "../temporary";
+        },
+        (config) => {
+            blobConfigOf(config).temporaryFilePrefix = ".partial-";
         },
     ]);
 });

@@ -4,7 +4,6 @@ import { once } from "node:events";
 import { access, mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 import { setTimeout } from "node:timers/promises";
 
@@ -24,19 +23,35 @@ test("a process crash after blob publication leaves no false receipt and remains
 
     const moduleUrl = new URL("../../src/index.ts", import.meta.url).href;
     const childSource = `
+        import { writeSync } from "node:fs";
+        import { DatabaseSync } from "node:sqlite";
         import { SQLiteTraceStore } from ${JSON.stringify(moduleUrl)};
+        const prepare = DatabaseSync.prototype.prepare;
+        DatabaseSync.prototype.prepare = function(sql) {
+            const statement = prepare.call(this, sql);
+            if (!sql.includes("INSERT OR IGNORE INTO blobs")) {
+                return statement;
+            }
+            return new Proxy(statement, {
+                get(target, property, receiver) {
+                    if (property === "run") {
+                        return () => {
+                            writeSync(1, "ready\\n");
+                            Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0);
+                        };
+                    }
+                    return Reflect.get(target, property, receiver);
+                },
+            });
+        };
         const store = new SQLiteTraceStore(
             ${JSON.stringify(databasePath)},
             { blobDirectory: ${JSON.stringify(blobDirectory)} },
         );
-        process.stdout.write("ready\\n");
-        process.stdin.once("data", () => {
-            store.putBlob(new TextEncoder().encode("shepherd"));
-            process.stdout.write("unexpected-commit\\n");
-        });
+        store.putBlob(new TextEncoder().encode("shepherd"));
     `;
     const child = spawn(process.execPath, ["--input-type=module", "--eval", childSource], {
-        stdio: ["pipe", "pipe", "pipe"],
+        stdio: ["ignore", "pipe", "pipe"],
     });
     context.after(() => {
         if (child.exitCode === null && child.signalCode === null) {
@@ -46,18 +61,14 @@ test("a process crash after blob publication leaves no false receipt and remains
     const [readyOutput] = (await once(child.stdout, "data")) as [Buffer];
     assert.equal(readyOutput.toString(), "ready\n");
 
-    const lock = new DatabaseSync(databasePath);
-    lock.exec("BEGIN IMMEDIATE");
-    child.stdin.write("put");
     await waitForPublishedBlob(blobPath, bucket);
+    const exit = once(child, "exit");
     assert.equal(child.kill("SIGKILL"), true);
-    const [, signal] = (await once(child, "exit")) as [number | null, NodeJS.Signals | null];
+    const [, signal] = (await exit) as [number | null, NodeJS.Signals | null];
     assert.equal(signal, "SIGKILL");
-    lock.exec("ROLLBACK");
-    lock.close();
-
     const reopened = new SQLiteTraceStore(databasePath, { blobDirectory });
     assert.equal(reopened.readBlob(blobId), undefined);
+    assert.deepEqual(reopened.collectBlobOrphans().orphan_blob_ids, [blobId]);
     assert.equal(reopened.putBlob(content).blob_id, blobId);
     assert.deepEqual(reopened.readBlob(blobId), content);
     assert.deepEqual(
