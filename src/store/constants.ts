@@ -33,6 +33,13 @@ export const STORE_TRANSACTION_SQL = Object.freeze({
     rollback: "ROLLBACK",
 });
 
+/** Read-snapshot transaction commands for a coherent whole-store diagnostic scan. */
+export const STORE_READ_TRANSACTION_SQL = Object.freeze({
+    begin: "BEGIN",
+    commit: "COMMIT",
+    rollback: "ROLLBACK",
+});
+
 /** SQLite PRAGMA commands derived from validated store configuration. */
 export const STORE_PRAGMA_SQL = Object.freeze({
     foreignKeys: `PRAGMA foreign_keys = ${Number(kernelProtocolConfig.store.foreignKeys)}`,

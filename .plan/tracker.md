@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-07-29
+Last updated: 2026-08-02
 
-Current version: `0.8.0`
+Current version: `0.9.0`
 
 Current level: L0 — canonical model
 
@@ -11,7 +11,8 @@ Current level: L0 — canonical model
 Phase 0 governance and repository foundations are established. Phase 1 trace-kernel work is in
 progress: canonical records, envelopes, append planning, SQLite durability, content-addressed blob
 storage, storage receipts, blob integrity verification, immutable cuts, and causal-slice queries
-and configured execution-history projections are implemented; integrity and recovery work remain.
+and configured execution-history projections are implemented. Whole-store verification and append
+recovery diagnosis are also implemented; trace interchange and orphan collection remain.
 
 ## Progress
 
@@ -36,6 +37,7 @@ and configured execution-history projections are implemented; integrity and reco
 - [x] Verify blob receipt recovery across an actual child-process crash.
 - [x] Implement trace cuts and causal-slice queries.
 - [x] Implement execution-history projections.
+- [x] Implement whole-store trace integrity verification and append recovery diagnostics.
 
 ## Verification required for this slice
 
@@ -47,7 +49,7 @@ and configured execution-history projections are implemented; integrity and reco
 
 ## Next slice
 
-Implement whole-store trace integrity verification and append recovery diagnostics.
+Implement identity-preserving, versioned trace export and import with conformance fixtures.
 
 ## Notes
 

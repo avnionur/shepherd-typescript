@@ -53,6 +53,14 @@ export {
     TraceStoreError,
     UnsupportedStoreSchemaError,
 } from "./store/errors.ts";
+export type {
+    AppendRecoveryDiagnostic,
+    AppendRecoveryIssue,
+    AppendRecoveryStatus,
+    TraceIntegrityIssue,
+    TraceIntegrityIssueKind,
+    TraceIntegrityReport,
+} from "./store/integrity-types.ts";
 export { SQLiteTraceStore } from "./store/sqlite-trace-store.ts";
 export type {
     AppendIntentId,

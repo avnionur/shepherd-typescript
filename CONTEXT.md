@@ -88,3 +88,13 @@ _Avoid_: Raw record list, mutable run tree
 **Published Record**:
 Schema-defined parent-owned data exposed by an effective-history projection.
 _Avoid_: Log message, unretained event
+
+**Integrity Report**:
+A read-only classified account of verified trace-store records, indexes, receipts, cuts, owner
+paths, and blobs.
+_Avoid_: Repair result, database dump
+
+**Append Recovery Diagnosis**:
+A read-only classification stating whether an append intent is committed, safe to retry, or
+requires manual recovery.
+_Avoid_: Automatic repair, inferred success

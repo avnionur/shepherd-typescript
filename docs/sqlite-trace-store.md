@@ -76,6 +76,12 @@ both-mode slices at verified immutable cuts and fold the configured lifecycle an
 schemas. Effective-history reads strictly resolve every active child address. Projection behavior
 is documented in [Execution-history projections](./execution-history-projections.md).
 
+`verifyIntegrity()` scans every retained store area and returns stable classified issues without
+repairing evidence. `diagnoseAppend(intentId)` distinguishes a clean retry boundary, a verified
+commit, and retained state requiring manual recovery. These read-only diagnostics add no schema
+migration and are documented in
+[Store integrity and append recovery](./store-integrity-and-recovery.md).
+
 The database and read decoder both enforce configured owner-ordinal bounds and non-empty owner
 identifiers. This prevents externally modified rows from bypassing the public `RecordView`
 contract.
@@ -86,5 +92,6 @@ Append and read operations after closure throw `TraceStoreError`.
 ## Current boundary
 
 This slice provides exact-ID, owner-path, immutable-cut, causal-closure, execution, and
-effective-history reads plus content-addressed external blob storage. Whole-graph integrity scans,
-orphan collection, and remote-store abstractions remain planned TypeScript trace-kernel work.
+effective-history reads, content-addressed external blob storage, whole-store integrity scans, and
+append recovery diagnosis. Orphan collection, trace interchange, and remote-store abstractions
+remain planned TypeScript trace-kernel work.

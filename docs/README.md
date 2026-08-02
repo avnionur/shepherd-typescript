@@ -28,6 +28,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   causal closure, mode filtering, visibility, anchors, and witness support.
 - [Execution-history projections](./execution-history-projections.md) defines lifecycle folds,
   parent relations, active children, parent-published data, and projection compatibility.
+- [Store integrity and append recovery](./store-integrity-and-recovery.md) defines whole-store
+  verification, classified defects, and read-only append recovery diagnosis.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

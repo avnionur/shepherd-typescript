@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-08-02
+
+### New Feature
+
+- Added `verifyIntegrity()` for read-only, snapshot-consistent whole-store verification across
+  SQLite and foreign-key integrity, canonical records, causal-parent indexes, witnesses, owner
+  paths, append receipts, cuts, and blobs.
+- Added `diagnoseAppend()` with stable `retry_safe`, `committed`, and
+  `manual_recovery_required` classifications.
+- Added frozen public integrity-report, issue, and append-recovery diagnostic types.
+
+### Improvement
+
+- Classified record, parent-index, witness, orphan-record, owner-ordinal, append-receipt,
+  orphaned-row, cut, SQLite, and blob integrity failures without rewriting retained evidence.
+- Added public-seam restart and intentional-corruption tests with complete line, branch, and
+  function coverage.
+- Documented the read-only diagnostic boundary, recovery meanings, module ownership, and
+  trace-kernel vocabulary.
+
+### Impact
+
+TypeScript applications can verify a complete retained trace store and decide whether an append
+is safe to retry, already committed, or requires manual intervention without guessing or mutating
+evidence.
+
 ## [0.8.0] - 2026-07-29
 
 ### New Feature

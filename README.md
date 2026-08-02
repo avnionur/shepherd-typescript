@@ -13,7 +13,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.8.0` provides a versioned trace-record contract and a durable SQLite trace store:
+Version `0.9.0` provides a versioned trace-record contract and a durable SQLite trace store:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -31,6 +31,7 @@ Version `0.8.0` provides a versioned trace-record contract and a durable SQLite 
 - causal-closure and owner-prefix slices with mode filters, visibility, anchors, and witness
   support;
 - configured execution lifecycle, relation, published-data, and effective-history projections;
+- whole-store integrity verification and read-only append recovery diagnosis;
 - configured root-witness bootstrap through `ROOT_WITNESS_ID`;
 - fail-closed, immutable protocol configuration with centralized store constants;
 - descriptor-safe closed draft validation, immutable body snapshots, and record views outside
@@ -114,6 +115,8 @@ store.readOwner("run:example");
 const blobReceipt = store.putBlob(new TextEncoder().encode("retained output"));
 store.readBlob(blobReceipt.blob_id);
 store.verifyBlobs();
+store.verifyIntegrity();
+store.diagnoseAppend("append:example:1");
 
 const cut = store.publishCut({
     cut_id: "cut:example",
@@ -176,6 +179,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Content-addressed blob storage](./docs/blob-storage.md)
 - [Trace cuts and causal slices](./docs/trace-queries.md)
 - [Execution-history projections](./docs/execution-history-projections.md)
+- [Store integrity and append recovery](./docs/store-integrity-and-recovery.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -184,7 +188,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 
 Phase 0 governance and the Phase 1 canonical record, append planning, SQLite durability, blob
 storage, trace-cut, causal-slice, and execution-history projection contracts are implemented. The
-next TypeScript slice adds whole-store trace integrity verification and recovery diagnostics.
+next TypeScript slice adds identity-preserving trace export and import.
 
 ## Attribution
 

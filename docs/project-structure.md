@@ -51,7 +51,8 @@ The runtime areas are intentionally shallow:
 - `projection/` owns pure disposable execution, relation, and effective-history folds;
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
-  retained reads, immutable cuts, graph-shaped slices, and blob metadata.
+  retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
+  recovery diagnostics.
 
 ## Module rules
 

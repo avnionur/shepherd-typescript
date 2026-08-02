@@ -12,11 +12,14 @@ import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { createConfiguredRootWitness } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
 import { appendToTraceStore } from "./append.ts";
+import { diagnoseStoredAppend } from "./append-recovery.ts";
 import { resolveBlobDirectory } from "./blob-options.ts";
 import { putStoredBlob, readStoredBlob, verifyStoredBlobs } from "./blobs.ts";
 import { DEFAULT_STORE_DATABASE_PATH, STORE_PRAGMA_SQL, STORE_TABLES } from "./constants.ts";
 import { publishStoredCut, readStoredCut } from "./cuts.ts";
 import { TraceStoreError } from "./errors.ts";
+import { verifyTraceStoreIntegrity } from "./integrity.ts";
+import type { AppendRecoveryDiagnostic, TraceIntegrityReport } from "./integrity-types.ts";
 import { migrateTraceStore } from "./migrations.ts";
 import { readOwnerRecords, readStoredRecord } from "./read.ts";
 import { readCausalClosureSlice, readOwnerPrefixSlice } from "./slices.ts";
@@ -117,6 +120,57 @@ export class SQLiteTraceStore implements Disposable {
     append(request: StoreAppendRequest): AppendReceipt {
         this.#assertOpen();
         return appendToTraceStore(this.#database, request);
+    }
+
+    /**
+     * Diagnoses whether an append intent is committed, retryable, or corrupt.
+     *
+     * The diagnosis is read-only. A missing intent is safe to retry, a consistent retained
+     * receipt is committed, and inconsistent retained evidence requires manual recovery.
+     *
+     * @param appendIntentId - Stable append intent to inspect.
+     * @returns A frozen recovery diagnosis.
+     * @throws {TraceStoreError} If the store is closed.
+     * @throws {TypeError} If the append intent is empty.
+     *
+     * @example
+     * ```ts
+     * const diagnosis = store.diagnoseAppend("append:task:1");
+     * if (diagnosis.status === "manual_recovery_required") {
+     *     console.error(diagnosis.issue);
+     * }
+     * ```
+     *
+     * @public
+     */
+    diagnoseAppend(appendIntentId: string): AppendRecoveryDiagnostic {
+        this.#assertOpen();
+        return diagnoseStoredAppend(this.#database, appendIntentId);
+    }
+
+    /**
+     * Verifies every retained store area and returns classified diagnostics.
+     *
+     * The scan is read-only and includes SQLite integrity, canonical records, append receipts,
+     * published cuts, owner paths, and registered external blobs.
+     *
+     * @returns A frozen whole-store integrity report.
+     * @throws {TraceStoreError} If the store is closed.
+     * @throws {Error} If SQLite cannot perform the diagnostic scan.
+     *
+     * @example
+     * ```ts
+     * const report = store.verifyIntegrity();
+     * if (!report.ok) {
+     *     console.error(report.issues);
+     * }
+     * ```
+     *
+     * @public
+     */
+    verifyIntegrity(): TraceIntegrityReport {
+        this.#assertOpen();
+        return verifyTraceStoreIntegrity(this.#database, this.#blobFilesystem);
     }
 
     /**

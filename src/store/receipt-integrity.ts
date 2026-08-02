@@ -10,9 +10,10 @@ import type { AppendReceipt } from "./types.ts";
 export function assertStoredReceiptMatches(database: DatabaseSync, receipt: AppendReceipt): void {
     const rows = database
         .prepare(
-            `SELECT v.append_position, v.owner_id, v.owner_ordinal, v.record_id, r.caused_by_json
+            `SELECT v.append_position, v.owner_id, v.owner_ordinal, v.record_id,
+                    r.record_id AS retained_record_id, r.caused_by_json
              FROM ${STORE_TABLES.recordViews} v
-             JOIN ${STORE_TABLES.records} r ON r.record_id = v.record_id
+             LEFT JOIN ${STORE_TABLES.records} r ON r.record_id = v.record_id
              WHERE v.append_intent_id = ?
              ORDER BY v.append_position`,
         )
@@ -21,6 +22,9 @@ export function assertStoredReceiptMatches(database: DatabaseSync, receipt: Appe
     const causalEdges: (readonly [RecordId, RecordId])[] = [];
     const ownerOrdinalRanges = new Map<string, readonly [number, number]>();
     for (const [expectedPosition, row] of rows.entries()) {
+        if (row.retained_record_id === null) {
+            throw new TraceStoreError("stored append view names a missing record");
+        }
         if (Number(row.append_position) !== expectedPosition) {
             throw new TraceStoreError("stored append positions are not contiguous");
         }
