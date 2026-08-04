@@ -152,8 +152,8 @@ collection are implemented.
 Configured bodyless task descriptors, strict input/output schemas, canonical task artifacts, exact
 artifact locks, and independently migrated durable exact task registration are implemented.
 Versioned effect intent/outcome records, configured reversibility tiers, and exact content-bound
-correlation are implemented. Aliases, grants, effect handlers and materialization, and execution
-remain planned.
+correlation are implemented. Immutable ordered exact-kind handler dispatch is also implemented.
+Aliases, grants, dynamic handler scopes, materialization, and execution remain planned.
 
 ## Task model
 

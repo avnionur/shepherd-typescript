@@ -1,7 +1,11 @@
 import { createHash } from "node:crypto";
 
 import type { ProtocolConfig } from "./config-types.ts";
-import { SECURE_HASH_ALGORITHMS } from "./config-types.ts";
+import {
+    EFFECT_HANDLER_SELECTIONS,
+    EFFECT_UNHANDLED_POLICIES,
+    SECURE_HASH_ALGORITHMS,
+} from "./config-types.ts";
 import {
     readAbsoluteUrl,
     readEnum,
@@ -20,6 +24,7 @@ export function readEffectConfig(value: unknown): ProtocolConfig["effects"] {
             "digestAlgorithm",
             "digestPrefix",
             "hexLength",
+            "handlers",
             "intentVersion",
             "outcomeVersion",
             "phases",
@@ -34,6 +39,7 @@ export function readEffectConfig(value: unknown): ProtocolConfig["effects"] {
         "effects.artifacts",
     );
     const phases = readObject(effect.phases, ["intent", "outcome"], "effects.phases");
+    const handlers = readObject(effect.handlers, ["selection", "unhandled"], "effects.handlers");
     const schemas = readObject(effect.schemas, ["intentId", "outcomeId"], "effects.schemas");
     const digestAlgorithm = readEnum(
         effect.digestAlgorithm,
@@ -67,6 +73,18 @@ export function readEffectConfig(value: unknown): ProtocolConfig["effects"] {
         digestAlgorithm,
         digestPrefix,
         hexLength,
+        handlers: {
+            selection: readEnum(
+                handlers.selection,
+                EFFECT_HANDLER_SELECTIONS,
+                "effects.handlers.selection",
+            ),
+            unhandled: readEnum(
+                handlers.unhandled,
+                EFFECT_UNHANDLED_POLICIES,
+                "effects.handlers.unhandled",
+            ),
+        },
         intentVersion: readPositiveInteger(effect.intentVersion, "effects.intentVersion"),
         outcomeVersion: readPositiveInteger(effect.outcomeVersion, "effects.outcomeVersion"),
         phases: { intent, outcome },

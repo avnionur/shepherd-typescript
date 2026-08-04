@@ -18,6 +18,13 @@ export {
     type SemanticScalar,
     type SemanticValue,
 } from "./canonical/canonical-record.ts";
+export { EffectHandlerNotFoundError } from "./effect/handler-errors.ts";
+export type {
+    EffectHandler,
+    EffectHandlerDispatch,
+    EffectHandlerStack,
+} from "./effect/handler-types.ts";
+export { createEffectHandlerStack } from "./effect/handlers.ts";
 export {
     createEffectIntent,
     createEffectOutcome,

@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.14.0` provides versioned task, effect, and trace-record contracts with durable SQLite
+Version `0.15.0` provides versioned task, effect, and trace-record contracts with durable SQLite
 task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -91,6 +91,7 @@ task and trace stores:
   resolution across registry restarts;
 - immutable typed effect intent/outcome records with configured reversibility tiers and exact
   content-bound intent correlation;
+- immutable ordered exact-kind effect handler stacks with configured last-matching precedence;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
@@ -111,6 +112,7 @@ pnpm install
 ```ts
 import {
     canonicalizeRecord,
+    createEffectHandlerStack,
     createEffectIntent,
     createEffectOutcome,
     createRecordEnvelope,
@@ -152,6 +154,20 @@ const outcome = createEffectOutcome(intent, {
     value: { exitCode: 0 },
 });
 validateEffectCorrelation(intent, outcome);
+
+const handlers = createEffectHandlerStack([
+    {
+        handlerId: "fallback.tool",
+        kind: "tool.call",
+        handle: () => ({ ok: true, value: null }),
+    },
+    {
+        handlerId: "local.tool",
+        kind: "tool.call",
+        handle: (current) => ({ ok: true, value: current.effect_id }),
+    },
+]);
+await handlers.dispatch(intent);
 
 const record = { operation: "task.started", ordinal: 1 };
 
@@ -282,6 +298,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Task descriptors](./docs/task-descriptors.md)
 - [Task registry](./docs/task-registry.md)
 - [Effect intent/outcome records](./docs/effect-records.md)
+- [Ordered effect handlers](./docs/effect-handlers.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -292,9 +309,10 @@ The project is currently at L0. Phase 0 governance and the Phase 1 canonical rec
 planning, SQLite durability, blob storage, trace-cut, causal-slice, execution-history projection,
 integrity, recovery, native interchange, and blob-orphan collection contracts are implemented.
 Phase 2 now includes bodyless task descriptors, runtime schemas, artifact locks, durable exact task
-registration, and immutable correlated effect intent/outcome records. Effect handlers and
-execution, settlement, scopes, live supervision, replay, and the paper applications remain
-planned. The next TypeScript slice adds ordered effect handlers.
+registration, immutable correlated effect intent/outcome records, and ordered exact-kind handler
+dispatch. Dynamic handler scopes, run outcomes and execution, settlement, scopes, live
+supervision, replay, and the paper applications remain planned. The next TypeScript slice adds
+versioned run outcome records.
 
 ## Attribution
 

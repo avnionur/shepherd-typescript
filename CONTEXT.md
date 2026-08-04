@@ -132,3 +132,13 @@ _Avoid_: Latest-version alias, executable task run, mutable descriptor
 **Task Registry**:
 A durable adapter that registers immutable task versions and resolves exact verified registrations.
 _Avoid_: Task executor, package registry, mutable alias table
+
+**Effect Handler Stack**:
+An immutable ordered collection that selects the nearest exact-kind handler for a validated effect
+intent.
+_Avoid_: Interceptor pipeline, observer, global middleware
+
+**Effect Handler Dispatch**:
+The frozen selected-handler identity and exactly correlated effect outcome returned by one handler
+invocation.
+_Avoid_: World receipt, durable append, interception decision

@@ -10,6 +10,12 @@ export const STORE_SYNCHRONOUS_LEVELS = ["FULL"] as const;
 /** SQLite transaction modes permitted for serialized append planning. */
 export const STORE_TRANSACTION_MODES = ["IMMEDIATE"] as const;
 
+/** Ordered effect-handler selection policies supported by this runtime. */
+export const EFFECT_HANDLER_SELECTIONS = ["last_matching"] as const;
+
+/** Unhandled effect policies supported by this runtime. */
+export const EFFECT_UNHANDLED_POLICIES = ["throw"] as const;
+
 /** One immutable historical trace-store migration contract. */
 export type StoreMigrationConfig = {
     readonly firstOwnerOrdinal: number;
@@ -198,6 +204,13 @@ export type EffectProtocolConfig = {
     readonly digestPrefix: string;
     /** Exact lowercase hexadecimal digest length. */
     readonly hexLength: number;
+    /** Runtime policies for deterministic handler selection and missing handlers. */
+    readonly handlers: {
+        /** Configured deterministic handler precedence rule. */
+        readonly selection: (typeof EFFECT_HANDLER_SELECTIONS)[number];
+        /** Configured behavior when no exact handler matches. */
+        readonly unhandled: (typeof EFFECT_UNHANDLED_POLICIES)[number];
+    };
     /** Wire version for canonical effect intents. */
     readonly intentVersion: number;
     /** Wire version for canonical effect outcomes. */

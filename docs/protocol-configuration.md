@@ -17,7 +17,8 @@ and protocol artifact generation use the same parser. The task section also fixe
 artifact-lock versions, hashing, identity prefixes, schema IDs, generated artifact paths, and the
 task registry's SQLite durability and migration contract. The effect section fixes intent/outcome
 versions and phases, reversibility tiers, canonical intent-reference hashing, schema IDs, and
-generated effect schema paths.
+generated effect schema paths. It also selects last-matching handler precedence and fail-closed
+unhandled behavior.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -59,7 +60,8 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
 - task-registry migrations are non-empty and contiguous, their latest version matches configured
   support, and defensive SQLite, foreign-key, WAL, FULL, and IMMEDIATE settings remain enabled.
 - effect phases are distinct, reversibility tiers are unique, intent/outcome versions are positive,
-  and intent-reference hashing, schema IDs, and generated paths match effect protocol v1.
+  handler policies are supported, and intent-reference hashing, schema IDs, and generated paths
+  match effect protocol v1.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,
 root-witness identity, or current ordinal bounds requires a new ABI or migration contract.

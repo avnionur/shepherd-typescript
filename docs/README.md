@@ -40,6 +40,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   conflict detection, migration, and verified resolution.
 - [Effect records](./effect-records.md) defines versioned intent/outcome records, reversibility
   tiers, immutable semantic values, and exact content-bound correlation.
+- [Ordered effect handlers](./effect-handlers.md) defines immutable exact-kind stacks,
+  last-matching precedence, validation-before-invocation, and unhandled behavior.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

@@ -10,6 +10,7 @@ implementation documentation, and forward-looking plans.
 │   ├── append/             Append drafts, validation, and pure planning
 │   ├── blob/               Binary identity and crash-safe filesystem objects
 │   ├── canonical/          Deterministic semantic encoding, hashing, and snapshots
+│   ├── effect/             Intent/outcome records and ordered exact-kind handlers
 │   ├── interchange/        Native archive encoding, validation, and import storage
 │   ├── projection/         Disposable execution, relation, and history folds
 │   ├── protocol/           Runtime configuration and generated literals
@@ -38,6 +39,7 @@ public exports → store area → blob filesystem and identity
 public exports → interchange area → store, record, blob, and protocol areas
 public exports → projection area → immutable store slice types
 public exports → task area → canonical identity and protocol configuration
+public exports → effect area → canonical snapshots and protocol configuration
 build/release scripts → repository configuration
 tests → public exports
 ```
@@ -55,6 +57,8 @@ The runtime areas are intentionally shallow:
 - `canonical/` owns language-neutral semantic encoding, unversioned record hashing, and immutable
   semantic snapshots;
 - `interchange/` owns native archive encoding, decoding, staging, and validated storage transfer;
+- `effect/` owns versioned intent/outcome construction, exact correlation, validation, and
+  immutable ordered handler dispatch;
 - `protocol/` owns typed configuration models, fail-closed validation, immutable runtime
   snapshots, and generated literal values;
 - `projection/` owns pure disposable execution, relation, and effective-history folds;

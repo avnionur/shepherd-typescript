@@ -160,6 +160,10 @@ export const EFFECT_PROTOCOL_V1_CONTRACT = deepFreeze({
     digestAlgorithm: "sha256",
     digestPrefix: "sha256:",
     hexLength: 64,
+    handlers: {
+        selection: "last_matching",
+        unhandled: "throw",
+    },
     intentVersion: 1,
     outcomeVersion: 1,
     phases: { intent: "intent", outcome: "outcome" },

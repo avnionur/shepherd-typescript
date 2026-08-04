@@ -32,7 +32,7 @@ and any applicable pinned upstream-oracle comparison.
 | Typed effect records | shipped | core | P0 | canonical v1 serialization fixture implemented |
 | Intent/outcome correlation | trace machinery | explicit | P0 | exact content-bound correlation implemented; stream ordering follows |
 | Immutable append stream | shipped | core | P0 | mutation/refusal and digest tests |
-| In-process handlers | shipped but narrowly documented | core | P1 | handler law suite |
+| In-process handlers | shipped but narrowly documented | core | P1 | immutable exact-kind stack implemented; dynamic scope laws follow |
 | Non-perturbing observation | limited public surface | explicit | P2 | identical worker trace with/without observer |
 | Pre-materialization interception | not productized | explicit | P2 | deny/replace/timeout race suite |
 | Custom effect families | architectural | explicit | P2 | registry and unknown-record round trip |

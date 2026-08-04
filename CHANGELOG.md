@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2026-08-04
+
+### New Feature
+
+- Added immutable ordered effect handler stacks with configured last-matching precedence.
+- Added synchronous and asynchronous exact-kind handler dispatch that returns exactly correlated
+  effect outcomes and selected-handler identity.
+- Added `EffectHandlerNotFoundError` for fail-closed unhandled effects.
+
+### Improvement
+
+- Validated and snapshotted intents before invoking handler code and preserved handler failures
+  without fabricating semantic outcomes.
+- Added public-seam tests for ordering, definition snapshots, failure results, malformed inputs,
+  missing handlers, and exception propagation.
+
+### Impact
+
+TypeScript applications can now interpret typed effect intents deterministically in-process while
+keeping handler dispatch separate from interception, observation, persistence, and world
+materialization.
+
 ## [0.14.0] - 2026-08-03
 
 ### New Feature
