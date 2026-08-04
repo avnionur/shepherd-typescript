@@ -150,3 +150,24 @@ export const TASK_PROTOCOL_V1_CONTRACT = deepFreeze({
     },
     taskIdPrefix: "task:sha256:",
 } as const);
+
+/** Immutable effect intent/outcome contract implemented by effect protocol v1. */
+export const EFFECT_PROTOCOL_V1_CONTRACT = deepFreeze({
+    artifacts: {
+        intentSchema: "spec/schemas/effect-intent-v1.schema.json",
+        outcomeSchema: "spec/schemas/effect-outcome-v1.schema.json",
+    },
+    digestAlgorithm: "sha256",
+    digestPrefix: "sha256:",
+    hexLength: 64,
+    intentVersion: 1,
+    outcomeVersion: 1,
+    phases: { intent: "intent", outcome: "outcome" },
+    reversibilityTiers: ["reversible", "compensable", "irreversible"],
+    schemas: {
+        intentId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/effect-intent-v1.schema.json",
+        outcomeId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/effect-outcome-v1.schema.json",
+    },
+} as const);

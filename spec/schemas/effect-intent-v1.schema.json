@@ -1,0 +1,73 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/effect-intent-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Effect Intent v1",
+    "description": "Typed action record emitted before an effect may materialize.",
+    "type": "object",
+    "required": [
+        "effect_id",
+        "intent_version",
+        "kind",
+        "payload",
+        "phase",
+        "reversibility"
+    ],
+    "properties": {
+        "effect_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "intent_version": {
+            "const": 1
+        },
+        "kind": {
+            "type": "string",
+            "minLength": 1
+        },
+        "payload": {
+            "$ref": "#/$defs/semanticValue"
+        },
+        "phase": {
+            "const": "intent"
+        },
+        "reversibility": {
+            "enum": [
+                "reversible",
+                "compensable",
+                "irreversible"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        }
+    }
+}

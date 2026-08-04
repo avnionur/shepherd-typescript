@@ -151,7 +151,9 @@ verification, append recovery diagnosis, native trace interchange, and verified 
 collection are implemented.
 Configured bodyless task descriptors, strict input/output schemas, canonical task artifacts, exact
 artifact locks, and independently migrated durable exact task registration are implemented.
-Aliases, grants, effects, and execution remain planned.
+Versioned effect intent/outcome records, configured reversibility tiers, and exact content-bound
+correlation are implemented. Aliases, grants, effect handlers and materialization, and execution
+remain planned.
 
 ## Task model
 

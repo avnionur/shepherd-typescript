@@ -18,6 +18,20 @@ export {
     type SemanticScalar,
     type SemanticValue,
 } from "./canonical/canonical-record.ts";
+export {
+    createEffectIntent,
+    createEffectOutcome,
+    validateEffectCorrelation,
+} from "./effect/records.ts";
+export type {
+    EffectFailure,
+    EffectIntent,
+    EffectIntentDefinition,
+    EffectOutcome,
+    EffectResult,
+    EffectReversibility,
+    EffectSuccess,
+} from "./effect/types.ts";
 export type { TraceImportReceipt } from "./interchange/types.ts";
 export { projectExecution } from "./projection/execution.ts";
 export { projectEffectiveHistory } from "./projection/history.ts";

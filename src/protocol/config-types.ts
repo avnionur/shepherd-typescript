@@ -183,8 +183,46 @@ export type TaskProtocolConfig = {
     readonly taskIdPrefix: string;
 };
 
+/** Validated effect intent, outcome, identity, and schema configuration. */
+export type EffectProtocolConfig = {
+    /** Generated language-neutral effect schema destinations. */
+    readonly artifacts: {
+        /** Repository-relative effect intent schema destination. */
+        readonly intentSchema: string;
+        /** Repository-relative effect outcome schema destination. */
+        readonly outcomeSchema: string;
+    };
+    /** Hash algorithm used to bind an outcome to its complete intent. */
+    readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
+    /** Prefix applied to canonical intent digests. */
+    readonly digestPrefix: string;
+    /** Exact lowercase hexadecimal digest length. */
+    readonly hexLength: number;
+    /** Wire version for canonical effect intents. */
+    readonly intentVersion: number;
+    /** Wire version for canonical effect outcomes. */
+    readonly outcomeVersion: number;
+    /** Configured wire discriminants for the two effect phases. */
+    readonly phases: {
+        /** Wire value identifying an intent record. */
+        readonly intent: string;
+        /** Wire value identifying an outcome record. */
+        readonly outcome: string;
+    };
+    /** Closed reversibility vocabulary ordered from strongest to weakest undo support. */
+    readonly reversibilityTiers: readonly string[];
+    /** Published effect schema identifiers. */
+    readonly schemas: {
+        /** Absolute effect intent schema identifier. */
+        readonly intentId: string;
+        /** Absolute effect outcome schema identifier. */
+        readonly outcomeId: string;
+    };
+};
+
 /** Complete validated language-neutral protocol configuration. */
 export type ProtocolConfig = {
+    readonly effects: EffectProtocolConfig;
     readonly kernel: KernelProtocolConfig;
     readonly projections: ProjectionProtocolConfig;
     readonly recordId: RecordIdConfig;

@@ -1,0 +1,25 @@
+{
+    "intent": {
+        "effect_id": "effect:tool:1",
+        "intent_version": 1,
+        "kind": "tool.call",
+        "payload": {
+            "command": "pnpm test"
+        },
+        "phase": "intent",
+        "reversibility": "irreversible"
+    },
+    "outcome": {
+        "effect_id": "effect:tool:1",
+        "intent_ref": "sha256:d46b11f62c0e6da152e47b35055a30ced9deacc89e7aab21fadaac25a11e3655",
+        "kind": "tool.call",
+        "outcome_version": 1,
+        "phase": "outcome",
+        "result": {
+            "ok": true,
+            "value": {
+                "exitCode": 0
+            }
+        }
+    }
+}

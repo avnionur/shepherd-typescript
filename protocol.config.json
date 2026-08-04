@@ -1,4 +1,24 @@
 {
+    "effects": {
+        "artifacts": {
+            "intentSchema": "spec/schemas/effect-intent-v1.schema.json",
+            "outcomeSchema": "spec/schemas/effect-outcome-v1.schema.json"
+        },
+        "digestAlgorithm": "sha256",
+        "digestPrefix": "sha256:",
+        "hexLength": 64,
+        "intentVersion": 1,
+        "outcomeVersion": 1,
+        "phases": {
+            "intent": "intent",
+            "outcome": "outcome"
+        },
+        "reversibilityTiers": ["reversible", "compensable", "irreversible"],
+        "schemas": {
+            "intentId": "https://avnionur.github.io/shepherd-typescript/schemas/effect-intent-v1.schema.json",
+            "outcomeId": "https://avnionur.github.io/shepherd-typescript/schemas/effect-outcome-v1.schema.json"
+        }
+    },
     "recordId": {
         "algorithm": "sha256",
         "prefix": "sha256:",

@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-02
+Last updated: 2026-08-03
 
-Current version: `0.13.0`
+Current version: `0.14.0`
 
 Current level: L0 — canonical model
 
@@ -15,6 +15,8 @@ and configured execution-history projections are implemented. Whole-store verifi
 recovery diagnosis, native trace interchange, and verified blob-orphan collection are also
 implemented. Phase 2 now includes configured bodyless task descriptors, runtime input/output
 schemas, exact artifact locks, and durable exact task-version registration and resolution.
+Versioned immutable effect intent/outcome records now provide configured reversibility tiers and
+exact content-bound correlation.
 
 ## Progress
 
@@ -45,6 +47,7 @@ schemas, exact artifact locks, and durable exact task-version registration and r
 - [x] Implement configured bodyless task descriptors, input/output schemas, and artifact locks.
 - [x] Implement durable task registration, version conflict detection, and exact artifact-lock
   resolution.
+- [x] Implement versioned effect intent/outcome records and exact content-bound correlation.
 - [x] Audit every paper-v3 section and close plan gaps for proof envelopes, trajectory compression,
   experiment protocols, limitations, and future-work classification.
 
@@ -58,7 +61,7 @@ schemas, exact artifact locks, and durable exact task-version registration and r
 
 ## Next slice
 
-Implement versioned effect intent/outcome records and exact correlation.
+Implement ordered effect handlers over the versioned intent/outcome protocol.
 
 ## Notes
 

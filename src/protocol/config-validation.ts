@@ -1,4 +1,5 @@
 import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
+import { readEffectConfig } from "./config-effects.ts";
 import { readProjectionConfig } from "./config-projections.ts";
 import {
     readArtifacts,
@@ -43,7 +44,7 @@ export function parseProtocolConfig(
 ): ProtocolConfig {
     const root = readObject(
         value,
-        ["kernel", "projections", "recordId", "tasks"],
+        ["effects", "kernel", "projections", "recordId", "tasks"],
         "protocol configuration",
     );
     const recordId = readRecordIdConfig(root.recordId);
@@ -55,7 +56,13 @@ export function parseProtocolConfig(
     ) {
         throw new TypeError("kernel.recordModes is not synchronized with generated constants");
     }
-    const config = { kernel, projections, recordId, tasks: readTaskConfig(root.tasks) };
+    const config = {
+        effects: readEffectConfig(root.effects),
+        kernel,
+        projections,
+        recordId,
+        tasks: readTaskConfig(root.tasks),
+    };
     if (options.enforceCompatibility !== false) {
         assertSupportedProtocolCompatibility(config);
     }

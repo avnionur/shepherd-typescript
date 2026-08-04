@@ -4,6 +4,7 @@ import path from "node:path";
 import { assertSupportedProtocolCompatibility } from "../src/protocol/config-compatibility.ts";
 import type { ProtocolConfig } from "../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
+import { renderEffectIntentSchema, renderEffectOutcomeSchema } from "./effect-protocol-schemas.ts";
 import {
     renderTaskArtifactLockSchema,
     renderTaskDescriptorSchema,
@@ -24,7 +25,7 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
     });
     const artifacts = [
         {
-            content: renderRecordValues(config.kernel.recordModes),
+            content: renderProtocolValues(config),
             relativePath: config.kernel.artifacts.recordValues,
         },
         {
@@ -55,6 +56,14 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             content: renderJson(renderTaskArtifactLockSchema(config)),
             relativePath: config.tasks.artifacts.artifactLockSchema,
         },
+        {
+            content: renderJson(renderEffectIntentSchema(config)),
+            relativePath: config.effects.artifacts.intentSchema,
+        },
+        {
+            content: renderJson(renderEffectOutcomeSchema(config)),
+            relativePath: config.effects.artifacts.outcomeSchema,
+        },
     ];
     const resolvedArtifacts: { content: string; artifactPath: string; relativePath: string }[] = [];
     for (const { content, relativePath } of artifacts) {
@@ -75,8 +84,11 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
     }
 }
 
-function renderRecordValues(recordModes: readonly string[]): string {
-    const renderedModes = recordModes.map((mode) => JSON.stringify(mode)).join(", ");
+function renderProtocolValues(config: ProtocolConfig): string {
+    const renderedModes = config.kernel.recordModes.map((mode) => JSON.stringify(mode)).join(", ");
+    const renderedTiers = config.effects.reversibilityTiers
+        .map((tier) => JSON.stringify(tier))
+        .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -85,6 +97,14 @@ function renderRecordValues(recordModes: readonly string[]): string {
  * @public
  */
 export const RECORD_MODES = [${renderedModes}] as const;
+
+/** Configured reversibility guarantees for effect intents. @public */
+export const EFFECT_REVERSIBILITY_TIERS = [${renderedTiers}] as const;
+
+/** Configured wire discriminants for effect lifecycle phases. @public */
+export const EFFECT_PHASES = { intent: ${JSON.stringify(
+        config.effects.phases.intent,
+    )}, outcome: ${JSON.stringify(config.effects.phases.outcome)} } as const;
 `;
 }
 

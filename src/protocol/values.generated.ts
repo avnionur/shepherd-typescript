@@ -6,3 +6,9 @@
  * @public
  */
 export const RECORD_MODES = ["capture", "declaration"] as const;
+
+/** Configured reversibility guarantees for effect intents. @public */
+export const EFFECT_REVERSIBILITY_TIERS = ["reversible", "compensable", "irreversible"] as const;
+
+/** Configured wire discriminants for effect lifecycle phases. @public */
+export const EFFECT_PHASES = { intent: "intent", outcome: "outcome" } as const;

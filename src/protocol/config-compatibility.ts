@@ -1,4 +1,5 @@
 import {
+    EFFECT_PROTOCOL_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
@@ -40,6 +41,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         throw new TypeError("kernel schema constants do not match the implemented ABI");
     }
     const artifactDestinations = [
+        ...Object.values(config.effects.artifacts),
         ...Object.values(config.kernel.artifacts),
         ...Object.values(config.tasks.artifacts),
     ];
@@ -63,6 +65,9 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     if (!sameJson(config.tasks, TASK_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("task descriptor constants require a new task protocol");
+    }
+    if (!sameJson(config.effects, EFFECT_PROTOCOL_V1_CONTRACT)) {
+        throw new TypeError("effect record constants require a new effect protocol");
     }
 }
 

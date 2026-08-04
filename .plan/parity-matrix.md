@@ -29,8 +29,8 @@ and any applicable pinned upstream-oracle comparison.
 
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
 | --- | --- | --- | --- | --- |
-| Typed effect records | shipped | core | P0 | canonical serialization vectors |
-| Intent/outcome correlation | trace machinery | explicit | P0 | ordering and uniqueness properties |
+| Typed effect records | shipped | core | P0 | canonical v1 serialization fixture implemented |
+| Intent/outcome correlation | trace machinery | explicit | P0 | exact content-bound correlation implemented; stream ordering follows |
 | Immutable append stream | shipped | core | P0 | mutation/refusal and digest tests |
 | In-process handlers | shipped but narrowly documented | core | P1 | handler law suite |
 | Non-perturbing observation | limited public surface | explicit | P2 | identical worker trace with/without observer |

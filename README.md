@@ -58,8 +58,8 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.13.0` provides versioned task and trace-record contracts with durable SQLite task and trace
-store:
+Version `0.14.0` provides versioned task, effect, and trace-record contracts with durable SQLite
+task and trace stores:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -89,6 +89,8 @@ store:
   content-addressed artifact locks;
 - durable exact task-version registration, idempotent replay, conflict detection, and verified
   resolution across registry restarts;
+- immutable typed effect intent/outcome records with configured reversibility tiers and exact
+  content-bound intent correlation;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
@@ -109,6 +111,8 @@ pnpm install
 ```ts
 import {
     canonicalizeRecord,
+    createEffectIntent,
+    createEffectOutcome,
     createRecordEnvelope,
     createRecordId,
     planAppendBatch,
@@ -117,6 +121,7 @@ import {
     SQLiteTaskRegistry,
     SQLiteTraceStore,
     task,
+    validateEffectCorrelation,
 } from "./src/index.ts";
 
 const writeNote = task({
@@ -135,6 +140,18 @@ taskRegistry.resolve({
     taskId: registration.artifactLock.task_id,
     version: registration.artifactLock.task_version,
 });
+
+const intent = createEffectIntent({
+    effectId: "effect:tool:1",
+    kind: "tool.call",
+    payload: { command: "pnpm test" },
+    reversibility: "irreversible",
+});
+const outcome = createEffectOutcome(intent, {
+    ok: true,
+    value: { exitCode: 0 },
+});
+validateEffectCorrelation(intent, outcome);
 
 const record = { operation: "task.started", ordinal: 1 };
 
@@ -264,6 +281,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Native trace interchange](./docs/trace-interchange.md)
 - [Task descriptors](./docs/task-descriptors.md)
 - [Task registry](./docs/task-registry.md)
+- [Effect intent/outcome records](./docs/effect-records.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -273,10 +291,10 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 The project is currently at L0. Phase 0 governance and the Phase 1 canonical record, append
 planning, SQLite durability, blob storage, trace-cut, causal-slice, execution-history projection,
 integrity, recovery, native interchange, and blob-orphan collection contracts are implemented.
-Phase 2 now includes bodyless task descriptors, runtime schemas, artifact locks, and durable exact
-task registration. Task execution, effects, settlement, scopes, live supervision, replay, and the
-paper applications remain planned. The next TypeScript slice adds effect intent/outcome records
-and correlation.
+Phase 2 now includes bodyless task descriptors, runtime schemas, artifact locks, durable exact task
+registration, and immutable correlated effect intent/outcome records. Effect handlers and
+execution, settlement, scopes, live supervision, replay, and the paper applications remain
+planned. The next TypeScript slice adds ordered effect handlers.
 
 ## Attribution
 
