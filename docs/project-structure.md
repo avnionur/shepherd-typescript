@@ -15,6 +15,7 @@ implementation documentation, and forward-looking plans.
 │   ├── projection/         Disposable execution, relation, and history folds
 │   ├── protocol/           Runtime configuration and generated literals
 │   ├── record/             Record types, envelopes, guards, and snapshots
+│   ├── run/                Versioned terminal task-run outcome records
 │   ├── store/              SQLite migrations, transactions, codecs, and reads
 │   └── task/               Descriptors, runtime schemas, locks, and durable registration
 ├── test/                   Public-seam unit tests and fixture assets
@@ -40,6 +41,7 @@ public exports → interchange area → store, record, blob, and protocol areas
 public exports → projection area → immutable store slice types
 public exports → task area → canonical identity and protocol configuration
 public exports → effect area → canonical snapshots and protocol configuration
+public exports → run area → task locks, canonical snapshots, and protocol configuration
 build/release scripts → repository configuration
 tests → public exports
 ```
@@ -63,6 +65,8 @@ The runtime areas are intentionally shallow:
   snapshots, and generated literal values;
 - `projection/` owns pure disposable execution, relation, and effective-history folds;
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
+- `run/` owns versioned terminal outcome construction, closed variant validation, and exact task
+  artifact-lock citations;
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
   recovery and orphan-collection diagnostics.

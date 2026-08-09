@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-04
+Last updated: 2026-08-05
 
-Current version: `0.15.0`
+Current version: `0.16.0`
 
 Current level: L0 — canonical model
 
@@ -17,7 +17,9 @@ implemented. Phase 2 now includes configured bodyless task descriptors, runtime 
 schemas, exact artifact locks, and durable exact task-version registration and resolution.
 Versioned immutable effect intent/outcome records now provide configured reversibility tiers and
 exact content-bound correlation. Immutable ordered handler stacks now provide exact-kind,
-last-matching in-process dispatch with validation before invocation.
+last-matching in-process dispatch with validation before invocation. Versioned terminal run
+outcomes now represent finished, failed, exhausted, and cancelled runs with exact task-lock
+provenance.
 
 ## Progress
 
@@ -50,6 +52,7 @@ last-matching in-process dispatch with validation before invocation.
   resolution.
 - [x] Implement versioned effect intent/outcome records and exact content-bound correlation.
 - [x] Implement immutable ordered exact-kind effect handler stacks.
+- [x] Implement versioned finished, failed, exhausted, and cancelled run outcome records.
 - [x] Audit every paper-v3 section and close plan gaps for proof envelopes, trajectory compression,
   experiment protocols, limitations, and future-work classification.
 
@@ -63,7 +66,7 @@ last-matching in-process dispatch with validation before invocation.
 
 ## Next slice
 
-Implement versioned run outcome records for success, failure, exhaustion, and cancellation.
+Implement immutable run artifacts and usage records that survive every terminal outcome.
 
 ## Notes
 

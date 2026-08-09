@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2026-08-05
+
+### New Feature
+
+- Added `createRunOutcome` for immutable versioned finished, failed, exhausted, and cancelled
+  terminal records.
+- Added exact task artifact-lock provenance and a generated language-neutral run-outcome v1 JSON
+  Schema.
+- Added configured and compatibility-locked run versions, status vocabulary, schema identity, and
+  artifact destination.
+
+### Improvement
+
+- Added strict closed-object validation, canonical successful values, normalized unknown
+  retryability, and stronger task-lock digest and identity validation.
+- Added independent exhaustive fixtures and public-seam tests for every terminal variant,
+  immutability, malformed records, schema closure, and protocol drift.
+
+### Impact
+
+TypeScript applications can represent every terminal run ending as inspectable canonical data
+bound to the exact task revision, without scraping exceptions or fabricating execution, artifact,
+or usage evidence.
+
 ## [0.15.0] - 2026-08-04
 
 ### New Feature

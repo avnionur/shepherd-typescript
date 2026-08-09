@@ -233,11 +233,30 @@ export type EffectProtocolConfig = {
     };
 };
 
+/** Validated terminal run-outcome protocol configuration. */
+export type RunProtocolConfig = {
+    /** Generated language-neutral run artifacts. */
+    readonly artifacts: {
+        /** Repository-relative run-outcome schema destination. */
+        readonly outcomeSchema: string;
+    };
+    /** Wire version for canonical terminal run outcomes. */
+    readonly outcomeVersion: number;
+    /** Published run schema identifiers. */
+    readonly schemas: {
+        /** Absolute run-outcome schema identifier. */
+        readonly outcomeId: string;
+    };
+    /** Closed terminal status vocabulary. */
+    readonly terminalStatuses: readonly string[];
+};
+
 /** Complete validated language-neutral protocol configuration. */
 export type ProtocolConfig = {
     readonly effects: EffectProtocolConfig;
     readonly kernel: KernelProtocolConfig;
     readonly projections: ProjectionProtocolConfig;
     readonly recordId: RecordIdConfig;
+    readonly runs: RunProtocolConfig;
     readonly tasks: TaskProtocolConfig;
 };

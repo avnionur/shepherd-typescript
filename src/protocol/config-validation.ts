@@ -1,6 +1,7 @@
 import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
 import { readEffectConfig } from "./config-effects.ts";
 import { readProjectionConfig } from "./config-projections.ts";
+import { readRunConfig } from "./config-runs.ts";
 import {
     readArtifacts,
     readBlobConfig,
@@ -44,7 +45,7 @@ export function parseProtocolConfig(
 ): ProtocolConfig {
     const root = readObject(
         value,
-        ["effects", "kernel", "projections", "recordId", "tasks"],
+        ["effects", "kernel", "projections", "recordId", "runs", "tasks"],
         "protocol configuration",
     );
     const recordId = readRecordIdConfig(root.recordId);
@@ -61,6 +62,7 @@ export function parseProtocolConfig(
         kernel,
         projections,
         recordId,
+        runs: readRunConfig(root.runs),
         tasks: readTaskConfig(root.tasks),
     };
     if (options.enforceCompatibility !== false) {

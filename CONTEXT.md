@@ -142,3 +142,8 @@ _Avoid_: Interceptor pipeline, observer, global middleware
 The frozen selected-handler identity and exactly correlated effect outcome returned by one handler
 invocation.
 _Avoid_: World receipt, durable append, interception decision
+
+**Run Outcome**:
+An immutable versioned terminal value stating that one exact task revision finished, failed,
+exhausted its budget, or was cancelled.
+_Avoid_: Mutable execution row, stack trace, complete run ledger

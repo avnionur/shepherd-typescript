@@ -28,6 +28,16 @@
         "prefix": "sha256:",
         "hexLength": 64
     },
+    "runs": {
+        "artifacts": {
+            "outcomeSchema": "spec/schemas/run-outcome-v1.schema.json"
+        },
+        "outcomeVersion": 1,
+        "schemas": {
+            "outcomeId": "https://avnionur.github.io/shepherd-typescript/schemas/run-outcome-v1.schema.json"
+        },
+        "terminalStatuses": ["finished", "failed", "exhausted", "cancelled"]
+    },
     "tasks": {
         "artifactLockVersion": 1,
         "artifacts": {

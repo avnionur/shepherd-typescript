@@ -45,7 +45,7 @@ and any applicable pinned upstream-oracle comparison.
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
 | --- | --- | --- | --- | --- |
 | Durable run ledger | shipped | required | P0 | restart persistence tests |
-| Success/failure/exhausted/cancelled outcomes | documented | required | P0 | exhaustive state fixtures |
+| Success/failure/exhausted/cancelled outcomes | documented | required | P0 | versioned closed records and exhaustive state fixtures implemented |
 | Artifacts and usage | documented | required | P1 | persistence and export fixtures |
 | Content-addressed record identity | vNext reference | explicit sharing | P0 | canonical hash vectors |
 | Atomic append batches | vNext reference | required | P0 | crash/fault injection |

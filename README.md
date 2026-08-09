@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.15.0` provides versioned task, effect, and trace-record contracts with durable SQLite
+Version `0.16.0` provides versioned task, effect, run-outcome, and trace-record contracts with durable SQLite
 task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -92,6 +92,8 @@ task and trace stores:
 - immutable typed effect intent/outcome records with configured reversibility tiers and exact
   content-bound intent correlation;
 - immutable ordered exact-kind effect handler stacks with configured last-matching precedence;
+- immutable finished, failed, exhausted, and cancelled run outcomes with exact task-lock
+  provenance;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
@@ -117,6 +119,7 @@ import {
     createEffectOutcome,
     createRecordEnvelope,
     createRecordId,
+    createRunOutcome,
     planAppendBatch,
     ROOT_WITNESS_ID,
     schema,
@@ -149,11 +152,11 @@ const intent = createEffectIntent({
     payload: { command: "pnpm test" },
     reversibility: "irreversible",
 });
-const outcome = createEffectOutcome(intent, {
+const effectOutcome = createEffectOutcome(intent, {
     ok: true,
     value: { exitCode: 0 },
 });
-validateEffectCorrelation(intent, outcome);
+validateEffectCorrelation(intent, effectOutcome);
 
 const handlers = createEffectHandlerStack([
     {
@@ -168,6 +171,12 @@ const handlers = createEffectHandlerStack([
     },
 ]);
 await handlers.dispatch(intent);
+
+const runOutcome = createRunOutcome({
+    runId: "run:write-note:1",
+    taskArtifactLock: writeNote.artifactLock,
+    outcome: { status: "finished", value: null },
+});
 
 const record = { operation: "task.started", ordinal: 1 };
 
@@ -299,6 +308,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Task registry](./docs/task-registry.md)
 - [Effect intent/outcome records](./docs/effect-records.md)
 - [Ordered effect handlers](./docs/effect-handlers.md)
+- [Run outcomes](./docs/run-outcomes.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -309,10 +319,10 @@ The project is currently at L0. Phase 0 governance and the Phase 1 canonical rec
 planning, SQLite durability, blob storage, trace-cut, causal-slice, execution-history projection,
 integrity, recovery, native interchange, and blob-orphan collection contracts are implemented.
 Phase 2 now includes bodyless task descriptors, runtime schemas, artifact locks, durable exact task
-registration, immutable correlated effect intent/outcome records, and ordered exact-kind handler
-dispatch. Dynamic handler scopes, run outcomes and execution, settlement, scopes, live
-supervision, replay, and the paper applications remain planned. The next TypeScript slice adds
-versioned run outcome records.
+registration, immutable correlated effect intent/outcome records, ordered exact-kind handler
+dispatch, and versioned terminal run-outcome records. Dynamic handler scopes, run execution,
+artifacts, usage, settlement, scopes, live supervision, replay, and the paper applications remain
+planned. The next TypeScript slice adds run artifacts and usage records.
 
 ## Attribution
 

@@ -68,6 +68,23 @@ export {
     type RecordMode,
 } from "./record/types.ts";
 export { validateRecordEnvelope } from "./record/validation.ts";
+export { createRunOutcome } from "./run/outcomes.ts";
+export type {
+    CancelledRunDefinition,
+    CancelledRunOutcome,
+    ExhaustedRunDefinition,
+    ExhaustedRunOutcome,
+    FailedRunDefinition,
+    FailedRunOutcome,
+    FinishedRunDefinition,
+    FinishedRunOutcome,
+    RunOutcome,
+    RunOutcomeDefinition,
+    RunOutcomeFor,
+    RunTerminalDefinition,
+    RunTerminalOutcome,
+    RunTerminalStatus,
+} from "./run/types.ts";
 export {
     AppendIntentConflictError,
     BlobIntegrityError,

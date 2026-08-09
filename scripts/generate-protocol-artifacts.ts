@@ -5,6 +5,7 @@ import { assertSupportedProtocolCompatibility } from "../src/protocol/config-com
 import type { ProtocolConfig } from "../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 import { renderEffectIntentSchema, renderEffectOutcomeSchema } from "./effect-protocol-schemas.ts";
+import { renderRunOutcomeSchema } from "./run-protocol-schema.ts";
 import {
     renderTaskArtifactLockSchema,
     renderTaskDescriptorSchema,
@@ -64,6 +65,10 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             content: renderJson(renderEffectOutcomeSchema(config)),
             relativePath: config.effects.artifacts.outcomeSchema,
         },
+        {
+            content: renderJson(renderRunOutcomeSchema(config)),
+            relativePath: config.runs.artifacts.outcomeSchema,
+        },
     ];
     const resolvedArtifacts: { content: string; artifactPath: string; relativePath: string }[] = [];
     for (const { content, relativePath } of artifacts) {
@@ -89,6 +94,9 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedTiers = config.effects.reversibilityTiers
         .map((tier) => JSON.stringify(tier))
         .join(", ");
+    const renderedRunStatuses = config.runs.terminalStatuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -105,6 +113,9 @@ export const EFFECT_REVERSIBILITY_TIERS = [${renderedTiers}] as const;
 export const EFFECT_PHASES = { intent: ${JSON.stringify(
         config.effects.phases.intent,
     )}, outcome: ${JSON.stringify(config.effects.phases.outcome)} } as const;
+
+/** Configured terminal status discriminants for run outcomes. @public */
+export const RUN_TERMINAL_STATUSES = [${renderedRunStatuses}] as const;
 `;
 }
 

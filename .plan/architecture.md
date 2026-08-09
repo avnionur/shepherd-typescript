@@ -234,7 +234,7 @@ Run lifecycle:
 declared → queued → running → terminal
                          ↘ recovering
 
-terminal = succeeded | failed | exhausted | cancelled
+terminal = finished | failed | exhausted | cancelled
 ```
 
 World output lifecycle:
@@ -262,6 +262,11 @@ Run records store:
 - retained output references;
 - settlement decision and citations;
 - error codes and recovery status.
+
+The implemented run-outcome v1 record covers the task artifact lock and terminal outcome only.
+The existing execution-history projection uses `succeeded` as a disposable projected lifecycle
+status; the canonical run record uses `finished`, matching the public outcome vocabulary. The
+remaining run-ledger fields are added by later Phase 2 slices.
 
 ## Workspace and versioned worlds
 

@@ -12,3 +12,6 @@ export const EFFECT_REVERSIBILITY_TIERS = ["reversible", "compensable", "irrever
 
 /** Configured wire discriminants for effect lifecycle phases. @public */
 export const EFFECT_PHASES = { intent: "intent", outcome: "outcome" } as const;
+
+/** Configured terminal status discriminants for run outcomes. @public */
+export const RUN_TERMINAL_STATUSES = ["finished", "failed", "exhausted", "cancelled"] as const;

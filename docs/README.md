@@ -42,6 +42,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   tiers, immutable semantic values, and exact content-bound correlation.
 - [Ordered effect handlers](./effect-handlers.md) defines immutable exact-kind stacks,
   last-matching precedence, validation-before-invocation, and unhandled behavior.
+- [Run outcomes](./run-outcomes.md) defines versioned finished, failed, exhausted, and cancelled
+  terminal records with exact task-lock provenance.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

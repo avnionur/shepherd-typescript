@@ -100,7 +100,8 @@ function readTaskArtifact(value: unknown): TaskArtifact {
     return createCanonicalSnapshot(fields as TaskArtifact) as TaskArtifact;
 }
 
-function readTaskArtifactLock(value: unknown): TaskArtifactLock {
+/** Validates and snapshots one exact task artifact lock. @internal */
+export function readTaskArtifactLock(value: unknown): TaskArtifactLock {
     const fields = readTaskDataObject(
         value,
         [
@@ -129,6 +130,25 @@ function readTaskArtifactLock(value: unknown): TaskArtifactLock {
         fields.descriptor_version !== taskProtocolConfig.descriptorVersion
     ) {
         throw new TypeError("task artifact lock protocol version is unsupported");
+    }
+    for (const key of ["artifact_digest", "schema_digest"] as const) {
+        const digest = fields[key] as string;
+        if (
+            !digest.startsWith(taskProtocolConfig.digestPrefix) ||
+            digest.slice(taskProtocolConfig.digestPrefix.length).length !==
+                taskProtocolConfig.hexLength ||
+            !/^[0-9a-f]+$/u.test(digest.slice(taskProtocolConfig.digestPrefix.length))
+        ) {
+            throw new TypeError(`task artifact lock ${key} is malformed`);
+        }
+    }
+    const taskDigest = (fields.task_id as string).slice(taskProtocolConfig.taskIdPrefix.length);
+    if (
+        !(fields.task_id as string).startsWith(taskProtocolConfig.taskIdPrefix) ||
+        taskDigest.length !== taskProtocolConfig.hexLength ||
+        !/^[0-9a-f]+$/u.test(taskDigest)
+    ) {
+        throw new TypeError("task artifact lock task_id is malformed");
     }
     return createCanonicalSnapshot(fields as TaskArtifactLock) as TaskArtifactLock;
 }

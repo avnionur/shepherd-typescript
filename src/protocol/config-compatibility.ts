@@ -2,6 +2,7 @@ import {
     EFFECT_PROTOCOL_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
+    RUN_PROTOCOL_V1_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
 } from "./compatibility-constants.ts";
 import type { ProtocolConfig } from "./config-types.ts";
@@ -43,6 +44,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     const artifactDestinations = [
         ...Object.values(config.effects.artifacts),
         ...Object.values(config.kernel.artifacts),
+        ...Object.values(config.runs.artifacts),
         ...Object.values(config.tasks.artifacts),
     ];
     if (new Set(artifactDestinations).size !== artifactDestinations.length) {
@@ -68,6 +70,9 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     if (!sameJson(config.effects, EFFECT_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("effect record constants require a new effect protocol");
+    }
+    if (!sameJson(config.runs, RUN_PROTOCOL_V1_CONTRACT)) {
+        throw new TypeError("run outcome constants require a new run protocol");
     }
 }
 
