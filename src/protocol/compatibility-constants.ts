@@ -178,13 +178,23 @@ export const EFFECT_PROTOCOL_V1_CONTRACT = deepFreeze({
 
 /** Immutable terminal run-outcome contract implemented by run protocol v1. */
 export const RUN_PROTOCOL_V1_CONTRACT = deepFreeze({
+    artifactContentTypes: ["text", "blob"],
+    artifactVersion: 1,
     artifacts: {
+        artifactSchema: "spec/schemas/run-artifact-v1.schema.json",
         outcomeSchema: "spec/schemas/run-outcome-v1.schema.json",
+        usageSchema: "spec/schemas/run-usage-v1.schema.json",
     },
+    firstArtifactOrdinal: 0,
+    lastArtifactOrdinal: 9_007_199_254_740_990,
     outcomeVersion: 1,
     schemas: {
+        artifactId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/run-artifact-v1.schema.json",
         outcomeId:
             "https://avnionur.github.io/shepherd-typescript/schemas/run-outcome-v1.schema.json",
+        usageId: "https://avnionur.github.io/shepherd-typescript/schemas/run-usage-v1.schema.json",
     },
     terminalStatuses: ["finished", "failed", "exhausted", "cancelled"],
+    usageVersion: 1,
 } as const);

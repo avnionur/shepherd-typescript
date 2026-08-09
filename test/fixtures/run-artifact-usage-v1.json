@@ -1,0 +1,40 @@
+{
+    "artifacts": [
+        {
+            "artifact_version": 1,
+            "run_id": "run:write-note:1",
+            "artifact_ordinal": 0,
+            "kind": "report",
+            "name": "note.txt",
+            "content": {
+                "type": "text",
+                "text": "Shepherd records execution as data."
+            },
+            "metadata": {
+                "media_type": "text/plain"
+            }
+        },
+        {
+            "artifact_version": 1,
+            "run_id": "run:write-note:1",
+            "artifact_ordinal": 1,
+            "kind": "binary",
+            "name": "bytes.bin",
+            "content": {
+                "type": "blob",
+                "blob_id": "sha256:ae4b3280e56e2faf83f414a6e3dabe9d5fbe18976544c05fed121accb85b53fc",
+                "byte_length": 3
+            },
+            "metadata": {}
+        }
+    ],
+    "usage": {
+        "usage_version": 1,
+        "run_id": "run:write-note:1",
+        "input_tokens": 120,
+        "output_tokens": 30,
+        "cache_creation_input_tokens": 10,
+        "cache_read_input_tokens": 80,
+        "cost_usd": 0.0042
+    }
+}

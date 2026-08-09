@@ -68,6 +68,17 @@ export {
     type RecordMode,
 } from "./record/types.ts";
 export { validateRecordEnvelope } from "./record/validation.ts";
+export type {
+    RunArtifact,
+    RunArtifactContentDefinition,
+    RunArtifactContentFor,
+    RunArtifactDefinition,
+    RunBlobArtifactContent,
+    RunBlobArtifactContentDefinition,
+    RunTextArtifactContent,
+    RunTextArtifactContentDefinition,
+} from "./run/artifact-types.ts";
+export { createRunArtifact } from "./run/artifacts.ts";
 export { createRunOutcome } from "./run/outcomes.ts";
 export type {
     CancelledRunDefinition,
@@ -85,6 +96,8 @@ export type {
     RunTerminalOutcome,
     RunTerminalStatus,
 } from "./run/types.ts";
+export { createRunUsage } from "./run/usage.ts";
+export type { RunUsage, RunUsageDefinition } from "./run/usage-types.ts";
 export {
     AppendIntentConflictError,
     BlobIntegrityError,

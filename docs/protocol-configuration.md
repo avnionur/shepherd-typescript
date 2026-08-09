@@ -18,8 +18,9 @@ artifact-lock versions, hashing, identity prefixes, schema IDs, generated artifa
 task registry's SQLite durability and migration contract. The effect section fixes intent/outcome
 versions and phases, reversibility tiers, canonical intent-reference hashing, schema IDs, and
 generated effect schema paths. It also selects last-matching handler precedence and fail-closed
-unhandled behavior. The run section fixes the terminal outcome version, closed status vocabulary,
-schema identifier, and generated run-outcome schema path.
+unhandled behavior. The run section fixes outcome, artifact, and usage versions; closed terminal
+status and artifact-content vocabularies; artifact ordinal bounds; schema identifiers; and
+generated schema paths.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -63,8 +64,9 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
 - effect phases are distinct, reversibility tiers are unique, intent/outcome versions are positive,
   handler policies are supported, and intent-reference hashing, schema IDs, and generated paths
   match effect protocol v1.
-- run-outcome versions are positive, terminal statuses are unique, schema identifiers and artifact
-  paths are valid, and all values match the immutable run protocol v1 contract.
+- run record versions are positive, terminal statuses and artifact content types are unique,
+  artifact ordinal bounds are safe, schema identifiers and artifact paths are valid, and all
+  values match the immutable run protocol v1 contract.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,
 root-witness identity, or current ordinal bounds requires a new ABI or migration contract.

@@ -147,3 +147,12 @@ _Avoid_: World receipt, durable append, interception decision
 An immutable versioned terminal value stating that one exact task revision finished, failed,
 exhausted its budget, or was cancelled.
 _Avoid_: Mutable execution row, stack trace, complete run ledger
+
+**Run Artifact**:
+An immutable versioned side-channel output placed at an explicit run-local emission ordinal, with
+text inline or binary content cited through a durable blob receipt.
+_Avoid_: Return value, embedded base64, mutable file handle
+
+**Run Usage**:
+An immutable versioned aggregate of token and cost totals for an entire run.
+_Avoid_: Individual provider-call usage, billing invoice, mutable counter

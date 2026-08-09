@@ -15,3 +15,6 @@ export const EFFECT_PHASES = { intent: "intent", outcome: "outcome" } as const;
 
 /** Configured terminal status discriminants for run outcomes. @public */
 export const RUN_TERMINAL_STATUSES = ["finished", "failed", "exhausted", "cancelled"] as const;
+
+/** Configured content representations for run artifacts. @public */
+export const RUN_ARTIFACT_CONTENT_TYPES = ["text", "blob"] as const;

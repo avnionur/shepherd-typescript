@@ -46,7 +46,7 @@ and any applicable pinned upstream-oracle comparison.
 | --- | --- | --- | --- | --- |
 | Durable run ledger | shipped | required | P0 | restart persistence tests |
 | Success/failure/exhausted/cancelled outcomes | documented | required | P0 | versioned closed records and exhaustive state fixtures implemented |
-| Artifacts and usage | documented | required | P1 | persistence and export fixtures |
+| Artifacts and usage | documented | required | P1 | public record/schema fixtures implemented; run-ledger persistence and export pending |
 | Content-addressed record identity | vNext reference | explicit sharing | P0 | canonical hash vectors |
 | Atomic append batches | vNext reference | required | P0 | crash/fault injection |
 | Idempotent append intent | vNext reference | required | P0 | retry conflict tests |

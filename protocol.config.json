@@ -29,14 +29,23 @@
         "hexLength": 64
     },
     "runs": {
+        "artifactContentTypes": ["text", "blob"],
+        "artifactVersion": 1,
         "artifacts": {
-            "outcomeSchema": "spec/schemas/run-outcome-v1.schema.json"
+            "artifactSchema": "spec/schemas/run-artifact-v1.schema.json",
+            "outcomeSchema": "spec/schemas/run-outcome-v1.schema.json",
+            "usageSchema": "spec/schemas/run-usage-v1.schema.json"
         },
+        "firstArtifactOrdinal": 0,
+        "lastArtifactOrdinal": 9007199254740990,
         "outcomeVersion": 1,
         "schemas": {
-            "outcomeId": "https://avnionur.github.io/shepherd-typescript/schemas/run-outcome-v1.schema.json"
+            "artifactId": "https://avnionur.github.io/shepherd-typescript/schemas/run-artifact-v1.schema.json",
+            "outcomeId": "https://avnionur.github.io/shepherd-typescript/schemas/run-outcome-v1.schema.json",
+            "usageId": "https://avnionur.github.io/shepherd-typescript/schemas/run-usage-v1.schema.json"
         },
-        "terminalStatuses": ["finished", "failed", "exhausted", "cancelled"]
+        "terminalStatuses": ["finished", "failed", "exhausted", "cancelled"],
+        "usageVersion": 1
     },
     "tasks": {
         "artifactLockVersion": 1,

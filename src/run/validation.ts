@@ -3,6 +3,7 @@ import { runProtocolConfig } from "../protocol/config.ts";
 import { RUN_TERMINAL_STATUSES } from "../protocol/values.generated.ts";
 import { readTaskArtifactLock } from "../task/registry-codec.ts";
 import type { RunOutcomeDefinition, RunTerminalDefinition, RunTerminalOutcome } from "./types.ts";
+import { assertRunText, readRunDataObject } from "./validation-values.ts";
 
 const [FINISHED_STATUS, FAILED_STATUS] = RUN_TERMINAL_STATUSES;
 
@@ -10,12 +11,12 @@ const [FINISHED_STATUS, FAILED_STATUS] = RUN_TERMINAL_STATUSES;
 export function readRunOutcomeDefinition<O extends RunTerminalDefinition>(
     value: RunOutcomeDefinition<O>,
 ): RunOutcomeDefinition<O> {
-    const fields = readDataObject(
+    const fields = readRunDataObject(
         value,
         ["outcome", "runId", "taskArtifactLock"],
         "run outcome definition",
     );
-    assertText(fields.runId, "runId");
+    assertRunText(fields.runId, "runId");
     const taskArtifactLock = readTaskArtifactLock(fields.taskArtifactLock);
     const outcome = readTerminalDefinition(fields.outcome);
     return Object.freeze({
@@ -26,12 +27,12 @@ export function readRunOutcomeDefinition<O extends RunTerminalDefinition>(
 }
 
 function readTerminalDefinition(value: unknown): RunTerminalOutcome {
-    const candidate = readDataObjectWithKnownShape(value, "run terminal outcome");
+    const candidate = readTerminalDataObject(value);
     if (!runProtocolConfig.terminalStatuses.includes(candidate.status as string)) {
         throw new TypeError("run terminal status is not configured");
     }
     if (candidate.status === FINISHED_STATUS) {
-        const fields = readExactFields(candidate, ["status", "value"], "finished run outcome");
+        const fields = readRunDataObject(value, ["status", "value"], "finished run outcome");
         assertSemanticValue(fields.value, "finished run value");
         return fields as RunTerminalOutcome;
     }
@@ -40,9 +41,9 @@ function readTerminalDefinition(value: unknown): RunTerminalOutcome {
             candidate.retryable === undefined
                 ? ["errorType", "message", "status"]
                 : ["errorType", "message", "retryable", "status"];
-        const fields = readExactFields(candidate, keys, "failed run outcome");
-        assertText(fields.errorType, "failed run errorType");
-        assertText(fields.message, "failed run message");
+        const fields = readRunDataObject(value, keys, "failed run outcome");
+        assertRunText(fields.errorType, "failed run errorType");
+        assertRunText(fields.message, "failed run message");
         if (fields.retryable !== undefined && typeof fields.retryable !== "boolean") {
             throw new TypeError("failed run retryable must be a boolean when supplied");
         }
@@ -53,12 +54,12 @@ function readTerminalDefinition(value: unknown): RunTerminalOutcome {
             status: FAILED_STATUS,
         } as RunTerminalOutcome;
     }
-    const fields = readExactFields(
-        candidate,
+    const fields = readRunDataObject(
+        value,
         ["reason", "status"],
         `${candidate.status} run outcome`,
     );
-    assertText(fields.reason, `${candidate.status} run reason`);
+    assertRunText(fields.reason, `${candidate.status} run reason`);
     return fields as RunTerminalOutcome;
 }
 
@@ -73,17 +74,7 @@ function assertSemanticValue(value: unknown, subject: string): asserts value is 
     }
 }
 
-function assertText(value: unknown, subject: string): asserts value is string {
-    if (typeof value !== "string" || value.length === 0 || /[\uD800-\uDFFF]/u.test(value)) {
-        throw new TypeError(`${subject} must be a non-empty well-formed string`);
-    }
-}
-
-function readDataObject(value: unknown, keys: readonly string[], subject: string) {
-    return readExactFields(readDataObjectWithKnownShape(value, subject), keys, subject);
-}
-
-function readDataObjectWithKnownShape(value: unknown, subject: string): Record<string, unknown> {
+function readTerminalDataObject(value: unknown): Record<string, unknown> {
     if (
         value === null ||
         typeof value !== "object" ||
@@ -92,25 +83,14 @@ function readDataObjectWithKnownShape(value: unknown, subject: string): Record<s
             Object.getPrototypeOf(value) !== null) ||
         Object.getOwnPropertySymbols(value).length > 0
     ) {
-        throw new TypeError(`${subject} must be a plain data object`);
+        throw new TypeError("run terminal outcome must be a plain data object");
     }
     const fields = Object.create(null) as Record<string, unknown>;
     for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(value))) {
         if (!("value" in descriptor)) {
-            throw new TypeError(`${subject} ${key} must be a data property`);
+            throw new TypeError(`run terminal outcome ${key} must be a data property`);
         }
         fields[key] = descriptor.value;
-    }
-    return fields;
-}
-
-function readExactFields(
-    fields: Record<string, unknown>,
-    keys: readonly string[],
-    subject: string,
-): Record<string, unknown> {
-    if (Object.keys(fields).sort().join("\0") !== [...keys].sort().join("\0")) {
-        throw new TypeError(`${subject} must contain exactly its declared fields`);
     }
     return fields;
 }

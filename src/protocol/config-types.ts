@@ -235,20 +235,38 @@ export type EffectProtocolConfig = {
 
 /** Validated terminal run-outcome protocol configuration. */
 export type RunProtocolConfig = {
+    /** Closed artifact-content representation vocabulary. */
+    readonly artifactContentTypes: readonly string[];
+    /** Wire version for canonical run artifacts. */
+    readonly artifactVersion: number;
     /** Generated language-neutral run artifacts. */
     readonly artifacts: {
+        /** Repository-relative run-artifact schema destination. */
+        readonly artifactSchema: string;
         /** Repository-relative run-outcome schema destination. */
         readonly outcomeSchema: string;
+        /** Repository-relative aggregate run-usage schema destination. */
+        readonly usageSchema: string;
     };
+    /** First valid artifact emission ordinal. */
+    readonly firstArtifactOrdinal: number;
+    /** Last valid artifact emission ordinal. */
+    readonly lastArtifactOrdinal: number;
     /** Wire version for canonical terminal run outcomes. */
     readonly outcomeVersion: number;
     /** Published run schema identifiers. */
     readonly schemas: {
+        /** Absolute run-artifact schema identifier. */
+        readonly artifactId: string;
         /** Absolute run-outcome schema identifier. */
         readonly outcomeId: string;
+        /** Absolute aggregate run-usage schema identifier. */
+        readonly usageId: string;
     };
     /** Closed terminal status vocabulary. */
     readonly terminalStatuses: readonly string[];
+    /** Wire version for canonical aggregate run usage. */
+    readonly usageVersion: number;
 };
 
 /** Complete validated language-neutral protocol configuration. */

@@ -5,7 +5,9 @@ import { assertSupportedProtocolCompatibility } from "../src/protocol/config-com
 import type { ProtocolConfig } from "../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 import { renderEffectIntentSchema, renderEffectOutcomeSchema } from "./effect-protocol-schemas.ts";
+import { renderRunArtifactSchema } from "./run-artifact-schema.ts";
 import { renderRunOutcomeSchema } from "./run-protocol-schema.ts";
+import { renderRunUsageSchema } from "./run-usage-schema.ts";
 import {
     renderTaskArtifactLockSchema,
     renderTaskDescriptorSchema,
@@ -66,8 +68,16 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             relativePath: config.effects.artifacts.outcomeSchema,
         },
         {
+            content: renderJson(renderRunArtifactSchema(config)),
+            relativePath: config.runs.artifacts.artifactSchema,
+        },
+        {
             content: renderJson(renderRunOutcomeSchema(config)),
             relativePath: config.runs.artifacts.outcomeSchema,
+        },
+        {
+            content: renderJson(renderRunUsageSchema(config)),
+            relativePath: config.runs.artifacts.usageSchema,
         },
     ];
     const resolvedArtifacts: { content: string; artifactPath: string; relativePath: string }[] = [];
@@ -97,6 +107,9 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedRunStatuses = config.runs.terminalStatuses
         .map((status) => JSON.stringify(status))
         .join(", ");
+    const renderedArtifactContentTypes = config.runs.artifactContentTypes
+        .map((type) => JSON.stringify(type))
+        .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -116,6 +129,9 @@ export const EFFECT_PHASES = { intent: ${JSON.stringify(
 
 /** Configured terminal status discriminants for run outcomes. @public */
 export const RUN_TERMINAL_STATUSES = [${renderedRunStatuses}] as const;
+
+/** Configured content representations for run artifacts. @public */
+export const RUN_ARTIFACT_CONTENT_TYPES = [${renderedArtifactContentTypes}] as const;
 `;
 }
 

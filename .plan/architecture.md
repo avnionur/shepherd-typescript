@@ -258,12 +258,14 @@ Run records store:
 - budgets;
 - outcome;
 - trace root/cut;
-- artifacts and usage;
+- ordered artifacts and aggregate usage (record contracts implemented);
 - retained output references;
 - settlement decision and citations;
 - error codes and recovery status.
 
-The implemented run-outcome v1 record covers the task artifact lock and terminal outcome only.
+The implemented run protocol v1 covers exact task-lock terminal outcomes, ordered artifact
+records, and aggregate usage records. Run-ledger persistence and execution-time collection remain
+pending.
 The existing execution-history projection uses `succeeded` as a disposable projected lifecycle
 status; the canonical run record uses `finished`, matching the public outcome vocabulary. The
 remaining run-ledger fields are added by later Phase 2 slices.

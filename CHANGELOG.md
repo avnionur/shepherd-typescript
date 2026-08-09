@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.0] - 2026-08-09
+
+### New Feature
+
+- Added `createRunArtifact` for immutable explicitly ordered inline-text and durable blob-reference
+  side-channel outputs.
+- Added `createRunUsage` for immutable aggregate token and optional cost totals across an entire
+  run.
+- Added generated language-neutral run-artifact and run-usage v1 JSON Schemas with configured and
+  compatibility-locked versions, discriminants, ordinal bounds, identities, and destinations.
+
+### Improvement
+
+- Added strict closed-data validation, canonical metadata snapshots, durable blob-receipt
+  validation, unavailable-cost normalization, and complete public-seam coverage.
+- Added independent conformance fixtures and structural documentation that distinguish record
+  construction from later run-ledger persistence and automatic execution-time collection.
+
+### Impact
+
+TypeScript applications can represent ordered side-channel outputs and whole-run resource totals
+as stable data correlated with any terminal run ending, without embedding binary bytes or
+conflating aggregate usage with individual provider calls.
+
 ## [0.16.0] - 2026-08-05
 
 ### New Feature
