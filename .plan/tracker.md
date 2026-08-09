@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-09
+Last updated: 2026-08-10
 
-Current version: `0.17.0`
+Current version: `0.18.0`
 
 Current level: L0 — canonical model
 
@@ -21,7 +21,8 @@ last-matching in-process dispatch with validation before invocation. Versioned t
 outcomes now represent finished, failed, exhausted, and cancelled runs with exact task-lock
 provenance. Immutable ordered run artifacts retain inline text or cite durable blob receipts, and
 aggregate run usage records retain token and optional cost totals independently of terminal
-status.
+status. Configured run controls now accumulate counter consumption, enforce duration limits, and
+compose caller cancellation through a first-terminal-wins `AbortSignal`.
 
 ## Progress
 
@@ -56,6 +57,7 @@ status.
 - [x] Implement immutable ordered exact-kind effect handler stacks.
 - [x] Implement versioned finished, failed, exhausted, and cancelled run outcome records.
 - [x] Implement configured ordered run-artifact and aggregate run-usage records.
+- [x] Implement configured run budgets and cooperative `AbortSignal` cancellation semantics.
 - [x] Audit every paper-v3 section and close plan gaps for proof envelopes, trajectory compression,
   experiment protocols, limitations, and future-work classification.
 
@@ -69,7 +71,7 @@ status.
 
 ## Next slice
 
-Implement configured run budgets and `AbortSignal` cancellation semantics.
+Implement the deterministic static provider and its provider-neutral request/response contract.
 
 ## Notes
 

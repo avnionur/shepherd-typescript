@@ -46,6 +46,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   terminal records with exact task-lock provenance.
 - [Run artifacts and usage](./run-artifacts-and-usage.md) defines ordered inline-text and durable
   blob outputs plus aggregate token and cost records correlated by run identity.
+- [Run budgets and cancellation](./run-control.md) defines configured resource limits, cumulative
+  consumption, duration expiry, composed `AbortSignal` behavior, and terminal race semantics.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

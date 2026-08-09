@@ -79,6 +79,21 @@ export type {
     RunTextArtifactContentDefinition,
 } from "./run/artifact-types.ts";
 export { createRunArtifact } from "./run/artifacts.ts";
+export { createRunControl } from "./run/control.ts";
+export { RunBudgetExhaustedError, RunCancelledError } from "./run/control-errors.ts";
+export type {
+    RunBudgetDefinition,
+    RunBudgetExhaustionReason,
+    RunBudgetMetric,
+    RunCancellationReason,
+    RunConsumption,
+    RunConsumptionDefinition,
+    RunControl,
+    RunControlOptions,
+    RunControlReason,
+    RunControlSnapshot,
+    RunControlStatus,
+} from "./run/control-types.ts";
 export { createRunOutcome } from "./run/outcomes.ts";
 export type {
     CancelledRunDefinition,

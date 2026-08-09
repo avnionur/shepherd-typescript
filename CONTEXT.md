@@ -156,3 +156,8 @@ _Avoid_: Return value, embedded base64, mutable file handle
 **Run Usage**:
 An immutable versioned aggregate of token and cost totals for an entire run.
 _Avoid_: Individual provider-call usage, billing invoice, mutable counter
+
+**Run Control**:
+A cooperative per-run controller that accumulates configured resource consumption and composes
+budget exhaustion, caller cancellation, and disposal into one first-terminal-wins `AbortSignal`.
+_Avoid_: Process kill, permission boundary, mutable run ledger

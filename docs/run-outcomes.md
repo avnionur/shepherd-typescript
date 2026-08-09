@@ -48,5 +48,7 @@ locked; changing its existing values requires a new protocol version. The genera
 [`run-outcome-v1.schema.json`](../spec/schemas/run-outcome-v1.schema.json) validates the same closed
 wire shapes independently of TypeScript.
 
-Artifacts, usage, budgets, `AbortSignal` behavior, persistence, and task execution are separate
-capabilities and are not fabricated by this record builder.
+Artifacts, usage, persistence, and task execution are separate capabilities and are not fabricated
+by this record builder. Budget and `AbortSignal` behavior are implemented independently by
+[`createRunControl`](../src/run/control.ts); a later executor will translate its terminal reason
+into the corresponding outcome while preserving partial evidence.

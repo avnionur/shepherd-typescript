@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] - 2026-08-10
+
+### New Feature
+
+- Added `createRunControl` for cooperative turns, effects, duration, token, and cost budgets.
+- Added composed caller `AbortSignal` cancellation, pre-abort handling, active-control disposal,
+  and typed `RunBudgetExhaustedError` and `RunCancelledError` reasons.
+- Added immutable active, exhausted, and cancelled snapshots with cumulative resource consumption
+  and first-terminal-transition semantics.
+
+### Improvement
+
+- Added configuration-owned budget metric precedence, control statuses, reason discriminants,
+  stable cancellation text, and safe Node timer bounds.
+- Added closed validation, safe-integer and finite-cost overflow protection, timer/listener cleanup,
+  and public-seam tests for every metric, race, duration, cancellation, and malformed input path.
+
+### Impact
+
+TypeScript execution adapters can now share one fail-closed signal across providers and effects,
+distinguish budget exhaustion from caller cancellation, and preserve observed partial consumption
+without claiming that arbitrary asynchronous work can be stopped forcibly.
+
 ## [0.17.0] - 2026-08-09
 
 ### New Feature

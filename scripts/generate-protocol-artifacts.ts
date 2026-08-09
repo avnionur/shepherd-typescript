@@ -110,6 +110,15 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedArtifactContentTypes = config.runs.artifactContentTypes
         .map((type) => JSON.stringify(type))
         .join(", ");
+    const renderedBudgetMetrics = config.runs.control.budgetMetrics
+        .map((metric) => `    ${JSON.stringify(metric)},`)
+        .join("\n");
+    const renderedControlReasonTypes = config.runs.control.reasonTypes
+        .map((type) => JSON.stringify(type))
+        .join(", ");
+    const renderedControlStatuses = config.runs.control.statuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -132,6 +141,17 @@ export const RUN_TERMINAL_STATUSES = [${renderedRunStatuses}] as const;
 
 /** Configured content representations for run artifacts. @public */
 export const RUN_ARTIFACT_CONTENT_TYPES = [${renderedArtifactContentTypes}] as const;
+
+/** Configured run-budget metrics in deterministic exhaustion precedence. @public */
+export const RUN_BUDGET_METRICS = [
+${renderedBudgetMetrics}
+] as const;
+
+/** Configured run-control reason discriminants. @public */
+export const RUN_CONTROL_REASON_TYPES = [${renderedControlReasonTypes}] as const;
+
+/** Configured run-control lifecycle statuses. @public */
+export const RUN_CONTROL_STATUSES = [${renderedControlStatuses}] as const;
 `;
 }
 

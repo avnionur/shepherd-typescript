@@ -264,8 +264,8 @@ Run records store:
 - error codes and recovery status.
 
 The implemented run protocol v1 covers exact task-lock terminal outcomes, ordered artifact
-records, and aggregate usage records. Run-ledger persistence and execution-time collection remain
-pending.
+records, aggregate usage records, and cooperative configured budget/cancellation control.
+Run-ledger persistence and automatic execution-time collection remain pending.
 The existing execution-history projection uses `succeeded` as a disposable projected lifecycle
 status; the canonical run record uses `finished`, matching the public outcome vocabulary. The
 remaining run-ledger fields are added by later Phase 2 slices.

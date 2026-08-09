@@ -103,6 +103,8 @@ test("run protocol configuration is frozen and compatibility locked", () => {
 
     assert.deepEqual(parsed.runs, RUN_PROTOCOL_V1_CONTRACT);
     assert.equal(Object.isFrozen(parsed.runs), true);
+    assert.equal(Object.isFrozen(parsed.runs.control), true);
+    assert.equal(Object.isFrozen(parsed.runs.control.budgetMetrics), true);
     assert.equal(Object.isFrozen(parsed.runs.terminalStatuses), true);
     assert.equal(Object.isFrozen(RUN_PROTOCOL_V1_CONTRACT), true);
 
@@ -125,6 +127,30 @@ test("run protocol configuration is frozen and compatibility locked", () => {
         },
         (runs: Record<string, unknown>) => {
             runs.artifactContentTypes = [];
+        },
+        (runs: Record<string, unknown>) => {
+            const control = runs.control as Record<string, unknown>;
+            control.budgetMetrics = [];
+        },
+        (runs: Record<string, unknown>) => {
+            const control = runs.control as Record<string, unknown>;
+            control.statuses = ["active", "exhausted", "stopped"];
+        },
+        (runs: Record<string, unknown>) => {
+            const control = runs.control as Record<string, unknown>;
+            control.reasonTypes = ["budget_exhausted", "stopped"];
+        },
+        (runs: Record<string, unknown>) => {
+            const control = runs.control as Record<string, unknown>;
+            control.cancellationReason = "";
+        },
+        (runs: Record<string, unknown>) => {
+            const control = runs.control as Record<string, unknown>;
+            control.disposalReason = "";
+        },
+        (runs: Record<string, unknown>) => {
+            const control = runs.control as Record<string, unknown>;
+            control.maxTimerDurationMilliseconds = 0;
         },
         (runs: Record<string, unknown>) => {
             runs.outcomeVersion = 2;

@@ -17,6 +17,7 @@ export function readRunConfig(value: unknown): ProtocolConfig["runs"] {
             "artifactContentTypes",
             "artifactVersion",
             "artifacts",
+            "control",
             "firstArtifactOrdinal",
             "lastArtifactOrdinal",
             "outcomeVersion",
@@ -35,6 +36,18 @@ export function readRunConfig(value: unknown): ProtocolConfig["runs"] {
         runs.schemas,
         ["artifactId", "outcomeId", "usageId"],
         "runs.schemas",
+    );
+    const control = readObject(
+        runs.control,
+        [
+            "budgetMetrics",
+            "cancellationReason",
+            "disposalReason",
+            "maxTimerDurationMilliseconds",
+            "reasonTypes",
+            "statuses",
+        ],
+        "runs.control",
     );
     const firstArtifactOrdinal = readNonNegativeInteger(
         runs.firstArtifactOrdinal,
@@ -68,6 +81,23 @@ export function readRunConfig(value: unknown): ProtocolConfig["runs"] {
                 "runs.artifacts.outcomeSchema",
             ),
             usageSchema: readNonEmptyString(artifacts.usageSchema, "runs.artifacts.usageSchema"),
+        },
+        control: {
+            budgetMetrics: readUniqueStrings(control.budgetMetrics, "runs.control.budgetMetrics"),
+            cancellationReason: readNonEmptyString(
+                control.cancellationReason,
+                "runs.control.cancellationReason",
+            ),
+            disposalReason: readNonEmptyString(
+                control.disposalReason,
+                "runs.control.disposalReason",
+            ),
+            maxTimerDurationMilliseconds: readPositiveInteger(
+                control.maxTimerDurationMilliseconds,
+                "runs.control.maxTimerDurationMilliseconds",
+            ),
+            reasonTypes: readUniqueStrings(control.reasonTypes, "runs.control.reasonTypes"),
+            statuses: readUniqueStrings(control.statuses, "runs.control.statuses"),
         },
         firstArtifactOrdinal,
         lastArtifactOrdinal,

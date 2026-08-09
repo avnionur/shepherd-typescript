@@ -103,7 +103,7 @@ and any applicable pinned upstream-oracle comparison.
 | OpenRouter/provider adapter | claimed via Claude path | examples | P2 | contract test |
 | Provider-neutral event model | architectural | core | P0 | fake-provider TCK |
 | Provider prompt/cache identity | research | replay need | P2 | prefix identity tests |
-| Cancellation and budgets | run model | required | P1 | race and exhaustion tests |
+| Cancellation and budgets | run model | required | P1 | configured counter/duration controls and first-terminal race tests implemented; executor integration pending |
 | Runtime supervisor | not public productized | case study | P2 | two-worker conflict scenario |
 | Inject/steer | experimental/case study | case study | P2 | ordered-context mutation test |
 | Handoff/redirect | experimental/case study | case study | P2 | ownership transition test |

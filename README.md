@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.17.0` provides versioned task, effect, run-outcome, run-artifact, run-usage, and
+Version `0.18.0` provides versioned task, effect, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -95,6 +95,7 @@ trace-record contracts with durable SQLite task and trace stores:
 - immutable finished, failed, exhausted, and cancelled run outcomes with exact task-lock
   provenance;
 - immutable ordered text/blob run artifacts and aggregate run-usage records correlated by run ID;
+- cooperative run controls with configured counter/duration budgets and caller cancellation;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
@@ -122,6 +123,7 @@ import {
     createRecordId,
     createRunOutcome,
     createRunArtifact,
+    createRunControl,
     createRunUsage,
     planAppendBatch,
     ROOT_WITNESS_ID,
@@ -198,6 +200,21 @@ const runUsage = createRunUsage({
     cacheReadInputTokens: 80,
     costUsd: 0.0042,
 });
+
+const runControl = createRunControl({
+    budget: {
+        maxTurns: 20,
+        maxEffects: 100,
+        maxDurationMilliseconds: 30_000,
+        maxInputTokens: 20_000,
+        maxOutputTokens: 4_000,
+        maxCostUsd: 1,
+    },
+});
+runControl.consume({ turns: 1, inputTokens: 500, outputTokens: 100, costUsd: 0.02 });
+runControl.signal;
+runControl.snapshot();
+runControl.dispose();
 
 const record = { operation: "task.started", ordinal: 1 };
 
@@ -331,6 +348,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Ordered effect handlers](./docs/effect-handlers.md)
 - [Run outcomes](./docs/run-outcomes.md)
 - [Run artifacts and usage](./docs/run-artifacts-and-usage.md)
+- [Run budgets and cancellation](./docs/run-control.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -343,9 +361,10 @@ integrity, recovery, native interchange, and blob-orphan collection contracts ar
 Phase 2 now includes bodyless task descriptors, runtime schemas, artifact locks, durable exact task
 registration, immutable correlated effect intent/outcome records, ordered exact-kind handler
 dispatch, versioned terminal run-outcome records, ordered text/blob artifact records, and aggregate
-run-usage records. Dynamic handler scopes, run execution, artifact persistence within the run
-ledger, budgets, cancellation, settlement, scopes, live supervision, replay, and the paper
-applications remain planned. The next TypeScript slice adds budgets and cancellation semantics.
+run-usage records. Configured run controls now enforce cooperative counter/duration budgets and
+caller cancellation. Dynamic handler scopes, deterministic and live-provider execution, artifact
+persistence within the run ledger, settlement, scopes, live supervision, replay, and the paper
+applications remain planned. The next TypeScript slice adds the deterministic static provider.
 
 ## Attribution
 

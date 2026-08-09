@@ -18,3 +18,19 @@ export const RUN_TERMINAL_STATUSES = ["finished", "failed", "exhausted", "cancel
 
 /** Configured content representations for run artifacts. @public */
 export const RUN_ARTIFACT_CONTENT_TYPES = ["text", "blob"] as const;
+
+/** Configured run-budget metrics in deterministic exhaustion precedence. @public */
+export const RUN_BUDGET_METRICS = [
+    "turns",
+    "effects",
+    "duration_milliseconds",
+    "input_tokens",
+    "output_tokens",
+    "cost_usd",
+] as const;
+
+/** Configured run-control reason discriminants. @public */
+export const RUN_CONTROL_REASON_TYPES = ["budget_exhausted", "cancelled"] as const;
+
+/** Configured run-control lifecycle statuses. @public */
+export const RUN_CONTROL_STATUSES = ["active", "exhausted", "cancelled"] as const;

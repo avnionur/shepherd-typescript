@@ -248,6 +248,21 @@ export type RunProtocolConfig = {
         /** Repository-relative aggregate run-usage schema destination. */
         readonly usageSchema: string;
     };
+    /** Runtime run-control vocabulary and timer bounds. */
+    readonly control: {
+        /** Ordered supported budget metrics and exhaustion precedence. */
+        readonly budgetMetrics: readonly string[];
+        /** Stable reason used when a caller signal aborts. */
+        readonly cancellationReason: string;
+        /** Stable reason used when active control is disposed. */
+        readonly disposalReason: string;
+        /** Largest supported duration timer with room for the over-limit tick. */
+        readonly maxTimerDurationMilliseconds: number;
+        /** Closed run-control reason vocabulary. */
+        readonly reasonTypes: readonly string[];
+        /** Closed run-control lifecycle vocabulary. */
+        readonly statuses: readonly string[];
+    };
     /** First valid artifact emission ordinal. */
     readonly firstArtifactOrdinal: number;
     /** Last valid artifact emission ordinal. */
