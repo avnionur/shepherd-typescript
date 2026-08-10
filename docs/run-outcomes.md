@@ -38,8 +38,8 @@ digest lengths, and lowercase hexadecimal encodings are validated against the ta
 
 The lock is an exact provenance citation, but direct outcome construction does not claim that the
 task is registered or that execution occurred. [`executeTask`](./task-execution.md) validates
-inputs and outputs and produces these records; durable trace evidence remains a separate ledger
-capability.
+inputs and outputs and produces these records; [`executeTaskDurably`](./durable-task-execution.md)
+retains the exact outcome as trace evidence.
 
 ## Configuration and schema
 

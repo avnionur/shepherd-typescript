@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.0] - 2026-08-10
+
+### New Feature
+
+- Added `executeTaskDurably` for SQLite-backed task execution with validated creation and start
+  boundaries, aggregate usage, exact terminal outcomes, configured lifecycle terminals, and
+  immutable terminal cuts.
+- Added immutable durable execution receipts exposing creation, optional start and usage, exact
+  outcome, lifecycle terminal, and cut identities.
+
+### Improvement
+
+- Added content-addressed append intents for deterministic equal replay and conflict detection
+  before invocation when an existing run's creation evidence changes.
+- Shared one validation and execution core between transient and durable execution while retaining
+  pre-invocation cancellation and exhaustion without fabricated start, usage, effect, or artifact
+  evidence.
+- Added reopen, projection, all-terminal-status, usage, validation, replay, and conflict tests plus
+  structural durable-execution documentation.
+
+### Impact
+
+TypeScript applications can now retain deterministic task-run evidence in the trace store and
+resolve an immutable terminal execution projection after restart. Reconstructing a prior transient
+result without provider invocation and resuming incomplete runs remain explicit recovery work.
+
 ## [0.20.0] - 2026-08-10
 
 ### New Feature

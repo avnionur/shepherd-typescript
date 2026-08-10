@@ -111,6 +111,11 @@ export type {
     RunControlSnapshot,
     RunControlStatus,
 } from "./run/control-types.ts";
+export { executeTaskDurably } from "./run/durable-execution.ts";
+export type {
+    DurableTaskExecutionResult,
+    TaskExecutionLedgerReceipt,
+} from "./run/durable-execution-types.ts";
 export { executeTask } from "./run/execution.ts";
 export type { TaskExecutionOptions, TaskExecutionResult } from "./run/execution-types.ts";
 export { createRunOutcome } from "./run/outcomes.ts";

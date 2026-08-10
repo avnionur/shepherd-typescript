@@ -34,5 +34,6 @@ protocol v1 compatibility constant. Generated JSON Schemas live in
 Public behavior, malformed inputs, blob integration, immutability, independent fixtures, schema
 closure, and configuration drift are covered by
 [`test/run/artifacts-usage.test.ts`](../test/run/artifacts-usage.test.ts) and
-[`test/run/protocol.test.ts`](../test/run/protocol.test.ts). Run-ledger persistence and automatic
-collection during execution are later runtime slices; these builders do not claim either behavior.
+[`test/run/protocol.test.ts`](../test/run/protocol.test.ts). Aggregate usage is retained by
+[`executeTaskDurably`](./durable-task-execution.md). Automatic artifact collection remains a later
+runtime slice; these builders do not claim that behavior.

@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-10
 
-Current version: `0.20.0`
+Current version: `0.21.0`
 
 Current level: L0 — canonical model
 
@@ -30,8 +30,11 @@ and fails closed with configured typed errors on mismatch or exhaustion.
 
 The offline bodyless task executor now maps validated task inputs and exact output schemas into
 provider requests, accounts observed usage through run control, validates provider responses and
-task outputs, and returns immutable finished, failed, exhausted, or cancelled results. It does not
-yet persist execution lifecycle evidence in the trace store.
+task outputs, and returns immutable finished, failed, exhausted, or cancelled results. Durable
+execution now retains validated creation and actual start boundaries, aggregate observed usage,
+the exact terminal outcome, its lifecycle projection record, and an immutable terminal cut in the
+trace store. Equal deterministic retries replay without duplicating records; recovery that returns
+prior results without provider invocation remains pending.
 
 ## Progress
 
@@ -70,6 +73,8 @@ yet persist execution lifecycle evidence in the trace store.
 - [x] Implement the provider-neutral request/response contract and deterministic static provider.
 - [x] Implement offline bodyless task execution with schema validation, usage accounting, budgets,
   cancellation, and terminal normalization.
+- [x] Persist deterministic task execution lifecycle, aggregate usage, terminal outcome evidence,
+  and immutable terminal cuts without fabricating effects or artifacts.
 - [x] Audit every paper-v3 section and close plan gaps for proof envelopes, trajectory compression,
   experiment protocols, limitations, and future-work classification.
 
@@ -83,8 +88,8 @@ yet persist execution lifecycle evidence in the trace store.
 
 ## Next slice
 
-Persist deterministic task execution lifecycle, aggregate usage, and terminal outcome evidence in
-the trace store without fabricating effect or artifact records.
+Add durable execution recovery reads that reconstruct a committed result without provider
+invocation and classify or resume incomplete creation/start traces safely.
 
 ## Notes
 

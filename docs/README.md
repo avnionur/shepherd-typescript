@@ -53,6 +53,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   fail-closed errors.
 - [Offline task execution](./task-execution.md) defines task-to-provider request mapping, schema
   validation, usage accounting, budgets, cancellation, and terminal-result normalization.
+- [Durable task execution](./durable-task-execution.md) defines lifecycle, aggregate usage, exact
+  terminal outcome persistence, deterministic append replay, and terminal cuts.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

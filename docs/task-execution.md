@@ -54,6 +54,6 @@ Stable executor failure classifications and fallback messages live under `runs.e
 remain generated, typed, and compatibility locked.
 
 This executor is deliberately offline and side-effect free beyond the supplied provider. It does
-not persist a run ledger, append lifecycle records, dispatch effects, or create artifacts. Those
-capabilities require later durable execution and scoped-effect slices; this API does not fabricate
-their evidence.
+not itself persist a run ledger, append lifecycle records, dispatch effects, or create artifacts.
+[`executeTaskDurably`](./durable-task-execution.md) wraps the same validated execution with trace
+evidence; effect dispatch and artifact collection remain separate capabilities.

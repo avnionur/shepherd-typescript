@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.20.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `0.21.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -100,6 +100,8 @@ trace-record contracts with durable SQLite task and trace stores:
   provider;
 - offline bodyless task execution with exact schema validation, usage accounting, budgets,
   cancellation, and terminal-result normalization;
+- durable task execution with configured lifecycle records, aggregate usage, exact terminal
+  outcomes, deterministic append replay, and immutable terminal cuts;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
@@ -131,6 +133,7 @@ import {
     createRunUsage,
     createStaticProvider,
     executeTask,
+    executeTaskDurably,
     planAppendBatch,
     ROOT_WITNESS_ID,
     schema,
@@ -288,6 +291,30 @@ planAppendBatch({
 // { records, causal_edges, owner_ordinal_ranges, next_owner_ordinals }
 
 using store = new SQLiteTraceStore("trace.sqlite");
+const durableProvider = createStaticProvider({
+    descriptor: { id: "durable-readme-fixture", model: "offline-v1" },
+    exchanges: [{
+        request: staticRequest,
+        response: {
+            output: "ready",
+            usage: {
+                cacheCreationInputTokens: 0,
+                cacheReadInputTokens: 0,
+                costUsd: 0,
+                inputTokens: 4,
+                outputTokens: 1,
+            },
+        },
+    }],
+});
+const durableExecution = await executeTaskDurably(store, {
+    task: statusTask,
+    input: { state: "ready" },
+    provider: durableProvider,
+    runId: "run:status:durable",
+    budget: { maxTurns: 1 },
+});
+store.projectExecution(durableExecution.ledger.cut.cut_id);
 const receipt = store.append({
     append_intent_id: "append:example:1",
     batch: {
@@ -393,6 +420,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Run budgets and cancellation](./docs/run-control.md)
 - [Provider contract and static provider](./docs/static-provider.md)
 - [Offline task execution](./docs/task-execution.md)
+- [Durable task execution](./docs/durable-task-execution.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -407,11 +435,10 @@ registration, immutable correlated effect intent/outcome records, ordered exact-
 dispatch, versioned terminal run-outcome records, ordered text/blob artifact records, and aggregate
 run-usage records. Configured run controls now enforce cooperative counter/duration budgets and
 caller cancellation. A provider-neutral structured request/response boundary, deterministic
-exact-cassette static provider, and offline bodyless task executor are implemented. Dynamic handler
-scopes, durable execution-ledger integration, live-provider adapters, artifact persistence within
-the run ledger, settlement, scopes, live supervision, replay, and the paper applications remain
-planned. The next TypeScript slice persists deterministic execution lifecycle, usage, and outcome
-evidence in the trace store.
+exact-cassette static provider, offline bodyless task executor, and durable lifecycle, usage,
+outcome, and terminal-cut persistence are implemented. Dynamic handler scopes, result recovery
+without provider re-invocation, live-provider adapters, artifact persistence within the run ledger,
+settlement, scopes, live supervision, suffix replay, and the paper applications remain planned.
 
 ## Attribution
 

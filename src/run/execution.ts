@@ -2,10 +2,15 @@ import type { SemanticValue } from "../canonical/canonical-record.ts";
 import { runProtocolConfig } from "../protocol/config.ts";
 import { RUN_CONTROL_STATUSES } from "../protocol/values.generated.ts";
 import type { ModelResponse } from "../provider/types.ts";
-import { readModelResponse, readProviderDescriptor } from "../provider/validation.ts";
+import { readModelResponse } from "../provider/validation.ts";
 import type { TaskSchema } from "../task/schema.ts";
 import { createRunControl } from "./control.ts";
 import type { RunControlSnapshot } from "./control-types.ts";
+import {
+    normalizeTaskValue,
+    type PreparedTaskExecution,
+    prepareTaskExecution,
+} from "./execution-preparation.ts";
 import {
     createControlEnding,
     createFailedExecution,
@@ -14,9 +19,7 @@ import {
     readProviderErrorName,
 } from "./execution-results.ts";
 import type { TaskExecutionOptions, TaskExecutionResult } from "./execution-types.ts";
-import { readTaskExecutionOptions } from "./execution-validation.ts";
 import { createRunUsage } from "./usage.ts";
-import { assertRunText } from "./validation-values.ts";
 
 const [ACTIVE_CONTROL_STATUS] = RUN_CONTROL_STATUSES;
 
@@ -43,10 +46,15 @@ const [ACTIVE_CONTROL_STATUS] = RUN_CONTROL_STATUSES;
 export async function executeTask<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
     options: TaskExecutionOptions<I, O>,
 ): Promise<TaskExecutionResult> {
-    const definition = readTaskExecutionOptions(options);
-    assertRunText(definition.runId, "runId");
-    const input = normalizeTaskValue(definition.task.parseInput(definition.input));
-    const provider = readProviderDescriptor(definition.provider.descriptor());
+    return executePreparedTask(prepareTaskExecution(options));
+}
+
+/** Executes validated inputs and optionally records the exact start boundary. @internal */
+export async function executePreparedTask<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(prepared: PreparedTaskExecution<I, O>, onStarted?: () => void): Promise<TaskExecutionResult> {
+    const { definition, input, provider } = prepared;
     const control = createRunControl({
         budget: definition.budget,
         ...(definition.signal === undefined ? {} : { signal: definition.signal }),
@@ -74,6 +82,7 @@ export async function executeTask<I extends TaskSchema<unknown>, O extends TaskS
                 null,
             );
         }
+        onStarted?.();
         let response: ModelResponse;
         try {
             response = readModelResponse(
@@ -188,8 +197,4 @@ export async function executeTask<I extends TaskSchema<unknown>, O extends TaskS
     } finally {
         control.dispose();
     }
-}
-
-function normalizeTaskValue(value: unknown): SemanticValue {
-    return value === undefined ? null : (value as SemanticValue);
 }
