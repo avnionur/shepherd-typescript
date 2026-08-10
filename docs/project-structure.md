@@ -43,7 +43,7 @@ public exports → projection area → immutable store slice types
 public exports → provider area → canonical snapshots and protocol configuration
 public exports → task area → canonical identity and protocol configuration
 public exports → effect area → canonical snapshots and protocol configuration
-public exports → run area → task locks, canonical snapshots, and protocol configuration
+public exports → run area → task, provider, canonical snapshots, and protocol configuration
 build/release scripts → repository configuration
 tests → public exports
 ```
@@ -69,9 +69,9 @@ The runtime areas are intentionally shallow:
 - `provider/` owns provider-neutral descriptors, structured invocation values, exact deterministic
   cassettes, typed failures, and closed validation;
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
-- `run/` owns versioned terminal outcomes, ordered artifact and aggregate usage construction,
-  cooperative budget/cancellation control, closed validation, exact task-lock citations, and
-  durable blob-receipt references;
+- `run/` owns offline task orchestration, versioned terminal outcomes, ordered artifact and
+  aggregate usage construction, cooperative budget/cancellation control, closed validation, exact
+  task-lock citations, and durable blob-receipt references;
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
   recovery and orphan-collection diagnostics.

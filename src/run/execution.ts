@@ -1,0 +1,195 @@
+import type { SemanticValue } from "../canonical/canonical-record.ts";
+import { runProtocolConfig } from "../protocol/config.ts";
+import { RUN_CONTROL_STATUSES } from "../protocol/values.generated.ts";
+import type { ModelResponse } from "../provider/types.ts";
+import { readModelResponse, readProviderDescriptor } from "../provider/validation.ts";
+import type { TaskSchema } from "../task/schema.ts";
+import { createRunControl } from "./control.ts";
+import type { RunControlSnapshot } from "./control-types.ts";
+import {
+    createControlEnding,
+    createFailedExecution,
+    createFinishedExecution,
+    readExecutionErrorMessage,
+    readProviderErrorName,
+} from "./execution-results.ts";
+import type { TaskExecutionOptions, TaskExecutionResult } from "./execution-types.ts";
+import { readTaskExecutionOptions } from "./execution-validation.ts";
+import { createRunUsage } from "./usage.ts";
+import { assertRunText } from "./validation-values.ts";
+
+const [ACTIVE_CONTROL_STATUS] = RUN_CONTROL_STATUSES;
+
+/**
+ * Executes one validated bodyless task through a provider-neutral structured boundary.
+ *
+ * @param options - Exact task, inferred input, provider, run identity, budget, and cancellation.
+ * @returns Terminal outcome, aggregate usage, provider identity, and final control snapshot.
+ * @throws {TypeError} If caller-owned task input or execution control options are malformed.
+ *
+ * @example
+ * ```ts
+ * const execution = await executeTask({
+ *     task: greet,
+ *     input: { name: "Ada" },
+ *     provider,
+ *     runId: "run:greet:1",
+ *     budget: { maxTurns: 1 },
+ * });
+ * ```
+ *
+ * @public
+ */
+export async function executeTask<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    options: TaskExecutionOptions<I, O>,
+): Promise<TaskExecutionResult> {
+    const definition = readTaskExecutionOptions(options);
+    assertRunText(definition.runId, "runId");
+    const input = normalizeTaskValue(definition.task.parseInput(definition.input));
+    const provider = readProviderDescriptor(definition.provider.descriptor());
+    const control = createRunControl({
+        budget: definition.budget,
+        ...(definition.signal === undefined ? {} : { signal: definition.signal }),
+    });
+    try {
+        const initialSnapshot = control.snapshot();
+        if (initialSnapshot.status !== ACTIVE_CONTROL_STATUS) {
+            return createControlEnding(
+                definition.runId,
+                definition.task.artifactLock,
+                provider,
+                control,
+                initialSnapshot,
+                null,
+            );
+        }
+        const turnSnapshot = control.consume({ turns: 1 });
+        if (turnSnapshot.status !== ACTIVE_CONTROL_STATUS) {
+            return createControlEnding(
+                definition.runId,
+                definition.task.artifactLock,
+                provider,
+                control,
+                turnSnapshot,
+                null,
+            );
+        }
+        let response: ModelResponse;
+        try {
+            response = readModelResponse(
+                await definition.provider.invoke(
+                    {
+                        input,
+                        instruction: definition.task.instruction,
+                        outputSchema: definition.task.artifact.output_schema,
+                    },
+                    control.signal,
+                ),
+            );
+        } catch (error) {
+            const snapshot = control.snapshot();
+            if (snapshot.status !== ACTIVE_CONTROL_STATUS) {
+                return createControlEnding(
+                    definition.runId,
+                    definition.task.artifactLock,
+                    provider,
+                    control,
+                    snapshot,
+                    null,
+                );
+            }
+            return createFailedExecution(
+                definition.runId,
+                definition.task.artifactLock,
+                provider,
+                snapshot,
+                null,
+                readProviderErrorName(error),
+                readExecutionErrorMessage(
+                    error,
+                    runProtocolConfig.execution.errors.providerFailureMessage,
+                ),
+            );
+        }
+        const usage = createRunUsage({
+            cacheCreationInputTokens: response.usage.cacheCreationInputTokens,
+            cacheReadInputTokens: response.usage.cacheReadInputTokens,
+            ...(response.usage.costUsd === null ? {} : { costUsd: response.usage.costUsd }),
+            inputTokens: response.usage.inputTokens,
+            outputTokens: response.usage.outputTokens,
+            runId: definition.runId,
+        });
+        let usageSnapshot: RunControlSnapshot;
+        try {
+            usageSnapshot = control.consume({
+                ...(response.usage.costUsd === null ? {} : { costUsd: response.usage.costUsd }),
+                inputTokens: response.usage.inputTokens,
+                outputTokens: response.usage.outputTokens,
+            });
+        } catch {
+            return createControlEnding(
+                definition.runId,
+                definition.task.artifactLock,
+                provider,
+                control,
+                control.snapshot(),
+                usage,
+            );
+        }
+        if (usageSnapshot.status !== ACTIVE_CONTROL_STATUS) {
+            return createControlEnding(
+                definition.runId,
+                definition.task.artifactLock,
+                provider,
+                control,
+                usageSnapshot,
+                usage,
+            );
+        }
+        if (definition.budget.maxCostUsd !== undefined && response.usage.costUsd === null) {
+            return createFailedExecution(
+                definition.runId,
+                definition.task.artifactLock,
+                provider,
+                usageSnapshot,
+                usage,
+                runProtocolConfig.execution.errors.costUnavailableType,
+                runProtocolConfig.execution.errors.costUnavailableMessage,
+                false,
+            );
+        }
+        let value: SemanticValue;
+        try {
+            value = normalizeTaskValue(definition.task.parseOutput(response.output));
+        } catch (error) {
+            const message = readExecutionErrorMessage(
+                error,
+                runProtocolConfig.execution.errors.outputValidationMessage,
+            );
+            return createFailedExecution(
+                definition.runId,
+                definition.task.artifactLock,
+                provider,
+                control.snapshot(),
+                usage,
+                runProtocolConfig.execution.errors.outputValidationType,
+                message,
+                false,
+            );
+        }
+        return createFinishedExecution(
+            definition.runId,
+            definition.task.artifactLock,
+            provider,
+            control.snapshot(),
+            usage,
+            value,
+        );
+    } finally {
+        control.dispose();
+    }
+}
+
+function normalizeTaskValue(value: unknown): SemanticValue {
+    return value === undefined ? null : (value as SemanticValue);
+}

@@ -36,9 +36,10 @@ properties, unsupported statuses, empty or malformed text, non-canonical success
 incompatible task locks are rejected before snapshotting. Task lock versions, identity prefixes,
 digest lengths, and lowercase hexadecimal encodings are validated against the task protocol.
 
-The lock is an exact provenance citation, but outcome construction does not claim that the task is
-registered or that execution occurred. A later execution slice will resolve the lock, validate
-inputs and outputs, append trace evidence, and produce this record.
+The lock is an exact provenance citation, but direct outcome construction does not claim that the
+task is registered or that execution occurred. [`executeTask`](./task-execution.md) validates
+inputs and outputs and produces these records; durable trace evidence remains a separate ledger
+capability.
 
 ## Configuration and schema
 
@@ -48,7 +49,6 @@ locked; changing its existing values requires a new protocol version. The genera
 [`run-outcome-v1.schema.json`](../spec/schemas/run-outcome-v1.schema.json) validates the same closed
 wire shapes independently of TypeScript.
 
-Artifacts, usage, persistence, and task execution are separate capabilities and are not fabricated
-by this record builder. Budget and `AbortSignal` behavior are implemented independently by
-[`createRunControl`](../src/run/control.ts); a later executor will translate its terminal reason
-into the corresponding outcome while preserving partial evidence.
+Artifacts, usage, persistence, and task execution remain separate capabilities and are not
+fabricated by this record builder. The offline executor combines `createRunControl`, aggregate
+usage, and this builder while preserving partial observed evidence.

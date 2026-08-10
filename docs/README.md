@@ -51,6 +51,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Provider contract and static provider](./static-provider.md) defines immutable provider
   descriptors, structured requests/responses, exact cassette replay, cancellation, and typed
   fail-closed errors.
+- [Offline task execution](./task-execution.md) defines task-to-provider request mapping, schema
+  validation, usage accounting, budgets, cancellation, and terminal-result normalization.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

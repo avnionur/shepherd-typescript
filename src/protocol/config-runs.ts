@@ -18,6 +18,7 @@ export function readRunConfig(value: unknown): ProtocolConfig["runs"] {
             "artifactVersion",
             "artifacts",
             "control",
+            "execution",
             "firstArtifactOrdinal",
             "lastArtifactOrdinal",
             "outcomeVersion",
@@ -48,6 +49,19 @@ export function readRunConfig(value: unknown): ProtocolConfig["runs"] {
             "statuses",
         ],
         "runs.control",
+    );
+    const execution = readObject(runs.execution, ["errors"], "runs.execution");
+    const executionErrors = readObject(
+        execution.errors,
+        [
+            "costUnavailableMessage",
+            "costUnavailableType",
+            "outputValidationMessage",
+            "outputValidationType",
+            "providerFailureMessage",
+            "providerFailureType",
+        ],
+        "runs.execution.errors",
     );
     const firstArtifactOrdinal = readNonNegativeInteger(
         runs.firstArtifactOrdinal,
@@ -98,6 +112,34 @@ export function readRunConfig(value: unknown): ProtocolConfig["runs"] {
             ),
             reasonTypes: readUniqueStrings(control.reasonTypes, "runs.control.reasonTypes"),
             statuses: readUniqueStrings(control.statuses, "runs.control.statuses"),
+        },
+        execution: {
+            errors: {
+                costUnavailableMessage: readNonEmptyString(
+                    executionErrors.costUnavailableMessage,
+                    "runs.execution.errors.costUnavailableMessage",
+                ),
+                costUnavailableType: readNonEmptyString(
+                    executionErrors.costUnavailableType,
+                    "runs.execution.errors.costUnavailableType",
+                ),
+                outputValidationMessage: readNonEmptyString(
+                    executionErrors.outputValidationMessage,
+                    "runs.execution.errors.outputValidationMessage",
+                ),
+                outputValidationType: readNonEmptyString(
+                    executionErrors.outputValidationType,
+                    "runs.execution.errors.outputValidationType",
+                ),
+                providerFailureMessage: readNonEmptyString(
+                    executionErrors.providerFailureMessage,
+                    "runs.execution.errors.providerFailureMessage",
+                ),
+                providerFailureType: readNonEmptyString(
+                    executionErrors.providerFailureType,
+                    "runs.execution.errors.providerFailureType",
+                ),
+            },
         },
         firstArtifactOrdinal,
         lastArtifactOrdinal,

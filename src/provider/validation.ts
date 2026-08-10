@@ -1,13 +1,52 @@
 import type { SemanticRecord, SemanticValue } from "../canonical/canonical-record.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
+import { providerProtocolConfig } from "../protocol/config.ts";
 import type {
     ModelRequest,
     ModelResponse,
     ModelUsage,
+    ProviderDescriptor,
     StaticProviderDefinition,
     StaticProviderDescriptorDefinition,
     StaticProviderExchange,
 } from "./types.ts";
+
+/** Validates and snapshots one provider-neutral descriptor. @internal */
+export function readProviderDescriptor(value: unknown): ProviderDescriptor {
+    const fields = readDataObject(
+        value,
+        ["capabilities", "id", "kind", "model"],
+        "provider descriptor",
+    );
+    const capabilities = readDataObject(
+        fields.capabilities,
+        ["streaming", "structuredOutput", "tools"],
+        "provider descriptor capabilities",
+    );
+    if (
+        ![capabilities.streaming, capabilities.structuredOutput, capabilities.tools].every(
+            (capability) => typeof capability === "boolean",
+        )
+    ) {
+        throw new TypeError("provider descriptor capabilities must be booleans");
+    }
+    if (!providerProtocolConfig.kinds.includes(fields.kind as string)) {
+        throw new TypeError("provider descriptor kind is not configured");
+    }
+    return Object.freeze({
+        capabilities: Object.freeze({
+            streaming: capabilities.streaming as boolean,
+            structuredOutput: capabilities.structuredOutput as boolean,
+            tools: capabilities.tools as boolean,
+        }),
+        id: readNonEmptyString(fields.id, "provider descriptor id"),
+        kind: fields.kind as ProviderDescriptor["kind"],
+        model:
+            fields.model === null
+                ? null
+                : readNonEmptyString(fields.model, "provider descriptor model"),
+    });
+}
 
 /** Validates and snapshots one complete static-provider definition. @internal */
 export function readStaticProviderDefinition(value: unknown): StaticProviderDefinition {
@@ -56,12 +95,12 @@ function readExchange(value: unknown, index: number): StaticProviderExchange {
     );
     return Object.freeze({
         request: readModelRequest(fields.request),
-        response: readModelResponse(fields.response, index),
+        response: readModelResponse(fields.response, `static provider exchange[${index}] response`),
     });
 }
 
-function readModelResponse(value: unknown, index: number): ModelResponse {
-    const subject = `static provider exchange[${index}] response`;
+/** Validates and snapshots one provider-neutral response. @internal */
+export function readModelResponse(value: unknown, subject = "model response"): ModelResponse {
     const fields = readDataObject(value, ["output", "usage"], subject);
     return Object.freeze({
         output: snapshotSemanticValue(fields.output, `${subject} output`),

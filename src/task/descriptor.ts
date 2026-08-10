@@ -7,6 +7,8 @@ import { type TaskSchema, taskSchemaMetadata } from "./schema.ts";
 import type { TaskArtifact, TaskArtifactLock, TaskDefinition, TaskDescriptor } from "./types.ts";
 import { assertTaskText, readTaskDataObject } from "./validation.ts";
 
+const authenticatedTaskDescriptors = new WeakSet<object>();
+
 /**
  * Creates an immutable, content-addressed bodyless task descriptor.
  *
@@ -43,7 +45,7 @@ export function task<I extends TaskSchema<unknown>, O extends TaskSchema<unknown
         task_version: values.version,
     }) as TaskArtifact;
     const artifactLock = createTaskArtifactLock(artifact);
-    return Object.freeze({
+    const descriptor = Object.freeze({
         artifact,
         artifactLock,
         inputSchema: values.input,
@@ -56,6 +58,17 @@ export function task<I extends TaskSchema<unknown>, O extends TaskSchema<unknown
             values.output.parse(value) as ReturnType<TaskDescriptor<I, O>["parseOutput"]>,
         version: values.version,
     });
+    authenticatedTaskDescriptors.add(descriptor);
+    return descriptor;
+}
+
+/** Rejects task descriptor objects not created by this package instance. @internal */
+export function assertTaskDescriptor(
+    value: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>,
+): void {
+    if (!authenticatedTaskDescriptors.has(value)) {
+        throw new TypeError("task descriptor must be created by the configured task builder");
+    }
 }
 
 /** Derives the exact configured lock for a validated canonical task artifact. @internal */

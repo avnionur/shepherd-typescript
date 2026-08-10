@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.0] - 2026-08-10
+
+### New Feature
+
+- Added `executeTask` for offline provider-backed execution of typed bodyless tasks.
+- Added immutable execution results containing exact task-lock outcomes, aggregate usage,
+  provider identity, and the final run-control snapshot.
+- Added finished, classified failure, budget-exhaustion, and caller-cancellation normalization.
+
+### Improvement
+
+- Added configuration-owned executor failure classifications and fallback messages.
+- Added fail-closed unavailable-cost handling, untrusted custom-provider descriptor/response
+  validation, authenticated task provenance, immutable option snapshots, late-cancellation
+  normalization, safe error text, void normalization, and pre-invocation option, input, identity,
+  and budget validation.
+- Added public-seam tests with complete runtime line, branch, and function coverage plus structural
+  execution documentation.
+
+### Impact
+
+TypeScript applications can now execute deterministic bodyless task fixtures end to end through
+the static provider while enforcing schemas, resource limits, cancellation, and inspectable
+terminal results. Durable run-ledger persistence remains a separate next slice.
+
 ## [0.19.0] - 2026-08-10
 
 ### New Feature

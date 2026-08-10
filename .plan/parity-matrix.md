@@ -15,7 +15,7 @@ and any applicable pinned upstream-oracle comparison.
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
 | --- | --- | --- | --- | --- |
 | Typed task declaration | shipped | core | P0 | compile-time tests plus runtime descriptor fixtures |
-| Bodyless task contract | shipped via retained run | core | P0 | static provider end-to-end test |
+| Bodyless task contract | shipped via retained run | core | P0 | offline static-provider execution and terminal public-seam tests implemented; durable run retention follows |
 | Bodied deterministic task | shipped | core | P0 | success/failure/cancel fixtures |
 | Doc/instruction is behavioral identity | shipped | core | P0 | task digest changes when instruction changes |
 | Runtime input/output validation | partial surface | core | P0 | schema failure fixtures |
@@ -97,13 +97,13 @@ and any applicable pinned upstream-oracle comparison.
 
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
 | --- | --- | --- | --- | --- |
-| Deterministic/static provider | shipped | testing need | P0 | exact offline cassette provider and public-seam tests implemented; executor trace fixture follows |
+| Deterministic/static provider | shipped | testing need | P0 | exact offline cassette provider and executor public-seam tests implemented; durable trace fixture follows |
 | Claude CLI provider | shipped path | examples | P1 | opt-in integration test |
 | Codex provider | claimed by project materials | examples | P1 | opt-in integration test |
 | OpenRouter/provider adapter | claimed via Claude path | examples | P2 | contract test |
 | Provider-neutral event model | architectural | core | P0 | request/response and descriptor contract implemented; event normalization follows executor integration |
 | Provider prompt/cache identity | research | replay need | P2 | prefix identity tests |
-| Cancellation and budgets | run model | required | P1 | configured counter/duration controls and first-terminal race tests implemented; executor integration pending |
+| Cancellation and budgets | run model | required | P1 | configured counter/duration controls and executor terminal integration implemented; effect accounting follows |
 | Runtime supervisor | not public productized | case study | P2 | two-worker conflict scenario |
 | Inject/steer | experimental/case study | case study | P2 | ordered-context mutation test |
 | Handoff/redirect | experimental/case study | case study | P2 | ownership transition test |

@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-10
 
-Current version: `0.19.0`
+Current version: `0.20.0`
 
 Current level: L0 — canonical model
 
@@ -27,6 +27,11 @@ compose caller cancellation through a first-terminal-wins `AbortSignal`.
 The provider-neutral model boundary now exposes immutable descriptors and structured invocation
 values. Its deterministic static provider consumes exact cassettes, cooperates with cancellation,
 and fails closed with configured typed errors on mismatch or exhaustion.
+
+The offline bodyless task executor now maps validated task inputs and exact output schemas into
+provider requests, accounts observed usage through run control, validates provider responses and
+task outputs, and returns immutable finished, failed, exhausted, or cancelled results. It does not
+yet persist execution lifecycle evidence in the trace store.
 
 ## Progress
 
@@ -63,6 +68,8 @@ and fails closed with configured typed errors on mismatch or exhaustion.
 - [x] Implement configured ordered run-artifact and aggregate run-usage records.
 - [x] Implement configured run budgets and cooperative `AbortSignal` cancellation semantics.
 - [x] Implement the provider-neutral request/response contract and deterministic static provider.
+- [x] Implement offline bodyless task execution with schema validation, usage accounting, budgets,
+  cancellation, and terminal normalization.
 - [x] Audit every paper-v3 section and close plan gaps for proof envelopes, trajectory compression,
   experiment protocols, limitations, and future-work classification.
 
@@ -76,8 +83,8 @@ and fails closed with configured typed errors on mismatch or exhaustion.
 
 ## Next slice
 
-Implement offline bodyless task execution through the static provider, task schemas, run control,
-and terminal run outcomes.
+Persist deterministic task execution lifecycle, aggregate usage, and terminal outcome evidence in
+the trace store without fabricating effect or artifact records.
 
 ## Notes
 

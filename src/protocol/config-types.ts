@@ -297,6 +297,24 @@ export type RunProtocolConfig = {
         /** Closed run-control lifecycle vocabulary. */
         readonly statuses: readonly string[];
     };
+    /** Runtime task-execution failure normalization. */
+    readonly execution: {
+        /** Stable classifications and fallback descriptions for executor failures. */
+        readonly errors: {
+            /** Failure description used when a configured cost limit cannot be enforced. */
+            readonly costUnavailableMessage: string;
+            /** Failure classification used when provider cost is unavailable. */
+            readonly costUnavailableType: string;
+            /** Fallback description used when task output validation fails opaquely. */
+            readonly outputValidationMessage: string;
+            /** Failure classification used when provider output violates the task schema. */
+            readonly outputValidationType: string;
+            /** Fallback provider failure description. */
+            readonly providerFailureMessage: string;
+            /** Fallback provider failure classification. */
+            readonly providerFailureType: string;
+        };
+    };
     /** First valid artifact emission ordinal. */
     readonly firstArtifactOrdinal: number;
     /** Last valid artifact emission ordinal. */

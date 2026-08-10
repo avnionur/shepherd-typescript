@@ -219,6 +219,16 @@ export const RUN_PROTOCOL_V1_CONTRACT = deepFreeze({
         reasonTypes: ["budget_exhausted", "cancelled"],
         statuses: ["active", "exhausted", "cancelled"],
     },
+    execution: {
+        errors: {
+            costUnavailableMessage: "provider cost is unavailable for a configured cost budget",
+            costUnavailableType: "RunCostUnavailableError",
+            outputValidationMessage: "provider output does not satisfy the task schema",
+            outputValidationType: "TaskOutputValidationError",
+            providerFailureMessage: "provider invocation failed",
+            providerFailureType: "ProviderInvocationError",
+        },
+    },
     firstArtifactOrdinal: 0,
     lastArtifactOrdinal: 9_007_199_254_740_990,
     outcomeVersion: 1,

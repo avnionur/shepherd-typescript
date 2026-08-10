@@ -23,6 +23,8 @@ unhandled behavior. The run section fixes outcome, artifact, and usage versions;
 status and artifact-content vocabularies; artifact ordinal bounds; schema identifiers; and
 generated schema paths. It also fixes run-control statuses, reason types, budget-metric precedence,
 stable cancellation reasons, and safe duration-timer bounds.
+It also fixes executor failure classifications and fallback messages used for provider, output,
+and unavailable-cost failures.
 The provider section fixes provider kinds, static-provider capabilities, and stable typed-error
 codes and messages.
 

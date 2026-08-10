@@ -51,6 +51,16 @@
             "reasonTypes": ["budget_exhausted", "cancelled"],
             "statuses": ["active", "exhausted", "cancelled"]
         },
+        "execution": {
+            "errors": {
+                "costUnavailableMessage": "provider cost is unavailable for a configured cost budget",
+                "costUnavailableType": "RunCostUnavailableError",
+                "outputValidationMessage": "provider output does not satisfy the task schema",
+                "outputValidationType": "TaskOutputValidationError",
+                "providerFailureMessage": "provider invocation failed",
+                "providerFailureType": "ProviderInvocationError"
+            }
+        },
         "firstArtifactOrdinal": 0,
         "lastArtifactOrdinal": 9007199254740990,
         "outcomeVersion": 1,

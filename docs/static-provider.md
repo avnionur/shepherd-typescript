@@ -11,8 +11,9 @@ and [`test/provider/protocol.test.ts`](../test/provider/protocol.test.ts).
 
 `ModelProvider` exposes `descriptor()` and `invoke(request, signal)`. The immutable descriptor
 identifies the provider instance, provider kind, model, and declared streaming, structured-output,
-and tool capabilities. Tasks do not select providers; later execution code binds a provider for a
-run and maps the task instruction, validated input, and output JSON Schema into `ModelRequest`.
+and tool capabilities. Tasks do not select providers; [`executeTask`](./task-execution.md) binds a
+provider for a run and maps the task instruction, validated input, and output JSON Schema into
+`ModelRequest`.
 
 `ModelResponse` contains one canonical semantic output and per-invocation token, cache-token, and
 optional cost usage. Provider-call usage is distinct from the aggregate `RunUsage` record. The
@@ -47,6 +48,6 @@ values, unsafe token counts, and invalid cost values. Provider kinds, static cap
 error codes/messages are compatibility-locked under `providers` in
 [`protocol.config.json`](../protocol.config.json).
 
-This slice does not append provider events, execute tasks, validate output against task schemas,
-or create run outcomes. Those responsibilities belong to the offline task executor and durable run
-ledger slices that consume this provider boundary.
+The provider itself does not append events, validate task output, or create run outcomes. The
+offline executor owns task-schema validation and terminal normalization; a later durable run
+ledger will own retained execution evidence.

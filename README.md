@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.19.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `0.20.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -98,6 +98,8 @@ trace-record contracts with durable SQLite task and trace stores:
 - cooperative run controls with configured counter/duration budgets and caller cancellation;
 - a provider-neutral structured invocation contract and deterministic exact-cassette static
   provider;
+- offline bodyless task execution with exact schema validation, usage accounting, budgets,
+  cancellation, and terminal-result normalization;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
@@ -128,6 +130,7 @@ import {
     createRunControl,
     createRunUsage,
     createStaticProvider,
+    executeTask,
     planAppendBatch,
     ROOT_WITNESS_ID,
     schema,
@@ -215,10 +218,17 @@ const runControl = createRunControl({
     },
 });
 runControl.consume({ turns: 1, inputTokens: 500, outputTokens: 100, costUsd: 0.02 });
-const staticRequest = {
+const statusTask = task({
+    name: "status",
+    version: "1.0.0",
     instruction: "Return one status word.",
+    input: schema.object({ state: schema.string() }),
+    output: schema.string(),
+});
+const staticRequest = {
+    instruction: statusTask.instruction,
     input: { state: "ready" },
-    outputSchema: { type: "string" },
+    outputSchema: statusTask.artifact.output_schema,
 };
 const staticProvider = createStaticProvider({
     descriptor: { id: "readme-fixture", model: "offline-v1" },
@@ -236,7 +246,15 @@ const staticProvider = createStaticProvider({
         },
     }],
 });
-await staticProvider.invoke(staticRequest, runControl.signal);
+const execution = await executeTask({
+    task: statusTask,
+    input: { state: "ready" },
+    provider: staticProvider,
+    runId: "run:status:1",
+    budget: { maxTurns: 1, maxInputTokens: 4, maxOutputTokens: 1 },
+});
+execution.outcome;
+execution.usage;
 runControl.snapshot();
 runControl.dispose();
 
@@ -374,6 +392,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Run artifacts and usage](./docs/run-artifacts-and-usage.md)
 - [Run budgets and cancellation](./docs/run-control.md)
 - [Provider contract and static provider](./docs/static-provider.md)
+- [Offline task execution](./docs/task-execution.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -387,11 +406,12 @@ Phase 2 now includes bodyless task descriptors, runtime schemas, artifact locks,
 registration, immutable correlated effect intent/outcome records, ordered exact-kind handler
 dispatch, versioned terminal run-outcome records, ordered text/blob artifact records, and aggregate
 run-usage records. Configured run controls now enforce cooperative counter/duration budgets and
-caller cancellation. A provider-neutral structured request/response boundary and deterministic
-exact-cassette static provider are implemented. Dynamic handler scopes, offline task execution,
-live-provider adapters, artifact persistence within the run ledger, settlement, scopes, live
-supervision, replay, and the paper applications remain planned. The next TypeScript slice adds
-offline task execution through the static provider.
+caller cancellation. A provider-neutral structured request/response boundary, deterministic
+exact-cassette static provider, and offline bodyless task executor are implemented. Dynamic handler
+scopes, durable execution-ledger integration, live-provider adapters, artifact persistence within
+the run ledger, settlement, scopes, live supervision, replay, and the paper applications remain
+planned. The next TypeScript slice persists deterministic execution lifecycle, usage, and outcome
+evidence in the trace store.
 
 ## Attribution
 

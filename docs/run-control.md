@@ -45,6 +45,7 @@ and maximum timer duration live under `runs.control` in
 locked by the run protocol v1 compatibility contract.
 
 The control retains only consumption and a terminal reason. It neither deletes nor fabricates run
-outcomes, artifacts, usage, effects, or trace records. Future execution code will use its signal
-at every async boundary and translate exhaustion/cancellation into existing terminal outcome
-records after partial evidence has settled.
+outcomes, artifacts, usage, effects, or trace records. [`executeTask`](./task-execution.md) uses its
+signal at the provider boundary and translates exhaustion or cancellation into terminal outcome
+records after observed usage has settled. Future effect and durable-ledger execution paths must
+preserve the same rule.
