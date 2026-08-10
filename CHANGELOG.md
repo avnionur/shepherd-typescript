@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.0] - 2026-08-10
+
+### New Feature
+
+- Added provider-neutral `ModelProvider`, descriptor, structured request/response, and
+  per-invocation usage contracts.
+- Added `createStaticProvider` for single-pass deterministic exact request/response cassettes.
+- Added configuration-owned `StaticProviderRequestMismatchError` and
+  `StaticProviderExhaustedError` with stable codes and cassette positions.
+
+### Improvement
+
+- Added closed descriptor-safe validation, canonical immutable snapshots, exact request matching,
+  pre-abort preservation, and fail-closed cassette consumption semantics.
+- Added provider protocol compatibility locking and exhaustive public-seam tests for invocation,
+  validation, cancellation, mismatch, exhaustion, immutability, and configuration drift.
+
+### Impact
+
+TypeScript applications can now run reproducible offline provider fixtures through the same
+structured boundary intended for future live adapters, without credentials, network access,
+fallback generation, or hidden mutable reset behavior.
+
 ## [0.18.0] - 2026-08-10
 
 ### New Feature

@@ -97,11 +97,11 @@ and any applicable pinned upstream-oracle comparison.
 
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
 | --- | --- | --- | --- | --- |
-| Deterministic/static provider | shipped | testing need | P0 | offline golden tests |
+| Deterministic/static provider | shipped | testing need | P0 | exact offline cassette provider and public-seam tests implemented; executor trace fixture follows |
 | Claude CLI provider | shipped path | examples | P1 | opt-in integration test |
 | Codex provider | claimed by project materials | examples | P1 | opt-in integration test |
 | OpenRouter/provider adapter | claimed via Claude path | examples | P2 | contract test |
-| Provider-neutral event model | architectural | core | P0 | fake-provider TCK |
+| Provider-neutral event model | architectural | core | P0 | request/response and descriptor contract implemented; event normalization follows executor integration |
 | Provider prompt/cache identity | research | replay need | P2 | prefix identity tests |
 | Cancellation and budgets | run model | required | P1 | configured counter/duration controls and first-terminal race tests implemented; executor integration pending |
 | Runtime supervisor | not public productized | case study | P2 | two-worker conflict scenario |

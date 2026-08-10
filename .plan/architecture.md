@@ -389,6 +389,12 @@ Build the static provider first. Add live providers behind optional packages and
 integration tests. Normalize provider events without discarding raw provider
 payload citations.
 
+The implemented first slice is a single-pass exact cassette exposed through `descriptor()` and
+`invoke()`. It snapshots canonical structured request/response values, rejects mismatch and
+exhaustion with stable typed errors, and preserves pre-abort reasons without consuming an
+exchange. Streaming, checkpoints, cache identity, event normalization, and live transports remain
+future extensions of the provider-neutral boundary.
+
 Never store secrets in semantic trace bodies. Persist secret references or
 redacted metadata and define export redaction policies.
 

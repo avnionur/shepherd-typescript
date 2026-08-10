@@ -16,6 +16,9 @@ export const EFFECT_HANDLER_SELECTIONS = ["last_matching"] as const;
 /** Unhandled effect policies supported by this runtime. */
 export const EFFECT_UNHANDLED_POLICIES = ["throw"] as const;
 
+/** Provider kinds implemented by the current provider protocol. */
+export const PROVIDER_KINDS = ["static"] as const;
+
 /** One immutable historical trace-store migration contract. */
 export type StoreMigrationConfig = {
     readonly firstOwnerOrdinal: number;
@@ -134,6 +137,37 @@ export type ExecutionHistoryProjectionConfig = {
 /** Validated disposable projection configuration. */
 export type ProjectionProtocolConfig = {
     readonly executionHistory: ExecutionHistoryProjectionConfig;
+};
+
+/** Validated provider-neutral and deterministic-provider configuration. */
+export type ProviderProtocolConfig = {
+    /** Closed provider-kind vocabulary. */
+    readonly kinds: readonly string[];
+    /** Deterministic static-provider contract. */
+    readonly static: {
+        /** Capabilities declared by every static provider. */
+        readonly capabilities: {
+            /** Whether the provider exposes streaming responses. */
+            readonly streaming: boolean;
+            /** Whether the provider returns structured values. */
+            readonly structuredOutput: boolean;
+            /** Whether the provider can invoke tools. */
+            readonly tools: boolean;
+        };
+        /** Stable typed-error codes and messages. */
+        readonly errors: {
+            /** Cassette-exhaustion error code. */
+            readonly exhaustedCode: string;
+            /** Cassette-exhaustion error message. */
+            readonly exhaustedMessage: string;
+            /** Request-mismatch error code. */
+            readonly mismatchCode: string;
+            /** Request-mismatch error message. */
+            readonly mismatchMessage: string;
+        };
+        /** Configured provider-kind discriminant. */
+        readonly kind: (typeof PROVIDER_KINDS)[number];
+    };
 };
 
 /** Validated task descriptor and artifact-lock protocol configuration. */
@@ -289,6 +323,7 @@ export type ProtocolConfig = {
     readonly effects: EffectProtocolConfig;
     readonly kernel: KernelProtocolConfig;
     readonly projections: ProjectionProtocolConfig;
+    readonly providers: ProviderProtocolConfig;
     readonly recordId: RecordIdConfig;
     readonly runs: RunProtocolConfig;
     readonly tasks: TaskProtocolConfig;

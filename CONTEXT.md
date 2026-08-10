@@ -161,3 +161,13 @@ _Avoid_: Individual provider-call usage, billing invoice, mutable counter
 A cooperative per-run controller that accumulates configured resource consumption and composes
 budget exhaustion, caller cancellation, and disposal into one first-terminal-wins `AbortSignal`.
 _Avoid_: Process kill, permission boundary, mutable run ledger
+
+**Model Provider**:
+A provider-neutral boundary that exposes immutable identity/capabilities and maps a validated
+structured model request to a validated structured response under cooperative cancellation.
+_Avoid_: Task implementation, ambient global model, credential store
+
+**Static Provider**:
+A deterministic offline model provider that consumes an exact ordered request/response cassette
+and fails closed on mismatch or exhaustion.
+_Avoid_: Test-only mock, live model adapter, fallback response generator

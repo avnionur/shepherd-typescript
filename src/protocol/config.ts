@@ -4,6 +4,7 @@ import type {
     KernelProtocolConfig,
     ProjectionProtocolConfig,
     ProtocolConfig,
+    ProviderProtocolConfig,
     RecordIdConfig,
     RunProtocolConfig,
     TaskProtocolConfig,
@@ -27,6 +28,9 @@ export const kernelProtocolConfig: KernelProtocolConfig = protocolConfig.kernel;
 
 /** Runtime contracts for disposable projections over trace slices. */
 export const projectionProtocolConfig: ProjectionProtocolConfig = protocolConfig.projections;
+
+/** Runtime provider-neutral and deterministic-provider configuration. */
+export const providerProtocolConfig: ProviderProtocolConfig = protocolConfig.providers;
 
 /** Runtime record-identifier configuration loaded from the protocol configuration file. */
 export const recordIdConfig: RecordIdConfig = protocolConfig.recordId;

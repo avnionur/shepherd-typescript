@@ -2,6 +2,7 @@ import {
     EFFECT_PROTOCOL_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
+    PROVIDER_PROTOCOL_V1_CONTRACT,
     RUN_PROTOCOL_V1_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
 } from "./compatibility-constants.ts";
@@ -64,6 +65,9 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     if (!sameJson(config.projections.executionHistory, EXECUTION_HISTORY_PROJECTION_V1_CONTRACT)) {
         throw new TypeError("execution-history projection constants require a new projection");
+    }
+    if (!sameJson(config.providers, PROVIDER_PROTOCOL_V1_CONTRACT)) {
+        throw new TypeError("provider constants require a new provider protocol");
     }
     if (!sameJson(config.tasks, TASK_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("task descriptor constants require a new task protocol");

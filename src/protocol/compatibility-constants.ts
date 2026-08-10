@@ -119,6 +119,25 @@ export const EXECUTION_HISTORY_PROJECTION_V1_CONTRACT = deepFreeze({
     relationSchemaRef: "shepherd2.execution_relation.created.v1",
 } as const);
 
+/** Immutable provider-neutral contract implemented by provider protocol v1. */
+export const PROVIDER_PROTOCOL_V1_CONTRACT = deepFreeze({
+    kinds: ["static"],
+    static: {
+        capabilities: {
+            streaming: false,
+            structuredOutput: true,
+            tools: false,
+        },
+        errors: {
+            exhaustedCode: "STATIC_PROVIDER_EXHAUSTED",
+            exhaustedMessage: "static provider cassette is exhausted",
+            mismatchCode: "STATIC_PROVIDER_REQUEST_MISMATCH",
+            mismatchMessage: "static provider request does not match the next exchange",
+        },
+        kind: "static",
+    },
+} as const);
+
 /** Immutable task descriptor and artifact-lock contract implemented by task protocol v1. */
 export const TASK_PROTOCOL_V1_CONTRACT = deepFreeze({
     artifactLockVersion: 1,

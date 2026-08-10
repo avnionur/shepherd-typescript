@@ -106,6 +106,23 @@
             "relationSchemaRef": "shepherd2.execution_relation.created.v1"
         }
     },
+    "providers": {
+        "kinds": ["static"],
+        "static": {
+            "capabilities": {
+                "streaming": false,
+                "structuredOutput": true,
+                "tools": false
+            },
+            "errors": {
+                "exhaustedCode": "STATIC_PROVIDER_EXHAUSTED",
+                "exhaustedMessage": "static provider cassette is exhausted",
+                "mismatchCode": "STATIC_PROVIDER_REQUEST_MISMATCH",
+                "mismatchMessage": "static provider request does not match the next exchange"
+            },
+            "kind": "static"
+        }
+    },
     "kernel": {
         "abiVersion": "shepherd.kernel.abi.v0",
         "append": {

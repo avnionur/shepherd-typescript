@@ -48,6 +48,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   blob outputs plus aggregate token and cost records correlated by run identity.
 - [Run budgets and cancellation](./run-control.md) defines configured resource limits, cumulative
   consumption, duration expiry, composed `AbortSignal` behavior, and terminal race semantics.
+- [Provider contract and static provider](./static-provider.md) defines immutable provider
+  descriptors, structured requests/responses, exact cassette replay, cancellation, and typed
+  fail-closed errors.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

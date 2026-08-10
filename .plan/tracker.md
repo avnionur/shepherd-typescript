@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-10
 
-Current version: `0.18.0`
+Current version: `0.19.0`
 
 Current level: L0 — canonical model
 
@@ -23,6 +23,10 @@ provenance. Immutable ordered run artifacts retain inline text or cite durable b
 aggregate run usage records retain token and optional cost totals independently of terminal
 status. Configured run controls now accumulate counter consumption, enforce duration limits, and
 compose caller cancellation through a first-terminal-wins `AbortSignal`.
+
+The provider-neutral model boundary now exposes immutable descriptors and structured invocation
+values. Its deterministic static provider consumes exact cassettes, cooperates with cancellation,
+and fails closed with configured typed errors on mismatch or exhaustion.
 
 ## Progress
 
@@ -58,6 +62,7 @@ compose caller cancellation through a first-terminal-wins `AbortSignal`.
 - [x] Implement versioned finished, failed, exhausted, and cancelled run outcome records.
 - [x] Implement configured ordered run-artifact and aggregate run-usage records.
 - [x] Implement configured run budgets and cooperative `AbortSignal` cancellation semantics.
+- [x] Implement the provider-neutral request/response contract and deterministic static provider.
 - [x] Audit every paper-v3 section and close plan gaps for proof envelopes, trajectory compression,
   experiment protocols, limitations, and future-work classification.
 
@@ -71,7 +76,8 @@ compose caller cancellation through a first-terminal-wins `AbortSignal`.
 
 ## Next slice
 
-Implement the deterministic static provider and its provider-neutral request/response contract.
+Implement offline bodyless task execution through the static provider, task schemas, run control,
+and terminal run outcomes.
 
 ## Notes
 

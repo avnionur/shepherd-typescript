@@ -54,6 +54,23 @@ export type {
     ExecutionStatus,
     PublishedRecord,
 } from "./projection/types.ts";
+export {
+    StaticProviderExhaustedError,
+    StaticProviderRequestMismatchError,
+} from "./provider/errors.ts";
+export { createStaticProvider } from "./provider/static-provider.ts";
+export type {
+    ModelProvider,
+    ModelRequest,
+    ModelResponse,
+    ModelUsage,
+    ProviderCapabilities,
+    ProviderDescriptor,
+    ProviderKind,
+    StaticProviderDefinition,
+    StaticProviderDescriptorDefinition,
+    StaticProviderExchange,
+} from "./provider/types.ts";
 export { createRecordEnvelope } from "./record/envelope.ts";
 export { validateRecordBody } from "./record/guards.ts";
 export { ROOT_WITNESS_ID } from "./record/root-witness.ts";

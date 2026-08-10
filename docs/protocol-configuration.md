@@ -6,7 +6,8 @@ Implementation:
 typed section/value modules. Configuration source:
 [`protocol.config.json`](../protocol.config.json). Tests:
 [`test/protocol-config.test.ts`](../test/protocol-config.test.ts) and
-[`test/protocol-artifacts.test.ts`](../test/protocol-artifacts.test.ts).
+[`test/protocol-artifacts.test.ts`](../test/protocol-artifacts.test.ts), plus provider-specific
+coverage in [`test/provider/protocol.test.ts`](../test/provider/protocol.test.ts).
 
 ## Source of truth
 
@@ -22,6 +23,8 @@ unhandled behavior. The run section fixes outcome, artifact, and usage versions;
 status and artifact-content vocabularies; artifact ordinal bounds; schema identifiers; and
 generated schema paths. It also fixes run-control statuses, reason types, budget-metric precedence,
 stable cancellation reasons, and safe duration-timer bounds.
+The provider section fixes provider kinds, static-provider capabilities, and stable typed-error
+codes and messages.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -68,6 +71,8 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
 - run record versions are positive, terminal statuses and artifact content types are unique,
   artifact ordinal and timer bounds are safe, control vocabularies are unique, schema identifiers
   and artifact paths are valid, and all values match the immutable run protocol v1 contract.
+- provider kinds are unique, static capabilities are booleans, error codes/messages are non-empty,
+  and every value matches the immutable provider protocol v1 contract.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,
 root-witness identity, or current ordinal bounds requires a new ABI or migration contract.

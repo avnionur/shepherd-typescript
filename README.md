@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.18.0` provides versioned task, effect, run-outcome, run-artifact, run-usage, and
+Version `0.19.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -96,6 +96,8 @@ trace-record contracts with durable SQLite task and trace stores:
   provenance;
 - immutable ordered text/blob run artifacts and aggregate run-usage records correlated by run ID;
 - cooperative run controls with configured counter/duration budgets and caller cancellation;
+- a provider-neutral structured invocation contract and deterministic exact-cassette static
+  provider;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
@@ -125,6 +127,7 @@ import {
     createRunArtifact,
     createRunControl,
     createRunUsage,
+    createStaticProvider,
     planAppendBatch,
     ROOT_WITNESS_ID,
     schema,
@@ -212,7 +215,28 @@ const runControl = createRunControl({
     },
 });
 runControl.consume({ turns: 1, inputTokens: 500, outputTokens: 100, costUsd: 0.02 });
-runControl.signal;
+const staticRequest = {
+    instruction: "Return one status word.",
+    input: { state: "ready" },
+    outputSchema: { type: "string" },
+};
+const staticProvider = createStaticProvider({
+    descriptor: { id: "readme-fixture", model: "offline-v1" },
+    exchanges: [{
+        request: staticRequest,
+        response: {
+            output: "ready",
+            usage: {
+                cacheCreationInputTokens: 0,
+                cacheReadInputTokens: 0,
+                costUsd: 0,
+                inputTokens: 4,
+                outputTokens: 1,
+            },
+        },
+    }],
+});
+await staticProvider.invoke(staticRequest, runControl.signal);
 runControl.snapshot();
 runControl.dispose();
 
@@ -349,6 +373,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Run outcomes](./docs/run-outcomes.md)
 - [Run artifacts and usage](./docs/run-artifacts-and-usage.md)
 - [Run budgets and cancellation](./docs/run-control.md)
+- [Provider contract and static provider](./docs/static-provider.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -362,9 +387,11 @@ Phase 2 now includes bodyless task descriptors, runtime schemas, artifact locks,
 registration, immutable correlated effect intent/outcome records, ordered exact-kind handler
 dispatch, versioned terminal run-outcome records, ordered text/blob artifact records, and aggregate
 run-usage records. Configured run controls now enforce cooperative counter/duration budgets and
-caller cancellation. Dynamic handler scopes, deterministic and live-provider execution, artifact
-persistence within the run ledger, settlement, scopes, live supervision, replay, and the paper
-applications remain planned. The next TypeScript slice adds the deterministic static provider.
+caller cancellation. A provider-neutral structured request/response boundary and deterministic
+exact-cassette static provider are implemented. Dynamic handler scopes, offline task execution,
+live-provider adapters, artifact persistence within the run ledger, settlement, scopes, live
+supervision, replay, and the paper applications remain planned. The next TypeScript slice adds
+offline task execution through the static provider.
 
 ## Attribution
 

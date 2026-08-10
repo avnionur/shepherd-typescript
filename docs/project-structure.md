@@ -13,6 +13,7 @@ implementation documentation, and forward-looking plans.
 │   ├── effect/             Intent/outcome records and ordered exact-kind handlers
 │   ├── interchange/        Native archive encoding, validation, and import storage
 │   ├── projection/         Disposable execution, relation, and history folds
+│   ├── provider/           Provider-neutral contracts and deterministic offline invocation
 │   ├── protocol/           Runtime configuration and generated literals
 │   ├── record/             Record types, envelopes, guards, and snapshots
 │   ├── run/                Outcomes, artifacts, usage, budgets, and cancellation
@@ -39,6 +40,7 @@ public exports → store area → append and record areas
 public exports → store area → blob filesystem and identity
 public exports → interchange area → store, record, blob, and protocol areas
 public exports → projection area → immutable store slice types
+public exports → provider area → canonical snapshots and protocol configuration
 public exports → task area → canonical identity and protocol configuration
 public exports → effect area → canonical snapshots and protocol configuration
 public exports → run area → task locks, canonical snapshots, and protocol configuration
@@ -64,6 +66,8 @@ The runtime areas are intentionally shallow:
 - `protocol/` owns typed configuration models, fail-closed validation, immutable runtime
   snapshots, and generated literal values;
 - `projection/` owns pure disposable execution, relation, and effective-history folds;
+- `provider/` owns provider-neutral descriptors, structured invocation values, exact deterministic
+  cassettes, typed failures, and closed validation;
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
 - `run/` owns versioned terminal outcomes, ordered artifact and aggregate usage construction,
   cooperative budget/cancellation control, closed validation, exact task-lock citations, and
