@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.6.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.7.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -120,6 +120,9 @@ trace-record contracts with durable SQLite task and trace stores:
 - globally idempotent resume commands bound to the exact suspension and continuation descriptor,
   with unavailable-evidence rejection, atomic monotonic fencing, and a command-bound running
   acknowledgement;
+- globally idempotent direct cancellation from created, waiting, and suspended lifecycle heads,
+  with atomic exact-head comparison, inactive-worker proof, terminal publication, claim expiry,
+  deterministic replay, and stale-worker fencing;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
@@ -496,10 +499,11 @@ commands validate that evidence, acquire the next worker fence, and publish resu
 authority without invoking a provider or restoring external state. Globally idempotent cancellation
 commands now bind the exact running head and fence; the current worker can acknowledge them at a
 safe boundary while atomically publishing a cancelled terminal and releasing its claim. The
+same command authority now terminalizes exact created, waiting, or suspended heads only when no
+worker remains authoritative, with exact replay across restart and stale-head rejection. The
 normative lifecycle matrix and continuation/waiting/suspension/running schemas are implemented.
-Runtime waiting and direct cancellation from non-running states,
-dynamic handler scopes, live-provider adapters, settlement, scopes, live supervision, suffix
-replay, and the paper applications remain planned.
+Runtime waiting, dynamic handler scopes, live-provider adapters, settlement, scopes, live
+supervision, suffix replay, and the paper applications remain planned.
 
 ## Attribution
 

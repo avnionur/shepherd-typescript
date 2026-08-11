@@ -1,5 +1,5 @@
 import { createRecordId } from "../canonical/canonical-record.ts";
-import { runProtocolConfig } from "../protocol/config.ts";
+import { projectionProtocolConfig, runProtocolConfig } from "../protocol/config.ts";
 import {
     DURABLE_EXECUTION_RECOVERY_STATUSES,
     RECORD_MODES,
@@ -13,6 +13,7 @@ import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
 import { TraceStoreError } from "../store/errors.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
+import type { OwnerRecord } from "../store/types.ts";
 import type { TaskSchema } from "../task/schema.ts";
 import {
     executeTaskDurablyWithRecoveryCommand,
@@ -21,6 +22,7 @@ import {
 import { readDurableCreation } from "./durable-execution-codec.ts";
 import {
     createDurableCancellationCommand,
+    createDurableInactiveCancellationCommand,
     createDurablePauseCommand,
     createDurableRecoveryCommand,
     readDurableCancellationCommand,
@@ -29,6 +31,7 @@ import type {
     DurableTaskCancellationAcknowledgementOptions,
     DurableTaskCancellationCommandReceipt,
     DurableTaskCancellationOptions,
+    DurableTaskDirectCancellationOptions,
     DurableTaskPauseCommandReceipt,
     DurableTaskPauseOptions,
     DurableTaskRecoveryOptions,
@@ -44,6 +47,7 @@ import type {
 import { retainDurableExecutionCreation } from "./durable-execution-creation.ts";
 import { publishDurableExecutionCut } from "./durable-execution-cut.ts";
 import { DurableExecutionRecoveryAbsentError } from "./durable-execution-errors.ts";
+import { inspectDurableTaskExecution } from "./durable-execution-inspection.ts";
 import {
     assertDurableExecutionRecordContract,
     readDurableTaskExecution,
@@ -64,6 +68,143 @@ const [
 const [, , CANCELLED_CONTROL_STATUS] = RUN_CONTROL_STATUSES;
 const [, CANCELLED_REASON_TYPE] = RUN_CONTROL_REASON_TYPES;
 const [, , , CANCELLED_TERMINAL_STATUS] = RUN_TERMINAL_STATUSES;
+
+/**
+ * Atomically cancels a created, waiting, or suspended durable run.
+ *
+ * The globally idempotent command, cancelled outcome, and terminal lifecycle commit in one store
+ * transaction after exact-head comparison. Any retained pre-start or released claim is expired in
+ * that transaction. Running workers must use {@link requestDurableTaskCancellation} and
+ * {@link acknowledgeDurableTaskCancellation} instead.
+ *
+ * @param store - Open trace store containing the inactive durable execution.
+ * @param options - Exact command, run, inactive lifecycle head, and reason contract.
+ * @returns Immutable cancelled execution and durable terminal receipt.
+ * @throws {TypeError} If options are malformed.
+ * @throws {TraceStoreError} If lifecycle authority is active, stale, or inconsistent.
+ * @throws {AppendIntentConflictError} If command identity already names different content.
+ *
+ * @example
+ * ```ts
+ * const cancelled = cancelDurableTask(store, {
+ *     commandId: "command:cancel:created:42",
+ *     expectedLifecycleRecordId: createdRecordId,
+ *     reason: "operator request",
+ *     runId: "run:42",
+ * });
+ * cancelled.execution.outcome.outcome.status;
+ * ```
+ *
+ * @public
+ */
+export function cancelDurableTask(
+    store: SQLiteTraceStore,
+    options: DurableTaskDirectCancellationOptions,
+): DurableTaskExecutionResult {
+    const parsed = readDirectCancellationOptions(options);
+    const schemas = projectionProtocolConfig.executionHistory.executionSchemas;
+    const ownerRecords = store.readOwner(parsed.runId);
+    const creationRecords = ownerRecords.filter(
+        (record) => record.envelope.schema_ref === schemas.created,
+    );
+    if (creationRecords.length !== 1) {
+        throw new TraceStoreError("durable cancellation requires exact creation evidence");
+    }
+    const creationRecord = creationRecords[0] as OwnerRecord;
+    const expectedHead = ownerRecords.find(
+        (record) => record.envelope.record_id === parsed.expectedLifecycleRecordId,
+    );
+    const quiescent =
+        expectedHead?.envelope.schema_ref === runProtocolConfig.schemas.waitingLifecycleId ||
+        expectedHead?.envelope.schema_ref === runProtocolConfig.schemas.suspendedLifecycleId;
+    const terminal = ownerRecords.some(
+        (record) =>
+            record.envelope.schema_ref === schemas.completed ||
+            record.envelope.schema_ref === schemas.failed,
+    );
+    if (quiescent || terminal) {
+        inspectDurableTaskExecution(store, parsed.runId);
+    }
+    const creationBody = readRunDataObject(
+        creationRecord.body,
+        ["payload"],
+        "durable cancellation creation record",
+    );
+    const creation = readDurableCreation(creationBody.payload, parsed.runId);
+    const startedRecord = ownerRecords.find(
+        (record) => record.envelope.schema_ref === schemas.started,
+    );
+    const execution = createCancelledExecution(parsed.runId, creation, startedRecord !== undefined);
+    const commandBody = createDurableInactiveCancellationCommand(
+        parsed.runId,
+        parsed.commandId,
+        parsed.expectedLifecycleRecordId,
+        parsed.reason,
+    );
+    const commandLocalId = createRecordId({ durable_cancel_command_id: parsed.commandId });
+    const outcomeLocalId = runProtocolConfig.schemas.outcomeId;
+    const receipt = store.appendDurableExecutionInactiveCancellation(
+        parsed.runId,
+        parsed.expectedLifecycleRecordId,
+        {
+            append_intent_id: createRecordId({ durable_control_command_id: parsed.commandId }),
+            batch: {
+                groups: [
+                    {
+                        caused_by_record_ids: [parsed.expectedLifecycleRecordId],
+                        owner_id: parsed.runId,
+                        records: [
+                            {
+                                append_local_id: commandLocalId,
+                                body: commandBody,
+                                mode: CAPTURE_MODE,
+                                schema_ref: runProtocolConfig.execution.controlCommandSchemaId,
+                                witness_ref: ROOT_WITNESS_ID,
+                            },
+                            {
+                                append_local_id: outcomeLocalId,
+                                body: execution.outcome,
+                                caused_by_local_refs: [commandLocalId],
+                                mode: CAPTURE_MODE,
+                                schema_ref: runProtocolConfig.schemas.outcomeId,
+                                witness_ref: ROOT_WITNESS_ID,
+                            },
+                            {
+                                body: {
+                                    payload: {
+                                        control: execution.control,
+                                        error: runProtocolConfig.control.cancellationReason,
+                                        execution_id: parsed.runId,
+                                    },
+                                },
+                                caused_by_local_refs: [commandLocalId, outcomeLocalId],
+                                mode: CAPTURE_MODE,
+                                schema_ref: schemas.failed,
+                                witness_ref: ROOT_WITNESS_ID,
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    );
+    const outcomeRecordId = receipt.record_ids[1] as RecordId;
+    const lifecycleRecordId = receipt.record_ids[2] as RecordId;
+    const cut = publishDurableExecutionCut(store, parsed.runId, lifecycleRecordId);
+    return Object.freeze({
+        execution,
+        ledger: Object.freeze({
+            artifact_record_ids: Object.freeze([]),
+            created_record_id: creationRecord.envelope.record_id,
+            cut,
+            lifecycle_record_id: lifecycleRecordId,
+            outcome_record_id: outcomeRecordId,
+            started: startedRecord !== undefined,
+            started_record_id: startedRecord?.envelope.record_id ?? null,
+            usage_record_id: null,
+        }),
+    });
+}
 
 /**
  * Retains one globally idempotent cancellation request against the exact running fence.
@@ -178,6 +319,7 @@ export function acknowledgeDurableTaskCancellation(
     }
     const command = readDurableCancellationCommand(commandRecord.body, parsed.runId);
     if (
+        !("fencing_token" in command) ||
         command.expected_lifecycle_record_id !== parsed.expectedLifecycleRecordId ||
         command.fencing_token !== parsed.fencingToken
     ) {
@@ -221,29 +363,7 @@ export function acknowledgeDurableTaskCancellation(
         "durable cancellation creation record",
     );
     const creation = readDurableCreation(creationBody.payload, parsed.runId);
-    const cancellationReason = runProtocolConfig.control.cancellationReason;
-    const control = Object.freeze({
-        consumed: Object.freeze({
-            costUsd: 0,
-            effects: 0,
-            inputTokens: 0,
-            outputTokens: 0,
-            turns: 1,
-        }),
-        reason: Object.freeze({ message: cancellationReason, type: CANCELLED_REASON_TYPE }),
-        status: CANCELLED_CONTROL_STATUS,
-    });
-    const execution = Object.freeze({
-        artifacts: Object.freeze([]),
-        control,
-        outcome: createRunOutcome({
-            outcome: { reason: cancellationReason, status: CANCELLED_TERMINAL_STATUS },
-            runId: parsed.runId,
-            taskArtifactLock: creation.taskArtifactLock,
-        }),
-        provider: creation.provider,
-        usage: null,
-    });
+    const execution = createCancelledExecution(parsed.runId, creation, true);
     return retainDurableCancellationTerminal(
         store,
         parsed.runId,
@@ -662,6 +782,49 @@ function readCancellationOptions(value: unknown): DurableTaskCancellationOptions
         throw new TypeError("fencingToken must be a positive safe integer");
     }
     return fields as DurableTaskCancellationOptions;
+}
+
+function readDirectCancellationOptions(value: unknown): DurableTaskDirectCancellationOptions {
+    const fields = readRunDataObject(
+        value,
+        ["commandId", "expectedLifecycleRecordId", "reason", "runId"],
+        "durable direct cancellation options",
+    );
+    assertRunText(fields.commandId, "commandId");
+    assertRecordId(fields.expectedLifecycleRecordId, "expectedLifecycleRecordId");
+    assertRunText(fields.reason, "reason");
+    assertRunText(fields.runId, "runId");
+    return fields as DurableTaskDirectCancellationOptions;
+}
+
+function createCancelledExecution(
+    runId: string,
+    creation: ReturnType<typeof readDurableCreation>,
+    started: boolean,
+): DurableTaskExecutionResult["execution"] {
+    const cancellationReason = runProtocolConfig.control.cancellationReason;
+    const control = Object.freeze({
+        consumed: Object.freeze({
+            costUsd: 0,
+            effects: 0,
+            inputTokens: 0,
+            outputTokens: 0,
+            turns: started ? 1 : 0,
+        }),
+        reason: Object.freeze({ message: cancellationReason, type: CANCELLED_REASON_TYPE }),
+        status: CANCELLED_CONTROL_STATUS,
+    });
+    return Object.freeze({
+        artifacts: Object.freeze([]),
+        control,
+        outcome: createRunOutcome({
+            outcome: { reason: cancellationReason, status: CANCELLED_TERMINAL_STATUS },
+            runId,
+            taskArtifactLock: creation.taskArtifactLock,
+        }),
+        provider: creation.provider,
+        usage: null,
+    });
 }
 
 function readCancellationAcknowledgementOptions(

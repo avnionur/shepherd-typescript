@@ -27,6 +27,7 @@ import {
     claimDurableExecutionInvocation,
 } from "./durable-execution-claims.ts";
 import {
+    appendDurableExecutionInactiveCancellation,
     appendDurableExecutionResume,
     appendDurableExecutionRunningControlCommand,
     appendDurableExecutionSuspension,
@@ -259,6 +260,30 @@ export class SQLiteTraceStore implements Disposable {
             runId,
             expectedLifecycleRecordId,
             fencingToken,
+            request,
+        );
+    }
+
+    /**
+     * Atomically appends command-bound cancellation for an inactive lifecycle head.
+     *
+     * @param runId - Durable run being cancelled.
+     * @param expectedLifecycleRecordId - Exact created, waiting, or suspended head.
+     * @param request - Canonical command, outcome, and terminal append request.
+     * @returns The committed or identically replayed append receipt.
+     * @throws {TraceStoreError} If the store is closed or authority is inconsistent.
+     * @internal
+     */
+    appendDurableExecutionInactiveCancellation(
+        runId: string,
+        expectedLifecycleRecordId: RecordId,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return appendDurableExecutionInactiveCancellation(
+            this.#database,
+            runId,
+            expectedLifecycleRecordId,
             request,
         );
     }

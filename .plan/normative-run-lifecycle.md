@@ -4,7 +4,7 @@ Status: proposed Phase 2 contract. This document remains in `.plan/` until the r
 public projection, commands, and conformance tests are implemented. It refines the architecture
 study without claiming automatic checkpoint restoration or provider continuation.
 
-Implementation status: release `1.6.0` publishes the configured transition matrix, a pure public
+Implementation status: release `1.7.0` publishes the configured transition matrix, a pure public
 transition validator, versioned continuation-descriptor, waiting, and suspension schemas, and
 read-only cut-bound inspection of retained waiting/suspension evidence. Globally idempotent pause
 requests are retained only against the exact current started head and fencing token and do not
@@ -13,8 +13,9 @@ now publish cut-bound continuation evidence and release the exact worker fence. 
 resume validates the exact suspension/descriptor, rejects unavailable constituents, atomically
 acquires a monotonic worker fence, and publishes a command-bound running acknowledgement. Running
 cancellation now retains exact-head/fence command authority and lets the current worker atomically
-terminalize and release its claim at a safe boundary. Runtime waiting, direct non-running
-cancellation, and automatic checkpoint restoration remain planned.
+terminalize and release its claim at a safe boundary. Direct cancellation now atomically
+terminalizes exact created, waiting, and suspended heads after proving no worker remains
+authoritative. Runtime waiting and automatic checkpoint restoration remain planned.
 
 ## Purpose
 
@@ -202,6 +203,8 @@ immutable cut or explicit current owner prefix.
    created, waiting, or suspended states remains future work.
 8. Add crash, stale-worker, missing-receipt, and cross-connection races at the public runtime seam.
    **Implemented in 1.6.1.**
+9. Extend exact-command cancellation to created, waiting, and suspended heads with atomic inactive
+   authority validation and stale-worker fencing. **Implemented in 1.7.0.**
 
 ## Acceptance gates
 

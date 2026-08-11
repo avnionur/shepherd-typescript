@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-11
 
-Current version: `1.6.1`
+Current version: `1.7.0`
 
 Current level: L0 — canonical model
 
@@ -58,6 +58,9 @@ worker from terminal publication.
 Globally idempotent resume commands now bind the exact suspension acknowledgement and continuation
 descriptor, reject unavailable constituents, atomically acquire the next monotonic worker fence,
 and publish a command-bound running acknowledgement across store reopen and connection races.
+Globally idempotent direct cancellation now binds exact created, waiting, or suspended lifecycle
+heads, atomically rejects authoritative workers, appends command-bound cancelled terminal
+evidence, expires pre-start claims, and preserves deterministic replay and stale-worker fencing.
 The proposed normative lifecycle now distinguishes prerequisite-driven `waiting` from
 control-driven `suspended`, keeps recovery as an orthogonal evidence classification, and requires
 verified continuation constituents before either state can return to `running`. Its configured
@@ -137,6 +140,9 @@ resumed-running command/fence evidence without mutation. Runtime waiting remains
 - [x] Complete public-seam crash/race preservation evidence for lost suspension receipts,
   competing cross-connection cancellation acknowledgements, stale pre-resume controls, and
   verified continuation constituents with missing receipts.
+- [x] Add globally idempotent direct cancellation from exact created, waiting, and suspended heads
+  with atomic inactive-worker validation, terminal publication, restart replay, corruption
+  rejection, and stale-worker fencing.
 
 ## Verification required for this slice
 
@@ -148,8 +154,8 @@ resumed-running command/fence evidence without mutation. Runtime waiting remains
 
 ## Next slice
 
-Extend globally idempotent cancellation to created and implemented quiescent states with atomic
-expected-head comparison and proof that no worker lease remains authoritative.
+Implement prerequisite-driven runtime waiting acknowledgement and guarded resume with exact
+waiting-head comparison and independently verified prerequisite-satisfaction evidence.
 
 ## Notes
 

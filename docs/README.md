@@ -65,7 +65,7 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Durable execution control](./durable-execution-control.md) defines globally idempotent recovery,
   pause, resume, and cancel commands; exact lifecycle-head/fence checks; ordered checkpoint
   adapters; atomic suspension release, resumed-running fence acquisition, and safe-boundary
-  cancelled terminalization; lease takeover; and unsafe-state rejection.
+  or inactive-head cancelled terminalization; lease takeover; and unsafe-state rejection.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

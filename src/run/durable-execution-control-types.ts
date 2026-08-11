@@ -64,6 +64,32 @@ export type DurableExecutionCancellationCommand = {
     readonly reason: string;
 };
 
+/** Canonical semantic body retained for cancellation without an authoritative worker. */
+export type DurableExecutionInactiveCancellationCommand = {
+    /** Caller-supplied globally idempotent command identity. */
+    readonly command_id: string;
+    /** Configured durable cancellation-command discriminant. */
+    readonly command_kind: (typeof DURABLE_EXECUTION_CONTROL_COMMAND_KINDS)[3];
+    /** Durable run whose inactive lifecycle is targeted. */
+    readonly execution_id: string;
+    /** Exact created, waiting, or suspended lifecycle record expected by the caller. */
+    readonly expected_lifecycle_record_id: RecordId;
+    /** Non-empty operator or controller reason. */
+    readonly reason: string;
+};
+
+/** Options for atomically cancelling a durable run without an authoritative worker. */
+export type DurableTaskDirectCancellationOptions = {
+    /** Stable identity reused for every retry of this exact cancellation. */
+    readonly commandId: string;
+    /** Exact created, waiting, or suspended lifecycle head expected by the caller. */
+    readonly expectedLifecycleRecordId: RecordId;
+    /** Non-empty operator or controller reason. */
+    readonly reason: string;
+    /** Durable run to cancel. */
+    readonly runId: string;
+};
+
 /** Options for retaining one globally idempotent durable cancellation request. */
 export type DurableTaskCancellationOptions = {
     /** Stable identity reused for every retry of this exact cancellation request. */

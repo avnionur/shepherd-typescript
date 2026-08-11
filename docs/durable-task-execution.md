@@ -142,6 +142,12 @@ safe boundary. Cancelled outcome and terminal evidence then commit atomically wi
 interrupted deterministic-cut publication is repaired by exact acknowledgement replay. A command
 without acknowledgement leaves an uncertain worker running and fail-closed.
 
+For `created`, `waiting`, or `suspended` heads, `cancelDurableTask` instead proves that no worker
+claim remains authoritative and atomically commits the exact command-bound cancelled outcome and
+terminal lifecycle. The transition compares the caller's expected head inside the same store
+transaction, expires any pre-start claim, replays identically after restart, and fences stale
+start or terminal writers.
+
 `recoverTaskDurably` records a globally idempotent configured recovery command before applying a
 safe recovery transition. Created runs reclaim expired pre-start authority and bind the recovered
 start causally to the command. Terminal-pending-cut runs bind cut repair to the command without

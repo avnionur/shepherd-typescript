@@ -123,6 +123,101 @@ export function appendDurableExecutionRunningControlCommand(
 }
 
 /**
+ * Atomically terminalizes an inactive lifecycle under one idempotent cancellation command.
+ *
+ * Existing command intent replay occurs before current-head validation. A first transition accepts
+ * only created, waiting, or suspended heads and rejects any authoritative started worker. Any
+ * retained pre-start claim is expired in the same transaction as terminal evidence.
+ *
+ * @param database - Open trace-store database inside no caller-owned transaction.
+ * @param runId - Durable run being cancelled.
+ * @param expectedLifecycleRecordId - Exact inactive lifecycle head expected by the caller.
+ * @param request - Canonical command, outcome, and terminal append request.
+ * @returns The committed or identically replayed append receipt.
+ * @throws {TraceStoreError} If lifecycle or worker authority is inconsistent.
+ * @throws {AppendIntentConflictError} If command identity names different content.
+ * @internal
+ */
+export function appendDurableExecutionInactiveCancellation(
+    database: DatabaseSync,
+    runId: string,
+    expectedLifecycleRecordId: RecordId,
+    request: StoreAppendRequest,
+): AppendReceipt {
+    assertNonEmptyString(runId, "runId");
+    assertRecordId(expectedLifecycleRecordId, "expectedLifecycleRecordId");
+    database.exec(STORE_TRANSACTION_SQL.begin);
+    try {
+        const existingIntent = database
+            .prepare(`SELECT 1 FROM ${STORE_TABLES.appendIntents} WHERE append_intent_id = ?`)
+            .get(request.append_intent_id);
+        if (existingIntent !== undefined) {
+            const receipt = appendWithinTraceStoreTransaction(database, request);
+            database.exec(STORE_TRANSACTION_SQL.commit);
+            return receipt;
+        }
+        const schemas = projectionProtocolConfig.executionHistory.executionSchemas;
+        const head = database
+            .prepare(
+                `SELECT view.owner_ordinal, record.schema_ref FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND view.record_id = ?`,
+            )
+            .get(runId, expectedLifecycleRecordId) as
+            | { readonly owner_ordinal: number; readonly schema_ref: string }
+            | undefined;
+        if (
+            head === undefined ||
+            ![
+                schemas.created,
+                runProtocolConfig.schemas.waitingLifecycleId,
+                runProtocolConfig.schemas.suspendedLifecycleId,
+            ].includes(head.schema_ref)
+        ) {
+            throw new TraceStoreError(
+                "durable inactive cancellation requires a created or quiescent lifecycle head",
+            );
+        }
+        const laterLifecycle = database
+            .prepare(
+                `SELECT 1 FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND view.owner_ordinal > ? AND record.schema_ref IN (?, ?, ?, ?, ?, ?) LIMIT 1`,
+            )
+            .get(
+                runId,
+                head.owner_ordinal,
+                schemas.started,
+                schemas.completed,
+                schemas.failed,
+                runProtocolConfig.schemas.runningLifecycleId,
+                runProtocolConfig.schemas.waitingLifecycleId,
+                runProtocolConfig.schemas.suspendedLifecycleId,
+            );
+        if (laterLifecycle !== undefined) {
+            throw new TraceStoreError(
+                "durable inactive cancellation expected lifecycle record is no longer current",
+            );
+        }
+        const claim = database
+            .prepare(`SELECT started FROM ${STORE_TABLES.durableExecutionClaims} WHERE run_id = ?`)
+            .get(runId) as { readonly started: number } | undefined;
+        if (claim?.started === 1) {
+            throw new TraceStoreError(
+                "durable inactive cancellation cannot replace an authoritative worker",
+            );
+        }
+        const receipt = appendWithinTraceStoreTransaction(database, request);
+        database
+            .prepare(
+                `UPDATE ${STORE_TABLES.durableExecutionClaims} SET lease_expires_at = 0, started = 0 WHERE run_id = ?`,
+            )
+            .run(runId);
+        database.exec(STORE_TRANSACTION_SQL.commit);
+        return receipt;
+    } catch (error) {
+        database.exec(STORE_TRANSACTION_SQL.rollback);
+        throw error;
+    }
+}
+
+/**
  * Atomically publishes suspension evidence and releases the exact current invocation fence.
  *
  * @param database - Open trace-store database inside no caller-owned transaction.

@@ -21,6 +21,7 @@ import type { OwnerRecord } from "../store/types.ts";
 import { readDurableCreation, readDurableExecutionResult } from "./durable-execution-codec.ts";
 import {
     readDurableCancellationCommand,
+    readDurablePauseCommand,
     readDurableRecoveryCommand,
 } from "./durable-execution-control-codec.ts";
 import { createDurableExecutionCutId } from "./durable-execution-cut.ts";
@@ -130,7 +131,26 @@ export function readDurableTaskExecution(
         if (terminalPayload.execution_id !== runId) {
             throw new TypeError("durable terminal execution identity is inconsistent");
         }
-        const baseRecordId = started?.envelope.record_id ?? created.envelope.record_id;
+        const lifecycleHead = [
+            created,
+            ...(started === undefined ? [] : [started]),
+            ...executionRecords.filter((record) =>
+                [
+                    runProtocolConfig.schemas.runningLifecycleId,
+                    runProtocolConfig.schemas.waitingLifecycleId,
+                    runProtocolConfig.schemas.suspendedLifecycleId,
+                ].includes(record.envelope.schema_ref),
+            ),
+        ].at(-1) as OwnerRecord;
+        validateRecoveredLifecycleHead(
+            store,
+            executionRecords,
+            lifecycleHead,
+            created,
+            started,
+            runId,
+        );
+        const baseRecordId = lifecycleHead.envelope.record_id;
         const artifacts = readOutcomeArtifacts(
             executionRecords,
             retainedArtifacts,
@@ -255,6 +275,162 @@ export function readDurableTaskExecution(
             throw error;
         }
         throw new TraceStoreError("durable execution evidence is malformed", { cause: error });
+    }
+}
+
+function validateRecoveredLifecycleHead(
+    store: SQLiteTraceStore,
+    records: readonly OwnerRecord[],
+    lifecycleHead: OwnerRecord,
+    created: OwnerRecord,
+    started: OwnerRecord | undefined,
+    runId: string,
+): void {
+    if (
+        lifecycleHead.envelope.record_id === created.envelope.record_id ||
+        lifecycleHead.envelope.record_id === started?.envelope.record_id
+    ) {
+        return;
+    }
+    const waiting =
+        lifecycleHead.envelope.schema_ref === runProtocolConfig.schemas.waitingLifecycleId;
+    const suspended =
+        lifecycleHead.envelope.schema_ref === runProtocolConfig.schemas.suspendedLifecycleId;
+    if ((!waiting && !suspended) || started === undefined) {
+        throw new TypeError("durable terminal lifecycle head is unsupported or incomplete");
+    }
+    const acknowledgement = readRunDataObject(
+        lifecycleHead.body,
+        waiting
+            ? [
+                  "continuation_descriptor_id",
+                  "execution_id",
+                  "lifecycle_version",
+                  "prerequisite",
+                  "status",
+              ]
+            : [
+                  "continuation_descriptor_id",
+                  "execution_id",
+                  "lifecycle_version",
+                  "pause_command_id",
+                  "status",
+              ],
+        "durable terminal quiescent head",
+    );
+    const expectedStatus = waiting
+        ? runProtocolConfig.execution.lifecycleWaitingStatus
+        : runProtocolConfig.execution.lifecycleSuspendedStatus;
+    if (
+        acknowledgement.execution_id !== runId ||
+        acknowledgement.lifecycle_version !== runProtocolConfig.execution.lifecycleVersion ||
+        acknowledgement.status !== expectedStatus
+    ) {
+        throw new TypeError("durable terminal quiescent head is inconsistent");
+    }
+    const descriptorId = acknowledgement.continuation_descriptor_id;
+    if (typeof descriptorId !== "string") {
+        throw new TypeError("durable terminal continuation descriptor identity is invalid");
+    }
+    const descriptors = records.filter((record) => record.envelope.record_id === descriptorId);
+    if (
+        descriptors.length !== 1 ||
+        descriptors[0]?.envelope.schema_ref !== runProtocolConfig.schemas.continuationDescriptorId
+    ) {
+        throw new TypeError("durable terminal continuation descriptor is unavailable");
+    }
+    const descriptor = descriptors[0] as OwnerRecord;
+    const descriptorBody = readRunDataObject(
+        descriptor.body,
+        ["constituents", "continuation_version", "execution_id", "trace_cut_id"],
+        "durable terminal continuation descriptor",
+    );
+    if (
+        descriptorBody.execution_id !== runId ||
+        descriptorBody.continuation_version !== runProtocolConfig.execution.continuationVersion ||
+        typeof descriptorBody.trace_cut_id !== "string" ||
+        !Array.isArray(descriptorBody.constituents) ||
+        descriptorBody.constituents.length !==
+            runProtocolConfig.execution.continuationConstituentKinds.length
+    ) {
+        throw new TypeError("durable terminal continuation descriptor is inconsistent");
+    }
+    const cut = store.readCut(descriptorBody.trace_cut_id);
+    if (cut.target_owner_id !== runId) {
+        throw new TypeError("durable terminal continuation cut targets another run");
+    }
+    assertDurableExecutionRecordContract(descriptor, CAPTURE_MODE, ROOT_WITNESS_ID, [
+        cut.created_by_record_id,
+    ]);
+    validateContinuationConstituents(descriptorBody.constituents);
+    if (lifecycleHead.view.append_intent_id !== descriptor.view.append_intent_id) {
+        throw new TypeError("durable terminal quiescent evidence was not retained atomically");
+    }
+    if (waiting) {
+        const prerequisite = readRunDataObject(
+            acknowledgement.prerequisite,
+            ["kind", "prerequisite_id"],
+            "durable terminal waiting prerequisite",
+        );
+        if (
+            typeof prerequisite.kind !== "string" ||
+            typeof prerequisite.prerequisite_id !== "string"
+        ) {
+            throw new TypeError("durable terminal waiting prerequisite is inconsistent");
+        }
+        assertDurableExecutionRecordContract(lifecycleHead, CAPTURE_MODE, ROOT_WITNESS_ID, [
+            cut.through_record_id,
+            descriptor.envelope.record_id,
+        ]);
+        return;
+    }
+    if (typeof acknowledgement.pause_command_id !== "string") {
+        throw new TypeError("durable terminal pause command identity is invalid");
+    }
+    const pause = records.find(
+        (record) => record.envelope.record_id === acknowledgement.pause_command_id,
+    );
+    if (
+        pause === undefined ||
+        pause.envelope.schema_ref !== runProtocolConfig.execution.controlCommandSchemaId
+    ) {
+        throw new TypeError("durable terminal pause command is unavailable");
+    }
+    const pauseBody = readDurablePauseCommand(pause.body, runId);
+    if (pauseBody.expected_lifecycle_record_id !== cut.through_record_id) {
+        throw new TypeError("durable terminal pause command boundary is inconsistent");
+    }
+    assertDurableExecutionRecordContract(pause, CAPTURE_MODE, ROOT_WITNESS_ID, [
+        cut.through_record_id,
+    ]);
+    assertDurableExecutionRecordContract(lifecycleHead, CAPTURE_MODE, ROOT_WITNESS_ID, [
+        cut.through_record_id,
+        pause.envelope.record_id,
+        descriptor.envelope.record_id,
+    ]);
+}
+
+function validateContinuationConstituents(value: readonly unknown[]): void {
+    const [, , unavailableStatus] = runProtocolConfig.execution.continuationEvidenceStatuses;
+    for (const [index, candidate] of value.entries()) {
+        const evidence = readRunDataObject(
+            candidate,
+            ["kind", "status"],
+            "durable terminal continuation constituent",
+            ["receipt_id"],
+        );
+        const verified = evidence.status === runProtocolConfig.execution.continuationVerifiedStatus;
+        if (
+            evidence.kind !== runProtocolConfig.execution.continuationConstituentKinds[index] ||
+            !runProtocolConfig.execution.continuationEvidenceStatuses.includes(
+                evidence.status as string,
+            ) ||
+            evidence.status === unavailableStatus ||
+            (verified && typeof evidence.receipt_id !== "string") ||
+            (!verified && evidence.receipt_id !== undefined)
+        ) {
+            throw new TypeError("durable terminal continuation constituent is inconsistent");
+        }
     }
 }
 

@@ -116,6 +116,7 @@ export { executeTaskDurably } from "./run/durable-execution.ts";
 export {
     acknowledgeDurableTaskCancellation,
     acknowledgeDurableTaskSuspension,
+    cancelDurableTask,
     captureRunContinuationCheckpoints,
     recoverTaskDurably,
     requestDurableTaskCancellation,
@@ -124,6 +125,7 @@ export {
 } from "./run/durable-execution-control.ts";
 export type {
     DurableExecutionCancellationCommand,
+    DurableExecutionInactiveCancellationCommand,
     DurableExecutionPauseCommand,
     DurableExecutionRecoveryCommand,
     DurableExecutionRecoveryCommandReceipt,
@@ -131,6 +133,7 @@ export type {
     DurableTaskCancellationAcknowledgementOptions,
     DurableTaskCancellationCommandReceipt,
     DurableTaskCancellationOptions,
+    DurableTaskDirectCancellationOptions,
     DurableTaskPauseCommandReceipt,
     DurableTaskPauseOptions,
     DurableTaskRecoveryOptions,

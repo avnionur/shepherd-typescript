@@ -3,6 +3,7 @@ import { DURABLE_EXECUTION_CONTROL_COMMAND_KINDS } from "../protocol/values.gene
 import { assertRecordId } from "../record/guards.ts";
 import type {
     DurableExecutionCancellationCommand,
+    DurableExecutionInactiveCancellationCommand,
     DurableExecutionPauseCommand,
     DurableExecutionRecoveryCommand,
     DurableExecutionResumeCommand,
@@ -41,6 +42,31 @@ export function createDurableCancellationCommand(
 }
 
 /**
+ * Creates one canonical inactive durable cancellation-command body.
+ *
+ * @param runId - Inactive durable run to cancel.
+ * @param commandId - Globally idempotent caller command identity.
+ * @param expectedLifecycleRecordId - Exact inactive lifecycle head expected by the caller.
+ * @param reason - Non-empty operator or controller reason.
+ * @returns The canonical inactive cancellation-command semantic body.
+ * @internal
+ */
+export function createDurableInactiveCancellationCommand(
+    runId: string,
+    commandId: string,
+    expectedLifecycleRecordId: string,
+    reason: string,
+): DurableExecutionInactiveCancellationCommand & SemanticRecord {
+    return {
+        command_id: commandId,
+        command_kind: CANCEL_COMMAND_KIND,
+        execution_id: runId,
+        expected_lifecycle_record_id: expectedLifecycleRecordId,
+        reason,
+    };
+}
+
+/**
  * Validates and decodes one canonical durable cancellation-command body.
  *
  * @param value - Unknown retained semantic body.
@@ -52,18 +78,12 @@ export function createDurableCancellationCommand(
 export function readDurableCancellationCommand(
     value: unknown,
     runId: string,
-): DurableExecutionCancellationCommand {
+): DurableExecutionCancellationCommand | DurableExecutionInactiveCancellationCommand {
     const body = readRunDataObject(
         value,
-        [
-            "command_id",
-            "command_kind",
-            "execution_id",
-            "expected_lifecycle_record_id",
-            "fencing_token",
-            "reason",
-        ],
+        ["command_id", "command_kind", "execution_id", "expected_lifecycle_record_id", "reason"],
         "durable cancellation command",
+        ["fencing_token"],
     );
     assertRunText(body.command_id, "durable cancellation command identity");
     assertRecordId(
@@ -74,12 +94,14 @@ export function readDurableCancellationCommand(
     if (
         body.command_kind !== CANCEL_COMMAND_KIND ||
         body.execution_id !== runId ||
-        !Number.isSafeInteger(body.fencing_token) ||
-        (body.fencing_token as number) <= 0
+        (body.fencing_token !== undefined &&
+            (!Number.isSafeInteger(body.fencing_token) || (body.fencing_token as number) <= 0))
     ) {
         throw new TypeError("durable cancellation command payload is inconsistent");
     }
-    return body as DurableExecutionCancellationCommand;
+    return body as
+        | DurableExecutionCancellationCommand
+        | DurableExecutionInactiveCancellationCommand;
 }
 
 /**

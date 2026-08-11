@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-08-11
+
+### New Feature
+
+- Added `cancelDurableTask` for globally idempotent command-bound cancellation from exact
+  `created`, `waiting`, and `suspended` lifecycle heads.
+- Added atomic inactive-worker validation, pre-start claim expiry, terminal publication, exact
+  replay across restart, stale-head conflicts, stale-worker fencing, and fail-closed quiescent
+  evidence recovery.
+
+### Impact
+
+Applications can terminalize durable executions that have not crossed a provider boundary or have
+already released their worker at a waiting or suspension boundary. Ambiguously running executions
+still require fenced safe-boundary acknowledgement and remain fail-closed.
+
 ## [1.6.1] - 2026-08-11
 
 ### Improvement

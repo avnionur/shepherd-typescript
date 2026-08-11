@@ -9,6 +9,7 @@ import {
     acknowledgeDurableTaskSuspension,
     type Cut,
     type CutSpec,
+    cancelDurableTask,
     captureRunContinuationCheckpoints,
     createStaticProvider,
     DurableExecutionClaimFencedError,
@@ -157,6 +158,8 @@ function appendSyntheticSuspension(
 
 class InterruptingStartStore extends SQLiteTraceStore {
     #interrupt = true;
+    claimId: string | null = null;
+    fencingToken: number | null = null;
 
     interruptNextStart(): void {
         this.#interrupt = true;
@@ -171,6 +174,8 @@ class InterruptingStartStore extends SQLiteTraceStore {
     ) {
         if (this.#interrupt) {
             this.#interrupt = false;
+            this.claimId = claimId;
+            this.fencingToken = fencingToken;
             throw new Error("start publication interrupted");
         }
         return super.appendDurableExecutionStart(
@@ -182,6 +187,498 @@ class InterruptingStartStore extends SQLiteTraceStore {
         );
     }
 }
+
+test("created cancellation atomically terminalizes and fences pre-start authority", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-created-cancellation-"));
+    context.after(() => rm(directory, { force: true, recursive: true }));
+    const databasePath = path.join(directory, "trace.sqlite");
+    const store = new InterruptingStartStore(databasePath);
+    const runId = "run:cancellation-created-public";
+    assert.throws(
+        () =>
+            cancelDurableTask(store, {
+                commandId: "command:cancel:absent-public",
+                expectedLifecycleRecordId: ROOT_WITNESS_ID,
+                reason: "cannot cancel absent execution",
+                runId,
+            }),
+        TraceStoreError,
+    );
+    await assert.rejects(
+        executeTaskDurably(store, {
+            budget: { maxTurns: 1 },
+            input: undefined,
+            provider: createStaticProvider({
+                descriptor: { id: "created-cancellation-provider", model: "offline-v1" },
+                exchanges: [],
+            }),
+            runId,
+            task: task({
+                input: schema.void(),
+                instruction: "Cancel before provider start.",
+                name: "created-cancellation",
+                output: schema.string(),
+                version: "1.0.0",
+            }),
+        }),
+        /start publication interrupted/,
+    );
+    const recovery = readDurableTaskExecution(store, runId);
+    assert.equal(recovery.status, "created");
+    if (recovery.status !== "created") {
+        throw new Error("expected created recovery state");
+    }
+    const options = {
+        commandId: "command:cancel:created-public",
+        expectedLifecycleRecordId: recovery.created_record_id,
+        reason: "operator cancellation before start",
+        runId,
+    } as const;
+    const cancelled = cancelDurableTask(store, options);
+    assert.equal(cancelled.execution.outcome.outcome.status, "cancelled");
+    assert.equal(cancelled.ledger.started, false);
+    assert.equal(inspectDurableTaskExecution(store, runId).status, "committed");
+    assert.throws(
+        () =>
+            cancelDurableTask(store, {
+                ...options,
+                commandId: "command:cancel:stale-created-public",
+            }),
+        TraceStoreError,
+    );
+    assert.ok(store.claimId && store.fencingToken);
+    assert.deepEqual(
+        store.appendDurableExecutionStart(runId, store.claimId, store.fencingToken, Date.now()),
+        { status: "fenced" },
+    );
+    store.close();
+    const reopened = new SQLiteTraceStore(databasePath);
+    assert.deepEqual(cancelDurableTask(reopened, options), cancelled);
+    assert.throws(
+        () => cancelDurableTask(reopened, { ...options, reason: "different reason" }),
+        TraceStoreError,
+    );
+    reopened.close();
+});
+
+test("suspended cancellation terminalizes from the exact quiescent head", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-suspended-cancellation-"));
+    context.after(() => rm(directory, { force: true, recursive: true }));
+    const databasePath = path.join(directory, "trace.sqlite");
+    const store = new ObservingStartStore(databasePath);
+    const runId = "run:cancellation-suspended-public";
+    let releaseProvider: (() => void) | undefined;
+    const providerRelease = new Promise<void>((resolve) => {
+        releaseProvider = resolve;
+    });
+    let suspensionOptions: Parameters<typeof acknowledgeDurableTaskSuspension>[1] | undefined;
+    let suspension: ReturnType<typeof acknowledgeDurableTaskSuspension> | undefined;
+    const running = executeTaskDurably(store, {
+        budget: { maxTurns: 1 },
+        input: undefined,
+        provider: {
+            descriptor: () => ({
+                capabilities: { streaming: false, structuredOutput: true, tools: false },
+                id: "suspended-cancellation-provider",
+                kind: "static" as const,
+                model: "offline-v1",
+            }),
+            invoke: async () => {
+                await providerRelease;
+                const options = suspensionOptions;
+                assert.ok(options);
+                suspension = acknowledgeDurableTaskSuspension(store, options);
+                return {
+                    output: "must be fenced",
+                    usage: {
+                        cacheCreationInputTokens: 0,
+                        cacheReadInputTokens: 0,
+                        costUsd: null,
+                        inputTokens: 1,
+                        outputTokens: 1,
+                    },
+                };
+            },
+        },
+        runId,
+        task: task({
+            input: schema.void(),
+            instruction: "Suspend before direct cancellation.",
+            name: "suspended-cancellation",
+            output: schema.string(),
+            version: "1.0.0",
+        }),
+    });
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    const startedRecordId = inspectDurableTaskExecution(store, runId).lifecycle.started_record_id;
+    assert.ok(startedRecordId && store.claimId && store.fencingToken);
+    assert.throws(
+        () =>
+            cancelDurableTask(store, {
+                commandId: "command:cancel:running-via-inactive-api",
+                expectedLifecycleRecordId: startedRecordId,
+                reason: "running execution requires fenced cancellation",
+                runId,
+            }),
+        TraceStoreError,
+    );
+    const pause = requestDurableTaskPause(store, {
+        commandId: "command:pause:before-direct-cancel",
+        expectedLifecycleRecordId: startedRecordId,
+        fencingToken: store.fencingToken,
+        reason: "suspend before cancellation",
+        runId,
+    });
+    const cut = store.publishCut({
+        cut_id: "cut:suspended-direct-cancel",
+        target_owner_id: runId,
+        through_record_id: startedRecordId,
+    });
+    suspensionOptions = {
+        constituents: runProtocolConfig.execution.continuationConstituentKinds.map((kind) => ({
+            kind,
+            status: "not_required",
+        })) as Parameters<typeof acknowledgeDurableTaskSuspension>[1]["constituents"],
+        expectedLifecycleRecordId: startedRecordId,
+        fencingToken: store.fencingToken,
+        pauseCommandRecordId: pause.record_id,
+        runId,
+        traceCutId: cut.cut_id,
+    };
+    releaseProvider?.();
+    await assert.rejects(running, DurableExecutionClaimFencedError);
+    const retainedSuspension = suspension;
+    assert.ok(retainedSuspension);
+    const options = {
+        commandId: "command:cancel:suspended-public",
+        expectedLifecycleRecordId: retainedSuspension.acknowledgement_record_id,
+        reason: "operator cancels suspended run",
+        runId,
+    } as const;
+    using malformedPreCancellationStore = new OwnerProjectionStore(
+        runId,
+        store
+            .readOwner(runId)
+            .map((record) =>
+                record.envelope.record_id === retainedSuspension.acknowledgement_record_id
+                    ? { ...record, body: { ...record.body, status: "invalid" } }
+                    : record,
+            ),
+        store,
+    );
+    assert.throws(() => cancelDurableTask(malformedPreCancellationStore, options), TraceStoreError);
+    const cancelled = cancelDurableTask(store, options);
+    assert.equal(cancelled.execution.outcome.outcome.status, "cancelled");
+    assert.equal(cancelled.ledger.started, true);
+    const inspection = inspectDurableTaskExecution(store, runId);
+    assert.equal(inspection.status, "committed");
+    assert.equal(inspection.outcome?.outcome.outcome.status, "cancelled");
+    const retainedRecords = store.readOwner(runId);
+    const terminalPrefixRecords = retainedRecords.filter(
+        (record) => record.envelope.record_id !== cancelled.ledger.cut.created_by_record_id,
+    );
+    const descriptorRecordId = retainedSuspension.continuation_descriptor_record_id;
+    const suspensionRecordId = retainedSuspension.acknowledgement_record_id;
+    const malformedTerminalPrefixes: readonly (readonly OwnerRecord[])[] = [
+        terminalPrefixRecords.map((record) =>
+            record.envelope.record_id === suspensionRecordId
+                ? { ...record, body: { ...record.body, status: "invalid" } }
+                : record,
+        ),
+        terminalPrefixRecords.map((record) =>
+            record.envelope.record_id === suspensionRecordId
+                ? {
+                      ...record,
+                      envelope: {
+                          ...record.envelope,
+                          schema_ref: runProtocolConfig.schemas.runningLifecycleId,
+                      },
+                  }
+                : record,
+        ),
+        terminalPrefixRecords.map((record) =>
+            record.envelope.record_id === suspensionRecordId
+                ? { ...record, body: { ...record.body, continuation_descriptor_id: 1 } }
+                : record,
+        ),
+        terminalPrefixRecords.filter((record) => record.envelope.record_id !== descriptorRecordId),
+        terminalPrefixRecords.map((record) =>
+            record.envelope.record_id === descriptorRecordId
+                ? {
+                      ...record,
+                      envelope: {
+                          ...record.envelope,
+                          schema_ref: runProtocolConfig.execution.controlCommandSchemaId,
+                      },
+                  }
+                : record,
+        ),
+        ...[
+            { execution_id: "run:other" },
+            { continuation_version: -1 },
+            { trace_cut_id: 1 },
+            { constituents: null },
+            { constituents: [] },
+        ].map((body) =>
+            terminalPrefixRecords.map((record) =>
+                record.envelope.record_id === descriptorRecordId
+                    ? { ...record, body: { ...record.body, ...body } as AppendBody }
+                    : record,
+            ),
+        ),
+        terminalPrefixRecords.map((record) =>
+            record.envelope.record_id === suspensionRecordId
+                ? {
+                      ...record,
+                      view: { ...record.view, append_intent_id: "append:non-atomic" },
+                  }
+                : record,
+        ),
+        terminalPrefixRecords.map((record) =>
+            record.envelope.record_id === suspensionRecordId
+                ? { ...record, body: { ...record.body, pause_command_id: 1 } }
+                : record,
+        ),
+        terminalPrefixRecords.filter((record) => record.envelope.record_id !== pause.record_id),
+        terminalPrefixRecords.map((record) =>
+            record.envelope.record_id === pause.record_id
+                ? {
+                      ...record,
+                      envelope: {
+                          ...record.envelope,
+                          schema_ref: runProtocolConfig.schemas.artifactId,
+                      },
+                  }
+                : record,
+        ),
+        terminalPrefixRecords.map((record) =>
+            record.envelope.record_id === pause.record_id
+                ? {
+                      ...record,
+                      body: { ...record.body, expected_lifecycle_record_id: ROOT_WITNESS_ID },
+                  }
+                : record,
+        ),
+        ...[
+            { kind: "invalid" },
+            { status: "invalid" },
+            { status: "unavailable" },
+            { status: "verified" },
+            { receipt_id: "receipt:unexpected" },
+        ].map((constituent) =>
+            terminalPrefixRecords.map((record) =>
+                record.envelope.record_id === descriptorRecordId
+                    ? {
+                          ...record,
+                          body: {
+                              ...record.body,
+                              constituents: [
+                                  {
+                                      ...(
+                                          record.body.constituents as readonly Record<
+                                              string,
+                                              unknown
+                                          >[]
+                                      )[0],
+                                      ...constituent,
+                                  },
+                                  ...(
+                                      record.body.constituents as readonly Record<string, unknown>[]
+                                  ).slice(1),
+                              ],
+                          } as AppendBody,
+                      }
+                    : record,
+            ),
+        ),
+    ];
+    for (const records of malformedTerminalPrefixes) {
+        using malformedHeadStore = new OwnerProjectionStore(runId, records, store);
+        assert.throws(() => readDurableTaskExecution(malformedHeadStore, runId), TraceStoreError);
+    }
+    using wrongCutOwnerStore = new OwnerProjectionStore(
+        runId,
+        terminalPrefixRecords,
+        store,
+        (cutEvidence) => ({ ...cutEvidence, target_owner_id: "run:other" }),
+    );
+    assert.throws(() => readDurableTaskExecution(wrongCutOwnerStore, runId), TraceStoreError);
+    assert.throws(
+        () =>
+            resumeDurableTask(store, {
+                commandId: "command:resume:after-direct-cancel",
+                continuationDescriptorRecordId:
+                    retainedSuspension.continuation_descriptor_record_id,
+                expectedLifecycleRecordId: retainedSuspension.acknowledgement_record_id,
+                runId,
+            }),
+        TraceStoreError,
+    );
+    store.close();
+    const reopened = new SQLiteTraceStore(databasePath);
+    assert.deepEqual(cancelDurableTask(reopened, options), cancelled);
+    reopened.close();
+});
+
+test("waiting cancellation terminalizes from retained prerequisite evidence", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-waiting-cancellation-"));
+    context.after(() => rm(directory, { force: true, recursive: true }));
+    const databasePath = path.join(directory, "trace.sqlite");
+    const store = new ObservingStartStore(databasePath);
+    const runId = "run:cancellation-waiting-public";
+    let releaseProvider: (() => void) | undefined;
+    const providerRelease = new Promise<void>((resolve) => {
+        releaseProvider = resolve;
+    });
+    const running = executeTaskDurably(store, {
+        budget: { maxTurns: 1 },
+        input: undefined,
+        provider: {
+            descriptor: () => ({
+                capabilities: { streaming: false, structuredOutput: true, tools: false },
+                id: "waiting-cancellation-provider",
+                kind: "static" as const,
+                model: "offline-v1",
+            }),
+            invoke: async () => {
+                await providerRelease;
+                return {
+                    output: "must be fenced",
+                    usage: {
+                        cacheCreationInputTokens: 0,
+                        cacheReadInputTokens: 0,
+                        costUsd: null,
+                        inputTokens: 1,
+                        outputTokens: 1,
+                    },
+                };
+            },
+        },
+        runId,
+        task: task({
+            input: schema.void(),
+            instruction: "Wait for a prerequisite before direct cancellation.",
+            name: "waiting-cancellation",
+            output: schema.string(),
+            version: "1.0.0",
+        }),
+    });
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    const startedRecordId = inspectDurableTaskExecution(store, runId).lifecycle.started_record_id;
+    assert.ok(startedRecordId && store.claimId && store.fencingToken);
+    const cut = store.publishCut({
+        cut_id: "cut:waiting-direct-cancel",
+        target_owner_id: runId,
+        through_record_id: startedRecordId,
+    });
+    const descriptorBody = {
+        constituents: runProtocolConfig.execution.continuationConstituentKinds.map((kind) => ({
+            kind,
+            status: "not_required",
+        })),
+        continuation_version: runProtocolConfig.execution.continuationVersion,
+        execution_id: runId,
+        trace_cut_id: cut.cut_id,
+    };
+    const descriptorLocalId = "waiting-descriptor";
+    const descriptorRecordId = createRecordEnvelope({
+        body: descriptorBody,
+        caused_by_record_ids: [cut.created_by_record_id],
+        mode: "capture",
+        schema_ref: runProtocolConfig.schemas.continuationDescriptorId,
+        witness_ref: ROOT_WITNESS_ID,
+    }).record_id;
+    const waitingReceipt = store.append({
+        append_intent_id: "append:waiting-before-direct-cancel",
+        batch: {
+            groups: [
+                {
+                    owner_id: runId,
+                    records: [
+                        {
+                            append_local_id: descriptorLocalId,
+                            body: descriptorBody,
+                            caused_by_record_ids: [cut.created_by_record_id],
+                            mode: "capture",
+                            schema_ref: runProtocolConfig.schemas.continuationDescriptorId,
+                            witness_ref: ROOT_WITNESS_ID,
+                        },
+                        {
+                            body: {
+                                continuation_descriptor_id: descriptorRecordId,
+                                execution_id: runId,
+                                lifecycle_version: runProtocolConfig.execution.lifecycleVersion,
+                                prerequisite: {
+                                    kind: "external",
+                                    prerequisite_id: "prerequisite:waiting-cancel",
+                                },
+                                status: runProtocolConfig.execution.lifecycleWaitingStatus,
+                            },
+                            caused_by_record_ids: [startedRecordId],
+                            caused_by_local_refs: [descriptorLocalId],
+                            mode: "capture",
+                            schema_ref: runProtocolConfig.schemas.waitingLifecycleId,
+                            witness_ref: ROOT_WITNESS_ID,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    const waitingRecordId = waitingReceipt.record_ids[1] as RecordId;
+    assert.throws(
+        () =>
+            cancelDurableTask(store, {
+                commandId: "command:cancel:waiting-active-worker",
+                expectedLifecycleRecordId: waitingRecordId,
+                reason: "worker has not released authority",
+                runId,
+            }),
+        TraceStoreError,
+    );
+    using database = new DatabaseSync(databasePath);
+    database
+        .prepare(
+            "UPDATE durable_execution_claims SET lease_expires_at = 0, started = 0 WHERE run_id = ?",
+        )
+        .run(runId);
+    assert.equal(inspectDurableTaskExecution(store, runId).lifecycle.quiescent?.status, "waiting");
+    const options = {
+        commandId: "command:cancel:waiting-public",
+        expectedLifecycleRecordId: waitingRecordId,
+        reason: "operator cancels waiting run",
+        runId,
+    } as const;
+    const cancelled = cancelDurableTask(store, options);
+    releaseProvider?.();
+    await assert.rejects(running, DurableExecutionClaimFencedError);
+    assert.equal(cancelled.execution.outcome.outcome.status, "cancelled");
+    assert.equal(cancelled.ledger.started, true);
+    assert.equal(inspectDurableTaskExecution(store, runId).status, "committed");
+    const malformedWaitingRecords = store
+        .readOwner(runId)
+        .filter((record) => record.envelope.record_id !== cancelled.ledger.cut.created_by_record_id)
+        .map((record) =>
+            record.envelope.record_id === waitingRecordId
+                ? {
+                      ...record,
+                      body: {
+                          ...record.body,
+                          prerequisite: {
+                              ...(record.body.prerequisite as Readonly<Record<string, unknown>>),
+                              kind: 1,
+                          },
+                      },
+                  }
+                : record,
+        );
+    using malformedWaitingStore = new OwnerProjectionStore(runId, malformedWaitingRecords, store);
+    assert.throws(() => readDurableTaskExecution(malformedWaitingStore, runId), TraceStoreError);
+    store.close();
+    const reopened = new SQLiteTraceStore(databasePath);
+    assert.deepEqual(cancelDurableTask(reopened, options), cancelled);
+    reopened.close();
+});
 
 class InterruptingCutStore extends SQLiteTraceStore {
     #interrupt = true;
@@ -280,13 +777,22 @@ class HidingRecordStore extends SQLiteTraceStore {
 }
 
 class OwnerProjectionStore extends SQLiteTraceStore {
+    readonly #cutTransform: ((cut: Cut) => Cut) | undefined;
     readonly #records: readonly OwnerRecord[];
     readonly #runId: string;
+    readonly #source: SQLiteTraceStore | undefined;
 
-    constructor(runId: string, records: readonly OwnerRecord[]) {
+    constructor(
+        runId: string,
+        records: readonly OwnerRecord[],
+        source?: SQLiteTraceStore,
+        cutTransform?: (cut: Cut) => Cut,
+    ) {
         super();
+        this.#cutTransform = cutTransform;
         this.#records = records;
         this.#runId = runId;
+        this.#source = source;
     }
 
     override readOwner(ownerId: string): readonly OwnerRecord[] {
@@ -298,6 +804,11 @@ class OwnerProjectionStore extends SQLiteTraceStore {
         return record === undefined
             ? undefined
             : { body: record.body, envelope: record.envelope, views: [record.view] };
+    }
+
+    override readCut(cutId: string): Cut {
+        const cut = this.#source?.readCut(cutId) ?? super.readCut(cutId);
+        return this.#cutTransform?.(cut) ?? cut;
     }
 }
 

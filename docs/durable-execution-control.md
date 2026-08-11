@@ -125,6 +125,19 @@ run/head binding, and causal position. Missing, ambiguous, malformed, or non-com
 evidence fails closed. A request that is never acknowledged cannot terminalize an ambiguously
 running execution.
 
+## Direct inactive cancellation
+
+`cancelDurableTask(store, options)` applies one globally idempotent `cancel` command directly to
+an exact `created`, `waiting`, or `suspended` lifecycle head. The command binds its identity to the
+run, expected head, and reason without inventing a worker fence for an inactive lifecycle.
+
+One SQLite transaction verifies that the expected record is the current inactive head, rejects a
+started worker claim, appends the canonical command, cancelled outcome, and terminal lifecycle,
+and expires any pre-start claim. Deterministic cut publication follows. Exact replay returns the
+same durable result after restart; changed command content, stale heads, terminal runs, malformed
+continuation evidence, and any still-authoritative worker fail closed. A stale pre-start or
+previously released worker cannot publish start or terminal evidence after cancellation commits.
+
 ## Crash and race guarantees
 
 Public runtime tests preserve the control boundary across store connections and lost responses.
@@ -138,7 +151,7 @@ constituent without its required receipt cannot authorize resume.
 ## Scope
 
 Recovery, pause-request retention, checkpoint adapter contracts, command-authorized suspension,
-exact resume authority, and fenced running cancellation are implemented. Runtime waiting and
-direct cancellation from created, waiting, or suspended states remain unavailable. These APIs do
-not forcibly stop a process, infer a safe boundary, or make an uncertain started provider call
-replay-safe; adapters and the calling worker own the safe-boundary assertion.
+exact resume authority, fenced running cancellation, and direct created/waiting/suspended
+cancellation are implemented. Runtime waiting remains unavailable. These APIs do not forcibly
+stop a process, infer a safe boundary, or make an uncertain started provider call replay-safe;
+adapters and the calling worker own the safe-boundary assertion.
