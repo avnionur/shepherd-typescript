@@ -10,6 +10,12 @@ cancelled runs.
 [`createRunUsage`](../src/run/usage.ts) creates aggregate resource totals for the entire run. Their
 public types are exported from [`src/index.ts`](../src/index.ts).
 
+Providers may return optional artifact definitions through `ModelResponse.artifacts`.
+[`executeTask`](./task-execution.md) validates those definitions, assigns configured consecutive
+ordinals, binds them to the run ID, and returns them in `TaskExecutionResult.artifacts`. Artifacts
+are retained even when later output validation or budget accounting produces a non-finished
+terminal outcome.
+
 Artifacts use an explicit configured zero-based `artifactOrdinal`. Text content is retained
 inline. Binary bytes are never base64-embedded in the semantic record; callers first persist the
 bytes through [`SQLiteTraceStore.putBlob`](../src/store/sqlite-trace-store.ts) and pass its durable
@@ -31,9 +37,11 @@ destinations are owned by [`protocol.config.json`](../protocol.config.json) and 
 protocol v1 compatibility constant. Generated JSON Schemas live in
 [`spec/schemas`](../spec/schemas).
 
-Public behavior, malformed inputs, blob integration, immutability, independent fixtures, schema
-closure, and configuration drift are covered by
+Public behavior, malformed inputs, executor ordering, durable recovery, blob integration,
+immutability, independent fixtures, schema closure, and configuration drift are covered by
 [`test/run/artifacts-usage.test.ts`](../test/run/artifacts-usage.test.ts) and
-[`test/run/protocol.test.ts`](../test/run/protocol.test.ts). Aggregate usage is retained by
-[`executeTaskDurably`](./durable-task-execution.md). Automatic artifact collection remains a later
-runtime slice; these builders do not claim that behavior.
+[`test/run/protocol.test.ts`](../test/run/protocol.test.ts), with production-seam execution tests in
+[`test/run/execution.test.ts`](../test/run/execution.test.ts) and
+[`test/run/durable-execution.test.ts`](../test/run/durable-execution.test.ts). Aggregate usage and
+provider-produced artifacts are retained by
+[`executeTaskDurably`](./durable-task-execution.md).

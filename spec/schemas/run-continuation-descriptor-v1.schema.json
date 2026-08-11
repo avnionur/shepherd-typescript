@@ -1,0 +1,211 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/run-continuation-descriptor-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Run Continuation Descriptor v1",
+    "description": "Ordered evidence classification for every configured run-continuation constituent.",
+    "type": "object",
+    "required": [
+        "continuation_version",
+        "execution_id",
+        "trace_cut_id",
+        "constituents"
+    ],
+    "properties": {
+        "continuation_version": {
+            "const": 1
+        },
+        "execution_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "trace_cut_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "constituents": {
+            "type": "array",
+            "prefixItems": [
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "status",
+                                "receipt_id"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "world"
+                                },
+                                "status": {
+                                    "const": "verified"
+                                },
+                                "receipt_id": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "status"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "world"
+                                },
+                                "status": {
+                                    "enum": [
+                                        "not_required",
+                                        "unavailable"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "status",
+                                "receipt_id"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "provider_session"
+                                },
+                                "status": {
+                                    "const": "verified"
+                                },
+                                "receipt_id": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "status"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "provider_session"
+                                },
+                                "status": {
+                                    "enum": [
+                                        "not_required",
+                                        "unavailable"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "status",
+                                "receipt_id"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "process"
+                                },
+                                "status": {
+                                    "const": "verified"
+                                },
+                                "receipt_id": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "status"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "process"
+                                },
+                                "status": {
+                                    "enum": [
+                                        "not_required",
+                                        "unavailable"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "status",
+                                "receipt_id"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "prerequisite"
+                                },
+                                "status": {
+                                    "const": "verified"
+                                },
+                                "receipt_id": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "status"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "prerequisite"
+                                },
+                                "status": {
+                                    "enum": [
+                                        "not_required",
+                                        "unavailable"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            ],
+            "minItems": 4,
+            "maxItems": 4
+        }
+    },
+    "additionalProperties": false
+}

@@ -1,5 +1,18 @@
 import type { SemanticRecord, SemanticValue } from "../canonical/canonical-record.ts";
 import type { PROVIDER_KINDS } from "../protocol/config-types.ts";
+import type { RunArtifactContentDefinition } from "../run/artifact-types.ts";
+
+/** One side-channel artifact emitted with a provider response. */
+export type ModelArtifactDefinition = {
+    /** Inline text or an existing durable blob receipt. */
+    readonly content: RunArtifactContentDefinition;
+    /** Application-defined artifact family. */
+    readonly kind: string;
+    /** Canonical provider-specific metadata. */
+    readonly metadata: SemanticRecord;
+    /** Caller-visible artifact name. */
+    readonly name: string;
+};
 
 /** Configured provider-kind vocabulary implemented by provider protocol v1. */
 export type ProviderKind = (typeof PROVIDER_KINDS)[number];
@@ -60,6 +73,8 @@ export type ModelUsage = {
 
 /** Provider-neutral response from one structured model invocation. */
 export type ModelResponse = {
+    /** Ordered side-channel artifacts emitted with the response. */
+    readonly artifacts?: readonly ModelArtifactDefinition[];
     /** Canonical structured output returned by the provider. */
     readonly output: SemanticValue;
     /** Resource usage measured for this invocation. */

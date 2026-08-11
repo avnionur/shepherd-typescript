@@ -1,6 +1,7 @@
 import type { ModelProvider, ProviderDescriptor } from "../provider/types.ts";
 import type { InferTaskSchema, TaskSchema } from "../task/schema.ts";
 import type { TaskDescriptor } from "../task/types.ts";
+import type { RunArtifact } from "./artifact-types.ts";
 import type { RunBudgetDefinition, RunControlSnapshot } from "./control-types.ts";
 import type { RunOutcome } from "./types.ts";
 import type { RunUsage } from "./usage-types.ts";
@@ -23,6 +24,8 @@ export type TaskExecutionOptions<I extends TaskSchema<unknown>, O extends TaskSc
 
 /** Terminal records and final observable state produced by one task execution. */
 export type TaskExecutionResult = {
+    /** Immutable ordered side-channel artifacts emitted by the provider. */
+    readonly artifacts: readonly RunArtifact[];
     /** Final run-control snapshot captured before internal resource cleanup. */
     readonly control: RunControlSnapshot;
     /** Immutable terminal outcome bound to the exact task artifact lock. */

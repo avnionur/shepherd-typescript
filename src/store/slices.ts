@@ -43,7 +43,7 @@ export function readOwnerPrefixSlice(
     const { modeFilter, visibilityProfile } = normalizeSliceReadOptions(options);
     const rows = database
         .prepare(
-            `SELECT owner_id, owner_ordinal, record_id
+            `SELECT append_intent_id, owner_id, owner_ordinal, record_id
              FROM ${STORE_TABLES.recordViews}
              WHERE owner_id = ? AND owner_ordinal <= ?
              ORDER BY owner_ordinal`,
@@ -62,6 +62,7 @@ export function readOwnerPrefixSlice(
                 body: record.body,
                 envelope: record.envelope,
                 view: Object.freeze({
+                    append_intent_id: String(row.append_intent_id),
                     owner_id: String(row.owner_id),
                     owner_ordinal: Number(row.owner_ordinal),
                 }),

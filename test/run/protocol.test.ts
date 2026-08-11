@@ -105,6 +105,19 @@ test("run protocol configuration is frozen and compatibility locked", () => {
     assert.equal(Object.isFrozen(parsed.runs), true);
     assert.equal(Object.isFrozen(parsed.runs.control), true);
     assert.equal(Object.isFrozen(parsed.runs.control.budgetMetrics), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.controlCommandKinds), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.continuationConstituentKinds), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.continuationEvidenceStatuses), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.errors), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.invocationClaimAppendStatuses), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.invocationClaimStatuses), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.lifecycleStatuses), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.lifecycleTerminalTransitions), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.lifecycleTerminalTransitions[0]), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.lifecycleTransitions), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.lifecycleTransitions[0]), true);
+    assert.equal(Object.isFrozen(parsed.runs.execution.recoveryStatuses), true);
     assert.equal(Object.isFrozen(parsed.runs.terminalStatuses), true);
     assert.equal(Object.isFrozen(RUN_PROTOCOL_V1_CONTRACT), true);
 
@@ -162,6 +175,123 @@ test("run protocol configuration is frozen and compatibility locked", () => {
             runs.terminalStatuses = ["finished", "failed", "exhausted", "stopped"];
         },
         (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).recoveryStatuses = [];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).continuationConstituentKinds = [];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).continuationEvidenceStatuses = [];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).continuationEvidenceStatuses = ["verified"];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).continuationVerifiedStatus = "unknown";
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).continuationVersion = 0;
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleStatuses = [];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleTerminalStatus = "unknown";
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleWaitingStatus = "unknown";
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleSuspendedStatus = "waiting";
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleTransitions = [];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleTransitions = [["created"]];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleTransitions = [
+                ["created", "running"],
+                ["created", "running"],
+            ];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleTransitions = [
+                ["unknown", "running"],
+            ];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleTransitions = [
+                ["terminal", "running"],
+            ];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleTransitions = [
+                ["created", "terminal"],
+            ];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleTerminalTransitions = [
+                ["unknown", "failed"],
+            ];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleTerminalTransitions = [
+                ["terminal", "failed"],
+            ];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleTerminalTransitions = [
+                ["created", "unknown"],
+            ];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).lifecycleVersion = 0;
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).controlCommandKinds = [];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).controlCommandSchemaId = "";
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).invocationClaimAppendStatuses = [];
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.execution as Record<string, unknown>).invocationClaimStatuses = [];
+        },
+        (runs: Record<string, unknown>) => {
+            const execution = runs.execution as Record<string, unknown>;
+            const errors = execution.errors as Record<string, unknown>;
+            errors.recoveryAbsentCode = "";
+        },
+        (runs: Record<string, unknown>) => {
+            const execution = runs.execution as Record<string, unknown>;
+            const errors = execution.errors as Record<string, unknown>;
+            errors.recoveryAbsentMessage = "";
+        },
+        (runs: Record<string, unknown>) => {
+            const execution = runs.execution as Record<string, unknown>;
+            const errors = execution.errors as Record<string, unknown>;
+            errors.recoveryCommandRequiredCode = "";
+        },
+        (runs: Record<string, unknown>) => {
+            const execution = runs.execution as Record<string, unknown>;
+            const errors = execution.errors as Record<string, unknown>;
+            errors.recoveryCommandRequiredMessage = "";
+        },
+        (runs: Record<string, unknown>) => {
+            const execution = runs.execution as Record<string, unknown>;
+            const errors = execution.errors as Record<string, unknown>;
+            errors.recoveryStartedCode = "";
+        },
+        (runs: Record<string, unknown>) => {
+            const execution = runs.execution as Record<string, unknown>;
+            const errors = execution.errors as Record<string, unknown>;
+            errors.recoveryStartedMessage = "";
+        },
+        (runs: Record<string, unknown>) => {
             (runs.schemas as Record<string, unknown>).outcomeId = "relative";
         },
         (runs: Record<string, unknown>) => {
@@ -171,6 +301,15 @@ test("run protocol configuration is frozen and compatibility locked", () => {
             (runs.schemas as Record<string, unknown>).usageId = "relative";
         },
         (runs: Record<string, unknown>) => {
+            (runs.schemas as Record<string, unknown>).continuationDescriptorId = "relative";
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.schemas as Record<string, unknown>).waitingLifecycleId = "relative";
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.schemas as Record<string, unknown>).suspendedLifecycleId = "relative";
+        },
+        (runs: Record<string, unknown>) => {
             (runs.artifacts as Record<string, unknown>).outcomeSchema = "";
         },
         (runs: Record<string, unknown>) => {
@@ -178,6 +317,15 @@ test("run protocol configuration is frozen and compatibility locked", () => {
         },
         (runs: Record<string, unknown>) => {
             (runs.artifacts as Record<string, unknown>).usageSchema = "";
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.artifacts as Record<string, unknown>).continuationDescriptorSchema = "";
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.artifacts as Record<string, unknown>).waitingLifecycleSchema = "";
+        },
+        (runs: Record<string, unknown>) => {
+            (runs.artifacts as Record<string, unknown>).suspendedLifecycleSchema = "";
         },
     ]) {
         const candidate = structuredClone(validConfig);

@@ -3,6 +3,7 @@ import { runProtocolConfig } from "../protocol/config.ts";
 import { RUN_CONTROL_STATUSES, RUN_TERMINAL_STATUSES } from "../protocol/values.generated.ts";
 import type { ProviderDescriptor } from "../provider/types.ts";
 import type { TaskArtifactLock } from "../task/types.ts";
+import type { RunArtifact } from "./artifact-types.ts";
 import type { RunCancellationReason, RunControl, RunControlSnapshot } from "./control-types.ts";
 import type { TaskExecutionResult } from "./execution-types.ts";
 import { createRunOutcome } from "./outcomes.ts";
@@ -19,8 +20,10 @@ export function createFinishedExecution(
     control: RunControlSnapshot,
     usage: RunUsage,
     value: SemanticValue,
+    artifacts: readonly RunArtifact[],
 ): TaskExecutionResult {
     return Object.freeze({
+        artifacts,
         control,
         outcome: createRunOutcome({
             outcome: { status: FINISHED_STATUS, value },
@@ -42,8 +45,10 @@ export function createFailedExecution(
     errorType: string,
     message: string,
     retryable?: boolean,
+    artifacts: readonly RunArtifact[] = Object.freeze([]),
 ): TaskExecutionResult {
     return Object.freeze({
+        artifacts,
         control,
         outcome: createRunOutcome({
             outcome: {
@@ -68,9 +73,11 @@ export function createControlEnding(
     control: RunControl,
     snapshot: RunControlSnapshot,
     usage: RunUsage | null,
+    artifacts: readonly RunArtifact[] = Object.freeze([]),
 ): TaskExecutionResult {
     if (snapshot.status === EXHAUSTED_CONTROL_STATUS) {
         return Object.freeze({
+            artifacts,
             control: snapshot,
             outcome: createRunOutcome({
                 outcome: {
@@ -89,6 +96,7 @@ export function createControlEnding(
     }
     const reason = snapshot.reason as RunCancellationReason;
     return Object.freeze({
+        artifacts,
         control: snapshot,
         outcome: createRunOutcome({
             outcome: { reason: reason.message, status: CANCELLED_STATUS },

@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `0.21.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.6.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -95,16 +95,38 @@ trace-record contracts with durable SQLite task and trace stores:
 - immutable finished, failed, exhausted, and cancelled run outcomes with exact task-lock
   provenance;
 - immutable ordered text/blob run artifacts and aggregate run-usage records correlated by run ID;
+- a configured normative run-lifecycle transition matrix with versioned continuation, waiting,
+  suspension, and resumed-running evidence schemas;
 - cooperative run controls with configured counter/duration budgets and caller cancellation;
-- a provider-neutral structured invocation contract and deterministic exact-cassette static
-  provider;
+- a provider-neutral structured invocation contract with ordered text/blob artifact definitions
+  and a deterministic exact-cassette static provider;
 - offline bodyless task execution with exact schema validation, usage accounting, budgets,
-  cancellation, and terminal-result normalization;
-- durable task execution with configured lifecycle records, aggregate usage, exact terminal
-  outcomes, deterministic append replay, and immutable terminal cuts;
+  cancellation, ordered artifact assignment, and terminal-result normalization;
+- durable task execution with configured lifecycle records, ordered artifacts, verified blob
+  receipts, aggregate usage, exact terminal outcomes, deterministic append replay, immutable
+  terminal cuts, restart-safe recovery classification, exact committed-result reconstruction,
+  command-authorized creation resume and cut repair, cross-connection first-writer leases, and
+  stale-writer fencing;
+- read-only durable execution inspection with configured recovery status, lifecycle, artifact,
+  usage, and outcome record identities, immutable terminal cuts, canonical causal edges, and
+  cut-bound waiting/suspension evidence;
+- globally idempotent durable recovery commands with canonical command evidence, expired-lease
+  takeover, command-bound start/cut transitions, and fail-closed absent/started handling;
+- globally idempotent pause requests bound atomically to the exact current started lifecycle head,
+  invocation fencing token, run, reason, and command content without claiming suspension;
+- configured checkpoint constituent adapters and atomic command-authorized suspension
+  acknowledgement that publishes continuation evidence, releases the worker claim, and fences
+  stale terminal publication;
+- globally idempotent resume commands bound to the exact suspension and continuation descriptor,
+  with unavailable-evidence rejection, atomic monotonic fencing, and a command-bound running
+  acknowledgement;
 - Node-native TypeScript execution and tests.
 
 The implementation preserves Unicode code points as supplied. It does not normalize Unicode.
+Durable recovery serializes concurrent first admission and safely reclaims only expired pre-start
+claims through an explicit command. Ordinary durable execution does not advance retained
+incomplete evidence. A retained start remains fail-closed because provider execution is not yet
+replay-safe.
 
 ## Requirements
 
@@ -121,6 +143,8 @@ pnpm install
 
 ```ts
 import {
+    acknowledgeDurableTaskSuspension,
+    captureRunContinuationCheckpoints,
     canonicalizeRecord,
     createEffectHandlerStack,
     createEffectIntent,
@@ -134,8 +158,13 @@ import {
     createStaticProvider,
     executeTask,
     executeTaskDurably,
+    inspectDurableTaskExecution,
     planAppendBatch,
     ROOT_WITNESS_ID,
+    readDurableTaskExecution,
+    recoverTaskDurably,
+    requestDurableTaskPause,
+    resumeDurableTask,
     schema,
     SQLiteTaskRegistry,
     SQLiteTraceStore,
@@ -315,6 +344,23 @@ const durableExecution = await executeTaskDurably(store, {
     budget: { maxTurns: 1 },
 });
 store.projectExecution(durableExecution.ledger.cut.cut_id);
+const durableRecovery = readDurableTaskExecution(store, "run:status:durable");
+if (durableRecovery.status === "committed") {
+    durableRecovery.result.execution.outcome;
+}
+const durableInspection = inspectDurableTaskExecution(store, "run:status:durable");
+durableInspection.causal_edges;
+const recoveredExecution = await recoverTaskDurably(store, {
+    commandId: "command:recover:status",
+    execution: {
+        task: statusTask,
+        input: { state: "ready" },
+        provider: durableProvider,
+        runId: "run:status:durable",
+        budget: { maxTurns: 1 },
+    },
+});
+recoveredExecution.command.record_id;
 const receipt = store.append({
     append_intent_id: "append:example:1",
     batch: {
@@ -418,9 +464,12 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Run outcomes](./docs/run-outcomes.md)
 - [Run artifacts and usage](./docs/run-artifacts-and-usage.md)
 - [Run budgets and cancellation](./docs/run-control.md)
+- [Run lifecycle protocol](./docs/run-lifecycle-protocol.md)
 - [Provider contract and static provider](./docs/static-provider.md)
 - [Offline task execution](./docs/task-execution.md)
 - [Durable task execution](./docs/durable-task-execution.md)
+- [Durable execution inspection](./docs/durable-execution-inspection.md)
+- [Durable execution control](./docs/durable-execution-control.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
 - [Changelog](./CHANGELOG.md)
@@ -435,10 +484,22 @@ registration, immutable correlated effect intent/outcome records, ordered exact-
 dispatch, versioned terminal run-outcome records, ordered text/blob artifact records, and aggregate
 run-usage records. Configured run controls now enforce cooperative counter/duration budgets and
 caller cancellation. A provider-neutral structured request/response boundary, deterministic
-exact-cassette static provider, offline bodyless task executor, and durable lifecycle, usage,
-outcome, and terminal-cut persistence are implemented. Dynamic handler scopes, result recovery
-without provider re-invocation, live-provider adapters, artifact persistence within the run ledger,
-settlement, scopes, live supervision, suffix replay, and the paper applications remain planned.
+exact-cassette static provider, offline bodyless task executor, and durable lifecycle, artifact,
+usage, outcome, terminal-cut, restart recovery, and leased/fenced invocation admission are
+implemented. Durable lifecycle, artifact, usage, outcome, cut, and causal-edge inspection is also
+available as a read-only projection of canonical evidence. Globally idempotent recovery commands
+bind safe pre-start resume and terminal-cut repair to canonical command evidence, and globally
+idempotent pause requests bind exact running-head and fencing-token authority without changing the
+lifecycle. Configured checkpoint adapters and safe-boundary suspension acknowledgement now publish
+cut-bound continuation evidence while atomically releasing and fencing the worker. Exact resume
+commands validate that evidence, acquire the next worker fence, and publish resumed-running
+authority without invoking a provider or restoring external state. Globally idempotent cancellation
+commands now bind the exact running head and fence; the current worker can acknowledge them at a
+safe boundary while atomically publishing a cancelled terminal and releasing its claim. The
+normative lifecycle matrix and continuation/waiting/suspension/running schemas are implemented.
+Runtime waiting and direct cancellation from non-running states,
+dynamic handler scopes, live-provider adapters, settlement, scopes, live supervision, suffix
+replay, and the paper applications remain planned.
 
 ## Attribution
 

@@ -2,13 +2,86 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+    createRunArtifact,
     createStaticProvider,
     executeTask,
     type ModelProvider,
     type ModelRequest,
+    SQLiteTraceStore,
     schema,
     task,
 } from "../../src/index.ts";
+
+test("executeTask assigns ordered run artifacts from a provider response", async () => {
+    const fixtureTask = task({
+        input: schema.void(),
+        instruction: "Return a result and its artifacts.",
+        name: "artifact-result",
+        output: schema.string(),
+        version: "1.0.0",
+    });
+    using artifactStore = new SQLiteTraceStore();
+    const receipt = artifactStore.putBlob(Uint8Array.of(7, 8, 9));
+    const provider = {
+        descriptor: () => ({
+            capabilities: { streaming: false, structuredOutput: true, tools: false },
+            id: "artifact-provider",
+            kind: "static" as const,
+            model: "offline-v1",
+        }),
+        invoke: async () => ({
+            artifacts: [
+                {
+                    content: { text: "artifact text", type: "text" as const },
+                    kind: "report",
+                    metadata: { media_type: "text/plain" },
+                    name: "report.txt",
+                },
+                {
+                    content: { receipt, type: "blob" as const },
+                    kind: "binary",
+                    metadata: {},
+                    name: "data.bin",
+                },
+            ],
+            output: "complete",
+            usage: {
+                cacheCreationInputTokens: 0,
+                cacheReadInputTokens: 0,
+                costUsd: null,
+                inputTokens: 1,
+                outputTokens: 1,
+            },
+        }),
+    };
+
+    const execution = await executeTask({
+        budget: { maxTurns: 1 },
+        input: undefined,
+        provider,
+        runId: "run:artifact-result",
+        task: fixtureTask,
+    });
+
+    assert.deepEqual(execution.artifacts, [
+        createRunArtifact({
+            artifactOrdinal: 0,
+            content: { text: "artifact text", type: "text" },
+            kind: "report",
+            metadata: { media_type: "text/plain" },
+            name: "report.txt",
+            runId: "run:artifact-result",
+        }),
+        createRunArtifact({
+            artifactOrdinal: 1,
+            content: { receipt, type: "blob" },
+            kind: "binary",
+            metadata: {},
+            name: "data.bin",
+            runId: "run:artifact-result",
+        }),
+    ]);
+});
 
 test("executeTask completes a validated bodyless task through a provider", async () => {
     const greet = task({
@@ -795,6 +868,74 @@ test("executeTask classifies malformed custom-provider responses before accounti
         status: "failed",
     });
     assert.equal(execution.usage, null);
+});
+
+test("executeTask rejects malformed provider artifact collections before accounting", async () => {
+    const responseTask = task({
+        input: schema.void(),
+        instruction: "Return validated artifacts.",
+        name: "artifact-response-validation",
+        output: schema.string(),
+        version: "1.0.0",
+    });
+    const usage = {
+        cacheCreationInputTokens: 0,
+        cacheReadInputTokens: 0,
+        costUsd: null,
+        inputTokens: 1,
+        outputTokens: 1,
+    };
+    const artifact = {
+        content: { text: "evidence", type: "text" },
+        kind: "report",
+        metadata: {},
+        name: "report.txt",
+    };
+    const accessorResponse = { output: "complete", usage };
+    Object.defineProperty(accessorResponse, "artifacts", { get: () => [artifact] });
+    const malformedResponses: readonly unknown[] = [
+        { artifacts: null, output: "complete", usage },
+        { artifacts: [{ ...artifact, extra: true }], output: "complete", usage },
+        { artifacts: [{ ...artifact, name: "" }], output: "complete", usage },
+        {
+            artifacts: [{ ...artifact, content: { receipt: {}, type: "blob" } }],
+            output: "complete",
+            usage,
+        },
+        {
+            artifacts: [{ ...artifact, metadata: { invalid: Symbol("invalid") } }],
+            output: "complete",
+            usage,
+        },
+        accessorResponse,
+    ];
+
+    for (const [index, response] of malformedResponses.entries()) {
+        const provider = {
+            descriptor: () => ({
+                capabilities: { streaming: false, structuredOutput: true, tools: false },
+                id: `malformed-artifact-provider-${index}`,
+                kind: "static" as const,
+                model: "offline-v1",
+            }),
+            invoke: async () => response as Awaited<ReturnType<ModelProvider["invoke"]>>,
+        } satisfies ModelProvider;
+        const execution = await executeTask({
+            budget: { maxTurns: 1 },
+            input: undefined,
+            provider,
+            runId: `run:malformed-artifact-response:${index}`,
+            task: responseTask,
+        });
+
+        assert.equal(
+            execution.outcome.outcome.status,
+            "failed",
+            `malformed artifact response ${index}`,
+        );
+        assert.deepEqual(execution.artifacts, []);
+        assert.equal(execution.usage, null);
+    }
 });
 
 test("executeTask rejects open and accessor option containers before invocation", async () => {

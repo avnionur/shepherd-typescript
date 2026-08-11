@@ -4,6 +4,8 @@ import { RUN_CONTROL_STATUSES } from "../protocol/values.generated.ts";
 import type { ModelResponse } from "../provider/types.ts";
 import { readModelResponse } from "../provider/validation.ts";
 import type { TaskSchema } from "../task/schema.ts";
+import type { RunArtifact } from "./artifact-types.ts";
+import { createRunArtifact } from "./artifacts.ts";
 import { createRunControl } from "./control.ts";
 import type { RunControlSnapshot } from "./control-types.ts";
 import {
@@ -27,7 +29,7 @@ const [ACTIVE_CONTROL_STATUS] = RUN_CONTROL_STATUSES;
  * Executes one validated bodyless task through a provider-neutral structured boundary.
  *
  * @param options - Exact task, inferred input, provider, run identity, budget, and cancellation.
- * @returns Terminal outcome, aggregate usage, provider identity, and final control snapshot.
+ * @returns Ordered artifacts, terminal outcome, aggregate usage, provider identity, and control.
  * @throws {TypeError} If caller-owned task input or execution control options are malformed.
  *
  * @example
@@ -128,6 +130,7 @@ export async function executePreparedTask<
             outputTokens: response.usage.outputTokens,
             runId: definition.runId,
         });
+        const artifacts = createExecutionArtifacts(definition.runId, response);
         let usageSnapshot: RunControlSnapshot;
         try {
             usageSnapshot = control.consume({
@@ -143,6 +146,7 @@ export async function executePreparedTask<
                 control,
                 control.snapshot(),
                 usage,
+                artifacts,
             );
         }
         if (usageSnapshot.status !== ACTIVE_CONTROL_STATUS) {
@@ -153,6 +157,7 @@ export async function executePreparedTask<
                 control,
                 usageSnapshot,
                 usage,
+                artifacts,
             );
         }
         if (definition.budget.maxCostUsd !== undefined && response.usage.costUsd === null) {
@@ -165,6 +170,7 @@ export async function executePreparedTask<
                 runProtocolConfig.execution.errors.costUnavailableType,
                 runProtocolConfig.execution.errors.costUnavailableMessage,
                 false,
+                artifacts,
             );
         }
         let value: SemanticValue;
@@ -184,6 +190,7 @@ export async function executePreparedTask<
                 runProtocolConfig.execution.errors.outputValidationType,
                 message,
                 false,
+                artifacts,
             );
         }
         return createFinishedExecution(
@@ -193,8 +200,24 @@ export async function executePreparedTask<
             control.snapshot(),
             usage,
             value,
+            artifacts,
         );
     } finally {
         control.dispose();
     }
+}
+
+function createExecutionArtifacts(runId: string, response: ModelResponse): readonly RunArtifact[] {
+    return Object.freeze(
+        (response.artifacts ?? []).map((artifact, index) =>
+            createRunArtifact({
+                artifactOrdinal: runProtocolConfig.firstArtifactOrdinal + index,
+                content: artifact.content,
+                kind: artifact.kind,
+                metadata: artifact.metadata,
+                name: artifact.name,
+                runId,
+            }),
+        ),
+    );
 }

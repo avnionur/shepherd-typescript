@@ -120,6 +120,29 @@ const migrations: readonly Migration[] = [
             ) STRICT;
         `,
     },
+    {
+        version: 4,
+        createSql: () => `
+            CREATE TABLE ${STORE_TABLES.durableExecutionClaims} (
+                run_id TEXT PRIMARY KEY CHECK (run_id <> ''),
+                claim_id TEXT NOT NULL CHECK (claim_id <> ''),
+                created_record_id TEXT NOT NULL,
+                FOREIGN KEY (created_record_id) REFERENCES ${STORE_TABLES.records}(record_id)
+            ) STRICT;
+        `,
+    },
+    {
+        version: 5,
+        createSql: () => `
+            ALTER TABLE ${STORE_TABLES.durableExecutionClaims}
+                ADD COLUMN lease_expires_at INTEGER NOT NULL DEFAULT 0;
+            ALTER TABLE ${STORE_TABLES.durableExecutionClaims}
+                ADD COLUMN fencing_token INTEGER NOT NULL DEFAULT 1 CHECK (fencing_token > 0);
+            ALTER TABLE ${STORE_TABLES.durableExecutionClaims}
+                ADD COLUMN started INTEGER NOT NULL DEFAULT 0 CHECK (started IN (0, 1));
+            UPDATE ${STORE_TABLES.durableExecutionClaims} SET started = 1;
+        `,
+    },
 ];
 
 /**

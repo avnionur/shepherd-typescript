@@ -70,11 +70,27 @@ Work:
 - implement effect intent/outcome records and correlation;
 - implement ordered handlers;
 - implement run outcomes: success, failure, exhaustion, cancellation;
-- implement artifacts and usage;
+- implement artifacts and usage, including executor collection, durable blob verification, and
+  exact restart reconstruction;
 - implement budgets and `AbortSignal` cancellation semantics;
 - implement deterministic static provider;
 - implement offline task execution without workspace access;
-- generate trace inspection views.
+- generate cut-bounded trace inspection views from canonical durable execution evidence;
+- define the run control-plane contract: a first-writer invocation claim, worker lease/fencing,
+  globally idempotent recovery and pause-command identities, exact running-head/fence comparison,
+  and command-bound recovery after a lost worker;
+- define the one normative run lifecycle and its projections; `waiting` and `suspended` are
+  non-terminal control states, while recovery is an orthogonal evidence classification whose
+  commands complete already-defined transitions rather than forming a competing lifecycle; follow
+  the proposed contract in
+  [`normative-run-lifecycle.md`](./normative-run-lifecycle.md), including safe-boundary,
+  continuation-evidence, and versioned-projection gates;
+- define the evidence-authority map: trace records prove runtime decisions, world carriers prove
+  managed-world state, and provider/external effects require independently verifiable receipts;
+- implement ordered checkpoint constituent adapters and atomic command-bound suspension
+  acknowledgement with worker lease release and stale-terminal fencing;
+- implement globally idempotent exact-suspension resume with unavailable-evidence rejection,
+  atomic monotonic fence acquisition, and command-bound running acknowledgement;
 - implement the Appendix B typed-effect reference machine and proof-envelope classifier;
 - validate configured profile, strength, lowering, sidecar, and pinned theorem-artifact metadata;
 - keep unsupported, incomplete, live, and extension traces at an honest non-proof claim level.
@@ -85,6 +101,9 @@ Exit criteria:
 - instruction, schema, or grants alter task identity;
 - malformed task/model outputs fail as structured outcomes;
 - cancellation and budget exhaustion preserve a valid partial trace;
+- concurrent callers cannot both cross a provider or effect boundary for one durable run identity;
+- every control command can be retried or recovered without inventing a transition, and a lost
+  worker cannot retain authority after its lease is fenced;
 - observer-free deterministic runs are byte-for-byte reproducible.
 - proof-envelope classification matches reference vectors and fails closed on missing or stale
   evidence without implying that the production runtime is formally verified.
@@ -191,6 +210,8 @@ Work:
 - add scope-local writer exclusivity;
 - add parallel and nested scope scheduling;
 - implement child recovery and orphan detection;
+- define branch checkpoints as a coupled descriptor of trace cut, world receipt, and any
+  provider/process checkpoint; no descriptor may imply state that it cannot restore or verify;
 - prove algebraic/reference-model laws against the copy carrier;
 - benchmark storage scaling by changed suffix.
 
@@ -200,6 +221,7 @@ Exit criteria:
 - merge/discard results match the reference carrier;
 - nested discard leaves ancestors unchanged;
 - crash recovery has no ambiguous ownership;
+- a branch can prove whether it started from an atomic checkpoint or a reconstructed state;
 - performance carriers pass the same correctness suite as copy;
 - branch storage scales with changed data for supported optimized carriers.
 
@@ -212,6 +234,8 @@ Goal: safely supervise running executions.
 Work:
 
 - implement durable cursor-based live subscriptions;
+- define subscription cursor, replay, overflow, and acknowledgement semantics as projections over
+  the content-addressed record graph; timestamps and delivery order are never semantic identity;
 - separate observer and interceptor roles;
 - implement bounded queues and backpressure;
 - implement interception decisions: allow, deny, replace, pause;
@@ -228,6 +252,7 @@ Exit criteria:
 - destructive intent can be denied before outcome/materialization;
 - timeouts follow declared fail-open/fail-closed policy;
 - reconnect resumes without duplication or loss;
+- subscriptions neither change semantic records nor create a second authoritative event stream;
 - supervisor failure cannot deadlock a worker indefinitely;
 - irreversible effects respect configured approval frontiers.
 
@@ -239,6 +264,8 @@ Work:
 
 - define provider-session and process checkpoint adapter contracts;
 - construct coupled checkpoint descriptors;
+- record the exact trace cut, world receipt, and provider/process evidence required by every
+  checkpoint, including unavailable capabilities;
 - implement reconstructive replay from deterministic prefixes;
 - add provider prompt/cache identity and cache-hit evidence;
 - implement rewind to a trace cut;
@@ -251,6 +278,8 @@ Work:
 Exit criteria:
 
 - restored managed filesystem is byte-equivalent to the recorded cut;
+- a checkpoint is accepted only when each claimed constituent is verified, otherwise replay is
+  classified as reconstructive or unavailable;
 - provider/context prefix identity is verified, not assumed;
 - only the intended suffix diverges in deterministic tests;
 - replay never re-materializes an irreversible effect without policy approval;
@@ -321,6 +350,8 @@ Work:
 - threat model and external security review;
 - fuzz canonical decoders, CLI inputs, changesets, and helper protocols;
 - harden secret handling and export redaction;
+- define retention, redaction, and export policy for context, provider citations, checkpoints,
+  and any future memory adapters before treating them as durable runtime inputs;
 - add remote storage/concurrency only behind stable interfaces;
 - test large traces, compaction indexes, and garbage collection;
 - define backup, restore, migration, and downgrade policy;

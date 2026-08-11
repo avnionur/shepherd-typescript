@@ -15,12 +15,17 @@ export class RunBudgetExhaustedError extends Error {
      * @param reason - Exhausted metric, configured limit, and observed aggregate.
      */
     constructor(reason: RunBudgetExhaustionReason) {
-        super(`run budget exceeded: ${reason.metric} ${reason.observed} > ${reason.limit}`);
+        super(formatRunBudgetExhaustionReason(reason));
         this.name = "RunBudgetExhaustedError";
         this.limit = reason.limit;
         this.metric = reason.metric;
         this.observed = reason.observed;
     }
+}
+
+/** Formats the stable terminal description for one budget exhaustion. @internal */
+export function formatRunBudgetExhaustionReason(reason: RunBudgetExhaustionReason): string {
+    return `run budget exceeded: ${reason.metric} ${reason.observed} > ${reason.limit}`;
 }
 
 /** Error carried by a run-control signal after cancellation. */

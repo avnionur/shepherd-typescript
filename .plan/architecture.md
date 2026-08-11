@@ -228,14 +228,24 @@ explicit overflow policy. Never silently drop trace events.
 
 ## Run state machine
 
-Run lifecycle:
+Proposed normative run lifecycle (see
+[`normative-run-lifecycle.md`](./normative-run-lifecycle.md)):
 
 ```text
-declared → queued → running → terminal
-                         ↘ recovering
+created ────────────────→ terminal
+   └→ running ─┬────────→ waiting ───→ running
+               ├────────→ suspended ─→ running
+               └────────→ terminal
+
+waiting ─────────────────────────────→ terminal
+suspended ───────────────────────────→ terminal
 
 terminal = finished | failed | exhausted | cancelled
 ```
+
+Recovery statuses classify incomplete evidence and recovery commands complete safe transitions;
+neither adds a `recovering` lifecycle state. Waiting is prerequisite-driven, while suspension is
+an acknowledged control-driven stop at a verified continuation boundary.
 
 World output lifecycle:
 
@@ -265,10 +275,13 @@ Run records store:
 
 The implemented run protocol v1 covers exact task-lock terminal outcomes, ordered artifact
 records, aggregate usage records, and cooperative configured budget/cancellation control. Durable
-task execution now retains validated creation and start boundaries, aggregate observed usage, the
-exact terminal outcome, a disposable lifecycle terminal, and an immutable terminal cut. Result
-reconstruction without provider invocation, automatic artifact collection, and the remaining
-placement, world, settlement, and recovery fields remain pending.
+task execution now retains validated creation and start boundaries, executor-produced ordered
+artifacts with verified blob receipts, aggregate observed usage, the exact terminal outcome, a
+disposable lifecycle terminal, and an immutable terminal cut. Exact result reconstruction without
+provider invocation is implemented. Disposable inspection views expose lifecycle, artifact,
+usage, outcome, cut, and direct causal-edge evidence without creating a second authority; the
+configured recovery command now binds safe lease takeover and cut repair to globally idempotent
+canonical command evidence. The remaining placement, world, and settlement fields remain pending.
 The existing execution-history projection uses `succeeded` as a disposable projected lifecycle
 status; the canonical run record uses `finished`, matching the public outcome vocabulary. The
 remaining run-ledger fields are added by later Phase 2 slices.

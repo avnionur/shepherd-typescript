@@ -1,29 +1,63 @@
+import { randomUUID } from "node:crypto";
 import { createRecordId, type SemanticRecord } from "../canonical/canonical-record.ts";
 import { projectionProtocolConfig, runProtocolConfig } from "../protocol/config.ts";
-import { RECORD_MODES, RUN_TERMINAL_STATUSES } from "../protocol/values.generated.ts";
+import {
+    DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES,
+    DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES,
+    DURABLE_EXECUTION_RECOVERY_STATUSES,
+    RECORD_MODES,
+    RUN_ARTIFACT_CONTENT_TYPES,
+    RUN_TERMINAL_STATUSES,
+} from "../protocol/values.generated.ts";
 import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
+import { TraceStoreError } from "../store/errors.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { TaskSchema } from "../task/schema.ts";
+import { retainDurableExecutionCreation } from "./durable-execution-creation.ts";
+import { publishDurableExecutionCut } from "./durable-execution-cut.ts";
+import {
+    DurableExecutionClaimFencedError,
+    DurableExecutionClaimLostError,
+    DurableExecutionRecoveryCommandRequiredError,
+    DurableExecutionRecoveryError,
+} from "./durable-execution-errors.ts";
+import { readDurableTaskExecution } from "./durable-execution-recovery.ts";
 import type { DurableTaskExecutionResult } from "./durable-execution-types.ts";
 import { executePreparedTask } from "./execution.ts";
 import { prepareTaskExecution } from "./execution-preparation.ts";
 import type { TaskExecutionOptions, TaskExecutionResult } from "./execution-types.ts";
 
-const [CAPTURE_MODE, DECLARATION_MODE] = RECORD_MODES;
+const [CAPTURE_MODE] = RECORD_MODES;
+const [, FENCED_APPEND_STATUS] = DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES;
+const [, LOST_CLAIM_STATUS] = DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES;
+const [, BLOB_ARTIFACT_TYPE] = RUN_ARTIFACT_CONTENT_TYPES;
 const [FINISHED_RUN_STATUS] = RUN_TERMINAL_STATUSES;
+const [
+    ,
+    CREATED_RECOVERY_STATUS,
+    STARTED_RECOVERY_STATUS,
+    TERMINAL_PENDING_CUT_STATUS,
+    COMMITTED_RECOVERY_STATUS,
+] = DURABLE_EXECUTION_RECOVERY_STATUSES;
 
 /**
- * Executes one task while retaining its lifecycle, usage, and exact terminal outcome.
+ * Executes one task while retaining its lifecycle, artifacts, usage, and exact terminal outcome.
  *
  * Caller-owned options are fully validated before the creation record is appended. Creation and
- * start are retained at their actual execution boundaries. Usage, outcome, and terminal lifecycle
- * evidence commit atomically, after which an immutable terminal cut is published.
+ * start are retained at their actual execution boundaries. Ordered artifacts, usage, outcome, and
+ * terminal lifecycle evidence commit atomically, after which an immutable terminal cut is
+ * published. Blob artifacts must cite bytes available in the same store. Sequential retries
+ * reconstruct committed results without provider invocation. Existing incomplete executions must
+ * be advanced through an explicit durable recovery command. A retained start without terminal
+ * evidence fails closed because repeating provider invocation may be unsafe. A durable
+ * first-writer claim prevents concurrent callers from crossing one provider boundary.
  *
  * @param store - Open SQLite trace store receiving execution evidence.
  * @param options - Exact task execution options accepted by {@link executeTask}.
  * @returns The immutable execution result and its durable record identities and cut.
  * @throws {TypeError} If execution options or task input are malformed.
+ * @throws {DurableExecutionRecoveryError} If retained start evidence has no terminal result.
  * @throws {TraceStoreError} If durable append or cut publication fails.
  *
  * @example
@@ -47,66 +81,110 @@ export async function executeTaskDurably<
     store: SQLiteTraceStore,
     options: TaskExecutionOptions<I, O>,
 ): Promise<DurableTaskExecutionResult> {
+    return executeTaskDurablyInternal(store, options, null);
+}
+
+/**
+ * Executes durable recovery while causally binding an already-retained command.
+ *
+ * @param store - Open trace store containing execution and command evidence.
+ * @param options - Exact execution contract associated with retained creation evidence.
+ * @param recoveryCommandRecordId - Canonical recovery-command record to cite.
+ * @returns The recovered immutable execution result and durable ledger receipt.
+ * @throws {TypeError} If execution or command evidence is malformed.
+ * @throws {TraceStoreError} If recovery is unsafe or retained evidence is inconsistent.
+ * @internal
+ */
+export async function executeTaskDurablyWithRecoveryCommand<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(
+    store: SQLiteTraceStore,
+    options: TaskExecutionOptions<I, O>,
+    recoveryCommandRecordId: RecordId,
+): Promise<DurableTaskExecutionResult> {
+    return executeTaskDurablyInternal(store, options, recoveryCommandRecordId);
+}
+
+async function executeTaskDurablyInternal<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(
+    store: SQLiteTraceStore,
+    options: TaskExecutionOptions<I, O>,
+    recoveryCommandRecordId: RecordId | null,
+): Promise<DurableTaskExecutionResult> {
     const prepared = prepareTaskExecution(options);
     const { definition } = prepared;
-    const schemas = projectionProtocolConfig.executionHistory.executionSchemas;
-    const created = store.append({
-        append_intent_id: createLedgerIntentId(definition.runId, schemas.created),
-        batch: {
-            groups: [
-                {
-                    owner_id: definition.runId,
-                    records: [
-                        {
-                            body: {
-                                payload: {
-                                    budget: definition.budget,
-                                    execution_id: definition.runId,
-                                    inputs: { value: prepared.input },
-                                    parent_execution_id: null,
-                                    provider: prepared.provider,
-                                    task_artifact_lock: definition.task.artifactLock,
-                                    task_ref: definition.task.artifactLock.artifact_digest,
-                                },
-                            } as SemanticRecord,
-                            mode: DECLARATION_MODE,
-                            schema_ref: schemas.created,
-                            witness_ref: ROOT_WITNESS_ID,
-                        },
-                    ],
-                },
-            ],
-        },
-    });
-    const createdRecordId = created.record_ids[0] as RecordId;
-    let startedRecordId: RecordId | null = null;
-    const execution = await executePreparedTask(prepared, () => {
-        const started = store.append({
-            append_intent_id: createLedgerIntentId(definition.runId, schemas.started),
-            batch: {
-                groups: [
-                    {
-                        caused_by_record_ids: [createdRecordId],
-                        owner_id: definition.runId,
-                        records: [
-                            {
-                                body: { payload: { execution_id: definition.runId } },
-                                mode: CAPTURE_MODE,
-                                schema_ref: schemas.started,
-                                witness_ref: ROOT_WITNESS_ID,
-                            },
-                        ],
-                    },
-                ],
-            },
+    const recovery = readDurableTaskExecution(store, definition.runId);
+    const createdRecordId = retainDurableExecutionCreation(store, prepared);
+    if (recovery.status === COMMITTED_RECOVERY_STATUS) {
+        return recovery.result;
+    }
+    if (recovery.status === TERMINAL_PENDING_CUT_STATUS) {
+        if (recoveryCommandRecordId === null) {
+            throw new DurableExecutionRecoveryCommandRequiredError(
+                definition.runId,
+                TERMINAL_PENDING_CUT_STATUS,
+            );
+        }
+        const cut = publishDurableExecutionCut(
+            store,
+            definition.runId,
+            recovery.ledger.lifecycle_record_id,
+            recoveryCommandRecordId,
+        );
+        return Object.freeze({
+            execution: recovery.execution,
+            ledger: Object.freeze({ cut, ...recovery.ledger }),
         });
-        startedRecordId = started.record_ids[0] as RecordId;
+    }
+    if (recovery.status === STARTED_RECOVERY_STATUS) {
+        throw new DurableExecutionRecoveryError(definition.runId);
+    }
+    if (recovery.status === CREATED_RECOVERY_STATUS && recoveryCommandRecordId === null) {
+        throw new DurableExecutionRecoveryCommandRequiredError(
+            definition.runId,
+            CREATED_RECOVERY_STATUS,
+        );
+    }
+    let startedRecordId: RecordId | null = null;
+    let invocationAuthority: { readonly claimId: string; readonly fencingToken: number } | null =
+        null;
+    const execution = await executePreparedTask(prepared, () => {
+        const claimId = randomUUID();
+        const claim = store.claimDurableExecutionInvocation(
+            definition.runId,
+            createdRecordId,
+            claimId,
+            Date.now(),
+            recoveryCommandRecordId !== null,
+        );
+        if (claim.status === LOST_CLAIM_STATUS) {
+            throw new DurableExecutionClaimLostError(definition.runId, claim.claim_id);
+        }
+        const started = store.appendDurableExecutionStart(
+            definition.runId,
+            claimId,
+            claim.fencing_token,
+            Date.now(),
+            recoveryCommandRecordId,
+        );
+        if (started.status === FENCED_APPEND_STATUS) {
+            throw new DurableExecutionClaimFencedError(definition.runId, claimId);
+        }
+        startedRecordId = started.receipt.record_ids[0] as RecordId;
+        invocationAuthority = Object.freeze({
+            claimId,
+            fencingToken: claim.fencing_token,
+        });
     });
     return retainTerminal(
         store,
         prepared.definition.runId,
         createdRecordId,
         startedRecordId,
+        invocationAuthority,
         execution,
     );
 }
@@ -116,21 +194,57 @@ function retainTerminal(
     runId: string,
     createdRecordId: RecordId,
     startedRecordId: RecordId | null,
+    invocationAuthority: { readonly claimId: string; readonly fencingToken: number } | null,
     execution: TaskExecutionResult,
+    commandRecordId: RecordId | null = null,
+    releaseClaim = false,
 ): DurableTaskExecutionResult {
     const schemas = projectionProtocolConfig.executionHistory.executionSchemas;
     const finished = execution.outcome.outcome.status === FINISHED_RUN_STATUS;
     const lifecycleSchema = finished ? schemas.completed : schemas.failed;
     const usageLocalId = runProtocolConfig.schemas.usageId;
     const outcomeLocalId = runProtocolConfig.schemas.outcomeId;
-    const terminal = store.append({
+    for (const artifact of execution.artifacts) {
+        if (artifact.content.type === BLOB_ARTIFACT_TYPE) {
+            const content = store.readBlob(artifact.content.blob_id);
+            if (content === undefined || content.byteLength !== artifact.content.byte_length) {
+                throw new TraceStoreError(
+                    "durable execution artifact references an unavailable blob receipt",
+                );
+            }
+        }
+    }
+    const artifactLocalIds = execution.artifacts.map((artifact) =>
+        createRecordId({
+            durable_artifact: {
+                artifact_ordinal: artifact.artifact_ordinal,
+                run_id: runId,
+            },
+        }),
+    );
+    const terminalRequest = {
         append_intent_id: createLedgerIntentId(runId, runProtocolConfig.schemas.outcomeId),
         batch: {
             groups: [
                 {
-                    caused_by_record_ids: [startedRecordId ?? createdRecordId],
+                    caused_by_record_ids: [
+                        startedRecordId ?? createdRecordId,
+                        ...(commandRecordId === null ? [] : [commandRecordId]),
+                    ],
                     owner_id: runId,
                     records: [
+                        ...execution.artifacts.map((artifact, index) => ({
+                            append_local_id: artifactLocalIds[index] as string,
+                            body: artifact as SemanticRecord,
+                            ...(index === 0
+                                ? {}
+                                : {
+                                      caused_by_local_refs: [artifactLocalIds[index - 1] as string],
+                                  }),
+                            mode: CAPTURE_MODE,
+                            schema_ref: runProtocolConfig.schemas.artifactId,
+                            witness_ref: ROOT_WITNESS_ID,
+                        })),
                         ...(execution.usage === null
                             ? []
                             : [
@@ -146,8 +260,10 @@ function retainTerminal(
                             append_local_id: outcomeLocalId,
                             body: execution.outcome,
                             ...(execution.usage === null
-                                ? {}
-                                : { caused_by_local_refs: [usageLocalId] }),
+                                ? artifactLocalIds.length === 0
+                                    ? {}
+                                    : { caused_by_local_refs: artifactLocalIds }
+                                : { caused_by_local_refs: [...artifactLocalIds, usageLocalId] }),
                             mode: CAPTURE_MODE,
                             schema_ref: runProtocolConfig.schemas.outcomeId,
                             witness_ref: ROOT_WITNESS_ID,
@@ -163,19 +279,103 @@ function retainTerminal(
                 },
             ],
         },
-    });
-    const usageOffset = execution.usage === null ? 0 : 1;
-    const usageRecordId = execution.usage === null ? null : (terminal.record_ids[0] as RecordId);
-    const outcomeRecordId = terminal.record_ids[usageOffset] as RecordId;
-    const lifecycleRecordId = terminal.record_ids[usageOffset + 1] as RecordId;
-    const cut = store.publishCut({
-        cut_id: createRecordId({ run_id: runId, through_record_id: lifecycleRecordId }),
-        target_owner_id: runId,
-        through_record_id: lifecycleRecordId,
-    });
+    };
+    const terminal =
+        invocationAuthority === null
+            ? store.append(terminalRequest)
+            : store.appendDurableExecutionTerminal(
+                  runId,
+                  invocationAuthority.claimId,
+                  invocationAuthority.fencingToken,
+                  terminalRequest,
+                  releaseClaim,
+              );
+    if ("status" in terminal) {
+        if (terminal.status === FENCED_APPEND_STATUS) {
+            throw new DurableExecutionClaimFencedError(
+                runId,
+                invocationAuthority?.claimId ?? runId,
+            );
+        }
+        return retainTerminalReceipt(
+            store,
+            runId,
+            createdRecordId,
+            startedRecordId,
+            execution,
+            terminal.receipt,
+        );
+    }
+    return retainTerminalReceipt(
+        store,
+        runId,
+        createdRecordId,
+        startedRecordId,
+        execution,
+        terminal,
+    );
+}
+
+/**
+ * Retains a command-bound cancelled terminal while atomically releasing the current worker.
+ *
+ * @param store - Open durable trace store.
+ * @param runId - Durable run being cancelled.
+ * @param createdRecordId - Exact retained creation record.
+ * @param startedRecordId - Exact current running lifecycle record.
+ * @param claimId - Exact current worker claim identity.
+ * @param fencingToken - Exact current monotonic fencing token.
+ * @param commandRecordId - Retained cancellation command authorizing terminalization.
+ * @param execution - Immutable cancelled execution result.
+ * @returns Durable cancelled result and terminal cut.
+ * @throws {DurableExecutionClaimFencedError} If worker authority is stale.
+ * @throws {TraceStoreError} If retained evidence cannot commit or reconstruct.
+ * @internal
+ */
+export function retainDurableCancellationTerminal(
+    store: SQLiteTraceStore,
+    runId: string,
+    createdRecordId: RecordId,
+    startedRecordId: RecordId,
+    claimId: string,
+    fencingToken: number,
+    commandRecordId: RecordId,
+    execution: TaskExecutionResult,
+): DurableTaskExecutionResult {
+    return retainTerminal(
+        store,
+        runId,
+        createdRecordId,
+        startedRecordId,
+        { claimId, fencingToken },
+        execution,
+        commandRecordId,
+        true,
+    );
+}
+
+function retainTerminalReceipt(
+    store: SQLiteTraceStore,
+    runId: string,
+    createdRecordId: RecordId,
+    startedRecordId: RecordId | null,
+    execution: TaskExecutionResult,
+    terminal: { readonly record_ids: readonly string[] },
+): DurableTaskExecutionResult {
+    const artifactRecordIds = Object.freeze(
+        terminal.record_ids.slice(0, execution.artifacts.length) as readonly RecordId[],
+    );
+    const usageOffset = execution.artifacts.length;
+    const outcomeOffset = usageOffset + (execution.usage === null ? 0 : 1);
+    const usageRecordId =
+        execution.usage === null ? null : (terminal.record_ids[usageOffset] as RecordId);
+    const outcomeRecordId = terminal.record_ids[outcomeOffset] as RecordId;
+    const lifecycleRecordId = terminal.record_ids[outcomeOffset + 1] as RecordId;
+    const cut = publishDurableExecutionCut(store, runId, lifecycleRecordId);
     return Object.freeze({
         execution,
         ledger: Object.freeze({
+            artifact_record_ids: artifactRecordIds,
             cut,
             created_record_id: createdRecordId,
             lifecycle_record_id: lifecycleRecordId,
@@ -190,10 +390,16 @@ function retainTerminal(
 function terminalLifecycleBody(runId: string, execution: TaskExecutionResult): SemanticRecord {
     const outcome = execution.outcome.outcome;
     if (outcome.status === FINISHED_RUN_STATUS) {
-        return { payload: { execution_id: runId, outputs: { value: outcome.value } } };
+        return {
+            payload: {
+                control: execution.control,
+                execution_id: runId,
+                outputs: { value: outcome.value },
+            },
+        };
     }
     const error = "message" in outcome ? outcome.message : outcome.reason;
-    return { payload: { error, execution_id: runId } };
+    return { payload: { control: execution.control, error, execution_id: runId } };
 }
 
 function createLedgerIntentId(runId: string, schemaRef: string): string {

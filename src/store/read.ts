@@ -25,7 +25,7 @@ export function readStoredRecord(
     const record = decodeRecordRow(row);
     const views = database
         .prepare(
-            `SELECT owner_id, owner_ordinal FROM ${STORE_TABLES.recordViews}
+            `SELECT append_intent_id, owner_id, owner_ordinal FROM ${STORE_TABLES.recordViews}
              WHERE record_id = ? ORDER BY owner_id, owner_ordinal`,
         )
         .all(recordId)
@@ -39,7 +39,8 @@ export function readOwnerRecords(database: DatabaseSync, ownerId: string): reado
         database
             .prepare(
                 `SELECT r.record_id, r.digest, r.schema_ref, r.mode, r.witness_ref,
-                        r.caused_by_json, r.body_json, v.owner_id, v.owner_ordinal
+                        r.caused_by_json, r.body_json, v.append_intent_id, v.owner_id,
+                        v.owner_ordinal
                  FROM ${STORE_TABLES.recordViews} v
                  JOIN ${STORE_TABLES.records} r ON r.record_id = v.record_id
                  WHERE v.owner_id = ?
@@ -81,8 +82,10 @@ function decodeRecordRow(row: Record<string, unknown>): {
 }
 
 function decodeViewRow(row: Record<string, unknown>) {
+    const appendIntentId = readString(row, "append_intent_id");
     const ownerId = readString(row, "owner_id");
     const ownerOrdinal = readNumber(row, "owner_ordinal");
+    assertNonEmptyString(appendIntentId, "stored append_intent_id");
     assertNonEmptyString(ownerId, "stored owner_id");
     if (
         !Number.isSafeInteger(ownerOrdinal) ||
@@ -92,6 +95,7 @@ function decodeViewRow(row: Record<string, unknown>) {
         throw new TypeError("stored owner_ordinal is outside the configured ordinal range");
     }
     return Object.freeze({
+        append_intent_id: appendIntentId,
         owner_id: ownerId,
         owner_ordinal: ownerOrdinal,
     });

@@ -9,6 +9,7 @@ export const STORE_TABLES = Object.freeze({
     appendIntents: "append_intents",
     blobs: "blobs",
     cuts: "trace_cuts",
+    durableExecutionClaims: "durable_execution_claims",
     migrations: "schema_migrations",
     ownerOrdinals: "owner_ordinals",
     recordParents: "record_parents",

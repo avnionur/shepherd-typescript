@@ -6,6 +6,12 @@ import type { ProtocolConfig } from "../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 import { renderEffectIntentSchema, renderEffectOutcomeSchema } from "./effect-protocol-schemas.ts";
 import { renderRunArtifactSchema } from "./run-artifact-schema.ts";
+import {
+    renderRunContinuationDescriptorSchema,
+    renderRunRunningLifecycleSchema,
+    renderRunSuspendedLifecycleSchema,
+    renderRunWaitingLifecycleSchema,
+} from "./run-lifecycle-schemas.ts";
 import { renderRunOutcomeSchema } from "./run-protocol-schema.ts";
 import { renderRunUsageSchema } from "./run-usage-schema.ts";
 import {
@@ -72,12 +78,28 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             relativePath: config.runs.artifacts.artifactSchema,
         },
         {
+            content: renderJson(renderRunContinuationDescriptorSchema(config)),
+            relativePath: config.runs.artifacts.continuationDescriptorSchema,
+        },
+        {
             content: renderJson(renderRunOutcomeSchema(config)),
             relativePath: config.runs.artifacts.outcomeSchema,
         },
         {
+            content: renderJson(renderRunRunningLifecycleSchema(config)),
+            relativePath: config.runs.artifacts.runningLifecycleSchema,
+        },
+        {
             content: renderJson(renderRunUsageSchema(config)),
             relativePath: config.runs.artifacts.usageSchema,
+        },
+        {
+            content: renderJson(renderRunWaitingLifecycleSchema(config)),
+            relativePath: config.runs.artifacts.waitingLifecycleSchema,
+        },
+        {
+            content: renderJson(renderRunSuspendedLifecycleSchema(config)),
+            relativePath: config.runs.artifacts.suspendedLifecycleSchema,
         },
     ];
     const resolvedArtifacts: { content: string; artifactPath: string; relativePath: string }[] = [];
@@ -119,6 +141,33 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedControlStatuses = config.runs.control.statuses
         .map((status) => JSON.stringify(status))
         .join(", ");
+    const renderedControlCommandKinds = config.runs.execution.controlCommandKinds
+        .map((kind) => `    ${JSON.stringify(kind)},`)
+        .join("\n");
+    const renderedRecoveryStatuses = config.runs.execution.recoveryStatuses
+        .map((status) => `    ${JSON.stringify(status)},`)
+        .join("\n");
+    const renderedClaimStatuses = config.runs.execution.invocationClaimStatuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
+    const renderedClaimAppendStatuses = config.runs.execution.invocationClaimAppendStatuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
+    const renderedLifecycleStatuses = config.runs.execution.lifecycleStatuses
+        .map((status) => `    ${JSON.stringify(status)},`)
+        .join("\n");
+    const renderedLifecycleTransitions = config.runs.execution.lifecycleTransitions
+        .map(([source, target]) => `    [${JSON.stringify(source)}, ${JSON.stringify(target)}],`)
+        .join("\n");
+    const renderedLifecycleTerminalTransitions = config.runs.execution.lifecycleTerminalTransitions
+        .map(([source, outcome]) => `    [${JSON.stringify(source)}, ${JSON.stringify(outcome)}],`)
+        .join("\n");
+    const renderedContinuationEvidenceStatuses = config.runs.execution.continuationEvidenceStatuses
+        .map((status) => `    ${JSON.stringify(status)},`)
+        .join("\n");
+    const renderedContinuationConstituentKinds = config.runs.execution.continuationConstituentKinds
+        .map((kind) => `    ${JSON.stringify(kind)},`)
+        .join("\n");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -152,6 +201,72 @@ export const RUN_CONTROL_REASON_TYPES = [${renderedControlReasonTypes}] as const
 
 /** Configured run-control lifecycle statuses. @public */
 export const RUN_CONTROL_STATUSES = [${renderedControlStatuses}] as const;
+
+/** Configured normative run-lifecycle statuses. @public */
+export const RUN_LIFECYCLE_STATUSES = [
+${renderedLifecycleStatuses}
+] as const;
+
+/** Configured status identifying the terminal normative lifecycle state. @public */
+export const RUN_LIFECYCLE_TERMINAL_STATUS = ${JSON.stringify(
+        config.runs.execution.lifecycleTerminalStatus,
+    )} as const;
+
+/** Configured active running lifecycle status. @public */
+export const RUN_LIFECYCLE_RUNNING_STATUS = ${JSON.stringify(
+        config.runs.execution.lifecycleRunningStatus,
+    )} as const;
+
+/** Configured prerequisite-driven waiting lifecycle status. @public */
+export const RUN_LIFECYCLE_WAITING_STATUS = ${JSON.stringify(
+        config.runs.execution.lifecycleWaitingStatus,
+    )} as const;
+
+/** Configured control-driven suspended lifecycle status. @public */
+export const RUN_LIFECYCLE_SUSPENDED_STATUS = ${JSON.stringify(
+        config.runs.execution.lifecycleSuspendedStatus,
+    )} as const;
+
+/** Configured allowed non-terminal run-lifecycle transitions. @public */
+export const RUN_LIFECYCLE_TRANSITIONS = [
+${renderedLifecycleTransitions}
+] as const;
+
+/** Configured allowed source-lifecycle and terminal-outcome pairs. @public */
+export const RUN_LIFECYCLE_TERMINAL_TRANSITIONS = [
+${renderedLifecycleTerminalTransitions}
+] as const;
+
+/** Configured continuation-evidence classifications. @public */
+export const RUN_CONTINUATION_EVIDENCE_STATUSES = [
+${renderedContinuationEvidenceStatuses}
+] as const;
+
+/** Configured receipt-bearing continuation-evidence status. @public */
+export const RUN_CONTINUATION_VERIFIED_STATUS = ${JSON.stringify(
+        config.runs.execution.continuationVerifiedStatus,
+    )} as const;
+
+/** Configured continuation-descriptor constituent kinds. @public */
+export const RUN_CONTINUATION_CONSTITUENT_KINDS = [
+${renderedContinuationConstituentKinds}
+] as const;
+
+/** Configured durable execution recovery statuses. @public */
+export const DURABLE_EXECUTION_RECOVERY_STATUSES = [
+${renderedRecoveryStatuses}
+] as const;
+
+/** Configured durable execution control-command kinds. @public */
+export const DURABLE_EXECUTION_CONTROL_COMMAND_KINDS = [
+${renderedControlCommandKinds}
+] as const;
+
+/** Configured durable invocation-claim result statuses. @public */
+export const DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES = [${renderedClaimStatuses}] as const;
+
+/** Configured claim-guarded append result statuses. @public */
+export const DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES = [${renderedClaimAppendStatuses}] as const;
 `;
 }
 
@@ -230,6 +345,7 @@ function recordViewSchema(config: ProtocolConfig): Readonly<Record<string, unkno
         type: "object",
         required: ["owner_id", "owner_ordinal"],
         properties: {
+            append_intent_id: { type: "string", minLength: 1 },
             owner_id: { type: "string", minLength: 1 },
             owner_ordinal: {
                 type: "integer",

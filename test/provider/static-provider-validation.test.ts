@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
     createStaticProvider,
     type ModelRequest,
+    SQLiteTraceStore,
     type StaticProviderDefinition,
 } from "../../src/index.ts";
 
@@ -166,14 +167,31 @@ test("static provider rejects open or malformed definitions and invocation reque
 });
 
 test("static provider owns immutable definition and response snapshots", async () => {
+    using blobStore = new SQLiteTraceStore();
+    const receipt = blobStore.putBlob(Uint8Array.of(1, 2, 3));
     const mutableInput = { name: "Ada" };
     const mutableOutput = { greeting: "Hello" };
+    const mutableArtifactMetadata = { media_type: "text/plain" };
     const definition = {
         descriptor: { id: "snapshot-fixture", model: "offline-v1" },
         exchanges: [
             {
                 request: { ...REQUEST, input: mutableInput },
                 response: {
+                    artifacts: [
+                        {
+                            content: { text: "snapshot", type: "text" as const },
+                            kind: "report",
+                            metadata: mutableArtifactMetadata,
+                            name: "snapshot.txt",
+                        },
+                        {
+                            content: { receipt, type: "blob" as const },
+                            kind: "binary",
+                            metadata: {},
+                            name: "snapshot.bin",
+                        },
+                    ],
                     output: mutableOutput,
                     usage: {
                         cacheCreationInputTokens: 0,
@@ -189,6 +207,7 @@ test("static provider owns immutable definition and response snapshots", async (
     const provider = createStaticProvider(definition);
     mutableInput.name = "Changed";
     mutableOutput.greeting = "Changed";
+    mutableArtifactMetadata.media_type = "changed";
 
     const descriptor = provider.descriptor();
     const response = await provider.invoke(
@@ -199,4 +218,13 @@ test("static provider owns immutable definition and response snapshots", async (
     assert.equal(Object.isFrozen(descriptor.capabilities), true);
     assert.deepEqual(response.output, { greeting: "Hello" });
     assert.equal(Object.isFrozen(response.output), true);
+    assert.deepEqual(response.artifacts?.[0]?.metadata, { media_type: "text/plain" });
+    assert.equal(Object.isFrozen(response.artifacts), true);
+    assert.equal(Object.isFrozen(response.artifacts?.[0]?.content), true);
+    const blobContent = response.artifacts?.[1]?.content;
+    assert.equal(blobContent?.type, "blob");
+    assert.equal(
+        Object.isFrozen(blobContent && "receipt" in blobContent ? blobContent.receipt : undefined),
+        true,
+    );
 });

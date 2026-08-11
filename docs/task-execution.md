@@ -21,6 +21,8 @@ One turn is consumed before provider invocation. A zero-turn budget therefore pr
 The immutable result contains:
 
 - a terminal `RunOutcome` bound to the exact task artifact lock;
+- ordered `RunArtifact` values supplied by the validated provider response, with ordinals assigned
+  by the executor;
 - aggregate `RunUsage`, or `null` when no valid provider response was observed;
 - the provider descriptor used by the run;
 - the final `RunControlSnapshot` captured before internal timer and listener cleanup.
@@ -28,15 +30,18 @@ The immutable result contains:
 ## Validation and terminal behavior
 
 Provider descriptors and responses are treated as untrusted. The executor validates and snapshots
-provider identity, capabilities, semantic output, and usage before returning or accounting, then
-parses output through the task's exact runtime schema. Successful void values are normalized to
-canonical JSON `null`.
+provider identity, capabilities, semantic output, optional artifact definitions, and usage before
+returning or accounting, then parses output through the task's exact runtime schema. Successful
+void values are normalized to canonical JSON `null`. Provider artifact definitions are closed
+data; the executor assigns configured consecutive ordinals and binds every artifact to the run ID.
 
-Provider errors become classified `failed` outcomes. Output-schema errors use the configured
-`TaskOutputValidationError` classification and retain observed provider usage. Budget exhaustion
-and caller cancellation remain distinct terminal outcomes, including when a provider ignores an
-abort and resolves late. If a cost budget is configured but the provider reports unavailable cost,
-execution fails closed instead of claiming that the limit was enforced.
+Provider errors become classified `failed` outcomes. Malformed response artifacts fail before
+usage accounting and do not expose partial artifacts. Output-schema errors use the configured
+`TaskOutputValidationError` classification and retain validated response artifacts and observed
+provider usage. Budget exhaustion and caller cancellation remain distinct terminal outcomes,
+including when a provider ignores an abort and resolves late. If a cost budget is configured but
+the provider reports unavailable cost, execution fails closed instead of claiming that the limit
+was enforced.
 
 When a provider resolves only after control became terminal, its validated `RunUsage` remains the
 authoritative late observation. The control snapshot retains counters admitted before the first
@@ -54,6 +59,7 @@ Stable executor failure classifications and fallback messages live under `runs.e
 remain generated, typed, and compatibility locked.
 
 This executor is deliberately offline and side-effect free beyond the supplied provider. It does
-not itself persist a run ledger, append lifecycle records, dispatch effects, or create artifacts.
+not itself persist a run ledger, append lifecycle records, dispatch effects, or write blob bytes.
 [`executeTaskDurably`](./durable-task-execution.md) wraps the same validated execution with trace
-evidence; effect dispatch and artifact collection remain separate capabilities.
+evidence and verifies that cited blob receipts belong to its durable store; effect dispatch remains
+a separate capability.

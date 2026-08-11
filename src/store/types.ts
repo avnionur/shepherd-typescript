@@ -5,6 +5,10 @@ import type {
     RecordView,
     TraceOwnerId,
 } from "../append/types.ts";
+import type {
+    DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES,
+    DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES,
+} from "../protocol/values.generated.ts";
 import type { RecordBody, RecordEnvelope, RecordId } from "../record/types.ts";
 
 /**
@@ -13,6 +17,64 @@ import type { RecordBody, RecordEnvelope, RecordId } from "../record/types.ts";
  * @public
  */
 export type AppendIntentId = string;
+
+/** Result of atomically admitting one caller to cross a durable invocation boundary. */
+export type DurableExecutionInvocationClaim =
+    | {
+          /** Current claim identity. */
+          readonly claim_id: string;
+          /** Creation evidence guarded by the claim. */
+          readonly created_record_id: RecordId;
+          /** Monotonic token that fences earlier claim holders. */
+          readonly fencing_token: number;
+          /** Exclusive lease-expiry timestamp in Unix milliseconds. */
+          readonly lease_expires_at: number;
+          /** Durable run whose provider boundary is guarded. */
+          readonly run_id: string;
+          /** Indicates that this caller owns the current lease. */
+          readonly status: (typeof DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES)[0];
+      }
+    | {
+          /** Current winning claim identity. */
+          readonly claim_id: string;
+          /** Creation evidence guarded by the claim. */
+          readonly created_record_id: RecordId;
+          /** Monotonic token held by the winning claimant. */
+          readonly fencing_token: number;
+          /** Exclusive lease-expiry timestamp in Unix milliseconds. */
+          readonly lease_expires_at: number;
+          /** Durable run whose provider boundary is guarded. */
+          readonly run_id: string;
+          /** Indicates that another caller owns or consumed the claim. */
+          readonly status: (typeof DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES)[1];
+      };
+
+/** Result of atomically appending while a durable invocation claim is current. */
+export type DurableExecutionClaimedAppend =
+    | {
+          /** Receipt for the start evidence committed under the claim. */
+          readonly receipt: AppendReceipt;
+          /** Indicates that the guarded append committed. */
+          readonly status: (typeof DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES)[0];
+      }
+    | {
+          /** Indicates that the supplied claim no longer has authority. */
+          readonly status: (typeof DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES)[1];
+      };
+
+/** Result of atomically acquiring resumed worker authority and publishing its running evidence. */
+export type DurableExecutionResumeAppend = {
+    /** Deterministic worker claim identity bound to the resume command. */
+    readonly claim_id: string;
+    /** Canonical resume-command record identity. */
+    readonly command_record_id: RecordId;
+    /** New monotonic invocation fencing token. */
+    readonly fencing_token: number;
+    /** Unix time when the resumed worker lease expires. */
+    readonly lease_expires_at: number;
+    /** Canonical running-continuation acknowledgement identity. */
+    readonly running_record_id: RecordId;
+};
 
 /**
  * One atomic append request presented to a trace store.

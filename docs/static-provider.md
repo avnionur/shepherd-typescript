@@ -15,11 +15,13 @@ and tool capabilities. Tasks do not select providers; [`executeTask`](./task-exe
 provider for a run and maps the task instruction, validated input, and output JSON Schema into
 `ModelRequest`.
 
-`ModelResponse` contains one canonical semantic output and per-invocation token, cache-token, and
-optional cost usage. Provider-call usage is distinct from the aggregate `RunUsage` record. The
-provider boundary validates semantic data but does not claim that an output satisfies the request's
-JSON Schema; the task executor remains responsible for parsing the output through the exact task
-descriptor before publishing a finished outcome.
+`ModelResponse` contains one canonical semantic output, optional ordered artifact definitions, and
+per-invocation token, cache-token, and optional cost usage. Artifact definitions contain a kind,
+name, semantic metadata, and either inline text or a durable blob receipt; the executor binds them
+to its run and assigns protocol ordinals. Provider-call usage is distinct from the aggregate
+`RunUsage` record. The provider boundary validates semantic data but does not claim that an output
+satisfies the request's JSON Schema; the task executor remains responsible for parsing the output
+through the exact task descriptor before publishing a finished outcome.
 
 ## Deterministic cassette
 
@@ -49,5 +51,5 @@ error codes/messages are compatibility-locked under `providers` in
 [`protocol.config.json`](../protocol.config.json).
 
 The provider itself does not append events, validate task output, or create run outcomes. The
-offline executor owns task-schema validation and terminal normalization; a later durable run
-ledger will own retained execution evidence.
+offline executor owns task-schema validation, artifact ordinal assignment, and terminal
+normalization; the durable executor owns retained lifecycle, artifact, usage, and outcome evidence.

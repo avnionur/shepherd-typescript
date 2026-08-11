@@ -60,6 +60,7 @@ export {
 } from "./provider/errors.ts";
 export { createStaticProvider } from "./provider/static-provider.ts";
 export type {
+    ModelArtifactDefinition,
     ModelProvider,
     ModelRequest,
     ModelResponse,
@@ -112,12 +113,70 @@ export type {
     RunControlStatus,
 } from "./run/control-types.ts";
 export { executeTaskDurably } from "./run/durable-execution.ts";
+export {
+    acknowledgeDurableTaskCancellation,
+    acknowledgeDurableTaskSuspension,
+    captureRunContinuationCheckpoints,
+    recoverTaskDurably,
+    requestDurableTaskCancellation,
+    requestDurableTaskPause,
+    resumeDurableTask,
+} from "./run/durable-execution-control.ts";
 export type {
+    DurableExecutionCancellationCommand,
+    DurableExecutionPauseCommand,
+    DurableExecutionRecoveryCommand,
+    DurableExecutionRecoveryCommandReceipt,
+    DurableExecutionResumeCommand,
+    DurableTaskCancellationAcknowledgementOptions,
+    DurableTaskCancellationCommandReceipt,
+    DurableTaskCancellationOptions,
+    DurableTaskPauseCommandReceipt,
+    DurableTaskPauseOptions,
+    DurableTaskRecoveryOptions,
+    DurableTaskRecoveryResult,
+    DurableTaskResumeOptions,
+    DurableTaskResumeReceipt,
+    DurableTaskSuspensionOptions,
+    DurableTaskSuspensionReceipt,
+    RunContinuationCheckpointAdapter,
+    RunContinuationCheckpointContext,
+    RunContinuationCheckpointEvidence,
+    RunContinuationCheckpointOptions,
+} from "./run/durable-execution-control-types.ts";
+export {
+    DurableExecutionClaimFencedError,
+    DurableExecutionClaimLostError,
+    DurableExecutionRecoveryAbsentError,
+    DurableExecutionRecoveryCommandRequiredError,
+    DurableExecutionRecoveryError,
+} from "./run/durable-execution-errors.ts";
+export { inspectDurableTaskExecution } from "./run/durable-execution-inspection.ts";
+export type {
+    DurableTaskExecutionArtifactInspection,
+    DurableTaskExecutionContinuationConstituentInspection,
+    DurableTaskExecutionContinuationInspection,
+    DurableTaskExecutionInspection,
+    DurableTaskExecutionLifecycleInspection,
+    DurableTaskExecutionOutcomeInspection,
+    DurableTaskExecutionQuiescentInspection,
+    DurableTaskExecutionUsageInspection,
+} from "./run/durable-execution-inspection-types.ts";
+export { readDurableTaskExecution } from "./run/durable-execution-recovery.ts";
+export type {
+    DurableTaskExecutionRecovery,
     DurableTaskExecutionResult,
     TaskExecutionLedgerReceipt,
 } from "./run/durable-execution-types.ts";
 export { executeTask } from "./run/execution.ts";
 export type { TaskExecutionOptions, TaskExecutionResult } from "./run/execution-types.ts";
+export { createRunLifecycleTransition } from "./run/lifecycle.ts";
+export type {
+    RunLifecycleStatus,
+    RunLifecycleTerminalStatus,
+    RunLifecycleTransition,
+    RunLifecycleTransitionDefinition,
+} from "./run/lifecycle-types.ts";
 export { createRunOutcome } from "./run/outcomes.ts";
 export type {
     CancelledRunDefinition,
@@ -168,6 +227,8 @@ export type {
     Cut,
     CutId,
     CutSpec,
+    DurableExecutionClaimedAppend,
+    DurableExecutionInvocationClaim,
     ExternalAnchor,
     ModeFilter,
     OwnerRecord,

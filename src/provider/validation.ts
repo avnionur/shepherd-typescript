@@ -1,7 +1,9 @@
 import type { SemanticRecord, SemanticValue } from "../canonical/canonical-record.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import { providerProtocolConfig } from "../protocol/config.ts";
+import { readRunArtifactPayloadDefinition } from "../run/artifact-validation.ts";
 import type {
+    ModelArtifactDefinition,
     ModelRequest,
     ModelResponse,
     ModelUsage,
@@ -101,11 +103,27 @@ function readExchange(value: unknown, index: number): StaticProviderExchange {
 
 /** Validates and snapshots one provider-neutral response. @internal */
 export function readModelResponse(value: unknown, subject = "model response"): ModelResponse {
-    const fields = readDataObject(value, ["output", "usage"], subject);
+    const includesArtifacts =
+        value !== null && typeof value === "object" && Object.hasOwn(value, "artifacts");
+    const fields = readDataObject(
+        value,
+        includesArtifacts ? ["artifacts", "output", "usage"] : ["output", "usage"],
+        subject,
+    );
     return Object.freeze({
+        ...(includesArtifacts
+            ? { artifacts: readModelArtifacts(fields.artifacts, `${subject} artifacts`) }
+            : {}),
         output: snapshotSemanticValue(fields.output, `${subject} output`),
         usage: readModelUsage(fields.usage, subject),
     });
+}
+
+function readModelArtifacts(value: unknown, subject: string): readonly ModelArtifactDefinition[] {
+    const artifacts = readDataArray(value, subject).map((candidate, index) =>
+        readRunArtifactPayloadDefinition(candidate, `${subject}[${index}]`),
+    );
+    return Object.freeze(artifacts);
 }
 
 function readModelUsage(value: unknown, subject: string): ModelUsage {

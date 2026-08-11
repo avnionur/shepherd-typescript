@@ -51,7 +51,9 @@ tests → public exports
 Runtime modules must not import build scripts or planning documents. Public behavior tests use
 `src/index.ts` so they exercise the same seam as consumers. Narrow migration-registry invariant
 tests may import the internal migration validator directly because malformed compiled registries
-cannot be constructed through a public runtime seam.
+cannot be constructed through a public runtime seam. Narrow persisted-codec tests may likewise
+import internal decoders for malformed control and terminal values that public builders reject;
+observable recovery behavior remains tested through `src/index.ts`.
 
 The runtime areas are intentionally shallow:
 
@@ -71,8 +73,11 @@ The runtime areas are intentionally shallow:
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
 - `run/` owns transient and durable task orchestration, versioned terminal outcomes, ordered
   artifact and aggregate usage construction, cooperative budget/cancellation control, closed
-  validation, exact task-lock citations, durable lifecycle evidence, terminal cuts, and durable
-  blob-receipt references;
+  validation, exact task-lock citations, the configured normative lifecycle transition matrix,
+  durable lifecycle evidence, terminal cuts, restart
+  recovery classification and reconstruction, durable blob-receipt references, and disposable
+  cut-bounded durable execution inspection views plus idempotent command-bound recovery, pause,
+  resume, suspension, and safe-boundary cancellation;
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
   recovery and orphan-collection diagnostics.

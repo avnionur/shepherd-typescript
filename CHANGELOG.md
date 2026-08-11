@@ -5,6 +5,245 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-08-11
+
+### New Feature
+
+- Added `requestDurableTaskCancellation` with globally idempotent command identity bound to the
+  exact running lifecycle head, worker fencing token, run, and operator reason.
+- Added `acknowledgeDurableTaskCancellation` to atomically publish command-bound cancelled outcome
+  and terminal evidence while releasing the current claim at a worker-confirmed safe boundary.
+- Added interrupted-cut repair, exact replay across store restart, stale-worker terminal fencing,
+  deterministic command conflicts, and fail-closed malformed-causality validation.
+
+### Impact
+
+Running workers can now durably receive and safely acknowledge cancellation without fabricating a
+terminal transition for an uncertain provider or external action. Direct cancellation from
+created, waiting, or suspended states remains planned.
+
+## [1.5.0] - 2026-08-11
+
+### New Feature
+
+- Added `resumeDurableTask` with a globally idempotent command bound to the exact suspension
+  acknowledgement, continuation descriptor, and run.
+- Added atomic unavailable-evidence rejection, current-head comparison, monotonic fencing-token and
+  lease acquisition, and a configured command-bound running-continuation acknowledgement.
+- Extended durable inspection and generated lifecycle schemas to validate and expose resumed-running
+  authority across store reopen and cross-connection replay.
+
+### Impact
+
+Checkpoint-capable callers can now resume an exactly suspended run under a new fenced worker
+authority without duplicating the transition. Resume does not restore external state or invoke a
+provider; callers must restore verified checkpoint receipts before crossing an effect boundary.
+
+## [1.4.0] - 2026-08-11
+
+### New Feature
+
+- Added ordered continuation checkpoint adapter contracts that return stable configured evidence
+  without mutating the run ledger.
+- Added `acknowledgeDurableTaskSuspension` to atomically validate the exact pause command, running
+  head, immutable cut, fencing token, and available continuation evidence before publishing the
+  descriptor and suspension acknowledgement and releasing the worker claim.
+- Fenced provider-backed terminal publication with the exact started claim so a worker released by
+  suspension cannot later retain terminal evidence.
+
+### Impact
+
+Checkpoint-capable workers can now durably acknowledge command-authorized suspension at a proven
+safe boundary, inspect it after restart, and retry without rerunning checkpoint side effects.
+Runtime waiting and same-run resume remain unavailable.
+
+## [1.3.0] - 2026-08-11
+
+### New Feature
+
+- Added `requestDurableTaskPause` to retain globally idempotent canonical pause requests bound to
+  an exact run, current started-lifecycle record, invocation fencing token, reason, and command
+  identity.
+- Added atomic current-head and live-claim validation, exact replay across store restart, and
+  fail-closed conflicts for changed content, stale fences, stale heads, and terminal executions.
+- Strengthened suspension inspection to validate the cited pause command's configured schema,
+  causality, run binding, and expected started head.
+
+### Impact
+
+Applications can durably request a pause without duplicating or ambiguously retargeting command
+evidence. A retained request deliberately leaves the run `running`; checkpoint adapters,
+safe-boundary acknowledgement, atomic lease release, and resume remain future slices.
+
+## [1.2.0] - 2026-08-11
+
+### New Feature
+
+- Extended `inspectDurableTaskExecution` with validated cut-bound waiting and suspension evidence,
+  including continuation constituents, acknowledgement identity, immutable trace cut,
+  prerequisite details, and retained pause-command identity.
+- Added fail-closed corruption and second-connection persistence coverage without changing durable
+  recovery classifications or the execution-history v1 projection.
+
+### Impact
+
+Applications can inspect externally retained quiescent lifecycle evidence without provider
+invocation, append, repair, or state mutation. Inspection does not authorize pause, resume, or
+checkpoint recovery.
+
+## [1.1.0] - 2026-08-11
+
+### New Feature
+
+- Added a public pure lifecycle transition validator backed by the configured non-terminal and
+  terminal transition matrices.
+- Published versioned continuation-descriptor, waiting-acknowledgement, and
+  suspension-acknowledgement schemas with exact continuation constituent ordering.
+
+### Impact
+
+Applications can validate lifecycle topology and exchange continuation evidence independently of
+runtime mutation. Durable waiting, suspension, pause, and resume execution remain explicitly
+unimplemented.
+
+## [1.0.1] - 2026-08-11
+
+### Improvement
+
+- Defined the proposed normative run lifecycle with distinct prerequisite-driven `waiting` and
+  control-driven `suspended` states.
+- Specified safe-boundary acknowledgements, continuation-evidence classification, command
+  authority, atomic fencing, a closed terminal-transition matrix, compatibility projection, and
+  fail-closed pause, resume, and cancellation gates.
+
+### Impact
+
+The Phase 2 roadmap now has an implementation-ready lifecycle contract without claiming that the
+current one-shot executor can pause or resume. The next slice can add versioned record schemas and
+transition conformance tests against explicit evidence and fencing requirements.
+
+## [1.0.0] - 2026-08-11
+
+### Breaking Changes
+
+- Added `recoverTaskDurably` with globally idempotent configured recovery-command identities and
+  canonical command receipts.
+- Bound safe expired-lease start recovery and terminal-cut repair causally to retained command
+  evidence while preserving exact committed replay.
+- Restricted expired-claim takeover atomically to command-authorized recovery so stale ordinary
+  admission cannot bypass the recovery boundary.
+- Changed `executeTaskDurably` so retained `created` and `terminal_pending_cut` evidence requires
+  an explicit recovery command instead of advancing automatically.
+- Exposed persisted append-intent identity on record views so recovery can verify command identity
+  from canonical store evidence.
+
+### Impact
+
+Applications can retry one exact durable recovery request across restart without duplicating
+provider invocation or inventing lifecycle transitions. Existing callers that relied on automatic
+resume or cut repair through `executeTaskDurably` must call `recoverTaskDurably` with a stable
+command identity. Reused identities conflict globally, and absent, uncertain started, malformed,
+or inconsistent recovery evidence fails closed.
+
+## [0.26.0] - 2026-08-10
+
+### New Feature
+
+- Added `inspectDurableTaskExecution` for immutable read-only views of absent, created, started,
+  terminal-pending-cut, and committed durable executions.
+- Exposed lifecycle, ordered artifact, aggregate usage, terminal outcome, immutable cut, and
+  direct canonical causal-edge evidence with retained record identities.
+
+### Impact
+
+Applications can inspect durable execution progress and committed evidence without invoking a
+provider, appending or repairing records, or persisting a second runtime authority. Committed
+views remain bounded by their terminal cut and fail closed on inconsistent retained evidence.
+
+## [0.25.0] - 2026-08-10
+
+### New Feature
+
+- Added optional ordered artifact definitions to provider responses and executor results, with
+  configured ordinal assignment and preservation across finished and post-response failure
+  outcomes.
+- Persisted executor-produced artifacts atomically with terminal durable execution evidence,
+  including verified blob receipts, explicit causal ordering, deterministic record identities,
+  exact restart reconstruction, and malformed-evidence rejection.
+
+### Impact
+
+Task providers can return inline-text or durable-blob artifacts through the normal execution
+boundary. Durable runs now retain and reconstruct those exact artifacts without fabricating
+outputs for runs that produced none or accepting unavailable blob bytes.
+
+## [0.24.0] - 2026-08-10
+
+### New Feature
+
+- Added configured expiry and monotonic fencing tokens to durable invocation claims, with atomic
+  pre-start takeover and claim-guarded start publication.
+- Added typed expired-or-superseded claim failures and conservative schema-v5 migration handling
+  for legacy claims whose start state cannot be proven.
+
+### Impact
+
+A durable run can recover availability after a claimant crashes before provider invocation while
+expired, superseded, or already-started writers remain unable to cross the invocation boundary.
+
+## [0.23.0] - 2026-08-10
+
+### New Feature
+
+- Added atomic SQLite first-writer invocation claims for durable task runs, including typed
+  acquired/lost results and cross-connection race coverage.
+
+### Impact
+
+Concurrent callers cannot invoke a provider twice for the same durable run identity. A claimant
+that crashes before recording start evidence remains conservatively unavailable until the planned
+lease-and-fencing slice.
+
+## [0.22.1] - 2026-08-10
+
+### Improvement
+
+- Reconciled the agent-runtime architecture study with the implementation roadmap by defining the
+  canonical record-graph authority model, fenced durable run control, coupled checkpoint evidence,
+  and projection-only subscription semantics.
+
+### Impact
+
+Future runtime work has explicit acceptance gates for concurrent invocation safety, checkpoint
+honesty, replay classification, and non-semantic event projections without changing the current
+runtime protocol.
+
+## [0.22.0] - 2026-08-10
+
+### New Feature
+
+- Added `readDurableTaskExecution` with absent, created, started, terminal-pending-cut, and
+  committed recovery classifications.
+- Added exact committed-result reconstruction across store reopen, safe pre-start resume,
+  deterministic missing-cut repair, and configured `DurableExecutionRecoveryError` handling for
+  ambiguous started executions.
+
+### Improvement
+
+- Persisted the final run-control snapshot with terminal lifecycle evidence and validate task,
+  provider, usage, outcome, control, causality, witness, record mode, lifecycle, and cut agreement
+  before recovery returns data.
+- Reject orphan usage and cross-check exact creation input envelopes, start/turn evidence, creation
+  budgets, usage counters, exhaustion reasons, and documented late observations during recovery.
+- Added public-seam restart, replay, interruption, and malformed retained-evidence tests with 100%
+  runtime line, branch, and function coverage.
+
+### Impact
+
+TypeScript applications can now restart safely around every durable task-execution boundary,
+return completed work without invoking a provider again, and fail closed when an interrupted start
+cannot prove that duplicate invocation is safe.
+
 ## [0.21.0] - 2026-08-10
 
 ### New Feature

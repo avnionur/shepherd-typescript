@@ -1,9 +1,18 @@
+import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import { runProtocolConfig } from "../protocol/config.ts";
+import {
+    RUN_BUDGET_METRICS,
+    RUN_CONTROL_REASON_TYPES,
+    RUN_CONTROL_STATUSES,
+} from "../protocol/values.generated.ts";
 import type {
     RunBudgetDefinition,
+    RunBudgetMetric,
     RunConsumption,
     RunConsumptionDefinition,
     RunControlOptions,
+    RunControlSnapshot,
+    RunControlStatus,
 } from "./control-types.ts";
 import { readRunDataObject } from "./validation-values.ts";
 
@@ -16,6 +25,8 @@ const BUDGET_KEYS = [
     "maxTurns",
 ] as const;
 const CONSUMPTION_KEYS = ["costUsd", "effects", "inputTokens", "outputTokens", "turns"] as const;
+const [ACTIVE_STATUS, EXHAUSTED_STATUS] = RUN_CONTROL_STATUSES;
+const [BUDGET_EXHAUSTED_TYPE, CANCELLED_TYPE] = RUN_CONTROL_REASON_TYPES;
 
 /** Validates and snapshots exact run-control options. @internal */
 export function readRunControlOptions(value: RunControlOptions): RunControlOptions {
@@ -40,6 +51,69 @@ export function readRunConsumption(value: RunConsumptionDefinition): RunConsumpt
         ),
         turns: readNonNegativeInteger(fields.turns ?? 0, "run consumption turns"),
     });
+}
+
+/** Validates and snapshots one exact persisted run-control state. @internal */
+export function readRunControlSnapshot(value: unknown): RunControlSnapshot {
+    const fields = readRunDataObject(
+        value,
+        ["consumed", "reason", "status"],
+        "run control snapshot",
+    );
+    const consumedFields = readRunDataObject(
+        fields.consumed,
+        CONSUMPTION_KEYS,
+        "run control snapshot consumed",
+    );
+    const consumed = readRunConsumption(consumedFields);
+    if (!runProtocolConfig.control.statuses.includes(fields.status as string)) {
+        throw new TypeError("run control snapshot status is not configured");
+    }
+    let reason: RunControlSnapshot["reason"];
+    if (fields.status === ACTIVE_STATUS) {
+        if (fields.reason !== null) {
+            throw new TypeError("active run control snapshot reason must be null");
+        }
+        reason = null;
+    } else if (fields.status === EXHAUSTED_STATUS) {
+        const reasonFields = readRunDataObject(
+            fields.reason,
+            ["limit", "metric", "observed", "type"],
+            "exhausted run control reason",
+        );
+        if (
+            reasonFields.type !== BUDGET_EXHAUSTED_TYPE ||
+            !RUN_BUDGET_METRICS.includes(reasonFields.metric as never)
+        ) {
+            throw new TypeError("exhausted run control reason is not configured");
+        }
+        reason = {
+            limit: readNonNegativeFinite(reasonFields.limit, "run control reason limit"),
+            metric: reasonFields.metric as RunBudgetMetric,
+            observed: readNonNegativeFinite(reasonFields.observed, "run control reason observed"),
+            type: BUDGET_EXHAUSTED_TYPE,
+        } as RunControlSnapshot["reason"];
+    } else {
+        const reasonFields = readRunDataObject(
+            fields.reason,
+            ["message", "type"],
+            "cancelled run control reason",
+        );
+        if (
+            reasonFields.type !== CANCELLED_TYPE ||
+            typeof reasonFields.message !== "string" ||
+            reasonFields.message.length === 0 ||
+            /[\uD800-\uDFFF]/u.test(reasonFields.message)
+        ) {
+            throw new TypeError("cancelled run control reason is malformed");
+        }
+        reason = { message: reasonFields.message, type: CANCELLED_TYPE };
+    }
+    return createCanonicalSnapshot({
+        consumed,
+        reason,
+        status: fields.status as RunControlStatus,
+    }) as RunControlSnapshot;
 }
 
 function readBudget(value: unknown): RunBudgetDefinition {

@@ -24,7 +24,13 @@ status and artifact-content vocabularies; artifact ordinal bounds; schema identi
 generated schema paths. It also fixes run-control statuses, reason types, budget-metric precedence,
 stable cancellation reasons, and safe duration-timer bounds.
 It also fixes executor failure classifications and fallback messages used for provider, output,
-and unavailable-cost failures.
+and unavailable-cost failures, plus durable execution recovery and claim statuses, configured
+control-command kinds and schema, invocation claim lease duration, and fail-closed recovery,
+claim-loss, and fencing error codes and messages. The control-command vocabulary includes recovery,
+pause, resume, and cooperative cancellation without embedding those discriminants in runtime code.
+The run section also fixes the normative lifecycle statuses and transition matrix, continuation
+constituent/evidence vocabularies, the receipt-bearing evidence status, their versions, and
+generated continuation, waiting, and suspension schema contracts.
 The provider section fixes provider kinds, static-provider capabilities, and stable typed-error
 codes and messages.
 
@@ -72,7 +78,9 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   match effect protocol v1.
 - run record versions are positive, terminal statuses and artifact content types are unique,
   artifact ordinal and timer bounds are safe, control vocabularies are unique, schema identifiers
-  and artifact paths are valid, and all values match the immutable run protocol v1 contract.
+  and artifact paths are valid, recovery and control-command vocabularies and executor errors are
+  non-empty, lifecycle and continuation vocabularies are closed, transition pairs cite known
+  non-terminal states and outcomes, and all values match the immutable run protocol v1 contract.
 - provider kinds are unique, static capabilities are booleans, error codes/messages are non-empty,
   and every value matches the immutable provider protocol v1 contract.
 

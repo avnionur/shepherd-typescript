@@ -1,4 +1,6 @@
 import { assertBlobId } from "../blob/identity.ts";
+import type { SemanticRecord } from "../canonical/canonical-record.ts";
+import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import { runProtocolConfig } from "../protocol/config.ts";
 import { RUN_ARTIFACT_CONTENT_TYPES } from "../protocol/values.generated.ts";
 import type {
@@ -16,6 +18,43 @@ import {
 
 const [TEXT_CONTENT_TYPE, BLOB_CONTENT_TYPE] = RUN_ARTIFACT_CONTENT_TYPES;
 
+/** Validates and snapshots artifact fields that do not depend on a run identity. @internal */
+export function readRunArtifactPayloadDefinition(
+    value: unknown,
+    subject = "run artifact payload",
+): {
+    readonly content: RunArtifactContentDefinition;
+    readonly kind: string;
+    readonly metadata: SemanticRecord;
+    readonly name: string;
+} {
+    const fields = readRunDataObject(value, ["content", "kind", "metadata", "name"], subject);
+    assertRunText(fields.kind, `${subject} kind`);
+    assertRunText(fields.name, `${subject} name`);
+    assertRunSemanticRecord(fields.metadata, `${subject} metadata`);
+    const content = readArtifactContent<RunArtifactContentDefinition>(fields.content);
+    return createCanonicalSnapshot({
+        content:
+            content.type === TEXT_CONTENT_TYPE
+                ? content
+                : {
+                      receipt: {
+                          blob_id: content.blob_id,
+                          byte_length: content.byte_length,
+                      },
+                      type: BLOB_CONTENT_TYPE,
+                  },
+        kind: fields.kind,
+        metadata: fields.metadata,
+        name: fields.name,
+    }) as {
+        readonly content: RunArtifactContentDefinition;
+        readonly kind: string;
+        readonly metadata: SemanticRecord;
+        readonly name: string;
+    };
+}
+
 /** Validates and normalizes one exact run-artifact definition. @internal */
 export function readRunArtifactDefinition<C extends RunArtifactContentDefinition>(
     value: RunArtifactDefinition<C>,
@@ -27,15 +66,28 @@ export function readRunArtifactDefinition<C extends RunArtifactContentDefinition
     );
     assertRunText(fields.runId, "run artifact runId");
     assertArtifactOrdinal(fields.artifactOrdinal);
-    assertRunText(fields.kind, "run artifact kind");
-    assertRunText(fields.name, "run artifact name");
-    assertRunSemanticRecord(fields.metadata, "run artifact metadata");
+    const payload = readRunArtifactPayloadDefinition(
+        {
+            content: fields.content,
+            kind: fields.kind,
+            metadata: fields.metadata,
+            name: fields.name,
+        },
+        "run artifact",
+    );
     return {
         artifactOrdinal: fields.artifactOrdinal,
-        content: readArtifactContent(fields.content),
-        kind: fields.kind,
-        metadata: fields.metadata,
-        name: fields.name,
+        content:
+            payload.content.type === TEXT_CONTENT_TYPE
+                ? payload.content
+                : {
+                      blob_id: payload.content.receipt.blob_id,
+                      byte_length: payload.content.receipt.byte_length,
+                      type: BLOB_CONTENT_TYPE,
+                  },
+        kind: payload.kind,
+        metadata: payload.metadata,
+        name: payload.name,
         runId: fields.runId,
     } as Omit<RunArtifactDefinition<C>, "content"> & {
         readonly content: RunArtifactContentFor<C>;

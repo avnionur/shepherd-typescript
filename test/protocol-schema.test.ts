@@ -110,6 +110,10 @@ test("published append and view schemas enforce their wire shapes", () => {
 
     assert.equal(validateBatch(validBatch), true, validator.errorsText(validateBatch.errors));
     assert.equal(validateView({ owner_id: "run:alpha", owner_ordinal: 0 }), true);
+    assert.equal(
+        validateView({ append_intent_id: "intent:alpha", owner_id: "run:alpha", owner_ordinal: 0 }),
+        true,
+    );
     assert.equal(validateBatch({ ...validBatch, extra: true }), false);
     assert.equal(
         validateBatch({

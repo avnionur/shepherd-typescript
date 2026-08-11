@@ -54,7 +54,7 @@ test("SQLiteTraceStore atomically appends and reopens retained records", async (
     store.close();
 
     const reopened = new SQLiteTraceStore(databasePath);
-    assert.equal(reopened.schemaVersion, 3);
+    assert.equal(reopened.schemaVersion, 5);
     assert.deepEqual(
         reopened.readOwner("run:alpha").map(({ body }) => body.operation),
         ["task.started", "task.completed"],
@@ -152,8 +152,8 @@ test("SQLiteTraceStore continues owner ordinals and shares semantic records acro
         [0, 1, 2],
     );
     assert.deepEqual(store.readRecord(first.record_ids[0] ?? "")?.views, [
-        { owner_id: "run:alpha", owner_ordinal: 0 },
-        { owner_id: "run:beta", owner_ordinal: 0 },
+        { append_intent_id: "intent:alpha", owner_id: "run:alpha", owner_ordinal: 0 },
+        { append_intent_id: "intent:beta", owner_id: "run:beta", owner_ordinal: 0 },
     ]);
     store.close();
 });

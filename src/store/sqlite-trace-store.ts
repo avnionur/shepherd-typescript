@@ -10,7 +10,7 @@ import { projectExecution } from "../projection/execution.ts";
 import { projectEffectiveHistory } from "../projection/history.ts";
 import { activeExecutionRelations, projectExecutionRelations } from "../projection/relations.ts";
 import type { EffectiveHistory, Execution } from "../projection/types.ts";
-import { kernelProtocolConfig } from "../protocol/config.ts";
+import { kernelProtocolConfig, runProtocolConfig } from "../protocol/config.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { createConfiguredRootWitness } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
@@ -21,6 +21,16 @@ import { collectStoredBlobOrphans } from "./blob-orphans.ts";
 import { putStoredBlob, readStoredBlob, verifyStoredBlobs } from "./blobs.ts";
 import { DEFAULT_STORE_DATABASE_PATH, STORE_PRAGMA_SQL, STORE_TABLES } from "./constants.ts";
 import { publishStoredCut, readStoredCut } from "./cuts.ts";
+import {
+    appendDurableExecutionStart,
+    appendDurableExecutionTerminal,
+    claimDurableExecutionInvocation,
+} from "./durable-execution-claims.ts";
+import {
+    appendDurableExecutionResume,
+    appendDurableExecutionRunningControlCommand,
+    appendDurableExecutionSuspension,
+} from "./durable-execution-control.ts";
 import { TraceStoreError } from "./errors.ts";
 import { verifyTraceStoreIntegrity } from "./integrity.ts";
 import type { AppendRecoveryDiagnostic, TraceIntegrityReport } from "./integrity-types.ts";
@@ -38,6 +48,9 @@ import type {
     Cut,
     CutId,
     CutSpec,
+    DurableExecutionClaimedAppend,
+    DurableExecutionInvocationClaim,
+    DurableExecutionResumeAppend,
     OwnerRecord,
     RetainedRecord,
     Slice,
@@ -126,6 +139,196 @@ export class SQLiteTraceStore implements Disposable {
     append(request: StoreAppendRequest): AppendReceipt {
         this.#assertOpen();
         return appendToTraceStore(this.#database, request);
+    }
+
+    /**
+     * Atomically acquires or observes the provider-invocation lease for a durable run.
+     *
+     * @param runId - Durable run whose provider boundary is guarded.
+     * @param createdRecordId - Exact creation evidence associated with the run.
+     * @param claimId - Unique identity proposed by this caller.
+     * @param nowMilliseconds - Unix time used for deterministic lease evaluation.
+     * @param allowExpiredTakeover - Whether this caller has authority to replace an expired claim.
+     * @returns The current frozen claim, including its monotonic fencing token and expiry.
+     * @throws {TypeError} If identifiers, creation evidence, or time are malformed or conflict.
+     * @throws {TraceStoreError} If the store is closed.
+     */
+    claimDurableExecutionInvocation(
+        runId: string,
+        createdRecordId: RecordId,
+        claimId: string,
+        nowMilliseconds = Date.now(),
+        allowExpiredTakeover = true,
+    ): DurableExecutionInvocationClaim {
+        this.#assertOpen();
+        return claimDurableExecutionInvocation(
+            this.#database,
+            runId,
+            createdRecordId,
+            claimId,
+            nowMilliseconds,
+            runProtocolConfig.execution.invocationClaimLeaseMilliseconds,
+            allowExpiredTakeover,
+        );
+    }
+
+    /**
+     * Atomically publishes canonical start evidence while a claim remains authoritative.
+     *
+     * @param runId - Durable run whose start boundary is guarded.
+     * @param claimId - Exact acquired claim identity.
+     * @param fencingToken - Exact monotonic token returned with the claim.
+     * @param nowMilliseconds - Unix time used for deterministic lease evaluation.
+     * @param recoveryCommandRecordId - Optional canonical recovery command authorizing the start.
+     * @returns A committed receipt or a frozen fenced result.
+     * @throws {TypeError} If identifiers, token, or time are malformed.
+     * @throws {TraceStoreError} If the store is closed or the append fails.
+     */
+    appendDurableExecutionStart(
+        runId: string,
+        claimId: string,
+        fencingToken: number,
+        nowMilliseconds = Date.now(),
+        recoveryCommandRecordId: RecordId | null = null,
+    ): DurableExecutionClaimedAppend {
+        this.#assertOpen();
+        return appendDurableExecutionStart(
+            this.#database,
+            runId,
+            claimId,
+            fencingToken,
+            nowMilliseconds,
+            recoveryCommandRecordId,
+        );
+    }
+
+    /**
+     * Atomically publishes terminal evidence while the exact started claim remains current.
+     *
+     * @param runId - Durable run whose terminal evidence is being published.
+     * @param claimId - Exact current invocation claim identity.
+     * @param fencingToken - Exact current monotonic fencing token.
+     * @param request - Canonical terminal-ledger append request.
+     * @param releaseClaim - Whether terminal commit must also release the current worker.
+     * @returns A committed receipt or a frozen fenced result.
+     * @throws {TraceStoreError} If the store is closed or append fails.
+     * @throws {TypeError} If identifiers, token, or request are malformed.
+     * @internal
+     */
+    appendDurableExecutionTerminal(
+        runId: string,
+        claimId: string,
+        fencingToken: number,
+        request: StoreAppendRequest,
+        releaseClaim = false,
+    ): DurableExecutionClaimedAppend {
+        this.#assertOpen();
+        return appendDurableExecutionTerminal(
+            this.#database,
+            runId,
+            claimId,
+            fencingToken,
+            request,
+            releaseClaim,
+        );
+    }
+
+    /**
+     * Atomically retains a running control command while the exact fence remains current.
+     *
+     * @param runId - Durable run whose running lifecycle is targeted.
+     * @param expectedLifecycleRecordId - Exact retained start record expected by the caller.
+     * @param fencingToken - Exact current invocation fencing token.
+     * @param request - Canonical running-control-command append request.
+     * @returns The committed or identically replayed append receipt.
+     * @throws {TraceStoreError} If the store is closed or running authority is no longer current.
+     * @throws {AppendIntentConflictError} If command identity already names different content.
+     * @throws {TypeError} If an identifier, token, or request is malformed.
+     *
+     * @internal
+     */
+    appendDurableExecutionRunningControlCommand(
+        runId: string,
+        expectedLifecycleRecordId: RecordId,
+        fencingToken: number,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return appendDurableExecutionRunningControlCommand(
+            this.#database,
+            runId,
+            expectedLifecycleRecordId,
+            fencingToken,
+            request,
+        );
+    }
+
+    /**
+     * Atomically appends suspension evidence and releases the exact running fence.
+     *
+     * @param runId - Durable run reaching a safe boundary.
+     * @param expectedLifecycleRecordId - Exact current started lifecycle record.
+     * @param fencingToken - Exact current invocation fencing token.
+     * @param pauseCommandRecordId - Retained pause command authorizing suspension.
+     * @param traceCutId - Immutable cut through the expected lifecycle record.
+     * @param request - Canonical descriptor and suspension append request.
+     * @returns The committed or identically replayed append receipt.
+     * @throws {TraceStoreError} If the store is closed or authority is inconsistent.
+     * @throws {AppendIntentConflictError} If the intent already names different content.
+     * @internal
+     */
+    appendDurableExecutionSuspension(
+        runId: string,
+        expectedLifecycleRecordId: RecordId,
+        fencingToken: number,
+        pauseCommandRecordId: RecordId,
+        traceCutId: string,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return appendDurableExecutionSuspension(
+            this.#database,
+            runId,
+            expectedLifecycleRecordId,
+            fencingToken,
+            pauseCommandRecordId,
+            traceCutId,
+            request,
+        );
+    }
+
+    /**
+     * Atomically acquires resumed worker authority and publishes running continuation evidence.
+     *
+     * @param runId - Durable run being resumed.
+     * @param commandId - Globally idempotent resume command identity.
+     * @param expectedLifecycleRecordId - Exact suspension acknowledgement expected as current.
+     * @param continuationDescriptorRecordId - Exact descriptor cited by suspension.
+     * @param claimId - Deterministic new worker claim identity.
+     * @param nowMilliseconds - Unix time used for lease creation.
+     * @returns Canonical command/running identities and new worker authority.
+     * @throws {TraceStoreError} If the store is closed or retained authority is inconsistent.
+     * @internal
+     */
+    appendDurableExecutionResume(
+        runId: string,
+        commandId: string,
+        expectedLifecycleRecordId: RecordId,
+        continuationDescriptorRecordId: RecordId,
+        claimId: string,
+        nowMilliseconds = Date.now(),
+    ): DurableExecutionResumeAppend {
+        this.#assertOpen();
+        return appendDurableExecutionResume(
+            this.#database,
+            runId,
+            commandId,
+            expectedLifecycleRecordId,
+            continuationDescriptorRecordId,
+            claimId,
+            nowMilliseconds,
+            runProtocolConfig.execution.invocationClaimLeaseMilliseconds,
+        );
     }
 
     /**

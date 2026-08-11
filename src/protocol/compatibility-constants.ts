@@ -98,8 +98,18 @@ export const KERNEL_ABI_V0_CONTRACT = deepFreeze({
                 lastOwnerOrdinal: 9_007_199_254_740_990,
                 version: 3,
             },
+            {
+                firstOwnerOrdinal: 0,
+                lastOwnerOrdinal: 9_007_199_254_740_990,
+                version: 4,
+            },
+            {
+                firstOwnerOrdinal: 0,
+                lastOwnerOrdinal: 9_007_199_254_740_990,
+                version: 5,
+            },
         ],
-        schemaVersion: 3,
+        schemaVersion: 5,
     },
 } as const);
 
@@ -201,8 +211,12 @@ export const RUN_PROTOCOL_V1_CONTRACT = deepFreeze({
     artifactVersion: 1,
     artifacts: {
         artifactSchema: "spec/schemas/run-artifact-v1.schema.json",
+        continuationDescriptorSchema: "spec/schemas/run-continuation-descriptor-v1.schema.json",
         outcomeSchema: "spec/schemas/run-outcome-v1.schema.json",
+        runningLifecycleSchema: "spec/schemas/run-lifecycle-running-v1.schema.json",
+        suspendedLifecycleSchema: "spec/schemas/run-lifecycle-suspended-v1.schema.json",
         usageSchema: "spec/schemas/run-usage-v1.schema.json",
+        waitingLifecycleSchema: "spec/schemas/run-lifecycle-waiting-v1.schema.json",
     },
     control: {
         budgetMetrics: [
@@ -220,14 +234,63 @@ export const RUN_PROTOCOL_V1_CONTRACT = deepFreeze({
         statuses: ["active", "exhausted", "cancelled"],
     },
     execution: {
+        continuationConstituentKinds: ["world", "provider_session", "process", "prerequisite"],
+        continuationEvidenceStatuses: ["verified", "not_required", "unavailable"],
+        continuationVerifiedStatus: "verified",
+        continuationVersion: 1,
+        controlCommandKinds: ["recover", "pause", "resume", "cancel"],
+        controlCommandSchemaId: "shepherd2.execution.control_command.v1",
         errors: {
+            claimFencedCode: "DURABLE_EXECUTION_CLAIM_FENCED",
+            claimFencedMessage: "durable execution invocation claim is expired or fenced",
+            claimLostCode: "DURABLE_EXECUTION_CLAIM_LOST",
+            claimLostMessage: "durable execution invocation claim is held by another caller",
+            recoveryAbsentCode: "DURABLE_EXECUTION_ABSENT",
+            recoveryAbsentMessage: "durable execution recovery requires retained creation evidence",
+            recoveryCommandRequiredCode: "DURABLE_EXECUTION_RECOVERY_COMMAND_REQUIRED",
+            recoveryCommandRequiredMessage:
+                "incomplete durable execution requires an explicit recovery command",
             costUnavailableMessage: "provider cost is unavailable for a configured cost budget",
             costUnavailableType: "RunCostUnavailableError",
             outputValidationMessage: "provider output does not satisfy the task schema",
             outputValidationType: "TaskOutputValidationError",
             providerFailureMessage: "provider invocation failed",
             providerFailureType: "ProviderInvocationError",
+            recoveryStartedCode: "DURABLE_EXECUTION_STARTED",
+            recoveryStartedMessage: "durable execution started without terminal evidence",
         },
+        invocationClaimAppendStatuses: ["committed", "fenced"],
+        invocationClaimLeaseMilliseconds: 30_000,
+        invocationClaimStatuses: ["acquired", "lost"],
+        lifecycleStatuses: ["created", "running", "waiting", "suspended", "terminal"],
+        lifecycleRunningStatus: "running",
+        lifecycleSuspendedStatus: "suspended",
+        lifecycleTerminalStatus: "terminal",
+        lifecycleTerminalTransitions: [
+            ["created", "failed"],
+            ["created", "exhausted"],
+            ["created", "cancelled"],
+            ["running", "finished"],
+            ["running", "failed"],
+            ["running", "exhausted"],
+            ["running", "cancelled"],
+            ["waiting", "failed"],
+            ["waiting", "exhausted"],
+            ["waiting", "cancelled"],
+            ["suspended", "failed"],
+            ["suspended", "exhausted"],
+            ["suspended", "cancelled"],
+        ],
+        lifecycleTransitions: [
+            ["created", "running"],
+            ["running", "waiting"],
+            ["waiting", "running"],
+            ["running", "suspended"],
+            ["suspended", "running"],
+        ],
+        lifecycleVersion: 1,
+        lifecycleWaitingStatus: "waiting",
+        recoveryStatuses: ["absent", "created", "started", "terminal_pending_cut", "committed"],
     },
     firstArtifactOrdinal: 0,
     lastArtifactOrdinal: 9_007_199_254_740_990,
@@ -235,9 +298,17 @@ export const RUN_PROTOCOL_V1_CONTRACT = deepFreeze({
     schemas: {
         artifactId:
             "https://avnionur.github.io/shepherd-typescript/schemas/run-artifact-v1.schema.json",
+        continuationDescriptorId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/run-continuation-descriptor-v1.schema.json",
         outcomeId:
             "https://avnionur.github.io/shepherd-typescript/schemas/run-outcome-v1.schema.json",
+        runningLifecycleId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/run-lifecycle-running-v1.schema.json",
+        suspendedLifecycleId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/run-lifecycle-suspended-v1.schema.json",
         usageId: "https://avnionur.github.io/shepherd-typescript/schemas/run-usage-v1.schema.json",
+        waitingLifecycleId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/run-lifecycle-waiting-v1.schema.json",
     },
     terminalStatuses: ["finished", "failed", "exhausted", "cancelled"],
     usageVersion: 1,

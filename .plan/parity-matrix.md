@@ -44,14 +44,14 @@ and any applicable pinned upstream-oracle comparison.
 
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
 | --- | --- | --- | --- | --- |
-| Durable run ledger | shipped | required | P0 | basic lifecycle, usage, outcome, cut, reopen, and deterministic replay evidence implemented; recovery read follows |
+| Durable run ledger | shipped | required | P0 | lifecycle, ordered artifacts, verified blob receipts, usage, outcome, cut, reopen, deterministic replay, exact recovery, command-authorized creation resume and cut repair, cross-connection claims, lease takeover, stale-writer fencing, cut-bound waiting/suspension inspection, idempotent command-bound recovery, exact-head/fence-bound pause and cancellation requests, checkpoint adapters, atomic suspension acknowledgement/claim release, exact-suspension resume with monotonic fencing, safe-boundary cancelled terminal fencing, and the configured lifecycle protocol foundation implemented |
 | Success/failure/exhausted/cancelled outcomes | documented | required | P0 | versioned closed records and exhaustive state fixtures implemented |
-| Artifacts and usage | documented | required | P1 | aggregate usage persists in the run ledger and native export; automatic artifact collection pending |
+| Artifacts and usage | documented | required | P1 | executor-assigned artifacts and aggregate usage persist in the run ledger and native export with exact restart reconstruction implemented |
 | Content-addressed record identity | vNext reference | explicit sharing | P0 | canonical hash vectors |
 | Atomic append batches | vNext reference | required | P0 | crash/fault injection |
 | Idempotent append intent | vNext reference | required | P0 | retry conflict tests |
 | Owner/cut/slice addressing | vNext reference | graph access | P1 | projection fixtures |
-| Trace query and materialization | shipped | core | P1 | CLI/API golden output |
+| Trace query and materialization | shipped | core | P1 | public cut-bounded durable execution inspection API implemented; broader CLI/API golden output remains |
 | Live trace subscription | not public complete | explicit | P2 | backpressure/reconnect tests |
 | Arbitrary rewind | not public API | explicit | P2 | byte-equivalence tests |
 | Suffix replay | deferred | explicit | P2 | deterministic and provider-cache tests |
@@ -97,11 +97,11 @@ and any applicable pinned upstream-oracle comparison.
 
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
 | --- | --- | --- | --- | --- |
-| Deterministic/static provider | shipped | testing need | P0 | exact offline cassette provider and executor public-seam tests implemented; durable trace fixture follows |
+| Deterministic/static provider | shipped | testing need | P0 | exact offline cassette provider plus transient and restart-safe durable executor public-seam fixtures implemented |
 | Claude CLI provider | shipped path | examples | P1 | opt-in integration test |
 | Codex provider | claimed by project materials | examples | P1 | opt-in integration test |
 | OpenRouter/provider adapter | claimed via Claude path | examples | P2 | contract test |
-| Provider-neutral event model | architectural | core | P0 | request/response and descriptor contract implemented; event normalization follows executor integration |
+| Provider-neutral event model | architectural | core | P0 | request/response, ordered artifact definition, descriptor, and executor normalization contracts implemented; streaming event normalization remains |
 | Provider prompt/cache identity | research | replay need | P2 | prefix identity tests |
 | Cancellation and budgets | run model | required | P1 | configured counter/duration controls and executor terminal integration implemented; effect accounting follows |
 | Runtime supervisor | not public productized | case study | P2 | two-worker conflict scenario |

@@ -28,7 +28,8 @@ planning to `planAppendBatch`. One `BEGIN IMMEDIATE` transaction then:
 2. loads known record identities and owner ordinal state;
 3. validates causal parents and witnesses;
 4. inserts deduplicated semantic records and ordered parent edges;
-5. inserts owner-local record views and advances changed owner ordinals;
+5. inserts owner-local record views with their append-intent identity and advances changed owner
+   ordinals;
 6. stores the deterministic append receipt and commits.
 
 Any validation or SQLite error rolls back the receipt, records, edges, views, and ordinal changes.
@@ -69,6 +70,12 @@ Schema v3 adds published trace-cut resolver entries. Cut publication remains aut
 its semantic record; the table is a verified resolver index. Existing schema-v2 stores upgrade
 without rewriting records or receipts. Query behavior is documented in
 [Trace cuts and causal slices](./trace-queries.md).
+
+Schema v4 adds durable first-writer invocation claims. Schema v5 adds configured lease expiry,
+monotonic fencing tokens, and an atomically consumed start flag. Legacy v4 claims are marked
+consumed during migration because their prior start state cannot be proven safely. Guarded claim
+and append methods serialize takeover and start publication with the configured immediate
+transaction.
 
 Execution projections are disposable reads and therefore add no schema migration. The
 `projectExecution(cutId)` and `projectEffectiveHistory(cutId)` facades resolve payload-visible,

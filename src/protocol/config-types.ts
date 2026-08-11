@@ -277,10 +277,18 @@ export type RunProtocolConfig = {
     readonly artifacts: {
         /** Repository-relative run-artifact schema destination. */
         readonly artifactSchema: string;
+        /** Repository-relative continuation-descriptor schema destination. */
+        readonly continuationDescriptorSchema: string;
         /** Repository-relative run-outcome schema destination. */
         readonly outcomeSchema: string;
+        /** Repository-relative running-continuation lifecycle schema destination. */
+        readonly runningLifecycleSchema: string;
+        /** Repository-relative suspended-lifecycle schema destination. */
+        readonly suspendedLifecycleSchema: string;
         /** Repository-relative aggregate run-usage schema destination. */
         readonly usageSchema: string;
+        /** Repository-relative waiting-lifecycle schema destination. */
+        readonly waitingLifecycleSchema: string;
     };
     /** Runtime run-control vocabulary and timer bounds. */
     readonly control: {
@@ -299,8 +307,36 @@ export type RunProtocolConfig = {
     };
     /** Runtime task-execution failure normalization. */
     readonly execution: {
+        /** Ordered constituent kinds classified by a continuation descriptor. */
+        readonly continuationConstituentKinds: readonly string[];
+        /** Ordered continuation evidence statuses from verified to unavailable. */
+        readonly continuationEvidenceStatuses: readonly string[];
+        /** Continuation evidence status that requires a durable receipt. */
+        readonly continuationVerifiedStatus: string;
+        /** Wire version for continuation descriptors. */
+        readonly continuationVersion: number;
+        /** Closed durable control-command vocabulary. */
+        readonly controlCommandKinds: readonly string[];
+        /** Schema identifying canonical durable control-command records. */
+        readonly controlCommandSchemaId: string;
         /** Stable classifications and fallback descriptions for executor failures. */
         readonly errors: {
+            /** Stable code for an expired or superseded invocation claim. */
+            readonly claimFencedCode: string;
+            /** Stable description for an expired or superseded invocation claim. */
+            readonly claimFencedMessage: string;
+            /** Stable code for losing an in-progress durable invocation claim. */
+            readonly claimLostCode: string;
+            /** Stable description for losing an in-progress durable invocation claim. */
+            readonly claimLostMessage: string;
+            /** Stable code for recovery requested without retained creation evidence. */
+            readonly recoveryAbsentCode: string;
+            /** Stable description for recovery requested without retained creation evidence. */
+            readonly recoveryAbsentMessage: string;
+            /** Stable code for incomplete evidence requiring explicit recovery authority. */
+            readonly recoveryCommandRequiredCode: string;
+            /** Stable description for incomplete evidence requiring explicit recovery authority. */
+            readonly recoveryCommandRequiredMessage: string;
             /** Failure description used when a configured cost limit cannot be enforced. */
             readonly costUnavailableMessage: string;
             /** Failure classification used when provider cost is unavailable. */
@@ -313,7 +349,35 @@ export type RunProtocolConfig = {
             readonly providerFailureMessage: string;
             /** Fallback provider failure classification. */
             readonly providerFailureType: string;
+            /** Stable code for unsafe started-run recovery. */
+            readonly recoveryStartedCode: string;
+            /** Stable description for unsafe started-run recovery. */
+            readonly recoveryStartedMessage: string;
         };
+        /** Closed claim-guarded append result vocabulary. */
+        readonly invocationClaimAppendStatuses: readonly string[];
+        /** Duration granted to a first-writer claim before pre-start reclamation. */
+        readonly invocationClaimLeaseMilliseconds: number;
+        /** Closed first-writer invocation-claim result vocabulary. */
+        readonly invocationClaimStatuses: readonly string[];
+        /** Closed normative run-lifecycle vocabulary. */
+        readonly lifecycleStatuses: readonly string[];
+        /** Lifecycle status identifying active running continuation. */
+        readonly lifecycleRunningStatus: string;
+        /** Lifecycle status identifying acknowledged control-driven suspension. */
+        readonly lifecycleSuspendedStatus: string;
+        /** Lifecycle status identifying an immutable terminal outcome. */
+        readonly lifecycleTerminalStatus: string;
+        /** Allowed source-status and terminal-outcome pairs. */
+        readonly lifecycleTerminalTransitions: readonly (readonly [string, string])[];
+        /** Allowed non-terminal source and target lifecycle pairs. */
+        readonly lifecycleTransitions: readonly (readonly [string, string])[];
+        /** Wire version for normative lifecycle evidence. */
+        readonly lifecycleVersion: number;
+        /** Lifecycle status identifying prerequisite-driven waiting. */
+        readonly lifecycleWaitingStatus: string;
+        /** Closed durable execution recovery lifecycle. */
+        readonly recoveryStatuses: readonly string[];
     };
     /** First valid artifact emission ordinal. */
     readonly firstArtifactOrdinal: number;
@@ -325,10 +389,18 @@ export type RunProtocolConfig = {
     readonly schemas: {
         /** Absolute run-artifact schema identifier. */
         readonly artifactId: string;
+        /** Absolute continuation-descriptor schema identifier. */
+        readonly continuationDescriptorId: string;
         /** Absolute run-outcome schema identifier. */
         readonly outcomeId: string;
+        /** Absolute running-continuation lifecycle schema identifier. */
+        readonly runningLifecycleId: string;
+        /** Absolute suspended-lifecycle schema identifier. */
+        readonly suspendedLifecycleId: string;
         /** Absolute aggregate run-usage schema identifier. */
         readonly usageId: string;
+        /** Absolute waiting-lifecycle schema identifier. */
+        readonly waitingLifecycleId: string;
     };
     /** Closed terminal status vocabulary. */
     readonly terminalStatuses: readonly string[];

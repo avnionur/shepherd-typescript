@@ -48,13 +48,24 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   blob outputs plus aggregate token and cost records correlated by run identity.
 - [Run budgets and cancellation](./run-control.md) defines configured resource limits, cumulative
   consumption, duration expiry, composed `AbortSignal` behavior, and terminal race semantics.
+- [Run lifecycle protocol](./run-lifecycle-protocol.md) defines the configured normative transition
+  matrix and versioned continuation, waiting, suspension, and resumed-running evidence schemas.
 - [Provider contract and static provider](./static-provider.md) defines immutable provider
   descriptors, structured requests/responses, exact cassette replay, cancellation, and typed
   fail-closed errors.
 - [Offline task execution](./task-execution.md) defines task-to-provider request mapping, schema
   validation, usage accounting, budgets, cancellation, and terminal-result normalization.
 - [Durable task execution](./durable-task-execution.md) defines lifecycle, aggregate usage, exact
-  terminal outcome persistence, deterministic append replay, and terminal cuts.
+  ordered artifact and terminal outcome persistence, blob-receipt verification, deterministic
+  append replay, recovery classification, exact reconstruction, command-authorized creation resume
+  and terminal-cut repair, leased first-writer claims, stale-writer fencing, and fail-closed started
+  handling.
+- [Durable execution inspection](./durable-execution-inspection.md) defines immutable read-only
+  lifecycle, artifact, usage, outcome, cut, and causal-edge views across every recovery state.
+- [Durable execution control](./durable-execution-control.md) defines globally idempotent recovery,
+  pause, resume, and cancel commands; exact lifecycle-head/fence checks; ordered checkpoint
+  adapters; atomic suspension release, resumed-running fence acquisition, and safe-boundary
+  cancelled terminalization; lease takeover; and unsafe-state rejection.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

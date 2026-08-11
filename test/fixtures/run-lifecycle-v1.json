@@ -1,0 +1,53 @@
+{
+    "continuation_descriptor": {
+        "continuation_version": 1,
+        "execution_id": "run:lifecycle-fixture",
+        "trace_cut_id": "cut:lifecycle-fixture",
+        "constituents": [
+            {
+                "kind": "world",
+                "status": "not_required"
+            },
+            {
+                "kind": "provider_session",
+                "status": "unavailable"
+            },
+            {
+                "kind": "process",
+                "status": "unavailable"
+            },
+            {
+                "kind": "prerequisite",
+                "status": "verified",
+                "receipt_id": "receipt:approval:1"
+            }
+        ]
+    },
+    "waiting": {
+        "lifecycle_version": 1,
+        "execution_id": "run:lifecycle-fixture",
+        "status": "waiting",
+        "continuation_descriptor_id": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "prerequisite": {
+            "prerequisite_id": "approval:1",
+            "kind": "human_approval"
+        }
+    },
+    "suspended": {
+        "lifecycle_version": 1,
+        "execution_id": "run:lifecycle-fixture",
+        "status": "suspended",
+        "continuation_descriptor_id": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "pause_command_id": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "running": {
+        "lifecycle_version": 1,
+        "execution_id": "run:lifecycle-fixture",
+        "status": "running",
+        "continuation_descriptor_id": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "resume_command_id": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "claim_id": "claim:resume:1",
+        "fencing_token": 2,
+        "lease_expires_at": 2000000000000
+    }
+}

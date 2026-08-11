@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-10
+Last updated: 2026-08-11
 
-Current version: `0.21.0`
+Current version: `1.6.0`
 
 Current level: L0 — canonical model
 
@@ -32,9 +32,39 @@ The offline bodyless task executor now maps validated task inputs and exact outp
 provider requests, accounts observed usage through run control, validates provider responses and
 task outputs, and returns immutable finished, failed, exhausted, or cancelled results. Durable
 execution now retains validated creation and actual start boundaries, aggregate observed usage,
-the exact terminal outcome, its lifecycle projection record, and an immutable terminal cut in the
-trace store. Equal deterministic retries replay without duplicating records; recovery that returns
-prior results without provider invocation remains pending.
+executor-produced ordered artifacts with verified blob receipts, the exact terminal outcome, its
+lifecycle projection record, and an immutable terminal cut in the trace store. Equal deterministic
+retries replay without duplicating records. Durable recovery now
+classifies absent, created, started, terminal-pending-cut, and committed states; reconstructs exact
+committed results without provider invocation; requires explicit command authority to resume safe
+pre-start creation or repair a missing terminal cut; and fails closed when invocation may already
+have occurred.
+Durable invocation admission now uses expiring first-writer leases and monotonic fencing tokens;
+an expired pre-start claimant can be replaced, while stale or already-started writers are rejected
+atomically before provider invocation.
+Disposable durable execution inspection views now expose every recovery state with lifecycle,
+ordered artifact, usage, outcome, immutable-cut, and direct causal-edge evidence derived from the
+canonical record graph. Inspection performs no append, provider invocation, or state repair.
+Configured durable recovery commands now carry globally idempotent identities and canonical
+command records. They causally bind and exclusively authorize expired-lease pre-start recovery and
+terminal-cut repair while absent or uncertain started runs remain fail-closed.
+Configured pause requests now use the same global command-identity authority, atomically compare
+the exact current started lifecycle head and invocation fencing token, and retain a canonical
+reason-bound command without changing the lifecycle or releasing the worker lease.
+Ordered checkpoint adapters now classify every configured continuation constituent without store
+mutation. At a proven safe boundary, command-authorized suspension atomically publishes the
+continuation descriptor and acknowledgement, releases the worker claim, and fences any returning
+worker from terminal publication.
+Globally idempotent resume commands now bind the exact suspension acknowledgement and continuation
+descriptor, reject unavailable constituents, atomically acquire the next monotonic worker fence,
+and publish a command-bound running acknowledgement across store reopen and connection races.
+The proposed normative lifecycle now distinguishes prerequisite-driven `waiting` from
+control-driven `suspended`, keeps recovery as an orthogonal evidence classification, and requires
+verified continuation constituents before either state can return to `running`. Its configured
+transition matrix, continuation descriptor, waiting acknowledgement, and suspension
+acknowledgement are now published as versioned schemas with a pure public transition validator.
+Read-only durable inspection validates cut-bound waiting and suspension evidence plus exact
+resumed-running command/fence evidence without mutation. Runtime waiting remains unimplemented.
 
 ## Progress
 
@@ -74,9 +104,36 @@ prior results without provider invocation remains pending.
 - [x] Implement offline bodyless task execution with schema validation, usage accounting, budgets,
   cancellation, and terminal normalization.
 - [x] Persist deterministic task execution lifecycle, aggregate usage, terminal outcome evidence,
-  and immutable terminal cuts without fabricating effects or artifacts.
+  and immutable terminal cuts without fabricating effects.
+- [x] Reconstruct committed durable executions after restart and safely classify or repair every
+  incomplete lifecycle boundary without duplicate provider invocation.
 - [x] Audit every paper-v3 section and close plan gaps for proof envelopes, trajectory compression,
   experiment protocols, limitations, and future-work classification.
+- [x] Reconcile the agent-runtime architecture study with the capability roadmap, including one
+  record-graph authority model, fenced run control, coupled checkpoints, and projection semantics.
+- [x] Add cross-connection durable invocation claims, pre-start lease takeover, monotonic fencing,
+  and atomic start publication.
+- [x] Persist executor-produced ordered run artifacts with verified blob receipts, causal ordering,
+  deterministic replay, and exact restart recovery.
+- [x] Add cut-bounded read-only durable execution inspection views for every recovery state.
+- [x] Add idempotent durable recovery-command identities and command-bound fail-closed transitions.
+- [x] Define the proposed normative waiting/suspension lifecycle, continuation-evidence gates, and
+  command-authority contract without claiming runtime resumability.
+- [x] Publish the configured lifecycle transition matrix and versioned continuation, waiting, and
+  suspension schemas with a pure public transition validator.
+- [x] Extend read-only durable inspection with cut-bound waiting and suspension evidence while
+  preserving the existing recovery classification and v1 execution-history projection.
+- [x] Retain globally idempotent pause requests with exact run, current started head, fencing token,
+  reason, command-content conflicts, and no lifecycle mutation.
+- [x] Add ordered checkpoint constituent adapters and atomic command-authorized suspension
+  acknowledgement with unavailable-evidence rejection, worker claim release, and stale-terminal
+  fencing.
+- [x] Add globally idempotent exact-suspension resume with unavailable-evidence rejection, atomic
+  monotonic fencing, command-bound running acknowledgement, reopen replay, and cross-connection
+  stale-head races.
+- [x] Add globally idempotent running cancellation with exact-head/fence comparison,
+  deterministic command conflicts, safe-boundary acknowledgement, atomic terminal claim release,
+  interrupted-cut repair, restart replay, and stale-worker terminal fencing.
 
 ## Verification required for this slice
 
@@ -88,8 +145,8 @@ prior results without provider invocation remains pending.
 
 ## Next slice
 
-Add durable execution recovery reads that reconstruct a committed result without provider
-invocation and classify or resume incomplete creation/start traces safely.
+Complete crash, stale-worker, missing-receipt, and cross-connection race coverage at the public
+runtime seam, then extend cancellation to created and implemented quiescent states.
 
 ## Notes
 

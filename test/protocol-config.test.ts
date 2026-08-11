@@ -122,7 +122,7 @@ test("protocol configuration rejects invalid append and migration bounds", () =>
             firstMigrationOf(config).version = 2;
         },
         (config) => {
-            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 4;
+            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 6;
         },
         (config) => {
             firstMigrationOf(config).firstOwnerOrdinal = 1;

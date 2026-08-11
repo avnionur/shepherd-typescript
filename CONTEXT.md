@@ -162,6 +162,32 @@ A cooperative per-run controller that accumulates configured resource consumptio
 budget exhaustion, caller cancellation, and disposal into one first-terminal-wins `AbortSignal`.
 _Avoid_: Process kill, permission boundary, mutable run ledger
 
+**Durable Recovery Command**:
+A globally idempotent canonical request to apply one safe recovery transition to retained durable
+execution evidence. Provider-boundary recovery additionally requires the current invocation fence.
+_Avoid_: Mutable run flag, provider replay permission, unretained retry request
+
+**Durable Resume Command**:
+A globally idempotent canonical request naming one exact suspension acknowledgement and its
+continuation descriptor. Successful application atomically acquires the next worker fence and
+publishes running authority without restoring external state or invoking a provider.
+_Avoid_: Process restart, implicit checkpoint restore, reuse of the previous worker lease
+
+**Waiting Run**:
+A non-terminal quiescent run whose continuation depends on one explicitly identified prerequisite
+and independently verifiable satisfaction evidence.
+_Avoid_: Paused run, sleeping worker, uncertain provider call
+
+**Suspended Run**:
+A non-terminal quiescent run whose authorized pause was acknowledged at a safe continuation
+boundary with sufficient continuation evidence.
+_Avoid_: Pause request, cancelled run, expired worker lease
+
+**Continuation Descriptor**:
+A canonical classification of the trace cut and world, provider-session, process, and prerequisite
+evidence required to continue a non-terminal run.
+_Avoid_: Trace cut alone, mutable worker snapshot, implicit replay promise
+
 **Model Provider**:
 A provider-neutral boundary that exposes immutable identity/capabilities and maps a validated
 structured model request to a validated structured response under cooperative cancellation.
