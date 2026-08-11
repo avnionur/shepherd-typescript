@@ -473,3 +473,26 @@ export const RUN_PROTOCOL_V1_CONTRACT = deepFreeze({
     terminalStatuses: ["finished", "failed", "exhausted", "cancelled"],
     usageVersion: 1,
 } as const);
+
+/** Immutable workspace initialization and adoption contract implemented by protocol v1. */
+export const WORKSPACE_PROTOCOL_V1_CONTRACT = deepFreeze({
+    adoptionModes: ["none", "git-head", "worktree"],
+    controlDirectory: ".vcscore",
+    defaultAdoptionMode: "worktree",
+    defaultInitializeGit: true,
+    digestAlgorithm: "sha256",
+    errors: {
+        conflictCode: "WORKSPACE_INITIALIZATION_CONFLICT",
+        conflictMessage: "workspace is already initialized with different options",
+        controlCode: "WORKSPACE_CONTROL_ERROR",
+        controlMessage: "workspace control metadata is invalid",
+    },
+    format: "shepherd.workspace-control",
+    formatVersion: 1,
+    gitExecutable: "git",
+    gitHeadRefPrefix: "git-head:",
+    gitMetadataName: ".git",
+    hexLength: 64,
+    manifestFile: "workspace.json",
+    worktreeRefPrefix: "worktree:sha256:",
+} as const);

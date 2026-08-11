@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-11
 
-Current version: `1.10.1`
+Current version: `1.11.0`
 
 Current level: L0 — canonical model
 
@@ -87,6 +87,11 @@ The Phase 2 exit audit now maps every criterion to public production-seam eviden
 native-trace byte comparison around deterministic replay and whole-store integrity checks for
 pre-invocation cancellation and exhaustion. The audit also moves runtime-grant identity to Phase 4,
 where grants are actually introduced, and does not overclaim durable effect-boundary admission.
+Phase 3 now begins with protected workspace initialization. Configured `none`, `git-head`, and
+`worktree` modes retain versioned baseline citations under `.vcscore`; worktree identity covers
+ordinary directories, file bytes, executable bits, and symlink targets while excluding Git and
+control metadata. Initialization may create an unborn Git repository but never invents a commit or
+rewrites existing history, and reopen fails closed on malformed or unavailable evidence.
 
 ## Progress
 
@@ -171,6 +176,8 @@ where grants are actually introduced, and does not overclaim durable effect-boun
   stale, malformed, unsupported, or untrusted evidence.
 - [x] Audit and close every Phase 2 exit criterion at its production seam, correcting the runtime
   grant and durable-effect phase boundaries.
+- [x] Add protected workspace initialization and adoption identity with exact reuse, Git-history
+  preservation, dirty-worktree fixtures, and fail-closed control metadata.
 
 ## Verification required for this slice
 
@@ -182,7 +189,7 @@ where grants are actually introduced, and does not overclaim durable effect-boun
 
 ## Next slice
 
-Begin Phase 3, Task 1: define and implement workspace initialization and adoption.
+Begin Phase 3, Task 2: implement canonical binding roots and overlap rejection.
 
 ## Notes
 

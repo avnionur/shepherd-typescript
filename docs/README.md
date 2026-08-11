@@ -45,6 +45,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Typed-effect reference validation and proof envelopes](./formal-assurance.md) defines the
   executable Core-A machine, pinned static-lowering/theorem evidence boundary, and fail-closed
   Core-0H sidecar gate.
+- [Workspace initialization and adoption](./workspace-initialization.md) defines protected
+  `.vcscore` metadata, configured baseline citations, Git-history preservation, and fail-closed
+  reopen behavior.
 - [Run outcomes](./run-outcomes.md) defines versioned finished, failed, exhausted, and cancelled
   terminal records with exact task-lock provenance.
 - [Run artifacts and usage](./run-artifacts-and-usage.md) defines ordered inline-text and durable

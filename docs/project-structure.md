@@ -19,7 +19,8 @@ implementation documentation, and forward-looking plans.
 │   ├── record/             Record types, envelopes, guards, and snapshots
 │   ├── run/                Outcomes, artifacts, usage, budgets, and cancellation
 │   ├── store/              SQLite migrations, transactions, codecs, and reads
-│   └── task/               Descriptors, runtime schemas, locks, and durable registration
+│   ├── task/               Descriptors, runtime schemas, locks, and durable registration
+│   └── workspace/          Initialization, adoption identity, and control-state validation
 ├── test/                   Public-seam unit tests and fixture assets
 ├── spec/                   Language-neutral JSON Schema contracts
 ├── scripts/                Build and release utilities
@@ -46,6 +47,7 @@ public exports → task area → canonical identity and protocol configuration
 public exports → effect area → canonical snapshots and protocol configuration
 public exports → formal area → canonical encoding and protocol configuration
 public exports → run area → task, provider, store, canonical snapshots, and protocol configuration
+public exports → workspace area → filesystem, Git, hashing, and protocol configuration
 build/release scripts → repository configuration
 tests → public exports
 ```
@@ -88,6 +90,8 @@ The runtime areas are intentionally shallow:
 - `task/` owns bodyless descriptor construction, inferred runtime schemas, validation snapshots,
   canonical task artifacts, exact artifact locks, and the independently migrated SQLite task
   registry.
+- `workspace/` owns protected initialization, baseline-adoption identity, Git-history preservation,
+  and fail-closed control-manifest validation.
 
 ## Module rules
 

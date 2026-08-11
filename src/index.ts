@@ -292,3 +292,12 @@ export type {
     TaskDescriptor,
     TaskRegistration,
 } from "./task/types.ts";
+export { WorkspaceControlError, WorkspaceInitializationConflictError } from "./workspace/errors.ts";
+export { initializeWorkspace, openWorkspace } from "./workspace/initialization.ts";
+export type {
+    WorkspaceAdoption,
+    WorkspaceAdoptionMode,
+    WorkspaceGitState,
+    WorkspaceInitializationOptions,
+    WorkspaceState,
+} from "./workspace/types.ts";

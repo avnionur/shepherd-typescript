@@ -9,6 +9,7 @@ import type {
     RecordIdConfig,
     RunProtocolConfig,
     TaskProtocolConfig,
+    WorkspaceProtocolConfig,
 } from "./config-types.ts";
 import { parseProtocolConfig } from "./config-validation.ts";
 import { RECORD_MODES } from "./values.generated.ts";
@@ -45,3 +46,6 @@ export const runProtocolConfig: RunProtocolConfig = protocolConfig.runs;
 
 /** Runtime task descriptor, schema, and artifact-lock protocol configuration. */
 export const taskProtocolConfig: TaskProtocolConfig = protocolConfig.tasks;
+
+/** Runtime workspace initialization and adoption configuration. */
+export const workspaceProtocolConfig: WorkspaceProtocolConfig = protocolConfig.workspaces;

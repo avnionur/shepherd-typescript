@@ -130,7 +130,8 @@ Goal: deliver the first useful settlement loop.
 
 Work:
 
-- implement workspace initialization and adoption;
+- implement workspace initialization and adoption identity; **implemented in 1.11.0**, with
+  retained file custody explicitly deferred to the reference copy carrier;
 - implement canonical binding roots and overlap rejection;
 - implement reference copy carrier;
 - implement Git-aware baseline and retained output custody;

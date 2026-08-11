@@ -7,6 +7,7 @@ import {
     FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
+    WORKSPACE_PROTOCOL_V1_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -45,6 +46,9 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.formalAssurance.proofEnvelope.runtimeOnlyProfile, "runtime_only");
     assert.equal(Object.isFrozen(parsed.formalAssurance), true);
     assert.equal(Object.isFrozen(FORMAL_ASSURANCE_V1_CONTRACT), true);
+    assert.equal(parsed.workspaces.defaultAdoptionMode, "worktree");
+    assert.equal(Object.isFrozen(parsed.workspaces), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
     assert.notEqual(
         parsed.kernel.rootWitness.body,
         objectAt(objectAt(config, "kernel"), "rootWitness").body,
@@ -638,6 +642,80 @@ test("protocol configuration rejects invalid or drifted formal assurance contrac
     ]);
 });
 
+test("protocol configuration rejects invalid or drifted workspace contracts", () => {
+    assertInvalid([
+        (config) => {
+            workspaceConfigOf(config).adoptionModes = [];
+        },
+        (config) => {
+            workspaceConfigOf(config).adoptionModes = ["none", "none"];
+        },
+        (config) => {
+            workspaceConfigOf(config).defaultAdoptionMode = "unknown";
+        },
+        (config) => {
+            workspaceConfigOf(config).defaultInitializeGit = "yes";
+        },
+        (config) => {
+            workspaceConfigOf(config).defaultInitializeGit = false;
+        },
+        (config) => {
+            workspaceConfigOf(config).digestAlgorithm = "md5";
+        },
+        (config) => {
+            workspaceConfigOf(config).hexLength = 63;
+        },
+        (config) => {
+            workspaceConfigOf(config).worktreeRefPrefix = "worktree:";
+        },
+        (config) => {
+            workspaceConfigOf(config).controlDirectory = "";
+        },
+        (config) => {
+            workspaceConfigOf(config).controlDirectory = ".";
+        },
+        (config) => {
+            workspaceConfigOf(config).controlDirectory = "..";
+        },
+        (config) => {
+            workspaceConfigOf(config).controlDirectory = "unsafe/path";
+        },
+        (config) => {
+            workspaceConfigOf(config).manifestFile = "unsafe\\path";
+        },
+        (config) => {
+            workspaceConfigOf(config).gitMetadataName = "../git";
+        },
+        (config) => {
+            workspaceConfigOf(config).gitMetadataName = "unsafe\0name";
+        },
+        (config) => {
+            workspaceConfigOf(config).controlDirectory = workspaceConfigOf(config).gitMetadataName;
+        },
+        (config) => {
+            workspaceConfigOf(config).manifestFile = workspaceConfigOf(config).controlDirectory;
+        },
+        (config) => {
+            workspaceConfigOf(config).format = "";
+        },
+        (config) => {
+            workspaceConfigOf(config).formatVersion = 0;
+        },
+        (config) => {
+            workspaceConfigOf(config).gitExecutable = "";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "errors").controlCode = "";
+        },
+        (config) => {
+            workspaceConfigOf(config).extra = true;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "errors").extra = true;
+        },
+    ]);
+});
+
 function assertInvalid(mutations: readonly Mutation[]): void {
     for (const mutate of mutations) {
         const config = structuredClone(validConfig);
@@ -684,6 +762,10 @@ function taskConfigOf(config: Record<string, unknown>): Record<string, unknown> 
 
 function taskRegistryConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(taskConfigOf(config), "registry");
+}
+
+function workspaceConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(config, "workspaces");
 }
 
 function proofEnvelopeConfigOf(config: Record<string, unknown>): Record<string, unknown> {

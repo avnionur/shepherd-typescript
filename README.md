@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.10.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.11.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -97,6 +97,8 @@ trace-record contracts with durable SQLite task and trace stores:
 - frozen proof-envelope classification with allowlisted, pinned-oracle static
   lowering evidence, exact theorem-metadata identity, fail-closed Core-0H sidecar admission, and
   explicit production-runtime non-claims;
+- protected workspace initialization with configured `none`, `git-head`, and `worktree` baseline
+  citations, no implicit Git history mutation, exact reuse, and fail-closed control metadata;
 - immutable finished, failed, exhausted, and cancelled run outcomes with exact task-lock
   provenance;
 - immutable ordered text/blob run artifacts and aggregate run-usage records correlated by run ID;
@@ -518,6 +520,8 @@ allowlisted conformance manifests. Core-0H activation remains disabled until a
 published sidecar is trusted, and local Lean artifact execution remains external. Dynamic handler
 scopes, live-provider adapters, settlement, scopes, live supervision, suffix replay, and the paper
 applications remain planned.
+Phase 3 workspace initialization and adoption identity are implemented. Canonical binding roots,
+retained copy-carrier custody, changesets, and settlement remain planned.
 
 ## Attribution
 

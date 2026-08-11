@@ -34,6 +34,7 @@ import {
     readUniqueStrings,
     sameStrings,
 } from "./config-value-readers.ts";
+import { readWorkspaceConfig } from "./config-workspaces.ts";
 
 type ParseProtocolConfigOptions = {
     readonly enforceCompatibility?: boolean;
@@ -56,6 +57,7 @@ export function parseProtocolConfig(
             "recordId",
             "runs",
             "tasks",
+            "workspaces",
         ],
         "protocol configuration",
     );
@@ -77,6 +79,7 @@ export function parseProtocolConfig(
         recordId,
         runs: readRunConfig(root.runs),
         tasks: readTaskConfig(root.tasks),
+        workspaces: readWorkspaceConfig(root.workspaces),
     };
     if (options.enforceCompatibility !== false) {
         assertSupportedProtocolCompatibility(config);

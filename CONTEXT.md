@@ -194,6 +194,16 @@ A globally idempotent canonical request to apply one safe recovery transition to
 execution evidence. Provider-boundary recovery additionally requires the current invocation fence.
 _Avoid_: Mutable run flag, provider replay permission, unretained retry request
 
+**Workspace Control State**:
+Versioned closed metadata under the configured `.vcscore` root that records initialization options
+and an adopted baseline citation without modifying ordinary workspace files or Git history.
+_Avoid_: Retained file carrier, Git repository alias, mutable user configuration
+
+**Workspace Adoption**:
+The configured choice to cite no baseline, an exact Git HEAD, or a content-addressed ordinary
+worktree. A worktree citation identifies content but does not itself retain the cited bytes.
+_Avoid_: Settlement, implicit commit, copy-carrier custody
+
 **Durable Resume Command**:
 A globally idempotent canonical request naming one exact suspension acknowledgement and its
 continuation descriptor. Successful application atomically acquires the next worker fence and

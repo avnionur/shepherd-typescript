@@ -61,7 +61,7 @@ and any applicable pinned upstream-oracle comparison.
 
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
 | --- | --- | --- | --- | --- |
-| Workspace initialization/adoption | shipped | substrate | P0 | empty/Git/worktree fixtures |
+| Workspace initialization/adoption | shipped | substrate | P0 | protected initialization, Git-history preservation, and TypeScript-owned empty/Git/worktree baseline identity implemented; retained custody and pinned dirty-worktree oracle parity follow the carrier slices |
 | Named disjoint bindings | shipped | scope binding | P0 | overlap refusal tests |
 | Retained world output | shipped | compatible | P0 | working tree remains unchanged |
 | Read-only changeset | shipped | required | P0 | file/mode/delete/symlink fixtures |

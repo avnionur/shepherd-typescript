@@ -189,6 +189,9 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedTraceClosureReasons = config.formalAssurance.referenceMachine.closureReasons
         .map((reason) => JSON.stringify(reason))
         .join(", ");
+    const renderedWorkspaceAdoptionModes = config.workspaces.adoptionModes
+        .map((mode) => JSON.stringify(mode))
+        .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -312,6 +315,9 @@ export const DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES = [${renderedClaimStatu
 
 /** Configured claim-guarded append result statuses. @public */
 export const DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES = [${renderedClaimAppendStatuses}] as const;
+
+/** Configured workspace baseline-adoption modes. @public */
+export const WORKSPACE_ADOPTION_MODES = [${renderedWorkspaceAdoptionModes}] as const;
 `;
 }
 

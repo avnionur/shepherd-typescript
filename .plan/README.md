@@ -142,6 +142,8 @@ record and public API must declare a protocol/compatibility version.
   deliverables, dependencies, and acceptance criteria.
 - [Phase 2 exit audit](./phase-2-exit-audit.md) — production-seam evidence, resolved phase-boundary
   mismatch, and the handoff into workspace initialization.
+- [Workspace initialization research](./workspace-initialization-research.md) — shipped init/adopt
+  contract, pinned-source boundaries, and explicit dirty-worktree oracle gaps.
 - [Testing and release](./testing-and-release.md) — conformance, property,
   security, recovery, performance, CI, and release gates.
 - [Decisions and risks](./decisions-and-risks.md) — adopted decisions,

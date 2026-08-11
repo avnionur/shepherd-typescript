@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-08-11
+
+### New Feature
+
+- Added `initializeWorkspace` and `openWorkspace` with configured `none`, `git-head`, and
+  content-addressed `worktree` baseline citations.
+- Added protected versioned `.vcscore` metadata, exact idempotent reuse, typed conflicts, Git HEAD
+  availability checks, and fail-closed symlink or malformed-control rejection.
+- Added optional Git initialization that creates no commit and preserves existing files, index,
+  refs, and dirty worktree state.
+
+### Impact
+
+Consumers can initialize and reopen a workspace without silently changing Git history and can cite
+the exact baseline selected for later retained-world custody. Copy-carrier storage and settlement
+remain separate Phase 3 capabilities.
+
 ## [1.10.1] - 2026-08-11
 
 ### Improvement

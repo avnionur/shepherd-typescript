@@ -160,3 +160,6 @@ export const DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES = ["acquired", "lost"] 
 
 /** Configured claim-guarded append result statuses. @public */
 export const DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES = ["committed", "fenced"] as const;
+
+/** Configured workspace baseline-adoption modes. @public */
+export const WORKSPACE_ADOPTION_MODES = ["none", "git-head", "worktree"] as const;

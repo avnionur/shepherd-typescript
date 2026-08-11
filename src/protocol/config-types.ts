@@ -565,6 +565,47 @@ export type RunProtocolConfig = {
     readonly usageVersion: number;
 };
 
+/** Validated workspace initialization and adoption protocol configuration. */
+export type WorkspaceProtocolConfig = {
+    /** Closed baseline-adoption modes. */
+    readonly adoptionModes: readonly string[];
+    /** Workspace-local protected control directory name. */
+    readonly controlDirectory: string;
+    /** Default baseline-adoption mode. */
+    readonly defaultAdoptionMode: string;
+    /** Whether initialization creates a Git repository when none contains the workspace. */
+    readonly defaultInitializeGit: boolean;
+    /** Secure digest algorithm for worktree baseline identity. */
+    readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
+    /** Stable public workspace error contract. */
+    readonly errors: {
+        /** Conflicting initialization error code. */
+        readonly conflictCode: string;
+        /** Conflicting initialization default message. */
+        readonly conflictMessage: string;
+        /** Invalid control state error code. */
+        readonly controlCode: string;
+        /** Invalid control state default message. */
+        readonly controlMessage: string;
+    };
+    /** Workspace-control manifest format name. */
+    readonly format: string;
+    /** Workspace-control manifest format version. */
+    readonly formatVersion: number;
+    /** Configured Git executable. */
+    readonly gitExecutable: string;
+    /** Prefix identifying an adopted Git HEAD baseline. */
+    readonly gitHeadRefPrefix: string;
+    /** Git administrative entry excluded from worktree content identity. */
+    readonly gitMetadataName: string;
+    /** Hexadecimal digest length for worktree baseline identity. */
+    readonly hexLength: number;
+    /** Workspace-control manifest filename. */
+    readonly manifestFile: string;
+    /** Prefix identifying an adopted worktree baseline. */
+    readonly worktreeRefPrefix: string;
+};
+
 /** Complete validated language-neutral protocol configuration. */
 export type ProtocolConfig = {
     readonly effects: EffectProtocolConfig;
@@ -575,4 +616,5 @@ export type ProtocolConfig = {
     readonly recordId: RecordIdConfig;
     readonly runs: RunProtocolConfig;
     readonly tasks: TaskProtocolConfig;
+    readonly workspaces: WorkspaceProtocolConfig;
 };
