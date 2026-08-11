@@ -449,22 +449,52 @@ function readRunningContinuationInspection(
         throw new TypeError("durable running continuation evidence is missing");
     }
     const resume = readDurableResumeCommand(command.body, runId);
-    const suspension = ownerRecords.find(
+    const sourceLifecycle = ownerRecords.find(
         (record) => record.envelope.record_id === resume.expected_lifecycle_record_id,
     );
     if (
         resume.continuation_descriptor_id !== descriptor.envelope.record_id ||
-        suspension === undefined ||
-        suspension.envelope.schema_ref !== runProtocolConfig.schemas.suspendedLifecycleId
+        sourceLifecycle === undefined ||
+        ![
+            runProtocolConfig.schemas.suspendedLifecycleId,
+            runProtocolConfig.schemas.waitingLifecycleId,
+        ].includes(sourceLifecycle.envelope.schema_ref)
     ) {
         throw new TypeError("durable resume command authority is inconsistent");
     }
+    if (sourceLifecycle.envelope.schema_ref === runProtocolConfig.schemas.waitingLifecycleId) {
+        const waiting = readRunDataObject(
+            sourceLifecycle.body,
+            [
+                "continuation_descriptor_id",
+                "execution_id",
+                "lifecycle_version",
+                "prerequisite",
+                "status",
+            ],
+            "durable resumed waiting lifecycle",
+        );
+        const prerequisite = readRunDataObject(
+            waiting.prerequisite,
+            ["kind", "prerequisite_id"],
+            "durable resumed waiting prerequisite",
+        );
+        if (
+            resume.prerequisite_satisfaction === undefined ||
+            prerequisite.kind !== resume.prerequisite_satisfaction.kind ||
+            prerequisite.prerequisite_id !== resume.prerequisite_satisfaction.prerequisite_id
+        ) {
+            throw new TypeError("durable waiting resume satisfaction is inconsistent");
+        }
+    } else if (resume.prerequisite_satisfaction !== undefined) {
+        throw new TypeError("durable suspension resume cites prerequisite satisfaction");
+    }
     assertDurableExecutionRecordContract(command, CAPTURE_MODE, ROOT_WITNESS_ID, [
-        suspension.envelope.record_id,
+        sourceLifecycle.envelope.record_id,
         descriptor.envelope.record_id,
     ]);
     assertDurableExecutionRecordContract(running, CAPTURE_MODE, ROOT_WITNESS_ID, [
-        suspension.envelope.record_id,
+        sourceLifecycle.envelope.record_id,
         descriptor.envelope.record_id,
         command.envelope.record_id,
     ]);
@@ -472,7 +502,7 @@ function readRunningContinuationInspection(
         quiescent: null,
         recordIds: Object.freeze([
             descriptor.envelope.record_id,
-            suspension.envelope.record_id,
+            sourceLifecycle.envelope.record_id,
             command.envelope.record_id,
             running.envelope.record_id,
         ]),

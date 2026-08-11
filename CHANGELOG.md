@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-08-11
+
+### New Feature
+
+- Added `acknowledgeDurableTaskWaiting` to atomically publish cut-bound prerequisite waiting
+  evidence, release the exact worker claim, and fence stale terminal publication.
+- Extended `resumeDurableTask` with exact prerequisite-satisfaction receipts for guarded waiting
+  resume while preserving suspension resume semantics.
+- Added restart replay, cross-connection races, malformed-evidence rejection, stale-head/fence
+  checks, and inspection coverage through the public durable-control seam.
+
+### Impact
+
+Checkpoint-capable workers can now enter a durable prerequisite-driven waiting state and resume
+only after independently verified evidence satisfies the exact retained prerequisite. Waiting
+acknowledgement and resume are idempotent across restart and do not invoke a provider or restore
+external state.
+
 ## [1.7.0] - 2026-08-11
 
 ### New Feature

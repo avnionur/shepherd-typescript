@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-11
 
-Current version: `1.7.0`
+Current version: `1.8.0`
 
 Current level: L0 — canonical model
 
@@ -55,8 +55,9 @@ Ordered checkpoint adapters now classify every configured continuation constitue
 mutation. At a proven safe boundary, command-authorized suspension atomically publishes the
 continuation descriptor and acknowledgement, releases the worker claim, and fences any returning
 worker from terminal publication.
-Globally idempotent resume commands now bind the exact suspension acknowledgement and continuation
-descriptor, reject unavailable constituents, atomically acquire the next monotonic worker fence,
+Globally idempotent resume commands now bind the exact waiting or suspension acknowledgement and
+continuation descriptor, reject unavailable constituents, require exact independently verified
+prerequisite-satisfaction evidence for waiting, atomically acquire the next monotonic worker fence,
 and publish a command-bound running acknowledgement across store reopen and connection races.
 Globally idempotent direct cancellation now binds exact created, waiting, or suspended lifecycle
 heads, atomically rejects authoritative workers, appends command-bound cancelled terminal
@@ -67,7 +68,9 @@ verified continuation constituents before either state can return to `running`. 
 transition matrix, continuation descriptor, waiting acknowledgement, and suspension
 acknowledgement are now published as versioned schemas with a pure public transition validator.
 Read-only durable inspection validates cut-bound waiting and suspension evidence plus exact
-resumed-running command/fence evidence without mutation. Runtime waiting remains unimplemented.
+resumed-running command/fence evidence without mutation. Prerequisite-driven waiting now atomically
+publishes cut-bound continuation and prerequisite evidence, releases the worker claim, fences stale
+terminal publication, and resumes only with matching satisfaction evidence.
 
 ## Progress
 
@@ -143,6 +146,8 @@ resumed-running command/fence evidence without mutation. Runtime waiting remains
 - [x] Add globally idempotent direct cancellation from exact created, waiting, and suspended heads
   with atomic inactive-worker validation, terminal publication, restart replay, corruption
   rejection, and stale-worker fencing.
+- [x] Add prerequisite-driven runtime waiting acknowledgement with atomic worker release and
+  guarded resume requiring exact independently verified prerequisite-satisfaction evidence.
 
 ## Verification required for this slice
 
@@ -154,8 +159,8 @@ resumed-running command/fence evidence without mutation. Runtime waiting remains
 
 ## Next slice
 
-Implement prerequisite-driven runtime waiting acknowledgement and guarded resume with exact
-waiting-head comparison and independently verified prerequisite-satisfaction evidence.
+Implement the Appendix B typed-effect reference machine and proof-envelope classifier with
+configured profiles, strengths, and fail-closed claim classification.
 
 ## Notes
 

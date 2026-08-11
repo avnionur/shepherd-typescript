@@ -12,6 +12,7 @@ import {
     readDurablePauseCommand,
     readDurableResumeCommand,
 } from "../run/durable-execution-control-codec.ts";
+import type { DurableExecutionPrerequisiteSatisfaction } from "../run/durable-execution-control-types.ts";
 import { assertDurableExecutionRecordContract } from "../run/durable-execution-recovery.ts";
 import { appendWithinTraceStoreTransaction } from "./append.ts";
 import { STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
@@ -218,6 +219,105 @@ export function appendDurableExecutionInactiveCancellation(
 }
 
 /**
+ * Atomically publishes waiting evidence and releases the exact current worker fence.
+ *
+ * @param database - Open trace-store database inside no caller-owned transaction.
+ * @param runId - Durable run reaching a prerequisite boundary.
+ * @param expectedLifecycleRecordId - Exact current running lifecycle record.
+ * @param fencingToken - Exact current invocation fencing token.
+ * @param traceCutId - Immutable cut through the expected lifecycle record.
+ * @param request - Canonical descriptor and waiting append request.
+ * @returns The committed or identically replayed append receipt.
+ * @throws {TraceStoreError} If worker, lifecycle, or cut authority is inconsistent.
+ * @throws {AppendIntentConflictError} If the intent already names different content.
+ * @internal
+ */
+export function appendDurableExecutionWaiting(
+    database: DatabaseSync,
+    runId: string,
+    expectedLifecycleRecordId: RecordId,
+    fencingToken: number,
+    traceCutId: string,
+    request: StoreAppendRequest,
+): AppendReceipt {
+    assertNonEmptyString(runId, "runId");
+    assertRecordId(expectedLifecycleRecordId, "expectedLifecycleRecordId");
+    assertNonEmptyString(traceCutId, "traceCutId");
+    if (!Number.isSafeInteger(fencingToken) || fencingToken <= 0) {
+        throw new TypeError("fencingToken must be a positive safe integer");
+    }
+    database.exec(STORE_TRANSACTION_SQL.begin);
+    try {
+        const existingIntent = database
+            .prepare(`SELECT 1 FROM ${STORE_TABLES.appendIntents} WHERE append_intent_id = ?`)
+            .get(request.append_intent_id);
+        if (existingIntent !== undefined) {
+            const receipt = appendWithinTraceStoreTransaction(database, request);
+            database.exec(STORE_TRANSACTION_SQL.commit);
+            return receipt;
+        }
+        const claim = database
+            .prepare(
+                `SELECT fencing_token, started FROM ${STORE_TABLES.durableExecutionClaims} WHERE run_id = ?`,
+            )
+            .get(runId) as StartedClaimRow | undefined;
+        if (claim === undefined || claim.started !== 1 || claim.fencing_token !== fencingToken) {
+            throw new TraceStoreError("durable waiting requires the current worker fence");
+        }
+        const cut = readStoredCut(database, traceCutId);
+        if (cut.target_owner_id !== runId || cut.through_record_id !== expectedLifecycleRecordId) {
+            throw new TraceStoreError("durable waiting trace cut is inconsistent");
+        }
+        const schemas = projectionProtocolConfig.executionHistory.executionSchemas;
+        const head = database
+            .prepare(
+                `SELECT view.owner_ordinal, record.schema_ref FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND view.record_id = ?`,
+            )
+            .get(runId, expectedLifecycleRecordId) as
+            | { readonly owner_ordinal: number; readonly schema_ref: string }
+            | undefined;
+        if (
+            head === undefined ||
+            ![schemas.started, runProtocolConfig.schemas.runningLifecycleId].includes(
+                head.schema_ref,
+            )
+        ) {
+            throw new TraceStoreError("durable waiting requires an exact running lifecycle head");
+        }
+        const laterLifecycle = database
+            .prepare(
+                `SELECT 1 FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND view.owner_ordinal > ? AND record.schema_ref IN (?, ?, ?, ?, ?, ?) LIMIT 1`,
+            )
+            .get(
+                runId,
+                head.owner_ordinal,
+                schemas.started,
+                schemas.completed,
+                schemas.failed,
+                runProtocolConfig.schemas.runningLifecycleId,
+                runProtocolConfig.schemas.waitingLifecycleId,
+                runProtocolConfig.schemas.suspendedLifecycleId,
+            );
+        if (laterLifecycle !== undefined) {
+            throw new TraceStoreError(
+                "durable waiting expected lifecycle record is no longer current",
+            );
+        }
+        const receipt = appendWithinTraceStoreTransaction(database, request);
+        database
+            .prepare(
+                `UPDATE ${STORE_TABLES.durableExecutionClaims} SET lease_expires_at = 0, started = 0 WHERE run_id = ? AND fencing_token = ?`,
+            )
+            .run(runId, fencingToken);
+        database.exec(STORE_TRANSACTION_SQL.commit);
+        return receipt;
+    } catch (error) {
+        database.exec(STORE_TRANSACTION_SQL.rollback);
+        throw error;
+    }
+}
+
+/**
  * Atomically publishes suspension evidence and releases the exact current invocation fence.
  *
  * @param database - Open trace-store database inside no caller-owned transaction.
@@ -337,11 +437,12 @@ export function appendDurableExecutionSuspension(
  * @param database - Open trace-store database inside no caller-owned transaction.
  * @param runId - Durable run being resumed.
  * @param commandId - Globally idempotent resume command identity.
- * @param expectedLifecycleRecordId - Exact suspension acknowledgement expected as current.
- * @param continuationDescriptorRecordId - Exact continuation descriptor cited by suspension.
+ * @param expectedLifecycleRecordId - Exact waiting or suspension acknowledgement expected as current.
+ * @param continuationDescriptorRecordId - Exact continuation descriptor cited by the acknowledgement.
  * @param claimId - Deterministic new worker claim identity.
  * @param nowMilliseconds - Unix time used for deterministic lease creation.
  * @param leaseDurationMilliseconds - Configured positive lease duration.
+ * @param prerequisiteSatisfaction - Required matching evidence for waiting, otherwise null.
  * @returns Canonical command/running identities and the new worker authority.
  * @throws {TraceStoreError} If lifecycle, continuation, or claim evidence is inconsistent.
  * @throws {AppendIntentConflictError} If command identity already names different content.
@@ -356,6 +457,7 @@ export function appendDurableExecutionResume(
     claimId: string,
     nowMilliseconds: number,
     leaseDurationMilliseconds: number,
+    prerequisiteSatisfaction: DurableExecutionPrerequisiteSatisfaction | null = null,
 ): DurableExecutionResumeAppend {
     assertNonEmptyString(runId, "runId");
     assertNonEmptyString(commandId, "commandId");
@@ -393,7 +495,11 @@ export function appendDurableExecutionResume(
                 command.continuation_descriptor_id !== continuationDescriptorRecordId ||
                 running.continuation_descriptor_id !== continuationDescriptorRecordId ||
                 running.resume_command_id !== commandRecord.envelope.record_id ||
-                running.claim_id !== claimId
+                running.claim_id !== claimId ||
+                !matchesPrerequisiteSatisfaction(
+                    command.prerequisite_satisfaction,
+                    prerequisiteSatisfaction,
+                )
             ) {
                 throw new TraceStoreError("durable resume command identity conflicts with content");
             }
@@ -406,6 +512,7 @@ export function appendDurableExecutionResume(
                 claimId,
                 running.fencing_token,
                 running.lease_expires_at,
+                prerequisiteSatisfaction,
             );
             const receipt = appendWithinTraceStoreTransaction(database, request);
             database.exec(STORE_TRANSACTION_SQL.commit);
@@ -417,28 +524,70 @@ export function appendDurableExecutionResume(
                 running.lease_expires_at,
             );
         }
-        const suspension = readOwnedRecord(database, runId, expectedLifecycleRecordId);
+        const lifecycle = readOwnedRecord(database, runId, expectedLifecycleRecordId);
         const descriptor = readOwnedRecord(database, runId, continuationDescriptorRecordId);
         if (
-            suspension.envelope.schema_ref !== runProtocolConfig.schemas.suspendedLifecycleId ||
+            ![
+                runProtocolConfig.schemas.suspendedLifecycleId,
+                runProtocolConfig.schemas.waitingLifecycleId,
+            ].includes(lifecycle.envelope.schema_ref) ||
             descriptor.envelope.schema_ref !== runProtocolConfig.schemas.continuationDescriptorId
         ) {
             throw new TraceStoreError("durable resume lifecycle evidence has an invalid schema");
         }
-        const suspensionBody = readExactDataObject(suspension.body, [
-            "continuation_descriptor_id",
-            "execution_id",
-            "lifecycle_version",
-            "pause_command_id",
-            "status",
-        ]);
+        const waiting =
+            lifecycle.envelope.schema_ref === runProtocolConfig.schemas.waitingLifecycleId;
+        const lifecycleBody = readExactDataObject(
+            lifecycle.body,
+            waiting
+                ? [
+                      "continuation_descriptor_id",
+                      "execution_id",
+                      "lifecycle_version",
+                      "prerequisite",
+                      "status",
+                  ]
+                : [
+                      "continuation_descriptor_id",
+                      "execution_id",
+                      "lifecycle_version",
+                      "pause_command_id",
+                      "status",
+                  ],
+        );
         if (
-            suspensionBody.execution_id !== runId ||
-            suspensionBody.status !== runProtocolConfig.execution.lifecycleSuspendedStatus ||
-            suspensionBody.lifecycle_version !== runProtocolConfig.execution.lifecycleVersion ||
-            suspensionBody.continuation_descriptor_id !== continuationDescriptorRecordId
+            lifecycleBody.execution_id !== runId ||
+            lifecycleBody.status !==
+                (waiting
+                    ? runProtocolConfig.execution.lifecycleWaitingStatus
+                    : runProtocolConfig.execution.lifecycleSuspendedStatus) ||
+            lifecycleBody.lifecycle_version !== runProtocolConfig.execution.lifecycleVersion ||
+            lifecycleBody.continuation_descriptor_id !== continuationDescriptorRecordId
         ) {
-            throw new TraceStoreError("durable resume suspension acknowledgement is inconsistent");
+            throw new TraceStoreError("durable resume lifecycle acknowledgement is inconsistent");
+        }
+        if (waiting) {
+            const prerequisite = readExactDataObject(lifecycleBody.prerequisite, [
+                "kind",
+                "prerequisite_id",
+            ]);
+            if (
+                prerequisiteSatisfaction === null ||
+                prerequisite.kind !== prerequisiteSatisfaction.kind ||
+                prerequisite.prerequisite_id !== prerequisiteSatisfaction.prerequisite_id
+            ) {
+                throw new TraceStoreError(
+                    "durable waiting resume prerequisite evidence is inconsistent",
+                );
+            }
+            assertNonEmptyString(
+                prerequisiteSatisfaction.receipt_id,
+                "waiting prerequisite satisfaction receipt identity",
+            );
+        } else if (prerequisiteSatisfaction !== null) {
+            throw new TraceStoreError(
+                "durable suspension resume must not cite prerequisite satisfaction",
+            );
         }
         const descriptorBody = assertResumableDescriptor(descriptor.body, runId);
         assertNonEmptyString(descriptorBody.trace_cut_id, "resume continuation trace cut identity");
@@ -449,26 +598,33 @@ export function appendDurableExecutionResume(
         assertDurableExecutionRecordContract(descriptor, CAPTURE_MODE, ROOT_WITNESS_ID, [
             cut.created_by_record_id,
         ]);
-        assertRecordId(suspensionBody.pause_command_id, "resume pause command identity");
-        const pause = readOwnedRecord(database, runId, suspensionBody.pause_command_id);
-        if (pause.envelope.schema_ref !== runProtocolConfig.execution.controlCommandSchemaId) {
-            throw new TraceStoreError("durable resume pause command schema is inconsistent");
+        if (waiting) {
+            assertDurableExecutionRecordContract(lifecycle, CAPTURE_MODE, ROOT_WITNESS_ID, [
+                cut.through_record_id,
+                descriptor.envelope.record_id,
+            ]);
+        } else {
+            assertRecordId(lifecycleBody.pause_command_id, "resume pause command identity");
+            const pause = readOwnedRecord(database, runId, lifecycleBody.pause_command_id);
+            if (pause.envelope.schema_ref !== runProtocolConfig.execution.controlCommandSchemaId) {
+                throw new TraceStoreError("durable resume pause command schema is inconsistent");
+            }
+            const pauseBody = readDurablePauseCommand(pause.body, runId);
+            if (pauseBody.expected_lifecycle_record_id !== cut.through_record_id) {
+                throw new TraceStoreError("durable resume pause command boundary is inconsistent");
+            }
+            assertDurableExecutionRecordContract(pause, CAPTURE_MODE, ROOT_WITNESS_ID, [
+                cut.through_record_id,
+            ]);
+            assertDurableExecutionRecordContract(lifecycle, CAPTURE_MODE, ROOT_WITNESS_ID, [
+                cut.through_record_id,
+                pause.envelope.record_id,
+                descriptor.envelope.record_id,
+            ]);
         }
-        const pauseBody = readDurablePauseCommand(pause.body, runId);
-        if (pauseBody.expected_lifecycle_record_id !== cut.through_record_id) {
-            throw new TraceStoreError("durable resume pause command boundary is inconsistent");
-        }
-        assertDurableExecutionRecordContract(pause, CAPTURE_MODE, ROOT_WITNESS_ID, [
-            cut.through_record_id,
-        ]);
-        assertDurableExecutionRecordContract(suspension, CAPTURE_MODE, ROOT_WITNESS_ID, [
-            cut.through_record_id,
-            pause.envelope.record_id,
-            descriptor.envelope.record_id,
-        ]);
-        if (suspension.view.append_intent_id !== descriptor.view.append_intent_id) {
+        if (lifecycle.view.append_intent_id !== descriptor.view.append_intent_id) {
             throw new TraceStoreError(
-                "durable resume suspension and descriptor must share one append transaction",
+                "durable resume lifecycle and descriptor must share one append transaction",
             );
         }
         const schemas = projectionProtocolConfig.executionHistory.executionSchemas;
@@ -502,7 +658,7 @@ export function appendDurableExecutionResume(
             )
             .get(runId) as StartedClaimRow | undefined;
         if (claim === undefined || claim.started !== 0) {
-            throw new TraceStoreError("durable resume requires a released suspended worker claim");
+            throw new TraceStoreError("durable resume requires a released quiescent worker claim");
         }
         const fencingToken = claim.fencing_token + 1;
         const leaseExpiresAt = nowMilliseconds + leaseDurationMilliseconds;
@@ -520,6 +676,7 @@ export function appendDurableExecutionResume(
             claimId,
             fencingToken,
             leaseExpiresAt,
+            prerequisiteSatisfaction,
         );
         const receipt = appendWithinTraceStoreTransaction(database, request);
         database
@@ -550,12 +707,14 @@ function createResumeAppendRequest(
     claimId: string,
     fencingToken: number,
     leaseExpiresAt: number,
+    prerequisiteSatisfaction: DurableExecutionPrerequisiteSatisfaction | null,
 ): StoreAppendRequest {
     const commandBody = createDurableResumeCommand(
         runId,
         commandId,
         expectedLifecycleRecordId,
         continuationDescriptorRecordId,
+        prerequisiteSatisfaction,
     );
     const commandLocalId = createRecordId({ durable_resume_command_id: commandId });
     const commandRecordId = createRecordEnvelope({
@@ -613,6 +772,20 @@ function createResumeAppendRequest(
             ],
         },
     };
+}
+
+function matchesPrerequisiteSatisfaction(
+    retained: DurableExecutionPrerequisiteSatisfaction | undefined,
+    requested: DurableExecutionPrerequisiteSatisfaction | null,
+): boolean {
+    if (retained === undefined || requested === null) {
+        return retained === undefined && requested === null;
+    }
+    return (
+        retained.kind === requested.kind &&
+        retained.prerequisite_id === requested.prerequisite_id &&
+        retained.receipt_id === requested.receipt_id
+    );
 }
 
 function readOwnedRecord(database: DatabaseSync, runId: string, recordId: RecordId): OwnerRecord {

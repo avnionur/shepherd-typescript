@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.7.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.8.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -117,8 +117,11 @@ trace-record contracts with durable SQLite task and trace stores:
 - configured checkpoint constituent adapters and atomic command-authorized suspension
   acknowledgement that publishes continuation evidence, releases the worker claim, and fences
   stale terminal publication;
-- globally idempotent resume commands bound to the exact suspension and continuation descriptor,
-  with unavailable-evidence rejection, atomic monotonic fencing, and a command-bound running
+- prerequisite-driven waiting acknowledgement that publishes cut-bound continuation and
+  prerequisite evidence while atomically releasing and fencing the worker;
+- globally idempotent resume commands bound to the exact waiting or suspension acknowledgement
+  and continuation descriptor, with guarded prerequisite-satisfaction evidence for waiting,
+  unavailable-evidence rejection, atomic monotonic fencing, and a command-bound running
   acknowledgement;
 - globally idempotent direct cancellation from created, waiting, and suspended lifecycle heads,
   with atomic exact-head comparison, inactive-worker proof, terminal publication, claim expiry,
@@ -495,15 +498,19 @@ bind safe pre-start resume and terminal-cut repair to canonical command evidence
 idempotent pause requests bind exact running-head and fencing-token authority without changing the
 lifecycle. Configured checkpoint adapters and safe-boundary suspension acknowledgement now publish
 cut-bound continuation evidence while atomically releasing and fencing the worker. Exact resume
-commands validate that evidence, acquire the next worker fence, and publish resumed-running
-authority without invoking a provider or restoring external state. Globally idempotent cancellation
+commands validate that evidence, and prerequisite-driven waiting acknowledgement now publishes
+the same cut-bound continuation evidence plus an exact prerequisite while atomically releasing
+the worker. Waiting resume additionally requires independently verified matching satisfaction.
+Both resume paths acquire the next worker fence and publish resumed-running authority without
+invoking a provider or restoring external state. Globally idempotent cancellation
 commands now bind the exact running head and fence; the current worker can acknowledge them at a
 safe boundary while atomically publishing a cancelled terminal and releasing its claim. The
 same command authority now terminalizes exact created, waiting, or suspended heads only when no
 worker remains authoritative, with exact replay across restart and stale-head rejection. The
 normative lifecycle matrix and continuation/waiting/suspension/running schemas are implemented.
-Runtime waiting, dynamic handler scopes, live-provider adapters, settlement, scopes, live
-supervision, suffix replay, and the paper applications remain planned.
+The Appendix B typed-effect reference machine and proof-envelope classifier, dynamic handler
+scopes, live-provider adapters, settlement, scopes, live supervision, suffix replay, and the paper
+applications remain planned.
 
 ## Attribution
 

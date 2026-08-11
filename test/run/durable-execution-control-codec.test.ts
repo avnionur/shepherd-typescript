@@ -48,12 +48,49 @@ test("durable resume command codec binds command, suspension, descriptor, and ru
         ROOT_WITNESS_ID,
     );
     assert.deepEqual({ ...readDurableResumeCommand(command, "run:resume-command-codec") }, command);
+    const waitingCommand = createDurableResumeCommand(
+        "run:resume-command-codec",
+        "command:resume-waiting-codec",
+        ROOT_WITNESS_ID,
+        ROOT_WITNESS_ID,
+        {
+            kind: "approval",
+            prerequisite_id: "approval:codec",
+            receipt_id: "receipt:approval:codec",
+        },
+    );
+    assert.deepEqual(
+        { ...readDurableResumeCommand(waitingCommand, "run:resume-command-codec") },
+        waitingCommand,
+    );
     for (const malformed of [
         { ...command, command_id: "" },
         { ...command, command_kind: "unsupported" },
         { ...command, execution_id: "run:other" },
         { ...command, expected_lifecycle_record_id: "invalid" },
         { ...command, continuation_descriptor_id: "invalid" },
+        { ...waitingCommand, prerequisite_satisfaction: null },
+        {
+            ...waitingCommand,
+            prerequisite_satisfaction: {
+                ...waitingCommand.prerequisite_satisfaction,
+                kind: "",
+            },
+        },
+        {
+            ...waitingCommand,
+            prerequisite_satisfaction: {
+                ...waitingCommand.prerequisite_satisfaction,
+                prerequisite_id: "",
+            },
+        },
+        {
+            ...waitingCommand,
+            prerequisite_satisfaction: {
+                ...waitingCommand.prerequisite_satisfaction,
+                receipt_id: "",
+            },
+        },
     ]) {
         assert.throws(
             () => readDurableResumeCommand(malformed, "run:resume-command-codec"),

@@ -42,10 +42,22 @@ export type DurableExecutionResumeCommand = {
     readonly command_kind: (typeof DURABLE_EXECUTION_CONTROL_COMMAND_KINDS)[2];
     /** Exact continuation descriptor authorizing restoration. */
     readonly continuation_descriptor_id: RecordId;
-    /** Durable run whose suspended lifecycle is targeted. */
+    /** Durable run whose waiting or suspended lifecycle is targeted. */
     readonly execution_id: string;
-    /** Exact suspension acknowledgement expected by the caller. */
+    /** Exact waiting or suspension acknowledgement expected by the caller. */
     readonly expected_lifecycle_record_id: RecordId;
+    /** Verified satisfaction required when the source lifecycle is waiting. */
+    readonly prerequisite_satisfaction?: DurableExecutionPrerequisiteSatisfaction;
+};
+
+/** Canonical prerequisite-satisfaction evidence retained by a waiting resume command. */
+export type DurableExecutionPrerequisiteSatisfaction = {
+    /** Application-defined prerequisite family. */
+    readonly kind: string;
+    /** Stable prerequisite identity copied from the waiting acknowledgement. */
+    readonly prerequisite_id: string;
+    /** Stable independently verified satisfaction receipt identity. */
+    readonly receipt_id: string;
 };
 
 /** Canonical semantic body retained for one durable cancellation request. */
@@ -221,14 +233,60 @@ export type DurableTaskSuspensionReceipt = {
     readonly trace_cut_id: string;
 };
 
-/** Options for atomically resuming one exactly suspended durable task. */
+/** Prerequisite that makes a durable running task quiescent. */
+export type DurableTaskWaitingPrerequisite = {
+    /** Application-defined prerequisite family. */
+    readonly kind: string;
+    /** Stable identity used to correlate later satisfaction evidence. */
+    readonly prerequisiteId: string;
+};
+
+/** Options for atomically acknowledging prerequisite-driven durable waiting. */
+export type DurableTaskWaitingOptions = {
+    /** Exact checkpoint evidence previously returned by the configured adapters. */
+    readonly constituents: readonly RunContinuationCheckpointEvidence[];
+    /** Exact current running lifecycle record. */
+    readonly expectedLifecycleRecordId: RecordId;
+    /** Exact current invocation fencing token. */
+    readonly fencingToken: number;
+    /** Explicit prerequisite that must be satisfied before resume. */
+    readonly prerequisite: DurableTaskWaitingPrerequisite;
+    /** Durable run whose worker reached the safe boundary. */
+    readonly runId: string;
+    /** Stable immutable cut identity through the running boundary. */
+    readonly traceCutId: string;
+};
+
+/** Canonical descriptor and acknowledgement retained for one waiting run. */
+export type DurableTaskWaitingReceipt = {
+    /** Canonical waiting-acknowledgement record identity. */
+    readonly acknowledgement_record_id: RecordId;
+    /** Canonical continuation-descriptor record identity. */
+    readonly continuation_descriptor_record_id: RecordId;
+    /** Stable immutable cut identity cited by the continuation descriptor. */
+    readonly trace_cut_id: string;
+};
+
+/** Prerequisite-satisfaction evidence supplied to a guarded waiting resume. */
+export type DurableTaskPrerequisiteSatisfaction = {
+    /** Application-defined prerequisite family. */
+    readonly kind: string;
+    /** Stable prerequisite identity copied from the waiting acknowledgement. */
+    readonly prerequisiteId: string;
+    /** Stable independently verified satisfaction receipt identity. */
+    readonly receiptId: string;
+};
+
+/** Options for atomically resuming one exact suspended or satisfied waiting durable task. */
 export type DurableTaskResumeOptions = {
     /** Stable identity reused for every retry of this exact resume request. */
     readonly commandId: string;
-    /** Exact continuation descriptor cited by the suspension acknowledgement. */
+    /** Exact continuation descriptor cited by the quiescent acknowledgement. */
     readonly continuationDescriptorRecordId: RecordId;
-    /** Exact suspension acknowledgement expected as the lifecycle head. */
+    /** Exact waiting or suspension acknowledgement expected as the lifecycle head. */
     readonly expectedLifecycleRecordId: RecordId;
+    /** Required matching satisfaction receipt when the expected lifecycle is waiting. */
+    readonly prerequisiteSatisfaction?: DurableTaskPrerequisiteSatisfaction;
     /** Durable run being resumed. */
     readonly runId: string;
 };

@@ -52,14 +52,15 @@ descriptor and a content-addressed pause-command record. The running-continuatio
 resumed execution to the exact descriptor, resume command, claim, fencing token, and lease. All are
 closed versioned record bodies.
 
-These schemas do not make the current one-shot executor pausable. Read-only durable
-inspection validates cut-bound waiting and suspension evidence. The runtime can retain a globally
-idempotent pause request, collect configured checkpoint evidence, and atomically publish a
-command-bound suspension acknowledgement while releasing the exact current worker fence. It can
-then validate an exact resume command, reject unavailable evidence, acquire the next monotonic
-fence, and publish running authority without invoking a provider. Runtime waiting remains a gated
-slice in the proposed
-[`normative-run-lifecycle.md`](../.plan/normative-run-lifecycle.md) contract.
+These schemas do not make the current one-shot executor automatically pausable or restorable.
+Read-only durable inspection validates cut-bound waiting and suspension evidence. The runtime can
+retain a globally idempotent pause request, collect configured checkpoint evidence, and atomically
+publish either a command-bound suspension acknowledgement or prerequisite-driven waiting
+acknowledgement while releasing the exact current worker fence. It then validates an exact resume
+command, rejects unavailable evidence, requires independently verified matching prerequisite
+satisfaction for waiting, acquires the next monotonic fence, and publishes running authority
+without invoking a provider or restoring external state. The remaining lifecycle work is tracked
+in the proposed [`normative-run-lifecycle.md`](../.plan/normative-run-lifecycle.md) contract.
 
 ## Configuration
 

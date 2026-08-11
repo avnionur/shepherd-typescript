@@ -85,12 +85,27 @@ conflicts. A returning worker's terminal append is claim-fenced, so it cannot pu
 evidence after suspension released its authority. A failed acknowledgement may leave an unused
 immutable cut publication, but never partial descriptor, acknowledgement, or lease-release state.
 
+## Waiting acknowledgement
+
+`acknowledgeDurableTaskWaiting(store, options)` records a prerequisite-driven quiescent boundary
+without requiring a pause command. After the worker reaches a safe boundary, it supplies the exact
+current running head and fence, an application-defined prerequisite kind and stable prerequisite
+identity, and available evidence for every configured continuation constituent.
+
+The operation publishes an immutable cut through the running head, then atomically validates the
+head, cut, claim, fence, and continuation evidence; appends the continuation descriptor and waiting
+acknowledgement; and releases the claim. Exact replay returns the retained identities across store
+reopen. Changed evidence conflicts, stale heads or fences fail closed, and the released worker
+cannot later publish terminal evidence.
+
 ## Resume
 
 `resumeDurableTask(store, options)` applies one globally idempotent `resume` command to the exact
-suspension acknowledgement and continuation descriptor named by the caller. The store transaction
-validates their ownership, configured schemas, identities, current-head position, and constituent
-classifications. Any `unavailable` constituent fails closed.
+waiting or suspension acknowledgement and continuation descriptor named by the caller. The store
+transaction validates their ownership, configured schemas, identities, current-head position, and
+constituent classifications. Any `unavailable` constituent fails closed. Waiting additionally
+requires a non-empty independently verified receipt whose kind and prerequisite identity exactly
+match the retained waiting acknowledgement; suspension rejects prerequisite-satisfaction evidence.
 
 On success the transaction advances the released claim to a new deterministic claim identity and
 monotonic fencing token, creates a configured lease, and appends the canonical command plus a
@@ -146,12 +161,14 @@ descriptor without rerunning checkpoint adapters. Competing cancellation command
 requests, but only the command cited by the first cancelled terminal can acknowledge successfully;
 the deterministic loser cannot rewrite that result. After resume acquires a new fence, pause or
 cancel requests carrying the previous head/token fail closed. A `verified` continuation
-constituent without its required receipt cannot authorize resume.
+constituent without its required receipt cannot authorize resume. Waiting resume without an exact
+matching prerequisite-satisfaction receipt also fails before new worker authority is acquired.
 
 ## Scope
 
 Recovery, pause-request retention, checkpoint adapter contracts, command-authorized suspension,
-exact resume authority, fenced running cancellation, and direct created/waiting/suspended
-cancellation are implemented. Runtime waiting remains unavailable. These APIs do not forcibly
-stop a process, infer a safe boundary, or make an uncertain started provider call replay-safe;
-adapters and the calling worker own the safe-boundary assertion.
+prerequisite-driven waiting acknowledgement, guarded waiting/suspension resume authority, fenced
+running cancellation, and direct created/waiting/suspended cancellation are implemented. These
+APIs do not forcibly stop a process, infer a safe boundary, verify an external prerequisite by
+themselves, or make an uncertain started provider call replay-safe; adapters and the calling
+worker own the safe-boundary assertion and external receipt verification.

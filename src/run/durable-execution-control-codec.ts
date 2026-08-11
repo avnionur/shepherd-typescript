@@ -5,6 +5,7 @@ import type {
     DurableExecutionCancellationCommand,
     DurableExecutionInactiveCancellationCommand,
     DurableExecutionPauseCommand,
+    DurableExecutionPrerequisiteSatisfaction,
     DurableExecutionRecoveryCommand,
     DurableExecutionResumeCommand,
 } from "./durable-execution-control-types.ts";
@@ -107,10 +108,11 @@ export function readDurableCancellationCommand(
 /**
  * Creates one canonical durable resume-command body.
  *
- * @param runId - Suspended durable run to resume.
+ * @param runId - Waiting or suspended durable run to resume.
  * @param commandId - Globally idempotent caller command identity.
- * @param expectedLifecycleRecordId - Exact suspension acknowledgement expected by the caller.
- * @param continuationDescriptorRecordId - Exact continuation descriptor cited by suspension.
+ * @param expectedLifecycleRecordId - Exact quiescent acknowledgement expected by the caller.
+ * @param continuationDescriptorRecordId - Exact continuation descriptor cited by the acknowledgement.
+ * @param prerequisiteSatisfaction - Matching evidence required for waiting, otherwise null.
  * @returns The canonical resume-command semantic body.
  * @internal
  */
@@ -119,6 +121,7 @@ export function createDurableResumeCommand(
     commandId: string,
     expectedLifecycleRecordId: string,
     continuationDescriptorRecordId: string,
+    prerequisiteSatisfaction: DurableExecutionPrerequisiteSatisfaction | null = null,
 ): DurableExecutionResumeCommand & SemanticRecord {
     return {
         command_id: commandId,
@@ -126,6 +129,9 @@ export function createDurableResumeCommand(
         continuation_descriptor_id: continuationDescriptorRecordId,
         execution_id: runId,
         expected_lifecycle_record_id: expectedLifecycleRecordId,
+        ...(prerequisiteSatisfaction === null
+            ? {}
+            : { prerequisite_satisfaction: prerequisiteSatisfaction }),
     };
 }
 
@@ -152,6 +158,7 @@ export function readDurableResumeCommand(
             "expected_lifecycle_record_id",
         ],
         "durable resume command",
+        ["prerequisite_satisfaction"],
     );
     assertRunText(body.command_id, "durable resume command identity");
     assertRecordId(
@@ -161,6 +168,20 @@ export function readDurableResumeCommand(
     assertRecordId(body.expected_lifecycle_record_id, "durable resume lifecycle identity");
     if (body.command_kind !== RESUME_COMMAND_KIND || body.execution_id !== runId) {
         throw new TypeError("durable resume command payload is inconsistent");
+    }
+    if (body.prerequisite_satisfaction === undefined) {
+        const { prerequisite_satisfaction: _omitted, ...command } = body;
+        return command as DurableExecutionResumeCommand;
+    }
+    {
+        const satisfaction = readRunDataObject(
+            body.prerequisite_satisfaction,
+            ["kind", "prerequisite_id", "receipt_id"],
+            "durable resume prerequisite satisfaction",
+        );
+        assertRunText(satisfaction.kind, "durable resume prerequisite kind");
+        assertRunText(satisfaction.prerequisite_id, "durable resume prerequisite identity");
+        assertRunText(satisfaction.receipt_id, "durable resume prerequisite receipt identity");
     }
     return body as DurableExecutionResumeCommand;
 }

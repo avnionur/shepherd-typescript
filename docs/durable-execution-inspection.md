@@ -47,13 +47,16 @@ caused by a published cut record whose cut targets the run through its retained 
 The acknowledgement must cite that start and descriptor; suspension also cites an existing
 owner-local pause-command record whose configured schema, mode, witness, run binding, expected
 started head, and command body validate, while waiting exposes its exact prerequisite descriptor.
-A resumed-running record must cite the exact suspension, descriptor, and canonical resume command;
-its positive fencing token and lease are validated before inspection exposes its identity.
+A resumed-running record must cite the exact waiting or suspension acknowledgement, descriptor,
+and canonical resume command. Waiting resume also requires command evidence whose satisfaction
+kind and prerequisite identity match the acknowledgement and whose receipt is non-empty;
+suspension resume rejects that evidence. The positive fencing token and lease are validated before
+inspection exposes the running identity.
 
-This remains descriptive validation. The runtime can now publish suspension evidence only through
-the exact pause/head/fence acknowledgement transaction, but inspection itself does not rerun
-checkpoint adapters, restore external state, or prove external receipt contents. Unavailable
-continuation constituents are not resumable.
+This remains descriptive validation. The runtime publishes waiting or suspension evidence only
+through the exact head/fence acknowledgement transaction, but inspection itself does not rerun
+checkpoint adapters, restore external state, or independently prove external receipt contents.
+Unavailable continuation constituents are not resumable.
 
 The function throws `TypeError` for an invalid run ID and `TraceStoreError` for missing, malformed,
 unavailable, or inconsistent retained evidence. An incomplete `started` view remains observable,

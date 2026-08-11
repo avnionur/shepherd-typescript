@@ -14,6 +14,7 @@ import { kernelProtocolConfig, runProtocolConfig } from "../protocol/config.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { createConfiguredRootWitness } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
+import type { DurableExecutionPrerequisiteSatisfaction } from "../run/durable-execution-control-types.ts";
 import { appendToTraceStore } from "./append.ts";
 import { diagnoseStoredAppend } from "./append-recovery.ts";
 import { resolveBlobDirectory } from "./blob-options.ts";
@@ -31,6 +32,7 @@ import {
     appendDurableExecutionResume,
     appendDurableExecutionRunningControlCommand,
     appendDurableExecutionSuspension,
+    appendDurableExecutionWaiting,
 } from "./durable-execution-control.ts";
 import { TraceStoreError } from "./errors.ts";
 import { verifyTraceStoreIntegrity } from "./integrity.ts";
@@ -323,14 +325,46 @@ export class SQLiteTraceStore implements Disposable {
     }
 
     /**
+     * Atomically appends waiting evidence and releases the exact running fence.
+     *
+     * @param runId - Durable run reaching a prerequisite boundary.
+     * @param expectedLifecycleRecordId - Exact current running lifecycle record.
+     * @param fencingToken - Exact current invocation fencing token.
+     * @param traceCutId - Immutable cut through the expected lifecycle record.
+     * @param request - Canonical descriptor and waiting append request.
+     * @returns The committed or identically replayed append receipt.
+     * @throws {TraceStoreError} If the store is closed or authority is inconsistent.
+     * @throws {AppendIntentConflictError} If the intent already names different content.
+     * @internal
+     */
+    appendDurableExecutionWaiting(
+        runId: string,
+        expectedLifecycleRecordId: RecordId,
+        fencingToken: number,
+        traceCutId: string,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return appendDurableExecutionWaiting(
+            this.#database,
+            runId,
+            expectedLifecycleRecordId,
+            fencingToken,
+            traceCutId,
+            request,
+        );
+    }
+
+    /**
      * Atomically acquires resumed worker authority and publishes running continuation evidence.
      *
      * @param runId - Durable run being resumed.
      * @param commandId - Globally idempotent resume command identity.
-     * @param expectedLifecycleRecordId - Exact suspension acknowledgement expected as current.
-     * @param continuationDescriptorRecordId - Exact descriptor cited by suspension.
+     * @param expectedLifecycleRecordId - Exact waiting or suspension acknowledgement expected.
+     * @param continuationDescriptorRecordId - Exact descriptor cited by the acknowledgement.
      * @param claimId - Deterministic new worker claim identity.
      * @param nowMilliseconds - Unix time used for lease creation.
+     * @param prerequisiteSatisfaction - Required matching evidence for waiting, otherwise null.
      * @returns Canonical command/running identities and new worker authority.
      * @throws {TraceStoreError} If the store is closed or retained authority is inconsistent.
      * @internal
@@ -342,6 +376,7 @@ export class SQLiteTraceStore implements Disposable {
         continuationDescriptorRecordId: RecordId,
         claimId: string,
         nowMilliseconds = Date.now(),
+        prerequisiteSatisfaction: DurableExecutionPrerequisiteSatisfaction | null = null,
     ): DurableExecutionResumeAppend {
         this.#assertOpen();
         return appendDurableExecutionResume(
@@ -353,6 +388,7 @@ export class SQLiteTraceStore implements Disposable {
             claimId,
             nowMilliseconds,
             runProtocolConfig.execution.invocationClaimLeaseMilliseconds,
+            prerequisiteSatisfaction,
         );
     }
 

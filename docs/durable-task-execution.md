@@ -101,14 +101,19 @@ Inspection uses the same fail-closed recovery validation, does not invoke provid
 records, and never creates a second runtime authority. Committed views are derived from the exact
 terminal causal chain and remain unchanged by later records owned by the run.
 
-## Suspension and resume authority
+## Waiting, suspension, and resume authority
 
 An acknowledged suspension releases and fences the current worker only after its configured
-checkpoint evidence is retained at an immutable cut. `resumeDurableTask` then compares the exact
-suspension head and descriptor, rejects unavailable constituents, and atomically publishes a new
-command-bound running acknowledgement with the next fencing token and lease. The call does not
-invoke the provider or restore external state; the returned authority is for checkpoint-capable
-runtime integration.
+checkpoint evidence is retained at an immutable cut. A prerequisite-driven waiting acknowledgement
+uses the same atomic cut, continuation, claim-release, and stale-worker fencing boundary without a
+pause command, and additionally retains the exact outstanding prerequisite.
+
+`resumeDurableTask` compares the exact quiescent head and descriptor, rejects unavailable
+constituents, and atomically publishes a new command-bound running acknowledgement with the next
+fencing token and lease. Waiting resume additionally requires independently verified satisfaction
+matching the retained prerequisite; suspension rejects that evidence. The call does not invoke the
+provider, verify an external prerequisite itself, or restore external state; the returned authority
+is for checkpoint-capable runtime integration.
 
 ## Concurrency boundary
 
@@ -130,11 +135,11 @@ expiry. Expired takeover is granted atomically only to an explicit recovery comm
 caller with a stale prior `absent` read from bypassing command authority.
 
 The exact started claim and fencing token also guard provider-backed terminal publication. A
-safe-boundary suspension acknowledgement atomically expires and releases that claim while
-publishing continuation evidence, so a returning stale worker is rejected before it can retain
-artifacts, usage, outcome, or terminal lifecycle evidence. Same-run continuation remains
-fail-closed until an explicit resume command can verify continuation receipts and acquire a new
-monotonic fence.
+safe-boundary waiting or suspension acknowledgement atomically expires and releases that claim
+while publishing continuation evidence, so a returning stale worker is rejected before it can
+retain artifacts, usage, outcome, or terminal lifecycle evidence. Same-run continuation remains
+fail-closed until an explicit resume command verifies continuation receipts, and for waiting the
+exact prerequisite satisfaction, before acquiring a new monotonic fence.
 
 A configured cancellation command similarly binds the exact running head and current fencing
 token without changing lifecycle state. Only the current worker may acknowledge it at a proven

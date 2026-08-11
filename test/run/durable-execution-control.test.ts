@@ -7,6 +7,7 @@ import { test } from "node:test";
 import {
     acknowledgeDurableTaskCancellation,
     acknowledgeDurableTaskSuspension,
+    acknowledgeDurableTaskWaiting,
     type Cut,
     type CutSpec,
     cancelDurableTask,
@@ -22,6 +23,7 @@ import {
     type RecordId,
     type RetainedRecord,
     ROOT_WITNESS_ID,
+    type RunContinuationCheckpointEvidence,
     readDurableTaskExecution,
     recoverTaskDurably,
     requestDurableTaskCancellation,
@@ -678,6 +680,299 @@ test("waiting cancellation terminalizes from retained prerequisite evidence", as
     const reopened = new SQLiteTraceStore(databasePath);
     assert.deepEqual(cancelDurableTask(reopened, options), cancelled);
     reopened.close();
+});
+
+test("waiting acknowledgement atomically releases the worker at a prerequisite boundary", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-waiting-acknowledgement-"));
+    context.after(() => rm(directory, { force: true, recursive: true }));
+    const databasePath = path.join(directory, "trace.sqlite");
+    const store = new ObservingStartStore(databasePath);
+    const runId = "run:waiting-acknowledgement-public";
+    let reachSafeBoundary: (() => void) | undefined;
+    const safeBoundary = new Promise<void>((resolve) => {
+        reachSafeBoundary = resolve;
+    });
+    let waitingOptions: Parameters<typeof acknowledgeDurableTaskWaiting>[1] | undefined;
+    let waitingReceipt: ReturnType<typeof acknowledgeDurableTaskWaiting> | undefined;
+    const running = executeTaskDurably(store, {
+        budget: { maxTurns: 1 },
+        input: undefined,
+        provider: {
+            descriptor: () => ({
+                capabilities: { streaming: false, structuredOutput: true, tools: false },
+                id: "waiting-acknowledgement-provider",
+                kind: "static" as const,
+                model: "offline-v1",
+            }),
+            invoke: async () => {
+                await safeBoundary;
+                assert.ok(waitingOptions);
+                waitingReceipt = acknowledgeDurableTaskWaiting(store, waitingOptions);
+                return {
+                    output: "must be fenced",
+                    usage: {
+                        cacheCreationInputTokens: 0,
+                        cacheReadInputTokens: 0,
+                        costUsd: null,
+                        inputTokens: 1,
+                        outputTokens: 1,
+                    },
+                };
+            },
+        },
+        runId,
+        task: task({
+            input: schema.void(),
+            instruction: "Wait for explicit approval.",
+            name: "waiting-acknowledgement",
+            output: schema.string(),
+            version: "1.0.0",
+        }),
+    });
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    const startedRecordId = inspectDurableTaskExecution(store, runId).lifecycle.started_record_id;
+    const fencingToken = store.fencingToken;
+    assert.ok(startedRecordId && fencingToken);
+    const prerequisiteId = "approval:waiting-acknowledgement";
+    const traceCutId = "cut:waiting-acknowledgement";
+    const constituents = runProtocolConfig.execution.continuationConstituentKinds.map(
+        (configuredKind): RunContinuationCheckpointEvidence => ({
+            kind: configuredKind as RunContinuationCheckpointEvidence["kind"],
+            status: "not_required",
+        }),
+    );
+    assert.throws(
+        () =>
+            acknowledgeDurableTaskWaiting(store, {
+                constituents,
+                expectedLifecycleRecordId: startedRecordId,
+                fencingToken: 0,
+                prerequisite: { kind: "approval", prerequisiteId },
+                runId,
+                traceCutId,
+            }),
+        TypeError,
+    );
+    assert.throws(
+        () =>
+            acknowledgeDurableTaskWaiting(store, {
+                constituents: [],
+                expectedLifecycleRecordId: startedRecordId,
+                fencingToken,
+                prerequisite: { kind: "approval", prerequisiteId },
+                runId,
+                traceCutId,
+            }),
+        TypeError,
+    );
+    assert.throws(
+        () =>
+            acknowledgeDurableTaskWaiting(store, {
+                constituents: constituents.map((evidence, index) =>
+                    index === 0 ? { kind: evidence.kind, status: "unavailable" } : evidence,
+                ),
+                expectedLifecycleRecordId: startedRecordId,
+                fencingToken,
+                prerequisite: { kind: "approval", prerequisiteId },
+                runId,
+                traceCutId,
+            }),
+        TypeError,
+    );
+    const waitingProbe = {
+        append_intent_id: "append:waiting-probe",
+        batch: { groups: [] },
+    } as const;
+    assert.throws(
+        () =>
+            store.appendDurableExecutionWaiting(
+                runId,
+                startedRecordId,
+                0,
+                traceCutId,
+                waitingProbe,
+            ),
+        TypeError,
+    );
+    store.publishCut({
+        cut_id: traceCutId,
+        target_owner_id: runId,
+        through_record_id: startedRecordId,
+    });
+    assert.throws(
+        () =>
+            store.appendDurableExecutionWaiting(
+                runId,
+                startedRecordId,
+                fencingToken + 1,
+                traceCutId,
+                waitingProbe,
+            ),
+        TraceStoreError,
+    );
+    const createdRecordId = inspectDurableTaskExecution(store, runId).lifecycle.created_record_id;
+    assert.ok(createdRecordId);
+    const wrongCut = store.publishCut({
+        cut_id: "cut:waiting-wrong-head",
+        target_owner_id: runId,
+        through_record_id: createdRecordId,
+    });
+    assert.throws(
+        () =>
+            store.appendDurableExecutionWaiting(
+                runId,
+                startedRecordId,
+                fencingToken,
+                wrongCut.cut_id,
+                waitingProbe,
+            ),
+        TraceStoreError,
+    );
+    assert.throws(
+        () =>
+            store.appendDurableExecutionWaiting(
+                runId,
+                createdRecordId,
+                fencingToken,
+                wrongCut.cut_id,
+                waitingProbe,
+            ),
+        TraceStoreError,
+    );
+    waitingOptions = {
+        constituents,
+        expectedLifecycleRecordId: startedRecordId,
+        fencingToken,
+        prerequisite: { kind: "approval", prerequisiteId },
+        runId,
+        traceCutId,
+    };
+    reachSafeBoundary?.();
+    await assert.rejects(running, DurableExecutionClaimFencedError);
+    assert.ok(waitingReceipt);
+    const inspection = inspectDurableTaskExecution(store, runId);
+    assert.equal(inspection.lifecycle.quiescent?.status, "waiting");
+    assert.deepEqual(inspection.lifecycle.quiescent?.prerequisite, {
+        kind: "approval",
+        prerequisite_id: prerequisiteId,
+    });
+    const retainedWaitingOptions = waitingOptions;
+    assert.ok(retainedWaitingOptions);
+    store.close();
+    using reopened = new SQLiteTraceStore(databasePath);
+    assert.deepEqual(
+        acknowledgeDurableTaskWaiting(reopened, retainedWaitingOptions),
+        waitingReceipt,
+    );
+    assert.equal(
+        inspectDurableTaskExecution(reopened, runId).lifecycle.quiescent?.status,
+        "waiting",
+    );
+    const resumeBase = {
+        commandId: "command:resume:waiting-acknowledgement",
+        continuationDescriptorRecordId: waitingReceipt.continuation_descriptor_record_id,
+        expectedLifecycleRecordId: waitingReceipt.acknowledgement_record_id,
+        runId,
+    } as const;
+    assert.throws(() => resumeDurableTask(reopened, resumeBase), TraceStoreError);
+    assert.throws(
+        () =>
+            resumeDurableTask(reopened, {
+                ...resumeBase,
+                commandId: "command:resume:waiting-mismatched-prerequisite",
+                prerequisiteSatisfaction: {
+                    kind: "approval",
+                    prerequisiteId: "approval:other",
+                    receiptId: "receipt:approval:other",
+                },
+            }),
+        TraceStoreError,
+    );
+    const resumeOptions = {
+        ...resumeBase,
+        prerequisiteSatisfaction: {
+            kind: "approval",
+            prerequisiteId,
+            receiptId: "receipt:approval:waiting-acknowledgement",
+        },
+    } as const;
+    assert.throws(
+        () =>
+            resumeDurableTask(reopened, {
+                ...resumeOptions,
+                commandId: "command:resume:waiting-empty-receipt",
+                prerequisiteSatisfaction: {
+                    ...resumeOptions.prerequisiteSatisfaction,
+                    receiptId: "",
+                },
+            }),
+        TypeError,
+    );
+    const resumed = resumeDurableTask(reopened, resumeOptions);
+    assert.equal(resumed.fencing_token, fencingToken + 1);
+    assert.equal(
+        inspectDurableTaskExecution(reopened, runId).lifecycle.running_continuation_record_id,
+        resumed.running_record_id,
+    );
+    assert.throws(
+        () =>
+            reopened.appendDurableExecutionWaiting(
+                runId,
+                startedRecordId,
+                resumed.fencing_token,
+                traceCutId,
+                {
+                    append_intent_id: "append:waiting-stale-running-head",
+                    batch: { groups: [] },
+                },
+            ),
+        TraceStoreError,
+    );
+    const resumedRecords = reopened.readOwner(runId);
+    const resumeCommand = resumedRecords.find(
+        (record) => record.envelope.record_id === resumed.command_record_id,
+    );
+    assert.ok(resumeCommand);
+    for (const prerequisite_satisfaction of [
+        undefined,
+        {
+            kind: "approval",
+            prerequisite_id: "approval:other",
+            receipt_id: "receipt:approval:waiting-acknowledgement",
+        },
+    ]) {
+        using malformedResumeStore = new OwnerProjectionStore(
+            runId,
+            resumedRecords.map((record) =>
+                record.envelope.record_id === resumed.command_record_id
+                    ? {
+                          ...record,
+                          body: {
+                              ...record.body,
+                              prerequisite_satisfaction,
+                          },
+                      }
+                    : record,
+            ),
+        );
+        assert.throws(
+            () => inspectDurableTaskExecution(malformedResumeStore, runId),
+            TraceStoreError,
+        );
+    }
+    using competing = new SQLiteTraceStore(databasePath);
+    assert.deepEqual(resumeDurableTask(competing, resumeOptions), resumed);
+    assert.throws(
+        () =>
+            resumeDurableTask(competing, {
+                ...resumeOptions,
+                prerequisiteSatisfaction: {
+                    ...resumeOptions.prerequisiteSatisfaction,
+                    receiptId: "receipt:approval:changed",
+                },
+            }),
+        TraceStoreError,
+    );
 });
 
 class InterruptingCutStore extends SQLiteTraceStore {
@@ -1707,6 +2002,19 @@ test("safe-boundary suspension publishes exact checkpoint evidence and fences th
         expectedLifecycleRecordId: retainedSuspension.acknowledgement_record_id,
         runId,
     } as const;
+    assert.throws(
+        () =>
+            resumeDurableTask(reopened, {
+                ...resumeOptions,
+                commandId: "command:resume:suspension-with-prerequisite",
+                prerequisiteSatisfaction: {
+                    kind: "approval",
+                    prerequisiteId: "approval:not-applicable",
+                    receiptId: "receipt:approval:not-applicable",
+                },
+            }),
+        TraceStoreError,
+    );
     const resumed = resumeDurableTask(reopened, resumeOptions);
     assert.equal(resumed.fencing_token, fencingToken + 1);
     assert.ok(resumed.claim_id.length > 0);
@@ -1760,6 +2068,23 @@ test("safe-boundary suspension publishes exact checkpoint evidence and fences th
                 ? {
                       ...runningRecord,
                       body: { ...runningRecord.body, status: "invalid" },
+                  }
+                : record,
+        ),
+    );
+    expectMalformedInspection(
+        resumedRecords.map((record, index) =>
+            index === commandIndex
+                ? {
+                      ...commandRecord,
+                      body: {
+                          ...commandRecord.body,
+                          prerequisite_satisfaction: {
+                              kind: "approval",
+                              prerequisite_id: "approval:not-applicable",
+                              receipt_id: "receipt:approval:not-applicable",
+                          },
+                      },
                   }
                 : record,
         ),

@@ -40,6 +40,8 @@ import type {
     DurableTaskResumeReceipt,
     DurableTaskSuspensionOptions,
     DurableTaskSuspensionReceipt,
+    DurableTaskWaitingOptions,
+    DurableTaskWaitingReceipt,
     RunContinuationCheckpointAdapter,
     RunContinuationCheckpointEvidence,
     RunContinuationCheckpointOptions,
@@ -407,16 +409,16 @@ function assertCancellationTerminalReplay(
 }
 
 /**
- * Atomically resumes one exactly suspended durable run under a globally idempotent command.
+ * Atomically resumes one exact suspended or satisfied waiting run under an idempotent command.
  *
- * Resume verifies the suspension acknowledgement and its continuation descriptor, rejects any
- * unavailable constituent, acquires the next monotonic worker fence, and publishes a distinct
- * command-bound running-continuation acknowledgement. It does not itself restore provider,
- * process, or world state; the caller uses the returned authority only after its adapters restore
- * the verified receipts.
+ * Resume verifies the quiescent acknowledgement and its continuation descriptor, requires exact
+ * prerequisite-satisfaction evidence for waiting, rejects satisfaction evidence for suspension,
+ * acquires the next monotonic worker fence, and publishes a distinct command-bound
+ * running-continuation acknowledgement. It does not itself restore provider, process, or world
+ * state; the caller uses the returned authority only after its adapters restore verified receipts.
  *
- * @param store - Open trace store containing the suspended run.
- * @param options - Exact command, suspension head, descriptor, and run contract.
+ * @param store - Open trace store containing the waiting or suspended run.
+ * @param options - Exact command, quiescent head, descriptor, satisfaction, and run contract.
  * @returns Canonical resume evidence and newly fenced worker authority.
  * @throws {TypeError} If options or identifiers are malformed.
  * @throws {TraceStoreError} If lifecycle, claim, or continuation evidence is inconsistent.
@@ -446,6 +448,14 @@ export function resumeDurableTask(
         parsed.expectedLifecycleRecordId,
         parsed.continuationDescriptorRecordId,
         createRecordId({ durable_resume_claim_id: parsed.commandId }),
+        Date.now(),
+        parsed.prerequisiteSatisfaction === undefined
+            ? null
+            : {
+                  kind: parsed.prerequisiteSatisfaction.kind,
+                  prerequisite_id: parsed.prerequisiteSatisfaction.prerequisiteId,
+                  receipt_id: parsed.prerequisiteSatisfaction.receiptId,
+              },
     );
 }
 
@@ -480,6 +490,113 @@ export async function captureRunContinuationCheckpoints(
         evidence.push(readCheckpointEvidence(await adapter.checkpoint(context), expectedKind));
     }
     return Object.freeze(evidence);
+}
+
+/**
+ * Atomically acknowledges prerequisite-driven waiting and releases the worker fence.
+ *
+ * The immutable cut is published through the exact running head before one store transaction
+ * validates the current claim and lifecycle, appends the continuation descriptor plus explicit
+ * prerequisite acknowledgement, and releases the worker. Exact replay returns retained evidence.
+ *
+ * @param store - Open trace store containing the running execution.
+ * @param options - Exact running authority, cut, prerequisite, and checkpoint evidence.
+ * @returns Canonical continuation and waiting acknowledgement identities.
+ * @throws {TypeError} If options or constituent evidence are malformed or unavailable.
+ * @throws {TraceStoreError} If the running authority, lifecycle head, or cut is inconsistent.
+ * @throws {AppendIntentConflictError} If the same waiting intent names different evidence.
+ *
+ * @public
+ */
+export function acknowledgeDurableTaskWaiting(
+    store: SQLiteTraceStore,
+    options: DurableTaskWaitingOptions,
+): DurableTaskWaitingReceipt {
+    const parsed = readWaitingOptions(options);
+    const cut = store.publishCut({
+        cut_id: parsed.traceCutId,
+        target_owner_id: parsed.runId,
+        through_record_id: parsed.expectedLifecycleRecordId,
+    });
+    const descriptorLocalId = createRecordId({
+        continuation_descriptor: {
+            expected_lifecycle_record_id: parsed.expectedLifecycleRecordId,
+            prerequisite_id: parsed.prerequisite.prerequisiteId,
+            run_id: parsed.runId,
+        },
+    });
+    const descriptorBody = {
+        constituents: parsed.constituents,
+        continuation_version: runProtocolConfig.execution.continuationVersion,
+        execution_id: parsed.runId,
+        trace_cut_id: parsed.traceCutId,
+    };
+    const descriptorRecordId = createRecordEnvelope({
+        body: descriptorBody,
+        caused_by_record_ids: [cut.created_by_record_id],
+        mode: CAPTURE_MODE,
+        schema_ref: runProtocolConfig.schemas.continuationDescriptorId,
+        witness_ref: ROOT_WITNESS_ID,
+    }).record_id;
+    const receipt = store.appendDurableExecutionWaiting(
+        parsed.runId,
+        parsed.expectedLifecycleRecordId,
+        parsed.fencingToken,
+        parsed.traceCutId,
+        {
+            append_intent_id: createRecordId({
+                durable_waiting: {
+                    expected_lifecycle_record_id: parsed.expectedLifecycleRecordId,
+                    prerequisite_id: parsed.prerequisite.prerequisiteId,
+                    run_id: parsed.runId,
+                },
+            }),
+            batch: {
+                groups: [
+                    {
+                        caused_by_record_ids: [cut.created_by_record_id],
+                        owner_id: parsed.runId,
+                        records: [
+                            {
+                                append_local_id: descriptorLocalId,
+                                body: descriptorBody,
+                                mode: CAPTURE_MODE,
+                                schema_ref: runProtocolConfig.schemas.continuationDescriptorId,
+                                witness_ref: ROOT_WITNESS_ID,
+                            },
+                        ],
+                    },
+                    {
+                        caused_by_record_ids: [parsed.expectedLifecycleRecordId],
+                        owner_id: parsed.runId,
+                        records: [
+                            {
+                                body: {
+                                    continuation_descriptor_id: descriptorRecordId,
+                                    execution_id: parsed.runId,
+                                    lifecycle_version: runProtocolConfig.execution.lifecycleVersion,
+                                    prerequisite: {
+                                        kind: parsed.prerequisite.kind,
+                                        prerequisite_id: parsed.prerequisite.prerequisiteId,
+                                    },
+                                    status: runProtocolConfig.execution.lifecycleWaitingStatus,
+                                },
+                                caused_by_local_refs: [descriptorLocalId],
+                                mode: CAPTURE_MODE,
+                                schema_ref: runProtocolConfig.schemas.waitingLifecycleId,
+                                witness_ref: ROOT_WITNESS_ID,
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    );
+    return Object.freeze({
+        acknowledgement_record_id: receipt.record_ids[1] as RecordId,
+        continuation_descriptor_record_id: receipt.record_ids[0] as RecordId,
+        trace_cut_id: parsed.traceCutId,
+    });
 }
 
 /**
@@ -850,12 +967,27 @@ function readResumeOptions(value: unknown): DurableTaskResumeOptions {
         value,
         ["commandId", "continuationDescriptorRecordId", "expectedLifecycleRecordId", "runId"],
         "durable resume options",
+        ["prerequisiteSatisfaction"],
     );
     assertRunText(fields.commandId, "commandId");
     assertRecordId(fields.continuationDescriptorRecordId, "continuationDescriptorRecordId");
     assertRecordId(fields.expectedLifecycleRecordId, "expectedLifecycleRecordId");
     assertRunText(fields.runId, "runId");
-    return fields as DurableTaskResumeOptions;
+    if (fields.prerequisiteSatisfaction === undefined) {
+        return fields as DurableTaskResumeOptions;
+    }
+    const satisfaction = readRunDataObject(
+        fields.prerequisiteSatisfaction,
+        ["kind", "prerequisiteId", "receiptId"],
+        "durable prerequisite satisfaction",
+    );
+    assertRunText(satisfaction.kind, "prerequisiteSatisfaction.kind");
+    assertRunText(satisfaction.prerequisiteId, "prerequisiteSatisfaction.prerequisiteId");
+    assertRunText(satisfaction.receiptId, "prerequisiteSatisfaction.receiptId");
+    return Object.freeze({
+        ...fields,
+        prerequisiteSatisfaction: Object.freeze(satisfaction),
+    }) as DurableTaskResumeOptions;
 }
 
 function readCheckpointOptions(value: unknown): RunContinuationCheckpointOptions {
@@ -938,6 +1070,63 @@ function readSuspensionOptions(value: unknown): DurableTaskSuspensionOptions {
         runId: fields.runId,
         traceCutId: fields.traceCutId,
     }) as DurableTaskSuspensionOptions;
+}
+
+function readWaitingOptions(value: unknown): DurableTaskWaitingOptions {
+    const fields = readRunDataObject(
+        value,
+        [
+            "constituents",
+            "expectedLifecycleRecordId",
+            "fencingToken",
+            "prerequisite",
+            "runId",
+            "traceCutId",
+        ],
+        "durable waiting options",
+    );
+    assertRecordId(fields.expectedLifecycleRecordId, "expectedLifecycleRecordId");
+    assertRunText(fields.runId, "runId");
+    assertRunText(fields.traceCutId, "traceCutId");
+    if (!Number.isSafeInteger(fields.fencingToken) || (fields.fencingToken as number) <= 0) {
+        throw new TypeError("fencingToken must be a positive safe integer");
+    }
+    const prerequisite = readRunDataObject(
+        fields.prerequisite,
+        ["kind", "prerequisiteId"],
+        "durable waiting prerequisite",
+    );
+    assertRunText(prerequisite.kind, "prerequisite.kind");
+    assertRunText(prerequisite.prerequisiteId, "prerequisite.prerequisiteId");
+    if (
+        !Array.isArray(fields.constituents) ||
+        fields.constituents.length !==
+            runProtocolConfig.execution.continuationConstituentKinds.length
+    ) {
+        throw new TypeError("waiting requires every configured continuation constituent");
+    }
+    const [, , unavailableStatus] = runProtocolConfig.execution.continuationEvidenceStatuses;
+    const constituents = fields.constituents.map((candidate, index) => {
+        const evidence = readCheckpointEvidence(
+            candidate,
+            runProtocolConfig.execution.continuationConstituentKinds[index],
+        );
+        if (evidence.status === unavailableStatus) {
+            throw new TypeError("waiting requires available continuation evidence");
+        }
+        return evidence;
+    });
+    return Object.freeze({
+        constituents: Object.freeze(constituents),
+        expectedLifecycleRecordId: fields.expectedLifecycleRecordId,
+        fencingToken: fields.fencingToken,
+        prerequisite: Object.freeze({
+            kind: prerequisite.kind,
+            prerequisiteId: prerequisite.prerequisiteId,
+        }),
+        runId: fields.runId,
+        traceCutId: fields.traceCutId,
+    }) as DurableTaskWaitingOptions;
 }
 
 function readCheckpointEvidence(
