@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.10.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.10.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;

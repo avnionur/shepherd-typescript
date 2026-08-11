@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.1] - 2026-08-11
+
+### Improvement
+
+- Completed the Phase 2 exit audit with exact native-trace byte comparison around deterministic
+  durable replay and whole-store integrity checks for pre-invocation cancellation and exhaustion.
+- Corrected the roadmap so runtime-grant identity is gated by the Phase 4 grant capability and
+  Phase 2 provider admission does not imply durable effect-boundary integration.
+
+### Impact
+
+Phase 2 now has explicit production-seam evidence for every applicable exit criterion and an
+honest phase boundary. Phase 3 can begin with workspace initialization and adoption.
+
 ## [1.10.0] - 2026-08-11
 
 ### New Feature

@@ -108,15 +108,21 @@ Work:
 Exit criteria:
 
 - repeated execution of the same deterministic task fixture produces equivalent TypeScript traces;
-- instruction, schema, or grants alter task identity;
+- instruction or schema changes alter the Phase 2 task identity; runtime grant identity is a
+  Phase 4 exit criterion because Phase 2 descriptors grant no authority;
 - malformed task/model outputs fail as structured outcomes;
 - cancellation and budget exhaustion preserve a valid partial trace;
-- concurrent callers cannot both cross a provider or effect boundary for one durable run identity;
+- concurrent callers cannot both cross any implemented durable external boundary for one run
+  identity; Phase 2 proves the provider boundary, while durable effect execution follows its own
+  later integration slice;
 - every control command can be retried or recovered without inventing a transition, and a lost
   worker cannot retain authority after its lease is fenced;
 - observer-free deterministic runs are byte-for-byte reproducible.
 - proof-envelope classification matches reference vectors and fails closed on missing or stale
   evidence without implying that the production runtime is formally verified.
+
+Exit audit: **complete in 1.10.1**; see
+[`phase-2-exit-audit.md`](./phase-2-exit-audit.md).
 
 ## Phase 3 — Workspaces, retained outputs, and basic settlement
 
@@ -170,6 +176,7 @@ Work:
 Exit criteria:
 
 - all documented `0.3.0` rows in the parity matrix pass;
+- changing the explicit runtime grant surface changes task identity;
 - jail escape/denial tests pass in platform CI;
 - `auto` fallback is visible and `jail` never degrades;
 - read selectors and exact settlement identity rules match the contract;

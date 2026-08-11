@@ -700,12 +700,14 @@ test("executeTaskDurably replays identical deterministic evidence without duplic
         });
 
     const first = await execute();
+    const firstTrace = store.exportTrace();
     const second = await execute();
 
     assert.deepEqual(second, first);
     assert.equal(invocationCount, 1);
     assert.deepEqual(second.ledger.artifact_record_ids, first.ledger.artifact_record_ids);
     assert.equal(store.readOwner("run:durable-replay").length, 7);
+    assert.equal(store.exportTrace(), firstTrace);
 });
 
 test("executeTaskDurably rejects changed evidence for an existing run before invocation", async () => {

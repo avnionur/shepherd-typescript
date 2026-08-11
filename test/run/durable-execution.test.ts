@@ -396,6 +396,7 @@ test("executeTaskDurably does not fabricate start or usage evidence for pre-canc
         run_id: "run:durable-cancelled",
         status: "committed",
     });
+    assert.equal(store.verifyIntegrity().ok, true);
 });
 
 test("executeTaskDurably retains started provider failures without fabricating usage", async () => {
@@ -548,4 +549,5 @@ test("executeTaskDurably retains pre-invocation budget exhaustion", async () => 
         run_id: "run:durable-exhausted",
         status: "committed",
     });
+    assert.equal(store.verifyIntegrity().ok, true);
 });

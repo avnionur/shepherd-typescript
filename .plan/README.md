@@ -140,6 +140,8 @@ record and public API must declare a protocol/compatibility version.
   state machines, interoperability, and platform strategy.
 - [Implementation roadmap](./implementation-roadmap.md) — phased work,
   deliverables, dependencies, and acceptance criteria.
+- [Phase 2 exit audit](./phase-2-exit-audit.md) — production-seam evidence, resolved phase-boundary
+  mismatch, and the handoff into workspace initialization.
 - [Testing and release](./testing-and-release.md) — conformance, property,
   security, recovery, performance, CI, and release gates.
 - [Decisions and risks](./decisions-and-risks.md) — adopted decisions,
@@ -194,5 +196,4 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 1 in the roadmap by implementing content-addressed blob storage, integrity
-verification, and durable storage receipts in TypeScript.
+Begin Phase 3, Task 1 by defining and implementing workspace initialization and adoption.

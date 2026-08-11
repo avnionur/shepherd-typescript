@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-11
 
-Current version: `1.10.0`
+Current version: `1.10.1`
 
 Current level: L0 — canonical model
 
@@ -83,6 +83,10 @@ imported theorem claims only for Core-0 and Core-A. Exact theorem metadata is pi
 drift-checked, while local Lean execution is explicitly out of scope. Core-0H sidecars are
 structurally and content-addressedly validated but cannot strengthen a claim until a published
 sidecar reference is configured as trusted.
+The Phase 2 exit audit now maps every criterion to public production-seam evidence. It adds exact
+native-trace byte comparison around deterministic replay and whole-store integrity checks for
+pre-invocation cancellation and exhaustion. The audit also moves runtime-grant identity to Phase 4,
+where grants are actually introduced, and does not overclaim durable effect-boundary admission.
 
 ## Progress
 
@@ -165,6 +169,8 @@ sidecar reference is configured as trusted.
 - [x] Validate configured strong profiles, allowlisted pinned-oracle static lowering
   manifests, Core-0H two-phase sidecars, and exact theorem-artifact metadata without strengthening
   stale, malformed, unsupported, or untrusted evidence.
+- [x] Audit and close every Phase 2 exit criterion at its production seam, correcting the runtime
+  grant and durable-effect phase boundaries.
 
 ## Verification required for this slice
 
@@ -176,8 +182,7 @@ sidecar reference is configured as trusted.
 
 ## Next slice
 
-Audit every Phase 2 exit criterion against production-seam evidence, close any remaining gaps, and
-then begin Phase 3 workspace initialization and adoption.
+Begin Phase 3, Task 1: define and implement workspace initialization and adoption.
 
 ## Notes
 
