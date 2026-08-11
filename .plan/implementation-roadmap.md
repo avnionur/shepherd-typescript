@@ -100,7 +100,10 @@ Work:
 - implement the Appendix B typed-effect reference machine and proof-envelope classifier;
   **implemented in 1.9.0**;
 - validate configured profile, strength, lowering, sidecar, and pinned theorem-artifact metadata;
-- keep unsupported, incomplete, live, and extension traces at an honest non-proof claim level.
+  **implemented in 1.10.0**, with Core-0H activation fail-closed until a published sidecar is
+  explicitly trusted;
+- keep unsupported, incomplete, live, and extension traces at an honest non-proof claim level;
+  **implemented in 1.10.0**.
 
 Exit criteria:
 

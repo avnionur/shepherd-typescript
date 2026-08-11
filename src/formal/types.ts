@@ -53,8 +53,100 @@ export type ProofEnvelopeClassificationOptions = {
     readonly completed: boolean;
     /** Content-addressed static-program identity, when independently available. */
     readonly programRef?: string;
+    /** Optional static lowering and theorem evidence requesting a stronger completed-trace claim. */
+    readonly proofEvidence?: StrongProofEvidence;
     /** Ordered normalized reference records or unsupported runtime evidence. */
     readonly trace: readonly unknown[];
+};
+
+/** Content-addressed static source-to-kernel lowering manifest. */
+export type StaticLoweringEvidence = {
+    /** Exact ordered fragment assumptions checked by the lowering authority. */
+    readonly assumptions: readonly string[];
+    /** Completion assertion; strong profiles require true. */
+    readonly completed: boolean;
+    /** Content identity of the exact generated trace. */
+    readonly generated_trace_ref: string;
+    /** Content identity of this lowering manifest. */
+    readonly lowering_ref: string;
+    /** Upstream static-source case that generated this lowering. */
+    readonly oracle_case: string;
+    /** Repository-relative path of the pinned lowering generator. */
+    readonly oracle_path: string;
+    /** Upstream repository containing the lowering generator. */
+    readonly oracle_repository: string;
+    /** Exact upstream revision containing the lowering generator and case. */
+    readonly oracle_revision: string;
+    /** Strong profile for which lowering was checked. */
+    readonly profile: ProofEnvelopeProfile;
+    /** Content identity of the lowered kernel program. */
+    readonly program_ref: string;
+    /** Stable lowering-manifest schema version. */
+    readonly schema_version: string;
+    /** Content identity of the admitted static source fragment. */
+    readonly source_ref: string;
+    /** Configured lowering authority. */
+    readonly validator: string;
+};
+
+/** Deterministic two-phase handler body cited by a Core-0H sidecar. */
+export type Core0hHandlerPhases = {
+    /** Content identity of the static handler body. */
+    readonly handler_ref: string;
+    /** Content identity of the first deterministic handler phase. */
+    readonly phase_one_ref: string;
+    /** Content identity of the second deterministic handler phase. */
+    readonly phase_two_ref: string;
+};
+
+/** Validator-issued content-addressed Core-0H sidecar manifest. */
+export type Core0hSidecarEvidence = {
+    /** Ordered deterministic handler phase pairs covered by the sidecar. */
+    readonly handler_phases: readonly Core0hHandlerPhases[];
+    /** Exact lowering manifest covered by this sidecar. */
+    readonly lowering_ref: string;
+    /** Exact lowered program covered by this sidecar. */
+    readonly program_ref: string;
+    /** Stable Core-0H sidecar schema version. */
+    readonly schema_version: string;
+    /** Content identity of this sidecar manifest. */
+    readonly sidecar_ref: string;
+    /** Exact completed generated trace covered by this sidecar. */
+    readonly trace_ref: string;
+    /** Configured Core-0H sidecar authority. */
+    readonly validator: string;
+};
+
+/** Pinned metadata declaration for an external theorem artifact. */
+export type PinnedTheoremArtifactEvidence = {
+    /** Named external theorem-artifact authority. */
+    readonly authority: string;
+    /** External command declared to check theorem names and typed signatures. */
+    readonly build_gate: string;
+    /** Complete extension theorem surface, kept separate from base profile claims. */
+    readonly extension_theorem_ids: readonly string[];
+    /** Content identity of this exact theorem metadata. */
+    readonly metadata_ref: string;
+    /** Pinned external artifact revision label. */
+    readonly revision: string;
+    /** Stable theorem-artifact metadata schema version. */
+    readonly schema_version: string;
+    /** Complete declared base theorem surface. */
+    readonly theorem_ids: readonly string[];
+};
+
+/** Complete external evidence bundle requesting one theorem-backed profile claim. */
+export type StrongProofEvidence = {
+    /** Core-0H sidecar, required only for the configured sidecar-gated profile. */
+    readonly core0h_sidecar: Core0hSidecarEvidence | null;
+    /** Exact static lowering manifest bound to the generated trace. */
+    readonly lowering: StaticLoweringEvidence;
+    /** Requested theorem-backed profile. */
+    readonly profile: ProofEnvelopeProfile;
+    /** Requested proof strength. */
+    readonly strength: ProofEnvelopeStrength;
+    /** Exact pinned external theorem-artifact metadata. */
+    readonly theorem_artifact: PinnedTheoremArtifactEvidence;
 };
 
 /** Frozen inspectable claim over runtime or executable-reference trace evidence. */

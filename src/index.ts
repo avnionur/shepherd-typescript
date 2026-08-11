@@ -43,10 +43,15 @@ export { TypedEffectTraceValidationError } from "./formal/errors.ts";
 export { classifyProofEnvelope } from "./formal/proof-envelope.ts";
 export { validateTypedEffectTrace } from "./formal/trace-machine.ts";
 export type {
+    Core0hHandlerPhases,
+    Core0hSidecarEvidence,
+    PinnedTheoremArtifactEvidence,
     ProofEnvelope,
     ProofEnvelopeClassificationOptions,
     ProofEnvelopeProfile,
     ProofEnvelopeStrength,
+    StaticLoweringEvidence,
+    StrongProofEvidence,
     TypedEffectTraceRecord,
     TypedEffectTraceRecordType,
     TypedEffectTraceValidation,

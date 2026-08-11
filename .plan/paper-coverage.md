@@ -46,7 +46,7 @@ not described as a new formal proof unless a separately verified theorem artifac
 | --- | --- | --- | --- |
 | A.1 Limitations | Normative non-claims | All phases | Report proof-of-existence scope, supervisor cost, and replay coupling limits with measured results |
 | A.2 Future work | P3 research backlog | Phases 10–11 and future releases | Track interpretability interventions, continual-learning environments, substrate-native post-training, and safety frontiers without calling them paper-parity blockers |
-| B Mechanized core and proof envelopes | Formal assurance boundary | Phases 1–2 | Native trace-machine validator, configured profiles/strengths, sidecar validation, pinned theorem metadata, and fail-closed claim classification |
+| B Mechanized core and proof envelopes | Formal assurance boundary | Phases 1–2 | Native trace-machine validator and allowlisted static lowerings implemented; Core-0/Core-A strong claims are enabled, Core-0H stays fail-closed without a published trusted sidecar, and Lean execution remains external |
 | C Extended performance | Measurement protocol | Phases 8, 10, and 11 | Record hardware, backend, warm/cold state, mutation size, branch count, observer load, cache evidence, and raw samples |
 | D Trajectory compression | Fourth demonstrated meta-agent application | Phase 10 | Fork-point/hint schema, suffix restoration, no-prune handling, verifier gate, best-of-N control, and reproducible aggregate artifacts |
 | E Runtime-supervision details | Experimental protocol | Phase 10 | Version the observation schema, action schema, tools, prompts, budgets, seeds, and dataset selection |

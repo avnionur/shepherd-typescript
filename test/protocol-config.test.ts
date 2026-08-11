@@ -563,6 +563,76 @@ test("protocol configuration rejects invalid or drifted formal assurance contrac
             referenceMachineConfigOf(config).extra = true;
         },
         (config) => {
+            strongEvidenceConfigOf(config).extra = true;
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "lowering").contentRefPrefix = objectAt(
+                strongEvidenceConfigOf(config),
+                "core0hSidecar",
+            ).contentRefPrefix;
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "lowering").trustedManifestRefs = [];
+        },
+        (config) => {
+            const lowering = objectAt(strongEvidenceConfigOf(config), "lowering");
+            lowering.trustedManifestRefs = ["proof-lowering:not-a-digest"];
+        },
+        (config) => {
+            const sidecar = objectAt(strongEvidenceConfigOf(config), "core0hSidecar");
+            const ref = `core0h-sidecar:sha256:${"0".repeat(64)}`;
+            sidecar.trustedManifestRefs = [ref, ref];
+        },
+        (config) => {
+            objectAt(objectAt(strongEvidenceConfigOf(config), "lowering"), "oracle").path = "";
+        },
+        (config) => {
+            objectAt(objectAt(strongEvidenceConfigOf(config), "lowering"), "oracle").extra = true;
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "core0hSidecar").extra = true;
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "theoremArtifact").metadataRef =
+                `proof-artifact:sha256:${"0".repeat(64)}`;
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "theoremArtifact").metadataRefPrefix =
+                "proof-artifact:md5:";
+        },
+        (config) => {
+            const artifact = objectAt(strongEvidenceConfigOf(config), "theoremArtifact");
+            artifact.extensionTheoremIds = [(artifact.theoremIds as unknown[])[0]];
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "theoremArtifact").theoremIds = [];
+        },
+        (config) => {
+            strongClaimAt(config, 0).theoremIds = ["unknown"];
+        },
+        (config) => {
+            strongClaimAt(config, 0).forbiddenActionKinds = ["unknown"];
+        },
+        (config) => {
+            strongClaimAt(config, 0).forbiddenActionKinds = ["abort", "abort"];
+        },
+        (config) => {
+            strongClaimAt(config, 1).forbiddenActionKinds = ["abort"];
+        },
+        (config) => {
+            strongClaimAt(config, 0).requiresCore0hSidecar = "yes";
+        },
+        (config) => {
+            strongClaimAt(config, 0).assumptions = ["same", "same"];
+        },
+        (config) => {
+            const strong = strongEvidenceConfigOf(config);
+            strong.profileClaims = [];
+        },
+        (config) => {
+            strongClaimAt(config, 1).profile = strongClaimAt(config, 0).profile;
+        },
+        (config) => {
             objectAt(config, "formalAssurance").extra = true;
         },
     ]);
@@ -622,4 +692,16 @@ function proofEnvelopeConfigOf(config: Record<string, unknown>): Record<string, 
 
 function referenceMachineConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(objectAt(config, "formalAssurance"), "referenceMachine");
+}
+
+function strongEvidenceConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "formalAssurance"), "strongEvidence");
+}
+
+function strongClaimAt(config: Record<string, unknown>, index: number): Record<string, unknown> {
+    const claims = strongEvidenceConfigOf(config).profileClaims;
+    assert.ok(Array.isArray(claims));
+    const claim = claims[index];
+    assert.ok(claim !== null && typeof claim === "object" && !Array.isArray(claim));
+    return claim as Record<string, unknown>;
 }

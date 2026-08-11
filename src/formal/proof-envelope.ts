@@ -1,8 +1,8 @@
-import { createHash } from "node:crypto";
-
-import { canonicalizeSemanticValue, type SemanticValue } from "../canonical/canonical-record.ts";
+import type { SemanticValue } from "../canonical/canonical-record.ts";
 import { formalAssuranceProtocolConfig } from "../protocol/config.ts";
-import { TypedEffectTraceValidationError } from "./errors.ts";
+import { formalContentRef } from "./content-ref.ts";
+import { StrongProofEvidenceValidationError, TypedEffectTraceValidationError } from "./errors.ts";
+import { validateStrongProofEvidence } from "./strong-evidence.ts";
 import { validateTypedEffectTrace } from "./trace-machine.ts";
 import type {
     ProofEnvelope,
@@ -54,13 +54,40 @@ export function classifyProofEnvelope(options: ProofEnvelopeClassificationOption
         }
         throw error;
     }
-    const traceRef = contentRef(
+    const traceRef = formalContentRef(
         parsed.completed
             ? proofEnvelope.traceRefPrefixes.completed
             : proofEnvelope.traceRefPrefixes.prefix,
         parsed.trace as readonly SemanticValue[],
     );
-    const evidenceId = contentRef(proofEnvelope.evidenceRefPrefix, {
+    if (parsed.completed && parsed.proofEvidence !== undefined) {
+        try {
+            const strong = validateStrongProofEvidence(
+                parsed.proofEvidence,
+                parsed.programRef,
+                traceRef,
+                parsed.trace,
+            );
+            return freezeEnvelope({
+                evidence_id: strong.evidenceId,
+                metadata: strong.metadata,
+                profile: strong.profile,
+                program_ref: parsed.programRef,
+                proof_backed: true,
+                reference_validated: false,
+                strength: strong.strength,
+                theorem_ids: strong.theoremIds,
+                trace_ref: traceRef,
+            });
+        } catch (error) {
+            if (
+                !(error instanceof StrongProofEvidenceValidationError || error instanceof TypeError)
+            ) {
+                throw error;
+            }
+        }
+    }
+    const evidenceId = formalContentRef(proofEnvelope.evidenceRefPrefix, {
         completed: parsed.completed,
         envelope_schema_version: proofEnvelope.schemaVersion,
         profile: proofEnvelope.referenceValidatedProfile,
@@ -82,8 +109,10 @@ export function classifyProofEnvelope(options: ProofEnvelopeClassificationOption
         },
         profile: proofEnvelope.referenceValidatedProfile as ProofEnvelopeProfile,
         program_ref: parsed.programRef,
+        proof_backed: false,
         reference_validated: true,
         strength: proofEnvelope.referenceValidatedStrength as ProofEnvelopeStrength,
+        theorem_ids: [],
         trace_ref: traceRef,
     });
 }
@@ -94,8 +123,10 @@ function runtimeOnlyEnvelope(reason: string): ProofEnvelope {
         metadata: { reason },
         profile: proofEnvelope.runtimeOnlyProfile as ProofEnvelopeProfile,
         program_ref: null,
+        proof_backed: false,
         reference_validated: false,
         strength: proofEnvelope.runtimeOnlyStrength as ProofEnvelopeStrength,
+        theorem_ids: [],
         trace_ref: null,
     });
 }
@@ -105,8 +136,10 @@ function freezeEnvelope(value: {
     readonly metadata: Readonly<Record<string, SemanticValue>>;
     readonly profile: ProofEnvelopeProfile;
     readonly program_ref: string | null;
+    readonly proof_backed: boolean;
     readonly reference_validated: boolean;
     readonly strength: ProofEnvelopeStrength;
+    readonly theorem_ids: readonly string[];
     readonly trace_ref: string | null;
 }): ProofEnvelope {
     return Object.freeze({
@@ -115,11 +148,11 @@ function freezeEnvelope(value: {
         metadata: Object.freeze({ ...value.metadata }),
         profile: value.profile,
         program_ref: value.program_ref,
-        proof_backed: false,
+        proof_backed: value.proof_backed,
         reference_validated: value.reference_validated,
         schema_version: proofEnvelope.schemaVersion,
         strength: value.strength,
-        theorem_ids: Object.freeze([]),
+        theorem_ids: Object.freeze([...value.theorem_ids]),
         trace_ref: value.trace_ref,
         validator: proofEnvelope.validator,
     });
@@ -128,6 +161,7 @@ function freezeEnvelope(value: {
 function readClassificationOptions(value: unknown): {
     readonly completed: boolean;
     readonly programRef?: string;
+    readonly proofEvidence?: unknown;
     readonly trace: readonly unknown[];
 } {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -146,10 +180,12 @@ function readClassificationOptions(value: unknown): {
     }
     const fields = value as Record<string, unknown>;
     const keys = Object.keys(fields).sort();
-    const allowed =
-        fields.programRef === undefined
-            ? ["completed", "trace"]
-            : ["completed", "programRef", "trace"];
+    const allowed = [
+        "completed",
+        ...(fields.programRef === undefined ? [] : ["programRef"]),
+        ...(fields.proofEvidence === undefined ? [] : ["proofEvidence"]),
+        "trace",
+    ].sort();
     if (keys.length !== allowed.length || keys.some((key, index) => key !== allowed[index])) {
         throw new TypeError("proof-envelope classification options must be exact");
     }
@@ -162,13 +198,7 @@ function readClassificationOptions(value: unknown): {
     return {
         completed: fields.completed,
         ...(fields.programRef === undefined ? {} : { programRef: fields.programRef }),
+        ...(fields.proofEvidence === undefined ? {} : { proofEvidence: fields.proofEvidence }),
         trace: fields.trace,
     };
-}
-
-function contentRef(prefix: string, value: SemanticValue): string {
-    const digest = createHash(proofEnvelope.digestAlgorithm)
-        .update(canonicalizeSemanticValue(value), "utf8")
-        .digest("hex");
-    return `${prefix}${digest}`;
 }

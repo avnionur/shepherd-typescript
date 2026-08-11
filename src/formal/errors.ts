@@ -10,3 +10,20 @@ export class TypedEffectTraceValidationError extends Error {
         this.name = "TypedEffectTraceValidationError";
     }
 }
+
+/**
+ * Raised internally when evidence cannot support a requested strong claim.
+ *
+ * @internal
+ */
+export class StrongProofEvidenceValidationError extends Error {
+    /**
+     * Creates a strong proof-evidence validation failure.
+     *
+     * @param message - Stable diagnostic describing the rejected evidence obligation.
+     */
+    constructor(message: string) {
+        super(message);
+        this.name = "StrongProofEvidenceValidationError";
+    }
+}

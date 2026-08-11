@@ -90,6 +90,101 @@
             },
             "resumptionSourceRecordType": "ResumptionHandle",
             "rootBranchRef": "branch:root"
+        },
+        "strongEvidence": {
+            "core0hSidecar": {
+                "contentRefPrefix": "core0h-sidecar:sha256:",
+                "handlerRefPrefix": "handler:sha256:",
+                "phaseRefPrefix": "handler-phase:sha256:",
+                "schemaVersion": "shepherd.kernel-v3-core0h-sidecar.v1",
+                "trustedManifestRefs": [],
+                "validator": "shepherd-kernel-v3-reference.core0h-sidecar.v1"
+            },
+            "lowering": {
+                "contentRefPrefix": "proof-lowering:sha256:",
+                "oracle": {
+                    "path": "shepherd/packages/kernel-v3-reference/tests/golden_cases.py",
+                    "repository": "https://github.com/shepherd-agents/shepherd",
+                    "revision": "d45074e0099d9ccafeed4a233702ad68ff8a2fa6"
+                },
+                "schemaVersion": "shepherd.kernel-v3-static-lowering.v1",
+                "sourceRefPrefix": "source:sha256:",
+                "trustedManifestRefs": [
+                    "proof-lowering:sha256:c160daf16228e78c4143f82c56eca660125131a942b540a92ecab2ac5ba37c15",
+                    "proof-lowering:sha256:fe4b89b5867cf0fcb2607c9b8822be0da455678d10b0641e0ecf2862b19cf111",
+                    "proof-lowering:sha256:18519bdcd9962eb9c375c1b1d99336d34aa034fd2ae9232bdf7f677af62fdbe3"
+                ],
+                "validator": "shepherd-kernel-v3-reference.static-lowering.v1"
+            },
+            "profileClaims": [
+                {
+                    "assumptions": [
+                        "static_source_fragment",
+                        "generated_trace_exact",
+                        "lean_fragment_assumptions"
+                    ],
+                    "forbiddenActionKinds": ["abort"],
+                    "profile": "core0",
+                    "requiredCaptureActionKind": null,
+                    "requiresCore0hSidecar": false,
+                    "strength": "semantic_adequacy",
+                    "theoremIds": [
+                        "source_eval_to_machine",
+                        "core0_machine_eval_to_source",
+                        "trace_monotonic"
+                    ]
+                },
+                {
+                    "assumptions": [
+                        "static_source_fragment",
+                        "generated_trace_exact",
+                        "lean_fragment_assumptions",
+                        "single_direct_abort_capture"
+                    ],
+                    "forbiddenActionKinds": [],
+                    "profile": "core_a",
+                    "requiredCaptureActionKind": "abort",
+                    "requiresCore0hSidecar": false,
+                    "strength": "semantic_adequacy",
+                    "theoremIds": [
+                        "source_eval_to_machine",
+                        "coreA_machine_eval_to_source",
+                        "trace_monotonic"
+                    ]
+                },
+                {
+                    "assumptions": [
+                        "static_source_fragment",
+                        "generated_trace_exact",
+                        "lean_fragment_assumptions",
+                        "deterministic_two_phase_handlers"
+                    ],
+                    "forbiddenActionKinds": ["abort"],
+                    "profile": "core0h",
+                    "requiredCaptureActionKind": null,
+                    "requiresCore0hSidecar": true,
+                    "strength": "forward_simulation",
+                    "theoremIds": ["core0h_source_eval_to_machine", "core0h_trace_monotonic"]
+                }
+            ],
+            "theoremArtifact": {
+                "authority": "shepherd-kernel-v3-proof-artifact.v1",
+                "buildGate": "make verify-proof-envelope-claim",
+                "extensionTheoremIds": ["vcscore_run_record_sound"],
+                "metadataRef": "proof-artifact:sha256:36d1bed0b6e9bc280691d7a27fad334ef7ec44ef45f82bbab62fe720dc837eb2",
+                "metadataRefPrefix": "proof-artifact:sha256:",
+                "revision": "arxiv:2605.10913v3",
+                "schemaVersion": "shepherd.kernel-v3-proof-artifact.v1",
+                "theoremIds": [
+                    "source_eval_to_machine",
+                    "core0_machine_eval_to_source",
+                    "coreA_machine_eval_to_source",
+                    "core0h_source_eval_to_machine",
+                    "trace_monotonic",
+                    "core0h_trace_monotonic",
+                    "single_child_branch_replay_sound"
+                ]
+            }
         }
     },
     "recordId": {

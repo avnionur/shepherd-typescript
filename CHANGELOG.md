@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-08-11
+
+### New Feature
+
+- Added configured strong proof-evidence validation for exact Core-0 and Core-A profiles,
+  strengths, assumptions, trace boundaries, and theorem-name surfaces.
+- Bound allowlisted static-lowering manifests to the exact pinned upstream generator repository,
+  path, revision, case, program, and generated trace.
+- Added content-addressed Core-0H two-phase sidecar validation with no trusted manifests enabled
+  until an upstream artifact is published.
+
+### Impact
+
+Consumers can request imported theorem-backed Core-0/Core-A classifications with exact trusted
+evidence. Malformed, stale, unsupported, or untrusted evidence remains reference-validated, and
+Core-0H cannot strengthen a claim without an explicitly configured trusted sidecar.
+
 ## [1.9.0] - 2026-08-11
 
 ### New Feature

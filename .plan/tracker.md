@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-11
 
-Current version: `1.9.0`
+Current version: `1.10.0`
 
 Current level: L0 — canonical model
 
@@ -74,8 +74,15 @@ terminal publication, and resumes only with matching satisfaction evidence.
 The Appendix B executable reference boundary now validates configured single-root Core-A
 typed-effect lifecycles against pinned upstream Core-0/Core-A vectors and classifies complete or
 live-prefix evidence conservatively. Missing, malformed, unsupported, or inconsistent evidence
-remains runtime-only, while accepted traces receive reference-validation authority without any
-theorem-backed claim.
+at the reference boundary remains runtime-only, while accepted traces receive
+reference-validation authority. Missing, malformed, unsupported, stale, or untrusted strong
+evidence cannot strengthen or weaken that accepted reference claim.
+Allowlisted Core-0, Core-A, and Core-0H lowering manifests now bind exact upstream generator
+repository, path, revision, case, program, and generated trace. The classifier emits configured
+imported theorem claims only for Core-0 and Core-A. Exact theorem metadata is pinned and
+drift-checked, while local Lean execution is explicitly out of scope. Core-0H sidecars are
+structurally and content-addressedly validated but cannot strengthen a claim until a published
+sidecar reference is configured as trusted.
 
 ## Progress
 
@@ -155,6 +162,9 @@ theorem-backed claim.
   guarded resume requiring exact independently verified prerequisite-satisfaction evidence.
 - [x] Add the configured Appendix B typed-effect reference machine, pinned Core-0/Core-A
   conformance vectors, and fail-closed proof-envelope classifier with explicit runtime non-claims.
+- [x] Validate configured strong profiles, allowlisted pinned-oracle static lowering
+  manifests, Core-0H two-phase sidecars, and exact theorem-artifact metadata without strengthening
+  stale, malformed, unsupported, or untrusted evidence.
 
 ## Verification required for this slice
 
@@ -166,8 +176,8 @@ theorem-backed claim.
 
 ## Next slice
 
-Validate configured Appendix B profile, strength, lowering, Core-0H sidecar, and pinned
-theorem-artifact metadata without strengthening unsupported evidence.
+Audit every Phase 2 exit criterion against production-seam evidence, close any remaining gaps, and
+then begin Phase 3 workspace initialization and adoption.
 
 ## Notes
 

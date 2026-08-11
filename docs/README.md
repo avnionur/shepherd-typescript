@@ -43,8 +43,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Ordered effect handlers](./effect-handlers.md) defines immutable exact-kind stacks,
   last-matching precedence, validation-before-invocation, and unhandled behavior.
 - [Typed-effect reference validation and proof envelopes](./formal-assurance.md) defines the
-  executable Core-A lifecycle boundary, fail-closed claim classification, pinned conformance
-  vectors, and explicit production-runtime non-claims.
+  executable Core-A machine, pinned static-lowering/theorem evidence boundary, and fail-closed
+  Core-0H sidecar gate.
 - [Run outcomes](./run-outcomes.md) defines versioned finished, failed, exhausted, and cancelled
   terminal records with exact task-lock provenance.
 - [Run artifacts and usage](./run-artifacts-and-usage.md) defines ordered inline-text and durable

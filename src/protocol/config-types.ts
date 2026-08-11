@@ -346,6 +346,82 @@ export type FormalAssuranceProtocolConfig = {
         /** Only branch identity admitted by the single-root core. */
         readonly rootBranchRef: string;
     };
+    /** Evidence contracts required before executable validation may emit theorem-backed claims. */
+    readonly strongEvidence: {
+        /** Validator-issued content-addressed Core-0H two-phase sidecar contract. */
+        readonly core0hSidecar: {
+            /** Prefix identifying a canonical sidecar manifest. */
+            readonly contentRefPrefix: string;
+            /** Prefix identifying one static handler body. */
+            readonly handlerRefPrefix: string;
+            /** Prefix identifying one deterministic handler phase. */
+            readonly phaseRefPrefix: string;
+            /** Stable Core-0H sidecar schema version. */
+            readonly schemaVersion: string;
+            /** Exact validator-issued sidecar manifests trusted by this release. */
+            readonly trustedManifestRefs: readonly string[];
+            /** Authority allowed to issue Core-0H sidecars. */
+            readonly validator: string;
+        };
+        /** Static source-to-kernel lowering evidence contract. */
+        readonly lowering: {
+            /** Prefix identifying one canonical lowering manifest. */
+            readonly contentRefPrefix: string;
+            /** Pinned upstream generator that proves program and generated-trace agreement. */
+            readonly oracle: {
+                /** Repository-relative static-source generator path. */
+                readonly path: string;
+                /** Upstream repository containing the generator. */
+                readonly repository: string;
+                /** Exact upstream revision containing the generator and vectors. */
+                readonly revision: string;
+            };
+            /** Stable lowering manifest schema version. */
+            readonly schemaVersion: string;
+            /** Prefix identifying a canonical source fragment. */
+            readonly sourceRefPrefix: string;
+            /** Exact validator-issued lowering manifests trusted by this release. */
+            readonly trustedManifestRefs: readonly string[];
+            /** Authority allowed to issue lowering evidence. */
+            readonly validator: string;
+        };
+        /** Strong profile claims and their exact assumptions and theorem surfaces. */
+        readonly profileClaims: readonly {
+            /** Exact ordered fragment assumptions required by the profile. */
+            readonly assumptions: readonly string[];
+            /** Handler answer actions forbidden by the profile. */
+            readonly forbiddenActionKinds: readonly string[];
+            /** Configured proof-envelope profile. */
+            readonly profile: string;
+            /** Exactly-one capture action required by the profile, otherwise null. */
+            readonly requiredCaptureActionKind: string | null;
+            /** Whether a matching Core-0H sidecar is mandatory. */
+            readonly requiresCore0hSidecar: boolean;
+            /** Only proof strength admitted by this profile. */
+            readonly strength: string;
+            /** Exact ordered theorem identifiers required by this profile. */
+            readonly theoremIds: readonly string[];
+        }[];
+        /** Pinned externally built theorem-surface metadata. */
+        readonly theoremArtifact: {
+            /** Named theorem-artifact authority. */
+            readonly authority: string;
+            /** External build command declared to check theorem names and signatures. */
+            readonly buildGate: string;
+            /** Theorem identifiers reserved for extension claims. */
+            readonly extensionTheoremIds: readonly string[];
+            /** Content identity of the pinned theorem metadata. */
+            readonly metadataRef: string;
+            /** Prefix identifying theorem-artifact metadata. */
+            readonly metadataRefPrefix: string;
+            /** Pinned external artifact revision label. */
+            readonly revision: string;
+            /** Stable theorem-artifact metadata schema version. */
+            readonly schemaVersion: string;
+            /** Complete declared base theorem surface. */
+            readonly theoremIds: readonly string[];
+        };
+    };
 };
 
 /** Validated terminal run-outcome protocol configuration. */

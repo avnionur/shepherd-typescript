@@ -155,6 +155,21 @@ by validated evidence. Missing, malformed, unsupported, or incomplete proof evid
 theorem authority.
 _Avoid_: Runtime guarantee, inferred formal proof, marketing compatibility label
 
+**Static Lowering Evidence**:
+A content-addressed manifest binding one completed reference trace and program to a named case in
+the exact configured upstream source generator revision.
+_Avoid_: Self-attested hash, arbitrary source file, production-runtime equivalence
+
+**Core-0H Sidecar**:
+A validator-issued content-addressed manifest binding deterministic two-phase handler evidence to
+one exact lowering, program, and completed trace. An untrusted sidecar cannot strengthen a claim.
+_Avoid_: Inferred handler purity, runtime handler log, allowlist bypass
+
+**Theorem Artifact Metadata**:
+A content-addressed declaration of the pinned paper revision, theorem-name surface, authority, and
+external build gate. It does not prove that the external Lean build ran in this repository.
+_Avoid_: Local theorem verification receipt, production-runtime proof, mutable theorem alias
+
 **Run Outcome**:
 An immutable versioned terminal value stating that one exact task revision finished, failed,
 exhausted its budget, or was cancelled.

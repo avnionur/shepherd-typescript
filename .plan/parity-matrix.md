@@ -117,12 +117,12 @@ and any applicable pinned upstream-oracle comparison.
 | Capability | Upstream/paper surface | Priority | Planned proof |
 | --- | --- | --- | --- |
 | Executable typed-effect trace machine | paper Appendix B reference core | P2 | configured Core-A lifecycle machine and pinned upstream Core-0/Core-A public-seam vectors implemented |
-| Proof-envelope profiles and strengths | paper Appendix B | P2 | closed configured vocabulary and conservative reference/runtime classifier implemented; stronger evidence validation follows |
-| Static-fragment lowering evidence | paper Appendix B | P2 | valid and invalid Core-0/Core-A lowering manifests |
-| Core-0H sidecar validation | paper Appendix B | P2 | content-addressed two-phase-handler sidecar fixtures |
-| Pinned theorem-artifact metadata | paper Appendix B | P2 | artifact digest/name drift gate against the configured baseline |
-| Fail-closed claim classification | paper Appendix B | P2 | live prefixes remain reference-only and malformed, unsupported, or missing evidence remains runtime-only; extension evidence follows |
-| Runtime/formal non-claim boundary | paper Appendix B | P2 | public frozen envelopes report configured excluded production surfaces explicitly; theorem authority remains false |
+| Proof-envelope profiles and strengths | paper Appendix B | P2 | configured reference, Core-0, Core-A, and Core-0H claims implemented with exact strength gates |
+| Static-fragment lowering evidence | paper Appendix B | P2 | allowlisted Core-0/Core-A/Core-0H manifests bind exact upstream generator repository, path, revision, case, program, and trace |
+| Core-0H sidecar validation | paper Appendix B | P2 | content-addressed two-phase-handler validation implemented; activation remains disabled because the pinned upstream publishes no trusted sidecar |
+| Pinned theorem-artifact metadata | paper Appendix B | P2 | exact paper revision, authority, theorem-name, and external build-gate metadata drift checks implemented; the Lean build is not local |
+| Fail-closed claim classification | paper Appendix B | P2 | live prefixes and missing, malformed, unsupported, stale, or untrusted strong evidence remain reference-only after reference validation |
+| Runtime/formal non-claim boundary | paper Appendix B | P2 | public frozen envelopes report configured excluded production surfaces; strong imported claims do not imply production-runtime verification |
 
 ## Paper experiments and reporting
 
