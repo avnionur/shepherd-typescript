@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-11
 
-Current version: `1.8.0`
+Current version: `1.9.0`
 
 Current level: L0 — canonical model
 
@@ -71,6 +71,11 @@ Read-only durable inspection validates cut-bound waiting and suspension evidence
 resumed-running command/fence evidence without mutation. Prerequisite-driven waiting now atomically
 publishes cut-bound continuation and prerequisite evidence, releases the worker claim, fences stale
 terminal publication, and resumes only with matching satisfaction evidence.
+The Appendix B executable reference boundary now validates configured single-root Core-A
+typed-effect lifecycles against pinned upstream Core-0/Core-A vectors and classifies complete or
+live-prefix evidence conservatively. Missing, malformed, unsupported, or inconsistent evidence
+remains runtime-only, while accepted traces receive reference-validation authority without any
+theorem-backed claim.
 
 ## Progress
 
@@ -148,6 +153,8 @@ terminal publication, and resumes only with matching satisfaction evidence.
   rejection, and stale-worker fencing.
 - [x] Add prerequisite-driven runtime waiting acknowledgement with atomic worker release and
   guarded resume requiring exact independently verified prerequisite-satisfaction evidence.
+- [x] Add the configured Appendix B typed-effect reference machine, pinned Core-0/Core-A
+  conformance vectors, and fail-closed proof-envelope classifier with explicit runtime non-claims.
 
 ## Verification required for this slice
 
@@ -159,8 +166,8 @@ terminal publication, and resumes only with matching satisfaction evidence.
 
 ## Next slice
 
-Implement the Appendix B typed-effect reference machine and proof-envelope classifier with
-configured profiles, strengths, and fail-closed claim classification.
+Validate configured Appendix B profile, strength, lowering, Core-0H sidecar, and pinned
+theorem-artifact metadata without strengthening unsupported evidence.
 
 ## Notes
 

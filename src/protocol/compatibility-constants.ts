@@ -205,6 +205,70 @@ export const EFFECT_PROTOCOL_V1_CONTRACT = deepFreeze({
     },
 } as const);
 
+/** Immutable Appendix B executable reference and proof-envelope contract. */
+export const FORMAL_ASSURANCE_V1_CONTRACT = deepFreeze({
+    proofEnvelope: {
+        digestAlgorithm: "sha256",
+        evidenceRefPrefix: "proof-evidence:sha256:",
+        excludedRuntimeSurfaces: [
+            "arbitrary_control_flow",
+            "provider_sdk_behavior",
+            "model_outputs",
+            "prompt_cache_state",
+            "shell_commands",
+            "filesystem_mutation_correctness",
+            "sandbox_implementations",
+            "carrier_storage",
+            "scheduling",
+            "cancellation",
+            "retries",
+            "recovery",
+            "multi_branch_replay",
+        ],
+        hexLength: 64,
+        profiles: ["runtime_only", "reference_core_a", "core0", "core_a", "core0h", "extension"],
+        programRefPrefix: "program:sha256:",
+        referenceValidatedProfile: "reference_core_a",
+        referenceValidatedStrength: "reference_validated",
+        runtimeOnlyProfile: "runtime_only",
+        runtimeOnlyStrength: "runtime_only",
+        schemaVersion: "shepherd_kernel_v3_reference.proof-envelope.v1",
+        strengths: [
+            "runtime_only",
+            "reference_validated",
+            "forward_simulation",
+            "semantic_adequacy",
+        ],
+        traceRefPrefixes: {
+            completed: "trace:sha256:",
+            prefix: "trace-prefix:sha256:",
+        },
+        validationOperations: {
+            completed: "validate_core_a_trace",
+            prefix: "validate_core_a_trace_prefix",
+        },
+        validator: "shepherd-kernel-v3-reference.proof-envelope.v1",
+    },
+    referenceMachine: {
+        actionKinds: ["return", "abort"],
+        closureReasons: ["abandoned", "skipped_by_outer_abort"],
+        continuationDispositions: ["completed", "aborted"],
+        pathPrefix: "path:",
+        profileVersion: "shepherd.kernel-v3-reference.core-a.v1",
+        recordTypes: {
+            capture: "EffectCapture",
+            continuationResume: "ContinuationResume",
+            declaration: "EffectDeclaration",
+            resumeReturn: "ResumeReturn",
+            resumptionHandle: "ResumptionHandle",
+            selection: "HandlerSelection",
+            selectionClosed: "SelectionClosed",
+        },
+        resumptionSourceRecordType: "ResumptionHandle",
+        rootBranchRef: "branch:root",
+    },
+} as const);
+
 /** Immutable terminal run-outcome contract implemented by run protocol v1. */
 export const RUN_PROTOCOL_V1_CONTRACT = deepFreeze({
     artifactContentTypes: ["text", "blob"],

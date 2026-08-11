@@ -143,6 +143,18 @@ The frozen selected-handler identity and exactly correlated effect outcome retur
 invocation.
 _Avoid_: World receipt, durable append, interception decision
 
+**Typed-Effect Reference Trace**:
+An ordered normalized record sequence accepted by the configured single-root Core-A lifecycle
+machine for one content-addressed static program. A valid live prefix is reference-validatable but
+is not proof-backed or complete.
+_Avoid_: Production run ledger, arbitrary runtime trace, Lean proof
+
+**Proof Envelope**:
+A frozen fail-closed classification of trace evidence at the strongest configured claim supported
+by validated evidence. Missing, malformed, unsupported, or incomplete proof evidence cannot imply
+theorem authority.
+_Avoid_: Runtime guarantee, inferred formal proof, marketing compatibility label
+
 **Run Outcome**:
 An immutable versioned terminal value stating that one exact task revision finished, failed,
 exhausted its budget, or was cancelled.

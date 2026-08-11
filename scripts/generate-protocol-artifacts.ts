@@ -168,6 +168,27 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedContinuationConstituentKinds = config.runs.execution.continuationConstituentKinds
         .map((kind) => `    ${JSON.stringify(kind)},`)
         .join("\n");
+    const renderedProofProfiles = config.formalAssurance.proofEnvelope.profiles
+        .map((profile) => `    ${JSON.stringify(profile)},`)
+        .join("\n");
+    const renderedProofStrengths = config.formalAssurance.proofEnvelope.strengths
+        .map((strength) => `    ${JSON.stringify(strength)},`)
+        .join("\n");
+    const renderedTraceRecordTypes = Object.entries(
+        config.formalAssurance.referenceMachine.recordTypes,
+    )
+        .map(([key, value]) => `    ${key}: ${JSON.stringify(value)},`)
+        .join("\n");
+    const renderedTraceActionKinds = config.formalAssurance.referenceMachine.actionKinds
+        .map((action) => JSON.stringify(action))
+        .join(", ");
+    const renderedTraceDispositions =
+        config.formalAssurance.referenceMachine.continuationDispositions
+            .map((disposition) => JSON.stringify(disposition))
+            .join(", ");
+    const renderedTraceClosureReasons = config.formalAssurance.referenceMachine.closureReasons
+        .map((reason) => JSON.stringify(reason))
+        .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -184,6 +205,30 @@ export const EFFECT_REVERSIBILITY_TIERS = [${renderedTiers}] as const;
 export const EFFECT_PHASES = { intent: ${JSON.stringify(
         config.effects.phases.intent,
     )}, outcome: ${JSON.stringify(config.effects.phases.outcome)} } as const;
+
+/** Configured proof-envelope profiles ordered from weakest upward. @public */
+export const PROOF_ENVELOPE_PROFILES = [
+${renderedProofProfiles}
+] as const;
+
+/** Configured proof-envelope strengths ordered from weakest upward. @public */
+export const PROOF_ENVELOPE_STRENGTHS = [
+${renderedProofStrengths}
+] as const;
+
+/** Configured normalized Core-A trace record discriminants. @public */
+export const TYPED_EFFECT_TRACE_RECORD_TYPES = {
+${renderedTraceRecordTypes}
+} as const;
+
+/** Configured Core-A handler answer actions. @public */
+export const TYPED_EFFECT_TRACE_ACTION_KINDS = [${renderedTraceActionKinds}] as const;
+
+/** Configured Core-A continuation dispositions paired with answer actions. @public */
+export const TYPED_EFFECT_TRACE_CONTINUATION_DISPOSITIONS = [${renderedTraceDispositions}] as const;
+
+/** Configured Core-A selection-closure reasons. @public */
+export const TYPED_EFFECT_TRACE_CLOSURE_REASONS = [${renderedTraceClosureReasons}] as const;
 
 /** Configured terminal status discriminants for run outcomes. @public */
 export const RUN_TERMINAL_STATUSES = [${renderedRunStatuses}] as const;

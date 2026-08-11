@@ -4,6 +4,7 @@ import { test } from "node:test";
 
 import {
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
+    FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
@@ -40,6 +41,10 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(parsed.tasks.registry.migrations), true);
     assert.equal(Object.isFrozen(parsed.tasks), true);
     assert.equal(Object.isFrozen(TASK_PROTOCOL_V1_CONTRACT), true);
+    assert.equal(parsed.formalAssurance.referenceMachine.rootBranchRef, "branch:root");
+    assert.equal(parsed.formalAssurance.proofEnvelope.runtimeOnlyProfile, "runtime_only");
+    assert.equal(Object.isFrozen(parsed.formalAssurance), true);
+    assert.equal(Object.isFrozen(FORMAL_ASSURANCE_V1_CONTRACT), true);
     assert.notEqual(
         parsed.kernel.rootWitness.body,
         objectAt(objectAt(config, "kernel"), "rootWitness").body,
@@ -463,6 +468,106 @@ test("protocol configuration rejects invalid or drifted task contracts", () => {
     ]);
 });
 
+test("protocol configuration rejects invalid or drifted formal assurance contracts", () => {
+    assertInvalid([
+        (config) => {
+            proofEnvelopeConfigOf(config).digestAlgorithm = "md5";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).hexLength = 63;
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).profiles = [];
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).profiles = ["runtime_only", "runtime_only"];
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).strengths = [];
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).runtimeOnlyProfile = "unknown";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).referenceValidatedProfile = "runtime_only";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).referenceValidatedStrength = "unknown";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).referenceValidatedStrength = "runtime_only";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).evidenceRefPrefix = "proof-evidence:md5:";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).programRefPrefix =
+                proofEnvelopeConfigOf(config).evidenceRefPrefix;
+        },
+        (config) => {
+            objectAt(proofEnvelopeConfigOf(config), "traceRefPrefixes").completed = "trace:";
+        },
+        (config) => {
+            objectAt(proofEnvelopeConfigOf(config), "traceRefPrefixes").prefix = objectAt(
+                proofEnvelopeConfigOf(config),
+                "traceRefPrefixes",
+            ).completed;
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).excludedRuntimeSurfaces = [];
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).excludedRuntimeSurfaces = ["retries", "retries"];
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).schemaVersion = "";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).validator = "another-valid-validator";
+        },
+        (config) => {
+            objectAt(proofEnvelopeConfigOf(config), "validationOperations").completed = "";
+        },
+        (config) => {
+            objectAt(proofEnvelopeConfigOf(config), "validationOperations").extra = true;
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).extra = true;
+        },
+        (config) => {
+            referenceMachineConfigOf(config).actionKinds = [];
+        },
+        (config) => {
+            referenceMachineConfigOf(config).continuationDispositions = ["completed"];
+        },
+        (config) => {
+            referenceMachineConfigOf(config).closureReasons = ["abandoned", "abandoned"];
+        },
+        (config) => {
+            referenceMachineConfigOf(config).pathPrefix = "";
+        },
+        (config) => {
+            referenceMachineConfigOf(config).rootBranchRef = "";
+        },
+        (config) => {
+            referenceMachineConfigOf(config).resumptionSourceRecordType = "unknown";
+        },
+        (config) => {
+            objectAt(referenceMachineConfigOf(config), "recordTypes").capture = "";
+        },
+        (config) => {
+            const types = objectAt(referenceMachineConfigOf(config), "recordTypes");
+            types.capture = types.declaration;
+        },
+        (config) => {
+            referenceMachineConfigOf(config).extra = true;
+        },
+        (config) => {
+            objectAt(config, "formalAssurance").extra = true;
+        },
+    ]);
+});
+
 function assertInvalid(mutations: readonly Mutation[]): void {
     for (const mutate of mutations) {
         const config = structuredClone(validConfig);
@@ -509,4 +614,12 @@ function taskConfigOf(config: Record<string, unknown>): Record<string, unknown> 
 
 function taskRegistryConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(taskConfigOf(config), "registry");
+}
+
+function proofEnvelopeConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "formalAssurance"), "proofEnvelope");
+}
+
+function referenceMachineConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "formalAssurance"), "referenceMachine");
 }

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import type {
     EffectProtocolConfig,
+    FormalAssuranceProtocolConfig,
     KernelProtocolConfig,
     ProjectionProtocolConfig,
     ProtocolConfig,
@@ -22,6 +23,10 @@ const protocolConfig: ProtocolConfig = parseProtocolConfig(
 
 /** Runtime effect intent, outcome, identity, and schema configuration. */
 export const effectProtocolConfig: EffectProtocolConfig = protocolConfig.effects;
+
+/** Executable reference-machine and proof-envelope configuration. */
+export const formalAssuranceProtocolConfig: FormalAssuranceProtocolConfig =
+    protocolConfig.formalAssurance;
 
 /** Runtime kernel ABI and canonicalization configuration. */
 export const kernelProtocolConfig: KernelProtocolConfig = protocolConfig.kernel;

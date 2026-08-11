@@ -98,6 +98,7 @@ Work:
 - implement prerequisite-driven runtime waiting acknowledgement and guarded resume with
   independently verified prerequisite-satisfaction evidence; **implemented in 1.8.0**;
 - implement the Appendix B typed-effect reference machine and proof-envelope classifier;
+  **implemented in 1.9.0**;
 - validate configured profile, strength, lowering, sidecar, and pinned theorem-artifact metadata;
 - keep unsupported, incomplete, live, and extension traces at an honest non-proof claim level.
 

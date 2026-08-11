@@ -116,13 +116,13 @@ and any applicable pinned upstream-oracle comparison.
 
 | Capability | Upstream/paper surface | Priority | Planned proof |
 | --- | --- | --- | --- |
-| Executable typed-effect trace machine | paper Appendix B reference core | P2 | cross-check TypeScript transitions against pinned reference vectors |
-| Proof-envelope profiles and strengths | paper Appendix B | P2 | configured profile/strength schema and complete classifier fixtures |
+| Executable typed-effect trace machine | paper Appendix B reference core | P2 | configured Core-A lifecycle machine and pinned upstream Core-0/Core-A public-seam vectors implemented |
+| Proof-envelope profiles and strengths | paper Appendix B | P2 | closed configured vocabulary and conservative reference/runtime classifier implemented; stronger evidence validation follows |
 | Static-fragment lowering evidence | paper Appendix B | P2 | valid and invalid Core-0/Core-A lowering manifests |
 | Core-0H sidecar validation | paper Appendix B | P2 | content-addressed two-phase-handler sidecar fixtures |
 | Pinned theorem-artifact metadata | paper Appendix B | P2 | artifact digest/name drift gate against the configured baseline |
-| Fail-closed claim classification | paper Appendix B | P2 | live, incomplete, unsupported, and extension traces never overclaim |
-| Runtime/formal non-claim boundary | paper Appendix B | P2 | public envelope reports excluded production surfaces explicitly |
+| Fail-closed claim classification | paper Appendix B | P2 | live prefixes remain reference-only and malformed, unsupported, or missing evidence remains runtime-only; extension evidence follows |
+| Runtime/formal non-claim boundary | paper Appendix B | P2 | public frozen envelopes report configured excluded production surfaces explicitly; theorem authority remains false |
 
 ## Paper experiments and reporting
 

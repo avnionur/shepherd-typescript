@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.8.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.9.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -92,6 +92,10 @@ trace-record contracts with durable SQLite task and trace stores:
 - immutable typed effect intent/outcome records with configured reversibility tiers and exact
   content-bound intent correlation;
 - immutable ordered exact-kind effect handler stacks with configured last-matching precedence;
+- a configured executable Core-A typed-effect trace machine with pinned Core-0/Core-A conformance
+  vectors, completed-versus-prefix validation, and fail-closed malformed-evidence rejection;
+- frozen proof-envelope classification that grants only `reference_validated` authority to
+  accepted reference traces and explicitly reports production-runtime non-claims;
 - immutable finished, failed, exhausted, and cancelled run outcomes with exact task-lock
   provenance;
 - immutable ordered text/blob run artifacts and aggregate run-usage records correlated by run ID;
@@ -508,9 +512,9 @@ safe boundary while atomically publishing a cancelled terminal and releasing its
 same command authority now terminalizes exact created, waiting, or suspended heads only when no
 worker remains authoritative, with exact replay across restart and stale-head rejection. The
 normative lifecycle matrix and continuation/waiting/suspension/running schemas are implemented.
-The Appendix B typed-effect reference machine and proof-envelope classifier, dynamic handler
-scopes, live-provider adapters, settlement, scopes, live supervision, suffix replay, and the paper
-applications remain planned.
+Appendix B static-fragment lowering evidence, Core-0H sidecars, pinned theorem-artifact validation,
+dynamic handler scopes, live-provider adapters, settlement, scopes, live supervision, suffix
+replay, and the paper applications remain planned.
 
 ## Attribution
 

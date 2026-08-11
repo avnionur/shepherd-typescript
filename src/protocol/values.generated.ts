@@ -13,6 +13,44 @@ export const EFFECT_REVERSIBILITY_TIERS = ["reversible", "compensable", "irrever
 /** Configured wire discriminants for effect lifecycle phases. @public */
 export const EFFECT_PHASES = { intent: "intent", outcome: "outcome" } as const;
 
+/** Configured proof-envelope profiles ordered from weakest upward. @public */
+export const PROOF_ENVELOPE_PROFILES = [
+    "runtime_only",
+    "reference_core_a",
+    "core0",
+    "core_a",
+    "core0h",
+    "extension",
+] as const;
+
+/** Configured proof-envelope strengths ordered from weakest upward. @public */
+export const PROOF_ENVELOPE_STRENGTHS = [
+    "runtime_only",
+    "reference_validated",
+    "forward_simulation",
+    "semantic_adequacy",
+] as const;
+
+/** Configured normalized Core-A trace record discriminants. @public */
+export const TYPED_EFFECT_TRACE_RECORD_TYPES = {
+    capture: "EffectCapture",
+    continuationResume: "ContinuationResume",
+    declaration: "EffectDeclaration",
+    resumeReturn: "ResumeReturn",
+    resumptionHandle: "ResumptionHandle",
+    selection: "HandlerSelection",
+    selectionClosed: "SelectionClosed",
+} as const;
+
+/** Configured Core-A handler answer actions. @public */
+export const TYPED_EFFECT_TRACE_ACTION_KINDS = ["return", "abort"] as const;
+
+/** Configured Core-A continuation dispositions paired with answer actions. @public */
+export const TYPED_EFFECT_TRACE_CONTINUATION_DISPOSITIONS = ["completed", "aborted"] as const;
+
+/** Configured Core-A selection-closure reasons. @public */
+export const TYPED_EFFECT_TRACE_CLOSURE_REASONS = ["abandoned", "skipped_by_outer_abort"] as const;
+
 /** Configured terminal status discriminants for run outcomes. @public */
 export const RUN_TERMINAL_STATUSES = ["finished", "failed", "exhausted", "cancelled"] as const;
 

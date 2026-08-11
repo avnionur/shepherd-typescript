@@ -1,6 +1,7 @@
 import {
     EFFECT_PROTOCOL_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
+    FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
     PROVIDER_PROTOCOL_V1_CONTRACT,
     RUN_PROTOCOL_V1_CONTRACT,
@@ -74,6 +75,9 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     if (!sameJson(config.effects, EFFECT_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("effect record constants require a new effect protocol");
+    }
+    if (!sameJson(config.formalAssurance, FORMAL_ASSURANCE_V1_CONTRACT)) {
+        throw new TypeError("formal assurance constants require a new formal assurance protocol");
     }
     if (!sameJson(config.runs, RUN_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("run outcome constants require a new run protocol");

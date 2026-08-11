@@ -39,6 +39,19 @@ export type {
     EffectReversibility,
     EffectSuccess,
 } from "./effect/types.ts";
+export { TypedEffectTraceValidationError } from "./formal/errors.ts";
+export { classifyProofEnvelope } from "./formal/proof-envelope.ts";
+export { validateTypedEffectTrace } from "./formal/trace-machine.ts";
+export type {
+    ProofEnvelope,
+    ProofEnvelopeClassificationOptions,
+    ProofEnvelopeProfile,
+    ProofEnvelopeStrength,
+    TypedEffectTraceRecord,
+    TypedEffectTraceRecordType,
+    TypedEffectTraceValidation,
+    TypedEffectTraceValidationOptions,
+} from "./formal/types.ts";
 export type { TraceImportReceipt } from "./interchange/types.ts";
 export { projectExecution } from "./projection/execution.ts";
 export { projectEffectiveHistory } from "./projection/history.ts";

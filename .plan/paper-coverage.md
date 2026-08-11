@@ -56,10 +56,11 @@ not described as a new formal proof unless a separately verified theorem artifac
 
 ### Formal claims
 
-Appendix B does not prove the complete production runtime. The TypeScript implementation will
-preserve that boundary: ordinary runs remain runtime-only; stronger envelopes require the exact
-configured profile evidence and pinned theorem/artifact metadata. TypeScript implements the
-runtime validator and classifier, while a formal proof remains an external verified artifact.
+Appendix B does not prove the complete production runtime. The TypeScript implementation preserves
+that boundary: the executable Core-A validator and fail-closed reference/runtime classifier are
+implemented, while ordinary runs remain runtime-only and stronger envelopes require exact
+configured lowering, sidecar, and pinned theorem/artifact evidence. A formal proof remains an
+external verified artifact.
 
 ### Experimental parity
 

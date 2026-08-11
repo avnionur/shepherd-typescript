@@ -52,7 +52,19 @@ export type SemanticRecord = {
  * @public
  */
 export function canonicalizeRecord(record: SemanticRecord): string {
-    return JSON.stringify(normalizeValue(record, new WeakSet<object>(), "$"));
+    return canonicalizeSemanticValue(record);
+}
+
+/**
+ * Serializes one canonical semantic value for internal content-addressed protocols.
+ *
+ * @param value - Scalar, array, or record accepted by the semantic value domain.
+ * @returns The value encoded as deterministic, whitespace-free JSON.
+ * @throws {TypeError} If the value contains unsupported or malformed data.
+ * @internal
+ */
+export function canonicalizeSemanticValue(value: SemanticValue): string {
+    return JSON.stringify(normalizeValue(value, new WeakSet<object>(), "$"));
 }
 
 /**

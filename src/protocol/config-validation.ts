@@ -1,5 +1,6 @@
 import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
 import { readEffectConfig } from "./config-effects.ts";
+import { readFormalAssuranceConfig } from "./config-formal-assurance.ts";
 import { readProjectionConfig } from "./config-projections.ts";
 import { readProviderConfig } from "./config-providers.ts";
 import { readRunConfig } from "./config-runs.ts";
@@ -46,7 +47,16 @@ export function parseProtocolConfig(
 ): ProtocolConfig {
     const root = readObject(
         value,
-        ["effects", "kernel", "projections", "providers", "recordId", "runs", "tasks"],
+        [
+            "effects",
+            "formalAssurance",
+            "kernel",
+            "projections",
+            "providers",
+            "recordId",
+            "runs",
+            "tasks",
+        ],
         "protocol configuration",
     );
     const recordId = readRecordIdConfig(root.recordId);
@@ -60,6 +70,7 @@ export function parseProtocolConfig(
     }
     const config = {
         effects: readEffectConfig(root.effects),
+        formalAssurance: readFormalAssuranceConfig(root.formalAssurance),
         kernel,
         projections,
         providers: readProviderConfig(root.providers),

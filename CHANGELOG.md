@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-08-11
+
+### New Feature
+
+- Added a configured executable single-root Core-A typed-effect lifecycle validator with exact
+  normalized record shapes, correlation, one-shot resumption, closure, and live-prefix rules.
+- Added a frozen fail-closed proof-envelope classifier with configured profile, strength,
+  content-reference, validator, and explicit production-runtime non-claim vocabularies.
+- Added public-seam conformance and corruption coverage derived from pinned upstream Core-0 and
+  Core-A golden traces.
+
+### Impact
+
+Consumers can validate normalized Appendix B reference traces and classify the strongest
+executable claim supported by their evidence. Accepted complete traces and live prefixes remain
+reference-validated only; missing, malformed, unsupported, or inconsistent evidence stays
+runtime-only and never implies theorem-backed coverage.
+
 ## [1.8.0] - 2026-08-11
 
 ### New Feature

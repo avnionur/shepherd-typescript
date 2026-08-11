@@ -11,6 +11,7 @@ implementation documentation, and forward-looking plans.
 │   ├── blob/               Binary identity and crash-safe filesystem objects
 │   ├── canonical/          Deterministic semantic encoding, hashing, and snapshots
 │   ├── effect/             Intent/outcome records and ordered exact-kind handlers
+│   ├── formal/             Typed-effect reference validation and proof-envelope classification
 │   ├── interchange/        Native archive encoding, validation, and import storage
 │   ├── projection/         Disposable execution, relation, and history folds
 │   ├── provider/           Provider-neutral contracts and deterministic offline invocation
@@ -43,6 +44,7 @@ public exports → projection area → immutable store slice types
 public exports → provider area → canonical snapshots and protocol configuration
 public exports → task area → canonical identity and protocol configuration
 public exports → effect area → canonical snapshots and protocol configuration
+public exports → formal area → canonical encoding and protocol configuration
 public exports → run area → task, provider, store, canonical snapshots, and protocol configuration
 build/release scripts → repository configuration
 tests → public exports
@@ -65,6 +67,8 @@ The runtime areas are intentionally shallow:
 - `interchange/` owns native archive encoding, decoding, staging, and validated storage transfer;
 - `effect/` owns versioned intent/outcome construction, exact correlation, validation, and
   immutable ordered handler dispatch;
+- `formal/` owns the executable typed-effect trace lifecycle machine and conservative
+  proof-envelope classification;
 - `protocol/` owns typed configuration models, fail-closed validation, immutable runtime
   snapshots, and generated literal values;
 - `projection/` owns pure disposable execution, relation, and effective-history folds;

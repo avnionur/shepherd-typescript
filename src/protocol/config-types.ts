@@ -267,6 +267,87 @@ export type EffectProtocolConfig = {
     };
 };
 
+/** Validated executable reference-machine and proof-envelope configuration. */
+export type FormalAssuranceProtocolConfig = {
+    /** Conservative proof-envelope claim vocabulary and content identities. */
+    readonly proofEnvelope: {
+        /** Hash algorithm used for proof evidence and trace identities. */
+        readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
+        /** Prefix identifying content-addressed proof evidence. */
+        readonly evidenceRefPrefix: string;
+        /** Production surfaces explicitly excluded from formal coverage. */
+        readonly excludedRuntimeSurfaces: readonly string[];
+        /** Exact lowercase hexadecimal digest length. */
+        readonly hexLength: number;
+        /** Closed proof-profile vocabulary ordered from weakest upward. */
+        readonly profiles: readonly string[];
+        /** Prefix identifying content-addressed static programs. */
+        readonly programRefPrefix: string;
+        /** Profile emitted after executable Core-A validation. */
+        readonly referenceValidatedProfile: string;
+        /** Strength emitted after executable Core-A validation. */
+        readonly referenceValidatedStrength: string;
+        /** Default profile for evidence outside the reference boundary. */
+        readonly runtimeOnlyProfile: string;
+        /** Default strength for evidence outside the reference boundary. */
+        readonly runtimeOnlyStrength: string;
+        /** Stable proof-envelope wire version. */
+        readonly schemaVersion: string;
+        /** Closed proof-strength vocabulary ordered from weakest upward. */
+        readonly strengths: readonly string[];
+        /** Prefixes identifying complete and prefix trace digests. */
+        readonly traceRefPrefixes: {
+            /** Prefix for completed trace identities. */
+            readonly completed: string;
+            /** Prefix for incomplete trace-prefix identities. */
+            readonly prefix: string;
+        };
+        /** Validator operation names for complete traces and valid live prefixes. */
+        readonly validationOperations: {
+            /** Operation identifying complete-trace validation. */
+            readonly completed: string;
+            /** Operation identifying live-prefix validation. */
+            readonly prefix: string;
+        };
+        /** Executable validator authority named by reference envelopes. */
+        readonly validator: string;
+    };
+    /** Single-root Core-A lifecycle vocabulary implemented by the reference machine. */
+    readonly referenceMachine: {
+        /** Handler answer actions supported by the Core-A boundary. */
+        readonly actionKinds: readonly string[];
+        /** Selection-closure reasons supported by the Core-A boundary. */
+        readonly closureReasons: readonly string[];
+        /** Continuation dispositions paired with handler answer actions. */
+        readonly continuationDispositions: readonly string[];
+        /** Prefix used to derive selected-path identities. */
+        readonly pathPrefix: string;
+        /** Stable implemented reference-machine profile version. */
+        readonly profileVersion: string;
+        /** Closed normalized lifecycle record discriminants. */
+        readonly recordTypes: {
+            /** Handler answer capture record discriminant. */
+            readonly capture: string;
+            /** Callable continuation-resume record discriminant. */
+            readonly continuationResume: string;
+            /** Effect declaration record discriminant. */
+            readonly declaration: string;
+            /** Callable continuation-return record discriminant. */
+            readonly resumeReturn: string;
+            /** Selected resumption-handle record discriminant. */
+            readonly resumptionHandle: string;
+            /** Handler-selection record discriminant. */
+            readonly selection: string;
+            /** Abandoned selected-path closure record discriminant. */
+            readonly selectionClosed: string;
+        };
+        /** Source-record type accepted by callable continuation resumes. */
+        readonly resumptionSourceRecordType: string;
+        /** Only branch identity admitted by the single-root core. */
+        readonly rootBranchRef: string;
+    };
+};
+
 /** Validated terminal run-outcome protocol configuration. */
 export type RunProtocolConfig = {
     /** Closed artifact-content representation vocabulary. */
@@ -411,6 +492,7 @@ export type RunProtocolConfig = {
 /** Complete validated language-neutral protocol configuration. */
 export type ProtocolConfig = {
     readonly effects: EffectProtocolConfig;
+    readonly formalAssurance: FormalAssuranceProtocolConfig;
     readonly kernel: KernelProtocolConfig;
     readonly projections: ProjectionProtocolConfig;
     readonly providers: ProviderProtocolConfig;
