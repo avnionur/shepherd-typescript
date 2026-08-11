@@ -231,6 +231,33 @@ class InterruptingCancellationStore extends ObservingStartStore {
     }
 }
 
+class LostSuspensionReceiptStore extends ObservingStartStore {
+    #loseReceipt = true;
+
+    override appendDurableExecutionSuspension(
+        runId: string,
+        expectedLifecycleRecordId: RecordId,
+        fencingToken: number,
+        pauseCommandRecordId: RecordId,
+        traceCutId: string,
+        request: Parameters<SQLiteTraceStore["appendDurableExecutionSuspension"]>[5],
+    ) {
+        const receipt = super.appendDurableExecutionSuspension(
+            runId,
+            expectedLifecycleRecordId,
+            fencingToken,
+            pauseCommandRecordId,
+            traceCutId,
+            request,
+        );
+        if (this.#loseReceipt) {
+            this.#loseReceipt = false;
+            throw new Error("suspension receipt lost after commit");
+        }
+        return receipt;
+    }
+}
+
 class NonPublishingCutStore extends SQLiteTraceStore {
     override publishCut(spec: CutSpec): Cut {
         return {
@@ -542,6 +569,14 @@ test("safe-boundary cancellation publishes a command-bound terminal and fences t
         reason: "operator cancellation",
         runId,
     });
+    const competingStore = new SQLiteTraceStore(databasePath);
+    const competingCommand = requestDurableTaskCancellation(competingStore, {
+        commandId: "command:cancel:competing",
+        expectedLifecycleRecordId,
+        fencingToken,
+        reason: "competing operator cancellation",
+        runId,
+    });
     assert.throws(
         () =>
             requestDurableTaskCancellation(store, {
@@ -629,6 +664,15 @@ test("safe-boundary cancellation publishes a command-bound terminal and fences t
         acknowledgeDurableTaskCancellation(store, cancellationOptions),
         retainedAcknowledgement,
     );
+    assert.throws(
+        () =>
+            acknowledgeDurableTaskCancellation(competingStore, {
+                ...cancellationOptions,
+                cancelCommandRecordId: competingCommand.record_id,
+            }),
+        TraceStoreError,
+    );
+    competingStore.close();
     const inspection = inspectDurableTaskExecution(store, runId);
     assert.equal(inspection.status, "committed");
     assert.equal(inspection.outcome?.outcome.outcome.status, "cancelled");
@@ -867,7 +911,7 @@ test("safe-boundary suspension publishes exact checkpoint evidence and fences th
     const directory = await mkdtemp(path.join(tmpdir(), "shepherd-suspension-"));
     context.after(() => rm(directory, { force: true, recursive: true }));
     const databasePath = path.join(directory, "trace.sqlite");
-    const store = new ObservingStartStore(databasePath);
+    const store = new LostSuspensionReceiptStore(databasePath);
     const runId = "run:suspension";
     const fixtureTask = task({
         input: schema.void(),
@@ -894,8 +938,15 @@ test("safe-boundary suspension publishes exact checkpoint evidence and fences th
             }),
             invoke: async () => {
                 await safeBoundary;
-                assert.ok(suspensionOptions);
-                suspensionReceipt = acknowledgeDurableTaskSuspension(store, suspensionOptions);
+                const options = suspensionOptions;
+                assert.ok(options);
+                assert.throws(
+                    () => acknowledgeDurableTaskSuspension(store, options),
+                    /suspension receipt lost after commit/,
+                );
+                const retryStore = new SQLiteTraceStore(databasePath);
+                suspensionReceipt = acknowledgeDurableTaskSuspension(retryStore, options);
+                retryStore.close();
                 return {
                     output: "must be fenced",
                     usage: {
@@ -1155,6 +1206,28 @@ test("safe-boundary suspension publishes exact checkpoint evidence and fences th
         resumedInspection.lifecycle.running_continuation_record_id,
         resumed.running_record_id,
     );
+    assert.throws(
+        () =>
+            requestDurableTaskPause(reopened, {
+                commandId: "command:pause:stale-worker-after-resume",
+                expectedLifecycleRecordId,
+                fencingToken,
+                reason: "stale worker",
+                runId,
+            }),
+        TraceStoreError,
+    );
+    assert.throws(
+        () =>
+            requestDurableTaskCancellation(reopened, {
+                commandId: "command:cancel:stale-worker-after-resume",
+                expectedLifecycleRecordId,
+                fencingToken,
+                reason: "stale worker",
+                runId,
+            }),
+        TraceStoreError,
+    );
     const resumedRecords = reopened.readOwner(runId);
     const runningIndex = resumedRecords.findIndex(
         (record) => record.envelope.record_id === resumed.running_record_id,
@@ -1264,6 +1337,15 @@ test("safe-boundary suspension publishes exact checkpoint evidence and fences th
                 ...descriptorBase,
                 constituents: resumableConstituents.map((value, index) =>
                     index === 0 ? { ...value, status: "unavailable" } : value,
+                ),
+            },
+        ],
+        [
+            "verified-missing-receipt",
+            {
+                ...descriptorBase,
+                constituents: resumableConstituents.map((value, index) =>
+                    index === 0 ? { ...value, status: "verified" } : value,
                 ),
             },
         ],

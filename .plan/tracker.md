@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-11
 
-Current version: `1.6.0`
+Current version: `1.6.1`
 
 Current level: L0 — canonical model
 
@@ -134,6 +134,9 @@ resumed-running command/fence evidence without mutation. Runtime waiting remains
 - [x] Add globally idempotent running cancellation with exact-head/fence comparison,
   deterministic command conflicts, safe-boundary acknowledgement, atomic terminal claim release,
   interrupted-cut repair, restart replay, and stale-worker terminal fencing.
+- [x] Complete public-seam crash/race preservation evidence for lost suspension receipts,
+  competing cross-connection cancellation acknowledgements, stale pre-resume controls, and
+  verified continuation constituents with missing receipts.
 
 ## Verification required for this slice
 
@@ -145,8 +148,8 @@ resumed-running command/fence evidence without mutation. Runtime waiting remains
 
 ## Next slice
 
-Complete crash, stale-worker, missing-receipt, and cross-connection race coverage at the public
-runtime seam, then extend cancellation to created and implemented quiescent states.
+Extend globally idempotent cancellation to created and implemented quiescent states with atomic
+expected-head comparison and proof that no worker lease remains authoritative.
 
 ## Notes
 

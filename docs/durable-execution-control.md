@@ -125,6 +125,16 @@ run/head binding, and causal position. Missing, ambiguous, malformed, or non-com
 evidence fails closed. A request that is never acknowledged cannot terminalize an ambiguously
 running execution.
 
+## Crash and race guarantees
+
+Public runtime tests preserve the control boundary across store connections and lost responses.
+If suspension commits but its receipt is lost, exact acknowledgement replay returns the retained
+descriptor without rerunning checkpoint adapters. Competing cancellation commands can coexist as
+requests, but only the command cited by the first cancelled terminal can acknowledge successfully;
+the deterministic loser cannot rewrite that result. After resume acquires a new fence, pause or
+cancel requests carrying the previous head/token fail closed. A `verified` continuation
+constituent without its required receipt cannot authorize resume.
+
 ## Scope
 
 Recovery, pause-request retention, checkpoint adapter contracts, command-authorized suspension,

@@ -201,6 +201,7 @@ immutable cut or explicit current owner prefix.
    atomic terminal fencing for running workers. **Implemented in 1.6.0.** Direct cancellation from
    created, waiting, or suspended states remains future work.
 8. Add crash, stale-worker, missing-receipt, and cross-connection races at the public runtime seam.
+   **Implemented in 1.6.1.**
 
 ## Acceptance gates
 

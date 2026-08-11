@@ -91,6 +91,8 @@ Work:
   acknowledgement with worker lease release and stale-terminal fencing;
 - implement globally idempotent exact-suspension resume with unavailable-evidence rejection,
   atomic monotonic fence acquisition, and command-bound running acknowledgement;
+- preserve control-plane behavior through public-seam lost-receipt, stale-worker,
+  missing-continuation-receipt, and competing cross-connection race fixtures;
 - implement the Appendix B typed-effect reference machine and proof-envelope classifier;
 - validate configured profile, strength, lowering, sidecar, and pinned theorem-artifact metadata;
 - keep unsupported, incomplete, live, and extension traces at an honest non-proof claim level.

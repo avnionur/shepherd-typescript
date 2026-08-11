@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-08-11
+
+### Improvement
+
+- Added public-seam preservation coverage for suspension commits whose receipt is lost before the
+  caller observes it, proving exact replay across another store connection.
+- Added deterministic competing-cancellation, stale pre-resume control, and verified
+  continuation-without-receipt rejection fixtures.
+
+### Impact
+
+The durable control plane now has explicit regression evidence for the crash, stale-worker,
+missing-receipt, and cross-connection races required by the normative lifecycle roadmap. Runtime
+behavior and public APIs are unchanged.
+
 ## [1.6.0] - 2026-08-11
 
 ### New Feature
