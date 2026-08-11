@@ -34,8 +34,8 @@ generated continuation, waiting, and suspension schema contracts.
 The provider section fixes provider kinds, static-provider capabilities, and stable typed-error
 codes and messages.
 The workspace section fixes the control directory and manifest names, format version, adoption
-vocabulary and defaults, Git discovery command, baseline-reference hashing, and stable control and
-conflict errors.
+vocabulary and defaults, Git discovery command, baseline-reference hashing, binding-identity
+domain, and stable control, conflict, and binding-validation errors.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -87,8 +87,9 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
 - provider kinds are unique, static capabilities are booleans, error codes/messages are non-empty,
   and every value matches the immutable provider protocol v1 contract.
 - workspace adoption modes are unique and include the configured default, path components are safe
-  simple names, digest and reference settings agree, errors are non-empty, and every value matches
-  the immutable workspace protocol v1 contract.
+  simple names, digest and reference settings agree, binding identity and errors are non-empty, and
+  every value matches the immutable workspace protocol v2 contract. Protocol v1 remains the
+  unchanged initialization/adoption subset.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,
 root-witness identity, or current ordinal bounds requires a new ABI or migration contract.

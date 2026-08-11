@@ -15,6 +15,9 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         value,
         [
             "adoptionModes",
+            "bindingErrors",
+            "bindingIdentityKind",
+            "bindingVersion",
             "controlDirectory",
             "defaultAdoptionMode",
             "defaultInitializeGit",
@@ -35,6 +38,22 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         config.errors,
         ["conflictCode", "conflictMessage", "controlCode", "controlMessage"],
         "workspaces.errors",
+    );
+    const bindingErrors = readObject(
+        config.bindingErrors,
+        [
+            "authorityEscapeCode",
+            "authorityEscapeMessage",
+            "duplicateNameCode",
+            "duplicateNameMessage",
+            "invalidNameCode",
+            "invalidNameMessage",
+            "invalidRootCode",
+            "invalidRootMessage",
+            "rootOverlapCode",
+            "rootOverlapMessage",
+        ],
+        "workspaces.bindingErrors",
     );
     const adoptionModes = readUniqueStrings(config.adoptionModes, "workspaces.adoptionModes");
     const defaultAdoptionMode = readNonEmptyString(
@@ -75,6 +94,53 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
     }
     return {
         adoptionModes,
+        bindingErrors: {
+            authorityEscapeCode: readNonEmptyString(
+                bindingErrors.authorityEscapeCode,
+                "workspaces.bindingErrors.authorityEscapeCode",
+            ),
+            authorityEscapeMessage: readNonEmptyString(
+                bindingErrors.authorityEscapeMessage,
+                "workspaces.bindingErrors.authorityEscapeMessage",
+            ),
+            duplicateNameCode: readNonEmptyString(
+                bindingErrors.duplicateNameCode,
+                "workspaces.bindingErrors.duplicateNameCode",
+            ),
+            duplicateNameMessage: readNonEmptyString(
+                bindingErrors.duplicateNameMessage,
+                "workspaces.bindingErrors.duplicateNameMessage",
+            ),
+            invalidNameCode: readNonEmptyString(
+                bindingErrors.invalidNameCode,
+                "workspaces.bindingErrors.invalidNameCode",
+            ),
+            invalidNameMessage: readNonEmptyString(
+                bindingErrors.invalidNameMessage,
+                "workspaces.bindingErrors.invalidNameMessage",
+            ),
+            invalidRootCode: readNonEmptyString(
+                bindingErrors.invalidRootCode,
+                "workspaces.bindingErrors.invalidRootCode",
+            ),
+            invalidRootMessage: readNonEmptyString(
+                bindingErrors.invalidRootMessage,
+                "workspaces.bindingErrors.invalidRootMessage",
+            ),
+            rootOverlapCode: readNonEmptyString(
+                bindingErrors.rootOverlapCode,
+                "workspaces.bindingErrors.rootOverlapCode",
+            ),
+            rootOverlapMessage: readNonEmptyString(
+                bindingErrors.rootOverlapMessage,
+                "workspaces.bindingErrors.rootOverlapMessage",
+            ),
+        },
+        bindingIdentityKind: readNonEmptyString(
+            config.bindingIdentityKind,
+            "workspaces.bindingIdentityKind",
+        ),
+        bindingVersion: readPositiveInteger(config.bindingVersion, "workspaces.bindingVersion"),
         controlDirectory,
         defaultAdoptionMode,
         defaultInitializeGit: config.defaultInitializeGit,

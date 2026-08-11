@@ -132,7 +132,8 @@ Work:
 
 - implement workspace initialization and adoption identity; **implemented in 1.11.0**, with
   retained file custody explicitly deferred to the reference copy carrier;
-- implement canonical binding roots and overlap rejection;
+- implement canonical binding roots and overlap rejection; **implemented in 1.12.0**, with runtime
+  grants and GitRepo typing deferred to Phase 4 and carrier custody/revalidation deferred to Task 3;
 - implement reference copy carrier;
 - implement Git-aware baseline and retained output custody;
 - implement complete changeset data model;

@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-11
 
-Current version: `1.11.0`
+Current version: `1.12.0`
 
 Current level: L0 — canonical model
 
@@ -92,6 +92,9 @@ Phase 3 now begins with protected workspace initialization. Configured `none`, `
 ordinary directories, file bytes, executable bits, and symlink targets while excluding Git and
 control metadata. Initialization may create an unborn Git repository but never invents a commit or
 rewrites existing history, and reopen fails closed on malformed or unavailable evidence.
+Canonical binding validation now reopens that protected workspace, resolves names to stable
+content-addressed authority identities, rejects missing or escaping roots, and rejects equal or
+nested canonical roots in either declaration order before returning any authority.
 
 ## Progress
 
@@ -178,6 +181,8 @@ rewrites existing history, and reopen fails closed on malformed or unavailable e
   grant and durable-effect phase boundaries.
 - [x] Add protected workspace initialization and adoption identity with exact reuse, Git-history
   preservation, dirty-worktree fixtures, and fail-closed control metadata.
+- [x] Add canonical workspace-contained binding identities with symlink-aware alias handling,
+  duplicate-name validation, and symmetric overlap rejection.
 
 ## Verification required for this slice
 
@@ -189,7 +194,7 @@ rewrites existing history, and reopen fails closed on malformed or unavailable e
 
 ## Next slice
 
-Begin Phase 3, Task 2: implement canonical binding roots and overlap rejection.
+Begin Phase 3, Task 3: implement the reference copy carrier.
 
 ## Notes
 

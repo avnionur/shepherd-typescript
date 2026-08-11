@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-08-11
+
+### New Feature
+
+- Added `createWorkspaceBindings` for ordered, frozen, content-addressed logical root authority.
+- Added filesystem canonicalization, initialized-workspace containment, and rejection of equal,
+  ancestor, descendant, and symlink-aliased roots before returning any binding.
+- Added configured typed failures for invalid names or roots, duplicate names, authority escapes,
+  and root overlap.
+- Added explicit `binding_version: 2` workspace protocol results as a binding extension while
+  preserving the immutable initialization and adoption protocol v1 contract.
+
+### Impact
+
+Consumers can establish stable disjoint workspace authorities without relying on display-path
+spelling. World-byte custody and runtime permission grants remain separate later capabilities.
+
 ## [1.11.0] - 2026-08-11
 
 ### New Feature

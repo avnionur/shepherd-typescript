@@ -204,6 +204,11 @@ The configured choice to cite no baseline, an exact Git HEAD, or a content-addre
 worktree. A worktree citation identifies content but does not itself retain the cited bytes.
 _Avoid_: Settlement, implicit commit, copy-carrier custody
 
+**Workspace Binding**:
+A frozen content-addressed authority identity joining one exact logical name to one canonical,
+workspace-contained, pairwise-disjoint filesystem root.
+_Avoid_: Runtime permission grant, display-path authority, retained world snapshot
+
 **Durable Resume Command**:
 A globally idempotent canonical request naming one exact suspension acknowledgement and its
 continuation descriptor. Successful application atomically acquires the next worker fence and

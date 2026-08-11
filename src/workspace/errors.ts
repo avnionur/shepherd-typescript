@@ -31,3 +31,21 @@ export class WorkspaceInitializationConflictError extends Error {
         this.name = "WorkspaceInitializationConflictError";
     }
 }
+
+/** Raised when a proposed workspace binding cannot establish unambiguous canonical authority. */
+export class WorkspaceBindingError extends Error {
+    /** Stable machine-readable binding-validation error code. */
+    readonly code: string;
+
+    /**
+     * Creates a workspace-binding validation failure.
+     *
+     * @param code - Configured machine-readable failure code.
+     * @param message - Configured diagnostic for the rejected binding set.
+     */
+    constructor(code: string, message: string) {
+        super(message);
+        this.code = code;
+        this.name = "WorkspaceBindingError";
+    }
+}

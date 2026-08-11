@@ -8,6 +8,7 @@ import {
     KERNEL_ABI_V0_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V1_CONTRACT,
+    WORKSPACE_PROTOCOL_V2_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -47,8 +48,12 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(parsed.formalAssurance), true);
     assert.equal(Object.isFrozen(FORMAL_ASSURANCE_V1_CONTRACT), true);
     assert.equal(parsed.workspaces.defaultAdoptionMode, "worktree");
+    assert.equal(parsed.workspaces.bindingVersion, 2);
     assert.equal(Object.isFrozen(parsed.workspaces), true);
+    assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V2_CONTRACT), true);
+    assert.equal("bindingErrors" in WORKSPACE_PROTOCOL_V1_CONTRACT, false);
     assert.notEqual(
         parsed.kernel.rootWitness.body,
         objectAt(objectAt(config, "kernel"), "rootWitness").body,
@@ -646,6 +651,18 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
     assertInvalid([
         (config) => {
             workspaceConfigOf(config).adoptionModes = [];
+        },
+        (config) => {
+            workspaceConfigOf(config).bindingIdentityKind = "";
+        },
+        (config) => {
+            workspaceConfigOf(config).bindingVersion = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "bindingErrors").invalidNameCode = "";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "bindingErrors").extra = true;
         },
         (config) => {
             workspaceConfigOf(config).adoptionModes = ["none", "none"];

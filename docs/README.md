@@ -48,6 +48,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Workspace initialization and adoption](./workspace-initialization.md) defines protected
   `.vcscore` metadata, configured baseline citations, Git-history preservation, and fail-closed
   reopen behavior.
+- [Workspace binding roots](./workspace-bindings.md) defines stable canonical binding identities,
+  workspace-authority containment, symlink-aware alias handling, and pairwise overlap rejection.
 - [Run outcomes](./run-outcomes.md) defines versioned finished, failed, exhausted, and cancelled
   terminal records with exact task-lock provenance.
 - [Run artifacts and usage](./run-artifacts-and-usage.md) defines ordered inline-text and durable

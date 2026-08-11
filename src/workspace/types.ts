@@ -48,3 +48,41 @@ export type WorkspaceState = {
     /** Canonical workspace root. */
     readonly root_path: string;
 };
+
+/** One logical root proposed for canonical workspace authority. */
+export type WorkspaceBindingDefinition = {
+    /** Exact logical name used to refer to the authority. */
+    readonly name: string;
+    /** Existing directory, absolute or relative to the initialized workspace root. */
+    readonly root: string;
+};
+
+/** Closed options accepted by {@link createWorkspaceBindings}. */
+export type WorkspaceBindingOptions = {
+    /** Complete proposed binding set validated atomically. */
+    readonly bindings: readonly WorkspaceBindingDefinition[];
+    /** Existing initialized workspace root. */
+    readonly workspaceRoot: string;
+};
+
+/** Frozen canonical authority for one disjoint workspace root. */
+export type WorkspaceBinding = {
+    /** Stable content-addressed identity derived from workspace, name, and canonical root. */
+    readonly binding_id: string;
+    /** Filesystem-resolved absolute authority root. */
+    readonly canonical_root: string;
+    /** Exact logical binding name. */
+    readonly name: string;
+    /** Non-authoritative path spelling supplied by the caller. */
+    readonly requested_root: string;
+};
+
+/** Frozen complete binding authority set for one initialized workspace. */
+export type WorkspaceBindingSet = {
+    /** Configured canonical-binding protocol version. */
+    readonly binding_version: number;
+    /** Ordered, canonical, pairwise-disjoint binding authorities. */
+    readonly bindings: readonly WorkspaceBinding[];
+    /** Canonical initialized workspace root containing every authority. */
+    readonly workspace_root: string;
+};

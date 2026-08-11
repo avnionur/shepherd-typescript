@@ -569,6 +569,33 @@ export type RunProtocolConfig = {
 export type WorkspaceProtocolConfig = {
     /** Closed baseline-adoption modes. */
     readonly adoptionModes: readonly string[];
+    /** Stable public binding-validation error contract. */
+    readonly bindingErrors: {
+        /** Workspace-authority escape error code. */
+        readonly authorityEscapeCode: string;
+        /** Workspace-authority escape default message. */
+        readonly authorityEscapeMessage: string;
+        /** Duplicate logical-name error code. */
+        readonly duplicateNameCode: string;
+        /** Duplicate logical-name default message. */
+        readonly duplicateNameMessage: string;
+        /** Invalid logical-name error code. */
+        readonly invalidNameCode: string;
+        /** Invalid logical-name default message. */
+        readonly invalidNameMessage: string;
+        /** Invalid canonical-root error code. */
+        readonly invalidRootCode: string;
+        /** Invalid canonical-root default message. */
+        readonly invalidRootMessage: string;
+        /** Overlapping canonical-root error code. */
+        readonly rootOverlapCode: string;
+        /** Overlapping canonical-root default message. */
+        readonly rootOverlapMessage: string;
+    };
+    /** Canonical identity domain for workspace bindings. */
+    readonly bindingIdentityKind: string;
+    /** Public canonical-binding protocol version. */
+    readonly bindingVersion: number;
     /** Workspace-local protected control directory name. */
     readonly controlDirectory: string;
     /** Default baseline-adoption mode. */

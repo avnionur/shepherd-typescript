@@ -20,7 +20,7 @@ implementation documentation, and forward-looking plans.
 │   ├── run/                Outcomes, artifacts, usage, budgets, and cancellation
 │   ├── store/              SQLite migrations, transactions, codecs, and reads
 │   ├── task/               Descriptors, runtime schemas, locks, and durable registration
-│   └── workspace/          Initialization, adoption identity, and control-state validation
+│   └── workspace/          Initialization, adoption identity, and canonical binding authority
 ├── test/                   Public-seam unit tests and fixture assets
 ├── spec/                   Language-neutral JSON Schema contracts
 ├── scripts/                Build and release utilities
@@ -91,7 +91,7 @@ The runtime areas are intentionally shallow:
   canonical task artifacts, exact artifact locks, and the independently migrated SQLite task
   registry.
 - `workspace/` owns protected initialization, baseline-adoption identity, Git-history preservation,
-  and fail-closed control-manifest validation.
+  fail-closed control-manifest validation, and canonical disjoint binding authority.
 
 ## Module rules
 

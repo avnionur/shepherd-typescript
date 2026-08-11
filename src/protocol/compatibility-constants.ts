@@ -496,3 +496,22 @@ export const WORKSPACE_PROTOCOL_V1_CONTRACT = deepFreeze({
     manifestFile: "workspace.json",
     worktreeRefPrefix: "worktree:sha256:",
 } as const);
+
+/** Immutable canonical-binding extension implemented by workspace protocol v2. */
+export const WORKSPACE_PROTOCOL_V2_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V1_CONTRACT,
+    bindingErrors: {
+        authorityEscapeCode: "WORKSPACE_BINDING_AUTHORITY_ESCAPE",
+        authorityEscapeMessage: "workspace binding root escapes workspace authority",
+        duplicateNameCode: "WORKSPACE_BINDING_DUPLICATE_NAME",
+        duplicateNameMessage: "workspace binding names must be unique",
+        invalidNameCode: "WORKSPACE_BINDING_INVALID_NAME",
+        invalidNameMessage: "workspace binding name is invalid",
+        invalidRootCode: "WORKSPACE_BINDING_INVALID_ROOT",
+        invalidRootMessage: "workspace binding root is unavailable or unsafe",
+        rootOverlapCode: "WORKSPACE_BINDING_ROOT_OVERLAP",
+        rootOverlapMessage: "workspace binding roots must be disjoint",
+    },
+    bindingIdentityKind: "workspace-binding",
+    bindingVersion: 2,
+} as const);
