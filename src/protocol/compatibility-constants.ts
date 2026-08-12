@@ -613,3 +613,12 @@ export const WORKSPACE_PROTOCOL_V5_CONTRACT = deepFreeze({
         version: 5,
     },
 } as const);
+
+/** Immutable parent-linked custody-capture extension implemented by workspace protocol v6. */
+export const WORKSPACE_PROTOCOL_V6_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V5_CONTRACT,
+    worldCapture: {
+        maxRevisionDepth: 1_024,
+        version: 6,
+    },
+} as const);

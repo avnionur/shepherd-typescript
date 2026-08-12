@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.0] - 2026-08-12
+
+### New Feature
+
+- Added `captureCustody` to publish an isolated mutable world as a verified immutable child of its
+  exact base revision.
+- Added deterministic repeat convergence, restart reopen, byte verification, and direct
+  carrier-authenticated Task 5 changeset composition for captured children.
+- Added workspace protocol v6 with a configured bound for iterative, fail-closed revision-ancestry
+  verification.
+- Preserved the user binding and parent revision while retaining mutable custody for later fenced
+  execution and recovery decisions.
+
+### Impact
+
+Task-world execution now has the carrier primitive needed to turn quiesced isolated work into a
+durable revision. The authenticated runner, shared execution fence, capture journal, and terminal
+cut attachment remain the next Task 6 slice.
+
 ## [1.15.0] - 2026-08-12
 
 ### New Feature

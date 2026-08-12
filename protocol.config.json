@@ -586,6 +586,10 @@
         "gitMetadataName": ".git",
         "hexLength": 64,
         "manifestFile": "workspace.json",
-        "worktreeRefPrefix": "worktree:sha256:"
+        "worktreeRefPrefix": "worktree:sha256:",
+        "worldCapture": {
+            "maxRevisionDepth": 1024,
+            "version": 6
+        }
     }
 }

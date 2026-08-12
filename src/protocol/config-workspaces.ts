@@ -34,6 +34,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "hexLength",
             "manifestFile",
             "worktreeRefPrefix",
+            "worldCapture",
         ],
         "workspaces",
     );
@@ -162,6 +163,11 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "unsupportedMessage",
         ],
         "workspaces.gitCustody.errors",
+    );
+    const worldCapture = readObject(
+        config.worldCapture,
+        ["maxRevisionDepth", "version"],
+        "workspaces.worldCapture",
     );
     const adoptionModes = readUniqueStrings(config.adoptionModes, "workspaces.adoptionModes");
     const defaultAdoptionMode = readNonEmptyString(
@@ -577,6 +583,13 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         hexLength,
         manifestFile,
         worktreeRefPrefix,
+        worldCapture: {
+            maxRevisionDepth: readPositiveInteger(
+                worldCapture.maxRevisionDepth,
+                "workspaces.worldCapture.maxRevisionDepth",
+            ),
+            version: readPositiveInteger(worldCapture.version, "workspaces.worldCapture.version"),
+        },
     };
 }
 

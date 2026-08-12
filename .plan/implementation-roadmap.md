@@ -143,7 +143,9 @@ Work:
 - implement the canonical copy-world changeset model core; **implemented in 1.15.0**, with
   carrier-verified revision comparison, reconstructive path changes, configured input/output
   limits, and immutable content-addressed identity; execution capture remains Task 6;
-- capture task world changes away from the user's working tree;
+- capture task world changes away from the user's working tree; **carrier foundation implemented
+  in 1.16.0**, with deterministic parent-linked custody promotion, restart reopen, and Task 5
+  changeset composition; authenticated runner and durable fenced publication remain Task 6B;
 - expose read-only changeset inspection, retained content reads, bounded previews, derived
   rename/copy projections, and Gitlink citations from the Git-aware adapter;
 - implement exact-ID `select` and `discard`;

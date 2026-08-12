@@ -738,6 +738,13 @@ export type WorkspaceProtocolConfig = {
     readonly manifestFile: string;
     /** Prefix identifying an adopted worktree baseline. */
     readonly worktreeRefPrefix: string;
+    /** Parent-linked task-world capture protocol configuration. */
+    readonly worldCapture: {
+        /** Maximum verified immutable revision ancestry depth. */
+        readonly maxRevisionDepth: number;
+        /** Public workspace capture protocol version. */
+        readonly version: number;
+    };
 };
 
 /** Complete validated language-neutral protocol configuration. */

@@ -227,8 +227,18 @@ export type ReferenceCopyCarrierOptions = {
     readonly workspaceRoot: string;
 };
 
-/** Public workspace protocol v3 reference copy-carrier operations. */
+/** Public workspace protocol v6 reference copy-carrier operations. */
 export type ReferenceCopyCarrier = {
+    /**
+     * Publishes the current verified custody as an immutable child world revision.
+     *
+     * The caller must already have fenced and quiesced every writer for this custody.
+     *
+     * @param custodyId - Exact quiesced mutable custody identity to capture.
+     * @returns Parent-linked immutable revision containing the custody's current bytes.
+     * @throws {WorldCarrierError} If custody, base, content, or publication fails verification.
+     */
+    readonly captureCustody: (custodyId: string) => Promise<WorldRevision>;
     /**
      * Physically discards one exact mutable custody receipt without changing its parent revision.
      *

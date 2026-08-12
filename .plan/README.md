@@ -152,6 +152,8 @@ record and public API must declare a protocol/compatibility version.
   repository/index evidence, object retention, movement, and Task 5 changeset boundary.
 - [Changeset-model research](./changeset-model-research.md) — canonical reconstructive changes,
   identity, path and node semantics, limits, and the Task 6 capture boundary.
+- [Task-world capture research](./task-world-capture-research.md) — isolated retained-world
+  execution, custody promotion, fencing, durable publication, recovery, and Task 7 boundaries.
 - [Testing and release](./testing-and-release.md) — conformance, property,
   security, recovery, performance, CI, and release gates.
 - [Decisions and risks](./decisions-and-risks.md) — adopted decisions,

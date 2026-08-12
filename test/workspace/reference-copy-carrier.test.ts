@@ -19,8 +19,10 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+    createRecordId,
     createReferenceCopyCarrier,
     createWorkspaceBindings,
+    createWorldChangeset,
     initializeWorkspace,
     WorldCarrierError,
 } from "../../src/index.ts";
@@ -73,6 +75,49 @@ test("reference copy carrier snapshots, reopens, forks, verifies, and discards r
     assert.notEqual(custodyVerification.content_id, revision.content_id);
     assert.equal(await readFile(path.join(sourceRoot, "text.txt"), "utf8"), "source\n");
     assert.equal((await reopened.verifyRevision(revision.revision_id)).modified, false);
+    const captured = await reopened.captureCustody(custody.custody_id);
+    assert.equal(captured.parent_revision_id, revision.revision_id);
+    assert.equal(captured.binding_id, revision.binding_id);
+    assert.equal(captured.content_id, custodyVerification.content_id);
+    assert.equal(await readFile(path.join(captured.path, "text.txt"), "utf8"), "retained change\n");
+    assert.equal(await readFile(path.join(sourceRoot, "text.txt"), "utf8"), "source\n");
+    assert.deepEqual(await reopened.captureCustody(custody.custody_id), captured);
+    assert.deepEqual(
+        await createReferenceCopyCarrier({ workspaceRoot }).openRevision(captured.revision_id),
+        captured,
+    );
+    const baseRevisionRoot = path.dirname(revision.path);
+    const hiddenBaseRevisionRoot = `${baseRevisionRoot}-hidden`;
+    await rename(baseRevisionRoot, hiddenBaseRevisionRoot);
+    await assert.rejects(reopened.openRevision(captured.revision_id), WorldCarrierError);
+    await rename(hiddenBaseRevisionRoot, baseRevisionRoot);
+    const changeset = await createWorldChangeset({
+        baseRevision: revision,
+        carrier: reopened,
+        headRevision: captured,
+    });
+    assert.deepEqual(changeset.changed_paths, ["text.txt"]);
+    const capturedDescriptorPath = path.join(
+        path.dirname(captured.path),
+        workspaceProtocolConfig.carrier.revisionDescriptorFile,
+    );
+    const capturedDescriptor = JSON.parse(await readFile(capturedDescriptorPath, "utf8")) as Record<
+        string,
+        unknown
+    >;
+    await writeFile(
+        capturedDescriptorPath,
+        `${JSON.stringify({ ...capturedDescriptor, content_id: revision.content_id })}\n`,
+    );
+    const stagingPath = path.join(
+        workspaceRoot,
+        ".vcscore",
+        workspaceProtocolConfig.carrier.carrierDirectory,
+        workspaceProtocolConfig.carrier.stagingDirectory,
+    );
+    const stagingBefore = await readdir(stagingPath);
+    await assert.rejects(reopened.captureCustody(custody.custody_id), WorldCarrierError);
+    assert.deepEqual(await readdir(stagingPath), stagingBefore);
 
     await reopened.discard(custody.custody_id);
     await reopened.discard(custody.custody_id);
@@ -135,6 +180,91 @@ test("reference copy carrier is deterministic and protects the exact workspace c
             error instanceof WorldCarrierError &&
             error.code === workspaceProtocolConfig.carrier.errors.conflictCode,
     );
+});
+
+test("custody capture converges on repeat and rejects invalid or unsupported custody", async (context) => {
+    const workspaceRoot = await temporaryDirectory(context, "custody-capture");
+    initializeWorkspace({ adopt: "none", initializeGit: false, rootPath: workspaceRoot });
+    const sourceRoot = path.join(workspaceRoot, "source");
+    await mkdir(sourceRoot);
+    await writeFile(path.join(sourceRoot, "file.txt"), "source\n");
+    const binding = createWorkspaceBindings({
+        bindings: [{ name: "source", root: "source" }],
+        workspaceRoot,
+    }).bindings[0];
+    assert.ok(binding);
+    const carrier = createReferenceCopyCarrier({ workspaceRoot });
+    const revision = await carrier.snapshot(binding);
+    const custody = await carrier.fork(revision.revision_id);
+    await writeFile(path.join(custody.path, "file.txt"), "changed\n");
+    const first = await carrier.captureCustody(custody.custody_id);
+    const second = await carrier.captureCustody(custody.custody_id);
+    assert.deepEqual(second, first);
+    await assert.rejects(carrier.captureCustody("world-custody:missing"), WorldCarrierError);
+
+    const unsupported = await carrier.fork(revision.revision_id);
+    if (process.platform !== "win32") {
+        execFileSync("mkfifo", [path.join(unsupported.path, "fifo")]);
+        await assert.rejects(carrier.captureCustody(unsupported.custody_id), WorldCarrierError);
+    }
+    const escaping = await carrier.fork(revision.revision_id);
+    await symlink("../../../../source/file.txt", path.join(escaping.path, "escape"));
+    await assert.rejects(carrier.captureCustody(escaping.custody_id), WorldCarrierError);
+    await carrier.discard(custody.custody_id);
+    await assert.rejects(carrier.captureCustody(custody.custody_id), WorldCarrierError);
+});
+
+test("revision verification rejects ancestry beyond the configured bound", async (context) => {
+    const workspaceRoot = await temporaryDirectory(context, "revision-depth");
+    initializeWorkspace({ adopt: "none", initializeGit: false, rootPath: workspaceRoot });
+    const sourceRoot = path.join(workspaceRoot, "source");
+    await mkdir(sourceRoot);
+    const binding = createWorkspaceBindings({
+        bindings: [{ name: "source", root: "source" }],
+        workspaceRoot,
+    }).bindings[0];
+    assert.ok(binding);
+    const carrier = createReferenceCopyCarrier({ workspaceRoot });
+    const base = await carrier.snapshot(binding);
+    const revisionsRoot = path.dirname(path.dirname(base.path));
+    const baseDescriptorPath = path.join(
+        path.dirname(base.path),
+        workspaceProtocolConfig.carrier.revisionDescriptorFile,
+    );
+    const baseDescriptor = JSON.parse(await readFile(baseDescriptorPath, "utf8")) as Record<
+        string,
+        unknown
+    >;
+    let parentRevisionId = base.revision_id;
+    for (let depth = 0; depth < workspaceProtocolConfig.worldCapture.maxRevisionDepth; depth += 1) {
+        const semanticId = createRecordId({
+            basis_ref: base.basis_ref,
+            binding_id: base.binding_id,
+            capture_kind: workspaceProtocolConfig.carrier.captureKind,
+            content_id: base.content_id,
+            descriptor_version: workspaceProtocolConfig.carrier.descriptorVersion,
+            manifest_version: workspaceProtocolConfig.carrier.manifestVersion,
+            parent_revision_id: parentRevisionId,
+        });
+        const revisionId = `${workspaceProtocolConfig.carrier.revisionIdPrefix}${semanticId.slice(semanticId.lastIndexOf(":") + 1)}`;
+        const revisionRoot = path.join(
+            revisionsRoot,
+            revisionId.slice(workspaceProtocolConfig.carrier.revisionIdPrefix.length),
+        );
+        await mkdir(path.join(revisionRoot, workspaceProtocolConfig.carrier.worldDirectory), {
+            recursive: true,
+        });
+        await writeFile(
+            path.join(revisionRoot, workspaceProtocolConfig.carrier.revisionDescriptorFile),
+            `${JSON.stringify({
+                ...baseDescriptor,
+                parent_revision_id: parentRevisionId,
+                revision_id: revisionId,
+            })}\n`,
+        );
+        parentRevisionId = revisionId;
+    }
+    await assert.rejects(carrier.openRevision(parentRevisionId), WorldCarrierError);
 });
 
 test("reference copy carrier captures empty, long, sparse, chained, and non-dereferenced loop entries", async (context) => {

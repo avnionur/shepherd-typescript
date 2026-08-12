@@ -21,6 +21,12 @@ changing the immutable revision or user workspace. `verifyRevision` rejects immu
 `verifyCustody` recomputes current content and reports whether it differs from the base. Closed
 descriptors support exact reopen after process restart.
 
+`captureCustody(custodyId)` double-scans the isolated mutable world, copies it into staged immutable
+custody, and publishes a verified child revision whose `parent_revision_id` is the custody's exact
+base revision. Equal repeated capture converges on the same revision, and reopening verifies its
+closed descriptor and bytes. The caller must already have proved writer quiescence; Task 6B owns
+that execution fence and durable capture journal.
+
 `discard(custodyId)` durably records the exact discard decision before removing only the owned
 mutable custody directory. Repeating the same discard is safe. It never removes the immutable base
 or user files, and substituted symlink targets fail closed. Every retry validates the closed
@@ -61,8 +67,8 @@ is exactly equal to the candidate and the retained tree verifies. Source entry i
 directory membership are checked around reads, but an ordinary copy cannot claim a kernel-atomic
 point-in-time snapshot; detected movement fails closed.
 
-This is the correctness-reference carrier, not complete settlement. Git-aware baseline semantics,
-task-world capture, changesets, selection, and settlement remain later Phase 3 tasks. Task 3 treats
+This is the correctness-reference carrier, not complete settlement. Authenticated task-world
+execution, selection, and settlement remain later Phase 3 tasks. Task 3 treats
 `.git` generically and never uses a Git commit as generic world identity.
 
 The automated suite covers ordinary restart, corruption, staging cleanup, source isolation, and

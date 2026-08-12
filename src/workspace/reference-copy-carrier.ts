@@ -158,6 +158,8 @@ function createCarrier(
     const paths = createCarrierPaths(workspace.control_path, createBindings);
 
     const carrier = Object.freeze({
+        captureCustody: async (custodyId: string) =>
+            invokeCarrier(() => captureCustody(paths, custodyId)),
         discard: async (custodyId: string) => invokeCarrier(() => discardCustody(paths, custodyId)),
         fork: async (revisionId: string) =>
             invokeCarrier(() => forkRevision(paths, revisionId, NO_ADAPTER_RECEIPTS)),
@@ -190,6 +192,65 @@ function createCarrier(
     });
     REFERENCE_CARRIERS.add(carrier);
     return carrier;
+}
+
+function captureCustody(paths: CarrierPaths, custodyId: string): WorldRevision {
+    const custody = loadCustody(paths, custodyId);
+    const baseDescriptor = readOwnedRevisionDescriptor(paths, custody.base_revision_id);
+    verifyRevision(paths, custody.base_revision_id);
+    const verifiedBaseDescriptor = readOwnedRevisionDescriptor(paths, custody.base_revision_id);
+    assert.equal(
+        canonicalizeRecord(baseDescriptor as unknown as SemanticRecord),
+        canonicalizeRecord(verifiedBaseDescriptor as unknown as SemanticRecord),
+        "base revision changed during custody capture",
+    );
+    const stagingRoot = createStaging(paths);
+    const stagedWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
+    try {
+        mkdirSync(stagedWorld);
+        const manifest = captureTree(custody.path, stagedWorld, null);
+        const secondManifest = captureTree(custody.path, null, null);
+        assert.equal(
+            canonicalManifest(manifest),
+            canonicalManifest(secondManifest),
+            "world custody changed during capture",
+        );
+        assertManifestEqual(manifest, captureTree(stagedWorld, null, null));
+        const contentId = createContentId(manifest);
+        const revisionId = createRevisionId(
+            custody.binding_id,
+            contentId,
+            baseDescriptor.basis_ref,
+            custody.base_revision_id,
+        );
+        const descriptor: RevisionDescriptor = {
+            backend: workspaceProtocolConfig.carrier.backendKind,
+            basis_ref: baseDescriptor.basis_ref,
+            binding_id: custody.binding_id,
+            binding_name: baseDescriptor.binding_name,
+            binding_root: baseDescriptor.binding_root,
+            capture_kind: workspaceProtocolConfig.carrier.captureKind,
+            content_id: contentId,
+            descriptor_format: workspaceProtocolConfig.carrier.descriptorFormat,
+            descriptor_version: workspaceProtocolConfig.carrier.descriptorVersion,
+            manifest,
+            parent_revision_id: custody.base_revision_id,
+            revision_id: revisionId,
+        };
+        writeClosedDescriptor(
+            path.join(stagingRoot, workspaceProtocolConfig.carrier.revisionDescriptorFile),
+            descriptor,
+        );
+        syncDirectory(stagingRoot);
+        publishDirectory(paths, stagingRoot, revisionRoot(paths, revisionId), () =>
+            assertRevisionPublicationEqual(paths, revisionId, descriptor),
+        );
+        verifyRevision(paths, revisionId);
+        return loadRevision(paths, revisionId);
+    } catch (error) {
+        cleanupStaging(paths, stagingRoot);
+        throwCarrierError(error);
+    }
 }
 
 /** @internal Captures a Git-adapter staging tree under the protected control root. */
@@ -460,6 +521,34 @@ function loadCustody(paths: CarrierPaths, custodyId: string): WorldCustody {
 }
 
 function verifyRevision(paths: CarrierPaths, revisionId: string): WorldVerification {
+    let depth = 0;
+    let currentRevisionId: string | null = revisionId;
+    let child: WorldRevision | null = null;
+    let requestedVerification: WorldVerification | null = null;
+    while (currentRevisionId !== null) {
+        if (depth >= workspaceProtocolConfig.worldCapture.maxRevisionDepth) {
+            throw carrierError("control", "world revision ancestry is cyclic or too deep");
+        }
+        depth += 1;
+        const verification = verifyRevisionNode(paths, currentRevisionId);
+        const current = loadRevision(paths, currentRevisionId);
+        if (requestedVerification === null) requestedVerification = verification;
+        if (child !== null) {
+            assert.equal(
+                current.binding_id,
+                child.binding_id,
+                "world revision parent binding differs",
+            );
+            assert.equal(current.basis_ref, child.basis_ref, "world revision parent basis differs");
+        }
+        child = current;
+        currentRevisionId = current.parent_revision_id;
+    }
+    assert.ok(requestedVerification);
+    return requestedVerification;
+}
+
+function verifyRevisionNode(paths: CarrierPaths, revisionId: string): WorldVerification {
     const descriptor = readOwnedRevisionDescriptor(paths, revisionId);
     const binding = paths.createBindings({
         bindings: [{ name: descriptor.binding_name, root: descriptor.binding_root }],
@@ -833,7 +922,7 @@ function readRevisionDescriptor(descriptorPath: string): RevisionDescriptor {
             typeof value.binding_root !== "string" ||
             typeof value.content_id !== "string" ||
             typeof value.revision_id !== "string" ||
-            value.parent_revision_id !== null ||
+            !(value.parent_revision_id === null || typeof value.parent_revision_id === "string") ||
             !Array.isArray(value.manifest)
         ),
         true,

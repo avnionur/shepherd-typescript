@@ -51,7 +51,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Workspace binding roots](./workspace-bindings.md) defines stable canonical binding identities,
   workspace-authority containment, symlink-aware alias handling, and pairwise overlap rejection.
 - [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,
-  isolated mutable custody, restart reopen, verification, and exact idempotent discard.
+  isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
+  idempotent discard.
 - [Git-aware baseline and retained output custody](./git-aware-custody.md) defines semantic Git
   bases, exact index/object receipts, linked-worktree identity, movement checks, and isolated
   retained output.

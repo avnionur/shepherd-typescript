@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-12
 
-Current version: `1.15.0`
+Current version: `1.16.0`
 
 Current level: L0 — canonical model
 
@@ -105,6 +105,9 @@ gate before any optimized carrier may claim reference parity.
 Workspace protocol v4 adds exact Git-aware retained-output bases and protocol v5 now adds pure,
 immutable, content-addressed changesets that validate and compare exact copy-world revisions.
 Task execution has not yet been connected to retained-output capture; that is Phase 3 Task 6.
+Task 6A now lets the reference carrier promote an isolated mutable custody into one verified,
+parent-linked immutable revision without reading or changing the user binding. The authenticated
+runner, shared execution fence, capture journal, and terminal-cut attachment remain Task 6B.
 
 ## Progress
 
@@ -202,6 +205,8 @@ Task execution has not yet been connected to retained-output capture; that is Ph
   reconstructive file/directory/mode/symlink-target changes, canonical identity, immutability, and
   configured input/output limits. Gitlinks, content reads, previews, and move projections remain
   assigned to read-only inspection.
+- [x] Add the Task 6A carrier foundation for deterministic parent-linked custody capture, restart
+  reopen, user-tree isolation, and direct Task 5 changeset composition.
 
 ## Verification required for this slice
 
@@ -213,8 +218,8 @@ Task execution has not yet been connected to retained-output capture; that is Ph
 
 ## Next slice
 
-Begin Phase 3, Task 6: capture task-world changes away from the user's working tree using the
-Task 5 changeset model.
+Continue Phase 3, Task 6B: add the authenticated retained-world runner and durable fenced capture
+journal, then attach verified world evidence inside the execution terminal cut.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive
