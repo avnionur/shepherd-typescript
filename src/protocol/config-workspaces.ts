@@ -27,6 +27,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "format",
             "formatVersion",
             "gitExecutable",
+            "gitCustody",
             "gitHeadRefPrefix",
             "gitMetadataName",
             "hexLength",
@@ -94,6 +95,49 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "unsupportedMessage",
         ],
         "workspaces.carrier.errors",
+    );
+    const gitCustody = readObject(
+        config.gitCustody,
+        [
+            "archiveExecutable",
+            "basisIdPrefix",
+            "descriptorFile",
+            "descriptorFormat",
+            "descriptorVersion",
+            "errors",
+            "headKinds",
+            "identityFile",
+            "identityFormat",
+            "indexIdPrefix",
+            "indexReceiptFile",
+            "maxCommandBytes",
+            "objectPackFile",
+            "objectPackIdPrefix",
+            "objectFormats",
+            "repositoryIdPrefix",
+            "repositoryIdentityFile",
+            "repositoryLockAttempts",
+            "repositoryLockDelayMs",
+            "repositoryLockPrefix",
+            "stagingDirectory",
+            "version",
+            "worktreeIdPrefix",
+        ],
+        "workspaces.gitCustody",
+    );
+    const gitCustodyErrors = readObject(
+        gitCustody.errors,
+        [
+            "baselineUnavailableCode",
+            "baselineUnavailableMessage",
+            "controlCode",
+            "controlMessage",
+            "movementCode",
+            "movementMessage",
+            "unsupportedCode",
+            "unsupportedMessage",
+        ],
+        "workspaces.gitCustody.errors",
     );
     const adoptionModes = readUniqueStrings(config.adoptionModes, "workspaces.adoptionModes");
     const defaultAdoptionMode = readNonEmptyString(
@@ -318,6 +362,127 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         format: readNonEmptyString(config.format, "workspaces.format"),
         formatVersion: readPositiveInteger(config.formatVersion, "workspaces.formatVersion"),
         gitExecutable: readNonEmptyString(config.gitExecutable, "workspaces.gitExecutable"),
+        gitCustody: {
+            archiveExecutable: readNonEmptyString(
+                gitCustody.archiveExecutable,
+                "workspaces.gitCustody.archiveExecutable",
+            ),
+            basisIdPrefix: readDigestPrefix(
+                gitCustody.basisIdPrefix,
+                digestAlgorithm,
+                "workspaces.gitCustody.basisIdPrefix",
+            ),
+            descriptorFile: readSimpleName(
+                gitCustody.descriptorFile,
+                "workspaces.gitCustody.descriptorFile",
+            ),
+            descriptorFormat: readNonEmptyString(
+                gitCustody.descriptorFormat,
+                "workspaces.gitCustody.descriptorFormat",
+            ),
+            descriptorVersion: readPositiveInteger(
+                gitCustody.descriptorVersion,
+                "workspaces.gitCustody.descriptorVersion",
+            ),
+            errors: {
+                baselineUnavailableCode: readNonEmptyString(
+                    gitCustodyErrors.baselineUnavailableCode,
+                    "workspaces.gitCustody.errors.baselineUnavailableCode",
+                ),
+                baselineUnavailableMessage: readNonEmptyString(
+                    gitCustodyErrors.baselineUnavailableMessage,
+                    "workspaces.gitCustody.errors.baselineUnavailableMessage",
+                ),
+                controlCode: readNonEmptyString(
+                    gitCustodyErrors.controlCode,
+                    "workspaces.gitCustody.errors.controlCode",
+                ),
+                controlMessage: readNonEmptyString(
+                    gitCustodyErrors.controlMessage,
+                    "workspaces.gitCustody.errors.controlMessage",
+                ),
+                movementCode: readNonEmptyString(
+                    gitCustodyErrors.movementCode,
+                    "workspaces.gitCustody.errors.movementCode",
+                ),
+                movementMessage: readNonEmptyString(
+                    gitCustodyErrors.movementMessage,
+                    "workspaces.gitCustody.errors.movementMessage",
+                ),
+                unsupportedCode: readNonEmptyString(
+                    gitCustodyErrors.unsupportedCode,
+                    "workspaces.gitCustody.errors.unsupportedCode",
+                ),
+                unsupportedMessage: readNonEmptyString(
+                    gitCustodyErrors.unsupportedMessage,
+                    "workspaces.gitCustody.errors.unsupportedMessage",
+                ),
+            },
+            headKinds: readUniqueStrings(gitCustody.headKinds, "workspaces.gitCustody.headKinds"),
+            identityFile: readSimpleName(
+                gitCustody.identityFile,
+                "workspaces.gitCustody.identityFile",
+            ),
+            identityFormat: readNonEmptyString(
+                gitCustody.identityFormat,
+                "workspaces.gitCustody.identityFormat",
+            ),
+            indexIdPrefix: readDigestPrefix(
+                gitCustody.indexIdPrefix,
+                digestAlgorithm,
+                "workspaces.gitCustody.indexIdPrefix",
+            ),
+            indexReceiptFile: readSimpleName(
+                gitCustody.indexReceiptFile,
+                "workspaces.gitCustody.indexReceiptFile",
+            ),
+            maxCommandBytes: readPositiveInteger(
+                gitCustody.maxCommandBytes,
+                "workspaces.gitCustody.maxCommandBytes",
+            ),
+            objectPackFile: readSimpleName(
+                gitCustody.objectPackFile,
+                "workspaces.gitCustody.objectPackFile",
+            ),
+            objectPackIdPrefix: readDigestPrefix(
+                gitCustody.objectPackIdPrefix,
+                digestAlgorithm,
+                "workspaces.gitCustody.objectPackIdPrefix",
+            ),
+            objectFormats: readUniqueStrings(
+                gitCustody.objectFormats,
+                "workspaces.gitCustody.objectFormats",
+            ),
+            repositoryIdPrefix: readNonEmptyString(
+                gitCustody.repositoryIdPrefix,
+                "workspaces.gitCustody.repositoryIdPrefix",
+            ),
+            repositoryIdentityFile: readSimpleName(
+                gitCustody.repositoryIdentityFile,
+                "workspaces.gitCustody.repositoryIdentityFile",
+            ),
+            repositoryLockAttempts: readPositiveInteger(
+                gitCustody.repositoryLockAttempts,
+                "workspaces.gitCustody.repositoryLockAttempts",
+            ),
+            repositoryLockDelayMs: readPositiveInteger(
+                gitCustody.repositoryLockDelayMs,
+                "workspaces.gitCustody.repositoryLockDelayMs",
+            ),
+            repositoryLockPrefix: readNonEmptyString(
+                gitCustody.repositoryLockPrefix,
+                "workspaces.gitCustody.repositoryLockPrefix",
+            ),
+            stagingDirectory: readSimpleName(
+                gitCustody.stagingDirectory,
+                "workspaces.gitCustody.stagingDirectory",
+            ),
+            version: readPositiveInteger(gitCustody.version, "workspaces.gitCustody.version"),
+            worktreeIdPrefix: readNonEmptyString(
+                gitCustody.worktreeIdPrefix,
+                "workspaces.gitCustody.worktreeIdPrefix",
+            ),
+        },
         gitHeadRefPrefix: readNonEmptyString(
             config.gitHeadRefPrefix,
             "workspaces.gitHeadRefPrefix",
@@ -327,6 +492,14 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         manifestFile,
         worktreeRefPrefix,
     };
+}
+
+function readDigestPrefix(value: unknown, algorithm: string, context: string): string {
+    const prefix = readNonEmptyString(value, context);
+    if (!prefix.endsWith(`${algorithm}:`)) {
+        throw new TypeError(`${context} must identify digestAlgorithm`);
+    }
+    return prefix;
 }
 
 function readSimpleName(value: unknown, context: string): string {

@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.13.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.14.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -102,6 +102,9 @@ trace-record contracts with durable SQLite task and trace stores:
 - stable canonical workspace binding identities with containment and overlap rejection;
 - a configured reference copy carrier with immutable verified revisions, isolated mutable custody,
   restart reopen, drift verification, and exact idempotent discard;
+- Git-aware `git-head` and `worktree` basis custody with exact index receipts, independently
+  retained Git objects, sparse/ignore evidence, linked-worktree identity, basis-movement checks,
+  and isolated restart-safe retained output;
 - immutable finished, failed, exhausted, and cancelled run outcomes with exact task-lock
   provenance;
 - immutable ordered text/blob run artifacts and aggregate run-usage records correlated by run ID;
@@ -524,9 +527,9 @@ allowlisted conformance manifests. Core-0H activation remains disabled until a
 published sidecar is trusted, and local Lean artifact execution remains external. Dynamic handler
 scopes, live-provider adapters, settlement, scopes, live supervision, suffix replay, and the paper
 applications remain planned.
-Phase 3 workspace initialization, adoption identity, canonical disjoint binding roots, and the
-reference copy carrier are implemented. Git-aware custody, changesets, and settlement remain
-planned.
+Phase 3 workspace initialization, adoption identity, canonical disjoint binding roots, the
+reference copy carrier, and Git-aware retained-output custody are implemented. The complete
+changeset model, inspection, and settlement remain planned.
 
 ## Attribution
 

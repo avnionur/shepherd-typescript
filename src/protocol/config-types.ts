@@ -673,6 +673,41 @@ export type WorkspaceProtocolConfig = {
     readonly formatVersion: number;
     /** Configured Git executable. */
     readonly gitExecutable: string;
+    /** Git-aware retained-output custody protocol configuration. */
+    readonly gitCustody: {
+        readonly archiveExecutable: string;
+        readonly basisIdPrefix: string;
+        readonly descriptorFile: string;
+        readonly descriptorFormat: string;
+        readonly descriptorVersion: number;
+        readonly errors: {
+            readonly baselineUnavailableCode: string;
+            readonly baselineUnavailableMessage: string;
+            readonly controlCode: string;
+            readonly controlMessage: string;
+            readonly movementCode: string;
+            readonly movementMessage: string;
+            readonly unsupportedCode: string;
+            readonly unsupportedMessage: string;
+        };
+        readonly headKinds: readonly string[];
+        readonly identityFile: string;
+        readonly identityFormat: string;
+        readonly indexIdPrefix: string;
+        readonly indexReceiptFile: string;
+        readonly maxCommandBytes: number;
+        readonly objectPackFile: string;
+        readonly objectPackIdPrefix: string;
+        readonly objectFormats: readonly string[];
+        readonly repositoryIdPrefix: string;
+        readonly repositoryIdentityFile: string;
+        readonly repositoryLockAttempts: number;
+        readonly repositoryLockDelayMs: number;
+        readonly repositoryLockPrefix: string;
+        readonly stagingDirectory: string;
+        readonly version: number;
+        readonly worktreeIdPrefix: string;
+    };
     /** Prefix identifying an adopted Git HEAD baseline. */
     readonly gitHeadRefPrefix: string;
     /** Git administrative entry excluded from worktree content identity. */

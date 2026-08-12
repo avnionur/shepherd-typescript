@@ -135,12 +135,11 @@ Work:
 - implement canonical binding roots and overlap rejection; **implemented in 1.12.0**, with runtime
   grants and GitRepo typing deferred to Phase 4 and carrier custody/revalidation deferred to Task 3;
 - implement reference copy carrier; **implemented in 1.13.0**, with immutable verified snapshots,
-  isolated mutable custody, restart reopen, and carrier-level discard; Git-aware custody remains
-  Task 4 and changeset/settlement operations remain later Phase 3 tasks;
-- implement Git-aware baseline and retained output custody;
-- complete reference-carrier platform and fault hardening for ACLs, extended attributes, resource
-  forks or alternate streams, case-folding collisions, permission/disk-full failures, concurrent
-  mutation, and process interruption before optimized carriers claim reference parity;
+  isolated mutable custody, restart reopen, and carrier-level discard;
+- implement the core Git-aware baseline and retained output custody slice; **implemented in 1.14.0**, with exact
+  HEAD/index/sparse/ignore evidence, independently retained Git objects, isolated copy custody,
+  restart reopen, and basis-movement classification; changeset and settlement operations remain
+  later Phase 3 tasks;
 - implement complete changeset data model;
 - capture task world changes away from the user's working tree;
 - expose read-only changeset inspection;
@@ -148,6 +147,10 @@ Work:
 - implement consume-once settlement with transactional compare-and-swap;
 - protect control-plane paths;
 - record settlement citations in the trace.
+- complete reference-carrier and Git-custody platform/fault conformance for ACLs, extended
+  attributes, resource forks or alternate streams, `core.symlinks=false`, sparse-index variants,
+  case-folding collisions, precise stable error taxonomy, permission/disk-full failures,
+  concurrent mutation, and process interruption before Phase 3 exit or optimized-carrier parity;
 
 Exit criteria:
 

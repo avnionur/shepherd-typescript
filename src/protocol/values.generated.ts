@@ -166,3 +166,6 @@ export const WORKSPACE_ADOPTION_MODES = ["none", "git-head", "worktree"] as cons
 
 /** Configured reference copy-carrier manifest entry kinds. @public */
 export const WORLD_ENTRY_KINDS = ["directory", "file", "symlink"] as const;
+
+/** Configured Git HEAD-state discriminants. @public */
+export const GIT_HEAD_KINDS = ["attached", "unborn", "detached"] as const;

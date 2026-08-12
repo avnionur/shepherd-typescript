@@ -92,7 +92,7 @@ The runtime areas are intentionally shallow:
   registry.
 - `workspace/` owns protected initialization, baseline-adoption identity, Git-history preservation,
   fail-closed control-manifest validation, canonical disjoint binding authority, and reference
-  copy-carrier custody.
+  copy-carrier plus Git-aware retained-output custody.
 
 ## Module rules
 

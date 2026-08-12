@@ -67,3 +67,21 @@ export class WorldCarrierError extends Error {
         this.name = "WorldCarrierError";
     }
 }
+
+/** Raised when Git-aware baseline or retained-output custody is unavailable or inconsistent. */
+export class GitCustodyError extends Error {
+    /** Stable machine-readable Git-custody failure code. */
+    readonly code: string;
+
+    /**
+     * Creates a Git-aware custody failure.
+     *
+     * @param code - Configured machine-readable failure code.
+     * @param message - Diagnostic describing the rejected Git state or custody evidence.
+     */
+    constructor(code: string, message: string) {
+        super(message);
+        this.code = code;
+        this.name = "GitCustodyError";
+    }
+}

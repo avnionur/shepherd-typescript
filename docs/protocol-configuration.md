@@ -36,7 +36,9 @@ codes and messages.
 The workspace section fixes the control directory and manifest names, format version, adoption
 vocabulary and defaults, Git discovery command, baseline-reference hashing, binding-identity
 domain, copy-carrier layout and identity vocabulary, and stable control, conflict, binding, and
-carrier errors.
+carrier errors. Workspace protocol v4 additionally fixes Git HEAD kinds, semantic basis and exact
+index/object receipt identities, descriptor filenames, local repository/worktree identity domains,
+supported Git object formats, command bounds, and stable Git-custody failures.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate

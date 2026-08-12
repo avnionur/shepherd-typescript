@@ -4,7 +4,7 @@ import path from "node:path";
 import { createRecordId } from "../canonical/canonical-record.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import { WorkspaceBindingError } from "./errors.ts";
-import { openWorkspace } from "./initialization.ts";
+import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import type {
     WorkspaceBinding,
     WorkspaceBindingDefinition,
@@ -27,8 +27,24 @@ import type {
  * @throws {TypeError} If the options or binding definitions are malformed.
  */
 export function createWorkspaceBindings(options: WorkspaceBindingOptions): WorkspaceBindingSet {
+    return createBindings(options, false);
+}
+
+/** @internal Revalidates binding paths for independently retained custody. */
+export function createWorkspaceBindingsForRetainedCustody(
+    options: WorkspaceBindingOptions,
+): WorkspaceBindingSet {
+    return createBindings(options, true);
+}
+
+function createBindings(
+    options: WorkspaceBindingOptions,
+    retainedCustody: boolean,
+): WorkspaceBindingSet {
     const parsed = readOptions(options);
-    const workspace = openWorkspace(parsed.workspaceRoot);
+    const workspace = retainedCustody
+        ? openWorkspaceForRetainedCustody(parsed.workspaceRoot)
+        : openWorkspace(parsed.workspaceRoot);
     const names = new Set<string>();
     const bindings: WorkspaceBinding[] = [];
     const bindingAncestorIdentities: (readonly string[])[] = [];

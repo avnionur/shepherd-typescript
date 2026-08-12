@@ -294,14 +294,27 @@ export type {
 } from "./task/types.ts";
 export { createWorkspaceBindings } from "./workspace/bindings.ts";
 export {
+    GitCustodyError,
     WorkspaceBindingError,
     WorkspaceControlError,
     WorkspaceInitializationConflictError,
     WorldCarrierError,
 } from "./workspace/errors.ts";
+export { createGitAwareCustody } from "./workspace/git-aware-custody.ts";
 export { initializeWorkspace, openWorkspace } from "./workspace/initialization.ts";
 export { createReferenceCopyCarrier } from "./workspace/reference-copy-carrier.ts";
 export type {
+    GitAwareCustody,
+    GitAwareCustodyOptions,
+    GitBasisEvidence,
+    GitCustodyVerification,
+    GitHeadEvidence,
+    GitHeadKind,
+    GitIgnoredEvidence,
+    GitIndexEntry,
+    GitIndexEvidence,
+    GitRepositoryIdentity,
+    GitRetainedOutput,
     ReferenceCopyCarrier,
     ReferenceCopyCarrierOptions,
     WorkspaceAdoption,

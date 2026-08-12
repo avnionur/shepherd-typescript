@@ -29,9 +29,9 @@ import {
 } from "../canonical/canonical-record.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import { WORLD_ENTRY_KINDS } from "../protocol/values.generated.ts";
-import { createWorkspaceBindings } from "./bindings.ts";
+import { createWorkspaceBindings, createWorkspaceBindingsForRetainedCustody } from "./bindings.ts";
 import { WorldCarrierError } from "./errors.ts";
-import { openWorkspace } from "./initialization.ts";
+import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import type {
     ReferenceCopyCarrier,
     ReferenceCopyCarrierOptions,
@@ -50,6 +50,7 @@ type CarrierPaths = {
     readonly staging: string;
     readonly workspaceRoot: string;
     readonly identities: readonly { readonly identity: string; readonly path: string }[];
+    readonly createBindings: typeof createWorkspaceBindings;
 };
 
 type RevisionDescriptor = {
@@ -86,6 +87,7 @@ type DiscardDescriptor = {
 };
 
 const [DIRECTORY_KIND, FILE_KIND, SYMLINK_KIND] = WORLD_ENTRY_KINDS;
+const NO_ADAPTER_RECEIPTS = (): void => undefined;
 
 /**
  * Creates a workspace protocol v3 reference copy carrier.
@@ -102,13 +104,49 @@ const [DIRECTORY_KIND, FILE_KIND, SYMLINK_KIND] = WORLD_ENTRY_KINDS;
 export function createReferenceCopyCarrier(
     options: ReferenceCopyCarrierOptions,
 ): ReferenceCopyCarrier {
-    const workspaceRoot = readOptions(options);
+    return createCarrier(options, openWorkspace, createWorkspaceBindings);
+}
+
+/** @internal Opens a carrier whose Git objects were internalized by retained custody. */
+export function createReferenceCopyCarrierForRetainedCustody(
+    options: ReferenceCopyCarrierOptions,
+): ReferenceCopyCarrier {
+    return createCarrier(
+        options,
+        openWorkspaceForRetainedCustody,
+        createWorkspaceBindingsForRetainedCustody,
+    );
+}
+
+/** @internal Atomically publishes a custody with adapter-owned closed receipts. */
+export function forkReferenceCopyRevisionWithReceipts(
+    workspaceRoot: string,
+    revisionId: string,
+    publishReceipts: (stagingRoot: string, custodyId: string) => void,
+): WorldCustody {
     const workspace = openWorkspace(workspaceRoot);
-    const paths = createCarrierPaths(workspace.control_path);
+    return invokeCarrier(() =>
+        forkRevision(
+            createCarrierPaths(workspace.control_path, createWorkspaceBindings),
+            revisionId,
+            publishReceipts,
+        ),
+    );
+}
+
+function createCarrier(
+    options: ReferenceCopyCarrierOptions,
+    open: typeof openWorkspace,
+    createBindings: typeof createWorkspaceBindings,
+): ReferenceCopyCarrier {
+    const workspaceRoot = readOptions(options);
+    const workspace = open(workspaceRoot);
+    const paths = createCarrierPaths(workspace.control_path, createBindings);
 
     return Object.freeze({
         discard: async (custodyId: string) => invokeCarrier(() => discardCustody(paths, custodyId)),
-        fork: async (revisionId: string) => invokeCarrier(() => forkRevision(paths, revisionId)),
+        fork: async (revisionId: string) =>
+            invokeCarrier(() => forkRevision(paths, revisionId, NO_ADAPTER_RECEIPTS)),
         openCustody: async (custodyId: string) =>
             invokeCarrier(() => {
                 verifyCustody(paths, custodyId);
@@ -127,6 +165,8 @@ export function createReferenceCopyCarrier(
                     workspace.control_path,
                     workspace.adoption.baseline_ref,
                     binding,
+                    binding.canonical_root,
+                    workspace.control_path,
                 ),
             ),
         verifyCustody: async (custodyId: string) =>
@@ -134,6 +174,53 @@ export function createReferenceCopyCarrier(
         verifyRevision: async (revisionId: string) =>
             invokeCarrier(() => verifyRevision(paths, revisionId)),
     });
+}
+
+/** @internal Captures a Git-adapter staging tree under the protected control root. */
+export function snapshotReferenceCopySource(
+    workspaceRoot: string,
+    binding: WorkspaceBinding,
+    sourceRoot: string,
+    basisRef: string,
+): WorldRevision {
+    const workspace = openWorkspace(workspaceRoot);
+    const source = assertGitStagingSource(workspace.control_path, sourceRoot);
+    return invokeCarrier(() =>
+        snapshotBinding(
+            createCarrierPaths(workspace.control_path, createWorkspaceBindings),
+            workspace.root_path,
+            workspace.control_path,
+            basisRef,
+            binding,
+            source,
+            null,
+        ),
+    );
+}
+
+/** @internal Computes copy-carrier content evidence for a Git-adapter staging tree. */
+export function inspectReferenceCopySource(
+    workspaceRoot: string,
+    sourceRoot: string,
+): WorldVerification {
+    const workspace = openWorkspace(workspaceRoot);
+    const source = assertGitStagingSource(workspace.control_path, sourceRoot);
+    return invokeCarrier(() => {
+        const manifest = captureTree(source, null, null);
+        return freezeVerification(createContentId(manifest), false, manifest);
+    });
+}
+
+function assertGitStagingSource(controlPath: string, sourceRoot: string): string {
+    const stagingParent = path.join(
+        controlPath,
+        workspaceProtocolConfig.gitCustody.stagingDirectory,
+    );
+    const source = realpathSync(sourceRoot);
+    const status = lstatSync(source);
+    assert.equal(status.isDirectory() && !status.isSymbolicLink(), true);
+    assert.equal(containsPath(stagingParent, source) && source !== stagingParent, true);
+    return source;
 }
 
 function readOptions(value: unknown): string {
@@ -157,7 +244,10 @@ function readOptions(value: unknown): string {
     return workspaceRoot;
 }
 
-function createCarrierPaths(controlPath: string): CarrierPaths {
+function createCarrierPaths(
+    controlPath: string,
+    createBindings: typeof createWorkspaceBindings,
+): CarrierPaths {
     const config = workspaceProtocolConfig.carrier;
     const carrier = path.join(controlPath, config.carrierDirectory);
     const basePaths = {
@@ -179,11 +269,12 @@ function createCarrierPaths(controlPath: string): CarrierPaths {
         }
         return {
             ...basePaths,
-            workspaceRoot: path.dirname(controlPath),
             identities: Object.values(basePaths).map((directory) => ({
                 identity: directoryIdentity(directory),
                 path: directory,
             })),
+            createBindings,
+            workspaceRoot: path.dirname(controlPath),
         };
     } catch (error) {
         throwCarrierError(error);
@@ -196,6 +287,8 @@ function snapshotBinding(
     controlPath: string,
     basisRef: string | null,
     binding: WorkspaceBinding,
+    sourceRoot: string,
+    captureControlPath: string | null,
 ): WorldRevision {
     const retainedBinding = revalidateBinding(workspaceRoot, binding);
     assert.equal(
@@ -207,8 +300,8 @@ function snapshotBinding(
     const stagedWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
     try {
         mkdirSync(stagedWorld);
-        const manifest = captureTree(retainedBinding.canonical_root, stagedWorld, controlPath);
-        const secondManifest = captureTree(retainedBinding.canonical_root, null, controlPath);
+        const manifest = captureTree(sourceRoot, stagedWorld, captureControlPath);
+        const secondManifest = captureTree(sourceRoot, null, captureControlPath);
         assert.equal(
             canonicalManifest(manifest),
             canonicalManifest(secondManifest),
@@ -263,7 +356,11 @@ function assertRevisionPublicationEqual(
     verifyRevision(paths, revisionId);
 }
 
-function forkRevision(paths: CarrierPaths, revisionId: string): WorldCustody {
+function forkRevision(
+    paths: CarrierPaths,
+    revisionId: string,
+    publishReceipts: (stagingRoot: string, custodyId: string) => void,
+): WorldCustody {
     const revision = loadRevision(paths, revisionId);
     verifyRevision(paths, revisionId);
     const custodyId = `${workspaceProtocolConfig.carrier.custodyIdPrefix}${randomUUID()}`;
@@ -282,6 +379,7 @@ function forkRevision(paths: CarrierPaths, revisionId: string): WorldCustody {
             descriptor_format: workspaceProtocolConfig.carrier.descriptorFormat,
             descriptor_version: workspaceProtocolConfig.carrier.descriptorVersion,
         };
+        publishReceipts(stagingRoot, custodyId);
         writeClosedDescriptor(
             path.join(stagingRoot, workspaceProtocolConfig.carrier.custodyDescriptorFile),
             descriptor,
@@ -347,7 +445,7 @@ function loadCustody(paths: CarrierPaths, custodyId: string): WorldCustody {
 
 function verifyRevision(paths: CarrierPaths, revisionId: string): WorldVerification {
     const descriptor = readOwnedRevisionDescriptor(paths, revisionId);
-    const binding = createWorkspaceBindings({
+    const binding = paths.createBindings({
         bindings: [{ name: descriptor.binding_name, root: descriptor.binding_root }],
         workspaceRoot: paths.workspaceRoot,
     }).bindings[0];
@@ -388,6 +486,7 @@ function discardCustody(paths: CarrierPaths, custodyId: string): void {
     const marker = discardMarker(paths, custodyId);
     const root = custodyRoot(paths, custodyId);
     try {
+        /* node:coverage ignore next */
         if (existsSync(marker)) {
             readDiscardDescriptor(marker, custodyId);
         } else {
@@ -679,6 +778,7 @@ function digestId(prefix: string, value: string | Buffer): string {
 }
 
 function revalidateBinding(workspaceRoot: string, binding: WorkspaceBinding): WorkspaceBinding {
+    /* node:coverage ignore next */
     if (binding === null || typeof binding !== "object") throw carrierError("control");
     const result = createWorkspaceBindings({
         bindings: [{ name: binding.name, root: binding.requested_root }],

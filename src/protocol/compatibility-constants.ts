@@ -550,3 +550,42 @@ export const WORKSPACE_PROTOCOL_V3_CONTRACT = deepFreeze({
         worldDirectory: "world",
     },
 } as const);
+
+/** Immutable Git-aware custody extension implemented by workspace protocol v4. */
+export const WORKSPACE_PROTOCOL_V4_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V3_CONTRACT,
+    gitCustody: {
+        archiveExecutable: "tar",
+        basisIdPrefix: "git-basis:sha256:",
+        descriptorFile: "git-output.json",
+        descriptorFormat: "shepherd.git-aware-custody",
+        descriptorVersion: 1,
+        errors: {
+            baselineUnavailableCode: "GIT_CUSTODY_BASELINE_UNAVAILABLE",
+            baselineUnavailableMessage: "Git custody baseline is unavailable",
+            controlCode: "GIT_CUSTODY_ERROR",
+            controlMessage: "Git custody evidence is unavailable or invalid",
+            movementCode: "GIT_CUSTODY_BASIS_MOVED",
+            movementMessage: "Git custody basis moved during capture",
+            unsupportedCode: "GIT_CUSTODY_UNSUPPORTED_STATE",
+            unsupportedMessage: "Git state is unsupported for retained custody",
+        },
+        headKinds: ["attached", "unborn", "detached"],
+        identityFile: "git-identity.json",
+        identityFormat: "shepherd.git-identity",
+        indexIdPrefix: "git-index:sha256:",
+        indexReceiptFile: "index.bin",
+        maxCommandBytes: 67_108_864,
+        objectPackFile: "objects.pack",
+        objectPackIdPrefix: "git-pack:sha256:",
+        objectFormats: ["sha1", "sha256"],
+        repositoryIdPrefix: "git-repository:",
+        repositoryIdentityFile: "git-repository-id.json",
+        repositoryLockAttempts: 500,
+        repositoryLockDelayMs: 10,
+        repositoryLockPrefix: "shepherd-git-authority-",
+        stagingDirectory: "git-staging",
+        version: 4,
+        worktreeIdPrefix: "git-worktree:",
+    },
+} as const);

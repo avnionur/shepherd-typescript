@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-11
+Last updated: 2026-08-12
 
-Current version: `1.13.0`
+Current version: `1.14.0`
 
 Current level: L0 — canonical model
 
@@ -192,6 +192,9 @@ gate before any optimized carrier may claim reference parity.
   duplicate-name validation, and symmetric overlap rejection.
 - [x] Add the reference copy carrier with verified snapshot publication, isolated mutable forks,
   restart reopen, corruption detection, protected-control exclusion, and exact custody discard.
+- [x] Add the Task 4 core Git-aware baseline and retained-output custody slice with exact HEAD/index/sparse/ignore
+  evidence, independent Git-object retention, linked-worktree identity, restart verification, and
+  semantic basis-movement classification.
 
 ## Verification required for this slice
 
@@ -203,7 +206,11 @@ gate before any optimized carrier may claim reference parity.
 
 ## Next slice
 
-Begin Phase 3, Task 4: implement Git-aware baseline and retained-output custody.
+Begin Phase 3, Task 5: implement the complete changeset data model.
+
+Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
+Task 5 data model: cross-platform case/symlink policy, sparse-index variants, exhaustive stable
+error taxonomy, and deterministic concurrency/process-interruption injection remain open.
 
 ## Notes
 

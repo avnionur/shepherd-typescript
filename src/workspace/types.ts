@@ -1,4 +1,8 @@
-import type { WORKSPACE_ADOPTION_MODES, WORLD_ENTRY_KINDS } from "../protocol/values.generated.ts";
+import type {
+    GIT_HEAD_KINDS,
+    WORKSPACE_ADOPTION_MODES,
+    WORLD_ENTRY_KINDS,
+} from "../protocol/values.generated.ts";
 
 /** Configured baseline-adoption mode used when initializing a workspace. */
 export type WorkspaceAdoptionMode = (typeof WORKSPACE_ADOPTION_MODES)[number];
@@ -222,4 +226,161 @@ export type ReferenceCopyCarrier = {
      * @throws {WorldCarrierError} If content or retained descriptor evidence is inconsistent.
      */
     readonly verifyRevision: (revisionId: string) => Promise<WorldVerification>;
+};
+
+/** Configured Git HEAD-state discriminant. */
+export type GitHeadKind = (typeof GIT_HEAD_KINDS)[number];
+
+/** Closed canonical Git HEAD evidence captured for one basis. */
+export type GitHeadEvidence = {
+    /** Full resolved commit object ID, or `null` for an unborn branch. */
+    readonly commit: string | null;
+    /** Attached, unborn, or detached HEAD classification. */
+    readonly kind: GitHeadKind;
+    /** Full symbolic ref name for attached or unborn HEAD, otherwise `null`. */
+    readonly ref: string | null;
+};
+
+/** One canonical Git index entry including stage and special flags. */
+export type GitIndexEntry = {
+    /** Whether Git marks the entry assume-unchanged. */
+    readonly assume_unchanged: boolean;
+    /** Whether the entry is an intent-to-add placeholder. */
+    readonly intent_to_add: boolean;
+    /** Exact Git object mode. */
+    readonly mode: string;
+    /** Exact staged object ID. */
+    readonly object_id: string;
+    /** NUL-safe repository-relative path. */
+    readonly path: string;
+    /** Whether Git marks the entry skip-worktree. */
+    readonly skip_worktree: boolean;
+    /** Git index stage, from zero through three. */
+    readonly stage: number;
+};
+
+/** Exact and semantic Git index evidence retained for a worktree basis. */
+export type GitIndexEvidence = {
+    /** Canonical semantic index entries. */
+    readonly entries: readonly GitIndexEntry[];
+    /** Digest citation for the exact opaque index bytes. */
+    readonly receipt_id: string;
+};
+
+/** Stable local repository and worktree authority evidence. */
+export type GitRepositoryIdentity = {
+    /** Whether Git reports the repository as bare. */
+    readonly bare: boolean;
+    /** Canonical Git common directory. */
+    readonly common_dir: string;
+    /** Filesystem revalidation receipt for the canonical common directory. */
+    readonly common_dir_identity: string;
+    /** Canonical per-worktree Git directory. */
+    readonly git_dir: string;
+    /** Exact Git executable version used to capture this identity. */
+    readonly git_version: string;
+    /** Configured Git object hash format. */
+    readonly object_format: string;
+    /** Persisted Shepherd-local repository identity. */
+    readonly repository_id: string;
+    /** Exact canonical Git worktree root. */
+    readonly root: string;
+    /** Persisted Shepherd-local worktree identity. */
+    readonly worktree_id: string;
+};
+
+/** Auditable ignored-untracked exclusion evidence. */
+export type GitIgnoredEvidence = {
+    /** Content digest of the canonical excluded path set. */
+    readonly digest: string;
+    /** Exact excluded ignored paths observed at capture. */
+    readonly paths: readonly string[];
+    /** Digest of effective repository and user exclusion-source receipts. */
+    readonly sources_digest: string;
+};
+
+/** Immutable Git-aware basis evidence for retained output custody. */
+export type GitBasisEvidence = {
+    /** Content-addressed semantic basis identity. */
+    readonly basis_id: string;
+    /** Exact workspace binding identity. */
+    readonly binding_id: string;
+    /** Canonical Git HEAD evidence. */
+    readonly head: GitHeadEvidence;
+    /** Ignored-untracked exclusion evidence. */
+    readonly ignored: GitIgnoredEvidence;
+    /** Exact and semantic index evidence for worktree adoption, otherwise `null`. */
+    readonly index: GitIndexEvidence | null;
+    /** Configured adoption mode. */
+    readonly mode: WorkspaceAdoptionMode;
+    /** Digest receipt for independently custodied required Git objects, or `null`. */
+    readonly object_pack_id: string | null;
+    /** Stable repository and worktree authority. */
+    readonly repository: GitRepositoryIdentity;
+    /** Digest of sparse-checkout configuration and pattern receipts. */
+    readonly sparse_digest: string;
+    /** Canonical managed filesystem content identity. */
+    readonly world_content_id: string;
+};
+
+/** One restart-safe retained output fork bound to an exact Git basis. */
+export type GitRetainedOutput = {
+    /** Immutable Git-aware basis descriptor. */
+    readonly basis: GitBasisEvidence;
+    /** Mutable isolated output custody. */
+    readonly custody: WorldCustody;
+    /** Workspace protocol version owning this public receipt. */
+    readonly git_custody_version: number;
+    /** Immutable managed-world revision underlying the output. */
+    readonly revision: WorldRevision;
+};
+
+/** Verification of retained output and the current user Git basis. */
+export type GitCustodyVerification = {
+    /** Whether the user's current semantic basis differs from the retained basis. */
+    readonly basis_moved: boolean;
+    /** Current verification of the isolated retained output. */
+    readonly output: WorldVerification;
+};
+
+/** Closed options accepted by {@link createGitAwareCustody}. */
+export type GitAwareCustodyOptions = {
+    /** Existing initialized workspace owning Git-aware retained output custody. */
+    readonly workspaceRoot: string;
+};
+
+/** Public workspace protocol v4 Git-aware custody operations. */
+export type GitAwareCustody = {
+    /**
+     * Captures the initialized Git adoption basis and creates isolated retained output custody.
+     *
+     * @param binding - Exact repository-root binding.
+     * @returns Retained output, or `null` when adoption mode is `none`.
+     * @throws {GitCustodyError} If Git state or publication fails closed.
+     */
+    readonly capture: (binding: WorkspaceBinding) => Promise<GitRetainedOutput | null>;
+    /**
+     * Discards one exact retained output without changing the user repository or immutable basis.
+     *
+     * @param custodyId - Exact retained output custody identity.
+     * @returns Completion after Task 3 carrier discard.
+     * @throws {GitCustodyError} If retained evidence is unavailable or malformed.
+     */
+    readonly discard: (custodyId: string) => Promise<void>;
+    /**
+     * Reopens one retained output from its closed descriptor.
+     *
+     * @param custodyId - Exact retained output custody identity.
+     * @returns Verified retained Git-aware output.
+     * @throws {GitCustodyError} If retained evidence fails validation.
+     */
+    readonly open: (custodyId: string) => Promise<GitRetainedOutput>;
+    /**
+     * Verifies retained output and compares the current Git basis with its captured basis.
+     *
+     * @param custodyId - Exact retained output custody identity.
+     * @returns Output verification and conservative basis-movement classification.
+     * @throws {GitCustodyError} If retained or current Git evidence cannot be verified.
+     */
+    readonly verify: (custodyId: string) => Promise<GitCustodyVerification>;
 };

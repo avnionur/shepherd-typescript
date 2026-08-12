@@ -111,12 +111,24 @@ export function initializeWorkspace(options: WorkspaceInitializationOptions): Wo
  * @throws {TypeError} If `rootPath` is malformed.
  */
 export function openWorkspace(rootPath: string): WorkspaceState {
+    return openWorkspaceWithCommitRequirement(rootPath, true);
+}
+
+/** @internal Opens control evidence whose adopted commit is held by retained custody. */
+export function openWorkspaceForRetainedCustody(rootPath: string): WorkspaceState {
+    return openWorkspaceWithCommitRequirement(rootPath, false);
+}
+
+function openWorkspaceWithCommitRequirement(
+    rootPath: string,
+    requireAdoptedCommit: boolean,
+): WorkspaceState {
     const canonicalRoot = readWorkspaceRoot(rootPath);
     try {
         const { controlPath, manifestPath } = resolveControlPaths(canonicalRoot, false);
         const manifest = readManifest(manifestPath);
         const git = readGitState(canonicalRoot);
-        assertRetainedGitEvidence(canonicalRoot, manifest, git);
+        assertRetainedGitEvidence(canonicalRoot, manifest, git, requireAdoptedCommit);
         return stateFrom(canonicalRoot, controlPath, manifest, git);
     } catch (error) {
         throwWorkspaceError(error);
@@ -391,11 +403,16 @@ function assertRetainedGitEvidence(
     rootPath: string,
     manifest: WorkspaceManifest,
     git: { readonly head: string | null; readonly repositoryRoot: string | null },
+    requireAdoptedCommit = true,
 ): void {
     if (manifest.initialize_git && git.repositoryRoot === null) {
         throw new WorkspaceControlError("initialized workspace no longer has a Git repository");
     }
-    if (manifest.git_head !== null && !gitCommitExists(rootPath, manifest.git_head)) {
+    if (
+        requireAdoptedCommit &&
+        manifest.git_head !== null &&
+        !gitCommitExists(rootPath, manifest.git_head)
+    ) {
         throw new WorkspaceControlError("adopted Git HEAD is unavailable");
     }
 }

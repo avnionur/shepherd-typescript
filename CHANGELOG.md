@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] - 2026-08-12
+
+### New Feature
+
+- Added workspace protocol v4 `createGitAwareCustody` for `git-head`, `worktree`, and `none`
+  adoption with isolated retained output on the reference copy carrier.
+- Added exact HEAD, index-byte and semantic-entry, sparse-checkout, ignored-source, repository,
+  linked-worktree, binding, and managed-world basis evidence with movement classification.
+- Added independently verified Git-object packs including staged-only index objects, atomically
+  published restart-safe closed receipts, shared linked-worktree repository identity, clean-gitlink
+  handling, and fail-closed conflict, dirty-submodule, nested-repository, and corruption checks.
+
+### Impact
+
+Consumers can retain Git-aware task output without changing the user's refs, index, configuration,
+or working tree, then reopen and verify it after restart. Complete changeset semantics remain the
+next Phase 3 slice.
+
 ## [1.13.0] - 2026-08-11
 
 ### New Feature

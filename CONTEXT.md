@@ -219,6 +219,11 @@ An owned mutable retained checkout forked from one verified world revision, iden
 non-semantic receipt and kept outside the user's working tree.
 _Avoid_: Immutable revision, settlement decision, user workspace
 
+**Git Basis**:
+A content-addressed repository/worktree citation joining exact HEAD, index, sparse, ignored-source,
+managed-world, binding, and retained-object evidence for movement checks and retained output.
+_Avoid_: Branch display name, current user checkout, changeset, settlement decision
+
 **Durable Resume Command**:
 A globally idempotent canonical request naming one exact suspension acknowledgement and its
 continuation descriptor. Successful application atomically acquires the next worker fence and

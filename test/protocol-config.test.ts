@@ -10,6 +10,7 @@ import {
     WORKSPACE_PROTOCOL_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V2_CONTRACT,
     WORKSPACE_PROTOCOL_V3_CONTRACT,
+    WORKSPACE_PROTOCOL_V4_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -51,13 +52,16 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.defaultAdoptionMode, "worktree");
     assert.equal(parsed.workspaces.bindingVersion, 2);
     assert.equal(parsed.workspaces.carrier.descriptorVersion, 1);
+    assert.equal(parsed.workspaces.gitCustody.version, 4);
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V2_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V3_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V4_CONTRACT), true);
     assert.equal("bindingErrors" in WORKSPACE_PROTOCOL_V1_CONTRACT, false);
     assert.equal("carrier" in WORKSPACE_PROTOCOL_V2_CONTRACT, false);
+    assert.equal("gitCustody" in WORKSPACE_PROTOCOL_V3_CONTRACT, false);
     assert.notEqual(
         parsed.kernel.rootWitness.body,
         objectAt(objectAt(config, "kernel"), "rootWitness").body,
@@ -681,6 +685,15 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             carrierConfigOf(config).discardDescriptorSuffix = "../discarded";
         },
         (config) => {
+            gitCustodyConfigOf(config).basisIdPrefix = "git-basis:md5:";
+        },
+        (config) => {
+            gitCustodyConfigOf(config).objectFormats = [];
+        },
+        (config) => {
+            gitCustodyConfigOf(config).descriptorFile = "../output.json";
+        },
+        (config) => {
             workspaceConfigOf(config).adoptionModes = ["none", "none"];
         },
         (config) => {
@@ -803,6 +816,10 @@ function workspaceConfigOf(config: Record<string, unknown>): Record<string, unkn
 
 function carrierConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(workspaceConfigOf(config), "carrier");
+}
+
+function gitCustodyConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(workspaceConfigOf(config), "gitCustody");
 }
 
 function proofEnvelopeConfigOf(config: Record<string, unknown>): Record<string, unknown> {
