@@ -590,6 +590,11 @@
         "worldCapture": {
             "maxRevisionDepth": 1024,
             "version": 6
+        },
+        "worldExecution": {
+            "enforcementKinds": ["advisory"],
+            "maxRunnerIdBytes": 256,
+            "runnerVersion": 7
         }
     }
 }

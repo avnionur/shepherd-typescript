@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.0] - 2026-08-12
+
+### New Feature
+
+- Added `createRetainedWorldRunner` for closed opaque runtime adapter registration handles.
+- Added workspace protocol v7 with configured runner version, identity bounds, and an honest
+  initial `advisory` enforcement classification.
+
+### Impact
+
+Task-world execution now has a closed runner registration whose callback remains private. Handle
+authentication, fenced world capability issuance, and durable capture publication remain the next
+Task 6 slices; this release does not yet grant filesystem authority or execute retained work.
+
 ## [1.16.0] - 2026-08-12
 
 ### New Feature

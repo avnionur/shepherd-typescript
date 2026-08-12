@@ -622,3 +622,13 @@ export const WORKSPACE_PROTOCOL_V6_CONTRACT = deepFreeze({
         version: 6,
     },
 } as const);
+
+/** Immutable authenticated retained-world runner extension implemented by workspace protocol v7. */
+export const WORKSPACE_PROTOCOL_V7_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V6_CONTRACT,
+    worldExecution: {
+        enforcementKinds: ["advisory"],
+        maxRunnerIdBytes: 256,
+        runnerVersion: 7,
+    },
+} as const);

@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-12
 
-Current version: `1.16.0`
+Current version: `1.17.0`
 
 Current level: L0 — canonical model
 
@@ -106,8 +106,11 @@ Workspace protocol v4 adds exact Git-aware retained-output bases and protocol v5
 immutable, content-addressed changesets that validate and compare exact copy-world revisions.
 Task execution has not yet been connected to retained-output capture; that is Phase 3 Task 6.
 Task 6A now lets the reference carrier promote an isolated mutable custody into one verified,
-parent-linked immutable revision without reading or changing the user binding. The authenticated
-runner, shared execution fence, capture journal, and terminal-cut attachment remain Task 6B.
+parent-linked immutable revision without reading or changing the user binding. The opaque runner
+registration is now implemented as a closed workspace-protocol-v7 handle whose executable
+callback remains in a private package registry and whose current enforcement is honestly advisory.
+Handle authentication, fenced capability issuance, the shared execution fence, capture journal,
+and terminal-cut attachment remain Task 6B.2–6B.3.
 
 ## Progress
 
@@ -207,6 +210,8 @@ runner, shared execution fence, capture journal, and terminal-cut attachment rem
   assigned to read-only inspection.
 - [x] Add the Task 6A carrier foundation for deterministic parent-linked custody capture, restart
   reopen, user-tree isolation, and direct Task 5 changeset composition.
+- [x] Add the Task 6B.1 closed opaque runner registration and configured advisory enforcement
+  contract without claiming authentication or granting filesystem/execution authority prematurely.
 
 ## Verification required for this slice
 
@@ -218,8 +223,9 @@ runner, shared execution fence, capture journal, and terminal-cut attachment rem
 
 ## Next slice
 
-Continue Phase 3, Task 6B: add the authenticated retained-world runner and durable fenced capture
-journal, then attach verified world evidence inside the execution terminal cut.
+Continue Phase 3, Task 6B.2: issue the fenced retained-world capability and integrate runner
+quiescence with the existing invocation fence. Task 6B.3 then adds the durable capture journal and
+attaches verified world evidence inside the execution terminal cut.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive

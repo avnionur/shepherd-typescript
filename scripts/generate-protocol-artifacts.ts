@@ -201,6 +201,9 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedWorldChangeOperations = config.workspaces.changesets.operations
         .map((operation) => JSON.stringify(operation))
         .join(", ");
+    const renderedRetainedWorldEnforcementKinds = config.workspaces.worldExecution.enforcementKinds
+        .map((kind) => JSON.stringify(kind))
+        .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -333,6 +336,9 @@ export const WORKSPACE_ADOPTION_MODES = [${renderedWorkspaceAdoptionModes}] as c
 
 /** Configured reference copy-carrier manifest entry kinds. @public */
 export const WORLD_ENTRY_KINDS = [${renderedWorldEntryKinds}] as const;
+
+/** Configured retained-world runner enforcement classifications. @public */
+export const RETAINED_WORLD_ENFORCEMENT_KINDS = [${renderedRetainedWorldEnforcementKinds}] as const;
 
 /** Configured Git HEAD-state discriminants. @public */
 export const GIT_HEAD_KINDS = [${renderedGitHeadKinds}] as const;

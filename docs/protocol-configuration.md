@@ -43,6 +43,8 @@ Workspace protocol v5 additionally fixes changeset operations, identity, schema 
 limits, and stable validation failures.
 Workspace protocol v6 additionally fixes parent-linked custody-capture versioning and the maximum
 revision-ancestry depth verified before recovery fails closed.
+Workspace protocol v7 additionally fixes retained-world runner-registration versioning,
+runner-identity bounds, and the closed enforcement vocabulary.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -97,8 +99,9 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   simple names, digest and reference settings agree, binding identity and errors are non-empty, and
   copy-carrier descriptor, collection, entry-kind, identity, and error values are closed and
   non-empty. Changeset operations, identity, limits, version, and error contracts are also closed.
-  Parent-linked capture versioning and its positive ancestry bound are closed. Every value matches
-  the immutable workspace protocol v6 contract. Protocols v1 through v5 remain unchanged
+  Parent-linked capture versioning and its positive ancestry bound are closed. Retained-world
+  runner versioning, identity bounds, and enforcement kinds are also closed. Every value matches
+  the immutable workspace protocol v7 contract. Protocols v1 through v6 remain unchanged
   historical subsets.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,

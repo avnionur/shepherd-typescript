@@ -305,6 +305,14 @@ export {
 export { createGitAwareCustody } from "./workspace/git-aware-custody.ts";
 export { initializeWorkspace, openWorkspace } from "./workspace/initialization.ts";
 export { createReferenceCopyCarrier } from "./workspace/reference-copy-carrier.ts";
+export { createRetainedWorldRunner } from "./workspace/retained-world-runner.ts";
+export type {
+    RetainedWorldCapability,
+    RetainedWorldEnforcement,
+    RetainedWorldExecutionContext,
+    RetainedWorldRunner,
+    RetainedWorldRunnerDefinition,
+} from "./workspace/retained-world-runner-types.ts";
 export type {
     GitAwareCustody,
     GitAwareCustodyOptions,

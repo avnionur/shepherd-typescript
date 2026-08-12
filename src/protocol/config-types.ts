@@ -745,6 +745,15 @@ export type WorkspaceProtocolConfig = {
         /** Public workspace capture protocol version. */
         readonly version: number;
     };
+    /** Authenticated retained-world runner protocol configuration. */
+    readonly worldExecution: {
+        /** Closed initial enforcement classifications. */
+        readonly enforcementKinds: readonly string[];
+        /** Maximum UTF-8 byte length of a stable runner identity. */
+        readonly maxRunnerIdBytes: number;
+        /** Public retained-world runner protocol version. */
+        readonly runnerVersion: number;
+    };
 };
 
 /** Complete validated language-neutral protocol configuration. */

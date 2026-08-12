@@ -35,6 +35,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "manifestFile",
             "worktreeRefPrefix",
             "worldCapture",
+            "worldExecution",
         ],
         "workspaces",
     );
@@ -168,6 +169,11 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         config.worldCapture,
         ["maxRevisionDepth", "version"],
         "workspaces.worldCapture",
+    );
+    const worldExecution = readObject(
+        config.worldExecution,
+        ["enforcementKinds", "maxRunnerIdBytes", "runnerVersion"],
+        "workspaces.worldExecution",
     );
     const adoptionModes = readUniqueStrings(config.adoptionModes, "workspaces.adoptionModes");
     const defaultAdoptionMode = readNonEmptyString(
@@ -589,6 +595,20 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 "workspaces.worldCapture.maxRevisionDepth",
             ),
             version: readPositiveInteger(worldCapture.version, "workspaces.worldCapture.version"),
+        },
+        worldExecution: {
+            enforcementKinds: readUniqueStrings(
+                worldExecution.enforcementKinds,
+                "workspaces.worldExecution.enforcementKinds",
+            ),
+            maxRunnerIdBytes: readPositiveInteger(
+                worldExecution.maxRunnerIdBytes,
+                "workspaces.worldExecution.maxRunnerIdBytes",
+            ),
+            runnerVersion: readPositiveInteger(
+                worldExecution.runnerVersion,
+                "workspaces.worldExecution.runnerVersion",
+            ),
         },
     };
 }

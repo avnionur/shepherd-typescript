@@ -53,6 +53,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,
   isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
   idempotent discard.
+- [Retained-world runner](./retained-world-runner.md) defines the closed opaque runner registration
+  handle and its honest initial advisory enforcement boundary.
 - [Git-aware baseline and retained output custody](./git-aware-custody.md) defines semantic Git
   bases, exact index/object receipts, linked-worktree identity, movement checks, and isolated
   retained output.

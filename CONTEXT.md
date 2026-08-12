@@ -219,6 +219,12 @@ An owned mutable retained checkout forked from one verified world revision, iden
 non-semantic receipt and kept outside the user's working tree.
 _Avoid_: Immutable revision, settlement decision, user workspace
 
+**Retained-World Runner**:
+A registered runtime adapter identified by closed versioned metadata whose private callback may
+execute only after orchestration authenticates its handle and supplies one exact fenced isolated
+world context.
+_Avoid_: Provider descriptor, arbitrary callback object, process sandbox, filesystem grant
+
 **Git Basis**:
 A content-addressed repository/worktree citation joining exact HEAD, index, sparse, ignored-source,
 managed-world, binding, and retained-object evidence for movement checks and retained output.

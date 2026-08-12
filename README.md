@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.16.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.17.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -103,6 +103,8 @@ trace-record contracts with durable SQLite task and trace stores:
 - a configured reference copy carrier with immutable verified revisions, isolated mutable custody,
   restart reopen, drift verification, deterministic parent-linked custody capture, and exact
   idempotent discard;
+- a closed workspace-protocol-v7 retained-world runner registration with a private callback
+  registry and an honest initial advisory enforcement classification;
 - Git-aware `git-head` and `worktree` basis custody with exact index receipts, independently
   retained Git objects, sparse/ignore evidence, linked-worktree identity, basis-movement checks,
   and isolated restart-safe retained output;
@@ -532,8 +534,9 @@ scopes, live-provider adapters, settlement, scopes, live supervision, suffix rep
 applications remain planned.
 Phase 3 workspace initialization, adoption identity, canonical disjoint binding roots, the
 reference copy carrier, Git-aware retained-output custody, and the canonical copy-world changeset
-core are implemented. Task 6A parent-linked custody capture is implemented; authenticated durable
-task-world execution, rich inspection/Gitlink projection, and settlement remain planned.
+core are implemented. Task 6A parent-linked custody capture and Task 6B.1 opaque runner
+registration are implemented; authenticated fenced task-world execution, rich inspection/Gitlink
+projection, and settlement remain planned.
 
 ## Attribution
 
