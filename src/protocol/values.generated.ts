@@ -45,6 +45,9 @@ export const TYPED_EFFECT_TRACE_RECORD_TYPES = {
 /** Configured Core-A handler answer actions. @public */
 export const TYPED_EFFECT_TRACE_ACTION_KINDS = ["return", "abort"] as const;
 
+/** Configured canonical world-changeset operations. @public */
+export const WORLD_CHANGE_OPERATIONS = ["add", "delete", "modify", "replace"] as const;
+
 /** Configured Core-A continuation dispositions paired with answer actions. @public */
 export const TYPED_EFFECT_TRACE_CONTINUATION_DISPOSITIONS = ["completed", "aborted"] as const;
 

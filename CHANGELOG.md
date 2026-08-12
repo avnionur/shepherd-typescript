@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.0] - 2026-08-12
+
+### New Feature
+
+- Added workspace protocol v5 `createWorldChangeset` for immutable, carrier-verified comparison of
+  two exact retained copy-world revisions.
+- Added canonical add, delete, modify, and type-replacement records covering files, directories,
+  modes, and non-dereferenced symlink targets with deterministic content-addressed identity.
+- Added fail-closed revision, manifest, ancestry, path, binding, identity, and configured resource
+  limit validation with frozen changed-path projections.
+
+### Impact
+
+Consumers can describe retained copy-world differences exactly without reading or changing user
+files. Execution capture, Gitlink-aware read-only inspection, previews, selection, and settlement
+remain later Phase 3 slices.
+
 ## [1.14.0] - 2026-08-12
 
 ### New Feature

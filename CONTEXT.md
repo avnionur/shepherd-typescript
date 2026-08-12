@@ -224,6 +224,11 @@ A content-addressed repository/worktree citation joining exact HEAD, index, spar
 managed-world, binding, and retained-object evidence for movement checks and retained output.
 _Avoid_: Branch display name, current user checkout, changeset, settlement decision
 
+**World Changeset**:
+An immutable content-addressed, ordered comparison of two exact world revisions for one binding,
+whose path changes reconstruct the head manifest from the base manifest.
+_Avoid_: Mutable custody, filesystem diff output, settlement authorization, heuristic rename
+
 **Durable Resume Command**:
 A globally idempotent canonical request naming one exact suspension acknowledgement and its
 continuation descriptor. Successful application atomically acquires the next worker fence and

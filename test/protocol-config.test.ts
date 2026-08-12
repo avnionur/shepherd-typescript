@@ -11,6 +11,7 @@ import {
     WORKSPACE_PROTOCOL_V2_CONTRACT,
     WORKSPACE_PROTOCOL_V3_CONTRACT,
     WORKSPACE_PROTOCOL_V4_CONTRACT,
+    WORKSPACE_PROTOCOL_V5_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -53,15 +54,18 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.bindingVersion, 2);
     assert.equal(parsed.workspaces.carrier.descriptorVersion, 1);
     assert.equal(parsed.workspaces.gitCustody.version, 4);
+    assert.equal(parsed.workspaces.changesets.version, 5);
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V2_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V3_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V4_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V5_CONTRACT), true);
     assert.equal("bindingErrors" in WORKSPACE_PROTOCOL_V1_CONTRACT, false);
     assert.equal("carrier" in WORKSPACE_PROTOCOL_V2_CONTRACT, false);
     assert.equal("gitCustody" in WORKSPACE_PROTOCOL_V3_CONTRACT, false);
+    assert.equal("changesets" in WORKSPACE_PROTOCOL_V4_CONTRACT, false);
     assert.notEqual(
         parsed.kernel.rootWitness.body,
         objectAt(objectAt(config, "kernel"), "rootWitness").body,
@@ -694,6 +698,15 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             gitCustodyConfigOf(config).descriptorFile = "../output.json";
         },
         (config) => {
+            changesetConfigOf(config).idPrefix = "world-changeset:md5:";
+        },
+        (config) => {
+            changesetConfigOf(config).operations = [];
+        },
+        (config) => {
+            changesetConfigOf(config).maxChanges = 0;
+        },
+        (config) => {
             workspaceConfigOf(config).adoptionModes = ["none", "none"];
         },
         (config) => {
@@ -820,6 +833,10 @@ function carrierConfigOf(config: Record<string, unknown>): Record<string, unknow
 
 function gitCustodyConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(workspaceConfigOf(config), "gitCustody");
+}
+
+function changesetConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(workspaceConfigOf(config), "changesets");
 }
 
 function proofEnvelopeConfigOf(config: Record<string, unknown>): Record<string, unknown> {

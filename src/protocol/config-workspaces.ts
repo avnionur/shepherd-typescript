@@ -19,6 +19,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "bindingIdentityKind",
             "bindingVersion",
             "carrier",
+            "changesets",
             "controlDirectory",
             "defaultAdoptionMode",
             "defaultInitializeGit",
@@ -95,6 +96,29 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "unsupportedMessage",
         ],
         "workspaces.carrier.errors",
+    );
+    const changesets = readObject(
+        config.changesets,
+        [
+            "errors",
+            "idPrefix",
+            "maxAggregateReferencedBytes",
+            "maxChanges",
+            "maxManifestEntries",
+            "maxManifestRecordBytes",
+            "maxPathBytes",
+            "maxRecordBytes",
+            "maxSingleBlobBytes",
+            "maxSymlinkTargetBytes",
+            "operations",
+            "version",
+        ],
+        "workspaces.changesets",
+    );
+    const changesetErrors = readObject(
+        changesets.errors,
+        ["invalidCode", "invalidMessage", "limitCode", "limitMessage"],
+        "workspaces.changesets.errors",
     );
     const gitCustody = readObject(
         config.gitCustody,
@@ -342,6 +366,68 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 carrier.worldDirectory,
                 "workspaces.carrier.worldDirectory",
             ),
+        },
+        changesets: {
+            errors: {
+                invalidCode: readNonEmptyString(
+                    changesetErrors.invalidCode,
+                    "workspaces.changesets.errors.invalidCode",
+                ),
+                invalidMessage: readNonEmptyString(
+                    changesetErrors.invalidMessage,
+                    "workspaces.changesets.errors.invalidMessage",
+                ),
+                limitCode: readNonEmptyString(
+                    changesetErrors.limitCode,
+                    "workspaces.changesets.errors.limitCode",
+                ),
+                limitMessage: readNonEmptyString(
+                    changesetErrors.limitMessage,
+                    "workspaces.changesets.errors.limitMessage",
+                ),
+            },
+            idPrefix: readDigestPrefix(
+                changesets.idPrefix,
+                digestAlgorithm,
+                "workspaces.changesets.idPrefix",
+            ),
+            maxAggregateReferencedBytes: readPositiveInteger(
+                changesets.maxAggregateReferencedBytes,
+                "workspaces.changesets.maxAggregateReferencedBytes",
+            ),
+            maxChanges: readPositiveInteger(
+                changesets.maxChanges,
+                "workspaces.changesets.maxChanges",
+            ),
+            maxManifestEntries: readPositiveInteger(
+                changesets.maxManifestEntries,
+                "workspaces.changesets.maxManifestEntries",
+            ),
+            maxManifestRecordBytes: readPositiveInteger(
+                changesets.maxManifestRecordBytes,
+                "workspaces.changesets.maxManifestRecordBytes",
+            ),
+            maxPathBytes: readPositiveInteger(
+                changesets.maxPathBytes,
+                "workspaces.changesets.maxPathBytes",
+            ),
+            maxRecordBytes: readPositiveInteger(
+                changesets.maxRecordBytes,
+                "workspaces.changesets.maxRecordBytes",
+            ),
+            maxSingleBlobBytes: readPositiveInteger(
+                changesets.maxSingleBlobBytes,
+                "workspaces.changesets.maxSingleBlobBytes",
+            ),
+            maxSymlinkTargetBytes: readPositiveInteger(
+                changesets.maxSymlinkTargetBytes,
+                "workspaces.changesets.maxSymlinkTargetBytes",
+            ),
+            operations: readUniqueStrings(
+                changesets.operations,
+                "workspaces.changesets.operations",
+            ),
+            version: readPositiveInteger(changesets.version, "workspaces.changesets.version"),
         },
         controlDirectory,
         defaultAdoptionMode,

@@ -589,3 +589,27 @@ export const WORKSPACE_PROTOCOL_V4_CONTRACT = deepFreeze({
         worktreeIdPrefix: "git-worktree:",
     },
 } as const);
+
+/** Immutable pure changeset-model extension implemented by workspace protocol v5. */
+export const WORKSPACE_PROTOCOL_V5_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V4_CONTRACT,
+    changesets: {
+        errors: {
+            invalidCode: "WORLD_CHANGESET_INVALID",
+            invalidMessage: "world changeset input is invalid or inconsistent",
+            limitCode: "WORLD_CHANGESET_LIMIT_EXCEEDED",
+            limitMessage: "world changeset exceeds configured resource limits",
+        },
+        idPrefix: "world-changeset:sha256:",
+        maxAggregateReferencedBytes: 1_073_741_824,
+        maxChanges: 100_000,
+        maxManifestEntries: 2_000,
+        maxManifestRecordBytes: 1_048_576,
+        maxPathBytes: 4_096,
+        maxRecordBytes: 1_048_576,
+        maxSingleBlobBytes: 268_435_456,
+        maxSymlinkTargetBytes: 65_536,
+        operations: ["add", "delete", "modify", "replace"],
+        version: 5,
+    },
+} as const);

@@ -88,6 +88,20 @@ type DiscardDescriptor = {
 
 const [DIRECTORY_KIND, FILE_KIND, SYMLINK_KIND] = WORLD_ENTRY_KINDS;
 const NO_ADAPTER_RECEIPTS = (): void => undefined;
+const REFERENCE_CARRIERS = new WeakSet<object>();
+
+/**
+ * Rejects structurally forged carrier objects at internal composition boundaries.
+ *
+ * @param value - Candidate reference carrier.
+ * @throws {TypeError} If the value was not created by this module.
+ * @internal
+ */
+export function assertReferenceCopyCarrier(value: unknown): asserts value is ReferenceCopyCarrier {
+    if (value === null || typeof value !== "object" || !REFERENCE_CARRIERS.has(value)) {
+        throw new TypeError("reference copy carrier authority is invalid");
+    }
+}
 
 /**
  * Creates a workspace protocol v3 reference copy carrier.
@@ -143,7 +157,7 @@ function createCarrier(
     const workspace = open(workspaceRoot);
     const paths = createCarrierPaths(workspace.control_path, createBindings);
 
-    return Object.freeze({
+    const carrier = Object.freeze({
         discard: async (custodyId: string) => invokeCarrier(() => discardCustody(paths, custodyId)),
         fork: async (revisionId: string) =>
             invokeCarrier(() => forkRevision(paths, revisionId, NO_ADAPTER_RECEIPTS)),
@@ -174,6 +188,8 @@ function createCarrier(
         verifyRevision: async (revisionId: string) =>
             invokeCarrier(() => verifyRevision(paths, revisionId)),
     });
+    REFERENCE_CARRIERS.add(carrier);
+    return carrier;
 }
 
 /** @internal Captures a Git-adapter staging tree under the protected control root. */

@@ -648,6 +648,26 @@ export type WorkspaceProtocolConfig = {
         /** Managed tree directory within one receipt. */
         readonly worldDirectory: string;
     };
+    /** Pure world-changeset protocol configuration. */
+    readonly changesets: {
+        readonly errors: {
+            readonly invalidCode: string;
+            readonly invalidMessage: string;
+            readonly limitCode: string;
+            readonly limitMessage: string;
+        };
+        readonly idPrefix: string;
+        readonly maxAggregateReferencedBytes: number;
+        readonly maxChanges: number;
+        readonly maxManifestEntries: number;
+        readonly maxManifestRecordBytes: number;
+        readonly maxPathBytes: number;
+        readonly maxRecordBytes: number;
+        readonly maxSingleBlobBytes: number;
+        readonly maxSymlinkTargetBytes: number;
+        readonly operations: readonly string[];
+        readonly version: number;
+    };
     /** Workspace-local protected control directory name. */
     readonly controlDirectory: string;
     /** Default baseline-adoption mode. */

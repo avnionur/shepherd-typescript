@@ -293,12 +293,14 @@ export type {
     TaskRegistration,
 } from "./task/types.ts";
 export { createWorkspaceBindings } from "./workspace/bindings.ts";
+export { createWorldChangeset } from "./workspace/changesets.ts";
 export {
     GitCustodyError,
     WorkspaceBindingError,
     WorkspaceControlError,
     WorkspaceInitializationConflictError,
     WorldCarrierError,
+    WorldChangesetError,
 } from "./workspace/errors.ts";
 export { createGitAwareCustody } from "./workspace/git-aware-custody.ts";
 export { initializeWorkspace, openWorkspace } from "./workspace/initialization.ts";
@@ -326,9 +328,14 @@ export type {
     WorkspaceGitState,
     WorkspaceInitializationOptions,
     WorkspaceState,
+    WorldChangeNode,
+    WorldChangeOperation,
+    WorldChangeset,
+    WorldChangesetOptions,
     WorldCustody,
     WorldEntryKind,
     WorldManifestEntry,
+    WorldPathChange,
     WorldRevision,
     WorldVerification,
 } from "./workspace/types.ts";

@@ -85,3 +85,21 @@ export class GitCustodyError extends Error {
         this.name = "GitCustodyError";
     }
 }
+
+/** Raised when a pure world changeset cannot be constructed safely and exactly. */
+export class WorldChangesetError extends Error {
+    /** Stable machine-readable changeset failure code. */
+    readonly code: string;
+
+    /**
+     * Creates a world-changeset validation failure.
+     *
+     * @param code - Configured machine-readable failure code.
+     * @param message - Diagnostic describing the rejected comparison.
+     */
+    constructor(code: string, message: string) {
+        super(message);
+        this.code = code;
+        this.name = "WorldChangesetError";
+    }
+}

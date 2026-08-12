@@ -198,6 +198,9 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedGitHeadKinds = config.workspaces.gitCustody.headKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
+    const renderedWorldChangeOperations = config.workspaces.changesets.operations
+        .map((operation) => JSON.stringify(operation))
+        .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -232,6 +235,9 @@ ${renderedTraceRecordTypes}
 
 /** Configured Core-A handler answer actions. @public */
 export const TYPED_EFFECT_TRACE_ACTION_KINDS = [${renderedTraceActionKinds}] as const;
+
+/** Configured canonical world-changeset operations. @public */
+export const WORLD_CHANGE_OPERATIONS = [${renderedWorldChangeOperations}] as const;
 
 /** Configured Core-A continuation dispositions paired with answer actions. @public */
 export const TYPED_EFFECT_TRACE_CONTINUATION_DISPOSITIONS = [${renderedTraceDispositions}] as const;

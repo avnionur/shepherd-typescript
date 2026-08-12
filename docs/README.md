@@ -55,6 +55,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Git-aware baseline and retained output custody](./git-aware-custody.md) defines semantic Git
   bases, exact index/object receipts, linked-worktree identity, movement checks, and isolated
   retained output.
+- [World changesets](./world-changesets.md) defines pure reconstructive comparison, canonical
+  add/delete/modify/replace operations, content identity, immutability, and fail-closed limits.
 - [Run outcomes](./run-outcomes.md) defines versioned finished, failed, exhausted, and cancelled
   terminal records with exact task-lock provenance.
 - [Run artifacts and usage](./run-artifacts-and-usage.md) defines ordered inline-text and durable

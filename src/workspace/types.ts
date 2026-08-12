@@ -1,6 +1,7 @@
 import type {
     GIT_HEAD_KINDS,
     WORKSPACE_ADOPTION_MODES,
+    WORLD_CHANGE_OPERATIONS,
     WORLD_ENTRY_KINDS,
 } from "../protocol/values.generated.ts";
 
@@ -132,6 +133,64 @@ export type WorldRevision = {
     readonly parent_revision_id: string | null;
     /** Immutable revision identity binding content and authority. */
     readonly revision_id: string;
+};
+
+/** Configured semantic operation for one canonical changed path. */
+export type WorldChangeOperation = (typeof WORLD_CHANGE_OPERATIONS)[number];
+
+/** Closed semantic state of one path in a world revision. */
+export type WorldChangeNode =
+    | { readonly kind: (typeof WORLD_ENTRY_KINDS)[0]; readonly mode: number }
+    | {
+          readonly byte_length: number;
+          readonly content_id: string;
+          readonly kind: (typeof WORLD_ENTRY_KINDS)[1];
+          readonly mode: number;
+      }
+    | {
+          readonly kind: (typeof WORLD_ENTRY_KINDS)[2];
+          readonly mode: null;
+          readonly target: string;
+      };
+
+/** One canonical reconstructive path change between two exact world revisions. */
+export type WorldPathChange = {
+    /** Semantic state in the head revision, or `null` for deletion. */
+    readonly after: WorldChangeNode | null;
+    /** Semantic state in the base revision, or `null` for addition. */
+    readonly before: WorldChangeNode | null;
+    /** Operation derived from before/after presence and node kinds. */
+    readonly operation: WorldChangeOperation;
+    /** Canonical binding-relative path. */
+    readonly path: string;
+};
+
+/** Immutable content-addressed comparison of two ordered world revisions. */
+export type WorldChangeset = {
+    /** Exact base revision identity. */
+    readonly base_revision_id: string;
+    /** Exact workspace binding shared by both revisions. */
+    readonly binding_id: string;
+    /** Canonical reconstructive path changes. */
+    readonly changes: readonly WorldPathChange[];
+    /** Content-addressed identity of the complete comparison. */
+    readonly changeset_id: string;
+    /** Canonical ordered changed paths derived from {@link changes}. */
+    readonly changed_paths: readonly string[];
+    /** Exact head revision identity. */
+    readonly head_revision_id: string;
+    /** Workspace changeset protocol version. */
+    readonly schema_version: number;
+};
+
+/** Closed options accepted by {@link createWorldChangeset}. */
+export type WorldChangesetOptions = {
+    /** Verified immutable base revision. */
+    readonly baseRevision: WorldRevision;
+    /** Retained carrier that owns and verifies both cited revisions. */
+    readonly carrier: ReferenceCopyCarrier;
+    /** Verified immutable head revision. */
+    readonly headRevision: WorldRevision;
 };
 
 /** Mutable retained checkout forked from an immutable copy-world revision. */

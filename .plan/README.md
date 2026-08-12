@@ -150,6 +150,8 @@ record and public API must declare a protocol/compatibility version.
   snapshot, mutable custody, verification, discard, durability, and Task 4 Git boundary.
 - [Git-aware custody research](./git-aware-custody-research.md) — shipped Git baseline,
   repository/index evidence, object retention, movement, and Task 5 changeset boundary.
+- [Changeset-model research](./changeset-model-research.md) — canonical reconstructive changes,
+  identity, path and node semantics, limits, and the Task 6 capture boundary.
 - [Testing and release](./testing-and-release.md) — conformance, property,
   security, recovery, performance, CI, and release gates.
 - [Decisions and risks](./decisions-and-risks.md) — adopted decisions,

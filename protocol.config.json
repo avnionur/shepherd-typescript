@@ -516,6 +516,25 @@
             "worldContentIdPrefix": "world-content:sha256:",
             "worldDirectory": "world"
         },
+        "changesets": {
+            "errors": {
+                "invalidCode": "WORLD_CHANGESET_INVALID",
+                "invalidMessage": "world changeset input is invalid or inconsistent",
+                "limitCode": "WORLD_CHANGESET_LIMIT_EXCEEDED",
+                "limitMessage": "world changeset exceeds configured resource limits"
+            },
+            "idPrefix": "world-changeset:sha256:",
+            "maxAggregateReferencedBytes": 1073741824,
+            "maxChanges": 100000,
+            "maxManifestEntries": 2000,
+            "maxManifestRecordBytes": 1048576,
+            "maxPathBytes": 4096,
+            "maxRecordBytes": 1048576,
+            "maxSingleBlobBytes": 268435456,
+            "maxSymlinkTargetBytes": 65536,
+            "operations": ["add", "delete", "modify", "replace"],
+            "version": 5
+        },
         "controlDirectory": ".vcscore",
         "defaultAdoptionMode": "worktree",
         "defaultInitializeGit": true,

@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-12
 
-Current version: `1.14.0`
+Current version: `1.15.0`
 
 Current level: L0 — canonical model
 
@@ -102,6 +102,9 @@ semantics, and performs exact idempotent custody discard without deleting the pa
 Portable ACL/xattr/resource-fork detection plus deterministic disk-full, permission, case-folding,
 concurrent-mutation, and process-interruption fault injection remain an explicit Phase 3 hardening
 gate before any optimized carrier may claim reference parity.
+Workspace protocol v4 adds exact Git-aware retained-output bases and protocol v5 now adds pure,
+immutable, content-addressed changesets that validate and compare exact copy-world revisions.
+Task execution has not yet been connected to retained-output capture; that is Phase 3 Task 6.
 
 ## Progress
 
@@ -195,6 +198,10 @@ gate before any optimized carrier may claim reference parity.
 - [x] Add the Task 4 core Git-aware baseline and retained-output custody slice with exact HEAD/index/sparse/ignore
   evidence, independent Git-object retention, linked-worktree identity, restart verification, and
   semantic basis-movement classification.
+- [x] Add the Task 5 canonical copy-world changeset core with carrier-verified revisions,
+  reconstructive file/directory/mode/symlink-target changes, canonical identity, immutability, and
+  configured input/output limits. Gitlinks, content reads, previews, and move projections remain
+  assigned to read-only inspection.
 
 ## Verification required for this slice
 
@@ -206,11 +213,12 @@ gate before any optimized carrier may claim reference parity.
 
 ## Next slice
 
-Begin Phase 3, Task 5: implement the complete changeset data model.
+Begin Phase 3, Task 6: capture task-world changes away from the user's working tree using the
+Task 5 changeset model.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
-Task 5 data model: cross-platform case/symlink policy, sparse-index variants, exhaustive stable
-error taxonomy, and deterministic concurrency/process-interruption injection remain open.
+Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive
+stable error taxonomy, and deterministic concurrency/process-interruption injection remain open.
 
 ## Notes
 

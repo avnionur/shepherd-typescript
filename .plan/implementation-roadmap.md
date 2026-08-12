@@ -140,9 +140,12 @@ Work:
   HEAD/index/sparse/ignore evidence, independently retained Git objects, isolated copy custody,
   restart reopen, and basis-movement classification; changeset and settlement operations remain
   later Phase 3 tasks;
-- implement complete changeset data model;
+- implement the canonical copy-world changeset model core; **implemented in 1.15.0**, with
+  carrier-verified revision comparison, reconstructive path changes, configured input/output
+  limits, and immutable content-addressed identity; execution capture remains Task 6;
 - capture task world changes away from the user's working tree;
-- expose read-only changeset inspection;
+- expose read-only changeset inspection, retained content reads, bounded previews, derived
+  rename/copy projections, and Gitlink citations from the Git-aware adapter;
 - implement exact-ID `select` and `discard`;
 - implement consume-once settlement with transactional compare-and-swap;
 - protect control-plane paths;

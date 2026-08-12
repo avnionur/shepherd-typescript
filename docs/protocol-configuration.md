@@ -39,6 +39,8 @@ domain, copy-carrier layout and identity vocabulary, and stable control, conflic
 carrier errors. Workspace protocol v4 additionally fixes Git HEAD kinds, semantic basis and exact
 index/object receipt identities, descriptor filenames, local repository/worktree identity domains,
 supported Git object formats, command bounds, and stable Git-custody failures.
+Workspace protocol v5 additionally fixes changeset operations, identity, schema version, resource
+limits, and stable validation failures.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -92,9 +94,9 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
 - workspace adoption modes are unique and include the configured default, path components are safe
   simple names, digest and reference settings agree, binding identity and errors are non-empty, and
   copy-carrier descriptor, collection, entry-kind, identity, and error values are closed and
-  non-empty. Every value matches the immutable workspace protocol v3 contract. Protocol v1 remains
-  the unchanged initialization/adoption subset and protocol v2 remains the unchanged binding
-  subset.
+  non-empty. Changeset operations, identity, limits, version, and error contracts are also closed.
+  Every value matches the immutable workspace protocol v5 contract. Protocols v1 through v4
+  remain unchanged historical subsets.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,
 root-witness identity, or current ordinal bounds requires a new ABI or migration contract.
