@@ -49,3 +49,21 @@ export class WorkspaceBindingError extends Error {
         this.name = "WorkspaceBindingError";
     }
 }
+
+/** Raised when copy-carrier custody or its retained evidence is unavailable or invalid. */
+export class WorldCarrierError extends Error {
+    /** Stable machine-readable carrier failure code. */
+    readonly code: string;
+
+    /**
+     * Creates a reference copy-carrier failure.
+     *
+     * @param code - Configured machine-readable failure code.
+     * @param message - Diagnostic describing the rejected operation or evidence.
+     */
+    constructor(code: string, message: string) {
+        super(message);
+        this.code = code;
+        this.name = "WorldCarrierError";
+    }
+}

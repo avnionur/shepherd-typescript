@@ -515,3 +515,38 @@ export const WORKSPACE_PROTOCOL_V2_CONTRACT = deepFreeze({
     bindingIdentityKind: "workspace-binding",
     bindingVersion: 2,
 } as const);
+
+/** Immutable reference copy-carrier extension implemented by workspace protocol v3. */
+export const WORKSPACE_PROTOCOL_V3_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V2_CONTRACT,
+    carrier: {
+        backendKind: "copy",
+        blobIdPrefix: "blob:sha256:",
+        carrierDirectory: "worlds",
+        captureKind: "verified-copy",
+        custodiesDirectory: "custodies",
+        custodyDescriptorFile: "custody.json",
+        custodyIdPrefix: "world-custody:",
+        descriptorFormat: "shepherd.copy-world",
+        descriptorVersion: 1,
+        discardDescriptorSuffix: ".discarded.json",
+        discardStatus: "discarded",
+        discardedDirectory: "discarded",
+        entryKinds: ["directory", "file", "symlink"],
+        errors: {
+            conflictCode: "WORLD_CARRIER_CONFLICT",
+            conflictMessage: "world carrier identity conflicts with retained custody",
+            controlCode: "WORLD_CARRIER_ERROR",
+            controlMessage: "world carrier evidence is unavailable or invalid",
+            unsupportedCode: "WORLD_CARRIER_UNSUPPORTED_ENTRY",
+            unsupportedMessage: "world carrier source contains unsupported filesystem semantics",
+        },
+        manifestVersion: 1,
+        revisionsDirectory: "revisions",
+        revisionDescriptorFile: "revision.json",
+        revisionIdPrefix: "world-revision:sha256:",
+        stagingDirectory: "staging",
+        worldContentIdPrefix: "world-content:sha256:",
+        worldDirectory: "world",
+    },
+} as const);

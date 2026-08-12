@@ -192,6 +192,9 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedWorkspaceAdoptionModes = config.workspaces.adoptionModes
         .map((mode) => JSON.stringify(mode))
         .join(", ");
+    const renderedWorldEntryKinds = config.workspaces.carrier.entryKinds
+        .map((kind) => JSON.stringify(kind))
+        .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -318,6 +321,9 @@ export const DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES = [${renderedClaimAppendS
 
 /** Configured workspace baseline-adoption modes. @public */
 export const WORKSPACE_ADOPTION_MODES = [${renderedWorkspaceAdoptionModes}] as const;
+
+/** Configured reference copy-carrier manifest entry kinds. @public */
+export const WORLD_ENTRY_KINDS = [${renderedWorldEntryKinds}] as const;
 `;
 }
 

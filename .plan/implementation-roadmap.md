@@ -134,8 +134,13 @@ Work:
   retained file custody explicitly deferred to the reference copy carrier;
 - implement canonical binding roots and overlap rejection; **implemented in 1.12.0**, with runtime
   grants and GitRepo typing deferred to Phase 4 and carrier custody/revalidation deferred to Task 3;
-- implement reference copy carrier;
+- implement reference copy carrier; **implemented in 1.13.0**, with immutable verified snapshots,
+  isolated mutable custody, restart reopen, and carrier-level discard; Git-aware custody remains
+  Task 4 and changeset/settlement operations remain later Phase 3 tasks;
 - implement Git-aware baseline and retained output custody;
+- complete reference-carrier platform and fault hardening for ACLs, extended attributes, resource
+  forks or alternate streams, case-folding collisions, permission/disk-full failures, concurrent
+  mutation, and process interruption before optimized carriers claim reference parity;
 - implement complete changeset data model;
 - capture task world changes away from the user's working tree;
 - expose read-only changeset inspection;

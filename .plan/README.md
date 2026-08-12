@@ -146,6 +146,8 @@ record and public API must declare a protocol/compatibility version.
   contract, pinned-source boundaries, and explicit dirty-worktree oracle gaps.
 - [Workspace binding research](./workspace-binding-research.md) — shipped named/disjoint root
   contract, canonicalization policy, and explicit filesystem/Git oracle gaps.
+- [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
+  snapshot, mutable custody, verification, discard, durability, and Task 4 Git boundary.
 - [Testing and release](./testing-and-release.md) — conformance, property,
   security, recovery, performance, CI, and release gates.
 - [Decisions and risks](./decisions-and-risks.md) — adopted decisions,
@@ -200,4 +202,4 @@ The project is complete only when:
 
 ## Immediate next step
 
-Begin Phase 3, Task 3 by implementing the reference copy carrier.
+Begin Phase 3, Task 4 by implementing Git-aware baseline and retained-output custody.

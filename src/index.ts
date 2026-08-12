@@ -297,9 +297,13 @@ export {
     WorkspaceBindingError,
     WorkspaceControlError,
     WorkspaceInitializationConflictError,
+    WorldCarrierError,
 } from "./workspace/errors.ts";
 export { initializeWorkspace, openWorkspace } from "./workspace/initialization.ts";
+export { createReferenceCopyCarrier } from "./workspace/reference-copy-carrier.ts";
 export type {
+    ReferenceCopyCarrier,
+    ReferenceCopyCarrierOptions,
     WorkspaceAdoption,
     WorkspaceAdoptionMode,
     WorkspaceBinding,
@@ -309,4 +313,9 @@ export type {
     WorkspaceGitState,
     WorkspaceInitializationOptions,
     WorkspaceState,
+    WorldCustody,
+    WorldEntryKind,
+    WorldManifestEntry,
+    WorldRevision,
+    WorldVerification,
 } from "./workspace/types.ts";

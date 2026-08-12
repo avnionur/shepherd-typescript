@@ -18,6 +18,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "bindingErrors",
             "bindingIdentityKind",
             "bindingVersion",
+            "carrier",
             "controlDirectory",
             "defaultAdoptionMode",
             "defaultInitializeGit",
@@ -55,6 +56,45 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         ],
         "workspaces.bindingErrors",
     );
+    const carrier = readObject(
+        config.carrier,
+        [
+            "backendKind",
+            "blobIdPrefix",
+            "carrierDirectory",
+            "captureKind",
+            "custodiesDirectory",
+            "custodyDescriptorFile",
+            "custodyIdPrefix",
+            "descriptorFormat",
+            "descriptorVersion",
+            "discardDescriptorSuffix",
+            "discardStatus",
+            "discardedDirectory",
+            "entryKinds",
+            "errors",
+            "manifestVersion",
+            "revisionsDirectory",
+            "revisionDescriptorFile",
+            "revisionIdPrefix",
+            "stagingDirectory",
+            "worldContentIdPrefix",
+            "worldDirectory",
+        ],
+        "workspaces.carrier",
+    );
+    const carrierErrors = readObject(
+        carrier.errors,
+        [
+            "conflictCode",
+            "conflictMessage",
+            "controlCode",
+            "controlMessage",
+            "unsupportedCode",
+            "unsupportedMessage",
+        ],
+        "workspaces.carrier.errors",
+    );
     const adoptionModes = readUniqueStrings(config.adoptionModes, "workspaces.adoptionModes");
     const defaultAdoptionMode = readNonEmptyString(
         config.defaultAdoptionMode,
@@ -91,6 +131,52 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
     );
     if (!worktreeRefPrefix.endsWith(`${digestAlgorithm}:`)) {
         throw new TypeError("workspaces.worktreeRefPrefix must identify digestAlgorithm");
+    }
+    const carrierDirectory = readSimpleName(
+        carrier.carrierDirectory,
+        "workspaces.carrier.carrierDirectory",
+    );
+    const carrierCollectionDirectories = [
+        readSimpleName(carrier.custodiesDirectory, "workspaces.carrier.custodiesDirectory"),
+        readSimpleName(carrier.discardedDirectory, "workspaces.carrier.discardedDirectory"),
+        readSimpleName(carrier.revisionsDirectory, "workspaces.carrier.revisionsDirectory"),
+        readSimpleName(carrier.stagingDirectory, "workspaces.carrier.stagingDirectory"),
+    ] as const;
+    if (
+        carrierDirectory === manifestFile ||
+        new Set(carrierCollectionDirectories).size !== carrierCollectionDirectories.length
+    ) {
+        throw new TypeError("workspace carrier path names must not collide");
+    }
+    const blobIdPrefix = readNonEmptyString(
+        carrier.blobIdPrefix,
+        "workspaces.carrier.blobIdPrefix",
+    );
+    const revisionIdPrefix = readNonEmptyString(
+        carrier.revisionIdPrefix,
+        "workspaces.carrier.revisionIdPrefix",
+    );
+    const worldContentIdPrefix = readNonEmptyString(
+        carrier.worldContentIdPrefix,
+        "workspaces.carrier.worldContentIdPrefix",
+    );
+    if (
+        ![blobIdPrefix, revisionIdPrefix, worldContentIdPrefix].every((prefix) =>
+            prefix.endsWith(`${digestAlgorithm}:`),
+        )
+    ) {
+        throw new TypeError("workspace carrier digest prefixes must identify digestAlgorithm");
+    }
+    const discardDescriptorSuffix = readNonEmptyString(
+        carrier.discardDescriptorSuffix,
+        "workspaces.carrier.discardDescriptorSuffix",
+    );
+    if (
+        discardDescriptorSuffix.includes("/") ||
+        discardDescriptorSuffix.includes("\\") ||
+        discardDescriptorSuffix.includes("\0")
+    ) {
+        throw new TypeError("workspaces.carrier.discardDescriptorSuffix must be a path suffix");
     }
     return {
         adoptionModes,
@@ -141,6 +227,78 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "workspaces.bindingIdentityKind",
         ),
         bindingVersion: readPositiveInteger(config.bindingVersion, "workspaces.bindingVersion"),
+        carrier: {
+            backendKind: readNonEmptyString(carrier.backendKind, "workspaces.carrier.backendKind"),
+            blobIdPrefix,
+            carrierDirectory,
+            captureKind: readNonEmptyString(carrier.captureKind, "workspaces.carrier.captureKind"),
+            custodiesDirectory: carrierCollectionDirectories[0],
+            custodyDescriptorFile: readSimpleName(
+                carrier.custodyDescriptorFile,
+                "workspaces.carrier.custodyDescriptorFile",
+            ),
+            custodyIdPrefix: readNonEmptyString(
+                carrier.custodyIdPrefix,
+                "workspaces.carrier.custodyIdPrefix",
+            ),
+            descriptorFormat: readNonEmptyString(
+                carrier.descriptorFormat,
+                "workspaces.carrier.descriptorFormat",
+            ),
+            descriptorVersion: readPositiveInteger(
+                carrier.descriptorVersion,
+                "workspaces.carrier.descriptorVersion",
+            ),
+            discardDescriptorSuffix,
+            discardStatus: readNonEmptyString(
+                carrier.discardStatus,
+                "workspaces.carrier.discardStatus",
+            ),
+            discardedDirectory: carrierCollectionDirectories[1],
+            entryKinds: readUniqueStrings(carrier.entryKinds, "workspaces.carrier.entryKinds"),
+            errors: {
+                conflictCode: readNonEmptyString(
+                    carrierErrors.conflictCode,
+                    "workspaces.carrier.errors.conflictCode",
+                ),
+                conflictMessage: readNonEmptyString(
+                    carrierErrors.conflictMessage,
+                    "workspaces.carrier.errors.conflictMessage",
+                ),
+                controlCode: readNonEmptyString(
+                    carrierErrors.controlCode,
+                    "workspaces.carrier.errors.controlCode",
+                ),
+                controlMessage: readNonEmptyString(
+                    carrierErrors.controlMessage,
+                    "workspaces.carrier.errors.controlMessage",
+                ),
+                unsupportedCode: readNonEmptyString(
+                    carrierErrors.unsupportedCode,
+                    "workspaces.carrier.errors.unsupportedCode",
+                ),
+                unsupportedMessage: readNonEmptyString(
+                    carrierErrors.unsupportedMessage,
+                    "workspaces.carrier.errors.unsupportedMessage",
+                ),
+            },
+            manifestVersion: readPositiveInteger(
+                carrier.manifestVersion,
+                "workspaces.carrier.manifestVersion",
+            ),
+            revisionsDirectory: carrierCollectionDirectories[2],
+            revisionDescriptorFile: readSimpleName(
+                carrier.revisionDescriptorFile,
+                "workspaces.carrier.revisionDescriptorFile",
+            ),
+            revisionIdPrefix,
+            stagingDirectory: carrierCollectionDirectories[3],
+            worldContentIdPrefix,
+            worldDirectory: readSimpleName(
+                carrier.worldDirectory,
+                "workspaces.carrier.worldDirectory",
+            ),
+        },
         controlDirectory,
         defaultAdoptionMode,
         defaultInitializeGit: config.defaultInitializeGit,

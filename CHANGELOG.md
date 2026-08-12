@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.0] - 2026-08-11
+
+### New Feature
+
+- Added workspace protocol v3 `createReferenceCopyCarrier` with immutable content-addressed
+  snapshots, isolated mutable forks, and closed restart-safe revision and custody descriptors.
+- Added logical manifests for file bytes, directories, permission modes, and contained symlink
+  targets with fail-closed unsupported-object, escape, mutation, and corruption handling.
+- Added structured revision and custody verification plus exact idempotent custody discard that
+  preserves the immutable parent and user workspace.
+- Added durable permission and carrier-directory publication, exact collision checks, normalized
+  name rejection, and restart-time binding-citation validation.
+
+### Impact
+
+Consumers can retain and mutate a verified copy of a bound world without changing user files.
+Git-aware custody, changesets, inspection, selection, and settlement remain later Phase 3 slices.
+
 ## [1.12.0] - 2026-08-11
 
 ### New Feature

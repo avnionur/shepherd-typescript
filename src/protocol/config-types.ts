@@ -596,6 +596,58 @@ export type WorkspaceProtocolConfig = {
     readonly bindingIdentityKind: string;
     /** Public canonical-binding protocol version. */
     readonly bindingVersion: number;
+    /** Reference copy-carrier protocol configuration. */
+    readonly carrier: {
+        /** Configured carrier backend discriminant. */
+        readonly backendKind: string;
+        /** Regular-file blob identifier prefix. */
+        readonly blobIdPrefix: string;
+        /** Carrier directory beneath workspace control. */
+        readonly carrierDirectory: string;
+        /** Evidence classification for ordinary verified copy capture. */
+        readonly captureKind: string;
+        /** Mutable custody collection directory. */
+        readonly custodiesDirectory: string;
+        /** Closed custody descriptor filename. */
+        readonly custodyDescriptorFile: string;
+        /** Mutable custody identifier prefix. */
+        readonly custodyIdPrefix: string;
+        /** Closed descriptor format. */
+        readonly descriptorFormat: string;
+        /** Closed descriptor version. */
+        readonly descriptorVersion: number;
+        /** Suffix for exact discard decision descriptors. */
+        readonly discardDescriptorSuffix: string;
+        /** Closed completed discard decision status. */
+        readonly discardStatus: string;
+        /** Discard decision collection directory. */
+        readonly discardedDirectory: string;
+        /** Supported manifest entry discriminants. */
+        readonly entryKinds: readonly string[];
+        /** Stable carrier error contracts. */
+        readonly errors: {
+            readonly conflictCode: string;
+            readonly conflictMessage: string;
+            readonly controlCode: string;
+            readonly controlMessage: string;
+            readonly unsupportedCode: string;
+            readonly unsupportedMessage: string;
+        };
+        /** Canonical manifest version. */
+        readonly manifestVersion: number;
+        /** Immutable revision collection directory. */
+        readonly revisionsDirectory: string;
+        /** Closed revision descriptor filename. */
+        readonly revisionDescriptorFile: string;
+        /** Immutable revision identifier prefix. */
+        readonly revisionIdPrefix: string;
+        /** Private publication staging directory. */
+        readonly stagingDirectory: string;
+        /** World-content identifier prefix. */
+        readonly worldContentIdPrefix: string;
+        /** Managed tree directory within one receipt. */
+        readonly worldDirectory: string;
+    };
     /** Workspace-local protected control directory name. */
     readonly controlDirectory: string;
     /** Default baseline-adoption mode. */

@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-11
 
-Current version: `1.12.0`
+Current version: `1.13.0`
 
 Current level: L0 — canonical model
 
@@ -95,6 +95,13 @@ rewrites existing history, and reopen fails closed on malformed or unavailable e
 Canonical binding validation now reopens that protected workspace, resolves names to stable
 content-addressed authority identities, rejects missing or escaping roots, and rejects equal or
 nested canonical roots in either declaration order before returning any authority.
+The workspace protocol v3 reference copy carrier now revalidates exact bindings, retains
+content-addressed immutable revisions away from user files, forks isolated mutable custody,
+reopens and verifies both forms after restart, rejects unsupported or escaping filesystem
+semantics, and performs exact idempotent custody discard without deleting the parent revision.
+Portable ACL/xattr/resource-fork detection plus deterministic disk-full, permission, case-folding,
+concurrent-mutation, and process-interruption fault injection remain an explicit Phase 3 hardening
+gate before any optimized carrier may claim reference parity.
 
 ## Progress
 
@@ -183,6 +190,8 @@ nested canonical roots in either declaration order before returning any authorit
   preservation, dirty-worktree fixtures, and fail-closed control metadata.
 - [x] Add canonical workspace-contained binding identities with symlink-aware alias handling,
   duplicate-name validation, and symmetric overlap rejection.
+- [x] Add the reference copy carrier with verified snapshot publication, isolated mutable forks,
+  restart reopen, corruption detection, protected-control exclusion, and exact custody discard.
 
 ## Verification required for this slice
 
@@ -194,7 +203,7 @@ nested canonical roots in either declaration order before returning any authorit
 
 ## Next slice
 
-Begin Phase 3, Task 3: implement the reference copy carrier.
+Begin Phase 3, Task 4: implement Git-aware baseline and retained-output custody.
 
 ## Notes
 

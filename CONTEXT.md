@@ -209,6 +209,16 @@ A frozen content-addressed authority identity joining one exact logical name to 
 workspace-contained, pairwise-disjoint filesystem root.
 _Avoid_: Runtime permission grant, display-path authority, retained world snapshot
 
+**World Revision**:
+An immutable verified copy-carrier snapshot whose revision identity binds canonical logical
+filesystem content to one exact workspace binding and carrier protocol.
+_Avoid_: Git commit, mutable checkout, custody directory path
+
+**World Custody**:
+An owned mutable retained checkout forked from one verified world revision, identified by a
+non-semantic receipt and kept outside the user's working tree.
+_Avoid_: Immutable revision, settlement decision, user workspace
+
 **Durable Resume Command**:
 A globally idempotent canonical request naming one exact suspension acknowledgement and its
 continuation descriptor. Successful application atomically acquires the next worker fence and

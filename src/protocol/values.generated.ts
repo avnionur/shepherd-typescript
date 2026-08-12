@@ -163,3 +163,6 @@ export const DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES = ["committed", "fenced"]
 
 /** Configured workspace baseline-adoption modes. @public */
 export const WORKSPACE_ADOPTION_MODES = ["none", "git-head", "worktree"] as const;
+
+/** Configured reference copy-carrier manifest entry kinds. @public */
+export const WORLD_ENTRY_KINDS = ["directory", "file", "symlink"] as const;
