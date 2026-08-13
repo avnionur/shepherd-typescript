@@ -323,6 +323,12 @@ export type {
     RetainedWorldOutput,
     TaskWorldCaptureResult,
 } from "./workspace/task-world-execution-types.ts";
+export { inspectTaskWorldCaptureJournal } from "./workspace/task-world-journal.ts";
+export type {
+    TaskWorldCaptureJournalInspection,
+    TaskWorldCaptureJournalStatus,
+    TaskWorldCaptureJournalTransition,
+} from "./workspace/task-world-journal-types.ts";
 export type {
     GitAwareCustody,
     GitAwareCustodyOptions,

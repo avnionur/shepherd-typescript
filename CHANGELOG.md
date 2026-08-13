@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.0] - 2026-08-13
+
+### New Feature
+
+- Added workspace protocol v9 ordered task-world capture journal evidence for preparation,
+  custody fork, fenced execution, and verified capture.
+- Added fail-closed recovery validation that binds retained world output to its exact capture
+  identity, runner authority, custody, basis, changeset, and causal journal chain.
+- Added `inspectTaskWorldCaptureJournal` for immutable restart-safe journal and terminal-attachment
+  inspection without invoking a runner or carrier.
+
+### Impact
+
+Consumers can diagnose a task-world capture from durable evidence before and after restart and can
+distinguish incomplete execution from committed retention. Automatic retry, cancellation cleanup,
+cross-store custody-orphan repair, and uncertain-writer recovery remain Phase 3 Task 6B.4.
+
 ## [1.18.0] - 2026-08-13
 
 ### New Feature

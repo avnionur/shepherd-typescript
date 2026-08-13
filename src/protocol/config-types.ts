@@ -760,6 +760,14 @@ export type WorkspaceProtocolConfig = {
         readonly captureSchemaId: string;
         /** Repository-relative generated capture-schema path. */
         readonly captureSchemaPath: string;
+        /** Ordered durable pre-terminal capture-journal phases. */
+        readonly journalPhases: readonly string[];
+        /** Schema identifier for durable capture-journal records. */
+        readonly journalSchemaId: string;
+        /** Repository-relative generated journal-schema path. */
+        readonly journalSchemaPath: string;
+        /** Public capture-journal protocol version. */
+        readonly journalVersion: number;
         /** Maximum UTF-8 byte length of one capture correlation identity. */
         readonly maxCaptureIdBytes: number;
         /** Maximum text bytes accepted by one capability operation. */

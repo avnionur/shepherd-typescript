@@ -176,6 +176,14 @@ export const RETAINED_WORLD_ENFORCEMENT_KINDS = ["advisory"] as const;
 /** Configured durable retained-world output statuses. @public */
 export const RETAINED_WORLD_OUTPUT_STATUSES = ["retained"] as const;
 
+/** Configured ordered durable retained-world capture-journal phases. @public */
+export const RETAINED_WORLD_JOURNAL_PHASES = [
+    "prepared",
+    "forked",
+    "executing",
+    "captured",
+] as const;
+
 /** Configured maximum UTF-8 bytes for one retained-world text operation. @public */
 export const RETAINED_WORLD_MAX_TEXT_BYTES = 16777216 as const;
 

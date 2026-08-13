@@ -148,8 +148,9 @@ Work:
   changeset composition; **runner registration implemented in 1.17.0**, with a closed opaque
   handle, private callback registry, and honest advisory enforcement; **successful-path fenced
   execution implemented in 1.18.0**, with authenticated handle consumption, isolated existing-file
-  authority, immutable capture, and atomic terminal-cut attachment; the pre-invocation capture
-  journal, restart recovery, and uncertain-writer handling remain Task 6B.3–6B.4;
+  authority, immutable capture, and atomic terminal-cut attachment; **durable capture journaling
+  and restart-safe inspection implemented in 1.19.0**; retry, cancellation, corruption recovery,
+  and uncertain-writer handling remain Task 6B.4;
 - expose read-only changeset inspection, retained content reads, bounded previews, derived
   rename/copy projections, and Gitlink citations from the Git-aware adapter;
 - implement exact-ID `select` and `discard`;

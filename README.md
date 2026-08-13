@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.18.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.19.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -106,7 +106,8 @@ trace-record contracts with durable SQLite task and trace stores:
 - a closed workspace-protocol-v7 retained-world runner registration with a private callback
   registry and an honest initial advisory enforcement classification;
 - authenticated invocation-fenced task-world execution over isolated custody, with successful
-  immutable capture, canonical changesets, and atomic terminal-cut world evidence;
+  immutable capture, canonical changesets, ordered durable capture journaling, restart-safe
+  inspection, and atomic terminal-cut world evidence;
 - Git-aware `git-head` and `worktree` basis custody with exact index receipts, independently
   retained Git objects, sparse/ignore evidence, linked-worktree identity, basis-movement checks,
   and isolated restart-safe retained output;
@@ -537,9 +538,10 @@ applications remain planned.
 Phase 3 workspace initialization, adoption identity, canonical disjoint binding roots, the
 reference copy carrier, Git-aware retained-output custody, and the canonical copy-world changeset
 core are implemented. Task 6A parent-linked custody capture, Task 6B.1 opaque runner registration,
-and the Task 6B.2 authenticated successful-path fenced execution and terminal attachment are
-implemented. The pre-invocation capture journal and restart hardening, rich inspection/Gitlink
-projection, and settlement remain planned.
+the Task 6B.2 authenticated successful-path fenced execution and terminal attachment, and Task
+6B.3 durable capture journaling with restart-safe inspection are implemented. Automatic capture
+retry and uncertain-writer hardening, rich changeset inspection/Gitlink projection, and settlement
+remain planned.
 
 ## Attribution
 

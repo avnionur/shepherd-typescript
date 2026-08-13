@@ -98,6 +98,10 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             relativePath: config.workspaces.worldTaskCapture.captureSchemaPath,
         },
         {
+            content: renderJson(renderWorldCaptureJournalSchema(config)),
+            relativePath: config.workspaces.worldTaskCapture.journalSchemaPath,
+        },
+        {
             content: renderJson(renderRunWaitingLifecycleSchema(config)),
             relativePath: config.runs.artifacts.waitingLifecycleSchema,
         },
@@ -157,6 +161,75 @@ function renderWorldCaptureSchema(config: ProtocolConfig): Readonly<Record<strin
         },
         required,
         type: "object",
+    };
+}
+
+function renderWorldCaptureJournalSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const [prepared, forked, executing, captured] =
+        config.workspaces.worldTaskCapture.journalPhases;
+    const phaseSchemas = [
+        [
+            prepared,
+            [
+                "base_revision_id",
+                "binding_id",
+                "enforcement",
+                "max_capture_id_bytes",
+                "max_text_bytes",
+                "runner_id",
+            ],
+        ],
+        [forked, ["custody_id", "user_basis_before"]],
+        [executing, ["claim_id", "custody_id", "fencing_token"]],
+        [
+            captured,
+            [
+                "changeset_id",
+                "custody_id",
+                "head_revision_id",
+                "user_basis_after",
+                "user_basis_before",
+            ],
+        ],
+    ] as const;
+    return {
+        $id: config.workspaces.worldTaskCapture.journalSchemaId,
+        $schema: config.kernel.schemas.dialect,
+        oneOf: phaseSchemas.map(([phase, phaseFields]) => {
+            const required = [
+                "capture_id",
+                "capture_phase",
+                "journal_version",
+                "run_id",
+                ...phaseFields,
+            ];
+            return {
+                additionalProperties: false,
+                properties: Object.fromEntries(
+                    required.map((key) => [
+                        key,
+                        key === "journal_version"
+                            ? {
+                                  const: config.workspaces.worldTaskCapture.journalVersion,
+                                  type: "integer",
+                              }
+                            : key === "capture_phase"
+                              ? { const: phase, type: "string" }
+                              : [
+                                      "fencing_token",
+                                      "max_capture_id_bytes",
+                                      "max_text_bytes",
+                                  ].includes(key)
+                                ? { minimum: 1, type: "integer" }
+                                : { minLength: 1, type: "string" },
+                    ]),
+                ),
+                required,
+                type: "object",
+            };
+        }),
     };
 }
 
@@ -246,6 +319,9 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedRetainedWorldOutputStatuses = config.workspaces.worldTaskCapture.statuses
         .map((status) => JSON.stringify(status))
         .join(", ");
+    const renderedRetainedWorldJournalPhases = config.workspaces.worldTaskCapture.journalPhases
+        .map((phase) => `    ${JSON.stringify(phase)}`)
+        .join(",\n");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -384,6 +460,11 @@ export const RETAINED_WORLD_ENFORCEMENT_KINDS = [${renderedRetainedWorldEnforcem
 
 /** Configured durable retained-world output statuses. @public */
 export const RETAINED_WORLD_OUTPUT_STATUSES = [${renderedRetainedWorldOutputStatuses}] as const;
+
+/** Configured ordered durable retained-world capture-journal phases. @public */
+export const RETAINED_WORLD_JOURNAL_PHASES = [
+${renderedRetainedWorldJournalPhases},
+] as const;
 
 /** Configured maximum UTF-8 bytes for one retained-world text operation. @public */
 export const RETAINED_WORLD_MAX_TEXT_BYTES = ${config.workspaces.worldTaskCapture.maxTextBytes} as const;

@@ -12,6 +12,8 @@ import {
 import {
     DURABLE_EXECUTION_RECOVERY_STATUSES,
     RECORD_MODES,
+    RETAINED_WORLD_ENFORCEMENT_KINDS,
+    RETAINED_WORLD_JOURNAL_PHASES,
     RUN_ARTIFACT_CONTENT_TYPES,
     RUN_TERMINAL_STATUSES,
 } from "../protocol/values.generated.ts";
@@ -112,7 +114,15 @@ export function readDurableTaskExecution(
             workspaceProtocolConfig.worldTaskCapture.captureSchemaId,
             "world capture",
         );
+        const worldJournal = validateWorldCaptureJournal(executionRecords, created, started, runId);
         const terminal = uniqueTerminal(executionRecords);
+        if (
+            terminal !== undefined &&
+            (worldJournal.captureId !== null) !==
+                (worldCapture !== undefined && worldJournal.capturedRecordId !== null)
+        ) {
+            throw new TypeError("durable terminal world-capture journal is incomplete");
+        }
         if (outcome === undefined && terminal === undefined) {
             if (usage !== undefined || retainedArtifacts.length > 0 || worldCapture !== undefined) {
                 throw new TypeError(
@@ -226,8 +236,9 @@ export function readDurableTaskExecution(
         if (worldCapture !== undefined) {
             assertDurableExecutionRecordContract(worldCapture, CAPTURE_MODE, ROOT_WITNESS_ID, [
                 baseRecordId,
+                ...(worldJournal.capturedRecordId === null ? [] : [worldJournal.capturedRecordId]),
             ]);
-            validateWorldCaptureRecord(worldCapture, runId);
+            validateWorldCaptureRecord(worldCapture, runId, worldJournal);
         }
         assertDurableExecutionRecordContract(outcome, CAPTURE_MODE, ROOT_WITNESS_ID, [
             baseRecordId,
@@ -296,7 +307,11 @@ export function readDurableTaskExecution(
     }
 }
 
-function validateWorldCaptureRecord(record: OwnerRecord, runId: string): void {
+function validateWorldCaptureRecord(
+    record: OwnerRecord,
+    runId: string,
+    journal: WorldCaptureJournalEvidence,
+): void {
     const fields = readRunDataObject(
         record.body,
         [
@@ -338,12 +353,208 @@ function validateWorldCaptureRecord(record: OwnerRecord, runId: string): void {
     ) {
         throw new TypeError("durable world capture contract is inconsistent");
     }
+    if (
+        journal.capturedFields !== null &&
+        (fields.base_revision_id !== journal.baseRevisionId ||
+            fields.binding_id !== journal.bindingId ||
+            fields.capture_id !== journal.captureId ||
+            fields.changeset_id !== journal.capturedFields.changesetId ||
+            fields.custody_id !== journal.capturedFields.custodyId ||
+            fields.head_revision_id !== journal.capturedFields.headRevisionId ||
+            fields.user_basis_before !== journal.capturedFields.userBasisBefore ||
+            fields.user_basis_after !== journal.capturedFields.userBasisAfter)
+    ) {
+        throw new TypeError("durable world capture disagrees with its journal");
+    }
     const { output_id: outputId, ...semantic } = fields;
     const digest = createRecordId({ retained_world_output: semantic as SemanticRecord });
     const expectedOutputId = `${workspaceProtocolConfig.worldTaskCapture.outputIdPrefix}${digest.slice(digest.lastIndexOf(":") + 1)}`;
     if (outputId !== expectedOutputId) {
         throw new TypeError("durable world capture identity is inconsistent");
     }
+}
+
+type WorldCaptureJournalEvidence = {
+    readonly baseRevisionId: string | null;
+    readonly bindingId: string | null;
+    readonly captureId: string | null;
+    readonly capturedFields: {
+        readonly changesetId: string;
+        readonly custodyId: string;
+        readonly headRevisionId: string;
+        readonly userBasisAfter: string;
+        readonly userBasisBefore: string;
+    } | null;
+    readonly capturedRecordId: string | null;
+};
+
+function validateWorldCaptureJournal(
+    records: readonly OwnerRecord[],
+    created: OwnerRecord,
+    started: OwnerRecord | undefined,
+    runId: string,
+): WorldCaptureJournalEvidence {
+    const journal = records.filter(
+        (record) =>
+            record.envelope.schema_ref === workspaceProtocolConfig.worldTaskCapture.journalSchemaId,
+    );
+    if (journal.length === 0)
+        return Object.freeze({
+            baseRevisionId: null,
+            bindingId: null,
+            captureId: null,
+            capturedFields: null,
+            capturedRecordId: null,
+        });
+    if (journal.length > RETAINED_WORLD_JOURNAL_PHASES.length) {
+        throw new TypeError("durable world capture journal contains excess transitions");
+    }
+    let previousRecordId = created.envelope.record_id;
+    let captureId: string | null = null;
+    let baseRevisionId: string | null = null;
+    let bindingId: string | null = null;
+    let custodyId: string | null = null;
+    let userBasisBefore: string | null = null;
+    let capturedFields: WorldCaptureJournalEvidence["capturedFields"] = null;
+    for (const [index, record] of journal.entries()) {
+        const phase = RETAINED_WORLD_JOURNAL_PHASES[index];
+        const fields = readRunDataObject(
+            record.body,
+            journalFields(phase),
+            `durable world capture ${phase} journal`,
+        );
+        if (
+            fields.capture_phase !== phase ||
+            fields.journal_version !== workspaceProtocolConfig.worldTaskCapture.journalVersion ||
+            fields.run_id !== runId ||
+            !isRunText(fields.capture_id) ||
+            Buffer.byteLength(fields.capture_id, "utf8") >
+                workspaceProtocolConfig.worldTaskCapture.maxCaptureIdBytes ||
+            (captureId !== null && fields.capture_id !== captureId)
+        ) {
+            throw new TypeError("durable world capture journal identity is inconsistent");
+        }
+        captureId = fields.capture_id;
+        if (phase === RETAINED_WORLD_JOURNAL_PHASES[0]) {
+            assertRunText(
+                fields.base_revision_id,
+                `durable world capture ${phase} base_revision_id`,
+            );
+            assertRunText(fields.binding_id, `durable world capture ${phase} binding_id`);
+            assertRunText(fields.runner_id, `durable world capture ${phase} runner_id`);
+            if (
+                !RETAINED_WORLD_ENFORCEMENT_KINDS.some(
+                    (enforcement) => enforcement === fields.enforcement,
+                ) ||
+                fields.max_capture_id_bytes !==
+                    workspaceProtocolConfig.worldTaskCapture.maxCaptureIdBytes ||
+                fields.max_text_bytes !== workspaceProtocolConfig.worldTaskCapture.maxTextBytes
+            ) {
+                throw new TypeError("durable world capture prepared journal is inconsistent");
+            }
+            baseRevisionId = fields.base_revision_id;
+            bindingId = fields.binding_id;
+        } else if (phase === RETAINED_WORLD_JOURNAL_PHASES[1]) {
+            assertRunText(fields.custody_id, `durable world capture ${phase} custody_id`);
+            assertRunText(
+                fields.user_basis_before,
+                `durable world capture ${phase} user_basis_before`,
+            );
+            custodyId = fields.custody_id;
+            userBasisBefore = fields.user_basis_before;
+        } else if (phase === RETAINED_WORLD_JOURNAL_PHASES[2]) {
+            assertRunText(fields.claim_id, `durable world capture ${phase} claim_id`);
+            assertRunText(fields.custody_id, `durable world capture ${phase} custody_id`);
+            if (
+                fields.custody_id !== custodyId ||
+                !Number.isSafeInteger(fields.fencing_token) ||
+                (fields.fencing_token as number) <= 0
+            ) {
+                throw new TypeError("durable world capture executing journal is inconsistent");
+            }
+        } else {
+            assertRunText(fields.changeset_id, `durable world capture ${phase} changeset_id`);
+            assertRunText(fields.custody_id, `durable world capture ${phase} custody_id`);
+            assertRunText(
+                fields.head_revision_id,
+                `durable world capture ${phase} head_revision_id`,
+            );
+            assertRunText(
+                fields.user_basis_after,
+                `durable world capture ${phase} user_basis_after`,
+            );
+            assertRunText(
+                fields.user_basis_before,
+                `durable world capture ${phase} user_basis_before`,
+            );
+            if (
+                fields.custody_id !== custodyId ||
+                fields.user_basis_before !== userBasisBefore ||
+                fields.user_basis_after !== userBasisBefore
+            ) {
+                throw new TypeError("durable world capture captured journal is inconsistent");
+            }
+            capturedFields = Object.freeze({
+                changesetId: fields.changeset_id,
+                custodyId: fields.custody_id,
+                headRevisionId: fields.head_revision_id,
+                userBasisAfter: fields.user_basis_after,
+                userBasisBefore: fields.user_basis_before,
+            });
+        }
+        const expectedParents =
+            phase === RETAINED_WORLD_JOURNAL_PHASES[2]
+                ? [previousRecordId, started?.envelope.record_id]
+                : [previousRecordId];
+        if (expectedParents.includes(undefined)) {
+            throw new TypeError("durable world capture executing journal requires start evidence");
+        }
+        assertDurableExecutionRecordContract(
+            record,
+            CAPTURE_MODE,
+            ROOT_WITNESS_ID,
+            expectedParents as readonly string[],
+        );
+        previousRecordId = record.envelope.record_id;
+    }
+    return Object.freeze({
+        baseRevisionId,
+        bindingId,
+        captureId,
+        capturedFields,
+        capturedRecordId:
+            journal.length === RETAINED_WORLD_JOURNAL_PHASES.length ? previousRecordId : null,
+    });
+}
+
+function isRunText(value: unknown): value is string {
+    return typeof value === "string" && value.length > 0 && !/[\uD800-\uDFFF]/u.test(value);
+}
+
+function journalFields(phase: string | undefined): readonly string[] {
+    const common = ["capture_id", "capture_phase", "journal_version", "run_id"];
+    if (phase === RETAINED_WORLD_JOURNAL_PHASES[0])
+        return [
+            "base_revision_id",
+            "binding_id",
+            ...common,
+            "enforcement",
+            "max_capture_id_bytes",
+            "max_text_bytes",
+            "runner_id",
+        ];
+    if (phase === RETAINED_WORLD_JOURNAL_PHASES[1])
+        return [...common, "custody_id", "user_basis_before"];
+    if (phase === RETAINED_WORLD_JOURNAL_PHASES[2])
+        return ["claim_id", ...common, "custody_id", "fencing_token"];
+    return [
+        "changeset_id",
+        ...common,
+        "custody_id",
+        "head_revision_id",
+        "user_basis_after",
+        "user_basis_before",
+    ];
 }
 
 function validateRecoveredLifecycleHead(
@@ -591,6 +802,7 @@ function isDurableExecutionRecord(record: OwnerRecord): boolean {
         runProtocolConfig.schemas.waitingLifecycleId,
         runProtocolConfig.execution.controlCommandSchemaId,
         workspaceProtocolConfig.worldTaskCapture.captureSchemaId,
+        workspaceProtocolConfig.worldTaskCapture.journalSchemaId,
     ].includes(record.envelope.schema_ref);
 }
 

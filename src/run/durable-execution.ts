@@ -110,6 +110,7 @@ export async function executeTaskDurablyWithRecoveryCommand<
 /** One additional record committed atomically before the durable outcome. @internal */
 export type DurableExecutionTerminalContribution = {
     readonly body: SemanticRecord;
+    readonly causedByRecordIds: readonly RecordId[];
     readonly localId: string;
     readonly schemaRef: string;
 };
@@ -127,9 +128,17 @@ export async function executeTaskDurablyWithTerminalContribution<
 >(
     store: SQLiteTraceStore,
     options: TaskExecutionOptions<I, O>,
+    beforeClaim: (
+        prepared: PreparedTaskExecution<I, O>,
+        createdRecordId: RecordId,
+    ) => Promise<void>,
     execute: (
         prepared: PreparedTaskExecution<I, O>,
-        authority: { readonly claimId: string; readonly fencingToken: number },
+        authority: {
+            readonly claimId: string;
+            readonly fencingToken: number;
+            readonly startedRecordId: RecordId;
+        },
     ) => Promise<{
         readonly contribution: DurableExecutionTerminalContribution;
         readonly execution: TaskExecutionResult;
@@ -142,6 +151,7 @@ export async function executeTaskDurablyWithTerminalContribution<
         throw new DurableExecutionRecoveryError(definition.runId);
     }
     const createdRecordId = retainDurableExecutionCreation(store, prepared);
+    await beforeClaim(prepared, createdRecordId);
     const claimId = randomUUID();
     const claim = store.claimDurableExecutionInvocation(
         definition.runId,
@@ -167,7 +177,11 @@ export async function executeTaskDurablyWithTerminalContribution<
         throw new DurableExecutionClaimFencedError(definition.runId, claimId);
     }
     const startedRecordId = started.receipt.record_ids[0] as RecordId;
-    const authority = Object.freeze({ claimId, fencingToken: claim.fencing_token });
+    const authority = Object.freeze({
+        claimId,
+        fencingToken: claim.fencing_token,
+        startedRecordId,
+    });
     const completed = await execute(prepared, authority);
     return retainTerminalWithContribution(
         store,
@@ -315,6 +329,7 @@ function retainTerminal(
                                   {
                                       append_local_id: contribution.localId,
                                       body: contribution.body,
+                                      caused_by_record_ids: contribution.causedByRecordIds,
                                       mode: CAPTURE_MODE,
                                       schema_ref: contribution.schemaRef,
                                       witness_ref: ROOT_WITNESS_ID,

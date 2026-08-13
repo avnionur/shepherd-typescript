@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-13
 
-Current version: `1.18.0`
+Current version: `1.19.0`
 
 Current level: L0 — canonical model
 
@@ -110,8 +110,9 @@ registration is now implemented as a closed workspace-protocol-v7 handle whose e
 callback remains in a private package registry and whose current enforcement is honestly advisory.
 Task 6B.2 now authenticates that handle, issues existing-file authority over isolated custody under
 the durable invocation fence, captures successful output, and atomically attaches its verified
-world record to the terminal cut. The pre-invocation capture journal, restart recovery, and
-uncertain-writer handling remain Task 6B.3–6B.4.
+world record to the terminal cut. Task 6B.3 now retains the pre-invocation and claim-guarded capture
+journal and exposes its validated prefix after restart. Retry, cancellation, cross-store custody
+orphan repair, corruption recovery, and uncertain-writer handling remain Task 6B.4.
 
 ## Progress
 
@@ -216,6 +217,8 @@ uncertain-writer handling remain Task 6B.3–6B.4.
 - [x] Add Task 6B.2 authenticated runner consumption, invocation-fenced existing-file authority,
   isolated successful capture, canonical changeset composition, and atomic terminal-cut world
   evidence without claiming restart recovery.
+- [x] Add Task 6B.3 ordered durable capture journaling, fail-closed recovery validation, exact
+  terminal attachment, and restart-safe public inspection without claiming automatic retry.
 
 ## Verification required for this slice
 
@@ -227,9 +230,8 @@ uncertain-writer handling remain Task 6B.3–6B.4.
 
 ## Next slice
 
-Continue Phase 3, Task 6B.3: append the durable capture journal before runner invocation and make
-exact capture identity, custody, and terminal attachment restart-safe. Task 6B.4 then closes retry,
-concurrency, cancellation, corruption, and uncertain-writer handling.
+Continue Phase 3, Task 6B.4: close retry, concurrency, cancellation, corruption recovery, and
+uncertain-writer handling over the retained capture journal.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive

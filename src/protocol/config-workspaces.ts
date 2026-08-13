@@ -181,6 +181,10 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         [
             "captureSchemaId",
             "captureSchemaPath",
+            "journalPhases",
+            "journalSchemaId",
+            "journalSchemaPath",
+            "journalVersion",
             "maxCaptureIdBytes",
             "maxTextBytes",
             "outputIdPrefix",
@@ -632,6 +636,22 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             captureSchemaPath: readNonEmptyString(
                 worldTaskCapture.captureSchemaPath,
                 "workspaces.worldTaskCapture.captureSchemaPath",
+            ),
+            journalPhases: readUniqueStrings(
+                worldTaskCapture.journalPhases,
+                "workspaces.worldTaskCapture.journalPhases",
+            ),
+            journalSchemaId: readNonEmptyString(
+                worldTaskCapture.journalSchemaId,
+                "workspaces.worldTaskCapture.journalSchemaId",
+            ),
+            journalSchemaPath: readNonEmptyString(
+                worldTaskCapture.journalSchemaPath,
+                "workspaces.worldTaskCapture.journalSchemaPath",
+            ),
+            journalVersion: readPositiveInteger(
+                worldTaskCapture.journalVersion,
+                "workspaces.worldTaskCapture.journalVersion",
             ),
             maxCaptureIdBytes: readPositiveInteger(
                 worldTaskCapture.maxCaptureIdBytes,

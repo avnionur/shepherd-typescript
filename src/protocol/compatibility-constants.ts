@@ -647,3 +647,16 @@ export const WORKSPACE_PROTOCOL_V8_CONTRACT = deepFreeze({
         version: 8,
     },
 } as const);
+
+/** Immutable capture-journal extension implemented by workspace protocol v9. */
+export const WORKSPACE_PROTOCOL_V9_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V8_CONTRACT,
+    worldTaskCapture: {
+        ...WORKSPACE_PROTOCOL_V8_CONTRACT.worldTaskCapture,
+        journalPhases: ["prepared", "forked", "executing", "captured"],
+        journalSchemaId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v1.schema.json",
+        journalSchemaPath: "spec/schemas/world-capture-journal-v1.schema.json",
+        journalVersion: 9,
+    },
+} as const);

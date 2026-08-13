@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+    cancelDurableTask,
     captureTaskWorldDurably,
     createReferenceCopyCarrier,
     createRetainedWorldRunner,
@@ -12,13 +13,16 @@ import {
     createRunOutcome,
     createStaticProvider,
     createWorkspaceBindings,
+    DurableExecutionRecoveryError,
     executeTask,
     initializeWorkspace,
+    inspectTaskWorldCaptureJournal,
     type OwnerRecord,
     RETAINED_WORLD_MAX_CAPTURE_ID_BYTES,
     RETAINED_WORLD_MAX_TEXT_BYTES,
     type RetainedWorldCapability,
     readDurableTaskExecution,
+    recoverTaskDurably,
     SQLiteTraceStore,
     schema,
     task,
@@ -26,20 +30,63 @@ import {
 
 class RetainedWorldEvidenceStore extends SQLiteTraceStore {
     readonly #records: readonly OwnerRecord[];
+    readonly #source: SQLiteTraceStore | null;
 
-    constructor(records: readonly OwnerRecord[]) {
+    constructor(records: readonly OwnerRecord[], source: SQLiteTraceStore | null = null) {
         super();
         this.#records = records;
+        this.#source = source;
     }
 
     override readOwner(_ownerId: string): readonly OwnerRecord[] {
         return this.#records;
+    }
+
+    override readCut(
+        cutId: Parameters<SQLiteTraceStore["readCut"]>[0],
+    ): ReturnType<SQLiteTraceStore["readCut"]> {
+        return this.#source === null ? super.readCut(cutId) : this.#source.readCut(cutId);
     }
 }
 
 class LostCaptureFenceStore extends SQLiteTraceStore {
     override hasDurableExecutionInvocationAuthority(): boolean {
         return false;
+    }
+}
+
+class FencedJournalStore extends SQLiteTraceStore {
+    override appendDurableExecutionTerminal(
+        ..._arguments: Parameters<SQLiteTraceStore["appendDurableExecutionTerminal"]>
+    ): ReturnType<SQLiteTraceStore["appendDurableExecutionTerminal"]> {
+        return { status: "fenced" };
+    }
+}
+
+class ChangingJournalStore extends RetainedWorldEvidenceStore {
+    readonly #changedRecords: readonly OwnerRecord[];
+    readonly #source: SQLiteTraceStore;
+    #reads = 0;
+
+    constructor(
+        source: SQLiteTraceStore,
+        records: readonly OwnerRecord[],
+        changedRecords: readonly OwnerRecord[],
+    ) {
+        super(records);
+        this.#source = source;
+        this.#changedRecords = changedRecords;
+    }
+
+    override readOwner(ownerId: string): readonly OwnerRecord[] {
+        this.#reads += 1;
+        return this.#reads < 3 ? super.readOwner(ownerId) : this.#changedRecords;
+    }
+
+    override readCut(
+        cutId: Parameters<SQLiteTraceStore["readCut"]>[0],
+    ): ReturnType<SQLiteTraceStore["readCut"]> {
+        return this.#source.readCut(cutId);
     }
 }
 
@@ -182,7 +229,8 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         TypeError,
     );
     let leakedWorld: RetainedWorldCapability | null = null;
-    using store = new SQLiteTraceStore();
+    const storePath = path.join(workspaceRoot, "trace.sqlite");
+    using store = new SQLiteTraceStore(storePath);
     assert.throws(
         () => store.hasDurableExecutionInvocationAuthority("run:test", "claim:test", 0),
         TypeError,
@@ -247,6 +295,149 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         status: "committed",
     });
     const retainedRecords = store.readOwner("run:captured-world:1");
+    assert.deepEqual(
+        retainedRecords.flatMap((record) => {
+            const phase = (record.body as { capture_phase?: unknown }).capture_phase;
+            return typeof phase === "string" ? [phase] : [];
+        }),
+        ["prepared", "forked", "executing", "captured"],
+    );
+    assert.deepEqual(
+        inspectTaskWorldCaptureJournal(store, "run:captured-world:1").transitions.map(
+            (transition) => transition.phase,
+        ),
+        ["prepared", "forked", "executing", "captured"],
+    );
+    const legacyStartedRecordId = result.ledger.started_record_id;
+    assert.ok(legacyStartedRecordId);
+    const legacyRecords = retainedRecords
+        .filter((record) => record.body.capture_phase === undefined)
+        .map((record) =>
+            record.envelope.record_id === result.output.capture_record_id
+                ? {
+                      ...record,
+                      envelope: {
+                          ...record.envelope,
+                          caused_by_record_ids: [legacyStartedRecordId],
+                      },
+                  }
+                : record,
+        );
+    using legacyStore = new RetainedWorldEvidenceStore(legacyRecords, store);
+    const legacyInspection = inspectTaskWorldCaptureJournal(legacyStore, "run:captured-world:1");
+    assert.equal(legacyInspection.status, "retained");
+    assert.equal(legacyInspection.capture_id, "capture:world:1");
+    assert.deepEqual(legacyInspection.transitions, []);
+    const capturedJournalRecord = retainedRecords.find(
+        (record) => record.body.capture_phase === "captured",
+    );
+    const preparedJournalRecord = retainedRecords.find(
+        (record) => record.body.capture_phase === "prepared",
+    );
+    const forkedJournalRecord = retainedRecords.find(
+        (record) => record.body.capture_phase === "forked",
+    );
+    assert.ok(preparedJournalRecord && forkedJournalRecord);
+    assert.ok(capturedJournalRecord);
+    const inconsistentJournal = retainedRecords.map((record) =>
+        record.envelope.record_id === capturedJournalRecord.envelope.record_id
+            ? {
+                  ...record,
+                  body: { ...record.body, custody_id: "custody:sha256:corrupt" },
+              }
+            : record,
+    );
+    using inconsistentJournalStore = new RetainedWorldEvidenceStore(inconsistentJournal);
+    assert.throws(
+        () => inspectTaskWorldCaptureJournal(inconsistentJournalStore, "run:captured-world:1"),
+        /malformed/u,
+    );
+    using omittedJournalStore = new RetainedWorldEvidenceStore(
+        retainedRecords.filter((record) => record.body.capture_phase !== "forked"),
+    );
+    assert.throws(
+        () => inspectTaskWorldCaptureJournal(omittedJournalStore, "run:captured-world:1"),
+        /malformed/u,
+    );
+    using mismatchedCaptureIdStore = new RetainedWorldEvidenceStore(
+        retainedRecords.map((record) =>
+            record.body.capture_phase === "forked"
+                ? { ...record, body: { ...record.body, capture_id: "capture:other" } }
+                : record,
+        ),
+    );
+    assert.throws(
+        () => inspectTaskWorldCaptureJournal(mismatchedCaptureIdStore, "run:captured-world:1"),
+        /malformed/u,
+    );
+    using duplicateJournalStore = new RetainedWorldEvidenceStore([
+        ...retainedRecords,
+        preparedJournalRecord,
+    ]);
+    assert.throws(
+        () => inspectTaskWorldCaptureJournal(duplicateJournalStore, "run:captured-world:1"),
+        /malformed/u,
+    );
+    using changingJournalStore = new ChangingJournalStore(store, retainedRecords, [
+        ...retainedRecords,
+        preparedJournalRecord,
+    ]);
+    assert.throws(
+        () => inspectTaskWorldCaptureJournal(changingJournalStore, "run:captured-world:1"),
+        /changed during inspection/u,
+    );
+    for (const [subject, mutate] of [
+        [
+            "prepared contract",
+            (record: OwnerRecord) => ({
+                ...record,
+                body: { ...record.body, enforcement: "unsupported" },
+            }),
+        ],
+        [
+            "executing contract",
+            (record: OwnerRecord) => ({
+                ...record,
+                body: { ...record.body, fencing_token: 0 },
+            }),
+        ],
+        [
+            "output journal agreement",
+            (record: OwnerRecord) => ({
+                ...record,
+                body: { ...record.body, binding_id: "binding:sha256:other" },
+            }),
+        ],
+    ] as const) {
+        const phase = subject === "executing contract" ? "executing" : "prepared";
+        using malformedJournalStore = new RetainedWorldEvidenceStore(
+            retainedRecords.map((record) =>
+                record.body.capture_phase === phase ? mutate(record) : record,
+            ),
+        );
+        assert.throws(
+            () => inspectTaskWorldCaptureJournal(malformedJournalStore, "run:captured-world:1"),
+            /malformed/u,
+        );
+    }
+    using missingStartJournalStore = new RetainedWorldEvidenceStore(
+        retainedRecords.filter(
+            (record) => record.envelope.record_id !== result.ledger.started_record_id,
+        ),
+    );
+    assert.throws(
+        () => inspectTaskWorldCaptureJournal(missingStartJournalStore, "run:captured-world:1"),
+        /malformed/u,
+    );
+    using missingOutputStore = new RetainedWorldEvidenceStore(
+        retainedRecords.filter(
+            (record) => record.envelope.record_id !== result.output.capture_record_id,
+        ),
+    );
+    assert.throws(
+        () => inspectTaskWorldCaptureJournal(missingOutputStore, "run:captured-world:1"),
+        /malformed/u,
+    );
     const captureRecord = retainedRecords.find(
         (record) => record.envelope.record_id === result.output.capture_record_id,
     );
@@ -363,9 +554,37 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         }),
         TypeError,
     );
+    assert.equal(
+        inspectTaskWorldCaptureJournal(lostCaptureFenceStore, "run:lost-fence").status,
+        "executing",
+    );
+    using fencedJournalStore = new FencedJournalStore();
+    await assert.rejects(
+        captureTaskWorldDurably({
+            baseRevision,
+            binding,
+            captureId: "capture:fenced-journal",
+            carrier,
+            execution: {
+                budget: { maxTurns: 1 },
+                input: undefined,
+                provider,
+                runId: "run:fenced-journal",
+                task: fixtureTask,
+            },
+            runner: noOperationRunner,
+            store: fencedJournalStore,
+        }),
+        /lost its invocation fence/u,
+    );
+    assert.equal(
+        inspectTaskWorldCaptureJournal(fencedJournalStore, "run:fenced-journal").status,
+        "forked",
+    );
 
     await writeFile(path.join(sourceRoot, "message.txt"), "moved-before\n");
-    using movedBeforeStore = new SQLiteTraceStore();
+    const movedBeforeStorePath = path.join(workspaceRoot, "moved-before.sqlite");
+    using movedBeforeStore = new SQLiteTraceStore(movedBeforeStorePath);
     await assert.rejects(
         captureTaskWorldDurably({
             baseRevision,
@@ -384,7 +603,102 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         }),
         TypeError,
     );
-    assert.equal(readDurableTaskExecution(movedBeforeStore, "run:moved-before").status, "started");
+    assert.equal(readDurableTaskExecution(movedBeforeStore, "run:moved-before").status, "created");
+    assert.deepEqual(inspectTaskWorldCaptureJournal(movedBeforeStore, "run:moved-before"), {
+        capture_id: null,
+        output_record_id: null,
+        recovery_status: "created",
+        run_id: "run:moved-before",
+        status: "absent",
+        transitions: [],
+    });
+    const movedBeforeCreation = readDurableTaskExecution(movedBeforeStore, "run:moved-before");
+    assert.equal(movedBeforeCreation.status, "created");
+    const preparedPrefix = movedBeforeStore.append({
+        append_intent_id: "append:prepared-prefix",
+        batch: {
+            groups: [
+                {
+                    caused_by_record_ids: [movedBeforeCreation.created_record_id],
+                    owner_id: "run:moved-before",
+                    records: [
+                        {
+                            body: {
+                                ...preparedJournalRecord.body,
+                                capture_id: "capture:moved-before",
+                                run_id: "run:moved-before",
+                            },
+                            mode: preparedJournalRecord.envelope.mode,
+                            schema_ref: preparedJournalRecord.envelope.schema_ref,
+                            witness_ref: preparedJournalRecord.envelope.witness_ref,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    const preparedPrefixRecordId = preparedPrefix.record_ids[0];
+    assert.ok(preparedPrefixRecordId);
+    movedBeforeStore.close();
+    using preparedPrefixStore = new SQLiteTraceStore(movedBeforeStorePath);
+    assert.equal(
+        inspectTaskWorldCaptureJournal(preparedPrefixStore, "run:moved-before").status,
+        "prepared",
+    );
+    const forkedPrefix = preparedPrefixStore.append({
+        append_intent_id: "append:forked-prefix",
+        batch: {
+            groups: [
+                {
+                    caused_by_record_ids: [preparedPrefixRecordId],
+                    owner_id: "run:moved-before",
+                    records: [
+                        {
+                            body: {
+                                ...forkedJournalRecord.body,
+                                capture_id: "capture:moved-before",
+                                run_id: "run:moved-before",
+                            },
+                            mode: forkedJournalRecord.envelope.mode,
+                            schema_ref: forkedJournalRecord.envelope.schema_ref,
+                            witness_ref: forkedJournalRecord.envelope.witness_ref,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    assert.ok(forkedPrefix.record_ids[0]);
+    preparedPrefixStore.close();
+    using forkedPrefixStore = new SQLiteTraceStore(movedBeforeStorePath);
+    const forkedInspection = inspectTaskWorldCaptureJournal(forkedPrefixStore, "run:moved-before");
+    assert.equal(forkedInspection.status, "forked");
+    assert.equal(forkedInspection.capture_id, "capture:moved-before");
+    const ownerCountBeforeRecovery = forkedPrefixStore.readOwner("run:moved-before").length;
+    await assert.rejects(
+        recoverTaskDurably(forkedPrefixStore, {
+            commandId: "command:recover:forked-prefix",
+            execution: {
+                budget: { maxTurns: 1 },
+                input: undefined,
+                provider,
+                runId: "run:moved-before",
+                task: fixtureTask,
+            },
+        }),
+        DurableExecutionRecoveryError,
+    );
+    assert.throws(
+        () =>
+            cancelDurableTask(forkedPrefixStore, {
+                commandId: "command:cancel:forked-prefix",
+                expectedLifecycleRecordId: movedBeforeCreation.created_record_id,
+                reason: "operator request",
+                runId: "run:moved-before",
+            }),
+        DurableExecutionRecoveryError,
+    );
+    assert.equal(forkedPrefixStore.readOwner("run:moved-before").length, ownerCountBeforeRecovery);
     await writeFile(path.join(sourceRoot, "message.txt"), "before\n");
 
     const movingRunner = createRetainedWorldRunner({
@@ -415,6 +729,10 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         TypeError,
     );
     assert.equal(readDurableTaskExecution(movedDuringStore, "run:moved-during").status, "started");
+    assert.equal(
+        inspectTaskWorldCaptureJournal(movedDuringStore, "run:moved-during").status,
+        "executing",
+    );
     await writeFile(path.join(sourceRoot, "message.txt"), "before\n");
 
     using forgedStore = new SQLiteTraceStore();
@@ -865,6 +1183,13 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         store: failedOutcomeStore,
     });
     assert.equal(failedOutcome.execution.outcome.outcome.status, "failed");
+
+    store.close();
+    using reopenedStore = new SQLiteTraceStore(storePath);
+    const reopenedJournal = inspectTaskWorldCaptureJournal(reopenedStore, "run:captured-world:1");
+    assert.equal(reopenedJournal.status, "retained");
+    assert.equal(reopenedJournal.output_record_id, result.output.capture_record_id);
+    assert.equal(reopenedJournal.capture_id, "capture:world:1");
 
     using extendedOptionsStore = new SQLiteTraceStore();
     const extendedOptions = {

@@ -20,10 +20,12 @@ import {
 } from "../canonical/canonical-record.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import {
+    RETAINED_WORLD_JOURNAL_PHASES,
     RETAINED_WORLD_OUTPUT_STATUSES,
     RUN_ARTIFACT_CONTENT_TYPES,
     RUN_TERMINAL_STATUSES,
 } from "../protocol/values.generated.ts";
+import type { RecordId } from "../record/types.ts";
 import {
     type DurableExecutionTerminalContribution,
     executeTaskDurablyWithTerminalContribution,
@@ -45,9 +47,12 @@ import type {
     RetainedWorldOutput,
     TaskWorldCaptureResult,
 } from "./task-world-execution-types.ts";
-import type { WorldCustody } from "./types.ts";
+import { appendTaskWorldJournal } from "./task-world-journal.ts";
+import type { WorldCustody, WorldRevision } from "./types.ts";
 
 const [RETAINED_STATUS] = RETAINED_WORLD_OUTPUT_STATUSES;
+const [PREPARED_PHASE, FORKED_PHASE, EXECUTING_PHASE, CAPTURED_PHASE] =
+    RETAINED_WORLD_JOURNAL_PHASES;
 const [FINISHED_STATUS] = RUN_TERMINAL_STATUSES;
 const [, BLOB_ARTIFACT_TYPE] = RUN_ARTIFACT_CONTENT_TYPES;
 
@@ -109,15 +114,61 @@ export async function captureTaskWorldDurably<
         RetainedWorldOutput,
         "capture_record_id" | "execution_cut" | "execution_outcome_record_id"
     > | null = null;
+    let observedBefore: WorldRevision | null = null;
+    let custody: WorldCustody | null = null;
+    let forkedRecordId: RecordId | null = null;
     const durable = await executeTaskDurablyWithTerminalContribution(
         fields.store,
         fields.execution,
-        async (prepared, authority) => {
-            const observedBefore = await fields.carrier.snapshot(fields.binding);
+        async (prepared, createdRecordId) => {
+            observedBefore = await fields.carrier.snapshot(fields.binding);
             if (observedBefore.revision_id !== retainedBase.revision_id) {
                 throw new TypeError("user basis differs from base");
             }
-            const custody = await fields.carrier.fork(retainedBase.revision_id);
+            const preparedRecordId = appendTaskWorldJournal(
+                fields.store,
+                prepared.definition.runId,
+                fields.captureId,
+                PREPARED_PHASE,
+                {
+                    base_revision_id: retainedBase.revision_id,
+                    binding_id: fields.binding.binding_id,
+                    enforcement: fields.runner.enforcement,
+                    max_capture_id_bytes:
+                        workspaceProtocolConfig.worldTaskCapture.maxCaptureIdBytes,
+                    max_text_bytes: workspaceProtocolConfig.worldTaskCapture.maxTextBytes,
+                    runner_id: fields.runner.runner_id,
+                },
+                [createdRecordId],
+            );
+            custody = await fields.carrier.fork(retainedBase.revision_id);
+            forkedRecordId = appendTaskWorldJournal(
+                fields.store,
+                prepared.definition.runId,
+                fields.captureId,
+                FORKED_PHASE,
+                {
+                    custody_id: custody.custody_id,
+                    user_basis_before: observedBefore.content_id,
+                },
+                [preparedRecordId],
+            );
+        },
+        async (prepared, authority) => {
+            assert.ok(observedBefore !== null && custody !== null && forkedRecordId !== null);
+            const executingRecordId = appendTaskWorldJournal(
+                fields.store,
+                prepared.definition.runId,
+                fields.captureId,
+                EXECUTING_PHASE,
+                {
+                    claim_id: authority.claimId,
+                    custody_id: custody.custody_id,
+                    fencing_token: authority.fencingToken,
+                },
+                [forkedRecordId, authority.startedRecordId],
+                authority,
+            );
             let active = true;
             const assertFence = () => {
                 if (
@@ -169,6 +220,21 @@ export async function captureTaskWorldDurably<
             if (observedAfter.revision_id !== observedBefore.revision_id) {
                 throw new TypeError("user basis moved during retained-world execution");
             }
+            const capturedRecordId = appendTaskWorldJournal(
+                fields.store,
+                prepared.definition.runId,
+                fields.captureId,
+                CAPTURED_PHASE,
+                {
+                    changeset_id: changeset.changeset_id,
+                    custody_id: custody.custody_id,
+                    head_revision_id: head.revision_id,
+                    user_basis_after: observedAfter.content_id,
+                    user_basis_before: observedBefore.content_id,
+                },
+                [executingRecordId],
+                authority,
+            );
             const semantic = {
                 base_revision_id: retainedBase.revision_id,
                 binding_id: retainedBase.binding_id,
@@ -202,6 +268,7 @@ export async function captureTaskWorldDurably<
             });
             const contribution: DurableExecutionTerminalContribution = Object.freeze({
                 body,
+                causedByRecordIds: Object.freeze([capturedRecordId]),
                 localId: workspaceProtocolConfig.worldTaskCapture.captureSchemaId,
                 schemaRef: workspaceProtocolConfig.worldTaskCapture.captureSchemaId,
             });

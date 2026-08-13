@@ -1,5 +1,9 @@
 import { createRecordId } from "../canonical/canonical-record.ts";
-import { projectionProtocolConfig, runProtocolConfig } from "../protocol/config.ts";
+import {
+    projectionProtocolConfig,
+    runProtocolConfig,
+    workspaceProtocolConfig,
+} from "../protocol/config.ts";
 import {
     DURABLE_EXECUTION_RECOVERY_STATUSES,
     RECORD_MODES,
@@ -48,7 +52,10 @@ import type {
 } from "./durable-execution-control-types.ts";
 import { retainDurableExecutionCreation } from "./durable-execution-creation.ts";
 import { publishDurableExecutionCut } from "./durable-execution-cut.ts";
-import { DurableExecutionRecoveryAbsentError } from "./durable-execution-errors.ts";
+import {
+    DurableExecutionRecoveryAbsentError,
+    DurableExecutionRecoveryError,
+} from "./durable-execution-errors.ts";
 import { inspectDurableTaskExecution } from "./durable-execution-inspection.ts";
 import {
     assertDurableExecutionRecordContract,
@@ -106,6 +113,7 @@ export function cancelDurableTask(
     const parsed = readDirectCancellationOptions(options);
     const schemas = projectionProtocolConfig.executionHistory.executionSchemas;
     const ownerRecords = store.readOwner(parsed.runId);
+    assertNoTaskWorldJournal(ownerRecords, parsed.runId);
     const creationRecords = ownerRecords.filter(
         (record) => record.envelope.schema_ref === schemas.created,
     );
@@ -817,6 +825,7 @@ export async function recoverTaskDurably<
     if (recovery.status === ABSENT_RECOVERY_STATUS) {
         throw new DurableExecutionRecoveryAbsentError(prepared.definition.runId);
     }
+    assertNoTaskWorldJournal(store.readOwner(prepared.definition.runId), prepared.definition.runId);
     const createdRecordId = retainDurableExecutionCreation(store, prepared);
     const command = store.append({
         append_intent_id: createRecordId({ durable_control_command_id: options.commandId }),
@@ -850,6 +859,18 @@ export async function recoverTaskDurably<
         command: Object.freeze({ command_id: options.commandId, record_id: commandRecordId }),
         result,
     });
+}
+
+function assertNoTaskWorldJournal(records: readonly OwnerRecord[], runId: string): void {
+    if (
+        records.some(
+            (record) =>
+                record.envelope.schema_ref ===
+                workspaceProtocolConfig.worldTaskCapture.journalSchemaId,
+        )
+    ) {
+        throw new DurableExecutionRecoveryError(runId);
+    }
 }
 
 function assertRecoveryOptions(
