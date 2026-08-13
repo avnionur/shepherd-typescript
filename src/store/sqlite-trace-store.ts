@@ -26,6 +26,7 @@ import {
     appendDurableExecutionStart,
     appendDurableExecutionTerminal,
     claimDurableExecutionInvocation,
+    hasDurableExecutionInvocationAuthority,
 } from "./durable-execution-claims.ts";
 import {
     appendDurableExecutionInactiveCancellation,
@@ -173,6 +174,16 @@ export class SQLiteTraceStore implements Disposable {
             runProtocolConfig.execution.invocationClaimLeaseMilliseconds,
             allowExpiredTakeover,
         );
+    }
+
+    /** @internal Reads whether one exact started invocation fence remains current. */
+    hasDurableExecutionInvocationAuthority(
+        runId: string,
+        claimId: string,
+        fencingToken: number,
+    ): boolean {
+        this.#assertOpen();
+        return hasDurableExecutionInvocationAuthority(this.#database, runId, claimId, fencingToken);
     }
 
     /**

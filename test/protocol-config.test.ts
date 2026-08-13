@@ -14,6 +14,7 @@ import {
     WORKSPACE_PROTOCOL_V5_CONTRACT,
     WORKSPACE_PROTOCOL_V6_CONTRACT,
     WORKSPACE_PROTOCOL_V7_CONTRACT,
+    WORKSPACE_PROTOCOL_V8_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -59,6 +60,7 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.changesets.version, 5);
     assert.equal(parsed.workspaces.worldCapture.version, 6);
     assert.equal(parsed.workspaces.worldExecution.runnerVersion, 7);
+    assert.equal(parsed.workspaces.worldTaskCapture.version, 8);
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
@@ -68,12 +70,14 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V5_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V6_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V7_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V8_CONTRACT), true);
     assert.equal("bindingErrors" in WORKSPACE_PROTOCOL_V1_CONTRACT, false);
     assert.equal("carrier" in WORKSPACE_PROTOCOL_V2_CONTRACT, false);
     assert.equal("gitCustody" in WORKSPACE_PROTOCOL_V3_CONTRACT, false);
     assert.equal("changesets" in WORKSPACE_PROTOCOL_V4_CONTRACT, false);
     assert.equal("worldCapture" in WORKSPACE_PROTOCOL_V5_CONTRACT, false);
     assert.equal("worldExecution" in WORKSPACE_PROTOCOL_V6_CONTRACT, false);
+    assert.equal("worldTaskCapture" in WORKSPACE_PROTOCOL_V7_CONTRACT, false);
     assert.notEqual(
         parsed.kernel.rootWitness.body,
         objectAt(objectAt(config, "kernel"), "rootWitness").body,
@@ -722,6 +726,15 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
         },
         (config) => {
             objectAt(workspaceConfigOf(config), "worldExecution").maxRunnerIdBytes = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldTaskCapture").statuses = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldTaskCapture").maxTextBytes = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldTaskCapture").maxCaptureIdBytes = 0;
         },
         (config) => {
             workspaceConfigOf(config).adoptionModes = ["none", "none"];

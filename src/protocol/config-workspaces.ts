@@ -36,6 +36,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "worktreeRefPrefix",
             "worldCapture",
             "worldExecution",
+            "worldTaskCapture",
         ],
         "workspaces",
     );
@@ -174,6 +175,19 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         config.worldExecution,
         ["enforcementKinds", "maxRunnerIdBytes", "runnerVersion"],
         "workspaces.worldExecution",
+    );
+    const worldTaskCapture = readObject(
+        config.worldTaskCapture,
+        [
+            "captureSchemaId",
+            "captureSchemaPath",
+            "maxCaptureIdBytes",
+            "maxTextBytes",
+            "outputIdPrefix",
+            "statuses",
+            "version",
+        ],
+        "workspaces.worldTaskCapture",
     );
     const adoptionModes = readUniqueStrings(config.adoptionModes, "workspaces.adoptionModes");
     const defaultAdoptionMode = readNonEmptyString(
@@ -608,6 +622,37 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             runnerVersion: readPositiveInteger(
                 worldExecution.runnerVersion,
                 "workspaces.worldExecution.runnerVersion",
+            ),
+        },
+        worldTaskCapture: {
+            captureSchemaId: readNonEmptyString(
+                worldTaskCapture.captureSchemaId,
+                "workspaces.worldTaskCapture.captureSchemaId",
+            ),
+            captureSchemaPath: readNonEmptyString(
+                worldTaskCapture.captureSchemaPath,
+                "workspaces.worldTaskCapture.captureSchemaPath",
+            ),
+            maxCaptureIdBytes: readPositiveInteger(
+                worldTaskCapture.maxCaptureIdBytes,
+                "workspaces.worldTaskCapture.maxCaptureIdBytes",
+            ),
+            maxTextBytes: readPositiveInteger(
+                worldTaskCapture.maxTextBytes,
+                "workspaces.worldTaskCapture.maxTextBytes",
+            ),
+            outputIdPrefix: readDigestPrefix(
+                worldTaskCapture.outputIdPrefix,
+                digestAlgorithm,
+                "workspaces.worldTaskCapture.outputIdPrefix",
+            ),
+            statuses: readUniqueStrings(
+                worldTaskCapture.statuses,
+                "workspaces.worldTaskCapture.statuses",
+            ),
+            version: readPositiveInteger(
+                worldTaskCapture.version,
+                "workspaces.worldTaskCapture.version",
             ),
         },
     };

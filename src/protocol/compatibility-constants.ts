@@ -632,3 +632,18 @@ export const WORKSPACE_PROTOCOL_V7_CONTRACT = deepFreeze({
         runnerVersion: 7,
     },
 } as const);
+
+/** Immutable durable task-world capture extension implemented by workspace protocol v8. */
+export const WORKSPACE_PROTOCOL_V8_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V7_CONTRACT,
+    worldTaskCapture: {
+        captureSchemaId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-v1.schema.json",
+        captureSchemaPath: "spec/schemas/world-capture-v1.schema.json",
+        maxCaptureIdBytes: 256,
+        maxTextBytes: 16_777_216,
+        outputIdPrefix: "world-output:sha256:",
+        statuses: ["retained"],
+        version: 8,
+    },
+} as const);

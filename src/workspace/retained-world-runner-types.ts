@@ -19,9 +19,26 @@ export type RetainedWorldCapability = {
     readonly custody_id: string;
     /** Enforcement actually provided for this invocation. */
     readonly enforcement: RetainedWorldEnforcement;
+    /**
+     * Reads one existing regular UTF-8 file beneath isolated custody.
+     *
+     * @param relativePath - Canonical binding-relative path.
+     * @returns Exact UTF-8 text.
+     * @throws {TypeError} If the path or current fence is invalid.
+     */
+    readonly readText: (relativePath: string) => Promise<string>;
+    /**
+     * Replaces one existing regular UTF-8 file beneath isolated custody.
+     *
+     * @param relativePath - Canonical binding-relative path.
+     * @param text - UTF-8 text within the configured operation bound.
+     * @returns Completion after the fenced write closes.
+     * @throws {TypeError} If the path, text, file, or current fence is invalid.
+     */
+    readonly writeText: (relativePath: string, text: string) => Promise<void>;
 };
 
-/** Frozen context supplied to one future authenticated retained-world runner invocation. */
+/** Frozen context supplied to one authenticated retained-world runner invocation. */
 export type RetainedWorldExecutionContext<
     I extends TaskSchema<unknown>,
     O extends TaskSchema<unknown>,

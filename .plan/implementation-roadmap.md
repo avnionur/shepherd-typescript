@@ -146,8 +146,10 @@ Work:
 - capture task world changes away from the user's working tree; **carrier foundation implemented
   in 1.16.0**, with deterministic parent-linked custody promotion, restart reopen, and Task 5
   changeset composition; **runner registration implemented in 1.17.0**, with a closed opaque
-  handle, private callback registry, and honest advisory enforcement; handle authentication,
-  fenced capability issuance, and durable capture publication remain Task 6B.2–6B.3;
+  handle, private callback registry, and honest advisory enforcement; **successful-path fenced
+  execution implemented in 1.18.0**, with authenticated handle consumption, isolated existing-file
+  authority, immutable capture, and atomic terminal-cut attachment; the pre-invocation capture
+  journal, restart recovery, and uncertain-writer handling remain Task 6B.3–6B.4;
 - expose read-only changeset inspection, retained content reads, bounded previews, derived
   rename/copy projections, and Gitlink citations from the Git-aware adapter;
 - implement exact-ID `select` and `discard`;

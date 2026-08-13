@@ -2,6 +2,7 @@ import { workspaceProtocolConfig } from "../protocol/config.ts";
 import type { TaskExecutionResult } from "../run/execution-types.ts";
 import type { TaskSchema } from "../task/schema.ts";
 import type {
+    RetainedWorldExecutionContext,
     RetainedWorldRunner,
     RetainedWorldRunnerDefinition,
 } from "./retained-world-runner-types.ts";
@@ -9,6 +10,15 @@ import type {
 type StoredRunner = (context: unknown) => Promise<TaskExecutionResult>;
 
 const runnerCallbacks = new WeakMap<object, StoredRunner>();
+
+/** Rejects structurally forged retained-world runner handles. @internal */
+export function assertRetainedWorldRunner(
+    value: unknown,
+): asserts value is RetainedWorldRunner<TaskSchema<unknown>, TaskSchema<unknown>> {
+    if (value === null || typeof value !== "object" || !runnerCallbacks.has(value)) {
+        throw new TypeError("retained-world runner registration is invalid");
+    }
+}
 
 /**
  * Creates one opaque retained-world runner registration handle.
@@ -43,6 +53,23 @@ export function createRetainedWorldRunner<
     }) as RetainedWorldRunner<I, O>;
     runnerCallbacks.set(runner, fields.run as unknown as StoredRunner);
     return runner;
+}
+
+/** Invokes one registered runner while rejecting structurally forged handles. @internal */
+export function invokeRetainedWorldRunner<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(
+    runner: RetainedWorldRunner<I, O>,
+    context: RetainedWorldExecutionContext<I, O>,
+): Promise<TaskExecutionResult> {
+    const callback = runnerCallbacks.get(runner);
+    // Package callers authenticate the handle before this private lookup.
+    /* node:coverage ignore next 3 */
+    if (callback === undefined) {
+        throw new TypeError("retained-world runner registration is invalid");
+    }
+    return callback(context);
 }
 
 function readDefinition<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(

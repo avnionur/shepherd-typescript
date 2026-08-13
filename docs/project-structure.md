@@ -93,7 +93,8 @@ The runtime areas are intentionally shallow:
 - `workspace/` owns protected initialization, baseline-adoption identity, Git-history preservation,
   fail-closed control-manifest validation, canonical disjoint binding authority, and reference
   copy-carrier including parent-linked custody capture, Git-aware retained-output custody, and pure
-  content-addressed world changesets, plus opaque retained-world runner registrations.
+  content-addressed world changesets, opaque retained-world runner registrations, and fenced
+  successful-path task-world capture.
 
 ## Module rules
 

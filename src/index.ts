@@ -73,6 +73,10 @@ export type {
     PublishedRecord,
 } from "./projection/types.ts";
 export {
+    RETAINED_WORLD_MAX_CAPTURE_ID_BYTES,
+    RETAINED_WORLD_MAX_TEXT_BYTES,
+} from "./protocol/values.generated.ts";
+export {
     StaticProviderExhaustedError,
     StaticProviderRequestMismatchError,
 } from "./provider/errors.ts";
@@ -313,6 +317,12 @@ export type {
     RetainedWorldRunner,
     RetainedWorldRunnerDefinition,
 } from "./workspace/retained-world-runner-types.ts";
+export { captureTaskWorldDurably } from "./workspace/task-world-execution.ts";
+export type {
+    CaptureTaskWorldOptions,
+    RetainedWorldOutput,
+    TaskWorldCaptureResult,
+} from "./workspace/task-world-execution-types.ts";
 export type {
     GitAwareCustody,
     GitAwareCustodyOptions,

@@ -595,6 +595,15 @@
             "enforcementKinds": ["advisory"],
             "maxRunnerIdBytes": 256,
             "runnerVersion": 7
+        },
+        "worldTaskCapture": {
+            "captureSchemaId": "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-v1.schema.json",
+            "captureSchemaPath": "spec/schemas/world-capture-v1.schema.json",
+            "maxCaptureIdBytes": 256,
+            "maxTextBytes": 16777216,
+            "outputIdPrefix": "world-output:sha256:",
+            "statuses": ["retained"],
+            "version": 8
         }
     }
 }

@@ -754,6 +754,23 @@ export type WorkspaceProtocolConfig = {
         /** Public retained-world runner protocol version. */
         readonly runnerVersion: number;
     };
+    /** Durable retained-world task-capture protocol configuration. */
+    readonly worldTaskCapture: {
+        /** Schema identifier for one retained world-capture record. */
+        readonly captureSchemaId: string;
+        /** Repository-relative generated capture-schema path. */
+        readonly captureSchemaPath: string;
+        /** Maximum UTF-8 byte length of one capture correlation identity. */
+        readonly maxCaptureIdBytes: number;
+        /** Maximum text bytes accepted by one capability operation. */
+        readonly maxTextBytes: number;
+        /** Content-addressed retained-output identity prefix. */
+        readonly outputIdPrefix: string;
+        /** Closed retained-output status vocabulary. */
+        readonly statuses: readonly string[];
+        /** Public durable task-world capture protocol version. */
+        readonly version: number;
+    };
 };
 
 /** Complete validated language-neutral protocol configuration. */

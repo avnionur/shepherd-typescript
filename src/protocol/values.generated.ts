@@ -173,5 +173,14 @@ export const WORLD_ENTRY_KINDS = ["directory", "file", "symlink"] as const;
 /** Configured retained-world runner enforcement classifications. @public */
 export const RETAINED_WORLD_ENFORCEMENT_KINDS = ["advisory"] as const;
 
+/** Configured durable retained-world output statuses. @public */
+export const RETAINED_WORLD_OUTPUT_STATUSES = ["retained"] as const;
+
+/** Configured maximum UTF-8 bytes for one retained-world text operation. @public */
+export const RETAINED_WORLD_MAX_TEXT_BYTES = 16777216 as const;
+
+/** Configured maximum UTF-8 bytes for one retained-world capture identity. @public */
+export const RETAINED_WORLD_MAX_CAPTURE_ID_BYTES = 256 as const;
+
 /** Configured Git HEAD-state discriminants. @public */
 export const GIT_HEAD_KINDS = ["attached", "unborn", "detached"] as const;

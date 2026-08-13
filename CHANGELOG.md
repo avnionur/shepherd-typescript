@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.0] - 2026-08-13
+
+### New Feature
+
+- Added `captureTaskWorldDurably` for authenticated invocation-fenced execution against isolated
+  retained custody with existing regular UTF-8 file reads and replacements.
+- Added workspace protocol v8 world-capture identities, schema generation, configured bounds, and
+  fail-closed recovery validation.
+- Added immutable child capture and canonical changeset composition with the verified world record
+  committed atomically inside the ordinary execution terminal cut.
+
+### Impact
+
+Registered runners can now produce a successfully retained world without changing user files, and
+the result is causally attached to the durable task outcome. Pre-invocation capture journaling,
+restart retry, uncertain-writer recovery, cancellation cleanup, and richer file operations remain
+Task 6B.3–6B.4.
+
 ## [1.17.0] - 2026-08-12
 
 ### New Feature

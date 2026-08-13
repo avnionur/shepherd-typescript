@@ -54,7 +54,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
   idempotent discard.
 - [Retained-world runner](./retained-world-runner.md) defines the closed opaque runner registration
-  handle and its honest initial advisory enforcement boundary.
+  handle and its honest advisory enforcement boundary.
+- [Fenced task-world execution](./task-world-execution.md) defines authenticated runner
+  consumption, isolated file authority, capture, and atomic terminal-cut attachment.
 - [Git-aware baseline and retained output custody](./git-aware-custody.md) defines semantic Git
   bases, exact index/object receipts, linked-worktree identity, movement checks, and isolated
   retained output.

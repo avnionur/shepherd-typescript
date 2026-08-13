@@ -7,6 +7,7 @@ import {
     kernelProtocolConfig,
     projectionProtocolConfig,
     runProtocolConfig,
+    workspaceProtocolConfig,
 } from "../protocol/config.ts";
 import {
     DURABLE_EXECUTION_RECOVERY_STATUSES,
@@ -106,10 +107,17 @@ export function readDurableTaskExecution(
         const retainedArtifacts = executionRecords.filter(
             (record) => record.envelope.schema_ref === runProtocolConfig.schemas.artifactId,
         );
+        const worldCapture = uniqueRecord(
+            executionRecords,
+            workspaceProtocolConfig.worldTaskCapture.captureSchemaId,
+            "world capture",
+        );
         const terminal = uniqueTerminal(executionRecords);
         if (outcome === undefined && terminal === undefined) {
-            if (usage !== undefined || retainedArtifacts.length > 0) {
-                throw new TypeError("durable usage or artifact evidence has no terminal outcome");
+            if (usage !== undefined || retainedArtifacts.length > 0 || worldCapture !== undefined) {
+                throw new TypeError(
+                    "durable usage, artifact, or world evidence has no terminal outcome",
+                );
             }
             return started === undefined
                 ? Object.freeze({
@@ -158,6 +166,7 @@ export function readDurableTaskExecution(
             usage,
             terminal,
             baseRecordId,
+            worldCapture?.envelope.record_id,
         );
         const execution = readDurableExecutionResult(
             artifacts.map((artifact) => artifact.body),
@@ -179,6 +188,7 @@ export function readDurableTaskExecution(
             started === undefined &&
             (usage !== undefined ||
                 artifacts.length > 0 ||
+                worldCapture !== undefined ||
                 execution.outcome.outcome.status === FINISHED_STATUS ||
                 execution.outcome.outcome.status === FAILED_STATUS)
         ) {
@@ -213,15 +223,23 @@ export function readDurableTaskExecution(
                 baseRecordId,
             ]);
         }
+        if (worldCapture !== undefined) {
+            assertDurableExecutionRecordContract(worldCapture, CAPTURE_MODE, ROOT_WITNESS_ID, [
+                baseRecordId,
+            ]);
+            validateWorldCaptureRecord(worldCapture, runId);
+        }
         assertDurableExecutionRecordContract(outcome, CAPTURE_MODE, ROOT_WITNESS_ID, [
             baseRecordId,
             ...cancellationCommandIds,
+            ...(worldCapture === undefined ? [] : [worldCapture.envelope.record_id]),
             ...artifacts.map((artifact) => artifact.envelope.record_id),
             ...(usage === undefined ? [] : [usage.envelope.record_id]),
         ]);
         assertDurableExecutionRecordContract(terminal, CAPTURE_MODE, ROOT_WITNESS_ID, [
             baseRecordId,
             ...cancellationCommandIds,
+            ...(worldCapture === undefined ? [] : [worldCapture.envelope.record_id]),
             outcome.envelope.record_id,
         ]);
         const evidence = Object.freeze({
@@ -275,6 +293,56 @@ export function readDurableTaskExecution(
             throw error;
         }
         throw new TraceStoreError("durable execution evidence is malformed", { cause: error });
+    }
+}
+
+function validateWorldCaptureRecord(record: OwnerRecord, runId: string): void {
+    const fields = readRunDataObject(
+        record.body,
+        [
+            "base_revision_id",
+            "binding_id",
+            "capture_id",
+            "changeset_id",
+            "custody_id",
+            "head_revision_id",
+            "output_id",
+            "run_id",
+            "schema_version",
+            "status",
+            "user_basis_after",
+            "user_basis_before",
+        ],
+        "durable world capture",
+    );
+    for (const key of [
+        "base_revision_id",
+        "binding_id",
+        "capture_id",
+        "changeset_id",
+        "custody_id",
+        "head_revision_id",
+        "output_id",
+        "run_id",
+        "status",
+        "user_basis_after",
+        "user_basis_before",
+    ] as const) {
+        assertRunText(fields[key], `durable world capture ${key}`);
+    }
+    if (
+        fields.run_id !== runId ||
+        fields.schema_version !== workspaceProtocolConfig.worldTaskCapture.version ||
+        fields.status !== workspaceProtocolConfig.worldTaskCapture.statuses[0] ||
+        fields.user_basis_before !== fields.user_basis_after
+    ) {
+        throw new TypeError("durable world capture contract is inconsistent");
+    }
+    const { output_id: outputId, ...semantic } = fields;
+    const digest = createRecordId({ retained_world_output: semantic as SemanticRecord });
+    const expectedOutputId = `${workspaceProtocolConfig.worldTaskCapture.outputIdPrefix}${digest.slice(digest.lastIndexOf(":") + 1)}`;
+    if (outputId !== expectedOutputId) {
+        throw new TypeError("durable world capture identity is inconsistent");
     }
 }
 
@@ -441,6 +509,7 @@ function readOutcomeArtifacts(
     usage: OwnerRecord | undefined,
     terminal: OwnerRecord,
     baseRecordId: string,
+    worldCaptureRecordId: string | undefined,
 ): readonly OwnerRecord[] {
     const terminalArtifacts = retainedArtifacts.filter(
         (artifact) => artifact.view.owner_ordinal < terminal.view.owner_ordinal,
@@ -463,7 +532,9 @@ function readOutcomeArtifacts(
     );
     const artifactRecordIds = parents
         .slice(1, usage === undefined ? undefined : -1)
-        .filter((recordId) => !controlCommandIds.has(recordId));
+        .filter(
+            (recordId) => !controlCommandIds.has(recordId) && recordId !== worldCaptureRecordId,
+        );
     const artifacts = artifactRecordIds.map((recordId) => {
         const matches = terminalArtifacts.filter(
             (artifact) => artifact.envelope.record_id === recordId,
@@ -519,6 +590,7 @@ function isDurableExecutionRecord(record: OwnerRecord): boolean {
         runProtocolConfig.schemas.usageId,
         runProtocolConfig.schemas.waitingLifecycleId,
         runProtocolConfig.execution.controlCommandSchemaId,
+        workspaceProtocolConfig.worldTaskCapture.captureSchemaId,
     ].includes(record.envelope.schema_ref);
 }
 

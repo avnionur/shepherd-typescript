@@ -25,6 +25,7 @@ import {
 import { readDurableTaskExecution } from "./durable-execution-recovery.ts";
 import type { DurableTaskExecutionResult } from "./durable-execution-types.ts";
 import { executePreparedTask } from "./execution.ts";
+import type { PreparedTaskExecution } from "./execution-preparation.ts";
 import { prepareTaskExecution } from "./execution-preparation.ts";
 import type { TaskExecutionOptions, TaskExecutionResult } from "./execution-types.ts";
 
@@ -104,6 +105,79 @@ export async function executeTaskDurablyWithRecoveryCommand<
     recoveryCommandRecordId: RecordId,
 ): Promise<DurableTaskExecutionResult> {
     return executeTaskDurablyInternal(store, options, recoveryCommandRecordId);
+}
+
+/** One additional record committed atomically before the durable outcome. @internal */
+export type DurableExecutionTerminalContribution = {
+    readonly body: SemanticRecord;
+    readonly localId: string;
+    readonly schemaRef: string;
+};
+
+/** Result of custom execution and its exact terminal contribution. @internal */
+export type DurableExecutionWithContribution = {
+    readonly contributionRecordId: RecordId;
+    readonly result: DurableTaskExecutionResult;
+};
+
+/** Executes a package-owned adapter under the ordinary durable invocation claim. @internal */
+export async function executeTaskDurablyWithTerminalContribution<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(
+    store: SQLiteTraceStore,
+    options: TaskExecutionOptions<I, O>,
+    execute: (
+        prepared: PreparedTaskExecution<I, O>,
+        authority: { readonly claimId: string; readonly fencingToken: number },
+    ) => Promise<{
+        readonly contribution: DurableExecutionTerminalContribution;
+        readonly execution: TaskExecutionResult;
+    }>,
+): Promise<DurableExecutionWithContribution> {
+    const prepared = prepareTaskExecution(options);
+    const { definition } = prepared;
+    const recovery = readDurableTaskExecution(store, definition.runId);
+    if (recovery.status !== DURABLE_EXECUTION_RECOVERY_STATUSES[0]) {
+        throw new DurableExecutionRecoveryError(definition.runId);
+    }
+    const createdRecordId = retainDurableExecutionCreation(store, prepared);
+    const claimId = randomUUID();
+    const claim = store.claimDurableExecutionInvocation(
+        definition.runId,
+        createdRecordId,
+        claimId,
+        Date.now(),
+        false,
+    );
+    // Cross-connection loss is proven through the shared ordinary admission seam.
+    /* node:coverage ignore next 3 */
+    if (claim.status === LOST_CLAIM_STATUS) {
+        throw new DurableExecutionClaimLostError(definition.runId, claim.claim_id);
+    }
+    const started = store.appendDurableExecutionStart(
+        definition.runId,
+        claimId,
+        claim.fencing_token,
+        Date.now(),
+    );
+    // Start fencing is proven through the shared store transaction seam.
+    /* node:coverage ignore next 3 */
+    if (started.status === FENCED_APPEND_STATUS) {
+        throw new DurableExecutionClaimFencedError(definition.runId, claimId);
+    }
+    const startedRecordId = started.receipt.record_ids[0] as RecordId;
+    const authority = Object.freeze({ claimId, fencingToken: claim.fencing_token });
+    const completed = await execute(prepared, authority);
+    return retainTerminalWithContribution(
+        store,
+        definition.runId,
+        createdRecordId,
+        startedRecordId,
+        authority,
+        completed.execution,
+        completed.contribution,
+    );
 }
 
 async function executeTaskDurablyInternal<
@@ -198,6 +272,8 @@ function retainTerminal(
     execution: TaskExecutionResult,
     commandRecordId: RecordId | null = null,
     releaseClaim = false,
+    contribution: DurableExecutionTerminalContribution | null = null,
+    onContributionRecordId?: (recordId: RecordId) => void,
 ): DurableTaskExecutionResult {
     const schemas = projectionProtocolConfig.executionHistory.executionSchemas;
     const finished = execution.outcome.outcome.status === FINISHED_RUN_STATUS;
@@ -233,6 +309,17 @@ function retainTerminal(
                     ],
                     owner_id: runId,
                     records: [
+                        ...(contribution === null
+                            ? []
+                            : [
+                                  {
+                                      append_local_id: contribution.localId,
+                                      body: contribution.body,
+                                      mode: CAPTURE_MODE,
+                                      schema_ref: contribution.schemaRef,
+                                      witness_ref: ROOT_WITNESS_ID,
+                                  },
+                              ]),
                         ...execution.artifacts.map((artifact, index) => ({
                             append_local_id: artifactLocalIds[index] as string,
                             body: artifact as SemanticRecord,
@@ -261,16 +348,34 @@ function retainTerminal(
                             body: execution.outcome,
                             ...(execution.usage === null
                                 ? artifactLocalIds.length === 0
-                                    ? {}
-                                    : { caused_by_local_refs: artifactLocalIds }
-                                : { caused_by_local_refs: [...artifactLocalIds, usageLocalId] }),
+                                    ? contribution === null
+                                        ? {}
+                                        : { caused_by_local_refs: [contribution.localId] }
+                                    : {
+                                          caused_by_local_refs: [
+                                              ...(contribution === null
+                                                  ? []
+                                                  : [contribution.localId]),
+                                              ...artifactLocalIds,
+                                          ],
+                                      }
+                                : {
+                                      caused_by_local_refs: [
+                                          ...(contribution === null ? [] : [contribution.localId]),
+                                          ...artifactLocalIds,
+                                          usageLocalId,
+                                      ],
+                                  }),
                             mode: CAPTURE_MODE,
                             schema_ref: runProtocolConfig.schemas.outcomeId,
                             witness_ref: ROOT_WITNESS_ID,
                         },
                         {
                             body: terminalLifecycleBody(runId, execution),
-                            caused_by_local_refs: [outcomeLocalId],
+                            caused_by_local_refs: [
+                                ...(contribution === null ? [] : [contribution.localId]),
+                                outcomeLocalId,
+                            ],
                             mode: CAPTURE_MODE,
                             schema_ref: lifecycleSchema,
                             witness_ref: ROOT_WITNESS_ID,
@@ -304,6 +409,8 @@ function retainTerminal(
             startedRecordId,
             execution,
             terminal.receipt,
+            contribution,
+            onContributionRecordId,
         );
     }
     return retainTerminalReceipt(
@@ -313,7 +420,44 @@ function retainTerminal(
         startedRecordId,
         execution,
         terminal,
+        contribution,
+        onContributionRecordId,
     );
+}
+
+function retainTerminalWithContribution(
+    store: SQLiteTraceStore,
+    runId: string,
+    createdRecordId: RecordId,
+    startedRecordId: RecordId,
+    invocationAuthority: { readonly claimId: string; readonly fencingToken: number },
+    execution: TaskExecutionResult,
+    contribution: DurableExecutionTerminalContribution,
+): DurableExecutionWithContribution {
+    let contributionRecordId: RecordId | null = null;
+    const result = retainTerminal(
+        store,
+        runId,
+        createdRecordId,
+        startedRecordId,
+        invocationAuthority,
+        execution,
+        null,
+        false,
+        contribution,
+        (recordId) => {
+            contributionRecordId = recordId;
+        },
+    );
+    // A committed contribution append always returns its first receipt identity.
+    /* node:coverage ignore next 3 */
+    if (contributionRecordId === null) {
+        throw new TraceStoreError("durable terminal contribution receipt is unavailable");
+    }
+    return Object.freeze({
+        contributionRecordId,
+        result,
+    });
 }
 
 /**
@@ -361,11 +505,20 @@ function retainTerminalReceipt(
     startedRecordId: RecordId | null,
     execution: TaskExecutionResult,
     terminal: { readonly record_ids: readonly string[] },
+    contribution: DurableExecutionTerminalContribution | null = null,
+    onContributionRecordId?: (recordId: RecordId) => void,
 ): DurableTaskExecutionResult {
+    const contributionOffset = contribution === null ? 0 : 1;
+    if (contribution !== null) {
+        onContributionRecordId?.(terminal.record_ids[0] as RecordId);
+    }
     const artifactRecordIds = Object.freeze(
-        terminal.record_ids.slice(0, execution.artifacts.length) as readonly RecordId[],
+        terminal.record_ids.slice(
+            contributionOffset,
+            contributionOffset + execution.artifacts.length,
+        ) as readonly RecordId[],
     );
-    const usageOffset = execution.artifacts.length;
+    const usageOffset = contributionOffset + execution.artifacts.length;
     const outcomeOffset = usageOffset + (execution.usage === null ? 0 : 1);
     const usageRecordId =
         execution.usage === null ? null : (terminal.record_ids[usageOffset] as RecordId);

@@ -28,6 +28,26 @@ type DurableExecutionClaimRow = {
     readonly started: number;
 };
 
+/** Reads whether one exact started durable invocation claim remains current. @internal */
+export function hasDurableExecutionInvocationAuthority(
+    database: DatabaseSync,
+    runId: string,
+    claimId: string,
+    fencingToken: number,
+): boolean {
+    assertNonEmptyString(runId, "runId");
+    assertNonEmptyString(claimId, "claimId");
+    if (!Number.isSafeInteger(fencingToken) || fencingToken <= 0) {
+        throw new TypeError("fencingToken must be a positive safe integer");
+    }
+    const row = database
+        .prepare(
+            `SELECT 1 FROM ${STORE_TABLES.durableExecutionClaims} WHERE run_id = ? AND claim_id = ? AND fencing_token = ? AND started = 1`,
+        )
+        .get(runId, claimId, fencingToken);
+    return row !== undefined;
+}
+
 /** Atomically admits at most one claim identity for one durable run. */
 export function claimDurableExecutionInvocation(
     database: DatabaseSync,

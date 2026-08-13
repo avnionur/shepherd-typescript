@@ -12,6 +12,15 @@ import type {
     WorkspaceBindingSet,
 } from "./types.ts";
 
+const WORKSPACE_BINDINGS = new WeakSet<object>();
+
+/** Rejects structurally forged workspace binding handles. @internal */
+export function assertWorkspaceBinding(value: unknown): asserts value is WorkspaceBinding {
+    if (value === null || typeof value !== "object" || !WORKSPACE_BINDINGS.has(value)) {
+        throw new TypeError("workspace binding authority is invalid");
+    }
+}
+
 /**
  * Creates workspace protocol v2 stable canonical authorities for a complete disjoint binding set.
  *
@@ -70,20 +79,20 @@ function createBindings(
             }
         }
         bindingAncestorIdentities.push(canonicalRoot.ancestorIdentities);
-        bindings.push(
-            Object.freeze({
-                binding_id: createRecordId({
-                    kind: workspaceProtocolConfig.bindingIdentityKind,
-                    name: definition.name,
-                    root: canonicalRoot.path,
-                    version: workspaceProtocolConfig.bindingVersion,
-                    workspace_root: workspace.root_path,
-                }),
-                canonical_root: canonicalRoot.path,
+        const binding = Object.freeze({
+            binding_id: createRecordId({
+                kind: workspaceProtocolConfig.bindingIdentityKind,
                 name: definition.name,
-                requested_root: definition.root,
+                root: canonicalRoot.path,
+                version: workspaceProtocolConfig.bindingVersion,
+                workspace_root: workspace.root_path,
             }),
-        );
+            canonical_root: canonicalRoot.path,
+            name: definition.name,
+            requested_root: definition.root,
+        });
+        WORKSPACE_BINDINGS.add(binding);
+        bindings.push(binding);
     }
     return Object.freeze({
         binding_version: workspaceProtocolConfig.bindingVersion,

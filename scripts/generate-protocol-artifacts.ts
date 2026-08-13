@@ -94,6 +94,10 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             relativePath: config.runs.artifacts.usageSchema,
         },
         {
+            content: renderJson(renderWorldCaptureSchema(config)),
+            relativePath: config.workspaces.worldTaskCapture.captureSchemaPath,
+        },
+        {
             content: renderJson(renderRunWaitingLifecycleSchema(config)),
             relativePath: config.runs.artifacts.waitingLifecycleSchema,
         },
@@ -119,6 +123,41 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
         await mkdir(path.dirname(artifactPath), { recursive: true });
         await writeFile(artifactPath, content);
     }
+}
+
+function renderWorldCaptureSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
+    const required = [
+        "base_revision_id",
+        "binding_id",
+        "capture_id",
+        "changeset_id",
+        "custody_id",
+        "head_revision_id",
+        "output_id",
+        "run_id",
+        "schema_version",
+        "status",
+        "user_basis_after",
+        "user_basis_before",
+    ];
+    const properties = Object.fromEntries(
+        required.map((key) => [key, { type: key === "schema_version" ? "integer" : "string" }]),
+    );
+    return {
+        $id: config.workspaces.worldTaskCapture.captureSchemaId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            ...properties,
+            schema_version: {
+                const: config.workspaces.worldTaskCapture.version,
+                type: "integer",
+            },
+            status: { const: config.workspaces.worldTaskCapture.statuses[0], type: "string" },
+        },
+        required,
+        type: "object",
+    };
 }
 
 function renderProtocolValues(config: ProtocolConfig): string {
@@ -203,6 +242,9 @@ function renderProtocolValues(config: ProtocolConfig): string {
         .join(", ");
     const renderedRetainedWorldEnforcementKinds = config.workspaces.worldExecution.enforcementKinds
         .map((kind) => JSON.stringify(kind))
+        .join(", ");
+    const renderedRetainedWorldOutputStatuses = config.workspaces.worldTaskCapture.statuses
+        .map((status) => JSON.stringify(status))
         .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
@@ -339,6 +381,15 @@ export const WORLD_ENTRY_KINDS = [${renderedWorldEntryKinds}] as const;
 
 /** Configured retained-world runner enforcement classifications. @public */
 export const RETAINED_WORLD_ENFORCEMENT_KINDS = [${renderedRetainedWorldEnforcementKinds}] as const;
+
+/** Configured durable retained-world output statuses. @public */
+export const RETAINED_WORLD_OUTPUT_STATUSES = [${renderedRetainedWorldOutputStatuses}] as const;
+
+/** Configured maximum UTF-8 bytes for one retained-world text operation. @public */
+export const RETAINED_WORLD_MAX_TEXT_BYTES = ${config.workspaces.worldTaskCapture.maxTextBytes} as const;
+
+/** Configured maximum UTF-8 bytes for one retained-world capture identity. @public */
+export const RETAINED_WORLD_MAX_CAPTURE_ID_BYTES = ${config.workspaces.worldTaskCapture.maxCaptureIdBytes} as const;
 
 /** Configured Git HEAD-state discriminants. @public */
 export const GIT_HEAD_KINDS = [${renderedGitHeadKinds}] as const;
