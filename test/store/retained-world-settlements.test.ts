@@ -81,6 +81,186 @@ test("retained-world settlement admission is consume-once and replayable after r
     secondStore.close();
 });
 
+test("settlement journal transitions replay exactly across connections and reopen", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-settlement-journal-"));
+    context.after(() => rm(directory, { recursive: true, force: true }));
+    const databasePath = path.join(directory, "trace.sqlite");
+    const firstStore = new SQLiteTraceStore(databasePath);
+    const admission = firstStore.admitRetainedWorldSettlement(request);
+    assert.deepEqual(firstStore.readRetainedWorldSettlementJournal(request.output_id), {
+        admission,
+        cleanup_completed: null,
+        operation: null,
+        receipt: null,
+        state: "prepared",
+    });
+
+    const secondStore = new SQLiteTraceStore(databasePath);
+    const applying = firstStore.beginRetainedWorldSettlement(request.output_id);
+    assert.equal(applying.state, "applying");
+    assert.match(applying.operation?.id ?? "", /^world-settlement-operation:sha256:[0-9a-f]{64}$/u);
+    assert.deepEqual(secondStore.beginRetainedWorldSettlement(request.output_id), applying);
+
+    const selected = secondStore.retainRetainedWorldSettlementTerminal(request.output_id, {
+        action: "select",
+        publication_id: "world-publication:one",
+        user_basis_after: "world-content:selected",
+    });
+    assert.equal(selected.state, "selected");
+    assert.equal(selected.cleanup_completed, null);
+    assert.deepEqual(
+        firstStore.retainRetainedWorldSettlementTerminal(request.output_id, {
+            action: "select",
+            publication_id: "world-publication:one",
+            user_basis_after: "world-content:selected",
+        }),
+        selected,
+    );
+    assert.throws(
+        () =>
+            firstStore.retainRetainedWorldSettlementTerminal(request.output_id, {
+                action: "select",
+                publication_id: "world-publication:different",
+                user_basis_after: "world-content:selected",
+            }),
+        RetainedWorldSettlementConflictError,
+    );
+    assert.deepEqual(firstStore.readRetainedWorldSettlement(request.output_id), admission);
+    firstStore.close();
+    secondStore.close();
+
+    using reopened = new SQLiteTraceStore(databasePath);
+    assert.deepEqual(reopened.readRetainedWorldSettlementJournal(request.output_id), selected);
+});
+
+test("settlement journal rejects skipped transitions and validates discard receipts", () => {
+    using store = new SQLiteTraceStore();
+    const discardRequest = Object.freeze({
+        ...request,
+        action: "discard",
+        command_id: "settlement-command:discard",
+        output_id: "world-output:discard",
+    }) satisfies RetainedWorldSettlementRequest;
+    store.admitRetainedWorldSettlement(discardRequest);
+    assert.throws(
+        () =>
+            store.retainRetainedWorldSettlementTerminal(discardRequest.output_id, {
+                action: "discard",
+                cleanup_completed: false,
+                user_basis_after: discardRequest.user_basis_before,
+            }),
+        RetainedWorldSettlementConflictError,
+    );
+    assert.equal(
+        store.readRetainedWorldSettlementJournal(discardRequest.output_id)?.state,
+        "prepared",
+    );
+    store.beginRetainedWorldSettlement(discardRequest.output_id);
+    const discarded = store.retainRetainedWorldSettlementTerminal(discardRequest.output_id, {
+        action: "discard",
+        cleanup_completed: false,
+        user_basis_after: discardRequest.user_basis_before,
+    });
+    assert.equal(discarded.state, "discarded");
+    assert.equal(discarded.cleanup_completed, false);
+    assert.deepEqual(
+        store.retainRetainedWorldSettlementTerminal(discardRequest.output_id, {
+            action: "discard",
+            cleanup_completed: false,
+            user_basis_after: discardRequest.user_basis_before,
+        }),
+        discarded,
+    );
+    const completed = store.completeRetainedWorldSettlementCleanup(discardRequest.output_id);
+    assert.equal(completed.cleanup_completed, true);
+    assert.deepEqual(
+        store.completeRetainedWorldSettlementCleanup(discardRequest.output_id),
+        completed,
+    );
+    assert.deepEqual(
+        store.retainRetainedWorldSettlementTerminal(discardRequest.output_id, {
+            action: "discard",
+            cleanup_completed: false,
+            user_basis_after: discardRequest.user_basis_before,
+        }),
+        completed,
+    );
+    const pendingRequest = Object.freeze({
+        ...discardRequest,
+        command_id: "settlement-command:pending",
+        output_id: "world-output:pending",
+    }) satisfies RetainedWorldSettlementRequest;
+    store.admitRetainedWorldSettlement(pendingRequest);
+    assert.throws(
+        () => store.completeRetainedWorldSettlementCleanup(pendingRequest.output_id),
+        RetainedWorldSettlementConflictError,
+    );
+    assert.throws(
+        () =>
+            store.retainRetainedWorldSettlementTerminal(discardRequest.output_id, {
+                action: "discard",
+                cleanup_completed: true,
+                user_basis_after: discardRequest.user_basis_before,
+            }),
+        TypeError,
+    );
+    assert.throws(
+        () => store.beginRetainedWorldSettlement("world-output:missing"),
+        RetainedWorldSettlementInvalidError,
+    );
+    assert.equal(store.readRetainedWorldSettlementJournal("world-output:missing"), undefined);
+});
+
+test("settlement journal reads fail closed for corrupt nullable evidence combinations", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-settlement-journal-corrupt-"));
+    context.after(() => rm(directory, { recursive: true, force: true }));
+    const corruptions = [
+        { phase: "prepared", set: "request_json = 'null'" },
+        { phase: "prepared", set: "request_digest = 'corrupt'" },
+        { phase: "prepared", set: "operation_id = 'unexpected'" },
+        { phase: "prepared", set: "receipt_digest = 'unexpected'" },
+        { phase: "prepared", set: "cleanup_completed = 0" },
+        { phase: "applying", set: "operation_json = NULL" },
+        { phase: "applying", set: "operation_id = 'corrupt'" },
+        { phase: "applying", set: "operation_digest = 'corrupt'" },
+        { phase: "applying", set: "receipt_digest = 'unexpected'" },
+        { phase: "applying", set: "cleanup_completed = 0" },
+        { phase: "applying", set: "state = 'unknown'" },
+        { phase: "selected", set: "receipt_json = NULL" },
+        { phase: "selected", set: "receipt_digest = 'corrupt'" },
+        { phase: "selected", set: "cleanup_completed = 1" },
+        { phase: "selected", set: "state = 'discarded'" },
+    ] as const;
+    for (const [index, corruption] of corruptions.entries()) {
+        const databasePath = path.join(directory, `trace-${index}.sqlite`);
+        const store = new SQLiteTraceStore(databasePath);
+        store.admitRetainedWorldSettlement(request);
+        if (corruption.phase !== "prepared") store.beginRetainedWorldSettlement(request.output_id);
+        if (corruption.phase === "selected") {
+            store.retainRetainedWorldSettlementTerminal(request.output_id, {
+                action: "select",
+                publication_id: "world-publication:one",
+                user_basis_after: "world-content:selected",
+            });
+        }
+        store.close();
+        const database = new DatabaseSync(databasePath);
+        database.exec(
+            `UPDATE retained_world_settlements SET ${corruption.set} WHERE output_id = '${request.output_id}'`,
+        );
+        database.close();
+        using reopened = new SQLiteTraceStore(databasePath);
+        assert.throws(
+            () => reopened.readRetainedWorldSettlementJournal(request.output_id),
+            RetainedWorldSettlementInvalidError,
+        );
+        assert.throws(
+            () => reopened.readRetainedWorldSettlement(request.output_id),
+            RetainedWorldSettlementInvalidError,
+        );
+    }
+});
+
 test("retained-world settlement reads reject malformed or inconsistent stored evidence", async (context) => {
     const directory = await mkdtemp(path.join(tmpdir(), "shepherd-settlement-corrupt-"));
     context.after(() => rm(directory, { recursive: true, force: true }));

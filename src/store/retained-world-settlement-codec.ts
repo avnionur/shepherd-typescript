@@ -21,31 +21,43 @@ type RetainedWorldSettlementOperation = Readonly<{
     request_id: string;
 }>;
 
-type RetainedWorldSettlementOperationEncoding = Readonly<{
+/** @internal Canonical operation encoding retained by the settlement journal. */
+export type RetainedWorldSettlementOperationEncoding = Readonly<{
     digest: string;
     id: string;
     json: string;
     value: RetainedWorldSettlementOperation;
 }>;
 
-type RetainedWorldSettlementTerminalReceipt = Readonly<{
-    action: RetainedWorldSettlementAdmission["action"];
-    cleanup_completed: boolean;
-    operation_id: string;
-    publication_id: string | null;
-    receipt_version: typeof RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION;
-    request_id: string;
-    state: typeof SELECTED_STATE | typeof DISCARDED_STATE;
-    user_basis_after: string;
-}>;
+type RetainedWorldSettlementTerminalReceipt =
+    | Readonly<{
+          action: typeof SELECT_ACTION;
+          operation_id: string;
+          publication_id: string;
+          receipt_version: typeof RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION;
+          request_id: string;
+          state: typeof SELECTED_STATE;
+          user_basis_after: string;
+      }>
+    | Readonly<{
+          action: typeof DISCARD_ACTION;
+          cleanup_completed: boolean;
+          operation_id: string;
+          receipt_version: typeof RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION;
+          request_id: string;
+          state: typeof DISCARDED_STATE;
+          user_basis_after: string;
+      }>;
 
-type RetainedWorldSettlementReceiptEncoding = Readonly<{
+/** @internal Canonical terminal-receipt encoding retained by the settlement journal. */
+export type RetainedWorldSettlementReceiptEncoding = Readonly<{
     digest: string;
     json: string;
     value: RetainedWorldSettlementTerminalReceipt;
 }>;
 
-type RetainedWorldSettlementTerminalEvidence =
+/** @internal Action-specific evidence accepted by the terminal journal transition. */
+export type RetainedWorldSettlementTerminalEvidence =
     | Readonly<{
           action: typeof SELECT_ACTION;
           publication_id: string;
@@ -101,18 +113,27 @@ export function encodeRetainedWorldSettlementTerminalReceipt(
     if (!selected && evidence.user_basis_after !== operation.value.request.user_basis_before) {
         throw new TypeError("discard settlement changed the user basis");
     }
-    const cleanupCompleted = selected ? false : evidence.cleanup_completed;
-    const publicationId = selected ? evidence.publication_id : null;
-    const value = Object.freeze({
-        action: evidence.action,
-        cleanup_completed: cleanupCompleted,
+    const common = {
         operation_id: operation.id,
-        publication_id: publicationId,
         receipt_version: RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION,
         request_id: operation.value.request_id,
-        state: selected ? SELECTED_STATE : DISCARDED_STATE,
         user_basis_after: evidence.user_basis_after,
-    }) as RetainedWorldSettlementTerminalReceipt;
+    };
+    const value = Object.freeze(
+        selected
+            ? {
+                  ...common,
+                  action: SELECT_ACTION,
+                  publication_id: evidence.publication_id,
+                  state: SELECTED_STATE,
+              }
+            : {
+                  ...common,
+                  action: DISCARD_ACTION,
+                  cleanup_completed: evidence.cleanup_completed,
+                  state: DISCARDED_STATE,
+              },
+    ) as RetainedWorldSettlementTerminalReceipt;
     const json = canonicalizeRecord(value as unknown as SemanticRecord);
     return Object.freeze({ digest: digestText(json), json, value });
 }

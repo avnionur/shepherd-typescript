@@ -21,7 +21,16 @@ null. Workspace protocol v13 adds configured deterministic operation and termina
 versions plus the content-addressed operation identity prefix. The closed codec binds the entire
 authenticated request into the operation, requires canonical persisted JSON, distinguishes
 selected publication from discarded cleanup evidence, and forbids discard from changing the user
-basis. Transactional journal writers remain Task 9.2B2.
+basis.
+
+Task 9.2B2 implements those trace-store writers. One `BEGIN IMMEDIATE` transaction derives and
+retains the exact operation while moving `prepared` to `applying`; another retains the exact
+action-specific terminal receipt while moving `applying` to `selected` or `discarded`. Equal
+retries replay the validated journal, different receipts conflict, skipped transitions fail before
+mutation, and every restart read validates the complete nullable-column combination. Selection
+keeps discard cleanup evidence null; discard retains its explicit cleanup-progress boolean. These
+internal transitions also advance a discarded receipt from cleanup-pending to cleanup-complete
+without changing its logical terminal state. They perform no carrier or user-filesystem operation.
 
 `SQLiteTraceStore.admitRetainedWorldSettlement` is the internal store-level compare-and-swap. One
 `BEGIN IMMEDIATE` transaction either inserts the configured `prepared` decision, replays the exact
@@ -50,6 +59,6 @@ filesystem operation.
 The store primitive deliberately remains internal and trusts only the authenticated coordinator.
 Preparation reads retained evidence and mutates only the durable settlement-admission row; it does
 not mutate user files or physical custody. Public `select` and `discard` remain unavailable until
-Task 9 effect journaling, basis revalidation, and crash recovery compose with this CAS.
+Task 9 basis revalidation and crash-safe external-effect recovery must still compose with this CAS.
 Carrier-level `discard(custodyId)` remains a distinct physical cleanup primitive and does not
 create a settlement decision.

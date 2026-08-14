@@ -62,8 +62,32 @@ export type RetainedWorldSettlementAdmission = {
     readonly request_id: string;
     /** Frozen exact request retained by the store. */
     readonly request: RetainedWorldSettlementRequest;
-    /** Current durable settlement state. */
+    /** Prepared state at the original consume-once admission boundary. */
     readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[0];
+};
+
+/** Canonical encoded settlement journal evidence. @internal */
+export type RetainedWorldSettlementEncodedEvidence = {
+    /** Secure digest of the canonical evidence JSON. */
+    readonly digest: string;
+    /** Content-addressed identity, present only for operation evidence. */
+    readonly id: string | null;
+    /** Canonical JSON retained by the store. */
+    readonly json: string;
+};
+
+/** Validated restart-safe state of one retained-world settlement journal. @internal */
+export type RetainedWorldSettlementJournal = {
+    /** Original immutable admission authority. */
+    readonly admission: RetainedWorldSettlementAdmission;
+    /** Physical custody cleanup progress, present only for terminal evidence. */
+    readonly cleanup_completed: boolean | null;
+    /** Deterministic operation evidence once execution has begun. */
+    readonly operation: RetainedWorldSettlementEncodedEvidence | null;
+    /** Deterministic terminal receipt after logical settlement. */
+    readonly receipt: RetainedWorldSettlementEncodedEvidence | null;
+    /** Current configured durable journal state. */
+    readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[number];
 };
 
 /** Result of atomically admitting one caller to cross a durable invocation boundary. */

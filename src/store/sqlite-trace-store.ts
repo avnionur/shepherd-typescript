@@ -40,9 +40,14 @@ import { verifyTraceStoreIntegrity } from "./integrity.ts";
 import type { AppendRecoveryDiagnostic, TraceIntegrityReport } from "./integrity-types.ts";
 import { migrateTraceStore } from "./migrations.ts";
 import { readOwnerRecords, readStoredRecord } from "./read.ts";
+import type { RetainedWorldSettlementTerminalEvidence } from "./retained-world-settlement-codec.ts";
 import {
     admitRetainedWorldSettlement,
+    beginRetainedWorldSettlement,
+    completeRetainedWorldSettlementCleanup,
     readRetainedWorldSettlement,
+    readRetainedWorldSettlementJournal,
+    retainRetainedWorldSettlementTerminal,
 } from "./retained-world-settlements.ts";
 import { readCausalClosureSlice, readOwnerPrefixSlice } from "./slices.ts";
 import type {
@@ -62,6 +67,7 @@ import type {
     OwnerRecord,
     RetainedRecord,
     RetainedWorldSettlementAdmission,
+    RetainedWorldSettlementJournal,
     RetainedWorldSettlementRequest,
     Slice,
     SliceReadOptions,
@@ -174,6 +180,35 @@ export class SQLiteTraceStore implements Disposable {
     readRetainedWorldSettlement(outputId: string): RetainedWorldSettlementAdmission | undefined {
         this.#assertOpen();
         return readRetainedWorldSettlement(this.#database, outputId);
+    }
+
+    /** @internal Reads one validated restart-safe settlement-journal snapshot. */
+    readRetainedWorldSettlementJournal(
+        outputId: string,
+    ): RetainedWorldSettlementJournal | undefined {
+        this.#assertOpen();
+        return readRetainedWorldSettlementJournal(this.#database, outputId);
+    }
+
+    /** @internal Atomically begins or replays the deterministic admitted operation. */
+    beginRetainedWorldSettlement(outputId: string): RetainedWorldSettlementJournal {
+        this.#assertOpen();
+        return beginRetainedWorldSettlement(this.#database, outputId);
+    }
+
+    /** @internal Atomically retains or replays the exact terminal settlement receipt. */
+    retainRetainedWorldSettlementTerminal(
+        outputId: string,
+        evidence: RetainedWorldSettlementTerminalEvidence,
+    ): RetainedWorldSettlementJournal {
+        this.#assertOpen();
+        return retainRetainedWorldSettlementTerminal(this.#database, outputId, evidence);
+    }
+
+    /** @internal Atomically completes or replays physical cleanup for a discarded settlement. */
+    completeRetainedWorldSettlementCleanup(outputId: string): RetainedWorldSettlementJournal {
+        this.#assertOpen();
+        return completeRetainedWorldSettlementCleanup(this.#database, outputId);
     }
 
     /**

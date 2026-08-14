@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-14
 
-Current version: `1.25.0`
+Current version: `1.26.0`
 
 Current level: L0 — canonical model
 
@@ -244,6 +244,8 @@ changeset identity.
   schema-v6 prepared decisions without fabricated evidence.
 - [x] Add Task 9.2B1 workspace-protocol-v13 deterministic operation and terminal-receipt codecs
   with canonical replay, exact admission binding, and discard basis preservation.
+- [x] Complete Task 9.2B2 atomic prepared/applying/terminal journal transitions with exact replay,
+  restart validation, skipped-transition refusal, and cross-connection receipt conflict evidence.
 
 ## Verification required for this slice
 
@@ -255,9 +257,9 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 9.2B2: implement transactional settlement transitions, restart inspection,
-and cross-connection adversarial tests without external effects. Task 9.3 then owns public discard
-and cleanup recovery.
+Continue Phase 3, Task 9.3: implement public exact-ID discard, terminal decision before idempotent
+custody cleanup, cleanup-progress retention, and restart recovery. Task 9.4 then owns selection
+staging, basis revalidation, publication, and crash repair.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive

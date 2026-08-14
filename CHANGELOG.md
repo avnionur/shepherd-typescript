@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.26.0] - 2026-08-14
+
+### New Feature
+
+- Added atomic `prepared` to `applying` settlement operation retention and action-specific
+  `selected`/`discarded` terminal receipt retention over trace-store schema v7.
+- Added restart-safe exact journal reads, identical transition replay, skipped-transition refusal,
+  nullable-evidence corruption checks, cross-connection conflicting-receipt rejection, and an
+  idempotent discarded cleanup-progress transition.
+
+### Impact
+
+Task 9 now has a complete deterministic persistence state machine without performing carrier or
+user-filesystem effects. Public discard and cleanup recovery remain Phase 3 Task 9.3.
+
 ## [1.25.0] - 2026-08-14
 
 ### New Feature
