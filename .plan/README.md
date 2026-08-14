@@ -154,6 +154,10 @@ record and public API must declare a protocol/compatibility version.
   identity, path and node semantics, limits, and the Task 6 capture boundary.
 - [Task-world capture research](./task-world-capture-research.md) — isolated retained-world
   execution, custody promotion, fencing, durable publication, recovery, and Task 7 boundaries.
+- [Exact-ID settlement research](./settlement-select-discard-research.md) — consume-once select and
+  discard identity, basis, mutation, cleanup, and recovery contract.
+- [Settlement effect-journal contract](./settlement-effect-journal-research.md) — deterministic
+  operation identity, persisted receipts, schema-v7 transitions, and Task 9 implementation order.
 - [Testing and release](./testing-and-release.md) — conformance, property,
   security, recovery, performance, CI, and release gates.
 - [Decisions and risks](./decisions-and-risks.md) — adopted decisions,

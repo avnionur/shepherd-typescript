@@ -238,6 +238,8 @@ changeset identity.
   journal, binding, carrier revisions, changeset, and custody before consume-once admission.
 - [x] Complete Task 8 with restart-safe read-only settlement inspection and authenticated
   cross-connection one-winner/conflict evidence.
+- [x] Close Task 9.1 deterministic operation, receipt, state-transition, schema-v7 migration, and
+  recovery-classification contract before exposing external effects.
 
 ## Verification required for this slice
 
@@ -249,9 +251,9 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 9: implement public exact-ID `select` and `discard` effects with effect
-journaling, basis revalidation, deterministic receipts, and crash recovery over the shared
-consume-once settlement authority.
+Continue Phase 3, Task 9.2: implement schema-v7 configured operation/receipt evidence,
+transactional settlement transitions, restart inspection, and cross-connection adversarial tests
+without external effects. Task 9.3 then owns public discard and cleanup recovery.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive
