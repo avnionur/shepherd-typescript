@@ -127,6 +127,20 @@ export const KERNEL_ABI_V0_STORE_V6_CONTRACT = deepFreeze({
     schemaVersion: 6,
 } as const);
 
+/** Immutable schema-v7 store extension reserving closed retained-world effect-journal columns. */
+export const KERNEL_ABI_V0_STORE_V7_CONTRACT = deepFreeze({
+    ...KERNEL_ABI_V0_STORE_V6_CONTRACT,
+    migrations: [
+        ...KERNEL_ABI_V0_STORE_V6_CONTRACT.migrations,
+        {
+            firstOwnerOrdinal: 0,
+            lastOwnerOrdinal: 9_007_199_254_740_990,
+            version: 7,
+        },
+    ],
+    schemaVersion: 7,
+} as const);
+
 /** Immutable execution-history projection contract implemented by schema-library v1. */
 export const EXECUTION_HISTORY_PROJECTION_V1_CONTRACT = deepFreeze({
     activeRelationKinds: ["spawned", "adopted"],

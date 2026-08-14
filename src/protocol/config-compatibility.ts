@@ -3,7 +3,7 @@ import {
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
-    KERNEL_ABI_V0_STORE_V6_CONTRACT,
+    KERNEL_ABI_V0_STORE_V7_CONTRACT,
     PROVIDER_PROTOCOL_V1_CONTRACT,
     RUN_PROTOCOL_V1_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
@@ -33,7 +33,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (config.kernel.store.appendIntentDigestAlgorithm !== expected.appendIntentDigestAlgorithm) {
         throw new TypeError("append intent digest requires a new store migration");
     }
-    if (!sameJson(config.kernel.store.blobs, KERNEL_ABI_V0_STORE_V6_CONTRACT.blobs)) {
+    if (!sameJson(config.kernel.store.blobs, KERNEL_ABI_V0_STORE_V7_CONTRACT.blobs)) {
         throw new TypeError("blob identity and filesystem constants require a new store migration");
     }
     if (!sameJson(config.kernel.queries, expected.queries)) {
@@ -58,8 +58,8 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         throw new TypeError("protocol artifact destinations do not match the repository contract");
     }
     if (
-        config.kernel.store.schemaVersion !== KERNEL_ABI_V0_STORE_V6_CONTRACT.schemaVersion ||
-        !sameMigrations(config.kernel.store.migrations, KERNEL_ABI_V0_STORE_V6_CONTRACT.migrations)
+        config.kernel.store.schemaVersion !== KERNEL_ABI_V0_STORE_V7_CONTRACT.schemaVersion ||
+        !sameMigrations(config.kernel.store.migrations, KERNEL_ABI_V0_STORE_V7_CONTRACT.migrations)
     ) {
         throw new TypeError("store migration constants do not match the implemented schema");
     }
@@ -91,7 +91,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
 
 function sameMigrations(
     actual: ProtocolConfig["kernel"]["store"]["migrations"],
-    expected: typeof KERNEL_ABI_V0_STORE_V6_CONTRACT.migrations,
+    expected: typeof KERNEL_ABI_V0_STORE_V7_CONTRACT.migrations,
 ): boolean {
     return (
         actual.length === expected.length &&

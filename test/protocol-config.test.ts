@@ -6,7 +6,7 @@ import {
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
-    KERNEL_ABI_V0_STORE_V6_CONTRACT,
+    KERNEL_ABI_V0_STORE_V7_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V2_CONTRACT,
@@ -47,7 +47,7 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(parsed.projections.executionHistory), true);
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT), true);
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT.store.migrations), true);
-    assert.equal(Object.isFrozen(KERNEL_ABI_V0_STORE_V6_CONTRACT), true);
+    assert.equal(Object.isFrozen(KERNEL_ABI_V0_STORE_V7_CONTRACT), true);
     assert.equal(Object.isFrozen(EXECUTION_HISTORY_PROJECTION_V1_CONTRACT), true);
     assert.equal(parsed.tasks.compatibilityVersion, "shepherd.tasks.v1");
     assert.equal(parsed.tasks.registry.schemaVersion, 1);
@@ -176,7 +176,7 @@ test("protocol configuration rejects invalid append and migration bounds", () =>
             firstMigrationOf(config).version = 2;
         },
         (config) => {
-            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 7;
+            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 8;
         },
         (config) => {
             firstMigrationOf(config).firstOwnerOrdinal = 1;

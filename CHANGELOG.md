@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.24.2] - 2026-08-14
+
+### Improvement
+
+- Added trace-store schema v7 with nullable deterministic operation, receipt, and cleanup-evidence
+  columns for the settlement effect journal.
+- Added migration coverage proving schema-v6 prepared settlement requests reopen unchanged with no
+  fabricated effect evidence.
+
+### Impact
+
+Task 9 now has a backward-compatible persistence carrier for later transactional transitions.
+Public settlement behavior is unchanged.
+
 ## [1.24.1] - 2026-08-14
 
 ### Improvement

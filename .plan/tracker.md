@@ -240,6 +240,8 @@ changeset identity.
   cross-connection one-winner/conflict evidence.
 - [x] Close Task 9.1 deterministic operation, receipt, state-transition, schema-v7 migration, and
   recovery-classification contract before exposing external effects.
+- [x] Add Task 9.2A schema-v7 nullable operation/receipt/cleanup storage while preserving migrated
+  schema-v6 prepared decisions without fabricated evidence.
 
 ## Verification required for this slice
 
@@ -251,7 +253,7 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 9.2: implement schema-v7 configured operation/receipt evidence,
+Continue Phase 3, Task 9.2B: implement configured deterministic operation/receipt codecs,
 transactional settlement transitions, restart inspection, and cross-connection adversarial tests
 without external effects. Task 9.3 then owns public discard and cleanup recovery.
 

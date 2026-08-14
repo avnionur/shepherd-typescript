@@ -18,14 +18,14 @@ test("SQLiteTraceStore migrates file databases in WAL mode", async (context) => 
     context.after(() => rm(directory, { force: true, recursive: true }));
     const databasePath = path.join(directory, "trace.sqlite");
     const store = new SQLiteTraceStore(databasePath);
-    assert.equal(store.schemaVersion, 6);
+    assert.equal(store.schemaVersion, 7);
     store.close();
 
     const database = new DatabaseSync(databasePath);
     assert.equal(database.prepare("PRAGMA journal_mode").get()?.journal_mode, "wal");
     assert.equal(
         database.prepare("SELECT MAX(version) AS version FROM schema_migrations").get()?.version,
-        6,
+        7,
     );
     database.close();
 });
@@ -47,7 +47,7 @@ test("SQLiteTraceStore upgrades a version-one database for blob receipts", async
     database.close();
 
     const upgraded = new SQLiteTraceStore(databasePath);
-    assert.equal(upgraded.schemaVersion, 6);
+    assert.equal(upgraded.schemaVersion, 7);
     assert.equal(upgraded.putBlob(new Uint8Array([1])).byte_length, 1);
     upgraded.close();
 });
@@ -107,13 +107,68 @@ test("schema-five migration conservatively fences legacy invocation claims", asy
     );
 });
 
+test("schema-seven migration preserves prepared settlement rows with empty journal evidence", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-v6-settlement-migration-"));
+    context.after(() => rm(directory, { force: true, recursive: true }));
+    const databasePath = path.join(directory, "trace.sqlite");
+    const initial = new SQLiteTraceStore(databasePath);
+    const admission = initial.admitRetainedWorldSettlement(settlementRequest);
+    initial.close();
+
+    const database = new DatabaseSync(databasePath);
+    database.exec(`
+        ALTER TABLE retained_world_settlements RENAME TO retained_world_settlements_v7;
+        CREATE TABLE retained_world_settlements (
+            output_id TEXT PRIMARY KEY CHECK (output_id <> ''),
+            command_id TEXT NOT NULL UNIQUE CHECK (command_id <> ''),
+            request_id TEXT NOT NULL UNIQUE CHECK (request_id <> ''),
+            request_digest TEXT NOT NULL CHECK (request_digest <> ''),
+            request_json TEXT NOT NULL,
+            action TEXT NOT NULL CHECK (action <> ''),
+            state TEXT NOT NULL CHECK (state <> '')
+        ) STRICT;
+        INSERT INTO retained_world_settlements(
+            output_id, command_id, request_id, request_digest, request_json, action, state
+        ) SELECT output_id, command_id, request_id, request_digest, request_json, action, state
+          FROM retained_world_settlements_v7;
+        DROP TABLE retained_world_settlements_v7;
+        DELETE FROM schema_migrations WHERE version = 7;
+    `);
+    database.close();
+
+    using upgraded = new SQLiteTraceStore(databasePath);
+    assert.equal(upgraded.schemaVersion, 7);
+    assert.deepEqual(upgraded.readRetainedWorldSettlement(settlementRequest.output_id), admission);
+    upgraded.close();
+    const inspected = new DatabaseSync(databasePath);
+    const row = inspected
+        .prepare(
+            `SELECT operation_id, operation_digest, operation_json,
+                    receipt_digest, receipt_json, cleanup_completed
+             FROM retained_world_settlements WHERE output_id = ?`,
+        )
+        .get(settlementRequest.output_id);
+    assert.deepEqual(
+        { ...row },
+        {
+            cleanup_completed: null,
+            operation_digest: null,
+            operation_id: null,
+            operation_json: null,
+            receipt_digest: null,
+            receipt_json: null,
+        },
+    );
+    inspected.close();
+});
+
 test("SQLiteTraceStore rejects unsupported future schemas", async (context) => {
     const directory = await mkdtemp(path.join(tmpdir(), "shepherd-future-schema-test-"));
     context.after(() => rm(directory, { force: true, recursive: true }));
     const databasePath = path.join(directory, "trace.sqlite");
     new SQLiteTraceStore(databasePath).close();
     const database = new DatabaseSync(databasePath);
-    database.prepare("INSERT INTO schema_migrations(version) VALUES (?)").run(7);
+    database.prepare("INSERT INTO schema_migrations(version) VALUES (?)").run(8);
     database.close();
 
     assert.throws(() => new SQLiteTraceStore(databasePath), UnsupportedStoreSchemaError);

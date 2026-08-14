@@ -437,9 +437,14 @@
                     "firstOwnerOrdinal": 0,
                     "lastOwnerOrdinal": 9007199254740990,
                     "version": 6
+                },
+                {
+                    "firstOwnerOrdinal": 0,
+                    "lastOwnerOrdinal": 9007199254740990,
+                    "version": 7
                 }
             ],
-            "schemaVersion": 6,
+            "schemaVersion": 7,
             "synchronous": "FULL",
             "transactionMode": "IMMEDIATE"
         },

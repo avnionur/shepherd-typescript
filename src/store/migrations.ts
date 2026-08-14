@@ -157,6 +157,23 @@ const migrations: readonly Migration[] = [
             ) STRICT;
         `,
     },
+    {
+        version: 7,
+        createSql: () => `
+            ALTER TABLE ${STORE_TABLES.retainedWorldSettlements}
+                ADD COLUMN operation_id TEXT;
+            ALTER TABLE ${STORE_TABLES.retainedWorldSettlements}
+                ADD COLUMN operation_digest TEXT;
+            ALTER TABLE ${STORE_TABLES.retainedWorldSettlements}
+                ADD COLUMN operation_json TEXT;
+            ALTER TABLE ${STORE_TABLES.retainedWorldSettlements}
+                ADD COLUMN receipt_digest TEXT;
+            ALTER TABLE ${STORE_TABLES.retainedWorldSettlements}
+                ADD COLUMN receipt_json TEXT;
+            ALTER TABLE ${STORE_TABLES.retainedWorldSettlements}
+                ADD COLUMN cleanup_completed INTEGER CHECK (cleanup_completed IN (0, 1));
+        `,
+    },
 ];
 
 /**
