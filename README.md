@@ -113,6 +113,8 @@ trace-record contracts with durable SQLite task and trace stores:
 - Git-aware `git-head` and `worktree` basis custody with exact index receipts, independently
   retained Git objects, sparse/ignore evidence, linked-worktree identity, basis-movement checks,
   and isolated restart-safe retained output;
+- workspace protocol v12 exact retained-output settlement requests and trace-store schema v6
+  consume-once admission with one-winner conflict detection and exact restart replay;
 - immutable copy-world changesets with carrier-verified revision citations, canonical reconstructive
   add/delete/modify/replace operations, configured resource limits, and deterministic identity;
 - immutable finished, failed, exhausted, and cancelled run outcomes with exact task-lock
@@ -547,7 +549,7 @@ durable capture journaling, and Task 6B.4 command-authorized capture recovery an
 hardening are implemented. Authenticated changeset inspection now provides exact-path lookup,
 bounded retained-content reads and previews, exact-content rename/copy projections, and Git-aware
 Gitlink/symlink-mode presentation without changing canonical identity. Selection and settlement
-remain planned.
+effects remain planned; the exact-request and consume-once persistence foundation is implemented.
 
 ## Attribution
 

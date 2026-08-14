@@ -160,6 +160,8 @@ Work:
   move/Git semantics that preserve workspace protocol v5 identity;
 - implement exact settlement identity, authenticated retained-output admission, and consume-once
   transactional compare-and-swap without exposing a mutation API that can bypass the CAS;
+  **protocol and store foundation implemented in 1.22.0**, with authenticated evidence admission
+  and public inspection remaining the next Task 8 slice;
 - implement public exact-ID `select` and `discard`, crash recovery, and settlement citations in the
   trace only after the shared consume-once protocol is in place;
 - protect control-plane paths and complete settlement/platform fault hardening;

@@ -75,6 +75,7 @@ export type {
 export {
     RETAINED_WORLD_MAX_CAPTURE_ID_BYTES,
     RETAINED_WORLD_MAX_TEXT_BYTES,
+    RETAINED_WORLD_SETTLEMENT_VERSION,
     WORLD_CHANGESET_ERROR_CODES,
     WORLD_CHANGESET_INSPECTION_LIMITS,
 } from "./protocol/values.generated.ts";
@@ -233,6 +234,8 @@ export {
     AppendIntentConflictError,
     BlobIntegrityError,
     ProjectionCompatibilityError,
+    RetainedWorldSettlementConflictError,
+    RetainedWorldSettlementInvalidError,
     TraceStoreError,
     UnsupportedStoreSchemaError,
 } from "./store/errors.ts";
@@ -267,6 +270,8 @@ export type {
     OwnerRecord,
     RecordShape,
     RetainedRecord,
+    RetainedWorldSettlementAdmission,
+    RetainedWorldSettlementRequest,
     Slice,
     SliceReadOptions,
     SliceRecord,

@@ -40,6 +40,10 @@ import { verifyTraceStoreIntegrity } from "./integrity.ts";
 import type { AppendRecoveryDiagnostic, TraceIntegrityReport } from "./integrity-types.ts";
 import { migrateTraceStore } from "./migrations.ts";
 import { readOwnerRecords, readStoredRecord } from "./read.ts";
+import {
+    admitRetainedWorldSettlement,
+    readRetainedWorldSettlement,
+} from "./retained-world-settlements.ts";
 import { readCausalClosureSlice, readOwnerPrefixSlice } from "./slices.ts";
 import type {
     AppendReceipt,
@@ -57,6 +61,8 @@ import type {
     DurableExecutionResumeAppend,
     OwnerRecord,
     RetainedRecord,
+    RetainedWorldSettlementAdmission,
+    RetainedWorldSettlementRequest,
     Slice,
     SliceReadOptions,
     SQLiteTraceStoreOptions,
@@ -143,6 +149,31 @@ export class SQLiteTraceStore implements Disposable {
     append(request: StoreAppendRequest): AppendReceipt {
         this.#assertOpen();
         return appendToTraceStore(this.#database, request);
+    }
+
+    /**
+     * Atomically admits or identically replays one exact retained-world settlement request.
+     *
+     * This store-level primitive does not authenticate retained execution or carrier evidence and
+     * does not mutate user files. The workspace settlement coordinator owns those boundaries.
+     *
+     * @param request - Closed exact settlement identity already authenticated by its coordinator.
+     * @returns The durable prepared decision owned by the winning command.
+     * @throws {TraceStoreError} If another command or request already owns the output.
+     * @throws {TypeError} If the request is malformed or uses an unsupported protocol value.
+     * @internal
+     */
+    admitRetainedWorldSettlement(
+        request: RetainedWorldSettlementRequest,
+    ): RetainedWorldSettlementAdmission {
+        this.#assertOpen();
+        return admitRetainedWorldSettlement(this.#database, request);
+    }
+
+    /** @internal Reads one prepared retained-world settlement decision by exact output identity. */
+    readRetainedWorldSettlement(outputId: string): RetainedWorldSettlementAdmission | undefined {
+        this.#assertOpen();
+        return readRetainedWorldSettlement(this.#database, outputId);
     }
 
     /**

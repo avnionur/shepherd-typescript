@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.22.0] - 2026-08-14
+
+### New Feature
+
+- Added workspace protocol v12 exact retained-output settlement actions, states, request identity,
+  versioning, and stable error contracts.
+- Added trace-store schema v6 and an internal atomic consume-once admission primitive with exact
+  command replay, output/command conflict refusal, and restart-safe reads.
+
+### Impact
+
+The persistence layer can now guarantee one winning prepared settlement decision for an exact
+retained output across SQLite connections and restarts. Public `select` and `discard` remain
+deferred until authenticated evidence admission and recovery-safe filesystem effects are complete.
+
 ## [1.21.1] - 2026-08-14
 
 ### Improvement

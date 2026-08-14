@@ -50,6 +50,10 @@ identity and text-operation bounds, and the successful retention status vocabula
 Workspace protocol v9 additionally fixes the task-world journal schema, ordered phase vocabulary,
 and journal version. Workspace protocol v10 adds the configured deterministic task-world custody
 identity domain used by command-authorized restart recovery.
+Workspace protocol v11 fixes bounded authenticated changeset inspection and projection
+vocabularies. Workspace protocol v12 fixes exact settlement actions, durable states, request
+identity, version, and stable validation/conflict errors. Store schema v6 owns the consume-once
+settlement decision table without changing kernel record identity.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate

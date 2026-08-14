@@ -6,6 +6,7 @@ import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 
 import {
+    RETAINED_WORLD_SETTLEMENT_VERSION,
     ROOT_WITNESS_ID,
     SQLiteTraceStore,
     TraceStoreError,
@@ -17,14 +18,14 @@ test("SQLiteTraceStore migrates file databases in WAL mode", async (context) => 
     context.after(() => rm(directory, { force: true, recursive: true }));
     const databasePath = path.join(directory, "trace.sqlite");
     const store = new SQLiteTraceStore(databasePath);
-    assert.equal(store.schemaVersion, 5);
+    assert.equal(store.schemaVersion, 6);
     store.close();
 
     const database = new DatabaseSync(databasePath);
     assert.equal(database.prepare("PRAGMA journal_mode").get()?.journal_mode, "wal");
     assert.equal(
         database.prepare("SELECT MAX(version) AS version FROM schema_migrations").get()?.version,
-        5,
+        6,
     );
     database.close();
 });
@@ -38,6 +39,7 @@ test("SQLiteTraceStore upgrades a version-one database for blob receipts", async
     database.exec(`
         DROP TABLE trace_cuts;
         DROP TABLE durable_execution_claims;
+        DROP TABLE retained_world_settlements;
         DROP TABLE storage_receipts;
         DROP TABLE blobs;
         DELETE FROM schema_migrations WHERE version >= 2;
@@ -45,7 +47,7 @@ test("SQLiteTraceStore upgrades a version-one database for blob receipts", async
     database.close();
 
     const upgraded = new SQLiteTraceStore(databasePath);
-    assert.equal(upgraded.schemaVersion, 5);
+    assert.equal(upgraded.schemaVersion, 6);
     assert.equal(upgraded.putBlob(new Uint8Array([1])).byte_length, 1);
     upgraded.close();
 });
@@ -81,13 +83,14 @@ test("schema-five migration conservatively fences legacy invocation claims", asy
     const database = new DatabaseSync(databasePath);
     database.exec(`
         DROP TABLE durable_execution_claims;
+        DROP TABLE retained_world_settlements;
         CREATE TABLE durable_execution_claims (
             run_id TEXT PRIMARY KEY CHECK (run_id <> ''),
             claim_id TEXT NOT NULL CHECK (claim_id <> ''),
             created_record_id TEXT NOT NULL,
             FOREIGN KEY (created_record_id) REFERENCES records(record_id)
         ) STRICT;
-        DELETE FROM schema_migrations WHERE version = 5;
+        DELETE FROM schema_migrations WHERE version >= 5;
     `);
     database
         .prepare(
@@ -110,7 +113,7 @@ test("SQLiteTraceStore rejects unsupported future schemas", async (context) => {
     const databasePath = path.join(directory, "trace.sqlite");
     new SQLiteTraceStore(databasePath).close();
     const database = new DatabaseSync(databasePath);
-    database.prepare("INSERT INTO schema_migrations(version) VALUES (?)").run(6);
+    database.prepare("INSERT INTO schema_migrations(version) VALUES (?)").run(7);
     database.close();
 
     assert.throws(() => new SQLiteTraceStore(databasePath), UnsupportedStoreSchemaError);
@@ -158,6 +161,11 @@ test("SQLiteTraceStore close is idempotent and guards every operation", () => {
     assert.throws(() => store.readCut("cut:closed"), TraceStoreError);
     assert.throws(() => store.readOwnerPrefix("run:alpha", 0), TraceStoreError);
     assert.throws(() => store.resolveCut("cut:closed"), TraceStoreError);
+    assert.throws(
+        () => store.admitRetainedWorldSettlement({ ...settlementRequest }),
+        TraceStoreError,
+    );
+    assert.throws(() => store.readRetainedWorldSettlement("world-output:closed"), TraceStoreError);
     assert.throws(() => store.projectExecution("cut:closed"), TraceStoreError);
     assert.throws(() => store.projectEffectiveHistory("cut:closed"), TraceStoreError);
     assert.throws(() => store.readCausalClosure([]), TraceStoreError);
@@ -175,3 +183,19 @@ test("SQLiteTraceStore close is idempotent and guards every operation", () => {
     disposable[Symbol.dispose]();
     assert.throws(() => disposable.readOwner("run:alpha"), TraceStoreError);
 });
+
+const settlementRequest = {
+    action: "select",
+    base_revision_id: "world-revision:base",
+    binding_id: "workspace-binding:one",
+    capture_record_id: "sha256:capture",
+    changeset_id: "world-changeset:one",
+    command_id: "settlement-command:one",
+    custody_id: "world-custody:one",
+    execution_cut_id: "cut:one",
+    head_revision_id: "world-revision:head",
+    output_id: "world-output:one",
+    run_id: "run:one",
+    settlement_version: RETAINED_WORLD_SETTLEMENT_VERSION,
+    user_basis_before: "world-revision:base",
+} as const;

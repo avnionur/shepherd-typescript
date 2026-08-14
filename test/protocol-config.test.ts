@@ -6,6 +6,7 @@ import {
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
+    KERNEL_ABI_V0_STORE_V6_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V2_CONTRACT,
@@ -17,6 +18,8 @@ import {
     WORKSPACE_PROTOCOL_V8_CONTRACT,
     WORKSPACE_PROTOCOL_V9_CONTRACT,
     WORKSPACE_PROTOCOL_V10_CONTRACT,
+    WORKSPACE_PROTOCOL_V11_CONTRACT,
+    WORKSPACE_PROTOCOL_V12_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -44,6 +47,7 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(parsed.projections.executionHistory), true);
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT), true);
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT.store.migrations), true);
+    assert.equal(Object.isFrozen(KERNEL_ABI_V0_STORE_V6_CONTRACT), true);
     assert.equal(Object.isFrozen(EXECUTION_HISTORY_PROJECTION_V1_CONTRACT), true);
     assert.equal(parsed.tasks.compatibilityVersion, "shepherd.tasks.v1");
     assert.equal(parsed.tasks.registry.schemaVersion, 1);
@@ -65,6 +69,7 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.worldTaskCapture.version, 8);
     assert.equal(parsed.workspaces.worldTaskCapture.journalVersion, 9);
     assert.equal(parsed.workspaces.worldTaskCapture.custodyIdentityKind, "task-world-custody");
+    assert.equal(parsed.workspaces.settlement.version, 12);
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
@@ -77,6 +82,9 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V8_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V9_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V10_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V11_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V12_CONTRACT), true);
+    assert.equal("settlement" in WORKSPACE_PROTOCOL_V11_CONTRACT, false);
     assert.equal("custodyIdentityKind" in WORKSPACE_PROTOCOL_V9_CONTRACT.worldTaskCapture, false);
     assert.equal("journalPhases" in WORKSPACE_PROTOCOL_V8_CONTRACT.worldTaskCapture, false);
     assert.equal("bindingErrors" in WORKSPACE_PROTOCOL_V1_CONTRACT, false);
@@ -168,7 +176,7 @@ test("protocol configuration rejects invalid append and migration bounds", () =>
             firstMigrationOf(config).version = 2;
         },
         (config) => {
-            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 6;
+            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 7;
         },
         (config) => {
             firstMigrationOf(config).firstOwnerOrdinal = 1;
@@ -749,6 +757,15 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
         },
         (config) => {
             objectAt(workspaceConfigOf(config), "worldTaskCapture").custodyIdentityKind = "";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "settlement").actions = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "settlement").states = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "settlement").requestIdPrefix = "";
         },
         (config) => {
             workspaceConfigOf(config).adoptionModes = ["none", "none"];

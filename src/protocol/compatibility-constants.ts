@@ -1,7 +1,7 @@
 import { deepFreeze } from "./config-value-readers.ts";
 
 /**
- * Immutable compatibility contract implemented by kernel ABI v0 and store schema v3.
+ * Immutable compatibility contract implemented by kernel ABI v0 through store schema v5.
  *
  * These values define historical identities. They are intentionally code constants:
  * changing the active protocol requires adding a new ABI or migration contract.
@@ -111,6 +111,20 @@ export const KERNEL_ABI_V0_CONTRACT = deepFreeze({
         ],
         schemaVersion: 5,
     },
+} as const);
+
+/** Immutable schema-v6 store extension for consume-once retained-output settlement. */
+export const KERNEL_ABI_V0_STORE_V6_CONTRACT = deepFreeze({
+    ...KERNEL_ABI_V0_CONTRACT.store,
+    migrations: [
+        ...KERNEL_ABI_V0_CONTRACT.store.migrations,
+        {
+            firstOwnerOrdinal: 0,
+            lastOwnerOrdinal: 9_007_199_254_740_990,
+            version: 6,
+        },
+    ],
+    schemaVersion: 6,
 } as const);
 
 /** Immutable execution-history projection contract implemented by schema-library v1. */
@@ -691,5 +705,22 @@ export const WORKSPACE_PROTOCOL_V11_CONTRACT = deepFreeze({
         previewClassifications: ["text", "binary"],
         symlinkMode: "120000",
         version: 11,
+    },
+} as const);
+
+/** Immutable exact settlement-admission extension implemented by workspace protocol v12. */
+export const WORKSPACE_PROTOCOL_V12_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V11_CONTRACT,
+    settlement: {
+        actions: ["select", "discard"],
+        errors: {
+            conflictCode: "RETAINED_WORLD_SETTLEMENT_CONFLICT",
+            conflictMessage: "retained world settlement conflicts with an existing decision",
+            invalidCode: "RETAINED_WORLD_SETTLEMENT_INVALID",
+            invalidMessage: "retained world settlement request is invalid or inconsistent",
+        },
+        requestIdPrefix: "world-settlement:sha256:",
+        states: ["prepared", "applying", "selected", "discarded"],
+        version: 12,
     },
 } as const);

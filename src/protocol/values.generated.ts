@@ -219,6 +219,20 @@ export const RETAINED_WORLD_JOURNAL_PHASES = [
     "captured",
 ] as const;
 
+/** Configured consume-once retained-world settlement actions. @public */
+export const RETAINED_WORLD_SETTLEMENT_ACTIONS = ["select", "discard"] as const;
+
+/** Configured durable retained-world settlement states. @public */
+export const RETAINED_WORLD_SETTLEMENT_STATES = [
+    "prepared",
+    "applying",
+    "selected",
+    "discarded",
+] as const;
+
+/** Configured public retained-world settlement protocol version. @public */
+export const RETAINED_WORLD_SETTLEMENT_VERSION = 12 as const;
+
 /** Configured maximum UTF-8 bytes for one retained-world text operation. @public */
 export const RETAINED_WORLD_MAX_TEXT_BYTES = 16777216 as const;
 

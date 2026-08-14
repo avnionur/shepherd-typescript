@@ -329,6 +329,12 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedRetainedWorldJournalPhases = config.workspaces.worldTaskCapture.journalPhases
         .map((phase) => `    ${JSON.stringify(phase)}`)
         .join(",\n");
+    const renderedRetainedWorldSettlementActions = config.workspaces.settlement.actions
+        .map((action) => JSON.stringify(action))
+        .join(", ");
+    const renderedRetainedWorldSettlementStates = config.workspaces.settlement.states
+        .map((state) => `    ${JSON.stringify(state)}`)
+        .join(",\n");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -507,6 +513,17 @@ export const RETAINED_WORLD_OUTPUT_STATUSES = [${renderedRetainedWorldOutputStat
 export const RETAINED_WORLD_JOURNAL_PHASES = [
 ${renderedRetainedWorldJournalPhases},
 ] as const;
+
+/** Configured consume-once retained-world settlement actions. @public */
+export const RETAINED_WORLD_SETTLEMENT_ACTIONS = [${renderedRetainedWorldSettlementActions}] as const;
+
+/** Configured durable retained-world settlement states. @public */
+export const RETAINED_WORLD_SETTLEMENT_STATES = [
+${renderedRetainedWorldSettlementStates},
+] as const;
+
+/** Configured public retained-world settlement protocol version. @public */
+export const RETAINED_WORLD_SETTLEMENT_VERSION = ${config.workspaces.settlement.version} as const;
 
 /** Configured maximum UTF-8 bytes for one retained-world text operation. @public */
 export const RETAINED_WORLD_MAX_TEXT_BYTES = ${config.workspaces.worldTaskCapture.maxTextBytes} as const;

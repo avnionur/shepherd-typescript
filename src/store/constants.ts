@@ -15,6 +15,7 @@ export const STORE_TABLES = Object.freeze({
     recordParents: "record_parents",
     recordViews: "record_views",
     records: "records",
+    retainedWorldSettlements: "retained_world_settlements",
     storageReceipts: "storage_receipts",
 });
 

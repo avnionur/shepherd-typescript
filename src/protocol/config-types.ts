@@ -705,6 +705,28 @@ export type WorkspaceProtocolConfig = {
         /** Public changeset-inspection protocol version. */
         readonly version: number;
     };
+    /** Exact consume-once retained-output settlement configuration. */
+    readonly settlement: {
+        /** Closed settlement command vocabulary. */
+        readonly actions: readonly string[];
+        /** Stable settlement validation and conflict errors. */
+        readonly errors: {
+            /** Conflicting decision error code. */
+            readonly conflictCode: string;
+            /** Conflicting decision default message. */
+            readonly conflictMessage: string;
+            /** Invalid exact-request error code. */
+            readonly invalidCode: string;
+            /** Invalid exact-request default message. */
+            readonly invalidMessage: string;
+        };
+        /** Prefix for content-addressed exact settlement requests. */
+        readonly requestIdPrefix: string;
+        /** Ordered durable settlement state vocabulary. */
+        readonly states: readonly string[];
+        /** Public settlement protocol version. */
+        readonly version: number;
+    };
     /** Workspace-local protected control directory name. */
     readonly controlDirectory: string;
     /** Default baseline-adoption mode. */

@@ -432,9 +432,14 @@
                     "firstOwnerOrdinal": 0,
                     "lastOwnerOrdinal": 9007199254740990,
                     "version": 5
+                },
+                {
+                    "firstOwnerOrdinal": 0,
+                    "lastOwnerOrdinal": 9007199254740990,
+                    "version": 6
                 }
             ],
-            "schemaVersion": 5,
+            "schemaVersion": 6,
             "synchronous": "FULL",
             "transactionMode": "IMMEDIATE"
         },
@@ -553,6 +558,18 @@
             "previewClassifications": ["text", "binary"],
             "symlinkMode": "120000",
             "version": 11
+        },
+        "settlement": {
+            "actions": ["select", "discard"],
+            "errors": {
+                "conflictCode": "RETAINED_WORLD_SETTLEMENT_CONFLICT",
+                "conflictMessage": "retained world settlement conflicts with an existing decision",
+                "invalidCode": "RETAINED_WORLD_SETTLEMENT_INVALID",
+                "invalidMessage": "retained world settlement request is invalid or inconsistent"
+            },
+            "requestIdPrefix": "world-settlement:sha256:",
+            "states": ["prepared", "applying", "selected", "discarded"],
+            "version": 12
         },
         "controlDirectory": ".vcscore",
         "defaultAdoptionMode": "worktree",

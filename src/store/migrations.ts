@@ -143,6 +143,20 @@ const migrations: readonly Migration[] = [
             UPDATE ${STORE_TABLES.durableExecutionClaims} SET started = 1;
         `,
     },
+    {
+        version: 6,
+        createSql: () => `
+            CREATE TABLE ${STORE_TABLES.retainedWorldSettlements} (
+                output_id TEXT PRIMARY KEY CHECK (output_id <> ''),
+                command_id TEXT NOT NULL UNIQUE CHECK (command_id <> ''),
+                request_id TEXT NOT NULL UNIQUE CHECK (request_id <> ''),
+                request_digest TEXT NOT NULL CHECK (request_digest <> ''),
+                request_json TEXT NOT NULL,
+                action TEXT NOT NULL CHECK (action <> ''),
+                state TEXT NOT NULL CHECK (state <> '')
+            ) STRICT;
+        `,
+    },
 ];
 
 /**

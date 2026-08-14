@@ -8,6 +8,8 @@ import type {
 import type {
     DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES,
     DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES,
+    RETAINED_WORLD_SETTLEMENT_ACTIONS,
+    RETAINED_WORLD_SETTLEMENT_STATES,
 } from "../protocol/values.generated.ts";
 import type { RecordBody, RecordEnvelope, RecordId } from "../record/types.ts";
 
@@ -17,6 +19,52 @@ import type { RecordBody, RecordEnvelope, RecordId } from "../record/types.ts";
  * @public
  */
 export type AppendIntentId = string;
+
+/** Closed exact identity presented to consume-once retained-world settlement admission. */
+export type RetainedWorldSettlementRequest = {
+    /** Exact settlement verb requested by the caller. */
+    readonly action: (typeof RETAINED_WORLD_SETTLEMENT_ACTIONS)[number];
+    /** Exact immutable input revision. */
+    readonly base_revision_id: string;
+    /** Exact workspace binding identity. */
+    readonly binding_id: string;
+    /** Exact retained world-capture record. */
+    readonly capture_record_id: string;
+    /** Exact canonical changeset identity. */
+    readonly changeset_id: string;
+    /** Globally idempotent caller command identity. */
+    readonly command_id: string;
+    /** Exact mutable custody cited by the retained output. */
+    readonly custody_id: string;
+    /** Exact immutable execution cut. */
+    readonly execution_cut_id: string;
+    /** Exact immutable output revision. */
+    readonly head_revision_id: string;
+    /** Exact retained-output identity. */
+    readonly output_id: string;
+    /** Exact durable run identity. */
+    readonly run_id: string;
+    /** Public settlement protocol version. */
+    readonly settlement_version: number;
+    /** User-basis witness that must remain unchanged before selection. */
+    readonly user_basis_before: string;
+};
+
+/** Durable prepared consume-once settlement decision returned by trace-store admission. */
+export type RetainedWorldSettlementAdmission = {
+    /** Exact settlement verb owned by the winning command. */
+    readonly action: (typeof RETAINED_WORLD_SETTLEMENT_ACTIONS)[number];
+    /** Globally idempotent winning command identity. */
+    readonly command_id: string;
+    /** Exact retained-output identity consumed by this decision. */
+    readonly output_id: string;
+    /** Content-addressed exact request identity. */
+    readonly request_id: string;
+    /** Frozen exact request retained by the store. */
+    readonly request: RetainedWorldSettlementRequest;
+    /** Current durable settlement state. */
+    readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[0];
+};
 
 /** Result of atomically admitting one caller to cross a durable invocation boundary. */
 export type DurableExecutionInvocationClaim =

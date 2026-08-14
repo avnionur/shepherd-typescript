@@ -232,6 +232,8 @@ changeset identity.
   fail-closed uncertain-writer handling.
 - [x] Add Task 7 authenticated read-only changeset inspection, retained content reads, bounded
   previews, derived rename/copy projections, and Git-aware Gitlink/symlink-mode presentation.
+- [x] Add Task 8 protocol v12 exact settlement identity and trace-store schema v6 atomic
+  consume-once admission with exact replay and conflict refusal.
 
 ## Verification required for this slice
 
@@ -243,10 +245,9 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 8: implement the exact settlement identity, authenticated retained-output
-admission, and consume-once compare-and-swap foundation specified in
-[`settlement-select-discard-research.md`](./settlement-select-discard-research.md). Public
-`select`/`discard` effects remain Task 9 so no settlement verb can bypass consume-once authority.
+Continue Phase 3, Task 8: authenticate exact terminal execution, cut, capture, binding, carrier,
+revision, changeset, and custody evidence before invoking settlement CAS, then expose restart-safe
+read-only settlement inspection. Public `select`/`discard` effects remain Task 9.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive

@@ -34,6 +34,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "gitMetadataName",
             "hexLength",
             "manifestFile",
+            "settlement",
             "worktreeRefPrefix",
             "worldCapture",
             "worldExecution",
@@ -146,6 +147,16 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "version",
         ],
         "workspaces.changesetInspection",
+    );
+    const settlement = readObject(
+        config.settlement,
+        ["actions", "errors", "requestIdPrefix", "states", "version"],
+        "workspaces.settlement",
+    );
+    const settlementErrors = readObject(
+        settlement.errors,
+        ["conflictCode", "conflictMessage", "invalidCode", "invalidMessage"],
+        "workspaces.settlement.errors",
     );
     const gitCustody = readObject(
         config.gitCustody,
@@ -553,6 +564,33 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 changesetInspection.version,
                 "workspaces.changesetInspection.version",
             ),
+        },
+        settlement: {
+            actions: readUniqueStrings(settlement.actions, "workspaces.settlement.actions"),
+            errors: {
+                conflictCode: readNonEmptyString(
+                    settlementErrors.conflictCode,
+                    "workspaces.settlement.errors.conflictCode",
+                ),
+                conflictMessage: readNonEmptyString(
+                    settlementErrors.conflictMessage,
+                    "workspaces.settlement.errors.conflictMessage",
+                ),
+                invalidCode: readNonEmptyString(
+                    settlementErrors.invalidCode,
+                    "workspaces.settlement.errors.invalidCode",
+                ),
+                invalidMessage: readNonEmptyString(
+                    settlementErrors.invalidMessage,
+                    "workspaces.settlement.errors.invalidMessage",
+                ),
+            },
+            requestIdPrefix: readNonEmptyString(
+                settlement.requestIdPrefix,
+                "workspaces.settlement.requestIdPrefix",
+            ),
+            states: readUniqueStrings(settlement.states, "workspaces.settlement.states"),
+            version: readPositiveInteger(settlement.version, "workspaces.settlement.version"),
         },
         controlDirectory,
         defaultAdoptionMode,
