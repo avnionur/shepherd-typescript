@@ -68,8 +68,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   bounded pagination/content/previews, exact-content move projections, and Git-aware Gitlink and
   symlink-mode presentation outside canonical identity.
 - [Retained-world settlement admission](./retained-world-settlement.md) defines workspace protocol
-  v12 exact requests, authenticated retained-output preparation, trace-store schema v6
-  consume-once compare-and-swap, schema-v7 journal storage, and restart-safe inspection, while
+  v12 exact requests, workspace protocol v13 deterministic operation/receipt codecs, authenticated
+  retained-output preparation, trace-store schema v6 consume-once compare-and-swap, schema-v7
+  journal storage, and restart-safe inspection, while
   keeping public settlement effects deferred until recovery-safe effect coordination exists.
 - [Run outcomes](./run-outcomes.md) defines versioned finished, failed, exhausted, and cancelled
   terminal records with exact task-lock provenance.

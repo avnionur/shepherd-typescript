@@ -20,6 +20,7 @@ import {
     WORKSPACE_PROTOCOL_V10_CONTRACT,
     WORKSPACE_PROTOCOL_V11_CONTRACT,
     WORKSPACE_PROTOCOL_V12_CONTRACT,
+    WORKSPACE_PROTOCOL_V13_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -70,6 +71,8 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.worldTaskCapture.journalVersion, 9);
     assert.equal(parsed.workspaces.worldTaskCapture.custodyIdentityKind, "task-world-custody");
     assert.equal(parsed.workspaces.settlement.version, 12);
+    assert.equal(parsed.workspaces.settlement.operationVersion, 1);
+    assert.equal(parsed.workspaces.settlement.receiptVersion, 1);
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
@@ -84,6 +87,8 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V10_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V11_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V12_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V13_CONTRACT), true);
+    assert.equal("operationVersion" in WORKSPACE_PROTOCOL_V12_CONTRACT.settlement, false);
     assert.equal("settlement" in WORKSPACE_PROTOCOL_V11_CONTRACT, false);
     assert.equal("custodyIdentityKind" in WORKSPACE_PROTOCOL_V9_CONTRACT.worldTaskCapture, false);
     assert.equal("journalPhases" in WORKSPACE_PROTOCOL_V8_CONTRACT.worldTaskCapture, false);

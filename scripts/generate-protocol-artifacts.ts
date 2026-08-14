@@ -525,6 +525,12 @@ ${renderedRetainedWorldSettlementStates},
 /** Configured public retained-world settlement protocol version. @public */
 export const RETAINED_WORLD_SETTLEMENT_VERSION = ${config.workspaces.settlement.version} as const;
 
+/** Configured deterministic settlement-operation codec version. @public */
+export const RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION = ${config.workspaces.settlement.operationVersion} as const;
+
+/** Configured deterministic settlement-receipt codec version. @public */
+export const RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION = ${config.workspaces.settlement.receiptVersion} as const;
+
 /** Configured maximum UTF-8 bytes for one retained-world text operation. @public */
 export const RETAINED_WORLD_MAX_TEXT_BYTES = ${config.workspaces.worldTaskCapture.maxTextBytes} as const;
 

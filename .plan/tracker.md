@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-14
 
-Current version: `1.21.0`
+Current version: `1.25.0`
 
 Current level: L0 — canonical model
 
@@ -242,6 +242,8 @@ changeset identity.
   recovery-classification contract before exposing external effects.
 - [x] Add Task 9.2A schema-v7 nullable operation/receipt/cleanup storage while preserving migrated
   schema-v6 prepared decisions without fabricated evidence.
+- [x] Add Task 9.2B1 workspace-protocol-v13 deterministic operation and terminal-receipt codecs
+  with canonical replay, exact admission binding, and discard basis preservation.
 
 ## Verification required for this slice
 
@@ -253,9 +255,9 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 9.2B: implement configured deterministic operation/receipt codecs,
-transactional settlement transitions, restart inspection, and cross-connection adversarial tests
-without external effects. Task 9.3 then owns public discard and cleanup recovery.
+Continue Phase 3, Task 9.2B2: implement transactional settlement transitions, restart inspection,
+and cross-connection adversarial tests without external effects. Task 9.3 then owns public discard
+and cleanup recovery.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive

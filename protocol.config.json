@@ -572,6 +572,9 @@
                 "invalidCode": "RETAINED_WORLD_SETTLEMENT_INVALID",
                 "invalidMessage": "retained world settlement request is invalid or inconsistent"
             },
+            "operationIdPrefix": "world-settlement-operation:sha256:",
+            "operationVersion": 1,
+            "receiptVersion": 1,
             "requestIdPrefix": "world-settlement:sha256:",
             "states": ["prepared", "applying", "selected", "discarded"],
             "version": 12

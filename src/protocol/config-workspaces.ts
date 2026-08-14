@@ -150,7 +150,16 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
     );
     const settlement = readObject(
         config.settlement,
-        ["actions", "errors", "requestIdPrefix", "states", "version"],
+        [
+            "actions",
+            "errors",
+            "operationIdPrefix",
+            "operationVersion",
+            "receiptVersion",
+            "requestIdPrefix",
+            "states",
+            "version",
+        ],
         "workspaces.settlement",
     );
     const settlementErrors = readObject(
@@ -585,6 +594,18 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                     "workspaces.settlement.errors.invalidMessage",
                 ),
             },
+            operationIdPrefix: readNonEmptyString(
+                settlement.operationIdPrefix,
+                "workspaces.settlement.operationIdPrefix",
+            ),
+            operationVersion: readPositiveInteger(
+                settlement.operationVersion,
+                "workspaces.settlement.operationVersion",
+            ),
+            receiptVersion: readPositiveInteger(
+                settlement.receiptVersion,
+                "workspaces.settlement.receiptVersion",
+            ),
             requestIdPrefix: readNonEmptyString(
                 settlement.requestIdPrefix,
                 "workspaces.settlement.requestIdPrefix",

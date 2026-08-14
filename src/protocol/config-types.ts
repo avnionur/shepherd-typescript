@@ -720,6 +720,12 @@ export type WorkspaceProtocolConfig = {
             /** Invalid exact-request default message. */
             readonly invalidMessage: string;
         };
+        /** Prefix for content-addressed settlement operations. */
+        readonly operationIdPrefix: string;
+        /** Closed settlement-operation codec version. */
+        readonly operationVersion: number;
+        /** Closed settlement-receipt codec version. */
+        readonly receiptVersion: number;
         /** Prefix for content-addressed exact settlement requests. */
         readonly requestIdPrefix: string;
         /** Ordered durable settlement state vocabulary. */

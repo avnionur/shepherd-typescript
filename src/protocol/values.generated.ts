@@ -233,6 +233,12 @@ export const RETAINED_WORLD_SETTLEMENT_STATES = [
 /** Configured public retained-world settlement protocol version. @public */
 export const RETAINED_WORLD_SETTLEMENT_VERSION = 12 as const;
 
+/** Configured deterministic settlement-operation codec version. @public */
+export const RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION = 1 as const;
+
+/** Configured deterministic settlement-receipt codec version. @public */
+export const RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION = 1 as const;
+
 /** Configured maximum UTF-8 bytes for one retained-world text operation. @public */
 export const RETAINED_WORLD_MAX_TEXT_BYTES = 16777216 as const;
 

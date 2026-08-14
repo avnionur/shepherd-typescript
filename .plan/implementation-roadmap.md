@@ -165,8 +165,9 @@ Work:
   inspection and cross-connection authenticated one-winner verification;
 - implement public exact-ID `select` and `discard`, crash recovery, and settlement citations in the
   trace only after the shared consume-once protocol is in place; **Task 9.1 effect-journal contract
-  completed in 1.24.1** and **Task 9.2A schema-v7 migration carrier implemented in 1.24.2**, with
-  transition codecs, discard, select, and trace citations assigned to the remaining Tasks 9.2-9.5;
+  completed in 1.24.1**, **Task 9.2A schema-v7 migration carrier implemented in 1.24.2**, and
+  **Task 9.2B1 deterministic operation/receipt codecs implemented in 1.25.0**, with transactional
+  transitions, discard, select, and trace citations assigned to the remaining Tasks 9.2B2-9.5;
 - protect control-plane paths and complete settlement/platform fault hardening;
 - complete reference-carrier and Git-custody platform/fault conformance for ACLs, extended
   attributes, resource forks or alternate streams, `core.symlinks=false`, sparse-index variants,

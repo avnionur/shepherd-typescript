@@ -738,3 +738,15 @@ export const WORKSPACE_PROTOCOL_V12_CONTRACT = deepFreeze({
         version: 12,
     },
 } as const);
+
+/** Immutable settlement operation/receipt codec extension implemented by workspace protocol v13. */
+export const WORKSPACE_PROTOCOL_V13_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V12_CONTRACT,
+    settlement: {
+        ...WORKSPACE_PROTOCOL_V12_CONTRACT.settlement,
+        operationIdPrefix: "world-settlement-operation:sha256:",
+        operationVersion: 1,
+        receiptVersion: 1,
+        version: 12,
+    },
+} as const);

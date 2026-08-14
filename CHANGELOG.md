@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.25.0] - 2026-08-14
+
+### New Feature
+
+- Added workspace protocol v13 configured deterministic settlement-operation and terminal-receipt
+  codecs with content-addressed operation identity and canonical exact-data replay.
+- Added action-specific receipt validation that binds publication evidence for selection and
+  unchanged user-basis plus explicit cleanup progress for discard.
+
+### Impact
+
+Task 9 now has a closed deterministic codec boundary for the schema-v7 settlement journal.
+Transactional state transitions and public filesystem effects remain later slices.
+
 ## [1.24.2] - 2026-08-14
 
 ### Improvement

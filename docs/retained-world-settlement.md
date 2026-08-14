@@ -17,7 +17,11 @@ content-addressed `request_id` identities.
 
 Trace-store schema v7 extends that row with nullable operation, receipt, and cleanup-evidence
 columns. Migration preserves every schema-v6 `prepared` request exactly and leaves the new columns
-null; transition codecs and writers remain Task 9.2B.
+null. Workspace protocol v13 adds configured deterministic operation and terminal-receipt codec
+versions plus the content-addressed operation identity prefix. The closed codec binds the entire
+authenticated request into the operation, requires canonical persisted JSON, distinguishes
+selected publication from discarded cleanup evidence, and forbids discard from changing the user
+basis. Transactional journal writers remain Task 9.2B2.
 
 `SQLiteTraceStore.admitRetainedWorldSettlement` is the internal store-level compare-and-swap. One
 `BEGIN IMMEDIATE` transaction either inserts the configured `prepared` decision, replays the exact
