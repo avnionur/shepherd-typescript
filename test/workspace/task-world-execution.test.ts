@@ -21,9 +21,11 @@ import {
     initializeWorkspace,
     inspectTaskWorldCaptureJournal,
     type OwnerRecord,
+    prepareRetainedWorldSettlement,
     RETAINED_WORLD_MAX_CAPTURE_ID_BYTES,
     RETAINED_WORLD_MAX_TEXT_BYTES,
     type RetainedWorldCapability,
+    RetainedWorldSettlementInvalidError,
     readDurableTaskExecution,
     recoverTaskDurably,
     recoverTaskWorldDurably,
@@ -383,6 +385,218 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         run_id: "run:captured-world:1",
         status: "committed",
     });
+    const settlement = await prepareRetainedWorldSettlement({
+        action: "select",
+        binding,
+        carrier,
+        commandId: "settlement:captured-world:1",
+        output: result.output,
+        store,
+    });
+    assert.equal(settlement.action, "select");
+    assert.equal(settlement.output_id, result.output.output_id);
+    assert.equal(settlement.request.execution_cut_id, result.output.execution_cut.cut_id);
+    assert.equal(settlement.state, "prepared");
+    for (const invalidOptions of [null, [], new (class SettlementOptions {})()]) {
+        await assert.rejects(
+            prepareRetainedWorldSettlement(invalidOptions as never),
+            RetainedWorldSettlementInvalidError,
+        );
+    }
+    await assert.rejects(
+        prepareRetainedWorldSettlement({
+            action: "apply" as never,
+            binding,
+            carrier,
+            commandId: "settlement:invalid-action",
+            output: result.output,
+            store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    for (const commandId of ["", 1 as never]) {
+        await assert.rejects(
+            prepareRetainedWorldSettlement({
+                action: "discard",
+                binding,
+                carrier,
+                commandId,
+                output: result.output,
+                store,
+            }),
+            RetainedWorldSettlementInvalidError,
+        );
+    }
+    await assert.rejects(
+        prepareRetainedWorldSettlement({
+            action: "discard",
+            binding,
+            carrier,
+            commandId: "settlement:absent-run",
+            output: { ...result.output, run_id: "run:absent-settlement" },
+            store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    await assert.rejects(
+        prepareRetainedWorldSettlement({
+            action: "discard",
+            binding,
+            carrier,
+            commandId: "settlement:wrong-capture",
+            output: { ...result.output, capture_id: "capture:wrong-settlement" },
+            store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    using alteredOutputStore = new AlteredOutputReadStore(
+        storePath,
+        result.output.capture_record_id,
+    );
+    await assert.rejects(
+        prepareRetainedWorldSettlement({
+            action: "discard",
+            binding,
+            carrier,
+            commandId: "settlement:altered-output-record",
+            output: result.output,
+            store: alteredOutputStore,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    await mkdir(path.join(workspaceRoot, "other-settlement-root"));
+    const otherBinding = createWorkspaceBindings({
+        bindings: [{ name: "other-settlement", root: "other-settlement-root" }],
+        workspaceRoot,
+    }).bindings[0];
+    assert.ok(otherBinding);
+    await assert.rejects(
+        prepareRetainedWorldSettlement({
+            action: "discard",
+            binding: otherBinding,
+            carrier,
+            commandId: "settlement:wrong-binding",
+            output: result.output,
+            store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    using replaySettlementStore = new SQLiteTraceStore(storePath);
+    assert.deepEqual(
+        await prepareRetainedWorldSettlement({
+            action: "select",
+            binding,
+            carrier,
+            commandId: "settlement:captured-world:1",
+            output: result.output,
+            store: replaySettlementStore,
+        }),
+        settlement,
+    );
+    await assert.rejects(
+        prepareRetainedWorldSettlement({
+            action: "discard",
+            binding,
+            carrier,
+            commandId: "settlement:conflict",
+            output: result.output,
+            store,
+        }),
+    );
+    const forgedOutputId = `${result.output.output_id}:forged`;
+    await assert.rejects(
+        prepareRetainedWorldSettlement({
+            action: "discard",
+            binding,
+            carrier,
+            commandId: "settlement:forged-output",
+            output: { ...result.output, output_id: forgedOutputId },
+            store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    for (const output of [
+        { ...result.output, schema_version: result.output.schema_version + 1 },
+        { ...result.output, status: "unsupported" as never },
+        { ...result.output, output_id: "" },
+        { ...result.output, execution_cut: null as never },
+        { ...result.output, extra: true },
+    ]) {
+        await assert.rejects(
+            prepareRetainedWorldSettlement({
+                action: "discard",
+                binding,
+                carrier,
+                commandId: "settlement:malformed-output",
+                output,
+                store,
+            }),
+            RetainedWorldSettlementInvalidError,
+        );
+    }
+    const settlementAccessorOptions = {
+        action: "discard" as const,
+        binding,
+        carrier,
+        commandId: "settlement:accessor",
+        output: result.output,
+        store,
+    };
+    Object.defineProperty(settlementAccessorOptions, "commandId", {
+        get: () => "settlement:substituted",
+    });
+    await assert.rejects(
+        prepareRetainedWorldSettlement(settlementAccessorOptions),
+        RetainedWorldSettlementInvalidError,
+    );
+    await assert.rejects(
+        prepareRetainedWorldSettlement({
+            action: "discard",
+            binding,
+            carrier,
+            commandId: "settlement:symbol",
+            output: result.output,
+            store,
+            [Symbol("extension")]: true,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    const capturedCustody = await carrier.openCustody(result.output.custody_id);
+    await writeFile(path.join(capturedCustody.path, "message.txt"), "moved after capture\n");
+    await assert.rejects(
+        prepareRetainedWorldSettlement({
+            action: "select",
+            binding,
+            carrier,
+            commandId: "settlement:captured-world:1",
+            output: result.output,
+            store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    assert.equal(store.readRetainedWorldSettlement(forgedOutputId), undefined);
+    await assert.rejects(
+        prepareRetainedWorldSettlement({
+            action: "discard",
+            binding: { ...binding },
+            carrier,
+            commandId: "settlement:forged-binding",
+            output: result.output,
+            store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    await assert.rejects(
+        prepareRetainedWorldSettlement({
+            action: "discard",
+            binding,
+            carrier: { ...carrier },
+            commandId: "settlement:forged-carrier",
+            output: result.output,
+            store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
     const retainedRecords = store.readOwner("run:captured-world:1");
     assert.deepEqual(
         retainedRecords.flatMap((record) => {

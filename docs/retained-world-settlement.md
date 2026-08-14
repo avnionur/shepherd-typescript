@@ -2,8 +2,11 @@
 
 Implementation:
 [`src/store/retained-world-settlements.ts`](../src/store/retained-world-settlements.ts).
-Public store entry point: [`src/index.ts`](../src/index.ts). Production-seam tests:
-[`test/store/retained-world-settlements.test.ts`](../test/store/retained-world-settlements.test.ts).
+Authenticated coordinator:
+[`src/workspace/retained-world-settlement.ts`](../src/workspace/retained-world-settlement.ts).
+Public entry point: [`src/index.ts`](../src/index.ts). Production-seam tests:
+[`test/store/retained-world-settlements.test.ts`](../test/store/retained-world-settlements.test.ts)
+and [`test/workspace/task-world-execution.test.ts`](../test/workspace/task-world-execution.test.ts).
 
 ## Implemented foundation
 
@@ -21,12 +24,19 @@ The exact request binds action, protocol version, run, output, capture record, e
 binding, base/head revisions, changeset, custody, user-basis witness, and caller command. Its
 content-addressed ID uses the configured workspace digest and settlement prefix.
 
+`prepareRetainedWorldSettlement` is the public authenticated admission seam. Before invoking the
+store compare-and-swap, it reconstructs the committed durable execution, validates the exact
+terminal cut and capture journal, authenticates the package-created binding and carrier, reopens
+and verifies both immutable revisions, recomputes the canonical changeset, and verifies that the
+cited mutable custody still contains the captured head. Any disagreement fails with the stable
+configured invalid-settlement error before admission.
+
 ## Current boundary
 
-The store primitive deliberately does not authenticate execution, carrier, Git, or binding
-evidence and does not mutate user files or physical custody. It is marked internal. The next Phase
-3 slice owns that evidence join and a public read-only settlement inspection. Public `select` and
-`discard` remain unavailable until authenticated admission, effect journaling, basis revalidation,
-and crash recovery compose with this CAS. Carrier-level `discard(custodyId)` remains a distinct
-physical cleanup primitive and does not create a settlement decision.
-
+The store primitive deliberately remains internal and trusts only the authenticated coordinator.
+Preparation reads retained evidence and mutates only the durable settlement-admission row; it does
+not mutate user files or physical custody. The next Phase 3 slice owns restart-safe public
+settlement inspection and cross-connection adversarial evidence. Public `select` and `discard`
+remain unavailable until effect journaling, basis revalidation, and crash recovery compose with
+this CAS. Carrier-level `discard(custodyId)` remains a distinct physical cleanup primitive and does
+not create a settlement decision.

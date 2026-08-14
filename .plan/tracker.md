@@ -234,6 +234,8 @@ changeset identity.
   previews, derived rename/copy projections, and Git-aware Gitlink/symlink-mode presentation.
 - [x] Add Task 8 protocol v12 exact settlement identity and trace-store schema v6 atomic
   consume-once admission with exact replay and conflict refusal.
+- [x] Add Task 8 authenticated exact-output preparation across committed execution, cut, capture
+  journal, binding, carrier revisions, changeset, and custody before consume-once admission.
 
 ## Verification required for this slice
 
@@ -245,9 +247,9 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 8: authenticate exact terminal execution, cut, capture, binding, carrier,
-revision, changeset, and custody evidence before invoking settlement CAS, then expose restart-safe
-read-only settlement inspection. Public `select`/`discard` effects remain Task 9.
+Continue Phase 3, Task 8: expose restart-safe read-only settlement inspection and complete
+cross-connection adversarial evidence for authenticated consume-once preparation. Public
+`select`/`discard` effects remain Task 9.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive
