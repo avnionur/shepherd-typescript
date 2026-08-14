@@ -33,6 +33,15 @@ export type CaptureTaskWorldOptions<
     readonly store: SQLiteTraceStore;
 };
 
+/** Closed options for command-authorized recovery of one retained-world task capture. */
+export type RecoverTaskWorldOptions<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+> = CaptureTaskWorldOptions<I, O> & {
+    /** Stable identity reused for every retry of this exact recovery request. */
+    readonly commandId: string;
+};
+
 /** Verified immutable world attachment retained inside one terminal execution cut. */
 export type RetainedWorldOutput = {
     /** Exact immutable input revision. */

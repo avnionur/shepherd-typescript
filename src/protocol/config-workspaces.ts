@@ -181,6 +181,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         [
             "captureSchemaId",
             "captureSchemaPath",
+            "custodyIdentityKind",
             "journalPhases",
             "journalSchemaId",
             "journalSchemaPath",
@@ -636,6 +637,10 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             captureSchemaPath: readNonEmptyString(
                 worldTaskCapture.captureSchemaPath,
                 "workspaces.worldTaskCapture.captureSchemaPath",
+            ),
+            custodyIdentityKind: readNonEmptyString(
+                worldTaskCapture.custodyIdentityKind,
+                "workspaces.worldTaskCapture.custodyIdentityKind",
             ),
             journalPhases: readUniqueStrings(
                 worldTaskCapture.journalPhases,

@@ -48,7 +48,8 @@ runner-identity bounds, and the closed enforcement vocabulary.
 Workspace protocol v8 additionally fixes task-world capture schema and output identities, capture
 identity and text-operation bounds, and the successful retention status vocabulary.
 Workspace protocol v9 additionally fixes the task-world journal schema, ordered phase vocabulary,
-and journal version while preserving the v8 retained-output contract.
+and journal version. Workspace protocol v10 adds the configured deterministic task-world custody
+identity domain used by command-authorized restart recovery.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate

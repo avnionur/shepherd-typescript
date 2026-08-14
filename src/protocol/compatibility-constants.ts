@@ -660,3 +660,12 @@ export const WORKSPACE_PROTOCOL_V9_CONTRACT = deepFreeze({
         journalVersion: 9,
     },
 } as const);
+
+/** Immutable deterministic task-world recovery extension implemented by workspace protocol v10. */
+export const WORKSPACE_PROTOCOL_V10_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V9_CONTRACT,
+    worldTaskCapture: {
+        ...WORKSPACE_PROTOCOL_V9_CONTRACT.worldTaskCapture,
+        custodyIdentityKind: "task-world-custody",
+    },
+} as const);

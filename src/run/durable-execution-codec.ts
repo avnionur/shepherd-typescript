@@ -92,6 +92,7 @@ export function readDurableExecutionResult(
     budget: RunBudgetDefinition,
     started: boolean,
     runId: string,
+    allowStartedWithoutTurn = false,
 ): TaskExecutionResult {
     const result = Object.freeze({
         artifacts: Object.freeze(
@@ -126,7 +127,13 @@ export function readDurableExecutionResult(
     ) {
         throw new TypeError("durable cancelled outcome and control reasons are inconsistent");
     }
-    validateRecoveredAccounting(result.control, result.usage, budget, started);
+    validateRecoveredAccounting(
+        result.control,
+        result.usage,
+        budget,
+        started,
+        allowStartedWithoutTurn,
+    );
     return result;
 }
 
@@ -197,6 +204,7 @@ function validateRecoveredAccounting(
     usage: RunUsage | null,
     budget: RunBudgetDefinition,
     started: boolean,
+    allowStartedWithoutTurn: boolean,
 ): void {
     const { consumed } = control;
     if (consumed.effects !== 0) {
@@ -207,7 +215,11 @@ function validateRecoveredAccounting(
             ? (control.reason as RunBudgetExhaustionReason)
             : null;
     const turnExhaustion = exhaustionReason !== null && exhaustionReason.metric === TURNS_METRIC;
-    if (consumed.turns !== (started || turnExhaustion ? 1 : 0)) {
+    const expectedTurns = started || turnExhaustion ? 1 : 0;
+    if (
+        consumed.turns !== expectedTurns &&
+        !(allowStartedWithoutTurn && started && consumed.turns === 0)
+    ) {
         throw new TypeError("durable execution start and turn consumption are inconsistent");
     }
     if (exhaustionReason !== null) {

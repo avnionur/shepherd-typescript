@@ -89,6 +89,7 @@ type DiscardDescriptor = {
 const [DIRECTORY_KIND, FILE_KIND, SYMLINK_KIND] = WORLD_ENTRY_KINDS;
 const NO_ADAPTER_RECEIPTS = (): void => undefined;
 const REFERENCE_CARRIERS = new WeakSet<object>();
+const REFERENCE_CARRIER_PATHS = new WeakMap<object, CarrierPaths>();
 
 /**
  * Rejects structurally forged carrier objects at internal composition boundaries.
@@ -144,8 +145,21 @@ export function forkReferenceCopyRevisionWithReceipts(
             createCarrierPaths(workspace.control_path, createWorkspaceBindings),
             revisionId,
             publishReceipts,
+            null,
         ),
     );
+}
+
+/** @internal Publishes or reopens one exact task-world custody identity. */
+export function forkReferenceCopyRevisionForTaskWorld(
+    carrier: ReferenceCopyCarrier,
+    revisionId: string,
+    custodyId: string,
+): WorldCustody {
+    assertReferenceCopyCarrier(carrier);
+    const paths = REFERENCE_CARRIER_PATHS.get(carrier);
+    assert.ok(paths, "reference carrier paths are unavailable");
+    return invokeCarrier(() => forkRevision(paths, revisionId, NO_ADAPTER_RECEIPTS, custodyId));
 }
 
 function createCarrier(
@@ -162,7 +176,7 @@ function createCarrier(
             invokeCarrier(() => captureCustody(paths, custodyId)),
         discard: async (custodyId: string) => invokeCarrier(() => discardCustody(paths, custodyId)),
         fork: async (revisionId: string) =>
-            invokeCarrier(() => forkRevision(paths, revisionId, NO_ADAPTER_RECEIPTS)),
+            invokeCarrier(() => forkRevision(paths, revisionId, NO_ADAPTER_RECEIPTS, null)),
         openCustody: async (custodyId: string) =>
             invokeCarrier(() => {
                 verifyCustody(paths, custodyId);
@@ -191,6 +205,7 @@ function createCarrier(
             invokeCarrier(() => verifyRevision(paths, revisionId)),
     });
     REFERENCE_CARRIERS.add(carrier);
+    REFERENCE_CARRIER_PATHS.set(carrier, paths);
     return carrier;
 }
 
@@ -437,10 +452,12 @@ function forkRevision(
     paths: CarrierPaths,
     revisionId: string,
     publishReceipts: (stagingRoot: string, custodyId: string) => void,
+    requestedCustodyId: string | null,
 ): WorldCustody {
     const revision = loadRevision(paths, revisionId);
     verifyRevision(paths, revisionId);
-    const custodyId = `${workspaceProtocolConfig.carrier.custodyIdPrefix}${randomUUID()}`;
+    const custodyId =
+        requestedCustodyId ?? `${workspaceProtocolConfig.carrier.custodyIdPrefix}${randomUUID()}`;
     const stagingRoot = createStaging(paths);
     const stagedWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
     try {
@@ -462,7 +479,13 @@ function forkRevision(
             descriptor,
         );
         syncDirectory(stagingRoot);
-        publishDirectory(paths, stagingRoot, custodyRoot(paths, custodyId));
+        publishDirectory(paths, stagingRoot, custodyRoot(paths, custodyId), () => {
+            const existing = loadCustody(paths, custodyId);
+            verifyCustody(paths, custodyId);
+            assert.equal(existing.base_revision_id, revision.revision_id);
+            assert.equal(existing.base_content_id, revision.content_id);
+            assert.equal(existing.binding_id, revision.binding_id);
+        });
         return loadCustody(paths, custodyId);
     } catch (error) {
         cleanupStaging(paths, stagingRoot);

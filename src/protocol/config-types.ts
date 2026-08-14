@@ -760,6 +760,8 @@ export type WorkspaceProtocolConfig = {
         readonly captureSchemaId: string;
         /** Repository-relative generated capture-schema path. */
         readonly captureSchemaPath: string;
+        /** Canonical identity domain for deterministic task-world custody. */
+        readonly custodyIdentityKind: string;
         /** Ordered durable pre-terminal capture-journal phases. */
         readonly journalPhases: readonly string[];
         /** Schema identifier for durable capture-journal records. */

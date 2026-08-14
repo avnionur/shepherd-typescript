@@ -150,7 +150,10 @@ Work:
   execution implemented in 1.18.0**, with authenticated handle consumption, isolated existing-file
   authority, immutable capture, and atomic terminal-cut attachment; **durable capture journaling
   and restart-safe inspection implemented in 1.19.0**; retry, cancellation, corruption recovery,
-  and uncertain-writer handling remain Task 6B.4;
+  and uncertain-writer handling **implemented for the advisory runner boundary in 1.20.0**, with
+  command-authorized pre-execution resume, exact custody convergence, terminal-cut repair,
+  cooperative partial-world cancellation, competing-recovery fencing, and fail-closed uncertain
+  execution; external-process quiescence remains part of the later jail/placement work;
 - expose read-only changeset inspection, retained content reads, bounded previews, derived
   rename/copy projections, and Gitlink citations from the Git-aware adapter;
 - implement exact-ID `select` and `discard`;

@@ -34,9 +34,21 @@ runner or carrier and reconstructs the same retained projection after the SQLite
 World records created under protocol v8 remain readable without journal transitions and are
 therefore legacy retained evidence; protocol v9 capture attempts carry the ordered journal.
 
-This Task 6B.3 slice does not yet resume or retry an incomplete journal, recover uncertain writers,
-create/delete paths, or define cancellation cleanup. Those are Task 6B.4. A failure after start
-therefore remains recovery-required and must not be retried as if no external work occurred.
-Process interruption between carrier custody publication and the `forked` append can leave an
-unattached custody; Task 6B.4 owns explicit orphan diagnosis and cleanup for that cross-store
-publication window, and recovery never discovers it by guessing from directory contents.
+`recoverTaskWorldDurably` validates the exact original task, provider, budget, binding, base,
+runner, capture, and configured limits before recovery. An explicit globally idempotent command
+may resume `prepared`, reopen `forked`, repair terminal-pending-cut publication, or replay the exact
+committed result. A live competing recovery loses the invocation claim and does not invoke the
+runner. An `executing` journal remains uncertain and is refused because external work may already
+have occurred.
+
+Workspace protocol v10 assigns deterministic custody identity to the run/capture pair. Recovery
+therefore converges after process interruption between custody publication and the `forked`
+journal append without scanning carrier directories. Existing v9 `forked` evidence remains
+recoverable by reopening its recorded custody identity. Missing, substituted, corrupt, or
+cross-base custody and output evidence fails closed.
+
+A runner that returns after cooperative cancellation is quiescent at the callback boundary; its
+verified partial custody is retained beside the cancelled outcome while the user binding remains
+unchanged. Process-jail enforcement, external-process termination proof, create/delete authority,
+and phase-specific administrative discard remain later runtime/settlement work. No uncertain
+writer is captured or retried automatically.

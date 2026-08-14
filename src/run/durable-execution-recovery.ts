@@ -187,6 +187,7 @@ export function readDurableTaskExecution(
             creation.budget,
             started !== undefined,
             runId,
+            worldCapture !== undefined,
         );
         if (
             canonicalizeRecord(execution.outcome.task_artifact_lock) !==

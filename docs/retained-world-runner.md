@@ -15,4 +15,5 @@ The initial configured enforcement is `advisory`. It records the truth that this
 adapter is not a process jail or syscall boundary. Task 6B.2 issues an exact invocation-fenced
 capability for existing regular UTF-8 files in isolated custody and attaches successful captured
 world evidence to the terminal cut. Task 6B.3 adds the durable pre-invocation capture journal and
-restart contract required beyond this successful path.
+Task 6B.4 adds command-authorized pre-execution recovery with fail-closed uncertain-writer handling.
+External-process quiescence and syscall confinement remain part of later placement work.

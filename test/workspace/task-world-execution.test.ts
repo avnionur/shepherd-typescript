@@ -5,6 +5,9 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+    type AppendReceipt,
+    type Cut,
+    type CutSpec,
     cancelDurableTask,
     captureTaskWorldDurably,
     createReferenceCopyCarrier,
@@ -23,7 +26,9 @@ import {
     type RetainedWorldCapability,
     readDurableTaskExecution,
     recoverTaskDurably,
+    recoverTaskWorldDurably,
     SQLiteTraceStore,
+    type StoreAppendRequest,
     schema,
     task,
 } from "../../src/index.ts";
@@ -60,6 +65,90 @@ class FencedJournalStore extends SQLiteTraceStore {
         ..._arguments: Parameters<SQLiteTraceStore["appendDurableExecutionTerminal"]>
     ): ReturnType<SQLiteTraceStore["appendDurableExecutionTerminal"]> {
         return { status: "fenced" };
+    }
+}
+
+class InterruptedBeforeClaimStore extends SQLiteTraceStore {
+    override claimDurableExecutionInvocation(): never {
+        throw new Error("interrupted before task-world claim");
+    }
+}
+
+class InterruptedAfterCustodyStore extends SQLiteTraceStore {
+    override append(request: StoreAppendRequest): AppendReceipt {
+        if (
+            request.batch.groups.some((group) =>
+                group.records.some(
+                    (record) =>
+                        (record.body as { capture_phase?: unknown }).capture_phase === "forked",
+                ),
+            )
+        ) {
+            throw new Error("interrupted after task-world custody publication");
+        }
+        return super.append(request);
+    }
+}
+
+class InterruptedWorldCutStore extends SQLiteTraceStore {
+    #interruptNextCut = true;
+
+    override publishCut(spec: CutSpec): Cut {
+        if (this.#interruptNextCut) {
+            this.#interruptNextCut = false;
+            throw new Error("interrupted task-world cut publication");
+        }
+        return super.publishCut(spec);
+    }
+}
+
+class SubstitutedForkedCustodyStore extends InterruptedBeforeClaimStore {
+    readonly #custodyId: string;
+
+    constructor(databasePath: string, custodyId: string) {
+        super(databasePath);
+        this.#custodyId = custodyId;
+    }
+
+    override append(request: StoreAppendRequest): AppendReceipt {
+        return super.append({
+            ...request,
+            batch: {
+                groups: request.batch.groups.map((group) => ({
+                    ...group,
+                    records: group.records.map((record) =>
+                        (record.body as { capture_phase?: unknown }).capture_phase === "forked"
+                            ? { ...record, body: { ...record.body, custody_id: this.#custodyId } }
+                            : record,
+                    ),
+                })),
+            },
+        });
+    }
+}
+
+class AlteredOutputReadStore extends SQLiteTraceStore {
+    readonly #outputRecordId: string;
+    readonly #remove: boolean;
+
+    constructor(databasePath: string, outputRecordId: string, remove = false) {
+        super(databasePath);
+        this.#outputRecordId = outputRecordId;
+        this.#remove = remove;
+    }
+
+    override readRecord(recordId: string): ReturnType<SQLiteTraceStore["readRecord"]> {
+        const record = super.readRecord(recordId);
+        if (recordId !== this.#outputRecordId || record === undefined) return record;
+        if (this.#remove) return undefined;
+        const changesetId = record.body.changeset_id as string;
+        return {
+            ...record,
+            body: {
+                ...record.body,
+                changeset_id: `${changesetId.slice(0, -1)}${changesetId.endsWith("0") ? "1" : "0"}`,
+            },
+        };
     }
 }
 
@@ -581,6 +670,383 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         inspectTaskWorldCaptureJournal(fencedJournalStore, "run:fenced-journal").status,
         "forked",
     );
+
+    const recoveryStorePath = path.join(workspaceRoot, "task-world-recovery.sqlite");
+    const interruptedStore = new InterruptedBeforeClaimStore(recoveryStorePath);
+    let recoveredInvocations = 0;
+    const recoveredRunnerSignals: {
+        release: (() => void) | null;
+        started: (() => void) | null;
+    } = { release: null, started: null };
+    const recoveredRunnerRelease = new Promise<void>((resolve) => {
+        recoveredRunnerSignals.release = resolve;
+    });
+    const recoveredRunnerStarted = new Promise<void>((resolve) => {
+        recoveredRunnerSignals.started = resolve;
+    });
+    const recoveryRunner = createRetainedWorldRunner({
+        enforcement: "advisory",
+        runnerId: "runner:task-world-recovery",
+        run: async (runnerContext) => {
+            recoveredInvocations += 1;
+            recoveredRunnerSignals.started?.();
+            await recoveredRunnerRelease;
+            await runnerContext.world.writeText("message.txt", "recovered\n");
+            return executeTask(runnerContext.execution);
+        },
+    });
+    await assert.rejects(
+        captureTaskWorldDurably({
+            baseRevision,
+            binding,
+            captureId: "capture:recover-forked",
+            carrier,
+            execution: {
+                budget: { maxTurns: 1 },
+                input: undefined,
+                provider,
+                runId: "run:recover-forked",
+                task: fixtureTask,
+            },
+            runner: recoveryRunner,
+            store: interruptedStore,
+        }),
+        /interrupted before task-world claim/u,
+    );
+    assert.equal(recoveredInvocations, 0);
+    const interruptedJournal = inspectTaskWorldCaptureJournal(
+        interruptedStore,
+        "run:recover-forked",
+    );
+    assert.equal(interruptedJournal.status, "forked");
+    const custodyId = interruptedJournal.transitions.at(-1)?.body.custody_id;
+    assert.equal(typeof custodyId, "string");
+    const custodiesBeforeRecovery = await readdir(custodiesRoot);
+    interruptedStore.close();
+    using recoveryStore = new SQLiteTraceStore(recoveryStorePath);
+    using competingRecoveryStore = new SQLiteTraceStore(recoveryStorePath);
+    const recoveryOptions = {
+        baseRevision,
+        binding,
+        captureId: "capture:recover-forked",
+        carrier: createReferenceCopyCarrier({ workspaceRoot }),
+        commandId: "command:recover-world:forked",
+        execution: {
+            budget: { maxTurns: 1 },
+            input: undefined,
+            provider,
+            runId: "run:recover-forked",
+            task: fixtureTask,
+        },
+        runner: recoveryRunner,
+        store: recoveryStore,
+    } as const;
+    await assert.rejects(
+        recoverTaskWorldDurably({ ...recoveryOptions, captureId: "capture:wrong" }),
+        DurableExecutionRecoveryError,
+    );
+    const changedRecoveryRunner = createRetainedWorldRunner({
+        enforcement: "advisory",
+        runnerId: "runner:changed-recovery-authority",
+        run: (runnerContext) => executeTask(runnerContext.execution),
+    });
+    await assert.rejects(
+        recoverTaskWorldDurably({ ...recoveryOptions, runner: changedRecoveryRunner }),
+        /recovery contract differs/u,
+    );
+    await writeFile(path.join(sourceRoot, "message.txt"), "moved during recovery\n");
+    await assert.rejects(
+        recoverTaskWorldDurably(recoveryOptions),
+        /recovery custody or user basis is inconsistent/u,
+    );
+    await writeFile(path.join(sourceRoot, "message.txt"), "before\n");
+    const recoveringWorld = recoverTaskWorldDurably(recoveryOptions);
+    await recoveredRunnerStarted;
+    await assert.rejects(
+        recoverTaskWorldDurably({ ...recoveryOptions, store: competingRecoveryStore }),
+        DurableExecutionRecoveryError,
+    );
+    assert.equal(recoveredInvocations, 1);
+    recoveredRunnerSignals.release?.();
+    const recoveredWorld = await recoveringWorld;
+    assert.equal(recoveredWorld.output.custody_id, custodyId);
+    assert.equal(recoveredInvocations, 1);
+    assert.deepEqual(await readdir(custodiesRoot), custodiesBeforeRecovery);
+    assert.equal(
+        inspectTaskWorldCaptureJournal(recoveryStore, "run:recover-forked").status,
+        "retained",
+    );
+    const replayedWorld = await recoverTaskWorldDurably({
+        ...recoveryOptions,
+        store: competingRecoveryStore,
+    });
+    assert.deepEqual(replayedWorld, recoveredWorld);
+    assert.equal(recoveredInvocations, 1);
+    await assert.rejects(
+        recoverTaskWorldDurably({
+            ...recoveryOptions,
+            commandId: "command:recover-world:changed-runner-after-retention",
+            runner: changedRecoveryRunner,
+            store: competingRecoveryStore,
+        }),
+        /recovery contract differs/u,
+    );
+    await assert.rejects(
+        recoverTaskWorldDurably({
+            ...recoveryOptions,
+            captureId: "capture:changed-after-retention",
+            commandId: "command:recover-world:changed-after-retention",
+            store: competingRecoveryStore,
+        }),
+        /retained task-world output differs/u,
+    );
+    using missingRecoveredOutputStore = new AlteredOutputReadStore(
+        recoveryStorePath,
+        recoveredWorld.output.capture_record_id,
+        true,
+    );
+    await assert.rejects(
+        recoverTaskWorldDurably({
+            ...recoveryOptions,
+            commandId: "command:recover-world:missing-output",
+            store: missingRecoveredOutputStore,
+        }),
+        DurableExecutionRecoveryError,
+    );
+    using changedOutputStore = new AlteredOutputReadStore(
+        recoveryStorePath,
+        recoveredWorld.output.capture_record_id,
+    );
+    await assert.rejects(
+        recoverTaskWorldDurably({
+            ...recoveryOptions,
+            commandId: "command:recover-world:changed-output",
+            store: changedOutputStore,
+        }),
+        /retained task-world changeset is inconsistent/u,
+    );
+
+    const preparedRecoveryStorePath = path.join(workspaceRoot, "prepared-recovery.sqlite");
+    const preparedRecoveryStore = new InterruptedAfterCustodyStore(preparedRecoveryStorePath);
+    let preparedRecoveryInvocations = 0;
+    const preparedRecoveryRunner = createRetainedWorldRunner({
+        enforcement: "advisory",
+        runnerId: "runner:prepared-recovery",
+        run: (runnerContext) => {
+            preparedRecoveryInvocations += 1;
+            return executeTask(runnerContext.execution);
+        },
+    });
+    await assert.rejects(
+        captureTaskWorldDurably({
+            baseRevision,
+            binding,
+            captureId: "capture:recover-prepared",
+            carrier,
+            execution: {
+                budget: { maxTurns: 1 },
+                input: undefined,
+                provider,
+                runId: "run:recover-prepared",
+                task: fixtureTask,
+            },
+            runner: preparedRecoveryRunner,
+            store: preparedRecoveryStore,
+        }),
+        /interrupted after task-world custody publication/u,
+    );
+    assert.equal(
+        inspectTaskWorldCaptureJournal(preparedRecoveryStore, "run:recover-prepared").status,
+        "prepared",
+    );
+    const custodiesAfterInterruptedPublication = await readdir(custodiesRoot);
+    preparedRecoveryStore.close();
+    using reopenedPreparedRecoveryStore = new SQLiteTraceStore(preparedRecoveryStorePath);
+    const recoveredPreparedWorld = await recoverTaskWorldDurably({
+        baseRevision,
+        binding,
+        captureId: "capture:recover-prepared",
+        carrier: createReferenceCopyCarrier({ workspaceRoot }),
+        commandId: "command:recover-world:prepared",
+        execution: {
+            budget: { maxTurns: 1 },
+            input: undefined,
+            provider,
+            runId: "run:recover-prepared",
+            task: fixtureTask,
+        },
+        runner: preparedRecoveryRunner,
+        store: reopenedPreparedRecoveryStore,
+    });
+    assert.equal(preparedRecoveryInvocations, 1);
+    assert.deepEqual(await readdir(custodiesRoot), custodiesAfterInterruptedPublication);
+    assert.equal(recoveredPreparedWorld.output.status, "retained");
+
+    await writeFile(path.join(sourceRoot, "message.txt"), "other custody base\n");
+    const otherCustodyBase = await carrier.snapshot(binding);
+    const otherCustody = await carrier.fork(otherCustodyBase.revision_id);
+    await writeFile(path.join(sourceRoot, "message.txt"), "before\n");
+    const substitutedStorePath = path.join(workspaceRoot, "substituted-custody.sqlite");
+    const substitutedStore = new SubstitutedForkedCustodyStore(
+        substitutedStorePath,
+        otherCustody.custody_id,
+    );
+    await assert.rejects(
+        captureTaskWorldDurably({
+            baseRevision,
+            binding,
+            captureId: "capture:substituted-custody",
+            carrier,
+            execution: {
+                budget: { maxTurns: 1 },
+                input: undefined,
+                provider,
+                runId: "run:substituted-custody",
+                task: fixtureTask,
+            },
+            runner: preparedRecoveryRunner,
+            store: substitutedStore,
+        }),
+        /interrupted before task-world claim/u,
+    );
+    substitutedStore.close();
+    using reopenedSubstitutedStore = new SQLiteTraceStore(substitutedStorePath);
+    await assert.rejects(
+        recoverTaskWorldDurably({
+            baseRevision,
+            binding,
+            captureId: "capture:substituted-custody",
+            carrier: createReferenceCopyCarrier({ workspaceRoot }),
+            commandId: "command:recover-world:substituted-custody",
+            execution: {
+                budget: { maxTurns: 1 },
+                input: undefined,
+                provider,
+                runId: "run:substituted-custody",
+                task: fixtureTask,
+            },
+            runner: preparedRecoveryRunner,
+            store: reopenedSubstitutedStore,
+        }),
+        /recovery custody or user basis is inconsistent/u,
+    );
+
+    const cutRecoveryStorePath = path.join(workspaceRoot, "world-cut-recovery.sqlite");
+    const interruptedCutStore = new InterruptedWorldCutStore(cutRecoveryStorePath);
+    let cutRecoveryInvocations = 0;
+    const cutRecoveryRunner = createRetainedWorldRunner({
+        enforcement: "advisory",
+        runnerId: "runner:world-cut-recovery",
+        run: async (runnerContext) => {
+            cutRecoveryInvocations += 1;
+            await runnerContext.world.writeText("message.txt", "pending cut\n");
+            return executeTask(runnerContext.execution);
+        },
+    });
+    const cutRecoveryExecution = {
+        budget: { maxTurns: 1 },
+        input: undefined,
+        provider,
+        runId: "run:world-cut-recovery",
+        task: fixtureTask,
+    } as const;
+    await assert.rejects(
+        captureTaskWorldDurably({
+            baseRevision,
+            binding,
+            captureId: "capture:world-cut-recovery",
+            carrier,
+            execution: cutRecoveryExecution,
+            runner: cutRecoveryRunner,
+            store: interruptedCutStore,
+        }),
+        /interrupted task-world cut publication/u,
+    );
+    assert.equal(
+        readDurableTaskExecution(interruptedCutStore, cutRecoveryExecution.runId).status,
+        "terminal_pending_cut",
+    );
+    interruptedCutStore.close();
+    using reopenedCutRecoveryStore = new SQLiteTraceStore(cutRecoveryStorePath);
+    const repairedCutWorld = await recoverTaskWorldDurably({
+        baseRevision,
+        binding,
+        captureId: "capture:world-cut-recovery",
+        carrier: createReferenceCopyCarrier({ workspaceRoot }),
+        commandId: "command:recover-world:cut",
+        execution: cutRecoveryExecution,
+        runner: cutRecoveryRunner,
+        store: reopenedCutRecoveryStore,
+    });
+    assert.equal(cutRecoveryInvocations, 1);
+    assert.equal(repairedCutWorld.output.status, "retained");
+    assert.equal(
+        readDurableTaskExecution(reopenedCutRecoveryStore, cutRecoveryExecution.runId).status,
+        "committed",
+    );
+
+    const cancellationController = new AbortController();
+    const cancellingRunner = createRetainedWorldRunner({
+        enforcement: "advisory",
+        runnerId: "runner:cooperative-world-cancellation",
+        run: async (runnerContext) => {
+            await runnerContext.world.writeText("message.txt", "cancelled partial\n");
+            cancellationController.abort("operator cancelled retained work");
+            return executeTask(runnerContext.execution);
+        },
+    });
+    using cancelledWorldStore = new SQLiteTraceStore();
+    const cancelledWorld = await captureTaskWorldDurably({
+        baseRevision,
+        binding,
+        captureId: "capture:cancelled-partial",
+        carrier,
+        execution: {
+            budget: { maxTurns: 1 },
+            input: undefined,
+            provider,
+            runId: "run:cancelled-partial",
+            signal: cancellationController.signal,
+            task: fixtureTask,
+        },
+        runner: cancellingRunner,
+        store: cancelledWorldStore,
+    });
+    assert.equal(cancelledWorld.execution.outcome.outcome.status, "cancelled");
+    assert.equal(cancelledWorld.output.status, "retained");
+    assert.equal(
+        await readFile(
+            path.join(
+                (await carrier.openRevision(cancelledWorld.output.head_revision_id)).path,
+                "message.txt",
+            ),
+            "utf8",
+        ),
+        "cancelled partial\n",
+    );
+    assert.equal(await readFile(path.join(sourceRoot, "message.txt"), "utf8"), "before\n");
+
+    const uncertainCustodies = await readdir(custodiesRoot);
+    await assert.rejects(
+        recoverTaskWorldDurably({
+            baseRevision,
+            binding,
+            captureId: "capture:lost-fence",
+            carrier,
+            commandId: "command:recover-world:uncertain",
+            execution: {
+                budget: { maxTurns: 1 },
+                input: undefined,
+                provider,
+                runId: "run:lost-fence",
+                task: fixtureTask,
+            },
+            runner: noOperationRunner,
+            store: lostCaptureFenceStore,
+        }),
+        DurableExecutionRecoveryError,
+    );
+    assert.deepEqual(await readdir(custodiesRoot), uncertainCustodies);
 
     await writeFile(path.join(sourceRoot, "message.txt"), "moved-before\n");
     const movedBeforeStorePath = path.join(workspaceRoot, "moved-before.sqlite");

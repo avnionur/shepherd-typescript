@@ -16,6 +16,7 @@ import {
     WORKSPACE_PROTOCOL_V7_CONTRACT,
     WORKSPACE_PROTOCOL_V8_CONTRACT,
     WORKSPACE_PROTOCOL_V9_CONTRACT,
+    WORKSPACE_PROTOCOL_V10_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -63,6 +64,7 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.worldExecution.runnerVersion, 7);
     assert.equal(parsed.workspaces.worldTaskCapture.version, 8);
     assert.equal(parsed.workspaces.worldTaskCapture.journalVersion, 9);
+    assert.equal(parsed.workspaces.worldTaskCapture.custodyIdentityKind, "task-world-custody");
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
@@ -74,6 +76,8 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V7_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V8_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V9_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V10_CONTRACT), true);
+    assert.equal("custodyIdentityKind" in WORKSPACE_PROTOCOL_V9_CONTRACT.worldTaskCapture, false);
     assert.equal("journalPhases" in WORKSPACE_PROTOCOL_V8_CONTRACT.worldTaskCapture, false);
     assert.equal("bindingErrors" in WORKSPACE_PROTOCOL_V1_CONTRACT, false);
     assert.equal("carrier" in WORKSPACE_PROTOCOL_V2_CONTRACT, false);
@@ -742,6 +746,9 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
         },
         (config) => {
             objectAt(workspaceConfigOf(config), "worldTaskCapture").journalPhases = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldTaskCapture").custodyIdentityKind = "";
         },
         (config) => {
             workspaceConfigOf(config).adoptionModes = ["none", "none"];

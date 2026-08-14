@@ -599,6 +599,7 @@
         "worldTaskCapture": {
             "captureSchemaId": "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-v1.schema.json",
             "captureSchemaPath": "spec/schemas/world-capture-v1.schema.json",
+            "custodyIdentityKind": "task-world-custody",
             "journalPhases": ["prepared", "forked", "executing", "captured"],
             "journalSchemaId": "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v1.schema.json",
             "journalSchemaPath": "spec/schemas/world-capture-journal-v1.schema.json",

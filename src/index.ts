@@ -317,9 +317,13 @@ export type {
     RetainedWorldRunner,
     RetainedWorldRunnerDefinition,
 } from "./workspace/retained-world-runner-types.ts";
-export { captureTaskWorldDurably } from "./workspace/task-world-execution.ts";
+export {
+    captureTaskWorldDurably,
+    recoverTaskWorldDurably,
+} from "./workspace/task-world-execution.ts";
 export type {
     CaptureTaskWorldOptions,
+    RecoverTaskWorldOptions,
     RetainedWorldOutput,
     TaskWorldCaptureResult,
 } from "./workspace/task-world-execution-types.ts";

@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.20.0] - 2026-08-13
+
+### New Feature
+
+- Added `recoverTaskWorldDurably` for globally idempotent command-authorized recovery of exact
+  `prepared` and `forked` task-world captures without directory scanning or duplicate invocation.
+- Added workspace protocol v10 deterministic task-world custody identity with compatibility for
+  reopening recorded v9 custody.
+- Added terminal-cut repair, exact committed replay, competing-recovery fencing, cooperative
+  cancelled partial-world retention, and fail-closed uncertain-writer handling.
+
+### Impact
+
+Consumers can recover a pre-execution task-world capture after restart, converge across custody
+publication interruption, and replay committed retained output without invoking the runner again.
+An executing capture remains deliberately recovery-required until independent quiescence exists.
+
 ## [1.19.0] - 2026-08-13
 
 ### New Feature

@@ -56,8 +56,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Retained-world runner](./retained-world-runner.md) defines the closed opaque runner registration
   handle and its honest advisory enforcement boundary.
 - [Fenced task-world execution](./task-world-execution.md) defines authenticated runner
-  consumption, isolated file authority, durable capture journaling, restart-safe inspection, and
-  atomic terminal-cut attachment.
+  consumption, isolated file authority, durable capture journaling, command-authorized recovery,
+  cooperative partial-world cancellation, restart-safe inspection, and atomic terminal-cut
+  attachment.
 - [Git-aware baseline and retained output custody](./git-aware-custody.md) defines semantic Git
   bases, exact index/object receipts, linked-worktree identity, movement checks, and isolated
   retained output.

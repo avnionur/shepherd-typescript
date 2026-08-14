@@ -128,6 +128,7 @@ export async function executeTaskDurablyWithTerminalContribution<
 >(
     store: SQLiteTraceStore,
     options: TaskExecutionOptions<I, O>,
+    recoveryCommandRecordId: RecordId | null,
     beforeClaim: (
         prepared: PreparedTaskExecution<I, O>,
         createdRecordId: RecordId,
@@ -147,7 +148,12 @@ export async function executeTaskDurablyWithTerminalContribution<
     const prepared = prepareTaskExecution(options);
     const { definition } = prepared;
     const recovery = readDurableTaskExecution(store, definition.runId);
-    if (recovery.status !== DURABLE_EXECUTION_RECOVERY_STATUSES[0]) {
+    if (
+        recovery.status !==
+        (recoveryCommandRecordId === null
+            ? DURABLE_EXECUTION_RECOVERY_STATUSES[0]
+            : CREATED_RECOVERY_STATUS)
+    ) {
         throw new DurableExecutionRecoveryError(definition.runId);
     }
     const createdRecordId = retainDurableExecutionCreation(store, prepared);
@@ -158,7 +164,7 @@ export async function executeTaskDurablyWithTerminalContribution<
         createdRecordId,
         claimId,
         Date.now(),
-        false,
+        recoveryCommandRecordId !== null,
     );
     // Cross-connection loss is proven through the shared ordinary admission seam.
     /* node:coverage ignore next 3 */
@@ -170,6 +176,7 @@ export async function executeTaskDurablyWithTerminalContribution<
         claimId,
         claim.fencing_token,
         Date.now(),
+        recoveryCommandRecordId,
     );
     // Start fencing is proven through the shared store transaction seam.
     /* node:coverage ignore next 3 */

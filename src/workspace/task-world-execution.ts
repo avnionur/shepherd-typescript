@@ -18,25 +18,39 @@ import {
     createRecordId,
     type SemanticRecord,
 } from "../canonical/canonical-record.ts";
-import { workspaceProtocolConfig } from "../protocol/config.ts";
+import { recordIdConfig, runProtocolConfig, workspaceProtocolConfig } from "../protocol/config.ts";
 import {
+    DURABLE_EXECUTION_RECOVERY_STATUSES,
+    RECORD_MODES,
     RETAINED_WORLD_JOURNAL_PHASES,
     RETAINED_WORLD_OUTPUT_STATUSES,
     RUN_ARTIFACT_CONTENT_TYPES,
     RUN_TERMINAL_STATUSES,
 } from "../protocol/values.generated.ts";
+import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
 import {
     type DurableExecutionTerminalContribution,
     executeTaskDurablyWithTerminalContribution,
 } from "../run/durable-execution.ts";
 import { readDurableExecutionResult } from "../run/durable-execution-codec.ts";
+import { createDurableRecoveryCommand } from "../run/durable-execution-control-codec.ts";
+import { retainDurableExecutionCreation } from "../run/durable-execution-creation.ts";
+import { publishDurableExecutionCut } from "../run/durable-execution-cut.ts";
+import { DurableExecutionRecoveryError } from "../run/durable-execution-errors.ts";
+import { readDurableTaskExecution } from "../run/durable-execution-recovery.ts";
 import type { PreparedTaskExecution } from "../run/execution-preparation.ts";
+import { prepareTaskExecution } from "../run/execution-preparation.ts";
 import type { TaskExecutionResult } from "../run/execution-types.ts";
+import { assertRunText } from "../run/validation-values.ts";
+import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { TaskSchema } from "../task/schema.ts";
 import { assertWorkspaceBinding } from "./bindings.ts";
 import { createWorldChangeset } from "./changesets.ts";
-import { assertReferenceCopyCarrier } from "./reference-copy-carrier.ts";
+import {
+    assertReferenceCopyCarrier,
+    forkReferenceCopyRevisionForTaskWorld,
+} from "./reference-copy-carrier.ts";
 import { assertRetainedWorldRunner, invokeRetainedWorldRunner } from "./retained-world-runner.ts";
 import type {
     RetainedWorldCapability,
@@ -44,17 +58,21 @@ import type {
 } from "./retained-world-runner-types.ts";
 import type {
     CaptureTaskWorldOptions,
+    RecoverTaskWorldOptions,
     RetainedWorldOutput,
     TaskWorldCaptureResult,
 } from "./task-world-execution-types.ts";
-import { appendTaskWorldJournal } from "./task-world-journal.ts";
+import { appendTaskWorldJournal, inspectTaskWorldCaptureJournal } from "./task-world-journal.ts";
 import type { WorldCustody, WorldRevision } from "./types.ts";
 
 const [RETAINED_STATUS] = RETAINED_WORLD_OUTPUT_STATUSES;
+const [, , , TERMINAL_PENDING_CUT_RECOVERY_STATUS, COMMITTED_RECOVERY_STATUS] =
+    DURABLE_EXECUTION_RECOVERY_STATUSES;
 const [PREPARED_PHASE, FORKED_PHASE, EXECUTING_PHASE, CAPTURED_PHASE] =
     RETAINED_WORLD_JOURNAL_PHASES;
 const [FINISHED_STATUS] = RUN_TERMINAL_STATUSES;
 const [, BLOB_ARTIFACT_TYPE] = RUN_ARTIFACT_CONTENT_TYPES;
+const [CAPTURE_MODE] = RECORD_MODES;
 
 /**
  * Executes one registered runner against isolated custody and retains its verified world output.
@@ -92,6 +110,238 @@ export async function captureTaskWorldDurably<
     O extends TaskSchema<unknown>,
 >(options: CaptureTaskWorldOptions<I, O>): Promise<TaskWorldCaptureResult> {
     const fields = readOptions(options);
+    const retainedBase = await validateCaptureAuthority(fields);
+    return executeTaskWorld(fields, retainedBase, null);
+}
+
+/**
+ * Resumes one pre-execution task-world capture under an explicit durable recovery command.
+ *
+ * Recovery reuses exact `forked` custody and creation evidence, acquires a command-authorized
+ * invocation fence, and never scans carrier directories or repeats an `executing` capture.
+ *
+ * @param options - Exact capture contract plus globally idempotent recovery command identity.
+ * @returns Durable task result and the retained world produced from the original custody.
+ * @throws {TypeError} If options or retained capture evidence disagree.
+ * @throws {DurableExecutionRecoveryError} If the capture is absent, uncertain, or not recoverable.
+ * @throws {TraceStoreError} If command, claim, or terminal publication fails closed.
+ *
+ * @example
+ * ```ts
+ * const result = await recoverTaskWorldDurably({
+ *     ...captureOptions,
+ *     commandId: "command:recover-world:1",
+ * });
+ * result.output.custody_id;
+ * ```
+ *
+ * @public
+ */
+export async function recoverTaskWorldDurably<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(options: RecoverTaskWorldOptions<I, O>): Promise<TaskWorldCaptureResult> {
+    const fields = readRecoveryOptions(options);
+    const retainedBase = await validateCaptureAuthority(fields);
+    const prepared = prepareTaskExecution(fields.execution);
+    const createdRecordId = retainDurableExecutionCreation(fields.store, prepared);
+    const inspection = inspectTaskWorldCaptureJournal(fields.store, fields.execution.runId);
+    const preparedTransition = inspection.transitions[0];
+    if (preparedTransition !== undefined) {
+        assertPreparedRecoveryContract(preparedTransition.body, fields, retainedBase);
+    }
+    if (inspection.status === RETAINED_STATUS) {
+        if (inspection.recovery_status === TERMINAL_PENDING_CUT_RECOVERY_STATUS) {
+            const pending = readDurableTaskExecution(fields.store, prepared.definition.runId);
+            // Another exact repair may publish the cut between stable inspection and this read.
+            /* node:coverage ignore next 7 */
+            if (pending.status === COMMITTED_RECOVERY_STATUS) {
+                return rebuildRetainedTaskWorld(fields, retainedBase, inspection.output_record_id);
+            }
+            // Stable recovery allows only pending or committed at this boundary.
+            assert.equal(pending.status, TERMINAL_PENDING_CUT_RECOVERY_STATUS);
+            const commandRecordId = retainRecoveryCommand(
+                fields.store,
+                prepared.definition.runId,
+                createdRecordId,
+                fields.commandId,
+            );
+            publishDurableExecutionCut(
+                fields.store,
+                prepared.definition.runId,
+                pending.ledger.lifecycle_record_id,
+                commandRecordId,
+            );
+        } else {
+            // A retained output requires one of the two terminal recovery classifications.
+            /* node:coverage ignore next 3 */
+            if (inspection.recovery_status !== COMMITTED_RECOVERY_STATUS) {
+                throw new DurableExecutionRecoveryError(prepared.definition.runId);
+            }
+        }
+        return rebuildRetainedTaskWorld(fields, retainedBase, inspection.output_record_id);
+    }
+    if (inspection.capture_id !== fields.captureId) {
+        throw new DurableExecutionRecoveryError(fields.execution.runId);
+    }
+    const [, retainedForkedTransition] = inspection.transitions;
+    if (
+        preparedTransition === undefined ||
+        ![PREPARED_PHASE, FORKED_PHASE].includes(inspection.status as never) ||
+        inspection.transitions.length !== (inspection.status === PREPARED_PHASE ? 1 : 2)
+    ) {
+        throw new DurableExecutionRecoveryError(fields.execution.runId);
+    }
+    const observedBefore = await fields.carrier.snapshot(fields.binding);
+    if (observedBefore.revision_id !== retainedBase.revision_id) {
+        throw new TypeError("task-world recovery custody or user basis is inconsistent");
+    }
+    const commandRecordId = retainRecoveryCommand(
+        fields.store,
+        prepared.definition.runId,
+        createdRecordId,
+        fields.commandId,
+    );
+    const custody =
+        retainedForkedTransition === undefined
+            ? forkReferenceCopyRevisionForTaskWorld(
+                  fields.carrier,
+                  retainedBase.revision_id,
+                  taskWorldCustodyId(prepared.definition.runId, fields.captureId),
+              )
+            : await fields.carrier.openCustody(retainedForkedTransition.body.custody_id as string);
+    if (
+        custody.base_revision_id !== retainedBase.revision_id ||
+        (retainedForkedTransition !== undefined &&
+            retainedForkedTransition.body.user_basis_before !== observedBefore.content_id)
+    ) {
+        throw new TypeError("task-world recovery custody or user basis is inconsistent");
+    }
+    const forkedRecordId =
+        retainedForkedTransition?.record_id ??
+        appendTaskWorldJournal(
+            fields.store,
+            prepared.definition.runId,
+            fields.captureId,
+            FORKED_PHASE,
+            {
+                custody_id: custody.custody_id,
+                user_basis_before: observedBefore.content_id,
+            },
+            [preparedTransition.record_id],
+        );
+    return executeTaskWorld(fields, retainedBase, {
+        commandRecordId,
+        custody,
+        forkedRecordId,
+        observedBefore,
+    });
+}
+
+function assertPreparedRecoveryContract<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(
+    preparedBody: SemanticRecord,
+    fields: CaptureTaskWorldOptions<I, O>,
+    retainedBase: WorldRevision,
+): void {
+    if (
+        preparedBody.base_revision_id !== retainedBase.revision_id ||
+        preparedBody.binding_id !== fields.binding.binding_id ||
+        preparedBody.runner_id !== fields.runner.runner_id ||
+        preparedBody.enforcement !== fields.runner.enforcement ||
+        preparedBody.max_capture_id_bytes !==
+            workspaceProtocolConfig.worldTaskCapture.maxCaptureIdBytes ||
+        preparedBody.max_text_bytes !== workspaceProtocolConfig.worldTaskCapture.maxTextBytes
+    ) {
+        throw new TypeError("task-world recovery contract differs from prepared evidence");
+    }
+}
+
+function retainRecoveryCommand(
+    store: SQLiteTraceStore,
+    runId: string,
+    createdRecordId: RecordId,
+    commandId: string,
+): RecordId {
+    const command = store.append({
+        append_intent_id: createRecordId({ durable_control_command_id: commandId }),
+        batch: {
+            groups: [
+                {
+                    caused_by_record_ids: [createdRecordId],
+                    owner_id: runId,
+                    records: [
+                        {
+                            body: createDurableRecoveryCommand(runId, commandId),
+                            mode: CAPTURE_MODE,
+                            schema_ref: runProtocolConfig.execution.controlCommandSchemaId,
+                            witness_ref: ROOT_WITNESS_ID,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    return command.record_ids[0] as RecordId;
+}
+
+async function rebuildRetainedTaskWorld<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(
+    fields: RecoverTaskWorldOptions<I, O>,
+    retainedBase: WorldRevision,
+    outputRecordId: RecordId | null,
+): Promise<TaskWorldCaptureResult> {
+    const recovery = readDurableTaskExecution(fields.store, fields.execution.runId);
+    // Retained inspection constructs its status from the presence of this exact record.
+    /* node:coverage ignore next 3 */
+    if (outputRecordId === null) {
+        throw new DurableExecutionRecoveryError(fields.execution.runId);
+    }
+    const outputRecord = fields.store.readRecord(outputRecordId);
+    if (recovery.status !== COMMITTED_RECOVERY_STATUS || outputRecord === undefined) {
+        throw new DurableExecutionRecoveryError(fields.execution.runId);
+    }
+    const body = outputRecord.body as unknown as Omit<
+        RetainedWorldOutput,
+        "capture_record_id" | "execution_cut" | "execution_outcome_record_id"
+    >;
+    if (
+        body.base_revision_id !== retainedBase.revision_id ||
+        body.binding_id !== fields.binding.binding_id ||
+        body.capture_id !== fields.captureId ||
+        body.run_id !== fields.execution.runId
+    ) {
+        throw new TypeError("retained task-world output differs from recovery options");
+    }
+    const head = await fields.carrier.openRevision(body.head_revision_id);
+    const changeset = await createWorldChangeset({
+        baseRevision: retainedBase,
+        carrier: fields.carrier,
+        headRevision: head,
+    });
+    if (changeset.changeset_id !== body.changeset_id) {
+        throw new TypeError("retained task-world changeset is inconsistent");
+    }
+    return Object.freeze({
+        ...recovery.result,
+        changeset,
+        output: Object.freeze({
+            ...body,
+            capture_record_id: outputRecordId,
+            execution_cut: recovery.result.ledger.cut,
+            execution_outcome_record_id: recovery.result.ledger.outcome_record_id,
+        }),
+    });
+}
+
+async function validateCaptureAuthority<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(fields: CaptureTaskWorldOptions<I, O>): Promise<WorldRevision> {
     assertReferenceCopyCarrier(fields.carrier);
     assertRetainedWorldRunner(fields.runner);
     assertWorkspaceBinding(fields.binding);
@@ -109,18 +359,33 @@ export async function captureTaskWorldDurably<
     ) {
         throw new TypeError("base revision differs from retained carrier evidence");
     }
+    return retainedBase;
+}
+
+async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    fields: CaptureTaskWorldOptions<I, O>,
+    retainedBase: WorldRevision,
+    recovery: {
+        readonly commandRecordId: RecordId;
+        readonly custody: WorldCustody;
+        readonly forkedRecordId: RecordId;
+        readonly observedBefore: WorldRevision;
+    } | null,
+): Promise<TaskWorldCaptureResult> {
     let changesetResult: Awaited<ReturnType<typeof createWorldChangeset>> | null = null;
     let retainedOutput: Omit<
         RetainedWorldOutput,
         "capture_record_id" | "execution_cut" | "execution_outcome_record_id"
     > | null = null;
-    let observedBefore: WorldRevision | null = null;
-    let custody: WorldCustody | null = null;
-    let forkedRecordId: RecordId | null = null;
+    let observedBefore: WorldRevision | null = recovery?.observedBefore ?? null;
+    let custody: WorldCustody | null = recovery?.custody ?? null;
+    let forkedRecordId: RecordId | null = recovery?.forkedRecordId ?? null;
     const durable = await executeTaskDurablyWithTerminalContribution(
         fields.store,
         fields.execution,
+        recovery?.commandRecordId ?? null,
         async (prepared, createdRecordId) => {
+            if (recovery !== null) return;
             observedBefore = await fields.carrier.snapshot(fields.binding);
             if (observedBefore.revision_id !== retainedBase.revision_id) {
                 throw new TypeError("user basis differs from base");
@@ -141,7 +406,11 @@ export async function captureTaskWorldDurably<
                 },
                 [createdRecordId],
             );
-            custody = await fields.carrier.fork(retainedBase.revision_id);
+            custody = forkReferenceCopyRevisionForTaskWorld(
+                fields.carrier,
+                retainedBase.revision_id,
+                taskWorldCustodyId(prepared.definition.runId, fields.captureId),
+            );
             forkedRecordId = appendTaskWorldJournal(
                 fields.store,
                 prepared.definition.runId,
@@ -290,6 +559,16 @@ export async function captureTaskWorldDurably<
             execution_outcome_record_id: durable.result.ledger.outcome_record_id,
         }),
     });
+}
+
+function taskWorldCustodyId(runId: string, captureId: string): string {
+    const digest = createRecordId({
+        [workspaceProtocolConfig.worldTaskCapture.custodyIdentityKind]: {
+            capture_id: captureId,
+            run_id: runId,
+        },
+    });
+    return `${workspaceProtocolConfig.carrier.custodyIdPrefix}${digest.slice(recordIdConfig.prefix.length)}`;
 }
 
 function createCapability(
@@ -448,6 +727,7 @@ function readRunnerResult<I extends TaskSchema<unknown>, O extends TaskSchema<un
         prepared.definition.budget,
         true,
         prepared.definition.runId,
+        true,
     );
     if (
         canonicalizeRecord(execution.provider as unknown as SemanticRecord) !==
@@ -474,6 +754,18 @@ function readRunnerResult<I extends TaskSchema<unknown>, O extends TaskSchema<un
 function readOptions<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
     value: CaptureTaskWorldOptions<I, O>,
 ): CaptureTaskWorldOptions<I, O> {
+    return readExactOptions(value, [
+        "baseRevision",
+        "binding",
+        "captureId",
+        "carrier",
+        "execution",
+        "runner",
+        "store",
+    ]) as unknown as CaptureTaskWorldOptions<I, O>;
+}
+
+function readExactOptions(value: unknown, expected: readonly string[]): Record<string, unknown> {
     if (
         value === null ||
         typeof value !== "object" ||
@@ -483,15 +775,6 @@ function readOptions<I extends TaskSchema<unknown>, O extends TaskSchema<unknown
         throw new TypeError("task-world capture options must be exact data");
     const descriptors = Object.getOwnPropertyDescriptors(value);
     const keys = Reflect.ownKeys(descriptors).sort();
-    const expected = [
-        "baseRevision",
-        "binding",
-        "captureId",
-        "carrier",
-        "execution",
-        "runner",
-        "store",
-    ];
     if (
         keys.length !== expected.length ||
         keys.some((key, index) => key !== expected[index]) ||
@@ -505,7 +788,24 @@ function readOptions<I extends TaskSchema<unknown>, O extends TaskSchema<unknown
         Object.fromEntries(
             expected.map((key) => [key, (descriptors[key] as PropertyDescriptor).value]),
         ),
-    ) as unknown as CaptureTaskWorldOptions<I, O>;
+    );
+}
+
+function readRecoveryOptions<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    value: RecoverTaskWorldOptions<I, O>,
+): RecoverTaskWorldOptions<I, O> {
+    const fields = readExactOptions(value, [
+        "baseRevision",
+        "binding",
+        "captureId",
+        "carrier",
+        "commandId",
+        "execution",
+        "runner",
+        "store",
+    ]);
+    assertRunText(fields.commandId, "commandId");
+    return fields as unknown as RecoverTaskWorldOptions<I, O>;
 }
 
 function assertText(value: unknown, subject: string, maxBytes: number): asserts value is string {
