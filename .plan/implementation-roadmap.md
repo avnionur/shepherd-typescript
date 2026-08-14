@@ -161,8 +161,8 @@ Work:
 - implement exact settlement identity, authenticated retained-output admission, and consume-once
   transactional compare-and-swap without exposing a mutation API that can bypass the CAS;
   **protocol and store foundation implemented in 1.22.0** and **authenticated retained-output
-  preparation implemented in 1.23.0**, with restart-safe public inspection and cross-connection
-  adversarial verification remaining the next Task 8 slice;
+  preparation implemented in 1.23.0**; **Task 8 completed in 1.24.0** with restart-safe public
+  inspection and cross-connection authenticated one-winner verification;
 - implement public exact-ID `select` and `discard`, crash recovery, and settlement citations in the
   trace only after the shared consume-once protocol is in place;
 - protect control-plane paths and complete settlement/platform fault hardening;

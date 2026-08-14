@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.24.0] - 2026-08-14
+
+### New Feature
+
+- Added restart-safe `inspectRetainedWorldSettlement` with immutable execution, cut, journal, and
+  capture-record revalidation and explicit absent-output classification.
+- Added authenticated cross-connection `select`/`discard` admission-race coverage proving one
+  winner, one typed conflict, and a stable read-only result after settlement preparation.
+
+### Impact
+
+Consumers can safely inspect prepared settlement authority after reopening the store without
+accessing carrier custody or user files. Phase 3 Task 8 is complete; public settlement effects
+remain Task 9.
+
 ## [1.23.0] - 2026-08-14
 
 ### New Feature

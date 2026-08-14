@@ -155,6 +155,70 @@ export async function prepareRetainedWorldSettlement(
     }
 }
 
+/**
+ * Inspects one durable prepared settlement decision and revalidates its immutable trace evidence.
+ *
+ * Inspection performs no carrier, provider, runner, or filesystem operation. It verifies the
+ * retained request against the committed execution cut and exact world-capture record before
+ * returning it, and therefore remains safe to use after reopening the trace store.
+ *
+ * @param store - Open trace store containing settlement and terminal execution evidence.
+ * @param outputId - Exact retained-output identity, never a prefix or latest selector.
+ * @returns Frozen prepared decision, or `undefined` when the output has no settlement admission.
+ * @throws {RetainedWorldSettlementInvalidError} If settlement or cited execution evidence is
+ * malformed, missing, or inconsistent.
+ * @throws {TypeError} If the output identity is malformed.
+ *
+ * @example
+ * ```ts
+ * const settlement = inspectRetainedWorldSettlement(store, captured.output.output_id);
+ * settlement?.request.execution_cut_id;
+ * ```
+ *
+ * @public
+ */
+export function inspectRetainedWorldSettlement(
+    store: PrepareRetainedWorldSettlementOptions["store"],
+    outputId: string,
+): PreparedRetainedWorldSettlement | undefined {
+    if (typeof outputId !== "string" || outputId.length === 0) {
+        throw new TypeError("retained-world settlement output identity is invalid");
+    }
+    try {
+        const admission = store.readRetainedWorldSettlement(outputId);
+        if (admission === undefined) return undefined;
+        const request = admission.request;
+        const recovery = readDurableTaskExecution(store, request.run_id);
+        if (recovery.status !== COMMITTED_RECOVERY_STATUS) {
+            throw new TypeError("retained-world settlement execution is not committed");
+        }
+        const journal = inspectTaskWorldCaptureJournal(store, request.run_id);
+        const outputRecord = store.readRecord(request.capture_record_id);
+        if (
+            journal.output_record_id !== request.capture_record_id ||
+            outputRecord === undefined ||
+            outputRecord.body.output_id !== request.output_id ||
+            outputRecord.body.run_id !== request.run_id ||
+            outputRecord.body.binding_id !== request.binding_id ||
+            outputRecord.body.base_revision_id !== request.base_revision_id ||
+            outputRecord.body.head_revision_id !== request.head_revision_id ||
+            outputRecord.body.changeset_id !== request.changeset_id ||
+            outputRecord.body.custody_id !== request.custody_id ||
+            outputRecord.body.user_basis_before !== request.user_basis_before ||
+            recovery.result.ledger.cut.cut_id !== request.execution_cut_id
+        ) {
+            throw new TypeError("retained-world settlement trace evidence is inconsistent");
+        }
+        return admission;
+    } catch (error) {
+        if (error instanceof RetainedWorldSettlementInvalidError) throw error;
+        throw new RetainedWorldSettlementInvalidError(
+            workspaceProtocolConfig.settlement.errors.invalidMessage,
+            { cause: error },
+        );
+    }
+}
+
 function assertRevisionContract(
     base: WorldRevision,
     head: WorldRevision,

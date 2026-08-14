@@ -96,7 +96,7 @@ The runtime areas are intentionally shallow:
   content-addressed world changesets, authenticated bounded changeset inspection and Git-aware
   projections, opaque retained-world runner registrations, and fenced task-world capture with
   durable journal inspection and command-authorized recovery, plus authenticated exact-output
-  settlement preparation.
+  settlement preparation and restart-safe settlement inspection.
 
 ## Module rules
 

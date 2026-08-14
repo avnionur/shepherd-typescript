@@ -31,12 +31,17 @@ and verifies both immutable revisions, recomputes the canonical changeset, and v
 cited mutable custody still contains the captured head. Any disagreement fails with the stable
 configured invalid-settlement error before admission.
 
+`inspectRetainedWorldSettlement` is the public restart-safe read seam. It returns `undefined` for
+an exact output with no admission. For a retained decision it verifies the closed settlement row,
+reconstructs the committed durable execution, and requires the cited cut, capture record, run,
+binding, revisions, changeset, custody, and basis witness to agree. It performs no carrier or user
+filesystem operation.
+
 ## Current boundary
 
 The store primitive deliberately remains internal and trusts only the authenticated coordinator.
 Preparation reads retained evidence and mutates only the durable settlement-admission row; it does
-not mutate user files or physical custody. The next Phase 3 slice owns restart-safe public
-settlement inspection and cross-connection adversarial evidence. Public `select` and `discard`
-remain unavailable until effect journaling, basis revalidation, and crash recovery compose with
-this CAS. Carrier-level `discard(custodyId)` remains a distinct physical cleanup primitive and does
-not create a settlement decision.
+not mutate user files or physical custody. Public `select` and `discard` remain unavailable until
+Task 9 effect journaling, basis revalidation, and crash recovery compose with this CAS.
+Carrier-level `discard(custodyId)` remains a distinct physical cleanup primitive and does not
+create a settlement decision.

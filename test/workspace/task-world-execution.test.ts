@@ -19,12 +19,14 @@ import {
     DurableExecutionRecoveryError,
     executeTask,
     initializeWorkspace,
+    inspectRetainedWorldSettlement,
     inspectTaskWorldCaptureJournal,
     type OwnerRecord,
     prepareRetainedWorldSettlement,
     RETAINED_WORLD_MAX_CAPTURE_ID_BYTES,
     RETAINED_WORLD_MAX_TEXT_BYTES,
     type RetainedWorldCapability,
+    RetainedWorldSettlementConflictError,
     RetainedWorldSettlementInvalidError,
     readDurableTaskExecution,
     recoverTaskDurably,
@@ -151,6 +153,12 @@ class AlteredOutputReadStore extends SQLiteTraceStore {
                 changeset_id: `${changesetId.slice(0, -1)}${changesetId.endsWith("0") ? "1" : "0"}`,
             },
         };
+    }
+}
+
+class InvalidSettlementReadStore extends SQLiteTraceStore {
+    override readRetainedWorldSettlement(): never {
+        throw new RetainedWorldSettlementInvalidError("invalid retained settlement evidence");
     }
 }
 
@@ -397,6 +405,26 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
     assert.equal(settlement.output_id, result.output.output_id);
     assert.equal(settlement.request.execution_cut_id, result.output.execution_cut.cut_id);
     assert.equal(settlement.state, "prepared");
+    assert.deepEqual(inspectRetainedWorldSettlement(store, result.output.output_id), settlement);
+    assert.equal(inspectRetainedWorldSettlement(store, "world-output:absent"), undefined);
+    assert.throws(() => inspectRetainedWorldSettlement(store, ""), TypeError);
+    using uncommittedSettlementStore = new SQLiteTraceStore();
+    const uncommittedOutputId = `${result.output.output_id}:uncommitted`;
+    uncommittedSettlementStore.admitRetainedWorldSettlement({
+        ...settlement.request,
+        command_id: "settlement:uncommitted",
+        output_id: uncommittedOutputId,
+        run_id: "run:uncommitted-settlement",
+    });
+    assert.throws(
+        () => inspectRetainedWorldSettlement(uncommittedSettlementStore, uncommittedOutputId),
+        RetainedWorldSettlementInvalidError,
+    );
+    using invalidSettlementReadStore = new InvalidSettlementReadStore();
+    assert.throws(
+        () => inspectRetainedWorldSettlement(invalidSettlementReadStore, result.output.output_id),
+        RetainedWorldSettlementInvalidError,
+    );
     for (const invalidOptions of [null, [], new (class SettlementOptions {})()]) {
         await assert.rejects(
             prepareRetainedWorldSettlement(invalidOptions as never),
@@ -464,6 +492,10 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         }),
         RetainedWorldSettlementInvalidError,
     );
+    assert.throws(
+        () => inspectRetainedWorldSettlement(alteredOutputStore, result.output.output_id),
+        RetainedWorldSettlementInvalidError,
+    );
     await mkdir(path.join(workspaceRoot, "other-settlement-root"));
     const otherBinding = createWorkspaceBindings({
         bindings: [{ name: "other-settlement", root: "other-settlement-root" }],
@@ -483,6 +515,10 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
     );
     using replaySettlementStore = new SQLiteTraceStore(storePath);
     assert.deepEqual(
+        inspectRetainedWorldSettlement(replaySettlementStore, result.output.output_id),
+        settlement,
+    );
+    assert.deepEqual(
         await prepareRetainedWorldSettlement({
             action: "select",
             binding,
@@ -493,6 +529,58 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         }),
         settlement,
     );
+    const concurrentSettlementPath = path.join(workspaceRoot, "concurrent-settlement.sqlite");
+    using concurrentCaptureStore = new SQLiteTraceStore(concurrentSettlementPath);
+    const concurrentOutput = await captureTaskWorldDurably({
+        baseRevision,
+        binding,
+        captureId: "capture:concurrent-settlement",
+        carrier,
+        execution: {
+            budget: { maxTurns: 1 },
+            input: undefined,
+            provider,
+            runId: "run:concurrent-settlement",
+            task: fixtureTask,
+        },
+        runner,
+        store: concurrentCaptureStore,
+    });
+    using competingSettlementStore = new SQLiteTraceStore(concurrentSettlementPath);
+    const competingAdmissions = await Promise.allSettled([
+        prepareRetainedWorldSettlement({
+            action: "select",
+            binding,
+            carrier,
+            commandId: "settlement:concurrent-select",
+            output: concurrentOutput.output,
+            store: concurrentCaptureStore,
+        }),
+        prepareRetainedWorldSettlement({
+            action: "discard",
+            binding,
+            carrier,
+            commandId: "settlement:concurrent-discard",
+            output: concurrentOutput.output,
+            store: competingSettlementStore,
+        }),
+    ]);
+    assert.equal(
+        competingAdmissions.filter((admission) => admission.status === "fulfilled").length,
+        1,
+    );
+    const losingAdmission = competingAdmissions.find(
+        (admission) => admission.status === "rejected",
+    );
+    assert.ok(
+        losingAdmission?.status === "rejected" &&
+            losingAdmission.reason instanceof RetainedWorldSettlementConflictError,
+    );
+    const concurrentInspection = inspectRetainedWorldSettlement(
+        competingSettlementStore,
+        concurrentOutput.output.output_id,
+    );
+    assert.equal(concurrentInspection?.output_id, concurrentOutput.output.output_id);
     await assert.rejects(
         prepareRetainedWorldSettlement({
             action: "discard",

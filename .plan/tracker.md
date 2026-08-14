@@ -236,6 +236,8 @@ changeset identity.
   consume-once admission with exact replay and conflict refusal.
 - [x] Add Task 8 authenticated exact-output preparation across committed execution, cut, capture
   journal, binding, carrier revisions, changeset, and custody before consume-once admission.
+- [x] Complete Task 8 with restart-safe read-only settlement inspection and authenticated
+  cross-connection one-winner/conflict evidence.
 
 ## Verification required for this slice
 
@@ -247,9 +249,9 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 8: expose restart-safe read-only settlement inspection and complete
-cross-connection adversarial evidence for authenticated consume-once preparation. Public
-`select`/`discard` effects remain Task 9.
+Continue Phase 3, Task 9: implement public exact-ID `select` and `discard` effects with effect
+journaling, basis revalidation, deterministic receipts, and crash recovery over the shared
+consume-once settlement authority.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive
