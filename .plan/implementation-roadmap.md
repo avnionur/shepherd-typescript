@@ -155,7 +155,9 @@ Work:
   cooperative partial-world cancellation, competing-recovery fencing, and fail-closed uncertain
   execution; external-process quiescence remains part of the later jail/placement work;
 - expose read-only changeset inspection, retained content reads, bounded previews, derived
-  rename/copy projections, and Gitlink citations from the Git-aware adapter;
+  rename/copy projections, and Gitlink citations from the Git-aware adapter; **implemented in
+  1.21.0**, with authenticated carrier/Git custody, configured resource bounds, and projection-only
+  move/Git semantics that preserve workspace protocol v5 identity;
 - implement exact-ID `select` and `discard`;
 - implement consume-once settlement with transactional compare-and-swap;
 - protect control-plane paths;

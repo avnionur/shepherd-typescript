@@ -48,6 +48,41 @@ export const TYPED_EFFECT_TRACE_ACTION_KINDS = ["return", "abort"] as const;
 /** Configured canonical world-changeset operations. @public */
 export const WORLD_CHANGE_OPERATIONS = ["add", "delete", "modify", "replace"] as const;
 
+/** Configured retained-world text-preview classifications. @public */
+export const WORLD_TEXT_PREVIEW_CLASSIFICATIONS = ["text", "binary"] as const;
+
+/** Configured retained-world text-preview encoding. @public */
+export const WORLD_TEXT_PREVIEW_ENCODING = "utf-8" as const;
+
+/** Configured exact-content derived move classifications. @public */
+export const WORLD_DERIVED_MOVE_KINDS = ["rename", "copy"] as const;
+
+/** Configured Gitlink presentation discriminant. @public */
+export const GITLINK_ENTRY_KIND = "gitlink" as const;
+
+/** Configured Gitlink index mode. @public */
+export const GITLINK_MODE = "160000" as const;
+
+/** Configured symbolic-link index mode. @public */
+export const GIT_SYMLINK_MODE = "120000" as const;
+
+/** Configured public resource bounds for changeset inspection. @public */
+export const WORLD_CHANGESET_INSPECTION_LIMITS = {
+    maxDerivedMoveCandidates: 10000,
+    maxPageSize: 1000,
+    maxPathBytes: 4096,
+    maxPreviewBytes: 1048576,
+    maxPreviewLines: 1000,
+    maxReadBytes: 1048576,
+    maxVerificationConcurrency: 2,
+} as const;
+
+/** Configured public world-changeset error codes. @public */
+export const WORLD_CHANGESET_ERROR_CODES = {
+    invalid: "WORLD_CHANGESET_INVALID",
+    limit: "WORLD_CHANGESET_LIMIT_EXCEEDED",
+} as const;
+
 /** Configured Core-A continuation dispositions paired with answer actions. @public */
 export const TYPED_EFFECT_TRACE_CONTINUATION_DISPOSITIONS = ["completed", "aborted"] as const;
 

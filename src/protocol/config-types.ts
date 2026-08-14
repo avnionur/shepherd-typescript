@@ -668,6 +668,43 @@ export type WorkspaceProtocolConfig = {
         readonly operations: readonly string[];
         readonly version: number;
     };
+    /** Authenticated read-only world-changeset inspection configuration. */
+    readonly changesetInspection: {
+        /** Default number of canonical changes returned by one page. */
+        readonly defaultPageSize: number;
+        /** Default byte bound for text previews. */
+        readonly defaultPreviewBytes: number;
+        /** Default line bound for text previews. */
+        readonly defaultPreviewLines: number;
+        /** Default byte bound for retained content reads. */
+        readonly defaultReadBytes: number;
+        /** Configured text-preview decoding label. */
+        readonly encoding: string;
+        /** Git-aware external commit-citation node discriminant. */
+        readonly gitlinkEntryKind: string;
+        /** Canonical Git index mode for Gitlinks. */
+        readonly gitlinkMode: string;
+        /** Maximum number of canonical changes returned by one page. */
+        readonly maxPageSize: number;
+        /** Maximum byte bound for text previews. */
+        readonly maxPreviewBytes: number;
+        /** Maximum line bound for text previews. */
+        readonly maxPreviewLines: number;
+        /** Maximum byte bound for retained content reads. */
+        readonly maxReadBytes: number;
+        /** Maximum exact-content source/target pairs considered for derived moves. */
+        readonly maxDerivedMoveCandidates: number;
+        /** Maximum concurrent retained-evidence verification operations. */
+        readonly maxVerificationConcurrency: number;
+        /** Closed derived move/copy classifications. */
+        readonly moveKinds: readonly string[];
+        /** Closed text-preview classifications. */
+        readonly previewClassifications: readonly string[];
+        /** Canonical Git index mode for symbolic links. */
+        readonly symlinkMode: string;
+        /** Public changeset-inspection protocol version. */
+        readonly version: number;
+    };
     /** Workspace-local protected control directory name. */
     readonly controlDirectory: string;
     /** Default baseline-adoption mode. */

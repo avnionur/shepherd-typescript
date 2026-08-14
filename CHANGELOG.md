@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.21.0] - 2026-08-14
+
+### New Feature
+
+- Added workspace protocol v11 `createWorldChangesetInspection` with authenticated exact-path
+  lookup, configured bounded pagination, digest-verified retained content reads, and bounded
+  UTF-8/binary previews.
+- Added deterministic exact-content rename/copy projections that remain outside canonical
+  workspace protocol v5 changeset identity.
+- Added `createGitChangesetInspection` for authenticated Gitlink add/delete/modify/replacement and
+  retained symbolic-link mode presentation without recursive submodule capture.
+
+### Impact
+
+Consumers can safely reopen and inspect retained output bytes and Git-aware changes after restart
+without reading user files, invoking external diff drivers, or changing canonical changeset IDs.
+Selection and settlement remain later Phase 3 capabilities.
+
 ## [1.20.0] - 2026-08-13
 
 ### New Feature

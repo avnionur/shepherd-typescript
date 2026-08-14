@@ -1,8 +1,12 @@
 import type {
     GIT_HEAD_KINDS,
+    GITLINK_ENTRY_KIND,
     WORKSPACE_ADOPTION_MODES,
     WORLD_CHANGE_OPERATIONS,
+    WORLD_DERIVED_MOVE_KINDS,
     WORLD_ENTRY_KINDS,
+    WORLD_TEXT_PREVIEW_CLASSIFICATIONS,
+    WORLD_TEXT_PREVIEW_ENCODING,
 } from "../protocol/values.generated.ts";
 
 /** Configured baseline-adoption mode used when initializing a workspace. */
@@ -191,6 +195,152 @@ export type WorldChangesetOptions = {
     readonly carrier: ReferenceCopyCarrier;
     /** Verified immutable head revision. */
     readonly headRevision: WorldRevision;
+};
+
+/** Closed options accepted by {@link createWorldChangesetInspection}. */
+export type WorldChangesetInspectionOptions = WorldChangesetOptions;
+
+/** Closed bounded pagination options for canonical world changes. */
+export type WorldChangesetPageOptions = {
+    /** Maximum number of changes to return, bounded by configured protocol limits. */
+    readonly limit?: number;
+    /** Zero-based canonical change offset. */
+    readonly offset?: number;
+};
+
+/** One immutable bounded page of canonical world changes. */
+export type WorldChangesetPage = {
+    /** Canonical changes in this page. */
+    readonly changes: readonly WorldPathChange[];
+    /** Next zero-based offset, or `null` when this page is final. */
+    readonly next_offset: number | null;
+    /** Zero-based offset represented by this page. */
+    readonly offset: number;
+    /** Total canonical changes in the authenticated changeset. */
+    readonly total: number;
+};
+
+/** Closed bounded options for reading authenticated retained content. */
+export type WorldContentReadOptions = {
+    /** Exact file-content identity cited by the inspected changeset. */
+    readonly contentId: string;
+    /** Maximum bytes to return, bounded by configured protocol limits. */
+    readonly length?: number;
+    /** Zero-based byte offset within the complete retained content. */
+    readonly offset?: number;
+};
+
+/** One authenticated bounded retained-content byte slice. */
+export type WorldContentRead = {
+    /** Defensive copy of retained content bytes in this slice. */
+    readonly bytes: Uint8Array;
+    /** Exact authenticated file-content identity. */
+    readonly content_id: string;
+    /** Zero-based byte offset represented by this slice. */
+    readonly offset: number;
+    /** Total authenticated content byte length. */
+    readonly total_bytes: number;
+    /** Whether authenticated content remains after this slice. */
+    readonly truncated: boolean;
+};
+
+/** Closed bounded options for an authenticated retained text preview. */
+export type WorldTextPreviewOptions = {
+    /** Exact file-content identity cited by the inspected changeset. */
+    readonly contentId: string;
+    /** Maximum source bytes considered, bounded by configured protocol limits. */
+    readonly maxBytes?: number;
+    /** Maximum decoded lines returned, bounded by configured protocol limits. */
+    readonly maxLines?: number;
+};
+
+/** One authenticated bounded text or binary classification. */
+export type WorldTextPreview =
+    | {
+          /** Total authenticated content byte length. */
+          readonly byte_length: number;
+          /** Configured text classification. */
+          readonly classification: (typeof WORLD_TEXT_PREVIEW_CLASSIFICATIONS)[0];
+          /** Exact authenticated file-content identity. */
+          readonly content_id: string;
+          /** Configured text decoding label. */
+          readonly encoding: typeof WORLD_TEXT_PREVIEW_ENCODING;
+          /** Bounded decoded preview text. */
+          readonly text: string;
+          /** Whether byte or line bounds omitted authenticated content. */
+          readonly truncated: boolean;
+      }
+    | {
+          /** Total authenticated content byte length. */
+          readonly byte_length: number;
+          /** Configured binary classification. */
+          readonly classification: (typeof WORLD_TEXT_PREVIEW_CLASSIFICATIONS)[1];
+          /** Exact authenticated file-content identity. */
+          readonly content_id: string;
+          /** Binary content has no text encoding. */
+          readonly encoding: null;
+          /** Binary content has no decoded text. */
+          readonly text: null;
+          /** Binary classification never exposes an unbounded preview. */
+          readonly truncated: boolean;
+      };
+
+/** One deterministic exact-content move projection outside canonical changeset identity. */
+export type WorldDerivedMove = {
+    /** Exact regular-file content shared by the source and target. */
+    readonly content_id: string;
+    /** Configured rename or copy classification. */
+    readonly kind: (typeof WORLD_DERIVED_MOVE_KINDS)[number];
+    /** Canonical path in the base revision. */
+    readonly source_path: string;
+    /** Canonical added path in the head revision. */
+    readonly target_path: string;
+};
+
+/** Authenticated read-only projection over one retained world changeset. */
+export type WorldChangesetInspection = {
+    /** Exact authenticated canonical changeset. */
+    readonly changeset: WorldChangeset;
+    /** Public changeset-inspection protocol version. */
+    readonly inspection_version: number;
+    /**
+     * Returns the exact canonical change for a binding-relative path.
+     *
+     * @param path - Canonical binding-relative path.
+     * @returns The authenticated path change, or `null` when unchanged or absent.
+     * @throws {WorldChangesetError} If the path is malformed or unsafe.
+     */
+    readonly change: (path: string) => WorldPathChange | null;
+    /**
+     * Returns deterministic exact-content rename/copy projections outside semantic identity.
+     *
+     * @returns Frozen bounded projections derived from canonical retained evidence.
+     */
+    readonly derivedMoves: () => readonly WorldDerivedMove[];
+    /**
+     * Returns one bounded canonical page without reading the user workspace.
+     *
+     * @param options - Optional configured limit and zero-based offset.
+     * @returns Frozen canonical page with total and continuation offset.
+     * @throws {WorldChangesetError} If options exceed configured bounds or are malformed.
+     */
+    readonly page: (options?: WorldChangesetPageOptions) => WorldChangesetPage;
+    /**
+     * Reads one bounded authenticated byte slice by cited file-content identity.
+     *
+     * @param options - Exact cited content identity and optional byte range.
+     * @returns Defensive byte copy with total length and truncation evidence.
+     * @throws {WorldChangesetError} If evidence, range, or retained bytes fail validation.
+     */
+    readonly readContent: (options: WorldContentReadOptions) => Promise<WorldContentRead>;
+    /**
+     * Returns one bounded UTF-8 preview or explicit binary classification.
+     *
+     * @param options - Exact cited content identity and optional byte/line bounds.
+     * @returns Authenticated text preview or binary classification.
+     * @throws {WorldChangesetError} If evidence, bounds, or retained bytes fail validation.
+     */
+    readonly previewText: (options: WorldTextPreviewOptions) => Promise<WorldTextPreview>;
 };
 
 /** Mutable retained checkout forked from an immutable copy-world revision. */
@@ -402,6 +552,62 @@ export type GitRetainedOutput = {
     readonly git_custody_version: number;
     /** Immutable managed-world revision underlying the output. */
     readonly revision: WorldRevision;
+};
+
+/** Closed options accepted by {@link createGitChangesetInspection}. */
+export type GitChangesetInspectionOptions = {
+    /** Exact retained Git-aware base custody identity. */
+    readonly baseCustodyId: string;
+    /** Exact retained Git-aware head custody identity. */
+    readonly headCustodyId: string;
+    /** Initialized workspace owning both Git-aware retained outputs. */
+    readonly workspaceRoot: string;
+};
+
+/** Git-aware path state, including external Gitlink commit citations. */
+export type GitChangesetNode =
+    | WorldChangeNode
+    | {
+          /** Exact external commit object ID cited by the superproject index. */
+          readonly commit_oid: string;
+          /** Configured Gitlink presentation discriminant. */
+          readonly kind: typeof GITLINK_ENTRY_KIND;
+          /** Exact configured Gitlink index mode. */
+          readonly mode: string;
+      };
+
+/** One Git-aware path change projection outside canonical world identity. */
+export type GitChangesetPathChange = {
+    /** Git-aware head state, or `null` for deletion. */
+    readonly after: GitChangesetNode | null;
+    /** Git-aware base state, or `null` for addition. */
+    readonly before: GitChangesetNode | null;
+    /** Canonical operation derived from the projected nodes. */
+    readonly operation: WorldChangeOperation;
+    /** Canonical repository-relative path. */
+    readonly path: string;
+};
+
+/** Git symbolic-link mode presentation retained outside canonical world identity. */
+export type GitSymlinkModePresentation = {
+    /** Exact base Git symlink mode, or `null` when absent. */
+    readonly before_mode: string | null;
+    /** Exact head Git symlink mode, or `null` when absent. */
+    readonly after_mode: string | null;
+    /** Canonical repository-relative symbolic-link path. */
+    readonly path: string;
+};
+
+/** Authenticated Git-aware projection composed with canonical world inspection. */
+export type GitChangesetInspection = {
+    /** Gitlink-aware projected changes excluded from canonical changeset identity. */
+    readonly git_changes: readonly GitChangesetPathChange[];
+    /** Public changeset-inspection protocol version. */
+    readonly inspection_version: number;
+    /** Retained Git symbolic-link modes for changed symlink paths. */
+    readonly symlink_modes: readonly GitSymlinkModePresentation[];
+    /** Authenticated canonical copy-world inspection. */
+    readonly world: WorldChangesetInspection;
 };
 
 /** Verification of retained output and the current user Git basis. */

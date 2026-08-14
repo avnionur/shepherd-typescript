@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-13
+Last updated: 2026-08-14
 
-Current version: `1.20.0`
+Current version: `1.21.0`
 
 Current level: L0 — canonical model
 
@@ -116,6 +116,11 @@ command-authorized recovery for pre-execution journal prefixes,
 deterministic custody convergence across the carrier/journal boundary, terminal-cut repair,
 competing-recovery fencing, cooperative partial-world cancellation retention, and fail-closed
 uncertain execution.
+Task 7 now adds workspace protocol v11 authenticated read-only changeset inspection: exact path
+lookup, bounded canonical pagination, digest-verified retained content reads, bounded text/binary
+previews, deterministic exact-content rename/copy projections, and authenticated Gitlink and
+symlink-mode presentation. Every projection remains outside immutable workspace protocol v5
+changeset identity.
 
 ## Progress
 
@@ -225,6 +230,8 @@ uncertain execution.
 - [x] Add Task 6B.4 command-authorized pre-execution recovery, deterministic custody convergence,
   terminal-cut repair, competing-recovery fencing, cooperative cancellation retention, and
   fail-closed uncertain-writer handling.
+- [x] Add Task 7 authenticated read-only changeset inspection, retained content reads, bounded
+  previews, derived rename/copy projections, and Git-aware Gitlink/symlink-mode presentation.
 
 ## Verification required for this slice
 
@@ -236,8 +243,8 @@ uncertain execution.
 
 ## Next slice
 
-Continue Phase 3, Task 7: expose read-only changeset inspection, retained content reads, bounded
-previews, derived rename/copy projections, and Gitlink citations from Git-aware custody.
+Continue Phase 3, Task 8: implement exact-ID `select` and `discard` over retained outputs without
+changing user files or immutable parent revisions.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive

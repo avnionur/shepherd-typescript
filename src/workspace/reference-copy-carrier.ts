@@ -162,6 +162,49 @@ export function forkReferenceCopyRevisionForTaskWorld(
     return invokeCarrier(() => forkRevision(paths, revisionId, NO_ADAPTER_RECEIPTS, custodyId));
 }
 
+/** @internal Reads and authenticates one retained regular-file blob from an owned revision. */
+export function readReferenceCopyRevisionBlob(
+    carrier: ReferenceCopyCarrier,
+    revisionId: string,
+    relativePath: string,
+    expectedBlobId: string,
+    expectedByteLength: number,
+): Buffer {
+    assertReferenceCopyCarrier(carrier);
+    const paths = REFERENCE_CARRIER_PATHS.get(carrier);
+    assert.ok(paths, "reference carrier paths are unavailable");
+    return invokeCarrier(() => {
+        verifyRevision(paths, revisionId);
+        const revision = loadRevision(paths, revisionId);
+        const entry = revision.manifest.find((candidate) => candidate.path === relativePath);
+        assert.equal(
+            entry?.kind === FILE_KIND &&
+                entry.blob_id === expectedBlobId &&
+                entry.size === expectedByteLength,
+            true,
+            "retained blob citation differs from its revision manifest",
+        );
+        const filePath = path.join(revision.path, ...relativePath.split("/"));
+        assert.equal(containsPath(revision.path, filePath) && filePath !== revision.path, true);
+        const before = lstatSync(filePath, { bigint: true });
+        assert.equal(before.isFile() && !before.isSymbolicLink(), true);
+        const descriptor = openSync(filePath, constants.O_RDONLY | constants.O_NOFOLLOW);
+        try {
+            assert.equal(stableStatus(before, fstatSync(descriptor, { bigint: true })), true);
+            const bytes = readFileSync(descriptor);
+            assert.equal(stableStatus(before, fstatSync(descriptor, { bigint: true })), true);
+            assert.equal(bytes.length, expectedByteLength);
+            assert.equal(
+                digestId(workspaceProtocolConfig.carrier.blobIdPrefix, bytes),
+                expectedBlobId,
+            );
+            return bytes;
+        } finally {
+            closeSync(descriptor);
+        }
+    });
+}
+
 function createCarrier(
     options: ReferenceCopyCarrierOptions,
     open: typeof openWorkspace,

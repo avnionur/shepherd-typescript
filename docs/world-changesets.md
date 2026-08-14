@@ -33,5 +33,7 @@ cross-binding evidence fails closed with a distinct configured code.
 
 This Task 5 module describes retained copy-world differences only. The current carrier records
 symlink targets but no independent numeric symlink mode. Task 6 owns post-execution capture away
-from user files. Read helpers, previews, optional rename/copy projections, and Gitlink citations
-from the Git-aware adapter belong to Task 7; selection and settlement remain later tasks.
+from user files. Workspace protocol v11
+[`changeset inspection`](./changeset-inspection.md) now owns bounded reads/previews, exact-content
+rename/copy projections, and Gitlink/symlink-mode presentation without changing this v5 identity.
+Selection and settlement remain later tasks.

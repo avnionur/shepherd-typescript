@@ -669,3 +669,27 @@ export const WORKSPACE_PROTOCOL_V10_CONTRACT = deepFreeze({
         custodyIdentityKind: "task-world-custody",
     },
 } as const);
+
+/** Immutable read-only changeset-inspection extension implemented by workspace protocol v11. */
+export const WORKSPACE_PROTOCOL_V11_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V10_CONTRACT,
+    changesetInspection: {
+        defaultPageSize: 100,
+        defaultPreviewBytes: 65_536,
+        defaultPreviewLines: 200,
+        defaultReadBytes: 65_536,
+        encoding: "utf-8",
+        gitlinkEntryKind: "gitlink",
+        gitlinkMode: "160000",
+        maxPageSize: 1_000,
+        maxPreviewBytes: 1_048_576,
+        maxPreviewLines: 1_000,
+        maxReadBytes: 1_048_576,
+        maxDerivedMoveCandidates: 10_000,
+        maxVerificationConcurrency: 2,
+        moveKinds: ["rename", "copy"],
+        previewClassifications: ["text", "binary"],
+        symlinkMode: "120000",
+        version: 11,
+    },
+} as const);

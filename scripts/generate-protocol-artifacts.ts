@@ -313,6 +313,13 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedWorldChangeOperations = config.workspaces.changesets.operations
         .map((operation) => JSON.stringify(operation))
         .join(", ");
+    const renderedWorldPreviewClassifications =
+        config.workspaces.changesetInspection.previewClassifications
+            .map((classification) => JSON.stringify(classification))
+            .join(", ");
+    const renderedWorldMoveKinds = config.workspaces.changesetInspection.moveKinds
+        .map((kind) => JSON.stringify(kind))
+        .join(", ");
     const renderedRetainedWorldEnforcementKinds = config.workspaces.worldExecution.enforcementKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
@@ -359,6 +366,41 @@ export const TYPED_EFFECT_TRACE_ACTION_KINDS = [${renderedTraceActionKinds}] as 
 
 /** Configured canonical world-changeset operations. @public */
 export const WORLD_CHANGE_OPERATIONS = [${renderedWorldChangeOperations}] as const;
+
+/** Configured retained-world text-preview classifications. @public */
+export const WORLD_TEXT_PREVIEW_CLASSIFICATIONS = [${renderedWorldPreviewClassifications}] as const;
+
+/** Configured retained-world text-preview encoding. @public */
+export const WORLD_TEXT_PREVIEW_ENCODING = ${JSON.stringify(config.workspaces.changesetInspection.encoding)} as const;
+
+/** Configured exact-content derived move classifications. @public */
+export const WORLD_DERIVED_MOVE_KINDS = [${renderedWorldMoveKinds}] as const;
+
+/** Configured Gitlink presentation discriminant. @public */
+export const GITLINK_ENTRY_KIND = ${JSON.stringify(config.workspaces.changesetInspection.gitlinkEntryKind)} as const;
+
+/** Configured Gitlink index mode. @public */
+export const GITLINK_MODE = ${JSON.stringify(config.workspaces.changesetInspection.gitlinkMode)} as const;
+
+/** Configured symbolic-link index mode. @public */
+export const GIT_SYMLINK_MODE = ${JSON.stringify(config.workspaces.changesetInspection.symlinkMode)} as const;
+
+/** Configured public resource bounds for changeset inspection. @public */
+export const WORLD_CHANGESET_INSPECTION_LIMITS = {
+    maxDerivedMoveCandidates: ${config.workspaces.changesetInspection.maxDerivedMoveCandidates},
+    maxPageSize: ${config.workspaces.changesetInspection.maxPageSize},
+    maxPathBytes: ${config.workspaces.changesets.maxPathBytes},
+    maxPreviewBytes: ${config.workspaces.changesetInspection.maxPreviewBytes},
+    maxPreviewLines: ${config.workspaces.changesetInspection.maxPreviewLines},
+    maxReadBytes: ${config.workspaces.changesetInspection.maxReadBytes},
+    maxVerificationConcurrency: ${config.workspaces.changesetInspection.maxVerificationConcurrency},
+} as const;
+
+/** Configured public world-changeset error codes. @public */
+export const WORLD_CHANGESET_ERROR_CODES = {
+    invalid: ${JSON.stringify(config.workspaces.changesets.errors.invalidCode)},
+    limit: ${JSON.stringify(config.workspaces.changesets.errors.limitCode)},
+} as const;
 
 /** Configured Core-A continuation dispositions paired with answer actions. @public */
 export const TYPED_EFFECT_TRACE_CONTINUATION_DISPOSITIONS = [${renderedTraceDispositions}] as const;

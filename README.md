@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.20.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.21.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -544,8 +544,10 @@ reference copy carrier, Git-aware retained-output custody, and the canonical cop
 core are implemented. Task 6A parent-linked custody capture, Task 6B.1 opaque runner registration,
 Task 6B.2 authenticated successful-path fenced execution and terminal attachment, Task 6B.3
 durable capture journaling, and Task 6B.4 command-authorized capture recovery and uncertain-writer
-hardening are implemented. Rich changeset inspection, Gitlink projection, and settlement remain
-planned.
+hardening are implemented. Authenticated changeset inspection now provides exact-path lookup,
+bounded retained-content reads and previews, exact-content rename/copy projections, and Git-aware
+Gitlink/symlink-mode presentation without changing canonical identity. Selection and settlement
+remain planned.
 
 ## Attribution
 

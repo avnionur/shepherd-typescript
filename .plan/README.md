@@ -208,4 +208,4 @@ The project is complete only when:
 
 ## Immediate next step
 
-Begin Phase 3, Task 5 by implementing the complete changeset data model.
+Begin Phase 3, Task 8 by implementing exact-ID `select` and `discard` over retained outputs.

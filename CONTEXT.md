@@ -235,6 +235,11 @@ An immutable content-addressed, ordered comparison of two exact world revisions 
 whose path changes reconstruct the head manifest from the base manifest.
 _Avoid_: Mutable custody, filesystem diff output, settlement authorization, heuristic rename
 
+**Changeset Inspection**:
+An authenticated read-only projection over one exact world changeset that provides bounded path,
+content, preview, move, and Git-aware presentation without changing canonical identity.
+_Avoid_: Settlement decision, unbounded diff output, user-workspace read, canonical rename record
+
 **Durable Resume Command**:
 A globally idempotent canonical request naming one exact suspension acknowledgement and its
 continuation descriptor. Successful application atomically acquires the next worker fence and

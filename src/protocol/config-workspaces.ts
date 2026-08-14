@@ -19,6 +19,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "bindingIdentityKind",
             "bindingVersion",
             "carrier",
+            "changesetInspection",
             "changesets",
             "controlDirectory",
             "defaultAdoptionMode",
@@ -122,6 +123,29 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         changesets.errors,
         ["invalidCode", "invalidMessage", "limitCode", "limitMessage"],
         "workspaces.changesets.errors",
+    );
+    const changesetInspection = readObject(
+        config.changesetInspection,
+        [
+            "defaultPageSize",
+            "defaultPreviewBytes",
+            "defaultPreviewLines",
+            "defaultReadBytes",
+            "encoding",
+            "gitlinkEntryKind",
+            "gitlinkMode",
+            "maxPageSize",
+            "maxPreviewBytes",
+            "maxPreviewLines",
+            "maxReadBytes",
+            "maxDerivedMoveCandidates",
+            "maxVerificationConcurrency",
+            "moveKinds",
+            "previewClassifications",
+            "symlinkMode",
+            "version",
+        ],
+        "workspaces.changesetInspection",
     );
     const gitCustody = readObject(
         config.gitCustody,
@@ -459,6 +483,76 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 "workspaces.changesets.operations",
             ),
             version: readPositiveInteger(changesets.version, "workspaces.changesets.version"),
+        },
+        changesetInspection: {
+            defaultPageSize: readPositiveInteger(
+                changesetInspection.defaultPageSize,
+                "workspaces.changesetInspection.defaultPageSize",
+            ),
+            defaultPreviewBytes: readPositiveInteger(
+                changesetInspection.defaultPreviewBytes,
+                "workspaces.changesetInspection.defaultPreviewBytes",
+            ),
+            defaultPreviewLines: readPositiveInteger(
+                changesetInspection.defaultPreviewLines,
+                "workspaces.changesetInspection.defaultPreviewLines",
+            ),
+            defaultReadBytes: readPositiveInteger(
+                changesetInspection.defaultReadBytes,
+                "workspaces.changesetInspection.defaultReadBytes",
+            ),
+            encoding: readNonEmptyString(
+                changesetInspection.encoding,
+                "workspaces.changesetInspection.encoding",
+            ),
+            gitlinkEntryKind: readNonEmptyString(
+                changesetInspection.gitlinkEntryKind,
+                "workspaces.changesetInspection.gitlinkEntryKind",
+            ),
+            gitlinkMode: readNonEmptyString(
+                changesetInspection.gitlinkMode,
+                "workspaces.changesetInspection.gitlinkMode",
+            ),
+            maxPageSize: readPositiveInteger(
+                changesetInspection.maxPageSize,
+                "workspaces.changesetInspection.maxPageSize",
+            ),
+            maxPreviewBytes: readPositiveInteger(
+                changesetInspection.maxPreviewBytes,
+                "workspaces.changesetInspection.maxPreviewBytes",
+            ),
+            maxPreviewLines: readPositiveInteger(
+                changesetInspection.maxPreviewLines,
+                "workspaces.changesetInspection.maxPreviewLines",
+            ),
+            maxReadBytes: readPositiveInteger(
+                changesetInspection.maxReadBytes,
+                "workspaces.changesetInspection.maxReadBytes",
+            ),
+            maxDerivedMoveCandidates: readPositiveInteger(
+                changesetInspection.maxDerivedMoveCandidates,
+                "workspaces.changesetInspection.maxDerivedMoveCandidates",
+            ),
+            maxVerificationConcurrency: readPositiveInteger(
+                changesetInspection.maxVerificationConcurrency,
+                "workspaces.changesetInspection.maxVerificationConcurrency",
+            ),
+            moveKinds: readUniqueStrings(
+                changesetInspection.moveKinds,
+                "workspaces.changesetInspection.moveKinds",
+            ),
+            previewClassifications: readUniqueStrings(
+                changesetInspection.previewClassifications,
+                "workspaces.changesetInspection.previewClassifications",
+            ),
+            symlinkMode: readNonEmptyString(
+                changesetInspection.symlinkMode,
+                "workspaces.changesetInspection.symlinkMode",
+            ),
+            version: readPositiveInteger(
+                changesetInspection.version,
+                "workspaces.changesetInspection.version",
+            ),
         },
         controlDirectory,
         defaultAdoptionMode,

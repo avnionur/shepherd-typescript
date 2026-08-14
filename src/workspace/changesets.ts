@@ -45,6 +45,21 @@ const REPLACE = WORLD_CHANGE_OPERATIONS[3];
 export async function createWorldChangeset(
     options: WorldChangesetOptions,
 ): Promise<WorldChangeset> {
+    return (await createVerifiedWorldChangeset(options)).changeset;
+}
+
+/** Authenticated retained revisions and canonical comparison used by package projections. @internal */
+export type VerifiedWorldChangeset = {
+    readonly baseRevision: WorldRevision;
+    readonly carrier: ReferenceCopyCarrier;
+    readonly changeset: WorldChangeset;
+    readonly headRevision: WorldRevision;
+};
+
+/** @internal Creates a canonical changeset and returns its exact authenticated carrier evidence. */
+export async function createVerifiedWorldChangeset(
+    options: WorldChangesetOptions,
+): Promise<VerifiedWorldChangeset> {
     try {
         const optionFields = exactObject(options, ["baseRevision", "carrier", "headRevision"]);
         const base = validateRevision(optionFields.baseRevision as WorldRevision);
@@ -68,9 +83,9 @@ export async function createWorldChangeset(
                 sameEntry(beforeEntry, afterEntry)
             )
                 continue;
-            const before = beforeEntry === undefined ? null : nodeOf(beforeEntry);
-            const after = afterEntry === undefined ? null : nodeOf(afterEntry);
-            const operation = operationOf(before, after);
+            const before = beforeEntry === undefined ? null : worldChangeNodeOf(beforeEntry);
+            const after = afterEntry === undefined ? null : worldChangeNodeOf(afterEntry);
+            const operation = worldChangeOperationOf(before, after);
             referencedBytes += referencedSize(before) + referencedSize(after);
             changes.push(Object.freeze({ after, before, operation, path }));
         }
@@ -100,12 +115,18 @@ export async function createWorldChangeset(
             .update(canonical)
             .digest("hex");
         const changedPaths = Object.freeze(changes.map((change) => change.path));
-        return Object.freeze({
+        const changeset = Object.freeze({
             ...semantic,
             changes: Object.freeze(changes),
             changed_paths: changedPaths,
             changeset_id: `${workspaceProtocolConfig.changesets.idPrefix}${digest}`,
         }) as WorldChangeset;
+        return Object.freeze({
+            baseRevision: retainedBase,
+            carrier,
+            changeset,
+            headRevision: retainedHead,
+        });
     } catch (error) {
         if (error instanceof WorldChangesetError) throw error;
         throw invalid(error instanceof Error ? error.message : undefined);
@@ -230,7 +251,8 @@ function validateEntry(value: unknown): WorldManifestEntry {
     return fields as WorldManifestEntry;
 }
 
-function nodeOf(entry: WorldManifestEntry): WorldChangeNode {
+/** @internal Projects one authenticated carrier-manifest entry into canonical changeset state. */
+export function worldChangeNodeOf(entry: WorldManifestEntry): WorldChangeNode {
     if (entry.kind === WORLD_ENTRY_KINDS[0])
         return Object.freeze({ kind: WORLD_ENTRY_KINDS[0], mode: entry.mode as number });
     if (entry.kind === WORLD_ENTRY_KINDS[1])
@@ -247,7 +269,8 @@ function nodeOf(entry: WorldManifestEntry): WorldChangeNode {
     });
 }
 
-function operationOf(
+/** @internal Derives the canonical operation for two authenticated path states. */
+export function worldChangeOperationOf(
     before: WorldChangeNode | null,
     after: WorldChangeNode | null,
 ): WorldChangeOperation {

@@ -75,6 +75,8 @@ export type {
 export {
     RETAINED_WORLD_MAX_CAPTURE_ID_BYTES,
     RETAINED_WORLD_MAX_TEXT_BYTES,
+    WORLD_CHANGESET_ERROR_CODES,
+    WORLD_CHANGESET_INSPECTION_LIMITS,
 } from "./protocol/values.generated.ts";
 export {
     StaticProviderExhaustedError,
@@ -297,6 +299,7 @@ export type {
     TaskRegistration,
 } from "./task/types.ts";
 export { createWorkspaceBindings } from "./workspace/bindings.ts";
+export { createWorldChangesetInspection } from "./workspace/changeset-inspection.ts";
 export { createWorldChangeset } from "./workspace/changesets.ts";
 export {
     GitCustodyError,
@@ -307,6 +310,7 @@ export {
     WorldChangesetError,
 } from "./workspace/errors.ts";
 export { createGitAwareCustody } from "./workspace/git-aware-custody.ts";
+export { createGitChangesetInspection } from "./workspace/git-changeset-inspection.ts";
 export { initializeWorkspace, openWorkspace } from "./workspace/initialization.ts";
 export { createReferenceCopyCarrier } from "./workspace/reference-copy-carrier.ts";
 export { createRetainedWorldRunner } from "./workspace/retained-world-runner.ts";
@@ -337,6 +341,10 @@ export type {
     GitAwareCustody,
     GitAwareCustodyOptions,
     GitBasisEvidence,
+    GitChangesetInspection,
+    GitChangesetInspectionOptions,
+    GitChangesetNode,
+    GitChangesetPathChange,
     GitCustodyVerification,
     GitHeadEvidence,
     GitHeadKind,
@@ -345,6 +353,7 @@ export type {
     GitIndexEvidence,
     GitRepositoryIdentity,
     GitRetainedOutput,
+    GitSymlinkModePresentation,
     ReferenceCopyCarrier,
     ReferenceCopyCarrierOptions,
     WorkspaceAdoption,
@@ -359,11 +368,20 @@ export type {
     WorldChangeNode,
     WorldChangeOperation,
     WorldChangeset,
+    WorldChangesetInspection,
+    WorldChangesetInspectionOptions,
     WorldChangesetOptions,
+    WorldChangesetPage,
+    WorldChangesetPageOptions,
+    WorldContentRead,
+    WorldContentReadOptions,
     WorldCustody,
+    WorldDerivedMove,
     WorldEntryKind,
     WorldManifestEntry,
     WorldPathChange,
     WorldRevision,
+    WorldTextPreview,
+    WorldTextPreviewOptions,
     WorldVerification,
 } from "./workspace/types.ts";

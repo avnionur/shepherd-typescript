@@ -64,6 +64,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   retained output.
 - [World changesets](./world-changesets.md) defines pure reconstructive comparison, canonical
   add/delete/modify/replace operations, content identity, immutability, and fail-closed limits.
+- [Changeset inspection](./changeset-inspection.md) defines authenticated exact-path lookup,
+  bounded pagination/content/previews, exact-content move projections, and Git-aware Gitlink and
+  symlink-mode presentation outside canonical identity.
 - [Run outcomes](./run-outcomes.md) defines versioned finished, failed, exhausted, and cancelled
   terminal records with exact task-lock provenance.
 - [Run artifacts and usage](./run-artifacts-and-usage.md) defines ordered inline-text and durable
