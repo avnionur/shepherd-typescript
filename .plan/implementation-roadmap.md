@@ -158,10 +158,11 @@ Work:
   rename/copy projections, and Gitlink citations from the Git-aware adapter; **implemented in
   1.21.0**, with authenticated carrier/Git custody, configured resource bounds, and projection-only
   move/Git semantics that preserve workspace protocol v5 identity;
-- implement exact-ID `select` and `discard`;
-- implement consume-once settlement with transactional compare-and-swap;
-- protect control-plane paths;
-- record settlement citations in the trace.
+- implement exact settlement identity, authenticated retained-output admission, and consume-once
+  transactional compare-and-swap without exposing a mutation API that can bypass the CAS;
+- implement public exact-ID `select` and `discard`, crash recovery, and settlement citations in the
+  trace only after the shared consume-once protocol is in place;
+- protect control-plane paths and complete settlement/platform fault hardening;
 - complete reference-carrier and Git-custody platform/fault conformance for ACLs, extended
   attributes, resource forks or alternate streams, `core.symlinks=false`, sparse-index variants,
   case-folding collisions, precise stable error taxonomy, permission/disk-full failures,

@@ -243,8 +243,10 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 8: implement exact-ID `select` and `discard` over retained outputs without
-changing user files or immutable parent revisions.
+Continue Phase 3, Task 8: implement the exact settlement identity, authenticated retained-output
+admission, and consume-once compare-and-swap foundation specified in
+[`settlement-select-discard-research.md`](./settlement-select-discard-research.md). Public
+`select`/`discard` effects remain Task 9 so no settlement verb can bypass consume-once authority.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive
