@@ -117,7 +117,8 @@ trace-record contracts with durable SQLite task and trace stores:
   deterministic operation/receipt codecs, authenticated terminal/cut/
   carrier evidence preparation, trace-store schema v6 consume-once admission, and schema v7
   effect-journal storage with atomic deterministic operation/receipt transitions, one-winner
-  conflict detection, exact restart replay, and fail-closed read-only settlement inspection;
+  conflict detection, exact restart replay, fail-closed read-only settlement inspection, and
+  terminal-before-cleanup public discard recovery;
 - immutable copy-world changesets with carrier-verified revision citations, canonical reconstructive
   add/delete/modify/replace operations, configured resource limits, and deterministic identity;
 - immutable finished, failed, exhausted, and cancelled run outcomes with exact task-lock

@@ -329,10 +329,13 @@ export type {
     RetainedWorldRunnerDefinition,
 } from "./workspace/retained-world-runner-types.ts";
 export {
+    discardRetainedWorldSettlement,
     inspectRetainedWorldSettlement,
     prepareRetainedWorldSettlement,
 } from "./workspace/retained-world-settlement.ts";
 export type {
+    DiscardedRetainedWorldSettlement,
+    DiscardRetainedWorldSettlementOptions,
     PreparedRetainedWorldSettlement,
     PrepareRetainedWorldSettlementOptions,
 } from "./workspace/retained-world-settlement-types.ts";

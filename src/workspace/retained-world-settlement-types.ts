@@ -1,4 +1,8 @@
-import type { RETAINED_WORLD_SETTLEMENT_ACTIONS } from "../protocol/values.generated.ts";
+import type {
+    RETAINED_WORLD_SETTLEMENT_ACTIONS,
+    RETAINED_WORLD_SETTLEMENT_STATES,
+    RETAINED_WORLD_SETTLEMENT_VERSION,
+} from "../protocol/values.generated.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type {
     RetainedWorldSettlementAdmission,
@@ -27,4 +31,32 @@ export type PrepareRetainedWorldSettlementOptions = {
 export type PreparedRetainedWorldSettlement = RetainedWorldSettlementAdmission & {
     /** Exact request authenticated before atomic consume-once admission. */
     readonly request: RetainedWorldSettlementRequest;
+};
+
+/** Closed authorities for exact-ID retained-world discard and recovery. */
+export type DiscardRetainedWorldSettlementOptions = {
+    /** Package-created carrier owning the admitted custody and immutable revisions. */
+    readonly carrier: ReferenceCopyCarrier;
+    /** Exact retained-output identity previously admitted for discard. */
+    readonly outputId: string;
+    /** Open trace store retaining the authenticated settlement journal. */
+    readonly store: SQLiteTraceStore;
+};
+
+/** Completed durable discard result after idempotent physical custody cleanup. */
+export type DiscardedRetainedWorldSettlement = {
+    /** Configured discard action. */
+    readonly action: (typeof RETAINED_WORLD_SETTLEMENT_ACTIONS)[1];
+    /** Confirms the carrier cleanup receipt is durably complete. */
+    readonly cleanup_completed: true;
+    /** Deterministic operation identity retained before cleanup. */
+    readonly operation_id: string;
+    /** Exact retained-output identity consumed by discard. */
+    readonly output_id: string;
+    /** Exact authenticated request identity. */
+    readonly request_id: string;
+    /** Public exact-request settlement protocol version. */
+    readonly settlement_version: typeof RETAINED_WORLD_SETTLEMENT_VERSION;
+    /** Configured terminal discarded state. */
+    readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[3];
 };

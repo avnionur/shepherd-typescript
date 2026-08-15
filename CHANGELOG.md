@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.27.0] - 2026-08-14
+
+### New Feature
+
+- Added authenticated public exact-ID retained-world discard that publishes deterministic terminal
+  authority before invoking idempotent physical custody cleanup.
+- Added restart recovery for interrupted cleanup, including convergence after custody was deleted
+  but cleanup completion was not yet retained.
+
+### Impact
+
+Consumers can durably discard an admitted retained output without changing user files and safely
+retry after interruption. Public selection remains Phase 3 Task 9.4.
+
 ## [1.26.0] - 2026-08-14
 
 ### New Feature

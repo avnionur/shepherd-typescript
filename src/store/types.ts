@@ -83,9 +83,9 @@ export type RetainedWorldSettlementJournal = {
     /** Physical custody cleanup progress, present only for terminal evidence. */
     readonly cleanup_completed: boolean | null;
     /** Deterministic operation evidence once execution has begun. */
-    readonly operation: RetainedWorldSettlementEncodedEvidence | null;
+    readonly operation: (RetainedWorldSettlementEncodedEvidence & { readonly id: string }) | null;
     /** Deterministic terminal receipt after logical settlement. */
-    readonly receipt: RetainedWorldSettlementEncodedEvidence | null;
+    readonly receipt: (RetainedWorldSettlementEncodedEvidence & { readonly id: null }) | null;
     /** Current configured durable journal state. */
     readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[number];
 };

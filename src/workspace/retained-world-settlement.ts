@@ -3,25 +3,32 @@ import { workspaceProtocolConfig } from "../protocol/config.ts";
 import {
     DURABLE_EXECUTION_RECOVERY_STATUSES,
     RETAINED_WORLD_SETTLEMENT_ACTIONS,
+    RETAINED_WORLD_SETTLEMENT_STATES,
+    RETAINED_WORLD_SETTLEMENT_VERSION,
 } from "../protocol/values.generated.ts";
 import { readDurableTaskExecution } from "../run/durable-execution-recovery.ts";
 import {
     RetainedWorldSettlementConflictError,
     RetainedWorldSettlementInvalidError,
 } from "../store/errors.ts";
+import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { RetainedWorldSettlementRequest } from "../store/types.ts";
 import { assertWorkspaceBinding } from "./bindings.ts";
 import { createVerifiedWorldChangeset } from "./changesets.ts";
 import { assertReferenceCopyCarrier } from "./reference-copy-carrier.ts";
 import type {
+    DiscardedRetainedWorldSettlement,
+    DiscardRetainedWorldSettlementOptions,
     PreparedRetainedWorldSettlement,
     PrepareRetainedWorldSettlementOptions,
 } from "./retained-world-settlement-types.ts";
 import type { RetainedWorldOutput } from "./task-world-execution-types.ts";
 import { inspectTaskWorldCaptureJournal } from "./task-world-journal.ts";
-import type { WorldRevision } from "./types.ts";
+import type { ReferenceCopyCarrier, WorldRevision } from "./types.ts";
 
 const [, , , , COMMITTED_RECOVERY_STATUS] = DURABLE_EXECUTION_RECOVERY_STATUSES;
+const [, DISCARD_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
+const [PREPARED_STATE, APPLYING_STATE, , DISCARDED_STATE] = RETAINED_WORLD_SETTLEMENT_STATES;
 
 /**
  * Authenticates one exact retained output and atomically prepares its consume-once settlement.
@@ -216,6 +223,148 @@ export function inspectRetainedWorldSettlement(
             workspaceProtocolConfig.settlement.errors.invalidMessage,
             { cause: error },
         );
+    }
+}
+
+/**
+ * Durably discards one exact admitted retained output and recovers interrupted cleanup.
+ *
+ * This is the workspace-protocol-v13 settlement-effect boundary over an exact v12 request.
+ *
+ * The deterministic operation is retained before any carrier effect. The logical discarded
+ * terminal receipt is retained before idempotent custody cleanup, so a restart can safely resume
+ * either the pre-cleanup or post-cleanup prefix without reopening admission or touching user files.
+ *
+ * @param options - Exact output identity plus authenticated carrier and trace-store authority.
+ * @returns Frozen completed discard receipt after durable cleanup completion.
+ * @throws {RetainedWorldSettlementInvalidError} If trace, journal, revision, custody, or carrier
+ * evidence is absent, malformed, forged, or inconsistent.
+ * @throws {RetainedWorldSettlementConflictError} If the output was admitted for another action or
+ * has already reached another terminal settlement.
+ *
+ * @example
+ * ```ts
+ * const discarded = await discardRetainedWorldSettlement({
+ *     carrier,
+ *     outputId: captured.output.output_id,
+ *     store,
+ * });
+ * discarded.cleanup_completed;
+ * ```
+ *
+ * @public
+ */
+export async function discardRetainedWorldSettlement(
+    options: DiscardRetainedWorldSettlementOptions,
+): Promise<DiscardedRetainedWorldSettlement> {
+    try {
+        const fields = exactObject(options, ["carrier", "outputId", "store"]);
+        if (typeof fields.outputId !== "string" || fields.outputId.length === 0) {
+            throw new TypeError("retained-world settlement output identity is invalid");
+        }
+        const carrier = fields.carrier as ReferenceCopyCarrier;
+        const store = fields.store as SQLiteTraceStore;
+        assertReferenceCopyCarrier(carrier);
+        const admission = inspectRetainedWorldSettlement(store, fields.outputId);
+        if (admission === undefined) {
+            throw new TypeError("retained-world discard admission is absent");
+        }
+        if (admission.action !== DISCARD_ACTION) {
+            throw new RetainedWorldSettlementConflictError(
+                workspaceProtocolConfig.settlement.errors.conflictMessage,
+            );
+        }
+        let journal = store.readRetainedWorldSettlementJournal(fields.outputId);
+        if (journal === undefined) {
+            throw new TypeError("retained-world discard journal is absent");
+        }
+        await verifyDiscardRevisions(carrier, admission.request);
+        if (journal.state === PREPARED_STATE || journal.state === APPLYING_STATE) {
+            await verifyDiscardCustody(carrier, admission.request);
+        }
+        if (journal.state === PREPARED_STATE) {
+            journal = store.beginRetainedWorldSettlement(fields.outputId);
+        }
+        if (journal.state === APPLYING_STATE) {
+            journal = store.retainRetainedWorldSettlementTerminal(fields.outputId, {
+                action: DISCARD_ACTION,
+                cleanup_completed: false,
+                user_basis_after: admission.request.user_basis_before,
+            });
+        }
+        // The validated closed journal and deterministic store transitions are exhaustive here.
+        /* node:coverage ignore next 3 */
+        if (journal.state !== DISCARDED_STATE || journal.operation === null) {
+            throw new TypeError("retained-world discard journal is inconsistent");
+        }
+        if (!journal.cleanup_completed) {
+            await carrier.discard(admission.request.custody_id);
+            journal = store.completeRetainedWorldSettlementCleanup(fields.outputId);
+        }
+        // Cleanup completion returns a freshly revalidated discarded journal.
+        /* node:coverage ignore next 7 */
+        if (
+            journal.state !== DISCARDED_STATE ||
+            journal.operation === null ||
+            !journal.cleanup_completed
+        ) {
+            throw new TypeError("retained-world discard cleanup is incomplete");
+        }
+        return Object.freeze({
+            action: DISCARD_ACTION,
+            cleanup_completed: true,
+            operation_id: journal.operation.id,
+            output_id: admission.output_id,
+            request_id: admission.request_id,
+            settlement_version: RETAINED_WORLD_SETTLEMENT_VERSION,
+            state: DISCARDED_STATE,
+        });
+    } catch (error) {
+        if (
+            error instanceof RetainedWorldSettlementInvalidError ||
+            error instanceof RetainedWorldSettlementConflictError
+        ) {
+            throw error;
+        }
+        throw new RetainedWorldSettlementInvalidError(
+            workspaceProtocolConfig.settlement.errors.invalidMessage,
+            { cause: error },
+        );
+    }
+}
+
+async function verifyDiscardRevisions(
+    carrier: ReferenceCopyCarrier,
+    request: RetainedWorldSettlementRequest,
+): Promise<void> {
+    const base = await carrier.openRevision(request.base_revision_id);
+    const head = await carrier.openRevision(request.head_revision_id);
+    // Authenticated content-addressed carrier reads reject these contradictions first.
+    /* node:coverage ignore next 7 */
+    if (
+        base.binding_id !== request.binding_id ||
+        head.binding_id !== request.binding_id ||
+        head.parent_revision_id !== request.base_revision_id
+    ) {
+        throw new TypeError("retained-world discard revision evidence is inconsistent");
+    }
+}
+
+async function verifyDiscardCustody(
+    carrier: ReferenceCopyCarrier,
+    request: RetainedWorldSettlementRequest,
+): Promise<void> {
+    const custody = await carrier.openCustody(request.custody_id);
+    const head = await carrier.openRevision(request.head_revision_id);
+    const verification = await carrier.verifyCustody(request.custody_id);
+    // Authenticated content-addressed carrier reads reject these contradictions first.
+    /* node:coverage ignore next 7 */
+    if (
+        custody.binding_id !== request.binding_id ||
+        custody.base_revision_id !== request.base_revision_id ||
+        verification.content_id !== head.content_id
+    ) {
+        throw new TypeError("retained-world discard custody evidence is inconsistent");
     }
 }
 

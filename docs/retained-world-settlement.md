@@ -7,6 +7,8 @@ Authenticated coordinator:
 Public entry point: [`src/index.ts`](../src/index.ts). Production-seam tests:
 [`test/store/retained-world-settlements.test.ts`](../test/store/retained-world-settlements.test.ts)
 and [`test/workspace/task-world-execution.test.ts`](../test/workspace/task-world-execution.test.ts).
+Public discard recovery is covered by
+[`test/workspace/retained-world-discard.test.ts`](../test/workspace/retained-world-discard.test.ts).
 
 ## Implemented foundation
 
@@ -31,6 +33,13 @@ mutation, and every restart read validates the complete nullable-column combinat
 keeps discard cleanup evidence null; discard retains its explicit cleanup-progress boolean. These
 internal transitions also advance a discarded receipt from cleanup-pending to cleanup-complete
 without changing its logical terminal state. They perform no carrier or user-filesystem operation.
+
+`discardRetainedWorldSettlement` is the public exact-ID discard seam. It revalidates the admitted
+execution and authentic carrier revisions, retains the deterministic operation, and publishes the
+logical `discarded` receipt with cleanup pending before invoking the carrier's idempotent custody
+discard. Cleanup completion is retained afterward. A crash after physical deletion therefore
+reopens as cleanup pending, repeats only the exact carrier cleanup, and converges without reopening
+admission or making the output selectable. Discard never reads or changes the user binding.
 
 `SQLiteTraceStore.admitRetainedWorldSettlement` is the internal store-level compare-and-swap. One
 `BEGIN IMMEDIATE` transaction either inserts the configured `prepared` decision, replays the exact
@@ -58,7 +67,7 @@ filesystem operation.
 
 The store primitive deliberately remains internal and trusts only the authenticated coordinator.
 Preparation reads retained evidence and mutates only the durable settlement-admission row; it does
-not mutate user files or physical custody. Public `select` and `discard` remain unavailable until
-Task 9 basis revalidation and crash-safe external-effect recovery must still compose with this CAS.
-Carrier-level `discard(custodyId)` remains a distinct physical cleanup primitive and does not
-create a settlement decision.
+not mutate user files or physical custody. Public `discard` now composes this authority with the
+effect journal; public `select` remains unavailable until Task 9.4 basis revalidation, staging,
+publication, and crash repair are complete. Carrier-level `discard(custodyId)` remains a physical
+primitive and cannot create or bypass a settlement decision by itself.

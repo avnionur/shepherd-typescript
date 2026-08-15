@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-14
 
-Current version: `1.26.0`
+Current version: `1.27.0`
 
 Current level: L0 — canonical model
 
@@ -246,6 +246,8 @@ changeset identity.
   with canonical replay, exact admission binding, and discard basis preservation.
 - [x] Complete Task 9.2B2 atomic prepared/applying/terminal journal transitions with exact replay,
   restart validation, skipped-transition refusal, and cross-connection receipt conflict evidence.
+- [x] Add Task 9.3 authenticated exact-ID discard with terminal-before-cleanup ordering, idempotent
+  carrier cleanup, cleanup-progress retention, and restart convergence after physical deletion.
 
 ## Verification required for this slice
 
@@ -257,9 +259,9 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 9.3: implement public exact-ID discard, terminal decision before idempotent
-custody cleanup, cleanup-progress retention, and restart recovery. Task 9.4 then owns selection
-staging, basis revalidation, publication, and crash repair.
+Continue Phase 3, Task 9.4: implement selection staging, two user-basis checks, isolated
+materialization, atomic publication evidence, and crash repair. Task 9.5 then owns settlement trace
+citations and the remaining concurrency/fault matrix.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive
