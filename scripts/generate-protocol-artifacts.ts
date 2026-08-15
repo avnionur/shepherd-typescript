@@ -439,6 +439,78 @@ function renderSelectionPublicationSchema(
                 required: ["change_ordinals", "plan_id", "schedule_kind", "schedule_version"],
                 type: "object",
             },
+            {
+                additionalProperties: false,
+                properties: {
+                    change: { $ref: "#/$defs/change" },
+                    change_ordinal: {
+                        maximum: config.workspaces.selectionPublication.maxSteps - 1,
+                        minimum: 0,
+                        type: "integer",
+                    },
+                    operation_ordinal: {
+                        maximum: config.workspaces.selectionPublication.maxSteps - 1,
+                        minimum: 0,
+                        type: "integer",
+                    },
+                    plan_id: text,
+                    previous_step_id: { anyOf: [{ type: "null" }, text] },
+                    schedule_id: text,
+                    status: {
+                        enum: config.workspaces.selectionPublication.stepStatuses,
+                        type: "string",
+                    },
+                    step_version: {
+                        const: config.workspaces.selectionPublication.scheduledStepVersion,
+                        type: "integer",
+                    },
+                },
+                required: [
+                    "change",
+                    "change_ordinal",
+                    "operation_ordinal",
+                    "plan_id",
+                    "previous_step_id",
+                    "schedule_id",
+                    "status",
+                    "step_version",
+                ],
+                type: "object",
+            },
+            {
+                additionalProperties: false,
+                properties: {
+                    atomicity: {
+                        enum: config.workspaces.selectionPublication.atomicityKinds,
+                        type: "string",
+                    },
+                    final_step_id: { anyOf: [{ type: "null" }, text] },
+                    head_content_id: text,
+                    operation_id: text,
+                    plan_id: text,
+                    publication_version: {
+                        const: config.workspaces.selectionPublication.scheduledPublicationVersion,
+                        type: "integer",
+                    },
+                    schedule_id: text,
+                    staging_id: text,
+                    user_basis_after: text,
+                    user_basis_before: text,
+                },
+                required: [
+                    "atomicity",
+                    "final_step_id",
+                    "head_content_id",
+                    "operation_id",
+                    "plan_id",
+                    "publication_version",
+                    "schedule_id",
+                    "staging_id",
+                    "user_basis_after",
+                    "user_basis_before",
+                ],
+                type: "object",
+            },
         ],
     };
 }
@@ -773,6 +845,12 @@ export const RETAINED_WORLD_SELECTION_RECEIPT_VERSION = ${config.workspaces.sele
 
 /** Configured retained-world selection dependency-schedule codec version. @public */
 export const RETAINED_WORLD_SELECTION_SCHEDULE_VERSION = ${config.workspaces.selectionPublication.scheduleVersion} as const;
+
+/** Configured dependency-scheduled path-step codec version. @public */
+export const RETAINED_WORLD_SELECTION_SCHEDULED_STEP_VERSION = ${config.workspaces.selectionPublication.scheduledStepVersion} as const;
+
+/** Configured dependency-scheduled terminal publication-receipt codec version. @public */
+export const RETAINED_WORLD_SELECTION_SCHEDULED_RECEIPT_VERSION = ${config.workspaces.selectionPublication.scheduledPublicationVersion} as const;
 
 /** Configured maximum path effects in one retained-world selection publication. @public */
 export const RETAINED_WORLD_SELECTION_MAX_STEPS = ${config.workspaces.selectionPublication.maxSteps} as const;

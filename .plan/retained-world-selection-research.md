@@ -157,9 +157,9 @@ content, basis before and after, final step receipt, and atomicity classificatio
 store's selected terminal receipt cites this exact carrier receipt. It does not recreate a
 publication ID from current bytes.
 
-Workspace protocols v13 and v14 remain immutable. Task 9.4B2A introduces workspace protocol v15
-for the dependency schedule; later carrier evidence must extend the protocol again rather than
-redefine v14/v15 records, and must retain explicit decoding of any supported earlier row. The
+Workspace protocols v14 and v15 remain immutable. Task 9.4B2B2A introduces workspace protocol v16
+for dependency-scheduled step and terminal evidence rather than redefining v14/v15 records, and
+retains explicit decoding of every supported earlier record. The
 trace-store schema may retain the new canonical receipt in its existing receipt columns
 only if compatibility validation proves the nullable/state constraints remain unchanged; otherwise
 it requires a new migrated schema version.
@@ -239,8 +239,10 @@ semantics, contention, malformed evidence, and recovery-required partial publica
 Task 9.4A owns this contract only. Task 9.4B1 implements the versioned plan, canonical-order step,
 terminal publication codecs, schema, and compatibility lock without filesystem effects. Task
 9.4B2A implements the separate dependency-ordered schedule and schema extension. Task 9.4B2B1
-implements authenticated deterministic immutable-head staging. Task 9.4B2B2 implements the
-journaled managed-path publication seam and carrier receipt. Task 9.4B3
+implements authenticated deterministic immutable-head staging. Task 9.4B2B2A implements the
+separate v16 dependency-scheduled step and terminal receipt codecs without filesystem effects.
+Task 9.4B2B2B implements the journaled managed-path publication seam, prefix recovery, and carrier
+receipt. Task 9.4B3
 then composes the expanded selected receipt, public exact-ID select coordinator, two basis checks,
 restart repair, and focused fault tests. Task 9.5 attaches settlement citations to the execution
 projection and closes the remaining cross-command concurrency and Phase 3 settlement fault matrix.

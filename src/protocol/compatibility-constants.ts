@@ -805,3 +805,19 @@ export const WORKSPACE_PROTOCOL_V15_CONTRACT = deepFreeze({
         version: 15,
     },
 } as const);
+
+/** Immutable dependency-scheduled step/receipt extension implemented by workspace protocol v16. */
+export const WORKSPACE_PROTOCOL_V16_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V15_CONTRACT,
+    selectionPublication: {
+        ...WORKSPACE_PROTOCOL_V15_CONTRACT.selectionPublication,
+        schemaId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-selection-publication-v3.schema.json",
+        schemaPath: "spec/schemas/retained-world-selection-publication-v3.schema.json",
+        scheduledPublicationIdPrefix: "world-selection-scheduled-publication:sha256:",
+        scheduledPublicationVersion: 1,
+        scheduledStepIdPrefix: "world-selection-scheduled-step:sha256:",
+        scheduledStepVersion: 1,
+        version: 16,
+    },
+} as const);

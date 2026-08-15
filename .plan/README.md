@@ -214,6 +214,6 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 3, Task 9.4B2B2 by implementing scheduled managed-path publication, durable step
-receipts, and exact carrier receipts. Task 9.4B3 then composes the two
+Continue Phase 3, Task 9.4B2B2B by executing scheduled managed-path effects, retaining and
+recovering the durable prefix, and publishing exact carrier evidence. Task 9.4B3 then composes the two
 basis checks, public exact-ID select, and restart repair.

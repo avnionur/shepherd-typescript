@@ -171,8 +171,10 @@ Work:
   in 1.27.0**; **Task 9.4A selection publication and crash-repair contract completed in 1.27.1**,
   with **Task 9.4B1 workspace-protocol-v14 publication codecs implemented in 1.28.0** and
   **Task 9.4B2A workspace-protocol-v15 dependency scheduling implemented in 1.29.0** and
-  **Task 9.4B2B1 authenticated immutable-head carrier staging implemented in 1.30.0**; Tasks
-  9.4B2B2-9.4B3 publication/coordinator effects plus Task 9.5 trace citations remain;
+  **Task 9.4B2B1 authenticated immutable-head carrier staging implemented in 1.30.0** and
+  **Task 9.4B2B2A workspace-protocol-v16 scheduled step/terminal evidence implemented in
+  1.31.0**; Tasks 9.4B2B2B-9.4B3 publication/coordinator effects plus Task 9.5 trace citations
+  remain;
 - protect control-plane paths and complete settlement/platform fault hardening;
 - complete reference-carrier and Git-custody platform/fault conformance for ACLs, extended
   attributes, resource forks or alternate streams, `core.symlinks=false`, sparse-index variants,

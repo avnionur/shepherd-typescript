@@ -20,14 +20,19 @@ import type {
     RetainedWorldSettlementRequest,
 } from "../../src/store/types.ts";
 import {
+    decodeScheduledSelectionPublicationReceipt,
+    decodeScheduledSelectionPublicationStep,
     decodeSelectionPublicationPlan,
     decodeSelectionPublicationReceipt,
     decodeSelectionPublicationSchedule,
     decodeSelectionPublicationStep,
+    encodeScheduledSelectionPublicationReceipt,
+    encodeScheduledSelectionPublicationStep,
     encodeSelectionPublicationPlan,
     encodeSelectionPublicationReceipt,
     encodeSelectionPublicationSchedule,
     encodeSelectionPublicationStep,
+    type ScheduledSelectionPublicationStepEncoding,
 } from "../../src/workspace/selection-publication-codec.ts";
 import type {
     WorldChangeNode,
@@ -162,6 +167,170 @@ test("selection schedules preserve canonical order for unrelated paths and empty
     );
     const empty = createFixture([]);
     assert.deepEqual(encodeSelectionPublicationSchedule(empty.plan).value.change_ordinals, []);
+});
+
+test("scheduled publication codecs bind effects to exact dependency order", () => {
+    const fixture = createFixture(dependencyChanges());
+    const schedule = encodeSelectionPublicationSchedule(fixture.plan);
+    const steps: ScheduledSelectionPublicationStepEncoding[] = [];
+    let previous = null;
+    for (const _ordinal of schedule.value.change_ordinals) {
+        const step = encodeScheduledSelectionPublicationStep(fixture.plan, schedule, previous);
+        steps.push(step);
+        previous = step;
+    }
+    const first = steps[0];
+    const finalStep = steps.at(-1);
+    assert.ok(first !== undefined && finalStep !== undefined);
+    assert.equal(first.value.operation_ordinal, 0);
+    assert.equal(first.value.change_ordinal, 2);
+    assert.equal(first.value.change.path, "a/child");
+    assert.equal(finalStep.value.operation_ordinal, schedule.value.change_ordinals.length - 1);
+    assert.deepEqual(
+        decodeScheduledSelectionPublicationStep(first.json, fixture.plan, schedule, null),
+        first,
+    );
+    assert.throws(
+        () =>
+            decodeScheduledSelectionPublicationStep(`${first.json} `, fixture.plan, schedule, null),
+        TypeError,
+    );
+    const receipt = encodeScheduledSelectionPublicationReceipt(
+        fixture.plan,
+        schedule,
+        finalStep,
+        "basis:after",
+    );
+    assert.deepEqual(
+        decodeScheduledSelectionPublicationReceipt(
+            receipt.json,
+            fixture.plan,
+            schedule,
+            finalStep,
+            "basis:after",
+        ),
+        receipt,
+    );
+    assert.equal(receipt.value.schedule_id, schedule.id);
+    assert.match(
+        first.id,
+        digestPattern(workspaceProtocolConfig.selectionPublication.scheduledStepIdPrefix),
+    );
+    assert.match(
+        receipt.id,
+        digestPattern(workspaceProtocolConfig.selectionPublication.scheduledPublicationIdPrefix),
+    );
+    assert.throws(
+        () => encodeScheduledSelectionPublicationStep(fixture.plan, schedule, finalStep),
+        TypeError,
+    );
+    assert.throws(
+        () =>
+            encodeScheduledSelectionPublicationReceipt(
+                fixture.plan,
+                schedule,
+                steps.at(-2) ?? null,
+                "basis:after",
+            ),
+        TypeError,
+    );
+    assert.throws(
+        () =>
+            encodeScheduledSelectionPublicationReceipt(
+                fixture.plan,
+                schedule,
+                {
+                    ...finalStep,
+                    value: { ...finalStep.value, operation_ordinal: Number.NaN },
+                },
+                "basis:after",
+            ),
+        TypeError,
+    );
+    assert.throws(
+        () =>
+            encodeScheduledSelectionPublicationReceipt(
+                fixture.plan,
+                schedule,
+                { ...finalStep, id: first.id },
+                "basis:after",
+            ),
+        TypeError,
+    );
+    assert.throws(
+        () =>
+            decodeScheduledSelectionPublicationReceipt(
+                `${receipt.json} `,
+                fixture.plan,
+                schedule,
+                finalStep,
+                "basis:after",
+            ),
+        TypeError,
+    );
+});
+
+test("scheduled publication codecs reject crossed plans and schedules", () => {
+    const first = createFixture(dependencyChanges());
+    const second = createFixture(dependencyChanges(), SELECT_ACTION, "command:other");
+    const firstSchedule = encodeSelectionPublicationSchedule(first.plan);
+    const secondSchedule = encodeSelectionPublicationSchedule(second.plan);
+    const firstStep = encodeScheduledSelectionPublicationStep(first.plan, firstSchedule, null);
+    assert.throws(
+        () => encodeScheduledSelectionPublicationStep(second.plan, firstSchedule, null),
+        TypeError,
+    );
+    assert.throws(
+        () => encodeScheduledSelectionPublicationStep(second.plan, secondSchedule, firstStep),
+        TypeError,
+    );
+    assert.throws(
+        () =>
+            encodeScheduledSelectionPublicationStep(first.plan, firstSchedule, {
+                ...firstStep,
+                value: {
+                    ...firstStep.value,
+                    operation_ordinal: firstSchedule.value.change_ordinals.length,
+                },
+            }),
+        TypeError,
+    );
+    assert.throws(
+        () =>
+            encodeScheduledSelectionPublicationStep(
+                first.plan,
+                {
+                    ...firstSchedule,
+                    id: secondSchedule.id,
+                },
+                null,
+            ),
+        TypeError,
+    );
+    assert.throws(
+        () =>
+            encodeScheduledSelectionPublicationReceipt(
+                first.plan,
+                { ...firstSchedule, digest: secondSchedule.digest },
+                null,
+                "basis:after",
+            ),
+        TypeError,
+    );
+
+    const empty = createFixture([]);
+    const emptySchedule = encodeSelectionPublicationSchedule(empty.plan);
+    const receipt = encodeScheduledSelectionPublicationReceipt(
+        empty.plan,
+        emptySchedule,
+        null,
+        empty.request.user_basis_before,
+    );
+    assert.equal(receipt.value.final_step_id, null);
+    assert.throws(
+        () => encodeScheduledSelectionPublicationStep(empty.plan, emptySchedule, null),
+        TypeError,
+    );
 });
 
 test("selection publication plans reject altered authority and malformed changes", () => {
@@ -468,10 +637,27 @@ test("published selection publication schema accepts every codec record kind", (
     assert.ok(finalStep !== undefined);
     const receipt = encodeSelectionPublicationReceipt(fixture.plan, finalStep, "basis:after");
     const schedule = encodeSelectionPublicationSchedule(fixture.plan);
+    const scheduledSteps: ScheduledSelectionPublicationStepEncoding[] = [];
+    let previousScheduled = null;
+    for (const _ordinal of schedule.value.change_ordinals) {
+        const step = encodeScheduledSelectionPublicationStep(
+            fixture.plan,
+            schedule,
+            previousScheduled,
+        );
+        scheduledSteps.push(step);
+        previousScheduled = step;
+    }
+    const scheduledReceipt = encodeScheduledSelectionPublicationReceipt(
+        fixture.plan,
+        schedule,
+        scheduledSteps.at(-1) ?? null,
+        "basis:after",
+    );
     const schema = JSON.parse(
         readFileSync(
             new URL(
-                "../../spec/schemas/retained-world-selection-publication-v2.schema.json",
+                "../../spec/schemas/retained-world-selection-publication-v3.schema.json",
                 import.meta.url,
             ),
             "utf8",
@@ -481,6 +667,8 @@ test("published selection publication schema accepts every codec record kind", (
     for (const value of [
         fixture.plan.value,
         schedule.value,
+        ...scheduledSteps.map((step) => step.value),
+        scheduledReceipt.value,
         ...fixture.steps.map((step) => step.value),
         receipt.value,
     ]) {

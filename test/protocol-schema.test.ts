@@ -60,7 +60,7 @@ const traceArchiveSchema = readJson(
     "../spec/schemas/trace-archive-v1.schema.json",
 ) as AnySchemaObject;
 const selectionPublicationSchema = readJson(
-    "../spec/schemas/retained-world-selection-publication-v2.schema.json",
+    "../spec/schemas/retained-world-selection-publication-v3.schema.json",
 ) as AnySchemaObject;
 const protocolConfig = readJson("../protocol.config.json") as ProtocolConfiguration;
 const fixture = readJson("./fixtures/kernel-record-envelope-v0.json") as RecordFixture;

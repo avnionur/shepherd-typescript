@@ -8,6 +8,8 @@ import {
     RETAINED_WORLD_SELECTION_RECEIPT_VERSION,
     RETAINED_WORLD_SELECTION_SCHEDULE_KINDS,
     RETAINED_WORLD_SELECTION_SCHEDULE_VERSION,
+    RETAINED_WORLD_SELECTION_SCHEDULED_RECEIPT_VERSION,
+    RETAINED_WORLD_SELECTION_SCHEDULED_STEP_VERSION,
     RETAINED_WORLD_SELECTION_STEP_STATUSES,
     RETAINED_WORLD_SELECTION_STEP_VERSION,
     RETAINED_WORLD_SETTLEMENT_ACTIONS,
@@ -75,6 +77,30 @@ type SelectionPublicationSchedule = Readonly<{
     schedule_version: typeof RETAINED_WORLD_SELECTION_SCHEDULE_VERSION;
 }>;
 
+type ScheduledSelectionPublicationStep = Readonly<{
+    change: WorldPathChange;
+    change_ordinal: number;
+    operation_ordinal: number;
+    plan_id: string;
+    previous_step_id: string | null;
+    schedule_id: string;
+    status: typeof APPLIED_STATUS;
+    step_version: typeof RETAINED_WORLD_SELECTION_SCHEDULED_STEP_VERSION;
+}>;
+
+type ScheduledSelectionPublicationReceipt = Readonly<{
+    atomicity: typeof JOURNALED_PATH_SET;
+    final_step_id: string | null;
+    head_content_id: string;
+    operation_id: string;
+    plan_id: string;
+    publication_version: typeof RETAINED_WORLD_SELECTION_SCHEDULED_RECEIPT_VERSION;
+    schedule_id: string;
+    staging_id: string;
+    user_basis_after: string;
+    user_basis_before: string;
+}>;
+
 /** @internal Canonical selection-publication plan retained before user-path mutation. */
 export type SelectionPublicationPlanEncoding = Readonly<{
     digest: string;
@@ -106,6 +132,22 @@ export type SelectionPublicationScheduleEncoding = Readonly<{
     id: string;
     json: string;
     value: SelectionPublicationSchedule;
+}>;
+
+/** @internal Canonical dependency-scheduled path-effect receipt retained during publication. */
+export type ScheduledSelectionPublicationStepEncoding = Readonly<{
+    digest: string;
+    id: string;
+    json: string;
+    value: ScheduledSelectionPublicationStep;
+}>;
+
+/** @internal Canonical dependency-scheduled terminal receipt retained after publication. */
+export type ScheduledSelectionPublicationReceiptEncoding = Readonly<{
+    digest: string;
+    id: string;
+    json: string;
+    value: ScheduledSelectionPublicationReceipt;
 }>;
 
 /** @internal Encodes one exact selection plan from authenticated operation and changeset evidence. */
@@ -205,6 +247,157 @@ export function decodeSelectionPublicationSchedule(
     const expected = encodeSelectionPublicationSchedule(plan);
     if (json !== expected.json) throw new TypeError("selection publication schedule is invalid");
     return expected;
+}
+
+/** @internal Encodes the next exact dependency-scheduled path-effect receipt. */
+export function encodeScheduledSelectionPublicationStep(
+    plan: SelectionPublicationPlanEncoding,
+    schedule: SelectionPublicationScheduleEncoding,
+    previous: ScheduledSelectionPublicationStepEncoding | null,
+): ScheduledSelectionPublicationStepEncoding {
+    const canonicalSchedule = decodeSelectionPublicationSchedule(schedule.json, plan);
+    if (schedule.id !== canonicalSchedule.id || schedule.digest !== canonicalSchedule.digest) {
+        throw new TypeError("scheduled selection publication prefix is inconsistent");
+    }
+    if (previous !== null) assertScheduledStep(plan, canonicalSchedule, previous);
+    const operationOrdinal = previous === null ? 0 : previous.value.operation_ordinal + 1;
+    const changeOrdinal = canonicalSchedule.value.change_ordinals[operationOrdinal];
+    if (changeOrdinal === undefined) {
+        throw new TypeError("scheduled selection publication has no next step");
+    }
+    const change = plan.value.changes[changeOrdinal] as WorldPathChange;
+    const value = Object.freeze({
+        change,
+        change_ordinal: changeOrdinal,
+        operation_ordinal: operationOrdinal,
+        plan_id: plan.id,
+        previous_step_id: previous?.id ?? null,
+        schedule_id: canonicalSchedule.id,
+        status: APPLIED_STATUS,
+        step_version: RETAINED_WORLD_SELECTION_SCHEDULED_STEP_VERSION,
+    }) satisfies ScheduledSelectionPublicationStep;
+    return encodeValue(
+        value,
+        workspaceProtocolConfig.selectionPublication.scheduledStepIdPrefix,
+        workspaceProtocolConfig.selectionPublication.maxStepBytes,
+    );
+}
+
+/** @internal Decodes only the canonical next dependency-scheduled step for one exact prefix. */
+export function decodeScheduledSelectionPublicationStep(
+    json: string,
+    plan: SelectionPublicationPlanEncoding,
+    schedule: SelectionPublicationScheduleEncoding,
+    previous: ScheduledSelectionPublicationStepEncoding | null,
+): ScheduledSelectionPublicationStepEncoding {
+    const expected = encodeScheduledSelectionPublicationStep(plan, schedule, previous);
+    if (json !== expected.json) {
+        throw new TypeError("scheduled selection publication step is invalid");
+    }
+    return expected;
+}
+
+/** @internal Encodes terminal evidence for one complete dependency-scheduled step chain. */
+export function encodeScheduledSelectionPublicationReceipt(
+    plan: SelectionPublicationPlanEncoding,
+    schedule: SelectionPublicationScheduleEncoding,
+    finalStep: ScheduledSelectionPublicationStepEncoding | null,
+    userBasisAfter: string,
+): ScheduledSelectionPublicationReceiptEncoding {
+    assertText(userBasisAfter, "user_basis_after");
+    const canonicalSchedule = decodeSelectionPublicationSchedule(schedule.json, plan);
+    if (schedule.id !== canonicalSchedule.id || schedule.digest !== canonicalSchedule.digest) {
+        throw new TypeError("scheduled selection publication schedule is inconsistent");
+    }
+    if (finalStep !== null) assertScheduledStep(plan, canonicalSchedule, finalStep);
+    const expectedFinalOrdinal = canonicalSchedule.value.change_ordinals.length - 1;
+    if (
+        (expectedFinalOrdinal < 0 && finalStep !== null) ||
+        (expectedFinalOrdinal >= 0 &&
+            (finalStep === null ||
+                finalStep.value.plan_id !== plan.id ||
+                finalStep.value.schedule_id !== canonicalSchedule.id ||
+                finalStep.value.status !== APPLIED_STATUS ||
+                finalStep.value.operation_ordinal !== expectedFinalOrdinal ||
+                finalStep.value.change_ordinal !==
+                    canonicalSchedule.value.change_ordinals[expectedFinalOrdinal]))
+    ) {
+        throw new TypeError("scheduled selection publication step chain is incomplete");
+    }
+    const value = Object.freeze({
+        atomicity: JOURNALED_PATH_SET,
+        final_step_id: finalStep?.id ?? null,
+        head_content_id: plan.value.head_content_id,
+        operation_id: plan.value.operation_id,
+        plan_id: plan.id,
+        publication_version: RETAINED_WORLD_SELECTION_SCHEDULED_RECEIPT_VERSION,
+        schedule_id: canonicalSchedule.id,
+        staging_id: plan.staging_id,
+        user_basis_after: userBasisAfter,
+        user_basis_before: plan.value.user_basis_before,
+    }) satisfies ScheduledSelectionPublicationReceipt;
+    return encodeValue(
+        value,
+        workspaceProtocolConfig.selectionPublication.scheduledPublicationIdPrefix,
+        workspaceProtocolConfig.selectionPublication.maxReceiptBytes,
+    );
+}
+
+/** @internal Decodes only the canonical terminal receipt for one completed schedule. */
+export function decodeScheduledSelectionPublicationReceipt(
+    json: string,
+    plan: SelectionPublicationPlanEncoding,
+    schedule: SelectionPublicationScheduleEncoding,
+    finalStep: ScheduledSelectionPublicationStepEncoding | null,
+    userBasisAfter: string,
+): ScheduledSelectionPublicationReceiptEncoding {
+    const expected = encodeScheduledSelectionPublicationReceipt(
+        plan,
+        schedule,
+        finalStep,
+        userBasisAfter,
+    );
+    if (json !== expected.json) {
+        throw new TypeError("scheduled selection publication receipt is invalid");
+    }
+    return expected;
+}
+
+function assertScheduledStep(
+    plan: SelectionPublicationPlanEncoding,
+    schedule: SelectionPublicationScheduleEncoding,
+    step: ScheduledSelectionPublicationStepEncoding,
+): void {
+    const operationOrdinal = step.value.operation_ordinal;
+    const changeOrdinal = schedule.value.change_ordinals[operationOrdinal];
+    const change = changeOrdinal === undefined ? undefined : plan.value.changes[changeOrdinal];
+    let canonical: ReturnType<typeof encodeValue>;
+    try {
+        canonical = encodeValue(
+            step.value,
+            workspaceProtocolConfig.selectionPublication.scheduledStepIdPrefix,
+            workspaceProtocolConfig.selectionPublication.maxStepBytes,
+        );
+    } catch {
+        throw new TypeError("scheduled selection publication step prefix is invalid");
+    }
+    if (
+        !Number.isSafeInteger(operationOrdinal) ||
+        operationOrdinal < 0 ||
+        change === undefined ||
+        step.value.change_ordinal !== changeOrdinal ||
+        canonicalizeRecord(step.value.change as unknown as SemanticRecord) !==
+            canonicalizeRecord(change as unknown as SemanticRecord) ||
+        step.value.plan_id !== plan.id ||
+        step.value.schedule_id !== schedule.id ||
+        step.value.status !== APPLIED_STATUS ||
+        step.value.step_version !== RETAINED_WORLD_SELECTION_SCHEDULED_STEP_VERSION ||
+        step.id !== canonical.id ||
+        step.digest !== canonical.digest ||
+        step.json !== canonical.json
+    ) {
+        throw new TypeError("scheduled selection publication step prefix is invalid");
+    }
 }
 
 /** @internal Encodes the next exact ordered path-effect receipt for one plan. */

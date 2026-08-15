@@ -59,7 +59,9 @@ versions and identity domains, carrier descriptor names, resource bounds, schema
 movement/recovery/unsupported errors. Workspace protocol v15 adds a separate content-addressed
 dependency schedule over canonical plan changes. It preserves canonical changeset identity while
 ordering directory construction parent-first and directory removal or replacement
-descendant-first. Store schema
+descendant-first. Workspace protocol v16 adds separate dependency-scheduled path-step and terminal
+receipt versions and identity domains bound to the exact v15 schedule, while preserving all v14
+and v15 evidence unchanged. Store schema
 v6 owns the consume-once
 settlement decision table without changing kernel record identity.
 
@@ -121,7 +123,7 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   schema paths, identity prefixes, limits, statuses, and version are closed. Settlement request,
   effect-journal, and selection-publication vocabularies, identity prefixes, resource bounds,
   descriptor names, errors, schema destinations, and versions are closed. Every value matches the
-  immutable workspace protocol v15 contract. Protocols v1 through v14 remain unchanged historical
+  immutable workspace protocol v16 contract. Protocols v1 through v15 remain unchanged historical
   subsets.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,

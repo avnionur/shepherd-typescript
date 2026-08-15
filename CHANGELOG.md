@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.31.0] - 2026-08-15
+
+### New Feature
+
+- Added workspace protocol v16 dependency-scheduled path-step and terminal publication-receipt
+  codecs bound to the exact v15 schedule and v14 selection plan.
+- Added configured scheduled evidence identity domains and versions, an immutable compatibility
+  lock, and generated language-neutral publication schema v3 coverage.
+
+### Impact
+
+The carrier protocol can now retain an exact dependency-ordered effect prefix and terminal receipt
+without redefining prior plan, step, receipt, or schedule evidence. Filesystem effects and public
+selection remain unavailable until Task 9.4B2B2B and Task 9.4B3.
+
 ## [1.30.0] - 2026-08-15
 
 ### New Feature

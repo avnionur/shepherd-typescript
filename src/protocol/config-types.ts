@@ -790,6 +790,14 @@ export type WorkspaceProtocolConfig = {
         readonly scheduleKinds: readonly string[];
         /** Closed dependency-schedule codec version. */
         readonly scheduleVersion: number;
+        /** Prefix for dependency-scheduled terminal publication receipts. */
+        readonly scheduledPublicationIdPrefix: string;
+        /** Closed dependency-scheduled terminal receipt codec version. */
+        readonly scheduledPublicationVersion: number;
+        /** Prefix for dependency-scheduled path-step receipts. */
+        readonly scheduledStepIdPrefix: string;
+        /** Closed dependency-scheduled path-step codec version. */
+        readonly scheduledStepVersion: number;
         /** Protected carrier selection-staging directory. */
         readonly stagingDirectory: string;
         /** Prefix for content-addressed staging identities. */

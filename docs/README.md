@@ -70,8 +70,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Retained-world settlement admission](./retained-world-settlement.md) defines workspace protocol
   v12 exact requests, workspace protocol v13 deterministic effect-journal codecs, workspace
   protocol v14 closed selection-publication plans/steps/receipts, protocol v15 dependency-ordered
-  publication schedules, authenticated immutable-head carrier staging, authenticated retained-output
-  preparation, trace-store schema v6 consume-once compare-and-swap, schema-v7 journal storage,
+  publication schedules, protocol v16 scheduled step/terminal-receipt evidence, authenticated
+  immutable-head carrier staging, authenticated retained-output preparation, trace-store schema v6
+  consume-once compare-and-swap, schema-v7 journal storage,
   atomic deterministic transitions, restart-safe inspection, and terminal-before-cleanup public
   discard recovery, while keeping selection deferred until carrier publication recovery is
   complete.

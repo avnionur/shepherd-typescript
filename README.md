@@ -115,7 +115,8 @@ trace-record contracts with durable SQLite task and trace stores:
   and isolated restart-safe retained output;
 - workspace protocol v12 exact retained-output settlement requests, workspace protocol v13
   deterministic operation/receipt codecs, workspace protocol v14 closed selection plan/step/
-  publication codecs, workspace protocol v15 dependency-ordered publication schedules,
+  publication codecs, workspace protocol v15 dependency-ordered publication schedules, workspace
+  protocol v16 scheduled step/terminal-receipt evidence,
   authenticated immutable-head selection staging, authenticated terminal/cut/
   carrier evidence preparation, trace-store schema v6 consume-once admission, and schema v7
   effect-journal storage with atomic deterministic operation/receipt transitions, one-winner

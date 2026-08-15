@@ -192,6 +192,10 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "scheduleIdPrefix",
             "scheduleKinds",
             "scheduleVersion",
+            "scheduledPublicationIdPrefix",
+            "scheduledPublicationVersion",
+            "scheduledStepIdPrefix",
+            "scheduledStepVersion",
             "stagingDirectory",
             "stagingIdPrefix",
             "stepIdPrefix",
@@ -440,6 +444,16 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             selectionPublication.scheduleIdPrefix,
             digestAlgorithm,
             "workspaces.selectionPublication.scheduleIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.scheduledPublicationIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.scheduledPublicationIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.scheduledStepIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.scheduledStepIdPrefix",
         ),
     ] as const;
     if (
@@ -819,6 +833,16 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             scheduleVersion: readPositiveInteger(
                 selectionPublication.scheduleVersion,
                 "workspaces.selectionPublication.scheduleVersion",
+            ),
+            scheduledPublicationIdPrefix: selectionPublicationDigestPrefixes[5],
+            scheduledPublicationVersion: readPositiveInteger(
+                selectionPublication.scheduledPublicationVersion,
+                "workspaces.selectionPublication.scheduledPublicationVersion",
+            ),
+            scheduledStepIdPrefix: selectionPublicationDigestPrefixes[6],
+            scheduledStepVersion: readPositiveInteger(
+                selectionPublication.scheduledStepVersion,
+                "workspaces.selectionPublication.scheduledStepVersion",
             ),
             stagingDirectory: selectionPublicationPathNames[1],
             stagingIdPrefix: selectionPublicationDigestPrefixes[2],

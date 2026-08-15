@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-15
 
-Current version: `1.30.0`
+Current version: `1.31.0`
 
 Current level: L0 — canonical model
 
@@ -256,6 +256,8 @@ changeset identity.
   redefining canonical changeset identity or workspace-protocol-v14 evidence.
 - [x] Add Task 9.4B2B1 authenticated deterministic reference-carrier staging sourced only from
   verified immutable head custody, with exact reopen and corruption refusal.
+- [x] Add Task 9.4B2B2A workspace-protocol-v16 dependency-scheduled step and terminal receipt
+  evidence without filesystem mutation or reinterpretation of v14/v15 records.
 
 ## Verification required for this slice
 
@@ -267,8 +269,8 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 9.4B2B2: implement scheduled managed-path materialization, durable step
-receipts, and exact carrier publication evidence. Task 9.4B3 then composes
+Continue Phase 3, Task 9.4B2B2B: execute scheduled managed-path effects, retain and recover the
+durable prefix, and publish exact carrier evidence. Task 9.4B3 then composes
 two user-basis checks, public exact-ID select, and restart repair. Task 9.5 owns settlement trace
 citations and the remaining concurrency/fault matrix.
 
