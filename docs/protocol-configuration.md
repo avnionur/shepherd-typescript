@@ -53,7 +53,10 @@ identity domain used by command-authorized restart recovery.
 Workspace protocol v11 fixes bounded authenticated changeset inspection and projection
 vocabularies. Workspace protocol v12 fixes exact settlement actions, durable states, request
 identity, version, and stable validation/conflict errors; workspace protocol v13 adds deterministic
-operation/receipt codec versions and the content-addressed operation identity domain. Store schema
+operation/receipt codec versions and the content-addressed operation identity domain. Workspace
+protocol v14 adds configured journaled-path atomicity, selection plan/step/publication codec
+versions and identity domains, carrier descriptor names, resource bounds, schemas, and stable
+movement/recovery/unsupported errors. Store schema
 v6 owns the consume-once
 settlement decision table without changing kernel record identity.
 
@@ -112,9 +115,11 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   non-empty. Changeset operations, identity, limits, version, and error contracts are also closed.
   Parent-linked capture versioning and its positive ancestry bound are closed. Retained-world
   runner versioning, identity bounds, and enforcement kinds are also closed. Task-world capture
-  schema paths, identity prefixes, limits, statuses, and version are closed. Every value matches
-  the immutable workspace protocol v8 contract. Protocols v1 through v7 remain unchanged
-  historical subsets.
+  schema paths, identity prefixes, limits, statuses, and version are closed. Settlement request,
+  effect-journal, and selection-publication vocabularies, identity prefixes, resource bounds,
+  descriptor names, errors, schema destinations, and versions are closed. Every value matches the
+  immutable workspace protocol v14 contract. Protocols v1 through v13 remain unchanged historical
+  subsets.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,
 root-witness identity, or current ordinal bounds requires a new ABI or migration contract.

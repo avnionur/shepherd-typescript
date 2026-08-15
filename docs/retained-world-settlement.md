@@ -9,6 +9,8 @@ Public entry point: [`src/index.ts`](../src/index.ts). Production-seam tests:
 and [`test/workspace/task-world-execution.test.ts`](../test/workspace/task-world-execution.test.ts).
 Public discard recovery is covered by
 [`test/workspace/retained-world-discard.test.ts`](../test/workspace/retained-world-discard.test.ts).
+Workspace protocol v14 codec evidence is covered by
+[`test/workspace/selection-publication-codec.test.ts`](../test/workspace/selection-publication-codec.test.ts).
 
 ## Implemented foundation
 
@@ -24,6 +26,15 @@ versions plus the content-addressed operation identity prefix. The closed codec 
 authenticated request into the operation, requires canonical persisted JSON, distinguishes
 selected publication from discarded cleanup evidence, and forbids discard from changing the user
 basis.
+
+Workspace protocol v14 adds the closed language-neutral selection-publication contract used by the
+next carrier slice. A deterministic plan binds the exact applying operation, request, immutable
+base/head content, canonical ordered changeset, configured journaled-path atomicity, and staging
+identity. Each path step binds its exact ordinal, before/after change, prior step, and applied
+status. A terminal carrier receipt binds the complete step chain, immutable head content, staging
+identity, and basis before/after. All three values are canonical, content-addressed, closed,
+resource-bounded, generated into a published JSON Schema, and compatibility-locked. This release
+does not stage or publish user files.
 
 Task 9.2B2 implements those trace-store writers. One `BEGIN IMMEDIATE` transaction derives and
 retains the exact operation while moving `prepared` to `applying`; another retains the exact
@@ -68,6 +79,6 @@ filesystem operation.
 The store primitive deliberately remains internal and trusts only the authenticated coordinator.
 Preparation reads retained evidence and mutates only the durable settlement-admission row; it does
 not mutate user files or physical custody. Public `discard` now composes this authority with the
-effect journal; public `select` remains unavailable until Task 9.4 basis revalidation, staging,
-publication, and crash repair are complete. Carrier-level `discard(custodyId)` remains a physical
-primitive and cannot create or bypass a settlement decision by itself.
+effect journal; public `select` remains unavailable until Task 9.4B2 carrier staging/publication
+and Task 9.4B3 coordinator/recovery are complete. Carrier-level `discard(custodyId)` remains a
+physical primitive and cannot create or bypass a settlement decision by itself.

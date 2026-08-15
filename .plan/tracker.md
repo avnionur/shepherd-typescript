@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-15
 
-Current version: `1.27.1`
+Current version: `1.28.0`
 
 Current level: L0 — canonical model
 
@@ -250,6 +250,8 @@ changeset identity.
   carrier cleanup, cleanup-progress retention, and restart convergence after physical deletion.
 - [x] Close Task 9.4A reference selection publication, two-basis-check, journaled-path,
   publication-receipt, and crash-repair contract without claiming runtime selection.
+- [x] Add Task 9.4B1 workspace-protocol-v14 closed selection plan, ordered step, and terminal
+  publication codecs with generated schema, resource bounds, and compatibility lock.
 
 ## Verification required for this slice
 
@@ -261,10 +263,10 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 9.4B: implement the versioned selection carrier, isolated staging, two
-user-basis checks, journaled managed-path materialization, exact publication evidence, public
-exact-ID select, and restart repair. Task 9.5 then owns settlement trace citations and the remaining
-concurrency/fault matrix.
+Continue Phase 3, Task 9.4B2: implement authenticated reference-carrier selection staging,
+journaled managed-path materialization, and exact publication evidence. Task 9.4B3 then composes
+two user-basis checks, public exact-ID select, and restart repair. Task 9.5 owns settlement trace
+citations and the remaining concurrency/fault matrix.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive

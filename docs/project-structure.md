@@ -55,9 +55,9 @@ tests → public exports
 Runtime modules must not import build scripts or planning documents. Public behavior tests use
 `src/index.ts` so they exercise the same seam as consumers. Narrow migration-registry invariant
 tests may import the internal migration validator directly because malformed compiled registries
-cannot be constructed through a public runtime seam. Narrow persisted-codec tests may likewise
-import internal decoders for malformed control and terminal values that public builders reject;
-observable recovery behavior remains tested through `src/index.ts`.
+cannot be constructed through a public runtime seam. Narrow versioned protocol and persisted-codec
+tests may likewise import internal encoders/decoders for malformed control and terminal values that
+public builders reject; observable recovery behavior remains tested through `src/index.ts`.
 
 The runtime areas are intentionally shallow:
 
@@ -96,7 +96,8 @@ The runtime areas are intentionally shallow:
   content-addressed world changesets, authenticated bounded changeset inspection and Git-aware
   projections, opaque retained-world runner registrations, and fenced task-world capture with
   durable journal inspection and command-authorized recovery, plus authenticated exact-output
-  settlement preparation and restart-safe settlement inspection.
+  settlement preparation, restart-safe settlement inspection, and closed selection-publication
+  plan, ordered path-step, and terminal carrier-receipt codecs.
 
 ## Module rules
 

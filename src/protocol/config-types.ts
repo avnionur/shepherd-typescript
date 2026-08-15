@@ -733,6 +733,68 @@ export type WorkspaceProtocolConfig = {
         /** Public settlement protocol version. */
         readonly version: number;
     };
+    /** Journaled retained-world selection publication configuration. */
+    readonly selectionPublication: {
+        /** Closed publication atomicity classifications. */
+        readonly atomicityKinds: readonly string[];
+        /** Closed carrier descriptor format. */
+        readonly descriptorFormat: string;
+        /** Stable selection publication errors. */
+        readonly errors: {
+            /** Basis-movement error code. */
+            readonly basisMovedCode: string;
+            /** Basis-movement default message. */
+            readonly basisMovedMessage: string;
+            /** Partial-publication recovery error code. */
+            readonly recoveryRequiredCode: string;
+            /** Partial-publication recovery default message. */
+            readonly recoveryRequiredMessage: string;
+            /** Unsupported-filesystem error code. */
+            readonly unsupportedCode: string;
+            /** Unsupported-filesystem default message. */
+            readonly unsupportedMessage: string;
+        };
+        /** Maximum canonical bytes in one selection plan. */
+        readonly maxPlanBytes: number;
+        /** Maximum canonical bytes in one terminal publication receipt. */
+        readonly maxReceiptBytes: number;
+        /** Maximum canonical bytes in one path-step receipt. */
+        readonly maxStepBytes: number;
+        /** Maximum ordered path effects in one publication. */
+        readonly maxSteps: number;
+        /** Closed plan descriptor filename. */
+        readonly planFile: string;
+        /** Prefix for content-addressed publication plans. */
+        readonly planIdPrefix: string;
+        /** Closed selection-plan codec version. */
+        readonly planVersion: number;
+        /** Closed terminal publication descriptor filename. */
+        readonly publicationFile: string;
+        /** Prefix for content-addressed terminal publication receipts. */
+        readonly publicationIdPrefix: string;
+        /** Closed terminal publication-receipt codec version. */
+        readonly publicationVersion: number;
+        /** Protected carrier publication collection directory. */
+        readonly publicationsDirectory: string;
+        /** Language-neutral publication schema identity. */
+        readonly schemaId: string;
+        /** Generated publication schema repository path. */
+        readonly schemaPath: string;
+        /** Protected carrier selection-staging directory. */
+        readonly stagingDirectory: string;
+        /** Prefix for content-addressed staging identities. */
+        readonly stagingIdPrefix: string;
+        /** Prefix for content-addressed path-step receipts. */
+        readonly stepIdPrefix: string;
+        /** Closed path-step completion statuses. */
+        readonly stepStatuses: readonly string[];
+        /** Protected ordered step-receipt directory. */
+        readonly stepsDirectory: string;
+        /** Closed path-step receipt codec version. */
+        readonly stepVersion: number;
+        /** Workspace protocol version owning selection publication. */
+        readonly version: number;
+    };
     /** Workspace-local protected control directory name. */
     readonly controlDirectory: string;
     /** Default baseline-adoption mode. */

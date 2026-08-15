@@ -239,6 +239,27 @@ export const RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION = 1 as const;
 /** Configured deterministic settlement-receipt codec version. @public */
 export const RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION = 1 as const;
 
+/** Configured retained-world selection publication atomicity classifications. @public */
+export const RETAINED_WORLD_SELECTION_ATOMICITY_KINDS = ["journaled-path-set"] as const;
+
+/** Configured retained-world selection path-step statuses. @public */
+export const RETAINED_WORLD_SELECTION_STEP_STATUSES = ["applied"] as const;
+
+/** Configured retained-world selection publication protocol version. @public */
+export const RETAINED_WORLD_SELECTION_PUBLICATION_VERSION = 14 as const;
+
+/** Configured retained-world selection plan codec version. @public */
+export const RETAINED_WORLD_SELECTION_PLAN_VERSION = 1 as const;
+
+/** Configured retained-world selection path-step codec version. @public */
+export const RETAINED_WORLD_SELECTION_STEP_VERSION = 1 as const;
+
+/** Configured retained-world selection publication-receipt codec version. @public */
+export const RETAINED_WORLD_SELECTION_RECEIPT_VERSION = 1 as const;
+
+/** Configured maximum path effects in one retained-world selection publication. @public */
+export const RETAINED_WORLD_SELECTION_MAX_STEPS = 100000 as const;
+
 /** Configured maximum UTF-8 bytes for one retained-world text operation. @public */
 export const RETAINED_WORLD_MAX_TEXT_BYTES = 16777216 as const;
 

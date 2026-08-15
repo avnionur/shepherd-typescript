@@ -59,6 +59,9 @@ const recordViewSchema = readJson("../spec/schemas/record-view-v0.schema.json") 
 const traceArchiveSchema = readJson(
     "../spec/schemas/trace-archive-v1.schema.json",
 ) as AnySchemaObject;
+const selectionPublicationSchema = readJson(
+    "../spec/schemas/retained-world-selection-publication-v1.schema.json",
+) as AnySchemaObject;
 const protocolConfig = readJson("../protocol.config.json") as ProtocolConfiguration;
 const fixture = readJson("./fixtures/kernel-record-envelope-v0.json") as RecordFixture;
 
@@ -70,6 +73,11 @@ test("published schemas are valid JSON Schema 2020-12 documents", () => {
     assert.equal(validator.validateSchema(appendBatchSchema), true, validator.errorsText());
     assert.equal(validator.validateSchema(recordViewSchema), true, validator.errorsText());
     assert.equal(validator.validateSchema(traceArchiveSchema), true, validator.errorsText());
+    assert.equal(
+        validator.validateSchema(selectionPublicationSchema),
+        true,
+        validator.errorsText(),
+    );
 });
 
 test("published trace archive schema accepts the conformance fixture", () => {

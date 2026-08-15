@@ -114,7 +114,8 @@ trace-record contracts with durable SQLite task and trace stores:
   retained Git objects, sparse/ignore evidence, linked-worktree identity, basis-movement checks,
   and isolated restart-safe retained output;
 - workspace protocol v12 exact retained-output settlement requests, workspace protocol v13
-  deterministic operation/receipt codecs, authenticated terminal/cut/
+  deterministic operation/receipt codecs, workspace protocol v14 closed selection plan/step/
+  publication codecs, authenticated terminal/cut/
   carrier evidence preparation, trace-store schema v6 consume-once admission, and schema v7
   effect-journal storage with atomic deterministic operation/receipt transitions, one-winner
   conflict detection, exact restart replay, fail-closed read-only settlement inspection, and

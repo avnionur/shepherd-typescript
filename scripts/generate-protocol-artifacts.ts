@@ -102,6 +102,10 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             relativePath: config.workspaces.worldTaskCapture.journalSchemaPath,
         },
         {
+            content: renderJson(renderSelectionPublicationSchema(config)),
+            relativePath: config.workspaces.selectionPublication.schemaPath,
+        },
+        {
             content: renderJson(renderRunWaitingLifecycleSchema(config)),
             relativePath: config.runs.artifacts.waitingLifecycleSchema,
         },
@@ -233,6 +237,187 @@ function renderWorldCaptureJournalSchema(
     };
 }
 
+function renderSelectionPublicationSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const text = { minLength: 1, type: "string" } as const;
+    const directoryNode = {
+        additionalProperties: false,
+        properties: {
+            kind: { const: config.workspaces.carrier.entryKinds[0], type: "string" },
+            mode: { minimum: 0, type: "integer" },
+        },
+        required: ["kind", "mode"],
+        type: "object",
+    };
+    const fileNode = {
+        additionalProperties: false,
+        properties: {
+            byte_length: { minimum: 0, type: "integer" },
+            content_id: text,
+            kind: { const: config.workspaces.carrier.entryKinds[1], type: "string" },
+            mode: { minimum: 0, type: "integer" },
+        },
+        required: ["byte_length", "content_id", "kind", "mode"],
+        type: "object",
+    };
+    const symlinkNode = {
+        additionalProperties: false,
+        properties: {
+            kind: { const: config.workspaces.carrier.entryKinds[2], type: "string" },
+            mode: { type: "null" },
+            target: { type: "string" },
+        },
+        required: ["kind", "mode", "target"],
+        type: "object",
+    };
+    const nullableNode = {
+        anyOf: [
+            { type: "null" },
+            { $ref: "#/$defs/directoryNode" },
+            { $ref: "#/$defs/fileNode" },
+            { $ref: "#/$defs/symlinkNode" },
+        ],
+    };
+    const change = {
+        additionalProperties: false,
+        properties: {
+            after: nullableNode,
+            before: nullableNode,
+            operation: { enum: config.workspaces.changesets.operations, type: "string" },
+            path: text,
+        },
+        required: ["after", "before", "operation", "path"],
+        type: "object",
+    };
+    const planFields = [
+        "action",
+        "atomicity",
+        "base_content_id",
+        "base_revision_id",
+        "binding_id",
+        "capture_record_id",
+        "changes",
+        "changeset_id",
+        "command_id",
+        "custody_id",
+        "descriptor_format",
+        "execution_cut_id",
+        "head_content_id",
+        "head_revision_id",
+        "operation_id",
+        "output_id",
+        "plan_version",
+        "request_id",
+        "run_id",
+        "settlement_version",
+        "staging_id",
+        "user_basis_before",
+    ];
+    return {
+        $defs: { change, directoryNode, fileNode, symlinkNode },
+        $id: config.workspaces.selectionPublication.schemaId,
+        $schema: config.kernel.schemas.dialect,
+        oneOf: [
+            {
+                additionalProperties: false,
+                properties: {
+                    ...Object.fromEntries(planFields.map((field) => [field, text])),
+                    action: {
+                        const: config.workspaces.settlement.actions[0],
+                        type: "string",
+                    },
+                    atomicity: {
+                        enum: config.workspaces.selectionPublication.atomicityKinds,
+                        type: "string",
+                    },
+                    changes: {
+                        items: { $ref: "#/$defs/change" },
+                        maxItems: config.workspaces.selectionPublication.maxSteps,
+                        type: "array",
+                    },
+                    descriptor_format: {
+                        const: config.workspaces.selectionPublication.descriptorFormat,
+                        type: "string",
+                    },
+                    plan_version: {
+                        const: config.workspaces.selectionPublication.planVersion,
+                        type: "integer",
+                    },
+                    settlement_version: {
+                        const: config.workspaces.settlement.version,
+                        type: "integer",
+                    },
+                },
+                required: planFields,
+                type: "object",
+            },
+            {
+                additionalProperties: false,
+                properties: {
+                    change: { $ref: "#/$defs/change" },
+                    ordinal: {
+                        maximum: config.workspaces.selectionPublication.maxSteps - 1,
+                        minimum: 0,
+                        type: "integer",
+                    },
+                    plan_id: text,
+                    previous_step_id: { anyOf: [{ type: "null" }, text] },
+                    status: {
+                        enum: config.workspaces.selectionPublication.stepStatuses,
+                        type: "string",
+                    },
+                    step_version: {
+                        const: config.workspaces.selectionPublication.stepVersion,
+                        type: "integer",
+                    },
+                },
+                required: [
+                    "change",
+                    "ordinal",
+                    "plan_id",
+                    "previous_step_id",
+                    "status",
+                    "step_version",
+                ],
+                type: "object",
+            },
+            {
+                additionalProperties: false,
+                properties: {
+                    atomicity: {
+                        enum: config.workspaces.selectionPublication.atomicityKinds,
+                        type: "string",
+                    },
+                    final_step_id: { anyOf: [{ type: "null" }, text] },
+                    head_content_id: text,
+                    operation_id: text,
+                    plan_id: text,
+                    publication_version: {
+                        const: config.workspaces.selectionPublication.publicationVersion,
+                        type: "integer",
+                    },
+                    staging_id: text,
+                    user_basis_after: text,
+                    user_basis_before: text,
+                },
+                required: [
+                    "atomicity",
+                    "final_step_id",
+                    "head_content_id",
+                    "operation_id",
+                    "plan_id",
+                    "publication_version",
+                    "staging_id",
+                    "user_basis_after",
+                    "user_basis_before",
+                ],
+                type: "object",
+            },
+        ],
+    };
+}
+
 function renderProtocolValues(config: ProtocolConfig): string {
     const renderedModes = config.kernel.recordModes.map((mode) => JSON.stringify(mode)).join(", ");
     const renderedTiers = config.effects.reversibilityTiers
@@ -335,6 +520,12 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedRetainedWorldSettlementStates = config.workspaces.settlement.states
         .map((state) => `    ${JSON.stringify(state)}`)
         .join(",\n");
+    const renderedSelectionAtomicityKinds = config.workspaces.selectionPublication.atomicityKinds
+        .map((kind) => JSON.stringify(kind))
+        .join(", ");
+    const renderedSelectionStepStatuses = config.workspaces.selectionPublication.stepStatuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
 /**
@@ -530,6 +721,27 @@ export const RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION = ${config.workspaces.s
 
 /** Configured deterministic settlement-receipt codec version. @public */
 export const RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION = ${config.workspaces.settlement.receiptVersion} as const;
+
+/** Configured retained-world selection publication atomicity classifications. @public */
+export const RETAINED_WORLD_SELECTION_ATOMICITY_KINDS = [${renderedSelectionAtomicityKinds}] as const;
+
+/** Configured retained-world selection path-step statuses. @public */
+export const RETAINED_WORLD_SELECTION_STEP_STATUSES = [${renderedSelectionStepStatuses}] as const;
+
+/** Configured retained-world selection publication protocol version. @public */
+export const RETAINED_WORLD_SELECTION_PUBLICATION_VERSION = ${config.workspaces.selectionPublication.version} as const;
+
+/** Configured retained-world selection plan codec version. @public */
+export const RETAINED_WORLD_SELECTION_PLAN_VERSION = ${config.workspaces.selectionPublication.planVersion} as const;
+
+/** Configured retained-world selection path-step codec version. @public */
+export const RETAINED_WORLD_SELECTION_STEP_VERSION = ${config.workspaces.selectionPublication.stepVersion} as const;
+
+/** Configured retained-world selection publication-receipt codec version. @public */
+export const RETAINED_WORLD_SELECTION_RECEIPT_VERSION = ${config.workspaces.selectionPublication.publicationVersion} as const;
+
+/** Configured maximum path effects in one retained-world selection publication. @public */
+export const RETAINED_WORLD_SELECTION_MAX_STEPS = ${config.workspaces.selectionPublication.maxSteps} as const;
 
 /** Configured maximum UTF-8 bytes for one retained-world text operation. @public */
 export const RETAINED_WORLD_MAX_TEXT_BYTES = ${config.workspaces.worldTaskCapture.maxTextBytes} as const;

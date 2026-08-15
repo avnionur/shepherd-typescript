@@ -750,3 +750,41 @@ export const WORKSPACE_PROTOCOL_V13_CONTRACT = deepFreeze({
         version: 12,
     },
 } as const);
+
+/** Immutable journaled selection-publication extension implemented by workspace protocol v14. */
+export const WORKSPACE_PROTOCOL_V14_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V13_CONTRACT,
+    selectionPublication: {
+        atomicityKinds: ["journaled-path-set"],
+        descriptorFormat: "shepherd.retained-world-selection-publication",
+        errors: {
+            basisMovedCode: "RETAINED_WORLD_SELECTION_BASIS_MOVED",
+            basisMovedMessage: "retained world selection basis moved before publication",
+            recoveryRequiredCode: "RETAINED_WORLD_SELECTION_RECOVERY_REQUIRED",
+            recoveryRequiredMessage: "retained world selection requires exact recovery",
+            unsupportedCode: "RETAINED_WORLD_SELECTION_UNSUPPORTED",
+            unsupportedMessage: "retained world selection is unsupported by this filesystem",
+        },
+        maxPlanBytes: 2_097_152,
+        maxReceiptBytes: 65_536,
+        maxStepBytes: 131_072,
+        maxSteps: 100_000,
+        planFile: "plan.json",
+        planIdPrefix: "world-selection-plan:sha256:",
+        planVersion: 1,
+        publicationFile: "published.json",
+        publicationIdPrefix: "world-selection-publication:sha256:",
+        publicationVersion: 1,
+        publicationsDirectory: "selection-publications",
+        schemaId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-selection-publication-v1.schema.json",
+        schemaPath: "spec/schemas/retained-world-selection-publication-v1.schema.json",
+        stagingDirectory: "selection-staging",
+        stagingIdPrefix: "world-selection-staging:sha256:",
+        stepIdPrefix: "world-selection-step:sha256:",
+        stepStatuses: ["applied"],
+        stepsDirectory: "steps",
+        stepVersion: 1,
+        version: 14,
+    },
+} as const);

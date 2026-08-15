@@ -34,6 +34,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "gitMetadataName",
             "hexLength",
             "manifestFile",
+            "selectionPublication",
             "settlement",
             "worktreeRefPrefix",
             "worldCapture",
@@ -166,6 +167,47 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         settlement.errors,
         ["conflictCode", "conflictMessage", "invalidCode", "invalidMessage"],
         "workspaces.settlement.errors",
+    );
+    const selectionPublication = readObject(
+        config.selectionPublication,
+        [
+            "atomicityKinds",
+            "descriptorFormat",
+            "errors",
+            "maxPlanBytes",
+            "maxReceiptBytes",
+            "maxStepBytes",
+            "maxSteps",
+            "planFile",
+            "planIdPrefix",
+            "planVersion",
+            "publicationFile",
+            "publicationIdPrefix",
+            "publicationVersion",
+            "publicationsDirectory",
+            "schemaId",
+            "schemaPath",
+            "stagingDirectory",
+            "stagingIdPrefix",
+            "stepIdPrefix",
+            "stepStatuses",
+            "stepsDirectory",
+            "stepVersion",
+            "version",
+        ],
+        "workspaces.selectionPublication",
+    );
+    const selectionPublicationErrors = readObject(
+        selectionPublication.errors,
+        [
+            "basisMovedCode",
+            "basisMovedMessage",
+            "recoveryRequiredCode",
+            "recoveryRequiredMessage",
+            "unsupportedCode",
+            "unsupportedMessage",
+        ],
+        "workspaces.selectionPublication.errors",
     );
     const gitCustody = readObject(
         config.gitCustody,
@@ -321,6 +363,77 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
     ) {
         throw new TypeError("workspaces.carrier.discardDescriptorSuffix must be a path suffix");
     }
+    const maxChanges = readPositiveInteger(
+        changesets.maxChanges,
+        "workspaces.changesets.maxChanges",
+    );
+    const maxSelectionSteps = readPositiveInteger(
+        selectionPublication.maxSteps,
+        "workspaces.selectionPublication.maxSteps",
+    );
+    if (maxSelectionSteps > maxChanges) {
+        throw new TypeError("workspace selection-publication steps must fit changeset limits");
+    }
+    const selectionPublicationPathNames = [
+        readSimpleName(
+            selectionPublication.publicationsDirectory,
+            "workspaces.selectionPublication.publicationsDirectory",
+        ),
+        readSimpleName(
+            selectionPublication.stagingDirectory,
+            "workspaces.selectionPublication.stagingDirectory",
+        ),
+        readSimpleName(
+            selectionPublication.stepsDirectory,
+            "workspaces.selectionPublication.stepsDirectory",
+        ),
+        readSimpleName(selectionPublication.planFile, "workspaces.selectionPublication.planFile"),
+        readSimpleName(
+            selectionPublication.publicationFile,
+            "workspaces.selectionPublication.publicationFile",
+        ),
+    ] as const;
+    if (new Set(selectionPublicationPathNames).size !== selectionPublicationPathNames.length) {
+        throw new TypeError("workspace selection-publication path names must not collide");
+    }
+    if (
+        new Set([
+            ...carrierCollectionDirectories,
+            selectionPublicationPathNames[0],
+            selectionPublicationPathNames[1],
+        ]).size !==
+        carrierCollectionDirectories.length + 2
+    ) {
+        throw new TypeError("workspace carrier and selection-publication directories must differ");
+    }
+    const selectionPublicationDigestPrefixes = [
+        readDigestPrefix(
+            selectionPublication.planIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.planIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.publicationIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.publicationIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.stagingIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.stagingIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.stepIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.stepIdPrefix",
+        ),
+    ] as const;
+    if (
+        new Set(selectionPublicationDigestPrefixes).size !==
+        selectionPublicationDigestPrefixes.length
+    ) {
+        throw new TypeError("workspace selection-publication digest prefixes must differ");
+    }
     return {
         adoptionModes,
         bindingErrors: {
@@ -470,10 +583,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 changesets.maxAggregateReferencedBytes,
                 "workspaces.changesets.maxAggregateReferencedBytes",
             ),
-            maxChanges: readPositiveInteger(
-                changesets.maxChanges,
-                "workspaces.changesets.maxChanges",
-            ),
+            maxChanges,
             maxManifestEntries: readPositiveInteger(
                 changesets.maxManifestEntries,
                 "workspaces.changesets.maxManifestEntries",
@@ -612,6 +722,92 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             ),
             states: readUniqueStrings(settlement.states, "workspaces.settlement.states"),
             version: readPositiveInteger(settlement.version, "workspaces.settlement.version"),
+        },
+        selectionPublication: {
+            atomicityKinds: readUniqueStrings(
+                selectionPublication.atomicityKinds,
+                "workspaces.selectionPublication.atomicityKinds",
+            ),
+            descriptorFormat: readNonEmptyString(
+                selectionPublication.descriptorFormat,
+                "workspaces.selectionPublication.descriptorFormat",
+            ),
+            errors: {
+                basisMovedCode: readNonEmptyString(
+                    selectionPublicationErrors.basisMovedCode,
+                    "workspaces.selectionPublication.errors.basisMovedCode",
+                ),
+                basisMovedMessage: readNonEmptyString(
+                    selectionPublicationErrors.basisMovedMessage,
+                    "workspaces.selectionPublication.errors.basisMovedMessage",
+                ),
+                recoveryRequiredCode: readNonEmptyString(
+                    selectionPublicationErrors.recoveryRequiredCode,
+                    "workspaces.selectionPublication.errors.recoveryRequiredCode",
+                ),
+                recoveryRequiredMessage: readNonEmptyString(
+                    selectionPublicationErrors.recoveryRequiredMessage,
+                    "workspaces.selectionPublication.errors.recoveryRequiredMessage",
+                ),
+                unsupportedCode: readNonEmptyString(
+                    selectionPublicationErrors.unsupportedCode,
+                    "workspaces.selectionPublication.errors.unsupportedCode",
+                ),
+                unsupportedMessage: readNonEmptyString(
+                    selectionPublicationErrors.unsupportedMessage,
+                    "workspaces.selectionPublication.errors.unsupportedMessage",
+                ),
+            },
+            maxPlanBytes: readPositiveInteger(
+                selectionPublication.maxPlanBytes,
+                "workspaces.selectionPublication.maxPlanBytes",
+            ),
+            maxReceiptBytes: readPositiveInteger(
+                selectionPublication.maxReceiptBytes,
+                "workspaces.selectionPublication.maxReceiptBytes",
+            ),
+            maxStepBytes: readPositiveInteger(
+                selectionPublication.maxStepBytes,
+                "workspaces.selectionPublication.maxStepBytes",
+            ),
+            maxSteps: maxSelectionSteps,
+            planFile: selectionPublicationPathNames[3],
+            planIdPrefix: selectionPublicationDigestPrefixes[0],
+            planVersion: readPositiveInteger(
+                selectionPublication.planVersion,
+                "workspaces.selectionPublication.planVersion",
+            ),
+            publicationFile: selectionPublicationPathNames[4],
+            publicationIdPrefix: selectionPublicationDigestPrefixes[1],
+            publicationVersion: readPositiveInteger(
+                selectionPublication.publicationVersion,
+                "workspaces.selectionPublication.publicationVersion",
+            ),
+            publicationsDirectory: selectionPublicationPathNames[0],
+            schemaId: readNonEmptyString(
+                selectionPublication.schemaId,
+                "workspaces.selectionPublication.schemaId",
+            ),
+            schemaPath: readNonEmptyString(
+                selectionPublication.schemaPath,
+                "workspaces.selectionPublication.schemaPath",
+            ),
+            stagingDirectory: selectionPublicationPathNames[1],
+            stagingIdPrefix: selectionPublicationDigestPrefixes[2],
+            stepIdPrefix: selectionPublicationDigestPrefixes[3],
+            stepStatuses: readUniqueStrings(
+                selectionPublication.stepStatuses,
+                "workspaces.selectionPublication.stepStatuses",
+            ),
+            stepsDirectory: selectionPublicationPathNames[2],
+            stepVersion: readPositiveInteger(
+                selectionPublication.stepVersion,
+                "workspaces.selectionPublication.stepVersion",
+            ),
+            version: readPositiveInteger(
+                selectionPublication.version,
+                "workspaces.selectionPublication.version",
+            ),
         },
         controlDirectory,
         defaultAdoptionMode,

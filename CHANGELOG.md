@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.28.0] - 2026-08-15
+
+### New Feature
+
+- Added workspace protocol v14 closed, canonical, content-addressed retained-world selection plans,
+  ordered path-step receipts, and terminal carrier publication receipts.
+- Added configured journaled-path atomicity, selection identity domains, resource and path bounds,
+  stable movement/recovery/unsupported errors, an immutable compatibility lock, and a generated
+  language-neutral publication schema.
+
+### Impact
+
+The workspace package now has a validated protocol boundary for the next reference-carrier staging
+and publication slice. Public selection and user-workspace mutation remain unavailable.
+
 ## [1.27.1] - 2026-08-15
 
 ### Improvement

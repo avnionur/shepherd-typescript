@@ -209,7 +209,7 @@ function validateEntry(value: unknown): WorldManifestEntry {
     ]);
     if (
         typeof fields.path !== "string" ||
-        !validPath(fields.path) ||
+        !isCanonicalWorldPath(fields.path) ||
         !WORLD_ENTRY_KINDS.includes(fields.kind as never)
     )
         fail("manifest entry path or kind is invalid");
@@ -325,7 +325,8 @@ function exactObject(value: unknown, keys: readonly string[]): Record<string, un
     return value as Record<string, unknown>;
 }
 
-function validPath(value: string): boolean {
+/** @internal Whether a path has the canonical managed-world spelling. */
+export function isCanonicalWorldPath(value: string): boolean {
     return (
         value.length > 0 &&
         !value.startsWith("/") &&

@@ -1,0 +1,464 @@
+import { createHash } from "node:crypto";
+
+import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
+import { workspaceProtocolConfig } from "../protocol/config.ts";
+import {
+    RETAINED_WORLD_SELECTION_ATOMICITY_KINDS,
+    RETAINED_WORLD_SELECTION_PLAN_VERSION,
+    RETAINED_WORLD_SELECTION_RECEIPT_VERSION,
+    RETAINED_WORLD_SELECTION_STEP_STATUSES,
+    RETAINED_WORLD_SELECTION_STEP_VERSION,
+    RETAINED_WORLD_SETTLEMENT_ACTIONS,
+    WORLD_ENTRY_KINDS,
+} from "../protocol/values.generated.ts";
+import type { RetainedWorldSettlementOperationEncoding } from "../store/retained-world-settlement-codec.ts";
+import { isCanonicalWorldPath, worldChangeOperationOf } from "./changesets.ts";
+import type { WorldChangeNode, WorldChangeset, WorldPathChange } from "./types.ts";
+
+const [SELECT_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
+const [JOURNALED_PATH_SET] = RETAINED_WORLD_SELECTION_ATOMICITY_KINDS;
+const [APPLIED_STATUS] = RETAINED_WORLD_SELECTION_STEP_STATUSES;
+
+type SelectionPublicationPlan = Readonly<{
+    action: typeof SELECT_ACTION;
+    atomicity: typeof JOURNALED_PATH_SET;
+    base_content_id: string;
+    base_revision_id: string;
+    binding_id: string;
+    capture_record_id: string;
+    changes: readonly WorldPathChange[];
+    changeset_id: string;
+    command_id: string;
+    custody_id: string;
+    descriptor_format: string;
+    execution_cut_id: string;
+    head_content_id: string;
+    head_revision_id: string;
+    operation_id: string;
+    output_id: string;
+    plan_version: typeof RETAINED_WORLD_SELECTION_PLAN_VERSION;
+    request_id: string;
+    run_id: string;
+    settlement_version: number;
+    staging_id: string;
+    user_basis_before: string;
+}>;
+
+type SelectionPublicationStep = Readonly<{
+    change: WorldPathChange;
+    ordinal: number;
+    plan_id: string;
+    previous_step_id: string | null;
+    status: typeof APPLIED_STATUS;
+    step_version: typeof RETAINED_WORLD_SELECTION_STEP_VERSION;
+}>;
+
+type SelectionPublicationReceipt = Readonly<{
+    atomicity: typeof JOURNALED_PATH_SET;
+    final_step_id: string | null;
+    head_content_id: string;
+    operation_id: string;
+    plan_id: string;
+    publication_version: typeof RETAINED_WORLD_SELECTION_RECEIPT_VERSION;
+    staging_id: string;
+    user_basis_after: string;
+    user_basis_before: string;
+}>;
+
+/** @internal Canonical selection-publication plan retained before user-path mutation. */
+export type SelectionPublicationPlanEncoding = Readonly<{
+    digest: string;
+    id: string;
+    json: string;
+    staging_id: string;
+    value: SelectionPublicationPlan;
+}>;
+
+/** @internal Canonical ordered path-effect receipt retained during publication. */
+export type SelectionPublicationStepEncoding = Readonly<{
+    digest: string;
+    id: string;
+    json: string;
+    value: SelectionPublicationStep;
+}>;
+
+/** @internal Canonical terminal carrier receipt retained before selected settlement authority. */
+export type SelectionPublicationReceiptEncoding = Readonly<{
+    digest: string;
+    id: string;
+    json: string;
+    value: SelectionPublicationReceipt;
+}>;
+
+/** @internal Encodes one exact selection plan from authenticated operation and changeset evidence. */
+export function encodeSelectionPublicationPlan(
+    operation: RetainedWorldSettlementOperationEncoding,
+    changeset: WorldChangeset,
+    baseContentId: string,
+    headContentId: string,
+): SelectionPublicationPlanEncoding {
+    const request = operation.value.request;
+    if (operation.value.action !== SELECT_ACTION || request.action !== SELECT_ACTION) {
+        throw new TypeError("selection publication requires an exact select operation");
+    }
+    assertText(baseContentId, "base_content_id");
+    assertText(headContentId, "head_content_id");
+    if (baseContentId !== request.user_basis_before) {
+        throw new TypeError("selection publication base content is inconsistent");
+    }
+    const changes = readChangeset(changeset, request);
+    const stagingId = digestId(workspaceProtocolConfig.selectionPublication.stagingIdPrefix, {
+        binding_id: request.binding_id,
+        changeset_id: request.changeset_id,
+        head_content_id: headContentId,
+        head_revision_id: request.head_revision_id,
+        operation_id: operation.id,
+    });
+    const value = Object.freeze({
+        action: SELECT_ACTION,
+        atomicity: JOURNALED_PATH_SET,
+        base_content_id: baseContentId,
+        base_revision_id: request.base_revision_id,
+        binding_id: request.binding_id,
+        capture_record_id: request.capture_record_id,
+        changes,
+        changeset_id: request.changeset_id,
+        command_id: request.command_id,
+        custody_id: request.custody_id,
+        descriptor_format: workspaceProtocolConfig.selectionPublication.descriptorFormat,
+        execution_cut_id: request.execution_cut_id,
+        head_content_id: headContentId,
+        head_revision_id: request.head_revision_id,
+        operation_id: operation.id,
+        output_id: request.output_id,
+        plan_version: RETAINED_WORLD_SELECTION_PLAN_VERSION,
+        request_id: operation.value.request_id,
+        run_id: request.run_id,
+        settlement_version: request.settlement_version,
+        staging_id: stagingId,
+        user_basis_before: request.user_basis_before,
+    }) satisfies SelectionPublicationPlan;
+    return Object.freeze({
+        ...encodeValue(value, workspaceProtocolConfig.selectionPublication.planIdPrefix),
+        staging_id: stagingId,
+    });
+}
+
+/** @internal Decodes only the canonical plan for the exact authenticated inputs. */
+export function decodeSelectionPublicationPlan(
+    json: string,
+    operation: RetainedWorldSettlementOperationEncoding,
+    changeset: WorldChangeset,
+    baseContentId: string,
+    headContentId: string,
+): SelectionPublicationPlanEncoding {
+    const expected = encodeSelectionPublicationPlan(
+        operation,
+        changeset,
+        baseContentId,
+        headContentId,
+    );
+    if (json !== expected.json) throw new TypeError("selection publication plan is invalid");
+    return expected;
+}
+
+/** @internal Encodes the next exact ordered path-effect receipt for one plan. */
+export function encodeSelectionPublicationStep(
+    plan: SelectionPublicationPlanEncoding,
+    previous: SelectionPublicationStepEncoding | null,
+): SelectionPublicationStepEncoding {
+    const ordinal = previous === null ? 0 : previous.value.ordinal + 1;
+    if (
+        previous !== null &&
+        (previous.value.plan_id !== plan.id || previous.value.status !== APPLIED_STATUS)
+    ) {
+        throw new TypeError("selection publication step prefix is inconsistent");
+    }
+    const change = plan.value.changes[ordinal];
+    if (change === undefined) throw new TypeError("selection publication has no next step");
+    const value = Object.freeze({
+        change,
+        ordinal,
+        plan_id: plan.id,
+        previous_step_id: previous?.id ?? null,
+        status: APPLIED_STATUS,
+        step_version: RETAINED_WORLD_SELECTION_STEP_VERSION,
+    }) satisfies SelectionPublicationStep;
+    return encodeValue(
+        value,
+        workspaceProtocolConfig.selectionPublication.stepIdPrefix,
+        workspaceProtocolConfig.selectionPublication.maxStepBytes,
+    );
+}
+
+/** @internal Decodes only the canonical next step for one exact plan prefix. */
+export function decodeSelectionPublicationStep(
+    json: string,
+    plan: SelectionPublicationPlanEncoding,
+    previous: SelectionPublicationStepEncoding | null,
+): SelectionPublicationStepEncoding {
+    const expected = encodeSelectionPublicationStep(plan, previous);
+    if (json !== expected.json) throw new TypeError("selection publication step is invalid");
+    return expected;
+}
+
+/** @internal Encodes terminal publication evidence for one complete ordered step chain. */
+export function encodeSelectionPublicationReceipt(
+    plan: SelectionPublicationPlanEncoding,
+    finalStep: SelectionPublicationStepEncoding | null,
+    userBasisAfter: string,
+): SelectionPublicationReceiptEncoding {
+    assertText(userBasisAfter, "user_basis_after");
+    const expectedFinalOrdinal = plan.value.changes.length - 1;
+    if (
+        (expectedFinalOrdinal < 0 && finalStep !== null) ||
+        (expectedFinalOrdinal >= 0 &&
+            (finalStep === null ||
+                finalStep.value.plan_id !== plan.id ||
+                finalStep.value.ordinal !== expectedFinalOrdinal))
+    ) {
+        throw new TypeError("selection publication step chain is incomplete");
+    }
+    const value = Object.freeze({
+        atomicity: JOURNALED_PATH_SET,
+        final_step_id: finalStep?.id ?? null,
+        head_content_id: plan.value.head_content_id,
+        operation_id: plan.value.operation_id,
+        plan_id: plan.id,
+        publication_version: RETAINED_WORLD_SELECTION_RECEIPT_VERSION,
+        staging_id: plan.staging_id,
+        user_basis_after: userBasisAfter,
+        user_basis_before: plan.value.user_basis_before,
+    }) satisfies SelectionPublicationReceipt;
+    return encodeValue(
+        value,
+        workspaceProtocolConfig.selectionPublication.publicationIdPrefix,
+        workspaceProtocolConfig.selectionPublication.maxReceiptBytes,
+    );
+}
+
+/** @internal Decodes only the canonical terminal receipt for one exact completed plan. */
+export function decodeSelectionPublicationReceipt(
+    json: string,
+    plan: SelectionPublicationPlanEncoding,
+    finalStep: SelectionPublicationStepEncoding | null,
+    userBasisAfter: string,
+): SelectionPublicationReceiptEncoding {
+    const expected = encodeSelectionPublicationReceipt(plan, finalStep, userBasisAfter);
+    if (json !== expected.json) throw new TypeError("selection publication receipt is invalid");
+    return expected;
+}
+
+function readChangeset(
+    value: WorldChangeset,
+    request: RetainedWorldSettlementOperationEncoding["value"]["request"],
+): readonly WorldPathChange[] {
+    const fields = exactObject(value, [
+        "base_revision_id",
+        "binding_id",
+        "changed_paths",
+        "changes",
+        "changeset_id",
+        "head_revision_id",
+        "schema_version",
+    ]);
+    if (
+        fields.base_revision_id !== request.base_revision_id ||
+        fields.binding_id !== request.binding_id ||
+        fields.changeset_id !== request.changeset_id ||
+        fields.head_revision_id !== request.head_revision_id ||
+        fields.schema_version !== workspaceProtocolConfig.changesets.version ||
+        !Array.isArray(fields.changes) ||
+        !Array.isArray(fields.changed_paths) ||
+        fields.changes.length > workspaceProtocolConfig.selectionPublication.maxSteps ||
+        Object.keys(fields.changes).length !== fields.changes.length ||
+        Object.keys(fields.changed_paths).length !== fields.changed_paths.length
+    ) {
+        throw new TypeError("selection publication changeset is inconsistent");
+    }
+    const changes = Object.freeze(fields.changes.map(readChange));
+    const referencedBytes = changes.reduce(
+        (total, change) =>
+            total + referencedBytesOf(change.before) + referencedBytesOf(change.after),
+        0,
+    );
+    if (referencedBytes > workspaceProtocolConfig.changesets.maxAggregateReferencedBytes) {
+        throw new TypeError("selection publication changeset exceeds referenced-byte limits");
+    }
+    const changedPaths = fields.changed_paths.map((path) => {
+        assertText(path, "changed_path");
+        return path;
+    });
+    if (
+        changedPaths.length !== changes.length ||
+        changedPaths.some((path, index) => path !== changes[index]?.path) ||
+        changes.some(
+            (change, index) =>
+                index > 0 &&
+                Buffer.from((changes[index - 1] as WorldPathChange).path).compare(
+                    Buffer.from(change.path),
+                ) >= 0,
+        )
+    ) {
+        throw new TypeError("selection publication changed paths are inconsistent");
+    }
+    const semantic = {
+        base_revision_id: request.base_revision_id,
+        binding_id: request.binding_id,
+        changes: changes as unknown as SemanticRecord["changes"],
+        head_revision_id: request.head_revision_id,
+        schema_version: workspaceProtocolConfig.changesets.version,
+    };
+    if (digestId(workspaceProtocolConfig.changesets.idPrefix, semantic) !== request.changeset_id) {
+        throw new TypeError("selection publication changeset identity is invalid");
+    }
+    return changes;
+}
+
+function readChange(value: unknown): WorldPathChange {
+    const fields = exactObject(value, ["after", "before", "operation", "path"]);
+    assertText(fields.path, "path");
+    if (
+        !isCanonicalWorldPath(fields.path) ||
+        Buffer.byteLength(fields.path) > workspaceProtocolConfig.changesets.maxPathBytes
+    ) {
+        throw new TypeError("selection publication path is invalid");
+    }
+    const before = fields.before === null ? null : readNode(fields.before);
+    const after = fields.after === null ? null : readNode(fields.after);
+    if (
+        (before === null && after === null) ||
+        fields.operation !== worldChangeOperationOf(before, after)
+    ) {
+        throw new TypeError("selection publication change is invalid");
+    }
+    return Object.freeze({
+        after,
+        before,
+        operation: fields.operation,
+        path: fields.path,
+    }) as WorldPathChange;
+}
+
+function readNode(value: unknown): WorldChangeNode {
+    const snapshot = snapshotObject(value);
+    const kind = snapshot.kind;
+    if (kind === WORLD_ENTRY_KINDS[0]) {
+        const fields = exactObject(snapshot, ["kind", "mode"]);
+        assertMode(fields.mode);
+        return Object.freeze({ kind, mode: fields.mode });
+    }
+    if (kind === WORLD_ENTRY_KINDS[1]) {
+        const fields = exactObject(snapshot, ["byte_length", "content_id", "kind", "mode"]);
+        assertMode(fields.mode);
+        assertText(fields.content_id, "content_id");
+        if (!validDigest(fields.content_id, workspaceProtocolConfig.carrier.blobIdPrefix)) {
+            throw new TypeError("selection publication content identity is invalid");
+        }
+        if (!Number.isSafeInteger(fields.byte_length) || Number(fields.byte_length) < 0) {
+            throw new TypeError("selection publication file length is invalid");
+        }
+        if (Number(fields.byte_length) > workspaceProtocolConfig.changesets.maxSingleBlobBytes) {
+            throw new TypeError("selection publication file exceeds byte limits");
+        }
+        return Object.freeze({
+            byte_length: fields.byte_length,
+            content_id: fields.content_id,
+            kind,
+            mode: fields.mode,
+        }) as WorldChangeNode;
+    }
+    if (kind === WORLD_ENTRY_KINDS[2]) {
+        const fields = exactObject(snapshot, ["kind", "mode", "target"]);
+        if (
+            fields.mode !== null ||
+            typeof fields.target !== "string" ||
+            Buffer.byteLength(String(fields.target)) >
+                workspaceProtocolConfig.changesets.maxSymlinkTargetBytes
+        ) {
+            throw new TypeError("selection publication symlink is invalid");
+        }
+        return Object.freeze({ kind, mode: null, target: fields.target });
+    }
+    throw new TypeError("selection publication node kind is invalid");
+}
+
+function exactObject(value: unknown, keys: readonly string[]): Record<string, unknown> {
+    const snapshot = snapshotObject(value);
+    const ownKeys = Object.keys(snapshot);
+    const expected = [...keys].sort();
+    if (
+        ownKeys.length !== expected.length ||
+        ownKeys.sort().some((key, index) => key !== expected[index])
+    ) {
+        throw new TypeError("selection publication evidence must be exact data");
+    }
+    return Object.fromEntries(keys.map((key) => [key, snapshot[key]]));
+}
+
+function snapshotObject(value: unknown): Record<string, unknown> {
+    if (
+        value === null ||
+        typeof value !== "object" ||
+        Array.isArray(value) ||
+        ![Object.prototype, null].includes(Object.getPrototypeOf(value))
+    ) {
+        throw new TypeError("selection publication evidence must be exact data");
+    }
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    const ownKeys = Reflect.ownKeys(descriptors);
+    if (
+        ownKeys.some((key) => typeof key !== "string") ||
+        (ownKeys as string[]).some((key) => !("value" in (descriptors[key] as PropertyDescriptor)))
+    ) {
+        throw new TypeError("selection publication evidence must be exact data");
+    }
+    return Object.fromEntries(
+        (ownKeys as string[]).map((key) => [key, (descriptors[key] as PropertyDescriptor).value]),
+    );
+}
+
+function assertMode(value: unknown): asserts value is number {
+    if (!Number.isSafeInteger(value) || Number(value) < 0) {
+        throw new TypeError("selection publication mode is invalid");
+    }
+}
+
+function assertText(value: unknown, field: string): asserts value is string {
+    if (typeof value !== "string" || value.length === 0) {
+        throw new TypeError(`selection publication ${field} is invalid`);
+    }
+}
+
+function validDigest(value: string, prefix: string): boolean {
+    return (
+        value.startsWith(prefix) &&
+        value.length === prefix.length + workspaceProtocolConfig.hexLength &&
+        /^[0-9a-f]+$/u.test(value.slice(prefix.length))
+    );
+}
+
+function encodeValue<T extends Readonly<Record<string, unknown>>>(
+    value: T,
+    prefix: string,
+    maxBytes = workspaceProtocolConfig.selectionPublication.maxPlanBytes,
+): Readonly<{ digest: string; id: string; json: string; value: T }> {
+    const json = canonicalizeRecord(value as SemanticRecord);
+    if (Buffer.byteLength(json) > maxBytes) {
+        throw new TypeError("selection publication evidence exceeds configured byte limits");
+    }
+    const digest = digestText(json);
+    return Object.freeze({ digest, id: `${prefix}${digest}`, json, value });
+}
+
+function referencedBytesOf(node: WorldChangeNode | null): number {
+    return node?.kind === WORLD_ENTRY_KINDS[1] ? node.byte_length : 0;
+}
+
+function digestId(prefix: string, value: SemanticRecord): string {
+    return `${prefix}${digestText(canonicalizeRecord(value))}`;
+}
+
+function digestText(value: string): string {
+    return createHash(workspaceProtocolConfig.digestAlgorithm).update(value).digest("hex");
+}

@@ -231,7 +231,9 @@ semantics, contention, malformed evidence, and recovery-required partial publica
 
 ## Task boundary
 
-Task 9.4A owns this contract only. Task 9.4B implements the versioned carrier publication seam,
-expanded selected receipt, public exact-ID select coordinator, restart repair, and focused fault
-tests. Task 9.5 then attaches settlement citations to the execution projection and closes the
-remaining cross-command concurrency and Phase 3 settlement fault matrix.
+Task 9.4A owns this contract only. Task 9.4B1 implements the versioned plan, ordered step, terminal
+publication codecs, schema, and compatibility lock without filesystem effects. Task 9.4B2
+implements the authenticated reference-carrier staging and journaled publication seam. Task 9.4B3
+then composes the expanded selected receipt, public exact-ID select coordinator, two basis checks,
+restart repair, and focused fault tests. Task 9.5 attaches settlement citations to the execution
+projection and closes the remaining cross-command concurrency and Phase 3 settlement fault matrix.

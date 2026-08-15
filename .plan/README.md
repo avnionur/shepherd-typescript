@@ -214,6 +214,6 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 3, Task 9.4B by implementing the versioned retained-world selection publication
-carrier, two basis checks, public exact-ID select, and restart repair defined by the Task 9.4A
-contract.
+Continue Phase 3, Task 9.4B2 by implementing authenticated reference-carrier selection staging,
+journaled managed-path publication, and exact carrier receipts. Task 9.4B3 then composes the two
+basis checks, public exact-ID select, and restart repair.
