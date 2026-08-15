@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-14
+Last updated: 2026-08-15
 
-Current version: `1.27.0`
+Current version: `1.27.1`
 
 Current level: L0 — canonical model
 
@@ -248,6 +248,8 @@ changeset identity.
   restart validation, skipped-transition refusal, and cross-connection receipt conflict evidence.
 - [x] Add Task 9.3 authenticated exact-ID discard with terminal-before-cleanup ordering, idempotent
   carrier cleanup, cleanup-progress retention, and restart convergence after physical deletion.
+- [x] Close Task 9.4A reference selection publication, two-basis-check, journaled-path,
+  publication-receipt, and crash-repair contract without claiming runtime selection.
 
 ## Verification required for this slice
 
@@ -259,9 +261,10 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 9.4: implement selection staging, two user-basis checks, isolated
-materialization, atomic publication evidence, and crash repair. Task 9.5 then owns settlement trace
-citations and the remaining concurrency/fault matrix.
+Continue Phase 3, Task 9.4B: implement the versioned selection carrier, isolated staging, two
+user-basis checks, journaled managed-path materialization, exact publication evidence, public
+exact-ID select, and restart repair. Task 9.5 then owns settlement trace citations and the remaining
+concurrency/fault matrix.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive

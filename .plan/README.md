@@ -158,6 +158,8 @@ record and public API must declare a protocol/compatibility version.
   discard identity, basis, mutation, cleanup, and recovery contract.
 - [Settlement effect-journal contract](./settlement-effect-journal-research.md) — deterministic
   operation identity, persisted receipts, schema-v7 transitions, and Task 9 implementation order.
+- [Retained-world selection publication contract](./retained-world-selection-research.md) —
+  journaled managed-path materialization, two basis checks, publication receipts, and crash repair.
 - [Testing and release](./testing-and-release.md) — conformance, property,
   security, recovery, performance, CI, and release gates.
 - [Decisions and risks](./decisions-and-risks.md) — adopted decisions,
@@ -212,4 +214,6 @@ The project is complete only when:
 
 ## Immediate next step
 
-Begin Phase 3, Task 8 by implementing exact-ID `select` and `discard` over retained outputs.
+Continue Phase 3, Task 9.4B by implementing the versioned retained-world selection publication
+carrier, two basis checks, public exact-ID select, and restart repair defined by the Task 9.4A
+contract.

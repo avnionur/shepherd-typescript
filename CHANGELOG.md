@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.27.1] - 2026-08-15
+
+### Improvement
+
+- Defined the retained-world selection publication contract for two semantic basis checks,
+  immutable-source staging, journaled managed-path effects, exact publication receipts, and
+  fail-closed restart repair.
+- Assigned the versioned carrier and public selection implementation to Phase 3 Task 9.4B without
+  claiming whole-tree atomic visibility or runtime selection in this documentation-only slice.
+
+### Impact
+
+The roadmap now has an implementable crash boundary for exact-ID selection across SQLite and the
+user filesystem. Runtime behavior is unchanged.
+
 ## [1.27.0] - 2026-08-14
 
 ### New Feature

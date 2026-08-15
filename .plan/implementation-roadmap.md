@@ -168,7 +168,8 @@ Work:
   completed in 1.24.1**, **Task 9.2A schema-v7 migration carrier implemented in 1.24.2**, and
   **Task 9.2B1 deterministic operation/receipt codecs implemented in 1.25.0**, with transactional
   transitions **implemented in 1.26.0**; **Task 9.3 public discard and cleanup recovery implemented
-  in 1.27.0**, with select and trace citations assigned to the remaining Tasks 9.4-9.5;
+  in 1.27.0**; **Task 9.4A selection publication and crash-repair contract completed in 1.27.1**,
+  with Task 9.4B implementation and Task 9.5 trace citations remaining;
 - protect control-plane paths and complete settlement/platform fault hardening;
 - complete reference-carrier and Git-custody platform/fault conformance for ACLs, extended
   attributes, resource forks or alternate streams, `core.symlinks=false`, sparse-index variants,
