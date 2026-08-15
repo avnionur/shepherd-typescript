@@ -238,8 +238,9 @@ semantics, contention, malformed evidence, and recovery-required partial publica
 
 Task 9.4A owns this contract only. Task 9.4B1 implements the versioned plan, canonical-order step,
 terminal publication codecs, schema, and compatibility lock without filesystem effects. Task
-9.4B2A implements the separate dependency-ordered schedule and schema extension. Task 9.4B2B
-implements the authenticated reference-carrier staging and journaled publication seam. Task 9.4B3
+9.4B2A implements the separate dependency-ordered schedule and schema extension. Task 9.4B2B1
+implements authenticated deterministic immutable-head staging. Task 9.4B2B2 implements the
+journaled managed-path publication seam and carrier receipt. Task 9.4B3
 then composes the expanded selected receipt, public exact-ID select coordinator, two basis checks,
 restart repair, and focused fault tests. Task 9.5 attaches settlement citations to the execution
 projection and closes the remaining cross-command concurrency and Phase 3 settlement fault matrix.

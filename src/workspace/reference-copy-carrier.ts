@@ -29,13 +29,21 @@ import {
 } from "../canonical/canonical-record.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import { WORLD_ENTRY_KINDS } from "../protocol/values.generated.ts";
+import type { RetainedWorldSettlementOperationEncoding } from "../store/retained-world-settlement-codec.ts";
 import { createWorkspaceBindings, createWorkspaceBindingsForRetainedCustody } from "./bindings.ts";
 import { WorldCarrierError } from "./errors.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
+import {
+    decodeSelectionPublicationPlan,
+    decodeSelectionPublicationSchedule,
+    type SelectionPublicationPlanEncoding,
+    type SelectionPublicationScheduleEncoding,
+} from "./selection-publication-codec.ts";
 import type {
     ReferenceCopyCarrier,
     ReferenceCopyCarrierOptions,
     WorkspaceBinding,
+    WorldChangeset,
     WorldCustody,
     WorldManifestEntry,
     WorldRevision,
@@ -47,6 +55,7 @@ type CarrierPaths = {
     readonly custodies: string;
     readonly discarded: string;
     readonly revisions: string;
+    readonly selectionStaging: string;
     readonly staging: string;
     readonly workspaceRoot: string;
     readonly identities: readonly { readonly identity: string; readonly path: string }[];
@@ -160,6 +169,41 @@ export function forkReferenceCopyRevisionForTaskWorld(
     const paths = REFERENCE_CARRIER_PATHS.get(carrier);
     assert.ok(paths, "reference carrier paths are unavailable");
     return invokeCarrier(() => forkRevision(paths, revisionId, NO_ADAPTER_RECEIPTS, custodyId));
+}
+
+/**
+ * Authenticates and durably stages one exact retained-world selection plan.
+ *
+ * Staging copies only from the immutable retained head revision into deterministic protected
+ * carrier custody. It never reads or mutates the user binding. Equal retries reopen the same
+ * verified staging identity; conflicting retained evidence fails closed.
+ *
+ * @param carrier - Package-created reference carrier authority.
+ * @param definition - Exact operation, changeset, plan, and schedule evidence to authenticate.
+ * @returns Frozen protected staging identity and operational path for later carrier publication.
+ * @throws {WorldCarrierError} If plan, schedule, revision, or staging evidence is unsafe or
+ * inconsistent.
+ * @throws {TypeError} If the carrier authority is forged.
+ * @internal
+ */
+export function stageReferenceCopySelection(
+    carrier: ReferenceCopyCarrier,
+    definition: Readonly<{
+        changeset: WorldChangeset;
+        operation: RetainedWorldSettlementOperationEncoding;
+        plan: SelectionPublicationPlanEncoding;
+        schedule: SelectionPublicationScheduleEncoding;
+    }>,
+): Readonly<{
+    plan_id: string;
+    schedule_id: string;
+    staging_id: string;
+    staging_path: string;
+}> {
+    assertReferenceCopyCarrier(carrier);
+    const paths = REFERENCE_CARRIER_PATHS.get(carrier);
+    assert.ok(paths, "reference carrier paths are unavailable");
+    return invokeCarrier(() => stageSelection(paths, definition));
 }
 
 /** @internal Reads and authenticates one retained regular-file blob from an owned revision. */
@@ -390,6 +434,10 @@ function createCarrierPaths(
         custodies: path.join(carrier, config.custodiesDirectory),
         discarded: path.join(carrier, config.discardedDirectory),
         revisions: path.join(carrier, config.revisionsDirectory),
+        selectionStaging: path.join(
+            carrier,
+            workspaceProtocolConfig.selectionPublication.stagingDirectory,
+        ),
         staging: path.join(carrier, config.stagingDirectory),
     };
     try {
@@ -414,6 +462,114 @@ function createCarrierPaths(
     } catch (error) {
         throwCarrierError(error);
     }
+}
+
+function stageSelection(
+    paths: CarrierPaths,
+    definition: Readonly<{
+        changeset: WorldChangeset;
+        operation: RetainedWorldSettlementOperationEncoding;
+        plan: SelectionPublicationPlanEncoding;
+        schedule: SelectionPublicationScheduleEncoding;
+    }>,
+): Readonly<{
+    plan_id: string;
+    schedule_id: string;
+    staging_id: string;
+    staging_path: string;
+}> {
+    const { changeset, operation, plan, schedule } = definition;
+    const candidate = JSON.parse(plan.json) as Record<string, unknown>;
+    const baseRevisionId = candidate.base_revision_id;
+    const headRevisionId = candidate.head_revision_id;
+    if (typeof baseRevisionId !== "string" || typeof headRevisionId !== "string") {
+        throw new TypeError("selection publication revision authority is invalid");
+    }
+    verifyRevision(paths, baseRevisionId);
+    verifyRevision(paths, headRevisionId);
+    const base = loadRevision(paths, baseRevisionId);
+    const head = loadRevision(paths, headRevisionId);
+    const validatedPlan = decodeSelectionPublicationPlan(
+        plan.json,
+        operation,
+        changeset,
+        base.content_id,
+        head.content_id,
+    );
+    if (
+        plan.id !== validatedPlan.id ||
+        plan.digest !== validatedPlan.digest ||
+        plan.staging_id !== validatedPlan.staging_id ||
+        canonicalizeRecord(plan.value as unknown as SemanticRecord) !== validatedPlan.json
+    ) {
+        throw new TypeError("selection publication plan authority is invalid");
+    }
+    const validatedSchedule = decodeSelectionPublicationSchedule(schedule.json, validatedPlan);
+    if (
+        schedule.id !== validatedSchedule.id ||
+        schedule.digest !== validatedSchedule.digest ||
+        canonicalizeRecord(schedule.value as unknown as SemanticRecord) !== validatedSchedule.json
+    ) {
+        throw new TypeError("selection publication schedule authority is invalid");
+    }
+    assert.equal(base.binding_id, validatedPlan.value.binding_id);
+    assert.equal(base.content_id, validatedPlan.value.base_content_id);
+    assert.equal(head.binding_id, validatedPlan.value.binding_id);
+    assert.equal(head.content_id, validatedPlan.value.head_content_id);
+
+    const stagingRoot = createStaging(paths);
+    const stagedWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
+    const finalRoot = selectionStagingRoot(paths, validatedPlan.staging_id);
+    try {
+        mkdirSync(stagedWorld);
+        assertManifestEqual(head.manifest, captureTree(head.path, stagedWorld, null));
+        writeClosedDescriptor(
+            path.join(stagingRoot, workspaceProtocolConfig.selectionPublication.planFile),
+            validatedPlan.value,
+        );
+        writeClosedDescriptor(
+            path.join(stagingRoot, workspaceProtocolConfig.selectionPublication.scheduleFile),
+            validatedSchedule.value,
+        );
+        syncDirectory(stagingRoot);
+        publishDirectory(paths, stagingRoot, finalRoot, () =>
+            verifySelectionStaging(paths, validatedPlan, validatedSchedule, head),
+        );
+        verifySelectionStaging(paths, validatedPlan, validatedSchedule, head);
+        return Object.freeze({
+            plan_id: validatedPlan.id,
+            schedule_id: validatedSchedule.id,
+            staging_id: validatedPlan.staging_id,
+            staging_path: safeWorldPath(finalRoot),
+        });
+    } catch (error) {
+        cleanupStaging(paths, stagingRoot);
+        throw error;
+    }
+}
+
+function verifySelectionStaging(
+    paths: CarrierPaths,
+    plan: SelectionPublicationPlanEncoding,
+    schedule: SelectionPublicationScheduleEncoding,
+    head: WorldRevision,
+): void {
+    const root = selectionStagingRoot(paths, plan.staging_id);
+    const retained = assertReceiptRoot(paths.selectionStaging, root);
+    const retainedPlan = canonicalizeRecord(
+        readJson(
+            path.join(root, workspaceProtocolConfig.selectionPublication.planFile),
+        ) as SemanticRecord,
+    );
+    const retainedSchedule = canonicalizeRecord(
+        readJson(
+            path.join(root, workspaceProtocolConfig.selectionPublication.scheduleFile),
+        ) as SemanticRecord,
+    );
+    assert.equal(retainedPlan, plan.json);
+    assert.equal(retainedSchedule, schedule.json);
+    assertManifestEqual(head.manifest, captureTree(safeWorldPath(root), null, null));
+    assertReceiptRootStable(root, retained);
 }
 
 function snapshotBinding(
@@ -1209,6 +1365,15 @@ function revisionRoot(paths: CarrierPaths, revisionId: string): string {
         paths.revisions,
         revisionId,
         workspaceProtocolConfig.carrier.revisionIdPrefix,
+    );
+}
+
+function selectionStagingRoot(paths: CarrierPaths, stagingId: string): string {
+    assertOwnedDirectory(paths, paths.selectionStaging);
+    return identityRoot(
+        paths.selectionStaging,
+        stagingId,
+        workspaceProtocolConfig.selectionPublication.stagingIdPrefix,
     );
 }
 

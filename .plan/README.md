@@ -214,6 +214,6 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 3, Task 9.4B2B by implementing authenticated reference-carrier selection staging,
-journaled managed-path publication, and exact carrier receipts. Task 9.4B3 then composes the two
+Continue Phase 3, Task 9.4B2B2 by implementing scheduled managed-path publication, durable step
+receipts, and exact carrier receipts. Task 9.4B3 then composes the two
 basis checks, public exact-ID select, and restart repair.

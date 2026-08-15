@@ -41,8 +41,14 @@ v14 plan. Canonical changes remain the changeset identity order. The schedule co
 permutation of those ordinals, preserves bytewise order for unrelated paths, publishes directory
 construction before descendants, and publishes descendants before removing or replacing a
 directory. The v14 plan, path-step, and terminal-receipt encodings remain unchanged. This schedule
-is protocol evidence only; authenticated carrier staging and filesystem publication remain the
-next slice.
+is protocol evidence only; it does not itself stage bytes or mutate user paths.
+
+Task 9.4B2B1 implements authenticated carrier staging. The carrier reconstructs the exact plan
+from its operation, canonical changeset, and verified base/head revisions, reconstructs the v15
+schedule, then copies only the immutable retained head into the deterministic protected staging
+identity. It flushes the staged bytes, plan, and schedule before publication, reopens equal retries
+exactly after restart, rejects conflicting or corrupted custody, and never reads or changes the
+user binding. Scheduled user-path mutation and terminal carrier publication remain Task 9.4B2B2.
 
 Task 9.2B2 implements those trace-store writers. One `BEGIN IMMEDIATE` transaction derives and
 retains the exact operation while moving `prepared` to `applying`; another retains the exact
@@ -87,6 +93,6 @@ filesystem operation.
 The store primitive deliberately remains internal and trusts only the authenticated coordinator.
 Preparation reads retained evidence and mutates only the durable settlement-admission row; it does
 not mutate user files or physical custody. Public `discard` now composes this authority with the
-effect journal; public `select` remains unavailable until Task 9.4B2B carrier staging/publication
+effect journal; public `select` remains unavailable until Task 9.4B2B2 journaled publication
 and Task 9.4B3 coordinator/recovery are complete. Carrier-level `discard(custodyId)` remains a
 physical primitive and cannot create or bypass a settlement decision by itself.

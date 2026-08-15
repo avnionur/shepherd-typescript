@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.30.0] - 2026-08-15
+
+### New Feature
+
+- Added authenticated reference-carrier staging for exact v14 selection plans and v15 dependency
+  schedules reconstructed from the cited settlement operation, changeset, and retained revisions.
+- Added deterministic protected staging publication sourced only from immutable head custody, with
+  exact replay after reopen and fail-closed conflict/corruption handling.
+
+### Impact
+
+The carrier can now durably prepare and verify the exact immutable bytes required by a selection
+without reading or mutating the user binding. Scheduled user-path effects and public `select`
+remain unavailable until the following Task 9.4B2B2 and 9.4B3 slices.
+
 ## [1.29.0] - 2026-08-15
 
 ### New Feature
