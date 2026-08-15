@@ -1,0 +1,399 @@
+{
+    "$defs": {
+        "change": {
+            "additionalProperties": false,
+            "properties": {
+                "after": {
+                    "anyOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/directoryNode"
+                        },
+                        {
+                            "$ref": "#/$defs/fileNode"
+                        },
+                        {
+                            "$ref": "#/$defs/symlinkNode"
+                        }
+                    ]
+                },
+                "before": {
+                    "anyOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/directoryNode"
+                        },
+                        {
+                            "$ref": "#/$defs/fileNode"
+                        },
+                        {
+                            "$ref": "#/$defs/symlinkNode"
+                        }
+                    ]
+                },
+                "operation": {
+                    "enum": [
+                        "add",
+                        "delete",
+                        "modify",
+                        "replace"
+                    ],
+                    "type": "string"
+                },
+                "path": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "after",
+                "before",
+                "operation",
+                "path"
+            ],
+            "type": "object"
+        },
+        "directoryNode": {
+            "additionalProperties": false,
+            "properties": {
+                "kind": {
+                    "const": "directory",
+                    "type": "string"
+                },
+                "mode": {
+                    "minimum": 0,
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "kind",
+                "mode"
+            ],
+            "type": "object"
+        },
+        "fileNode": {
+            "additionalProperties": false,
+            "properties": {
+                "byte_length": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "content_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "file",
+                    "type": "string"
+                },
+                "mode": {
+                    "minimum": 0,
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "byte_length",
+                "content_id",
+                "kind",
+                "mode"
+            ],
+            "type": "object"
+        },
+        "symlinkNode": {
+            "additionalProperties": false,
+            "properties": {
+                "kind": {
+                    "const": "symlink",
+                    "type": "string"
+                },
+                "mode": {
+                    "type": "null"
+                },
+                "target": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "kind",
+                "mode",
+                "target"
+            ],
+            "type": "object"
+        }
+    },
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-selection-publication-v2.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "oneOf": [
+        {
+            "additionalProperties": false,
+            "properties": {
+                "action": {
+                    "const": "select",
+                    "type": "string"
+                },
+                "atomicity": {
+                    "enum": [
+                        "journaled-path-set"
+                    ],
+                    "type": "string"
+                },
+                "base_content_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "base_revision_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "binding_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "capture_record_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "changes": {
+                    "items": {
+                        "$ref": "#/$defs/change"
+                    },
+                    "maxItems": 100000,
+                    "type": "array"
+                },
+                "changeset_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "command_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "custody_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "descriptor_format": {
+                    "const": "shepherd.retained-world-selection-publication",
+                    "type": "string"
+                },
+                "execution_cut_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "head_content_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "head_revision_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "operation_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "output_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "plan_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "request_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "run_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "settlement_version": {
+                    "const": 12,
+                    "type": "integer"
+                },
+                "staging_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "user_basis_before": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "action",
+                "atomicity",
+                "base_content_id",
+                "base_revision_id",
+                "binding_id",
+                "capture_record_id",
+                "changes",
+                "changeset_id",
+                "command_id",
+                "custody_id",
+                "descriptor_format",
+                "execution_cut_id",
+                "head_content_id",
+                "head_revision_id",
+                "operation_id",
+                "output_id",
+                "plan_version",
+                "request_id",
+                "run_id",
+                "settlement_version",
+                "staging_id",
+                "user_basis_before"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "change": {
+                    "$ref": "#/$defs/change"
+                },
+                "ordinal": {
+                    "maximum": 99999,
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "plan_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "previous_step_id": {
+                    "anyOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "minLength": 1,
+                            "type": "string"
+                        }
+                    ]
+                },
+                "status": {
+                    "enum": [
+                        "applied"
+                    ],
+                    "type": "string"
+                },
+                "step_version": {
+                    "const": 1,
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "change",
+                "ordinal",
+                "plan_id",
+                "previous_step_id",
+                "status",
+                "step_version"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "atomicity": {
+                    "enum": [
+                        "journaled-path-set"
+                    ],
+                    "type": "string"
+                },
+                "final_step_id": {
+                    "anyOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "minLength": 1,
+                            "type": "string"
+                        }
+                    ]
+                },
+                "head_content_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "operation_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "plan_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "publication_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "staging_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "user_basis_after": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "user_basis_before": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "atomicity",
+                "final_step_id",
+                "head_content_id",
+                "operation_id",
+                "plan_id",
+                "publication_version",
+                "staging_id",
+                "user_basis_after",
+                "user_basis_before"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "change_ordinals": {
+                    "items": {
+                        "maximum": 99999,
+                        "minimum": 0,
+                        "type": "integer"
+                    },
+                    "maxItems": 100000,
+                    "type": "array"
+                },
+                "plan_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "schedule_kind": {
+                    "enum": [
+                        "dependency-ordered-path-set"
+                    ],
+                    "type": "string"
+                },
+                "schedule_version": {
+                    "const": 1,
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "change_ordinals",
+                "plan_id",
+                "schedule_kind",
+                "schedule_version"
+            ],
+            "type": "object"
+        }
+    ]
+}

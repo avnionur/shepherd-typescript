@@ -22,16 +22,22 @@ import type {
 import {
     decodeSelectionPublicationPlan,
     decodeSelectionPublicationReceipt,
+    decodeSelectionPublicationSchedule,
     decodeSelectionPublicationStep,
     encodeSelectionPublicationPlan,
     encodeSelectionPublicationReceipt,
+    encodeSelectionPublicationSchedule,
     encodeSelectionPublicationStep,
 } from "../../src/workspace/selection-publication-codec.ts";
-import type { WorldChangeset, WorldPathChange } from "../../src/workspace/types.ts";
+import type {
+    WorldChangeNode,
+    WorldChangeset,
+    WorldPathChange,
+} from "../../src/workspace/types.ts";
 
 const [SELECT_ACTION, DISCARD_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
 const [PREPARED_STATE] = RETAINED_WORLD_SETTLEMENT_STATES;
-const [ADD, , MODIFY] = WORLD_CHANGE_OPERATIONS;
+const [ADD, DELETE, MODIFY, REPLACE] = WORLD_CHANGE_OPERATIONS;
 const [DIRECTORY, FILE, SYMLINK] = WORLD_ENTRY_KINDS;
 
 test("selection publication codecs bind an exact ordered plan and terminal receipt", () => {
@@ -126,6 +132,36 @@ test("selection publication codecs support an empty reconstructive plan", () => 
             ),
         TypeError,
     );
+});
+
+test("selection schedules order construction parents first and removed directories last", () => {
+    const fixture = createFixture(dependencyChanges());
+    const schedule = encodeSelectionPublicationSchedule(fixture.plan);
+    assert.deepEqual(schedule.value.change_ordinals, [2, 0, 1, 3, 4, 6, 5, 7, 8, 9]);
+    assert.equal(Object.isFrozen(schedule.value), true);
+    assert.equal(Object.isFrozen(schedule.value.change_ordinals), true);
+    assert.match(
+        schedule.id,
+        digestPattern(workspaceProtocolConfig.selectionPublication.scheduleIdPrefix),
+    );
+    assert.deepEqual(decodeSelectionPublicationSchedule(schedule.json, fixture.plan), schedule);
+    assert.throws(
+        () => decodeSelectionPublicationSchedule(`${schedule.json} `, fixture.plan),
+        TypeError,
+    );
+
+    const second = createFixture(dependencyChanges(), SELECT_ACTION, "command:other");
+    assert.throws(() => decodeSelectionPublicationSchedule(schedule.json, second.plan), TypeError);
+});
+
+test("selection schedules preserve canonical order for unrelated paths and empty plans", () => {
+    const ordinary = createFixture();
+    assert.deepEqual(
+        encodeSelectionPublicationSchedule(ordinary.plan).value.change_ordinals,
+        [0, 1],
+    );
+    const empty = createFixture([]);
+    assert.deepEqual(encodeSelectionPublicationSchedule(empty.plan).value.change_ordinals, []);
 });
 
 test("selection publication plans reject altered authority and malformed changes", () => {
@@ -431,10 +467,11 @@ test("published selection publication schema accepts every codec record kind", (
     const finalStep = fixture.steps.at(-1);
     assert.ok(finalStep !== undefined);
     const receipt = encodeSelectionPublicationReceipt(fixture.plan, finalStep, "basis:after");
+    const schedule = encodeSelectionPublicationSchedule(fixture.plan);
     const schema = JSON.parse(
         readFileSync(
             new URL(
-                "../../spec/schemas/retained-world-selection-publication-v1.schema.json",
+                "../../spec/schemas/retained-world-selection-publication-v2.schema.json",
                 import.meta.url,
             ),
             "utf8",
@@ -443,6 +480,7 @@ test("published selection publication schema accepts every codec record kind", (
     const validate = new Ajv2020({ strict: true }).compile(schema);
     for (const value of [
         fixture.plan.value,
+        schedule.value,
         ...fixture.steps.map((step) => step.value),
         receipt.value,
     ]) {
@@ -543,6 +581,31 @@ function defaultChanges(): readonly WorldPathChange[] {
             operation: WORLD_CHANGE_OPERATIONS[3],
             path: "two",
         }),
+    ]);
+}
+
+function dependencyChanges(): readonly WorldPathChange[] {
+    const directory = (): WorldChangeNode => Object.freeze({ kind: DIRECTORY, mode: 493 });
+    const file = (character: string): WorldChangeNode =>
+        Object.freeze({
+            byte_length: 1,
+            content_id: blobId(character),
+            kind: FILE,
+            mode: 420,
+        });
+    const symlink = (): WorldChangeNode =>
+        Object.freeze({ kind: SYMLINK, mode: null, target: "target" });
+    return Object.freeze([
+        Object.freeze({ after: null, before: directory(), operation: DELETE, path: "a" }),
+        Object.freeze({ after: file("2"), before: file("1"), operation: MODIFY, path: "a-b" }),
+        Object.freeze({ after: null, before: file("3"), operation: DELETE, path: "a/child" }),
+        Object.freeze({ after: directory(), before: null, operation: ADD, path: "b" }),
+        Object.freeze({ after: file("4"), before: null, operation: ADD, path: "b/child" }),
+        Object.freeze({ after: symlink(), before: directory(), operation: REPLACE, path: "c" }),
+        Object.freeze({ after: null, before: file("5"), operation: DELETE, path: "c/child" }),
+        Object.freeze({ after: directory(), before: file("6"), operation: REPLACE, path: "d" }),
+        Object.freeze({ after: file("7"), before: null, operation: ADD, path: "d/child" }),
+        Object.freeze({ after: file("9"), before: file("8"), operation: MODIFY, path: "e" }),
     ]);
 }
 

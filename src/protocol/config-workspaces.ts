@@ -176,6 +176,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "errors",
             "maxPlanBytes",
             "maxReceiptBytes",
+            "maxScheduleBytes",
             "maxStepBytes",
             "maxSteps",
             "planFile",
@@ -187,6 +188,10 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "publicationsDirectory",
             "schemaId",
             "schemaPath",
+            "scheduleFile",
+            "scheduleIdPrefix",
+            "scheduleKinds",
+            "scheduleVersion",
             "stagingDirectory",
             "stagingIdPrefix",
             "stepIdPrefix",
@@ -392,6 +397,10 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             selectionPublication.publicationFile,
             "workspaces.selectionPublication.publicationFile",
         ),
+        readSimpleName(
+            selectionPublication.scheduleFile,
+            "workspaces.selectionPublication.scheduleFile",
+        ),
     ] as const;
     if (new Set(selectionPublicationPathNames).size !== selectionPublicationPathNames.length) {
         throw new TypeError("workspace selection-publication path names must not collide");
@@ -426,6 +435,11 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             selectionPublication.stepIdPrefix,
             digestAlgorithm,
             "workspaces.selectionPublication.stepIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.scheduleIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.scheduleIdPrefix",
         ),
     ] as const;
     if (
@@ -766,6 +780,10 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 selectionPublication.maxReceiptBytes,
                 "workspaces.selectionPublication.maxReceiptBytes",
             ),
+            maxScheduleBytes: readPositiveInteger(
+                selectionPublication.maxScheduleBytes,
+                "workspaces.selectionPublication.maxScheduleBytes",
+            ),
             maxStepBytes: readPositiveInteger(
                 selectionPublication.maxStepBytes,
                 "workspaces.selectionPublication.maxStepBytes",
@@ -791,6 +809,16 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             schemaPath: readNonEmptyString(
                 selectionPublication.schemaPath,
                 "workspaces.selectionPublication.schemaPath",
+            ),
+            scheduleFile: selectionPublicationPathNames[5],
+            scheduleIdPrefix: selectionPublicationDigestPrefixes[4],
+            scheduleKinds: readUniqueStrings(
+                selectionPublication.scheduleKinds,
+                "workspaces.selectionPublication.scheduleKinds",
+            ),
+            scheduleVersion: readPositiveInteger(
+                selectionPublication.scheduleVersion,
+                "workspaces.selectionPublication.scheduleVersion",
             ),
             stagingDirectory: selectionPublicationPathNames[1],
             stagingIdPrefix: selectionPublicationDigestPrefixes[2],

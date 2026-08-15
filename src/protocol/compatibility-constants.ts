@@ -788,3 +788,20 @@ export const WORKSPACE_PROTOCOL_V14_CONTRACT = deepFreeze({
         version: 14,
     },
 } as const);
+
+/** Immutable dependency-ordered selection-schedule extension implemented by workspace protocol v15. */
+export const WORKSPACE_PROTOCOL_V15_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V14_CONTRACT,
+    selectionPublication: {
+        ...WORKSPACE_PROTOCOL_V14_CONTRACT.selectionPublication,
+        maxScheduleBytes: 1_048_576,
+        schemaId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-selection-publication-v2.schema.json",
+        schemaPath: "spec/schemas/retained-world-selection-publication-v2.schema.json",
+        scheduleFile: "schedule.json",
+        scheduleIdPrefix: "world-selection-schedule:sha256:",
+        scheduleKinds: ["dependency-ordered-path-set"],
+        scheduleVersion: 1,
+        version: 15,
+    },
+} as const);

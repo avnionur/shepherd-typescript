@@ -22,6 +22,7 @@ import {
     WORKSPACE_PROTOCOL_V12_CONTRACT,
     WORKSPACE_PROTOCOL_V13_CONTRACT,
     WORKSPACE_PROTOCOL_V14_CONTRACT,
+    WORKSPACE_PROTOCOL_V15_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -74,10 +75,11 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.settlement.version, 12);
     assert.equal(parsed.workspaces.settlement.operationVersion, 1);
     assert.equal(parsed.workspaces.settlement.receiptVersion, 1);
-    assert.equal(parsed.workspaces.selectionPublication.version, 14);
+    assert.equal(parsed.workspaces.selectionPublication.version, 15);
     assert.equal(parsed.workspaces.selectionPublication.planVersion, 1);
     assert.equal(parsed.workspaces.selectionPublication.stepVersion, 1);
     assert.equal(parsed.workspaces.selectionPublication.publicationVersion, 1);
+    assert.equal(parsed.workspaces.selectionPublication.scheduleVersion, 1);
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
@@ -94,6 +96,8 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V12_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V13_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V14_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V15_CONTRACT), true);
+    assert.equal("scheduleKinds" in WORKSPACE_PROTOCOL_V14_CONTRACT.selectionPublication, false);
     assert.equal("selectionPublication" in WORKSPACE_PROTOCOL_V13_CONTRACT, false);
     assert.equal("operationVersion" in WORKSPACE_PROTOCOL_V12_CONTRACT.settlement, false);
     assert.equal("settlement" in WORKSPACE_PROTOCOL_V11_CONTRACT, false);
@@ -801,6 +805,16 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
         },
         (config) => {
             objectAt(workspaceConfigOf(config), "selectionPublication").maxReceiptBytes = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").maxScheduleBytes = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").scheduleKinds = [];
+        },
+        (config) => {
+            const publication = objectAt(workspaceConfigOf(config), "selectionPublication");
+            publication.scheduleIdPrefix = publication.planIdPrefix;
         },
         (config) => {
             objectAt(workspaceConfigOf(config), "selectionPublication").maxSteps =

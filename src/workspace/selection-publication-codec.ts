@@ -6,6 +6,8 @@ import {
     RETAINED_WORLD_SELECTION_ATOMICITY_KINDS,
     RETAINED_WORLD_SELECTION_PLAN_VERSION,
     RETAINED_WORLD_SELECTION_RECEIPT_VERSION,
+    RETAINED_WORLD_SELECTION_SCHEDULE_KINDS,
+    RETAINED_WORLD_SELECTION_SCHEDULE_VERSION,
     RETAINED_WORLD_SELECTION_STEP_STATUSES,
     RETAINED_WORLD_SELECTION_STEP_VERSION,
     RETAINED_WORLD_SETTLEMENT_ACTIONS,
@@ -18,6 +20,7 @@ import type { WorldChangeNode, WorldChangeset, WorldPathChange } from "./types.t
 const [SELECT_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
 const [JOURNALED_PATH_SET] = RETAINED_WORLD_SELECTION_ATOMICITY_KINDS;
 const [APPLIED_STATUS] = RETAINED_WORLD_SELECTION_STEP_STATUSES;
+const [DEPENDENCY_ORDERED_PATH_SET] = RETAINED_WORLD_SELECTION_SCHEDULE_KINDS;
 
 type SelectionPublicationPlan = Readonly<{
     action: typeof SELECT_ACTION;
@@ -65,6 +68,13 @@ type SelectionPublicationReceipt = Readonly<{
     user_basis_before: string;
 }>;
 
+type SelectionPublicationSchedule = Readonly<{
+    change_ordinals: readonly number[];
+    plan_id: string;
+    schedule_kind: typeof DEPENDENCY_ORDERED_PATH_SET;
+    schedule_version: typeof RETAINED_WORLD_SELECTION_SCHEDULE_VERSION;
+}>;
+
 /** @internal Canonical selection-publication plan retained before user-path mutation. */
 export type SelectionPublicationPlanEncoding = Readonly<{
     digest: string;
@@ -88,6 +98,14 @@ export type SelectionPublicationReceiptEncoding = Readonly<{
     id: string;
     json: string;
     value: SelectionPublicationReceipt;
+}>;
+
+/** @internal Canonical dependency-ordered schedule over one immutable selection plan. */
+export type SelectionPublicationScheduleEncoding = Readonly<{
+    digest: string;
+    id: string;
+    json: string;
+    value: SelectionPublicationSchedule;
 }>;
 
 /** @internal Encodes one exact selection plan from authenticated operation and changeset evidence. */
@@ -159,6 +177,33 @@ export function decodeSelectionPublicationPlan(
         headContentId,
     );
     if (json !== expected.json) throw new TypeError("selection publication plan is invalid");
+    return expected;
+}
+
+/** @internal Encodes a deterministic directory-safe application schedule over canonical changes. */
+export function encodeSelectionPublicationSchedule(
+    plan: SelectionPublicationPlanEncoding,
+): SelectionPublicationScheduleEncoding {
+    const value = Object.freeze({
+        change_ordinals: dependencyOrderedOrdinals(plan.value.changes),
+        plan_id: plan.id,
+        schedule_kind: DEPENDENCY_ORDERED_PATH_SET,
+        schedule_version: RETAINED_WORLD_SELECTION_SCHEDULE_VERSION,
+    }) satisfies SelectionPublicationSchedule;
+    return encodeValue(
+        value,
+        workspaceProtocolConfig.selectionPublication.scheduleIdPrefix,
+        workspaceProtocolConfig.selectionPublication.maxScheduleBytes,
+    );
+}
+
+/** @internal Decodes only the canonical dependency schedule for one exact plan. */
+export function decodeSelectionPublicationSchedule(
+    json: string,
+    plan: SelectionPublicationPlanEncoding,
+): SelectionPublicationScheduleEncoding {
+    const expected = encodeSelectionPublicationSchedule(plan);
+    if (json !== expected.json) throw new TypeError("selection publication schedule is invalid");
     return expected;
 }
 
@@ -313,6 +358,49 @@ function readChangeset(
         throw new TypeError("selection publication changeset identity is invalid");
     }
     return changes;
+}
+
+type ScheduleNode = {
+    readonly children: ScheduleNode[];
+    readonly ordinal: number;
+};
+
+function dependencyOrderedOrdinals(changes: readonly WorldPathChange[]): readonly number[] {
+    const roots: ScheduleNode[] = [];
+    const nodesByPath = new Map<string, ScheduleNode>();
+    for (const [ordinal, change] of changes.entries()) {
+        let parent: ScheduleNode | undefined;
+        let separator = change.path.lastIndexOf("/");
+        while (separator >= 0 && parent === undefined) {
+            parent = nodesByPath.get(change.path.slice(0, separator));
+            separator = change.path.lastIndexOf("/", separator - 1);
+        }
+        const node: ScheduleNode = { children: [], ordinal };
+        (parent?.children ?? roots).push(node);
+        nodesByPath.set(change.path, node);
+    }
+
+    const ordinals: number[] = [];
+    const pending: Array<Readonly<{ emit: boolean; node: ScheduleNode }>> = [...roots]
+        .reverse()
+        .map((node) => ({ emit: false, node }));
+    while (pending.length > 0) {
+        const item = pending.pop() as Readonly<{ emit: boolean; node: ScheduleNode }>;
+        if (item.emit) {
+            ordinals.push(item.node.ordinal);
+            continue;
+        }
+        const change = changes[item.node.ordinal] as WorldPathChange;
+        const descendantsFirst =
+            change.before?.kind === WORLD_ENTRY_KINDS[0] &&
+            change.after?.kind !== WORLD_ENTRY_KINDS[0];
+        if (!descendantsFirst) ordinals.push(item.node.ordinal);
+        if (descendantsFirst) pending.push({ emit: true, node: item.node });
+        for (const child of [...item.node.children].reverse()) {
+            pending.push({ emit: false, node: child });
+        }
+    }
+    return Object.freeze(ordinals);
 }
 
 function readChange(value: unknown): WorldPathChange {

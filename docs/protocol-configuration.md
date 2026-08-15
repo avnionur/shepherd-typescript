@@ -56,7 +56,10 @@ identity, version, and stable validation/conflict errors; workspace protocol v13
 operation/receipt codec versions and the content-addressed operation identity domain. Workspace
 protocol v14 adds configured journaled-path atomicity, selection plan/step/publication codec
 versions and identity domains, carrier descriptor names, resource bounds, schemas, and stable
-movement/recovery/unsupported errors. Store schema
+movement/recovery/unsupported errors. Workspace protocol v15 adds a separate content-addressed
+dependency schedule over canonical plan changes. It preserves canonical changeset identity while
+ordering directory construction parent-first and directory removal or replacement
+descendant-first. Store schema
 v6 owns the consume-once
 settlement decision table without changing kernel record identity.
 
@@ -118,7 +121,7 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   schema paths, identity prefixes, limits, statuses, and version are closed. Settlement request,
   effect-journal, and selection-publication vocabularies, identity prefixes, resource bounds,
   descriptor names, errors, schema destinations, and versions are closed. Every value matches the
-  immutable workspace protocol v14 contract. Protocols v1 through v13 remain unchanged historical
+  immutable workspace protocol v15 contract. Protocols v1 through v14 remain unchanged historical
   subsets.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,

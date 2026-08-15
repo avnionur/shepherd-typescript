@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.29.0] - 2026-08-15
+
+### New Feature
+
+- Added workspace protocol v15 canonical, content-addressed dependency schedules over exact v14
+  selection plans without redefining the existing plan, step, or receipt encodings.
+- Added deterministic directory-safe ordering: construction parents precede descendants, removed
+  or replaced directories follow descendants, and unrelated changes retain canonical order.
+- Added configured schedule identity, kind, version, filename and byte bound, an immutable
+  compatibility lock, and a generated language-neutral publication schema v2.
+
+### Impact
+
+The reference carrier now has a deterministic application order for the next staging/publication
+slice while canonical changeset identity and all workspace protocol v14 evidence remain unchanged.
+Public selection and user-workspace mutation remain unavailable.
+
 ## [1.28.0] - 2026-08-15
 
 ### New Feature

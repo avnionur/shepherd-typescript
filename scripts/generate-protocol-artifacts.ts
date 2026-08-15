@@ -414,6 +414,31 @@ function renderSelectionPublicationSchema(
                 ],
                 type: "object",
             },
+            {
+                additionalProperties: false,
+                properties: {
+                    change_ordinals: {
+                        items: {
+                            maximum: config.workspaces.selectionPublication.maxSteps - 1,
+                            minimum: 0,
+                            type: "integer",
+                        },
+                        maxItems: config.workspaces.selectionPublication.maxSteps,
+                        type: "array",
+                    },
+                    plan_id: text,
+                    schedule_kind: {
+                        enum: config.workspaces.selectionPublication.scheduleKinds,
+                        type: "string",
+                    },
+                    schedule_version: {
+                        const: config.workspaces.selectionPublication.scheduleVersion,
+                        type: "integer",
+                    },
+                },
+                required: ["change_ordinals", "plan_id", "schedule_kind", "schedule_version"],
+                type: "object",
+            },
         ],
     };
 }
@@ -525,6 +550,9 @@ function renderProtocolValues(config: ProtocolConfig): string {
         .join(", ");
     const renderedSelectionStepStatuses = config.workspaces.selectionPublication.stepStatuses
         .map((status) => JSON.stringify(status))
+        .join(", ");
+    const renderedSelectionScheduleKinds = config.workspaces.selectionPublication.scheduleKinds
+        .map((kind) => JSON.stringify(kind))
         .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
@@ -728,6 +756,9 @@ export const RETAINED_WORLD_SELECTION_ATOMICITY_KINDS = [${renderedSelectionAtom
 /** Configured retained-world selection path-step statuses. @public */
 export const RETAINED_WORLD_SELECTION_STEP_STATUSES = [${renderedSelectionStepStatuses}] as const;
 
+/** Configured retained-world selection dependency-schedule classifications. @public */
+export const RETAINED_WORLD_SELECTION_SCHEDULE_KINDS = [${renderedSelectionScheduleKinds}] as const;
+
 /** Configured retained-world selection publication protocol version. @public */
 export const RETAINED_WORLD_SELECTION_PUBLICATION_VERSION = ${config.workspaces.selectionPublication.version} as const;
 
@@ -739,6 +770,9 @@ export const RETAINED_WORLD_SELECTION_STEP_VERSION = ${config.workspaces.selecti
 
 /** Configured retained-world selection publication-receipt codec version. @public */
 export const RETAINED_WORLD_SELECTION_RECEIPT_VERSION = ${config.workspaces.selectionPublication.publicationVersion} as const;
+
+/** Configured retained-world selection dependency-schedule codec version. @public */
+export const RETAINED_WORLD_SELECTION_SCHEDULE_VERSION = ${config.workspaces.selectionPublication.scheduleVersion} as const;
 
 /** Configured maximum path effects in one retained-world selection publication. @public */
 export const RETAINED_WORLD_SELECTION_MAX_STEPS = ${config.workspaces.selectionPublication.maxSteps} as const;

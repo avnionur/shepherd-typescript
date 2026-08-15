@@ -758,6 +758,8 @@ export type WorkspaceProtocolConfig = {
         readonly maxPlanBytes: number;
         /** Maximum canonical bytes in one terminal publication receipt. */
         readonly maxReceiptBytes: number;
+        /** Maximum canonical bytes in one dependency-ordered schedule. */
+        readonly maxScheduleBytes: number;
         /** Maximum canonical bytes in one path-step receipt. */
         readonly maxStepBytes: number;
         /** Maximum ordered path effects in one publication. */
@@ -780,6 +782,14 @@ export type WorkspaceProtocolConfig = {
         readonly schemaId: string;
         /** Generated publication schema repository path. */
         readonly schemaPath: string;
+        /** Closed dependency schedule descriptor filename. */
+        readonly scheduleFile: string;
+        /** Prefix for content-addressed dependency schedules. */
+        readonly scheduleIdPrefix: string;
+        /** Closed publication schedule classifications. */
+        readonly scheduleKinds: readonly string[];
+        /** Closed dependency-schedule codec version. */
+        readonly scheduleVersion: number;
         /** Protected carrier selection-staging directory. */
         readonly stagingDirectory: string;
         /** Prefix for content-addressed staging identities. */

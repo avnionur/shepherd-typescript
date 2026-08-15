@@ -245,8 +245,11 @@ export const RETAINED_WORLD_SELECTION_ATOMICITY_KINDS = ["journaled-path-set"] a
 /** Configured retained-world selection path-step statuses. @public */
 export const RETAINED_WORLD_SELECTION_STEP_STATUSES = ["applied"] as const;
 
+/** Configured retained-world selection dependency-schedule classifications. @public */
+export const RETAINED_WORLD_SELECTION_SCHEDULE_KINDS = ["dependency-ordered-path-set"] as const;
+
 /** Configured retained-world selection publication protocol version. @public */
-export const RETAINED_WORLD_SELECTION_PUBLICATION_VERSION = 14 as const;
+export const RETAINED_WORLD_SELECTION_PUBLICATION_VERSION = 15 as const;
 
 /** Configured retained-world selection plan codec version. @public */
 export const RETAINED_WORLD_SELECTION_PLAN_VERSION = 1 as const;
@@ -256,6 +259,9 @@ export const RETAINED_WORLD_SELECTION_STEP_VERSION = 1 as const;
 
 /** Configured retained-world selection publication-receipt codec version. @public */
 export const RETAINED_WORLD_SELECTION_RECEIPT_VERSION = 1 as const;
+
+/** Configured retained-world selection dependency-schedule codec version. @public */
+export const RETAINED_WORLD_SELECTION_SCHEDULE_VERSION = 1 as const;
 
 /** Configured maximum path effects in one retained-world selection publication. @public */
 export const RETAINED_WORLD_SELECTION_MAX_STEPS = 100000 as const;

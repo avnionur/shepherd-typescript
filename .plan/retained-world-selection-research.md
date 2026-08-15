@@ -115,8 +115,11 @@ revalidated at both checks.
 
 ## Journaled path publication
 
-Operations are applied in the configured canonical order. For each path, recovery or first
-execution compares the current managed node to the authenticated before and after nodes:
+Canonical changeset order remains part of changeset and plan identity. Application follows the
+separately content-addressed dependency schedule: directory construction precedes descendants,
+directory removal or replacement follows descendants, and unrelated paths preserve canonical
+byte order. For each scheduled path, recovery or first execution compares the current managed node
+to the authenticated before and after nodes:
 
 - exact before: apply the recorded operation from staged immutable content, flush it, verify exact
   after, then append the step receipt;
@@ -124,8 +127,9 @@ execution compares the current managed node to the authenticated before and afte
   receipt without rewriting the path;
 - neither before nor after: stop with recovery-required and do not overwrite the third state.
 
-Directory creation/removal ordering must respect the canonical reconstructive changeset. File and
-symlink replacement uses owned same-directory staging and atomic rename where supported. Deletion
+The schedule must be a complete deterministic permutation of the canonical reconstructive
+changeset. File and symlink replacement uses owned same-directory staging and atomic rename where
+supported. Deletion
 validates the exact before node before removal. Parent directories are never recursively removed
 unless the plan proves they are managed, empty, and named by the changeset.
 
@@ -153,9 +157,10 @@ content, basis before and after, final step receipt, and atomicity classificatio
 store's selected terminal receipt cites this exact carrier receipt. It does not recreate a
 publication ID from current bytes.
 
-Workspace protocol v13 remains immutable. Task 9.4B must introduce a new configured protocol
-version for the expanded selection receipt and retain explicit decoding of any supported earlier
-row. The trace-store schema may retain the new canonical receipt in its existing receipt columns
+Workspace protocols v13 and v14 remain immutable. Task 9.4B2A introduces workspace protocol v15
+for the dependency schedule; later carrier evidence must extend the protocol again rather than
+redefine v14/v15 records, and must retain explicit decoding of any supported earlier row. The
+trace-store schema may retain the new canonical receipt in its existing receipt columns
 only if compatibility validation proves the nullable/state constraints remain unchanged; otherwise
 it requires a new migrated schema version.
 
@@ -231,8 +236,9 @@ semantics, contention, malformed evidence, and recovery-required partial publica
 
 ## Task boundary
 
-Task 9.4A owns this contract only. Task 9.4B1 implements the versioned plan, ordered step, terminal
-publication codecs, schema, and compatibility lock without filesystem effects. Task 9.4B2
+Task 9.4A owns this contract only. Task 9.4B1 implements the versioned plan, canonical-order step,
+terminal publication codecs, schema, and compatibility lock without filesystem effects. Task
+9.4B2A implements the separate dependency-ordered schedule and schema extension. Task 9.4B2B
 implements the authenticated reference-carrier staging and journaled publication seam. Task 9.4B3
 then composes the expanded selected receipt, public exact-ID select coordinator, two basis checks,
 restart repair, and focused fault tests. Task 9.5 attaches settlement citations to the execution
