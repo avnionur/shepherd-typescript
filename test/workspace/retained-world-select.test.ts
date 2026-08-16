@@ -262,6 +262,116 @@ test("public select publishes one exact retained world and replays after reopen"
     );
 });
 
+test("selection custody faults never invent a terminal settlement receipt", async (context) => {
+    const beforeWrite = await createFixture(
+        context,
+        "fault-before-write",
+        (databasePath) => new SQLiteTraceStore(databasePath),
+    );
+    const beforeWriteCarrier = createReferenceCopyCarrier({
+        faultInjection: {
+            classification: "permission",
+            phase: "selection-before-write",
+            systemCode: "EACCES",
+        },
+        workspaceRoot: beforeWrite.workspaceRoot,
+    });
+    await assert.rejects(
+        selectRetainedWorldSettlement({
+            binding: beforeWrite.binding,
+            carrier: beforeWriteCarrier,
+            outputId: beforeWrite.captured.output.output_id,
+            store: beforeWrite.store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    const applyingBeforeWrite = beforeWrite.store.readRetainedWorldSettlementJournal(
+        beforeWrite.captured.output.output_id,
+    );
+    assert.equal(applyingBeforeWrite?.state, "applying");
+    assert.equal(applyingBeforeWrite?.receipt, null);
+    assert.equal(await readFile(beforeWrite.messagePath, "utf8"), "before\n");
+    const recoveredBeforeWrite = await selectRetainedWorldSettlement({
+        binding: beforeWrite.binding,
+        carrier: beforeWrite.carrier,
+        outputId: beforeWrite.captured.output.output_id,
+        store: beforeWrite.store,
+    });
+    assert.equal(recoveredBeforeWrite.state, "selected");
+
+    const afterWrite = await createFixture(
+        context,
+        "fault-after-write",
+        (databasePath) => new SQLiteTraceStore(databasePath),
+    );
+    const afterWriteCarrier = createReferenceCopyCarrier({
+        faultInjection: {
+            classification: "capacity",
+            phase: "selection-after-write",
+            systemCode: "ENOSPC",
+        },
+        workspaceRoot: afterWrite.workspaceRoot,
+    });
+    await assert.rejects(
+        selectRetainedWorldSettlement({
+            binding: afterWrite.binding,
+            carrier: afterWriteCarrier,
+            outputId: afterWrite.captured.output.output_id,
+            store: afterWrite.store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    const applyingAfterWrite = afterWrite.store.readRetainedWorldSettlementJournal(
+        afterWrite.captured.output.output_id,
+    );
+    assert.equal(applyingAfterWrite?.state, "applying");
+    assert.equal(applyingAfterWrite?.receipt, null);
+    assert.equal(await readFile(afterWrite.messagePath, "utf8"), "selected\n");
+    const recoveredAfterWrite = await selectRetainedWorldSettlement({
+        binding: afterWrite.binding,
+        carrier: afterWrite.carrier,
+        outputId: afterWrite.captured.output.output_id,
+        store: afterWrite.store,
+    });
+    assert.equal(recoveredAfterWrite.state, "selected");
+
+    const postPublication = await createFixture(
+        context,
+        "fault-post-publication",
+        (databasePath) => new SQLiteTraceStore(databasePath),
+    );
+    const postPublicationCarrier = createReferenceCopyCarrier({
+        faultInjection: {
+            classification: "interrupted",
+            phase: "selection-post-publication",
+            systemCode: "EINTR",
+        },
+        workspaceRoot: postPublication.workspaceRoot,
+    });
+    await assert.rejects(
+        selectRetainedWorldSettlement({
+            binding: postPublication.binding,
+            carrier: postPublicationCarrier,
+            outputId: postPublication.captured.output.output_id,
+            store: postPublication.store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    const applyingPostPublication = postPublication.store.readRetainedWorldSettlementJournal(
+        postPublication.captured.output.output_id,
+    );
+    assert.equal(applyingPostPublication?.state, "applying");
+    assert.equal(applyingPostPublication?.receipt, null);
+    assert.equal(await readFile(postPublication.messagePath, "utf8"), "selected\n");
+    const recoveredPostPublication = await selectRetainedWorldSettlement({
+        binding: postPublication.binding,
+        carrier: postPublication.carrier,
+        outputId: postPublication.captured.output.output_id,
+        store: postPublication.store,
+    });
+    assert.equal(recoveredPostPublication.state, "selected");
+});
+
 test("public select refuses movement at both pre-write basis checks", async (context) => {
     const first = await createFixture(
         context,

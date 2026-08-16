@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.36.0] - 2026-08-17
+
+### New Feature
+
+- Added workspace protocol v19 public platform-policy inspection, fail-closed host probes for
+  ACLs, extended attributes, resource forks, and alternate streams, and portable case-collision
+  rejection before reference-carrier publication.
+- Added explicit `core.symlinks=false` placeholder refusal, actual sparse-index custody evidence,
+  stable configured permission/capacity/mutation/interruption faults across reference and Git
+  custody, and reference-suite gating for optimized-carrier parity.
+- Added deterministic selection fault boundaries proving that interrupted carrier publication
+  leaves no falsely terminal settlement receipt and converges through authenticated retry.
+
+### Impact
+
+Retained custody now classifies unsupported host semantics and interrupted publication precisely,
+fails closed before ambiguous claims, and supplies repeatable recovery evidence across reference,
+Git-aware, and settlement boundaries on macOS, Linux, and Windows.
+
 ## [1.35.0] - 2026-08-16
 
 ### New Feature

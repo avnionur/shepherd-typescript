@@ -185,6 +185,9 @@ Work:
   attributes, resource forks or alternate streams, `core.symlinks=false`, sparse-index variants,
   case-folding collisions, precise stable error taxonomy, permission/disk-full failures,
   concurrent mutation, and process interruption before Phase 3 exit or optimized-carrier parity;
+  **implemented in 1.36.0** with workspace protocol v19 configured policy inspection,
+  fail-closed metadata probes, deterministic carrier/Git/selection fault boundaries, honest
+  receipt recovery, and a reference-suite gate for optimized carriers;
 
 Exit criteria:
 

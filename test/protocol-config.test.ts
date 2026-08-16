@@ -26,6 +26,7 @@ import {
     WORKSPACE_PROTOCOL_V16_CONTRACT,
     WORKSPACE_PROTOCOL_V17_CONTRACT,
     WORKSPACE_PROTOCOL_V18_CONTRACT,
+    WORKSPACE_PROTOCOL_V19_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -86,6 +87,7 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.selectionPublication.scheduledStepVersion, 1);
     assert.equal(parsed.workspaces.selectionPublication.scheduledPublicationVersion, 1);
     assert.equal(parsed.workspaces.protectedPaths.version, 18);
+    assert.equal(parsed.workspaces.platformConformance.version, 19);
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(parsed.workspaces.protectedPaths), true);
@@ -107,6 +109,8 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V16_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V17_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V18_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V19_CONTRACT), true);
+    assert.equal("platformConformance" in WORKSPACE_PROTOCOL_V18_CONTRACT, false);
     assert.equal("protectedPaths" in WORKSPACE_PROTOCOL_V17_CONTRACT, false);
     assert.equal(
         "scheduledStepVersion" in WORKSPACE_PROTOCOL_V15_CONTRACT.selectionPublication,
@@ -938,6 +942,55 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             objectAt(workspaceConfigOf(config), "protectedPaths").extra = true;
         },
         (config) => {
+            platformConformanceConfigOf(config).version = 0;
+        },
+        (config) => {
+            objectAt(platformConformanceConfigOf(config), "faults").metadataClassification =
+                "unknown";
+        },
+        (config) => {
+            objectAt(platformConformanceConfigOf(config), "faults").classifications = [];
+        },
+        (config) => {
+            const probes = platformConformanceConfigOf(config).metadataProbes as Record<
+                string,
+                unknown
+            >[];
+            const first = probes[0];
+            assert.ok(first);
+            first.matchPattern = "[";
+        },
+        (config) => {
+            const probes = platformConformanceConfigOf(config).metadataProbes as Record<
+                string,
+                unknown
+            >[];
+            const first = probes[0];
+            assert.ok(first);
+            first.arguments = ["missing-token"];
+        },
+        (config) => {
+            const probes = platformConformanceConfigOf(config).metadataProbes as Record<
+                string,
+                unknown
+            >[];
+            const first = probes[0];
+            assert.ok(first);
+            first.symlinkArguments = ["missing-token"];
+        },
+        (config) => {
+            const probes = platformConformanceConfigOf(config).metadataProbes as Record<
+                string,
+                unknown
+            >[];
+            const first = probes[0];
+            assert.ok(first);
+            first.separateLineBreakPaths = "yes";
+        },
+        (config) => {
+            platformConformanceConfigOf(config).supportedPlatforms = [];
+        },
+        (config) => {
             workspaceConfigOf(config).format = "";
         },
         (config) => {
@@ -1020,6 +1073,10 @@ function gitCustodyConfigOf(config: Record<string, unknown>): Record<string, unk
 
 function changesetConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(workspaceConfigOf(config), "changesets");
+}
+
+function platformConformanceConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(workspaceConfigOf(config), "platformConformance");
 }
 
 function proofEnvelopeConfigOf(config: Record<string, unknown>): Record<string, unknown> {

@@ -336,6 +336,17 @@ export { createGitAwareCustody } from "./workspace/git-aware-custody.ts";
 export { createGitChangesetInspection } from "./workspace/git-changeset-inspection.ts";
 export { initializeWorkspace, openWorkspace } from "./workspace/initialization.ts";
 export type {
+    WorkspaceCustodyFaultEvidence,
+    WorkspaceCustodyFaultInjection,
+    WorkspaceGitPlatformPolicy,
+    WorkspacePlatformConformance,
+    WorkspacePlatformConformanceOptions,
+} from "./workspace/platform-conformance.ts";
+export {
+    inspectWorkspacePlatformConformance,
+    WorkspaceCustodyFaultError,
+} from "./workspace/platform-conformance.ts";
+export type {
     WorkspacePathProtectionOptions,
     WorkspacePathProtectionValidation,
 } from "./workspace/protected-control-paths.ts";

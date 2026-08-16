@@ -32,6 +32,14 @@ import { createWorkspaceBindings } from "./bindings.ts";
 import { GitCustodyError } from "./errors.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import {
+    assertWorkspaceMetadataSupported,
+    injectWorkspaceCustodyFault,
+    raiseWorkspaceCustodyPlatformFault,
+    readWorkspaceCustodyFaultInjection,
+    WorkspaceCustodyFaultError,
+    type WorkspaceCustodyFaultInjection,
+} from "./platform-conformance.ts";
+import {
     assertWorkspacePathUnprotected,
     WorkspaceProtectedPathError,
 } from "./protected-control-paths.ts";
@@ -87,14 +95,16 @@ type GitStaging = { readonly identity: string; readonly path: string };
  * @throws {TypeError} If options are malformed.
  */
 export function createGitAwareCustody(options: GitAwareCustodyOptions): GitAwareCustody {
-    const workspaceRoot = readOptions(options);
+    const { faultInjection, workspaceRoot } = readOptions(options);
     const workspace = openWorkspaceForRetainedCustody(workspaceRoot);
-    const carrier = createReferenceCopyCarrierForRetainedCustody({ workspaceRoot });
+    const carrier = createReferenceCopyCarrierForRetainedCustody(
+        faultInjection === null ? { workspaceRoot } : { faultInjection, workspaceRoot },
+    );
     const staging = gitStagingRoot(workspace.control_path);
 
     return Object.freeze({
         capture: async (binding: WorkspaceBinding) =>
-            invoke(() => capture(workspaceRoot, staging, binding)),
+            invoke(() => capture(workspaceRoot, staging, binding, faultInjection)),
         discard: async (custodyId: string) =>
             invoke(async () => {
                 await readRetained(workspaceRoot, custodyId);
@@ -124,6 +134,7 @@ async function capture(
     workspaceRoot: string,
     staging: GitStaging,
     binding: WorkspaceBinding,
+    faultInjection: WorkspaceCustodyFaultInjection | null,
 ): Promise<GitRetainedOutput | null> {
     const workspace = openWorkspace(workspaceRoot);
     const retainedBinding = revalidateRepositoryBinding(workspaceRoot, binding);
@@ -134,6 +145,21 @@ async function capture(
     const stagingWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
     mkdirSync(stagingWorld, { recursive: true, mode: 0o700 });
     try {
+        const [
+            materialization,
+            basisCapture,
+            basisRevalidation,
+            custodyPublication,
+            postPublication,
+        ] = workspaceProtocolConfig.platformConformance.faults.phases.slice(11, 16);
+        assert.ok(
+            materialization &&
+                basisCapture &&
+                basisRevalidation &&
+                custodyPublication &&
+                postPublication,
+        );
+        injectWorkspaceCustodyFault(faultInjection, materialization.name);
         materializeManagedWorld(
             workspaceRoot,
             retainedBinding.canonical_root,
@@ -150,6 +176,7 @@ async function capture(
             workspaceProtocolConfig.gitCustody.objectPackFile,
         );
         const bundleId = createObjectBundle(retainedBinding.canonical_root, bundlePath);
+        injectWorkspaceCustodyFault(faultInjection, basisCapture.name);
         const basis = captureBasis(
             workspaceRoot,
             retainedBinding.binding_id,
@@ -175,6 +202,7 @@ async function capture(
             );
         }
         if (bundleBytes !== null) verifyRequiredPackObjects(bundleBytes, basis);
+        injectWorkspaceCustodyFault(faultInjection, basisRevalidation.name);
         const current = captureBasis(
             workspaceRoot,
             retainedBinding.binding_id,
@@ -190,6 +218,7 @@ async function capture(
             throw gitError("movement");
         }
         /* node:coverage enable */
+        injectWorkspaceCustodyFault(faultInjection, custodyPublication.name);
         const custody = forkReferenceCopyRevisionWithReceipts(
             workspaceRoot,
             revision.revision_id,
@@ -204,7 +233,9 @@ async function capture(
                 ),
         );
         try {
-            return await readRetained(workspaceRoot, custody.custody_id);
+            const retained = await readRetained(workspaceRoot, custody.custody_id);
+            injectWorkspaceCustodyFault(faultInjection, postPublication.name);
+            return retained;
             /* node:coverage disable */
             /* node:coverage ignore next */
             /* node:coverage ignore next */
@@ -316,8 +347,52 @@ function materializeManagedWorld(
         /* node:coverage enable */
         return;
     }
+    assertCoreSymlinksWorktree(repositoryRoot);
     const paths = readManagedPaths(workspaceRoot, repositoryRoot);
+    assertManagedPathMetadataSupported(repositoryRoot, paths);
     for (const relative of paths) copyNode(repositoryRoot, target, relative);
+}
+
+function assertManagedPathMetadataSupported(
+    repositoryRoot: string,
+    managedPaths: readonly string[],
+): void {
+    const ordinary = new Set([repositoryRoot]);
+    const symbolicLinks: string[] = [];
+    for (const relative of managedPaths) {
+        const parts = relative.split("/");
+        for (let index = 1; index < parts.length; index += 1) {
+            const parent = path.join(repositoryRoot, ...parts.slice(0, index));
+            if (lstatSync(parent, { throwIfNoEntry: false }) !== undefined) ordinary.add(parent);
+        }
+        const candidate = path.join(repositoryRoot, ...parts);
+        const status = lstatSync(candidate, { throwIfNoEntry: false });
+        if (status === undefined) continue;
+        if (status.isSymbolicLink()) symbolicLinks.push(candidate);
+        else ordinary.add(candidate);
+    }
+    const materialization = workspaceProtocolConfig.platformConformance.faults.phases[11];
+    assert.ok(materialization);
+    assertWorkspaceMetadataSupported([...ordinary], materialization.name);
+    assertWorkspaceMetadataSupported(symbolicLinks, materialization.name, true);
+}
+
+function assertCoreSymlinksWorktree(repositoryRoot: string): void {
+    if (tryGit(repositoryRoot, ["config", "--bool", "--get", "core.symlinks"])?.text !== "false") {
+        return;
+    }
+    for (const item of parseNull(runGit(repositoryRoot, ["ls-files", "--stage", "-z"]).bytes)) {
+        const separator = item.indexOf(0x09);
+        const header = item.subarray(0, separator).toString("ascii").split(" ");
+        if (header[0] !== "120000") continue;
+        const relative = decodeGitPath(item.subarray(separator + 1));
+        const candidate = path.join(repositoryRoot, ...relative.split("/"));
+        if (existsSync(candidate) && !lstatSync(candidate).isSymbolicLink()) {
+            const materialization = workspaceProtocolConfig.platformConformance.faults.phases[11];
+            assert.ok(materialization);
+            raiseWorkspaceCustodyPlatformFault(materialization.name);
+        }
+    }
 }
 
 function copyNode(sourceRoot: string, targetRoot: string, relative: string): void {
@@ -1201,7 +1276,10 @@ function digest(value: string | Buffer): string {
     return createHash(workspaceProtocolConfig.digestAlgorithm).update(value).digest("hex");
 }
 
-function readOptions(value: unknown): string {
+function readOptions(value: unknown): Readonly<{
+    faultInjection: WorkspaceCustodyFaultInjection | null;
+    workspaceRoot: string;
+}> {
     if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError();
     if (
         Object.getPrototypeOf(value) !== Object.prototype ||
@@ -1209,14 +1287,21 @@ function readOptions(value: unknown): string {
         Object.values(Object.getOwnPropertyDescriptors(value)).some(
             (descriptor) => !("value" in descriptor),
         ) ||
-        Object.keys(value).length !== 1 ||
+        Object.keys(value).some((key) => !["faultInjection", "workspaceRoot"].includes(key)) ||
         !("workspaceRoot" in value)
     ) {
         throw new TypeError();
     }
     const workspaceRoot = (value as Record<string, unknown>).workspaceRoot;
     if (typeof workspaceRoot !== "string" || workspaceRoot.length === 0) throw new TypeError();
-    return workspaceRoot;
+    return Object.freeze({
+        faultInjection: readWorkspaceCustodyFaultInjection(
+            "faultInjection" in value
+                ? (value as Record<string, unknown>).faultInjection
+                : undefined,
+        ),
+        workspaceRoot,
+    });
 }
 
 function gitError(
@@ -1238,7 +1323,11 @@ async function invoke<T>(operation: () => T | Promise<T>): Promise<T> {
     try {
         return await operation();
     } catch (error) {
-        if (error instanceof GitCustodyError || error instanceof WorkspaceProtectedPathError) {
+        if (
+            error instanceof GitCustodyError ||
+            error instanceof WorkspaceCustodyFaultError ||
+            error instanceof WorkspaceProtectedPathError
+        ) {
             throw error;
         }
         throw gitError("control", String(error));

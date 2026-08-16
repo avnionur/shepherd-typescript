@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import { type ProtocolConfig, SECURE_HASH_ALGORITHMS } from "./config-types.ts";
 import {
+    readArray,
     readEnum,
     readNonEmptyString,
     readObject,
@@ -34,6 +35,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "gitMetadataName",
             "hexLength",
             "manifestFile",
+            "platformConformance",
             "protectedPaths",
             "selectionPublication",
             "settlement",
@@ -63,6 +65,143 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         ],
         "workspaces.protectedPaths",
     );
+    const platformConformance = readObject(
+        config.platformConformance,
+        [
+            "caseCollisionPolicy",
+            "faults",
+            "git",
+            "metadataPolicy",
+            "metadataPathToken",
+            "metadataProbeMaxBytes",
+            "metadataProbes",
+            "modePolicy",
+            "optimizedCarrierParity",
+            "supportedPlatforms",
+            "symlinkPolicy",
+            "unsupportedMetadata",
+            "version",
+        ],
+        "workspaces.platformConformance",
+    );
+    const platformGit = readObject(
+        platformConformance.git,
+        ["coreSymlinksFalse", "gitlinks", "sparseIndex"],
+        "workspaces.platformConformance.git",
+    );
+    const platformFaults = readObject(
+        platformConformance.faults,
+        ["classifications", "metadataClassification", "phases", "platformClassification"],
+        "workspaces.platformConformance.faults",
+    );
+    const faultClassifications = readArray(
+        platformFaults.classifications,
+        "workspaces.platformConformance.faults.classifications",
+    ).map((value, index) => {
+        const context = `workspaces.platformConformance.faults.classifications[${index}]`;
+        const classification = readObject(value, ["code", "message", "name"], context);
+        return {
+            code: readNonEmptyString(classification.code, `${context}.code`),
+            message: readNonEmptyString(classification.message, `${context}.message`),
+            name: readNonEmptyString(classification.name, `${context}.name`),
+        };
+    });
+    const faultPhases = readArray(
+        platformFaults.phases,
+        "workspaces.platformConformance.faults.phases",
+    ).map((value, index) => {
+        const context = `workspaces.platformConformance.faults.phases[${index}]`;
+        const phase = readObject(value, ["name", "recovery"], context);
+        return {
+            name: readNonEmptyString(phase.name, `${context}.name`),
+            recovery: readNonEmptyString(phase.recovery, `${context}.recovery`),
+        };
+    });
+    if (
+        faultClassifications.length === 0 ||
+        new Set(faultClassifications.map(({ name }) => name)).size !==
+            faultClassifications.length ||
+        new Set(faultClassifications.map(({ code }) => code)).size !==
+            faultClassifications.length ||
+        faultPhases.length === 0 ||
+        new Set(faultPhases.map(({ name }) => name)).size !== faultPhases.length
+    ) {
+        throw new TypeError("workspace platform fault contracts must be non-empty and unique");
+    }
+    const metadataClassification = readNonEmptyString(
+        platformFaults.metadataClassification,
+        "workspaces.platformConformance.faults.metadataClassification",
+    );
+    const platformClassification = readNonEmptyString(
+        platformFaults.platformClassification,
+        "workspaces.platformConformance.faults.platformClassification",
+    );
+    if (
+        !faultClassifications.some(({ name }) => name === metadataClassification) ||
+        !faultClassifications.some(({ name }) => name === platformClassification)
+    ) {
+        throw new TypeError("workspace platform fault classification mapping is invalid");
+    }
+    const metadataPathToken = readNonEmptyString(
+        platformConformance.metadataPathToken,
+        "workspaces.platformConformance.metadataPathToken",
+    );
+    const metadataProbes = readArray(
+        platformConformance.metadataProbes,
+        "workspaces.platformConformance.metadataProbes",
+    ).map((value, index) => {
+        const context = `workspaces.platformConformance.metadataProbes[${index}]`;
+        const probe = readObject(
+            value,
+            [
+                "arguments",
+                "executable",
+                "kind",
+                "matchPattern",
+                "patternFlags",
+                "platform",
+                "separateLineBreakPaths",
+                "symlinkArguments",
+            ],
+            context,
+        );
+        const arguments_ = readArray(probe.arguments, `${context}.arguments`).map(
+            (argument, argumentIndex) =>
+                readNonEmptyString(argument, `${context}.arguments[${argumentIndex}]`),
+        );
+        if (!arguments_.includes(metadataPathToken)) {
+            throw new TypeError(`${context}.arguments must contain metadataPathToken`);
+        }
+        const symlinkArguments = readArray(
+            probe.symlinkArguments,
+            `${context}.symlinkArguments`,
+        ).map((argument, argumentIndex) =>
+            readNonEmptyString(argument, `${context}.symlinkArguments[${argumentIndex}]`),
+        );
+        if (!symlinkArguments.includes(metadataPathToken)) {
+            throw new TypeError(`${context}.symlinkArguments must contain metadataPathToken`);
+        }
+        const matchPattern = readNonEmptyString(probe.matchPattern, `${context}.matchPattern`);
+        const patternFlags = readNonEmptyString(probe.patternFlags, `${context}.patternFlags`);
+        if (typeof probe.separateLineBreakPaths !== "boolean") {
+            throw new TypeError(`${context}.separateLineBreakPaths must be a boolean`);
+        }
+        try {
+            new RegExp(matchPattern, patternFlags);
+        } catch {
+            throw new TypeError(`${context} must contain a valid regular expression`);
+        }
+        return {
+            arguments: arguments_,
+            executable: readNonEmptyString(probe.executable, `${context}.executable`),
+            kind: readNonEmptyString(probe.kind, `${context}.kind`),
+            matchPattern,
+            patternFlags,
+            platform: readNonEmptyString(probe.platform, `${context}.platform`),
+            separateLineBreakPaths: probe.separateLineBreakPaths,
+            symlinkArguments,
+        };
+    });
     const bindingErrors = readObject(
         config.bindingErrors,
         [
@@ -1071,6 +1210,66 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         gitMetadataName,
         hexLength,
         manifestFile,
+        platformConformance: {
+            caseCollisionPolicy: readNonEmptyString(
+                platformConformance.caseCollisionPolicy,
+                "workspaces.platformConformance.caseCollisionPolicy",
+            ),
+            faults: {
+                classifications: faultClassifications,
+                metadataClassification,
+                phases: faultPhases,
+                platformClassification,
+            },
+            git: {
+                coreSymlinksFalse: readNonEmptyString(
+                    platformGit.coreSymlinksFalse,
+                    "workspaces.platformConformance.git.coreSymlinksFalse",
+                ),
+                gitlinks: readNonEmptyString(
+                    platformGit.gitlinks,
+                    "workspaces.platformConformance.git.gitlinks",
+                ),
+                sparseIndex: readNonEmptyString(
+                    platformGit.sparseIndex,
+                    "workspaces.platformConformance.git.sparseIndex",
+                ),
+            },
+            metadataPolicy: readNonEmptyString(
+                platformConformance.metadataPolicy,
+                "workspaces.platformConformance.metadataPolicy",
+            ),
+            metadataPathToken,
+            metadataProbeMaxBytes: readPositiveInteger(
+                platformConformance.metadataProbeMaxBytes,
+                "workspaces.platformConformance.metadataProbeMaxBytes",
+            ),
+            metadataProbes,
+            modePolicy: readNonEmptyString(
+                platformConformance.modePolicy,
+                "workspaces.platformConformance.modePolicy",
+            ),
+            optimizedCarrierParity: readNonEmptyString(
+                platformConformance.optimizedCarrierParity,
+                "workspaces.platformConformance.optimizedCarrierParity",
+            ),
+            supportedPlatforms: readUniqueStrings(
+                platformConformance.supportedPlatforms,
+                "workspaces.platformConformance.supportedPlatforms",
+            ),
+            symlinkPolicy: readNonEmptyString(
+                platformConformance.symlinkPolicy,
+                "workspaces.platformConformance.symlinkPolicy",
+            ),
+            unsupportedMetadata: readUniqueStrings(
+                platformConformance.unsupportedMetadata,
+                "workspaces.platformConformance.unsupportedMetadata",
+            ),
+            version: readPositiveInteger(
+                platformConformance.version,
+                "workspaces.platformConformance.version",
+            ),
+        },
         protectedPaths: {
             alternateNameSeparators,
             caseFold: protectedPaths.caseFold,

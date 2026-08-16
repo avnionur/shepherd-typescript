@@ -8,6 +8,7 @@ import type {
     WORLD_TEXT_PREVIEW_CLASSIFICATIONS,
     WORLD_TEXT_PREVIEW_ENCODING,
 } from "../protocol/values.generated.ts";
+import type { WorkspaceCustodyFaultInjection } from "./platform-conformance.ts";
 
 /** Configured baseline-adoption mode used when initializing a workspace. */
 export type WorkspaceAdoptionMode = (typeof WORKSPACE_ADOPTION_MODES)[number];
@@ -373,6 +374,8 @@ export type WorldVerification = {
 
 /** Closed options accepted by {@link createReferenceCopyCarrier}. */
 export type ReferenceCopyCarrierOptions = {
+    /** Optional deterministic conformance fault injected at one configured custody boundary. */
+    readonly faultInjection?: WorkspaceCustodyFaultInjection;
     /** Existing initialized workspace whose protected control root owns carrier custody. */
     readonly workspaceRoot: string;
 };
@@ -620,6 +623,8 @@ export type GitCustodyVerification = {
 
 /** Closed options accepted by {@link createGitAwareCustody}. */
 export type GitAwareCustodyOptions = {
+    /** Optional deterministic conformance fault injected at one configured Git-custody boundary. */
+    readonly faultInjection?: WorkspaceCustodyFaultInjection;
     /** Existing initialized workspace owning Git-aware retained output custody. */
     readonly workspaceRoot: string;
 };

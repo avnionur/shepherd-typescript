@@ -55,6 +55,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,
   isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
   idempotent discard.
+- [Workspace platform and fault conformance](./platform-fault-conformance.md) defines protocol
+  v19 metadata refusal, portable name policy, Git platform cases, stable fault evidence, recovery,
+  and the optimized-carrier parity gate.
 - [Retained-world runner](./retained-world-runner.md) defines the closed opaque runner registration
   handle and its honest advisory enforcement boundary.
 - [Fenced task-world execution](./task-world-execution.md) defines authenticated runner

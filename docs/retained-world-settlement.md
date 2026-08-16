@@ -91,6 +91,13 @@ complete prefix retains its basis-after witness inside deterministic staging bef
 terminal carrier receipt is published. Equal concurrent calls converge, and restart revalidates
 both authorities. This internal seam does not by itself admit or terminalize settlement.
 
+Workspace protocol v19 adds configured selection fault boundaries before the first managed write,
+after scheduled writes, and after carrier receipt publication. A pre-write fault leaves the user
+basis unchanged. A post-publication interruption leaves the durable settlement journal in the
+honest `applying` state without a terminal store receipt; retry authenticates the retained carrier
+prefix and converges before terminal settlement and citation publication. See
+[Workspace platform and fault conformance](./platform-fault-conformance.md).
+
 `selectRetainedWorldSettlement` is the public exact-ID selection coordinator. It revalidates the
 admitted execution and immutable carrier revisions, reconstructs the canonical changeset, and
 requires the current binding basis to equal the admitted base before it starts the deterministic
