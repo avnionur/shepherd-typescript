@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.33.1] - 2026-08-16
+
+### Improvement
+
+- Added the repository-wide GitHub issue delivery workflow for dependency-ordered branch creation,
+  verification, documentation, pull requests, issue updates, merge gates, and next-task reporting.
+
+### Impact
+
+Contributors and coding agents now have one explicit process for delivering roadmap issues from an
+updated `main` branch through verified pull-request merge and selection of the next unblocked task.
+
 ## [1.33.0] - 2026-08-16
 
 ### New Feature

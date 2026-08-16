@@ -86,6 +86,47 @@ Rules:
 - To refresh the lockfile after metadata-only changes, use `pnpm install --lockfile-only`.
 - Never add `minimumReleaseAgeExclude` entries in `pnpm-workspace.yaml` to bypass the release-age gate without explicit user approval.
 
+## GitHub Issue Delivery Workflow
+
+Use this workflow for every implementation issue. Each branch and pull request should deliver one
+issue unless the issue explicitly defines a coordinated multi-issue slice.
+
+1. **Select the next issue.** Work in dependency order. The issue must be open, all issues listed
+   under `Blocked by` must be closed, and the parent phase must be active. Read the complete issue,
+   parent epic, linked plan and normative documentation, and relevant comments before editing.
+2. **Start from `main`.** Preserve unrelated user or agent work. If local changes prevent a safe
+   branch switch, stop and ask instead of stashing, resetting, cleaning, or discarding them. Update
+   `main` with a fast-forward-only pull, then create a new branch from it using the generic pattern
+   `codex/phase-<phase>-<task>-<slug>`.
+3. **Mark the issue in progress.** Use `gh` to replace `status:ready` with
+   `status:in-progress` when applicable and add a short comment naming the branch and planned
+   verification. Do not close or modify the parent epic except to maintain its tracking state.
+4. **Implement the complete slice.** Follow the issue acceptance criteria and implementation
+   contract. Add or update relevant tests, normative documentation, public API documentation,
+   examples, `.plan/tracker.md`, `CHANGELOG.md`, and the semantic version. Do not defer required
+   documentation or recovery/security evidence to an unrelated follow-up.
+5. **Verify before review.** Run focused tests while implementing. Before opening the pull request,
+   run `pnpm verify`, perform the required version synchronization, and run
+   `pnpm build:desktop`. Review dependency and lockfile diffs when present. Record exact commands
+   and results for the pull request and issue.
+6. **Commit and push safely.** Follow the repository Git rules below, including asking before the
+   commit, staging only explicit paths, and checking staged contents. Push the issue branch without
+   force.
+7. **Open a pull request into `main`.** Use `gh pr create` with the issue title or a concise scoped
+   equivalent. The body must link the issue, use `Closes #<issue>` for a fully delivered task,
+   summarize behavior and compatibility impact, list verification, identify documentation changes,
+   and call out security, recovery, platform, provider, or migration limits.
+8. **Update the issue.** After opening the pull request, add an issue comment with the PR link,
+   delivered acceptance criteria, verification results, documentation links, and remaining risks.
+   Keep labels and the parent epic accurate while checks or review are pending.
+9. **Merge only when ready.** Wait for required checks and review requirements to pass, resolve
+   actionable feedback, and use `gh pr merge` without force into `main`. Confirm that the task issue
+   closed through the PR, then update the parent epic progress. Close a phase epic only after every
+   exit criterion has verified evidence.
+10. **Report the next task.** Synchronize local `main` after merge when safe, inspect open roadmap
+    issues and their blocking edges, and tell the user which issue is the next unblocked task. If no
+    issue is ready, report the exact blocker instead of selecting speculative work.
+
 ## Git
 
 Follow these rules:
