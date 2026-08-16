@@ -60,3 +60,35 @@ export type DiscardedRetainedWorldSettlement = {
     /** Configured terminal discarded state. */
     readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[3];
 };
+
+/** Closed authorities for exact-ID retained-world selection and recovery. */
+export type SelectRetainedWorldSettlementOptions = {
+    /** Package-created canonical binding cited by the admitted retained output. */
+    readonly binding: WorkspaceBinding;
+    /** Package-created carrier owning the admitted immutable revisions. */
+    readonly carrier: ReferenceCopyCarrier;
+    /** Exact retained-output identity previously admitted for selection. */
+    readonly outputId: string;
+    /** Open trace store retaining the authenticated settlement journal. */
+    readonly store: SQLiteTraceStore;
+};
+
+/** Completed durable selection result after authenticated carrier publication. */
+export type SelectedRetainedWorldSettlement = {
+    /** Configured select action. */
+    readonly action: (typeof RETAINED_WORLD_SETTLEMENT_ACTIONS)[0];
+    /** Deterministic operation identity retained before publication. */
+    readonly operation_id: string;
+    /** Exact retained-output identity consumed by selection. */
+    readonly output_id: string;
+    /** Exact carrier publication identity cited by the terminal settlement receipt. */
+    readonly publication_id: string;
+    /** Exact authenticated request identity. */
+    readonly request_id: string;
+    /** Public exact-request settlement protocol version. */
+    readonly settlement_version: typeof RETAINED_WORLD_SETTLEMENT_VERSION;
+    /** Configured terminal selected state. */
+    readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[2];
+    /** Semantic user-basis witness observed after complete carrier publication. */
+    readonly user_basis_after: string;
+};

@@ -214,5 +214,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 3, Task 9.4B3 by composing both basis checks, public exact-ID select, the exact
-carrier receipt, and store-terminal restart repair.
+Continue Phase 3, Task 9.5 by attaching settlement citations to the execution projection and
+closing the remaining cross-command concurrency and fault-injection matrix.

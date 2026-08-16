@@ -243,6 +243,6 @@ implements authenticated deterministic immutable-head staging. Task 9.4B2B2A imp
 separate v16 dependency-scheduled step and terminal receipt codecs without filesystem effects.
 Task 9.4B2B2B implements the journaled managed-path publication seam, prefix recovery, and carrier
 receipt; completed in 1.32.0 for the authenticated reference carrier. Task 9.4B3
-then composes the expanded selected receipt, public exact-ID select coordinator, two basis checks,
-restart repair, and focused fault tests. Task 9.5 attaches settlement citations to the execution
+composes the expanded selected receipt, public exact-ID select coordinator, two basis checks,
+restart repair, and focused fault tests; completed in 1.33.0. Task 9.5 attaches settlement citations to the execution
 projection and closes the remaining cross-command concurrency and Phase 3 settlement fault matrix.

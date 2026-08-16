@@ -343,12 +343,15 @@ export {
     discardRetainedWorldSettlement,
     inspectRetainedWorldSettlement,
     prepareRetainedWorldSettlement,
+    selectRetainedWorldSettlement,
 } from "./workspace/retained-world-settlement.ts";
 export type {
     DiscardedRetainedWorldSettlement,
     DiscardRetainedWorldSettlementOptions,
     PreparedRetainedWorldSettlement,
     PrepareRetainedWorldSettlementOptions,
+    SelectedRetainedWorldSettlement,
+    SelectRetainedWorldSettlementOptions,
 } from "./workspace/retained-world-settlement-types.ts";
 export {
     captureTaskWorldDurably,

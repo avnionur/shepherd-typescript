@@ -11,24 +11,35 @@ import {
     RetainedWorldSettlementConflictError,
     RetainedWorldSettlementInvalidError,
 } from "../store/errors.ts";
+import { encodeRetainedWorldSettlementOperation } from "../store/retained-world-settlement-codec.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { RetainedWorldSettlementRequest } from "../store/types.ts";
 import { assertWorkspaceBinding } from "./bindings.ts";
 import { createVerifiedWorldChangeset } from "./changesets.ts";
-import { assertReferenceCopyCarrier } from "./reference-copy-carrier.ts";
+import {
+    assertReferenceCopyCarrier,
+    publishReferenceCopySelection,
+} from "./reference-copy-carrier.ts";
 import type {
     DiscardedRetainedWorldSettlement,
     DiscardRetainedWorldSettlementOptions,
     PreparedRetainedWorldSettlement,
     PrepareRetainedWorldSettlementOptions,
+    SelectedRetainedWorldSettlement,
+    SelectRetainedWorldSettlementOptions,
 } from "./retained-world-settlement-types.ts";
+import {
+    encodeSelectionPublicationPlan,
+    encodeSelectionPublicationSchedule,
+} from "./selection-publication-codec.ts";
 import type { RetainedWorldOutput } from "./task-world-execution-types.ts";
 import { inspectTaskWorldCaptureJournal } from "./task-world-journal.ts";
 import type { ReferenceCopyCarrier, WorldRevision } from "./types.ts";
 
 const [, , , , COMMITTED_RECOVERY_STATUS] = DURABLE_EXECUTION_RECOVERY_STATUSES;
-const [, DISCARD_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
-const [PREPARED_STATE, APPLYING_STATE, , DISCARDED_STATE] = RETAINED_WORLD_SETTLEMENT_STATES;
+const [SELECT_ACTION, DISCARD_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
+const [PREPARED_STATE, APPLYING_STATE, SELECTED_STATE, DISCARDED_STATE] =
+    RETAINED_WORLD_SETTLEMENT_STATES;
 
 /**
  * Authenticates one exact retained output and atomically prepares its consume-once settlement.
@@ -219,6 +230,154 @@ export function inspectRetainedWorldSettlement(
         return admission;
     } catch (error) {
         if (error instanceof RetainedWorldSettlementInvalidError) throw error;
+        throw new RetainedWorldSettlementInvalidError(
+            workspaceProtocolConfig.settlement.errors.invalidMessage,
+            { cause: error },
+        );
+    }
+}
+
+/**
+ * Durably selects one exact admitted retained output and recovers interrupted publication.
+ *
+ * The coordinator verifies the immutable admission, checks the current semantic user basis before
+ * beginning the deterministic operation, and delegates a second pre-write basis check plus every
+ * managed-path effect to the authenticated carrier. The selected store receipt is retained only
+ * after the carrier publishes its exact terminal receipt. Applying and selected prefixes replay
+ * without reopening consume-once admission or inferring success from current user bytes.
+ *
+ * @param options - Exact output identity plus canonical binding, carrier, and trace-store authority.
+ * @returns Frozen selected result citing the exact carrier publication and final user basis.
+ * @throws {RetainedWorldSettlementInvalidError} If trace, revision, changeset, basis, carrier, or
+ * publication evidence is absent, malformed, moved, forged, or inconsistent.
+ * @throws {RetainedWorldSettlementConflictError} If the output was admitted for another action or
+ * has already reached another terminal settlement.
+ *
+ * @example
+ * ```ts
+ * const selected = await selectRetainedWorldSettlement({
+ *     binding,
+ *     carrier,
+ *     outputId: captured.output.output_id,
+ *     store,
+ * });
+ * selected.publication_id;
+ * ```
+ *
+ * @public
+ */
+export async function selectRetainedWorldSettlement(
+    options: SelectRetainedWorldSettlementOptions,
+): Promise<SelectedRetainedWorldSettlement> {
+    try {
+        const fields = exactObject(options, ["binding", "carrier", "outputId", "store"]);
+        if (typeof fields.outputId !== "string" || fields.outputId.length === 0) {
+            throw new TypeError("retained-world settlement output identity is invalid");
+        }
+        const binding = fields.binding as SelectRetainedWorldSettlementOptions["binding"];
+        const carrier = fields.carrier as ReferenceCopyCarrier;
+        const store = fields.store as SQLiteTraceStore;
+        assertWorkspaceBinding(binding);
+        assertReferenceCopyCarrier(carrier);
+        const admission = inspectRetainedWorldSettlement(store, fields.outputId);
+        if (admission === undefined) {
+            throw new TypeError("retained-world select admission is absent");
+        }
+        if (admission.action !== SELECT_ACTION) {
+            throw new RetainedWorldSettlementConflictError(
+                workspaceProtocolConfig.settlement.errors.conflictMessage,
+            );
+        }
+        if (binding.binding_id !== admission.request.binding_id) {
+            throw new TypeError("retained-world select binding authority is inconsistent");
+        }
+        const base = await carrier.openRevision(admission.request.base_revision_id);
+        const head = await carrier.openRevision(admission.request.head_revision_id);
+        const evidence = await createVerifiedWorldChangeset({
+            baseRevision: base,
+            carrier,
+            headRevision: head,
+        });
+        // Authenticated content-addressed carrier reads reject these contradictions first.
+        /* node:coverage ignore next 9 */
+        if (
+            base.binding_id !== admission.request.binding_id ||
+            base.content_id !== admission.request.user_basis_before ||
+            head.binding_id !== admission.request.binding_id ||
+            head.parent_revision_id !== base.revision_id ||
+            evidence.changeset.changeset_id !== admission.request.changeset_id
+        ) {
+            throw new TypeError("retained-world select revision evidence is inconsistent");
+        }
+        let journal = store.readRetainedWorldSettlementJournal(fields.outputId);
+        if (journal === undefined) {
+            throw new TypeError("retained-world select journal is absent");
+        }
+        if (journal.state === PREPARED_STATE) {
+            const observed = await carrier.snapshot(binding);
+            if (observed.content_id !== admission.request.user_basis_before) {
+                throw new TypeError("retained-world select user basis moved before publication");
+            }
+            journal = store.beginRetainedWorldSettlement(fields.outputId);
+        }
+        // The action-bound closed journal cannot hold the other action's terminal state.
+        /* node:coverage ignore next 5 */
+        if (journal.state !== APPLYING_STATE && journal.state !== SELECTED_STATE) {
+            throw new RetainedWorldSettlementConflictError(
+                workspaceProtocolConfig.settlement.errors.conflictMessage,
+            );
+        }
+        const operation = encodeRetainedWorldSettlementOperation(admission);
+        // The store's closed journal decoder reconstructs this exact operation before returning.
+        /* node:coverage ignore next 8 */
+        if (
+            journal.operation?.id !== operation.id ||
+            journal.operation.digest !== operation.digest ||
+            journal.operation.json !== operation.json
+        ) {
+            throw new TypeError("retained-world select operation evidence is inconsistent");
+        }
+        const plan = encodeSelectionPublicationPlan(
+            operation,
+            evidence.changeset,
+            base.content_id,
+            head.content_id,
+        );
+        const schedule = encodeSelectionPublicationSchedule(plan);
+        const publication = await publishReferenceCopySelection(carrier, {
+            changeset: evidence.changeset,
+            observeUserBasis: async () => (await carrier.snapshot(binding)).content_id,
+            operation,
+            plan,
+            schedule,
+        });
+        journal = store.retainRetainedWorldSettlementTerminal(fields.outputId, {
+            action: SELECT_ACTION,
+            publication_id: publication.id,
+            user_basis_after: publication.value.user_basis_after,
+        });
+        // The atomic store transition returns a freshly validated selected journal.
+        /* node:coverage ignore next 3 */
+        if (journal.state !== SELECTED_STATE || journal.operation === null) {
+            throw new TypeError("retained-world select terminal evidence is incomplete");
+        }
+        return Object.freeze({
+            action: SELECT_ACTION,
+            operation_id: journal.operation.id,
+            output_id: admission.output_id,
+            publication_id: publication.id,
+            request_id: admission.request_id,
+            settlement_version: RETAINED_WORLD_SETTLEMENT_VERSION,
+            state: SELECTED_STATE,
+            user_basis_after: publication.value.user_basis_after,
+        });
+    } catch (error) {
+        if (
+            error instanceof RetainedWorldSettlementInvalidError ||
+            error instanceof RetainedWorldSettlementConflictError
+        ) {
+            throw error;
+        }
         throw new RetainedWorldSettlementInvalidError(
             workspaceProtocolConfig.settlement.errors.invalidMessage,
             { cause: error },

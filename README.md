@@ -117,7 +117,8 @@ trace-record contracts with durable SQLite task and trace stores:
   deterministic operation/receipt codecs, workspace protocol v14 closed selection plan/step/
   publication codecs, workspace protocol v15 dependency-ordered publication schedules, workspace
   protocol v16 scheduled step/terminal-receipt evidence, authenticated immutable-head selection
-  staging, scheduled reference-carrier materialization and prefix recovery, authenticated terminal/cut/
+  staging, scheduled reference-carrier materialization and prefix recovery, public exact-ID
+  selection with two pre-write basis checks and terminal repair, authenticated terminal/cut/
   carrier evidence preparation, trace-store schema v6 consume-once admission, and schema v7
   effect-journal storage with atomic deterministic operation/receipt transitions, one-winner
   conflict detection, exact restart replay, fail-closed read-only settlement inspection, and

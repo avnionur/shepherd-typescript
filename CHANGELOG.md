@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.33.0] - 2026-08-16
+
+### New Feature
+
+- Added public exact-output retained-world selection with authenticated immutable revision and
+  changeset reconstruction, consume-once action enforcement, and two semantic-basis checks before
+  the first managed-path write.
+- Added exact carrier-publication citation in the selected terminal receipt, applying-prefix and
+  post-publication restart repair, selected replay validation, and third-state refusal.
+
+### Impact
+
+Callers can now apply one explicitly admitted retained output to its canonical binding and recover
+an interrupted selection without re-admission, inference from current bytes, or overwrite of
+unrecognized user state.
+
 ## [1.32.0] - 2026-08-16
 
 ### New Feature

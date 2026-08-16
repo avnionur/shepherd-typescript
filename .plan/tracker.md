@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-15
+Last updated: 2026-08-16
 
-Current version: `1.32.0`
+Current version: `1.33.0`
 
 Current level: L0 — canonical model
 
@@ -260,6 +260,8 @@ changeset identity.
   evidence without filesystem mutation or reinterpretation of v14/v15 records.
 - [x] Complete Task 9.4B2B2B authenticated scheduled reference-carrier effects, durable-prefix
   recovery, third-state refusal, and exact terminal carrier publication.
+- [x] Complete Task 9.4B3 public exact-ID selection, two pre-write basis checks, exact carrier
+  receipt citation, selected replay, and store-terminal restart repair.
 
 ## Verification required for this slice
 
@@ -271,9 +273,8 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 9.4B3: compose both user-basis checks, public exact-ID select, the carrier
-receipt, and store-terminal restart repair. Task 9.5 owns settlement trace
-citations and the remaining concurrency/fault matrix.
+Continue Phase 3, Task 9.5: attach settlement citations to the execution projection and close the
+remaining cross-command concurrency and fault-injection matrix.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive

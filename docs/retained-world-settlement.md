@@ -13,6 +13,8 @@ Workspace protocol v14-v16 plan, dependency-schedule, and scheduled receipt evid
 [`test/workspace/selection-publication-codec.test.ts`](../test/workspace/selection-publication-codec.test.ts).
 Reference-carrier materialization and recovery is covered by
 [`test/workspace/reference-copy-selection-publication.test.ts`](../test/workspace/reference-copy-selection-publication.test.ts).
+Public exact-ID selection and store-terminal repair is covered by
+[`test/workspace/retained-world-select.test.ts`](../test/workspace/retained-world-select.test.ts).
 
 ## Implemented foundation
 
@@ -69,6 +71,16 @@ complete prefix retains its basis-after witness inside deterministic staging bef
 terminal carrier receipt is published. Equal concurrent calls converge, and restart revalidates
 both authorities. This internal seam does not by itself admit or terminalize settlement.
 
+`selectRetainedWorldSettlement` is the public exact-ID selection coordinator. It revalidates the
+admitted execution and immutable carrier revisions, reconstructs the canonical changeset, and
+requires the current binding basis to equal the admitted base before it starts the deterministic
+operation. The carrier observes the basis again before its first managed-path write, applies or
+recovers the exact scheduled prefix, and publishes its content-addressed receipt. Only then does
+the store retain the selected terminal receipt citing that exact publication and final basis.
+Applying retries resume the carrier prefix; a carrier-complete/store-incomplete retry repairs only
+the terminal store receipt; selected retries authenticate both authorities. Any third-state path
+or moved final basis fails closed without overwrite.
+
 Task 9.2B2 implements those trace-store writers. One `BEGIN IMMEDIATE` transaction derives and
 retains the exact operation while moving `prepared` to `applying`; another retains the exact
 action-specific terminal receipt while moving `applying` to `selected` or `discarded`. Equal
@@ -111,7 +123,6 @@ filesystem operation.
 
 The store primitive deliberately remains internal and trusts only the authenticated coordinator.
 Preparation reads retained evidence and mutates only the durable settlement-admission row; it does
-not mutate user files or physical custody. Public `discard` now composes this authority with the
-effect journal; public `select` remains unavailable until Task 9.4B3 composes admission, both basis
-checks, the carrier receipt, and store-terminal recovery. Carrier-level `discard(custodyId)` remains a
-physical primitive and cannot create or bypass a settlement decision by itself.
+not mutate user files or physical custody. Public `select` and `discard` now compose this authority
+with the effect journal. Carrier-level selection publication and `discard(custodyId)` remain
+internal physical primitives and cannot create or bypass a settlement decision by themselves.
