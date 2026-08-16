@@ -821,3 +821,17 @@ export const WORKSPACE_PROTOCOL_V16_CONTRACT = deepFreeze({
         version: 16,
     },
 } as const);
+
+/** Immutable execution-trace settlement-citation extension implemented by workspace protocol v17. */
+export const WORKSPACE_PROTOCOL_V17_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V16_CONTRACT,
+    settlement: {
+        ...WORKSPACE_PROTOCOL_V16_CONTRACT.settlement,
+        citationAppendIntentPrefix: "world-settlement-citation-append:",
+        citationCutIdPrefix: "world-settlement-citation-cut:",
+        citationSchemaId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-settlement-citation-v1.schema.json",
+        citationSchemaPath: "spec/schemas/retained-world-settlement-citation-v1.schema.json",
+        citationVersion: 1,
+    },
+} as const);

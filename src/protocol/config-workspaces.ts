@@ -153,6 +153,11 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         config.settlement,
         [
             "actions",
+            "citationAppendIntentPrefix",
+            "citationCutIdPrefix",
+            "citationSchemaId",
+            "citationSchemaPath",
+            "citationVersion",
             "errors",
             "operationIdPrefix",
             "operationVersion",
@@ -714,6 +719,26 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         },
         settlement: {
             actions: readUniqueStrings(settlement.actions, "workspaces.settlement.actions"),
+            citationAppendIntentPrefix: readNonEmptyString(
+                settlement.citationAppendIntentPrefix,
+                "workspaces.settlement.citationAppendIntentPrefix",
+            ),
+            citationCutIdPrefix: readNonEmptyString(
+                settlement.citationCutIdPrefix,
+                "workspaces.settlement.citationCutIdPrefix",
+            ),
+            citationSchemaId: readNonEmptyString(
+                settlement.citationSchemaId,
+                "workspaces.settlement.citationSchemaId",
+            ),
+            citationSchemaPath: readNonEmptyString(
+                settlement.citationSchemaPath,
+                "workspaces.settlement.citationSchemaPath",
+            ),
+            citationVersion: readPositiveInteger(
+                settlement.citationVersion,
+                "workspaces.settlement.citationVersion",
+            ),
             errors: {
                 conflictCode: readNonEmptyString(
                     settlementErrors.conflictCode,

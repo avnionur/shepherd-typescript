@@ -1,0 +1,102 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-settlement-citation-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "action": {
+            "enum": [
+                "select",
+                "discard"
+            ],
+            "type": "string"
+        },
+        "capture_record_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "citation_cut_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "citation_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "command_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "execution_cut_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "operation_digest": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "operation_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "operation_json": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "outcome_record_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "output_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "receipt_digest": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "receipt_json": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "request_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "run_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "state": {
+            "enum": [
+                "selected",
+                "discarded"
+            ],
+            "type": "string"
+        },
+        "terminal_record_id": {
+            "minLength": 1,
+            "type": "string"
+        }
+    },
+    "required": [
+        "action",
+        "capture_record_id",
+        "citation_cut_id",
+        "citation_version",
+        "command_id",
+        "execution_cut_id",
+        "operation_digest",
+        "operation_id",
+        "operation_json",
+        "outcome_record_id",
+        "output_id",
+        "receipt_digest",
+        "receipt_json",
+        "request_id",
+        "run_id",
+        "state",
+        "terminal_record_id"
+    ],
+    "title": "Shepherd Retained World Settlement Citation v1",
+    "type": "object"
+}

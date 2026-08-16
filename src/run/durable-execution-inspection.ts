@@ -11,6 +11,7 @@ import type { RecordId } from "../record/types.ts";
 import { TraceStoreError } from "../store/errors.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { Cut, OwnerRecord, RetainedRecord } from "../store/types.ts";
+import { readRetainedWorldSettlementCitations } from "../workspace/retained-world-settlement-citation.ts";
 import type { RunArtifact } from "./artifact-types.ts";
 import {
     readDurablePauseCommand,
@@ -135,6 +136,7 @@ function createIncompleteInspection(
         }),
         outcome: null,
         run_id: runId,
+        settlements: Object.freeze([]),
         status,
         usage: null,
     });
@@ -148,6 +150,15 @@ function createTerminalInspection(
     ledger: Omit<TaskExecutionLedgerReceipt, "cut">,
     cut: Cut | null,
 ): DurableTaskExecutionInspection {
+    const settlements =
+        cut === null
+            ? Object.freeze([])
+            : readRetainedWorldSettlementCitations(store, {
+                  execution_cut_id: cut.cut_id,
+                  outcome_record_id: ledger.outcome_record_id,
+                  run_id: runId,
+                  terminal_record_id: ledger.lifecycle_record_id,
+              });
     const recordIds = [
         ledger.created_record_id,
         ...(ledger.started_record_id === null ? [] : [ledger.started_record_id]),
@@ -156,6 +167,10 @@ function createTerminalInspection(
         ledger.outcome_record_id,
         ledger.lifecycle_record_id,
         ...(cut === null ? [] : [cut.created_by_record_id]),
+        ...settlements.flatMap((settlement) => [
+            settlement.citation_record_id,
+            settlement.citation_cut.created_by_record_id,
+        ]),
     ];
     const terminalRecord = readRequiredRecord(store, ledger.lifecycle_record_id);
     return Object.freeze({
@@ -182,6 +197,7 @@ function createTerminalInspection(
             record_id: ledger.outcome_record_id,
         }),
         run_id: runId,
+        settlements,
         status,
         usage:
             ledger.usage_record_id === null

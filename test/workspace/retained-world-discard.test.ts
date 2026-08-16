@@ -13,6 +13,7 @@ import {
     discardRetainedWorldSettlement,
     executeTask,
     initializeWorkspace,
+    inspectDurableTaskExecution,
     prepareRetainedWorldSettlement,
     RETAINED_WORLD_SETTLEMENT_VERSION,
     RetainedWorldSettlementConflictError,
@@ -162,6 +163,23 @@ test("public discard commits terminal authority before cleanup and recovers afte
         reopened.readRetainedWorldSettlementJournal(captured.output.output_id)?.cleanup_completed,
         true,
     );
+    const terminal = reopened.readRetainedWorldSettlementJournal(captured.output.output_id);
+    assert.ok(terminal?.operation && terminal.receipt);
+    const settlement = inspectDurableTaskExecution(reopened, captured.output.run_id).settlements[0];
+    assert.ok(settlement);
+    assert.equal(settlement.action, "discard");
+    assert.equal(settlement.state, "discarded");
+    assert.equal(settlement.output_id, captured.output.output_id);
+    assert.deepEqual(settlement.operation, {
+        digest: terminal.operation.digest,
+        id: terminal.operation.id,
+        json: terminal.operation.json,
+    });
+    assert.deepEqual(settlement.receipt, {
+        digest: terminal.receipt.digest,
+        json: terminal.receipt.json,
+    });
+    assert.equal(settlement.citation_cut.through_record_id, settlement.citation_record_id);
     await carrier.openRevision(captured.output.base_revision_id);
     await carrier.openRevision(captured.output.head_revision_id);
     assert.equal(await readFile(path.join(sourceRoot, "message.txt"), "utf8"), "before\n");
