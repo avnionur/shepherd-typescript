@@ -46,11 +46,18 @@ test("effect protocol configuration is frozen and compatibility locked", () => {
 
     assert.deepEqual(parsed.effects, EFFECT_PROTOCOL_V1_CONTRACT);
     assert.equal(Object.isFrozen(parsed.effects), true);
+    assert.equal(Object.isFrozen(parsed.effects.handlers), true);
     assert.equal(Object.isFrozen(parsed.effects.reversibilityTiers), true);
 
     for (const mutate of [
         (effects: Record<string, unknown>) => {
             effects.intentVersion = 0;
+        },
+        (effects: Record<string, unknown>) => {
+            (effects.handlers as Record<string, unknown>).selection = "first_matching";
+        },
+        (effects: Record<string, unknown>) => {
+            (effects.handlers as Record<string, unknown>).unhandled = "ignore";
         },
         (effects: Record<string, unknown>) => {
             effects.intentVersion = 2;

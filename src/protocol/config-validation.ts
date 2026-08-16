@@ -1,6 +1,9 @@
 import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
 import { readEffectConfig } from "./config-effects.ts";
+import { readFormalAssuranceConfig } from "./config-formal-assurance.ts";
 import { readProjectionConfig } from "./config-projections.ts";
+import { readProviderConfig } from "./config-providers.ts";
+import { readRunConfig } from "./config-runs.ts";
 import {
     readArtifacts,
     readBlobConfig,
@@ -31,6 +34,7 @@ import {
     readUniqueStrings,
     sameStrings,
 } from "./config-value-readers.ts";
+import { readWorkspaceConfig } from "./config-workspaces.ts";
 
 type ParseProtocolConfigOptions = {
     readonly enforceCompatibility?: boolean;
@@ -44,7 +48,17 @@ export function parseProtocolConfig(
 ): ProtocolConfig {
     const root = readObject(
         value,
-        ["effects", "kernel", "projections", "recordId", "tasks"],
+        [
+            "effects",
+            "formalAssurance",
+            "kernel",
+            "projections",
+            "providers",
+            "recordId",
+            "runs",
+            "tasks",
+            "workspaces",
+        ],
         "protocol configuration",
     );
     const recordId = readRecordIdConfig(root.recordId);
@@ -58,10 +72,14 @@ export function parseProtocolConfig(
     }
     const config = {
         effects: readEffectConfig(root.effects),
+        formalAssurance: readFormalAssuranceConfig(root.formalAssurance),
         kernel,
         projections,
+        providers: readProviderConfig(root.providers),
         recordId,
+        runs: readRunConfig(root.runs),
         tasks: readTaskConfig(root.tasks),
+        workspaces: readWorkspaceConfig(root.workspaces),
     };
     if (options.enforceCompatibility !== false) {
         assertSupportedProtocolCompatibility(config);

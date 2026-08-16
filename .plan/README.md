@@ -140,6 +140,26 @@ record and public API must declare a protocol/compatibility version.
   state machines, interoperability, and platform strategy.
 - [Implementation roadmap](./implementation-roadmap.md) — phased work,
   deliverables, dependencies, and acceptance criteria.
+- [Phase 2 exit audit](./phase-2-exit-audit.md) — production-seam evidence, resolved phase-boundary
+  mismatch, and the handoff into workspace initialization.
+- [Workspace initialization research](./workspace-initialization-research.md) — shipped init/adopt
+  contract, pinned-source boundaries, and explicit dirty-worktree oracle gaps.
+- [Workspace binding research](./workspace-binding-research.md) — shipped named/disjoint root
+  contract, canonicalization policy, and explicit filesystem/Git oracle gaps.
+- [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
+  snapshot, mutable custody, verification, discard, durability, and Task 4 Git boundary.
+- [Git-aware custody research](./git-aware-custody-research.md) — shipped Git baseline,
+  repository/index evidence, object retention, movement, and Task 5 changeset boundary.
+- [Changeset-model research](./changeset-model-research.md) — canonical reconstructive changes,
+  identity, path and node semantics, limits, and the Task 6 capture boundary.
+- [Task-world capture research](./task-world-capture-research.md) — isolated retained-world
+  execution, custody promotion, fencing, durable publication, recovery, and Task 7 boundaries.
+- [Exact-ID settlement research](./settlement-select-discard-research.md) — consume-once select and
+  discard identity, basis, mutation, cleanup, and recovery contract.
+- [Settlement effect-journal contract](./settlement-effect-journal-research.md) — deterministic
+  operation identity, persisted receipts, schema-v7 transitions, and Task 9 implementation order.
+- [Retained-world selection publication contract](./retained-world-selection-research.md) —
+  journaled managed-path materialization, two basis checks, publication receipts, and crash repair.
 - [Testing and release](./testing-and-release.md) — conformance, property,
   security, recovery, performance, CI, and release gates.
 - [Decisions and risks](./decisions-and-risks.md) — adopted decisions,
@@ -194,5 +214,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 1 in the roadmap by implementing content-addressed blob storage, integrity
-verification, and durable storage receipts in TypeScript.
+Continue Phase 3, Task 9.5 by attaching settlement citations to the execution projection and
+closing the remaining cross-command concurrency and fault-injection matrix.

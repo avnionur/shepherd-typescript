@@ -5,6 +5,15 @@ import { assertSupportedProtocolCompatibility } from "../src/protocol/config-com
 import type { ProtocolConfig } from "../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 import { renderEffectIntentSchema, renderEffectOutcomeSchema } from "./effect-protocol-schemas.ts";
+import { renderRunArtifactSchema } from "./run-artifact-schema.ts";
+import {
+    renderRunContinuationDescriptorSchema,
+    renderRunRunningLifecycleSchema,
+    renderRunSuspendedLifecycleSchema,
+    renderRunWaitingLifecycleSchema,
+} from "./run-lifecycle-schemas.ts";
+import { renderRunOutcomeSchema } from "./run-protocol-schema.ts";
+import { renderRunUsageSchema } from "./run-usage-schema.ts";
 import {
     renderTaskArtifactLockSchema,
     renderTaskDescriptorSchema,
@@ -64,6 +73,46 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             content: renderJson(renderEffectOutcomeSchema(config)),
             relativePath: config.effects.artifacts.outcomeSchema,
         },
+        {
+            content: renderJson(renderRunArtifactSchema(config)),
+            relativePath: config.runs.artifacts.artifactSchema,
+        },
+        {
+            content: renderJson(renderRunContinuationDescriptorSchema(config)),
+            relativePath: config.runs.artifacts.continuationDescriptorSchema,
+        },
+        {
+            content: renderJson(renderRunOutcomeSchema(config)),
+            relativePath: config.runs.artifacts.outcomeSchema,
+        },
+        {
+            content: renderJson(renderRunRunningLifecycleSchema(config)),
+            relativePath: config.runs.artifacts.runningLifecycleSchema,
+        },
+        {
+            content: renderJson(renderRunUsageSchema(config)),
+            relativePath: config.runs.artifacts.usageSchema,
+        },
+        {
+            content: renderJson(renderWorldCaptureSchema(config)),
+            relativePath: config.workspaces.worldTaskCapture.captureSchemaPath,
+        },
+        {
+            content: renderJson(renderWorldCaptureJournalSchema(config)),
+            relativePath: config.workspaces.worldTaskCapture.journalSchemaPath,
+        },
+        {
+            content: renderJson(renderSelectionPublicationSchema(config)),
+            relativePath: config.workspaces.selectionPublication.schemaPath,
+        },
+        {
+            content: renderJson(renderRunWaitingLifecycleSchema(config)),
+            relativePath: config.runs.artifacts.waitingLifecycleSchema,
+        },
+        {
+            content: renderJson(renderRunSuspendedLifecycleSchema(config)),
+            relativePath: config.runs.artifacts.suspendedLifecycleSchema,
+        },
     ];
     const resolvedArtifacts: { content: string; artifactPath: string; relativePath: string }[] = [];
     for (const { content, relativePath } of artifacts) {
@@ -84,10 +133,498 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
     }
 }
 
+function renderWorldCaptureSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
+    const required = [
+        "base_revision_id",
+        "binding_id",
+        "capture_id",
+        "changeset_id",
+        "custody_id",
+        "head_revision_id",
+        "output_id",
+        "run_id",
+        "schema_version",
+        "status",
+        "user_basis_after",
+        "user_basis_before",
+    ];
+    const properties = Object.fromEntries(
+        required.map((key) => [key, { type: key === "schema_version" ? "integer" : "string" }]),
+    );
+    return {
+        $id: config.workspaces.worldTaskCapture.captureSchemaId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            ...properties,
+            schema_version: {
+                const: config.workspaces.worldTaskCapture.version,
+                type: "integer",
+            },
+            status: { const: config.workspaces.worldTaskCapture.statuses[0], type: "string" },
+        },
+        required,
+        type: "object",
+    };
+}
+
+function renderWorldCaptureJournalSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const [prepared, forked, executing, captured] =
+        config.workspaces.worldTaskCapture.journalPhases;
+    const phaseSchemas = [
+        [
+            prepared,
+            [
+                "base_revision_id",
+                "binding_id",
+                "enforcement",
+                "max_capture_id_bytes",
+                "max_text_bytes",
+                "runner_id",
+            ],
+        ],
+        [forked, ["custody_id", "user_basis_before"]],
+        [executing, ["claim_id", "custody_id", "fencing_token"]],
+        [
+            captured,
+            [
+                "changeset_id",
+                "custody_id",
+                "head_revision_id",
+                "user_basis_after",
+                "user_basis_before",
+            ],
+        ],
+    ] as const;
+    return {
+        $id: config.workspaces.worldTaskCapture.journalSchemaId,
+        $schema: config.kernel.schemas.dialect,
+        oneOf: phaseSchemas.map(([phase, phaseFields]) => {
+            const required = [
+                "capture_id",
+                "capture_phase",
+                "journal_version",
+                "run_id",
+                ...phaseFields,
+            ];
+            return {
+                additionalProperties: false,
+                properties: Object.fromEntries(
+                    required.map((key) => [
+                        key,
+                        key === "journal_version"
+                            ? {
+                                  const: config.workspaces.worldTaskCapture.journalVersion,
+                                  type: "integer",
+                              }
+                            : key === "capture_phase"
+                              ? { const: phase, type: "string" }
+                              : [
+                                      "fencing_token",
+                                      "max_capture_id_bytes",
+                                      "max_text_bytes",
+                                  ].includes(key)
+                                ? { minimum: 1, type: "integer" }
+                                : { minLength: 1, type: "string" },
+                    ]),
+                ),
+                required,
+                type: "object",
+            };
+        }),
+    };
+}
+
+function renderSelectionPublicationSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const text = { minLength: 1, type: "string" } as const;
+    const directoryNode = {
+        additionalProperties: false,
+        properties: {
+            kind: { const: config.workspaces.carrier.entryKinds[0], type: "string" },
+            mode: { minimum: 0, type: "integer" },
+        },
+        required: ["kind", "mode"],
+        type: "object",
+    };
+    const fileNode = {
+        additionalProperties: false,
+        properties: {
+            byte_length: { minimum: 0, type: "integer" },
+            content_id: text,
+            kind: { const: config.workspaces.carrier.entryKinds[1], type: "string" },
+            mode: { minimum: 0, type: "integer" },
+        },
+        required: ["byte_length", "content_id", "kind", "mode"],
+        type: "object",
+    };
+    const symlinkNode = {
+        additionalProperties: false,
+        properties: {
+            kind: { const: config.workspaces.carrier.entryKinds[2], type: "string" },
+            mode: { type: "null" },
+            target: { type: "string" },
+        },
+        required: ["kind", "mode", "target"],
+        type: "object",
+    };
+    const nullableNode = {
+        anyOf: [
+            { type: "null" },
+            { $ref: "#/$defs/directoryNode" },
+            { $ref: "#/$defs/fileNode" },
+            { $ref: "#/$defs/symlinkNode" },
+        ],
+    };
+    const change = {
+        additionalProperties: false,
+        properties: {
+            after: nullableNode,
+            before: nullableNode,
+            operation: { enum: config.workspaces.changesets.operations, type: "string" },
+            path: text,
+        },
+        required: ["after", "before", "operation", "path"],
+        type: "object",
+    };
+    const planFields = [
+        "action",
+        "atomicity",
+        "base_content_id",
+        "base_revision_id",
+        "binding_id",
+        "capture_record_id",
+        "changes",
+        "changeset_id",
+        "command_id",
+        "custody_id",
+        "descriptor_format",
+        "execution_cut_id",
+        "head_content_id",
+        "head_revision_id",
+        "operation_id",
+        "output_id",
+        "plan_version",
+        "request_id",
+        "run_id",
+        "settlement_version",
+        "staging_id",
+        "user_basis_before",
+    ];
+    return {
+        $defs: { change, directoryNode, fileNode, symlinkNode },
+        $id: config.workspaces.selectionPublication.schemaId,
+        $schema: config.kernel.schemas.dialect,
+        oneOf: [
+            {
+                additionalProperties: false,
+                properties: {
+                    ...Object.fromEntries(planFields.map((field) => [field, text])),
+                    action: {
+                        const: config.workspaces.settlement.actions[0],
+                        type: "string",
+                    },
+                    atomicity: {
+                        enum: config.workspaces.selectionPublication.atomicityKinds,
+                        type: "string",
+                    },
+                    changes: {
+                        items: { $ref: "#/$defs/change" },
+                        maxItems: config.workspaces.selectionPublication.maxSteps,
+                        type: "array",
+                    },
+                    descriptor_format: {
+                        const: config.workspaces.selectionPublication.descriptorFormat,
+                        type: "string",
+                    },
+                    plan_version: {
+                        const: config.workspaces.selectionPublication.planVersion,
+                        type: "integer",
+                    },
+                    settlement_version: {
+                        const: config.workspaces.settlement.version,
+                        type: "integer",
+                    },
+                },
+                required: planFields,
+                type: "object",
+            },
+            {
+                additionalProperties: false,
+                properties: {
+                    change: { $ref: "#/$defs/change" },
+                    ordinal: {
+                        maximum: config.workspaces.selectionPublication.maxSteps - 1,
+                        minimum: 0,
+                        type: "integer",
+                    },
+                    plan_id: text,
+                    previous_step_id: { anyOf: [{ type: "null" }, text] },
+                    status: {
+                        enum: config.workspaces.selectionPublication.stepStatuses,
+                        type: "string",
+                    },
+                    step_version: {
+                        const: config.workspaces.selectionPublication.stepVersion,
+                        type: "integer",
+                    },
+                },
+                required: [
+                    "change",
+                    "ordinal",
+                    "plan_id",
+                    "previous_step_id",
+                    "status",
+                    "step_version",
+                ],
+                type: "object",
+            },
+            {
+                additionalProperties: false,
+                properties: {
+                    atomicity: {
+                        enum: config.workspaces.selectionPublication.atomicityKinds,
+                        type: "string",
+                    },
+                    final_step_id: { anyOf: [{ type: "null" }, text] },
+                    head_content_id: text,
+                    operation_id: text,
+                    plan_id: text,
+                    publication_version: {
+                        const: config.workspaces.selectionPublication.publicationVersion,
+                        type: "integer",
+                    },
+                    staging_id: text,
+                    user_basis_after: text,
+                    user_basis_before: text,
+                },
+                required: [
+                    "atomicity",
+                    "final_step_id",
+                    "head_content_id",
+                    "operation_id",
+                    "plan_id",
+                    "publication_version",
+                    "staging_id",
+                    "user_basis_after",
+                    "user_basis_before",
+                ],
+                type: "object",
+            },
+            {
+                additionalProperties: false,
+                properties: {
+                    change_ordinals: {
+                        items: {
+                            maximum: config.workspaces.selectionPublication.maxSteps - 1,
+                            minimum: 0,
+                            type: "integer",
+                        },
+                        maxItems: config.workspaces.selectionPublication.maxSteps,
+                        type: "array",
+                    },
+                    plan_id: text,
+                    schedule_kind: {
+                        enum: config.workspaces.selectionPublication.scheduleKinds,
+                        type: "string",
+                    },
+                    schedule_version: {
+                        const: config.workspaces.selectionPublication.scheduleVersion,
+                        type: "integer",
+                    },
+                },
+                required: ["change_ordinals", "plan_id", "schedule_kind", "schedule_version"],
+                type: "object",
+            },
+            {
+                additionalProperties: false,
+                properties: {
+                    change: { $ref: "#/$defs/change" },
+                    change_ordinal: {
+                        maximum: config.workspaces.selectionPublication.maxSteps - 1,
+                        minimum: 0,
+                        type: "integer",
+                    },
+                    operation_ordinal: {
+                        maximum: config.workspaces.selectionPublication.maxSteps - 1,
+                        minimum: 0,
+                        type: "integer",
+                    },
+                    plan_id: text,
+                    previous_step_id: { anyOf: [{ type: "null" }, text] },
+                    schedule_id: text,
+                    status: {
+                        enum: config.workspaces.selectionPublication.stepStatuses,
+                        type: "string",
+                    },
+                    step_version: {
+                        const: config.workspaces.selectionPublication.scheduledStepVersion,
+                        type: "integer",
+                    },
+                },
+                required: [
+                    "change",
+                    "change_ordinal",
+                    "operation_ordinal",
+                    "plan_id",
+                    "previous_step_id",
+                    "schedule_id",
+                    "status",
+                    "step_version",
+                ],
+                type: "object",
+            },
+            {
+                additionalProperties: false,
+                properties: {
+                    atomicity: {
+                        enum: config.workspaces.selectionPublication.atomicityKinds,
+                        type: "string",
+                    },
+                    final_step_id: { anyOf: [{ type: "null" }, text] },
+                    head_content_id: text,
+                    operation_id: text,
+                    plan_id: text,
+                    publication_version: {
+                        const: config.workspaces.selectionPublication.scheduledPublicationVersion,
+                        type: "integer",
+                    },
+                    schedule_id: text,
+                    staging_id: text,
+                    user_basis_after: text,
+                    user_basis_before: text,
+                },
+                required: [
+                    "atomicity",
+                    "final_step_id",
+                    "head_content_id",
+                    "operation_id",
+                    "plan_id",
+                    "publication_version",
+                    "schedule_id",
+                    "staging_id",
+                    "user_basis_after",
+                    "user_basis_before",
+                ],
+                type: "object",
+            },
+        ],
+    };
+}
+
 function renderProtocolValues(config: ProtocolConfig): string {
     const renderedModes = config.kernel.recordModes.map((mode) => JSON.stringify(mode)).join(", ");
     const renderedTiers = config.effects.reversibilityTiers
         .map((tier) => JSON.stringify(tier))
+        .join(", ");
+    const renderedRunStatuses = config.runs.terminalStatuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
+    const renderedArtifactContentTypes = config.runs.artifactContentTypes
+        .map((type) => JSON.stringify(type))
+        .join(", ");
+    const renderedBudgetMetrics = config.runs.control.budgetMetrics
+        .map((metric) => `    ${JSON.stringify(metric)},`)
+        .join("\n");
+    const renderedControlReasonTypes = config.runs.control.reasonTypes
+        .map((type) => JSON.stringify(type))
+        .join(", ");
+    const renderedControlStatuses = config.runs.control.statuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
+    const renderedControlCommandKinds = config.runs.execution.controlCommandKinds
+        .map((kind) => `    ${JSON.stringify(kind)},`)
+        .join("\n");
+    const renderedRecoveryStatuses = config.runs.execution.recoveryStatuses
+        .map((status) => `    ${JSON.stringify(status)},`)
+        .join("\n");
+    const renderedClaimStatuses = config.runs.execution.invocationClaimStatuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
+    const renderedClaimAppendStatuses = config.runs.execution.invocationClaimAppendStatuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
+    const renderedLifecycleStatuses = config.runs.execution.lifecycleStatuses
+        .map((status) => `    ${JSON.stringify(status)},`)
+        .join("\n");
+    const renderedLifecycleTransitions = config.runs.execution.lifecycleTransitions
+        .map(([source, target]) => `    [${JSON.stringify(source)}, ${JSON.stringify(target)}],`)
+        .join("\n");
+    const renderedLifecycleTerminalTransitions = config.runs.execution.lifecycleTerminalTransitions
+        .map(([source, outcome]) => `    [${JSON.stringify(source)}, ${JSON.stringify(outcome)}],`)
+        .join("\n");
+    const renderedContinuationEvidenceStatuses = config.runs.execution.continuationEvidenceStatuses
+        .map((status) => `    ${JSON.stringify(status)},`)
+        .join("\n");
+    const renderedContinuationConstituentKinds = config.runs.execution.continuationConstituentKinds
+        .map((kind) => `    ${JSON.stringify(kind)},`)
+        .join("\n");
+    const renderedProofProfiles = config.formalAssurance.proofEnvelope.profiles
+        .map((profile) => `    ${JSON.stringify(profile)},`)
+        .join("\n");
+    const renderedProofStrengths = config.formalAssurance.proofEnvelope.strengths
+        .map((strength) => `    ${JSON.stringify(strength)},`)
+        .join("\n");
+    const renderedTraceRecordTypes = Object.entries(
+        config.formalAssurance.referenceMachine.recordTypes,
+    )
+        .map(([key, value]) => `    ${key}: ${JSON.stringify(value)},`)
+        .join("\n");
+    const renderedTraceActionKinds = config.formalAssurance.referenceMachine.actionKinds
+        .map((action) => JSON.stringify(action))
+        .join(", ");
+    const renderedTraceDispositions =
+        config.formalAssurance.referenceMachine.continuationDispositions
+            .map((disposition) => JSON.stringify(disposition))
+            .join(", ");
+    const renderedTraceClosureReasons = config.formalAssurance.referenceMachine.closureReasons
+        .map((reason) => JSON.stringify(reason))
+        .join(", ");
+    const renderedWorkspaceAdoptionModes = config.workspaces.adoptionModes
+        .map((mode) => JSON.stringify(mode))
+        .join(", ");
+    const renderedWorldEntryKinds = config.workspaces.carrier.entryKinds
+        .map((kind) => JSON.stringify(kind))
+        .join(", ");
+    const renderedGitHeadKinds = config.workspaces.gitCustody.headKinds
+        .map((kind) => JSON.stringify(kind))
+        .join(", ");
+    const renderedWorldChangeOperations = config.workspaces.changesets.operations
+        .map((operation) => JSON.stringify(operation))
+        .join(", ");
+    const renderedWorldPreviewClassifications =
+        config.workspaces.changesetInspection.previewClassifications
+            .map((classification) => JSON.stringify(classification))
+            .join(", ");
+    const renderedWorldMoveKinds = config.workspaces.changesetInspection.moveKinds
+        .map((kind) => JSON.stringify(kind))
+        .join(", ");
+    const renderedRetainedWorldEnforcementKinds = config.workspaces.worldExecution.enforcementKinds
+        .map((kind) => JSON.stringify(kind))
+        .join(", ");
+    const renderedRetainedWorldOutputStatuses = config.workspaces.worldTaskCapture.statuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
+    const renderedRetainedWorldJournalPhases = config.workspaces.worldTaskCapture.journalPhases
+        .map((phase) => `    ${JSON.stringify(phase)}`)
+        .join(",\n");
+    const renderedRetainedWorldSettlementActions = config.workspaces.settlement.actions
+        .map((action) => JSON.stringify(action))
+        .join(", ");
+    const renderedRetainedWorldSettlementStates = config.workspaces.settlement.states
+        .map((state) => `    ${JSON.stringify(state)}`)
+        .join(",\n");
+    const renderedSelectionAtomicityKinds = config.workspaces.selectionPublication.atomicityKinds
+        .map((kind) => JSON.stringify(kind))
+        .join(", ");
+    const renderedSelectionStepStatuses = config.workspaces.selectionPublication.stepStatuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
+    const renderedSelectionScheduleKinds = config.workspaces.selectionPublication.scheduleKinds
+        .map((kind) => JSON.stringify(kind))
         .join(", ");
     return `// Generated from protocol.config.json. Do not edit directly.
 
@@ -105,6 +642,227 @@ export const EFFECT_REVERSIBILITY_TIERS = [${renderedTiers}] as const;
 export const EFFECT_PHASES = { intent: ${JSON.stringify(
         config.effects.phases.intent,
     )}, outcome: ${JSON.stringify(config.effects.phases.outcome)} } as const;
+
+/** Configured proof-envelope profiles ordered from weakest upward. @public */
+export const PROOF_ENVELOPE_PROFILES = [
+${renderedProofProfiles}
+] as const;
+
+/** Configured proof-envelope strengths ordered from weakest upward. @public */
+export const PROOF_ENVELOPE_STRENGTHS = [
+${renderedProofStrengths}
+] as const;
+
+/** Configured normalized Core-A trace record discriminants. @public */
+export const TYPED_EFFECT_TRACE_RECORD_TYPES = {
+${renderedTraceRecordTypes}
+} as const;
+
+/** Configured Core-A handler answer actions. @public */
+export const TYPED_EFFECT_TRACE_ACTION_KINDS = [${renderedTraceActionKinds}] as const;
+
+/** Configured canonical world-changeset operations. @public */
+export const WORLD_CHANGE_OPERATIONS = [${renderedWorldChangeOperations}] as const;
+
+/** Configured retained-world text-preview classifications. @public */
+export const WORLD_TEXT_PREVIEW_CLASSIFICATIONS = [${renderedWorldPreviewClassifications}] as const;
+
+/** Configured retained-world text-preview encoding. @public */
+export const WORLD_TEXT_PREVIEW_ENCODING = ${JSON.stringify(config.workspaces.changesetInspection.encoding)} as const;
+
+/** Configured exact-content derived move classifications. @public */
+export const WORLD_DERIVED_MOVE_KINDS = [${renderedWorldMoveKinds}] as const;
+
+/** Configured Gitlink presentation discriminant. @public */
+export const GITLINK_ENTRY_KIND = ${JSON.stringify(config.workspaces.changesetInspection.gitlinkEntryKind)} as const;
+
+/** Configured Gitlink index mode. @public */
+export const GITLINK_MODE = ${JSON.stringify(config.workspaces.changesetInspection.gitlinkMode)} as const;
+
+/** Configured symbolic-link index mode. @public */
+export const GIT_SYMLINK_MODE = ${JSON.stringify(config.workspaces.changesetInspection.symlinkMode)} as const;
+
+/** Configured public resource bounds for changeset inspection. @public */
+export const WORLD_CHANGESET_INSPECTION_LIMITS = {
+    maxDerivedMoveCandidates: ${config.workspaces.changesetInspection.maxDerivedMoveCandidates},
+    maxPageSize: ${config.workspaces.changesetInspection.maxPageSize},
+    maxPathBytes: ${config.workspaces.changesets.maxPathBytes},
+    maxPreviewBytes: ${config.workspaces.changesetInspection.maxPreviewBytes},
+    maxPreviewLines: ${config.workspaces.changesetInspection.maxPreviewLines},
+    maxReadBytes: ${config.workspaces.changesetInspection.maxReadBytes},
+    maxVerificationConcurrency: ${config.workspaces.changesetInspection.maxVerificationConcurrency},
+} as const;
+
+/** Configured public world-changeset error codes. @public */
+export const WORLD_CHANGESET_ERROR_CODES = {
+    invalid: ${JSON.stringify(config.workspaces.changesets.errors.invalidCode)},
+    limit: ${JSON.stringify(config.workspaces.changesets.errors.limitCode)},
+} as const;
+
+/** Configured Core-A continuation dispositions paired with answer actions. @public */
+export const TYPED_EFFECT_TRACE_CONTINUATION_DISPOSITIONS = [${renderedTraceDispositions}] as const;
+
+/** Configured Core-A selection-closure reasons. @public */
+export const TYPED_EFFECT_TRACE_CLOSURE_REASONS = [${renderedTraceClosureReasons}] as const;
+
+/** Configured terminal status discriminants for run outcomes. @public */
+export const RUN_TERMINAL_STATUSES = [${renderedRunStatuses}] as const;
+
+/** Configured content representations for run artifacts. @public */
+export const RUN_ARTIFACT_CONTENT_TYPES = [${renderedArtifactContentTypes}] as const;
+
+/** Configured run-budget metrics in deterministic exhaustion precedence. @public */
+export const RUN_BUDGET_METRICS = [
+${renderedBudgetMetrics}
+] as const;
+
+/** Configured run-control reason discriminants. @public */
+export const RUN_CONTROL_REASON_TYPES = [${renderedControlReasonTypes}] as const;
+
+/** Configured run-control lifecycle statuses. @public */
+export const RUN_CONTROL_STATUSES = [${renderedControlStatuses}] as const;
+
+/** Configured normative run-lifecycle statuses. @public */
+export const RUN_LIFECYCLE_STATUSES = [
+${renderedLifecycleStatuses}
+] as const;
+
+/** Configured status identifying the terminal normative lifecycle state. @public */
+export const RUN_LIFECYCLE_TERMINAL_STATUS = ${JSON.stringify(
+        config.runs.execution.lifecycleTerminalStatus,
+    )} as const;
+
+/** Configured active running lifecycle status. @public */
+export const RUN_LIFECYCLE_RUNNING_STATUS = ${JSON.stringify(
+        config.runs.execution.lifecycleRunningStatus,
+    )} as const;
+
+/** Configured prerequisite-driven waiting lifecycle status. @public */
+export const RUN_LIFECYCLE_WAITING_STATUS = ${JSON.stringify(
+        config.runs.execution.lifecycleWaitingStatus,
+    )} as const;
+
+/** Configured control-driven suspended lifecycle status. @public */
+export const RUN_LIFECYCLE_SUSPENDED_STATUS = ${JSON.stringify(
+        config.runs.execution.lifecycleSuspendedStatus,
+    )} as const;
+
+/** Configured allowed non-terminal run-lifecycle transitions. @public */
+export const RUN_LIFECYCLE_TRANSITIONS = [
+${renderedLifecycleTransitions}
+] as const;
+
+/** Configured allowed source-lifecycle and terminal-outcome pairs. @public */
+export const RUN_LIFECYCLE_TERMINAL_TRANSITIONS = [
+${renderedLifecycleTerminalTransitions}
+] as const;
+
+/** Configured continuation-evidence classifications. @public */
+export const RUN_CONTINUATION_EVIDENCE_STATUSES = [
+${renderedContinuationEvidenceStatuses}
+] as const;
+
+/** Configured receipt-bearing continuation-evidence status. @public */
+export const RUN_CONTINUATION_VERIFIED_STATUS = ${JSON.stringify(
+        config.runs.execution.continuationVerifiedStatus,
+    )} as const;
+
+/** Configured continuation-descriptor constituent kinds. @public */
+export const RUN_CONTINUATION_CONSTITUENT_KINDS = [
+${renderedContinuationConstituentKinds}
+] as const;
+
+/** Configured durable execution recovery statuses. @public */
+export const DURABLE_EXECUTION_RECOVERY_STATUSES = [
+${renderedRecoveryStatuses}
+] as const;
+
+/** Configured durable execution control-command kinds. @public */
+export const DURABLE_EXECUTION_CONTROL_COMMAND_KINDS = [
+${renderedControlCommandKinds}
+] as const;
+
+/** Configured durable invocation-claim result statuses. @public */
+export const DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES = [${renderedClaimStatuses}] as const;
+
+/** Configured claim-guarded append result statuses. @public */
+export const DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES = [${renderedClaimAppendStatuses}] as const;
+
+/** Configured workspace baseline-adoption modes. @public */
+export const WORKSPACE_ADOPTION_MODES = [${renderedWorkspaceAdoptionModes}] as const;
+
+/** Configured reference copy-carrier manifest entry kinds. @public */
+export const WORLD_ENTRY_KINDS = [${renderedWorldEntryKinds}] as const;
+
+/** Configured retained-world runner enforcement classifications. @public */
+export const RETAINED_WORLD_ENFORCEMENT_KINDS = [${renderedRetainedWorldEnforcementKinds}] as const;
+
+/** Configured durable retained-world output statuses. @public */
+export const RETAINED_WORLD_OUTPUT_STATUSES = [${renderedRetainedWorldOutputStatuses}] as const;
+
+/** Configured ordered durable retained-world capture-journal phases. @public */
+export const RETAINED_WORLD_JOURNAL_PHASES = [
+${renderedRetainedWorldJournalPhases},
+] as const;
+
+/** Configured consume-once retained-world settlement actions. @public */
+export const RETAINED_WORLD_SETTLEMENT_ACTIONS = [${renderedRetainedWorldSettlementActions}] as const;
+
+/** Configured durable retained-world settlement states. @public */
+export const RETAINED_WORLD_SETTLEMENT_STATES = [
+${renderedRetainedWorldSettlementStates},
+] as const;
+
+/** Configured public retained-world settlement protocol version. @public */
+export const RETAINED_WORLD_SETTLEMENT_VERSION = ${config.workspaces.settlement.version} as const;
+
+/** Configured deterministic settlement-operation codec version. @public */
+export const RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION = ${config.workspaces.settlement.operationVersion} as const;
+
+/** Configured deterministic settlement-receipt codec version. @public */
+export const RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION = ${config.workspaces.settlement.receiptVersion} as const;
+
+/** Configured retained-world selection publication atomicity classifications. @public */
+export const RETAINED_WORLD_SELECTION_ATOMICITY_KINDS = [${renderedSelectionAtomicityKinds}] as const;
+
+/** Configured retained-world selection path-step statuses. @public */
+export const RETAINED_WORLD_SELECTION_STEP_STATUSES = [${renderedSelectionStepStatuses}] as const;
+
+/** Configured retained-world selection dependency-schedule classifications. @public */
+export const RETAINED_WORLD_SELECTION_SCHEDULE_KINDS = [${renderedSelectionScheduleKinds}] as const;
+
+/** Configured retained-world selection publication protocol version. @public */
+export const RETAINED_WORLD_SELECTION_PUBLICATION_VERSION = ${config.workspaces.selectionPublication.version} as const;
+
+/** Configured retained-world selection plan codec version. @public */
+export const RETAINED_WORLD_SELECTION_PLAN_VERSION = ${config.workspaces.selectionPublication.planVersion} as const;
+
+/** Configured retained-world selection path-step codec version. @public */
+export const RETAINED_WORLD_SELECTION_STEP_VERSION = ${config.workspaces.selectionPublication.stepVersion} as const;
+
+/** Configured retained-world selection publication-receipt codec version. @public */
+export const RETAINED_WORLD_SELECTION_RECEIPT_VERSION = ${config.workspaces.selectionPublication.publicationVersion} as const;
+
+/** Configured retained-world selection dependency-schedule codec version. @public */
+export const RETAINED_WORLD_SELECTION_SCHEDULE_VERSION = ${config.workspaces.selectionPublication.scheduleVersion} as const;
+
+/** Configured dependency-scheduled path-step codec version. @public */
+export const RETAINED_WORLD_SELECTION_SCHEDULED_STEP_VERSION = ${config.workspaces.selectionPublication.scheduledStepVersion} as const;
+
+/** Configured dependency-scheduled terminal publication-receipt codec version. @public */
+export const RETAINED_WORLD_SELECTION_SCHEDULED_RECEIPT_VERSION = ${config.workspaces.selectionPublication.scheduledPublicationVersion} as const;
+
+/** Configured maximum path effects in one retained-world selection publication. @public */
+export const RETAINED_WORLD_SELECTION_MAX_STEPS = ${config.workspaces.selectionPublication.maxSteps} as const;
+
+/** Configured maximum UTF-8 bytes for one retained-world text operation. @public */
+export const RETAINED_WORLD_MAX_TEXT_BYTES = ${config.workspaces.worldTaskCapture.maxTextBytes} as const;
+
+/** Configured maximum UTF-8 bytes for one retained-world capture identity. @public */
+export const RETAINED_WORLD_MAX_CAPTURE_ID_BYTES = ${config.workspaces.worldTaskCapture.maxCaptureIdBytes} as const;
+
+/** Configured Git HEAD-state discriminants. @public */
+export const GIT_HEAD_KINDS = [${renderedGitHeadKinds}] as const;
 `;
 }
 
@@ -183,6 +941,7 @@ function recordViewSchema(config: ProtocolConfig): Readonly<Record<string, unkno
         type: "object",
         required: ["owner_id", "owner_ordinal"],
         properties: {
+            append_intent_id: { type: "string", minLength: 1 },
             owner_id: { type: "string", minLength: 1 },
             owner_ordinal: {
                 type: "integer",

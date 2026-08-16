@@ -1,0 +1,50 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/run-lifecycle-waiting-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Run Lifecycle waiting v1",
+    "description": "Prerequisite-driven quiescent run lifecycle evidence.",
+    "type": "object",
+    "required": [
+        "lifecycle_version",
+        "execution_id",
+        "status",
+        "continuation_descriptor_id",
+        "prerequisite"
+    ],
+    "properties": {
+        "lifecycle_version": {
+            "const": 1
+        },
+        "execution_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "status": {
+            "const": "waiting"
+        },
+        "continuation_descriptor_id": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "prerequisite": {
+            "type": "object",
+            "required": [
+                "prerequisite_id",
+                "kind"
+            ],
+            "properties": {
+                "prerequisite_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "kind": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

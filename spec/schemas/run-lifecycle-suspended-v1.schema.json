@@ -1,0 +1,36 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/run-lifecycle-suspended-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Run Lifecycle suspended v1",
+    "description": "Command-authorized quiescent run lifecycle evidence.",
+    "type": "object",
+    "required": [
+        "lifecycle_version",
+        "execution_id",
+        "status",
+        "continuation_descriptor_id",
+        "pause_command_id"
+    ],
+    "properties": {
+        "lifecycle_version": {
+            "const": 1
+        },
+        "execution_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "status": {
+            "const": "suspended"
+        },
+        "continuation_descriptor_id": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "pause_command_id": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+    },
+    "additionalProperties": false
+}

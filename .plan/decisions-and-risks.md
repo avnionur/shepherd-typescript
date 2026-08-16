@@ -89,6 +89,30 @@ only in optional compatibility tests where it exposes relevant shipped behavior.
 Reason: the project goal is a complete TypeScript implementation. Language-neutral schemas and
 fixtures protect protocol stability without expanding the deliverable into a second runtime.
 
+### D-014: One record graph and explicit evidence authority
+
+The content-addressed record graph is the only canonical runtime history. Owner-local ordinals,
+causal references, and immutable cuts establish semantic order and causality. Timestamps,
+delivery sequences, logs, and materialized run views are non-semantic projections.
+
+Trace records prove runtime decisions and observed evidence; they do not by themselves prove an
+external mutation, a provider session, or a managed-world snapshot. Those claims require the
+corresponding verified effect, provider, or carrier receipt. Tools remain effect handlers, not a
+second event model.
+
+Reason: this preserves portable semantic identity while preventing event-sourcing terminology from
+overstating replay, recovery, or world-state guarantees.
+
+### D-015: Run control is a fenced durable protocol
+
+Creation, invocation, pause, resume, cancellation, and recovery must be represented by one
+normative lifecycle and idempotent control commands. A worker may invoke a provider or effect only
+while it holds a durable first-writer claim or lease; recovery fences expired authority before a
+new worker proceeds.
+
+Reason: cooperative cancellation alone cannot prevent duplicate provider invocation or stale-worker
+side effects under concurrent callers and process failure.
+
 ## Decisions required before coding
 
 ### Q-004: Supported runtimes
@@ -148,6 +172,9 @@ over a protocol-compatible core, with a migration mapping document.
 | Dynamic task synthesis executes untrusted code | Code execution vulnerability | Schema/policy validation and isolated execution boundary |
 | Optimized filesystem backend corrupts state | Data loss | Copy backend oracle; verify before settlement; recovery receipts |
 | Concurrent settlement splits ownership | Duplicate application | Transactional CAS and exact output identity |
+| Concurrent workers cross one invocation boundary | Duplicate cost or external action | First-writer claim, lease fencing, idempotent control commands, cross-connection race tests |
+| Projection/event terminology implies unproven state | False replay or audit claims | One canonical record graph; receipt-specific evidence authority and explicit reconstructive status |
+| Checkpoint cites unavailable constituent state | Unsafe resume or misleading branch | Coupled checkpoint descriptor with verified trace, world, and provider/process receipts |
 | Native binary supply chain | Compromise/install friction | Signed artifacts, SBOM, reproducible builds, source fallback |
 | Name/branding conflicts | Publishing or user confusion | Resolve naming before package publication |
 | Upstream benchmark claims are inherited | Credibility loss | Reproduce locally and scope all reported numbers |
@@ -194,4 +221,7 @@ Pause a phase rather than weakening guarantees when:
 - replay cannot distinguish irreversible effects;
 - an optimized carrier disagrees with the reference model;
 - protocol migration can orphan or silently reinterpret records;
+- a control command or recovered worker can cross an invocation/effect boundary without a valid
+  durable claim;
+- a checkpoint or replay claim cannot verify every constituent it represents;
 - the project name or licensing posture remains unresolved at publication time.

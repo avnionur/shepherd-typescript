@@ -152,8 +152,8 @@ collection are implemented.
 Configured bodyless task descriptors, strict input/output schemas, canonical task artifacts, exact
 artifact locks, and independently migrated durable exact task registration are implemented.
 Versioned effect intent/outcome records, configured reversibility tiers, and exact content-bound
-correlation are implemented. Aliases, grants, effect handlers and materialization, and execution
-remain planned.
+correlation are implemented. Immutable ordered exact-kind handler dispatch is also implemented.
+Aliases, grants, dynamic handler scopes, materialization, and execution remain planned.
 
 ## Task model
 
@@ -228,14 +228,24 @@ explicit overflow policy. Never silently drop trace events.
 
 ## Run state machine
 
-Run lifecycle:
+Proposed normative run lifecycle (see
+[`normative-run-lifecycle.md`](./normative-run-lifecycle.md)):
 
 ```text
-declared → queued → running → terminal
-                         ↘ recovering
+created ────────────────→ terminal
+   └→ running ─┬────────→ waiting ───→ running
+               ├────────→ suspended ─→ running
+               └────────→ terminal
 
-terminal = succeeded | failed | exhausted | cancelled
+waiting ─────────────────────────────→ terminal
+suspended ───────────────────────────→ terminal
+
+terminal = finished | failed | exhausted | cancelled
 ```
+
+Recovery statuses classify incomplete evidence and recovery commands complete safe transitions;
+neither adds a `recovering` lifecycle state. Waiting is prerequisite-driven, while suspension is
+an acknowledged control-driven stop at a verified continuation boundary.
 
 World output lifecycle:
 
@@ -258,10 +268,23 @@ Run records store:
 - budgets;
 - outcome;
 - trace root/cut;
-- artifacts and usage;
+- ordered artifacts and aggregate usage (record contracts implemented);
 - retained output references;
 - settlement decision and citations;
 - error codes and recovery status.
+
+The implemented run protocol v1 covers exact task-lock terminal outcomes, ordered artifact
+records, aggregate usage records, and cooperative configured budget/cancellation control. Durable
+task execution now retains validated creation and start boundaries, executor-produced ordered
+artifacts with verified blob receipts, aggregate observed usage, the exact terminal outcome, a
+disposable lifecycle terminal, and an immutable terminal cut. Exact result reconstruction without
+provider invocation is implemented. Disposable inspection views expose lifecycle, artifact,
+usage, outcome, cut, and direct causal-edge evidence without creating a second authority; the
+configured recovery command now binds safe lease takeover and cut repair to globally idempotent
+canonical command evidence. The remaining placement, world, and settlement fields remain pending.
+The existing execution-history projection uses `succeeded` as a disposable projected lifecycle
+status; the canonical run record uses `finished`, matching the public outcome vocabulary. The
+remaining run-ledger fields are added by later Phase 2 slices.
 
 ## Workspace and versioned worlds
 
@@ -381,6 +404,12 @@ interface ModelProvider {
 Build the static provider first. Add live providers behind optional packages and
 integration tests. Normalize provider events without discarding raw provider
 payload citations.
+
+The implemented first slice is a single-pass exact cassette exposed through `descriptor()` and
+`invoke()`. It snapshots canonical structured request/response values, rejects mismatch and
+exhaustion with stable typed errors, and preserves pre-abort reasons without consuming an
+exchange. Streaming, checkpoints, cache identity, event normalization, and live transports remain
+future extensions of the provider-neutral boundary.
 
 Never store secrets in semantic trace bodies. Persist secret references or
 redacted metadata and define export redaction policies.

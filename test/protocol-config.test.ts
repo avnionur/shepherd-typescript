@@ -4,8 +4,26 @@ import { test } from "node:test";
 
 import {
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
+    FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
+    KERNEL_ABI_V0_STORE_V7_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
+    WORKSPACE_PROTOCOL_V1_CONTRACT,
+    WORKSPACE_PROTOCOL_V2_CONTRACT,
+    WORKSPACE_PROTOCOL_V3_CONTRACT,
+    WORKSPACE_PROTOCOL_V4_CONTRACT,
+    WORKSPACE_PROTOCOL_V5_CONTRACT,
+    WORKSPACE_PROTOCOL_V6_CONTRACT,
+    WORKSPACE_PROTOCOL_V7_CONTRACT,
+    WORKSPACE_PROTOCOL_V8_CONTRACT,
+    WORKSPACE_PROTOCOL_V9_CONTRACT,
+    WORKSPACE_PROTOCOL_V10_CONTRACT,
+    WORKSPACE_PROTOCOL_V11_CONTRACT,
+    WORKSPACE_PROTOCOL_V12_CONTRACT,
+    WORKSPACE_PROTOCOL_V13_CONTRACT,
+    WORKSPACE_PROTOCOL_V14_CONTRACT,
+    WORKSPACE_PROTOCOL_V15_CONTRACT,
+    WORKSPACE_PROTOCOL_V16_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -33,6 +51,7 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(parsed.projections.executionHistory), true);
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT), true);
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT.store.migrations), true);
+    assert.equal(Object.isFrozen(KERNEL_ABI_V0_STORE_V7_CONTRACT), true);
     assert.equal(Object.isFrozen(EXECUTION_HISTORY_PROJECTION_V1_CONTRACT), true);
     assert.equal(parsed.tasks.compatibilityVersion, "shepherd.tasks.v1");
     assert.equal(parsed.tasks.registry.schemaVersion, 1);
@@ -40,6 +59,65 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(parsed.tasks.registry.migrations), true);
     assert.equal(Object.isFrozen(parsed.tasks), true);
     assert.equal(Object.isFrozen(TASK_PROTOCOL_V1_CONTRACT), true);
+    assert.equal(parsed.formalAssurance.referenceMachine.rootBranchRef, "branch:root");
+    assert.equal(parsed.formalAssurance.proofEnvelope.runtimeOnlyProfile, "runtime_only");
+    assert.equal(Object.isFrozen(parsed.formalAssurance), true);
+    assert.equal(Object.isFrozen(FORMAL_ASSURANCE_V1_CONTRACT), true);
+    assert.equal(parsed.workspaces.defaultAdoptionMode, "worktree");
+    assert.equal(parsed.workspaces.bindingVersion, 2);
+    assert.equal(parsed.workspaces.carrier.descriptorVersion, 1);
+    assert.equal(parsed.workspaces.gitCustody.version, 4);
+    assert.equal(parsed.workspaces.changesets.version, 5);
+    assert.equal(parsed.workspaces.worldCapture.version, 6);
+    assert.equal(parsed.workspaces.worldExecution.runnerVersion, 7);
+    assert.equal(parsed.workspaces.worldTaskCapture.version, 8);
+    assert.equal(parsed.workspaces.worldTaskCapture.journalVersion, 9);
+    assert.equal(parsed.workspaces.worldTaskCapture.custodyIdentityKind, "task-world-custody");
+    assert.equal(parsed.workspaces.settlement.version, 12);
+    assert.equal(parsed.workspaces.settlement.operationVersion, 1);
+    assert.equal(parsed.workspaces.settlement.receiptVersion, 1);
+    assert.equal(parsed.workspaces.selectionPublication.version, 16);
+    assert.equal(parsed.workspaces.selectionPublication.planVersion, 1);
+    assert.equal(parsed.workspaces.selectionPublication.stepVersion, 1);
+    assert.equal(parsed.workspaces.selectionPublication.publicationVersion, 1);
+    assert.equal(parsed.workspaces.selectionPublication.scheduleVersion, 1);
+    assert.equal(parsed.workspaces.selectionPublication.scheduledStepVersion, 1);
+    assert.equal(parsed.workspaces.selectionPublication.scheduledPublicationVersion, 1);
+    assert.equal(Object.isFrozen(parsed.workspaces), true);
+    assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V2_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V3_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V4_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V5_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V6_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V7_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V8_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V9_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V10_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V11_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V12_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V13_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V14_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V15_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V16_CONTRACT), true);
+    assert.equal(
+        "scheduledStepVersion" in WORKSPACE_PROTOCOL_V15_CONTRACT.selectionPublication,
+        false,
+    );
+    assert.equal("scheduleKinds" in WORKSPACE_PROTOCOL_V14_CONTRACT.selectionPublication, false);
+    assert.equal("selectionPublication" in WORKSPACE_PROTOCOL_V13_CONTRACT, false);
+    assert.equal("operationVersion" in WORKSPACE_PROTOCOL_V12_CONTRACT.settlement, false);
+    assert.equal("settlement" in WORKSPACE_PROTOCOL_V11_CONTRACT, false);
+    assert.equal("custodyIdentityKind" in WORKSPACE_PROTOCOL_V9_CONTRACT.worldTaskCapture, false);
+    assert.equal("journalPhases" in WORKSPACE_PROTOCOL_V8_CONTRACT.worldTaskCapture, false);
+    assert.equal("bindingErrors" in WORKSPACE_PROTOCOL_V1_CONTRACT, false);
+    assert.equal("carrier" in WORKSPACE_PROTOCOL_V2_CONTRACT, false);
+    assert.equal("gitCustody" in WORKSPACE_PROTOCOL_V3_CONTRACT, false);
+    assert.equal("changesets" in WORKSPACE_PROTOCOL_V4_CONTRACT, false);
+    assert.equal("worldCapture" in WORKSPACE_PROTOCOL_V5_CONTRACT, false);
+    assert.equal("worldExecution" in WORKSPACE_PROTOCOL_V6_CONTRACT, false);
+    assert.equal("worldTaskCapture" in WORKSPACE_PROTOCOL_V7_CONTRACT, false);
     assert.notEqual(
         parsed.kernel.rootWitness.body,
         objectAt(objectAt(config, "kernel"), "rootWitness").body,
@@ -122,7 +200,7 @@ test("protocol configuration rejects invalid append and migration bounds", () =>
             firstMigrationOf(config).version = 2;
         },
         (config) => {
-            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 4;
+            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 8;
         },
         (config) => {
             firstMigrationOf(config).firstOwnerOrdinal = 1;
@@ -463,6 +541,386 @@ test("protocol configuration rejects invalid or drifted task contracts", () => {
     ]);
 });
 
+test("protocol configuration rejects invalid or drifted formal assurance contracts", () => {
+    assertInvalid([
+        (config) => {
+            proofEnvelopeConfigOf(config).digestAlgorithm = "md5";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).hexLength = 63;
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).profiles = [];
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).profiles = ["runtime_only", "runtime_only"];
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).strengths = [];
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).runtimeOnlyProfile = "unknown";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).referenceValidatedProfile = "runtime_only";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).referenceValidatedStrength = "unknown";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).referenceValidatedStrength = "runtime_only";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).evidenceRefPrefix = "proof-evidence:md5:";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).programRefPrefix =
+                proofEnvelopeConfigOf(config).evidenceRefPrefix;
+        },
+        (config) => {
+            objectAt(proofEnvelopeConfigOf(config), "traceRefPrefixes").completed = "trace:";
+        },
+        (config) => {
+            objectAt(proofEnvelopeConfigOf(config), "traceRefPrefixes").prefix = objectAt(
+                proofEnvelopeConfigOf(config),
+                "traceRefPrefixes",
+            ).completed;
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).excludedRuntimeSurfaces = [];
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).excludedRuntimeSurfaces = ["retries", "retries"];
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).schemaVersion = "";
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).validator = "another-valid-validator";
+        },
+        (config) => {
+            objectAt(proofEnvelopeConfigOf(config), "validationOperations").completed = "";
+        },
+        (config) => {
+            objectAt(proofEnvelopeConfigOf(config), "validationOperations").extra = true;
+        },
+        (config) => {
+            proofEnvelopeConfigOf(config).extra = true;
+        },
+        (config) => {
+            referenceMachineConfigOf(config).actionKinds = [];
+        },
+        (config) => {
+            referenceMachineConfigOf(config).continuationDispositions = ["completed"];
+        },
+        (config) => {
+            referenceMachineConfigOf(config).closureReasons = ["abandoned", "abandoned"];
+        },
+        (config) => {
+            referenceMachineConfigOf(config).pathPrefix = "";
+        },
+        (config) => {
+            referenceMachineConfigOf(config).rootBranchRef = "";
+        },
+        (config) => {
+            referenceMachineConfigOf(config).resumptionSourceRecordType = "unknown";
+        },
+        (config) => {
+            objectAt(referenceMachineConfigOf(config), "recordTypes").capture = "";
+        },
+        (config) => {
+            const types = objectAt(referenceMachineConfigOf(config), "recordTypes");
+            types.capture = types.declaration;
+        },
+        (config) => {
+            referenceMachineConfigOf(config).extra = true;
+        },
+        (config) => {
+            strongEvidenceConfigOf(config).extra = true;
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "lowering").contentRefPrefix = objectAt(
+                strongEvidenceConfigOf(config),
+                "core0hSidecar",
+            ).contentRefPrefix;
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "lowering").trustedManifestRefs = [];
+        },
+        (config) => {
+            const lowering = objectAt(strongEvidenceConfigOf(config), "lowering");
+            lowering.trustedManifestRefs = ["proof-lowering:not-a-digest"];
+        },
+        (config) => {
+            const sidecar = objectAt(strongEvidenceConfigOf(config), "core0hSidecar");
+            const ref = `core0h-sidecar:sha256:${"0".repeat(64)}`;
+            sidecar.trustedManifestRefs = [ref, ref];
+        },
+        (config) => {
+            objectAt(objectAt(strongEvidenceConfigOf(config), "lowering"), "oracle").path = "";
+        },
+        (config) => {
+            objectAt(objectAt(strongEvidenceConfigOf(config), "lowering"), "oracle").extra = true;
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "core0hSidecar").extra = true;
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "theoremArtifact").metadataRef =
+                `proof-artifact:sha256:${"0".repeat(64)}`;
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "theoremArtifact").metadataRefPrefix =
+                "proof-artifact:md5:";
+        },
+        (config) => {
+            const artifact = objectAt(strongEvidenceConfigOf(config), "theoremArtifact");
+            artifact.extensionTheoremIds = [(artifact.theoremIds as unknown[])[0]];
+        },
+        (config) => {
+            objectAt(strongEvidenceConfigOf(config), "theoremArtifact").theoremIds = [];
+        },
+        (config) => {
+            strongClaimAt(config, 0).theoremIds = ["unknown"];
+        },
+        (config) => {
+            strongClaimAt(config, 0).forbiddenActionKinds = ["unknown"];
+        },
+        (config) => {
+            strongClaimAt(config, 0).forbiddenActionKinds = ["abort", "abort"];
+        },
+        (config) => {
+            strongClaimAt(config, 1).forbiddenActionKinds = ["abort"];
+        },
+        (config) => {
+            strongClaimAt(config, 0).requiresCore0hSidecar = "yes";
+        },
+        (config) => {
+            strongClaimAt(config, 0).assumptions = ["same", "same"];
+        },
+        (config) => {
+            const strong = strongEvidenceConfigOf(config);
+            strong.profileClaims = [];
+        },
+        (config) => {
+            strongClaimAt(config, 1).profile = strongClaimAt(config, 0).profile;
+        },
+        (config) => {
+            objectAt(config, "formalAssurance").extra = true;
+        },
+    ]);
+});
+
+test("protocol configuration rejects invalid or drifted workspace contracts", () => {
+    assertInvalid([
+        (config) => {
+            workspaceConfigOf(config).adoptionModes = [];
+        },
+        (config) => {
+            workspaceConfigOf(config).bindingIdentityKind = "";
+        },
+        (config) => {
+            workspaceConfigOf(config).bindingVersion = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "bindingErrors").invalidNameCode = "";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "bindingErrors").extra = true;
+        },
+        (config) => {
+            carrierConfigOf(config).blobIdPrefix = "blob:md5:";
+        },
+        (config) => {
+            carrierConfigOf(config).custodiesDirectory = carrierConfigOf(config).revisionsDirectory;
+        },
+        (config) => {
+            carrierConfigOf(config).carrierDirectory = workspaceConfigOf(config).manifestFile;
+        },
+        (config) => {
+            carrierConfigOf(config).discardDescriptorSuffix = "../discarded";
+        },
+        (config) => {
+            gitCustodyConfigOf(config).basisIdPrefix = "git-basis:md5:";
+        },
+        (config) => {
+            gitCustodyConfigOf(config).objectFormats = [];
+        },
+        (config) => {
+            gitCustodyConfigOf(config).descriptorFile = "../output.json";
+        },
+        (config) => {
+            changesetConfigOf(config).idPrefix = "world-changeset:md5:";
+        },
+        (config) => {
+            changesetConfigOf(config).operations = [];
+        },
+        (config) => {
+            changesetConfigOf(config).maxChanges = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldCapture").maxRevisionDepth = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldExecution").enforcementKinds = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldExecution").maxRunnerIdBytes = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldTaskCapture").statuses = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldTaskCapture").maxTextBytes = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldTaskCapture").maxCaptureIdBytes = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldTaskCapture").journalPhases = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "worldTaskCapture").custodyIdentityKind = "";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "settlement").actions = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "settlement").states = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "settlement").requestIdPrefix = "";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").atomicityKinds = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").planIdPrefix =
+                "world-selection-plan:md5:";
+        },
+        (config) => {
+            const publication = objectAt(workspaceConfigOf(config), "selectionPublication");
+            publication.stepIdPrefix = publication.planIdPrefix;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").maxSteps = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").maxPlanBytes = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").maxStepBytes = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").maxReceiptBytes = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").maxScheduleBytes = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").scheduleKinds = [];
+        },
+        (config) => {
+            const publication = objectAt(workspaceConfigOf(config), "selectionPublication");
+            publication.scheduleIdPrefix = publication.planIdPrefix;
+        },
+        (config) => {
+            const publication = objectAt(workspaceConfigOf(config), "selectionPublication");
+            publication.scheduledStepIdPrefix = publication.planIdPrefix;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").scheduledStepVersion = 0;
+        },
+        (config) => {
+            objectAt(
+                workspaceConfigOf(config),
+                "selectionPublication",
+            ).scheduledPublicationVersion = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").maxSteps =
+                Number(changesetConfigOf(config).maxChanges) + 1;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "selectionPublication").planFile = "../plan.json";
+        },
+        (config) => {
+            const publication = objectAt(workspaceConfigOf(config), "selectionPublication");
+            publication.stepsDirectory = publication.stagingDirectory;
+        },
+        (config) => {
+            const publication = objectAt(workspaceConfigOf(config), "selectionPublication");
+            publication.stagingDirectory = carrierConfigOf(config).stagingDirectory;
+        },
+        (config) => {
+            workspaceConfigOf(config).adoptionModes = ["none", "none"];
+        },
+        (config) => {
+            workspaceConfigOf(config).defaultAdoptionMode = "unknown";
+        },
+        (config) => {
+            workspaceConfigOf(config).defaultInitializeGit = "yes";
+        },
+        (config) => {
+            workspaceConfigOf(config).defaultInitializeGit = false;
+        },
+        (config) => {
+            workspaceConfigOf(config).digestAlgorithm = "md5";
+        },
+        (config) => {
+            workspaceConfigOf(config).hexLength = 63;
+        },
+        (config) => {
+            workspaceConfigOf(config).worktreeRefPrefix = "worktree:";
+        },
+        (config) => {
+            workspaceConfigOf(config).controlDirectory = "";
+        },
+        (config) => {
+            workspaceConfigOf(config).controlDirectory = ".";
+        },
+        (config) => {
+            workspaceConfigOf(config).controlDirectory = "..";
+        },
+        (config) => {
+            workspaceConfigOf(config).controlDirectory = "unsafe/path";
+        },
+        (config) => {
+            workspaceConfigOf(config).manifestFile = "unsafe\\path";
+        },
+        (config) => {
+            workspaceConfigOf(config).gitMetadataName = "../git";
+        },
+        (config) => {
+            workspaceConfigOf(config).gitMetadataName = "unsafe\0name";
+        },
+        (config) => {
+            workspaceConfigOf(config).controlDirectory = workspaceConfigOf(config).gitMetadataName;
+        },
+        (config) => {
+            workspaceConfigOf(config).manifestFile = workspaceConfigOf(config).controlDirectory;
+        },
+        (config) => {
+            workspaceConfigOf(config).format = "";
+        },
+        (config) => {
+            workspaceConfigOf(config).formatVersion = 0;
+        },
+        (config) => {
+            workspaceConfigOf(config).gitExecutable = "";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "errors").controlCode = "";
+        },
+        (config) => {
+            workspaceConfigOf(config).extra = true;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "errors").extra = true;
+        },
+    ]);
+});
+
 function assertInvalid(mutations: readonly Mutation[]): void {
     for (const mutate of mutations) {
         const config = structuredClone(validConfig);
@@ -509,4 +967,40 @@ function taskConfigOf(config: Record<string, unknown>): Record<string, unknown> 
 
 function taskRegistryConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(taskConfigOf(config), "registry");
+}
+
+function workspaceConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(config, "workspaces");
+}
+
+function carrierConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(workspaceConfigOf(config), "carrier");
+}
+
+function gitCustodyConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(workspaceConfigOf(config), "gitCustody");
+}
+
+function changesetConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(workspaceConfigOf(config), "changesets");
+}
+
+function proofEnvelopeConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "formalAssurance"), "proofEnvelope");
+}
+
+function referenceMachineConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "formalAssurance"), "referenceMachine");
+}
+
+function strongEvidenceConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "formalAssurance"), "strongEvidence");
+}
+
+function strongClaimAt(config: Record<string, unknown>, index: number): Record<string, unknown> {
+    const claims = strongEvidenceConfigOf(config).profileClaims;
+    assert.ok(Array.isArray(claims));
+    const claim = claims[index];
+    assert.ok(claim !== null && typeof claim === "object" && !Array.isArray(claim));
+    return claim as Record<string, unknown>;
 }

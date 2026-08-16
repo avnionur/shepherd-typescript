@@ -1,0 +1,74 @@
+{
+    "finished": {
+        "outcome_version": 1,
+        "run_id": "run:write-note:1",
+        "task_artifact_lock": {
+            "artifact_digest": "sha256:d2132783491a862e165c34c4e1a212cebadb040efaaa1334e3e4fe2aee7630e9",
+            "artifact_lock_version": 1,
+            "compatibility_version": "shepherd.tasks.v1",
+            "descriptor_version": 1,
+            "schema_digest": "sha256:90af3164eb3a8c2d33746029ed83ac88273597a135720c53abd64fa050b777f8",
+            "task_id": "task:sha256:f12c0e0bcae1e3a62b993770a933a0c4b87e462fe09488651ba13385e359c824",
+            "task_version": "1.0.0"
+        },
+        "outcome": {
+            "status": "finished",
+            "value": {
+                "note": "Shepherd records execution as data."
+            }
+        }
+    },
+    "failed": {
+        "outcome_version": 1,
+        "run_id": "run:write-note:2",
+        "task_artifact_lock": {
+            "artifact_digest": "sha256:d2132783491a862e165c34c4e1a212cebadb040efaaa1334e3e4fe2aee7630e9",
+            "artifact_lock_version": 1,
+            "compatibility_version": "shepherd.tasks.v1",
+            "descriptor_version": 1,
+            "schema_digest": "sha256:90af3164eb3a8c2d33746029ed83ac88273597a135720c53abd64fa050b777f8",
+            "task_id": "task:sha256:f12c0e0bcae1e3a62b993770a933a0c4b87e462fe09488651ba13385e359c824",
+            "task_version": "1.0.0"
+        },
+        "outcome": {
+            "error_type": "ProviderError",
+            "message": "provider unavailable",
+            "retryable": true,
+            "status": "failed"
+        }
+    },
+    "exhausted": {
+        "outcome_version": 1,
+        "run_id": "run:write-note:3",
+        "task_artifact_lock": {
+            "artifact_digest": "sha256:d2132783491a862e165c34c4e1a212cebadb040efaaa1334e3e4fe2aee7630e9",
+            "artifact_lock_version": 1,
+            "compatibility_version": "shepherd.tasks.v1",
+            "descriptor_version": 1,
+            "schema_digest": "sha256:90af3164eb3a8c2d33746029ed83ac88273597a135720c53abd64fa050b777f8",
+            "task_id": "task:sha256:f12c0e0bcae1e3a62b993770a933a0c4b87e462fe09488651ba13385e359c824",
+            "task_version": "1.0.0"
+        },
+        "outcome": {
+            "reason": "maximum turns reached",
+            "status": "exhausted"
+        }
+    },
+    "cancelled": {
+        "outcome_version": 1,
+        "run_id": "run:write-note:4",
+        "task_artifact_lock": {
+            "artifact_digest": "sha256:d2132783491a862e165c34c4e1a212cebadb040efaaa1334e3e4fe2aee7630e9",
+            "artifact_lock_version": 1,
+            "compatibility_version": "shepherd.tasks.v1",
+            "descriptor_version": 1,
+            "schema_digest": "sha256:90af3164eb3a8c2d33746029ed83ac88273597a135720c53abd64fa050b777f8",
+            "task_id": "task:sha256:f12c0e0bcae1e3a62b993770a933a0c4b87e462fe09488651ba13385e359c824",
+            "task_version": "1.0.0"
+        },
+        "outcome": {
+            "reason": "caller aborted",
+            "status": "cancelled"
+        }
+    }
+}

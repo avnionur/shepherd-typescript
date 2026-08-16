@@ -5,6 +5,12 @@ import type {
     RecordView,
     TraceOwnerId,
 } from "../append/types.ts";
+import type {
+    DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES,
+    DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES,
+    RETAINED_WORLD_SETTLEMENT_ACTIONS,
+    RETAINED_WORLD_SETTLEMENT_STATES,
+} from "../protocol/values.generated.ts";
 import type { RecordBody, RecordEnvelope, RecordId } from "../record/types.ts";
 
 /**
@@ -13,6 +19,134 @@ import type { RecordBody, RecordEnvelope, RecordId } from "../record/types.ts";
  * @public
  */
 export type AppendIntentId = string;
+
+/** Closed exact identity presented to consume-once retained-world settlement admission. */
+export type RetainedWorldSettlementRequest = {
+    /** Exact settlement verb requested by the caller. */
+    readonly action: (typeof RETAINED_WORLD_SETTLEMENT_ACTIONS)[number];
+    /** Exact immutable input revision. */
+    readonly base_revision_id: string;
+    /** Exact workspace binding identity. */
+    readonly binding_id: string;
+    /** Exact retained world-capture record. */
+    readonly capture_record_id: string;
+    /** Exact canonical changeset identity. */
+    readonly changeset_id: string;
+    /** Globally idempotent caller command identity. */
+    readonly command_id: string;
+    /** Exact mutable custody cited by the retained output. */
+    readonly custody_id: string;
+    /** Exact immutable execution cut. */
+    readonly execution_cut_id: string;
+    /** Exact immutable output revision. */
+    readonly head_revision_id: string;
+    /** Exact retained-output identity. */
+    readonly output_id: string;
+    /** Exact durable run identity. */
+    readonly run_id: string;
+    /** Public settlement protocol version. */
+    readonly settlement_version: number;
+    /** User-basis witness that must remain unchanged before selection. */
+    readonly user_basis_before: string;
+};
+
+/** Durable prepared consume-once settlement decision returned by trace-store admission. */
+export type RetainedWorldSettlementAdmission = {
+    /** Exact settlement verb owned by the winning command. */
+    readonly action: (typeof RETAINED_WORLD_SETTLEMENT_ACTIONS)[number];
+    /** Globally idempotent winning command identity. */
+    readonly command_id: string;
+    /** Exact retained-output identity consumed by this decision. */
+    readonly output_id: string;
+    /** Content-addressed exact request identity. */
+    readonly request_id: string;
+    /** Frozen exact request retained by the store. */
+    readonly request: RetainedWorldSettlementRequest;
+    /** Prepared state at the original consume-once admission boundary. */
+    readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[0];
+};
+
+/** Canonical encoded settlement journal evidence. @internal */
+export type RetainedWorldSettlementEncodedEvidence = {
+    /** Secure digest of the canonical evidence JSON. */
+    readonly digest: string;
+    /** Content-addressed identity, present only for operation evidence. */
+    readonly id: string | null;
+    /** Canonical JSON retained by the store. */
+    readonly json: string;
+};
+
+/** Validated restart-safe state of one retained-world settlement journal. @internal */
+export type RetainedWorldSettlementJournal = {
+    /** Original immutable admission authority. */
+    readonly admission: RetainedWorldSettlementAdmission;
+    /** Physical custody cleanup progress, present only for terminal evidence. */
+    readonly cleanup_completed: boolean | null;
+    /** Deterministic operation evidence once execution has begun. */
+    readonly operation: (RetainedWorldSettlementEncodedEvidence & { readonly id: string }) | null;
+    /** Deterministic terminal receipt after logical settlement. */
+    readonly receipt: (RetainedWorldSettlementEncodedEvidence & { readonly id: null }) | null;
+    /** Current configured durable journal state. */
+    readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[number];
+};
+
+/** Result of atomically admitting one caller to cross a durable invocation boundary. */
+export type DurableExecutionInvocationClaim =
+    | {
+          /** Current claim identity. */
+          readonly claim_id: string;
+          /** Creation evidence guarded by the claim. */
+          readonly created_record_id: RecordId;
+          /** Monotonic token that fences earlier claim holders. */
+          readonly fencing_token: number;
+          /** Exclusive lease-expiry timestamp in Unix milliseconds. */
+          readonly lease_expires_at: number;
+          /** Durable run whose provider boundary is guarded. */
+          readonly run_id: string;
+          /** Indicates that this caller owns the current lease. */
+          readonly status: (typeof DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES)[0];
+      }
+    | {
+          /** Current winning claim identity. */
+          readonly claim_id: string;
+          /** Creation evidence guarded by the claim. */
+          readonly created_record_id: RecordId;
+          /** Monotonic token held by the winning claimant. */
+          readonly fencing_token: number;
+          /** Exclusive lease-expiry timestamp in Unix milliseconds. */
+          readonly lease_expires_at: number;
+          /** Durable run whose provider boundary is guarded. */
+          readonly run_id: string;
+          /** Indicates that another caller owns or consumed the claim. */
+          readonly status: (typeof DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES)[1];
+      };
+
+/** Result of atomically appending while a durable invocation claim is current. */
+export type DurableExecutionClaimedAppend =
+    | {
+          /** Receipt for the start evidence committed under the claim. */
+          readonly receipt: AppendReceipt;
+          /** Indicates that the guarded append committed. */
+          readonly status: (typeof DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES)[0];
+      }
+    | {
+          /** Indicates that the supplied claim no longer has authority. */
+          readonly status: (typeof DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES)[1];
+      };
+
+/** Result of atomically acquiring resumed worker authority and publishing its running evidence. */
+export type DurableExecutionResumeAppend = {
+    /** Deterministic worker claim identity bound to the resume command. */
+    readonly claim_id: string;
+    /** Canonical resume-command record identity. */
+    readonly command_record_id: RecordId;
+    /** New monotonic invocation fencing token. */
+    readonly fencing_token: number;
+    /** Unix time when the resumed worker lease expires. */
+    readonly lease_expires_at: number;
+    /** Canonical running-continuation acknowledgement identity. */
+    readonly running_record_id: RecordId;
+};
 
 /**
  * One atomic append request presented to a trace store.

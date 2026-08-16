@@ -1,0 +1,1107 @@
+import { createHash } from "node:crypto";
+
+import { type ProtocolConfig, SECURE_HASH_ALGORITHMS } from "./config-types.ts";
+import {
+    readEnum,
+    readNonEmptyString,
+    readObject,
+    readPositiveInteger,
+    readUniqueStrings,
+} from "./config-value-readers.ts";
+
+/** Validates workspace initialization and adoption configuration. */
+export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"] {
+    const config = readObject(
+        value,
+        [
+            "adoptionModes",
+            "bindingErrors",
+            "bindingIdentityKind",
+            "bindingVersion",
+            "carrier",
+            "changesetInspection",
+            "changesets",
+            "controlDirectory",
+            "defaultAdoptionMode",
+            "defaultInitializeGit",
+            "digestAlgorithm",
+            "errors",
+            "format",
+            "formatVersion",
+            "gitExecutable",
+            "gitCustody",
+            "gitHeadRefPrefix",
+            "gitMetadataName",
+            "hexLength",
+            "manifestFile",
+            "selectionPublication",
+            "settlement",
+            "worktreeRefPrefix",
+            "worldCapture",
+            "worldExecution",
+            "worldTaskCapture",
+        ],
+        "workspaces",
+    );
+    const errors = readObject(
+        config.errors,
+        ["conflictCode", "conflictMessage", "controlCode", "controlMessage"],
+        "workspaces.errors",
+    );
+    const bindingErrors = readObject(
+        config.bindingErrors,
+        [
+            "authorityEscapeCode",
+            "authorityEscapeMessage",
+            "duplicateNameCode",
+            "duplicateNameMessage",
+            "invalidNameCode",
+            "invalidNameMessage",
+            "invalidRootCode",
+            "invalidRootMessage",
+            "rootOverlapCode",
+            "rootOverlapMessage",
+        ],
+        "workspaces.bindingErrors",
+    );
+    const carrier = readObject(
+        config.carrier,
+        [
+            "backendKind",
+            "blobIdPrefix",
+            "carrierDirectory",
+            "captureKind",
+            "custodiesDirectory",
+            "custodyDescriptorFile",
+            "custodyIdPrefix",
+            "descriptorFormat",
+            "descriptorVersion",
+            "discardDescriptorSuffix",
+            "discardStatus",
+            "discardedDirectory",
+            "entryKinds",
+            "errors",
+            "manifestVersion",
+            "revisionsDirectory",
+            "revisionDescriptorFile",
+            "revisionIdPrefix",
+            "stagingDirectory",
+            "worldContentIdPrefix",
+            "worldDirectory",
+        ],
+        "workspaces.carrier",
+    );
+    const carrierErrors = readObject(
+        carrier.errors,
+        [
+            "conflictCode",
+            "conflictMessage",
+            "controlCode",
+            "controlMessage",
+            "unsupportedCode",
+            "unsupportedMessage",
+        ],
+        "workspaces.carrier.errors",
+    );
+    const changesets = readObject(
+        config.changesets,
+        [
+            "errors",
+            "idPrefix",
+            "maxAggregateReferencedBytes",
+            "maxChanges",
+            "maxManifestEntries",
+            "maxManifestRecordBytes",
+            "maxPathBytes",
+            "maxRecordBytes",
+            "maxSingleBlobBytes",
+            "maxSymlinkTargetBytes",
+            "operations",
+            "version",
+        ],
+        "workspaces.changesets",
+    );
+    const changesetErrors = readObject(
+        changesets.errors,
+        ["invalidCode", "invalidMessage", "limitCode", "limitMessage"],
+        "workspaces.changesets.errors",
+    );
+    const changesetInspection = readObject(
+        config.changesetInspection,
+        [
+            "defaultPageSize",
+            "defaultPreviewBytes",
+            "defaultPreviewLines",
+            "defaultReadBytes",
+            "encoding",
+            "gitlinkEntryKind",
+            "gitlinkMode",
+            "maxPageSize",
+            "maxPreviewBytes",
+            "maxPreviewLines",
+            "maxReadBytes",
+            "maxDerivedMoveCandidates",
+            "maxVerificationConcurrency",
+            "moveKinds",
+            "previewClassifications",
+            "symlinkMode",
+            "version",
+        ],
+        "workspaces.changesetInspection",
+    );
+    const settlement = readObject(
+        config.settlement,
+        [
+            "actions",
+            "errors",
+            "operationIdPrefix",
+            "operationVersion",
+            "receiptVersion",
+            "requestIdPrefix",
+            "states",
+            "version",
+        ],
+        "workspaces.settlement",
+    );
+    const settlementErrors = readObject(
+        settlement.errors,
+        ["conflictCode", "conflictMessage", "invalidCode", "invalidMessage"],
+        "workspaces.settlement.errors",
+    );
+    const selectionPublication = readObject(
+        config.selectionPublication,
+        [
+            "atomicityKinds",
+            "descriptorFormat",
+            "errors",
+            "maxPlanBytes",
+            "maxReceiptBytes",
+            "maxScheduleBytes",
+            "maxStepBytes",
+            "maxSteps",
+            "planFile",
+            "planIdPrefix",
+            "planVersion",
+            "publicationFile",
+            "publicationIdPrefix",
+            "publicationVersion",
+            "publicationsDirectory",
+            "schemaId",
+            "schemaPath",
+            "scheduleFile",
+            "scheduleIdPrefix",
+            "scheduleKinds",
+            "scheduleVersion",
+            "scheduledPublicationIdPrefix",
+            "scheduledPublicationVersion",
+            "scheduledStepIdPrefix",
+            "scheduledStepVersion",
+            "stagingDirectory",
+            "stagingIdPrefix",
+            "stepIdPrefix",
+            "stepStatuses",
+            "stepsDirectory",
+            "stepVersion",
+            "version",
+        ],
+        "workspaces.selectionPublication",
+    );
+    const selectionPublicationErrors = readObject(
+        selectionPublication.errors,
+        [
+            "basisMovedCode",
+            "basisMovedMessage",
+            "recoveryRequiredCode",
+            "recoveryRequiredMessage",
+            "unsupportedCode",
+            "unsupportedMessage",
+        ],
+        "workspaces.selectionPublication.errors",
+    );
+    const gitCustody = readObject(
+        config.gitCustody,
+        [
+            "archiveExecutable",
+            "basisIdPrefix",
+            "descriptorFile",
+            "descriptorFormat",
+            "descriptorVersion",
+            "errors",
+            "headKinds",
+            "identityFile",
+            "identityFormat",
+            "indexIdPrefix",
+            "indexReceiptFile",
+            "maxCommandBytes",
+            "objectPackFile",
+            "objectPackIdPrefix",
+            "objectFormats",
+            "repositoryIdPrefix",
+            "repositoryIdentityFile",
+            "repositoryLockAttempts",
+            "repositoryLockDelayMs",
+            "repositoryLockPrefix",
+            "stagingDirectory",
+            "version",
+            "worktreeIdPrefix",
+        ],
+        "workspaces.gitCustody",
+    );
+    const gitCustodyErrors = readObject(
+        gitCustody.errors,
+        [
+            "baselineUnavailableCode",
+            "baselineUnavailableMessage",
+            "controlCode",
+            "controlMessage",
+            "movementCode",
+            "movementMessage",
+            "unsupportedCode",
+            "unsupportedMessage",
+        ],
+        "workspaces.gitCustody.errors",
+    );
+    const worldCapture = readObject(
+        config.worldCapture,
+        ["maxRevisionDepth", "version"],
+        "workspaces.worldCapture",
+    );
+    const worldExecution = readObject(
+        config.worldExecution,
+        ["enforcementKinds", "maxRunnerIdBytes", "runnerVersion"],
+        "workspaces.worldExecution",
+    );
+    const worldTaskCapture = readObject(
+        config.worldTaskCapture,
+        [
+            "captureSchemaId",
+            "captureSchemaPath",
+            "custodyIdentityKind",
+            "journalPhases",
+            "journalSchemaId",
+            "journalSchemaPath",
+            "journalVersion",
+            "maxCaptureIdBytes",
+            "maxTextBytes",
+            "outputIdPrefix",
+            "statuses",
+            "version",
+        ],
+        "workspaces.worldTaskCapture",
+    );
+    const adoptionModes = readUniqueStrings(config.adoptionModes, "workspaces.adoptionModes");
+    const defaultAdoptionMode = readNonEmptyString(
+        config.defaultAdoptionMode,
+        "workspaces.defaultAdoptionMode",
+    );
+    if (!adoptionModes.includes(defaultAdoptionMode)) {
+        throw new TypeError("workspaces.defaultAdoptionMode must belong to adoptionModes");
+    }
+    if (typeof config.defaultInitializeGit !== "boolean") {
+        throw new TypeError("workspaces.defaultInitializeGit must be boolean");
+    }
+    const controlDirectory = readSimpleName(config.controlDirectory, "workspaces.controlDirectory");
+    const manifestFile = readSimpleName(config.manifestFile, "workspaces.manifestFile");
+    const gitMetadataName = readSimpleName(config.gitMetadataName, "workspaces.gitMetadataName");
+    if (
+        controlDirectory === manifestFile ||
+        controlDirectory === gitMetadataName ||
+        manifestFile === gitMetadataName
+    ) {
+        throw new TypeError("workspace reserved path names must differ");
+    }
+    const digestAlgorithm = readEnum(
+        config.digestAlgorithm,
+        SECURE_HASH_ALGORITHMS,
+        "workspaces.digestAlgorithm",
+    );
+    const hexLength = readPositiveInteger(config.hexLength, "workspaces.hexLength");
+    if (hexLength !== createHash(digestAlgorithm).digest("hex").length) {
+        throw new TypeError("workspaces.hexLength must match digestAlgorithm");
+    }
+    const worktreeRefPrefix = readNonEmptyString(
+        config.worktreeRefPrefix,
+        "workspaces.worktreeRefPrefix",
+    );
+    if (!worktreeRefPrefix.endsWith(`${digestAlgorithm}:`)) {
+        throw new TypeError("workspaces.worktreeRefPrefix must identify digestAlgorithm");
+    }
+    const carrierDirectory = readSimpleName(
+        carrier.carrierDirectory,
+        "workspaces.carrier.carrierDirectory",
+    );
+    const carrierCollectionDirectories = [
+        readSimpleName(carrier.custodiesDirectory, "workspaces.carrier.custodiesDirectory"),
+        readSimpleName(carrier.discardedDirectory, "workspaces.carrier.discardedDirectory"),
+        readSimpleName(carrier.revisionsDirectory, "workspaces.carrier.revisionsDirectory"),
+        readSimpleName(carrier.stagingDirectory, "workspaces.carrier.stagingDirectory"),
+    ] as const;
+    if (
+        carrierDirectory === manifestFile ||
+        new Set(carrierCollectionDirectories).size !== carrierCollectionDirectories.length
+    ) {
+        throw new TypeError("workspace carrier path names must not collide");
+    }
+    const blobIdPrefix = readNonEmptyString(
+        carrier.blobIdPrefix,
+        "workspaces.carrier.blobIdPrefix",
+    );
+    const revisionIdPrefix = readNonEmptyString(
+        carrier.revisionIdPrefix,
+        "workspaces.carrier.revisionIdPrefix",
+    );
+    const worldContentIdPrefix = readNonEmptyString(
+        carrier.worldContentIdPrefix,
+        "workspaces.carrier.worldContentIdPrefix",
+    );
+    if (
+        ![blobIdPrefix, revisionIdPrefix, worldContentIdPrefix].every((prefix) =>
+            prefix.endsWith(`${digestAlgorithm}:`),
+        )
+    ) {
+        throw new TypeError("workspace carrier digest prefixes must identify digestAlgorithm");
+    }
+    const discardDescriptorSuffix = readNonEmptyString(
+        carrier.discardDescriptorSuffix,
+        "workspaces.carrier.discardDescriptorSuffix",
+    );
+    if (
+        discardDescriptorSuffix.includes("/") ||
+        discardDescriptorSuffix.includes("\\") ||
+        discardDescriptorSuffix.includes("\0")
+    ) {
+        throw new TypeError("workspaces.carrier.discardDescriptorSuffix must be a path suffix");
+    }
+    const maxChanges = readPositiveInteger(
+        changesets.maxChanges,
+        "workspaces.changesets.maxChanges",
+    );
+    const maxSelectionSteps = readPositiveInteger(
+        selectionPublication.maxSteps,
+        "workspaces.selectionPublication.maxSteps",
+    );
+    if (maxSelectionSteps > maxChanges) {
+        throw new TypeError("workspace selection-publication steps must fit changeset limits");
+    }
+    const selectionPublicationPathNames = [
+        readSimpleName(
+            selectionPublication.publicationsDirectory,
+            "workspaces.selectionPublication.publicationsDirectory",
+        ),
+        readSimpleName(
+            selectionPublication.stagingDirectory,
+            "workspaces.selectionPublication.stagingDirectory",
+        ),
+        readSimpleName(
+            selectionPublication.stepsDirectory,
+            "workspaces.selectionPublication.stepsDirectory",
+        ),
+        readSimpleName(selectionPublication.planFile, "workspaces.selectionPublication.planFile"),
+        readSimpleName(
+            selectionPublication.publicationFile,
+            "workspaces.selectionPublication.publicationFile",
+        ),
+        readSimpleName(
+            selectionPublication.scheduleFile,
+            "workspaces.selectionPublication.scheduleFile",
+        ),
+    ] as const;
+    if (new Set(selectionPublicationPathNames).size !== selectionPublicationPathNames.length) {
+        throw new TypeError("workspace selection-publication path names must not collide");
+    }
+    if (
+        new Set([
+            ...carrierCollectionDirectories,
+            selectionPublicationPathNames[0],
+            selectionPublicationPathNames[1],
+        ]).size !==
+        carrierCollectionDirectories.length + 2
+    ) {
+        throw new TypeError("workspace carrier and selection-publication directories must differ");
+    }
+    const selectionPublicationDigestPrefixes = [
+        readDigestPrefix(
+            selectionPublication.planIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.planIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.publicationIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.publicationIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.stagingIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.stagingIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.stepIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.stepIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.scheduleIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.scheduleIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.scheduledPublicationIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.scheduledPublicationIdPrefix",
+        ),
+        readDigestPrefix(
+            selectionPublication.scheduledStepIdPrefix,
+            digestAlgorithm,
+            "workspaces.selectionPublication.scheduledStepIdPrefix",
+        ),
+    ] as const;
+    if (
+        new Set(selectionPublicationDigestPrefixes).size !==
+        selectionPublicationDigestPrefixes.length
+    ) {
+        throw new TypeError("workspace selection-publication digest prefixes must differ");
+    }
+    return {
+        adoptionModes,
+        bindingErrors: {
+            authorityEscapeCode: readNonEmptyString(
+                bindingErrors.authorityEscapeCode,
+                "workspaces.bindingErrors.authorityEscapeCode",
+            ),
+            authorityEscapeMessage: readNonEmptyString(
+                bindingErrors.authorityEscapeMessage,
+                "workspaces.bindingErrors.authorityEscapeMessage",
+            ),
+            duplicateNameCode: readNonEmptyString(
+                bindingErrors.duplicateNameCode,
+                "workspaces.bindingErrors.duplicateNameCode",
+            ),
+            duplicateNameMessage: readNonEmptyString(
+                bindingErrors.duplicateNameMessage,
+                "workspaces.bindingErrors.duplicateNameMessage",
+            ),
+            invalidNameCode: readNonEmptyString(
+                bindingErrors.invalidNameCode,
+                "workspaces.bindingErrors.invalidNameCode",
+            ),
+            invalidNameMessage: readNonEmptyString(
+                bindingErrors.invalidNameMessage,
+                "workspaces.bindingErrors.invalidNameMessage",
+            ),
+            invalidRootCode: readNonEmptyString(
+                bindingErrors.invalidRootCode,
+                "workspaces.bindingErrors.invalidRootCode",
+            ),
+            invalidRootMessage: readNonEmptyString(
+                bindingErrors.invalidRootMessage,
+                "workspaces.bindingErrors.invalidRootMessage",
+            ),
+            rootOverlapCode: readNonEmptyString(
+                bindingErrors.rootOverlapCode,
+                "workspaces.bindingErrors.rootOverlapCode",
+            ),
+            rootOverlapMessage: readNonEmptyString(
+                bindingErrors.rootOverlapMessage,
+                "workspaces.bindingErrors.rootOverlapMessage",
+            ),
+        },
+        bindingIdentityKind: readNonEmptyString(
+            config.bindingIdentityKind,
+            "workspaces.bindingIdentityKind",
+        ),
+        bindingVersion: readPositiveInteger(config.bindingVersion, "workspaces.bindingVersion"),
+        carrier: {
+            backendKind: readNonEmptyString(carrier.backendKind, "workspaces.carrier.backendKind"),
+            blobIdPrefix,
+            carrierDirectory,
+            captureKind: readNonEmptyString(carrier.captureKind, "workspaces.carrier.captureKind"),
+            custodiesDirectory: carrierCollectionDirectories[0],
+            custodyDescriptorFile: readSimpleName(
+                carrier.custodyDescriptorFile,
+                "workspaces.carrier.custodyDescriptorFile",
+            ),
+            custodyIdPrefix: readNonEmptyString(
+                carrier.custodyIdPrefix,
+                "workspaces.carrier.custodyIdPrefix",
+            ),
+            descriptorFormat: readNonEmptyString(
+                carrier.descriptorFormat,
+                "workspaces.carrier.descriptorFormat",
+            ),
+            descriptorVersion: readPositiveInteger(
+                carrier.descriptorVersion,
+                "workspaces.carrier.descriptorVersion",
+            ),
+            discardDescriptorSuffix,
+            discardStatus: readNonEmptyString(
+                carrier.discardStatus,
+                "workspaces.carrier.discardStatus",
+            ),
+            discardedDirectory: carrierCollectionDirectories[1],
+            entryKinds: readUniqueStrings(carrier.entryKinds, "workspaces.carrier.entryKinds"),
+            errors: {
+                conflictCode: readNonEmptyString(
+                    carrierErrors.conflictCode,
+                    "workspaces.carrier.errors.conflictCode",
+                ),
+                conflictMessage: readNonEmptyString(
+                    carrierErrors.conflictMessage,
+                    "workspaces.carrier.errors.conflictMessage",
+                ),
+                controlCode: readNonEmptyString(
+                    carrierErrors.controlCode,
+                    "workspaces.carrier.errors.controlCode",
+                ),
+                controlMessage: readNonEmptyString(
+                    carrierErrors.controlMessage,
+                    "workspaces.carrier.errors.controlMessage",
+                ),
+                unsupportedCode: readNonEmptyString(
+                    carrierErrors.unsupportedCode,
+                    "workspaces.carrier.errors.unsupportedCode",
+                ),
+                unsupportedMessage: readNonEmptyString(
+                    carrierErrors.unsupportedMessage,
+                    "workspaces.carrier.errors.unsupportedMessage",
+                ),
+            },
+            manifestVersion: readPositiveInteger(
+                carrier.manifestVersion,
+                "workspaces.carrier.manifestVersion",
+            ),
+            revisionsDirectory: carrierCollectionDirectories[2],
+            revisionDescriptorFile: readSimpleName(
+                carrier.revisionDescriptorFile,
+                "workspaces.carrier.revisionDescriptorFile",
+            ),
+            revisionIdPrefix,
+            stagingDirectory: carrierCollectionDirectories[3],
+            worldContentIdPrefix,
+            worldDirectory: readSimpleName(
+                carrier.worldDirectory,
+                "workspaces.carrier.worldDirectory",
+            ),
+        },
+        changesets: {
+            errors: {
+                invalidCode: readNonEmptyString(
+                    changesetErrors.invalidCode,
+                    "workspaces.changesets.errors.invalidCode",
+                ),
+                invalidMessage: readNonEmptyString(
+                    changesetErrors.invalidMessage,
+                    "workspaces.changesets.errors.invalidMessage",
+                ),
+                limitCode: readNonEmptyString(
+                    changesetErrors.limitCode,
+                    "workspaces.changesets.errors.limitCode",
+                ),
+                limitMessage: readNonEmptyString(
+                    changesetErrors.limitMessage,
+                    "workspaces.changesets.errors.limitMessage",
+                ),
+            },
+            idPrefix: readDigestPrefix(
+                changesets.idPrefix,
+                digestAlgorithm,
+                "workspaces.changesets.idPrefix",
+            ),
+            maxAggregateReferencedBytes: readPositiveInteger(
+                changesets.maxAggregateReferencedBytes,
+                "workspaces.changesets.maxAggregateReferencedBytes",
+            ),
+            maxChanges,
+            maxManifestEntries: readPositiveInteger(
+                changesets.maxManifestEntries,
+                "workspaces.changesets.maxManifestEntries",
+            ),
+            maxManifestRecordBytes: readPositiveInteger(
+                changesets.maxManifestRecordBytes,
+                "workspaces.changesets.maxManifestRecordBytes",
+            ),
+            maxPathBytes: readPositiveInteger(
+                changesets.maxPathBytes,
+                "workspaces.changesets.maxPathBytes",
+            ),
+            maxRecordBytes: readPositiveInteger(
+                changesets.maxRecordBytes,
+                "workspaces.changesets.maxRecordBytes",
+            ),
+            maxSingleBlobBytes: readPositiveInteger(
+                changesets.maxSingleBlobBytes,
+                "workspaces.changesets.maxSingleBlobBytes",
+            ),
+            maxSymlinkTargetBytes: readPositiveInteger(
+                changesets.maxSymlinkTargetBytes,
+                "workspaces.changesets.maxSymlinkTargetBytes",
+            ),
+            operations: readUniqueStrings(
+                changesets.operations,
+                "workspaces.changesets.operations",
+            ),
+            version: readPositiveInteger(changesets.version, "workspaces.changesets.version"),
+        },
+        changesetInspection: {
+            defaultPageSize: readPositiveInteger(
+                changesetInspection.defaultPageSize,
+                "workspaces.changesetInspection.defaultPageSize",
+            ),
+            defaultPreviewBytes: readPositiveInteger(
+                changesetInspection.defaultPreviewBytes,
+                "workspaces.changesetInspection.defaultPreviewBytes",
+            ),
+            defaultPreviewLines: readPositiveInteger(
+                changesetInspection.defaultPreviewLines,
+                "workspaces.changesetInspection.defaultPreviewLines",
+            ),
+            defaultReadBytes: readPositiveInteger(
+                changesetInspection.defaultReadBytes,
+                "workspaces.changesetInspection.defaultReadBytes",
+            ),
+            encoding: readNonEmptyString(
+                changesetInspection.encoding,
+                "workspaces.changesetInspection.encoding",
+            ),
+            gitlinkEntryKind: readNonEmptyString(
+                changesetInspection.gitlinkEntryKind,
+                "workspaces.changesetInspection.gitlinkEntryKind",
+            ),
+            gitlinkMode: readNonEmptyString(
+                changesetInspection.gitlinkMode,
+                "workspaces.changesetInspection.gitlinkMode",
+            ),
+            maxPageSize: readPositiveInteger(
+                changesetInspection.maxPageSize,
+                "workspaces.changesetInspection.maxPageSize",
+            ),
+            maxPreviewBytes: readPositiveInteger(
+                changesetInspection.maxPreviewBytes,
+                "workspaces.changesetInspection.maxPreviewBytes",
+            ),
+            maxPreviewLines: readPositiveInteger(
+                changesetInspection.maxPreviewLines,
+                "workspaces.changesetInspection.maxPreviewLines",
+            ),
+            maxReadBytes: readPositiveInteger(
+                changesetInspection.maxReadBytes,
+                "workspaces.changesetInspection.maxReadBytes",
+            ),
+            maxDerivedMoveCandidates: readPositiveInteger(
+                changesetInspection.maxDerivedMoveCandidates,
+                "workspaces.changesetInspection.maxDerivedMoveCandidates",
+            ),
+            maxVerificationConcurrency: readPositiveInteger(
+                changesetInspection.maxVerificationConcurrency,
+                "workspaces.changesetInspection.maxVerificationConcurrency",
+            ),
+            moveKinds: readUniqueStrings(
+                changesetInspection.moveKinds,
+                "workspaces.changesetInspection.moveKinds",
+            ),
+            previewClassifications: readUniqueStrings(
+                changesetInspection.previewClassifications,
+                "workspaces.changesetInspection.previewClassifications",
+            ),
+            symlinkMode: readNonEmptyString(
+                changesetInspection.symlinkMode,
+                "workspaces.changesetInspection.symlinkMode",
+            ),
+            version: readPositiveInteger(
+                changesetInspection.version,
+                "workspaces.changesetInspection.version",
+            ),
+        },
+        settlement: {
+            actions: readUniqueStrings(settlement.actions, "workspaces.settlement.actions"),
+            errors: {
+                conflictCode: readNonEmptyString(
+                    settlementErrors.conflictCode,
+                    "workspaces.settlement.errors.conflictCode",
+                ),
+                conflictMessage: readNonEmptyString(
+                    settlementErrors.conflictMessage,
+                    "workspaces.settlement.errors.conflictMessage",
+                ),
+                invalidCode: readNonEmptyString(
+                    settlementErrors.invalidCode,
+                    "workspaces.settlement.errors.invalidCode",
+                ),
+                invalidMessage: readNonEmptyString(
+                    settlementErrors.invalidMessage,
+                    "workspaces.settlement.errors.invalidMessage",
+                ),
+            },
+            operationIdPrefix: readNonEmptyString(
+                settlement.operationIdPrefix,
+                "workspaces.settlement.operationIdPrefix",
+            ),
+            operationVersion: readPositiveInteger(
+                settlement.operationVersion,
+                "workspaces.settlement.operationVersion",
+            ),
+            receiptVersion: readPositiveInteger(
+                settlement.receiptVersion,
+                "workspaces.settlement.receiptVersion",
+            ),
+            requestIdPrefix: readNonEmptyString(
+                settlement.requestIdPrefix,
+                "workspaces.settlement.requestIdPrefix",
+            ),
+            states: readUniqueStrings(settlement.states, "workspaces.settlement.states"),
+            version: readPositiveInteger(settlement.version, "workspaces.settlement.version"),
+        },
+        selectionPublication: {
+            atomicityKinds: readUniqueStrings(
+                selectionPublication.atomicityKinds,
+                "workspaces.selectionPublication.atomicityKinds",
+            ),
+            descriptorFormat: readNonEmptyString(
+                selectionPublication.descriptorFormat,
+                "workspaces.selectionPublication.descriptorFormat",
+            ),
+            errors: {
+                basisMovedCode: readNonEmptyString(
+                    selectionPublicationErrors.basisMovedCode,
+                    "workspaces.selectionPublication.errors.basisMovedCode",
+                ),
+                basisMovedMessage: readNonEmptyString(
+                    selectionPublicationErrors.basisMovedMessage,
+                    "workspaces.selectionPublication.errors.basisMovedMessage",
+                ),
+                recoveryRequiredCode: readNonEmptyString(
+                    selectionPublicationErrors.recoveryRequiredCode,
+                    "workspaces.selectionPublication.errors.recoveryRequiredCode",
+                ),
+                recoveryRequiredMessage: readNonEmptyString(
+                    selectionPublicationErrors.recoveryRequiredMessage,
+                    "workspaces.selectionPublication.errors.recoveryRequiredMessage",
+                ),
+                unsupportedCode: readNonEmptyString(
+                    selectionPublicationErrors.unsupportedCode,
+                    "workspaces.selectionPublication.errors.unsupportedCode",
+                ),
+                unsupportedMessage: readNonEmptyString(
+                    selectionPublicationErrors.unsupportedMessage,
+                    "workspaces.selectionPublication.errors.unsupportedMessage",
+                ),
+            },
+            maxPlanBytes: readPositiveInteger(
+                selectionPublication.maxPlanBytes,
+                "workspaces.selectionPublication.maxPlanBytes",
+            ),
+            maxReceiptBytes: readPositiveInteger(
+                selectionPublication.maxReceiptBytes,
+                "workspaces.selectionPublication.maxReceiptBytes",
+            ),
+            maxScheduleBytes: readPositiveInteger(
+                selectionPublication.maxScheduleBytes,
+                "workspaces.selectionPublication.maxScheduleBytes",
+            ),
+            maxStepBytes: readPositiveInteger(
+                selectionPublication.maxStepBytes,
+                "workspaces.selectionPublication.maxStepBytes",
+            ),
+            maxSteps: maxSelectionSteps,
+            planFile: selectionPublicationPathNames[3],
+            planIdPrefix: selectionPublicationDigestPrefixes[0],
+            planVersion: readPositiveInteger(
+                selectionPublication.planVersion,
+                "workspaces.selectionPublication.planVersion",
+            ),
+            publicationFile: selectionPublicationPathNames[4],
+            publicationIdPrefix: selectionPublicationDigestPrefixes[1],
+            publicationVersion: readPositiveInteger(
+                selectionPublication.publicationVersion,
+                "workspaces.selectionPublication.publicationVersion",
+            ),
+            publicationsDirectory: selectionPublicationPathNames[0],
+            schemaId: readNonEmptyString(
+                selectionPublication.schemaId,
+                "workspaces.selectionPublication.schemaId",
+            ),
+            schemaPath: readNonEmptyString(
+                selectionPublication.schemaPath,
+                "workspaces.selectionPublication.schemaPath",
+            ),
+            scheduleFile: selectionPublicationPathNames[5],
+            scheduleIdPrefix: selectionPublicationDigestPrefixes[4],
+            scheduleKinds: readUniqueStrings(
+                selectionPublication.scheduleKinds,
+                "workspaces.selectionPublication.scheduleKinds",
+            ),
+            scheduleVersion: readPositiveInteger(
+                selectionPublication.scheduleVersion,
+                "workspaces.selectionPublication.scheduleVersion",
+            ),
+            scheduledPublicationIdPrefix: selectionPublicationDigestPrefixes[5],
+            scheduledPublicationVersion: readPositiveInteger(
+                selectionPublication.scheduledPublicationVersion,
+                "workspaces.selectionPublication.scheduledPublicationVersion",
+            ),
+            scheduledStepIdPrefix: selectionPublicationDigestPrefixes[6],
+            scheduledStepVersion: readPositiveInteger(
+                selectionPublication.scheduledStepVersion,
+                "workspaces.selectionPublication.scheduledStepVersion",
+            ),
+            stagingDirectory: selectionPublicationPathNames[1],
+            stagingIdPrefix: selectionPublicationDigestPrefixes[2],
+            stepIdPrefix: selectionPublicationDigestPrefixes[3],
+            stepStatuses: readUniqueStrings(
+                selectionPublication.stepStatuses,
+                "workspaces.selectionPublication.stepStatuses",
+            ),
+            stepsDirectory: selectionPublicationPathNames[2],
+            stepVersion: readPositiveInteger(
+                selectionPublication.stepVersion,
+                "workspaces.selectionPublication.stepVersion",
+            ),
+            version: readPositiveInteger(
+                selectionPublication.version,
+                "workspaces.selectionPublication.version",
+            ),
+        },
+        controlDirectory,
+        defaultAdoptionMode,
+        defaultInitializeGit: config.defaultInitializeGit,
+        digestAlgorithm,
+        errors: {
+            conflictCode: readNonEmptyString(errors.conflictCode, "workspaces.errors.conflictCode"),
+            conflictMessage: readNonEmptyString(
+                errors.conflictMessage,
+                "workspaces.errors.conflictMessage",
+            ),
+            controlCode: readNonEmptyString(errors.controlCode, "workspaces.errors.controlCode"),
+            controlMessage: readNonEmptyString(
+                errors.controlMessage,
+                "workspaces.errors.controlMessage",
+            ),
+        },
+        format: readNonEmptyString(config.format, "workspaces.format"),
+        formatVersion: readPositiveInteger(config.formatVersion, "workspaces.formatVersion"),
+        gitExecutable: readNonEmptyString(config.gitExecutable, "workspaces.gitExecutable"),
+        gitCustody: {
+            archiveExecutable: readNonEmptyString(
+                gitCustody.archiveExecutable,
+                "workspaces.gitCustody.archiveExecutable",
+            ),
+            basisIdPrefix: readDigestPrefix(
+                gitCustody.basisIdPrefix,
+                digestAlgorithm,
+                "workspaces.gitCustody.basisIdPrefix",
+            ),
+            descriptorFile: readSimpleName(
+                gitCustody.descriptorFile,
+                "workspaces.gitCustody.descriptorFile",
+            ),
+            descriptorFormat: readNonEmptyString(
+                gitCustody.descriptorFormat,
+                "workspaces.gitCustody.descriptorFormat",
+            ),
+            descriptorVersion: readPositiveInteger(
+                gitCustody.descriptorVersion,
+                "workspaces.gitCustody.descriptorVersion",
+            ),
+            errors: {
+                baselineUnavailableCode: readNonEmptyString(
+                    gitCustodyErrors.baselineUnavailableCode,
+                    "workspaces.gitCustody.errors.baselineUnavailableCode",
+                ),
+                baselineUnavailableMessage: readNonEmptyString(
+                    gitCustodyErrors.baselineUnavailableMessage,
+                    "workspaces.gitCustody.errors.baselineUnavailableMessage",
+                ),
+                controlCode: readNonEmptyString(
+                    gitCustodyErrors.controlCode,
+                    "workspaces.gitCustody.errors.controlCode",
+                ),
+                controlMessage: readNonEmptyString(
+                    gitCustodyErrors.controlMessage,
+                    "workspaces.gitCustody.errors.controlMessage",
+                ),
+                movementCode: readNonEmptyString(
+                    gitCustodyErrors.movementCode,
+                    "workspaces.gitCustody.errors.movementCode",
+                ),
+                movementMessage: readNonEmptyString(
+                    gitCustodyErrors.movementMessage,
+                    "workspaces.gitCustody.errors.movementMessage",
+                ),
+                unsupportedCode: readNonEmptyString(
+                    gitCustodyErrors.unsupportedCode,
+                    "workspaces.gitCustody.errors.unsupportedCode",
+                ),
+                unsupportedMessage: readNonEmptyString(
+                    gitCustodyErrors.unsupportedMessage,
+                    "workspaces.gitCustody.errors.unsupportedMessage",
+                ),
+            },
+            headKinds: readUniqueStrings(gitCustody.headKinds, "workspaces.gitCustody.headKinds"),
+            identityFile: readSimpleName(
+                gitCustody.identityFile,
+                "workspaces.gitCustody.identityFile",
+            ),
+            identityFormat: readNonEmptyString(
+                gitCustody.identityFormat,
+                "workspaces.gitCustody.identityFormat",
+            ),
+            indexIdPrefix: readDigestPrefix(
+                gitCustody.indexIdPrefix,
+                digestAlgorithm,
+                "workspaces.gitCustody.indexIdPrefix",
+            ),
+            indexReceiptFile: readSimpleName(
+                gitCustody.indexReceiptFile,
+                "workspaces.gitCustody.indexReceiptFile",
+            ),
+            maxCommandBytes: readPositiveInteger(
+                gitCustody.maxCommandBytes,
+                "workspaces.gitCustody.maxCommandBytes",
+            ),
+            objectPackFile: readSimpleName(
+                gitCustody.objectPackFile,
+                "workspaces.gitCustody.objectPackFile",
+            ),
+            objectPackIdPrefix: readDigestPrefix(
+                gitCustody.objectPackIdPrefix,
+                digestAlgorithm,
+                "workspaces.gitCustody.objectPackIdPrefix",
+            ),
+            objectFormats: readUniqueStrings(
+                gitCustody.objectFormats,
+                "workspaces.gitCustody.objectFormats",
+            ),
+            repositoryIdPrefix: readNonEmptyString(
+                gitCustody.repositoryIdPrefix,
+                "workspaces.gitCustody.repositoryIdPrefix",
+            ),
+            repositoryIdentityFile: readSimpleName(
+                gitCustody.repositoryIdentityFile,
+                "workspaces.gitCustody.repositoryIdentityFile",
+            ),
+            repositoryLockAttempts: readPositiveInteger(
+                gitCustody.repositoryLockAttempts,
+                "workspaces.gitCustody.repositoryLockAttempts",
+            ),
+            repositoryLockDelayMs: readPositiveInteger(
+                gitCustody.repositoryLockDelayMs,
+                "workspaces.gitCustody.repositoryLockDelayMs",
+            ),
+            repositoryLockPrefix: readNonEmptyString(
+                gitCustody.repositoryLockPrefix,
+                "workspaces.gitCustody.repositoryLockPrefix",
+            ),
+            stagingDirectory: readSimpleName(
+                gitCustody.stagingDirectory,
+                "workspaces.gitCustody.stagingDirectory",
+            ),
+            version: readPositiveInteger(gitCustody.version, "workspaces.gitCustody.version"),
+            worktreeIdPrefix: readNonEmptyString(
+                gitCustody.worktreeIdPrefix,
+                "workspaces.gitCustody.worktreeIdPrefix",
+            ),
+        },
+        gitHeadRefPrefix: readNonEmptyString(
+            config.gitHeadRefPrefix,
+            "workspaces.gitHeadRefPrefix",
+        ),
+        gitMetadataName,
+        hexLength,
+        manifestFile,
+        worktreeRefPrefix,
+        worldCapture: {
+            maxRevisionDepth: readPositiveInteger(
+                worldCapture.maxRevisionDepth,
+                "workspaces.worldCapture.maxRevisionDepth",
+            ),
+            version: readPositiveInteger(worldCapture.version, "workspaces.worldCapture.version"),
+        },
+        worldExecution: {
+            enforcementKinds: readUniqueStrings(
+                worldExecution.enforcementKinds,
+                "workspaces.worldExecution.enforcementKinds",
+            ),
+            maxRunnerIdBytes: readPositiveInteger(
+                worldExecution.maxRunnerIdBytes,
+                "workspaces.worldExecution.maxRunnerIdBytes",
+            ),
+            runnerVersion: readPositiveInteger(
+                worldExecution.runnerVersion,
+                "workspaces.worldExecution.runnerVersion",
+            ),
+        },
+        worldTaskCapture: {
+            captureSchemaId: readNonEmptyString(
+                worldTaskCapture.captureSchemaId,
+                "workspaces.worldTaskCapture.captureSchemaId",
+            ),
+            captureSchemaPath: readNonEmptyString(
+                worldTaskCapture.captureSchemaPath,
+                "workspaces.worldTaskCapture.captureSchemaPath",
+            ),
+            custodyIdentityKind: readNonEmptyString(
+                worldTaskCapture.custodyIdentityKind,
+                "workspaces.worldTaskCapture.custodyIdentityKind",
+            ),
+            journalPhases: readUniqueStrings(
+                worldTaskCapture.journalPhases,
+                "workspaces.worldTaskCapture.journalPhases",
+            ),
+            journalSchemaId: readNonEmptyString(
+                worldTaskCapture.journalSchemaId,
+                "workspaces.worldTaskCapture.journalSchemaId",
+            ),
+            journalSchemaPath: readNonEmptyString(
+                worldTaskCapture.journalSchemaPath,
+                "workspaces.worldTaskCapture.journalSchemaPath",
+            ),
+            journalVersion: readPositiveInteger(
+                worldTaskCapture.journalVersion,
+                "workspaces.worldTaskCapture.journalVersion",
+            ),
+            maxCaptureIdBytes: readPositiveInteger(
+                worldTaskCapture.maxCaptureIdBytes,
+                "workspaces.worldTaskCapture.maxCaptureIdBytes",
+            ),
+            maxTextBytes: readPositiveInteger(
+                worldTaskCapture.maxTextBytes,
+                "workspaces.worldTaskCapture.maxTextBytes",
+            ),
+            outputIdPrefix: readDigestPrefix(
+                worldTaskCapture.outputIdPrefix,
+                digestAlgorithm,
+                "workspaces.worldTaskCapture.outputIdPrefix",
+            ),
+            statuses: readUniqueStrings(
+                worldTaskCapture.statuses,
+                "workspaces.worldTaskCapture.statuses",
+            ),
+            version: readPositiveInteger(
+                worldTaskCapture.version,
+                "workspaces.worldTaskCapture.version",
+            ),
+        },
+    };
+}
+
+function readDigestPrefix(value: unknown, algorithm: string, context: string): string {
+    const prefix = readNonEmptyString(value, context);
+    if (!prefix.endsWith(`${algorithm}:`)) {
+        throw new TypeError(`${context} must identify digestAlgorithm`);
+    }
+    return prefix;
+}
+
+function readSimpleName(value: unknown, context: string): string {
+    const name = readNonEmptyString(value, context);
+    if (
+        name === "." ||
+        name === ".." ||
+        name.includes("/") ||
+        name.includes("\\") ||
+        name.includes("\0")
+    ) {
+        throw new TypeError(`${context} must be a simple path name`);
+    }
+    return name;
+}

@@ -32,3 +32,17 @@ export class BlobIntegrityError extends TraceStoreError {}
  * @public
  */
 export class ProjectionCompatibilityError extends TypeError {}
+
+/** Raised when an exact retained-world settlement request conflicts with durable authority. */
+export class RetainedWorldSettlementConflictError extends TraceStoreError {
+    /** Stable configured settlement-conflict code. */
+    readonly code = workspaceProtocolConfig.settlement.errors.conflictCode;
+}
+
+/** Raised when retained-world settlement evidence is malformed or inconsistent. */
+export class RetainedWorldSettlementInvalidError extends TraceStoreError {
+    /** Stable configured invalid-settlement code. */
+    readonly code = workspaceProtocolConfig.settlement.errors.invalidCode;
+}
+
+import { workspaceProtocolConfig } from "../protocol/config.ts";

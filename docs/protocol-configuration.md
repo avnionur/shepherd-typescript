@@ -6,7 +6,8 @@ Implementation:
 typed section/value modules. Configuration source:
 [`protocol.config.json`](../protocol.config.json). Tests:
 [`test/protocol-config.test.ts`](../test/protocol-config.test.ts) and
-[`test/protocol-artifacts.test.ts`](../test/protocol-artifacts.test.ts).
+[`test/protocol-artifacts.test.ts`](../test/protocol-artifacts.test.ts), plus provider-specific
+coverage in [`test/provider/protocol.test.ts`](../test/provider/protocol.test.ts).
 
 ## Source of truth
 
@@ -17,7 +18,52 @@ and protocol artifact generation use the same parser. The task section also fixe
 artifact-lock versions, hashing, identity prefixes, schema IDs, generated artifact paths, and the
 task registry's SQLite durability and migration contract. The effect section fixes intent/outcome
 versions and phases, reversibility tiers, canonical intent-reference hashing, schema IDs, and
-generated effect schema paths.
+generated effect schema paths. It also selects last-matching handler precedence and fail-closed
+unhandled behavior. The run section fixes outcome, artifact, and usage versions; closed terminal
+status and artifact-content vocabularies; artifact ordinal bounds; schema identifiers; and
+generated schema paths. It also fixes run-control statuses, reason types, budget-metric precedence,
+stable cancellation reasons, and safe duration-timer bounds.
+It also fixes executor failure classifications and fallback messages used for provider, output,
+and unavailable-cost failures, plus durable execution recovery and claim statuses, configured
+control-command kinds and schema, invocation claim lease duration, and fail-closed recovery,
+claim-loss, and fencing error codes and messages. The control-command vocabulary includes recovery,
+pause, resume, and cooperative cancellation without embedding those discriminants in runtime code.
+The run section also fixes the normative lifecycle statuses and transition matrix, continuation
+constituent/evidence vocabularies, the receipt-bearing evidence status, their versions, and
+generated continuation, waiting, and suspension schema contracts.
+The provider section fixes provider kinds, static-provider capabilities, and stable typed-error
+codes and messages.
+The workspace section fixes the control directory and manifest names, format version, adoption
+vocabulary and defaults, Git discovery command, baseline-reference hashing, binding-identity
+domain, copy-carrier layout and identity vocabulary, and stable control, conflict, binding, and
+carrier errors. Workspace protocol v4 additionally fixes Git HEAD kinds, semantic basis and exact
+index/object receipt identities, descriptor filenames, local repository/worktree identity domains,
+supported Git object formats, command bounds, and stable Git-custody failures.
+Workspace protocol v5 additionally fixes changeset operations, identity, schema version, resource
+limits, and stable validation failures.
+Workspace protocol v6 additionally fixes parent-linked custody-capture versioning and the maximum
+revision-ancestry depth verified before recovery fails closed.
+Workspace protocol v7 additionally fixes retained-world runner-registration versioning,
+runner-identity bounds, and the closed enforcement vocabulary.
+Workspace protocol v8 additionally fixes task-world capture schema and output identities, capture
+identity and text-operation bounds, and the successful retention status vocabulary.
+Workspace protocol v9 additionally fixes the task-world journal schema, ordered phase vocabulary,
+and journal version. Workspace protocol v10 adds the configured deterministic task-world custody
+identity domain used by command-authorized restart recovery.
+Workspace protocol v11 fixes bounded authenticated changeset inspection and projection
+vocabularies. Workspace protocol v12 fixes exact settlement actions, durable states, request
+identity, version, and stable validation/conflict errors; workspace protocol v13 adds deterministic
+operation/receipt codec versions and the content-addressed operation identity domain. Workspace
+protocol v14 adds configured journaled-path atomicity, selection plan/step/publication codec
+versions and identity domains, carrier descriptor names, resource bounds, schemas, and stable
+movement/recovery/unsupported errors. Workspace protocol v15 adds a separate content-addressed
+dependency schedule over canonical plan changes. It preserves canonical changeset identity while
+ordering directory construction parent-first and directory removal or replacement
+descendant-first. Workspace protocol v16 adds separate dependency-scheduled path-step and terminal
+receipt versions and identity domains bound to the exact v15 schedule, while preserving all v14
+and v15 evidence unchanged. Store schema
+v6 owns the consume-once
+settlement decision table without changing kernel record identity.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -59,7 +105,26 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
 - task-registry migrations are non-empty and contiguous, their latest version matches configured
   support, and defensive SQLite, foreign-key, WAL, FULL, and IMMEDIATE settings remain enabled.
 - effect phases are distinct, reversibility tiers are unique, intent/outcome versions are positive,
-  and intent-reference hashing, schema IDs, and generated paths match effect protocol v1.
+  handler policies are supported, and intent-reference hashing, schema IDs, and generated paths
+  match effect protocol v1.
+- run record versions are positive, terminal statuses and artifact content types are unique,
+  artifact ordinal and timer bounds are safe, control vocabularies are unique, schema identifiers
+  and artifact paths are valid, recovery and control-command vocabularies and executor errors are
+  non-empty, lifecycle and continuation vocabularies are closed, transition pairs cite known
+  non-terminal states and outcomes, and all values match the immutable run protocol v1 contract.
+- provider kinds are unique, static capabilities are booleans, error codes/messages are non-empty,
+  and every value matches the immutable provider protocol v1 contract.
+- workspace adoption modes are unique and include the configured default, path components are safe
+  simple names, digest and reference settings agree, binding identity and errors are non-empty, and
+  copy-carrier descriptor, collection, entry-kind, identity, and error values are closed and
+  non-empty. Changeset operations, identity, limits, version, and error contracts are also closed.
+  Parent-linked capture versioning and its positive ancestry bound are closed. Retained-world
+  runner versioning, identity bounds, and enforcement kinds are also closed. Task-world capture
+  schema paths, identity prefixes, limits, statuses, and version are closed. Settlement request,
+  effect-journal, and selection-publication vocabularies, identity prefixes, resource bounds,
+  descriptor names, errors, schema destinations, and versions are closed. Every value matches the
+  immutable workspace protocol v16 contract. Protocols v1 through v15 remain unchanged historical
+  subsets.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,
 root-witness identity, or current ordinal bounds requires a new ABI or migration contract.

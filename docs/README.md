@@ -40,6 +40,67 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   conflict detection, migration, and verified resolution.
 - [Effect records](./effect-records.md) defines versioned intent/outcome records, reversibility
   tiers, immutable semantic values, and exact content-bound correlation.
+- [Ordered effect handlers](./effect-handlers.md) defines immutable exact-kind stacks,
+  last-matching precedence, validation-before-invocation, and unhandled behavior.
+- [Typed-effect reference validation and proof envelopes](./formal-assurance.md) defines the
+  executable Core-A machine, pinned static-lowering/theorem evidence boundary, and fail-closed
+  Core-0H sidecar gate.
+- [Workspace initialization and adoption](./workspace-initialization.md) defines protected
+  `.vcscore` metadata, configured baseline citations, Git-history preservation, and fail-closed
+  reopen behavior.
+- [Workspace binding roots](./workspace-bindings.md) defines stable canonical binding identities,
+  workspace-authority containment, symlink-aware alias handling, and pairwise overlap rejection.
+- [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,
+  isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
+  idempotent discard.
+- [Retained-world runner](./retained-world-runner.md) defines the closed opaque runner registration
+  handle and its honest advisory enforcement boundary.
+- [Fenced task-world execution](./task-world-execution.md) defines authenticated runner
+  consumption, isolated file authority, durable capture journaling, command-authorized recovery,
+  cooperative partial-world cancellation, restart-safe inspection, and atomic terminal-cut
+  attachment.
+- [Git-aware baseline and retained output custody](./git-aware-custody.md) defines semantic Git
+  bases, exact index/object receipts, linked-worktree identity, movement checks, and isolated
+  retained output.
+- [World changesets](./world-changesets.md) defines pure reconstructive comparison, canonical
+  add/delete/modify/replace operations, content identity, immutability, and fail-closed limits.
+- [Changeset inspection](./changeset-inspection.md) defines authenticated exact-path lookup,
+  bounded pagination/content/previews, exact-content move projections, and Git-aware Gitlink and
+  symlink-mode presentation outside canonical identity.
+- [Retained-world settlement admission](./retained-world-settlement.md) defines workspace protocol
+  v12 exact requests, workspace protocol v13 deterministic effect-journal codecs, workspace
+  protocol v14 closed selection-publication plans/steps/receipts, protocol v15 dependency-ordered
+  publication schedules, protocol v16 scheduled step/terminal-receipt evidence, authenticated
+  immutable-head carrier staging, scheduled materialization and prefix recovery, public exact-ID
+  selection and restart repair, authenticated retained-output preparation, trace-store v6
+  consume-once compare-and-swap, schema-v7 journal storage,
+  atomic deterministic transitions, restart-safe inspection, and terminal-before-cleanup public
+  discard recovery.
+- [Run outcomes](./run-outcomes.md) defines versioned finished, failed, exhausted, and cancelled
+  terminal records with exact task-lock provenance.
+- [Run artifacts and usage](./run-artifacts-and-usage.md) defines ordered inline-text and durable
+  blob outputs plus aggregate token and cost records correlated by run identity.
+- [Run budgets and cancellation](./run-control.md) defines configured resource limits, cumulative
+  consumption, duration expiry, composed `AbortSignal` behavior, and terminal race semantics.
+- [Run lifecycle protocol](./run-lifecycle-protocol.md) defines the configured normative transition
+  matrix and versioned continuation, waiting, suspension, and resumed-running evidence schemas.
+- [Provider contract and static provider](./static-provider.md) defines immutable provider
+  descriptors, structured requests/responses, exact cassette replay, cancellation, and typed
+  fail-closed errors.
+- [Offline task execution](./task-execution.md) defines task-to-provider request mapping, schema
+  validation, usage accounting, budgets, cancellation, and terminal-result normalization.
+- [Durable task execution](./durable-task-execution.md) defines lifecycle, aggregate usage, exact
+  ordered artifact and terminal outcome persistence, blob-receipt verification, deterministic
+  append replay, recovery classification, exact reconstruction, command-authorized creation resume
+  and terminal-cut repair, leased first-writer claims, stale-writer fencing, and fail-closed started
+  handling.
+- [Durable execution inspection](./durable-execution-inspection.md) defines immutable read-only
+  lifecycle, artifact, usage, outcome, cut, and causal-edge views across every recovery state.
+- [Durable execution control](./durable-execution-control.md) defines globally idempotent recovery,
+  pause, resume, and cancel commands; exact lifecycle-head/fence checks; ordered checkpoint
+  adapters; atomic waiting and suspension release; prerequisite-satisfaction-gated resumed-running
+  fence acquisition; safe-boundary or inactive-head cancelled terminalization; lease takeover;
+  and unsafe-state rejection.
 - [Trace kernel vocabulary](../CONTEXT.md) defines the canonical domain terms used by code,
   schemas, tests, and documentation.
 - [Upstream compatibility baseline](../.plan/upstream-baseline.md) records pinned Shepherd

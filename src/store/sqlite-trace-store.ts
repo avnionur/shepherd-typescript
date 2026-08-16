@@ -10,10 +10,11 @@ import { projectExecution } from "../projection/execution.ts";
 import { projectEffectiveHistory } from "../projection/history.ts";
 import { activeExecutionRelations, projectExecutionRelations } from "../projection/relations.ts";
 import type { EffectiveHistory, Execution } from "../projection/types.ts";
-import { kernelProtocolConfig } from "../protocol/config.ts";
+import { kernelProtocolConfig, runProtocolConfig } from "../protocol/config.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { createConfiguredRootWitness } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
+import type { DurableExecutionPrerequisiteSatisfaction } from "../run/durable-execution-control-types.ts";
 import { appendToTraceStore } from "./append.ts";
 import { diagnoseStoredAppend } from "./append-recovery.ts";
 import { resolveBlobDirectory } from "./blob-options.ts";
@@ -21,11 +22,33 @@ import { collectStoredBlobOrphans } from "./blob-orphans.ts";
 import { putStoredBlob, readStoredBlob, verifyStoredBlobs } from "./blobs.ts";
 import { DEFAULT_STORE_DATABASE_PATH, STORE_PRAGMA_SQL, STORE_TABLES } from "./constants.ts";
 import { publishStoredCut, readStoredCut } from "./cuts.ts";
+import {
+    appendDurableExecutionStart,
+    appendDurableExecutionTerminal,
+    claimDurableExecutionInvocation,
+    hasDurableExecutionInvocationAuthority,
+} from "./durable-execution-claims.ts";
+import {
+    appendDurableExecutionInactiveCancellation,
+    appendDurableExecutionResume,
+    appendDurableExecutionRunningControlCommand,
+    appendDurableExecutionSuspension,
+    appendDurableExecutionWaiting,
+} from "./durable-execution-control.ts";
 import { TraceStoreError } from "./errors.ts";
 import { verifyTraceStoreIntegrity } from "./integrity.ts";
 import type { AppendRecoveryDiagnostic, TraceIntegrityReport } from "./integrity-types.ts";
 import { migrateTraceStore } from "./migrations.ts";
 import { readOwnerRecords, readStoredRecord } from "./read.ts";
+import type { RetainedWorldSettlementTerminalEvidence } from "./retained-world-settlement-codec.ts";
+import {
+    admitRetainedWorldSettlement,
+    beginRetainedWorldSettlement,
+    completeRetainedWorldSettlementCleanup,
+    readRetainedWorldSettlement,
+    readRetainedWorldSettlementJournal,
+    retainRetainedWorldSettlementTerminal,
+} from "./retained-world-settlements.ts";
 import { readCausalClosureSlice, readOwnerPrefixSlice } from "./slices.ts";
 import type {
     AppendReceipt,
@@ -38,8 +61,14 @@ import type {
     Cut,
     CutId,
     CutSpec,
+    DurableExecutionClaimedAppend,
+    DurableExecutionInvocationClaim,
+    DurableExecutionResumeAppend,
     OwnerRecord,
     RetainedRecord,
+    RetainedWorldSettlementAdmission,
+    RetainedWorldSettlementJournal,
+    RetainedWorldSettlementRequest,
     Slice,
     SliceReadOptions,
     SQLiteTraceStoreOptions,
@@ -126,6 +155,318 @@ export class SQLiteTraceStore implements Disposable {
     append(request: StoreAppendRequest): AppendReceipt {
         this.#assertOpen();
         return appendToTraceStore(this.#database, request);
+    }
+
+    /**
+     * Atomically admits or identically replays one exact retained-world settlement request.
+     *
+     * This store-level primitive does not authenticate retained execution or carrier evidence and
+     * does not mutate user files. The workspace settlement coordinator owns those boundaries.
+     *
+     * @param request - Closed exact settlement identity already authenticated by its coordinator.
+     * @returns The durable prepared decision owned by the winning command.
+     * @throws {TraceStoreError} If another command or request already owns the output.
+     * @throws {TypeError} If the request is malformed or uses an unsupported protocol value.
+     * @internal
+     */
+    admitRetainedWorldSettlement(
+        request: RetainedWorldSettlementRequest,
+    ): RetainedWorldSettlementAdmission {
+        this.#assertOpen();
+        return admitRetainedWorldSettlement(this.#database, request);
+    }
+
+    /** @internal Reads one prepared retained-world settlement decision by exact output identity. */
+    readRetainedWorldSettlement(outputId: string): RetainedWorldSettlementAdmission | undefined {
+        this.#assertOpen();
+        return readRetainedWorldSettlement(this.#database, outputId);
+    }
+
+    /** @internal Reads one validated restart-safe settlement-journal snapshot. */
+    readRetainedWorldSettlementJournal(
+        outputId: string,
+    ): RetainedWorldSettlementJournal | undefined {
+        this.#assertOpen();
+        return readRetainedWorldSettlementJournal(this.#database, outputId);
+    }
+
+    /** @internal Atomically begins or replays the deterministic admitted operation. */
+    beginRetainedWorldSettlement(outputId: string): RetainedWorldSettlementJournal {
+        this.#assertOpen();
+        return beginRetainedWorldSettlement(this.#database, outputId);
+    }
+
+    /** @internal Atomically retains or replays the exact terminal settlement receipt. */
+    retainRetainedWorldSettlementTerminal(
+        outputId: string,
+        evidence: RetainedWorldSettlementTerminalEvidence,
+    ): RetainedWorldSettlementJournal {
+        this.#assertOpen();
+        return retainRetainedWorldSettlementTerminal(this.#database, outputId, evidence);
+    }
+
+    /** @internal Atomically completes or replays physical cleanup for a discarded settlement. */
+    completeRetainedWorldSettlementCleanup(outputId: string): RetainedWorldSettlementJournal {
+        this.#assertOpen();
+        return completeRetainedWorldSettlementCleanup(this.#database, outputId);
+    }
+
+    /**
+     * Atomically acquires or observes the provider-invocation lease for a durable run.
+     *
+     * @param runId - Durable run whose provider boundary is guarded.
+     * @param createdRecordId - Exact creation evidence associated with the run.
+     * @param claimId - Unique identity proposed by this caller.
+     * @param nowMilliseconds - Unix time used for deterministic lease evaluation.
+     * @param allowExpiredTakeover - Whether this caller has authority to replace an expired claim.
+     * @returns The current frozen claim, including its monotonic fencing token and expiry.
+     * @throws {TypeError} If identifiers, creation evidence, or time are malformed or conflict.
+     * @throws {TraceStoreError} If the store is closed.
+     */
+    claimDurableExecutionInvocation(
+        runId: string,
+        createdRecordId: RecordId,
+        claimId: string,
+        nowMilliseconds = Date.now(),
+        allowExpiredTakeover = true,
+    ): DurableExecutionInvocationClaim {
+        this.#assertOpen();
+        return claimDurableExecutionInvocation(
+            this.#database,
+            runId,
+            createdRecordId,
+            claimId,
+            nowMilliseconds,
+            runProtocolConfig.execution.invocationClaimLeaseMilliseconds,
+            allowExpiredTakeover,
+        );
+    }
+
+    /** @internal Reads whether one exact started invocation fence remains current. */
+    hasDurableExecutionInvocationAuthority(
+        runId: string,
+        claimId: string,
+        fencingToken: number,
+    ): boolean {
+        this.#assertOpen();
+        return hasDurableExecutionInvocationAuthority(this.#database, runId, claimId, fencingToken);
+    }
+
+    /**
+     * Atomically publishes canonical start evidence while a claim remains authoritative.
+     *
+     * @param runId - Durable run whose start boundary is guarded.
+     * @param claimId - Exact acquired claim identity.
+     * @param fencingToken - Exact monotonic token returned with the claim.
+     * @param nowMilliseconds - Unix time used for deterministic lease evaluation.
+     * @param recoveryCommandRecordId - Optional canonical recovery command authorizing the start.
+     * @returns A committed receipt or a frozen fenced result.
+     * @throws {TypeError} If identifiers, token, or time are malformed.
+     * @throws {TraceStoreError} If the store is closed or the append fails.
+     */
+    appendDurableExecutionStart(
+        runId: string,
+        claimId: string,
+        fencingToken: number,
+        nowMilliseconds = Date.now(),
+        recoveryCommandRecordId: RecordId | null = null,
+    ): DurableExecutionClaimedAppend {
+        this.#assertOpen();
+        return appendDurableExecutionStart(
+            this.#database,
+            runId,
+            claimId,
+            fencingToken,
+            nowMilliseconds,
+            recoveryCommandRecordId,
+        );
+    }
+
+    /**
+     * Atomically publishes terminal evidence while the exact started claim remains current.
+     *
+     * @param runId - Durable run whose terminal evidence is being published.
+     * @param claimId - Exact current invocation claim identity.
+     * @param fencingToken - Exact current monotonic fencing token.
+     * @param request - Canonical terminal-ledger append request.
+     * @param releaseClaim - Whether terminal commit must also release the current worker.
+     * @returns A committed receipt or a frozen fenced result.
+     * @throws {TraceStoreError} If the store is closed or append fails.
+     * @throws {TypeError} If identifiers, token, or request are malformed.
+     * @internal
+     */
+    appendDurableExecutionTerminal(
+        runId: string,
+        claimId: string,
+        fencingToken: number,
+        request: StoreAppendRequest,
+        releaseClaim = false,
+    ): DurableExecutionClaimedAppend {
+        this.#assertOpen();
+        return appendDurableExecutionTerminal(
+            this.#database,
+            runId,
+            claimId,
+            fencingToken,
+            request,
+            releaseClaim,
+        );
+    }
+
+    /**
+     * Atomically retains a running control command while the exact fence remains current.
+     *
+     * @param runId - Durable run whose running lifecycle is targeted.
+     * @param expectedLifecycleRecordId - Exact retained start record expected by the caller.
+     * @param fencingToken - Exact current invocation fencing token.
+     * @param request - Canonical running-control-command append request.
+     * @returns The committed or identically replayed append receipt.
+     * @throws {TraceStoreError} If the store is closed or running authority is no longer current.
+     * @throws {AppendIntentConflictError} If command identity already names different content.
+     * @throws {TypeError} If an identifier, token, or request is malformed.
+     *
+     * @internal
+     */
+    appendDurableExecutionRunningControlCommand(
+        runId: string,
+        expectedLifecycleRecordId: RecordId,
+        fencingToken: number,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return appendDurableExecutionRunningControlCommand(
+            this.#database,
+            runId,
+            expectedLifecycleRecordId,
+            fencingToken,
+            request,
+        );
+    }
+
+    /**
+     * Atomically appends command-bound cancellation for an inactive lifecycle head.
+     *
+     * @param runId - Durable run being cancelled.
+     * @param expectedLifecycleRecordId - Exact created, waiting, or suspended head.
+     * @param request - Canonical command, outcome, and terminal append request.
+     * @returns The committed or identically replayed append receipt.
+     * @throws {TraceStoreError} If the store is closed or authority is inconsistent.
+     * @internal
+     */
+    appendDurableExecutionInactiveCancellation(
+        runId: string,
+        expectedLifecycleRecordId: RecordId,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return appendDurableExecutionInactiveCancellation(
+            this.#database,
+            runId,
+            expectedLifecycleRecordId,
+            request,
+        );
+    }
+
+    /**
+     * Atomically appends suspension evidence and releases the exact running fence.
+     *
+     * @param runId - Durable run reaching a safe boundary.
+     * @param expectedLifecycleRecordId - Exact current started lifecycle record.
+     * @param fencingToken - Exact current invocation fencing token.
+     * @param pauseCommandRecordId - Retained pause command authorizing suspension.
+     * @param traceCutId - Immutable cut through the expected lifecycle record.
+     * @param request - Canonical descriptor and suspension append request.
+     * @returns The committed or identically replayed append receipt.
+     * @throws {TraceStoreError} If the store is closed or authority is inconsistent.
+     * @throws {AppendIntentConflictError} If the intent already names different content.
+     * @internal
+     */
+    appendDurableExecutionSuspension(
+        runId: string,
+        expectedLifecycleRecordId: RecordId,
+        fencingToken: number,
+        pauseCommandRecordId: RecordId,
+        traceCutId: string,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return appendDurableExecutionSuspension(
+            this.#database,
+            runId,
+            expectedLifecycleRecordId,
+            fencingToken,
+            pauseCommandRecordId,
+            traceCutId,
+            request,
+        );
+    }
+
+    /**
+     * Atomically appends waiting evidence and releases the exact running fence.
+     *
+     * @param runId - Durable run reaching a prerequisite boundary.
+     * @param expectedLifecycleRecordId - Exact current running lifecycle record.
+     * @param fencingToken - Exact current invocation fencing token.
+     * @param traceCutId - Immutable cut through the expected lifecycle record.
+     * @param request - Canonical descriptor and waiting append request.
+     * @returns The committed or identically replayed append receipt.
+     * @throws {TraceStoreError} If the store is closed or authority is inconsistent.
+     * @throws {AppendIntentConflictError} If the intent already names different content.
+     * @internal
+     */
+    appendDurableExecutionWaiting(
+        runId: string,
+        expectedLifecycleRecordId: RecordId,
+        fencingToken: number,
+        traceCutId: string,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return appendDurableExecutionWaiting(
+            this.#database,
+            runId,
+            expectedLifecycleRecordId,
+            fencingToken,
+            traceCutId,
+            request,
+        );
+    }
+
+    /**
+     * Atomically acquires resumed worker authority and publishes running continuation evidence.
+     *
+     * @param runId - Durable run being resumed.
+     * @param commandId - Globally idempotent resume command identity.
+     * @param expectedLifecycleRecordId - Exact waiting or suspension acknowledgement expected.
+     * @param continuationDescriptorRecordId - Exact descriptor cited by the acknowledgement.
+     * @param claimId - Deterministic new worker claim identity.
+     * @param nowMilliseconds - Unix time used for lease creation.
+     * @param prerequisiteSatisfaction - Required matching evidence for waiting, otherwise null.
+     * @returns Canonical command/running identities and new worker authority.
+     * @throws {TraceStoreError} If the store is closed or retained authority is inconsistent.
+     * @internal
+     */
+    appendDurableExecutionResume(
+        runId: string,
+        commandId: string,
+        expectedLifecycleRecordId: RecordId,
+        continuationDescriptorRecordId: RecordId,
+        claimId: string,
+        nowMilliseconds = Date.now(),
+        prerequisiteSatisfaction: DurableExecutionPrerequisiteSatisfaction | null = null,
+    ): DurableExecutionResumeAppend {
+        this.#assertOpen();
+        return appendDurableExecutionResume(
+            this.#database,
+            runId,
+            commandId,
+            expectedLifecycleRecordId,
+            continuationDescriptorRecordId,
+            claimId,
+            nowMilliseconds,
+            runProtocolConfig.execution.invocationClaimLeaseMilliseconds,
+            prerequisiteSatisfaction,
+        );
     }
 
     /**

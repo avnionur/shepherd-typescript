@@ -45,9 +45,10 @@ equal kinds, supported versions and phases, and an exact recomputation of `inten
 reference covers the complete intent, changing its ID, kind, payload, version, phase, or
 reversibility invalidates the outcome relationship.
 
-This module defines records and correlation only. It does not materialize effects, append them to a
-trace, enforce intent-before-outcome ordering across storage, or run observers and interceptors.
-Those runtime concerns consume this protocol in later slices.
+This module defines records and correlation only. The separate
+[ordered handler stack](./effect-handlers.md) can interpret validated intents in-process. Neither
+module materializes world changes, appends records, enforces intent-before-outcome ordering across
+storage, or runs observers and interceptors.
 
 ## Protocol artifacts
 

@@ -1,0 +1,60 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "base_revision_id": {
+            "type": "string"
+        },
+        "binding_id": {
+            "type": "string"
+        },
+        "capture_id": {
+            "type": "string"
+        },
+        "changeset_id": {
+            "type": "string"
+        },
+        "custody_id": {
+            "type": "string"
+        },
+        "head_revision_id": {
+            "type": "string"
+        },
+        "output_id": {
+            "type": "string"
+        },
+        "run_id": {
+            "type": "string"
+        },
+        "schema_version": {
+            "const": 8,
+            "type": "integer"
+        },
+        "status": {
+            "const": "retained",
+            "type": "string"
+        },
+        "user_basis_after": {
+            "type": "string"
+        },
+        "user_basis_before": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "base_revision_id",
+        "binding_id",
+        "capture_id",
+        "changeset_id",
+        "custody_id",
+        "head_revision_id",
+        "output_id",
+        "run_id",
+        "schema_version",
+        "status",
+        "user_basis_after",
+        "user_basis_before"
+    ],
+    "type": "object"
+}

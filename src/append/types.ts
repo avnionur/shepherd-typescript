@@ -85,6 +85,8 @@ export type AppendPlanningState = {
  * @public
  */
 export type RecordView = {
+    /** Persisted append identity, omitted only from a pure pre-persistence plan. */
+    readonly append_intent_id?: string;
     /** Stable owner path containing this record occurrence. */
     readonly owner_id: TraceOwnerId;
     /** Position allocated on the owner path. */

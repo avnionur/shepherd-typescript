@@ -132,3 +132,141 @@ _Avoid_: Latest-version alias, executable task run, mutable descriptor
 **Task Registry**:
 A durable adapter that registers immutable task versions and resolves exact verified registrations.
 _Avoid_: Task executor, package registry, mutable alias table
+
+**Effect Handler Stack**:
+An immutable ordered collection that selects the nearest exact-kind handler for a validated effect
+intent.
+_Avoid_: Interceptor pipeline, observer, global middleware
+
+**Effect Handler Dispatch**:
+The frozen selected-handler identity and exactly correlated effect outcome returned by one handler
+invocation.
+_Avoid_: World receipt, durable append, interception decision
+
+**Typed-Effect Reference Trace**:
+An ordered normalized record sequence accepted by the configured single-root Core-A lifecycle
+machine for one content-addressed static program. A valid live prefix is reference-validatable but
+is not proof-backed or complete.
+_Avoid_: Production run ledger, arbitrary runtime trace, Lean proof
+
+**Proof Envelope**:
+A frozen fail-closed classification of trace evidence at the strongest configured claim supported
+by validated evidence. Missing, malformed, unsupported, or incomplete proof evidence cannot imply
+theorem authority.
+_Avoid_: Runtime guarantee, inferred formal proof, marketing compatibility label
+
+**Static Lowering Evidence**:
+A content-addressed manifest binding one completed reference trace and program to a named case in
+the exact configured upstream source generator revision.
+_Avoid_: Self-attested hash, arbitrary source file, production-runtime equivalence
+
+**Core-0H Sidecar**:
+A validator-issued content-addressed manifest binding deterministic two-phase handler evidence to
+one exact lowering, program, and completed trace. An untrusted sidecar cannot strengthen a claim.
+_Avoid_: Inferred handler purity, runtime handler log, allowlist bypass
+
+**Theorem Artifact Metadata**:
+A content-addressed declaration of the pinned paper revision, theorem-name surface, authority, and
+external build gate. It does not prove that the external Lean build ran in this repository.
+_Avoid_: Local theorem verification receipt, production-runtime proof, mutable theorem alias
+
+**Run Outcome**:
+An immutable versioned terminal value stating that one exact task revision finished, failed,
+exhausted its budget, or was cancelled.
+_Avoid_: Mutable execution row, stack trace, complete run ledger
+
+**Run Artifact**:
+An immutable versioned side-channel output placed at an explicit run-local emission ordinal, with
+text inline or binary content cited through a durable blob receipt.
+_Avoid_: Return value, embedded base64, mutable file handle
+
+**Run Usage**:
+An immutable versioned aggregate of token and cost totals for an entire run.
+_Avoid_: Individual provider-call usage, billing invoice, mutable counter
+
+**Run Control**:
+A cooperative per-run controller that accumulates configured resource consumption and composes
+budget exhaustion, caller cancellation, and disposal into one first-terminal-wins `AbortSignal`.
+_Avoid_: Process kill, permission boundary, mutable run ledger
+
+**Durable Recovery Command**:
+A globally idempotent canonical request to apply one safe recovery transition to retained durable
+execution evidence. Provider-boundary recovery additionally requires the current invocation fence.
+_Avoid_: Mutable run flag, provider replay permission, unretained retry request
+
+**Workspace Control State**:
+Versioned closed metadata under the configured `.vcscore` root that records initialization options
+and an adopted baseline citation without modifying ordinary workspace files or Git history.
+_Avoid_: Retained file carrier, Git repository alias, mutable user configuration
+
+**Workspace Adoption**:
+The configured choice to cite no baseline, an exact Git HEAD, or a content-addressed ordinary
+worktree. A worktree citation identifies content but does not itself retain the cited bytes.
+_Avoid_: Settlement, implicit commit, copy-carrier custody
+
+**Workspace Binding**:
+A frozen content-addressed authority identity joining one exact logical name to one canonical,
+workspace-contained, pairwise-disjoint filesystem root.
+_Avoid_: Runtime permission grant, display-path authority, retained world snapshot
+
+**World Revision**:
+An immutable verified copy-carrier snapshot whose revision identity binds canonical logical
+filesystem content to one exact workspace binding and carrier protocol.
+_Avoid_: Git commit, mutable checkout, custody directory path
+
+**World Custody**:
+An owned mutable retained checkout forked from one verified world revision, identified by a
+non-semantic receipt and kept outside the user's working tree.
+_Avoid_: Immutable revision, settlement decision, user workspace
+
+**Retained-World Runner**:
+A registered runtime adapter identified by closed versioned metadata whose private callback may
+execute only after orchestration authenticates its handle and supplies one exact fenced isolated
+world context.
+_Avoid_: Provider descriptor, arbitrary callback object, process sandbox, filesystem grant
+
+**Git Basis**:
+A content-addressed repository/worktree citation joining exact HEAD, index, sparse, ignored-source,
+managed-world, binding, and retained-object evidence for movement checks and retained output.
+_Avoid_: Branch display name, current user checkout, changeset, settlement decision
+
+**World Changeset**:
+An immutable content-addressed, ordered comparison of two exact world revisions for one binding,
+whose path changes reconstruct the head manifest from the base manifest.
+_Avoid_: Mutable custody, filesystem diff output, settlement authorization, heuristic rename
+
+**Changeset Inspection**:
+An authenticated read-only projection over one exact world changeset that provides bounded path,
+content, preview, move, and Git-aware presentation without changing canonical identity.
+_Avoid_: Settlement decision, unbounded diff output, user-workspace read, canonical rename record
+
+**Durable Resume Command**:
+A globally idempotent canonical request naming one exact suspension acknowledgement and its
+continuation descriptor. Successful application atomically acquires the next worker fence and
+publishes running authority without restoring external state or invoking a provider.
+_Avoid_: Process restart, implicit checkpoint restore, reuse of the previous worker lease
+
+**Waiting Run**:
+A non-terminal quiescent run whose continuation depends on one explicitly identified prerequisite
+and independently verifiable satisfaction evidence.
+_Avoid_: Paused run, sleeping worker, uncertain provider call
+
+**Suspended Run**:
+A non-terminal quiescent run whose authorized pause was acknowledged at a safe continuation
+boundary with sufficient continuation evidence.
+_Avoid_: Pause request, cancelled run, expired worker lease
+
+**Continuation Descriptor**:
+A canonical classification of the trace cut and world, provider-session, process, and prerequisite
+evidence required to continue a non-terminal run.
+_Avoid_: Trace cut alone, mutable worker snapshot, implicit replay promise
+
+**Model Provider**:
+A provider-neutral boundary that exposes immutable identity/capabilities and maps a validated
+structured model request to a validated structured response under cooperative cancellation.
+_Avoid_: Task implementation, ambient global model, credential store
+
+**Static Provider**:
+A deterministic offline model provider that consumes an exact ordered request/response cassette
+and fails closed on mismatch or exhaustion.
+_Avoid_: Test-only mock, live model adapter, fallback response generator

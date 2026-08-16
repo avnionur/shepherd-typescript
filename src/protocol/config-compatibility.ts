@@ -1,8 +1,13 @@
 import {
     EFFECT_PROTOCOL_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
+    FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
+    KERNEL_ABI_V0_STORE_V7_CONTRACT,
+    PROVIDER_PROTOCOL_V1_CONTRACT,
+    RUN_PROTOCOL_V1_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
+    WORKSPACE_PROTOCOL_V16_CONTRACT,
 } from "./compatibility-constants.ts";
 import type { ProtocolConfig } from "./config-types.ts";
 import { sameStrings } from "./config-value-readers.ts";
@@ -28,7 +33,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (config.kernel.store.appendIntentDigestAlgorithm !== expected.appendIntentDigestAlgorithm) {
         throw new TypeError("append intent digest requires a new store migration");
     }
-    if (!sameJson(config.kernel.store.blobs, expected.store.blobs)) {
+    if (!sameJson(config.kernel.store.blobs, KERNEL_ABI_V0_STORE_V7_CONTRACT.blobs)) {
         throw new TypeError("blob identity and filesystem constants require a new store migration");
     }
     if (!sameJson(config.kernel.queries, expected.queries)) {
@@ -43,7 +48,11 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     const artifactDestinations = [
         ...Object.values(config.effects.artifacts),
         ...Object.values(config.kernel.artifacts),
+        ...Object.values(config.runs.artifacts),
         ...Object.values(config.tasks.artifacts),
+        config.workspaces.selectionPublication.schemaPath,
+        config.workspaces.worldTaskCapture.captureSchemaPath,
+        config.workspaces.worldTaskCapture.journalSchemaPath,
     ];
     if (new Set(artifactDestinations).size !== artifactDestinations.length) {
         throw new TypeError("protocol artifact destinations must be unique");
@@ -52,8 +61,8 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         throw new TypeError("protocol artifact destinations do not match the repository contract");
     }
     if (
-        config.kernel.store.schemaVersion !== expected.store.schemaVersion ||
-        !sameMigrations(config.kernel.store.migrations, expected.store.migrations)
+        config.kernel.store.schemaVersion !== KERNEL_ABI_V0_STORE_V7_CONTRACT.schemaVersion ||
+        !sameMigrations(config.kernel.store.migrations, KERNEL_ABI_V0_STORE_V7_CONTRACT.migrations)
     ) {
         throw new TypeError("store migration constants do not match the implemented schema");
     }
@@ -63,17 +72,29 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (!sameJson(config.projections.executionHistory, EXECUTION_HISTORY_PROJECTION_V1_CONTRACT)) {
         throw new TypeError("execution-history projection constants require a new projection");
     }
+    if (!sameJson(config.providers, PROVIDER_PROTOCOL_V1_CONTRACT)) {
+        throw new TypeError("provider constants require a new provider protocol");
+    }
     if (!sameJson(config.tasks, TASK_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("task descriptor constants require a new task protocol");
     }
     if (!sameJson(config.effects, EFFECT_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("effect record constants require a new effect protocol");
     }
+    if (!sameJson(config.formalAssurance, FORMAL_ASSURANCE_V1_CONTRACT)) {
+        throw new TypeError("formal assurance constants require a new formal assurance protocol");
+    }
+    if (!sameJson(config.runs, RUN_PROTOCOL_V1_CONTRACT)) {
+        throw new TypeError("run outcome constants require a new run protocol");
+    }
+    if (!sameJson(config.workspaces, WORKSPACE_PROTOCOL_V16_CONTRACT)) {
+        throw new TypeError("workspace constants require a new workspace protocol");
+    }
 }
 
 function sameMigrations(
     actual: ProtocolConfig["kernel"]["store"]["migrations"],
-    expected: typeof KERNEL_ABI_V0_CONTRACT.store.migrations,
+    expected: typeof KERNEL_ABI_V0_STORE_V7_CONTRACT.migrations,
 ): boolean {
     return (
         actual.length === expected.length &&

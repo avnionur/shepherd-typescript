@@ -1,0 +1,51 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/run-lifecycle-running-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Run Lifecycle running v1",
+    "description": "Command-authorized running continuation with a newly fenced worker claim.",
+    "type": "object",
+    "required": [
+        "lifecycle_version",
+        "execution_id",
+        "status",
+        "continuation_descriptor_id",
+        "resume_command_id",
+        "claim_id",
+        "fencing_token",
+        "lease_expires_at"
+    ],
+    "properties": {
+        "lifecycle_version": {
+            "const": 1
+        },
+        "execution_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "status": {
+            "const": "running"
+        },
+        "continuation_descriptor_id": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "resume_command_id": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "claim_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "fencing_token": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "lease_expires_at": {
+            "type": "integer",
+            "minimum": 0
+        }
+    },
+    "additionalProperties": false
+}

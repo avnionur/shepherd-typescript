@@ -1,11 +1,15 @@
 import { readFileSync } from "node:fs";
 import type {
     EffectProtocolConfig,
+    FormalAssuranceProtocolConfig,
     KernelProtocolConfig,
     ProjectionProtocolConfig,
     ProtocolConfig,
+    ProviderProtocolConfig,
     RecordIdConfig,
+    RunProtocolConfig,
     TaskProtocolConfig,
+    WorkspaceProtocolConfig,
 } from "./config-types.ts";
 import { parseProtocolConfig } from "./config-validation.ts";
 import { RECORD_MODES } from "./values.generated.ts";
@@ -21,14 +25,27 @@ const protocolConfig: ProtocolConfig = parseProtocolConfig(
 /** Runtime effect intent, outcome, identity, and schema configuration. */
 export const effectProtocolConfig: EffectProtocolConfig = protocolConfig.effects;
 
+/** Executable reference-machine and proof-envelope configuration. */
+export const formalAssuranceProtocolConfig: FormalAssuranceProtocolConfig =
+    protocolConfig.formalAssurance;
+
 /** Runtime kernel ABI and canonicalization configuration. */
 export const kernelProtocolConfig: KernelProtocolConfig = protocolConfig.kernel;
 
 /** Runtime contracts for disposable projections over trace slices. */
 export const projectionProtocolConfig: ProjectionProtocolConfig = protocolConfig.projections;
 
+/** Runtime provider-neutral and deterministic-provider configuration. */
+export const providerProtocolConfig: ProviderProtocolConfig = protocolConfig.providers;
+
 /** Runtime record-identifier configuration loaded from the protocol configuration file. */
 export const recordIdConfig: RecordIdConfig = protocolConfig.recordId;
 
+/** Runtime terminal run-outcome and schema configuration. */
+export const runProtocolConfig: RunProtocolConfig = protocolConfig.runs;
+
 /** Runtime task descriptor, schema, and artifact-lock protocol configuration. */
 export const taskProtocolConfig: TaskProtocolConfig = protocolConfig.tasks;
+
+/** Runtime workspace initialization and adoption configuration. */
+export const workspaceProtocolConfig: WorkspaceProtocolConfig = protocolConfig.workspaces;

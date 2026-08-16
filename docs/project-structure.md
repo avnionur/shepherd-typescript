@@ -10,12 +10,17 @@ implementation documentation, and forward-looking plans.
 │   ├── append/             Append drafts, validation, and pure planning
 │   ├── blob/               Binary identity and crash-safe filesystem objects
 │   ├── canonical/          Deterministic semantic encoding, hashing, and snapshots
+│   ├── effect/             Intent/outcome records and ordered exact-kind handlers
+│   ├── formal/             Typed-effect reference validation and proof-envelope classification
 │   ├── interchange/        Native archive encoding, validation, and import storage
 │   ├── projection/         Disposable execution, relation, and history folds
+│   ├── provider/           Provider-neutral contracts and deterministic offline invocation
 │   ├── protocol/           Runtime configuration and generated literals
 │   ├── record/             Record types, envelopes, guards, and snapshots
+│   ├── run/                Outcomes, artifacts, usage, budgets, and cancellation
 │   ├── store/              SQLite migrations, transactions, codecs, and reads
-│   └── task/               Descriptors, runtime schemas, locks, and durable registration
+│   ├── task/               Descriptors, runtime schemas, locks, and durable registration
+│   └── workspace/          Initialization, bindings, and reference retained-world custody
 ├── test/                   Public-seam unit tests and fixture assets
 ├── spec/                   Language-neutral JSON Schema contracts
 ├── scripts/                Build and release utilities
@@ -37,7 +42,12 @@ public exports → store area → append and record areas
 public exports → store area → blob filesystem and identity
 public exports → interchange area → store, record, blob, and protocol areas
 public exports → projection area → immutable store slice types
+public exports → provider area → canonical snapshots and protocol configuration
 public exports → task area → canonical identity and protocol configuration
+public exports → effect area → canonical snapshots and protocol configuration
+public exports → formal area → canonical encoding and protocol configuration
+public exports → run area → task, provider, store, canonical snapshots, and protocol configuration
+public exports → workspace area → filesystem, Git, hashing, and protocol configuration
 build/release scripts → repository configuration
 tests → public exports
 ```
@@ -45,7 +55,9 @@ tests → public exports
 Runtime modules must not import build scripts or planning documents. Public behavior tests use
 `src/index.ts` so they exercise the same seam as consumers. Narrow migration-registry invariant
 tests may import the internal migration validator directly because malformed compiled registries
-cannot be constructed through a public runtime seam.
+cannot be constructed through a public runtime seam. Narrow versioned protocol and persisted-codec
+tests may likewise import internal encoders/decoders for malformed control and terminal values that
+public builders reject; observable recovery behavior remains tested through `src/index.ts`.
 
 The runtime areas are intentionally shallow:
 
@@ -55,16 +67,37 @@ The runtime areas are intentionally shallow:
 - `canonical/` owns language-neutral semantic encoding, unversioned record hashing, and immutable
   semantic snapshots;
 - `interchange/` owns native archive encoding, decoding, staging, and validated storage transfer;
+- `effect/` owns versioned intent/outcome construction, exact correlation, validation, and
+  immutable ordered handler dispatch;
+- `formal/` owns the executable typed-effect trace lifecycle machine and conservative
+  proof-envelope classification;
 - `protocol/` owns typed configuration models, fail-closed validation, immutable runtime
   snapshots, and generated literal values;
 - `projection/` owns pure disposable execution, relation, and effective-history folds;
+- `provider/` owns provider-neutral descriptors, structured invocation values, exact deterministic
+  cassettes, typed failures, and closed validation;
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
+- `run/` owns transient and durable task orchestration, versioned terminal outcomes, ordered
+  artifact and aggregate usage construction, cooperative budget/cancellation control, closed
+  validation, exact task-lock citations, the configured normative lifecycle transition matrix,
+  durable lifecycle evidence, terminal cuts, restart
+  recovery classification and reconstruction, durable blob-receipt references, and disposable
+  cut-bounded durable execution inspection views plus idempotent command-bound recovery, pause,
+  resume, suspension, and safe-boundary cancellation;
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
   recovery and orphan-collection diagnostics.
 - `task/` owns bodyless descriptor construction, inferred runtime schemas, validation snapshots,
   canonical task artifacts, exact artifact locks, and the independently migrated SQLite task
   registry.
+- `workspace/` owns protected initialization, baseline-adoption identity, Git-history preservation,
+  fail-closed control-manifest validation, canonical disjoint binding authority, and reference
+  copy-carrier including parent-linked custody capture, Git-aware retained-output custody, and pure
+  content-addressed world changesets, authenticated bounded changeset inspection and Git-aware
+  projections, opaque retained-world runner registrations, and fenced task-world capture with
+  durable journal inspection and command-authorized recovery, plus authenticated exact-output
+  settlement preparation, restart-safe settlement inspection, and closed selection-publication
+  plan, ordered path-step, and terminal carrier-receipt codecs.
 
 ## Module rules
 

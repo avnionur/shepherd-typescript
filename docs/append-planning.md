@@ -57,7 +57,8 @@ The planner returns:
 - the next unallocated ordinal for every supplied or changed owner;
 - ordered parent-to-child causal edges.
 
-Owner IDs and ordinals live in `RecordView`, outside the semantic envelope. The same semantic
+Owner IDs and ordinals live in `RecordView`, outside the semantic envelope. Persisted views also
+expose their append-intent identity, while pure pre-persistence plans omit it. The same semantic
 record can therefore be placed on multiple owner paths without changing `record_id`.
 
 The record-view wire schema is
