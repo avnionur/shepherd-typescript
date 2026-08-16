@@ -11,6 +11,8 @@ Public discard recovery is covered by
 [`test/workspace/retained-world-discard.test.ts`](../test/workspace/retained-world-discard.test.ts).
 Workspace protocol v14-v16 plan, dependency-schedule, and scheduled receipt evidence is covered by
 [`test/workspace/selection-publication-codec.test.ts`](../test/workspace/selection-publication-codec.test.ts).
+Reference-carrier materialization and recovery is covered by
+[`test/workspace/reference-copy-selection-publication.test.ts`](../test/workspace/reference-copy-selection-publication.test.ts).
 
 ## Implemented foundation
 
@@ -58,6 +60,15 @@ v14 steps and receipts and the v15 schedule remain unchanged. This evidence laye
 filesystem mutation; scheduled user-path effects and durable-prefix recovery remain Task
 9.4B2B2B.
 
+Task 9.4B2B2B implements that reference-carrier effect seam. Before the first write it requires the
+package-owned observer to reproduce the admitted semantic basis. It then validates or replays the
+exact retained prefix, applies only the next dependency-scheduled change from immutable staging,
+flushes and verifies the exact after node, and atomically links its canonical step receipt. Exact
+after state can repair a missing receipt without rewriting; any third state stops recovery. The
+complete prefix retains its basis-after witness inside deterministic staging before a separate
+terminal carrier receipt is published. Equal concurrent calls converge, and restart revalidates
+both authorities. This internal seam does not by itself admit or terminalize settlement.
+
 Task 9.2B2 implements those trace-store writers. One `BEGIN IMMEDIATE` transaction derives and
 retains the exact operation while moving `prepared` to `applying`; another retains the exact
 action-specific terminal receipt while moving `applying` to `selected` or `discarded`. Equal
@@ -101,6 +112,6 @@ filesystem operation.
 The store primitive deliberately remains internal and trusts only the authenticated coordinator.
 Preparation reads retained evidence and mutates only the durable settlement-admission row; it does
 not mutate user files or physical custody. Public `discard` now composes this authority with the
-effect journal; public `select` remains unavailable until Task 9.4B2B2B journaled publication
-and Task 9.4B3 coordinator/recovery are complete. Carrier-level `discard(custodyId)` remains a
+effect journal; public `select` remains unavailable until Task 9.4B3 composes admission, both basis
+checks, the carrier receipt, and store-terminal recovery. Carrier-level `discard(custodyId)` remains a
 physical primitive and cannot create or bypass a settlement decision by itself.

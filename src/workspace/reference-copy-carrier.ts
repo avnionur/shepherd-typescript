@@ -8,16 +8,20 @@ import {
     fchmodSync,
     fstatSync,
     fsyncSync,
+    linkSync,
     lstatSync,
     mkdirSync,
     opendirSync,
     openSync,
+    readdirSync,
     readFileSync,
     readlinkSync,
     realpathSync,
     renameSync,
+    rmdirSync,
     rmSync,
     symlinkSync,
+    unlinkSync,
     writeFileSync,
 } from "node:fs";
 import path from "node:path";
@@ -34,8 +38,14 @@ import { createWorkspaceBindings, createWorkspaceBindingsForRetainedCustody } fr
 import { WorldCarrierError } from "./errors.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import {
+    decodeScheduledSelectionPublicationReceipt,
+    decodeScheduledSelectionPublicationStep,
     decodeSelectionPublicationPlan,
     decodeSelectionPublicationSchedule,
+    encodeScheduledSelectionPublicationReceipt,
+    encodeScheduledSelectionPublicationStep,
+    type ScheduledSelectionPublicationReceiptEncoding,
+    type ScheduledSelectionPublicationStepEncoding,
     type SelectionPublicationPlanEncoding,
     type SelectionPublicationScheduleEncoding,
 } from "./selection-publication-codec.ts";
@@ -43,9 +53,11 @@ import type {
     ReferenceCopyCarrier,
     ReferenceCopyCarrierOptions,
     WorkspaceBinding,
+    WorldChangeNode,
     WorldChangeset,
     WorldCustody,
     WorldManifestEntry,
+    WorldPathChange,
     WorldRevision,
     WorldVerification,
 } from "./types.ts";
@@ -55,6 +67,7 @@ type CarrierPaths = {
     readonly custodies: string;
     readonly discarded: string;
     readonly revisions: string;
+    readonly selectionPublications: string;
     readonly selectionStaging: string;
     readonly staging: string;
     readonly workspaceRoot: string;
@@ -204,6 +217,36 @@ export function stageReferenceCopySelection(
     const paths = REFERENCE_CARRIER_PATHS.get(carrier);
     assert.ok(paths, "reference carrier paths are unavailable");
     return invokeCarrier(() => stageSelection(paths, definition));
+}
+
+/**
+ * Applies and recovers one exact staged selection under a package-owned basis observer.
+ *
+ * @param carrier - Authenticated reference carrier that owns staging and receipt custody.
+ * @param definition - Exact publication evidence and semantic-basis observer.
+ * @returns Canonical terminal carrier receipt after every scheduled path is durably applied.
+ * @throws {WorldCarrierError} If basis, path, staging, prefix, or publication evidence disagrees.
+ * @throws {TypeError} If the carrier authority is forged.
+ * @internal
+ */
+export async function publishReferenceCopySelection(
+    carrier: ReferenceCopyCarrier,
+    definition: Readonly<{
+        changeset: WorldChangeset;
+        observeUserBasis: () => Promise<string>;
+        operation: RetainedWorldSettlementOperationEncoding;
+        plan: SelectionPublicationPlanEncoding;
+        schedule: SelectionPublicationScheduleEncoding;
+    }>,
+): Promise<ScheduledSelectionPublicationReceiptEncoding> {
+    assertReferenceCopyCarrier(carrier);
+    const paths = REFERENCE_CARRIER_PATHS.get(carrier);
+    assert.ok(paths, "reference carrier paths are unavailable");
+    try {
+        return await publishSelection(paths, definition);
+    } catch (error) {
+        throwCarrierError(error);
+    }
 }
 
 /** @internal Reads and authenticates one retained regular-file blob from an owned revision. */
@@ -434,6 +477,10 @@ function createCarrierPaths(
         custodies: path.join(carrier, config.custodiesDirectory),
         discarded: path.join(carrier, config.discardedDirectory),
         revisions: path.join(carrier, config.revisionsDirectory),
+        selectionPublications: path.join(
+            carrier,
+            workspaceProtocolConfig.selectionPublication.publicationsDirectory,
+        ),
         selectionStaging: path.join(
             carrier,
             workspaceProtocolConfig.selectionPublication.stagingDirectory,
@@ -522,6 +569,9 @@ function stageSelection(
     const finalRoot = selectionStagingRoot(paths, validatedPlan.staging_id);
     try {
         mkdirSync(stagedWorld);
+        mkdirSync(
+            path.join(stagingRoot, workspaceProtocolConfig.selectionPublication.stepsDirectory),
+        );
         assertManifestEqual(head.manifest, captureTree(head.path, stagedWorld, null));
         writeClosedDescriptor(
             path.join(stagingRoot, workspaceProtocolConfig.selectionPublication.planFile),
@@ -536,6 +586,7 @@ function stageSelection(
             verifySelectionStaging(paths, validatedPlan, validatedSchedule, head),
         );
         verifySelectionStaging(paths, validatedPlan, validatedSchedule, head);
+        ensureSelectionStepsDirectory(finalRoot);
         return Object.freeze({
             plan_id: validatedPlan.id,
             schedule_id: validatedSchedule.id,
@@ -546,6 +597,17 @@ function stageSelection(
         cleanupStaging(paths, stagingRoot);
         throw error;
     }
+}
+
+function ensureSelectionStepsDirectory(stagingRoot: string): void {
+    const stepsRoot = path.join(
+        stagingRoot,
+        workspaceProtocolConfig.selectionPublication.stepsDirectory,
+    );
+    mkdirSync(stepsRoot, { recursive: true });
+    syncDirectory(stepsRoot);
+    syncDirectory(stagingRoot);
+    assertSelectionDirectory(stepsRoot);
 }
 
 function verifySelectionStaging(
@@ -570,6 +632,331 @@ function verifySelectionStaging(
     assert.equal(retainedSchedule, schedule.json);
     assertManifestEqual(head.manifest, captureTree(safeWorldPath(root), null, null));
     assertReceiptRootStable(root, retained);
+}
+
+async function publishSelection(
+    paths: CarrierPaths,
+    definition: Readonly<{
+        changeset: WorldChangeset;
+        observeUserBasis: () => Promise<string>;
+        operation: RetainedWorldSettlementOperationEncoding;
+        plan: SelectionPublicationPlanEncoding;
+        schedule: SelectionPublicationScheduleEncoding;
+    }>,
+): Promise<ScheduledSelectionPublicationReceiptEncoding> {
+    const staging = stageSelection(paths, definition);
+    const base = readOwnedRevisionDescriptor(paths, definition.plan.value.base_revision_id);
+    const head = loadRevision(paths, definition.plan.value.head_revision_id);
+    const binding = paths.createBindings({
+        bindings: [{ name: base.binding_name, root: base.binding_root }],
+        workspaceRoot: paths.workspaceRoot,
+    }).bindings[0];
+    assert.ok(binding, "selection binding is unavailable");
+    assert.equal(binding.binding_id, definition.plan.value.binding_id);
+    const stepsRoot = path.join(
+        selectionStagingRoot(paths, staging.staging_id),
+        workspaceProtocolConfig.selectionPublication.stepsDirectory,
+    );
+    assertSelectionDirectory(stepsRoot);
+    let previous: ScheduledSelectionPublicationStepEncoding | null = null;
+    const retainedNames = new Set(readdirSync(stepsRoot));
+    if (retainedNames.size === 0) {
+        const observed = await definition.observeUserBasis();
+        if (observed !== definition.plan.value.user_basis_before) throw selectionError("basis");
+    }
+    for (const _ordinal of definition.schedule.value.change_ordinals) {
+        const expected = encodeScheduledSelectionPublicationStep(
+            definition.plan,
+            definition.schedule,
+            previous,
+        );
+        const name = identityToken(
+            expected.id,
+            workspaceProtocolConfig.selectionPublication.scheduledStepIdPrefix,
+        );
+        const receiptPath = path.join(stepsRoot, name);
+        if (retainedNames.delete(name)) {
+            const retained = canonicalizeRecord(readJson(receiptPath) as SemanticRecord);
+            previous = decodeScheduledSelectionPublicationStep(
+                retained,
+                definition.plan,
+                definition.schedule,
+                previous,
+            );
+            assert.equal(previous.id, expected.id);
+            assertPathNode(
+                binding.canonical_root,
+                expected.value.change.path,
+                expected.value.change.after,
+            );
+            continue;
+        }
+        assert.equal(retainedNames.size, 0, "selection step prefix is skipped or conflicting");
+        const change = expected.value.change;
+        const current = readPathNode(binding.canonical_root, change.path);
+        if (!sameNode(current, change.after)) {
+            if (!sameNode(current, change.before)) throw selectionError("recovery");
+            applyPathChange(binding.canonical_root, staging.staging_path, change);
+        }
+        assertPathNode(binding.canonical_root, change.path, change.after);
+        publishSelectionStep(paths, stepsRoot, expected);
+        previous = expected;
+    }
+    assert.equal(retainedNames.size, 0, "selection step prefix contains unknown evidence");
+    for (const change of definition.plan.value.changes) {
+        assertPathNode(binding.canonical_root, change.path, change.after);
+    }
+    const journalReceiptPath = path.join(
+        selectionStagingRoot(paths, staging.staging_id),
+        workspaceProtocolConfig.selectionPublication.publicationFile,
+    );
+    if (existsSync(journalReceiptPath)) {
+        const retainedValue = readJson(journalReceiptPath) as Record<string, unknown>;
+        if (typeof retainedValue.user_basis_after !== "string") throw selectionError("recovery");
+        const retained = decodeScheduledSelectionPublicationReceipt(
+            canonicalizeRecord(retainedValue as SemanticRecord),
+            definition.plan,
+            definition.schedule,
+            previous,
+            retainedValue.user_basis_after,
+        );
+        if ((await definition.observeUserBasis()) !== retained.value.user_basis_after) {
+            throw selectionError("recovery");
+        }
+        publishSelectionReceipt(paths, retained);
+        verifySelectionReceipt(paths, retained);
+        return retained;
+    }
+    const userBasisAfter = await definition.observeUserBasis();
+    if (typeof userBasisAfter !== "string" || userBasisAfter.length === 0) {
+        throw selectionError("recovery");
+    }
+    const receipt = encodeScheduledSelectionPublicationReceipt(
+        definition.plan,
+        definition.schedule,
+        previous,
+        userBasisAfter,
+    );
+    publishCanonicalFile(paths, journalReceiptPath, receipt.json, receipt.value);
+    publishSelectionReceipt(paths, receipt);
+    verifySelectionReceipt(paths, receipt);
+    assertManifestEqual(head.manifest, captureTree(staging.staging_path, null, null));
+    return receipt;
+}
+
+function publishCanonicalFile(
+    paths: CarrierPaths,
+    finalPath: string,
+    canonical: string,
+    value: object,
+): void {
+    const temporary = path.join(paths.staging, randomUUID());
+    try {
+        writeClosedDescriptor(temporary, value);
+        linkSync(temporary, finalPath);
+        syncDirectory(path.dirname(finalPath));
+    } catch (error) {
+        if (!existsSync(finalPath)) throw error;
+        assert.equal(canonicalizeRecord(readJson(finalPath) as SemanticRecord), canonical);
+    } finally {
+        rmSync(temporary, { force: true });
+    }
+}
+
+function publishSelectionStep(
+    paths: CarrierPaths,
+    stepsRoot: string,
+    step: ScheduledSelectionPublicationStepEncoding,
+): void {
+    const finalPath = path.join(
+        stepsRoot,
+        identityToken(step.id, workspaceProtocolConfig.selectionPublication.scheduledStepIdPrefix),
+    );
+    publishCanonicalFile(paths, finalPath, step.json, step.value);
+}
+
+function publishSelectionReceipt(
+    paths: CarrierPaths,
+    receipt: ScheduledSelectionPublicationReceiptEncoding,
+): void {
+    const stagingRoot = createStaging(paths);
+    try {
+        const finalRoot = selectionPublicationRoot(paths, receipt.id);
+        writeClosedDescriptor(
+            path.join(stagingRoot, workspaceProtocolConfig.selectionPublication.publicationFile),
+            receipt.value,
+        );
+        syncDirectory(stagingRoot);
+        publishDirectory(paths, stagingRoot, finalRoot, () =>
+            verifySelectionReceipt(paths, receipt),
+        );
+    } catch (error) {
+        cleanupStaging(paths, stagingRoot);
+        throw error;
+    }
+}
+
+function verifySelectionReceipt(
+    paths: CarrierPaths,
+    receipt: ScheduledSelectionPublicationReceiptEncoding,
+): void {
+    const root = selectionPublicationRoot(paths, receipt.id);
+    const retained = assertReceiptRoot(paths.selectionPublications, root);
+    assert.equal(
+        canonicalizeRecord(
+            readJson(
+                path.join(root, workspaceProtocolConfig.selectionPublication.publicationFile),
+            ) as SemanticRecord,
+        ),
+        receipt.json,
+    );
+    assertReceiptRootStable(root, retained);
+}
+
+function applyPathChange(root: string, stagedRoot: string, change: WorldPathChange): void {
+    const target = safeManagedPath(root, change.path);
+    const before = change.before;
+    const after = change.after;
+    const source = after === null ? null : safeManagedPath(stagedRoot, change.path);
+    if (before !== null && after !== null && before.kind === after.kind) {
+        if (after.kind === DIRECTORY_KIND) {
+            setDirectoryModeDurably(target, after.mode);
+        } else {
+            assert.ok(source);
+            replaceLeaf(source, target, after);
+        }
+    } else {
+        if (before !== null) removeManagedNode(target, before);
+        if (after !== null) {
+            assert.ok(source);
+            createManagedNode(source, target, after);
+        }
+    }
+    syncDirectory(path.dirname(target));
+}
+
+function replaceLeaf(
+    source: string,
+    target: string,
+    node: Exclude<WorldChangeNode, { kind: typeof DIRECTORY_KIND }>,
+): void {
+    const temporary = path.join(path.dirname(target), `.${randomUUID()}`);
+    try {
+        createManagedNode(source, temporary, node);
+        renameSync(temporary, target);
+        syncDirectory(path.dirname(target));
+    } finally {
+        rmSync(temporary, { force: true });
+    }
+}
+
+function createManagedNode(source: string, target: string, node: WorldChangeNode): void {
+    if (node.kind === DIRECTORY_KIND) {
+        mkdirSync(target, { mode: node.mode });
+        setDirectoryModeDurably(target, node.mode);
+        return;
+    }
+    if (node.kind === FILE_KIND) {
+        const sourceStatus = lstatSync(source, { bigint: true });
+        assert.equal(sourceStatus.isFile() && !sourceStatus.isSymbolicLink(), true);
+        const bytes = readRegularFile(source, sourceStatus);
+        assert.equal(
+            digestId(workspaceProtocolConfig.carrier.blobIdPrefix, bytes),
+            node.content_id,
+        );
+        const descriptor = openSync(target, "wx", node.mode);
+        try {
+            writeFileSync(descriptor, bytes);
+            fchmodSync(descriptor, node.mode);
+            fsyncSync(descriptor);
+        } finally {
+            closeSync(descriptor);
+        }
+        return;
+    }
+    assert.equal(readlinkSync(source), node.target);
+    symlinkSync(node.target, target);
+}
+
+function removeManagedNode(target: string, node: WorldChangeNode): void {
+    if (node.kind === DIRECTORY_KIND) rmdirSync(target);
+    else unlinkSync(target);
+}
+
+function assertPathNode(
+    root: string,
+    relativePath: string,
+    expected: WorldChangeNode | null,
+): void {
+    if (!sameNode(readPathNode(root, relativePath), expected)) throw selectionError("recovery");
+}
+
+function readPathNode(root: string, relativePath: string): WorldChangeNode | null {
+    const target = managedPath(root, relativePath);
+    let status: BigIntStats;
+    try {
+        status = lstatSync(target, { bigint: true });
+    } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+        throw error;
+    }
+    if (status.isDirectory() && !status.isSymbolicLink()) {
+        return { kind: DIRECTORY_KIND, mode: Number(status.mode & 0o777n) };
+    }
+    if (status.isFile() && !status.isSymbolicLink()) {
+        const bytes = readRegularFile(target, status);
+        return {
+            byte_length: bytes.length,
+            content_id: digestId(workspaceProtocolConfig.carrier.blobIdPrefix, bytes),
+            kind: FILE_KIND,
+            mode: Number(status.mode & 0o777n),
+        };
+    }
+    if (status.isSymbolicLink()) {
+        return { kind: SYMLINK_KIND, mode: null, target: readlinkSync(target) };
+    }
+    throw selectionError("unsupported");
+}
+
+function readRegularFile(filePath: string, retained: BigIntStats): Buffer {
+    const descriptor = openSync(filePath, constants.O_RDONLY | constants.O_NOFOLLOW);
+    try {
+        assert.equal(stableStatus(retained, fstatSync(descriptor, { bigint: true })), true);
+        const bytes = readFileSync(descriptor);
+        assert.equal(stableStatus(retained, fstatSync(descriptor, { bigint: true })), true);
+        assert.equal(stableStatus(retained, lstatSync(filePath, { bigint: true })), true);
+        return bytes;
+    } finally {
+        closeSync(descriptor);
+    }
+}
+
+function sameNode(left: WorldChangeNode | null, right: WorldChangeNode | null): boolean {
+    return (
+        canonicalizeRecord({ node: left } as unknown as SemanticRecord) ===
+        canonicalizeRecord({ node: right } as unknown as SemanticRecord)
+    );
+}
+
+function safeManagedPath(root: string, relativePath: string): string {
+    const candidate = managedPath(root, relativePath);
+    const parent = path.dirname(candidate);
+    const parentStatus = lstatSync(parent);
+    assert.equal(parentStatus.isDirectory() && !parentStatus.isSymbolicLink(), true);
+    assert.equal(realpathSync(parent), parent);
+    return candidate;
+}
+
+function managedPath(root: string, relativePath: string): string {
+    const candidate = path.join(root, ...relativePath.split("/"));
+    assert.equal(containsPath(root, candidate) && candidate !== root, true);
+    return candidate;
+}
+
+function assertSelectionDirectory(directory: string): void {
+    const status = lstatSync(directory);
+    assert.equal(status.isDirectory() && !status.isSymbolicLink(), true);
+    assert.equal(realpathSync(directory), directory);
 }
 
 function snapshotBinding(
@@ -1377,6 +1764,15 @@ function selectionStagingRoot(paths: CarrierPaths, stagingId: string): string {
     );
 }
 
+function selectionPublicationRoot(paths: CarrierPaths, publicationId: string): string {
+    assertOwnedDirectory(paths, paths.selectionPublications);
+    return identityRoot(
+        paths.selectionPublications,
+        publicationId,
+        workspaceProtocolConfig.selectionPublication.scheduledPublicationIdPrefix,
+    );
+}
+
 function custodyRoot(paths: CarrierPaths, custodyId: string): string {
     assertOwnedDirectory(paths, paths.custodies);
     return identityRoot(
@@ -1491,6 +1887,17 @@ function carrierError(
     const [code, message] = contracts[kind];
     const messages = [message, `${message}: ${String(detail)}`] as const;
     return new WorldCarrierError(code, messages[Number(detail !== undefined)] as string);
+}
+
+function selectionError(kind: "basis" | "recovery" | "unsupported"): WorldCarrierError {
+    const errors = workspaceProtocolConfig.selectionPublication.errors;
+    const contracts = {
+        basis: [errors.basisMovedCode, errors.basisMovedMessage],
+        recovery: [errors.recoveryRequiredCode, errors.recoveryRequiredMessage],
+        unsupported: [errors.unsupportedCode, errors.unsupportedMessage],
+    } as const;
+    const [code, message] = contracts[kind];
+    return new WorldCarrierError(code, message);
 }
 
 function invokeCarrier<T>(operation: () => T): T {

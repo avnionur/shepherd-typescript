@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-15
 
-Current version: `1.31.0`
+Current version: `1.32.0`
 
 Current level: L0 — canonical model
 
@@ -258,6 +258,8 @@ changeset identity.
   verified immutable head custody, with exact reopen and corruption refusal.
 - [x] Add Task 9.4B2B2A workspace-protocol-v16 dependency-scheduled step and terminal receipt
   evidence without filesystem mutation or reinterpretation of v14/v15 records.
+- [x] Complete Task 9.4B2B2B authenticated scheduled reference-carrier effects, durable-prefix
+  recovery, third-state refusal, and exact terminal carrier publication.
 
 ## Verification required for this slice
 
@@ -269,9 +271,8 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 9.4B2B2B: execute scheduled managed-path effects, retain and recover the
-durable prefix, and publish exact carrier evidence. Task 9.4B3 then composes
-two user-basis checks, public exact-ID select, and restart repair. Task 9.5 owns settlement trace
+Continue Phase 3, Task 9.4B3: compose both user-basis checks, public exact-ID select, the carrier
+receipt, and store-terminal restart repair. Task 9.5 owns settlement trace
 citations and the remaining concurrency/fault matrix.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the

@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.32.0] - 2026-08-16
+
+### New Feature
+
+- Added authenticated reference-carrier execution of v16 dependency-scheduled filesystem effects
+  from immutable staging, with descriptor-safe before/after validation and durability flushes.
+- Added append-only step-prefix recovery, exact-after replay without rewriting, third-state refusal,
+  concurrent equal publication convergence, safe advancement of earlier authenticated staging, and
+  separately retained terminal carrier receipts.
+
+### Impact
+
+The carrier can now durably materialize and recover one exact selected world without overwriting
+unrecognized user state. Public consume-once `select` remains unavailable until Task 9.4B3 composes
+the coordinator, both semantic-basis checks, and store-terminal recovery.
+
 ## [1.31.0] - 2026-08-15
 
 ### New Feature

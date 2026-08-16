@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -101,6 +101,20 @@ test("reference carrier stages exact selection evidence from immutable head cust
 
     const reopened = createInternalCarrier({ workspaceRoot });
     assert.deepEqual(stageReferenceCopySelection(reopened, definition), staging);
+    const stepsRoot = path.join(
+        path.dirname(staging.staging_path),
+        workspaceProtocolConfig.selectionPublication.stepsDirectory,
+    );
+    await rm(stepsRoot, { recursive: true });
+    const stagingRoot = path.dirname(staging.staging_path);
+    await chmod(stagingRoot, 0o500);
+    try {
+        assert.throws(() => stageReferenceCopySelection(reopened, definition), WorldCarrierError);
+    } finally {
+        await chmod(stagingRoot, 0o700);
+    }
+    assert.deepEqual(stageReferenceCopySelection(reopened, definition), staging);
+    assert.deepEqual(await readdir(stepsRoot), []);
     const genericStaging = path.join(
         workspaceRoot,
         workspaceProtocolConfig.controlDirectory,
