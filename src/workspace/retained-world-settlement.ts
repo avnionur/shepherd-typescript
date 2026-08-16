@@ -13,13 +13,17 @@ import {
 } from "../store/errors.ts";
 import { encodeRetainedWorldSettlementOperation } from "../store/retained-world-settlement-codec.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
-import type { RetainedWorldSettlementRequest } from "../store/types.ts";
+import type {
+    RetainedWorldSettlementJournal,
+    RetainedWorldSettlementRequest,
+} from "../store/types.ts";
 import { assertWorkspaceBinding } from "./bindings.ts";
 import { createVerifiedWorldChangeset } from "./changesets.ts";
 import {
     assertReferenceCopyCarrier,
     publishReferenceCopySelection,
 } from "./reference-copy-carrier.ts";
+import { publishRetainedWorldSettlementCitation } from "./retained-world-settlement-citation.ts";
 import type {
     DiscardedRetainedWorldSettlement,
     DiscardRetainedWorldSettlementOptions,
@@ -361,6 +365,7 @@ export async function selectRetainedWorldSettlement(
         if (journal.state !== SELECTED_STATE || journal.operation === null) {
             throw new TypeError("retained-world select terminal evidence is incomplete");
         }
+        publishTerminalSettlementCitation(store, journal);
         return Object.freeze({
             action: SELECT_ACTION,
             operation_id: journal.operation.id,
@@ -469,6 +474,7 @@ export async function discardRetainedWorldSettlement(
         ) {
             throw new TypeError("retained-world discard cleanup is incomplete");
         }
+        publishTerminalSettlementCitation(store, journal);
         return Object.freeze({
             action: DISCARD_ACTION,
             cleanup_completed: true,
@@ -490,6 +496,26 @@ export async function discardRetainedWorldSettlement(
             { cause: error },
         );
     }
+}
+
+function publishTerminalSettlementCitation(
+    store: SQLiteTraceStore,
+    journal: RetainedWorldSettlementJournal,
+): void {
+    const recovery = readDurableTaskExecution(store, journal.admission.request.run_id);
+    // A settlement journal can exist only for an authenticated committed retained output.
+    /* node:coverage ignore next 3 */
+    if (recovery.status !== COMMITTED_RECOVERY_STATUS) {
+        throw new TypeError("retained-world citation execution is not committed");
+    }
+    const ledger = recovery.result.ledger;
+    publishRetainedWorldSettlementCitation(store, journal, {
+        capture_record_id: journal.admission.request.capture_record_id,
+        execution_cut_id: ledger.cut.cut_id,
+        outcome_record_id: ledger.outcome_record_id,
+        run_id: journal.admission.request.run_id,
+        terminal_record_id: ledger.lifecycle_record_id,
+    });
 }
 
 async function verifyDiscardRevisions(

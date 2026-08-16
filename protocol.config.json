@@ -566,6 +566,11 @@
         },
         "settlement": {
             "actions": ["select", "discard"],
+            "citationAppendIntentPrefix": "world-settlement-citation-append:",
+            "citationCutIdPrefix": "world-settlement-citation-cut:",
+            "citationSchemaId": "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-settlement-citation-v1.schema.json",
+            "citationSchemaPath": "spec/schemas/retained-world-settlement-citation-v1.schema.json",
+            "citationVersion": 1,
             "errors": {
                 "conflictCode": "RETAINED_WORLD_SETTLEMENT_CONFLICT",
                 "conflictMessage": "retained world settlement conflicts with an existing decision",

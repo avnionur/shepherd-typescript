@@ -86,6 +86,7 @@ export {
     RETAINED_WORLD_SELECTION_SCHEDULED_STEP_VERSION,
     RETAINED_WORLD_SELECTION_STEP_STATUSES,
     RETAINED_WORLD_SELECTION_STEP_VERSION,
+    RETAINED_WORLD_SETTLEMENT_CITATION_VERSION,
     RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION,
     RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION,
     RETAINED_WORLD_SETTLEMENT_VERSION,
@@ -207,6 +208,10 @@ export type {
     DurableTaskExecutionLifecycleInspection,
     DurableTaskExecutionOutcomeInspection,
     DurableTaskExecutionQuiescentInspection,
+    DurableTaskExecutionSettlementInspection,
+    DurableTaskExecutionSettlementOperationInspection,
+    DurableTaskExecutionSettlementReceiptInspection,
+    DurableTaskExecutionSettlementTraceInspection,
     DurableTaskExecutionUsageInspection,
 } from "./run/durable-execution-inspection-types.ts";
 export { readDurableTaskExecution } from "./run/durable-execution-recovery.ts";

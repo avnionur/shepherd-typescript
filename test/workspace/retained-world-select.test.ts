@@ -6,6 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+    type Cut,
+    type CutSpec,
     captureTaskWorldDurably,
     createReferenceCopyCarrier,
     createRetainedWorldRunner,
@@ -13,6 +15,7 @@ import {
     createWorkspaceBindings,
     executeTask,
     initializeWorkspace,
+    inspectDurableTaskExecution,
     prepareRetainedWorldSettlement,
     RETAINED_WORLD_SETTLEMENT_VERSION,
     RetainedWorldSettlementConflictError,
@@ -20,6 +23,7 @@ import {
     SQLiteTraceStore,
     schema,
     selectRetainedWorldSettlement,
+    TraceStoreError,
     task,
 } from "../../src/index.ts";
 
@@ -50,6 +54,17 @@ class BasisMovedAfterBeginStore extends SQLiteTraceStore {
     }
 }
 
+class InterruptedSettlementCitationStore extends SQLiteTraceStore {
+    interruptCitation = false;
+
+    override publishCut(spec: CutSpec): Cut {
+        if (this.interruptCitation) {
+            throw new Error("interrupted before settlement citation cut publication");
+        }
+        return super.publishCut(spec);
+    }
+}
+
 test("public select publishes one exact retained world and replays after reopen", async (context) => {
     const fixture = await createFixture(
         context,
@@ -75,6 +90,87 @@ test("public select publishes one exact retained world and replays after reopen"
     );
     assert.ok(terminal?.receipt);
     assert.equal(JSON.parse(terminal.receipt.json).publication_id, selected.publication_id);
+    const settlement = inspectDurableTaskExecution(fixture.store, fixture.captured.output.run_id)
+        .settlements[0];
+    assert.ok(settlement);
+    assert.equal(settlement.action, "select");
+    assert.equal(settlement.command_id, terminal.admission.request.command_id);
+    assert.equal(settlement.output_id, fixture.captured.output.output_id);
+    assert.deepEqual(settlement.operation, {
+        digest: terminal.operation?.digest,
+        id: terminal.operation?.id,
+        json: terminal.operation?.json,
+    });
+    assert.deepEqual(settlement.receipt, {
+        digest: terminal.receipt.digest,
+        json: terminal.receipt.json,
+    });
+    assert.deepEqual(settlement.trace, {
+        capture_record_id: fixture.captured.output.capture_record_id,
+        execution_cut_id: fixture.captured.output.execution_cut.cut_id,
+        outcome_record_id: fixture.captured.output.execution_outcome_record_id,
+        terminal_record_id: fixture.captured.output.execution_cut.through_record_id,
+    });
+    assert.equal(settlement.citation_cut.target_owner_id, fixture.captured.output.run_id);
+    assert.equal(settlement.citation_cut.through_record_id, settlement.citation_record_id);
+    assert.equal(Object.isFrozen(settlement), true);
+    const retainedCitation = fixture.store.readRecord(settlement.citation_record_id);
+    assert.ok(retainedCitation);
+    fixture.store.append({
+        append_intent_id: "test:duplicate-settlement-citation-view",
+        batch: {
+            groups: [
+                {
+                    owner_id: fixture.captured.output.run_id,
+                    records: [
+                        {
+                            body: retainedCitation.body,
+                            caused_by_record_ids: retainedCitation.envelope.caused_by_record_ids,
+                            mode: retainedCitation.envelope.mode,
+                            schema_ref: retainedCitation.envelope.schema_ref,
+                            witness_ref: retainedCitation.envelope.witness_ref,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    assert.equal(
+        inspectDurableTaskExecution(fixture.store, fixture.captured.output.run_id).settlements
+            .length,
+        1,
+    );
+    using imported = new SQLiteTraceStore();
+    imported.importTrace(fixture.store.exportTrace());
+    assert.deepEqual(
+        inspectDurableTaskExecution(imported, fixture.captured.output.run_id).settlements,
+        [settlement],
+    );
+    const citationRecord = imported.readRecord(settlement.citation_record_id);
+    assert.ok(citationRecord);
+    imported.append({
+        append_intent_id: "test:malformed-settlement-citation",
+        batch: {
+            groups: [
+                {
+                    owner_id: fixture.captured.output.run_id,
+                    records: [
+                        {
+                            body: { ...citationRecord.body, operation_json: "null" },
+                            caused_by_record_ids: citationRecord.envelope.caused_by_record_ids,
+                            mode: citationRecord.envelope.mode,
+                            schema_ref: citationRecord.envelope.schema_ref,
+                            witness_ref: citationRecord.envelope.witness_ref,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    assert.throws(
+        () => inspectDurableTaskExecution(imported, fixture.captured.output.run_id),
+        TraceStoreError,
+    );
     assert.equal(await readFile(fixture.messagePath, "utf8"), "selected\n");
     assert.equal(await readFile(path.join(fixture.sourceRoot, "added.txt"), "utf8"), "added\n");
     assert.equal(
@@ -260,6 +356,48 @@ test("public select repairs carrier publication left before store terminal reten
         }),
         RetainedWorldSettlementConflictError,
     );
+});
+
+test("public select repairs interrupted settlement citation publication", async (context) => {
+    const fixture = await createFixture(
+        context,
+        "citation-repair",
+        (databasePath) => new InterruptedSettlementCitationStore(databasePath),
+    );
+    fixture.store.interruptCitation = true;
+    await assert.rejects(
+        selectRetainedWorldSettlement({
+            binding: fixture.binding,
+            carrier: fixture.carrier,
+            outputId: fixture.captured.output.output_id,
+            store: fixture.store,
+        }),
+        RetainedWorldSettlementInvalidError,
+    );
+    assert.equal(
+        fixture.store.readRetainedWorldSettlementJournal(fixture.captured.output.output_id)?.state,
+        "selected",
+    );
+    assert.throws(
+        () => inspectDurableTaskExecution(fixture.store, fixture.captured.output.run_id),
+        TraceStoreError,
+    );
+    assert.equal(await readFile(fixture.messagePath, "utf8"), "selected\n");
+    fixture.store.close();
+
+    using reopened = new SQLiteTraceStore(fixture.databasePath);
+    const selected = await selectRetainedWorldSettlement({
+        binding: fixture.binding,
+        carrier: createReferenceCopyCarrier({ workspaceRoot: fixture.workspaceRoot }),
+        outputId: fixture.captured.output.output_id,
+        store: reopened,
+    });
+    assert.equal(selected.state, "selected");
+    assert.equal(
+        inspectDurableTaskExecution(reopened, fixture.captured.output.run_id).settlements.length,
+        1,
+    );
+    assert.equal(await readFile(fixture.messagePath, "utf8"), "selected\n");
 });
 
 type StoreFactory<T extends SQLiteTraceStore> = (databasePath: string, userPath: string) => T;

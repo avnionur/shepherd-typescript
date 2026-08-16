@@ -175,7 +175,8 @@ Work:
   **Task 9.4B2B2A workspace-protocol-v16 scheduled step/terminal evidence implemented in
   1.31.0** and **Task 9.4B2B2B scheduled reference-carrier materialization and prefix recovery
   implemented in 1.32.0** and **Task 9.4B3 public exact-ID selection, two-basis-check coordination,
-  and store-terminal repair implemented in 1.33.0**; Task 9.5 trace citations remain;
+  and store-terminal repair implemented in 1.33.0**; **Task 9.5 cut-bounded settlement citations,
+  import-safe execution projection, and interrupted-publication repair implemented in 1.34.0**;
 - protect control-plane paths and complete settlement/platform fault hardening;
 - complete reference-carrier and Git-custody platform/fault conformance for ACLs, extended
   attributes, resource forks or alternate streams, `core.symlinks=false`, sparse-index variants,

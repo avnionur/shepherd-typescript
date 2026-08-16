@@ -102,6 +102,10 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             relativePath: config.workspaces.worldTaskCapture.journalSchemaPath,
         },
         {
+            content: renderJson(renderSettlementCitationSchema(config)),
+            relativePath: config.workspaces.settlement.citationSchemaPath,
+        },
+        {
             content: renderJson(renderSelectionPublicationSchema(config)),
             relativePath: config.workspaces.selectionPublication.schemaPath,
         },
@@ -131,6 +135,61 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
         await mkdir(path.dirname(artifactPath), { recursive: true });
         await writeFile(artifactPath, content);
     }
+}
+
+function renderSettlementCitationSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
+    const text = { minLength: 1, type: "string" } as const;
+    return {
+        $id: config.workspaces.settlement.citationSchemaId,
+        $schema: "https://json-schema.org/draft/2020-12/schema",
+        additionalProperties: false,
+        properties: {
+            action: { enum: config.workspaces.settlement.actions, type: "string" },
+            capture_record_id: text,
+            citation_cut_id: text,
+            citation_version: {
+                const: config.workspaces.settlement.citationVersion,
+                type: "integer",
+            },
+            command_id: text,
+            execution_cut_id: text,
+            operation_digest: text,
+            operation_id: text,
+            operation_json: text,
+            outcome_record_id: text,
+            output_id: text,
+            receipt_digest: text,
+            receipt_json: text,
+            request_id: text,
+            run_id: text,
+            state: {
+                enum: config.workspaces.settlement.states.slice(2),
+                type: "string",
+            },
+            terminal_record_id: text,
+        },
+        required: [
+            "action",
+            "capture_record_id",
+            "citation_cut_id",
+            "citation_version",
+            "command_id",
+            "execution_cut_id",
+            "operation_digest",
+            "operation_id",
+            "operation_json",
+            "outcome_record_id",
+            "output_id",
+            "receipt_digest",
+            "receipt_json",
+            "request_id",
+            "run_id",
+            "state",
+            "terminal_record_id",
+        ],
+        title: "Shepherd Retained World Settlement Citation v1",
+        type: "object",
+    };
 }
 
 function renderWorldCaptureSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
@@ -821,6 +880,9 @@ export const RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION = ${config.workspaces.s
 
 /** Configured deterministic settlement-receipt codec version. @public */
 export const RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION = ${config.workspaces.settlement.receiptVersion} as const;
+
+/** Configured execution-trace settlement-citation version. @public */
+export const RETAINED_WORLD_SETTLEMENT_CITATION_VERSION = ${config.workspaces.settlement.citationVersion} as const;
 
 /** Configured retained-world selection publication atomicity classifications. @public */
 export const RETAINED_WORLD_SELECTION_ATOMICITY_KINDS = [${renderedSelectionAtomicityKinds}] as const;

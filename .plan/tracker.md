@@ -262,6 +262,9 @@ changeset identity.
   recovery, third-state refusal, and exact terminal carrier publication.
 - [x] Complete Task 9.4B3 public exact-ID selection, two pre-write basis checks, exact carrier
   receipt citation, selected replay, and store-terminal restart repair.
+- [x] Complete Task 9.5 workspace-protocol-v17 settlement citations with exact command/operation/
+  receipt/terminal trace identity, deterministic citation cuts, import-safe durable inspection,
+  interrupted-publication repair, and malformed-evidence refusal.
 
 ## Verification required for this slice
 
@@ -273,8 +276,8 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3, Task 9.5: attach settlement citations to the execution projection and close the
-remaining cross-command concurrency and fault-injection matrix.
+Continue Phase 3 control-plane and platform fault hardening: protect control paths and close the
+remaining filesystem, cross-platform, concurrent-mutation, and process-interruption matrix.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive

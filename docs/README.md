@@ -70,12 +70,13 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Retained-world settlement admission](./retained-world-settlement.md) defines workspace protocol
   v12 exact requests, workspace protocol v13 deterministic effect-journal codecs, workspace
   protocol v14 closed selection-publication plans/steps/receipts, protocol v15 dependency-ordered
-  publication schedules, protocol v16 scheduled step/terminal-receipt evidence, authenticated
-  immutable-head carrier staging, scheduled materialization and prefix recovery, public exact-ID
+  publication schedules, protocol v16 scheduled step/terminal-receipt evidence, protocol v17
+  cut-bounded execution-trace settlement citations, authenticated immutable-head carrier staging,
+  scheduled materialization and prefix recovery, public exact-ID
   selection and restart repair, authenticated retained-output preparation, trace-store v6
   consume-once compare-and-swap, schema-v7 journal storage,
   atomic deterministic transitions, restart-safe inspection, and terminal-before-cleanup public
-  discard recovery.
+  discard recovery with import-safe settlement projection.
 - [Run outcomes](./run-outcomes.md) defines versioned finished, failed, exhausted, and cancelled
   terminal records with exact task-lock provenance.
 - [Run artifacts and usage](./run-artifacts-and-usage.md) defines ordered inline-text and durable

@@ -239,6 +239,9 @@ export const RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION = 1 as const;
 /** Configured deterministic settlement-receipt codec version. @public */
 export const RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION = 1 as const;
 
+/** Configured execution-trace settlement-citation version. @public */
+export const RETAINED_WORLD_SETTLEMENT_CITATION_VERSION = 1 as const;
+
 /** Configured retained-world selection publication atomicity classifications. @public */
 export const RETAINED_WORLD_SELECTION_ATOMICITY_KINDS = ["journaled-path-set"] as const;
 

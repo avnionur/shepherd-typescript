@@ -53,7 +53,7 @@ export function admitRetainedWorldSettlement(
     database: DatabaseSync,
     request: RetainedWorldSettlementRequest,
 ): RetainedWorldSettlementAdmission {
-    const retainedRequest = readRequest(request);
+    const retainedRequest = readRetainedWorldSettlementRequest(request);
     const requestJson = canonicalizeRecord(retainedRequest as unknown as SemanticRecord);
     const requestDigest = createHash(workspaceProtocolConfig.digestAlgorithm)
         .update(requestJson)
@@ -306,7 +306,8 @@ export function completeRetainedWorldSettlementCleanup(
     }
 }
 
-function readRequest(value: unknown): RetainedWorldSettlementRequest {
+/** Validates and freezes one exact retained-world settlement request value. @internal */
+export function readRetainedWorldSettlementRequest(value: unknown): RetainedWorldSettlementRequest {
     if (
         value === null ||
         typeof value !== "object" ||
@@ -434,7 +435,7 @@ function journalFromStoredRow(row: SettlementRow): RetainedWorldSettlementJourna
         throw invalidSettlement(error);
     }
     try {
-        return journalFromRow(row, readRequest(value));
+        return journalFromRow(row, readRetainedWorldSettlementRequest(value));
     } catch (error) {
         if (error instanceof RetainedWorldSettlementInvalidError) throw error;
         throw invalidSettlement(error);

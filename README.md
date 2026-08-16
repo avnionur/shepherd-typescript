@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.21.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.34.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -116,8 +116,9 @@ trace-record contracts with durable SQLite task and trace stores:
 - workspace protocol v12 exact retained-output settlement requests, workspace protocol v13
   deterministic operation/receipt codecs, workspace protocol v14 closed selection plan/step/
   publication codecs, workspace protocol v15 dependency-ordered publication schedules, workspace
-  protocol v16 scheduled step/terminal-receipt evidence, authenticated immutable-head selection
-  staging, scheduled reference-carrier materialization and prefix recovery, public exact-ID
+  protocol v16 scheduled step/terminal-receipt evidence, workspace protocol v17 cut-bounded
+  execution-trace settlement citations, authenticated immutable-head selection staging,
+  scheduled reference-carrier materialization and prefix recovery, public exact-ID
   selection with two pre-write basis checks and terminal repair, authenticated terminal/cut/
   carrier evidence preparation, trace-store schema v6 consume-once admission, and schema v7
   effect-journal storage with atomic deterministic operation/receipt transitions, one-winner
@@ -142,7 +143,7 @@ trace-record contracts with durable SQLite task and trace stores:
   stale-writer fencing;
 - read-only durable execution inspection with configured recovery status, lifecycle, artifact,
   usage, and outcome record identities, immutable terminal cuts, canonical causal edges, and
-  cut-bound waiting/suspension evidence;
+  cut-bound waiting/suspension evidence, plus exact import-safe terminal settlement citations;
 - globally idempotent durable recovery commands with canonical command evidence, expired-lease
   takeover, command-bound start/cut transitions, and fail-closed absent/started handling;
 - globally idempotent pause requests bound atomically to the exact current started lifecycle head,

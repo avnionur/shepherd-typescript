@@ -5,6 +5,10 @@ Implementation:
 types: [`src/run/durable-execution-inspection-types.ts`](../src/run/durable-execution-inspection-types.ts).
 Public entry point: [`src/index.ts`](../src/index.ts). Tests:
 [`test/run/durable-execution-inspection.test.ts`](../test/run/durable-execution-inspection.test.ts).
+Settlement-citation production seams:
+[`test/workspace/retained-world-select.test.ts`](../test/workspace/retained-world-select.test.ts)
+and
+[`test/workspace/retained-world-discard.test.ts`](../test/workspace/retained-world-discard.test.ts).
 
 ## Contract
 
@@ -22,6 +26,8 @@ state:
 - ordered artifacts paired with their retaining record identities;
 - aggregate usage and terminal outcome paired with their retaining record identities;
 - the immutable terminal cut when it has been published;
+- ordered terminal retained-world settlements with their exact command, request, operation,
+  receipt, trace identities, citation record, and immutable citation cut;
 - direct canonical causal edges between the selected durable execution records.
 
 Missing evidence is represented by empty arrays or `null`; it is never fabricated. Artifact order
@@ -39,6 +45,15 @@ For terminal executions, the selected artifact and causal evidence comes from th
 outcome's validated causal chain. A committed view is bounded by its immutable terminal cut, so
 later records owned by the same run—including records using an artifact schema—cannot change the
 inspection result.
+
+Terminal settlement evidence is an additive post-execution projection. Each citation is retained
+under the run owner after the original terminal cut and carries its own deterministic immutable
+cut through the citation record. Inspection validates the canonical operation and terminal receipt,
+their request/command/output identities, the cited capture/outcome/lifecycle records, exact
+causality, and any local settlement journal. Duplicate owner views of the same semantic citation
+collapse to one result. A trace imported without the private settlement table reconstructs the
+same citation from retained records and cuts; missing, conflicting, or malformed evidence fails
+closed. The original execution cut and lifecycle result remain unchanged.
 
 For a non-terminal started execution, inspection selects the latest configured waiting,
 suspension, or resumed-running acknowledgement on the explicit current owner prefix. A quiescent
@@ -66,4 +81,4 @@ but inspection does not make that execution safe to resume; provider replay rema
 
 The running-continuation body uses the configured generated schema. Every inspection field remains
 a disposable projection of durable lifecycle, command, continuation, artifact, usage, outcome,
-causal-edge, and cut evidence.
+causal-edge, cut, and terminal settlement-citation evidence.

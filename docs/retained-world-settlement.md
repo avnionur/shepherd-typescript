@@ -62,6 +62,20 @@ v14 steps and receipts and the v15 schedule remain unchanged. This evidence laye
 filesystem mutation; scheduled user-path effects and durable-prefix recovery remain Task
 9.4B2B2B.
 
+Workspace protocol v17 adds terminal execution-trace settlement citations. After a selected
+receipt is retained, or after discarded cleanup reaches its final receipt, the coordinator
+idempotently appends a configured citation record under the durable run and publishes a
+deterministic immutable cut through it. The record binds the exact command, request, operation,
+terminal receipt, output, capture record, execution cut, outcome record, and terminal lifecycle
+record. A crash after the append but before cut publication leaves the settlement terminal and is
+repaired by an equal retry without replaying carrier effects.
+
+`inspectDurableTaskExecution` projects these citations as frozen settlement values. It validates
+canonical codecs, record causality, citation cuts, and the local journal when present. Native
+trace export/import reconstructs the same result without importing the private settlement table.
+Missing cuts, malformed canonical evidence, duplicate output/command authority, or journal
+disagreement fail closed.
+
 Task 9.4B2B2B implements that reference-carrier effect seam. Before the first write it requires the
 package-owned observer to reproduce the admitted semantic basis. It then validates or replays the
 exact retained prefix, applies only the next dependency-scheduled change from immutable staging,
@@ -124,5 +138,6 @@ filesystem operation.
 The store primitive deliberately remains internal and trusts only the authenticated coordinator.
 Preparation reads retained evidence and mutates only the durable settlement-admission row; it does
 not mutate user files or physical custody. Public `select` and `discard` now compose this authority
-with the effect journal. Carrier-level selection publication and `discard(custodyId)` remain
-internal physical primitives and cannot create or bypass a settlement decision by themselves.
+with the effect journal and publish terminal trace citations only after the relevant terminal
+receipt is durable. Carrier-level selection publication and `discard(custodyId)` remain internal
+physical primitives and cannot create or bypass a settlement decision by themselves.

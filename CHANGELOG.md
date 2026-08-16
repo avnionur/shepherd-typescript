@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.34.0] - 2026-08-16
+
+### New Feature
+
+- Added workspace protocol v17 terminal retained-world settlement citation records with exact
+  command, request, operation, receipt, output, and terminal trace identities plus deterministic
+  immutable citation cuts.
+- Extended durable execution inspection with frozen, cut-bounded settlement projections that
+  survive native trace export/import without the private settlement journal.
+- Added idempotent citation publication repair after selected terminal retention or completed
+  discard cleanup, with duplicate-view convergence and fail-closed missing or malformed evidence.
+
+### Impact
+
+Callers can trace a settled retained output from the durable execution projection to its exact
+decision and terminal receipt, including after archive transfer, while interrupted citation
+publication recovers without replaying user-path effects.
+
 ## [1.33.1] - 2026-08-16
 
 ### Improvement

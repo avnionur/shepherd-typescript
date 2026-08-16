@@ -278,6 +278,7 @@ test("inspectDurableTaskExecution projects every incomplete recovery state", asy
         },
         outcome: null,
         run_id: "run:inspection:absent",
+        settlements: [],
         status: "absent",
         usage: null,
     });

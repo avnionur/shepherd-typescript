@@ -709,6 +709,16 @@ export type WorkspaceProtocolConfig = {
     readonly settlement: {
         /** Closed settlement command vocabulary. */
         readonly actions: readonly string[];
+        /** Prefix for idempotent settlement-citation append intents. */
+        readonly citationAppendIntentPrefix: string;
+        /** Prefix for immutable settlement-citation cuts. */
+        readonly citationCutIdPrefix: string;
+        /** Published JSON Schema identity for settlement citations. */
+        readonly citationSchemaId: string;
+        /** Repository-relative generated settlement-citation schema path. */
+        readonly citationSchemaPath: string;
+        /** Closed settlement-citation record version. */
+        readonly citationVersion: number;
         /** Stable settlement validation and conflict errors. */
         readonly errors: {
             /** Conflicting decision error code. */
