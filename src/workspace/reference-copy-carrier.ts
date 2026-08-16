@@ -38,6 +38,11 @@ import { createWorkspaceBindings, createWorkspaceBindingsForRetainedCustody } fr
 import { WorldCarrierError } from "./errors.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import {
+    assertWorkspacePathUnprotected,
+    type WorkspacePathProtectionOptions,
+    WorkspaceProtectedPathError,
+} from "./protected-control-paths.ts";
+import {
     decodeScheduledSelectionPublicationReceipt,
     decodeScheduledSelectionPublicationStep,
     decodeSelectionPublicationPlan,
@@ -107,6 +112,8 @@ type DiscardDescriptor = {
     readonly descriptor_version: number;
     readonly status: string;
 };
+
+type WorkspacePathProtectionAuthority = Omit<WorkspacePathProtectionOptions, "path">;
 
 const [DIRECTORY_KIND, FILE_KIND, SYMLINK_KIND] = WORLD_ENTRY_KINDS;
 const NO_ADAPTER_RECEIPTS = (): void => undefined;
@@ -342,6 +349,7 @@ function createCarrier(
 function captureCustody(paths: CarrierPaths, custodyId: string): WorldRevision {
     const custody = loadCustody(paths, custodyId);
     const baseDescriptor = readOwnedRevisionDescriptor(paths, custody.base_revision_id);
+    const protection = pathProtection(paths.workspaceRoot, baseDescriptor.binding_root);
     verifyRevision(paths, custody.base_revision_id);
     const verifiedBaseDescriptor = readOwnedRevisionDescriptor(paths, custody.base_revision_id);
     assert.equal(
@@ -353,14 +361,14 @@ function captureCustody(paths: CarrierPaths, custodyId: string): WorldRevision {
     const stagedWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
     try {
         mkdirSync(stagedWorld);
-        const manifest = captureTree(custody.path, stagedWorld, null);
-        const secondManifest = captureTree(custody.path, null, null);
+        const manifest = captureTree(custody.path, stagedWorld, null, protection);
+        const secondManifest = captureTree(custody.path, null, null, protection);
         assert.equal(
             canonicalManifest(manifest),
             canonicalManifest(secondManifest),
             "world custody changed during capture",
         );
-        assertManifestEqual(manifest, captureTree(stagedWorld, null, null));
+        assertManifestEqual(manifest, captureTree(stagedWorld, null, null, protection));
         const contentId = createContentId(manifest);
         const revisionId = createRevisionId(
             custody.binding_id,
@@ -424,11 +432,17 @@ export function snapshotReferenceCopySource(
 export function inspectReferenceCopySource(
     workspaceRoot: string,
     sourceRoot: string,
+    bindingRoot: string,
 ): WorldVerification {
     const workspace = openWorkspace(workspaceRoot);
     const source = assertGitStagingSource(workspace.control_path, sourceRoot);
     return invokeCarrier(() => {
-        const manifest = captureTree(source, null, null);
+        const manifest = captureTree(
+            source,
+            null,
+            null,
+            pathProtection(workspace.root_path, bindingRoot),
+        );
         return freezeVerification(createContentId(manifest), false, manifest);
     });
 }
@@ -563,6 +577,9 @@ function stageSelection(
     assert.equal(base.content_id, validatedPlan.value.base_content_id);
     assert.equal(head.binding_id, validatedPlan.value.binding_id);
     assert.equal(head.content_id, validatedPlan.value.head_content_id);
+    const baseDescriptor = readOwnedRevisionDescriptor(paths, baseRevisionId);
+    const protection = pathProtection(paths.workspaceRoot, baseDescriptor.binding_root);
+    assertChangesetPathsUnprotected(changeset, protection);
 
     const stagingRoot = createStaging(paths);
     const stagedWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
@@ -572,7 +589,7 @@ function stageSelection(
         mkdirSync(
             path.join(stagingRoot, workspaceProtocolConfig.selectionPublication.stepsDirectory),
         );
-        assertManifestEqual(head.manifest, captureTree(head.path, stagedWorld, null));
+        assertManifestEqual(head.manifest, captureTree(head.path, stagedWorld, null, protection));
         writeClosedDescriptor(
             path.join(stagingRoot, workspaceProtocolConfig.selectionPublication.planFile),
             validatedPlan.value,
@@ -630,7 +647,16 @@ function verifySelectionStaging(
     );
     assert.equal(retainedPlan, plan.json);
     assert.equal(retainedSchedule, schedule.json);
-    assertManifestEqual(head.manifest, captureTree(safeWorldPath(root), null, null));
+    const descriptor = readOwnedRevisionDescriptor(paths, head.revision_id);
+    assertManifestEqual(
+        head.manifest,
+        captureTree(
+            safeWorldPath(root),
+            null,
+            null,
+            pathProtection(paths.workspaceRoot, descriptor.binding_root),
+        ),
+    );
     assertReceiptRootStable(root, retained);
 }
 
@@ -740,7 +766,15 @@ async function publishSelection(
     publishCanonicalFile(paths, journalReceiptPath, receipt.json, receipt.value);
     publishSelectionReceipt(paths, receipt);
     verifySelectionReceipt(paths, receipt);
-    assertManifestEqual(head.manifest, captureTree(staging.staging_path, null, null));
+    assertManifestEqual(
+        head.manifest,
+        captureTree(
+            staging.staging_path,
+            null,
+            null,
+            pathProtection(paths.workspaceRoot, base.binding_root),
+        ),
+    );
     return receipt;
 }
 
@@ -976,16 +1010,17 @@ function snapshotBinding(
     );
     const stagingRoot = createStaging(paths);
     const stagedWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
+    const protection = pathProtection(workspaceRoot, retainedBinding.canonical_root);
     try {
         mkdirSync(stagedWorld);
-        const manifest = captureTree(sourceRoot, stagedWorld, captureControlPath);
-        const secondManifest = captureTree(sourceRoot, null, captureControlPath);
+        const manifest = captureTree(sourceRoot, stagedWorld, captureControlPath, protection);
+        const secondManifest = captureTree(sourceRoot, null, captureControlPath, protection);
         assert.equal(
             canonicalManifest(manifest),
             canonicalManifest(secondManifest),
             "workspace binding changed during snapshot",
         );
-        assertManifestEqual(manifest, captureTree(stagedWorld, null, null));
+        assertManifestEqual(manifest, captureTree(stagedWorld, null, null, protection));
         const contentId = createContentId(manifest);
         const revisionId = createRevisionId(retainedBinding.binding_id, contentId, basisRef, null);
         const descriptor: RevisionDescriptor = {
@@ -1041,6 +1076,7 @@ function forkRevision(
     requestedCustodyId: string | null,
 ): WorldCustody {
     const revision = loadRevision(paths, revisionId);
+    const revisionDescriptor = readOwnedRevisionDescriptor(paths, revisionId);
     verifyRevision(paths, revisionId);
     const custodyId =
         requestedCustodyId ?? `${workspaceProtocolConfig.carrier.custodyIdPrefix}${randomUUID()}`;
@@ -1048,7 +1084,12 @@ function forkRevision(
     const stagedWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
     try {
         mkdirSync(stagedWorld);
-        const copied = captureTree(revision.path, stagedWorld, null);
+        const copied = captureTree(
+            revision.path,
+            stagedWorld,
+            null,
+            pathProtection(paths.workspaceRoot, revisionDescriptor.binding_root),
+        );
         assertManifestEqual(revision.manifest, copied);
         const descriptor: CustodyDescriptor = {
             backend: workspaceProtocolConfig.carrier.backendKind,
@@ -1100,9 +1141,9 @@ function loadRevision(paths: CarrierPaths, revisionId: string): WorldRevision {
     });
 }
 
-function loadCustody(paths: CarrierPaths, custodyId: string): WorldCustody {
+function loadCustody(paths: CarrierPaths, custodyId: string, allowDiscarded = false): WorldCustody {
     const marker = discardMarker(paths, custodyId);
-    if (existsSync(marker)) {
+    if (!allowDiscarded && existsSync(marker)) {
         readDiscardDescriptor(marker, custodyId);
         throw carrierError("control", "world custody was discarded");
     }
@@ -1171,7 +1212,12 @@ function verifyRevisionNode(paths: CarrierPaths, revisionId: string): WorldVerif
         "retained revision binding root changed",
     );
     const revision = loadRevision(paths, revisionId);
-    const manifest = captureTree(revision.path, null, null);
+    const manifest = captureTree(
+        revision.path,
+        null,
+        null,
+        pathProtection(paths.workspaceRoot, descriptor.binding_root),
+    );
     assertManifestEqual(revision.manifest, manifest);
     const contentId = createContentId(manifest);
     if (
@@ -1188,10 +1234,20 @@ function verifyRevisionNode(paths: CarrierPaths, revisionId: string): WorldVerif
     return freezeVerification(contentId, false, manifest);
 }
 
-function verifyCustody(paths: CarrierPaths, custodyId: string): WorldVerification {
-    const custody = loadCustody(paths, custodyId);
+function verifyCustody(
+    paths: CarrierPaths,
+    custodyId: string,
+    allowDiscarded = false,
+): WorldVerification {
+    const custody = loadCustody(paths, custodyId, allowDiscarded);
+    const descriptor = readOwnedRevisionDescriptor(paths, custody.base_revision_id);
     verifyRevision(paths, custody.base_revision_id);
-    const manifest = captureTree(custody.path, null, null);
+    const manifest = captureTree(
+        custody.path,
+        null,
+        null,
+        pathProtection(paths.workspaceRoot, descriptor.binding_root),
+    );
     const contentId = createContentId(manifest);
     return freezeVerification(contentId, contentId !== custody.base_content_id, manifest);
 }
@@ -1208,10 +1264,15 @@ function discardCustody(paths: CarrierPaths, custodyId: string): void {
             publishDiscardDescriptor(paths, marker, custodyId);
         }
         if (existsSync(root)) {
+            verifyCustody(paths, custodyId, true);
             const status = lstatSync(root);
+            // Deterministic substitution between verified traversal and this immediate authority
+            // check requires the Phase 3 concurrent-mutation fault injector.
+            /* node:coverage disable */
             if (!status.isDirectory() || status.isSymbolicLink()) {
                 throw carrierError("control");
             }
+            /* node:coverage enable */
             rmSync(root, { recursive: true });
             syncDirectory(paths.custodies);
         }
@@ -1220,14 +1281,31 @@ function discardCustody(paths: CarrierPaths, custodyId: string): void {
     }
 }
 
+function pathProtection(
+    workspaceRoot: string,
+    bindingRoot: string,
+): WorkspacePathProtectionAuthority {
+    return { bindingRoot, workspaceRoot };
+}
+
+function assertChangesetPathsUnprotected(
+    changeset: WorldChangeset,
+    protection: WorkspacePathProtectionAuthority,
+): void {
+    for (const change of changeset.changes) {
+        assertWorkspacePathUnprotected({ ...protection, path: change.path });
+    }
+}
+
 function captureTree(
     sourceRoot: string,
     targetRoot: string | null,
     controlPath: string | null,
+    protection: WorkspacePathProtectionAuthority,
 ): readonly WorldManifestEntry[] {
     const manifest: WorldManifestEntry[] = [];
     const seenHardLinks = new Set<string>();
-    walkDirectory(sourceRoot, targetRoot, "", controlPath, manifest, seenHardLinks);
+    walkDirectory(sourceRoot, targetRoot, "", controlPath, protection, manifest, seenHardLinks);
     if (targetRoot !== null) {
         syncDirectory(targetRoot);
     }
@@ -1240,6 +1318,7 @@ function walkDirectory(
     targetRoot: string | null,
     relativeDirectory: string,
     controlPath: string | null,
+    protection: WorkspacePathProtectionAuthority,
     manifest: WorldManifestEntry[],
     seenHardLinks: Set<string>,
 ): void {
@@ -1283,6 +1362,7 @@ function walkDirectory(
         if (controlPath !== null && samePath(sourcePath, controlPath)) {
             continue;
         }
+        assertWorkspacePathUnprotected({ ...protection, path: relativePath });
         const before = lstatSync(sourcePath, { bigint: true });
         const targetPath =
             targetRoot === null ? null : path.join(targetRoot, ...relativePath.split("/"));
@@ -1303,6 +1383,7 @@ function walkDirectory(
                 targetRoot,
                 relativePath,
                 controlPath,
+                protection,
                 manifest,
                 seenHardLinks,
             );
@@ -1909,6 +1990,8 @@ function invokeCarrier<T>(operation: () => T): T {
 }
 
 function throwCarrierError(error: unknown): never {
-    if (error instanceof WorldCarrierError) throw error;
+    if (error instanceof WorldCarrierError || error instanceof WorkspaceProtectedPathError) {
+        throw error;
+    }
     throw carrierError("control", String(error));
 }

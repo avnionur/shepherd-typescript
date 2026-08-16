@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.35.0] - 2026-08-16
+
+### New Feature
+
+- Added workspace protocol v18 configured protected-path validation with deterministic Unicode,
+  case-fold, trailing-character, alternate-name, and resolved symlink-alias comparisons plus a
+  public versioned validation result and stable typed error.
+- Enforced the shared policy across reference-copy and Git capture, retained revision/custody
+  verification, selection staging and recovery, and discard cleanup before user-path effects.
+- Added direct, nested, case-folded, alternate-name, symlink-alias, selection, cleanup-recovery,
+  and ordinary-path preservation fixtures.
+
+### Impact
+
+Retained-world operations now fail closed before protected Shepherd control metadata can be
+captured, inspected, materialized, or cleaned through an alias, while ordinary managed paths and
+durable retry behavior remain unchanged.
+
 ## [1.34.0] - 2026-08-16
 
 ### New Feature

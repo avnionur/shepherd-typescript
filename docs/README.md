@@ -48,6 +48,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Workspace initialization and adoption](./workspace-initialization.md) defines protected
   `.vcscore` metadata, configured baseline citations, Git-history preservation, and fail-closed
   reopen behavior.
+- [Protected control paths](./protected-control-paths.md) defines workspace protocol v18's
+  configured normalization, stable rejection evidence, and capture/selection/cleanup enforcement.
 - [Workspace binding roots](./workspace-bindings.md) defines stable canonical binding identities,
   workspace-authority containment, symlink-aware alias handling, and pairwise overlap rejection.
 - [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,

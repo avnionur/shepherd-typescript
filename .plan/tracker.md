@@ -265,6 +265,9 @@ changeset identity.
 - [x] Complete Task 9.5 workspace-protocol-v17 settlement citations with exact command/operation/
   receipt/terminal trace identity, deterministic citation cuts, import-safe durable inspection,
   interrupted-publication repair, and malformed-evidence refusal.
+- [x] Complete Task 10 workspace-protocol-v18 configured protected-path validation across copy and
+  Git capture, retained inspection, selection/recovery, and discard cleanup, including normalized
+  case/alternate names, symlink aliases, stable versioned errors, and ordinary-path preservation.
 
 ## Verification required for this slice
 
@@ -276,8 +279,8 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3 control-plane and platform fault hardening: protect control paths and close the
-remaining filesystem, cross-platform, concurrent-mutation, and process-interruption matrix.
+Continue Phase 3 platform/fault conformance by closing the remaining filesystem-preservation,
+cross-platform, concurrent-mutation, permission/disk-full, and process-interruption matrix.
 
 Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
 Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive

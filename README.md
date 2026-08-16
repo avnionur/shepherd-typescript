@@ -103,6 +103,9 @@ trace-record contracts with durable SQLite task and trace stores:
 - a configured reference copy carrier with immutable verified revisions, isolated mutable custody,
   restart reopen, drift verification, deterministic parent-linked custody capture, and exact
   idempotent discard;
+- workspace protocol v18 configured protected-path validation with Unicode/case normalization,
+  alternate-name and symlink-alias refusal, stable versioned errors, and enforcement across copy,
+  Git, inspection, selection, discard, and recovery seams;
 - a closed workspace-protocol-v7 retained-world runner registration with a private callback
   registry and an honest initial advisory enforcement classification;
 - authenticated invocation-fenced task-world execution over isolated custody, with successful
@@ -117,7 +120,8 @@ trace-record contracts with durable SQLite task and trace stores:
   deterministic operation/receipt codecs, workspace protocol v14 closed selection plan/step/
   publication codecs, workspace protocol v15 dependency-ordered publication schedules, workspace
   protocol v16 scheduled step/terminal-receipt evidence, workspace protocol v17 cut-bounded
-  execution-trace settlement citations, authenticated immutable-head selection staging,
+  execution-trace settlement citations, workspace protocol v18 protected control-path
+  enforcement, authenticated immutable-head selection staging,
   scheduled reference-carrier materialization and prefix recovery, public exact-ID
   selection with two pre-write basis checks and terminal repair, authenticated terminal/cut/
   carrier evidence preparation, trace-store schema v6 consume-once admission, and schema v7
@@ -558,7 +562,8 @@ durable capture journaling, and Task 6B.4 command-authorized capture recovery an
 hardening are implemented. Authenticated changeset inspection now provides exact-path lookup,
 bounded retained-content reads and previews, exact-content rename/copy projections, and Git-aware
 Gitlink/symlink-mode presentation without changing canonical identity. Selection and settlement
-effects remain planned; the exact-request and consume-once persistence foundation is implemented.
+effects, terminal trace citations, and configured protected control-path enforcement are
+implemented. Broader platform and fault-conformance work remains before Phase 3 exit.
 
 ## Attribution
 

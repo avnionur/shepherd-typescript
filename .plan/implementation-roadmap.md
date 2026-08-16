@@ -177,7 +177,10 @@ Work:
   implemented in 1.32.0** and **Task 9.4B3 public exact-ID selection, two-basis-check coordination,
   and store-terminal repair implemented in 1.33.0**; **Task 9.5 cut-bounded settlement citations,
   import-safe execution projection, and interrupted-publication repair implemented in 1.34.0**;
-- protect control-plane paths and complete settlement/platform fault hardening;
+- protect control-plane paths and complete settlement/platform fault hardening; **configured
+  workspace-protocol-v18 protected-path validation implemented in 1.35.0** across copy/Git capture,
+  retained inspection, selection/recovery, and discard cleanup, with remaining general platform
+  and fault-conformance work assigned to the next slice;
 - complete reference-carrier and Git-custody platform/fault conformance for ACLs, extended
   attributes, resource forks or alternate streams, `core.symlinks=false`, sparse-index variants,
   case-folding collisions, precise stable error taxonomy, permission/disk-full failures,

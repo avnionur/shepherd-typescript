@@ -40,6 +40,10 @@ exact configured format/version and closed shape. Malformed metadata, missing ad
 removed required Git state, unsupported objects during worktree capture, and option conflicts fail
 closed with typed errors.
 
+Workspace protocol v18's shared [protected-path policy](./protected-control-paths.md) extends this
+authority across copy and Git capture, inspection, selection, discard, and recovery without
+hard-coding control names in those implementations.
+
 The worktree reference is an identity citation, not retained file custody. Copying baseline bytes
 into a managed carrier belongs to the Phase 3 reference-copy-carrier slice. Canonical named binding
 roots and overlap rejection are also separate from this initialization contract.

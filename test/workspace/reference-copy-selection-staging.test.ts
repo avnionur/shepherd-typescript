@@ -1,15 +1,18 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { chmod, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
 import {
+    canonicalizeRecord,
     createReferenceCopyCarrier,
     createWorkspaceBindings,
     createWorldChangeset,
     initializeWorkspace,
     RETAINED_WORLD_SETTLEMENT_VERSION,
+    WorkspaceProtectedPathError,
     WorldCarrierError,
 } from "../../src/index.ts";
 import { workspaceProtocolConfig } from "../../src/protocol/config.ts";
@@ -149,6 +152,57 @@ test("reference carrier stages exact selection evidence from immutable head cust
             WorldCarrierError,
         );
     }
+
+    const firstChange = changeset.changes[0];
+    assert.ok(firstChange);
+    const protectedPath = workspaceProtocolConfig.controlDirectory.toUpperCase();
+    const protectedChanges = Object.freeze([
+        Object.freeze({ ...firstChange, path: protectedPath }),
+    ]);
+    const protectedSemantic = {
+        base_revision_id: changeset.base_revision_id,
+        binding_id: changeset.binding_id,
+        changes: protectedChanges,
+        head_revision_id: changeset.head_revision_id,
+        schema_version: changeset.schema_version,
+    };
+    const protectedChangesetId = `${workspaceProtocolConfig.changesets.idPrefix}${createHash(
+        workspaceProtocolConfig.digestAlgorithm,
+    )
+        .update(canonicalizeRecord(protectedSemantic))
+        .digest("hex")}`;
+    const protectedChangeset = Object.freeze({
+        ...protectedSemantic,
+        changed_paths: Object.freeze([protectedPath]),
+        changeset_id: protectedChangesetId,
+    });
+    const protectedRequest = Object.freeze({
+        ...request,
+        changeset_id: protectedChangesetId,
+    });
+    const protectedAdmission = Object.freeze({
+        ...admission,
+        request: protectedRequest,
+    });
+    const protectedOperation = encodeRetainedWorldSettlementOperation(protectedAdmission);
+    const protectedPlan = encodeSelectionPublicationPlan(
+        protectedOperation,
+        protectedChangeset,
+        base.content_id,
+        head.content_id,
+    );
+    const protectedSchedule = encodeSelectionPublicationSchedule(protectedPlan);
+    assert.throws(
+        () =>
+            stageReferenceCopySelection(reopened, {
+                changeset: protectedChangeset,
+                operation: protectedOperation,
+                plan: protectedPlan,
+                schedule: protectedSchedule,
+            }),
+        WorkspaceProtectedPathError,
+    );
+    assert.deepEqual(await readdir(genericStaging), []);
 
     await writeFile(path.join(staging.staging_path, "message.txt"), "corrupt\n");
     assert.throws(() => stageReferenceCopySelection(reopened, definition), WorldCarrierError);

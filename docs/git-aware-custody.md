@@ -42,6 +42,11 @@ ordinary ignored-file byte churn does not move the basis; changing effective ign
 Unmerged indexes, dirty submodules, undeclared embedded repositories, inexact repository roots,
 unsupported object formats, and malformed or corrupt receipts fail closed.
 
+Workspace protocol v18 applies the shared configured protected-path policy to managed and ignored
+Git enumeration and to independently inspected archive materialization. Exact control storage is
+excluded; nested, case-folded, trailing-name, alternate-name, and symlink aliases are rejected
+before retained output publication.
+
 ## Git preservation and isolation
 
 Every Git command runs with optional locks disabled. Capture does not checkout, reset, commit,
@@ -61,5 +66,5 @@ Task 4 owns basis acquisition, movement classification, isolated retained custod
 discard. The next Phase 3 task owns the complete changeset model; this API intentionally exposes no
 partial diff or settlement schema. Deterministic concurrent-mutation, disk-full, permission, and
 process-kill injection, exhaustive stable error codes, `core.symlinks=false`, sparse-index variants,
-and cross-platform case semantics remain Phase 3 exit gates and are not reported as verified here.
+and broad cross-platform filesystem preservation remain Phase 3 exit gates and are not reported as verified here.
 They do not change the Task 5 changeset record shape, so that slice can proceed independently.
