@@ -34,6 +34,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "gitMetadataName",
             "hexLength",
             "manifestFile",
+            "protectedPaths",
             "selectionPublication",
             "settlement",
             "worktreeRefPrefix",
@@ -47,6 +48,20 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         config.errors,
         ["conflictCode", "conflictMessage", "controlCode", "controlMessage"],
         "workspaces.errors",
+    );
+    const protectedPaths = readObject(
+        config.protectedPaths,
+        [
+            "alternateNameSeparators",
+            "caseFold",
+            "errorCode",
+            "errorMessage",
+            "normalizationForm",
+            "roots",
+            "trailingCharacters",
+            "version",
+        ],
+        "workspaces.protectedPaths",
     );
     const bindingErrors = readObject(
         config.bindingErrors,
@@ -315,6 +330,29 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
     ) {
         throw new TypeError("workspace reserved path names must differ");
     }
+    const protectedRoots = readUniqueStrings(
+        protectedPaths.roots,
+        "workspaces.protectedPaths.roots",
+    ).map((root, index) => readSimpleName(root, `workspaces.protectedPaths.roots[${index}]`));
+    if (!protectedRoots.includes(controlDirectory)) {
+        throw new TypeError("workspaces.protectedPaths.roots must protect controlDirectory");
+    }
+    const alternateNameSeparators = readSingleCharacters(
+        protectedPaths.alternateNameSeparators,
+        "workspaces.protectedPaths.alternateNameSeparators",
+    );
+    const trailingCharacters = readSingleCharacters(
+        protectedPaths.trailingCharacters,
+        "workspaces.protectedPaths.trailingCharacters",
+    );
+    if (typeof protectedPaths.caseFold !== "boolean") {
+        throw new TypeError("workspaces.protectedPaths.caseFold must be boolean");
+    }
+    const normalizationForm = readEnum(
+        protectedPaths.normalizationForm,
+        ["NFC", "NFD", "NFKC", "NFKD"] as const,
+        "workspaces.protectedPaths.normalizationForm",
+    );
     const digestAlgorithm = readEnum(
         config.digestAlgorithm,
         SECURE_HASH_ALGORITHMS,
@@ -1033,6 +1071,25 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         gitMetadataName,
         hexLength,
         manifestFile,
+        protectedPaths: {
+            alternateNameSeparators,
+            caseFold: protectedPaths.caseFold,
+            errorCode: readNonEmptyString(
+                protectedPaths.errorCode,
+                "workspaces.protectedPaths.errorCode",
+            ),
+            errorMessage: readNonEmptyString(
+                protectedPaths.errorMessage,
+                "workspaces.protectedPaths.errorMessage",
+            ),
+            normalizationForm,
+            roots: Object.freeze(protectedRoots),
+            trailingCharacters,
+            version: readPositiveInteger(
+                protectedPaths.version,
+                "workspaces.protectedPaths.version",
+            ),
+        },
         worktreeRefPrefix,
         worldCapture: {
             maxRevisionDepth: readPositiveInteger(
@@ -1129,4 +1186,20 @@ function readSimpleName(value: unknown, context: string): string {
         throw new TypeError(`${context} must be a simple path name`);
     }
     return name;
+}
+
+function readSingleCharacters(value: unknown, context: string): readonly string[] {
+    const characters = readUniqueStrings(value, context);
+    if (
+        characters.some(
+            (character) =>
+                [...character].length !== 1 ||
+                character === "/" ||
+                character === "\\" ||
+                character === "\0",
+        )
+    ) {
+        throw new TypeError(`${context} must contain portable single characters`);
+    }
+    return characters;
 }

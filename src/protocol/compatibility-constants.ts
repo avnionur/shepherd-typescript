@@ -835,3 +835,18 @@ export const WORKSPACE_PROTOCOL_V17_CONTRACT = deepFreeze({
         citationVersion: 1,
     },
 } as const);
+
+/** Immutable protected control-path policy implemented by workspace protocol v18. */
+export const WORKSPACE_PROTOCOL_V18_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V17_CONTRACT,
+    protectedPaths: {
+        alternateNameSeparators: [":"],
+        caseFold: true,
+        errorCode: "WORKSPACE_PROTECTED_PATH",
+        errorMessage: "workspace path targets protected control metadata",
+        normalizationForm: "NFC",
+        roots: [".vcscore"],
+        trailingCharacters: [" ", "."],
+        version: 18,
+    },
+} as const);

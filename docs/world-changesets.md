@@ -31,6 +31,10 @@ semantics, and the protected control-root exclusion. Configured path, symlink, b
 change-count, and canonical-record bounds fail with `WorldChangesetError`; malformed or
 cross-binding evidence fails closed with a distinct configured code.
 
+Workspace protocol v18 additionally revalidates every retained manifest and complete selection
+changeset against the shared protected-path policy, including normalized alternate spellings and
+resolved aliases, before any later materialization or recovery effect.
+
 This Task 5 module describes retained copy-world differences only. The current carrier records
 symlink targets but no independent numeric symlink mode. Task 6 owns post-execution capture away
 from user files. Workspace protocol v11

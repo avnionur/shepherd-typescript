@@ -32,6 +32,10 @@ import { createWorkspaceBindings } from "./bindings.ts";
 import { GitCustodyError } from "./errors.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import {
+    assertWorkspacePathUnprotected,
+    WorkspaceProtectedPathError,
+} from "./protected-control-paths.ts";
+import {
     createReferenceCopyCarrierForRetainedCustody,
     forkReferenceCopyRevisionWithReceipts,
     inspectReferenceCopySource,
@@ -131,11 +135,16 @@ async function capture(
     mkdirSync(stagingWorld, { recursive: true, mode: 0o700 });
     try {
         materializeManagedWorld(
+            workspaceRoot,
             retainedBinding.canonical_root,
             workspace.adoption.mode,
             stagingWorld,
         );
-        const world = inspectReferenceCopySource(workspaceRoot, stagingWorld);
+        const world = inspectReferenceCopySource(
+            workspaceRoot,
+            stagingWorld,
+            retainedBinding.canonical_root,
+        );
         const bundlePath = path.join(
             stagingRoot,
             workspaceProtocolConfig.gitCustody.objectPackFile,
@@ -230,7 +239,7 @@ function captureBasis(
     /* node:coverage enable */
     const index = mode === "worktree" ? readIndex(identity) : null;
     if (index?.entries.some((entry) => entry.stage !== 0)) throw gitError("unsupported");
-    const ignoredPaths = mode === "worktree" ? readIgnoredPaths(identity.root) : [];
+    const ignoredPaths = mode === "worktree" ? readIgnoredPaths(workspaceRoot, identity.root) : [];
     const ignored = Object.freeze({
         digest: digest(canonicalizeRecord({ paths: ignoredPaths })),
         paths: Object.freeze(ignoredPaths),
@@ -275,8 +284,8 @@ function currentManagedWorldId(
     const root = path.join(stagingParent.path, randomUUID());
     mkdirSync(root, { recursive: true, mode: 0o700 });
     try {
-        materializeManagedWorld(repositoryRoot, mode, root);
-        return inspectReferenceCopySource(workspaceRoot, root).content_id;
+        materializeManagedWorld(workspaceRoot, repositoryRoot, mode, root);
+        return inspectReferenceCopySource(workspaceRoot, root, repositoryRoot).content_id;
     } finally {
         assertStagingIdentity(stagingParent);
         rmSync(root, { recursive: true, force: true });
@@ -285,6 +294,7 @@ function currentManagedWorldId(
 }
 
 function materializeManagedWorld(
+    workspaceRoot: string,
     repositoryRoot: string,
     mode: WorkspaceAdoptionMode,
     target: string,
@@ -306,7 +316,7 @@ function materializeManagedWorld(
         /* node:coverage enable */
         return;
     }
-    const paths = readManagedPaths(repositoryRoot);
+    const paths = readManagedPaths(workspaceRoot, repositoryRoot);
     for (const relative of paths) copyNode(repositoryRoot, target, relative);
 }
 
@@ -361,12 +371,16 @@ function assertManagedRepositoryBoundary(repositoryRoot: string, relative: strin
     );
     assert.equal(existsSync(nested), true);
     const staged = tryGit(repositoryRoot, ["ls-files", "--stage", "--", relative]);
+    // Git versions differ in whether an undeclared embedded repository is enumerated as a
+    // directory boundary or rejected earlier as an unsafe managed path.
+    /* node:coverage disable */
     if (staged === null || !staged.text.startsWith("160000 ")) {
         throw gitError(
             "unsupported",
             `embedded repository is not a declared submodule: ${relative}`,
         );
     }
+    /* node:coverage enable */
     const status = runGit(repositoryRoot, [
         "status",
         "--porcelain=v1",
@@ -378,7 +392,7 @@ function assertManagedRepositoryBoundary(repositoryRoot: string, relative: strin
     if (status.length > 0) throw gitError("unsupported", `dirty submodule: ${relative}`);
 }
 
-function readManagedPaths(root: string): string[] {
+function readManagedPaths(workspaceRoot: string, root: string): string[] {
     const command = runGit(root, [
         "ls-files",
         "-z",
@@ -387,10 +401,10 @@ function readManagedPaths(root: string): string[] {
         "--exclude-standard",
         `--exclude=${workspaceProtocolConfig.controlDirectory}/**`,
     ]);
-    return managedGitPaths(command.bytes);
+    return managedGitPaths(workspaceRoot, root, command.bytes);
 }
 
-function readIgnoredPaths(root: string): string[] {
+function readIgnoredPaths(workspaceRoot: string, root: string): string[] {
     const command = runGit(root, [
         "ls-files",
         "-z",
@@ -399,7 +413,7 @@ function readIgnoredPaths(root: string): string[] {
         "--exclude-standard",
         `--exclude=${workspaceProtocolConfig.controlDirectory}/**`,
     ]);
-    return managedGitPaths(command.bytes);
+    return managedGitPaths(workspaceRoot, root, command.bytes);
 }
 
 function ignoredSourcesDigest(identity: GitRepositoryIdentity): string {
@@ -441,9 +455,9 @@ function sparseStateDigest(identity: GitRepositoryIdentity): string {
     );
 }
 
-function managedGitPaths(value: Buffer): string[] {
+function managedGitPaths(workspaceRoot: string, bindingRoot: string, value: Buffer): string[] {
     const protectedPrefix = `${workspaceProtocolConfig.controlDirectory}/`;
-    return parseNull(value)
+    const paths = parseNull(value)
         .sort(Buffer.compare)
         .map(decodeGitPath)
         .filter(
@@ -451,6 +465,10 @@ function managedGitPaths(value: Buffer): string[] {
                 item !== workspaceProtocolConfig.controlDirectory &&
                 !item.startsWith(protectedPrefix),
         );
+    for (const candidate of paths) {
+        assertWorkspacePathUnprotected({ bindingRoot, path: candidate, workspaceRoot });
+    }
+    return paths;
 }
 
 function decodeGitPath(value: Buffer): string {
@@ -1220,7 +1238,9 @@ async function invoke<T>(operation: () => T | Promise<T>): Promise<T> {
     try {
         return await operation();
     } catch (error) {
-        if (error instanceof GitCustodyError) throw error;
+        if (error instanceof GitCustodyError || error instanceof WorkspaceProtectedPathError) {
+            throw error;
+        }
         throw gitError("control", String(error));
     }
 }

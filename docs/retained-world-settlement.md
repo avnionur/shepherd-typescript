@@ -76,6 +76,12 @@ trace export/import reconstructs the same result without importing the private s
 Missing cuts, malformed canonical evidence, duplicate output/command authority, or journal
 disagreement fail closed.
 
+Workspace protocol v18 validates the complete authenticated path set before selection staging and
+again during publication recovery. Protected direct, nested, case-folded, alternate-name, and
+symlink-alias targets fail with stable versioned evidence before a user-path effect. Discard
+cleanup verifies its retained path set before recursive removal and preserves the durable discard
+marker when cleanup must be retried.
+
 Task 9.4B2B2B implements that reference-carrier effect seam. Before the first write it requires the
 package-owned observer to reproduce the admitted semantic basis. It then validates or replays the
 exact retained prefix, applies only the next dependency-scheduled change from immutable staging,

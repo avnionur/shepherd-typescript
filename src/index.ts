@@ -335,6 +335,14 @@ export {
 export { createGitAwareCustody } from "./workspace/git-aware-custody.ts";
 export { createGitChangesetInspection } from "./workspace/git-changeset-inspection.ts";
 export { initializeWorkspace, openWorkspace } from "./workspace/initialization.ts";
+export type {
+    WorkspacePathProtectionOptions,
+    WorkspacePathProtectionValidation,
+} from "./workspace/protected-control-paths.ts";
+export {
+    inspectWorkspacePathProtection,
+    WorkspaceProtectedPathError,
+} from "./workspace/protected-control-paths.ts";
 export { createReferenceCopyCarrier } from "./workspace/reference-copy-carrier.ts";
 export { createRetainedWorldRunner } from "./workspace/retained-world-runner.ts";
 export type {

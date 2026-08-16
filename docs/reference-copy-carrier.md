@@ -45,16 +45,19 @@ collisions are rejected while retained path spelling stays exact. Binary and Uni
 intact and broken contained links, and logical sparse-file bytes are supported. Hard links, FIFO or
 other special objects, escaping or absolute links, malformed names, and unsupported permission
 semantics fail closed with configured `WorldCarrierError` codes. The exact workspace control root
-is excluded; another ordinary directory with the same basename is not globally filtered.
+is excluded. Workspace protocol v18 rejects configured protected names at any managed depth,
+including case-folded, trailing-character, alternate-name, and resolved symlink aliases, with
+versioned `WorkspaceProtectedPathError` evidence.
 Contained looping symlink nodes are retained as target text because carrier traversal never follows
 them; any link encountered while establishing directory authority must resolve to that exact
 directory or the operation fails.
 
 On Windows, `mode` is the normalized low nine bits exposed by Node `lstat` and accepted by Node
 `chmod`; it does not claim POSIX ownership, ACL, or independent user/group/other enforcement.
-ACLs, extended attributes, resource forks, Windows alternate streams, and filesystem case-folding
-collisions beyond the host's observable namespace are not yet portable managed semantics. This
-slice does not claim to preserve them; the roadmap retains explicit carrier hardening before
+ACLs, extended attributes, resource forks, and retained Windows alternate-stream content are not
+yet portable managed semantics. Protected-path case and alternate-name comparisons are
+deterministic under the v18 policy, but this slice does not claim to preserve those broader
+filesystem values; the roadmap retains explicit carrier hardening before
 optimized backends can claim reference parity.
 
 ## Durability and current boundary

@@ -891,6 +891,25 @@ export type WorkspaceProtocolConfig = {
     readonly hexLength: number;
     /** Workspace-control manifest filename. */
     readonly manifestFile: string;
+    /** Generic protected workspace-path validation policy. */
+    readonly protectedPaths: {
+        /** Separators introducing filesystem alternate-name forms. */
+        readonly alternateNameSeparators: readonly string[];
+        /** Whether comparisons use deterministic Unicode case folding. */
+        readonly caseFold: boolean;
+        /** Stable protected-path error code. */
+        readonly errorCode: string;
+        /** Stable protected-path default message. */
+        readonly errorMessage: string;
+        /** Unicode normalization form applied before comparison. */
+        readonly normalizationForm: "NFC" | "NFD" | "NFKC" | "NFKD";
+        /** Workspace-relative protected path roots. */
+        readonly roots: readonly string[];
+        /** Trailing characters ignored by alternate-name filesystems. */
+        readonly trailingCharacters: readonly string[];
+        /** Public protected-path validation contract version. */
+        readonly version: number;
+    };
     /** Prefix identifying an adopted worktree baseline. */
     readonly worktreeRefPrefix: string;
     /** Parent-linked task-world capture protocol configuration. */

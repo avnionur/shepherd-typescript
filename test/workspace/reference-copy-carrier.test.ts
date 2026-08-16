@@ -346,6 +346,7 @@ test("reference copy carrier rejects unsafe sources and forged bindings without 
     await rm(path.join(sourceRoot, "escape"));
     await symlink(path.join(workspaceRoot, ".vcscore"), path.join(sourceRoot, "absolute"));
     await assert.rejects(carrier.snapshot(binding), WorldCarrierError);
+    await rm(path.join(sourceRoot, "absolute"));
 
     await assert.rejects(
         carrier.snapshot({ ...binding, binding_id: "sha256:forged" }),

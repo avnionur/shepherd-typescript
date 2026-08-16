@@ -676,6 +676,16 @@
         "gitMetadataName": ".git",
         "hexLength": 64,
         "manifestFile": "workspace.json",
+        "protectedPaths": {
+            "alternateNameSeparators": [":"],
+            "caseFold": true,
+            "errorCode": "WORKSPACE_PROTECTED_PATH",
+            "errorMessage": "workspace path targets protected control metadata",
+            "normalizationForm": "NFC",
+            "roots": [".vcscore"],
+            "trailingCharacters": [" ", "."],
+            "version": 18
+        },
         "worktreeRefPrefix": "worktree:sha256:",
         "worldCapture": {
             "maxRevisionDepth": 1024,

@@ -24,6 +24,8 @@ import {
     WORKSPACE_PROTOCOL_V14_CONTRACT,
     WORKSPACE_PROTOCOL_V15_CONTRACT,
     WORKSPACE_PROTOCOL_V16_CONTRACT,
+    WORKSPACE_PROTOCOL_V17_CONTRACT,
+    WORKSPACE_PROTOCOL_V18_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -83,8 +85,10 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.selectionPublication.scheduleVersion, 1);
     assert.equal(parsed.workspaces.selectionPublication.scheduledStepVersion, 1);
     assert.equal(parsed.workspaces.selectionPublication.scheduledPublicationVersion, 1);
+    assert.equal(parsed.workspaces.protectedPaths.version, 18);
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
+    assert.equal(Object.isFrozen(parsed.workspaces.protectedPaths), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V2_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V3_CONTRACT), true);
@@ -101,6 +105,9 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V14_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V15_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V16_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V17_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V18_CONTRACT), true);
+    assert.equal("protectedPaths" in WORKSPACE_PROTOCOL_V17_CONTRACT, false);
     assert.equal(
         "scheduledStepVersion" in WORKSPACE_PROTOCOL_V15_CONTRACT.selectionPublication,
         false,
@@ -899,6 +906,36 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
         },
         (config) => {
             workspaceConfigOf(config).manifestFile = workspaceConfigOf(config).controlDirectory;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "protectedPaths").roots = ["ordinary"];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "protectedPaths").roots = ["unsafe/path"];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "protectedPaths").alternateNameSeparators = ["::"];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "protectedPaths").alternateNameSeparators = ["/"];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "protectedPaths").trailingCharacters = ["\\"];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "protectedPaths").caseFold = "yes";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "protectedPaths").normalizationForm = "invalid";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "protectedPaths").errorCode = "";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "protectedPaths").version = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "protectedPaths").extra = true;
         },
         (config) => {
             workspaceConfigOf(config).format = "";
