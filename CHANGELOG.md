@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added deterministic selection fault boundaries proving that interrupted carrier publication
   leaves no falsely terminal settlement receipt and converges through authenticated retry.
 - Pinned generated TypeScript and JSON artifacts to canonical LF checkout bytes so protocol
-  synchronization remains deterministic on Windows.
+  synchronization remains deterministic on Windows, and made Gitlink test identity independent of
+  machine-global Git configuration.
 
 ### Impact
 

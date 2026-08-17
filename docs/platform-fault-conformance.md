@@ -18,8 +18,9 @@ mode bits. ACLs, extended attributes, macOS resource forks, and Windows alternat
 not represented. Platform-specific probes therefore reject any such metadata before snapshot or
 custody-capture publication. A missing or failed required probe also fails closed as an unsupported
 platform. The system-owned macOS `com.apple.provenance` audit marker is explicitly non-semantic and
-excluded; user and resource-fork attributes still fail closed. CI installs the Linux `acl` and
-`attr` probes; macOS and Windows use native tools.
+excluded; user and resource-fork attributes still fail closed. On Linux, `getfattr` classifies the
+user namespace while `getfacl` classifies POSIX ACL metadata separately. CI installs the Linux
+`acl` and `attr` probes; macOS and Windows use native tools.
 
 Names are compared after configured Unicode normalization, case folding, alternate-name splitting,
 and trailing-character removal. Distinct host entries that collapse to one portable name are

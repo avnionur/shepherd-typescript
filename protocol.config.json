@@ -785,7 +785,7 @@
                         "--no-dereference",
                         "-d",
                         "-m",
-                        "-",
+                        "^user\\.",
                         "{path}"
                     ],
                     "executable": "getfattr",
@@ -799,7 +799,7 @@
                         "--no-dereference",
                         "-d",
                         "-m",
-                        "-",
+                        "^user\\.",
                         "{path}"
                     ]
                 },
