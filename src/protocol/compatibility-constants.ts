@@ -926,6 +926,7 @@ export const WORKSPACE_PROTOCOL_V19_CONTRACT = deepFreeze({
         metadataPolicy: "reject-unsupported-before-publication",
         metadataPathToken: "{path}",
         metadataProbeMaxBytes: 1_048_576,
+        metadataProbeTimeoutMs: 30_000,
         metadataProbes: [
             {
                 arguments: ["{path}"],

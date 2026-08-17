@@ -945,6 +945,9 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             platformConformanceConfigOf(config).version = 0;
         },
         (config) => {
+            platformConformanceConfigOf(config).metadataProbeTimeoutMs = 0;
+        },
+        (config) => {
             objectAt(platformConformanceConfigOf(config), "faults").metadataClassification =
                 "unknown";
         },

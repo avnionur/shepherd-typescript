@@ -748,6 +748,7 @@
             "metadataPolicy": "reject-unsupported-before-publication",
             "metadataPathToken": "{path}",
             "metadataProbeMaxBytes": 1048576,
+            "metadataProbeTimeoutMs": 30000,
             "metadataProbes": [
                 {
                     "arguments": ["{path}"],

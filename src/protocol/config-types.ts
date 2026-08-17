@@ -933,6 +933,8 @@ export type WorkspaceProtocolConfig = {
         readonly metadataPathToken: string;
         /** Maximum output bytes accepted from one metadata probe. */
         readonly metadataProbeMaxBytes: number;
+        /** Maximum execution time accepted from one metadata probe. */
+        readonly metadataProbeTimeoutMs: number;
         /** Configured host metadata probes. */
         readonly metadataProbes: readonly {
             /** Ordered executable arguments containing the configured path token. */

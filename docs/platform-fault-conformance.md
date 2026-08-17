@@ -20,7 +20,8 @@ custody-capture publication. A missing or failed required probe also fails close
 platform. The system-owned macOS `com.apple.provenance` audit marker is explicitly non-semantic and
 excluded; user and resource-fork attributes still fail closed. On Linux, `getfattr` classifies the
 user namespace while `getfacl` classifies POSIX ACL metadata separately. CI installs the Linux
-`acl` and `attr` probes; macOS and Windows use native tools.
+`acl` and `attr` probes; macOS and Windows use native tools. Every probe has a configured execution
+timeout and fails closed as an unsupported platform when the host tool stalls or is unavailable.
 
 Names are compared after configured Unicode normalization, case folding, alternate-name splitting,
 and trailing-character removal. Distinct host entries that collapse to one portable name are

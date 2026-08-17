@@ -213,6 +213,7 @@ export function assertWorkspaceMetadataSupported(
                 encoding: "utf8",
                 maxBuffer: policy.metadataProbeMaxBytes,
                 stdio: ["ignore", "pipe", "pipe"],
+                timeout: policy.metadataProbeTimeoutMs,
             });
             if (result.error !== undefined || result.status !== 0) {
                 /* node:coverage disable */

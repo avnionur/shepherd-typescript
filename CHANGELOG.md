@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pinned generated TypeScript and JSON artifacts to canonical LF checkout bytes so protocol
   synchronization remains deterministic on Windows, and made Gitlink test identity independent of
   machine-global Git configuration.
+- Added a configured fail-closed metadata-probe timeout so a stalled native host tool cannot hang
+  custody verification indefinitely.
 
 ### Impact
 

@@ -74,6 +74,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "metadataPolicy",
             "metadataPathToken",
             "metadataProbeMaxBytes",
+            "metadataProbeTimeoutMs",
             "metadataProbes",
             "modePolicy",
             "optimizedCarrierParity",
@@ -1243,6 +1244,10 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             metadataProbeMaxBytes: readPositiveInteger(
                 platformConformance.metadataProbeMaxBytes,
                 "workspaces.platformConformance.metadataProbeMaxBytes",
+            ),
+            metadataProbeTimeoutMs: readPositiveInteger(
+                platformConformance.metadataProbeTimeoutMs,
+                "workspaces.platformConformance.metadataProbeTimeoutMs",
             ),
             metadataProbes,
             modePolicy: readNonEmptyString(
