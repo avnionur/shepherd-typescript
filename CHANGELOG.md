@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   custody, and reference-suite gating for optimized-carrier parity.
 - Added deterministic selection fault boundaries proving that interrupted carrier publication
   leaves no falsely terminal settlement receipt and converges through authenticated retry.
+- Pinned generated TypeScript and JSON artifacts to canonical LF checkout bytes so protocol
+  synchronization remains deterministic on Windows.
 
 ### Impact
 
