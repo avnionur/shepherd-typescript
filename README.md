@@ -465,11 +465,13 @@ pnpm lint
 pnpm check:protocol
 pnpm build
 pnpm verify
+pnpm verify:serial
 ```
 
 Biome provides formatting and linting. Node's built-in test runner executes TypeScript directly.
-The test command enforces 100% line, branch, and function coverage for runtime source. TypeScript
-builds declarations and JavaScript into `dist/`.
+The test command enforces 100% line, branch, and function coverage for runtime source. The serial
+verification variant retains the same gates while avoiding native-probe process contention on the
+Windows CI runner. TypeScript builds declarations and JavaScript into `dist/`.
 
 Release versions are configured in `release-config.yaml`. After changing the version, run
 `pnpm sync:version` to update every configured JSON manifest.

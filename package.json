@@ -34,8 +34,10 @@
         "lint": "biome check .",
         "sync:version": "node scripts/sync-version-cli.ts",
         "test": "node --test --experimental-test-coverage --test-coverage-branches=100 --test-coverage-functions=100 --test-coverage-lines=100 --test-coverage-include=\"src/**/*.ts\" --test-coverage-include=\"scripts/build-output.ts\" --test-coverage-include=\"scripts/sync-version.ts\" --test-coverage-include=\"scripts/generate-protocol-artifacts.ts\" \"test/**/*.test.ts\"",
+        "test:serial": "node --test --test-concurrency=1 --experimental-test-coverage --test-coverage-branches=100 --test-coverage-functions=100 --test-coverage-lines=100 --test-coverage-include=\"src/**/*.ts\" --test-coverage-include=\"scripts/build-output.ts\" --test-coverage-include=\"scripts/sync-version.ts\" --test-coverage-include=\"scripts/generate-protocol-artifacts.ts\" \"test/**/*.test.ts\"",
         "typecheck": "tsc --noEmit",
-        "verify": "pnpm check:protocol && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+        "verify": "pnpm check:protocol && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+        "verify:serial": "pnpm check:protocol && pnpm lint && pnpm typecheck && pnpm test:serial && pnpm build"
     },
     "devDependencies": {
         "@biomejs/biome": "2.5.7",

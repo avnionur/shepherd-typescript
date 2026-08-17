@@ -47,7 +47,12 @@ jobs:
               run: pnpm install --frozen-lockfile
 
             - name: Verify source
+              if: runner.os != 'Windows'
               run: pnpm verify
+
+            - name: Verify source serially
+              if: runner.os == 'Windows'
+              run: pnpm verify:serial
 
             - name: Build production output
               run: pnpm build:desktop
