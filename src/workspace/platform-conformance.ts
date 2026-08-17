@@ -241,16 +241,16 @@ function metadataProbePathGroups(
     files: readonly string[],
     separateLineBreakPaths: boolean,
 ): readonly (readonly string[])[] {
+    // Newline-safe batching is selected only by the macOS probe configuration and is exercised by
+    // the macOS platform suite; other platform coverage runs cannot enter this configured branch.
     /* node:coverage disable */
     if (!separateLineBreakPaths) return [files];
-    /* node:coverage enable */
     const safe: string[] = [];
     const separate: string[][] = [];
     for (const file of files) {
         if (file.includes("\n") || file.includes("\r")) separate.push([file]);
         else safe.push(file);
     }
-    /* node:coverage disable */
     return safe.length === 0 ? separate : [safe, ...separate];
     /* node:coverage enable */
 }
