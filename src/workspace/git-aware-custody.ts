@@ -28,8 +28,14 @@ import { syncDirectory } from "../blob/directory-durability.ts";
 import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import { GIT_HEAD_KINDS, WORKSPACE_ADOPTION_MODES } from "../protocol/values.generated.ts";
-import { createWorkspaceBindings } from "./bindings.ts";
+import {
+    assertWorkspaceBinding,
+    createGitRepositoryBindings,
+    createWorkspaceBindings,
+    isGitRepositoryBinding,
+} from "./bindings.ts";
 import { GitCustodyError } from "./errors.ts";
+import { gitFilesystemIdentity, inspectGitRepository } from "./git-repository-evidence.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import {
     assertWorkspaceMetadataSupported,
@@ -137,6 +143,7 @@ async function capture(
     faultInjection: WorkspaceCustodyFaultInjection | null,
 ): Promise<GitRetainedOutput | null> {
     const workspace = openWorkspace(workspaceRoot);
+    assertWorkspaceBinding(binding);
     const retainedBinding = revalidateRepositoryBinding(workspaceRoot, binding);
     const identity = readOrCreateIdentity(workspace.control_path, retainedBinding);
     if (workspace.adoption.mode === "none") return null;
@@ -664,15 +671,37 @@ function readOrCreateIdentity(
     controlPath: string,
     binding: WorkspaceBinding,
 ): GitRepositoryIdentity {
-    const file = path.join(controlPath, workspaceProtocolConfig.gitCustody.identityFile);
+    const repositoryBinding = isGitRepositoryBinding(binding) ? binding : null;
+    const identityRoot =
+        repositoryBinding === null
+            ? controlPath
+            : path.join(controlPath, workspaceProtocolConfig.repositoryBindings.identityDirectory);
+    if (repositoryBinding !== null) {
+        const identityRootExisted = existsSync(identityRoot);
+        mkdirSync(identityRoot, { mode: 0o700, recursive: true });
+        const status = lstatSync(identityRoot);
+        assert.equal(status.isDirectory() && !status.isSymbolicLink(), true);
+        if (!identityRootExisted) syncDirectory(controlPath);
+    }
+    const file = path.join(
+        identityRoot,
+        repositoryBinding === null
+            ? workspaceProtocolConfig.gitCustody.identityFile
+            : `${digest(repositoryBinding.resource_id)}-${workspaceProtocolConfig.gitCustody.identityFile}`,
+    );
     if (existsSync(file)) return readIdentityDescriptor(file, binding);
     const observed = readGitIdentity(binding.canonical_root, null);
     const descriptor: GitIdentityDescriptor = {
         ...observed,
         format: workspaceProtocolConfig.gitCustody.identityFormat,
-        repository_id: readOrCreateRepositoryAuthority(observed),
+        repository_id:
+            repositoryBinding?.repository.repository_id ??
+            readOrCreateRepositoryAuthority(observed),
         version: workspaceProtocolConfig.gitCustody.version,
-        worktree_id: `${workspaceProtocolConfig.gitCustody.worktreeIdPrefix}${randomUUID()}`,
+        worktree_id:
+            repositoryBinding === null
+                ? `${workspaceProtocolConfig.gitCustody.worktreeIdPrefix}${randomUUID()}`
+                : `${workspaceProtocolConfig.gitCustody.worktreeIdPrefix}${digest(repositoryBinding.resource_id)}`,
     };
     const temporary = `${file}.${randomUUID()}.tmp`;
     writeExclusive(temporary, descriptor);
@@ -689,7 +718,7 @@ function readOrCreateIdentity(
     } finally {
         unlinkSync(temporary);
     }
-    syncDirectory(controlPath);
+    syncDirectory(identityRoot);
     return readIdentityDescriptor(file, binding);
 }
 
@@ -735,7 +764,12 @@ function readIdentityDescriptor(file: string, binding: WorkspaceBinding): GitRep
         workspaceProtocolConfig.gitCustody.objectFormats.includes(value.object_format),
         true,
     );
-    assert.equal(value.repository_id, readOrCreateRepositoryAuthority(binding.canonical_root));
+    assert.equal(
+        value.repository_id,
+        isGitRepositoryBinding(binding)
+            ? binding.repository.repository_id
+            : readOrCreateRepositoryAuthority(binding.canonical_root),
+    );
     return readGitIdentity(binding.canonical_root, value);
 }
 
@@ -746,7 +780,7 @@ function readOrCreateRepositoryAuthority(identity: GitRepositoryIdentity | strin
     );
     const lock = path.join(
         tmpdir(),
-        `${workspaceProtocolConfig.gitCustody.repositoryLockPrefix}${digest(filesystemIdentity(commonDir))}`,
+        `${workspaceProtocolConfig.gitCustody.repositoryLockPrefix}${digest(gitFilesystemIdentity(commonDir))}`,
     );
     for (
         let attempt = 0;
@@ -840,34 +874,29 @@ function readGitIdentity(
     root: string,
     retained: GitRepositoryIdentity | null,
 ): GitRepositoryIdentity {
-    const top = realpathSync(runGit(root, ["rev-parse", "--show-toplevel"]).text);
-    if (top !== realpathSync(root))
+    const repository = inspectGitRepository(root, (args) => runGit(root, args).text);
+    if (repository.top !== realpathSync(root))
         throw gitError("unsupported", "binding must equal Git top level");
-    const gitDir = realpathSync(runGit(root, ["rev-parse", "--absolute-git-dir"]).text);
-    const commonDir = realpathSync(
-        runGit(root, ["rev-parse", "--path-format=absolute", "--git-common-dir"]).text,
-    );
-    const objectFormat = runGit(root, ["rev-parse", "--show-object-format"]).text;
-    const bare = runGit(root, ["rev-parse", "--is-bare-repository"]).text === "true";
-    const gitVersion = runGit(root, ["--version"]).text;
-    /* node:coverage ignore next */
-    if (bare) throw gitError("unsupported", "bare repositories have no worktree custody");
+    /* node:coverage disable */
+    if (repository.bare)
+        throw gitError("unsupported", "bare repositories have no worktree custody");
+    /* node:coverage enable */
     // Supported object formats are Git-build capabilities.
     /* node:coverage disable */
     /* node:coverage ignore next */
-    if (!workspaceProtocolConfig.gitCustody.objectFormats.includes(objectFormat)) {
+    if (!workspaceProtocolConfig.gitCustody.objectFormats.includes(repository.objectFormat)) {
         throw gitError("unsupported");
     }
     /* node:coverage enable */
     const observed: GitRepositoryIdentity = Object.freeze({
-        bare,
-        common_dir: commonDir,
-        common_dir_identity: filesystemIdentity(commonDir),
-        git_dir: gitDir,
-        git_version: gitVersion,
-        object_format: objectFormat,
+        bare: repository.bare,
+        common_dir: repository.commonDir,
+        common_dir_identity: repository.commonDirIdentity,
+        git_dir: repository.gitDir,
+        git_version: repository.gitVersion,
+        object_format: repository.objectFormat,
         repository_id: retained?.repository_id ?? "",
-        root: top,
+        root: repository.top,
         worktree_id: retained?.worktree_id ?? "",
     });
     if (retained !== null) {
@@ -885,13 +914,19 @@ function readGitIdentity(
 }
 
 function revalidateRepositoryBinding(workspaceRoot: string, binding: WorkspaceBinding) {
-    const result = createWorkspaceBindings({
+    const result = (
+        isGitRepositoryBinding(binding) ? createGitRepositoryBindings : createWorkspaceBindings
+    )({
         bindings: [{ name: binding.name, root: binding.requested_root }],
         workspaceRoot,
     }).bindings[0];
     assert.ok(result);
     assert.equal(result.binding_id, binding.binding_id);
     assert.equal(result.canonical_root, binding.canonical_root);
+    if (isGitRepositoryBinding(binding)) {
+        assert.ok(isGitRepositoryBinding(result));
+        assert.equal(result.resource_id, binding.resource_id);
+    }
     return result;
 }
 
@@ -1111,17 +1146,11 @@ function gitStagingRoot(controlPath: string): GitStaging {
     assert.equal(status.isDirectory() && !status.isSymbolicLink(), true);
     syncDirectory(root);
     syncDirectory(controlPath);
-    return { identity: filesystemIdentity(root), path: root };
+    return { identity: gitFilesystemIdentity(root), path: root };
 }
 
 function assertStagingIdentity(staging: GitStaging): void {
-    assert.equal(filesystemIdentity(staging.path), staging.identity);
-}
-
-function filesystemIdentity(file: string): string {
-    const status = lstatSync(file, { bigint: true });
-    assert.equal(status.isDirectory() && !status.isSymbolicLink(), true);
-    return `${status.dev}:${status.ino}`;
+    assert.equal(gitFilesystemIdentity(staging.path), staging.identity);
 }
 
 function runGit(root: string, args: readonly string[], input?: Buffer): GitCommand {

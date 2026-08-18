@@ -51,7 +51,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Protected control paths](./protected-control-paths.md) defines workspace protocol v18's
   configured normalization, stable rejection evidence, and capture/selection/cleanup enforcement.
 - [Workspace binding roots](./workspace-bindings.md) defines stable canonical binding identities,
-  workspace-authority containment, symlink-aware alias handling, and pairwise overlap rejection.
+  workspace-authority containment, symlink-aware alias handling, pairwise overlap rejection, and
+  protocol-v20 repository-aware resource authorities for disjoint Git worktrees.
 - [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,
   isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
   idempotent discard.

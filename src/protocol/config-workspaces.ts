@@ -37,6 +37,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "manifestFile",
             "platformConformance",
             "protectedPaths",
+            "repositoryBindings",
             "selectionPublication",
             "settlement",
             "worktreeRefPrefix",
@@ -64,6 +65,16 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "version",
         ],
         "workspaces.protectedPaths",
+    );
+    const repositoryBindings = readObject(
+        config.repositoryBindings,
+        ["errors", "identityDirectory", "identityKind", "resourceType", "version"],
+        "workspaces.repositoryBindings",
+    );
+    const repositoryBindingErrors = readObject(
+        repositoryBindings.errors,
+        ["invalidRepositoryCode", "invalidRepositoryMessage"],
+        "workspaces.repositoryBindings.errors",
     );
     const platformConformance = readObject(
         config.platformConformance,
@@ -513,6 +524,22 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         carrier.carrierDirectory,
         "workspaces.carrier.carrierDirectory",
     );
+    const gitIdentityFile = readSimpleName(
+        gitCustody.identityFile,
+        "workspaces.gitCustody.identityFile",
+    );
+    const gitRepositoryIdentityFile = readSimpleName(
+        gitCustody.repositoryIdentityFile,
+        "workspaces.gitCustody.repositoryIdentityFile",
+    );
+    const gitStagingDirectory = readSimpleName(
+        gitCustody.stagingDirectory,
+        "workspaces.gitCustody.stagingDirectory",
+    );
+    const repositoryIdentityDirectory = readSimpleName(
+        repositoryBindings.identityDirectory,
+        "workspaces.repositoryBindings.identityDirectory",
+    );
     const carrierCollectionDirectories = [
         readSimpleName(carrier.custodiesDirectory, "workspaces.carrier.custodiesDirectory"),
         readSimpleName(carrier.discardedDirectory, "workspaces.carrier.discardedDirectory"),
@@ -591,6 +618,19 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
     ] as const;
     if (new Set(selectionPublicationPathNames).size !== selectionPublicationPathNames.length) {
         throw new TypeError("workspace selection-publication path names must not collide");
+    }
+    const controlPathNames = [
+        carrierDirectory,
+        gitIdentityFile,
+        gitRepositoryIdentityFile,
+        gitStagingDirectory,
+        manifestFile,
+        repositoryIdentityDirectory,
+        selectionPublicationPathNames[0],
+        selectionPublicationPathNames[1],
+    ];
+    if (new Set(controlPathNames).size !== controlPathNames.length) {
+        throw new TypeError("workspace control path names must not collide");
     }
     if (
         new Set([
@@ -1140,10 +1180,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 ),
             },
             headKinds: readUniqueStrings(gitCustody.headKinds, "workspaces.gitCustody.headKinds"),
-            identityFile: readSimpleName(
-                gitCustody.identityFile,
-                "workspaces.gitCustody.identityFile",
-            ),
+            identityFile: gitIdentityFile,
             identityFormat: readNonEmptyString(
                 gitCustody.identityFormat,
                 "workspaces.gitCustody.identityFormat",
@@ -1178,10 +1215,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 gitCustody.repositoryIdPrefix,
                 "workspaces.gitCustody.repositoryIdPrefix",
             ),
-            repositoryIdentityFile: readSimpleName(
-                gitCustody.repositoryIdentityFile,
-                "workspaces.gitCustody.repositoryIdentityFile",
-            ),
+            repositoryIdentityFile: gitRepositoryIdentityFile,
             repositoryLockAttempts: readPositiveInteger(
                 gitCustody.repositoryLockAttempts,
                 "workspaces.gitCustody.repositoryLockAttempts",
@@ -1194,10 +1228,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 gitCustody.repositoryLockPrefix,
                 "workspaces.gitCustody.repositoryLockPrefix",
             ),
-            stagingDirectory: readSimpleName(
-                gitCustody.stagingDirectory,
-                "workspaces.gitCustody.stagingDirectory",
-            ),
+            stagingDirectory: gitStagingDirectory,
             version: readPositiveInteger(gitCustody.version, "workspaces.gitCustody.version"),
             worktreeIdPrefix: readNonEmptyString(
                 gitCustody.worktreeIdPrefix,
@@ -1292,6 +1323,31 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             version: readPositiveInteger(
                 protectedPaths.version,
                 "workspaces.protectedPaths.version",
+            ),
+        },
+        repositoryBindings: {
+            errors: {
+                invalidRepositoryCode: readNonEmptyString(
+                    repositoryBindingErrors.invalidRepositoryCode,
+                    "workspaces.repositoryBindings.errors.invalidRepositoryCode",
+                ),
+                invalidRepositoryMessage: readNonEmptyString(
+                    repositoryBindingErrors.invalidRepositoryMessage,
+                    "workspaces.repositoryBindings.errors.invalidRepositoryMessage",
+                ),
+            },
+            identityDirectory: repositoryIdentityDirectory,
+            identityKind: readNonEmptyString(
+                repositoryBindings.identityKind,
+                "workspaces.repositoryBindings.identityKind",
+            ),
+            resourceType: readNonEmptyString(
+                repositoryBindings.resourceType,
+                "workspaces.repositoryBindings.resourceType",
+            ),
+            version: readPositiveInteger(
+                repositoryBindings.version,
+                "workspaces.repositoryBindings.version",
             ),
         },
         worktreeRefPrefix,

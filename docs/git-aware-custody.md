@@ -19,6 +19,13 @@ the retained output and conservatively reports whether the current user Git basi
 `discard(custodyId)` delegates exact physical cleanup to the reference carrier without changing
 the immutable basis or user repository.
 
+Workspace protocol v20 composes `createGitRepositoryBindings` with this existing custody API.
+Repository-aware bindings support multiple sibling Git worktrees beneath one initialized
+workspace, retain distinct repository/resource evidence independent of declaration order, and use
+per-resource identity receipts beneath the workspace control root. No `.vcscore` directory is
+written into a nested user repository. Ordinary v2 directory bindings remain accepted for Phase 3
+compatibility and keep their existing binding and custody identities.
+
 ## Basis semantics
 
 `git-head` requires an attached or detached commit and materializes only its committed tree.

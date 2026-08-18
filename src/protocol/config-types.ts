@@ -891,6 +891,22 @@ export type WorkspaceProtocolConfig = {
     readonly hexLength: number;
     /** Workspace-control manifest filename. */
     readonly manifestFile: string;
+    /** Repository-aware workspace binding protocol configuration. */
+    readonly repositoryBindings: {
+        /** Stable repository-binding validation errors. */
+        readonly errors: {
+            readonly invalidRepositoryCode: string;
+            readonly invalidRepositoryMessage: string;
+        };
+        /** Protected per-resource Git identity receipt directory. */
+        readonly identityDirectory: string;
+        /** Canonical identity domain for repository binding resources. */
+        readonly identityKind: string;
+        /** Public repository resource discriminant. */
+        readonly resourceType: string;
+        /** Public repository-binding protocol version. */
+        readonly version: number;
+    };
     /** Cross-platform retained-custody conformance policy. */
     readonly platformConformance: {
         /** Portable path case-collision policy. */

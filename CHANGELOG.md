@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.37.0] - 2026-08-18
+
+### New Feature
+
+- Added workspace protocol v20 `createGitRepositoryBindings` authorities with exact Git worktree,
+  shared-repository, per-worktree, object-format, and filesystem evidence plus stable
+  order-independent resource identities.
+- Added independent multi-repository Git custody receipts beneath one workspace control root,
+  linked/common-repository and nested submodule-boundary refusal, repository-drift detection, and
+  package-handle authentication before custody capture.
+- Added pinned `0.3.0` `GitRepo` evidence and explicit oracle gaps without claiming that local
+  filesystem/resource identity or future grant semantics match undocumented Python internals.
+
+### Impact
+
+Callers can bind and retain multiple disjoint Git repositories under one initialized workspace
+without writing Shepherd metadata into those user repositories, while ordinary Phase 3 directory
+bindings and all existing settlement behavior retain their identities and public APIs.
+
 ## [1.36.1] - 2026-08-18
 
 ### Improvement
