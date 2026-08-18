@@ -46,8 +46,8 @@ Coverage is earned in explicit levels so planned behavior is never presented as 
 
 | Level | Meaning | Status |
 | --- | --- | --- |
-| L0 | Canonical schemas, identities, trace storage, and projections | In progress |
-| L1 | Documented Shepherd `0.3.0` settlement behavior | Planned |
+| L0 | Canonical schemas, identities, trace storage, and projections | Complete |
+| L1 | Shepherd `0.3.0` settlement compatibility | L1-alpha: P0 loop complete; full Phase 4 surface planned |
 | L2 | Scope and versioned-world substrate parity | Planned |
 | L3 | Paper programming-model parity | Planned |
 | L4 | Production security, recovery, performance, packaging, and releases | Planned |
@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.36.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.36.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -528,48 +528,18 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 
 ## Status
 
-The project is currently at L0. Phase 0 governance and the Phase 1 canonical record, append
-planning, SQLite durability, blob storage, trace-cut, causal-slice, execution-history projection,
-integrity, recovery, native interchange, and blob-orphan collection contracts are implemented.
-Phase 2 now includes bodyless task descriptors, runtime schemas, artifact locks, durable exact task
-registration, immutable correlated effect intent/outcome records, ordered exact-kind handler
-dispatch, versioned terminal run-outcome records, ordered text/blob artifact records, and aggregate
-run-usage records. Configured run controls now enforce cooperative counter/duration budgets and
-caller cancellation. A provider-neutral structured request/response boundary, deterministic
-exact-cassette static provider, offline bodyless task executor, and durable lifecycle, artifact,
-usage, outcome, terminal-cut, restart recovery, and leased/fenced invocation admission are
-implemented. Durable lifecycle, artifact, usage, outcome, cut, and causal-edge inspection is also
-available as a read-only projection of canonical evidence. Globally idempotent recovery commands
-bind safe pre-start resume and terminal-cut repair to canonical command evidence, and globally
-idempotent pause requests bind exact running-head and fencing-token authority without changing the
-lifecycle. Configured checkpoint adapters and safe-boundary suspension acknowledgement now publish
-cut-bound continuation evidence while atomically releasing and fencing the worker. Exact resume
-commands validate that evidence, and prerequisite-driven waiting acknowledgement now publishes
-the same cut-bound continuation evidence plus an exact prerequisite while atomically releasing
-the worker. Waiting resume additionally requires independently verified matching satisfaction.
-Both resume paths acquire the next worker fence and publish resumed-running authority without
-invoking a provider or restoring external state. Globally idempotent cancellation
-commands now bind the exact running head and fence; the current worker can acknowledge them at a
-safe boundary while atomically publishing a cancelled terminal and releasing its claim. The
-same command authority now terminalizes exact created, waiting, or suspended heads only when no
-worker remains authoritative, with exact replay across restart and stale-head rejection. The
-normative lifecycle matrix and continuation/waiting/suspension/running schemas are implemented.
-Appendix B static-fragment lowering and pinned theorem-metadata validation are implemented for
-allowlisted conformance manifests. Core-0H activation remains disabled until a
-published sidecar is trusted, and local Lean artifact execution remains external. Dynamic handler
-scopes, live-provider adapters, settlement, scopes, live supervision, suffix replay, and the paper
-applications remain planned.
-Phase 3 workspace initialization, adoption identity, canonical disjoint binding roots, the
-reference copy carrier, Git-aware retained-output custody, and the canonical copy-world changeset
-core are implemented. Task 6A parent-linked custody capture, Task 6B.1 opaque runner registration,
-Task 6B.2 authenticated successful-path fenced execution and terminal attachment, Task 6B.3
-durable capture journaling, and Task 6B.4 command-authorized capture recovery and uncertain-writer
-hardening are implemented. Authenticated changeset inspection now provides exact-path lookup,
-bounded retained-content reads and previews, exact-content rename/copy projections, and Git-aware
-Gitlink/symlink-mode presentation without changing canonical identity. Selection and settlement
-effects, terminal trace citations, and configured protected control-path enforcement are
-implemented. Platform and fault conformance is documented in
-[`docs/platform-fault-conformance.md`](./docs/platform-fault-conformance.md).
+The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
+execution, durable lifecycle/control evidence, and conservative formal-claim boundary. Phase 3 now
+provides the complete P0 retained-world settlement loop through public TypeScript APIs: isolated
+task-world capture, authenticated changeset inspection, consume-once preparation, moved-basis
+refusal, exact selection, parent-preserving discard, terminal trace citations, protected control
+paths, and restart recovery.
+
+The [Phase 3 status](./docs/phase-3-l1-alpha.md) and
+[exit audit](./.plan/phase-3-exit-audit.md) map each criterion to repeatable production-seam
+evidence. This is not full Shepherd `0.3.0` parity. Runtime grants, placement and jail enforcement,
+`apply`, `release`, CLI compatibility, repair commands, installed-package consumer fixtures,
+live-provider adapters, scopes, supervision, replay, and paper applications remain later phases.
 
 ## Attribution
 

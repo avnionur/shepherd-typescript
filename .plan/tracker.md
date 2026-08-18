@@ -1,10 +1,10 @@
 # Implementation Tracker
 
-Last updated: 2026-08-17
+Last updated: 2026-08-18
 
-Current version: `1.36.0`
+Current version: `1.36.1`
 
-Current level: L0 — canonical model
+Current level: L1-alpha — P0 retained-world settlement loop
 
 ## Current position
 
@@ -274,19 +274,24 @@ changeset identity.
   fail-closed host metadata probes, portable case and Git placeholder policy, sparse-index
   evidence, stable deterministic fault boundaries, honest settlement receipts, and optimized
   carrier reference-suite gating.
+- [x] Audit every Phase 3 exit criterion at its public production seam, publish the L1-alpha P0
+  settlement evidence matrix, correct stale status claims, and preserve explicit Phase 4 and
+  platform boundaries.
 
 ## Verification required for this slice
 
 - [x] `pnpm sync:version`
 - [x] `pnpm verify`
+- [x] `pnpm verify:serial`
 - [x] `pnpm build:desktop`
-- [x] dependency and lockfile review
+- [x] `npm pack --dry-run` with an isolated cache
+- [x] production dependency audit and lockfile review
 - [x] standards, specification, and capability review
 
 ## Next slice
 
-Close the Phase 3 epic after its exit evidence is reconciled, then select the next dependency-ready
-roadmap issue from GitHub rather than speculating beyond the issue graph.
+Close Phase 3 epic #16 after this audit merges, then activate Phase 4 epic #17 and create its first
+dependency-ready implementation issue from the documented roadmap frontier.
 
 ## Notes
 

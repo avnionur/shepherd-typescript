@@ -40,4 +40,4 @@ symlink targets but no independent numeric symlink mode. Task 6 owns post-execut
 from user files. Workspace protocol v11
 [`changeset inspection`](./changeset-inspection.md) now owns bounded reads/previews, exact-content
 rename/copy projections, and Gitlink/symlink-mode presentation without changing this v5 identity.
-Selection and settlement remain later tasks.
+Selection and settlement are separate public capabilities and do not redefine changeset identity.

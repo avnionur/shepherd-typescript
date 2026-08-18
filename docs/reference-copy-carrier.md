@@ -70,9 +70,10 @@ is exactly equal to the candidate and the retained tree verifies. Source entry i
 directory membership are checked around reads, but an ordinary copy cannot claim a kernel-atomic
 point-in-time snapshot; detected movement fails closed.
 
-This is the correctness-reference carrier, not complete settlement. Authenticated task-world
-execution, selection, and settlement remain later Phase 3 tasks. Task 3 treats
-`.git` generically and never uses a Git commit as generic world identity.
+This remains the correctness-reference carrier rather than a settlement authority. Authenticated
+task-world execution and settlement compose it through separate public coordinators; carrier
+methods alone cannot admit or settle an output. Task 3 treats `.git` generically and never uses a
+Git commit as generic world identity.
 
 The automated suite covers ordinary restart, corruption, staging cleanup, source isolation, the
 portable filesystem matrix, host metadata refusal, case collisions, and deterministic permission,

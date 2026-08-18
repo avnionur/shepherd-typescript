@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.36.1] - 2026-08-18
+
+### Improvement
+
+- Published the Phase 3 production-seam evidence matrix and L1-alpha compatibility boundary for
+  retained-world isolation, inspection, moved-basis refusal, one-winner settlement, discard
+  preservation, and restart recovery.
+- Reconciled README, documentation, roadmap, parity, and tracker status while keeping runtime
+  grants, jail placement, `apply`, `release`, CLI, installed-package, optimized-carrier, and final
+  native-Windows claims assigned to later verified work.
+
+### Impact
+
+Users can distinguish the completed P0 retained-world settlement loop from the remaining full
+`0.3.0`, substrate, paper, and production-readiness work without relying on stale L0 status text or
+overstated platform/package claims.
+
 ## [1.36.0] - 2026-08-17
 
 ### New Feature

@@ -37,8 +37,9 @@ base/head content, canonical ordered changeset, configured journaled-path atomic
 identity. Each path step binds its exact ordinal, before/after change, prior step, and applied
 status. A terminal carrier receipt binds the complete step chain, immutable head content, staging
 identity, and basis before/after. All three values are canonical, content-addressed, closed,
-resource-bounded, generated into a published JSON Schema, and compatibility-locked. This release
-does not stage or publish user files.
+resource-bounded, generated into a published JSON Schema, and compatibility-locked. The v14 codec
+layer itself does not stage or publish user files; later carrier and coordinator layers consume its
+evidence.
 
 Workspace protocol v15 adds a separate canonical, content-addressed schedule bound to one exact
 v14 plan. Canonical changes remain the changeset identity order. The schedule contains a complete
@@ -59,8 +60,8 @@ operation ordinal, canonical change ordinal, exact change, prior step, v14 plan,
 The corresponding terminal receipt requires the complete scheduled prefix and binds the exact
 schedule, operation, staging identity, immutable head, and before/after basis witnesses. Existing
 v14 steps and receipts and the v15 schedule remain unchanged. This evidence layer performs no
-filesystem mutation; scheduled user-path effects and durable-prefix recovery remain Task
-9.4B2B2B.
+filesystem mutation; the later Task 9.4B2B2B carrier layer implements scheduled user-path effects
+and durable-prefix recovery without changing the v16 codec identity.
 
 Workspace protocol v17 adds terminal execution-trace settlement citations. After a selected
 receipt is retained, or after discarded cleanup reaches its final receipt, the coordinator

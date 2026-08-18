@@ -142,6 +142,8 @@ record and public API must declare a protocol/compatibility version.
   deliverables, dependencies, and acceptance criteria.
 - [Phase 2 exit audit](./phase-2-exit-audit.md) — production-seam evidence, resolved phase-boundary
   mismatch, and the handoff into workspace initialization.
+- [Phase 3 exit audit](./phase-3-exit-audit.md) — P0 retained-world settlement evidence,
+  L1-alpha claim boundary, platform limits, and the handoff into Phase 4 compatibility.
 - [Workspace initialization research](./workspace-initialization-research.md) — shipped init/adopt
   contract, pinned-source boundaries, and explicit dirty-worktree oracle gaps.
 - [Workspace binding research](./workspace-binding-research.md) — shipped named/disjoint root
@@ -214,5 +216,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 3, Task 9.5 by attaching settlement citations to the execution projection and
-closing the remaining cross-command concurrency and fault-injection matrix.
+Complete and merge the Phase 3 exit audit, close epic #16, and activate Phase 4 epic #17 for the
+remaining documented `0.3.0` compatibility surface.

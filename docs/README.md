@@ -58,6 +58,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Workspace platform and fault conformance](./platform-fault-conformance.md) defines protocol
   v19 metadata refusal, portable name policy, Git platform cases, stable fault evidence, recovery,
   and the optimized-carrier parity gate.
+- [Phase 3 L1-alpha status](./phase-3-l1-alpha.md) defines the completed P0 retained-world
+  settlement scope, production-seam evidence boundary, and remaining Phase 4 compatibility work.
 - [Retained-world runner](./retained-world-runner.md) defines the closed opaque runner registration
   handle and its honest advisory enforcement boundary.
 - [Fenced task-world execution](./task-world-execution.md) defines authenticated runner
