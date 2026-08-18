@@ -200,6 +200,11 @@ Exit criteria:
 
 Milestone: **L1-alpha**, the minimal end-to-end Shepherd settlement experience.
 
+Exit audit: **complete in 1.36.1**; see
+[`phase-3-exit-audit.md`](./phase-3-exit-audit.md). This milestone covers the P0 retained-world
+settlement loop only; the remaining documented `0.3.0` grants, placement, jail, `apply`/`release`
+settlement, CLI, repair, and installed-package surface remains Phase 4.
+
 ## Phase 4 — Full documented `0.3.0` compatibility
 
 Goal: cover the documented shipped surface.

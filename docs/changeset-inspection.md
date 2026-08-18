@@ -46,4 +46,5 @@ inspectable through its canonical world changeset.
 Gitlink contents are never recursively captured or read. Similarity-based Git rename settings do
 not participate in canonical identity or exact-content move derivation.
 
-Selection, settlement, and user-worktree materialization remain separate later capabilities.
+Selection, settlement, and user-worktree materialization remain separate public capabilities; an
+inspection value cannot itself authorize or perform a user-workspace mutation.

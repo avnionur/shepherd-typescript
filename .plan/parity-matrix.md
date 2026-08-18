@@ -76,6 +76,19 @@ and any applicable pinned upstream-oracle comparison.
 | Process checkpoint/resume | research substrate | explicit | P2 | platform-gated continuation suite |
 | Storage sharing by divergent suffix | research substrate | explicit | P2 | disk scaling benchmark |
 
+### Phase 3 L1-alpha result
+
+The P0 retained-world rows above pass through public TypeScript seams: isolated capture keeps the
+user tree unchanged, canonical inspection covers file/mode/symlink changes, selection refuses
+moved bases, consume-once admission has one winner, discard preserves the parent, and selection or
+discard converges after restart. The reproducible evidence is recorded in
+[`phase-3-exit-audit.md`](./phase-3-exit-audit.md).
+
+`L1-alpha` does not mark the entire upstream column complete. Runtime grants, placement and jail
+enforcement, `apply`, `release`, CLI compatibility, repair, installed-package consumer fixtures,
+and remaining P1 rows stay assigned to Phase 4. Platform completion is limited to the named
+macOS/Linux scope; no optimized carrier or final native-Windows CI result is claimed.
+
 ## Permissions, placement, and safety
 
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
