@@ -62,7 +62,7 @@ and any applicable pinned upstream-oracle comparison.
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
 | --- | --- | --- | --- | --- |
 | Workspace initialization/adoption | shipped | substrate | P0 | protected initialization, Git-history preservation, and TypeScript-owned empty/Git/worktree baseline identity implemented; retained custody and pinned dirty-worktree oracle parity follow the carrier slices |
-| Named disjoint bindings | shipped | scope binding | P0 | canonical directory authorities plus protocol-v20 exact Git repository resource identity, disjoint multi-repository custody, linked/common-repository refusal, and nested/submodule boundary tests implemented; runtime grants follow |
+| Named disjoint bindings | shipped | scope binding | P0 | canonical directory authorities plus protocol-v20 exact Git repository resource identity, disjoint multi-repository custody, linked/common-repository refusal, nested/submodule boundary tests, and protocol-v21 exact grant admission implemented |
 | Retained world output | shipped | compatible | P0 | working tree remains unchanged |
 | Read-only changeset | shipped | required | P0 | file/mode/delete/symlink fixtures |
 | `select` fast-forward settlement | shipped | merge analogue | P0 | moved-basis refusal tests |
@@ -84,7 +84,8 @@ moved bases, consume-once admission has one winner, discard preserves the parent
 discard converges after restart. The reproducible evidence is recorded in
 [`phase-3-exit-audit.md`](./phase-3-exit-audit.md).
 
-`L1-alpha` does not mark the entire upstream column complete. Runtime grants, placement and jail
+`L1-alpha` does not mark the entire upstream column complete. Explicit grant identity and advisory
+capability checks are implemented, while placement and jail
 enforcement, `apply`, `release`, CLI compatibility, repair, installed-package consumer fixtures,
 and remaining P1 rows stay assigned to Phase 4. Platform completion is limited to the named
 macOS/Linux scope; no optimized carrier or final native-Windows CI result is claimed.
@@ -93,10 +94,10 @@ macOS/Linux scope; no optimized carrier or final native-Windows CI result is cla
 
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
 | --- | --- | --- | --- | --- |
-| Runtime permission descriptors | shipped | required | P0 | schema and API tests |
-| `ReadOnly`/`ReadWrite` per binding | shipped | required | P0 | matrix tests |
-| Whole-run permission ceiling | shipped | useful | P1 | attenuation property |
-| Deny by default | shipped | required | P0 | undeclared write refusal |
+| Runtime permission descriptors | shipped | required | P0 | protocol-v21 companion artifacts and independent canonical fixture implemented |
+| `ReadOnly`/`ReadWrite` per binding | shipped | required | P0 | exact-resource admission and advisory capability matrix implemented |
+| Whole-run permission ceiling | shipped | useful | P1 | configured atom intersection and non-amplification property implemented |
+| Deny by default | shipped | required | P0 | missing/extra resources and read-only writes fail closed at granted public seams; OS/process denial follows placement |
 | Advisory placement | shipped | useful | P0 | honest metadata tests |
 | Auto placement | shipped | useful | P0 | resolution matrix |
 | Jail placement fails closed | shipped | safety critical | P1 | unsupported/jail-failure tests |

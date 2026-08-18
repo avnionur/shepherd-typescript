@@ -285,6 +285,9 @@ worktrees, nested superproject/submodule sets, inexact roots, drift, and forged 
 - [x] Complete Phase 4 Task 1 workspace-protocol-v20 named multi-repository binding authorities,
   per-resource Git custody receipts, exact reopen/movement evidence, linked/nested boundary
   refusal, pinned-oracle claim limits, and ordinary Phase 3 binding preservation.
+- [x] Complete Phase 4 Task 2 workspace-protocol-v21 explicit repository task-grant companion
+  identity, exact multi-resource admission, non-amplifying whole-run ceilings, advisory capability
+  enforcement, stale-resource refusal, and exact journal-v10 recovery while retaining v9 readers.
 
 ## Verification required for this slice
 
@@ -298,9 +301,9 @@ worktrees, nested superproject/submodule sets, inexact roots, drift, and forged 
 
 ## Next slice
 
-Continue Phase 4 with explicit runtime grants and whole-run authority ceilings bound to exact
-repository resource identities; do not begin placement or jail launchers before grant identity is
-versioned and covered at the public/package seam.
+Continue Phase 4 with honest advisory/auto placement resolution and reporting over the versioned
+grant plan. Do not begin native jail launchers until placement selection is explicit and explicit
+`jail` can fail closed without silently degrading.
 
 ## Notes
 

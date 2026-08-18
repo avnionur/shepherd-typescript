@@ -214,7 +214,9 @@ Work:
 - add named disjoint multi-repository bindings; **implemented in 1.37.0** with workspace protocol
   v20 exact Git worktree authorities, stable per-resource identity, linked/common repository and
   nested-boundary refusal, and independent downstream Git custody;
-- add explicit runtime grants and whole-run ceiling;
+- add explicit runtime grants and whole-run ceiling; **implemented in 1.38.0** with workspace
+  protocol v21 companion task-grant identity, exact repository admission, monotone attenuation,
+  advisory capability checks, and exact recovery evidence;
 - implement advisory/auto placement reporting;
 - implement macOS Seatbelt and Linux Landlock jail launchers;
 - make explicit jail fail closed;

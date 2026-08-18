@@ -57,5 +57,7 @@ object schema's required fields equal its property keys and recomputes every con
 ## Current boundary
 
 Constructing a descriptor never executes code or grants authority. Registration is a separate
-durable operation; aliases, execution, workspace grants, effect families, and model delivery
-remain outside this descriptor boundary.
+durable operation. Explicit repository authority uses a separate versioned
+[`RepositoryGrantedTask`](./repository-grants.md) companion artifact so existing bodyless task
+artifact bytes and identities remain unchanged. Aliases, execution, effect families, and model
+delivery remain outside this descriptor boundary.

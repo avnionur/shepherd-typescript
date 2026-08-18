@@ -180,9 +180,10 @@ it as carried-forward evidence in the pinned `0.3.0` tree rather than inventing 
 The pinned runtime
 [`test_git_repo_handle_contract.py`](https://github.com/shepherd-agents/shepherd/blob/a8196d4c453514836d06bd2fece91a03cdc37107/shepherd/packages/runtime/tests/unit/nucleus/test_git_repo_handle_contract.py)
 additionally treats `GitRepo` as a pure value whose identity combines a binding, basis, and
-authority and whose serialization cannot amplify authority. Phase 4 Task 1 implements only the
+authority and whose serialization cannot amplify authority. Phase 4 Task 1 implements the
 repository-backed binding/resource portion. Basis custody continues through
-`createGitAwareCustody`; read/write authority and attenuation remain the next grant slice.
+`createGitAwareCustody`; Phase 4 Task 2 now layers explicit read/write companion artifacts, exact
+resource admission, and monotone advisory attenuation without redefining binding identity.
 
 No pinned shipped fixture specifies repository-ID hashing, Git administrative-path encoding,
 linked-worktree grouping, submodule ownership, control receipt layout, or exact error codes.
@@ -191,8 +192,8 @@ administrative-directory containment, linked/separate-directory and nested-bound
 content-addressed local resource identity, and per-resource receipts under the initialized
 workspace control root.
 
-Remaining upstream oracle work for later compatibility slices includes grant identity,
-placement/jail compilation, and an installed-package multi-binding run fixture. Task 1 makes no
+Remaining upstream oracle work for later compatibility slices includes placement/jail compilation
+and an installed-package multi-binding run fixture. Task 1 makes no
 claim that its local filesystem identity representation equals Python internals.
 
 ## Historical oracle gaps before the repository-binding slice

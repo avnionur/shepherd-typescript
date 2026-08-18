@@ -1,0 +1,23 @@
+{
+    "artifact": {
+        "compatibility_version": "shepherd.workspace.repository-grants.v1",
+        "grant_version": 1,
+        "grants": [
+            {
+                "binding": "docs",
+                "profile": "read-only"
+            },
+            {
+                "binding": "source",
+                "profile": "read-write"
+            }
+        ],
+        "task_artifact_digest": "sha256:aed489acb5c381cc5e751a9a47ef339da614e0af4e82c28fc590e7c701ea9cbe"
+    },
+    "artifact_lock": {
+        "artifact_digest": "sha256:6ab72f128aa3b021f4b8a9296bb0696bd2fc095fe25509deffa0727ad923e987",
+        "grant_version": 1,
+        "task_artifact_digest": "sha256:aed489acb5c381cc5e751a9a47ef339da614e0af4e82c28fc590e7c701ea9cbe",
+        "task_grant_id": "task-grant:sha256:6ab72f128aa3b021f4b8a9296bb0696bd2fc095fe25509deffa0727ad923e987"
+    }
+}

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import { type ProtocolConfig, SECURE_HASH_ALGORITHMS } from "./config-types.ts";
 import {
+    readAbsoluteUrl,
     readArray,
     readEnum,
     readNonEmptyString,
@@ -38,6 +39,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "platformConformance",
             "protectedPaths",
             "repositoryBindings",
+            "repositoryGrants",
             "selectionPublication",
             "settlement",
             "worktreeRefPrefix",
@@ -76,6 +78,65 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         ["invalidRepositoryCode", "invalidRepositoryMessage"],
         "workspaces.repositoryBindings.errors",
     );
+    const repositoryGrants = readObject(
+        config.repositoryGrants,
+        [
+            "artifactVersion",
+            "artifacts",
+            "atoms",
+            "compatibilityVersion",
+            "enforcement",
+            "operations",
+            "planIdPrefix",
+            "planVersion",
+            "profiles",
+            "schemas",
+            "taskGrantIdPrefix",
+        ],
+        "workspaces.repositoryGrants",
+    );
+    const repositoryGrantArtifacts = readObject(
+        repositoryGrants.artifacts,
+        ["grantPlanSchema", "taskGrantArtifactLockSchema", "taskGrantArtifactSchema"],
+        "workspaces.repositoryGrants.artifacts",
+    );
+    const repositoryGrantSchemas = readObject(
+        repositoryGrants.schemas,
+        ["grantPlanId", "taskGrantArtifactId", "taskGrantArtifactLockId"],
+        "workspaces.repositoryGrants.schemas",
+    );
+    const repositoryGrantOperations = readObject(
+        repositoryGrants.operations,
+        ["readText", "writeText"],
+        "workspaces.repositoryGrants.operations",
+    );
+    const repositoryGrantAtoms = readUniqueStrings(
+        repositoryGrants.atoms,
+        "workspaces.repositoryGrants.atoms",
+    );
+    const repositoryGrantProfiles = readArray(
+        repositoryGrants.profiles,
+        "workspaces.repositoryGrants.profiles",
+    ).map((value, index) => {
+        const context = `workspaces.repositoryGrants.profiles[${index}]`;
+        const profile = readObject(value, ["atoms", "name"], context);
+        const atoms = readUniqueStrings(profile.atoms, `${context}.atoms`);
+        if (atoms.length === 0 || atoms.some((atom) => !repositoryGrantAtoms.includes(atom))) {
+            throw new TypeError(`${context}.atoms must be a non-empty configured subset`);
+        }
+        return {
+            atoms,
+            name: readNonEmptyString(profile.name, `${context}.name`),
+        };
+    });
+    if (
+        repositoryGrantAtoms.length === 0 ||
+        repositoryGrantProfiles.length === 0 ||
+        new Set(repositoryGrantProfiles.map(({ name }) => name)).size !==
+            repositoryGrantProfiles.length
+    ) {
+        throw new TypeError("workspace repository grant contracts must be non-empty and unique");
+    }
     const platformConformance = readObject(
         config.platformConformance,
         [
@@ -449,6 +510,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "captureSchemaPath",
             "custodyIdentityKind",
             "journalPhases",
+            "journalReaders",
             "journalSchemaId",
             "journalSchemaPath",
             "journalVersion",
@@ -460,6 +522,37 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         ],
         "workspaces.worldTaskCapture",
     );
+    const journalVersion = readPositiveInteger(
+        worldTaskCapture.journalVersion,
+        "workspaces.worldTaskCapture.journalVersion",
+    );
+    const journalSchemaId = readAbsoluteUrl(
+        worldTaskCapture.journalSchemaId,
+        "workspaces.worldTaskCapture.journalSchemaId",
+    );
+    const journalReaders = readArray(
+        worldTaskCapture.journalReaders,
+        "workspaces.worldTaskCapture.journalReaders",
+    ).map((value, index) => {
+        const context = `workspaces.worldTaskCapture.journalReaders[${index}]`;
+        const reader = readObject(value, ["schemaId", "version"], context);
+        return {
+            schemaId: readAbsoluteUrl(reader.schemaId, `${context}.schemaId`),
+            version: readPositiveInteger(reader.version, `${context}.version`),
+        };
+    });
+    if (
+        journalReaders.length === 0 ||
+        new Set(journalReaders.map(({ schemaId }) => schemaId)).size !== journalReaders.length ||
+        new Set(journalReaders.map(({ version }) => version)).size !== journalReaders.length ||
+        !journalReaders.some(
+            (reader) => reader.schemaId === journalSchemaId && reader.version === journalVersion,
+        )
+    ) {
+        throw new TypeError(
+            "workspaces.worldTaskCapture.journalReaders must be unique and include the current schema/version pair",
+        );
+    }
     const adoptionModes = readUniqueStrings(config.adoptionModes, "workspaces.adoptionModes");
     const defaultAdoptionMode = readNonEmptyString(
         config.defaultAdoptionMode,
@@ -1350,6 +1443,74 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 "workspaces.repositoryBindings.version",
             ),
         },
+        repositoryGrants: {
+            artifactVersion: readPositiveInteger(
+                repositoryGrants.artifactVersion,
+                "workspaces.repositoryGrants.artifactVersion",
+            ),
+            artifacts: {
+                grantPlanSchema: readNonEmptyString(
+                    repositoryGrantArtifacts.grantPlanSchema,
+                    "workspaces.repositoryGrants.artifacts.grantPlanSchema",
+                ),
+                taskGrantArtifactLockSchema: readNonEmptyString(
+                    repositoryGrantArtifacts.taskGrantArtifactLockSchema,
+                    "workspaces.repositoryGrants.artifacts.taskGrantArtifactLockSchema",
+                ),
+                taskGrantArtifactSchema: readNonEmptyString(
+                    repositoryGrantArtifacts.taskGrantArtifactSchema,
+                    "workspaces.repositoryGrants.artifacts.taskGrantArtifactSchema",
+                ),
+            },
+            atoms: repositoryGrantAtoms,
+            compatibilityVersion: readNonEmptyString(
+                repositoryGrants.compatibilityVersion,
+                "workspaces.repositoryGrants.compatibilityVersion",
+            ),
+            enforcement: readNonEmptyString(
+                repositoryGrants.enforcement,
+                "workspaces.repositoryGrants.enforcement",
+            ),
+            operations: {
+                readText: readRepositoryGrantOperation(
+                    repositoryGrantOperations.readText,
+                    repositoryGrantAtoms,
+                    "workspaces.repositoryGrants.operations.readText",
+                ),
+                writeText: readRepositoryGrantOperation(
+                    repositoryGrantOperations.writeText,
+                    repositoryGrantAtoms,
+                    "workspaces.repositoryGrants.operations.writeText",
+                ),
+            },
+            planIdPrefix: readNonEmptyString(
+                repositoryGrants.planIdPrefix,
+                "workspaces.repositoryGrants.planIdPrefix",
+            ),
+            planVersion: readPositiveInteger(
+                repositoryGrants.planVersion,
+                "workspaces.repositoryGrants.planVersion",
+            ),
+            profiles: repositoryGrantProfiles,
+            schemas: {
+                grantPlanId: readAbsoluteUrl(
+                    repositoryGrantSchemas.grantPlanId,
+                    "workspaces.repositoryGrants.schemas.grantPlanId",
+                ),
+                taskGrantArtifactId: readAbsoluteUrl(
+                    repositoryGrantSchemas.taskGrantArtifactId,
+                    "workspaces.repositoryGrants.schemas.taskGrantArtifactId",
+                ),
+                taskGrantArtifactLockId: readAbsoluteUrl(
+                    repositoryGrantSchemas.taskGrantArtifactLockId,
+                    "workspaces.repositoryGrants.schemas.taskGrantArtifactLockId",
+                ),
+            },
+            taskGrantIdPrefix: readNonEmptyString(
+                repositoryGrants.taskGrantIdPrefix,
+                "workspaces.repositoryGrants.taskGrantIdPrefix",
+            ),
+        },
         worktreeRefPrefix,
         worldCapture: {
             maxRevisionDepth: readPositiveInteger(
@@ -1389,18 +1550,13 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 worldTaskCapture.journalPhases,
                 "workspaces.worldTaskCapture.journalPhases",
             ),
-            journalSchemaId: readNonEmptyString(
-                worldTaskCapture.journalSchemaId,
-                "workspaces.worldTaskCapture.journalSchemaId",
-            ),
+            journalReaders,
+            journalSchemaId,
             journalSchemaPath: readNonEmptyString(
                 worldTaskCapture.journalSchemaPath,
                 "workspaces.worldTaskCapture.journalSchemaPath",
             ),
-            journalVersion: readPositiveInteger(
-                worldTaskCapture.journalVersion,
-                "workspaces.worldTaskCapture.journalVersion",
-            ),
+            journalVersion,
             maxCaptureIdBytes: readPositiveInteger(
                 worldTaskCapture.maxCaptureIdBytes,
                 "workspaces.worldTaskCapture.maxCaptureIdBytes",
@@ -1432,6 +1588,18 @@ function readDigestPrefix(value: unknown, algorithm: string, context: string): s
         throw new TypeError(`${context} must identify digestAlgorithm`);
     }
     return prefix;
+}
+
+function readRepositoryGrantOperation(
+    value: unknown,
+    atoms: readonly string[],
+    context: string,
+): string {
+    const atom = readNonEmptyString(value, context);
+    if (!atoms.includes(atom)) {
+        throw new TypeError(`${context} must identify a configured repository grant atom`);
+    }
+    return atom;
 }
 
 function readSimpleName(value: unknown, context: string): string {

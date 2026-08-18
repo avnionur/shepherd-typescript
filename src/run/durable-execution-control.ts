@@ -863,10 +863,10 @@ export async function recoverTaskDurably<
 
 function assertNoTaskWorldJournal(records: readonly OwnerRecord[], runId: string): void {
     if (
-        records.some(
-            (record) =>
-                record.envelope.schema_ref ===
-                workspaceProtocolConfig.worldTaskCapture.journalSchemaId,
+        records.some((record) =>
+            workspaceProtocolConfig.worldTaskCapture.journalReaders.some(
+                ({ schemaId }) => schemaId === record.envelope.schema_ref,
+            ),
         )
     ) {
         throw new DurableExecutionRecoveryError(runId);

@@ -45,25 +45,33 @@ import type { TaskExecutionResult } from "../run/execution-types.ts";
 import { assertRunText } from "../run/validation-values.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { TaskSchema } from "../task/schema.ts";
-import { assertWorkspaceBinding } from "./bindings.ts";
+import { assertWorkspaceBinding, isGitRepositoryBinding } from "./bindings.ts";
 import { createWorldChangeset } from "./changesets.ts";
 import {
     assertReferenceCopyCarrier,
     forkReferenceCopyRevisionForTaskWorld,
 } from "./reference-copy-carrier.ts";
+import type {
+    GitRepositoryGrantPlan,
+    GitRepositoryGrantPlanEntry,
+    RepositoryGrantAtom,
+} from "./repository-grant-types.ts";
+import { assertGitRepositoryGrantPlan } from "./repository-grants.ts";
 import { assertRetainedWorldRunner, invokeRetainedWorldRunner } from "./retained-world-runner.ts";
 import type {
     RetainedWorldCapability,
     RetainedWorldExecutionContext,
 } from "./retained-world-runner-types.ts";
 import type {
+    CaptureGrantedTaskWorldOptions,
     CaptureTaskWorldOptions,
+    RecoverGrantedTaskWorldOptions,
     RecoverTaskWorldOptions,
     RetainedWorldOutput,
     TaskWorldCaptureResult,
 } from "./task-world-execution-types.ts";
 import { appendTaskWorldJournal, inspectTaskWorldCaptureJournal } from "./task-world-journal.ts";
-import type { WorldCustody, WorldRevision } from "./types.ts";
+import type { GitRepositoryBinding, WorldCustody, WorldRevision } from "./types.ts";
 
 const [RETAINED_STATUS] = RETAINED_WORLD_OUTPUT_STATUSES;
 const [, , , TERMINAL_PENDING_CUT_RECOVERY_STATUS, COMMITTED_RECOVERY_STATUS] =
@@ -73,6 +81,14 @@ const [PREPARED_PHASE, FORKED_PHASE, EXECUTING_PHASE, CAPTURED_PHASE] =
 const [FINISHED_STATUS] = RUN_TERMINAL_STATUSES;
 const [, BLOB_ARTIFACT_TYPE] = RUN_ARTIFACT_CONTENT_TYPES;
 const [CAPTURE_MODE] = RECORD_MODES;
+
+type CaptureTaskWorldFields<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>> =
+    | CaptureTaskWorldOptions<I, O>
+    | CaptureGrantedTaskWorldOptions<I, O>;
+
+type RecoverTaskWorldFields<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>> =
+    | RecoverTaskWorldOptions<I, O>
+    | RecoverGrantedTaskWorldOptions<I, O>;
 
 /**
  * Executes one registered runner against isolated custody and retains its verified world output.
@@ -115,6 +131,39 @@ export async function captureTaskWorldDurably<
 }
 
 /**
+ * Executes one retained-world task under an authenticated exact repository grant plan.
+ *
+ * Admission authenticates every resource in the plan before runner or provider invocation. The
+ * active capability exposes only the intersection of the task grant and whole-run ceiling.
+ * Enforcement is in-process advisory; this function does not claim an OS sandbox or syscall jail.
+ *
+ * @param options - Exact granted task-world capture contract.
+ * @returns Durable task result, canonical changeset, and retained world attachment.
+ * @throws {TypeError} If the plan, task, resource, authority, or options are invalid.
+ * @throws {TraceStoreError} If durable execution or terminal publication fails closed.
+ * @throws {WorldCarrierError} If retained carrier evidence cannot be verified or captured.
+ * @throws {WorldChangesetError} If the captured comparison is invalid or exceeds limits.
+ *
+ * @example
+ * ```ts
+ * const result = await captureGrantedTaskWorldDurably({
+ *     ...captureOptions,
+ *     repositoryGrantPlan,
+ * });
+ * ```
+ *
+ * @public
+ */
+export async function captureGrantedTaskWorldDurably<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(options: CaptureGrantedTaskWorldOptions<I, O>): Promise<TaskWorldCaptureResult> {
+    const fields = readGrantedOptions(options);
+    const retainedBase = await validateCaptureAuthority(fields);
+    return executeTaskWorld(fields, retainedBase, null);
+}
+
+/**
  * Resumes one pre-execution task-world capture under an explicit durable recovery command.
  *
  * Recovery reuses exact `forked` custody and creation evidence, acquires a command-authorized
@@ -141,7 +190,40 @@ export async function recoverTaskWorldDurably<
     I extends TaskSchema<unknown>,
     O extends TaskSchema<unknown>,
 >(options: RecoverTaskWorldOptions<I, O>): Promise<TaskWorldCaptureResult> {
-    const fields = readRecoveryOptions(options);
+    return recoverTaskWorld(readRecoveryOptions(options));
+}
+
+/**
+ * Recovers a repository-granted task-world capture only under the exact prepared grant plan.
+ *
+ * @param options - Exact granted capture contract plus recovery command identity.
+ * @returns Recovered durable task result and retained world.
+ * @throws {TypeError} If current grant evidence differs from the prepared contract.
+ * @throws {DurableExecutionRecoveryError} If the capture is absent, uncertain, or unrecoverable.
+ * @throws {TraceStoreError} If command, claim, or terminal publication fails closed.
+ * @throws {WorldCarrierError} If retained carrier evidence cannot be reopened or captured.
+ * @throws {WorldChangesetError} If retained comparison evidence is invalid or exceeds limits.
+ *
+ * @example
+ * ```ts
+ * const result = await recoverGrantedTaskWorldDurably({
+ *     ...grantedCaptureOptions,
+ *     commandId: "command:recover-granted-world:1",
+ * });
+ * ```
+ *
+ * @public
+ */
+export async function recoverGrantedTaskWorldDurably<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(options: RecoverGrantedTaskWorldOptions<I, O>): Promise<TaskWorldCaptureResult> {
+    return recoverTaskWorld(readGrantedRecoveryOptions(options));
+}
+
+async function recoverTaskWorld<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    fields: RecoverTaskWorldFields<I, O>,
+): Promise<TaskWorldCaptureResult> {
     const retainedBase = await validateCaptureAuthority(fields);
     const prepared = prepareTaskExecution(fields.execution);
     const createdRecordId = retainDurableExecutionCreation(fields.store, prepared);
@@ -153,12 +235,10 @@ export async function recoverTaskWorldDurably<
     if (inspection.status === RETAINED_STATUS) {
         if (inspection.recovery_status === TERMINAL_PENDING_CUT_RECOVERY_STATUS) {
             const pending = readDurableTaskExecution(fields.store, prepared.definition.runId);
-            // Another exact repair may publish the cut between stable inspection and this read.
             /* node:coverage ignore next 7 */
             if (pending.status === COMMITTED_RECOVERY_STATUS) {
                 return rebuildRetainedTaskWorld(fields, retainedBase, inspection.output_record_id);
             }
-            // Stable recovery allows only pending or committed at this boundary.
             assert.equal(pending.status, TERMINAL_PENDING_CUT_RECOVERY_STATUS);
             const commandRecordId = retainRecoveryCommand(
                 fields.store,
@@ -173,7 +253,6 @@ export async function recoverTaskWorldDurably<
                 commandRecordId,
             );
         } else {
-            // A retained output requires one of the two terminal recovery classifications.
             /* node:coverage ignore next 3 */
             if (inspection.recovery_status !== COMMITTED_RECOVERY_STATUS) {
                 throw new DurableExecutionRecoveryError(prepared.definition.runId);
@@ -243,7 +322,7 @@ function assertPreparedRecoveryContract<
     O extends TaskSchema<unknown>,
 >(
     preparedBody: SemanticRecord,
-    fields: CaptureTaskWorldOptions<I, O>,
+    fields: CaptureTaskWorldFields<I, O>,
     retainedBase: WorldRevision,
 ): void {
     if (
@@ -253,7 +332,12 @@ function assertPreparedRecoveryContract<
         preparedBody.enforcement !== fields.runner.enforcement ||
         preparedBody.max_capture_id_bytes !==
             workspaceProtocolConfig.worldTaskCapture.maxCaptureIdBytes ||
-        preparedBody.max_text_bytes !== workspaceProtocolConfig.worldTaskCapture.maxTextBytes
+        preparedBody.max_text_bytes !== workspaceProtocolConfig.worldTaskCapture.maxTextBytes ||
+        canonicalizeRecord({
+            repository_grant_plan: preparedBody.repository_grant_plan ?? null,
+        }) !== canonicalizeRecord({ repository_grant_plan: repositoryGrantPlan(fields) }) ||
+        (preparedBody.repository_grant_plan_id ?? null) !==
+            (repositoryGrantPlan(fields)?.plan_id ?? null)
     ) {
         throw new TypeError("task-world recovery contract differs from prepared evidence");
     }
@@ -291,7 +375,7 @@ async function rebuildRetainedTaskWorld<
     I extends TaskSchema<unknown>,
     O extends TaskSchema<unknown>,
 >(
-    fields: RecoverTaskWorldOptions<I, O>,
+    fields: RecoverTaskWorldFields<I, O>,
     retainedBase: WorldRevision,
     outputRecordId: RecordId | null,
 ): Promise<TaskWorldCaptureResult> {
@@ -341,10 +425,11 @@ async function rebuildRetainedTaskWorld<
 async function validateCaptureAuthority<
     I extends TaskSchema<unknown>,
     O extends TaskSchema<unknown>,
->(fields: CaptureTaskWorldOptions<I, O>): Promise<WorldRevision> {
+>(fields: CaptureTaskWorldFields<I, O>): Promise<WorldRevision> {
     assertReferenceCopyCarrier(fields.carrier);
     assertRetainedWorldRunner(fields.runner);
     assertWorkspaceBinding(fields.binding);
+    activeRepositoryGrant(fields);
     assertText(
         fields.captureId,
         "captureId",
@@ -363,7 +448,7 @@ async function validateCaptureAuthority<
 }
 
 async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
-    fields: CaptureTaskWorldOptions<I, O>,
+    fields: CaptureTaskWorldFields<I, O>,
     retainedBase: WorldRevision,
     recovery: {
         readonly commandRecordId: RecordId;
@@ -402,6 +487,8 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
                     max_capture_id_bytes:
                         workspaceProtocolConfig.worldTaskCapture.maxCaptureIdBytes,
                     max_text_bytes: workspaceProtocolConfig.worldTaskCapture.maxTextBytes,
+                    repository_grant_plan: repositoryGrantPlan(fields),
+                    repository_grant_plan_id: repositoryGrantPlan(fields)?.plan_id ?? null,
                     runner_id: fields.runner.runner_id,
                 },
                 [createdRecordId],
@@ -455,6 +542,9 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
                 custody,
                 authority.fencingToken,
                 fields.runner.enforcement,
+                activeRepositoryGrant(fields)?.authority ??
+                    workspaceProtocolConfig.repositoryGrants.atoms,
+                repositoryGrantPlan(fields) !== null,
                 assertFence,
             );
             const runnerContext = Object.freeze({
@@ -575,6 +665,8 @@ function createCapability(
     custody: WorldCustody,
     fencingToken: number,
     enforcement: RetainedWorldCapability["enforcement"],
+    grantedAuthority: readonly string[],
+    protectGitMetadata: boolean,
     assertFence: () => void,
 ): RetainedWorldCapability {
     return Object.freeze({
@@ -586,7 +678,12 @@ function createCapability(
         readText: async (relativePath: string) =>
             runFileOperation(() => {
                 assertFence();
-                const filePath = resolveRegularFile(custody.path, relativePath);
+                assertAuthority(
+                    grantedAuthority,
+                    workspaceProtocolConfig.repositoryGrants.operations
+                        .readText as RepositoryGrantAtom,
+                );
+                const filePath = resolveRegularFile(custody.path, relativePath, protectGitMetadata);
                 const descriptor = openSync(filePath, constants.O_RDONLY | constants.O_NOFOLLOW);
                 try {
                     assertOpenedRegularFile(custody.path, filePath, descriptor);
@@ -603,6 +700,11 @@ function createCapability(
         writeText: async (relativePath: string, text: string) =>
             runFileOperation(() => {
                 assertFence();
+                assertAuthority(
+                    grantedAuthority,
+                    workspaceProtocolConfig.repositoryGrants.operations
+                        .writeText as RepositoryGrantAtom,
+                );
                 if (
                     typeof text !== "string" ||
                     /[\uD800-\uDFFF]/u.test(text) ||
@@ -610,7 +712,7 @@ function createCapability(
                 ) {
                     throw new TypeError("retained-world text is invalid or too large");
                 }
-                const filePath = resolveRegularFile(custody.path, relativePath);
+                const filePath = resolveRegularFile(custody.path, relativePath, protectGitMetadata);
                 const descriptor = openSync(filePath, constants.O_WRONLY | constants.O_NOFOLLOW);
                 try {
                     assertOpenedRegularFile(custody.path, filePath, descriptor);
@@ -631,6 +733,33 @@ function runFileOperation<T>(operation: () => T): T {
         if (error instanceof TypeError) throw error;
         throw new TypeError("retained-world filesystem operation failed", { cause: error });
     }
+}
+
+function assertAuthority(authority: readonly string[], atom: RepositoryGrantAtom): void {
+    if (!authority.includes(atom)) {
+        throw new TypeError(`repository grant does not grant ${atom} authority`);
+    }
+}
+
+function repositoryGrantPlan<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    fields: CaptureTaskWorldFields<I, O>,
+): GitRepositoryGrantPlan | null {
+    return "repositoryGrantPlan" in fields ? fields.repositoryGrantPlan : null;
+}
+
+function activeRepositoryGrant<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    fields: CaptureTaskWorldFields<I, O>,
+): GitRepositoryGrantPlanEntry | null {
+    const plan = repositoryGrantPlan(fields);
+    if (plan === null) return null;
+    if (!isGitRepositoryBinding(fields.binding)) {
+        throw new TypeError("repository-granted execution requires an exact repository binding");
+    }
+    return assertGitRepositoryGrantPlan(
+        plan,
+        fields.execution.task.artifactLock.artifact_digest,
+        fields.binding as GitRepositoryBinding,
+    );
 }
 
 function assertOpenedRegularFile(root: string, filePath: string, descriptor: number): void {
@@ -655,7 +784,11 @@ function assertOpenedRegularFile(root: string, filePath: string, descriptor: num
     }
 }
 
-function resolveRegularFile(root: string, relativePath: string): string {
+function resolveRegularFile(
+    root: string,
+    relativePath: string,
+    protectGitMetadata: boolean,
+): string {
     if (
         typeof relativePath !== "string" ||
         relativePath.length === 0 ||
@@ -668,7 +801,8 @@ function resolveRegularFile(root: string, relativePath: string): string {
                     part.length === 0 ||
                     part === "." ||
                     part === ".." ||
-                    part === workspaceProtocolConfig.controlDirectory,
+                    part === workspaceProtocolConfig.controlDirectory ||
+                    (protectGitMetadata && part === workspaceProtocolConfig.gitMetadataName),
             )
     ) {
         throw new TypeError("retained-world path is invalid");
@@ -689,7 +823,7 @@ function resolveRegularFile(root: string, relativePath: string): string {
 function readRunnerResult<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
     value: unknown,
     prepared: PreparedTaskExecution<I, O>,
-    store: CaptureTaskWorldOptions<I, O>["store"],
+    store: CaptureTaskWorldFields<I, O>["store"],
 ): TaskExecutionResult {
     // Exotic prototypes are rejected at the registered runner boundary.
     /* node:coverage disable */
@@ -765,6 +899,21 @@ function readOptions<I extends TaskSchema<unknown>, O extends TaskSchema<unknown
     ]) as unknown as CaptureTaskWorldOptions<I, O>;
 }
 
+function readGrantedOptions<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    value: CaptureGrantedTaskWorldOptions<I, O>,
+): CaptureGrantedTaskWorldOptions<I, O> {
+    return readExactOptions(value, [
+        "baseRevision",
+        "binding",
+        "captureId",
+        "carrier",
+        "execution",
+        "repositoryGrantPlan",
+        "runner",
+        "store",
+    ]) as unknown as CaptureGrantedTaskWorldOptions<I, O>;
+}
+
 function readExactOptions(value: unknown, expected: readonly string[]): Record<string, unknown> {
     if (
         value === null ||
@@ -806,6 +955,24 @@ function readRecoveryOptions<I extends TaskSchema<unknown>, O extends TaskSchema
     ]);
     assertRunText(fields.commandId, "commandId");
     return fields as unknown as RecoverTaskWorldOptions<I, O>;
+}
+
+function readGrantedRecoveryOptions<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    value: RecoverGrantedTaskWorldOptions<I, O>,
+): RecoverGrantedTaskWorldOptions<I, O> {
+    const fields = readExactOptions(value, [
+        "baseRevision",
+        "binding",
+        "captureId",
+        "carrier",
+        "commandId",
+        "execution",
+        "repositoryGrantPlan",
+        "runner",
+        "store",
+    ]);
+    assertRunText(fields.commandId, "commandId");
+    return fields as unknown as RecoverGrantedTaskWorldOptions<I, O>;
 }
 
 function assertText(value: unknown, subject: string, maxBytes: number): asserts value is string {

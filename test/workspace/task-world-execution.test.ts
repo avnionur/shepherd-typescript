@@ -196,6 +196,8 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
     const sourceRoot = path.join(workspaceRoot, "source");
     await mkdir(sourceRoot);
     await writeFile(path.join(sourceRoot, "message.txt"), "before\n");
+    await mkdir(path.join(sourceRoot, ".git"));
+    await writeFile(path.join(sourceRoot, ".git", "legacy-visible.txt"), "legacy\n");
     await mkdir(path.join(sourceRoot, "directory"));
     await writeFile(path.join(sourceRoot, "invalid-utf8.bin"), Uint8Array.of(0xff));
     const oversizedText = "x".repeat(RETAINED_WORLD_MAX_TEXT_BYTES + 1);
@@ -294,6 +296,7 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
                 TypeError,
             );
             assert.equal(await runnerContext.world.readText("message.txt"), "before\n");
+            assert.equal(await runnerContext.world.readText(".git/legacy-visible.txt"), "legacy\n");
             await runnerContext.world.writeText("message.txt", "after\n");
             return executeTask(runnerContext.execution);
         },

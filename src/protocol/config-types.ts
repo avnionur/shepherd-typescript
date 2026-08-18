@@ -907,6 +907,55 @@ export type WorkspaceProtocolConfig = {
         /** Public repository-binding protocol version. */
         readonly version: number;
     };
+    /** Explicit repository task-grant and whole-run ceiling configuration. */
+    readonly repositoryGrants: {
+        /** Public task-grant artifact protocol version. */
+        readonly artifactVersion: number;
+        /** Generated language-neutral repository-grant artifacts. */
+        readonly artifacts: {
+            /** Repository grant-plan schema destination. */
+            readonly grantPlanSchema: string;
+            /** Repository task-grant artifact-lock schema destination. */
+            readonly taskGrantArtifactLockSchema: string;
+            /** Repository task-grant artifact schema destination. */
+            readonly taskGrantArtifactSchema: string;
+        };
+        /** Closed authority-atom vocabulary. */
+        readonly atoms: readonly string[];
+        /** Compatibility namespace included in repository task-grant identity. */
+        readonly compatibilityVersion: string;
+        /** Enforcement classification truthfully provided by the current runtime seam. */
+        readonly enforcement: string;
+        /** Capability operations mapped to configured required authority atoms. */
+        readonly operations: {
+            /** Authority atom required by retained-world text reads. */
+            readonly readText: string;
+            /** Authority atom required by retained-world text writes. */
+            readonly writeText: string;
+        };
+        /** Prefix for content-addressed admitted grant-plan identities. */
+        readonly planIdPrefix: string;
+        /** Public admitted grant-plan protocol version. */
+        readonly planVersion: number;
+        /** Closed whole-binding profiles and their authority atoms. */
+        readonly profiles: readonly {
+            /** Canonically ordered authority atoms supplied by the profile. */
+            readonly atoms: readonly string[];
+            /** Stable public profile name. */
+            readonly name: string;
+        }[];
+        /** Published repository-grant schema identifiers. */
+        readonly schemas: {
+            /** Absolute repository grant-plan schema identifier. */
+            readonly grantPlanId: string;
+            /** Absolute repository task-grant artifact schema identifier. */
+            readonly taskGrantArtifactId: string;
+            /** Absolute repository task-grant lock schema identifier. */
+            readonly taskGrantArtifactLockId: string;
+        };
+        /** Prefix for content-addressed task-grant identities. */
+        readonly taskGrantIdPrefix: string;
+    };
     /** Cross-platform retained-custody conformance policy. */
     readonly platformConformance: {
         /** Portable path case-collision policy. */
@@ -1030,6 +1079,13 @@ export type WorkspaceProtocolConfig = {
         readonly custodyIdentityKind: string;
         /** Ordered durable pre-terminal capture-journal phases. */
         readonly journalPhases: readonly string[];
+        /** Closed exact capture-journal schema/version pairs accepted by recovery readers. */
+        readonly journalReaders: readonly {
+            /** Exact immutable journal schema identity. */
+            readonly schemaId: string;
+            /** Exact journal body version governed by the schema identity. */
+            readonly version: number;
+        }[];
         /** Schema identifier for durable capture-journal records. */
         readonly journalSchemaId: string;
         /** Repository-relative generated journal-schema path. */

@@ -1,0 +1,91 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/repository-grant-plan-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "authority_ceiling": {
+            "enum": [
+                "read-only",
+                "read-write"
+            ],
+            "type": "string"
+        },
+        "enforcement": {
+            "const": "advisory",
+            "type": "string"
+        },
+        "grants": {
+            "items": {
+                "additionalProperties": false,
+                "properties": {
+                    "authority": {
+                        "items": {
+                            "enum": [
+                                "read",
+                                "write"
+                            ],
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": true
+                    },
+                    "binding_id": {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                    },
+                    "binding_name": {
+                        "pattern": "^(?!\\s*$)(?!\\.{1,2}$)[^/\\\\\\u0000]+$",
+                        "type": "string"
+                    },
+                    "resource_id": {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                    },
+                    "task_profile": {
+                        "enum": [
+                            "read-only",
+                            "read-write"
+                        ],
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "authority",
+                    "binding_id",
+                    "binding_name",
+                    "resource_id",
+                    "task_profile"
+                ],
+                "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+        },
+        "grant_plan_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "plan_id": {
+            "pattern": "^repository-grant-plan:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "task_artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "task_grant_artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+        }
+    },
+    "required": [
+        "authority_ceiling",
+        "enforcement",
+        "grants",
+        "grant_plan_version",
+        "plan_id",
+        "task_artifact_digest",
+        "task_grant_artifact_digest"
+    ],
+    "type": "object"
+}

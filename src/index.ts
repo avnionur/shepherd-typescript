@@ -73,6 +73,8 @@ export type {
     PublishedRecord,
 } from "./projection/types.ts";
 export {
+    REPOSITORY_GRANT_ATOMS,
+    REPOSITORY_GRANT_PROFILES,
     RETAINED_WORLD_MAX_CAPTURE_ID_BYTES,
     RETAINED_WORLD_MAX_TEXT_BYTES,
     RETAINED_WORLD_SELECTION_ATOMICITY_KINDS,
@@ -358,6 +360,22 @@ export {
     WorkspaceProtectedPathError,
 } from "./workspace/protected-control-paths.ts";
 export { createReferenceCopyCarrier } from "./workspace/reference-copy-carrier.ts";
+export type {
+    GitRepositoryGrantPlan,
+    GitRepositoryGrantPlanEntry,
+    GitRepositoryGrantPlanOptions,
+    GrantTaskRepositoriesOptions,
+    RepositoryGrantAtom,
+    RepositoryGrantedTask,
+    RepositoryGrantProfile,
+    RepositoryTaskGrantArtifact,
+    RepositoryTaskGrantArtifactLock,
+    RepositoryTaskGrantDefinition,
+} from "./workspace/repository-grant-types.ts";
+export {
+    createGitRepositoryGrantPlan,
+    grantTaskRepositories,
+} from "./workspace/repository-grants.ts";
 export { createRetainedWorldRunner } from "./workspace/retained-world-runner.ts";
 export type {
     RetainedWorldCapability,
@@ -381,11 +399,15 @@ export type {
     SelectRetainedWorldSettlementOptions,
 } from "./workspace/retained-world-settlement-types.ts";
 export {
+    captureGrantedTaskWorldDurably,
     captureTaskWorldDurably,
+    recoverGrantedTaskWorldDurably,
     recoverTaskWorldDurably,
 } from "./workspace/task-world-execution.ts";
 export type {
+    CaptureGrantedTaskWorldOptions,
     CaptureTaskWorldOptions,
+    RecoverGrantedTaskWorldOptions,
     RecoverTaskWorldOptions,
     RetainedWorldOutput,
     TaskWorldCaptureResult,

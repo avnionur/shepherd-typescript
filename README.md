@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.37.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.38.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -103,6 +103,9 @@ trace-record contracts with durable SQLite task and trace stores:
 - workspace protocol v20 repository-aware binding authorities with exact Git worktree evidence,
   stable order-independent resource identity, linked-worktree/common-repository refusal, and
   multi-repository Git custody without nested control metadata;
+- workspace protocol v21 explicit per-binding repository task-grant companion artifacts, exact
+  multi-resource admission plans, non-amplifying whole-run ceilings, advisory read/write capability
+  enforcement, stale-resource refusal, and exact journaled recovery identity;
 - a configured reference copy carrier with immutable verified revisions, isolated mutable custody,
   restart reopen, drift verification, deterministic parent-linked custody capture, and exact
   idempotent discard;
@@ -496,6 +499,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Documentation index](./docs/README.md)
 - [Project structure](./docs/project-structure.md)
 - [Reference copy carrier](./docs/reference-copy-carrier.md)
+- [Repository grants and run authority ceilings](./docs/repository-grants.md)
 - [Naming and licensing](./docs/naming-and-licensing.md)
 - [Implementation plan](./.plan/README.md)
 - [Paper coverage map](./.plan/paper-coverage.md)
@@ -540,11 +544,13 @@ paths, and restart recovery.
 
 The [Phase 3 status](./docs/phase-3-l1-alpha.md) and
 [exit audit](./.plan/phase-3-exit-audit.md) map each criterion to repeatable production-seam
-evidence. This is not full Shepherd `0.3.0` parity. Runtime grants, placement and jail enforcement,
+evidence. This is not full Shepherd `0.3.0` parity. Placement and jail enforcement,
 `apply`, `release`, CLI compatibility, repair commands, installed-package consumer fixtures,
 live-provider adapters, scopes, supervision, replay, and paper applications remain later phases.
-Phase 4 has started with exact named multi-repository binding resources; these values deliberately
-carry no read/write grant until the next authority-identity slice is implemented and verified.
+Phase 4 now includes exact named multi-repository binding resources and explicit read-only/
+read-write task grants with a whole-run ceiling at an honest in-process advisory seam. Placement,
+native syscall jails, simultaneous multi-world runner access, and the remaining documented run
+surface are not implemented.
 
 ## Attribution
 
