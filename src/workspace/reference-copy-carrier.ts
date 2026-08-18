@@ -38,6 +38,13 @@ import { createWorkspaceBindings, createWorkspaceBindingsForRetainedCustody } fr
 import { WorldCarrierError } from "./errors.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import {
+    assertWorkspaceMetadataSupported,
+    assertWorkspaceNamesPortable,
+    injectWorkspaceCustodyFault,
+    readWorkspaceCustodyFaultInjection,
+    type WorkspaceCustodyFaultInjection,
+} from "./platform-conformance.ts";
+import {
     assertWorkspacePathUnprotected,
     type WorkspacePathProtectionOptions,
     WorkspaceProtectedPathError,
@@ -78,6 +85,7 @@ type CarrierPaths = {
     readonly workspaceRoot: string;
     readonly identities: readonly { readonly identity: string; readonly path: string }[];
     readonly createBindings: typeof createWorkspaceBindings;
+    readonly faultInjection: WorkspaceCustodyFaultInjection | null;
 };
 
 type RevisionDescriptor = {
@@ -104,6 +112,10 @@ type CustodyDescriptor = {
     readonly descriptor_format: string;
     readonly descriptor_version: number;
 };
+
+const snapshotSourceInspectionPhase = workspaceProtocolConfig.platformConformance.faults.phases[0];
+assert.ok(snapshotSourceInspectionPhase);
+const SNAPSHOT_SOURCE_INSPECTION_PHASE_NAME = snapshotSourceInspectionPhase.name;
 
 type DiscardDescriptor = {
     readonly backend: string;
@@ -304,9 +316,9 @@ function createCarrier(
     open: typeof openWorkspace,
     createBindings: typeof createWorkspaceBindings,
 ): ReferenceCopyCarrier {
-    const workspaceRoot = readOptions(options);
+    const { faultInjection, workspaceRoot } = readOptions(options);
     const workspace = open(workspaceRoot);
-    const paths = createCarrierPaths(workspace.control_path, createBindings);
+    const paths = createCarrierPaths(workspace.control_path, createBindings, faultInjection);
 
     const carrier = Object.freeze({
         captureCustody: async (custodyId: string) =>
@@ -360,9 +372,35 @@ function captureCustody(paths: CarrierPaths, custodyId: string): WorldRevision {
     const stagingRoot = createStaging(paths);
     const stagedWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
     try {
+        const [sourceInspection, stagingWrite, sourceRevalidation, publication, postPublication] =
+            workspaceProtocolConfig.platformConformance.faults.phases.slice(5, 10);
+        assert.ok(
+            sourceInspection &&
+                stagingWrite &&
+                sourceRevalidation &&
+                publication &&
+                postPublication,
+        );
+        injectWorkspaceCustodyFault(paths.faultInjection, sourceInspection.name);
         mkdirSync(stagedWorld);
-        const manifest = captureTree(custody.path, stagedWorld, null, protection);
-        const secondManifest = captureTree(custody.path, null, null, protection);
+        injectWorkspaceCustodyFault(paths.faultInjection, stagingWrite.name);
+        const manifest = captureTree(
+            custody.path,
+            stagedWorld,
+            null,
+            protection,
+            sourceInspection.name,
+        );
+        assertManifestMetadataSupported(custody.path, manifest, sourceInspection.name);
+        injectWorkspaceCustodyFault(paths.faultInjection, sourceRevalidation.name);
+        const secondManifest = captureTree(
+            custody.path,
+            null,
+            null,
+            protection,
+            sourceRevalidation.name,
+        );
+        assertManifestMetadataSupported(custody.path, secondManifest, sourceRevalidation.name);
         assert.equal(
             canonicalManifest(manifest),
             canonicalManifest(secondManifest),
@@ -395,9 +433,11 @@ function captureCustody(paths: CarrierPaths, custodyId: string): WorldRevision {
             descriptor,
         );
         syncDirectory(stagingRoot);
+        injectWorkspaceCustodyFault(paths.faultInjection, publication.name);
         publishDirectory(paths, stagingRoot, revisionRoot(paths, revisionId), () =>
             assertRevisionPublicationEqual(paths, revisionId, descriptor),
         );
+        injectWorkspaceCustodyFault(paths.faultInjection, postPublication.name);
         verifyRevision(paths, revisionId);
         return loadRevision(paths, revisionId);
     } catch (error) {
@@ -459,7 +499,10 @@ function assertGitStagingSource(controlPath: string, sourceRoot: string): string
     return source;
 }
 
-function readOptions(value: unknown): string {
+function readOptions(value: unknown): Readonly<{
+    faultInjection: WorkspaceCustodyFaultInjection | null;
+    workspaceRoot: string;
+}> {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
         throw new TypeError("reference copy carrier options must be an object");
     }
@@ -467,9 +510,10 @@ function readOptions(value: unknown): string {
     if (
         Object.getPrototypeOf(value) !== Object.prototype ||
         Object.getOwnPropertySymbols(value).length > 0 ||
-        Object.keys(descriptors).length !== 1 ||
+        ![1, 2].includes(Object.keys(descriptors).length) ||
         !("workspaceRoot" in descriptors) ||
-        !("value" in descriptors.workspaceRoot)
+        !("value" in descriptors.workspaceRoot) ||
+        Object.keys(descriptors).some((key) => !["faultInjection", "workspaceRoot"].includes(key))
     ) {
         throw new TypeError("reference copy carrier options must be exact data");
     }
@@ -477,12 +521,18 @@ function readOptions(value: unknown): string {
     if (typeof workspaceRoot !== "string" || workspaceRoot.length === 0) {
         throw new TypeError("reference copy carrier workspaceRoot must be a non-empty string");
     }
-    return workspaceRoot;
+    return {
+        faultInjection: readWorkspaceCustodyFaultInjection(
+            "faultInjection" in descriptors ? descriptors.faultInjection?.value : undefined,
+        ),
+        workspaceRoot,
+    };
 }
 
 function createCarrierPaths(
     controlPath: string,
     createBindings: typeof createWorkspaceBindings,
+    faultInjection: WorkspaceCustodyFaultInjection | null = null,
 ): CarrierPaths {
     const config = workspaceProtocolConfig.carrier;
     const carrier = path.join(controlPath, config.carrierDirectory);
@@ -518,6 +568,7 @@ function createCarrierPaths(
                 path: directory,
             })),
             createBindings,
+            faultInjection,
             workspaceRoot: path.dirname(controlPath),
         };
     } catch (error) {
@@ -670,6 +721,9 @@ async function publishSelection(
         schedule: SelectionPublicationScheduleEncoding;
     }>,
 ): Promise<ScheduledSelectionPublicationReceiptEncoding> {
+    const [beforeWrite, afterWrite, postPublication] =
+        workspaceProtocolConfig.platformConformance.faults.phases.slice(16, 19);
+    assert.ok(beforeWrite && afterWrite && postPublication);
     const staging = stageSelection(paths, definition);
     const base = readOwnedRevisionDescriptor(paths, definition.plan.value.base_revision_id);
     const head = loadRevision(paths, definition.plan.value.head_revision_id);
@@ -686,6 +740,7 @@ async function publishSelection(
     assertSelectionDirectory(stepsRoot);
     let previous: ScheduledSelectionPublicationStepEncoding | null = null;
     const retainedNames = new Set(readdirSync(stepsRoot));
+    injectWorkspaceCustodyFault(paths.faultInjection, beforeWrite.name);
     if (retainedNames.size === 0) {
         const observed = await definition.observeUserBasis();
         if (observed !== definition.plan.value.user_basis_before) throw selectionError("basis");
@@ -732,6 +787,7 @@ async function publishSelection(
     for (const change of definition.plan.value.changes) {
         assertPathNode(binding.canonical_root, change.path, change.after);
     }
+    injectWorkspaceCustodyFault(paths.faultInjection, afterWrite.name);
     const journalReceiptPath = path.join(
         selectionStagingRoot(paths, staging.staging_id),
         workspaceProtocolConfig.selectionPublication.publicationFile,
@@ -751,6 +807,7 @@ async function publishSelection(
         }
         publishSelectionReceipt(paths, retained);
         verifySelectionReceipt(paths, retained);
+        injectWorkspaceCustodyFault(paths.faultInjection, postPublication.name);
         return retained;
     }
     const userBasisAfter = await definition.observeUserBasis();
@@ -775,6 +832,7 @@ async function publishSelection(
             pathProtection(paths.workspaceRoot, base.binding_root),
         ),
     );
+    injectWorkspaceCustodyFault(paths.faultInjection, postPublication.name);
     return receipt;
 }
 
@@ -1012,9 +1070,35 @@ function snapshotBinding(
     const stagedWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
     const protection = pathProtection(workspaceRoot, retainedBinding.canonical_root);
     try {
+        const [sourceInspection, stagingWrite, sourceRevalidation, publication, postPublication] =
+            workspaceProtocolConfig.platformConformance.faults.phases;
+        assert.ok(
+            sourceInspection &&
+                stagingWrite &&
+                sourceRevalidation &&
+                publication &&
+                postPublication,
+        );
+        injectWorkspaceCustodyFault(paths.faultInjection, sourceInspection.name);
         mkdirSync(stagedWorld);
-        const manifest = captureTree(sourceRoot, stagedWorld, captureControlPath, protection);
-        const secondManifest = captureTree(sourceRoot, null, captureControlPath, protection);
+        injectWorkspaceCustodyFault(paths.faultInjection, stagingWrite.name);
+        const manifest = captureTree(
+            sourceRoot,
+            stagedWorld,
+            captureControlPath,
+            protection,
+            sourceInspection.name,
+        );
+        assertManifestMetadataSupported(sourceRoot, manifest, sourceInspection.name);
+        injectWorkspaceCustodyFault(paths.faultInjection, sourceRevalidation.name);
+        const secondManifest = captureTree(
+            sourceRoot,
+            null,
+            captureControlPath,
+            protection,
+            sourceRevalidation.name,
+        );
+        assertManifestMetadataSupported(sourceRoot, secondManifest, sourceRevalidation.name);
         assert.equal(
             canonicalManifest(manifest),
             canonicalManifest(secondManifest),
@@ -1043,9 +1127,11 @@ function snapshotBinding(
         );
         syncDirectory(stagingRoot);
         const finalRoot = revisionRoot(paths, revisionId);
+        injectWorkspaceCustodyFault(paths.faultInjection, publication.name);
         publishDirectory(paths, stagingRoot, finalRoot, () =>
             assertRevisionPublicationEqual(paths, revisionId, descriptor),
         );
+        injectWorkspaceCustodyFault(paths.faultInjection, postPublication.name);
         verifyRevision(paths, revisionId);
         return loadRevision(paths, revisionId);
     } catch (error) {
@@ -1218,6 +1304,7 @@ function verifyRevisionNode(paths: CarrierPaths, revisionId: string): WorldVerif
         null,
         pathProtection(paths.workspaceRoot, descriptor.binding_root),
     );
+    assertManifestMetadataSupported(revision.path, manifest, SNAPSHOT_SOURCE_INSPECTION_PHASE_NAME);
     assertManifestEqual(revision.manifest, manifest);
     const contentId = createContentId(manifest);
     if (
@@ -1265,9 +1352,10 @@ function discardCustody(paths: CarrierPaths, custodyId: string): void {
         }
         if (existsSync(root)) {
             verifyCustody(paths, custodyId, true);
+            const cleanup = workspaceProtocolConfig.platformConformance.faults.phases[10];
+            assert.ok(cleanup);
+            injectWorkspaceCustodyFault(paths.faultInjection, cleanup.name);
             const status = lstatSync(root);
-            // Deterministic substitution between verified traversal and this immediate authority
-            // check requires the Phase 3 concurrent-mutation fault injector.
             /* node:coverage disable */
             if (!status.isDirectory() || status.isSymbolicLink()) {
                 throw carrierError("control");
@@ -1302,10 +1390,20 @@ function captureTree(
     targetRoot: string | null,
     controlPath: string | null,
     protection: WorkspacePathProtectionAuthority,
+    platformPhase = SNAPSHOT_SOURCE_INSPECTION_PHASE_NAME,
 ): readonly WorldManifestEntry[] {
     const manifest: WorldManifestEntry[] = [];
     const seenHardLinks = new Set<string>();
-    walkDirectory(sourceRoot, targetRoot, "", controlPath, protection, manifest, seenHardLinks);
+    walkDirectory(
+        sourceRoot,
+        targetRoot,
+        "",
+        controlPath,
+        protection,
+        platformPhase,
+        manifest,
+        seenHardLinks,
+    );
     if (targetRoot !== null) {
         syncDirectory(targetRoot);
     }
@@ -1319,6 +1417,7 @@ function walkDirectory(
     relativeDirectory: string,
     controlPath: string | null,
     protection: WorkspacePathProtectionAuthority,
+    platformPhase: string,
     manifest: WorldManifestEntry[],
     seenHardLinks: Set<string>,
 ): void {
@@ -1344,6 +1443,7 @@ function walkDirectory(
         directory.closeSync();
     }
     beforeNames.sort();
+    assertWorkspaceNamesPortable(beforeNames, platformPhase);
     assert.equal(
         new Set(beforeNames.map((name) => name.normalize("NFC"))).size,
         beforeNames.length,
@@ -1384,6 +1484,7 @@ function walkDirectory(
                 relativePath,
                 controlPath,
                 protection,
+                platformPhase,
                 manifest,
                 seenHardLinks,
             );
@@ -1473,6 +1574,22 @@ function walkDirectory(
         afterNames.closeSync();
     }
     assert.deepEqual(retainedNames.sort(), beforeNames, "directory changed during capture");
+}
+
+function assertManifestMetadataSupported(
+    sourceRoot: string,
+    manifest: readonly WorldManifestEntry[],
+    phase: string,
+): void {
+    const ordinary = [sourceRoot];
+    const symbolicLinks: string[] = [];
+    for (const entry of manifest) {
+        const candidate = path.join(sourceRoot, ...entry.path.split("/"));
+        if (entry.kind === SYMLINK_KIND) symbolicLinks.push(candidate);
+        else ordinary.push(candidate);
+    }
+    assertWorkspaceMetadataSupported(ordinary, phase);
+    assertWorkspaceMetadataSupported(symbolicLinks, phase, true);
 }
 
 function entry(

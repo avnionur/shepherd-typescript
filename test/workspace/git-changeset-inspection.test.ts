@@ -37,6 +37,8 @@ test("Git changeset inspection presents clean Gitlink changes outside canonical 
         { stdio: ["ignore", "pipe", "pipe"] },
     );
     git(parent, "commit", "-m", "add module");
+    git(path.join(parent, "module"), "config", "user.name", "Shepherd Test");
+    git(path.join(parent, "module"), "config", "user.email", "test@example.invalid");
     await writeFile(path.join(parent, "target-one.txt"), "one\n");
     await writeFile(path.join(parent, "target-two.txt"), "two\n");
     await symlink("target-one.txt", path.join(parent, "pointer"));

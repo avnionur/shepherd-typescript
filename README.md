@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.34.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.36.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -106,6 +106,9 @@ trace-record contracts with durable SQLite task and trace stores:
 - workspace protocol v18 configured protected-path validation with Unicode/case normalization,
   alternate-name and symlink-alias refusal, stable versioned errors, and enforcement across copy,
   Git, inspection, selection, discard, and recovery seams;
+- workspace protocol v19 configured platform inspection, fail-closed ACL/xattr/resource-fork/
+  alternate-stream detection, portable case-collision and `core.symlinks=false` refusal,
+  sparse-index evidence, stable deterministic custody faults, and receipt-safe recovery;
 - a closed workspace-protocol-v7 retained-world runner registration with a private callback
   registry and an honest initial advisory enforcement classification;
 - authenticated invocation-fenced task-world execution over isolated custody, with successful
@@ -462,11 +465,13 @@ pnpm lint
 pnpm check:protocol
 pnpm build
 pnpm verify
+pnpm verify:serial
 ```
 
 Biome provides formatting and linting. Node's built-in test runner executes TypeScript directly.
-The test command enforces 100% line, branch, and function coverage for runtime source. TypeScript
-builds declarations and JavaScript into `dist/`.
+The test command enforces 100% line, branch, and function coverage for runtime source. The serial
+verification variant retains the same gates while avoiding native-probe process contention on the
+Windows CI runner. TypeScript builds declarations and JavaScript into `dist/`.
 
 Release versions are configured in `release-config.yaml`. After changing the version, run
 `pnpm sync:version` to update every configured JSON manifest.
@@ -563,7 +568,8 @@ hardening are implemented. Authenticated changeset inspection now provides exact
 bounded retained-content reads and previews, exact-content rename/copy projections, and Git-aware
 Gitlink/symlink-mode presentation without changing canonical identity. Selection and settlement
 effects, terminal trace citations, and configured protected control-path enforcement are
-implemented. Broader platform and fault-conformance work remains before Phase 3 exit.
+implemented. Platform and fault conformance is documented in
+[`docs/platform-fault-conformance.md`](./docs/platform-fault-conformance.md).
 
 ## Attribution
 

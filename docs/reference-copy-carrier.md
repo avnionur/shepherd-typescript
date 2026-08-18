@@ -54,11 +54,11 @@ directory or the operation fails.
 
 On Windows, `mode` is the normalized low nine bits exposed by Node `lstat` and accepted by Node
 `chmod`; it does not claim POSIX ownership, ACL, or independent user/group/other enforcement.
-ACLs, extended attributes, resource forks, and retained Windows alternate-stream content are not
-yet portable managed semantics. Protected-path case and alternate-name comparisons are
-deterministic under the v18 policy, but this slice does not claim to preserve those broader
-filesystem values; the roadmap retains explicit carrier hardening before
-optimized backends can claim reference parity.
+Workspace protocol v19 probes ACLs, extended attributes, macOS resource forks, and Windows
+alternate streams and rejects them before publication because the portable manifest cannot retain
+them. It also rejects deterministic portable case-fold collisions. The complete configured policy,
+stable fault evidence, and optimized-carrier parity gate are defined in
+[Workspace platform and fault conformance](./platform-fault-conformance.md).
 
 ## Durability and current boundary
 
@@ -74,7 +74,7 @@ This is the correctness-reference carrier, not complete settlement. Authenticate
 execution, selection, and settlement remain later Phase 3 tasks. Task 3 treats
 `.git` generically and never uses a Git commit as generic world identity.
 
-The automated suite covers ordinary restart, corruption, staging cleanup, source isolation, and
-the portable filesystem matrix. Deterministic disk-full, process-kill-at-fsync, permission-race,
-and case-insensitive collision injection still require the planned carrier fault harness; those
-failure boundaries are not reported as verified in this release.
+The automated suite covers ordinary restart, corruption, staging cleanup, source isolation, the
+portable filesystem matrix, host metadata refusal, case collisions, and deterministic permission,
+capacity, mutation, and interruption boundaries. Post-publication interruption tests prove exact
+reopen or retry convergence without inventing a successful caller receipt.

@@ -219,6 +219,35 @@ test("worktree custody preserves sparse absence and rejects unsafe repository bo
     );
 });
 
+test("worktree custody preserves sparse-index evidence and excluded-path absence", async (context) => {
+    const root = await repository(context, "sparse-index");
+    await mkdir(path.join(root, "included"));
+    await mkdir(path.join(root, "excluded"));
+    await writeFile(path.join(root, "included", "present.txt"), "present\n");
+    await writeFile(path.join(root, "excluded", "absent.txt"), "absent\n");
+    git(root, "add", "included", "excluded");
+    git(root, "commit", "-m", "sparse index paths");
+    git(root, "sparse-checkout", "init", "--cone", "--sparse-index");
+    git(root, "sparse-checkout", "set", "included");
+    initializeWorkspace({ adopt: "worktree", rootPath: root });
+
+    const service = createGitAwareCustody({ workspaceRoot: root });
+    const retained = await service.capture(bindingFor(root));
+    assert.ok(retained);
+    assert.equal(
+        retained.basis.index?.entries.find((entry) => entry.path === "excluded/absent.txt")
+            ?.skip_worktree,
+        true,
+    );
+    assert.equal(retained.basis.sparse_digest.length > 0, true);
+    assert.equal(
+        await readFile(path.join(retained.custody.path, "included", "present.txt"), "utf8"),
+        "present\n",
+    );
+    await assert.rejects(readFile(path.join(retained.custody.path, "excluded", "absent.txt")));
+    assert.equal((await service.verify(retained.custody.custody_id)).basis_moved, false);
+});
+
 test("worktree custody accepts a clean gitlink and rejects dirty submodule content", async (context) => {
     const submodule = await repository(context, "submodule-source");
     const root = await repository(context, "submodule-parent");
@@ -396,6 +425,7 @@ test("Git-aware custody validates its public boundary and exact repository root"
         {},
         { workspaceRoot: 1 },
         { workspaceRoot: "", extra: true },
+        { faultInjection: null, workspaceRoot: "root" },
         accessor,
         symbolic,
         new Date(),

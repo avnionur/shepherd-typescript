@@ -891,6 +891,82 @@ export type WorkspaceProtocolConfig = {
     readonly hexLength: number;
     /** Workspace-control manifest filename. */
     readonly manifestFile: string;
+    /** Cross-platform retained-custody conformance policy. */
+    readonly platformConformance: {
+        /** Portable path case-collision policy. */
+        readonly caseCollisionPolicy: string;
+        /** Stable deterministic fault classifications and injection phases. */
+        readonly faults: {
+            /** Closed fault names with stable public error contracts. */
+            readonly classifications: readonly {
+                /** Stable machine-readable error code. */
+                readonly code: string;
+                /** Stable default diagnostic. */
+                readonly message: string;
+                /** Fault classification name. */
+                readonly name: string;
+            }[];
+            /** Classification used when portable custody cannot preserve detected metadata. */
+            readonly metadataClassification: string;
+            /** Closed injection phases with required recovery behavior. */
+            readonly phases: readonly {
+                /** Stable custody boundary name. */
+                readonly name: string;
+                /** Required recovery classification. */
+                readonly recovery: string;
+            }[];
+            /** Classification used when host semantics cannot satisfy portable custody. */
+            readonly platformClassification: string;
+        };
+        /** Git-specific platform policy. */
+        readonly git: {
+            /** Policy for worktree placeholders created with `core.symlinks=false`. */
+            readonly coreSymlinksFalse: string;
+            /** Policy for Gitlink evidence outside canonical copy-world identity. */
+            readonly gitlinks: string;
+            /** Policy for sparse-index evidence. */
+            readonly sparseIndex: string;
+        };
+        /** Unsupported filesystem-metadata handling policy. */
+        readonly metadataPolicy: string;
+        /** Placeholder replaced with the inspected path in metadata probe arguments. */
+        readonly metadataPathToken: string;
+        /** Maximum output bytes accepted from one metadata probe. */
+        readonly metadataProbeMaxBytes: number;
+        /** Maximum execution time accepted from one metadata probe. */
+        readonly metadataProbeTimeoutMs: number;
+        /** Configured host metadata probes. */
+        readonly metadataProbes: readonly {
+            /** Ordered executable arguments containing the configured path token. */
+            readonly arguments: readonly string[];
+            /** Probe executable. */
+            readonly executable: string;
+            /** Metadata kind detected by a matching probe. */
+            readonly kind: string;
+            /** Regular expression matched against standard output. */
+            readonly matchPattern: string;
+            /** Regular-expression flags. */
+            readonly patternFlags: string;
+            /** Node host platform for this probe. */
+            readonly platform: string;
+            /** Whether paths containing line breaks must be probed outside a batched invocation. */
+            readonly separateLineBreakPaths: boolean;
+            /** Ordered non-following arguments used for symbolic-link paths. */
+            readonly symlinkArguments: readonly string[];
+        }[];
+        /** Portable file and directory mode policy. */
+        readonly modePolicy: string;
+        /** Correctness gate for optimized carrier parity claims. */
+        readonly optimizedCarrierParity: string;
+        /** Host platforms with an explicit custody policy. */
+        readonly supportedPlatforms: readonly string[];
+        /** Symbolic-link retention policy. */
+        readonly symlinkPolicy: string;
+        /** Filesystem metadata rejected before publication. */
+        readonly unsupportedMetadata: readonly string[];
+        /** Public platform-conformance contract version. */
+        readonly version: number;
+    };
     /** Generic protected workspace-path validation policy. */
     readonly protectedPaths: {
         /** Separators introducing filesystem alternate-name forms. */

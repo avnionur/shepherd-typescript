@@ -60,11 +60,16 @@ and verified receipts, never from the user's current HEAD. A retained object pac
 reopenable when an originally borrowed alternate object store disappears; ordinary
 `openWorkspace` remains stricter and still rejects unavailable adopted commits.
 
-## Current boundary
+## Platform and fault boundary
 
-Task 4 owns basis acquisition, movement classification, isolated retained custody, restart, and
-discard. The next Phase 3 task owns the complete changeset model; this API intentionally exposes no
-partial diff or settlement schema. Deterministic concurrent-mutation, disk-full, permission, and
-process-kill injection, exhaustive stable error codes, `core.symlinks=false`, sparse-index variants,
-and broad cross-platform filesystem preservation remain Phase 3 exit gates and are not reported as verified here.
-They do not change the Task 5 changeset record shape, so that slice can proceed independently.
+Workspace protocol v19 rejects `core.symlinks=false` regular-file placeholders for index symlink
+entries before worktree custody publication. Actual sparse-index fixtures retain opaque index
+receipts, canonical skip-worktree evidence, sparse configuration, and excluded-path absence. Clean
+Gitlinks remain external commit citations, while symlink target text and portable mode bits continue
+through reference-copy custody.
+
+Git materialization, basis capture/revalidation, custody publication, and post-publication are
+configured deterministic fault boundaries. Failures preserve `WorkspaceCustodyFaultError` rather
+than collapsing the stable classification into a generic Git control error. See
+[Workspace platform and fault conformance](./platform-fault-conformance.md) for host policy,
+recovery evidence, and the optimized-carrier parity gate.

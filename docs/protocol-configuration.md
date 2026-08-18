@@ -64,6 +64,8 @@ receipt versions and identity domains bound to the exact v15 schedule, while pre
 and v15 evidence unchanged. Workspace protocol v17 adds settlement-citation record, cut, schema,
 and append-intent identities. Workspace protocol v18 adds configured protected roots, Unicode and
 case normalization, alternate-name handling, stable rejection evidence, and validation version.
+Workspace protocol v19 adds host metadata probes, portable filesystem/Git policy, stable custody
+fault classifications and recovery phases, and the optimized-carrier reference-suite gate.
 Store schema
 v6 owns the consume-once
 settlement decision table without changing kernel record identity.
@@ -126,8 +128,9 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   schema paths, identity prefixes, limits, statuses, and version are closed. Settlement request,
   effect-journal, and selection-publication vocabularies, identity prefixes, resource bounds,
   descriptor names, errors, schema destinations, and versions are closed. Every value matches the
-  immutable workspace protocol v18 contract. Protocols v1 through v17 remain unchanged historical
-  subsets.
+  immutable workspace protocol v19 contract. Protocols v1 through v18 remain unchanged historical
+  subsets. Platform probes contain valid path-token arguments and regular expressions, fault
+  names/codes/phases are unique, classification mappings resolve, and supported hosts are closed.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,
 root-witness identity, or current ordinal bounds requires a new ABI or migration contract.

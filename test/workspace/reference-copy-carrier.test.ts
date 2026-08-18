@@ -416,6 +416,15 @@ test("reference copy carrier validates its closed option boundary", async (conte
         new Date(),
         {},
         { workspaceRoot, extra: true },
+        { faultInjection: null, workspaceRoot },
+        {
+            faultInjection: {
+                classification: "unknown",
+                phase: "snapshot-source-inspection",
+                systemCode: null,
+            },
+            workspaceRoot,
+        },
         { workspaceRoot: "" },
         { workspaceRoot: 1 },
         symbolOptions,

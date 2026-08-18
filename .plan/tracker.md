@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-16
+Last updated: 2026-08-17
 
-Current version: `1.33.0`
+Current version: `1.36.0`
 
 Current level: L0 — canonical model
 
@@ -99,9 +99,11 @@ The workspace protocol v3 reference copy carrier now revalidates exact bindings,
 content-addressed immutable revisions away from user files, forks isolated mutable custody,
 reopens and verifies both forms after restart, rejects unsupported or escaping filesystem
 semantics, and performs exact idempotent custody discard without deleting the parent revision.
-Portable ACL/xattr/resource-fork detection plus deterministic disk-full, permission, case-folding,
-concurrent-mutation, and process-interruption fault injection remain an explicit Phase 3 hardening
-gate before any optimized carrier may claim reference parity.
+Workspace protocol v19 now closes the platform/fault gate with configured public policy inspection,
+fail-closed ACL/xattr/resource-fork/alternate-stream probes, portable case collision and
+`core.symlinks=false` placeholder rejection, actual sparse-index evidence, stable deterministic
+permission/capacity/mutation/interruption errors, receipt-safe carrier and settlement recovery,
+and a mandatory reference-suite parity gate for any optimized carrier.
 Workspace protocol v4 adds exact Git-aware retained-output bases and protocol v5 now adds pure,
 immutable, content-addressed changesets that validate and compare exact copy-world revisions.
 Task 6A now lets the reference carrier promote an isolated mutable custody into one verified,
@@ -268,6 +270,10 @@ changeset identity.
 - [x] Complete Task 10 workspace-protocol-v18 configured protected-path validation across copy and
   Git capture, retained inspection, selection/recovery, and discard cleanup, including normalized
   case/alternate names, symlink aliases, stable versioned errors, and ordinary-path preservation.
+- [x] Complete Task 11 workspace-protocol-v19 carrier and Git platform/fault conformance with
+  fail-closed host metadata probes, portable case and Git placeholder policy, sparse-index
+  evidence, stable deterministic fault boundaries, honest settlement receipts, and optimized
+  carrier reference-suite gating.
 
 ## Verification required for this slice
 
@@ -279,12 +285,8 @@ changeset identity.
 
 ## Next slice
 
-Continue Phase 3 platform/fault conformance by closing the remaining filesystem-preservation,
-cross-platform, concurrent-mutation, permission/disk-full, and process-interruption matrix.
-
-Task 4 platform/fault conformance remains a Phase 3 exit gate rather than a prerequisite for the
-Task 6 capture integration: cross-platform case/symlink policy, sparse-index variants, exhaustive
-stable error taxonomy, and deterministic concurrency/process-interruption injection remain open.
+Close the Phase 3 epic after its exit evidence is reconciled, then select the next dependency-ready
+roadmap issue from GitHub rather than speculating beyond the issue graph.
 
 ## Notes
 
