@@ -211,7 +211,9 @@ Goal: cover the documented shipped surface.
 
 Work:
 
-- add named disjoint multi-repository bindings;
+- add named disjoint multi-repository bindings; **implemented in 1.37.0** with workspace protocol
+  v20 exact Git worktree authorities, stable per-resource identity, linked/common repository and
+  nested-boundary refusal, and independent downstream Git custody;
 - add explicit runtime grants and whole-run ceiling;
 - implement advisory/auto placement reporting;
 - implement macOS Seatbelt and Linux Landlock jail launchers;

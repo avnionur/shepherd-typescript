@@ -321,7 +321,10 @@ export type {
     TaskDescriptor,
     TaskRegistration,
 } from "./task/types.ts";
-export { createWorkspaceBindings } from "./workspace/bindings.ts";
+export {
+    createGitRepositoryBindings,
+    createWorkspaceBindings,
+} from "./workspace/bindings.ts";
 export { createWorldChangesetInspection } from "./workspace/changeset-inspection.ts";
 export { createWorldChangeset } from "./workspace/changesets.ts";
 export {
@@ -407,6 +410,8 @@ export type {
     GitIgnoredEvidence,
     GitIndexEntry,
     GitIndexEvidence,
+    GitRepositoryBinding,
+    GitRepositoryBindingSet,
     GitRepositoryIdentity,
     GitRetainedOutput,
     GitSymlinkModePresentation,
@@ -420,6 +425,7 @@ export type {
     WorkspaceBindingSet,
     WorkspaceGitState,
     WorkspaceInitializationOptions,
+    WorkspaceRepositoryBindingEvidence,
     WorkspaceState,
     WorldChangeNode,
     WorldChangeOperation,

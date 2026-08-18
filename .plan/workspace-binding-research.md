@@ -1,6 +1,6 @@
 # Workspace Binding Roots and Overlap Research
 
-Status: Phase 3 Task 2 implementation input
+Status: Phase 3 Task 2 foundation plus Phase 4 Task 1 repository-binding oracle record
 
 Research date: 2026-08-11
 
@@ -167,6 +167,35 @@ Parent Git repositories, nested repositories, submodules, worktrees, and reposit
 belong to Phase 4 GitRepo typing and oracle work.
 
 ## Oracle gaps before a parity claim
+
+### Phase 4 pinned-source findings
+
+The pinned `v0.3.0` tree retains the
+[release-ready repository-access guide](https://github.com/shepherd-agents/shepherd/blob/a8196d4c453514836d06bd2fece91a03cdc37107/docs/shepherd/guides/grant-repo-access.md)
+and generated `GitRepo` reference. The guide proves that `ws.bind(root=..., name=...)` returns a
+`GitRepo`, that named roots are disjoint, and that grants attach to those bound values. Its
+metadata says the documented surface first shipped in `0.2.0`; this repository therefore treats
+it as carried-forward evidence in the pinned `0.3.0` tree rather than inventing a newer contract.
+
+The pinned runtime
+[`test_git_repo_handle_contract.py`](https://github.com/shepherd-agents/shepherd/blob/a8196d4c453514836d06bd2fece91a03cdc37107/shepherd/packages/runtime/tests/unit/nucleus/test_git_repo_handle_contract.py)
+additionally treats `GitRepo` as a pure value whose identity combines a binding, basis, and
+authority and whose serialization cannot amplify authority. Phase 4 Task 1 implements only the
+repository-backed binding/resource portion. Basis custody continues through
+`createGitAwareCustody`; read/write authority and attenuation remain the next grant slice.
+
+No pinned shipped fixture specifies repository-ID hashing, Git administrative-path encoding,
+linked-worktree grouping, submodule ownership, control receipt layout, or exact error codes.
+Workspace protocol v20 therefore labels those rules TypeScript-owned: exact worktree-top and Git
+administrative-directory containment, linked/separate-directory and nested-boundary refusal,
+content-addressed local resource identity, and per-resource receipts under the initialized
+workspace control root.
+
+Remaining upstream oracle work for later compatibility slices includes grant identity,
+placement/jail compilation, and an installed-package multi-binding run fixture. Task 1 makes no
+claim that its local filesystem identity representation equals Python internals.
+
+## Historical oracle gaps before the repository-binding slice
 
 Run the pinned v0.3.0 binding tests or a black-box installed-package fixture to determine:
 

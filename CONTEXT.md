@@ -209,6 +209,12 @@ A frozen content-addressed authority identity joining one exact logical name to 
 workspace-contained, pairwise-disjoint filesystem root.
 _Avoid_: Runtime permission grant, display-path authority, retained world snapshot
 
+**Git Repository Binding**:
+A package-authenticated workspace binding extended with one exact non-bare Git worktree, shared
+repository identity, per-worktree identity, object format, and a separate content-addressed
+resource identity. It carries no runtime read/write grant by itself.
+_Avoid_: Git custody receipt, ambient repository discovery, permission grant, linked worktree
+
 **World Revision**:
 An immutable verified copy-carrier snapshot whose revision identity binds canonical logical
 filesystem content to one exact workspace binding and carrier protocol.

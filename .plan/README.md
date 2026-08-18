@@ -146,8 +146,9 @@ record and public API must declare a protocol/compatibility version.
   L1-alpha claim boundary, platform limits, and the handoff into Phase 4 compatibility.
 - [Workspace initialization research](./workspace-initialization-research.md) — shipped init/adopt
   contract, pinned-source boundaries, and explicit dirty-worktree oracle gaps.
-- [Workspace binding research](./workspace-binding-research.md) — shipped named/disjoint root
-  contract, canonicalization policy, and explicit filesystem/Git oracle gaps.
+- [Workspace binding research](./workspace-binding-research.md) — shipped named/disjoint root and
+  `GitRepo` evidence, canonicalization and repository-resource policy, and explicit grant/platform
+  oracle gaps.
 - [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
   snapshot, mutable custody, verification, discard, durability, and Task 4 Git boundary.
 - [Git-aware custody research](./git-aware-custody-research.md) — shipped Git baseline,
@@ -216,5 +217,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Complete and merge the Phase 3 exit audit, close epic #16, and activate Phase 4 epic #17 for the
-remaining documented `0.3.0` compatibility surface.
+Complete and merge Phase 4 Task 1 repository binding compatibility, then version explicit runtime
+grant identity and whole-run authority ceilings before placement or jail implementation.

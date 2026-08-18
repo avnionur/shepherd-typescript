@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-18
 
-Current version: `1.36.1`
+Current version: `1.37.0`
 
 Current level: L1-alpha — P0 retained-world settlement loop
 
@@ -123,6 +123,11 @@ lookup, bounded canonical pagination, digest-verified retained content reads, bo
 previews, deterministic exact-content rename/copy projections, and authenticated Gitlink and
 symlink-mode presentation. Every projection remains outside immutable workspace protocol v5
 changeset identity.
+Phase 4 now begins with workspace protocol v20 repository-aware binding authorities. Exact Git
+worktree, common-directory, per-worktree directory, object-format, and filesystem evidence extend
+the unchanged v2 directory binding with a separate content-addressed resource identity. Multiple
+disjoint repositories retain independent custody under one workspace control root; shared linked
+worktrees, nested superproject/submodule sets, inexact roots, drift, and forged handles fail closed.
 
 ## Progress
 
@@ -277,6 +282,9 @@ changeset identity.
 - [x] Audit every Phase 3 exit criterion at its public production seam, publish the L1-alpha P0
   settlement evidence matrix, correct stale status claims, and preserve explicit Phase 4 and
   platform boundaries.
+- [x] Complete Phase 4 Task 1 workspace-protocol-v20 named multi-repository binding authorities,
+  per-resource Git custody receipts, exact reopen/movement evidence, linked/nested boundary
+  refusal, pinned-oracle claim limits, and ordinary Phase 3 binding preservation.
 
 ## Verification required for this slice
 
@@ -290,8 +298,9 @@ changeset identity.
 
 ## Next slice
 
-Close Phase 3 epic #16 after this audit merges, then activate Phase 4 epic #17 and create its first
-dependency-ready implementation issue from the documented roadmap frontier.
+Continue Phase 4 with explicit runtime grants and whole-run authority ceilings bound to exact
+repository resource identities; do not begin placement or jail launchers before grant identity is
+versioned and covered at the public/package seam.
 
 ## Notes
 

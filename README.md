@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.36.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.37.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -100,6 +100,9 @@ trace-record contracts with durable SQLite task and trace stores:
 - protected workspace initialization with configured `none`, `git-head`, and `worktree` baseline
   citations, no implicit Git history mutation, exact reuse, and fail-closed control metadata;
 - stable canonical workspace binding identities with containment and overlap rejection;
+- workspace protocol v20 repository-aware binding authorities with exact Git worktree evidence,
+  stable order-independent resource identity, linked-worktree/common-repository refusal, and
+  multi-repository Git custody without nested control metadata;
 - a configured reference copy carrier with immutable verified revisions, isolated mutable custody,
   restart reopen, drift verification, deterministic parent-linked custody capture, and exact
   idempotent discard;
@@ -540,6 +543,8 @@ The [Phase 3 status](./docs/phase-3-l1-alpha.md) and
 evidence. This is not full Shepherd `0.3.0` parity. Runtime grants, placement and jail enforcement,
 `apply`, `release`, CLI compatibility, repair commands, installed-package consumer fixtures,
 live-provider adapters, scopes, supervision, replay, and paper applications remain later phases.
+Phase 4 has started with exact named multi-repository binding resources; these values deliberately
+carry no read/write grant until the next authority-identity slice is implemented and verified.
 
 ## Attribution
 

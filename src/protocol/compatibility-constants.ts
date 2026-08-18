@@ -1050,3 +1050,19 @@ export const WORKSPACE_PROTOCOL_V19_CONTRACT = deepFreeze({
         version: 19,
     },
 } as const);
+
+/** Immutable repository-aware binding extension implemented by workspace protocol v20. */
+export const WORKSPACE_PROTOCOL_V20_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V19_CONTRACT,
+    repositoryBindings: {
+        errors: {
+            invalidRepositoryCode: "WORKSPACE_REPOSITORY_BINDING_INVALID",
+            invalidRepositoryMessage:
+                "workspace repository binding root is not an exact supported Git worktree",
+        },
+        identityDirectory: "git-bindings",
+        identityKind: "workspace-git-repository-binding",
+        resourceType: "git-repository",
+        version: 1,
+    },
+} as const);

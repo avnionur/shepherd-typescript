@@ -1,11 +1,15 @@
+import { spawnSync } from "node:child_process";
 import { lstatSync, realpathSync } from "node:fs";
 import path from "node:path";
 
 import { createRecordId } from "../canonical/canonical-record.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import { WorkspaceBindingError } from "./errors.ts";
+import { gitBindingFilesystemIdentity, inspectGitRepository } from "./git-repository-evidence.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import type {
+    GitRepositoryBinding,
+    GitRepositoryBindingSet,
     WorkspaceBinding,
     WorkspaceBindingDefinition,
     WorkspaceBindingOptions,
@@ -13,6 +17,7 @@ import type {
 } from "./types.ts";
 
 const WORKSPACE_BINDINGS = new WeakSet<object>();
+const GIT_REPOSITORY_BINDINGS = new WeakSet<object>();
 
 /** Rejects structurally forged workspace binding handles. @internal */
 export function assertWorkspaceBinding(value: unknown): asserts value is WorkspaceBinding {
@@ -37,6 +42,58 @@ export function assertWorkspaceBinding(value: unknown): asserts value is Workspa
  */
 export function createWorkspaceBindings(options: WorkspaceBindingOptions): WorkspaceBindingSet {
     return createBindings(options, false);
+}
+
+/**
+ * Creates stable repository-aware authorities for a complete disjoint binding set.
+ *
+ * Each root must be the exact top level of one supported non-bare Git worktree. Repositories are
+ * inspected through read-only Git plumbing, and linked worktrees sharing one common repository
+ * cannot be returned as distinct repository authorities in the same set.
+ *
+ * @param options - Initialized workspace and complete proposed repository binding set.
+ * @returns Frozen ordered repository-backed authorities with stable resource identities.
+ * @throws {WorkspaceBindingError} If a root is not an exact supported repository or two bindings
+ * identify the same common Git repository.
+ * @throws {WorkspaceControlError} If workspace control evidence cannot be opened safely.
+ * @throws {TypeError} If the options or binding definitions are malformed.
+ */
+export function createGitRepositoryBindings(
+    options: WorkspaceBindingOptions,
+): GitRepositoryBindingSet {
+    const base = createBindings(options, false);
+    const bindings = base.bindings.map((binding): GitRepositoryBinding => {
+        const repository = readRepositoryEvidence(binding.canonical_root);
+        const config = workspaceProtocolConfig.repositoryBindings;
+        const result = Object.freeze({
+            ...binding,
+            repository,
+            resource_id: createRecordId({
+                binding_id: binding.binding_id,
+                kind: config.identityKind,
+                repository_id: repository.repository_id,
+                root: repository.root,
+                type: config.resourceType,
+                version: config.version,
+                worktree_identity: repository.git_dir_identity,
+            }),
+            resource_type: config.resourceType,
+        });
+        WORKSPACE_BINDINGS.add(result);
+        GIT_REPOSITORY_BINDINGS.add(result);
+        return result;
+    });
+    return Object.freeze({
+        binding_version: base.binding_version,
+        bindings: Object.freeze(bindings),
+        repository_binding_version: workspaceProtocolConfig.repositoryBindings.version,
+        workspace_root: base.workspace_root,
+    });
+}
+
+/** @internal Reports whether a package-created binding carries repository authority evidence. */
+export function isGitRepositoryBinding(value: WorkspaceBinding): value is GitRepositoryBinding {
+    return GIT_REPOSITORY_BINDINGS.has(value);
 }
 
 /** @internal Revalidates binding paths for independently retained custody. */
@@ -252,6 +309,78 @@ function identityRootsOverlap(left: readonly string[], right: readonly string[])
         (leftRoot !== undefined && right.includes(leftRoot)) ||
         (rightRoot !== undefined && left.includes(rightRoot))
     );
+}
+
+function readRepositoryEvidence(root: string): GitRepositoryBinding["repository"] {
+    try {
+        const observed = inspectGitRepository(
+            root,
+            (args) => runGit(root, args),
+            gitBindingFilesystemIdentity,
+        );
+        if (
+            observed.bare ||
+            observed.top !== root ||
+            observed.gitDir !== observed.commonDir ||
+            !containsRoot(root, observed.gitDir) ||
+            !containsRoot(root, observed.commonDir)
+        ) {
+            throw repositoryBindingError("invalidRepository");
+        }
+        // Supported object formats are a configured Git-build capability.
+        /* node:coverage disable */
+        if (!workspaceProtocolConfig.gitCustody.objectFormats.includes(observed.objectFormat)) {
+            throw repositoryBindingError("invalidRepository");
+        }
+        /* node:coverage enable */
+        return Object.freeze({
+            common_dir: observed.commonDir,
+            common_dir_identity: observed.commonDirIdentity,
+            git_dir: observed.gitDir,
+            git_dir_identity: observed.gitDirIdentity,
+            object_format: observed.objectFormat,
+            repository_id: `${workspaceProtocolConfig.gitCustody.repositoryIdPrefix}${createRecordId(
+                {
+                    common_directory_identity: observed.commonDirIdentity,
+                    kind: workspaceProtocolConfig.repositoryBindings.identityKind,
+                    object_format: observed.objectFormat,
+                    version: workspaceProtocolConfig.repositoryBindings.version,
+                },
+            )}`,
+            root,
+        });
+        // Non-contract failures here require a filesystem race after successful Git inspection.
+        /* node:coverage disable */
+    } catch (error) {
+        if (error instanceof WorkspaceBindingError) throw error;
+        throw repositoryBindingError("invalidRepository");
+    }
+    /* node:coverage enable */
+}
+
+function runGit(root: string, args: readonly string[]): string {
+    const result = spawnSync(workspaceProtocolConfig.gitExecutable, ["-C", root, ...args], {
+        encoding: "utf8",
+        maxBuffer: workspaceProtocolConfig.gitCustody.maxCommandBytes,
+        stdio: ["ignore", "pipe", "pipe"],
+    });
+    // Config validation and platform conformance own executable availability.
+    /* node:coverage disable */
+    if (result.error !== undefined) throw repositoryBindingError("invalidRepository");
+    /* node:coverage enable */
+    if (result.status !== 0) {
+        throw repositoryBindingError("invalidRepository");
+    }
+    // Every configured inspection command has required scalar output on success.
+    /* node:coverage disable */
+    if (result.stdout.trim().length === 0) throw repositoryBindingError("invalidRepository");
+    /* node:coverage enable */
+    return result.stdout.trim();
+}
+
+function repositoryBindingError(kind: "invalidRepository"): WorkspaceBindingError {
+    const errors = workspaceProtocolConfig.repositoryBindings.errors;
+    return new WorkspaceBindingError(errors[`${kind}Code`], errors[`${kind}Message`]);
 }
 
 function bindingError(

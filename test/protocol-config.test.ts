@@ -27,6 +27,7 @@ import {
     WORKSPACE_PROTOCOL_V17_CONTRACT,
     WORKSPACE_PROTOCOL_V18_CONTRACT,
     WORKSPACE_PROTOCOL_V19_CONTRACT,
+    WORKSPACE_PROTOCOL_V20_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -88,9 +89,12 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.selectionPublication.scheduledPublicationVersion, 1);
     assert.equal(parsed.workspaces.protectedPaths.version, 18);
     assert.equal(parsed.workspaces.platformConformance.version, 19);
+    assert.equal(parsed.workspaces.repositoryBindings.version, 1);
+    assert.equal(parsed.workspaces.repositoryBindings.resourceType, "git-repository");
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(parsed.workspaces.protectedPaths), true);
+    assert.equal(Object.isFrozen(parsed.workspaces.repositoryBindings), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V2_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V3_CONTRACT), true);
@@ -110,6 +114,8 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V17_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V18_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V19_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V20_CONTRACT), true);
+    assert.equal("repositoryBindings" in WORKSPACE_PROTOCOL_V19_CONTRACT, false);
     assert.equal("platformConformance" in WORKSPACE_PROTOCOL_V18_CONTRACT, false);
     assert.equal("protectedPaths" in WORKSPACE_PROTOCOL_V17_CONTRACT, false);
     assert.equal(
@@ -992,6 +998,31 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
         },
         (config) => {
             platformConformanceConfigOf(config).supportedPlatforms = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "repositoryBindings").version = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "repositoryBindings").identityDirectory =
+                "unsafe/path";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "repositoryBindings").identityDirectory = objectAt(
+                workspaceConfigOf(config),
+                "gitCustody",
+            ).stagingDirectory;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "repositoryBindings").identityKind = "";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "repositoryBindings").resourceType = "";
+        },
+        (config) => {
+            objectAt(
+                objectAt(workspaceConfigOf(config), "repositoryBindings"),
+                "errors",
+            ).invalidRepositoryCode = "";
         },
         (config) => {
             workspaceConfigOf(config).format = "";

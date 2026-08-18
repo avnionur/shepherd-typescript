@@ -97,6 +97,46 @@ export type WorkspaceBindingSet = {
     readonly workspace_root: string;
 };
 
+/** Read-only Git authority observed for one exact repository binding root. */
+export type WorkspaceRepositoryBindingEvidence = {
+    /** Canonical Git common directory shared by linked worktrees. */
+    readonly common_dir: string;
+    /** Filesystem revalidation identity for the common directory. */
+    readonly common_dir_identity: string;
+    /** Canonical per-worktree Git directory. */
+    readonly git_dir: string;
+    /** Filesystem revalidation identity for the per-worktree Git directory. */
+    readonly git_dir_identity: string;
+    /** Configured supported Git object format. */
+    readonly object_format: string;
+    /** Stable content-addressed local repository authority. */
+    readonly repository_id: string;
+    /** Exact canonical Git worktree top level. */
+    readonly root: string;
+};
+
+/** Frozen repository-aware authority extending one canonical workspace binding. */
+export type GitRepositoryBinding = WorkspaceBinding & {
+    /** Exact repository evidence bound into the resource identity. */
+    readonly repository: WorkspaceRepositoryBindingEvidence;
+    /** Stable content-addressed identity for this repository-backed resource. */
+    readonly resource_id: string;
+    /** Configured repository resource discriminant. */
+    readonly resource_type: string;
+};
+
+/** Frozen complete repository-binding set for one initialized workspace. */
+export type GitRepositoryBindingSet = {
+    /** Underlying canonical directory-binding protocol version. */
+    readonly binding_version: number;
+    /** Ordered, canonical, pairwise-disjoint repository authorities. */
+    readonly bindings: readonly GitRepositoryBinding[];
+    /** Repository-aware binding protocol version. */
+    readonly repository_binding_version: number;
+    /** Canonical initialized workspace root containing every repository authority. */
+    readonly workspace_root: string;
+};
+
 /** Configured logical entry kind represented by a copy-carrier manifest. */
 export type WorldEntryKind = (typeof WORLD_ENTRY_KINDS)[number];
 

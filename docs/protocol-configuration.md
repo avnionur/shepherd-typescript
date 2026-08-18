@@ -66,6 +66,9 @@ and append-intent identities. Workspace protocol v18 adds configured protected r
 case normalization, alternate-name handling, stable rejection evidence, and validation version.
 Workspace protocol v19 adds host metadata probes, portable filesystem/Git policy, stable custody
 fault classifications and recovery phases, and the optimized-carrier reference-suite gate.
+Workspace protocol v20 adds the repository-binding resource type, identity domain, protected
+per-resource receipt directory, version, and stable repository-validation errors without changing
+v2 directory binding identity.
 Store schema
 v6 owns the consume-once
 settlement decision table without changing kernel record identity.
@@ -128,7 +131,7 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   schema paths, identity prefixes, limits, statuses, and version are closed. Settlement request,
   effect-journal, and selection-publication vocabularies, identity prefixes, resource bounds,
   descriptor names, errors, schema destinations, and versions are closed. Every value matches the
-  immutable workspace protocol v19 contract. Protocols v1 through v18 remain unchanged historical
+  immutable workspace protocol v20 contract. Protocols v1 through v19 remain unchanged historical
   subsets. Platform probes contain valid path-token arguments and regular expressions, fault
   names/codes/phases are unique, classification mappings resolve, and supported hosts are closed.
 
