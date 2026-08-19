@@ -10,11 +10,22 @@ handles before any durable execution evidence is retained. It verifies an exact 
 observes the user binding, forks isolated custody, and invokes the registered callback with a
 frozen capability tied to the durable invocation claim and fencing token.
 
+`captureGrantedTaskWorldDurably` adds the workspace-protocol-v21 explicit repository grant seam.
+It authenticates the complete exact-resource plan, task artifact, active repository binding, and
+current Git evidence before runner/provider invocation. `readText` and `writeText` then require the
+configured operation atoms respectively. The prepared journal records the complete exact grant
+plan and its ID; `recoverGrantedTaskWorldDurably` refuses a changed task grant, ceiling, or
+resource. The v2 schema carries journal v10 while the unchanged v1 schema and journal v9 remain
+readable. See
+[`repository-grants.md`](./repository-grants.md).
+
 The current advisory capability reads and replaces existing regular UTF-8 files beneath custody.
-Paths are binding-relative; absolute paths, traversal, control-directory access, symbolic links,
-non-files, malformed UTF-8, and configured size-limit violations fail closed. The claim is checked
-before each operation and again after opening the file. A capability retained after callback
-settlement is stale. Advisory enforcement is an in-process package contract, not a process jail or
+Paths are binding-relative; absolute paths, traversal, Shepherd control-directory access, symbolic
+links, non-files, malformed UTF-8, and configured size-limit violations fail closed. Granted Git
+repository capture additionally denies Git administrative paths; legacy ordinary capture retains
+its prior treatment of an ordinary `.git`-named directory. The
+claim is checked before each operation and again after opening the file. A capability retained after
+callback settlement is stale. Advisory enforcement is an in-process package contract, not a process jail or
 syscall boundary.
 
 Before runner admission, the runtime appends configured `prepared` and `forked` journal evidence
@@ -32,7 +43,8 @@ the capture record and its causal position while continuing to reconstruct the o
 result. `inspectTaskWorldCaptureJournal` exposes the validated ordered prefix without invoking the
 runner or carrier and reconstructs the same retained projection after the SQLite store reopens.
 World records created under protocol v8 remain readable without journal transitions and are
-therefore legacy retained evidence; protocol v9 capture attempts carry the ordered journal.
+therefore legacy retained evidence. Journal v9/v1 capture attempts remain readable; new ordinary
+and granted attempts use journal v10/v2, with granted prepared evidence carrying the exact plan.
 
 `recoverTaskWorldDurably` validates the exact original task, provider, budget, binding, base,
 runner, capture, and configured limits before recovery. An explicit globally idempotent command

@@ -9,6 +9,7 @@ import {
     runProtocolConfig,
     workspaceProtocolConfig,
 } from "../protocol/config.ts";
+import { readRepositoryGrantPlanEvidence } from "../protocol/repository-grant-evidence.ts";
 import {
     DURABLE_EXECUTION_RECOVERY_STATUSES,
     RECORD_MODES,
@@ -395,9 +396,10 @@ function validateWorldCaptureJournal(
     started: OwnerRecord | undefined,
     runId: string,
 ): WorldCaptureJournalEvidence {
-    const journal = records.filter(
-        (record) =>
-            record.envelope.schema_ref === workspaceProtocolConfig.worldTaskCapture.journalSchemaId,
+    const journal = records.filter((record) =>
+        workspaceProtocolConfig.worldTaskCapture.journalReaders.some(
+            ({ schemaId }) => schemaId === record.envelope.schema_ref,
+        ),
     );
     if (journal.length === 0)
         return Object.freeze({
@@ -419,14 +421,15 @@ function validateWorldCaptureJournal(
     let capturedFields: WorldCaptureJournalEvidence["capturedFields"] = null;
     for (const [index, record] of journal.entries()) {
         const phase = RETAINED_WORLD_JOURNAL_PHASES[index];
+        const journalVersion = journalVersionForSchema(record.envelope.schema_ref);
         const fields = readRunDataObject(
             record.body,
-            journalFields(phase),
+            journalFields(phase, record.body.journal_version),
             `durable world capture ${phase} journal`,
         );
         if (
             fields.capture_phase !== phase ||
-            fields.journal_version !== workspaceProtocolConfig.worldTaskCapture.journalVersion ||
+            journalVersion !== fields.journal_version ||
             fields.run_id !== runId ||
             !isRunText(fields.capture_id) ||
             Buffer.byteLength(fields.capture_id, "utf8") >
@@ -443,6 +446,9 @@ function validateWorldCaptureJournal(
             );
             assertRunText(fields.binding_id, `durable world capture ${phase} binding_id`);
             assertRunText(fields.runner_id, `durable world capture ${phase} runner_id`);
+            if (!validRepositoryGrantEvidence(fields)) {
+                throw new TypeError("durable world capture prepared grant plan is invalid");
+            }
             if (
                 !RETAINED_WORLD_ENFORCEMENT_KINDS.some(
                     (enforcement) => enforcement === fields.enforcement,
@@ -532,7 +538,7 @@ function isRunText(value: unknown): value is string {
     return typeof value === "string" && value.length > 0 && !/[\uD800-\uDFFF]/u.test(value);
 }
 
-function journalFields(phase: string | undefined): readonly string[] {
+function journalFields(phase: string | undefined, version: unknown): readonly string[] {
     const common = ["capture_id", "capture_phase", "journal_version", "run_id"];
     if (phase === RETAINED_WORLD_JOURNAL_PHASES[0])
         return [
@@ -542,6 +548,9 @@ function journalFields(phase: string | undefined): readonly string[] {
             "enforcement",
             "max_capture_id_bytes",
             "max_text_bytes",
+            ...(version === workspaceProtocolConfig.worldTaskCapture.journalVersion
+                ? ["repository_grant_plan", "repository_grant_plan_id"]
+                : []),
             "runner_id",
         ];
     if (phase === RETAINED_WORLD_JOURNAL_PHASES[1])
@@ -556,6 +565,31 @@ function journalFields(phase: string | undefined): readonly string[] {
         "user_basis_after",
         "user_basis_before",
     ];
+}
+
+function validRepositoryGrantEvidence(fields: Record<string, unknown>): boolean {
+    if (fields.journal_version !== workspaceProtocolConfig.worldTaskCapture.journalVersion) {
+        return (
+            fields.repository_grant_plan === undefined &&
+            fields.repository_grant_plan_id === undefined
+        );
+    }
+    const plan = fields.repository_grant_plan;
+    const planId = fields.repository_grant_plan_id;
+    if (plan === null) return planId === null;
+    return readRepositoryGrantPlanEvidence(plan).plan_id === planId;
+}
+
+function journalVersionForSchema(schemaRef: string): number {
+    const reader = workspaceProtocolConfig.worldTaskCapture.journalReaders.find(
+        ({ schemaId }) => schemaId === schemaRef,
+    );
+    /* Records were filtered by the same configured reader set. */
+    /* node:coverage ignore next 3 */
+    if (reader === undefined) {
+        throw new TypeError("durable world capture journal schema is unsupported");
+    }
+    return reader.version;
 }
 
 function validateRecoveredLifecycleHead(
@@ -803,7 +837,7 @@ function isDurableExecutionRecord(record: OwnerRecord): boolean {
         runProtocolConfig.schemas.waitingLifecycleId,
         runProtocolConfig.execution.controlCommandSchemaId,
         workspaceProtocolConfig.worldTaskCapture.captureSchemaId,
-        workspaceProtocolConfig.worldTaskCapture.journalSchemaId,
+        ...workspaceProtocolConfig.worldTaskCapture.journalReaders.map(({ schemaId }) => schemaId),
     ].includes(record.envelope.schema_ref);
 }
 

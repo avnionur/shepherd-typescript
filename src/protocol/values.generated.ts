@@ -208,6 +208,12 @@ export const WORLD_ENTRY_KINDS = ["directory", "file", "symlink"] as const;
 /** Configured retained-world runner enforcement classifications. @public */
 export const RETAINED_WORLD_ENFORCEMENT_KINDS = ["advisory"] as const;
 
+/** Configured repository authority atoms. @public */
+export const REPOSITORY_GRANT_ATOMS = ["read", "write"] as const;
+
+/** Configured whole-repository grant profiles. @public */
+export const REPOSITORY_GRANT_PROFILES = ["read-only", "read-write"] as const;
+
 /** Configured durable retained-world output statuses. @public */
 export const RETAINED_WORLD_OUTPUT_STATUSES = ["retained"] as const;
 

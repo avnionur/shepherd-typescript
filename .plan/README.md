@@ -149,6 +149,9 @@ record and public API must declare a protocol/compatibility version.
 - [Workspace binding research](./workspace-binding-research.md) — shipped named/disjoint root and
   `GitRepo` evidence, canonicalization and repository-resource policy, and explicit grant/platform
   oracle gaps.
+- [Repository grant research](./repository-grant-research.md) — pinned `May`/`GitRepoGrant`,
+  authority attenuation and permission-plan evidence, TypeScript-owned identity, and advisory/jail
+  claim boundaries.
 - [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
   snapshot, mutable custody, verification, discard, durability, and Task 4 Git boundary.
 - [Git-aware custody research](./git-aware-custody-research.md) — shipped Git baseline,
@@ -217,5 +220,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Complete and merge Phase 4 Task 1 repository binding compatibility, then version explicit runtime
-grant identity and whole-run authority ceilings before placement or jail implementation.
+Continue Phase 4 with honest advisory/auto placement resolution and reporting over the completed
+protocol-v21 grant identity and whole-run ceiling before native jail implementation.

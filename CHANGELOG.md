@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.38.0] - 2026-08-18
+
+### New Feature
+
+- Added workspace protocol v21 versioned repository task-grant companion artifacts with configured
+  `read`/`write` atoms, canonical whole-binding profiles, order-neutral identity, and an independent
+  conformance fixture without redefining existing bodyless task artifacts.
+- Added authenticated exact multi-repository grant plans that bind every logical grant to a
+  package-created repository resource and intersect it with a non-amplifying whole-run ceiling.
+- Added granted retained-world capture and recovery APIs with advisory per-operation read/write
+  enforcement, Git/control-path refusal, current-resource revalidation, exact journal-v10 plan
+  descriptor/identity under a new v2 schema, fresh-process recovery, and backward-readable
+  unchanged journal-v9/v1 evidence.
+
+### Impact
+
+Callers can declare and durably recover explicit per-repository authority with a whole-run cap and
+fail-closed exact resource admission. Enforcement is currently an in-process capability contract,
+not an OS sandbox; placement reporting and native jail enforcement remain later Phase 4 work.
+
 ## [1.37.0] - 2026-08-18
 
 ### New Feature

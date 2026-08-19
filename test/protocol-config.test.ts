@@ -28,6 +28,7 @@ import {
     WORKSPACE_PROTOCOL_V18_CONTRACT,
     WORKSPACE_PROTOCOL_V19_CONTRACT,
     WORKSPACE_PROTOCOL_V20_CONTRACT,
+    WORKSPACE_PROTOCOL_V21_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -75,7 +76,12 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.worldCapture.version, 6);
     assert.equal(parsed.workspaces.worldExecution.runnerVersion, 7);
     assert.equal(parsed.workspaces.worldTaskCapture.version, 8);
-    assert.equal(parsed.workspaces.worldTaskCapture.journalVersion, 9);
+    assert.equal(parsed.workspaces.worldTaskCapture.journalVersion, 10);
+    assert.deepEqual(
+        parsed.workspaces.worldTaskCapture.journalReaders.map(({ version }) => version),
+        [9, 10],
+    );
+    assert.match(parsed.workspaces.worldTaskCapture.journalSchemaId, /v2/u);
     assert.equal(parsed.workspaces.worldTaskCapture.custodyIdentityKind, "task-world-custody");
     assert.equal(parsed.workspaces.settlement.version, 12);
     assert.equal(parsed.workspaces.settlement.operationVersion, 1);
@@ -91,10 +97,19 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.platformConformance.version, 19);
     assert.equal(parsed.workspaces.repositoryBindings.version, 1);
     assert.equal(parsed.workspaces.repositoryBindings.resourceType, "git-repository");
+    assert.deepEqual(parsed.workspaces.repositoryGrants.atoms, ["read", "write"]);
+    assert.deepEqual(
+        parsed.workspaces.repositoryGrants.profiles.map(({ name }) => name),
+        ["read-only", "read-write"],
+    );
+    assert.equal(parsed.workspaces.repositoryGrants.enforcement, "advisory");
+    assert.equal(parsed.workspaces.repositoryGrants.operations.readText, "read");
+    assert.equal(parsed.workspaces.repositoryGrants.operations.writeText, "write");
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(parsed.workspaces.protectedPaths), true);
     assert.equal(Object.isFrozen(parsed.workspaces.repositoryBindings), true);
+    assert.equal(Object.isFrozen(parsed.workspaces.repositoryGrants), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V2_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V3_CONTRACT), true);
@@ -115,6 +130,8 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V18_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V19_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V20_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V21_CONTRACT), true);
+    assert.equal("repositoryGrants" in WORKSPACE_PROTOCOL_V20_CONTRACT, false);
     assert.equal("repositoryBindings" in WORKSPACE_PROTOCOL_V19_CONTRACT, false);
     assert.equal("platformConformance" in WORKSPACE_PROTOCOL_V18_CONTRACT, false);
     assert.equal("protectedPaths" in WORKSPACE_PROTOCOL_V17_CONTRACT, false);
@@ -797,6 +814,25 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             objectAt(workspaceConfigOf(config), "worldTaskCapture").journalPhases = [];
         },
         (config) => {
+            objectAt(workspaceConfigOf(config), "worldTaskCapture").journalReaders = [];
+        },
+        (config) => {
+            const capture = objectAt(workspaceConfigOf(config), "worldTaskCapture");
+            const readers = capture.journalReaders as Record<string, unknown>[];
+            assert.ok(readers[1]);
+            readers[1].version = readers[0]?.version;
+        },
+        (config) => {
+            const capture = objectAt(workspaceConfigOf(config), "worldTaskCapture");
+            const readers = capture.journalReaders as Record<string, unknown>[];
+            assert.ok(readers[1]);
+            readers[1].schemaId = readers[0]?.schemaId;
+        },
+        (config) => {
+            const capture = objectAt(workspaceConfigOf(config), "worldTaskCapture");
+            capture.journalReaders = (capture.journalReaders as unknown[]).slice(0, 1);
+        },
+        (config) => {
             objectAt(workspaceConfigOf(config), "worldTaskCapture").custodyIdentityKind = "";
         },
         (config) => {
@@ -1017,6 +1053,32 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
         },
         (config) => {
             objectAt(workspaceConfigOf(config), "repositoryBindings").resourceType = "";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "repositoryGrants").atoms = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "repositoryGrants").profiles = [];
+        },
+        (config) => {
+            const grantConfig = objectAt(workspaceConfigOf(config), "repositoryGrants");
+            grantConfig.profiles = [
+                { atoms: ["read"], name: "duplicate" },
+                { atoms: ["write"], name: "duplicate" },
+            ];
+        },
+        (config) => {
+            const grantConfig = objectAt(workspaceConfigOf(config), "repositoryGrants");
+            grantConfig.profiles = [{ atoms: ["admin"], name: "invalid" }];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "repositoryGrants").artifactVersion = 0;
+        },
+        (config) => {
+            objectAt(
+                objectAt(workspaceConfigOf(config), "repositoryGrants"),
+                "operations",
+            ).readText = "admin";
         },
         (config) => {
             objectAt(

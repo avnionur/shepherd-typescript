@@ -1066,3 +1066,57 @@ export const WORKSPACE_PROTOCOL_V20_CONTRACT = deepFreeze({
         version: 1,
     },
 } as const);
+
+/** Immutable explicit repository-grant extension implemented by workspace protocol v21. */
+export const WORKSPACE_PROTOCOL_V21_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V20_CONTRACT,
+    repositoryGrants: {
+        artifactVersion: 1,
+        artifacts: {
+            grantPlanSchema: "spec/schemas/repository-grant-plan-v1.schema.json",
+            taskGrantArtifactLockSchema: "spec/schemas/repository-task-grant-lock-v1.schema.json",
+            taskGrantArtifactSchema: "spec/schemas/repository-task-grant-v1.schema.json",
+        },
+        atoms: ["read", "write"],
+        compatibilityVersion: "shepherd.workspace.repository-grants.v1",
+        enforcement: "advisory",
+        operations: {
+            readText: "read",
+            writeText: "write",
+        },
+        planIdPrefix: "repository-grant-plan:sha256:",
+        planVersion: 1,
+        profiles: [
+            { atoms: ["read"], name: "read-only" },
+            { atoms: ["read", "write"], name: "read-write" },
+        ],
+        schemas: {
+            grantPlanId:
+                "https://avnionur.github.io/shepherd-typescript/schemas/repository-grant-plan-v1.schema.json",
+            taskGrantArtifactId:
+                "https://avnionur.github.io/shepherd-typescript/schemas/repository-task-grant-v1.schema.json",
+            taskGrantArtifactLockId:
+                "https://avnionur.github.io/shepherd-typescript/schemas/repository-task-grant-lock-v1.schema.json",
+        },
+        taskGrantIdPrefix: "task-grant:sha256:",
+    },
+    worldTaskCapture: {
+        ...WORKSPACE_PROTOCOL_V20_CONTRACT.worldTaskCapture,
+        journalReaders: [
+            {
+                schemaId:
+                    "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v1.schema.json",
+                version: 9,
+            },
+            {
+                schemaId:
+                    "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v2.schema.json",
+                version: 10,
+            },
+        ],
+        journalSchemaId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v2.schema.json",
+        journalSchemaPath: "spec/schemas/world-capture-journal-v2.schema.json",
+        journalVersion: 10,
+    },
+} as const);

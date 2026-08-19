@@ -1,0 +1,221 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v2.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "oneOf": [
+        {
+            "additionalProperties": false,
+            "properties": {
+                "capture_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "capture_phase": {
+                    "const": "prepared",
+                    "type": "string"
+                },
+                "journal_version": {
+                    "const": 10,
+                    "type": "integer"
+                },
+                "run_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "base_revision_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "binding_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "enforcement": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "max_capture_id_bytes": {
+                    "minimum": 1,
+                    "type": "integer"
+                },
+                "max_text_bytes": {
+                    "minimum": 1,
+                    "type": "integer"
+                },
+                "repository_grant_plan": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/repository-grant-plan-v1.schema.json"
+                        }
+                    ]
+                },
+                "repository_grant_plan_id": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "pattern": "^repository-grant-plan:sha256:[0-9a-f]{64}$",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "runner_id": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "capture_id",
+                "capture_phase",
+                "journal_version",
+                "run_id",
+                "base_revision_id",
+                "binding_id",
+                "enforcement",
+                "max_capture_id_bytes",
+                "max_text_bytes",
+                "repository_grant_plan",
+                "repository_grant_plan_id",
+                "runner_id"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "capture_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "capture_phase": {
+                    "const": "forked",
+                    "type": "string"
+                },
+                "journal_version": {
+                    "const": 10,
+                    "type": "integer"
+                },
+                "run_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "custody_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "user_basis_before": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "capture_id",
+                "capture_phase",
+                "journal_version",
+                "run_id",
+                "custody_id",
+                "user_basis_before"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "capture_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "capture_phase": {
+                    "const": "executing",
+                    "type": "string"
+                },
+                "journal_version": {
+                    "const": 10,
+                    "type": "integer"
+                },
+                "run_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "claim_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "custody_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "fencing_token": {
+                    "minimum": 1,
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "capture_id",
+                "capture_phase",
+                "journal_version",
+                "run_id",
+                "claim_id",
+                "custody_id",
+                "fencing_token"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "capture_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "capture_phase": {
+                    "const": "captured",
+                    "type": "string"
+                },
+                "journal_version": {
+                    "const": 10,
+                    "type": "integer"
+                },
+                "run_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "changeset_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "custody_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "head_revision_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "user_basis_after": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "user_basis_before": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "capture_id",
+                "capture_phase",
+                "journal_version",
+                "run_id",
+                "changeset_id",
+                "custody_id",
+                "head_revision_id",
+                "user_basis_after",
+                "user_basis_before"
+            ],
+            "type": "object"
+        }
+    ]
+}

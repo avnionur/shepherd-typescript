@@ -1,0 +1,30 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/repository-task-grant-lock-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "grant_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "task_artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "task_grant_id": {
+            "pattern": "^task-grant:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        }
+    },
+    "required": [
+        "artifact_digest",
+        "grant_version",
+        "task_artifact_digest",
+        "task_grant_id"
+    ],
+    "type": "object"
+}

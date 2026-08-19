@@ -1,0 +1,51 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/repository-task-grant-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "compatibility_version": {
+            "const": "shepherd.workspace.repository-grants.v1",
+            "type": "string"
+        },
+        "grant_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "grants": {
+            "items": {
+                "additionalProperties": false,
+                "properties": {
+                    "binding": {
+                        "pattern": "^(?!\\s*$)(?!\\.{1,2}$)[^/\\\\\\u0000]+$",
+                        "type": "string"
+                    },
+                    "profile": {
+                        "enum": [
+                            "read-only",
+                            "read-write"
+                        ],
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "binding",
+                    "profile"
+                ],
+                "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+        },
+        "task_artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+        }
+    },
+    "required": [
+        "compatibility_version",
+        "grant_version",
+        "grants",
+        "task_artifact_digest"
+    ],
+    "type": "object"
+}

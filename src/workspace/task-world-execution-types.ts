@@ -4,8 +4,10 @@ import type { TaskExecutionOptions } from "../run/execution-types.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { Cut } from "../store/types.ts";
 import type { TaskSchema } from "../task/schema.ts";
+import type { GitRepositoryGrantPlan } from "./repository-grant-types.ts";
 import type { RetainedWorldRunner } from "./retained-world-runner-types.ts";
 import type {
+    GitRepositoryBinding,
     ReferenceCopyCarrier,
     WorkspaceBinding,
     WorldChangeset,
@@ -31,6 +33,26 @@ export type CaptureTaskWorldOptions<
     readonly runner: RetainedWorldRunner<I, O>;
     /** Open durable trace store receiving execution and world evidence. */
     readonly store: SQLiteTraceStore;
+};
+
+/** Closed options for repository-granted retained-world task execution. */
+export type CaptureGrantedTaskWorldOptions<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+> = Omit<CaptureTaskWorldOptions<I, O>, "binding"> & {
+    /** Exact package-created repository resource selected for this retained world. */
+    readonly binding: GitRepositoryBinding;
+    /** Authenticated complete task/run grant plan admitting this exact repository resource. */
+    readonly repositoryGrantPlan: GitRepositoryGrantPlan;
+};
+
+/** Closed options for exact recovery of repository-granted retained-world execution. */
+export type RecoverGrantedTaskWorldOptions<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+> = CaptureGrantedTaskWorldOptions<I, O> & {
+    /** Stable identity reused for every retry of this exact granted recovery request. */
+    readonly commandId: string;
 };
 
 /** Closed options for command-authorized recovery of one retained-world task capture. */

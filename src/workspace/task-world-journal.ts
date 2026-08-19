@@ -108,9 +108,10 @@ export function inspectTaskWorldCaptureJournal(
         throw new TraceStoreError("task-world journal changed during inspection");
     }
     const records = terminalPrefix(after);
-    const journal = records.filter(
-        (record) =>
-            record.envelope.schema_ref === workspaceProtocolConfig.worldTaskCapture.journalSchemaId,
+    const journal = records.filter((record) =>
+        workspaceProtocolConfig.worldTaskCapture.journalReaders.some(
+            ({ schemaId }) => schemaId === record.envelope.schema_ref,
+        ),
     );
     const transitions = Object.freeze(
         journal.map((record) =>

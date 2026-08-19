@@ -66,6 +66,18 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             relativePath: config.tasks.artifacts.artifactLockSchema,
         },
         {
+            content: renderJson(renderRepositoryTaskGrantSchema(config)),
+            relativePath: config.workspaces.repositoryGrants.artifacts.taskGrantArtifactSchema,
+        },
+        {
+            content: renderJson(renderRepositoryTaskGrantLockSchema(config)),
+            relativePath: config.workspaces.repositoryGrants.artifacts.taskGrantArtifactLockSchema,
+        },
+        {
+            content: renderJson(renderRepositoryGrantPlanSchema(config)),
+            relativePath: config.workspaces.repositoryGrants.artifacts.grantPlanSchema,
+        },
+        {
             content: renderJson(renderEffectIntentSchema(config)),
             relativePath: config.effects.artifacts.intentSchema,
         },
@@ -241,6 +253,8 @@ function renderWorldCaptureJournalSchema(
                 "enforcement",
                 "max_capture_id_bytes",
                 "max_text_bytes",
+                "repository_grant_plan",
+                "repository_grant_plan_id",
                 "runner_id",
             ],
         ],
@@ -280,19 +294,168 @@ function renderWorldCaptureJournalSchema(
                               }
                             : key === "capture_phase"
                               ? { const: phase, type: "string" }
-                              : [
-                                      "fencing_token",
-                                      "max_capture_id_bytes",
-                                      "max_text_bytes",
-                                  ].includes(key)
-                                ? { minimum: 1, type: "integer" }
-                                : { minLength: 1, type: "string" },
+                              : key === "repository_grant_plan"
+                                ? {
+                                      oneOf: [
+                                          { type: "null" },
+                                          {
+                                              $ref: config.workspaces.repositoryGrants.schemas
+                                                  .grantPlanId,
+                                          },
+                                      ],
+                                  }
+                                : key === "repository_grant_plan_id"
+                                  ? {
+                                        oneOf: [
+                                            { type: "null" },
+                                            {
+                                                pattern: `^${escapeRegularExpression(
+                                                    config.workspaces.repositoryGrants.planIdPrefix,
+                                                )}[0-9a-f]{${config.recordId.hexLength}}$`,
+                                                type: "string",
+                                            },
+                                        ],
+                                    }
+                                  : [
+                                          "fencing_token",
+                                          "max_capture_id_bytes",
+                                          "max_text_bytes",
+                                      ].includes(key)
+                                    ? { minimum: 1, type: "integer" }
+                                    : { minLength: 1, type: "string" },
                     ]),
                 ),
                 required,
                 type: "object",
             };
         }),
+    };
+}
+
+function renderRepositoryTaskGrantSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const grants = config.workspaces.repositoryGrants;
+    return {
+        $id: grants.schemas.taskGrantArtifactId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            compatibility_version: { const: grants.compatibilityVersion, type: "string" },
+            grant_version: { const: grants.artifactVersion, type: "integer" },
+            grants: {
+                items: {
+                    additionalProperties: false,
+                    properties: {
+                        binding: {
+                            pattern: "^(?!\\s*$)(?!\\.{1,2}$)[^/\\\\\\u0000]+$",
+                            type: "string",
+                        },
+                        profile: { enum: grants.profiles.map(({ name }) => name), type: "string" },
+                    },
+                    required: ["binding", "profile"],
+                    type: "object",
+                },
+                minItems: 1,
+                type: "array",
+            },
+            task_artifact_digest: {
+                pattern: `^${escapeRegularExpression(config.tasks.digestPrefix)}[0-9a-f]{${config.tasks.hexLength}}$`,
+                type: "string",
+            },
+        },
+        required: ["compatibility_version", "grant_version", "grants", "task_artifact_digest"],
+        type: "object",
+    };
+}
+
+function renderRepositoryTaskGrantLockSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const grants = config.workspaces.repositoryGrants;
+    return {
+        $id: grants.schemas.taskGrantArtifactLockId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            artifact_digest: { pattern: recordIdPattern(config), type: "string" },
+            grant_version: { const: grants.artifactVersion, type: "integer" },
+            task_artifact_digest: {
+                pattern: `^${escapeRegularExpression(config.tasks.digestPrefix)}[0-9a-f]{${config.tasks.hexLength}}$`,
+                type: "string",
+            },
+            task_grant_id: {
+                pattern: `^${escapeRegularExpression(grants.taskGrantIdPrefix)}[0-9a-f]{${config.recordId.hexLength}}$`,
+                type: "string",
+            },
+        },
+        required: ["artifact_digest", "grant_version", "task_artifact_digest", "task_grant_id"],
+        type: "object",
+    };
+}
+
+function renderRepositoryGrantPlanSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const grants = config.workspaces.repositoryGrants;
+    const profiles = grants.profiles.map(({ name }) => name);
+    return {
+        $id: grants.schemas.grantPlanId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            authority_ceiling: { enum: profiles, type: "string" },
+            enforcement: { const: grants.enforcement, type: "string" },
+            grants: {
+                items: {
+                    additionalProperties: false,
+                    properties: {
+                        authority: {
+                            items: { enum: grants.atoms, type: "string" },
+                            type: "array",
+                            uniqueItems: true,
+                        },
+                        binding_id: { pattern: recordIdPattern(config), type: "string" },
+                        binding_name: {
+                            pattern: "^(?!\\s*$)(?!\\.{1,2}$)[^/\\\\\\u0000]+$",
+                            type: "string",
+                        },
+                        resource_id: { pattern: recordIdPattern(config), type: "string" },
+                        task_profile: { enum: profiles, type: "string" },
+                    },
+                    required: [
+                        "authority",
+                        "binding_id",
+                        "binding_name",
+                        "resource_id",
+                        "task_profile",
+                    ],
+                    type: "object",
+                },
+                minItems: 1,
+                type: "array",
+            },
+            grant_plan_version: { const: grants.planVersion, type: "integer" },
+            plan_id: {
+                pattern: `^${escapeRegularExpression(grants.planIdPrefix)}[0-9a-f]{${config.recordId.hexLength}}$`,
+                type: "string",
+            },
+            task_artifact_digest: {
+                pattern: `^${escapeRegularExpression(config.tasks.digestPrefix)}[0-9a-f]{${config.tasks.hexLength}}$`,
+                type: "string",
+            },
+            task_grant_artifact_digest: { pattern: recordIdPattern(config), type: "string" },
+        },
+        required: [
+            "authority_ceiling",
+            "enforcement",
+            "grants",
+            "grant_plan_version",
+            "plan_id",
+            "task_artifact_digest",
+            "task_grant_artifact_digest",
+        ],
+        type: "object",
     };
 }
 
@@ -664,6 +827,12 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedRetainedWorldEnforcementKinds = config.workspaces.worldExecution.enforcementKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
+    const renderedRepositoryGrantAtoms = config.workspaces.repositoryGrants.atoms
+        .map((atom) => JSON.stringify(atom))
+        .join(", ");
+    const renderedRepositoryGrantProfiles = config.workspaces.repositoryGrants.profiles
+        .map((profile) => JSON.stringify(profile.name))
+        .join(", ");
     const renderedRetainedWorldOutputStatuses = config.workspaces.worldTaskCapture.statuses
         .map((status) => JSON.stringify(status))
         .join(", ");
@@ -855,6 +1024,12 @@ export const WORLD_ENTRY_KINDS = [${renderedWorldEntryKinds}] as const;
 
 /** Configured retained-world runner enforcement classifications. @public */
 export const RETAINED_WORLD_ENFORCEMENT_KINDS = [${renderedRetainedWorldEnforcementKinds}] as const;
+
+/** Configured repository authority atoms. @public */
+export const REPOSITORY_GRANT_ATOMS = [${renderedRepositoryGrantAtoms}] as const;
+
+/** Configured whole-repository grant profiles. @public */
+export const REPOSITORY_GRANT_PROFILES = [${renderedRepositoryGrantProfiles}] as const;
 
 /** Configured durable retained-world output statuses. @public */
 export const RETAINED_WORLD_OUTPUT_STATUSES = [${renderedRetainedWorldOutputStatuses}] as const;

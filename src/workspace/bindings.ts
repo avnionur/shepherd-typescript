@@ -18,6 +18,7 @@ import type {
 
 const WORKSPACE_BINDINGS = new WeakSet<object>();
 const GIT_REPOSITORY_BINDINGS = new WeakSet<object>();
+const GIT_REPOSITORY_BINDING_WORKSPACES = new WeakMap<object, string>();
 
 /** Rejects structurally forged workspace binding handles. @internal */
 export function assertWorkspaceBinding(value: unknown): asserts value is WorkspaceBinding {
@@ -81,6 +82,7 @@ export function createGitRepositoryBindings(
         });
         WORKSPACE_BINDINGS.add(result);
         GIT_REPOSITORY_BINDINGS.add(result);
+        GIT_REPOSITORY_BINDING_WORKSPACES.set(result, base.workspace_root);
         return result;
     });
     return Object.freeze({
@@ -94,6 +96,46 @@ export function createGitRepositoryBindings(
 /** @internal Reports whether a package-created binding carries repository authority evidence. */
 export function isGitRepositoryBinding(value: WorkspaceBinding): value is GitRepositoryBinding {
     return GIT_REPOSITORY_BINDINGS.has(value);
+}
+
+/** Returns the exact initialized workspace root that issued a repository binding. @internal */
+export function gitRepositoryBindingWorkspaceRoot(binding: GitRepositoryBinding): string {
+    const workspaceRoot = GIT_REPOSITORY_BINDING_WORKSPACES.get(binding);
+    if (workspaceRoot === undefined) {
+        throw new TypeError("repository binding resource authority is invalid");
+    }
+    return workspaceRoot;
+}
+
+/** Revalidates one authenticated repository binding against current Git/filesystem evidence. @internal */
+export function assertCurrentGitRepositoryBinding(binding: GitRepositoryBinding): void {
+    assertWorkspaceBinding(binding);
+    if (!isGitRepositoryBinding(binding)) {
+        throw new TypeError("repository binding resource authority is invalid");
+    }
+    const repository = readRepositoryEvidence(binding.canonical_root);
+    const config = workspaceProtocolConfig.repositoryBindings;
+    const resourceId = createRecordId({
+        binding_id: binding.binding_id,
+        kind: config.identityKind,
+        repository_id: repository.repository_id,
+        root: repository.root,
+        type: config.resourceType,
+        version: config.version,
+        worktree_identity: repository.git_dir_identity,
+    });
+    if (
+        resourceId !== binding.resource_id ||
+        repository.common_dir !== binding.repository.common_dir ||
+        repository.common_dir_identity !== binding.repository.common_dir_identity ||
+        repository.git_dir !== binding.repository.git_dir ||
+        repository.git_dir_identity !== binding.repository.git_dir_identity ||
+        repository.object_format !== binding.repository.object_format ||
+        repository.repository_id !== binding.repository.repository_id ||
+        repository.root !== binding.repository.root
+    ) {
+        throw new TypeError("repository binding resource evidence is stale");
+    }
 }
 
 /** @internal Revalidates binding paths for independently retained custody. */

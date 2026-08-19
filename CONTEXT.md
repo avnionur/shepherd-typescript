@@ -215,6 +215,21 @@ repository identity, per-worktree identity, object format, and a separate conten
 resource identity. It carries no runtime read/write grant by itself.
 _Avoid_: Git custody receipt, ambient repository discovery, permission grant, linked worktree
 
+**Repository Task Grant Artifact**:
+A versioned companion artifact binding one exact bodyless task artifact digest to a complete,
+canonical, per-binding whole-repository authority declaration without redefining the task artifact.
+_Avoid_: Mutable policy file, repository binding, ambient filesystem permission
+
+**Repository Grant Plan**:
+An authenticated content-addressed admission record that resolves every task grant to one exact
+repository resource and intersects it with a whole-run authority ceiling.
+_Avoid_: OS sandbox profile, mutable ACL, display-path allowlist
+
+**Whole-Run Authority Ceiling**:
+A configured repository grant profile whose authority atoms can only remove, never add, atoms from
+each task-declared binding grant for one admitted run.
+_Avoid_: Default permission, task grant replacement, runtime escalation
+
 **World Revision**:
 An immutable verified copy-carrier snapshot whose revision identity binds canonical logical
 filesystem content to one exact workspace binding and carrier protocol.

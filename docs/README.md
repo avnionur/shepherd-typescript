@@ -53,6 +53,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Workspace binding roots](./workspace-bindings.md) defines stable canonical binding identities,
   workspace-authority containment, symlink-aware alias handling, pairwise overlap rejection, and
   protocol-v20 repository-aware resource authorities for disjoint Git worktrees.
+- [Repository grants and run authority ceilings](./repository-grants.md) defines workspace protocol
+  v21 task-grant companion identity, exact repository admission, monotone whole-run attenuation,
+  advisory capability enforcement, and exact recovery evidence.
 - [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,
   isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
   idempotent discard.
