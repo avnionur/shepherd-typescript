@@ -1,0 +1,66 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/placement-platform-evidence-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "compatibility_version": {
+            "const": "shepherd.workspace.placements.v1",
+            "type": "string"
+        },
+        "environment": {
+            "enum": [
+                "native",
+                "wsl",
+                "unsupported"
+            ],
+            "type": "string"
+        },
+        "family": {
+            "enum": [
+                "macos",
+                "linux",
+                "windows",
+                "unsupported"
+            ],
+            "type": "string"
+        },
+        "node_platform": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "os_release": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "platform_id": {
+            "pattern": "^placement-platform:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "platform_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "wsl_markers": {
+            "items": {
+                "enum": [
+                    "WSL_DISTRO_NAME",
+                    "WSL_INTEROP"
+                ],
+                "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+        }
+    },
+    "required": [
+        "compatibility_version",
+        "environment",
+        "family",
+        "node_platform",
+        "os_release",
+        "platform_id",
+        "platform_version",
+        "wsl_markers"
+    ],
+    "type": "object"
+}

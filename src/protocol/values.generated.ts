@@ -214,6 +214,28 @@ export const REPOSITORY_GRANT_ATOMS = ["read", "write"] as const;
 /** Configured whole-repository grant profiles. @public */
 export const REPOSITORY_GRANT_PROFILES = ["read-only", "read-write"] as const;
 
+/** Configured requested placement vocabulary. @public */
+export const PLACEMENT_REQUESTS = ["advisory", "auto", "jail"] as const;
+
+/** Configured effective placement vocabulary. @public */
+export const RESOLVED_PLACEMENTS = ["advisory"] as const;
+
+/** Configured placement-resolution reasons. @public */
+export const PLACEMENT_RESOLUTION_REASONS = [
+    "requested-advisory",
+    "auto-fallback-unavailable",
+    "explicit-jail-unavailable",
+] as const;
+
+/** Configured placement resolved/refused statuses. @public */
+export const PLACEMENT_RESOLUTION_STATUSES = ["resolved", "refused"] as const;
+
+/** Configured platform-family classifications used by placement evidence. @public */
+export const PLACEMENT_PLATFORM_FAMILIES = ["macos", "linux", "windows", "unsupported"] as const;
+
+/** Configured execution-environment classifications used by placement evidence. @public */
+export const PLACEMENT_ENVIRONMENTS = ["native", "wsl", "unsupported"] as const;
+
 /** Configured durable retained-world output statuses. @public */
 export const RETAINED_WORLD_OUTPUT_STATUSES = ["retained"] as const;
 

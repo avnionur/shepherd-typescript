@@ -78,6 +78,8 @@ class LegacyJournalStore extends InterruptedBeforeGrantedClaimStore {
                         const phase = (record.body as { capture_phase?: unknown }).capture_phase;
                         if (typeof phase !== "string") return record;
                         const {
+                            placement_resolution: _removedPlacement,
+                            placement_resolution_id: _removedPlacementId,
                             repository_grant_plan: _removedPlan,
                             repository_grant_plan_id: _removedPlanId,
                             ...body
@@ -115,6 +117,8 @@ class CrossPairedJournalStore extends InterruptedBeforeGrantedClaimStore {
                             return { ...record, schema_ref: LEGACY_JOURNAL_SCHEMA_ID };
                         }
                         const {
+                            placement_resolution: _removedPlacement,
+                            placement_resolution_id: _removedPlacementId,
                             repository_grant_plan: _removedPlan,
                             repository_grant_plan_id: _removedPlanId,
                             ...body
@@ -523,6 +527,13 @@ test("granted task-world execution enforces effective authority and exact recove
     );
     assert.equal(runnerInvocations, 0);
     const prepared = inspectTaskWorldCaptureJournal(interrupted, "run:granted").transitions[0];
+    assert.equal(prepared?.body.journal_version, 10);
+    assert.equal(
+        prepared === undefined
+            ? undefined
+            : interrupted.readRecord(prepared.record_id)?.envelope.schema_ref,
+        "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v2.schema.json",
+    );
     assert.equal(prepared?.body.repository_grant_plan_id, readonlyPlan.plan_id);
     assert.deepEqual(prepared?.body.repository_grant_plan, readonlyPlan);
     interrupted.close();

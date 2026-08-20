@@ -62,7 +62,10 @@ existing Git custody API.
 Bindings establish authority identity only; they do not grant runtime access. Filesystem
 `realpath` and Git administrative identities do not prove identity across bind mounts, network
 shares, or a concurrent replacement after validation, so custody revalidates before capture.
-Permissions, whole-run ceilings, and placement remain later Phase 4 capabilities. Case aliases are
+Bindings still carry no implicit permission or placement. Explicit grants, whole-run ceilings, and
+placement reporting are separate Phase 4 artifacts documented in
+[`repository-grants.md`](./repository-grants.md) and
+[`placement-resolution.md`](./placement-resolution.md). Case aliases are
 equivalent when the host filesystem resolves them to the same real path; no relocation-independent
 or cross-platform path-identity claim is made. On macOS and Linux, filesystem evidence uses device
 and inode identity. Native Windows/WSL uses the canonical-path fallback when Node reports a zero

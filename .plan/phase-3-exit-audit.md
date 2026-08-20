@@ -57,8 +57,9 @@ The audit baseline passed all 34 focused tests.
   platform-gated ACL and alternate-stream policy fixtures, but the repository GitHub CI workflow
   is manually disabled and no final Windows lane is claimed by this audit.
 - The reference copy carrier is the correctness oracle. No optimized carrier claims parity.
-- Runtime grants, placement resolution, Seatbelt/Landlock jail enforcement, `apply`, `release`,
-  CLI compatibility, and the installed-package quickstart remain Phase 4.
+- Runtime grants and advisory/auto placement reporting are now implemented in Phase 4. Native
+  Seatbelt/Landlock jail enforcement, `apply`, `release`, CLI compatibility, and the
+  installed-package quickstart remain open.
 - `npm pack --dry-run` verifies package contents only. Installed consumer import/type fixtures and
   publication readiness remain Phase 4/5; npm publication stays disabled.
 - Upstream Python is a pinned behavioral oracle. This audit does not claim full upstream or paper

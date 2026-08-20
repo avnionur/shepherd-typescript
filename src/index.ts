@@ -73,8 +73,14 @@ export type {
     PublishedRecord,
 } from "./projection/types.ts";
 export {
+    PLACEMENT_ENVIRONMENTS,
+    PLACEMENT_PLATFORM_FAMILIES,
+    PLACEMENT_REQUESTS,
+    PLACEMENT_RESOLUTION_REASONS,
+    PLACEMENT_RESOLUTION_STATUSES,
     REPOSITORY_GRANT_ATOMS,
     REPOSITORY_GRANT_PROFILES,
+    RESOLVED_PLACEMENTS,
     RETAINED_WORLD_MAX_CAPTURE_ID_BYTES,
     RETAINED_WORLD_MAX_TEXT_BYTES,
     RETAINED_WORLD_SELECTION_ATOMICITY_KINDS,
@@ -340,6 +346,25 @@ export {
 export { createGitAwareCustody } from "./workspace/git-aware-custody.ts";
 export { createGitChangesetInspection } from "./workspace/git-changeset-inspection.ts";
 export { initializeWorkspace, openWorkspace } from "./workspace/initialization.ts";
+export {
+    createGrantedPlacementResolution,
+    createPlacementPlatformEvidence,
+    inspectLocalPlacementPlatformEvidence,
+    PlacementUnavailableError,
+} from "./workspace/placement.ts";
+export type {
+    GrantedPlacementResolution,
+    GrantedPlacementResolutionOptions,
+    PlacementEnvironment,
+    PlacementPlatformEvidence,
+    PlacementPlatformEvidenceOptions,
+    PlacementPlatformFamily,
+    PlacementRefusalEvidence,
+    PlacementRequest,
+    PlacementResolutionReason,
+    PlacementResolutionStatus,
+    ResolvedPlacement,
+} from "./workspace/placement-types.ts";
 export type {
     WorkspaceCustodyFaultEvidence,
     WorkspaceCustodyFaultInjection,
@@ -400,14 +425,19 @@ export type {
 } from "./workspace/retained-world-settlement-types.ts";
 export {
     captureGrantedTaskWorldDurably,
+    capturePlacedGrantedTaskWorldDurably,
     captureTaskWorldDurably,
     recoverGrantedTaskWorldDurably,
+    recoverPlacedGrantedTaskWorldDurably,
     recoverTaskWorldDurably,
 } from "./workspace/task-world-execution.ts";
 export type {
     CaptureGrantedTaskWorldOptions,
+    CapturePlacedGrantedTaskWorldOptions,
     CaptureTaskWorldOptions,
+    PlacedTaskWorldCaptureResult,
     RecoverGrantedTaskWorldOptions,
+    RecoverPlacedGrantedTaskWorldOptions,
     RecoverTaskWorldOptions,
     RetainedWorldOutput,
     TaskWorldCaptureResult,

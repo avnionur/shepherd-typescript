@@ -57,9 +57,10 @@ APIs, and it supplies no native Seatbelt/Landlock evidence.
 
 The plan can represent multiple resources; conformance executes the same plan through each
 selected binding's retained-world seam. One capture still selects one active binding/custody.
-Simultaneous multi-binding callback capabilities, placement resolution, jail compilation, native
-Windows/WSL placement classification, installed-package compatibility, CLI rendering,
-bare-annotation provenance, and provider/subprocess confinement remain explicit gaps.
+Simultaneous multi-binding callback capabilities, jail compilation, installed-package
+compatibility, CLI rendering, bare-annotation provenance, and provider/subprocess confinement
+remain explicit gaps. Workspace protocol v22 now owns placement resolution and
+native-Windows/WSL classification without claiming a native sandbox.
 
 ## Claim boundary
 

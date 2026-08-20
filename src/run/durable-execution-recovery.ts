@@ -9,6 +9,7 @@ import {
     runProtocolConfig,
     workspaceProtocolConfig,
 } from "../protocol/config.ts";
+import { readGrantedPlacementResolutionEvidence } from "../protocol/placement-evidence.ts";
 import { readRepositoryGrantPlanEvidence } from "../protocol/repository-grant-evidence.ts";
 import {
     DURABLE_EXECUTION_RECOVERY_STATUSES,
@@ -449,6 +450,9 @@ function validateWorldCaptureJournal(
             if (!validRepositoryGrantEvidence(fields)) {
                 throw new TypeError("durable world capture prepared grant plan is invalid");
             }
+            if (!validPlacementResolutionEvidence(fields)) {
+                throw new TypeError("durable world capture prepared placement is invalid");
+            }
             if (
                 !RETAINED_WORLD_ENFORCEMENT_KINDS.some(
                     (enforcement) => enforcement === fields.enforcement,
@@ -548,7 +552,10 @@ function journalFields(phase: string | undefined, version: unknown): readonly st
             "enforcement",
             "max_capture_id_bytes",
             "max_text_bytes",
-            ...(version === workspaceProtocolConfig.worldTaskCapture.journalVersion
+            ...(workspaceProtocolConfig.placements.journalVersions.includes(version as number)
+                ? ["placement_resolution", "placement_resolution_id"]
+                : []),
+            ...(workspaceProtocolConfig.repositoryGrants.journalVersions.includes(version as number)
                 ? ["repository_grant_plan", "repository_grant_plan_id"]
                 : []),
             "runner_id",
@@ -568,7 +575,11 @@ function journalFields(phase: string | undefined, version: unknown): readonly st
 }
 
 function validRepositoryGrantEvidence(fields: Record<string, unknown>): boolean {
-    if (fields.journal_version !== workspaceProtocolConfig.worldTaskCapture.journalVersion) {
+    if (
+        !workspaceProtocolConfig.repositoryGrants.journalVersions.includes(
+            fields.journal_version as number,
+        )
+    ) {
         return (
             fields.repository_grant_plan === undefined &&
             fields.repository_grant_plan_id === undefined
@@ -578,6 +589,34 @@ function validRepositoryGrantEvidence(fields: Record<string, unknown>): boolean 
     const planId = fields.repository_grant_plan_id;
     if (plan === null) return planId === null;
     return readRepositoryGrantPlanEvidence(plan).plan_id === planId;
+}
+
+function validPlacementResolutionEvidence(fields: Record<string, unknown>): boolean {
+    if (
+        !workspaceProtocolConfig.placements.journalVersions.includes(
+            fields.journal_version as number,
+        )
+    ) {
+        return (
+            fields.placement_resolution === undefined &&
+            fields.placement_resolution_id === undefined
+        );
+    }
+    const placement = fields.placement_resolution;
+    const placementId = fields.placement_resolution_id;
+    if (placement === null) return placementId === null;
+    if (fields.repository_grant_plan === null) return false;
+    const decodedPlacement = readGrantedPlacementResolutionEvidence(placement);
+    const decodedGrantPlan = readRepositoryGrantPlanEvidence(fields.repository_grant_plan);
+    return (
+        decodedPlacement.resolution_id === placementId &&
+        decodedPlacement.capture_id === fields.capture_id &&
+        decodedPlacement.run_id === fields.run_id &&
+        decodedPlacement.runner_id === fields.runner_id &&
+        decodedPlacement.enforcement === fields.enforcement &&
+        decodedPlacement.repository_grant_plan_id === decodedGrantPlan.plan_id &&
+        decodedPlacement.task_artifact_digest === decodedGrantPlan.task_artifact_digest
+    );
 }
 
 function journalVersionForSchema(schemaRef: string): number {

@@ -4,6 +4,7 @@ import type { TaskExecutionOptions } from "../run/execution-types.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { Cut } from "../store/types.ts";
 import type { TaskSchema } from "../task/schema.ts";
+import type { GrantedPlacementResolution } from "./placement-types.ts";
 import type { GitRepositoryGrantPlan } from "./repository-grant-types.ts";
 import type { RetainedWorldRunner } from "./retained-world-runner-types.ts";
 import type {
@@ -52,6 +53,24 @@ export type RecoverGrantedTaskWorldOptions<
     O extends TaskSchema<unknown>,
 > = CaptureGrantedTaskWorldOptions<I, O> & {
     /** Stable identity reused for every retry of this exact granted recovery request. */
+    readonly commandId: string;
+};
+
+/** Closed options for placement-resolved repository-granted retained-world execution. */
+export type CapturePlacedGrantedTaskWorldOptions<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+> = CaptureGrantedTaskWorldOptions<I, O> & {
+    /** Authenticated exact placement resolution for this run and capture. */
+    readonly placementResolution: GrantedPlacementResolution;
+};
+
+/** Closed options for exact recovery of placement-resolved granted execution. */
+export type RecoverPlacedGrantedTaskWorldOptions<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+> = CapturePlacedGrantedTaskWorldOptions<I, O> & {
+    /** Stable identity reused for every retry of this exact placed recovery request. */
     readonly commandId: string;
 };
 
@@ -104,4 +123,10 @@ export type TaskWorldCaptureResult = DurableTaskExecutionResult & {
     readonly changeset: WorldChangeset;
     /** Verified retained world attachment. */
     readonly output: RetainedWorldOutput;
+};
+
+/** Durable placed task result paired with exact placement and retained-world evidence. */
+export type PlacedTaskWorldCaptureResult = TaskWorldCaptureResult & {
+    /** Exact authenticated requested/resolved placement evidence. */
+    readonly placement: GrantedPlacementResolution;
 };

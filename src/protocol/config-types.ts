@@ -926,6 +926,10 @@ export type WorkspaceProtocolConfig = {
         readonly compatibilityVersion: string;
         /** Enforcement classification truthfully provided by the current runtime seam. */
         readonly enforcement: string;
+        /** Capture-journal version written by unplaced granted execution. */
+        readonly journalVersion: number;
+        /** Capture-journal versions carrying repository grant-plan evidence. */
+        readonly journalVersions: readonly number[];
         /** Capability operations mapped to configured required authority atoms. */
         readonly operations: {
             /** Authority atom required by retained-world text reads. */
@@ -955,6 +959,90 @@ export type WorkspaceProtocolConfig = {
         };
         /** Prefix for content-addressed task-grant identities. */
         readonly taskGrantIdPrefix: string;
+    };
+    /** Placement request, platform classification, and honest resolution configuration. */
+    readonly placements: {
+        /** Public placement artifact protocol version. */
+        readonly artifactVersion: number;
+        /** Generated language-neutral placement artifact destinations. */
+        readonly artifacts: {
+            /** Placement platform-evidence schema destination. */
+            readonly platformEvidenceSchema: string;
+            /** Placement-resolution schema destination. */
+            readonly resolutionSchema: string;
+        };
+        /** Compatibility namespace included in placement identity. */
+        readonly compatibilityVersion: string;
+        /** Actual enforcement classification of every currently supported resolution. */
+        readonly enforcement: string;
+        /** Capture-journal version written by placed granted execution. */
+        readonly journalVersion: number;
+        /** Capture-journal versions carrying placement-resolution evidence. */
+        readonly journalVersions: readonly number[];
+        /** Deterministic platform-classification policy. */
+        readonly platform: {
+            /** Closed execution-environment classifications. */
+            readonly environments: readonly string[];
+            /** Prefix for content-addressed platform-evidence identities. */
+            readonly evidenceIdPrefix: string;
+            /** Closed platform-family classifications. */
+            readonly families: readonly string[];
+            /** Environment classification for ordinary native hosts. */
+            readonly nativeEnvironment: string;
+            /** Supported Node platform spellings and their families. */
+            readonly nodePlatforms: readonly {
+                /** Configured platform family. */
+                readonly family: string;
+                /** Exact Node platform spelling. */
+                readonly name: string;
+            }[];
+            /** Environment classification for unsupported hosts. */
+            readonly unsupportedEnvironment: string;
+            /** Family classification for unsupported hosts. */
+            readonly unsupportedFamily: string;
+            /** Public platform-evidence protocol version. */
+            readonly version: number;
+            /** Environment classification for Windows Subsystem for Linux. */
+            readonly wslEnvironment: string;
+            /** Environment-variable names that provide WSL evidence. */
+            readonly wslEnvironmentVariables: readonly string[];
+            /** Platform family assigned to WSL. */
+            readonly wslFamily: string;
+            /** Node platform spelling on which WSL detection applies. */
+            readonly wslNodePlatform: string;
+            /** Case-insensitive OS-release pattern providing WSL evidence. */
+            readonly wslReleasePattern: string;
+        };
+        /** Closed placement-resolution reason vocabulary. */
+        readonly reasons: readonly string[];
+        /** Closed requested-placement vocabulary. */
+        readonly requests: readonly string[];
+        /** Prefix for content-addressed placement-resolution identities. */
+        readonly resolutionIdPrefix: string;
+        /** Closed effective-placement vocabulary implemented by this protocol. */
+        readonly resolvedPlacements: readonly string[];
+        /** Total configured request-resolution rules. */
+        readonly rules: readonly {
+            /** Stable resolution reason. */
+            readonly reason: string;
+            /** Requested placement governed by this rule. */
+            readonly request: string;
+            /** Effective placement, or `null` for a fail-closed unsupported request. */
+            readonly resolved: string | null;
+            /** Public resolved/refused status for this rule. */
+            readonly status: string;
+            /** Whether the request may produce resolution evidence. */
+            readonly supported: boolean;
+        }[];
+        /** Published placement schema identifiers. */
+        readonly schemas: {
+            /** Absolute platform-evidence schema identifier. */
+            readonly platformEvidenceId: string;
+            /** Absolute placement-resolution schema identifier. */
+            readonly resolutionId: string;
+        };
+        /** Closed placement resolution/refusal status vocabulary. */
+        readonly statuses: readonly string[];
     };
     /** Cross-platform retained-custody conformance policy. */
     readonly platformConformance: {
@@ -1086,6 +1174,8 @@ export type WorkspaceProtocolConfig = {
             /** Exact journal body version governed by the schema identity. */
             readonly version: number;
         }[];
+        /** Capture-journal version written by ordinary ungranted execution. */
+        readonly ordinaryJournalVersion: number;
         /** Schema identifier for durable capture-journal records. */
         readonly journalSchemaId: string;
         /** Repository-relative generated journal-schema path. */

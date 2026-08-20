@@ -29,6 +29,12 @@ export type TaskWorldJournalAuthority = {
     readonly fencingToken: number;
 };
 
+/** Exact immutable journal schema/version pair selected by the calling public API. @internal */
+export type TaskWorldJournalWriter = {
+    readonly schemaId: string;
+    readonly version: number;
+};
+
 /** Appends one idempotent capture-journal transition. @internal */
 export function appendTaskWorldJournal(
     store: SQLiteTraceStore,
@@ -37,13 +43,14 @@ export function appendTaskWorldJournal(
     phase: TaskWorldJournalPhase,
     fields: SemanticRecord,
     parents: readonly RecordId[],
+    writer: TaskWorldJournalWriter,
     authority: TaskWorldJournalAuthority | null = null,
 ): RecordId {
     const body = {
         ...fields,
         capture_id: captureId,
         capture_phase: phase,
-        journal_version: workspaceProtocolConfig.worldTaskCapture.journalVersion,
+        journal_version: writer.version,
         run_id: runId,
     } as SemanticRecord;
     const request = {
@@ -59,7 +66,7 @@ export function appendTaskWorldJournal(
                         {
                             body,
                             mode: CAPTURE_MODE,
-                            schema_ref: workspaceProtocolConfig.worldTaskCapture.journalSchemaId,
+                            schema_ref: writer.schemaId,
                             witness_ref: ROOT_WITNESS_ID,
                         },
                     ],

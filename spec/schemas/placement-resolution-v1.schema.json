@@ -1,0 +1,130 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/placement-resolution-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "allOf": [
+        {
+            "oneOf": [
+                {
+                    "properties": {
+                        "reason": {
+                            "const": "requested-advisory"
+                        },
+                        "requested_placement": {
+                            "const": "advisory"
+                        },
+                        "resolved_placement": {
+                            "const": "advisory"
+                        },
+                        "status": {
+                            "const": "resolved"
+                        }
+                    }
+                },
+                {
+                    "properties": {
+                        "reason": {
+                            "const": "auto-fallback-unavailable"
+                        },
+                        "requested_placement": {
+                            "const": "auto"
+                        },
+                        "resolved_placement": {
+                            "const": "advisory"
+                        },
+                        "status": {
+                            "const": "resolved"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "properties": {
+        "capture_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "compatibility_version": {
+            "const": "shepherd.workspace.placements.v1",
+            "type": "string"
+        },
+        "enforcement": {
+            "const": "advisory",
+            "type": "string"
+        },
+        "placement_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "platform": {
+            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/placement-platform-evidence-v1.schema.json"
+        },
+        "reason": {
+            "enum": [
+                "requested-advisory",
+                "auto-fallback-unavailable",
+                "explicit-jail-unavailable"
+            ],
+            "type": "string"
+        },
+        "repository_grant_plan_id": {
+            "pattern": "^repository-grant-plan:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "requested_placement": {
+            "enum": [
+                "advisory",
+                "auto",
+                "jail"
+            ],
+            "type": "string"
+        },
+        "resolution_id": {
+            "pattern": "^placement-resolution:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "resolved_placement": {
+            "enum": [
+                "advisory"
+            ],
+            "type": "string"
+        },
+        "run_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "runner_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "status": {
+            "enum": [
+                "resolved",
+                "refused"
+            ],
+            "type": "string"
+        },
+        "task_artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+        }
+    },
+    "required": [
+        "capture_id",
+        "compatibility_version",
+        "enforcement",
+        "placement_version",
+        "platform",
+        "reason",
+        "repository_grant_plan_id",
+        "requested_placement",
+        "resolution_id",
+        "resolved_placement",
+        "run_id",
+        "runner_id",
+        "status",
+        "task_artifact_digest"
+    ],
+    "type": "object"
+}

@@ -19,6 +19,12 @@ resource. The v2 schema carries journal v10 while the unchanged v1 schema and jo
 readable. See
 [`repository-grants.md`](./repository-grants.md).
 
+`capturePlacedGrantedTaskWorldDurably` composes granted execution with an authenticated placement
+resolution. The complete requested/resolved placement is present in prepared journal evidence
+before runner/provider invocation and is returned with the task-world result. New attempts use
+journal v11/v3; unchanged v9/v1 and v10/v2 evidence remains readable. See
+[`placement-resolution.md`](./placement-resolution.md).
+
 The current advisory capability reads and replaces existing regular UTF-8 files beneath custody.
 Paths are binding-relative; absolute paths, traversal, Shepherd control-directory access, symbolic
 links, non-files, malformed UTF-8, and configured size-limit violations fail closed. Granted Git
@@ -43,8 +49,8 @@ the capture record and its causal position while continuing to reconstruct the o
 result. `inspectTaskWorldCaptureJournal` exposes the validated ordered prefix without invoking the
 runner or carrier and reconstructs the same retained projection after the SQLite store reopens.
 World records created under protocol v8 remain readable without journal transitions and are
-therefore legacy retained evidence. Journal v9/v1 capture attempts remain readable; new ordinary
-and granted attempts use journal v10/v2, with granted prepared evidence carrying the exact plan.
+therefore legacy retained evidence. Ordinary capture writes journal v9/v1, unplaced granted capture
+writes v10/v2, and placed granted capture writes v11/v3. All three exact pairs remain readable.
 
 `recoverTaskWorldDurably` validates the exact original task, provider, budget, binding, base,
 runner, capture, and configured limits before recovery. An explicit globally idempotent command

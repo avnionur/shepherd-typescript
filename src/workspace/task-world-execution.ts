@@ -47,6 +47,8 @@ import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { TaskSchema } from "../task/schema.ts";
 import { assertWorkspaceBinding, isGitRepositoryBinding } from "./bindings.ts";
 import { createWorldChangeset } from "./changesets.ts";
+import { assertGrantedPlacementResolutionContract } from "./placement.ts";
+import type { GrantedPlacementResolution } from "./placement-types.ts";
 import {
     assertReferenceCopyCarrier,
     forkReferenceCopyRevisionForTaskWorld,
@@ -64,8 +66,11 @@ import type {
 } from "./retained-world-runner-types.ts";
 import type {
     CaptureGrantedTaskWorldOptions,
+    CapturePlacedGrantedTaskWorldOptions,
     CaptureTaskWorldOptions,
+    PlacedTaskWorldCaptureResult,
     RecoverGrantedTaskWorldOptions,
+    RecoverPlacedGrantedTaskWorldOptions,
     RecoverTaskWorldOptions,
     RetainedWorldOutput,
     TaskWorldCaptureResult,
@@ -84,11 +89,13 @@ const [CAPTURE_MODE] = RECORD_MODES;
 
 type CaptureTaskWorldFields<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>> =
     | CaptureTaskWorldOptions<I, O>
-    | CaptureGrantedTaskWorldOptions<I, O>;
+    | CaptureGrantedTaskWorldOptions<I, O>
+    | CapturePlacedGrantedTaskWorldOptions<I, O>;
 
 type RecoverTaskWorldFields<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>> =
     | RecoverTaskWorldOptions<I, O>
-    | RecoverGrantedTaskWorldOptions<I, O>;
+    | RecoverGrantedTaskWorldOptions<I, O>
+    | RecoverPlacedGrantedTaskWorldOptions<I, O>;
 
 /**
  * Executes one registered runner against isolated custody and retains its verified world output.
@@ -164,6 +171,37 @@ export async function captureGrantedTaskWorldDurably<
 }
 
 /**
+ * Executes one granted retained-world task under exact requested/resolved placement evidence.
+ *
+ * @param options - Exact granted capture contract plus authenticated placement resolution.
+ * @returns Durable task, retained world, changeset, and immutable placement evidence.
+ * @throws {TypeError} If placement, grant, task, resource, runner, or options are inconsistent.
+ * @throws {TraceStoreError} If durable execution or terminal publication fails closed.
+ * @throws {WorldCarrierError} If retained carrier evidence cannot be verified or captured.
+ * @throws {WorldChangesetError} If the captured comparison is invalid or exceeds limits.
+ *
+ * @example
+ * ```ts
+ * const result = await capturePlacedGrantedTaskWorldDurably({
+ *     ...grantedCaptureOptions,
+ *     placementResolution,
+ * });
+ * result.placement.resolved_placement;
+ * ```
+ *
+ * @public
+ */
+export async function capturePlacedGrantedTaskWorldDurably<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(options: CapturePlacedGrantedTaskWorldOptions<I, O>): Promise<PlacedTaskWorldCaptureResult> {
+    const fields = readPlacedOptions(options);
+    const retainedBase = await validateCaptureAuthority(fields);
+    const result = await executeTaskWorld(fields, retainedBase, null);
+    return Object.freeze({ ...result, placement: fields.placementResolution });
+}
+
+/**
  * Resumes one pre-execution task-world capture under an explicit durable recovery command.
  *
  * Recovery reuses exact `forked` custody and creation evidence, acquires a command-authorized
@@ -219,6 +257,36 @@ export async function recoverGrantedTaskWorldDurably<
     O extends TaskSchema<unknown>,
 >(options: RecoverGrantedTaskWorldOptions<I, O>): Promise<TaskWorldCaptureResult> {
     return recoverTaskWorld(readGrantedRecoveryOptions(options));
+}
+
+/**
+ * Recovers a placed granted task-world capture under the exact prepared placement resolution.
+ *
+ * @param options - Exact placed capture contract plus recovery command identity.
+ * @returns Recovered task-world result with exact placement evidence.
+ * @throws {TypeError} If current placement or retained evidence differs from the prepared contract.
+ * @throws {DurableExecutionRecoveryError} If the capture is absent, uncertain, or unrecoverable.
+ * @throws {TraceStoreError} If command, claim, or terminal publication fails closed.
+ * @throws {WorldCarrierError} If retained carrier evidence cannot be reopened or captured.
+ * @throws {WorldChangesetError} If retained comparison evidence is invalid or exceeds limits.
+ *
+ * @example
+ * ```ts
+ * const result = await recoverPlacedGrantedTaskWorldDurably({
+ *     ...placedCaptureOptions,
+ *     commandId: "command:recover-placed-world:1",
+ * });
+ * ```
+ *
+ * @public
+ */
+export async function recoverPlacedGrantedTaskWorldDurably<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(options: RecoverPlacedGrantedTaskWorldOptions<I, O>): Promise<PlacedTaskWorldCaptureResult> {
+    const fields = readPlacedRecoveryOptions(options);
+    const result = await recoverTaskWorld(fields);
+    return Object.freeze({ ...result, placement: fields.placementResolution });
 }
 
 async function recoverTaskWorld<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
@@ -308,6 +376,7 @@ async function recoverTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
                 user_basis_before: observedBefore.content_id,
             },
             [preparedTransition.record_id],
+            taskWorldJournalWriter(fields),
         );
     return executeTaskWorld(fields, retainedBase, {
         commandRecordId,
@@ -337,7 +406,11 @@ function assertPreparedRecoveryContract<
             repository_grant_plan: preparedBody.repository_grant_plan ?? null,
         }) !== canonicalizeRecord({ repository_grant_plan: repositoryGrantPlan(fields) }) ||
         (preparedBody.repository_grant_plan_id ?? null) !==
-            (repositoryGrantPlan(fields)?.plan_id ?? null)
+            (repositoryGrantPlan(fields)?.plan_id ?? null) ||
+        canonicalizeRecord({ placement_resolution: preparedBody.placement_resolution ?? null }) !==
+            canonicalizeRecord({ placement_resolution: placementResolution(fields) }) ||
+        (preparedBody.placement_resolution_id ?? null) !==
+            (placementResolution(fields)?.resolution_id ?? null)
     ) {
         throw new TypeError("task-world recovery contract differs from prepared evidence");
     }
@@ -430,6 +503,16 @@ async function validateCaptureAuthority<
     assertRetainedWorldRunner(fields.runner);
     assertWorkspaceBinding(fields.binding);
     activeRepositoryGrant(fields);
+    const placement = placementResolution(fields);
+    if (placement !== null) {
+        assertGrantedPlacementResolutionContract(placement, {
+            captureId: fields.captureId,
+            repositoryGrantPlan: (fields as CapturePlacedGrantedTaskWorldOptions<I, O>)
+                .repositoryGrantPlan,
+            runId: fields.execution.runId,
+            runner: fields.runner,
+        });
+    }
     assertText(
         fields.captureId,
         "captureId",
@@ -487,11 +570,11 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
                     max_capture_id_bytes:
                         workspaceProtocolConfig.worldTaskCapture.maxCaptureIdBytes,
                     max_text_bytes: workspaceProtocolConfig.worldTaskCapture.maxTextBytes,
-                    repository_grant_plan: repositoryGrantPlan(fields),
-                    repository_grant_plan_id: repositoryGrantPlan(fields)?.plan_id ?? null,
+                    ...taskWorldPreparedAuthorityEvidence(fields),
                     runner_id: fields.runner.runner_id,
                 },
                 [createdRecordId],
+                taskWorldJournalWriter(fields),
             );
             custody = forkReferenceCopyRevisionForTaskWorld(
                 fields.carrier,
@@ -508,6 +591,7 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
                     user_basis_before: observedBefore.content_id,
                 },
                 [preparedRecordId],
+                taskWorldJournalWriter(fields),
             );
         },
         async (prepared, authority) => {
@@ -523,6 +607,7 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
                     fencing_token: authority.fencingToken,
                 },
                 [forkedRecordId, authority.startedRecordId],
+                taskWorldJournalWriter(fields),
                 authority,
             );
             let active = true;
@@ -592,6 +677,7 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
                     user_basis_before: observedBefore.content_id,
                 },
                 [executingRecordId],
+                taskWorldJournalWriter(fields),
                 authority,
             );
             const semantic = {
@@ -745,6 +831,54 @@ function repositoryGrantPlan<I extends TaskSchema<unknown>, O extends TaskSchema
     fields: CaptureTaskWorldFields<I, O>,
 ): GitRepositoryGrantPlan | null {
     return "repositoryGrantPlan" in fields ? fields.repositoryGrantPlan : null;
+}
+
+function placementResolution<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    fields: CaptureTaskWorldFields<I, O>,
+): GrantedPlacementResolution | null {
+    return "placementResolution" in fields ? fields.placementResolution : null;
+}
+
+function taskWorldJournalWriter<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    fields: CaptureTaskWorldFields<I, O>,
+): { readonly schemaId: string; readonly version: number } {
+    const version =
+        placementResolution(fields) !== null
+            ? workspaceProtocolConfig.placements.journalVersion
+            : repositoryGrantPlan(fields) !== null
+              ? workspaceProtocolConfig.repositoryGrants.journalVersion
+              : workspaceProtocolConfig.worldTaskCapture.ordinaryJournalVersion;
+    const writer = workspaceProtocolConfig.worldTaskCapture.journalReaders.find(
+        (reader) => reader.version === version,
+    );
+    /* Config validation requires every selected writer version to have one exact reader. */
+    /* node:coverage ignore next 3 */
+    if (writer === undefined) {
+        throw new TypeError("task-world journal writer contract is unavailable");
+    }
+    return writer;
+}
+
+function taskWorldPreparedAuthorityEvidence<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(fields: CaptureTaskWorldFields<I, O>): SemanticRecord {
+    const grantPlan = repositoryGrantPlan(fields);
+    const placement = placementResolution(fields);
+    return {
+        ...(placement === null
+            ? {}
+            : {
+                  placement_resolution: placement,
+                  placement_resolution_id: placement.resolution_id,
+              }),
+        ...(grantPlan === null
+            ? {}
+            : {
+                  repository_grant_plan: grantPlan,
+                  repository_grant_plan_id: grantPlan.plan_id,
+              }),
+    } as SemanticRecord;
 }
 
 function activeRepositoryGrant<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
@@ -914,6 +1048,22 @@ function readGrantedOptions<I extends TaskSchema<unknown>, O extends TaskSchema<
     ]) as unknown as CaptureGrantedTaskWorldOptions<I, O>;
 }
 
+function readPlacedOptions<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    value: CapturePlacedGrantedTaskWorldOptions<I, O>,
+): CapturePlacedGrantedTaskWorldOptions<I, O> {
+    return readExactOptions(value, [
+        "baseRevision",
+        "binding",
+        "captureId",
+        "carrier",
+        "execution",
+        "placementResolution",
+        "repositoryGrantPlan",
+        "runner",
+        "store",
+    ]) as unknown as CapturePlacedGrantedTaskWorldOptions<I, O>;
+}
+
 function readExactOptions(value: unknown, expected: readonly string[]): Record<string, unknown> {
     if (
         value === null ||
@@ -973,6 +1123,25 @@ function readGrantedRecoveryOptions<I extends TaskSchema<unknown>, O extends Tas
     ]);
     assertRunText(fields.commandId, "commandId");
     return fields as unknown as RecoverGrantedTaskWorldOptions<I, O>;
+}
+
+function readPlacedRecoveryOptions<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    value: RecoverPlacedGrantedTaskWorldOptions<I, O>,
+): RecoverPlacedGrantedTaskWorldOptions<I, O> {
+    const fields = readExactOptions(value, [
+        "baseRevision",
+        "binding",
+        "captureId",
+        "carrier",
+        "commandId",
+        "execution",
+        "placementResolution",
+        "repositoryGrantPlan",
+        "runner",
+        "store",
+    ]);
+    assertRunText(fields.commandId, "commandId");
+    return fields as unknown as RecoverPlacedGrantedTaskWorldOptions<I, O>;
 }
 
 function assertText(value: unknown, subject: string, maxBytes: number): asserts value is string {

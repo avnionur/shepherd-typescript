@@ -84,8 +84,8 @@ moved bases, consume-once admission has one winner, discard preserves the parent
 discard converges after restart. The reproducible evidence is recorded in
 [`phase-3-exit-audit.md`](./phase-3-exit-audit.md).
 
-`L1-alpha` does not mark the entire upstream column complete. Explicit grant identity and advisory
-capability checks are implemented, while placement and jail
+`L1-alpha` does not mark the entire upstream column complete. Explicit grant identity, advisory
+capability checks, and advisory/auto placement reporting are implemented, while native jail
 enforcement, `apply`, `release`, CLI compatibility, repair, installed-package consumer fixtures,
 and remaining P1 rows stay assigned to Phase 4. Platform completion is limited to the named
 macOS/Linux scope; no optimized carrier or final native-Windows CI result is claimed.
@@ -98,12 +98,12 @@ macOS/Linux scope; no optimized carrier or final native-Windows CI result is cla
 | `ReadOnly`/`ReadWrite` per binding | shipped | required | P0 | exact-resource admission and advisory capability matrix implemented |
 | Whole-run permission ceiling | shipped | useful | P1 | configured atom intersection and non-amplification property implemented |
 | Deny by default | shipped | required | P0 | missing/extra resources and read-only writes fail closed at granted public seams; OS/process denial follows placement |
-| Advisory placement | shipped | useful | P0 | honest metadata tests |
-| Auto placement | shipped | useful | P0 | resolution matrix |
+| Advisory placement | shipped | useful | P0 | protocol-v22 requested/resolved/actual evidence and placed capture/recovery implemented |
+| Auto placement | shipped | useful | P0 | visible advisory fallback and exact replay/recovery matrix implemented; jail resolution follows native backends |
 | Jail placement fails closed | shipped | safety critical | P1 | unsupported/jail-failure tests |
 | macOS Seatbelt | shipped | platform | P1 | macOS CI |
 | Linux Landlock/container jail | shipped | platform | P1 | privileged Linux CI |
-| Windows/WSL policy | WSL advised | platform | P1 | documented detection tests |
+| Windows/WSL policy | WSL advised | platform | P1 | protocol-v22 native-Windows/WSL classification implemented; jail support policy remains pending |
 | Capability attenuation/delegation | not complete | meta-agent need | P2 | no-amplification property |
 | Irreversible-effect approval gate | research direction | safety need | P2 | interception tests |
 
