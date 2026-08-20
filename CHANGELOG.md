@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.39.0] - 2026-08-19
+
+### New Feature
+
+- Added workspace protocol v22 content-addressed placement platform evidence with deterministic
+  macOS, Linux, native Windows, WSL, and unsupported classifications that retain no environment
+  values.
+- Added configured advisory/auto/jail request rules: advisory resolves honestly, auto records a
+  visible advisory fallback, and explicit jail fails closed because no native backend is shipped.
+- Added placed granted capture and recovery APIs with complete pre-invocation journal-v11/v3
+  evidence, changed-request/platform refusal, exact replay, and fresh-process reconstruction while
+  preserving ordinary journal-v9/v1 and unplaced-granted journal-v10/v2 writers and readers.
+
+### Impact
+
+Callers can distinguish requested placement from effective placement and actual enforcement before
+and after a granted run. This release reports advisory execution honestly and does not claim
+Seatbelt, Landlock, syscall denial, process containment, or any other native jail capability.
+
 ## [1.38.0] - 2026-08-18
 
 ### New Feature

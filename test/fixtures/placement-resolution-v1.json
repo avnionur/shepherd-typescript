@@ -1,0 +1,54 @@
+{
+    "platform": {
+        "compatibility_version": "shepherd.workspace.placements.v1",
+        "environment": "wsl",
+        "family": "windows",
+        "node_platform": "linux",
+        "os_release": "microsoft-wsl2",
+        "platform_version": 1,
+        "wsl_markers": ["WSL_DISTRO_NAME", "WSL_INTEROP"],
+        "platform_id": "placement-platform:sha256:e6ec60254a9265ff621d9e9b5d290d04110dad0d843865d3bd0750220e466948"
+    },
+    "repository_grant_plan": {
+        "authority_ceiling": "read-only",
+        "enforcement": "advisory",
+        "grant_plan_version": 1,
+        "grants": [
+            {
+                "authority": ["read"],
+                "binding_id": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+                "binding_name": "source",
+                "resource_id": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+                "task_profile": "read-only"
+            }
+        ],
+        "task_artifact_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "task_grant_artifact_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "plan_id": "repository-grant-plan:sha256:774264e6a176bb2f1f1f66d5dc3c4faa7a044ba30b6d2eeabbcb1a77fd018504"
+    },
+    "resolution": {
+        "capture_id": "capture:fixture",
+        "compatibility_version": "shepherd.workspace.placements.v1",
+        "enforcement": "advisory",
+        "placement_version": 1,
+        "platform": {
+            "compatibility_version": "shepherd.workspace.placements.v1",
+            "environment": "wsl",
+            "family": "windows",
+            "node_platform": "linux",
+            "os_release": "microsoft-wsl2",
+            "platform_id": "placement-platform:sha256:e6ec60254a9265ff621d9e9b5d290d04110dad0d843865d3bd0750220e466948",
+            "platform_version": 1,
+            "wsl_markers": ["WSL_DISTRO_NAME", "WSL_INTEROP"]
+        },
+        "reason": "auto-fallback-unavailable",
+        "repository_grant_plan_id": "repository-grant-plan:sha256:774264e6a176bb2f1f1f66d5dc3c4faa7a044ba30b6d2eeabbcb1a77fd018504",
+        "requested_placement": "auto",
+        "resolved_placement": "advisory",
+        "run_id": "run:fixture",
+        "runner_id": "runner:fixture",
+        "status": "resolved",
+        "task_artifact_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "resolution_id": "placement-resolution:sha256:b41a8b2cea68aa4b01e65831729920aacec73f347721e7f6df1d93f1f2a1698e"
+    }
+}

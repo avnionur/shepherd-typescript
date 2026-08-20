@@ -217,7 +217,9 @@ Work:
 - add explicit runtime grants and whole-run ceiling; **implemented in 1.38.0** with workspace
   protocol v21 companion task-grant identity, exact repository admission, monotone attenuation,
   advisory capability checks, and exact recovery evidence;
-- implement advisory/auto placement reporting;
+- implement advisory/auto placement reporting; **implemented in 1.39.0** with workspace protocol
+  v22 platform evidence, visible auto fallback, exact placed capture/recovery identity, and
+  explicit jail refusal without a native-enforcement claim;
 - implement macOS Seatbelt and Linux Landlock jail launchers;
 - make explicit jail fail closed;
 - add `apply` with path-disjoint three-way semantics;

@@ -41,6 +41,13 @@ const PROFILE_ATOMS = new Map(
     workspaceProtocolConfig.repositoryGrants.profiles.map(({ atoms, name }) => [name, atoms]),
 );
 
+/** Rejects structurally forged repository grant-plan handles. @internal */
+export function assertGitRepositoryGrantPlanHandle(plan: GitRepositoryGrantPlan): void {
+    if (!AUTHENTICATED_GRANT_PLANS.has(plan)) {
+        throw new TypeError("repository grant plan must be created by this package instance");
+    }
+}
+
 /**
  * Binds an explicit canonical repository grant surface to one bodyless task artifact.
  *

@@ -29,6 +29,7 @@ import {
     WORKSPACE_PROTOCOL_V19_CONTRACT,
     WORKSPACE_PROTOCOL_V20_CONTRACT,
     WORKSPACE_PROTOCOL_V21_CONTRACT,
+    WORKSPACE_PROTOCOL_V22_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -76,12 +77,12 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.worldCapture.version, 6);
     assert.equal(parsed.workspaces.worldExecution.runnerVersion, 7);
     assert.equal(parsed.workspaces.worldTaskCapture.version, 8);
-    assert.equal(parsed.workspaces.worldTaskCapture.journalVersion, 10);
+    assert.equal(parsed.workspaces.worldTaskCapture.journalVersion, 11);
     assert.deepEqual(
         parsed.workspaces.worldTaskCapture.journalReaders.map(({ version }) => version),
-        [9, 10],
+        [9, 10, 11],
     );
-    assert.match(parsed.workspaces.worldTaskCapture.journalSchemaId, /v2/u);
+    assert.match(parsed.workspaces.worldTaskCapture.journalSchemaId, /v3/u);
     assert.equal(parsed.workspaces.worldTaskCapture.custodyIdentityKind, "task-world-custody");
     assert.equal(parsed.workspaces.settlement.version, 12);
     assert.equal(parsed.workspaces.settlement.operationVersion, 1);
@@ -105,11 +106,20 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.repositoryGrants.enforcement, "advisory");
     assert.equal(parsed.workspaces.repositoryGrants.operations.readText, "read");
     assert.equal(parsed.workspaces.repositoryGrants.operations.writeText, "write");
+    assert.deepEqual(parsed.workspaces.repositoryGrants.journalVersions, [10, 11]);
+    assert.equal(parsed.workspaces.repositoryGrants.journalVersion, 10);
+    assert.deepEqual(parsed.workspaces.placements.requests, ["advisory", "auto", "jail"]);
+    assert.deepEqual(parsed.workspaces.placements.resolvedPlacements, ["advisory"]);
+    assert.deepEqual(parsed.workspaces.placements.journalVersions, [11]);
+    assert.equal(parsed.workspaces.placements.journalVersion, 11);
+    assert.deepEqual(parsed.workspaces.placements.statuses, ["resolved", "refused"]);
+    assert.equal(parsed.workspaces.placements.platform.wslFamily, "windows");
     assert.equal(Object.isFrozen(parsed.workspaces), true);
     assert.equal(Object.isFrozen(parsed.workspaces.bindingErrors), true);
     assert.equal(Object.isFrozen(parsed.workspaces.protectedPaths), true);
     assert.equal(Object.isFrozen(parsed.workspaces.repositoryBindings), true);
     assert.equal(Object.isFrozen(parsed.workspaces.repositoryGrants), true);
+    assert.equal(Object.isFrozen(parsed.workspaces.placements), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V1_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V2_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V3_CONTRACT), true);
@@ -131,6 +141,8 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V19_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V20_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V21_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V22_CONTRACT), true);
+    assert.equal("placements" in WORKSPACE_PROTOCOL_V21_CONTRACT, false);
     assert.equal("repositoryGrants" in WORKSPACE_PROTOCOL_V20_CONTRACT, false);
     assert.equal("repositoryBindings" in WORKSPACE_PROTOCOL_V19_CONTRACT, false);
     assert.equal("platformConformance" in WORKSPACE_PROTOCOL_V18_CONTRACT, false);
@@ -833,6 +845,9 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             capture.journalReaders = (capture.journalReaders as unknown[]).slice(0, 1);
         },
         (config) => {
+            objectAt(workspaceConfigOf(config), "worldTaskCapture").ordinaryJournalVersion = 12;
+        },
+        (config) => {
             objectAt(workspaceConfigOf(config), "worldTaskCapture").custodyIdentityKind = "";
         },
         (config) => {
@@ -1075,10 +1090,169 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             objectAt(workspaceConfigOf(config), "repositoryGrants").artifactVersion = 0;
         },
         (config) => {
+            objectAt(workspaceConfigOf(config), "repositoryGrants").journalVersions = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "repositoryGrants").journalVersions = [10, 12];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "repositoryGrants").journalVersion = 12;
+        },
+        (config) => {
             objectAt(
                 objectAt(workspaceConfigOf(config), "repositoryGrants"),
                 "operations",
             ).readText = "admin";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "placements").artifactVersion = 0;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "placements").enforcement = "jailed";
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "placements").journalVersions = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "placements").journalVersions = [11, 12];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "placements").journalVersion = 12;
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "placements").statuses = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "placements").requests = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "placements").reasons = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "placements").resolvedPlacements = [];
+        },
+        (config) => {
+            objectAt(workspaceConfigOf(config), "placements").rules = [];
+        },
+        (config) => {
+            const rules = objectAt(workspaceConfigOf(config), "placements").rules as Record<
+                string,
+                unknown
+            >[];
+            assert.ok(rules[2]);
+            rules[2].request = rules[0]?.request;
+        },
+        (config) => {
+            const rules = objectAt(workspaceConfigOf(config), "placements").rules as Record<
+                string,
+                unknown
+            >[];
+            assert.ok(rules[0]);
+            rules[0].supported = false;
+        },
+        (config) => {
+            const rules = objectAt(workspaceConfigOf(config), "placements").rules as Record<
+                string,
+                unknown
+            >[];
+            assert.ok(rules[0]);
+            rules[0].supported = "yes";
+        },
+        (config) => {
+            const rules = objectAt(workspaceConfigOf(config), "placements").rules as Record<
+                string,
+                unknown
+            >[];
+            assert.ok(rules[0]);
+            rules[0].status = "other";
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            platform.wslEnvironmentVariables = [];
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            platform.environments = [];
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            platform.families = [];
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            platform.nativeEnvironment = "other";
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            platform.unsupportedEnvironment = "other";
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            platform.wslEnvironment = "other";
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            platform.unsupportedFamily = "other";
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            platform.wslFamily = "other";
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            platform.wslNodePlatform = "freebsd";
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            platform.nodePlatforms = [];
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            const entries = platform.nodePlatforms as Record<string, unknown>[];
+            assert.ok(entries[1]);
+            entries[1].name = entries[0]?.name;
+        },
+        (config) => {
+            const platform = objectAt(
+                objectAt(workspaceConfigOf(config), "placements"),
+                "platform",
+            );
+            const entries = platform.nodePlatforms as Record<string, unknown>[];
+            assert.ok(entries[0]);
+            entries[0].family = "other";
         },
         (config) => {
             objectAt(

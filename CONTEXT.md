@@ -230,6 +230,16 @@ A configured repository grant profile whose authority atoms can only remove, nev
 each task-declared binding grant for one admitted run.
 _Avoid_: Default permission, task grant replacement, runtime escalation
 
+**Placement Platform Evidence**:
+An immutable content-addressed classification of an explicit execution-environment probe into a
+platform family and native, WSL, or unsupported environment without retaining environment values.
+_Avoid_: Sandbox capability, launcher receipt, ambient host guess
+
+**Placement Resolution**:
+An immutable content-addressed record binding requested placement, effective placement, actual
+enforcement, reason, platform, grant plan, runner, run, and capture before execution admission.
+_Avoid_: Jail profile, aspirational enforcement, mutable runtime option
+
 **World Revision**:
 An immutable verified copy-carrier snapshot whose revision identity binds canonical logical
 filesystem content to one exact workspace binding and carrier protocol.

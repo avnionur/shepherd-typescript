@@ -36,6 +36,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "gitMetadataName",
             "hexLength",
             "manifestFile",
+            "placements",
             "platformConformance",
             "protectedPaths",
             "repositoryBindings",
@@ -86,6 +87,8 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "atoms",
             "compatibilityVersion",
             "enforcement",
+            "journalVersion",
+            "journalVersions",
             "operations",
             "planIdPrefix",
             "planVersion",
@@ -114,6 +117,19 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         repositoryGrants.atoms,
         "workspaces.repositoryGrants.atoms",
     );
+    const repositoryGrantJournalVersions = readProtocolVersions(
+        repositoryGrants.journalVersions,
+        "workspaces.repositoryGrants.journalVersions",
+    );
+    const repositoryGrantJournalVersion = readPositiveInteger(
+        repositoryGrants.journalVersion,
+        "workspaces.repositoryGrants.journalVersion",
+    );
+    if (!repositoryGrantJournalVersions.includes(repositoryGrantJournalVersion)) {
+        throw new TypeError(
+            "workspaces.repositoryGrants.journalVersion must be a configured grant journal version",
+        );
+    }
     const repositoryGrantProfiles = readArray(
         repositoryGrants.profiles,
         "workspaces.repositoryGrants.profiles",
@@ -137,6 +153,195 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
     ) {
         throw new TypeError("workspace repository grant contracts must be non-empty and unique");
     }
+    const placements = readObject(
+        config.placements,
+        [
+            "artifactVersion",
+            "artifacts",
+            "compatibilityVersion",
+            "enforcement",
+            "journalVersion",
+            "journalVersions",
+            "platform",
+            "reasons",
+            "requests",
+            "resolutionIdPrefix",
+            "resolvedPlacements",
+            "rules",
+            "schemas",
+            "statuses",
+        ],
+        "workspaces.placements",
+    );
+    const placementArtifacts = readObject(
+        placements.artifacts,
+        ["platformEvidenceSchema", "resolutionSchema"],
+        "workspaces.placements.artifacts",
+    );
+    const placementSchemas = readObject(
+        placements.schemas,
+        ["platformEvidenceId", "resolutionId"],
+        "workspaces.placements.schemas",
+    );
+    const placementPlatform = readObject(
+        placements.platform,
+        [
+            "environments",
+            "evidenceIdPrefix",
+            "families",
+            "nativeEnvironment",
+            "nodePlatforms",
+            "unsupportedEnvironment",
+            "unsupportedFamily",
+            "version",
+            "wslEnvironment",
+            "wslEnvironmentVariables",
+            "wslFamily",
+            "wslNodePlatform",
+            "wslReleasePattern",
+        ],
+        "workspaces.placements.platform",
+    );
+    const placementEnvironments = readUniqueStrings(
+        placementPlatform.environments,
+        "workspaces.placements.platform.environments",
+    );
+    const placementJournalVersions = readProtocolVersions(
+        placements.journalVersions,
+        "workspaces.placements.journalVersions",
+    );
+    const placementJournalVersion = readPositiveInteger(
+        placements.journalVersion,
+        "workspaces.placements.journalVersion",
+    );
+    if (!placementJournalVersions.includes(placementJournalVersion)) {
+        throw new TypeError(
+            "workspaces.placements.journalVersion must be a configured placement journal version",
+        );
+    }
+    const placementFamilies = readUniqueStrings(
+        placementPlatform.families,
+        "workspaces.placements.platform.families",
+    );
+    const placementRequests = readUniqueStrings(
+        placements.requests,
+        "workspaces.placements.requests",
+    );
+    const placementReasons = readUniqueStrings(placements.reasons, "workspaces.placements.reasons");
+    const resolvedPlacements = readUniqueStrings(
+        placements.resolvedPlacements,
+        "workspaces.placements.resolvedPlacements",
+    );
+    const placementStatuses = readUniqueStrings(
+        placements.statuses,
+        "workspaces.placements.statuses",
+    );
+    const nodePlatforms = readArray(
+        placementPlatform.nodePlatforms,
+        "workspaces.placements.platform.nodePlatforms",
+    ).map((value, index) => {
+        const context = `workspaces.placements.platform.nodePlatforms[${index}]`;
+        const entry = readObject(value, ["family", "name"], context);
+        const family = readNonEmptyString(entry.family, `${context}.family`);
+        if (!placementFamilies.includes(family)) {
+            throw new TypeError(`${context}.family must be configured`);
+        }
+        return {
+            family,
+            name: readNonEmptyString(entry.name, `${context}.name`),
+        };
+    });
+    if (
+        nodePlatforms.length === 0 ||
+        new Set(nodePlatforms.map(({ name }) => name)).size !== nodePlatforms.length
+    ) {
+        throw new TypeError("workspace placement node platforms must be non-empty and unique");
+    }
+    const placementRules = readArray(placements.rules, "workspaces.placements.rules").map(
+        (value, index) => {
+            const context = `workspaces.placements.rules[${index}]`;
+            const rule = readObject(
+                value,
+                ["reason", "request", "resolved", "status", "supported"],
+                context,
+            );
+            const reason = readNonEmptyString(rule.reason, `${context}.reason`);
+            const request = readNonEmptyString(rule.request, `${context}.request`);
+            const status = readNonEmptyString(rule.status, `${context}.status`);
+            if (typeof rule.supported !== "boolean") {
+                throw new TypeError(`${context}.supported must be boolean`);
+            }
+            const resolved =
+                rule.resolved === null
+                    ? null
+                    : readNonEmptyString(rule.resolved, `${context}.resolved`);
+            if (
+                !placementReasons.includes(reason) ||
+                !placementRequests.includes(request) ||
+                !placementStatuses.includes(status) ||
+                (rule.supported
+                    ? resolved === null || !resolvedPlacements.includes(resolved)
+                    : resolved !== null)
+            ) {
+                throw new TypeError(`${context} is inconsistent with placement vocabularies`);
+            }
+            return { reason, request, resolved, status, supported: rule.supported };
+        },
+    );
+    if (
+        placementRules.length !== placementRequests.length ||
+        new Set(placementRules.map(({ request }) => request)).size !== placementRules.length
+    ) {
+        throw new TypeError("workspace placement rules must cover each request exactly once");
+    }
+    const placementRoleValues = {
+        nativeEnvironment: readNonEmptyString(
+            placementPlatform.nativeEnvironment,
+            "workspaces.placements.platform.nativeEnvironment",
+        ),
+        unsupportedEnvironment: readNonEmptyString(
+            placementPlatform.unsupportedEnvironment,
+            "workspaces.placements.platform.unsupportedEnvironment",
+        ),
+        unsupportedFamily: readNonEmptyString(
+            placementPlatform.unsupportedFamily,
+            "workspaces.placements.platform.unsupportedFamily",
+        ),
+        wslEnvironment: readNonEmptyString(
+            placementPlatform.wslEnvironment,
+            "workspaces.placements.platform.wslEnvironment",
+        ),
+        wslFamily: readNonEmptyString(
+            placementPlatform.wslFamily,
+            "workspaces.placements.platform.wslFamily",
+        ),
+        wslNodePlatform: readNonEmptyString(
+            placementPlatform.wslNodePlatform,
+            "workspaces.placements.platform.wslNodePlatform",
+        ),
+    };
+    if (
+        !placementEnvironments.includes(placementRoleValues.nativeEnvironment) ||
+        !placementEnvironments.includes(placementRoleValues.unsupportedEnvironment) ||
+        !placementEnvironments.includes(placementRoleValues.wslEnvironment) ||
+        !placementFamilies.includes(placementRoleValues.unsupportedFamily) ||
+        !placementFamilies.includes(placementRoleValues.wslFamily) ||
+        !nodePlatforms.some(({ name }) => name === placementRoleValues.wslNodePlatform)
+    ) {
+        throw new TypeError("workspace placement platform roles are inconsistent");
+    }
+    const wslEnvironmentVariables = readUniqueStrings(
+        placementPlatform.wslEnvironmentVariables,
+        "workspaces.placements.platform.wslEnvironmentVariables",
+    );
+    const wslReleasePattern = readNonEmptyString(
+        placementPlatform.wslReleasePattern,
+        "workspaces.placements.platform.wslReleasePattern",
+    );
+    const placementEnforcement = readNonEmptyString(
+        placements.enforcement,
+        "workspaces.placements.enforcement",
+    );
     const platformConformance = readObject(
         config.platformConformance,
         [
@@ -503,6 +708,16 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         ["enforcementKinds", "maxRunnerIdBytes", "runnerVersion"],
         "workspaces.worldExecution",
     );
+    if (
+        !readUniqueStrings(
+            worldExecution.enforcementKinds,
+            "workspaces.worldExecution.enforcementKinds",
+        ).includes(placementEnforcement)
+    ) {
+        throw new TypeError(
+            "workspaces.placements.enforcement must be a configured world execution enforcement",
+        );
+    }
     const worldTaskCapture = readObject(
         config.worldTaskCapture,
         [
@@ -517,6 +732,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "maxCaptureIdBytes",
             "maxTextBytes",
             "outputIdPrefix",
+            "ordinaryJournalVersion",
             "statuses",
             "version",
         ],
@@ -525,6 +741,10 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
     const journalVersion = readPositiveInteger(
         worldTaskCapture.journalVersion,
         "workspaces.worldTaskCapture.journalVersion",
+    );
+    const ordinaryJournalVersion = readPositiveInteger(
+        worldTaskCapture.ordinaryJournalVersion,
+        "workspaces.worldTaskCapture.ordinaryJournalVersion",
     );
     const journalSchemaId = readAbsoluteUrl(
         worldTaskCapture.journalSchemaId,
@@ -551,6 +771,26 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
     ) {
         throw new TypeError(
             "workspaces.worldTaskCapture.journalReaders must be unique and include the current schema/version pair",
+        );
+    }
+    const readableJournalVersions = journalReaders.map(({ version }) => version);
+    if (
+        repositoryGrantJournalVersions.some(
+            (version) => !readableJournalVersions.includes(version),
+        ) ||
+        placementJournalVersions.some((version) => !readableJournalVersions.includes(version))
+    ) {
+        throw new TypeError(
+            "workspace prepared-evidence journal versions must have configured readers",
+        );
+    }
+    if (
+        !readableJournalVersions.includes(ordinaryJournalVersion) ||
+        new Set([ordinaryJournalVersion, repositoryGrantJournalVersion, placementJournalVersion])
+            .size !== 3
+    ) {
+        throw new TypeError(
+            "workspace task-world writer journal versions must be readable and distinct",
         );
     }
     const adoptionModes = readUniqueStrings(config.adoptionModes, "workspaces.adoptionModes");
@@ -1335,6 +1575,69 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         gitMetadataName,
         hexLength,
         manifestFile,
+        placements: {
+            artifactVersion: readPositiveInteger(
+                placements.artifactVersion,
+                "workspaces.placements.artifactVersion",
+            ),
+            artifacts: {
+                platformEvidenceSchema: readNonEmptyString(
+                    placementArtifacts.platformEvidenceSchema,
+                    "workspaces.placements.artifacts.platformEvidenceSchema",
+                ),
+                resolutionSchema: readNonEmptyString(
+                    placementArtifacts.resolutionSchema,
+                    "workspaces.placements.artifacts.resolutionSchema",
+                ),
+            },
+            compatibilityVersion: readNonEmptyString(
+                placements.compatibilityVersion,
+                "workspaces.placements.compatibilityVersion",
+            ),
+            enforcement: placementEnforcement,
+            journalVersion: placementJournalVersion,
+            journalVersions: placementJournalVersions,
+            platform: {
+                environments: placementEnvironments,
+                evidenceIdPrefix: readNonEmptyString(
+                    placementPlatform.evidenceIdPrefix,
+                    "workspaces.placements.platform.evidenceIdPrefix",
+                ),
+                families: placementFamilies,
+                nativeEnvironment: placementRoleValues.nativeEnvironment,
+                nodePlatforms,
+                unsupportedEnvironment: placementRoleValues.unsupportedEnvironment,
+                unsupportedFamily: placementRoleValues.unsupportedFamily,
+                version: readPositiveInteger(
+                    placementPlatform.version,
+                    "workspaces.placements.platform.version",
+                ),
+                wslEnvironment: placementRoleValues.wslEnvironment,
+                wslEnvironmentVariables,
+                wslFamily: placementRoleValues.wslFamily,
+                wslNodePlatform: placementRoleValues.wslNodePlatform,
+                wslReleasePattern,
+            },
+            reasons: placementReasons,
+            requests: placementRequests,
+            resolutionIdPrefix: readNonEmptyString(
+                placements.resolutionIdPrefix,
+                "workspaces.placements.resolutionIdPrefix",
+            ),
+            resolvedPlacements,
+            rules: placementRules,
+            schemas: {
+                platformEvidenceId: readAbsoluteUrl(
+                    placementSchemas.platformEvidenceId,
+                    "workspaces.placements.schemas.platformEvidenceId",
+                ),
+                resolutionId: readAbsoluteUrl(
+                    placementSchemas.resolutionId,
+                    "workspaces.placements.schemas.resolutionId",
+                ),
+            },
+            statuses: placementStatuses,
+        },
         platformConformance: {
             caseCollisionPolicy: readNonEmptyString(
                 platformConformance.caseCollisionPolicy,
@@ -1471,6 +1774,8 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 repositoryGrants.enforcement,
                 "workspaces.repositoryGrants.enforcement",
             ),
+            journalVersion: repositoryGrantJournalVersion,
+            journalVersions: repositoryGrantJournalVersions,
             operations: {
                 readText: readRepositoryGrantOperation(
                     repositoryGrantOperations.readText,
@@ -1570,6 +1875,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 digestAlgorithm,
                 "workspaces.worldTaskCapture.outputIdPrefix",
             ),
+            ordinaryJournalVersion,
             statuses: readUniqueStrings(
                 worldTaskCapture.statuses,
                 "workspaces.worldTaskCapture.statuses",
@@ -1600,6 +1906,16 @@ function readRepositoryGrantOperation(
         throw new TypeError(`${context} must identify a configured repository grant atom`);
     }
     return atom;
+}
+
+function readProtocolVersions(value: unknown, context: string): readonly number[] {
+    const versions = readArray(value, context).map((version, index) =>
+        readPositiveInteger(version, `${context}[${index}]`),
+    );
+    if (versions.length === 0 || new Set(versions).size !== versions.length) {
+        throw new TypeError(`${context} must be non-empty and unique`);
+    }
+    return versions;
 }
 
 function readSimpleName(value: unknown, context: string): string {

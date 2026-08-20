@@ -1120,3 +1120,93 @@ export const WORKSPACE_PROTOCOL_V21_CONTRACT = deepFreeze({
         journalVersion: 10,
     },
 } as const);
+
+/** Immutable placement-resolution extension implemented by workspace protocol v22. */
+export const WORKSPACE_PROTOCOL_V22_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V21_CONTRACT,
+    repositoryGrants: {
+        ...WORKSPACE_PROTOCOL_V21_CONTRACT.repositoryGrants,
+        journalVersion: 10,
+        journalVersions: [10, 11],
+    },
+    placements: {
+        artifactVersion: 1,
+        artifacts: {
+            platformEvidenceSchema: "spec/schemas/placement-platform-evidence-v1.schema.json",
+            resolutionSchema: "spec/schemas/placement-resolution-v1.schema.json",
+        },
+        compatibilityVersion: "shepherd.workspace.placements.v1",
+        enforcement: "advisory",
+        journalVersion: 11,
+        journalVersions: [11],
+        platform: {
+            environments: ["native", "wsl", "unsupported"],
+            evidenceIdPrefix: "placement-platform:sha256:",
+            families: ["macos", "linux", "windows", "unsupported"],
+            nativeEnvironment: "native",
+            nodePlatforms: [
+                { family: "macos", name: "darwin" },
+                { family: "linux", name: "linux" },
+                { family: "windows", name: "win32" },
+            ],
+            unsupportedEnvironment: "unsupported",
+            unsupportedFamily: "unsupported",
+            version: 1,
+            wslEnvironment: "wsl",
+            wslEnvironmentVariables: ["WSL_DISTRO_NAME", "WSL_INTEROP"],
+            wslFamily: "windows",
+            wslNodePlatform: "linux",
+            wslReleasePattern: "microsoft",
+        },
+        reasons: ["requested-advisory", "auto-fallback-unavailable", "explicit-jail-unavailable"],
+        requests: ["advisory", "auto", "jail"],
+        resolutionIdPrefix: "placement-resolution:sha256:",
+        resolvedPlacements: ["advisory"],
+        rules: [
+            {
+                reason: "requested-advisory",
+                request: "advisory",
+                resolved: "advisory",
+                status: "resolved",
+                supported: true,
+            },
+            {
+                reason: "auto-fallback-unavailable",
+                request: "auto",
+                resolved: "advisory",
+                status: "resolved",
+                supported: true,
+            },
+            {
+                reason: "explicit-jail-unavailable",
+                request: "jail",
+                resolved: null,
+                status: "refused",
+                supported: false,
+            },
+        ],
+        schemas: {
+            platformEvidenceId:
+                "https://avnionur.github.io/shepherd-typescript/schemas/placement-platform-evidence-v1.schema.json",
+            resolutionId:
+                "https://avnionur.github.io/shepherd-typescript/schemas/placement-resolution-v1.schema.json",
+        },
+        statuses: ["resolved", "refused"],
+    },
+    worldTaskCapture: {
+        ...WORKSPACE_PROTOCOL_V21_CONTRACT.worldTaskCapture,
+        journalReaders: [
+            ...WORKSPACE_PROTOCOL_V21_CONTRACT.worldTaskCapture.journalReaders,
+            {
+                schemaId:
+                    "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v3.schema.json",
+                version: 11,
+            },
+        ],
+        journalSchemaId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v3.schema.json",
+        journalSchemaPath: "spec/schemas/world-capture-journal-v3.schema.json",
+        journalVersion: 11,
+        ordinaryJournalVersion: 9,
+    },
+} as const);

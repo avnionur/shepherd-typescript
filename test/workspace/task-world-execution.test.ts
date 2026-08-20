@@ -689,6 +689,14 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         RetainedWorldSettlementInvalidError,
     );
     const retainedRecords = store.readOwner("run:captured-world:1");
+    const ordinaryPrepared = retainedRecords.find(
+        (record) => record.body.capture_phase === "prepared",
+    );
+    assert.equal(ordinaryPrepared?.body.journal_version, 9);
+    assert.equal(
+        ordinaryPrepared?.envelope.schema_ref,
+        "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v1.schema.json",
+    );
     assert.deepEqual(
         retainedRecords.flatMap((record) => {
             const phase = (record.body as { capture_phase?: unknown }).capture_phase;

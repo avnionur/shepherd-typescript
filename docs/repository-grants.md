@@ -87,9 +87,10 @@ capability, or stale repository binding.
 This enforcement is an in-process package contract classified as `advisory`. It is identical on
 macOS, Linux, native Windows, and WSL because it does not install a process or syscall sandbox.
 Code outside the supplied capability, including a hostile runner using ambient Node.js APIs, is
-not confined by this slice. Placement reporting, macOS Seatbelt, Linux Landlock, explicit jail
-failure and process containment remain later Phase 4 work. This per-capture API does not claim a
-simultaneous multi-world callback context.
+not confined by this slice. Workspace protocol v22 adds honest
+[`placement resolution and reporting`](./placement-resolution.md), but macOS Seatbelt, Linux
+Landlock, native launchers, and process containment remain later Phase 4 work. This per-capture API
+does not claim a simultaneous multi-world callback context.
 
 ## Durable recovery
 

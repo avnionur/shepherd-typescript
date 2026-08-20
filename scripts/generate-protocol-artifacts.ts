@@ -78,6 +78,14 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             relativePath: config.workspaces.repositoryGrants.artifacts.grantPlanSchema,
         },
         {
+            content: renderJson(renderPlacementPlatformEvidenceSchema(config)),
+            relativePath: config.workspaces.placements.artifacts.platformEvidenceSchema,
+        },
+        {
+            content: renderJson(renderPlacementResolutionSchema(config)),
+            relativePath: config.workspaces.placements.artifacts.resolutionSchema,
+        },
+        {
             content: renderJson(renderEffectIntentSchema(config)),
             relativePath: config.effects.artifacts.intentSchema,
         },
@@ -253,6 +261,8 @@ function renderWorldCaptureJournalSchema(
                 "enforcement",
                 "max_capture_id_bytes",
                 "max_text_bytes",
+                "placement_resolution",
+                "placement_resolution_id",
                 "repository_grant_plan",
                 "repository_grant_plan_id",
                 "runner_id",
@@ -271,9 +281,36 @@ function renderWorldCaptureJournalSchema(
             ],
         ],
     ] as const;
+    const placedGrantDependency = Object.fromEntries([
+        [
+            "if",
+            {
+                properties: {
+                    capture_phase: { const: prepared },
+                    placement_resolution: { type: "object" },
+                },
+                required: ["capture_phase", "placement_resolution"],
+                type: "object",
+            },
+        ],
+        [
+            // biome-ignore lint/suspicious/noThenProperty: JSON Schema conditional keyword.
+            "then",
+            {
+                properties: {
+                    repository_grant_plan: {
+                        $ref: config.workspaces.repositoryGrants.schemas.grantPlanId,
+                    },
+                },
+                required: ["repository_grant_plan"],
+                type: "object",
+            },
+        ],
+    ]);
     return {
         $id: config.workspaces.worldTaskCapture.journalSchemaId,
         $schema: config.kernel.schemas.dialect,
+        allOf: [placedGrantDependency],
         oneOf: phaseSchemas.map(([phase, phaseFields]) => {
             const required = [
                 "capture_id",
@@ -294,41 +331,170 @@ function renderWorldCaptureJournalSchema(
                               }
                             : key === "capture_phase"
                               ? { const: phase, type: "string" }
-                              : key === "repository_grant_plan"
+                              : key === "placement_resolution"
                                 ? {
                                       oneOf: [
                                           { type: "null" },
                                           {
-                                              $ref: config.workspaces.repositoryGrants.schemas
-                                                  .grantPlanId,
+                                              $ref: config.workspaces.placements.schemas
+                                                  .resolutionId,
                                           },
                                       ],
                                   }
-                                : key === "repository_grant_plan_id"
+                                : key === "placement_resolution_id"
                                   ? {
                                         oneOf: [
                                             { type: "null" },
                                             {
                                                 pattern: `^${escapeRegularExpression(
-                                                    config.workspaces.repositoryGrants.planIdPrefix,
+                                                    config.workspaces.placements.resolutionIdPrefix,
                                                 )}[0-9a-f]{${config.recordId.hexLength}}$`,
                                                 type: "string",
                                             },
                                         ],
                                     }
-                                  : [
-                                          "fencing_token",
-                                          "max_capture_id_bytes",
-                                          "max_text_bytes",
-                                      ].includes(key)
-                                    ? { minimum: 1, type: "integer" }
-                                    : { minLength: 1, type: "string" },
+                                  : key === "repository_grant_plan"
+                                    ? {
+                                          oneOf: [
+                                              { type: "null" },
+                                              {
+                                                  $ref: config.workspaces.repositoryGrants.schemas
+                                                      .grantPlanId,
+                                              },
+                                          ],
+                                      }
+                                    : key === "repository_grant_plan_id"
+                                      ? {
+                                            oneOf: [
+                                                { type: "null" },
+                                                {
+                                                    pattern: `^${escapeRegularExpression(
+                                                        config.workspaces.repositoryGrants
+                                                            .planIdPrefix,
+                                                    )}[0-9a-f]{${config.recordId.hexLength}}$`,
+                                                    type: "string",
+                                                },
+                                            ],
+                                        }
+                                      : [
+                                              "fencing_token",
+                                              "max_capture_id_bytes",
+                                              "max_text_bytes",
+                                          ].includes(key)
+                                        ? { minimum: 1, type: "integer" }
+                                        : { minLength: 1, type: "string" },
                     ]),
                 ),
                 required,
                 type: "object",
             };
         }),
+    };
+}
+
+function renderPlacementPlatformEvidenceSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const placement = config.workspaces.placements;
+    return {
+        $id: placement.schemas.platformEvidenceId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            compatibility_version: { const: placement.compatibilityVersion, type: "string" },
+            environment: { enum: placement.platform.environments, type: "string" },
+            family: { enum: placement.platform.families, type: "string" },
+            node_platform: { minLength: 1, type: "string" },
+            os_release: { minLength: 1, type: "string" },
+            platform_id: {
+                pattern: `^${escapeRegularExpression(placement.platform.evidenceIdPrefix)}[0-9a-f]{${config.recordId.hexLength}}$`,
+                type: "string",
+            },
+            platform_version: { const: placement.platform.version, type: "integer" },
+            wsl_markers: {
+                items: { enum: placement.platform.wslEnvironmentVariables, type: "string" },
+                type: "array",
+                uniqueItems: true,
+            },
+        },
+        required: [
+            "compatibility_version",
+            "environment",
+            "family",
+            "node_platform",
+            "os_release",
+            "platform_id",
+            "platform_version",
+            "wsl_markers",
+        ],
+        type: "object",
+    };
+}
+
+function renderPlacementResolutionSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const placement = config.workspaces.placements;
+    const digestPattern = `^${escapeRegularExpression(config.tasks.digestPrefix)}[0-9a-f]{${config.tasks.hexLength}}$`;
+    return {
+        $id: placement.schemas.resolutionId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        allOf: [
+            {
+                oneOf: placement.rules
+                    .filter((rule) => rule.supported && rule.resolved !== null)
+                    .map((rule) => ({
+                        properties: {
+                            reason: { const: rule.reason },
+                            requested_placement: { const: rule.request },
+                            resolved_placement: { const: rule.resolved },
+                            status: { const: rule.status },
+                        },
+                    })),
+            },
+        ],
+        properties: {
+            capture_id: { minLength: 1, type: "string" },
+            compatibility_version: { const: placement.compatibilityVersion, type: "string" },
+            enforcement: { const: placement.enforcement, type: "string" },
+            placement_version: { const: placement.artifactVersion, type: "integer" },
+            platform: { $ref: placement.schemas.platformEvidenceId },
+            reason: { enum: placement.reasons, type: "string" },
+            repository_grant_plan_id: {
+                pattern: `^${escapeRegularExpression(
+                    config.workspaces.repositoryGrants.planIdPrefix,
+                )}[0-9a-f]{${config.recordId.hexLength}}$`,
+                type: "string",
+            },
+            requested_placement: { enum: placement.requests, type: "string" },
+            resolution_id: {
+                pattern: `^${escapeRegularExpression(placement.resolutionIdPrefix)}[0-9a-f]{${config.recordId.hexLength}}$`,
+                type: "string",
+            },
+            resolved_placement: { enum: placement.resolvedPlacements, type: "string" },
+            run_id: { minLength: 1, type: "string" },
+            runner_id: { minLength: 1, type: "string" },
+            status: { enum: placement.statuses, type: "string" },
+            task_artifact_digest: { pattern: digestPattern, type: "string" },
+        },
+        required: [
+            "capture_id",
+            "compatibility_version",
+            "enforcement",
+            "placement_version",
+            "platform",
+            "reason",
+            "repository_grant_plan_id",
+            "requested_placement",
+            "resolution_id",
+            "resolved_placement",
+            "run_id",
+            "runner_id",
+            "status",
+            "task_artifact_digest",
+        ],
+        type: "object",
     };
 }
 
@@ -833,6 +999,24 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedRepositoryGrantProfiles = config.workspaces.repositoryGrants.profiles
         .map((profile) => JSON.stringify(profile.name))
         .join(", ");
+    const renderedPlacementRequests = config.workspaces.placements.requests
+        .map((request) => JSON.stringify(request))
+        .join(", ");
+    const renderedResolvedPlacements = config.workspaces.placements.resolvedPlacements
+        .map((placement) => JSON.stringify(placement))
+        .join(", ");
+    const renderedPlacementReasons = config.workspaces.placements.reasons
+        .map((reason) => `    ${JSON.stringify(reason)},`)
+        .join("\n");
+    const renderedPlacementStatuses = config.workspaces.placements.statuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
+    const renderedPlacementPlatformFamilies = config.workspaces.placements.platform.families
+        .map((family) => JSON.stringify(family))
+        .join(", ");
+    const renderedPlacementEnvironments = config.workspaces.placements.platform.environments
+        .map((environment) => JSON.stringify(environment))
+        .join(", ");
     const renderedRetainedWorldOutputStatuses = config.workspaces.worldTaskCapture.statuses
         .map((status) => JSON.stringify(status))
         .join(", ");
@@ -1030,6 +1214,26 @@ export const REPOSITORY_GRANT_ATOMS = [${renderedRepositoryGrantAtoms}] as const
 
 /** Configured whole-repository grant profiles. @public */
 export const REPOSITORY_GRANT_PROFILES = [${renderedRepositoryGrantProfiles}] as const;
+
+/** Configured requested placement vocabulary. @public */
+export const PLACEMENT_REQUESTS = [${renderedPlacementRequests}] as const;
+
+/** Configured effective placement vocabulary. @public */
+export const RESOLVED_PLACEMENTS = [${renderedResolvedPlacements}] as const;
+
+/** Configured placement-resolution reasons. @public */
+export const PLACEMENT_RESOLUTION_REASONS = [
+${renderedPlacementReasons}
+] as const;
+
+/** Configured placement resolved/refused statuses. @public */
+export const PLACEMENT_RESOLUTION_STATUSES = [${renderedPlacementStatuses}] as const;
+
+/** Configured platform-family classifications used by placement evidence. @public */
+export const PLACEMENT_PLATFORM_FAMILIES = [${renderedPlacementPlatformFamilies}] as const;
+
+/** Configured execution-environment classifications used by placement evidence. @public */
+export const PLACEMENT_ENVIRONMENTS = [${renderedPlacementEnvironments}] as const;
 
 /** Configured durable retained-world output statuses. @public */
 export const RETAINED_WORLD_OUTPUT_STATUSES = [${renderedRetainedWorldOutputStatuses}] as const;

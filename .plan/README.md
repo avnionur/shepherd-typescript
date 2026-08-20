@@ -152,6 +152,8 @@ record and public API must declare a protocol/compatibility version.
 - [Repository grant research](./repository-grant-research.md) — pinned `May`/`GitRepoGrant`,
   authority attenuation and permission-plan evidence, TypeScript-owned identity, and advisory/jail
   claim boundaries.
+- [Placement research](./placement-research.md) — pinned advisory/auto/jail behavior, platform
+  reporting, TypeScript-owned identity, and the native-launcher claim boundary.
 - [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
   snapshot, mutable custody, verification, discard, durability, and Task 4 Git boundary.
 - [Git-aware custody research](./git-aware-custody-research.md) — shipped Git baseline,
@@ -220,5 +222,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 4 with honest advisory/auto placement resolution and reporting over the completed
-protocol-v21 grant identity and whole-run ceiling before native jail implementation.
+Continue Phase 4 with macOS Seatbelt and Linux Landlock launcher evidence over the completed
+protocol-v22 placement resolution, preserving fail-closed explicit jail and visible auto fallback.

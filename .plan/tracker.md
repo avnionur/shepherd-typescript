@@ -288,6 +288,9 @@ worktrees, nested superproject/submodule sets, inexact roots, drift, and forged 
 - [x] Complete Phase 4 Task 2 workspace-protocol-v21 explicit repository task-grant companion
   identity, exact multi-resource admission, non-amplifying whole-run ceilings, advisory capability
   enforcement, stale-resource refusal, and exact journal-v10 recovery while retaining v9 readers.
+- [x] Complete Phase 4 Task 3 workspace-protocol-v22 platform classification, advisory/auto
+  placement resolution, visible fallback, placed journal-v11 recovery, fresh-process replay, and
+  explicit jail refusal without claiming native enforcement.
 
 ## Verification required for this slice
 
@@ -301,9 +304,9 @@ worktrees, nested superproject/submodule sets, inexact roots, drift, and forged 
 
 ## Next slice
 
-Continue Phase 4 with honest advisory/auto placement resolution and reporting over the versioned
-grant plan. Do not begin native jail launchers until placement selection is explicit and explicit
-`jail` can fail closed without silently degrading.
+Continue Phase 4 with macOS Seatbelt and Linux Landlock launcher evidence over the versioned
+placement resolution. Explicit `jail` must fail closed, and `auto` may resolve to jail only after a
+real backend probe and denial suite pass.
 
 ## Notes
 
