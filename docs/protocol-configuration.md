@@ -68,7 +68,13 @@ Workspace protocol v19 adds host metadata probes, portable filesystem/Git policy
 fault classifications and recovery phases, and the optimized-carrier reference-suite gate.
 Workspace protocol v20 adds the repository-binding resource type, identity domain, protected
 per-resource receipt directory, version, and stable repository-validation errors without changing
-v2 directory binding identity.
+v2 directory binding identity. Workspace protocol v21 adds explicit repository grant atoms,
+profiles, task-grant/plan identities, schemas, and journal-v10 evidence. Workspace protocol v22
+adds platform classification, advisory placement resolution, visible auto fallback, and
+journal-v11 evidence. Workspace protocol v23 adds configured Seatbelt/Landlock backend
+descriptors, compiler/helper policy, probe/status/reason vocabularies, structured command/resource
+bounds, native resolution and confinement-plan identities, process/quiescence classifications,
+schema destinations, and journal-v12/v4 evidence without redefining v1-v3 journals.
 Store schema
 v6 owns the consume-once
 settlement decision table without changing kernel record identity.
@@ -131,8 +137,10 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   schema paths, identity prefixes, limits, statuses, and version are closed. Settlement request,
   effect-journal, and selection-publication vocabularies, identity prefixes, resource bounds,
   descriptor names, errors, schema destinations, and versions are closed. Every value matches the
-  immutable workspace protocol v20 contract. Protocols v1 through v19 remain unchanged historical
-  subsets. Platform probes contain valid path-token arguments and regular expressions, fault
+  immutable workspace protocol v23 contract. Protocols v1 through v22 remain unchanged historical
+  subsets. Native-jail backend names/platforms, probe/placement/process vocabularies, compiler and
+  command bounds, schema paths, journal readers/writers, and semantic roles are closed and
+  internally consistent. Platform probes contain valid path-token arguments and regular expressions, fault
   names/codes/phases are unique, classification mappings resolve, and supported hosts are closed.
 
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,

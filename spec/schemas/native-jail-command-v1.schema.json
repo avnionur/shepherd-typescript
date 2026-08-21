@@ -1,0 +1,55 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-command-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "arguments": {
+            "items": {
+                "type": "string"
+            },
+            "maxItems": 256,
+            "type": "array"
+        },
+        "command_id": {
+            "pattern": "^native-jail-command:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "command_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "environment": {
+            "items": {
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "value"
+                ],
+                "type": "object"
+            },
+            "maxItems": 128,
+            "type": "array"
+        },
+        "executable": {
+            "minLength": 1,
+            "type": "string"
+        }
+    },
+    "required": [
+        "arguments",
+        "command_id",
+        "command_version",
+        "environment",
+        "executable"
+    ],
+    "type": "object"
+}

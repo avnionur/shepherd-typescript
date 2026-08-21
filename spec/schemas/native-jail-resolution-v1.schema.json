@@ -1,0 +1,105 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-resolution-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "backend": {
+            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-backend-v1.schema.json"
+        },
+        "backend_probe": {
+            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-probe-v1.schema.json"
+        },
+        "capture_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "command": {
+            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-command-v1.schema.json"
+        },
+        "compatibility_version": {
+            "const": "shepherd.workspace.native-jails.v1",
+            "type": "string"
+        },
+        "enforcement": {
+            "const": "native-syscall-deny",
+            "type": "string"
+        },
+        "max_output_bytes": {
+            "maximum": 1048576,
+            "minimum": 1,
+            "type": "integer"
+        },
+        "placement_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "reason": {
+            "enum": [
+                "requested-native-jail",
+                "auto-selected-native-jail"
+            ],
+            "type": "string"
+        },
+        "repository_grant_plan_id": {
+            "pattern": "^repository-grant-plan:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "requested_placement": {
+            "enum": [
+                "auto",
+                "jail"
+            ],
+            "type": "string"
+        },
+        "resolution_id": {
+            "pattern": "^native-jail-resolution:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "resolved_placement": {
+            "const": "jail",
+            "type": "string"
+        },
+        "run_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "runner_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "status": {
+            "const": "resolved",
+            "type": "string"
+        },
+        "task_artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "timeout_milliseconds": {
+            "maximum": 3600000,
+            "minimum": 1,
+            "type": "integer"
+        }
+    },
+    "required": [
+        "backend",
+        "backend_probe",
+        "capture_id",
+        "command",
+        "compatibility_version",
+        "enforcement",
+        "max_output_bytes",
+        "placement_version",
+        "reason",
+        "repository_grant_plan_id",
+        "requested_placement",
+        "resolution_id",
+        "resolved_placement",
+        "run_id",
+        "runner_id",
+        "status",
+        "task_artifact_digest",
+        "timeout_milliseconds"
+    ],
+    "type": "object"
+}

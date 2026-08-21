@@ -148,6 +148,14 @@ export function assertPlacementPlatformEvidence(value: PlacementPlatformEvidence
     }
 }
 
+/** Rejects platform evidence that was not produced by current-host inspection. @internal */
+export function assertLocalPlacementPlatformEvidence(value: PlacementPlatformEvidence): void {
+    assertPlacementPlatformEvidence(value);
+    if (!LOCAL_PLATFORM_EVIDENCE.has(value)) {
+        throw new TypeError("placement platform evidence must describe the inspected local host");
+    }
+}
+
 /**
  * Resolves one explicit placement request for an exact granted run and capture.
  *

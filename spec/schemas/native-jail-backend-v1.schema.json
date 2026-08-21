@@ -1,0 +1,84 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-backend-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "backend_id": {
+            "pattern": "^native-jail-backend:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "backend_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "compatibility_version": {
+            "const": "shepherd.workspace.native-jails.v1",
+            "type": "string"
+        },
+        "enforcement": {
+            "const": "native-syscall-deny",
+            "type": "string"
+        },
+        "environments": {
+            "items": {
+                "enum": [
+                    "native",
+                    "wsl",
+                    "unsupported"
+                ]
+            },
+            "type": "array",
+            "uniqueItems": true
+        },
+        "executable": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "family": {
+            "enum": [
+                "macos",
+                "linux",
+                "windows",
+                "unsupported"
+            ],
+            "type": "string"
+        },
+        "name": {
+            "enum": [
+                "seatbelt",
+                "landlock"
+            ],
+            "type": "string"
+        },
+        "node_platforms": {
+            "items": {
+                "minLength": 1,
+                "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+        },
+        "profile_argument": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "backend_id",
+        "backend_version",
+        "compatibility_version",
+        "enforcement",
+        "environments",
+        "executable",
+        "family",
+        "name",
+        "node_platforms",
+        "profile_argument"
+    ],
+    "type": "object"
+}

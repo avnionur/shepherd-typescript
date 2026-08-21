@@ -77,12 +77,15 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.worldCapture.version, 6);
     assert.equal(parsed.workspaces.worldExecution.runnerVersion, 7);
     assert.equal(parsed.workspaces.worldTaskCapture.version, 8);
-    assert.equal(parsed.workspaces.worldTaskCapture.journalVersion, 11);
+    assert.equal(parsed.workspaces.worldTaskCapture.journalVersion, 12);
     assert.deepEqual(
         parsed.workspaces.worldTaskCapture.journalReaders.map(({ version }) => version),
-        [9, 10, 11],
+        [9, 10, 11, 12],
     );
-    assert.match(parsed.workspaces.worldTaskCapture.journalSchemaId, /v3/u);
+    assert.match(parsed.workspaces.worldTaskCapture.journalSchemaId, /v4/u);
+    assert.equal(parsed.workspaces.placements.nativeJails.journalVersion, 12);
+    assert.equal(parsed.workspaces.placements.nativeJails.enforcement, "native-syscall-deny");
+    assert.equal(Object.isFrozen(parsed.workspaces.placements.nativeJails), true);
     assert.equal(parsed.workspaces.worldTaskCapture.custodyIdentityKind, "task-world-custody");
     assert.equal(parsed.workspaces.settlement.version, 12);
     assert.equal(parsed.workspaces.settlement.operationVersion, 1);
@@ -106,11 +109,11 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.repositoryGrants.enforcement, "advisory");
     assert.equal(parsed.workspaces.repositoryGrants.operations.readText, "read");
     assert.equal(parsed.workspaces.repositoryGrants.operations.writeText, "write");
-    assert.deepEqual(parsed.workspaces.repositoryGrants.journalVersions, [10, 11]);
+    assert.deepEqual(parsed.workspaces.repositoryGrants.journalVersions, [10, 11, 12]);
     assert.equal(parsed.workspaces.repositoryGrants.journalVersion, 10);
     assert.deepEqual(parsed.workspaces.placements.requests, ["advisory", "auto", "jail"]);
     assert.deepEqual(parsed.workspaces.placements.resolvedPlacements, ["advisory"]);
-    assert.deepEqual(parsed.workspaces.placements.journalVersions, [11]);
+    assert.deepEqual(parsed.workspaces.placements.journalVersions, [11, 12]);
     assert.equal(parsed.workspaces.placements.journalVersion, 11);
     assert.deepEqual(parsed.workspaces.placements.statuses, ["resolved", "refused"]);
     assert.equal(parsed.workspaces.placements.platform.wslFamily, "windows");
@@ -1093,10 +1096,10 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             objectAt(workspaceConfigOf(config), "repositoryGrants").journalVersions = [];
         },
         (config) => {
-            objectAt(workspaceConfigOf(config), "repositoryGrants").journalVersions = [10, 12];
+            objectAt(workspaceConfigOf(config), "repositoryGrants").journalVersions = [10, 99];
         },
         (config) => {
-            objectAt(workspaceConfigOf(config), "repositoryGrants").journalVersion = 12;
+            objectAt(workspaceConfigOf(config), "repositoryGrants").journalVersion = 99;
         },
         (config) => {
             objectAt(
@@ -1114,10 +1117,49 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             objectAt(workspaceConfigOf(config), "placements").journalVersions = [];
         },
         (config) => {
-            objectAt(workspaceConfigOf(config), "placements").journalVersions = [11, 12];
+            objectAt(workspaceConfigOf(config), "placements").journalVersions = [12];
         },
         (config) => {
             objectAt(workspaceConfigOf(config), "placements").journalVersion = 12;
+        },
+        (config) => {
+            nativeJailConfigOf(config).backends = [];
+        },
+        (config) => {
+            const jail = nativeJailConfigOf(config);
+            const backends = jail.backends as Record<string, unknown>[];
+            assert.ok(backends[0]);
+            assert.ok(backends[1]);
+            backends[1].name = backends[0].name;
+        },
+        (config) => {
+            const backend = (nativeJailConfigOf(config).backends as Record<string, unknown>[])[0];
+            assert.ok(backend);
+            backend.environments = ["unknown"];
+        },
+        (config) => {
+            nativeJailConfigOf(config).probeReasons = [];
+        },
+        (config) => {
+            nativeJailConfigOf(config).probeStatuses = ["available"];
+        },
+        (config) => {
+            objectAt(nativeJailConfigOf(config), "probeReasonRoles").succeeded = "unknown";
+        },
+        (config) => {
+            objectAt(nativeJailConfigOf(config), "placementReasonRoles").auto = "unknown";
+        },
+        (config) => {
+            nativeJailConfigOf(config).journalVersions = [];
+        },
+        (config) => {
+            nativeJailConfigOf(config).journalVersion = 11;
+        },
+        (config) => {
+            objectAt(nativeJailConfigOf(config), "process").statuses = [];
+        },
+        (config) => {
+            objectAt(nativeJailConfigOf(config), "schemas").backendId = "relative";
         },
         (config) => {
             objectAt(workspaceConfigOf(config), "placements").statuses = [];
@@ -1331,6 +1373,10 @@ function taskRegistryConfigOf(config: Record<string, unknown>): Record<string, u
 
 function workspaceConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(config, "workspaces");
+}
+
+function nativeJailConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(workspaceConfigOf(config), "placements"), "nativeJails");
 }
 
 function carrierConfigOf(config: Record<string, unknown>): Record<string, unknown> {

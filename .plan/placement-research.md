@@ -1,8 +1,8 @@
 # Placement Resolution Research
 
-Status: Phase 4 Task 3 implemented oracle record
+Status: Phase 4 Tasks 3-4 implemented oracle record
 
-Research date: 2026-08-19
+Research date: 2026-08-21
 
 Pinned shipped revision: `a8196d4c453514836d06bd2fece91a03cdc37107` (`v0.3.0`)
 
@@ -13,6 +13,10 @@ Pinned shipped revision: `a8196d4c453514836d06bd2fece91a03cdc37107` (`v0.3.0`)
 - [pinned dialect placement-refusal verification](https://github.com/shepherd-agents/shepherd/blob/a8196d4c453514836d06bd2fece91a03cdc37107/shepherd/packages/dialect/tests/test_placement_refusal_dialect_lane.py)
 - [pinned confinement lowering](https://github.com/shepherd-agents/shepherd/blob/a8196d4c453514836d06bd2fece91a03cdc37107/shepherd/packages/dialect/src/shepherd_dialect/confinement.py)
 - [pinned per-binding confinement tests](https://github.com/shepherd-agents/shepherd/blob/a8196d4c453514836d06bd2fece91a03cdc37107/shepherd/packages/dialect/tests/test_per_binding_confinement.py)
+- [pinned Seatbelt containment backend](https://github.com/shepherd-agents/shepherd/blob/a8196d4c453514836d06bd2fece91a03cdc37107/vcs-core/packages/core/src/vcs_core/_seatbelt_containment.py)
+- [pinned Landlock containment backend](https://github.com/shepherd-agents/shepherd/blob/a8196d4c453514836d06bd2fece91a03cdc37107/vcs-core/packages/core/src/vcs_core/_landlock_containment.py)
+- [pinned macOS jailed run fixture](https://github.com/shepherd-agents/shepherd/blob/a8196d4c453514836d06bd2fece91a03cdc37107/shepherd/packages/dialect/tests/test_jailed_run.py)
+- [pinned Linux jailed run fixture](https://github.com/shepherd-agents/shepherd/blob/a8196d4c453514836d06bd2fece91a03cdc37107/shepherd/packages/dialect/tests/test_jailed_run_linux.py)
 
 ## Verified carried-forward behavior
 
@@ -42,18 +46,28 @@ handles. WSL is reported as Windows-family/WSL-environment while its Node platfo
 Native Windows is reported separately. Unsupported Node platforms remain explicit instead of being
 guessed into a supported family.
 
-The current resolution table has no jail backend. Both `advisory` and `auto` resolve to actual
-advisory enforcement, with different reasons; `jail` fails before an artifact or runner/provider
-invocation. This is intentionally weaker than upstream jailed execution and makes no Seatbelt,
-Landlock, syscall, child-process, or containment claim.
+Placement-v1 remains unchanged: advisory resolves explicitly, auto records an advisory fallback,
+and jail refuses without fabricating evidence. Workspace protocol v23 adds separate native-jail
+backend, probe, command, resolution, confinement-plan, and process artifacts. Auto reaches native
+jail only through a successful package-authenticated probe; unavailable hosts retain the visible
+placement-v1 advisory fallback.
+
+The TypeScript Seatbelt lowering follows the pinned deny-all-write plus canonical writable-root
+allows. The Landlock helper follows the pinned self-restrict-before-exec design and write-access
+mask, but is implemented as a package-owned C helper compiled and digest-verified from fixed source
+because Node exposes no direct Landlock syscall API. TypeScript additionally owns structured argv/
+environment bounds, process-group quiescence, durable launch intent/start/receipt evidence, and
+no-retry uncertain interruption because the pinned Python code supplies no language-neutral
+artifact or recovery contract for those concerns.
 
 ## Remaining oracle and implementation gaps
 
 - exact upstream run-record placement encoding and default-omission behavior;
-- native jail capability probing and backend-selection precedence;
-- macOS Seatbelt and Linux Landlock launcher receipts and denial evidence;
-- explicit-jail errors and `auto` jail resolution on capable hosts;
 - installed-package and CLI placement rendering parity;
 - remote/cloud placement, which the pinned v0.2 scope excludes.
+- native Windows/AppContainer, which is explicitly unsupported in protocol v23;
+- simultaneous multi-binding custody and network/read confinement, which are outside the native
+  filesystem-write boundary.
 
-Until the launcher slice closes those gaps, TypeScript may report only advisory effective placement.
+Native enforcement is reported only by the authenticated v23 adapter. Platform evidence or an
+ordinary runner cannot claim it.

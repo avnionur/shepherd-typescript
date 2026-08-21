@@ -1210,3 +1210,155 @@ export const WORKSPACE_PROTOCOL_V22_CONTRACT = deepFreeze({
         ordinaryJournalVersion: 9,
     },
 } as const);
+
+/** Immutable native-jail backend probe extension implemented by workspace protocol v23. */
+export const WORKSPACE_PROTOCOL_V23_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V22_CONTRACT,
+    placements: {
+        ...WORKSPACE_PROTOCOL_V22_CONTRACT.placements,
+        journalVersions: [11, 12],
+        nativeJails: {
+            artifacts: {
+                backendSchema: "spec/schemas/native-jail-backend-v1.schema.json",
+                commandSchema: "spec/schemas/native-jail-command-v1.schema.json",
+                planSchema: "spec/schemas/native-jail-plan-v1.schema.json",
+                probeSchema: "spec/schemas/native-jail-probe-v1.schema.json",
+                processSchema: "spec/schemas/native-jail-process-v1.schema.json",
+                resolutionSchema: "spec/schemas/native-jail-resolution-v1.schema.json",
+            },
+            backends: [
+                {
+                    environments: ["native"],
+                    executable: "/usr/bin/sandbox-exec",
+                    family: "macos",
+                    name: "seatbelt",
+                    nodePlatforms: ["darwin"],
+                    profileArgument: "-p",
+                },
+                {
+                    environments: ["native", "wsl"],
+                    executable: null,
+                    family: "linux",
+                    name: "landlock",
+                    nodePlatforms: ["linux"],
+                    profileArgument: null,
+                },
+            ],
+            compatibilityVersion: "shepherd.workspace.native-jails.v1",
+            compilerArguments: ["-O2", "-std=c11", "-Wall", "-Wextra", "-Werror"],
+            compilerExecutables: ["/usr/bin/cc", "/usr/bin/clang", "/usr/bin/gcc"],
+            compilerOutputArgument: "-o",
+            commandIdPrefix: "native-jail-command:sha256:",
+            commandVersion: 1,
+            descriptorIdPrefix: "native-jail-backend:sha256:",
+            descriptorVersion: 1,
+            enforcement: "native-syscall-deny",
+            journalVersion: 12,
+            journalVersions: [12],
+            maxArgumentBytes: 65_536,
+            maxArguments: 256,
+            maxEnvironmentEntries: 128,
+            maxEnvironmentValueBytes: 16_384,
+            maxOutputBytes: 1_048_576,
+            maxTimeoutMilliseconds: 3_600_000,
+            planIdPrefix: "native-jail-plan:sha256:",
+            planVersion: 1,
+            placementReasonRoles: {
+                auto: "auto-selected-native-jail",
+                explicit: "requested-native-jail",
+            },
+            placementReasons: ["requested-native-jail", "auto-selected-native-jail"],
+            placementStatus: "resolved",
+            placementVersion: 1,
+            probeIdPrefix: "native-jail-probe:sha256:",
+            probeReasonRoles: {
+                deniedWriteFailed: "native-denial-failed",
+                executableUnavailable: "backend-executable-unavailable",
+                helperCompilerUnavailable: "helper-compiler-unavailable",
+                helperIntegrityFailed: "helper-integrity-failed",
+                grantedWriteFailed: "native-write-failed",
+                platformUnsupported: "platform-unsupported",
+                probeError: "native-probe-error",
+                succeeded: "probe-succeeded",
+            },
+            probeReasons: [
+                "probe-succeeded",
+                "platform-unsupported",
+                "backend-executable-unavailable",
+                "helper-compiler-unavailable",
+                "helper-integrity-failed",
+                "native-denial-failed",
+                "native-write-failed",
+                "native-probe-error",
+            ],
+            probeStatuses: ["available", "unavailable"],
+            probeVersion: 1,
+            process: {
+                killSignal: "SIGKILL",
+                launchIdPrefix: "native-jail-launch:sha256:",
+                quiescenceAttempts: 20,
+                quiescenceDelayMilliseconds: 10,
+                quiescenceStatuses: ["proven", "uncertain"],
+                quiescenceStatusRoles: { proven: "proven", uncertain: "uncertain" },
+                receiptIdPrefix: "native-jail-receipt:sha256:",
+                receiptVersion: 1,
+                startIdPrefix: "native-jail-start:sha256:",
+                statusRoles: {
+                    cancelled: "cancelled",
+                    exited: "exited",
+                    launchFailed: "launch-failed",
+                    outputLimit: "output-limit",
+                    quiescenceUncertain: "quiescence-uncertain",
+                    timedOut: "timed-out",
+                },
+                statuses: [
+                    "exited",
+                    "cancelled",
+                    "timed-out",
+                    "output-limit",
+                    "launch-failed",
+                    "quiescence-uncertain",
+                ],
+            },
+            resolutionIdPrefix: "native-jail-resolution:sha256:",
+            resolvedPlacement: "jail",
+            schemas: {
+                backendId:
+                    "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-backend-v1.schema.json",
+                commandId:
+                    "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-command-v1.schema.json",
+                planId: "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-plan-v1.schema.json",
+                probeId:
+                    "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-probe-v1.schema.json",
+                processId:
+                    "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-process-v1.schema.json",
+                resolutionId:
+                    "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-resolution-v1.schema.json",
+            },
+            temporaryDirectoryPrefix: "shepherd-native-jail-probe-",
+        },
+    },
+    worldExecution: {
+        ...WORKSPACE_PROTOCOL_V22_CONTRACT.worldExecution,
+        enforcementKinds: ["advisory", "native-syscall-deny"],
+    },
+    repositoryGrants: {
+        ...WORKSPACE_PROTOCOL_V22_CONTRACT.repositoryGrants,
+        journalVersions: [10, 11, 12],
+    },
+    worldTaskCapture: {
+        ...WORKSPACE_PROTOCOL_V22_CONTRACT.worldTaskCapture,
+        journalReaders: [
+            ...WORKSPACE_PROTOCOL_V22_CONTRACT.worldTaskCapture.journalReaders,
+            {
+                schemaId:
+                    "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v4.schema.json",
+                version: 12,
+            },
+        ],
+        journalSchemaId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v4.schema.json",
+        journalSchemaPath: "spec/schemas/world-capture-journal-v4.schema.json",
+        journalVersion: 12,
+    },
+} as const);

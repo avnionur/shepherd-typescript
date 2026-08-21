@@ -1,0 +1,82 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-probe-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "backend": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-backend-v1.schema.json"
+                }
+            ]
+        },
+        "compatibility_version": {
+            "const": "shepherd.workspace.native-jails.v1",
+            "type": "string"
+        },
+        "denied_write": {
+            "type": "boolean"
+        },
+        "enforcement": {
+            "const": "native-syscall-deny",
+            "type": "string"
+        },
+        "granted_write": {
+            "type": "boolean"
+        },
+        "helper_digest": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "platform": {
+            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/placement-platform-evidence-v1.schema.json"
+        },
+        "probe_id": {
+            "pattern": "^native-jail-probe:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "probe_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "reason": {
+            "enum": [
+                "probe-succeeded",
+                "platform-unsupported",
+                "backend-executable-unavailable",
+                "helper-compiler-unavailable",
+                "helper-integrity-failed",
+                "native-denial-failed",
+                "native-write-failed",
+                "native-probe-error"
+            ],
+            "type": "string"
+        },
+        "status": {
+            "enum": [
+                "available",
+                "unavailable"
+            ],
+            "type": "string"
+        }
+    },
+    "required": [
+        "backend",
+        "compatibility_version",
+        "denied_write",
+        "enforcement",
+        "granted_write",
+        "helper_digest",
+        "platform",
+        "probe_id",
+        "probe_version",
+        "reason",
+        "status"
+    ],
+    "type": "object"
+}

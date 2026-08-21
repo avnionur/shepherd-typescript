@@ -95,7 +95,9 @@ The runtime areas are intentionally shallow:
   copy-carrier including parent-linked custody capture, Git-aware retained-output custody, and pure
   content-addressed world changesets, authenticated bounded changeset inspection and Git-aware
   projections, opaque retained-world runner registrations, and fenced task-world capture with
-  durable journal inspection and command-authorized recovery, plus authenticated exact-output
+  durable journal inspection and command-authorized recovery, authenticated Seatbelt/Landlock
+  probes, structured native runners, confinement plans, process receipts and no-retry uncertain
+  recovery, plus authenticated exact-output
   settlement preparation, restart-safe settlement inspection, and closed selection-publication
   plan, ordered path-step, and terminal carrier-receipt codecs.
 

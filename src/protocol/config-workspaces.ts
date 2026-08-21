@@ -162,6 +162,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "enforcement",
             "journalVersion",
             "journalVersions",
+            "nativeJails",
             "platform",
             "reasons",
             "requests",
@@ -172,6 +173,110 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "statuses",
         ],
         "workspaces.placements",
+    );
+    const nativeJails = readObject(
+        placements.nativeJails,
+        [
+            "artifacts",
+            "backends",
+            "compatibilityVersion",
+            "compilerArguments",
+            "compilerExecutables",
+            "compilerOutputArgument",
+            "commandIdPrefix",
+            "commandVersion",
+            "descriptorIdPrefix",
+            "descriptorVersion",
+            "enforcement",
+            "journalVersion",
+            "journalVersions",
+            "maxArgumentBytes",
+            "maxArguments",
+            "maxEnvironmentEntries",
+            "maxEnvironmentValueBytes",
+            "maxOutputBytes",
+            "maxTimeoutMilliseconds",
+            "planIdPrefix",
+            "planVersion",
+            "placementReasonRoles",
+            "placementReasons",
+            "placementStatus",
+            "placementVersion",
+            "probeIdPrefix",
+            "probeReasonRoles",
+            "probeReasons",
+            "probeStatuses",
+            "probeVersion",
+            "process",
+            "resolutionIdPrefix",
+            "resolvedPlacement",
+            "schemas",
+            "temporaryDirectoryPrefix",
+        ],
+        "workspaces.placements.nativeJails",
+    );
+    const nativeJailArtifacts = readObject(
+        nativeJails.artifacts,
+        [
+            "backendSchema",
+            "commandSchema",
+            "planSchema",
+            "probeSchema",
+            "processSchema",
+            "resolutionSchema",
+        ],
+        "workspaces.placements.nativeJails.artifacts",
+    );
+    const nativeJailSchemas = readObject(
+        nativeJails.schemas,
+        ["backendId", "commandId", "planId", "probeId", "processId", "resolutionId"],
+        "workspaces.placements.nativeJails.schemas",
+    );
+    const nativeJailProbeReasonRoles = readObject(
+        nativeJails.probeReasonRoles,
+        [
+            "deniedWriteFailed",
+            "executableUnavailable",
+            "helperCompilerUnavailable",
+            "helperIntegrityFailed",
+            "grantedWriteFailed",
+            "platformUnsupported",
+            "probeError",
+            "succeeded",
+        ],
+        "workspaces.placements.nativeJails.probeReasonRoles",
+    );
+    const nativeJailPlacementReasonRoles = readObject(
+        nativeJails.placementReasonRoles,
+        ["auto", "explicit"],
+        "workspaces.placements.nativeJails.placementReasonRoles",
+    );
+    const nativeJailProcess = readObject(
+        nativeJails.process,
+        [
+            "killSignal",
+            "launchIdPrefix",
+            "quiescenceAttempts",
+            "quiescenceDelayMilliseconds",
+            "quiescenceStatuses",
+            "quiescenceStatusRoles",
+            "receiptIdPrefix",
+            "receiptVersion",
+            "startIdPrefix",
+            "statusRoles",
+            "statuses",
+        ],
+        "workspaces.placements.nativeJails.process",
+    );
+    const nativeJailQuiescenceStatusRoles = readObject(
+        nativeJailProcess.quiescenceStatusRoles,
+        ["proven", "uncertain"],
+        "workspaces.placements.nativeJails.process.quiescenceStatusRoles",
+    );
+    const nativeJailProcessStatusRoles = readObject(
+        nativeJailProcess.statusRoles,
+        ["cancelled", "exited", "launchFailed", "outputLimit", "quiescenceUncertain", "timedOut"],
+        "workspaces.placements.nativeJails.process.statusRoles",
     );
     const placementArtifacts = readObject(
         placements.artifacts,
@@ -214,6 +319,17 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         placements.journalVersion,
         "workspaces.placements.journalVersion",
     );
+    const nativeJailJournalVersions = readProtocolVersions(
+        nativeJails.journalVersions,
+        "workspaces.placements.nativeJails.journalVersions",
+    );
+    const nativeJailJournalVersion = readPositiveInteger(
+        nativeJails.journalVersion,
+        "workspaces.placements.nativeJails.journalVersion",
+    );
+    if (!nativeJailJournalVersions.includes(nativeJailJournalVersion)) {
+        throw new TypeError("workspaces.placements.nativeJails.journalVersion must be configured");
+    }
     if (!placementJournalVersions.includes(placementJournalVersion)) {
         throw new TypeError(
             "workspaces.placements.journalVersion must be a configured placement journal version",
@@ -236,6 +352,78 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         placements.statuses,
         "workspaces.placements.statuses",
     );
+    const nativeJailProbeReasons = readUniqueStrings(
+        nativeJails.probeReasons,
+        "workspaces.placements.nativeJails.probeReasons",
+    );
+    const nativeJailProbeStatuses = readUniqueStrings(
+        nativeJails.probeStatuses,
+        "workspaces.placements.nativeJails.probeStatuses",
+    );
+    const nativeJailPlacementReasons = readUniqueStrings(
+        nativeJails.placementReasons,
+        "workspaces.placements.nativeJails.placementReasons",
+    );
+    const nativeJailPlacementReasonRoleValues = {
+        auto: readNonEmptyString(
+            nativeJailPlacementReasonRoles.auto,
+            "workspaces.placements.nativeJails.placementReasonRoles.auto",
+        ),
+        explicit: readNonEmptyString(
+            nativeJailPlacementReasonRoles.explicit,
+            "workspaces.placements.nativeJails.placementReasonRoles.explicit",
+        ),
+    };
+    if (
+        Object.values(nativeJailPlacementReasonRoleValues).some(
+            (reason) => !nativeJailPlacementReasons.includes(reason),
+        )
+    ) {
+        throw new TypeError("workspace native jail placement reasons are inconsistent");
+    }
+    const nativeJailReasonRoles = {
+        deniedWriteFailed: readNonEmptyString(
+            nativeJailProbeReasonRoles.deniedWriteFailed,
+            "workspaces.placements.nativeJails.probeReasonRoles.deniedWriteFailed",
+        ),
+        executableUnavailable: readNonEmptyString(
+            nativeJailProbeReasonRoles.executableUnavailable,
+            "workspaces.placements.nativeJails.probeReasonRoles.executableUnavailable",
+        ),
+        helperCompilerUnavailable: readNonEmptyString(
+            nativeJailProbeReasonRoles.helperCompilerUnavailable,
+            "workspaces.placements.nativeJails.probeReasonRoles.helperCompilerUnavailable",
+        ),
+        helperIntegrityFailed: readNonEmptyString(
+            nativeJailProbeReasonRoles.helperIntegrityFailed,
+            "workspaces.placements.nativeJails.probeReasonRoles.helperIntegrityFailed",
+        ),
+        grantedWriteFailed: readNonEmptyString(
+            nativeJailProbeReasonRoles.grantedWriteFailed,
+            "workspaces.placements.nativeJails.probeReasonRoles.grantedWriteFailed",
+        ),
+        platformUnsupported: readNonEmptyString(
+            nativeJailProbeReasonRoles.platformUnsupported,
+            "workspaces.placements.nativeJails.probeReasonRoles.platformUnsupported",
+        ),
+        probeError: readNonEmptyString(
+            nativeJailProbeReasonRoles.probeError,
+            "workspaces.placements.nativeJails.probeReasonRoles.probeError",
+        ),
+        succeeded: readNonEmptyString(
+            nativeJailProbeReasonRoles.succeeded,
+            "workspaces.placements.nativeJails.probeReasonRoles.succeeded",
+        ),
+    };
+    if (
+        nativeJailProbeReasons.length === 0 ||
+        nativeJailProbeStatuses.length !== 2 ||
+        Object.values(nativeJailReasonRoles).some(
+            (reason) => !nativeJailProbeReasons.includes(reason),
+        )
+    ) {
+        throw new TypeError("workspace native jail probe vocabularies are inconsistent");
+    }
     const nodePlatforms = readArray(
         placementPlatform.nodePlatforms,
         "workspaces.placements.platform.nodePlatforms",
@@ -251,6 +439,46 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             name: readNonEmptyString(entry.name, `${context}.name`),
         };
     });
+    const nativeJailBackends = readArray(
+        nativeJails.backends,
+        "workspaces.placements.nativeJails.backends",
+    ).map((value, index) => {
+        const context = `workspaces.placements.nativeJails.backends[${index}]`;
+        const backend = readObject(
+            value,
+            ["environments", "executable", "family", "name", "nodePlatforms", "profileArgument"],
+            context,
+        );
+        const environments = readUniqueStrings(backend.environments, `${context}.environments`);
+        const family = readNonEmptyString(backend.family, `${context}.family`);
+        if (
+            environments.length === 0 ||
+            environments.some((environment) => !placementEnvironments.includes(environment)) ||
+            !placementFamilies.includes(family)
+        ) {
+            throw new TypeError(`${context} platform support is inconsistent`);
+        }
+        return {
+            environments,
+            executable:
+                backend.executable === null
+                    ? null
+                    : readNonEmptyString(backend.executable, `${context}.executable`),
+            family,
+            name: readNonEmptyString(backend.name, `${context}.name`),
+            nodePlatforms: readUniqueStrings(backend.nodePlatforms, `${context}.nodePlatforms`),
+            profileArgument:
+                backend.profileArgument === null
+                    ? null
+                    : readNonEmptyString(backend.profileArgument, `${context}.profileArgument`),
+        };
+    });
+    if (
+        nativeJailBackends.length === 0 ||
+        new Set(nativeJailBackends.map(({ name }) => name)).size !== nativeJailBackends.length
+    ) {
+        throw new TypeError("workspace native jail backends must be non-empty and unique");
+    }
     if (
         nodePlatforms.length === 0 ||
         new Set(nodePlatforms.map(({ name }) => name)).size !== nodePlatforms.length
@@ -778,7 +1006,8 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         repositoryGrantJournalVersions.some(
             (version) => !readableJournalVersions.includes(version),
         ) ||
-        placementJournalVersions.some((version) => !readableJournalVersions.includes(version))
+        placementJournalVersions.some((version) => !readableJournalVersions.includes(version)) ||
+        nativeJailJournalVersions.some((version) => !readableJournalVersions.includes(version))
     ) {
         throw new TypeError(
             "workspace prepared-evidence journal versions must have configured readers",
@@ -786,8 +1015,12 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
     }
     if (
         !readableJournalVersions.includes(ordinaryJournalVersion) ||
-        new Set([ordinaryJournalVersion, repositoryGrantJournalVersion, placementJournalVersion])
-            .size !== 3
+        new Set([
+            ordinaryJournalVersion,
+            repositoryGrantJournalVersion,
+            placementJournalVersion,
+            nativeJailJournalVersion,
+        ]).size !== 4
     ) {
         throw new TypeError(
             "workspace task-world writer journal versions must be readable and distinct",
@@ -1597,6 +1830,238 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             enforcement: placementEnforcement,
             journalVersion: placementJournalVersion,
             journalVersions: placementJournalVersions,
+            nativeJails: {
+                artifacts: {
+                    backendSchema: readNonEmptyString(
+                        nativeJailArtifacts.backendSchema,
+                        "workspaces.placements.nativeJails.artifacts.backendSchema",
+                    ),
+                    commandSchema: readNonEmptyString(
+                        nativeJailArtifacts.commandSchema,
+                        "workspaces.placements.nativeJails.artifacts.commandSchema",
+                    ),
+                    planSchema: readNonEmptyString(
+                        nativeJailArtifacts.planSchema,
+                        "workspaces.placements.nativeJails.artifacts.planSchema",
+                    ),
+                    probeSchema: readNonEmptyString(
+                        nativeJailArtifacts.probeSchema,
+                        "workspaces.placements.nativeJails.artifacts.probeSchema",
+                    ),
+                    processSchema: readNonEmptyString(
+                        nativeJailArtifacts.processSchema,
+                        "workspaces.placements.nativeJails.artifacts.processSchema",
+                    ),
+                    resolutionSchema: readNonEmptyString(
+                        nativeJailArtifacts.resolutionSchema,
+                        "workspaces.placements.nativeJails.artifacts.resolutionSchema",
+                    ),
+                },
+                backends: nativeJailBackends,
+                compatibilityVersion: readNonEmptyString(
+                    nativeJails.compatibilityVersion,
+                    "workspaces.placements.nativeJails.compatibilityVersion",
+                ),
+                compilerArguments: readUniqueStrings(
+                    nativeJails.compilerArguments,
+                    "workspaces.placements.nativeJails.compilerArguments",
+                ),
+                compilerExecutables: readUniqueStrings(
+                    nativeJails.compilerExecutables,
+                    "workspaces.placements.nativeJails.compilerExecutables",
+                ),
+                compilerOutputArgument: readNonEmptyString(
+                    nativeJails.compilerOutputArgument,
+                    "workspaces.placements.nativeJails.compilerOutputArgument",
+                ),
+                commandIdPrefix: readNonEmptyString(
+                    nativeJails.commandIdPrefix,
+                    "workspaces.placements.nativeJails.commandIdPrefix",
+                ),
+                commandVersion: readPositiveInteger(
+                    nativeJails.commandVersion,
+                    "workspaces.placements.nativeJails.commandVersion",
+                ),
+                descriptorIdPrefix: readNonEmptyString(
+                    nativeJails.descriptorIdPrefix,
+                    "workspaces.placements.nativeJails.descriptorIdPrefix",
+                ),
+                descriptorVersion: readPositiveInteger(
+                    nativeJails.descriptorVersion,
+                    "workspaces.placements.nativeJails.descriptorVersion",
+                ),
+                enforcement: readNonEmptyString(
+                    nativeJails.enforcement,
+                    "workspaces.placements.nativeJails.enforcement",
+                ),
+                journalVersion: nativeJailJournalVersion,
+                journalVersions: nativeJailJournalVersions,
+                maxArgumentBytes: readPositiveInteger(
+                    nativeJails.maxArgumentBytes,
+                    "workspaces.placements.nativeJails.maxArgumentBytes",
+                ),
+                maxArguments: readPositiveInteger(
+                    nativeJails.maxArguments,
+                    "workspaces.placements.nativeJails.maxArguments",
+                ),
+                maxEnvironmentEntries: readPositiveInteger(
+                    nativeJails.maxEnvironmentEntries,
+                    "workspaces.placements.nativeJails.maxEnvironmentEntries",
+                ),
+                maxEnvironmentValueBytes: readPositiveInteger(
+                    nativeJails.maxEnvironmentValueBytes,
+                    "workspaces.placements.nativeJails.maxEnvironmentValueBytes",
+                ),
+                maxOutputBytes: readPositiveInteger(
+                    nativeJails.maxOutputBytes,
+                    "workspaces.placements.nativeJails.maxOutputBytes",
+                ),
+                maxTimeoutMilliseconds: readPositiveInteger(
+                    nativeJails.maxTimeoutMilliseconds,
+                    "workspaces.placements.nativeJails.maxTimeoutMilliseconds",
+                ),
+                planIdPrefix: readNonEmptyString(
+                    nativeJails.planIdPrefix,
+                    "workspaces.placements.nativeJails.planIdPrefix",
+                ),
+                planVersion: readPositiveInteger(
+                    nativeJails.planVersion,
+                    "workspaces.placements.nativeJails.planVersion",
+                ),
+                placementReasonRoles: nativeJailPlacementReasonRoleValues,
+                placementReasons: nativeJailPlacementReasons,
+                placementStatus: readNonEmptyString(
+                    nativeJails.placementStatus,
+                    "workspaces.placements.nativeJails.placementStatus",
+                ),
+                placementVersion: readPositiveInteger(
+                    nativeJails.placementVersion,
+                    "workspaces.placements.nativeJails.placementVersion",
+                ),
+                probeIdPrefix: readNonEmptyString(
+                    nativeJails.probeIdPrefix,
+                    "workspaces.placements.nativeJails.probeIdPrefix",
+                ),
+                probeReasonRoles: nativeJailReasonRoles,
+                probeReasons: nativeJailProbeReasons,
+                probeStatuses: nativeJailProbeStatuses,
+                probeVersion: readPositiveInteger(
+                    nativeJails.probeVersion,
+                    "workspaces.placements.nativeJails.probeVersion",
+                ),
+                process: {
+                    killSignal: readNonEmptyString(
+                        nativeJailProcess.killSignal,
+                        "workspaces.placements.nativeJails.process.killSignal",
+                    ),
+                    launchIdPrefix: readNonEmptyString(
+                        nativeJailProcess.launchIdPrefix,
+                        "workspaces.placements.nativeJails.process.launchIdPrefix",
+                    ),
+                    quiescenceAttempts: readPositiveInteger(
+                        nativeJailProcess.quiescenceAttempts,
+                        "workspaces.placements.nativeJails.process.quiescenceAttempts",
+                    ),
+                    quiescenceDelayMilliseconds: readPositiveInteger(
+                        nativeJailProcess.quiescenceDelayMilliseconds,
+                        "workspaces.placements.nativeJails.process.quiescenceDelayMilliseconds",
+                    ),
+                    quiescenceStatuses: readUniqueStrings(
+                        nativeJailProcess.quiescenceStatuses,
+                        "workspaces.placements.nativeJails.process.quiescenceStatuses",
+                    ),
+                    quiescenceStatusRoles: {
+                        proven: readNonEmptyString(
+                            nativeJailQuiescenceStatusRoles.proven,
+                            "workspaces.placements.nativeJails.process.quiescenceStatusRoles.proven",
+                        ),
+                        uncertain: readNonEmptyString(
+                            nativeJailQuiescenceStatusRoles.uncertain,
+                            "workspaces.placements.nativeJails.process.quiescenceStatusRoles.uncertain",
+                        ),
+                    },
+                    receiptIdPrefix: readNonEmptyString(
+                        nativeJailProcess.receiptIdPrefix,
+                        "workspaces.placements.nativeJails.process.receiptIdPrefix",
+                    ),
+                    receiptVersion: readPositiveInteger(
+                        nativeJailProcess.receiptVersion,
+                        "workspaces.placements.nativeJails.process.receiptVersion",
+                    ),
+                    startIdPrefix: readNonEmptyString(
+                        nativeJailProcess.startIdPrefix,
+                        "workspaces.placements.nativeJails.process.startIdPrefix",
+                    ),
+                    statusRoles: {
+                        cancelled: readNonEmptyString(
+                            nativeJailProcessStatusRoles.cancelled,
+                            "workspaces.placements.nativeJails.process.statusRoles.cancelled",
+                        ),
+                        exited: readNonEmptyString(
+                            nativeJailProcessStatusRoles.exited,
+                            "workspaces.placements.nativeJails.process.statusRoles.exited",
+                        ),
+                        launchFailed: readNonEmptyString(
+                            nativeJailProcessStatusRoles.launchFailed,
+                            "workspaces.placements.nativeJails.process.statusRoles.launchFailed",
+                        ),
+                        outputLimit: readNonEmptyString(
+                            nativeJailProcessStatusRoles.outputLimit,
+                            "workspaces.placements.nativeJails.process.statusRoles.outputLimit",
+                        ),
+                        quiescenceUncertain: readNonEmptyString(
+                            nativeJailProcessStatusRoles.quiescenceUncertain,
+                            "workspaces.placements.nativeJails.process.statusRoles.quiescenceUncertain",
+                        ),
+                        timedOut: readNonEmptyString(
+                            nativeJailProcessStatusRoles.timedOut,
+                            "workspaces.placements.nativeJails.process.statusRoles.timedOut",
+                        ),
+                    },
+                    statuses: readUniqueStrings(
+                        nativeJailProcess.statuses,
+                        "workspaces.placements.nativeJails.process.statuses",
+                    ),
+                },
+                resolutionIdPrefix: readNonEmptyString(
+                    nativeJails.resolutionIdPrefix,
+                    "workspaces.placements.nativeJails.resolutionIdPrefix",
+                ),
+                resolvedPlacement: readNonEmptyString(
+                    nativeJails.resolvedPlacement,
+                    "workspaces.placements.nativeJails.resolvedPlacement",
+                ),
+                schemas: {
+                    backendId: readAbsoluteUrl(
+                        nativeJailSchemas.backendId,
+                        "workspaces.placements.nativeJails.schemas.backendId",
+                    ),
+                    commandId: readAbsoluteUrl(
+                        nativeJailSchemas.commandId,
+                        "workspaces.placements.nativeJails.schemas.commandId",
+                    ),
+                    planId: readAbsoluteUrl(
+                        nativeJailSchemas.planId,
+                        "workspaces.placements.nativeJails.schemas.planId",
+                    ),
+                    probeId: readAbsoluteUrl(
+                        nativeJailSchemas.probeId,
+                        "workspaces.placements.nativeJails.schemas.probeId",
+                    ),
+                    processId: readAbsoluteUrl(
+                        nativeJailSchemas.processId,
+                        "workspaces.placements.nativeJails.schemas.processId",
+                    ),
+                    resolutionId: readAbsoluteUrl(
+                        nativeJailSchemas.resolutionId,
+                        "workspaces.placements.nativeJails.schemas.resolutionId",
+                    ),
+                },
+                temporaryDirectoryPrefix: readNonEmptyString(
+                    nativeJails.temporaryDirectoryPrefix,
+                    "workspaces.placements.nativeJails.temporaryDirectoryPrefix",
+                ),
+            },
             platform: {
                 environments: placementEnvironments,
                 evidenceIdPrefix: readNonEmptyString(
