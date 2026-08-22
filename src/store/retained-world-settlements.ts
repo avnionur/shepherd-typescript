@@ -21,6 +21,7 @@ import {
     type RetainedWorldSettlementTerminalEvidence,
 } from "./retained-world-settlement-codec.ts";
 import type {
+    RetainedWorldApplicationPlanEvidence,
     RetainedWorldSettlementAdmission,
     RetainedWorldSettlementJournal,
     RetainedWorldSettlementRequest,
@@ -42,7 +43,7 @@ type SettlementRow = {
     readonly state: string;
 };
 
-const [PREPARED_STATE, APPLYING_STATE, SELECTED_STATE, DISCARDED_STATE] =
+const [PREPARED_STATE, APPLYING_STATE, SELECTED_STATE, DISCARDED_STATE, APPLIED_STATE] =
     RETAINED_WORLD_SETTLEMENT_STATES;
 const ROW_COLUMNS = `output_id, command_id, request_id, request_digest, request_json, action, state,
                      operation_id, operation_digest, operation_json,
@@ -134,6 +135,7 @@ export function readRetainedWorldSettlementJournal(
 export function beginRetainedWorldSettlement(
     database: DatabaseSync,
     outputId: string,
+    applicationPlan: RetainedWorldApplicationPlanEvidence | null = null,
 ): RetainedWorldSettlementJournal {
     assertNonEmptyString(outputId, "outputId");
     database.exec(STORE_TRANSACTION_SQL.begin);
@@ -141,10 +143,31 @@ export function beginRetainedWorldSettlement(
         const row = requiredRow(database, outputId);
         const current = journalFromStoredRow(row);
         if (current.state !== PREPARED_STATE) {
+            if (applicationPlan !== null) {
+                // Every validated non-prepared state has an operation.
+                /* node:coverage ignore next 2 */
+                if (current.operation === null) throw invalidSettlement();
+                const retained = decodeRetainedWorldSettlementOperation(
+                    current.operation.json,
+                    current.admission,
+                );
+                const proposed = encodeRetainedWorldSettlementOperation(
+                    current.admission,
+                    applicationPlan,
+                );
+                if (retained.id !== proposed.id) {
+                    throw new RetainedWorldSettlementConflictError(
+                        workspaceProtocolConfig.settlement.errors.conflictMessage,
+                    );
+                }
+            }
             database.exec(STORE_TRANSACTION_SQL.commit);
             return current;
         }
-        const operation = encodeRetainedWorldSettlementOperation(current.admission);
+        const operation = encodeRetainedWorldSettlementOperation(
+            current.admission,
+            applicationPlan,
+        );
         const result = database
             .prepare(
                 `UPDATE ${STORE_TABLES.retainedWorldSettlements}
@@ -192,9 +215,19 @@ export function retainRetainedWorldSettlementTerminal(
                 workspaceProtocolConfig.settlement.errors.conflictMessage,
             );
         }
-        const operation = encodeRetainedWorldSettlementOperation(current.admission);
+        // Prepared was rejected above and every other validated journal state owns an operation.
+        /* node:coverage ignore next 2 */
+        if (current.operation === null) throw invalidSettlement();
+        const operation = decodeRetainedWorldSettlementOperation(
+            current.operation.json,
+            current.admission,
+        );
         const receipt = encodeRetainedWorldSettlementTerminalReceipt(operation, evidence);
-        if (current.state === SELECTED_STATE || current.state === DISCARDED_STATE) {
+        if (
+            current.state === SELECTED_STATE ||
+            current.state === DISCARDED_STATE ||
+            current.state === APPLIED_STATE
+        ) {
             if (
                 current.state === DISCARDED_STATE &&
                 current.cleanup_completed === true &&
@@ -480,7 +513,14 @@ function journalFromRow(
         }
         return freezeJournal(admission, APPLYING_STATE, retainedOperation, null, null);
     }
-    if (row.state !== SELECTED_STATE && row.state !== DISCARDED_STATE) {
+    // The decoder above admits only the configured terminal states; the compound guard remains a
+    // defense against future state drift and intentionally has no production-success branch.
+    /* node:coverage ignore next 7 */
+    if (
+        row.state !== SELECTED_STATE &&
+        row.state !== DISCARDED_STATE &&
+        row.state !== APPLIED_STATE
+    ) {
         throw invalidSettlement();
     }
     if (receiptColumns.some((value) => typeof value !== "string")) {
@@ -493,9 +533,9 @@ function journalFromRow(
     if (
         row.receipt_digest !== receipt.digest ||
         row.state !== receipt.value.state ||
-        (receipt.value.action === RETAINED_WORLD_SETTLEMENT_ACTIONS[0]
-            ? row.cleanup_completed !== null
-            : row.cleanup_completed !== (receipt.value.cleanup_completed ? 1 : 0))
+        (receipt.value.action === RETAINED_WORLD_SETTLEMENT_ACTIONS[1]
+            ? row.cleanup_completed !== (receipt.value.cleanup_completed ? 1 : 0)
+            : row.cleanup_completed !== null)
     ) {
         throw invalidSettlement();
     }

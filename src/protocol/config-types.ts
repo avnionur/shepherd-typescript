@@ -709,6 +709,55 @@ export type WorkspaceProtocolConfig = {
     readonly settlement: {
         /** Closed settlement command vocabulary. */
         readonly actions: readonly string[];
+        /** Path-disjoint retained-world application protocol. */
+        readonly application: {
+            /** Generated application artifact destinations. */
+            readonly artifacts: {
+                readonly conflictSchema: string;
+                readonly planSchema: string;
+                readonly receiptSchema: string;
+            };
+            /** Whether portable path comparison folds case. */
+            readonly caseFold: boolean;
+            /** Compatibility namespace included in application evidence. */
+            readonly compatibilityVersion: string;
+            /** Prefix for content-addressed conflict evidence. */
+            readonly conflictIdPrefix: string;
+            /** Closed application conflict classifications. */
+            readonly conflictKinds: readonly string[];
+            /** Public conflict-evidence protocol version. */
+            readonly conflictVersion: number;
+            /** Stable application conflict error contract. */
+            readonly errors: {
+                readonly conflictCode: string;
+                readonly conflictMessage: string;
+            };
+            /** Maximum conflict pairs retained in one refusal. */
+            readonly maxConflicts: number;
+            /** Unicode normalization form used for portable path comparison. */
+            readonly normalizationForm: string;
+            /** Prefix for content-addressed application plans. */
+            readonly planIdPrefix: string;
+            /** Public application-plan protocol version. */
+            readonly planVersion: number;
+            /** Semantic roles for successful application planning. */
+            readonly reasonRoles: {
+                readonly disjoint: string;
+                readonly unmoved: string;
+            };
+            /** Closed application-plan reason vocabulary. */
+            readonly reasons: readonly string[];
+            /** Public application-receipt protocol version. */
+            readonly receiptVersion: number;
+            /** Published application schema identifiers. */
+            readonly schemas: {
+                readonly conflictId: string;
+                readonly planId: string;
+                readonly receiptId: string;
+            };
+            /** Closed application-plan status vocabulary. */
+            readonly statuses: readonly string[];
+        };
         /** Prefix for idempotent settlement-citation append intents. */
         readonly citationAppendIntentPrefix: string;
         /** Prefix for immutable settlement-citation cuts. */

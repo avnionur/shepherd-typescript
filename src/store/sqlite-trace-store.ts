@@ -66,6 +66,7 @@ import type {
     DurableExecutionResumeAppend,
     OwnerRecord,
     RetainedRecord,
+    RetainedWorldApplicationPlanEvidence,
     RetainedWorldSettlementAdmission,
     RetainedWorldSettlementJournal,
     RetainedWorldSettlementRequest,
@@ -191,9 +192,12 @@ export class SQLiteTraceStore implements Disposable {
     }
 
     /** @internal Atomically begins or replays the deterministic admitted operation. */
-    beginRetainedWorldSettlement(outputId: string): RetainedWorldSettlementJournal {
+    beginRetainedWorldSettlement(
+        outputId: string,
+        applicationPlan: RetainedWorldApplicationPlanEvidence | null = null,
+    ): RetainedWorldSettlementJournal {
         this.#assertOpen();
-        return beginRetainedWorldSettlement(this.#database, outputId);
+        return beginRetainedWorldSettlement(this.#database, outputId, applicationPlan);
     }
 
     /** @internal Atomically retains or replays the exact terminal settlement receipt. */

@@ -285,7 +285,20 @@ export const RETAINED_WORLD_JOURNAL_PHASES = [
 ] as const;
 
 /** Configured consume-once retained-world settlement actions. @public */
-export const RETAINED_WORLD_SETTLEMENT_ACTIONS = ["select", "discard"] as const;
+export const RETAINED_WORLD_SETTLEMENT_ACTIONS = ["select", "discard", "apply"] as const;
+
+/** Configured retained-world application conflict classifications. @public */
+export const RETAINED_WORLD_APPLICATION_CONFLICT_KINDS = [
+    "equal-path",
+    "ancestor-descendant",
+    "portable-alias",
+] as const;
+
+/** Configured retained-world application plan reasons. @public */
+export const RETAINED_WORLD_APPLICATION_REASONS = ["unmoved-parent", "path-disjoint"] as const;
+
+/** Configured retained-world application plan statuses. @public */
+export const RETAINED_WORLD_APPLICATION_STATUSES = ["planned"] as const;
 
 /** Configured durable retained-world settlement states. @public */
 export const RETAINED_WORLD_SETTLEMENT_STATES = [
@@ -293,6 +306,7 @@ export const RETAINED_WORLD_SETTLEMENT_STATES = [
     "applying",
     "selected",
     "discarded",
+    "applied",
 ] as const;
 
 /** Configured public retained-world settlement protocol version. @public */

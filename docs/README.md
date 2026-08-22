@@ -61,6 +61,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Native jail execution](./native-jail-execution.md) defines workspace protocol v23 authenticated
   Seatbelt/Landlock probes, exact grant lowering, structured process launch, durable receipts,
   platform support, threat limits, and no-retry uncertain recovery.
+- [Retained-world application](./retained-world-application.md) defines portable path-conflict
+  evidence, exact three-way plans, merged-revision custody, publication, and restart recovery.
 - [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,
   isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
   idempotent discard.

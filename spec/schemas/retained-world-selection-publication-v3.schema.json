@@ -132,7 +132,10 @@
             "additionalProperties": false,
             "properties": {
                 "action": {
-                    "const": "select",
+                    "enum": [
+                        "select",
+                        "apply"
+                    ],
                     "type": "string"
                 },
                 "atomicity": {

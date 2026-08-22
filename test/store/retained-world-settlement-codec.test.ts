@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { RETAINED_WORLD_SETTLEMENT_VERSION } from "../../src/protocol/values.generated.ts";
+import { encodeRetainedWorldApplicationPlan } from "../../src/store/retained-world-application-codec.ts";
 import {
     decodeRetainedWorldSettlementOperation,
     decodeRetainedWorldSettlementTerminalReceipt,
@@ -135,4 +136,84 @@ test("discard receipts bind an unchanged basis and explicit cleanup state", () =
             }),
         TypeError,
     );
+});
+
+test("apply operations bind the exact three-way plan and applied receipt", () => {
+    const applyRequest = Object.freeze({
+        ...request,
+        action: "apply",
+    }) satisfies RetainedWorldSettlementRequest;
+    const applyAdmission = Object.freeze({
+        ...admission,
+        action: applyRequest.action,
+        request: applyRequest,
+    }) satisfies RetainedWorldSettlementAdmission;
+    const plan = encodeRetainedWorldApplicationPlan({
+        application_custody_id: "custody:application",
+        base_content_id: applyRequest.user_basis_before,
+        base_revision_id: applyRequest.base_revision_id,
+        binding_id: applyRequest.binding_id,
+        candidate_changeset_id: applyRequest.changeset_id,
+        candidate_content_id: "content:candidate",
+        candidate_paths: ["candidate.txt"],
+        candidate_revision_id: applyRequest.head_revision_id,
+        current_changeset_id: "changeset:current",
+        current_content_id: "content:current",
+        current_paths: ["current.txt"],
+        current_revision_id: "revision:current",
+        merged_content_id: "content:merged",
+        merged_revision_id: "revision:merged",
+        publication_changeset_id: "changeset:publication",
+        reason: "path-disjoint",
+        request_id: applyAdmission.request_id,
+        status: "planned",
+    });
+    assert.throws(() => encodeRetainedWorldSettlementOperation(applyAdmission), TypeError);
+    assert.throws(() => encodeRetainedWorldSettlementOperation(admission, plan), TypeError);
+    const operation = encodeRetainedWorldSettlementOperation(applyAdmission, plan);
+    assert.deepEqual(
+        decodeRetainedWorldSettlementOperation(operation.json, applyAdmission),
+        operation,
+    );
+    const receipt = encodeRetainedWorldSettlementTerminalReceipt(operation, {
+        action: "apply",
+        applied_revision_id: plan.merged_revision_id,
+        application_plan_id: plan.plan_id,
+        publication_id: "publication:apply",
+        user_basis_after: plan.merged_content_id,
+    });
+    assert.equal(receipt.value.state, "applied");
+    assert.deepEqual(
+        decodeRetainedWorldSettlementTerminalReceipt(receipt.json, operation),
+        receipt,
+    );
+    for (const invalid of [
+        { applied_revision_id: "revision:different" },
+        { application_plan_id: "plan:different" },
+        { user_basis_after: "content:different" },
+    ]) {
+        assert.throws(
+            () =>
+                encodeRetainedWorldSettlementTerminalReceipt(operation, {
+                    action: "apply",
+                    applied_revision_id: plan.merged_revision_id,
+                    application_plan_id: plan.plan_id,
+                    publication_id: "publication:apply",
+                    user_basis_after: plan.merged_content_id,
+                    ...invalid,
+                }),
+            TypeError,
+        );
+    }
+    for (const invalid of [
+        { ...receipt.value, applied_revision_id: 1 },
+        { ...receipt.value, application_plan_id: 1 },
+        { ...receipt.value, publication_id: 1 },
+        { ...receipt.value, user_basis_after: "content:different" },
+    ]) {
+        assert.throws(
+            () => decodeRetainedWorldSettlementTerminalReceipt(JSON.stringify(invalid), operation),
+            TypeError,
+        );
+    }
 });

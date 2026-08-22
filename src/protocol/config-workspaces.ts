@@ -813,6 +813,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         config.settlement,
         [
             "actions",
+            "application",
             "citationAppendIntentPrefix",
             "citationCutIdPrefix",
             "citationSchemaId",
@@ -828,6 +829,80 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         ],
         "workspaces.settlement",
     );
+    const settlementApplication = readObject(
+        settlement.application,
+        [
+            "artifacts",
+            "caseFold",
+            "compatibilityVersion",
+            "conflictIdPrefix",
+            "conflictKinds",
+            "conflictVersion",
+            "errors",
+            "maxConflicts",
+            "normalizationForm",
+            "planIdPrefix",
+            "planVersion",
+            "reasonRoles",
+            "reasons",
+            "receiptVersion",
+            "schemas",
+            "statuses",
+        ],
+        "workspaces.settlement.application",
+    );
+    const settlementApplicationArtifacts = readObject(
+        settlementApplication.artifacts,
+        ["conflictSchema", "planSchema", "receiptSchema"],
+        "workspaces.settlement.application.artifacts",
+    );
+    const settlementApplicationErrors = readObject(
+        settlementApplication.errors,
+        ["conflictCode", "conflictMessage"],
+        "workspaces.settlement.application.errors",
+    );
+    const settlementApplicationSchemas = readObject(
+        settlementApplication.schemas,
+        ["conflictId", "planId", "receiptId"],
+        "workspaces.settlement.application.schemas",
+    );
+    const settlementApplicationReasonRoles = readObject(
+        settlementApplication.reasonRoles,
+        ["disjoint", "unmoved"],
+        "workspaces.settlement.application.reasonRoles",
+    );
+    const settlementApplicationConflictKinds = readUniqueStrings(
+        settlementApplication.conflictKinds,
+        "workspaces.settlement.application.conflictKinds",
+    );
+    const settlementApplicationReasons = readUniqueStrings(
+        settlementApplication.reasons,
+        "workspaces.settlement.application.reasons",
+    );
+    const settlementApplicationStatuses = readUniqueStrings(
+        settlementApplication.statuses,
+        "workspaces.settlement.application.statuses",
+    );
+    const settlementApplicationReasonRoleValues = {
+        disjoint: readNonEmptyString(
+            settlementApplicationReasonRoles.disjoint,
+            "workspaces.settlement.application.reasonRoles.disjoint",
+        ),
+        unmoved: readNonEmptyString(
+            settlementApplicationReasonRoles.unmoved,
+            "workspaces.settlement.application.reasonRoles.unmoved",
+        ),
+    };
+    if (
+        settlementApplicationConflictKinds.length === 0 ||
+        settlementApplicationReasons.length === 0 ||
+        settlementApplicationStatuses.length === 0 ||
+        Object.values(settlementApplicationReasonRoleValues).some(
+            (reason) => !settlementApplicationReasons.includes(reason),
+        )
+    ) {
+        throw new TypeError("workspace retained application vocabularies are inconsistent");
+    }
     const settlementErrors = readObject(
         settlement.errors,
         ["conflictCode", "conflictMessage", "invalidCode", "invalidMessage"],
@@ -1503,6 +1578,91 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         },
         settlement: {
             actions: readUniqueStrings(settlement.actions, "workspaces.settlement.actions"),
+            application: {
+                artifacts: {
+                    conflictSchema: readNonEmptyString(
+                        settlementApplicationArtifacts.conflictSchema,
+                        "workspaces.settlement.application.artifacts.conflictSchema",
+                    ),
+                    planSchema: readNonEmptyString(
+                        settlementApplicationArtifacts.planSchema,
+                        "workspaces.settlement.application.artifacts.planSchema",
+                    ),
+                    receiptSchema: readNonEmptyString(
+                        settlementApplicationArtifacts.receiptSchema,
+                        "workspaces.settlement.application.artifacts.receiptSchema",
+                    ),
+                },
+                caseFold: (() => {
+                    if (typeof settlementApplication.caseFold !== "boolean") {
+                        throw new TypeError(
+                            "workspaces.settlement.application.caseFold must be boolean",
+                        );
+                    }
+                    return settlementApplication.caseFold;
+                })(),
+                compatibilityVersion: readNonEmptyString(
+                    settlementApplication.compatibilityVersion,
+                    "workspaces.settlement.application.compatibilityVersion",
+                ),
+                conflictIdPrefix: readNonEmptyString(
+                    settlementApplication.conflictIdPrefix,
+                    "workspaces.settlement.application.conflictIdPrefix",
+                ),
+                conflictKinds: settlementApplicationConflictKinds,
+                conflictVersion: readPositiveInteger(
+                    settlementApplication.conflictVersion,
+                    "workspaces.settlement.application.conflictVersion",
+                ),
+                errors: {
+                    conflictCode: readNonEmptyString(
+                        settlementApplicationErrors.conflictCode,
+                        "workspaces.settlement.application.errors.conflictCode",
+                    ),
+                    conflictMessage: readNonEmptyString(
+                        settlementApplicationErrors.conflictMessage,
+                        "workspaces.settlement.application.errors.conflictMessage",
+                    ),
+                },
+                maxConflicts: readPositiveInteger(
+                    settlementApplication.maxConflicts,
+                    "workspaces.settlement.application.maxConflicts",
+                ),
+                normalizationForm: readEnum(
+                    settlementApplication.normalizationForm,
+                    ["NFC", "NFD", "NFKC", "NFKD"] as const,
+                    "workspaces.settlement.application.normalizationForm",
+                ),
+                planIdPrefix: readNonEmptyString(
+                    settlementApplication.planIdPrefix,
+                    "workspaces.settlement.application.planIdPrefix",
+                ),
+                planVersion: readPositiveInteger(
+                    settlementApplication.planVersion,
+                    "workspaces.settlement.application.planVersion",
+                ),
+                reasonRoles: settlementApplicationReasonRoleValues,
+                reasons: settlementApplicationReasons,
+                receiptVersion: readPositiveInteger(
+                    settlementApplication.receiptVersion,
+                    "workspaces.settlement.application.receiptVersion",
+                ),
+                schemas: {
+                    conflictId: readAbsoluteUrl(
+                        settlementApplicationSchemas.conflictId,
+                        "workspaces.settlement.application.schemas.conflictId",
+                    ),
+                    planId: readAbsoluteUrl(
+                        settlementApplicationSchemas.planId,
+                        "workspaces.settlement.application.schemas.planId",
+                    ),
+                    receiptId: readAbsoluteUrl(
+                        settlementApplicationSchemas.receiptId,
+                        "workspaces.settlement.application.schemas.receiptId",
+                    ),
+                },
+                statuses: settlementApplicationStatuses,
+            },
             citationAppendIntentPrefix: readNonEmptyString(
                 settlement.citationAppendIntentPrefix,
                 "workspaces.settlement.citationAppendIntentPrefix",

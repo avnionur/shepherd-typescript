@@ -56,6 +56,7 @@ import {
     decodeSelectionPublicationSchedule,
     encodeScheduledSelectionPublicationReceipt,
     encodeScheduledSelectionPublicationStep,
+    orderWorldPathChangesForPublication,
     type ScheduledSelectionPublicationReceiptEncoding,
     type ScheduledSelectionPublicationStepEncoding,
     type SelectionPublicationPlanEncoding,
@@ -201,6 +202,64 @@ export function forkReferenceCopyRevisionForTaskWorld(
     const paths = REFERENCE_CARRIER_PATHS.get(carrier);
     assert.ok(paths, "reference carrier paths are unavailable");
     return invokeCarrier(() => forkRevision(paths, revisionId, NO_ADAPTER_RECEIPTS, custodyId));
+}
+
+/**
+ * Creates or reopens one deterministic merged revision by applying a disjoint candidate delta to
+ * an immutable current revision inside protected carrier custody. @internal
+ */
+export function createReferenceCopyApplicationRevision(
+    carrier: ReferenceCopyCarrier,
+    definition: Readonly<{
+        candidateChangeset: WorldChangeset;
+        currentRevisionId: string;
+        operationKey: string;
+    }>,
+): Readonly<{ custody: WorldCustody; revision: WorldRevision }> {
+    assertReferenceCopyCarrier(carrier);
+    const paths = REFERENCE_CARRIER_PATHS.get(carrier);
+    assert.ok(paths, "reference carrier paths are unavailable");
+    return invokeCarrier(() => {
+        if (typeof definition.operationKey !== "string" || definition.operationKey.length === 0) {
+            throw new TypeError("application operation key is invalid");
+        }
+        const current = loadRevision(paths, definition.currentRevisionId);
+        const candidateBase = loadRevision(paths, definition.candidateChangeset.base_revision_id);
+        const candidate = loadRevision(paths, definition.candidateChangeset.head_revision_id);
+        if (
+            current.binding_id !== definition.candidateChangeset.binding_id ||
+            candidateBase.binding_id !== current.binding_id ||
+            candidate.binding_id !== current.binding_id
+        ) {
+            throw new TypeError("application revisions cite different bindings");
+        }
+        const identity = createRecordId({
+            candidate_changeset_id: definition.candidateChangeset.changeset_id,
+            current_revision_id: current.revision_id,
+            operation_key: definition.operationKey,
+        });
+        const custodyId = `${workspaceProtocolConfig.carrier.custodyIdPrefix}${identity.slice(
+            identity.lastIndexOf(":") + 1,
+        )}`;
+        const custody = forkRevision(paths, current.revision_id, NO_ADAPTER_RECEIPTS, custodyId);
+        for (const change of orderWorldPathChangesForPublication(
+            definition.candidateChangeset.changes,
+        )) {
+            const observed = readPathNode(custody.path, change.path);
+            if (sameNode(observed, change.after)) continue;
+            if (!sameNode(observed, change.before)) {
+                throw selectionError("recovery");
+            }
+            applyPathChange(custody.path, candidate.path, change);
+        }
+        const revision = captureCustody(paths, custody.custody_id);
+        // captureCustody constructs this parent from the just-opened custody descriptor.
+        /* node:coverage ignore next 3 */
+        if (revision.parent_revision_id !== current.revision_id) {
+            throw new TypeError("application revision parent is inconsistent");
+        }
+        return Object.freeze({ custody, revision });
+    });
 }
 
 /**

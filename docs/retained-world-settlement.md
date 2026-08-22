@@ -15,6 +15,8 @@ Reference-carrier materialization and recovery is covered by
 [`test/workspace/reference-copy-selection-publication.test.ts`](../test/workspace/reference-copy-selection-publication.test.ts).
 Public exact-ID selection and store-terminal repair is covered by
 [`test/workspace/retained-world-select.test.ts`](../test/workspace/retained-world-select.test.ts).
+Public path-disjoint application and recovery is covered by
+[`test/workspace/retained-world-apply.test.ts`](../test/workspace/retained-world-apply.test.ts).
 
 ## Implemented foundation
 
@@ -109,6 +111,16 @@ Applying retries resume the carrier prefix; a carrier-complete/store-incomplete 
 the terminal store receipt; selected retries authenticate both authorities. Any third-state path
 or moved final basis fails closed without overwrite.
 
+Workspace protocol v24 extends the closed action/state vocabulary with `apply` and `applied` and
+adds content-addressed conflict, application-plan, and applied-receipt schemas.
+`prepareRetainedWorldSettlement` computes the base-to-candidate and base-to-current changesets and
+refuses equal, ancestor/descendant, or configured portable-alias paths before consume-once
+admission. `applyRetainedWorldSettlement` either uses the candidate for an unchanged current basis
+or creates a fresh protected revision by applying the exact candidate delta to the immutable
+current revision. It then reuses the dependency-scheduled publication journal, retains an applied
+terminal receipt and citation, and cleans only the temporary merge custody. See
+[Retained-world application](./retained-world-application.md).
+
 Task 9.2B2 implements those trace-store writers. One `BEGIN IMMEDIATE` transaction derives and
 retains the exact operation while moving `prepared` to `applying`; another retains the exact
 action-specific terminal receipt while moving `applying` to `selected` or `discarded`. Equal
@@ -150,8 +162,9 @@ filesystem operation.
 ## Current boundary
 
 The store primitive deliberately remains internal and trusts only the authenticated coordinator.
-Preparation reads retained evidence and mutates only the durable settlement-admission row; it does
-not mutate user files or physical custody. Public `select` and `discard` now compose this authority
+Preparation authenticates retained evidence and, for `apply`, snapshots the current user basis for
+read-only conflict analysis before mutating only the durable settlement-admission row. It does not
+mutate user files or physical custody. Public `select`, `apply`, and `discard` compose this authority
 with the effect journal and publish terminal trace citations only after the relevant terminal
-receipt is durable. Carrier-level selection publication and `discard(custodyId)` remain internal
+receipt is durable. Carrier-level scheduled publication and `discard(custodyId)` remain internal
 physical primitives and cannot create or bypass a settlement decision by themselves.

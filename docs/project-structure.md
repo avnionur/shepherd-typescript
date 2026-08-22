@@ -99,7 +99,8 @@ The runtime areas are intentionally shallow:
   probes, structured native runners, confinement plans, process receipts and no-retry uncertain
   recovery, plus authenticated exact-output
   settlement preparation, restart-safe settlement inspection, and closed selection-publication
-  plan, ordered path-step, and terminal carrier-receipt codecs.
+  plan, ordered path-step, and terminal carrier-receipt codecs, portable application-conflict
+  inspection, exact three-way plans, protected merged revisions, and path-disjoint apply recovery.
 
 ## Module rules
 

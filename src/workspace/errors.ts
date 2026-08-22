@@ -1,4 +1,5 @@
 import { workspaceProtocolConfig } from "../protocol/config.ts";
+import type { RetainedWorldApplicationConflictEvidence } from "./retained-world-application-types.ts";
 
 /** Raised when workspace control state is missing, unsafe, malformed, or inconsistent. */
 export class WorkspaceControlError extends Error {
@@ -101,5 +102,24 @@ export class WorldChangesetError extends Error {
         super(message);
         this.code = code;
         this.name = "WorldChangesetError";
+    }
+}
+
+/** Raised when retained and current path effects are not provably disjoint. */
+export class RetainedWorldApplicationConflictError extends Error {
+    /** Stable machine-readable application-conflict code. */
+    readonly code = workspaceProtocolConfig.settlement.application.errors.conflictCode;
+    /** Exact immutable path-overlap evidence. */
+    readonly evidence: RetainedWorldApplicationConflictEvidence;
+
+    /**
+     * Creates one fail-closed retained-world application conflict.
+     *
+     * @param evidence - Exact content-addressed overlap evidence.
+     */
+    constructor(evidence: RetainedWorldApplicationConflictEvidence) {
+        super(workspaceProtocolConfig.settlement.application.errors.conflictMessage);
+        this.name = "RetainedWorldApplicationConflictError";
+        this.evidence = evidence;
     }
 }

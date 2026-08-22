@@ -4,6 +4,7 @@ import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import {
     RECORD_MODES,
+    RETAINED_WORLD_SETTLEMENT_ACTIONS,
     RETAINED_WORLD_SETTLEMENT_CITATION_VERSION,
     RETAINED_WORLD_SETTLEMENT_STATES,
 } from "../protocol/values.generated.ts";
@@ -24,7 +25,9 @@ import type {
 } from "../store/types.ts";
 
 const [CAPTURE_MODE] = RECORD_MODES;
-const [PREPARED_STATE, , SELECTED_STATE, DISCARDED_STATE] = RETAINED_WORLD_SETTLEMENT_STATES;
+const [, , APPLY_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
+const [PREPARED_STATE, , SELECTED_STATE, DISCARDED_STATE, APPLIED_STATE] =
+    RETAINED_WORLD_SETTLEMENT_STATES;
 const CITATION_FIELDS = [
     "action",
     "capture_record_id",
@@ -70,11 +73,13 @@ export function publishRetainedWorldSettlementCitation(
 ): DurableTaskExecutionSettlementInspection {
     const { admission, operation, receipt } = journal;
     // Public settlement coordinators and the closed journal validator establish this authority.
-    /* node:coverage ignore next 10 */
+    /* node:coverage ignore next 12 */
     if (
         operation === null ||
         receipt === null ||
-        (journal.state !== SELECTED_STATE && journal.state !== DISCARDED_STATE) ||
+        (journal.state !== SELECTED_STATE &&
+            journal.state !== DISCARDED_STATE &&
+            journal.state !== APPLIED_STATE) ||
         admission.request.run_id !== trace.run_id ||
         admission.request.capture_record_id !== trace.capture_record_id ||
         admission.request.execution_cut_id !== trace.execution_cut_id
@@ -163,7 +168,7 @@ export function readRetainedWorldSettlementCitations(
             assertRecordId(fields.outcome_record_id, "settlement citation outcome record");
             assertRecordId(fields.terminal_record_id, "settlement citation terminal record");
             // Individual contradictions are reachable only from corrupt retained store evidence.
-            /* node:coverage ignore next 12 */
+            /* node:coverage ignore next 14 */
             if (
                 fields.citation_version !== RETAINED_WORLD_SETTLEMENT_CITATION_VERSION ||
                 fields.run_id !== trace.run_id ||
@@ -172,14 +177,24 @@ export function readRetainedWorldSettlementCitations(
                 fields.execution_cut_id !== trace.execution_cut_id ||
                 fields.outcome_record_id !== trace.outcome_record_id ||
                 fields.terminal_record_id !== trace.terminal_record_id ||
-                (fields.state !== SELECTED_STATE && fields.state !== DISCARDED_STATE)
+                (fields.state !== SELECTED_STATE &&
+                    fields.state !== DISCARDED_STATE &&
+                    fields.state !== APPLIED_STATE)
             ) {
                 throw new TypeError("settlement citation trace identity is inconsistent");
             }
             const operationValue = JSON.parse(fields.operation_json as string) as unknown;
+            const operationAction =
+                operationValue !== null &&
+                typeof operationValue === "object" &&
+                !Array.isArray(operationValue)
+                    ? Object.getOwnPropertyDescriptor(operationValue, "action")?.value
+                    : undefined;
             const operationFields = readExactObject(
                 operationValue,
-                ["action", "operation_version", "request", "request_id"],
+                operationAction === APPLY_ACTION
+                    ? ["action", "application_plan", "operation_version", "request", "request_id"]
+                    : ["action", "operation_version", "request", "request_id"],
                 "settlement citation operation",
             );
             const request = readRetainedWorldSettlementRequest(operationFields.request);

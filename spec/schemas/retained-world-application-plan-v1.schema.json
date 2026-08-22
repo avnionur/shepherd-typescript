@@ -1,0 +1,130 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-application-plan-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "application_custody_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "application_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "base_content_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "base_revision_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "binding_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "candidate_changeset_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "candidate_content_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "candidate_paths": {
+            "items": {
+                "minLength": 1,
+                "type": "string"
+            },
+            "maxItems": 100000,
+            "type": "array",
+            "uniqueItems": true
+        },
+        "candidate_revision_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "compatibility_version": {
+            "const": "shepherd.workspace.retained-world-application.v1",
+            "type": "string"
+        },
+        "current_changeset_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "current_content_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "current_paths": {
+            "items": {
+                "minLength": 1,
+                "type": "string"
+            },
+            "maxItems": 100000,
+            "type": "array",
+            "uniqueItems": true
+        },
+        "current_revision_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "merged_content_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "merged_revision_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "plan_id": {
+            "pattern": "^world-application-plan:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "publication_changeset_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "reason": {
+            "enum": [
+                "unmoved-parent",
+                "path-disjoint"
+            ],
+            "type": "string"
+        },
+        "request_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "status": {
+            "enum": [
+                "planned"
+            ],
+            "type": "string"
+        }
+    },
+    "required": [
+        "application_custody_id",
+        "application_version",
+        "base_content_id",
+        "base_revision_id",
+        "binding_id",
+        "candidate_changeset_id",
+        "candidate_content_id",
+        "candidate_paths",
+        "candidate_revision_id",
+        "compatibility_version",
+        "current_changeset_id",
+        "current_content_id",
+        "current_paths",
+        "current_revision_id",
+        "merged_content_id",
+        "merged_revision_id",
+        "plan_id",
+        "publication_changeset_id",
+        "reason",
+        "request_id",
+        "status"
+    ],
+    "type": "object"
+}

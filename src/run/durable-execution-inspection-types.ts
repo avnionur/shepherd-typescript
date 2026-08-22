@@ -89,7 +89,7 @@ export type DurableTaskExecutionSettlementInspection = {
     /** Content-addressed authenticated settlement request identity. */
     readonly request_id: string;
     /** Configured terminal settlement state. */
-    readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[2 | 3];
+    readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[2 | 3 | 4];
     /** Exact durable execution evidence bound into the settlement. */
     readonly trace: DurableTaskExecutionSettlementTraceInspection;
 };

@@ -8,6 +8,8 @@ import type {
 import type {
     DURABLE_EXECUTION_CLAIMED_APPEND_STATUSES,
     DURABLE_EXECUTION_INVOCATION_CLAIM_STATUSES,
+    RETAINED_WORLD_APPLICATION_REASONS,
+    RETAINED_WORLD_APPLICATION_STATUSES,
     RETAINED_WORLD_SETTLEMENT_ACTIONS,
     RETAINED_WORLD_SETTLEMENT_STATES,
 } from "../protocol/values.generated.ts";
@@ -64,6 +66,52 @@ export type RetainedWorldSettlementAdmission = {
     readonly request: RetainedWorldSettlementRequest;
     /** Prepared state at the original consume-once admission boundary. */
     readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[0];
+};
+
+/** Content-addressed three-way application plan retained before user-tree mutation. */
+export type RetainedWorldApplicationPlanEvidence = {
+    /** Deterministic protected custody used to construct the merged revision. */
+    readonly application_custody_id: string;
+    /** Public application-plan protocol version. */
+    readonly application_version: number;
+    /** Compatibility namespace governing application evidence. */
+    readonly compatibility_version: string;
+    /** Exact retained base content identity. */
+    readonly base_content_id: string;
+    /** Exact retained base revision identity. */
+    readonly base_revision_id: string;
+    /** Exact workspace binding identity. */
+    readonly binding_id: string;
+    /** Candidate delta changeset identity. */
+    readonly candidate_changeset_id: string;
+    /** Candidate retained content identity. */
+    readonly candidate_content_id: string;
+    /** Canonical candidate changed paths. */
+    readonly candidate_paths: readonly string[];
+    /** Candidate retained revision identity. */
+    readonly candidate_revision_id: string;
+    /** Current-user delta changeset identity. */
+    readonly current_changeset_id: string;
+    /** Current user-basis content identity. */
+    readonly current_content_id: string;
+    /** Canonical current-user changed paths. */
+    readonly current_paths: readonly string[];
+    /** Current user-basis revision identity. */
+    readonly current_revision_id: string;
+    /** Exact merged content identity published by apply. */
+    readonly merged_content_id: string;
+    /** Exact merged immutable revision identity. */
+    readonly merged_revision_id: string;
+    /** Content-addressed identity of this complete plan. */
+    readonly plan_id: string;
+    /** Current-to-merged publication changeset identity. */
+    readonly publication_changeset_id: string;
+    /** Configured reason explaining the plan shape. */
+    readonly reason: (typeof RETAINED_WORLD_APPLICATION_REASONS)[number];
+    /** Exact authenticated settlement request identity. */
+    readonly request_id: string;
+    /** Configured successful planning status. */
+    readonly status: (typeof RETAINED_WORLD_APPLICATION_STATUSES)[number];
 };
 
 /** Canonical encoded settlement journal evidence. @internal */

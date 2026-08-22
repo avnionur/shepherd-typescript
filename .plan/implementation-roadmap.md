@@ -220,9 +220,14 @@ Work:
 - implement advisory/auto placement reporting; **implemented in 1.39.0** with workspace protocol
   v22 platform evidence, visible auto fallback, exact placed capture/recovery identity, and
   explicit jail refusal without a native-enforcement claim;
-- implement macOS Seatbelt and Linux Landlock jail launchers;
-- make explicit jail fail closed;
-- add `apply` with path-disjoint three-way semantics;
+- implement macOS Seatbelt and Linux Landlock jail launchers; **implemented in 1.40.0** with
+  workspace protocol v23 authenticated probes, exact grant lowering, structured native launch,
+  process/quiescence receipts, and journal-v12 recovery;
+- make explicit jail fail closed; **implemented in 1.40.0** for unavailable, failed, or uncertain
+  native evidence without advisory degradation;
+- add `apply` with path-disjoint three-way semantics; **implemented in 1.41.0** with workspace
+  protocol v24 bounded portable conflicts, exact durable plans, protected merged revisions,
+  consume-once terminal citations, and restart/concurrent recovery;
 - add `release` custody transition;
 - implement task/run ledgers and selectors;
 - implement output citations, trace revisions, and recovery records;
