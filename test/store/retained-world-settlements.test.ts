@@ -12,6 +12,7 @@ import {
     type RetainedWorldSettlementRequest,
     SQLiteTraceStore,
 } from "../../src/index.ts";
+import { encodeRetainedWorldApplicationPlan } from "../../src/store/retained-world-application-codec.ts";
 
 const request = Object.freeze({
     action: "select",
@@ -211,6 +212,90 @@ test("settlement journal rejects skipped transitions and validates discard recei
     assert.equal(store.readRetainedWorldSettlementJournal("world-output:missing"), undefined);
 });
 
+test("application journal binds one exact plan and applied terminal receipt", () => {
+    using store = new SQLiteTraceStore();
+    const applyRequest = Object.freeze({
+        ...request,
+        action: "apply",
+        command_id: "settlement-command:apply",
+        output_id: "world-output:apply",
+    }) satisfies RetainedWorldSettlementRequest;
+    const admission = store.admitRetainedWorldSettlement(applyRequest);
+    const plan = encodeRetainedWorldApplicationPlan({
+        application_custody_id: "world-custody:application",
+        base_content_id: applyRequest.user_basis_before,
+        base_revision_id: applyRequest.base_revision_id,
+        binding_id: applyRequest.binding_id,
+        candidate_changeset_id: applyRequest.changeset_id,
+        candidate_content_id: "world-content:candidate",
+        candidate_paths: ["candidate.txt"],
+        candidate_revision_id: applyRequest.head_revision_id,
+        current_changeset_id: "world-changeset:current",
+        current_content_id: "world-content:current",
+        current_paths: ["current.txt"],
+        current_revision_id: "world-revision:current",
+        merged_content_id: "world-content:merged",
+        merged_revision_id: "world-revision:merged",
+        publication_changeset_id: "world-changeset:publication",
+        reason: "path-disjoint",
+        request_id: admission.request_id,
+        status: "planned",
+    });
+    const applying = store.beginRetainedWorldSettlement(applyRequest.output_id, plan);
+    assert.equal(applying.state, "applying");
+    assert.deepEqual(store.beginRetainedWorldSettlement(applyRequest.output_id, plan), applying);
+    assert.throws(
+        () =>
+            store.beginRetainedWorldSettlement(
+                applyRequest.output_id,
+                encodeRetainedWorldApplicationPlan({
+                    application_custody_id: plan.application_custody_id,
+                    base_content_id: plan.base_content_id,
+                    base_revision_id: plan.base_revision_id,
+                    binding_id: plan.binding_id,
+                    candidate_changeset_id: plan.candidate_changeset_id,
+                    candidate_content_id: plan.candidate_content_id,
+                    candidate_paths: plan.candidate_paths,
+                    candidate_revision_id: plan.candidate_revision_id,
+                    current_changeset_id: plan.current_changeset_id,
+                    current_content_id: plan.current_content_id,
+                    current_paths: plan.current_paths,
+                    current_revision_id: "world-revision:different",
+                    merged_content_id: plan.merged_content_id,
+                    merged_revision_id: plan.merged_revision_id,
+                    publication_changeset_id: plan.publication_changeset_id,
+                    reason: plan.reason,
+                    request_id: plan.request_id,
+                    status: plan.status,
+                }),
+            ),
+        RetainedWorldSettlementConflictError,
+    );
+    const applied = store.retainRetainedWorldSettlementTerminal(applyRequest.output_id, {
+        action: "apply",
+        applied_revision_id: plan.merged_revision_id,
+        application_plan_id: plan.plan_id,
+        publication_id: "world-publication:apply",
+        user_basis_after: plan.merged_content_id,
+    });
+    assert.equal(applied.state, "applied");
+    assert.equal(applied.cleanup_completed, null);
+    assert.deepEqual(
+        store.retainRetainedWorldSettlementTerminal(applyRequest.output_id, {
+            action: "apply",
+            applied_revision_id: plan.merged_revision_id,
+            application_plan_id: plan.plan_id,
+            publication_id: "world-publication:apply",
+            user_basis_after: plan.merged_content_id,
+        }),
+        applied,
+    );
+    assert.throws(
+        () => store.completeRetainedWorldSettlementCleanup(applyRequest.output_id),
+        RetainedWorldSettlementConflictError,
+    );
+});
+
 test("settlement journal reads fail closed for corrupt nullable evidence combinations", async (context) => {
     const directory = await mkdtemp(path.join(tmpdir(), "shepherd-settlement-journal-corrupt-"));
     context.after(() => rm(directory, { recursive: true, force: true }));
@@ -311,7 +396,7 @@ test("retained-world settlement admission rejects malformed exact requests", () 
         () =>
             store.admitRetainedWorldSettlement({
                 ...request,
-                action: "apply" as RetainedWorldSettlementRequest["action"],
+                action: "unknown" as RetainedWorldSettlementRequest["action"],
             }),
         TypeError,
     );

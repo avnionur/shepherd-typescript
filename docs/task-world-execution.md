@@ -78,4 +78,6 @@ verified partial custody is retained beside the cancelled outcome while the user
 unchanged. Native jailed execution separately requires terminal process and process-group
 quiescence evidence before capture. A launch intent without terminal evidence remains uncertain
 and is never replayed automatically. Create/delete capability methods, simultaneous multi-world
-custody, and phase-specific administrative discard remain later runtime/settlement work.
+custody, and an explicit `release` transition remain later runtime/settlement work. Captured
+outputs can use the separate path-disjoint application coordinator described in
+[`retained-world-application.md`](./retained-world-application.md).

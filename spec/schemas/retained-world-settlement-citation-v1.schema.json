@@ -6,7 +6,8 @@
         "action": {
             "enum": [
                 "select",
-                "discard"
+                "discard",
+                "apply"
             ],
             "type": "string"
         },
@@ -69,7 +70,8 @@
         "state": {
             "enum": [
                 "selected",
-                "discarded"
+                "discarded",
+                "applied"
             ],
             "type": "string"
         },

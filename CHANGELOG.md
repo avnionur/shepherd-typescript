@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.41.0] - 2026-08-22
+
+### New Feature
+
+- Added workspace protocol v24 bounded content-addressed equal/prefix/portable-alias conflict
+  evidence and exact durable base/current/candidate/merged application plans.
+- Added public path-disjoint `apply` preparation, plan inspection, three-way materialization,
+  consume-once settlement, terminal citations, concurrent/restart recovery, and generated conflict,
+  plan, and receipt schemas.
+- Preserved unrelated current filesystem changes and Git HEAD/index/sparse/dirty/untracked/ignored
+  state while refusing overlaps, moved bases, Git administrative candidate paths, corrupt plans,
+  and third-state recovery.
+
+### Impact
+
+Callers can apply an isolated retained output onto an independently advanced user world when the
+two deltas touch disjoint portable paths. Overlap is reported before admission so the output remains
+selectable or discardable; no textual merge, rename inference, Git history mutation, or `release`
+transition is claimed.
+
 ## [1.40.0] - 2026-08-21
 
 ### New Feature

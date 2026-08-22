@@ -286,6 +286,16 @@ An authenticated read-only projection over one exact world changeset that provid
 content, preview, move, and Git-aware presentation without changing canonical identity.
 _Avoid_: Settlement decision, unbounded diff output, user-workspace read, canonical rename record
 
+**Retained-World Application Conflict**:
+A bounded content-addressed classification proving that candidate and current changes touch equal,
+portable-alias, or ancestor/descendant paths and therefore cannot be applied automatically.
+_Avoid_: Textual merge conflict, consumed settlement decision, rename inference
+
+**Retained-World Application Plan**:
+An immutable content-addressed settlement record binding one shared base, current world, retained
+candidate, path-disjoint merged revision, input changesets, and exact publication changeset.
+_Avoid_: Mutable merge workspace, Git merge commit, inferred conflict resolution
+
 **Durable Resume Command**:
 A globally idempotent canonical request naming one exact suspension acknowledgement and its
 continuation descriptor. Successful application atomically acquires the next worker fence and

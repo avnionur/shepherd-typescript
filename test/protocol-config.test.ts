@@ -90,6 +90,19 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.settlement.version, 12);
     assert.equal(parsed.workspaces.settlement.operationVersion, 1);
     assert.equal(parsed.workspaces.settlement.receiptVersion, 1);
+    assert.deepEqual(parsed.workspaces.settlement.actions, ["select", "discard", "apply"]);
+    assert.deepEqual(parsed.workspaces.settlement.states, [
+        "prepared",
+        "applying",
+        "selected",
+        "discarded",
+        "applied",
+    ]);
+    assert.deepEqual(parsed.workspaces.settlement.application.reasons, [
+        "unmoved-parent",
+        "path-disjoint",
+    ]);
+    assert.equal(Object.isFrozen(parsed.workspaces.settlement.application), true);
     assert.equal(parsed.workspaces.selectionPublication.version, 16);
     assert.equal(parsed.workspaces.selectionPublication.planVersion, 1);
     assert.equal(parsed.workspaces.selectionPublication.stepVersion, 1);
@@ -863,6 +876,30 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             objectAt(workspaceConfigOf(config), "settlement").requestIdPrefix = "";
         },
         (config) => {
+            settlementApplicationConfigOf(config).conflictKinds = [];
+        },
+        (config) => {
+            settlementApplicationConfigOf(config).reasons = [];
+        },
+        (config) => {
+            settlementApplicationConfigOf(config).statuses = [];
+        },
+        (config) => {
+            objectAt(settlementApplicationConfigOf(config), "reasonRoles").disjoint = "unknown";
+        },
+        (config) => {
+            settlementApplicationConfigOf(config).caseFold = "yes";
+        },
+        (config) => {
+            settlementApplicationConfigOf(config).normalizationForm = "invalid";
+        },
+        (config) => {
+            settlementApplicationConfigOf(config).maxConflicts = 0;
+        },
+        (config) => {
+            objectAt(settlementApplicationConfigOf(config), "schemas").planId = "relative";
+        },
+        (config) => {
             objectAt(workspaceConfigOf(config), "selectionPublication").atomicityKinds = [];
         },
         (config) => {
@@ -1377,6 +1414,10 @@ function workspaceConfigOf(config: Record<string, unknown>): Record<string, unkn
 
 function nativeJailConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(objectAt(workspaceConfigOf(config), "placements"), "nativeJails");
+}
+
+function settlementApplicationConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(workspaceConfigOf(config), "settlement"), "application");
 }
 
 function carrierConfigOf(config: Record<string, unknown>): Record<string, unknown> {

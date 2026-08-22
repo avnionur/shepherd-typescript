@@ -1362,3 +1362,47 @@ export const WORKSPACE_PROTOCOL_V23_CONTRACT = deepFreeze({
         journalVersion: 12,
     },
 } as const);
+
+/** Immutable retained-world apply vocabulary extension implemented by workspace protocol v24. */
+export const WORKSPACE_PROTOCOL_V24_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V23_CONTRACT,
+    settlement: {
+        ...WORKSPACE_PROTOCOL_V23_CONTRACT.settlement,
+        actions: ["select", "discard", "apply"],
+        application: {
+            artifacts: {
+                conflictSchema: "spec/schemas/retained-world-application-conflict-v1.schema.json",
+                planSchema: "spec/schemas/retained-world-application-plan-v1.schema.json",
+                receiptSchema: "spec/schemas/retained-world-application-receipt-v1.schema.json",
+            },
+            caseFold: true,
+            compatibilityVersion: "shepherd.workspace.retained-world-application.v1",
+            conflictIdPrefix: "world-application-conflict:sha256:",
+            conflictKinds: ["equal-path", "ancestor-descendant", "portable-alias"],
+            conflictVersion: 1,
+            errors: {
+                conflictCode: "RETAINED_WORLD_APPLICATION_CONFLICT",
+                conflictMessage: "retained world application changes overlap current user changes",
+            },
+            maxConflicts: 1_000,
+            normalizationForm: "NFC",
+            planIdPrefix: "world-application-plan:sha256:",
+            planVersion: 1,
+            reasonRoles: {
+                disjoint: "path-disjoint",
+                unmoved: "unmoved-parent",
+            },
+            reasons: ["unmoved-parent", "path-disjoint"],
+            receiptVersion: 1,
+            schemas: {
+                conflictId:
+                    "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-application-conflict-v1.schema.json",
+                planId: "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-application-plan-v1.schema.json",
+                receiptId:
+                    "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-application-receipt-v1.schema.json",
+            },
+            statuses: ["planned"],
+        },
+        states: ["prepared", "applying", "selected", "discarded", "applied"],
+    },
+} as const);

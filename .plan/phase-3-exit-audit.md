@@ -57,8 +57,8 @@ The audit baseline passed all 34 focused tests.
   platform-gated ACL and alternate-stream policy fixtures, but the repository GitHub CI workflow
   is manually disabled and no final Windows lane is claimed by this audit.
 - The reference copy carrier is the correctness oracle. No optimized carrier claims parity.
-- Runtime grants, advisory/auto placement reporting, and native Seatbelt/Landlock filesystem-write
-  enforcement are now implemented in Phase 4. `apply`, `release`, CLI compatibility, and the
+- Runtime grants, advisory/auto placement reporting, native Seatbelt/Landlock filesystem-write
+  enforcement, and path-disjoint `apply` are now implemented in Phase 4. `release`, CLI compatibility, and the
   installed-package quickstart remain open.
 - `npm pack --dry-run` verifies package contents only. Installed consumer import/type fixtures and
   publication readiness remain Phase 4/5; npm publication stays disabled.
@@ -68,5 +68,5 @@ The audit baseline passed all 34 focused tests.
 ## Phase boundary
 
 After this audit merges, close Phase 3 epic #16 and activate Phase 4 epic #17. Phase 4 owns the
-remaining documented `0.3.0` `apply`/`release` settlement, CLI, repair, and
+remaining documented `0.3.0` `release` settlement, CLI, repair, and
 installed-package compatibility work.

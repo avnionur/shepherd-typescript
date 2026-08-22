@@ -19,13 +19,13 @@ import type { RetainedWorldSettlementOperationEncoding } from "../store/retained
 import { isCanonicalWorldPath, worldChangeOperationOf } from "./changesets.ts";
 import type { WorldChangeNode, WorldChangeset, WorldPathChange } from "./types.ts";
 
-const [SELECT_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
+const [SELECT_ACTION, , APPLY_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
 const [JOURNALED_PATH_SET] = RETAINED_WORLD_SELECTION_ATOMICITY_KINDS;
 const [APPLIED_STATUS] = RETAINED_WORLD_SELECTION_STEP_STATUSES;
 const [DEPENDENCY_ORDERED_PATH_SET] = RETAINED_WORLD_SELECTION_SCHEDULE_KINDS;
 
 type SelectionPublicationPlan = Readonly<{
-    action: typeof SELECT_ACTION;
+    action: typeof SELECT_ACTION | typeof APPLY_ACTION;
     atomicity: typeof JOURNALED_PATH_SET;
     base_content_id: string;
     base_revision_id: string;
@@ -158,37 +158,55 @@ export function encodeSelectionPublicationPlan(
     headContentId: string,
 ): SelectionPublicationPlanEncoding {
     const request = operation.value.request;
-    if (operation.value.action !== SELECT_ACTION || request.action !== SELECT_ACTION) {
-        throw new TypeError("selection publication requires an exact select operation");
+    if (
+        (operation.value.action !== SELECT_ACTION && operation.value.action !== APPLY_ACTION) ||
+        request.action !== operation.value.action
+    ) {
+        throw new TypeError("selection publication requires an exact publishing operation");
     }
+    const applicationPlan =
+        operation.value.action === APPLY_ACTION ? operation.value.application_plan : null;
+    const expected = {
+        baseContentId: applicationPlan?.current_content_id ?? request.user_basis_before,
+        baseRevisionId: applicationPlan?.current_revision_id ?? request.base_revision_id,
+        changesetId: applicationPlan?.publication_changeset_id ?? request.changeset_id,
+        custodyId: applicationPlan?.application_custody_id ?? request.custody_id,
+        headContentId: applicationPlan?.merged_content_id ?? headContentId,
+        headRevisionId: applicationPlan?.merged_revision_id ?? request.head_revision_id,
+    };
     assertText(baseContentId, "base_content_id");
     assertText(headContentId, "head_content_id");
-    if (baseContentId !== request.user_basis_before) {
+    if (baseContentId !== expected.baseContentId || headContentId !== expected.headContentId) {
         throw new TypeError("selection publication base content is inconsistent");
     }
-    const changes = readChangeset(changeset, request);
+    const changes = readChangeset(changeset, {
+        baseRevisionId: expected.baseRevisionId,
+        bindingId: request.binding_id,
+        changesetId: expected.changesetId,
+        headRevisionId: expected.headRevisionId,
+    });
     const stagingId = digestId(workspaceProtocolConfig.selectionPublication.stagingIdPrefix, {
         binding_id: request.binding_id,
-        changeset_id: request.changeset_id,
-        head_content_id: headContentId,
-        head_revision_id: request.head_revision_id,
+        changeset_id: expected.changesetId,
+        head_content_id: expected.headContentId,
+        head_revision_id: expected.headRevisionId,
         operation_id: operation.id,
     });
     const value = Object.freeze({
-        action: SELECT_ACTION,
+        action: operation.value.action,
         atomicity: JOURNALED_PATH_SET,
-        base_content_id: baseContentId,
-        base_revision_id: request.base_revision_id,
+        base_content_id: expected.baseContentId,
+        base_revision_id: expected.baseRevisionId,
         binding_id: request.binding_id,
         capture_record_id: request.capture_record_id,
         changes,
-        changeset_id: request.changeset_id,
+        changeset_id: expected.changesetId,
         command_id: request.command_id,
-        custody_id: request.custody_id,
+        custody_id: expected.custodyId,
         descriptor_format: workspaceProtocolConfig.selectionPublication.descriptorFormat,
         execution_cut_id: request.execution_cut_id,
-        head_content_id: headContentId,
-        head_revision_id: request.head_revision_id,
+        head_content_id: expected.headContentId,
+        head_revision_id: expected.headRevisionId,
         operation_id: operation.id,
         output_id: request.output_id,
         plan_version: RETAINED_WORLD_SELECTION_PLAN_VERSION,
@@ -196,7 +214,7 @@ export function encodeSelectionPublicationPlan(
         run_id: request.run_id,
         settlement_version: request.settlement_version,
         staging_id: stagingId,
-        user_basis_before: request.user_basis_before,
+        user_basis_before: expected.baseContentId,
     }) satisfies SelectionPublicationPlan;
     return Object.freeze({
         ...encodeValue(value, workspaceProtocolConfig.selectionPublication.planIdPrefix),
@@ -489,7 +507,12 @@ export function decodeSelectionPublicationReceipt(
 
 function readChangeset(
     value: WorldChangeset,
-    request: RetainedWorldSettlementOperationEncoding["value"]["request"],
+    expected: Readonly<{
+        baseRevisionId: string;
+        bindingId: string;
+        changesetId: string;
+        headRevisionId: string;
+    }>,
 ): readonly WorldPathChange[] {
     const fields = exactObject(value, [
         "base_revision_id",
@@ -501,10 +524,10 @@ function readChangeset(
         "schema_version",
     ]);
     if (
-        fields.base_revision_id !== request.base_revision_id ||
-        fields.binding_id !== request.binding_id ||
-        fields.changeset_id !== request.changeset_id ||
-        fields.head_revision_id !== request.head_revision_id ||
+        fields.base_revision_id !== expected.baseRevisionId ||
+        fields.binding_id !== expected.bindingId ||
+        fields.changeset_id !== expected.changesetId ||
+        fields.head_revision_id !== expected.headRevisionId ||
         fields.schema_version !== workspaceProtocolConfig.changesets.version ||
         !Array.isArray(fields.changes) ||
         !Array.isArray(fields.changed_paths) ||
@@ -541,13 +564,13 @@ function readChangeset(
         throw new TypeError("selection publication changed paths are inconsistent");
     }
     const semantic = {
-        base_revision_id: request.base_revision_id,
-        binding_id: request.binding_id,
+        base_revision_id: expected.baseRevisionId,
+        binding_id: expected.bindingId,
         changes: changes as unknown as SemanticRecord["changes"],
-        head_revision_id: request.head_revision_id,
+        head_revision_id: expected.headRevisionId,
         schema_version: workspaceProtocolConfig.changesets.version,
     };
-    if (digestId(workspaceProtocolConfig.changesets.idPrefix, semantic) !== request.changeset_id) {
+    if (digestId(workspaceProtocolConfig.changesets.idPrefix, semantic) !== expected.changesetId) {
         throw new TypeError("selection publication changeset identity is invalid");
     }
     return changes;
@@ -594,6 +617,23 @@ function dependencyOrderedOrdinals(changes: readonly WorldPathChange[]): readonl
         }
     }
     return Object.freeze(ordinals);
+}
+
+/** Returns candidate changes in deterministic directory-safe publication order. @internal */
+export function orderWorldPathChangesForPublication(
+    changes: readonly WorldPathChange[],
+): readonly WorldPathChange[] {
+    return Object.freeze(
+        dependencyOrderedOrdinals(changes).map((ordinal) => {
+            const change = changes[ordinal];
+            // dependencyOrderedOrdinals derives every ordinal from this exact dense array.
+            /* node:coverage ignore next 3 */
+            if (change === undefined) {
+                throw new TypeError("publication schedule references an absent change");
+            }
+            return change;
+        }),
+    );
 }
 
 function readChange(value: unknown): WorldPathChange {

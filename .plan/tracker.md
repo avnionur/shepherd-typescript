@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-18
+Last updated: 2026-08-22
 
-Current version: `1.37.0`
+Current version: `1.41.0`
 
 Current level: L1-alpha — P0 retained-world settlement loop
 
@@ -128,6 +128,11 @@ worktree, common-directory, per-worktree directory, object-format, and filesyste
 the unchanged v2 directory binding with a separate content-addressed resource identity. Multiple
 disjoint repositories retain independent custody under one workspace control root; shared linked
 worktrees, nested superproject/submodule sets, inexact roots, drift, and forged handles fail closed.
+Workspace protocol v24 now adds bounded portable equal/prefix/alias conflict evidence and
+path-disjoint three-way application. It binds one exact base/current/candidate/merged plan,
+publishes through the existing dependency-scheduled carrier journal, preserves unrelated user and
+Git state, converges across interruption/concurrency/restart, and retains applied terminal
+citations without consuming overlap refusals.
 
 ## Progress
 
@@ -295,6 +300,9 @@ worktrees, nested superproject/submodule sets, inexact roots, drift, and forged 
   WSL Landlock probes, exact writable-root lowering, structured shell-free launch, durable
   process/quiescence evidence, journal-v12 recovery, fresh-process replay, and fail-closed
   uncertain interruption while retaining journal v1-v3 identities.
+- [x] Complete Phase 4 Task 5 workspace-protocol-v24 portable path-conflict inspection, exact
+  three-way application plans, protected merged revisions, consume-once applied receipts/citations,
+  Git-state preservation, and interruption/concurrency/fresh-process recovery.
 
 ## Verification required for this slice
 
@@ -308,8 +316,8 @@ worktrees, nested superproject/submodule sets, inexact roots, drift, and forged 
 
 ## Next slice
 
-Continue Phase 4 with the next dependency-unblocked settlement or compatibility issue after the
-native jail slice is merged. Preserve the v9-v12 writer/reader matrix and require production-seam
+Continue Phase 4 with the next dependency-unblocked `release` or compatibility issue after the
+path-disjoint application slice is merged. Preserve the v9-v12 writer/reader matrix and require production-seam
 evidence for every new authority or mutation path.
 
 ## Notes

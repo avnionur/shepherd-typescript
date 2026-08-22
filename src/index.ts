@@ -87,6 +87,9 @@ export {
     REPOSITORY_GRANT_ATOMS,
     REPOSITORY_GRANT_PROFILES,
     RESOLVED_PLACEMENTS,
+    RETAINED_WORLD_APPLICATION_CONFLICT_KINDS,
+    RETAINED_WORLD_APPLICATION_REASONS,
+    RETAINED_WORLD_APPLICATION_STATUSES,
     RETAINED_WORLD_MAX_CAPTURE_ID_BYTES,
     RETAINED_WORLD_MAX_TEXT_BYTES,
     RETAINED_WORLD_SELECTION_ATOMICITY_KINDS,
@@ -302,6 +305,7 @@ export type {
     OwnerRecord,
     RecordShape,
     RetainedRecord,
+    RetainedWorldApplicationPlanEvidence,
     RetainedWorldSettlementAdmission,
     RetainedWorldSettlementRequest,
     Slice,
@@ -343,6 +347,7 @@ export { createWorldChangesetInspection } from "./workspace/changeset-inspection
 export { createWorldChangeset } from "./workspace/changesets.ts";
 export {
     GitCustodyError,
+    RetainedWorldApplicationConflictError,
     WorkspaceBindingError,
     WorkspaceControlError,
     WorkspaceInitializationConflictError,
@@ -436,6 +441,13 @@ export {
     createGitRepositoryGrantPlan,
     grantTaskRepositories,
 } from "./workspace/repository-grants.ts";
+export { inspectRetainedWorldApplicationConflicts } from "./workspace/retained-world-application.ts";
+export type {
+    InspectRetainedWorldApplicationConflictsOptions,
+    RetainedWorldApplicationConflict,
+    RetainedWorldApplicationConflictEvidence,
+    RetainedWorldApplicationConflictKind,
+} from "./workspace/retained-world-application-types.ts";
 export { createRetainedWorldRunner } from "./workspace/retained-world-runner.ts";
 export type {
     RetainedWorldCapability,
@@ -445,12 +457,16 @@ export type {
     RetainedWorldRunnerDefinition,
 } from "./workspace/retained-world-runner-types.ts";
 export {
+    applyRetainedWorldSettlement,
     discardRetainedWorldSettlement,
+    inspectRetainedWorldApplicationPlan,
     inspectRetainedWorldSettlement,
     prepareRetainedWorldSettlement,
     selectRetainedWorldSettlement,
 } from "./workspace/retained-world-settlement.ts";
 export type {
+    AppliedRetainedWorldSettlement,
+    ApplyRetainedWorldSettlementOptions,
     DiscardedRetainedWorldSettlement,
     DiscardRetainedWorldSettlementOptions,
     PreparedRetainedWorldSettlement,

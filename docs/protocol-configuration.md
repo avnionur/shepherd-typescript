@@ -75,6 +75,10 @@ journal-v11 evidence. Workspace protocol v23 adds configured Seatbelt/Landlock b
 descriptors, compiler/helper policy, probe/status/reason vocabularies, structured command/resource
 bounds, native resolution and confinement-plan identities, process/quiescence classifications,
 schema destinations, and journal-v12/v4 evidence without redefining v1-v3 journals.
+Workspace protocol v24 extends settlement with configured `apply`/`applied` vocabulary, NFC and
+case-folded equal/prefix/alias conflict classification, bounded conflict evidence, exact
+application-plan and receipt identities, reason/status roles, and generated schema destinations
+without redefining existing select/discard or journal-v1-v4 evidence.
 Store schema
 v6 owns the consume-once
 settlement decision table without changing kernel record identity.
@@ -137,7 +141,7 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   schema paths, identity prefixes, limits, statuses, and version are closed. Settlement request,
   effect-journal, and selection-publication vocabularies, identity prefixes, resource bounds,
   descriptor names, errors, schema destinations, and versions are closed. Every value matches the
-  immutable workspace protocol v23 contract. Protocols v1 through v22 remain unchanged historical
+  immutable workspace protocol v24 contract. Protocols v1 through v23 remain unchanged historical
   subsets. Native-jail backend names/platforms, probe/placement/process vocabularies, compiler and
   command bounds, schema paths, journal readers/writers, and semantic roles are closed and
   internally consistent. Platform probes contain valid path-token arguments and regular expressions, fault

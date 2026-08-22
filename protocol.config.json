@@ -565,7 +565,39 @@
             "version": 11
         },
         "settlement": {
-            "actions": ["select", "discard"],
+            "actions": ["select", "discard", "apply"],
+            "application": {
+                "artifacts": {
+                    "conflictSchema": "spec/schemas/retained-world-application-conflict-v1.schema.json",
+                    "planSchema": "spec/schemas/retained-world-application-plan-v1.schema.json",
+                    "receiptSchema": "spec/schemas/retained-world-application-receipt-v1.schema.json"
+                },
+                "caseFold": true,
+                "compatibilityVersion": "shepherd.workspace.retained-world-application.v1",
+                "conflictIdPrefix": "world-application-conflict:sha256:",
+                "conflictKinds": ["equal-path", "ancestor-descendant", "portable-alias"],
+                "conflictVersion": 1,
+                "errors": {
+                    "conflictCode": "RETAINED_WORLD_APPLICATION_CONFLICT",
+                    "conflictMessage": "retained world application changes overlap current user changes"
+                },
+                "maxConflicts": 1000,
+                "normalizationForm": "NFC",
+                "planIdPrefix": "world-application-plan:sha256:",
+                "planVersion": 1,
+                "reasonRoles": {
+                    "disjoint": "path-disjoint",
+                    "unmoved": "unmoved-parent"
+                },
+                "reasons": ["unmoved-parent", "path-disjoint"],
+                "receiptVersion": 1,
+                "schemas": {
+                    "conflictId": "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-application-conflict-v1.schema.json",
+                    "planId": "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-application-plan-v1.schema.json",
+                    "receiptId": "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-application-receipt-v1.schema.json"
+                },
+                "statuses": ["planned"]
+            },
             "citationAppendIntentPrefix": "world-settlement-citation-append:",
             "citationCutIdPrefix": "world-settlement-citation-cut:",
             "citationSchemaId": "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-settlement-citation-v1.schema.json",
@@ -581,7 +613,7 @@
             "operationVersion": 1,
             "receiptVersion": 1,
             "requestIdPrefix": "world-settlement:sha256:",
-            "states": ["prepared", "applying", "selected", "discarded"],
+            "states": ["prepared", "applying", "selected", "discarded", "applied"],
             "version": 12
         },
         "selectionPublication": {

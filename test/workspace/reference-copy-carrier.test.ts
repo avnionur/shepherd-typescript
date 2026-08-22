@@ -27,6 +27,7 @@ import {
     WorldCarrierError,
 } from "../../src/index.ts";
 import { workspaceProtocolConfig } from "../../src/protocol/config.ts";
+import { createReferenceCopyApplicationRevision } from "../../src/workspace/reference-copy-carrier.ts";
 
 test("reference copy carrier snapshots, reopens, forks, verifies, and discards retained custody", async (context) => {
     const workspaceRoot = await temporaryDirectory(context, "lifecycle");
@@ -212,6 +213,120 @@ test("custody capture converges on repeat and rejects invalid or unsupported cus
     await assert.rejects(carrier.captureCustody(escaping.custody_id), WorldCarrierError);
     await carrier.discard(custody.custody_id);
     await assert.rejects(carrier.captureCustody(custody.custody_id), WorldCarrierError);
+});
+
+test("reference application revision rejects invalid, cross-binding, and third-state recovery", async (context) => {
+    const workspaceRoot = await temporaryDirectory(context, "application-revision");
+    initializeWorkspace({ adopt: "none", initializeGit: false, rootPath: workspaceRoot });
+    await mkdir(path.join(workspaceRoot, "source"));
+    await mkdir(path.join(workspaceRoot, "other"));
+    await writeFile(path.join(workspaceRoot, "source", "candidate.txt"), "before\n");
+    await writeFile(path.join(workspaceRoot, "other", "candidate.txt"), "before\n");
+    const bindings = createWorkspaceBindings({
+        bindings: [
+            { name: "source", root: "source" },
+            { name: "other", root: "other" },
+        ],
+        workspaceRoot,
+    }).bindings;
+    const sourceBinding = bindings[0];
+    const otherBinding = bindings[1];
+    assert.ok(sourceBinding && otherBinding);
+    const carrier = createReferenceCopyCarrier({ workspaceRoot });
+    const sourceBase = await carrier.snapshot(sourceBinding);
+    const sourceCustody = await carrier.fork(sourceBase.revision_id);
+    await writeFile(path.join(sourceCustody.path, "candidate.txt"), "candidate\n");
+    const sourceHead = await carrier.captureCustody(sourceCustody.custody_id);
+    const sourceChangeset = await createWorldChangeset({
+        baseRevision: sourceBase,
+        carrier,
+        headRevision: sourceHead,
+    });
+    assert.throws(
+        () =>
+            createReferenceCopyApplicationRevision(carrier, {
+                candidateChangeset: sourceChangeset,
+                currentRevisionId: sourceBase.revision_id,
+                operationKey: "",
+            }),
+        WorldCarrierError,
+    );
+    assert.throws(
+        () =>
+            createReferenceCopyApplicationRevision(carrier, {
+                candidateChangeset: sourceChangeset,
+                currentRevisionId: sourceBase.revision_id,
+                operationKey: null as never,
+            }),
+        WorldCarrierError,
+    );
+
+    const otherBase = await carrier.snapshot(otherBinding);
+    const otherCustody = await carrier.fork(otherBase.revision_id);
+    await writeFile(path.join(otherCustody.path, "candidate.txt"), "other\n");
+    const otherHead = await carrier.captureCustody(otherCustody.custody_id);
+    const otherChangeset = await createWorldChangeset({
+        baseRevision: otherBase,
+        carrier,
+        headRevision: otherHead,
+    });
+    assert.throws(
+        () =>
+            createReferenceCopyApplicationRevision(carrier, {
+                candidateChangeset: otherChangeset,
+                currentRevisionId: sourceBase.revision_id,
+                operationKey: "application:cross-binding",
+            }),
+        WorldCarrierError,
+    );
+    assert.throws(
+        () =>
+            createReferenceCopyApplicationRevision(carrier, {
+                candidateChangeset: {
+                    ...otherChangeset,
+                    binding_id: sourceBase.binding_id,
+                },
+                currentRevisionId: sourceBase.revision_id,
+                operationKey: "application:cross-base-binding",
+            }),
+        WorldCarrierError,
+    );
+    assert.throws(
+        () =>
+            createReferenceCopyApplicationRevision(carrier, {
+                candidateChangeset: {
+                    ...sourceChangeset,
+                    head_revision_id: otherHead.revision_id,
+                },
+                currentRevisionId: sourceBase.revision_id,
+                operationKey: "application:cross-head-binding",
+            }),
+        WorldCarrierError,
+    );
+
+    const application = createReferenceCopyApplicationRevision(carrier, {
+        candidateChangeset: sourceChangeset,
+        currentRevisionId: sourceBase.revision_id,
+        operationKey: "application:recovery",
+    });
+    assert.deepEqual(
+        createReferenceCopyApplicationRevision(carrier, {
+            candidateChangeset: sourceChangeset,
+            currentRevisionId: sourceBase.revision_id,
+            operationKey: "application:recovery",
+        }),
+        application,
+    );
+    await writeFile(path.join(application.custody.path, "candidate.txt"), "third-state\n");
+    assert.throws(
+        () =>
+            createReferenceCopyApplicationRevision(carrier, {
+                candidateChangeset: sourceChangeset,
+                currentRevisionId: sourceBase.revision_id,
+                operationKey: "application:recovery",
+            }),
+        WorldCarrierError,
+    );
 });
 
 test("revision verification rejects ancestry beyond the configured bound", async (context) => {

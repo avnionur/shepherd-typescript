@@ -66,7 +66,7 @@ and any applicable pinned upstream-oracle comparison.
 | Retained world output | shipped | compatible | P0 | working tree remains unchanged |
 | Read-only changeset | shipped | required | P0 | file/mode/delete/symlink fixtures |
 | `select` fast-forward settlement | shipped | merge analogue | P0 | moved-basis refusal tests |
-| `apply` path-disjoint three-way settlement | shipped | merge analogue | P1 | overlap matrix |
+| `apply` path-disjoint three-way settlement | shipped | merge analogue | P1 | public equal/prefix/portable-alias overlap refusal, structural merge, Git-state preservation, consume-once, interruption, concurrency, and fresh-process recovery implemented |
 | `release` | shipped | scope handoff analogue | P1 | custody transition fixtures |
 | `discard` | shipped | core | P0 | parent/worktree equivalence |
 | Consume-once settlement | shipped | required | P0 | concurrent CAS tests |
@@ -85,8 +85,8 @@ discard converges after restart. The reproducible evidence is recorded in
 [`phase-3-exit-audit.md`](./phase-3-exit-audit.md).
 
 `L1-alpha` does not mark the entire upstream column complete. Explicit grant identity, advisory
-capability checks, advisory/auto placement reporting, and authenticated native filesystem-write
-jails are implemented, while `apply`, `release`, CLI compatibility, repair, installed-package
+capability checks, advisory/auto placement reporting, authenticated native filesystem-write jails,
+and path-disjoint `apply` are implemented, while `release`, CLI compatibility, repair, installed-package
 consumer fixtures, and remaining P1 rows stay assigned to Phase 4. Platform completion is limited
 to probed macOS Seatbelt and Linux/WSL Landlock; no optimized carrier, AppContainer, or native-
 Windows jail claim is made.

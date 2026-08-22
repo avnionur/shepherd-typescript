@@ -150,6 +150,18 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             relativePath: config.workspaces.settlement.citationSchemaPath,
         },
         {
+            content: renderJson(renderRetainedWorldApplicationConflictSchema(config)),
+            relativePath: config.workspaces.settlement.application.artifacts.conflictSchema,
+        },
+        {
+            content: renderJson(renderRetainedWorldApplicationPlanSchema(config)),
+            relativePath: config.workspaces.settlement.application.artifacts.planSchema,
+        },
+        {
+            content: renderJson(renderRetainedWorldApplicationReceiptSchema(config)),
+            relativePath: config.workspaces.settlement.application.artifacts.receiptSchema,
+        },
+        {
             content: renderJson(renderSelectionPublicationSchema(config)),
             relativePath: config.workspaces.selectionPublication.schemaPath,
         },
@@ -232,6 +244,132 @@ function renderSettlementCitationSchema(config: ProtocolConfig): Readonly<Record
             "terminal_record_id",
         ],
         title: "Shepherd Retained World Settlement Citation v1",
+        type: "object",
+    };
+}
+
+function renderRetainedWorldApplicationConflictSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const application = config.workspaces.settlement.application;
+    return {
+        $id: application.schemas.conflictId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            compatibility_version: { const: application.compatibilityVersion, type: "string" },
+            conflict_id: {
+                pattern: digestPrefixPattern(application.conflictIdPrefix, config),
+                type: "string",
+            },
+            conflict_version: { const: application.conflictVersion, type: "integer" },
+            conflicts: {
+                items: {
+                    additionalProperties: false,
+                    properties: {
+                        candidate_path: { minLength: 1, type: "string" },
+                        current_path: { minLength: 1, type: "string" },
+                        kind: { enum: application.conflictKinds, type: "string" },
+                    },
+                    required: ["candidate_path", "current_path", "kind"],
+                    type: "object",
+                },
+                maxItems: application.maxConflicts,
+                minItems: 1,
+                type: "array",
+            },
+        },
+        required: ["compatibility_version", "conflict_id", "conflict_version", "conflicts"],
+        type: "object",
+    };
+}
+
+function renderRetainedWorldApplicationPlanSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const application = config.workspaces.settlement.application;
+    const text = { minLength: 1, type: "string" } as const;
+    const pathArray = {
+        items: text,
+        maxItems: config.workspaces.changesets.maxChanges,
+        type: "array",
+        uniqueItems: true,
+    } as const;
+    const fields = [
+        "application_custody_id",
+        "application_version",
+        "base_content_id",
+        "base_revision_id",
+        "binding_id",
+        "candidate_changeset_id",
+        "candidate_content_id",
+        "candidate_paths",
+        "candidate_revision_id",
+        "compatibility_version",
+        "current_changeset_id",
+        "current_content_id",
+        "current_paths",
+        "current_revision_id",
+        "merged_content_id",
+        "merged_revision_id",
+        "plan_id",
+        "publication_changeset_id",
+        "reason",
+        "request_id",
+        "status",
+    ];
+    return {
+        $id: application.schemas.planId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            ...Object.fromEntries(fields.map((field) => [field, text])),
+            application_version: { const: application.planVersion, type: "integer" },
+            candidate_paths: pathArray,
+            compatibility_version: { const: application.compatibilityVersion, type: "string" },
+            current_paths: pathArray,
+            plan_id: {
+                pattern: digestPrefixPattern(application.planIdPrefix, config),
+                type: "string",
+            },
+            reason: { enum: application.reasons, type: "string" },
+            status: { enum: application.statuses, type: "string" },
+        },
+        required: fields,
+        type: "object",
+    };
+}
+
+function renderRetainedWorldApplicationReceiptSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const application = config.workspaces.settlement.application;
+    const fields = [
+        "action",
+        "applied_revision_id",
+        "application_plan_id",
+        "operation_id",
+        "publication_id",
+        "receipt_version",
+        "request_id",
+        "state",
+        "user_basis_after",
+    ];
+    return {
+        $id: application.schemas.receiptId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            ...Object.fromEntries(fields.map((field) => [field, { minLength: 1, type: "string" }])),
+            action: { const: config.workspaces.settlement.actions[2], type: "string" },
+            application_plan_id: {
+                pattern: digestPrefixPattern(application.planIdPrefix, config),
+                type: "string",
+            },
+            receipt_version: { const: application.receiptVersion, type: "integer" },
+            state: { const: config.workspaces.settlement.states[4], type: "string" },
+        },
+        required: fields,
         type: "object",
     };
 }
@@ -1071,7 +1209,10 @@ function renderSelectionPublicationSchema(
                 properties: {
                     ...Object.fromEntries(planFields.map((field) => [field, text])),
                     action: {
-                        const: config.workspaces.settlement.actions[0],
+                        enum: [
+                            config.workspaces.settlement.actions[0],
+                            config.workspaces.settlement.actions[2],
+                        ],
                         type: "string",
                     },
                     atomicity: {
@@ -1406,6 +1547,17 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedRetainedWorldSettlementActions = config.workspaces.settlement.actions
         .map((action) => JSON.stringify(action))
         .join(", ");
+    const renderedRetainedWorldApplicationConflictKinds =
+        config.workspaces.settlement.application.conflictKinds
+            .map((kind) => `    ${JSON.stringify(kind)},`)
+            .join("\n");
+    const renderedRetainedWorldApplicationReasons = config.workspaces.settlement.application.reasons
+        .map((reason) => JSON.stringify(reason))
+        .join(", ");
+    const renderedRetainedWorldApplicationStatuses =
+        config.workspaces.settlement.application.statuses
+            .map((status) => JSON.stringify(status))
+            .join(", ");
     const renderedRetainedWorldSettlementStates = config.workspaces.settlement.states
         .map((state) => `    ${JSON.stringify(state)}`)
         .join(",\n");
@@ -1649,6 +1801,17 @@ ${renderedRetainedWorldJournalPhases},
 
 /** Configured consume-once retained-world settlement actions. @public */
 export const RETAINED_WORLD_SETTLEMENT_ACTIONS = [${renderedRetainedWorldSettlementActions}] as const;
+
+/** Configured retained-world application conflict classifications. @public */
+export const RETAINED_WORLD_APPLICATION_CONFLICT_KINDS = [
+${renderedRetainedWorldApplicationConflictKinds}
+] as const;
+
+/** Configured retained-world application plan reasons. @public */
+export const RETAINED_WORLD_APPLICATION_REASONS = [${renderedRetainedWorldApplicationReasons}] as const;
+
+/** Configured retained-world application plan statuses. @public */
+export const RETAINED_WORLD_APPLICATION_STATUSES = [${renderedRetainedWorldApplicationStatuses}] as const;
 
 /** Configured durable retained-world settlement states. @public */
 export const RETAINED_WORLD_SETTLEMENT_STATES = [

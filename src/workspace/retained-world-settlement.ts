@@ -11,20 +11,37 @@ import {
     RetainedWorldSettlementConflictError,
     RetainedWorldSettlementInvalidError,
 } from "../store/errors.ts";
-import { encodeRetainedWorldSettlementOperation } from "../store/retained-world-settlement-codec.ts";
+import {
+    encodeRetainedWorldApplicationPlan,
+    readRetainedWorldApplicationPlan,
+} from "../store/retained-world-application-codec.ts";
+import {
+    decodeRetainedWorldSettlementOperation,
+    encodeRetainedWorldSettlementOperation,
+} from "../store/retained-world-settlement-codec.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type {
+    RetainedWorldApplicationPlanEvidence,
     RetainedWorldSettlementJournal,
     RetainedWorldSettlementRequest,
 } from "../store/types.ts";
-import { assertWorkspaceBinding } from "./bindings.ts";
+import {
+    assertCurrentGitRepositoryBinding,
+    assertWorkspaceBinding,
+    isGitRepositoryBinding,
+} from "./bindings.ts";
 import { createVerifiedWorldChangeset } from "./changesets.ts";
+import { RetainedWorldApplicationConflictError } from "./errors.ts";
 import {
     assertReferenceCopyCarrier,
+    createReferenceCopyApplicationRevision,
     publishReferenceCopySelection,
 } from "./reference-copy-carrier.ts";
+import { assertRetainedWorldApplicationPathsDisjoint } from "./retained-world-application.ts";
 import { publishRetainedWorldSettlementCitation } from "./retained-world-settlement-citation.ts";
 import type {
+    AppliedRetainedWorldSettlement,
+    ApplyRetainedWorldSettlementOptions,
     DiscardedRetainedWorldSettlement,
     DiscardRetainedWorldSettlementOptions,
     PreparedRetainedWorldSettlement,
@@ -41,16 +58,17 @@ import { inspectTaskWorldCaptureJournal } from "./task-world-journal.ts";
 import type { ReferenceCopyCarrier, WorldRevision } from "./types.ts";
 
 const [, , , , COMMITTED_RECOVERY_STATUS] = DURABLE_EXECUTION_RECOVERY_STATUSES;
-const [SELECT_ACTION, DISCARD_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
-const [PREPARED_STATE, APPLYING_STATE, SELECTED_STATE, DISCARDED_STATE] =
+const [SELECT_ACTION, DISCARD_ACTION, APPLY_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
+const [PREPARED_STATE, APPLYING_STATE, SELECTED_STATE, DISCARDED_STATE, APPLIED_STATE] =
     RETAINED_WORLD_SETTLEMENT_STATES;
 
 /**
  * Authenticates one exact retained output and atomically prepares its consume-once settlement.
  *
- * This function reads only durable trace and retained carrier evidence. It does not mutate the
- * user binding, select a revision, or discard custody. Exact replay returns the existing prepared
- * decision; a different command or action conflicts at the store transaction.
+ * This function authenticates durable trace and retained carrier evidence. Apply preparation also
+ * snapshots the current user basis to prove path disjointness, but does not mutate the user binding,
+ * select a revision, or discard custody. Exact replay returns the existing prepared decision; a
+ * different command or action conflicts at the store transaction.
  *
  * @param options - Exact action, command, output, store, binding, and carrier authority.
  * @returns Frozen authenticated prepared settlement decision.
@@ -96,6 +114,7 @@ export async function prepareRetainedWorldSettlement(
         const carrier = fields.carrier as PrepareRetainedWorldSettlementOptions["carrier"];
         const store = fields.store as PrepareRetainedWorldSettlementOptions["store"];
         assertWorkspaceBinding(binding);
+        if (isGitRepositoryBinding(binding)) assertCurrentGitRepositoryBinding(binding);
         assertReferenceCopyCarrier(carrier);
         const output = readOutput(fields.output);
         const recovery = readDurableTaskExecution(store, output.run_id);
@@ -130,6 +149,19 @@ export async function prepareRetainedWorldSettlement(
             carrier,
             headRevision: head,
         });
+        if (fields.action === APPLY_ACTION) {
+            assertApplicationCandidatePathsAllowed(evidence.changeset.changed_paths, binding);
+            const current = await carrier.snapshot(binding);
+            const currentEvidence = await createVerifiedWorldChangeset({
+                baseRevision: evidence.baseRevision,
+                carrier,
+                headRevision: current,
+            });
+            assertRetainedWorldApplicationPathsDisjoint(
+                evidence.changeset.changed_paths,
+                currentEvidence.changeset.changed_paths,
+            );
+        }
         assertRevisionContract(evidence.baseRevision, evidence.headRevision, output);
         // Authenticated content-addressed revisions make disagreement possible only after a
         // digest collision or an implementation defect in the shared changeset constructor.
@@ -166,7 +198,8 @@ export async function prepareRetainedWorldSettlement(
     } catch (error) {
         if (
             error instanceof RetainedWorldSettlementInvalidError ||
-            error instanceof RetainedWorldSettlementConflictError
+            error instanceof RetainedWorldSettlementConflictError ||
+            error instanceof RetainedWorldApplicationConflictError
         ) {
             throw error;
         }
@@ -232,6 +265,48 @@ export function inspectRetainedWorldSettlement(
             throw new TypeError("retained-world settlement trace evidence is inconsistent");
         }
         return admission;
+    } catch (error) {
+        if (error instanceof RetainedWorldSettlementInvalidError) throw error;
+        throw new RetainedWorldSettlementInvalidError(
+            workspaceProtocolConfig.settlement.errors.invalidMessage,
+            { cause: error },
+        );
+    }
+}
+
+/**
+ * Reads the exact durable three-way application plan without touching carrier or user files.
+ *
+ * @param store - Open trace store containing the settlement journal.
+ * @param outputId - Exact retained-output identity.
+ * @returns Authenticated application plan after planning, otherwise `undefined`.
+ * @throws {RetainedWorldSettlementInvalidError} If retained operation evidence is malformed.
+ * @throws {TypeError} If the output identity is malformed.
+ *
+ * @public
+ */
+export function inspectRetainedWorldApplicationPlan(
+    store: SQLiteTraceStore,
+    outputId: string,
+): RetainedWorldApplicationPlanEvidence | undefined {
+    if (typeof outputId !== "string" || outputId.length === 0) {
+        throw new TypeError("retained-world application output identity is invalid");
+    }
+    try {
+        const journal = store.readRetainedWorldSettlementJournal(outputId);
+        if (journal?.admission.action !== APPLY_ACTION || journal.operation === null) {
+            return undefined;
+        }
+        const operation = decodeRetainedWorldSettlementOperation(
+            journal.operation.json,
+            journal.admission,
+        );
+        // The action-discriminated operation decoder requires an application plan for apply.
+        /* node:coverage ignore next 3 */
+        if (!("application_plan" in operation.value)) {
+            throw new TypeError("retained-world application plan is absent");
+        }
+        return readRetainedWorldApplicationPlan(operation.value.application_plan);
     } catch (error) {
         if (error instanceof RetainedWorldSettlementInvalidError) throw error;
         throw new RetainedWorldSettlementInvalidError(
@@ -387,6 +462,316 @@ export async function selectRetainedWorldSettlement(
             workspaceProtocolConfig.settlement.errors.invalidMessage,
             { cause: error },
         );
+    }
+}
+
+/**
+ * Durably applies one exact admitted retained output and recovers interrupted publication.
+ *
+ * On an unchanged user basis this degenerates to the candidate head while retaining a distinct
+ * applied settlement. On an advanced basis it requires path-disjoint deltas, constructs one exact
+ * merged revision from current plus candidate changes, and publishes that revision recoverably.
+ *
+ * @param options - Exact output identity plus canonical binding, carrier, and trace-store authority.
+ * @returns Frozen applied result citing the exact carrier publication and applied revision.
+ * @throws {RetainedWorldSettlementInvalidError} If trace, revision, basis, carrier, or publication
+ * evidence is absent, moved, malformed, forged, or inconsistent.
+ * @throws {RetainedWorldSettlementConflictError} If another action owns the admission or terminal.
+ *
+ * @example
+ * ```ts
+ * const applied = await applyRetainedWorldSettlement({
+ *     binding,
+ *     carrier,
+ *     outputId: captured.output.output_id,
+ *     store,
+ * });
+ * applied.applied_revision_id;
+ * ```
+ *
+ * @public
+ */
+export async function applyRetainedWorldSettlement(
+    options: ApplyRetainedWorldSettlementOptions,
+): Promise<AppliedRetainedWorldSettlement> {
+    try {
+        const fields = exactObject(options, ["binding", "carrier", "outputId", "store"]);
+        if (typeof fields.outputId !== "string" || fields.outputId.length === 0) {
+            throw new TypeError("retained-world settlement output identity is invalid");
+        }
+        const binding = fields.binding as ApplyRetainedWorldSettlementOptions["binding"];
+        const carrier = fields.carrier as ReferenceCopyCarrier;
+        const store = fields.store as SQLiteTraceStore;
+        assertWorkspaceBinding(binding);
+        if (isGitRepositoryBinding(binding)) assertCurrentGitRepositoryBinding(binding);
+        assertReferenceCopyCarrier(carrier);
+        const admission = inspectRetainedWorldSettlement(store, fields.outputId);
+        if (admission === undefined) {
+            throw new TypeError("retained-world apply admission is absent");
+        }
+        if (admission.action !== APPLY_ACTION) {
+            throw new RetainedWorldSettlementConflictError(
+                workspaceProtocolConfig.settlement.errors.conflictMessage,
+            );
+        }
+        if (binding.binding_id !== admission.request.binding_id) {
+            throw new TypeError("retained-world apply binding authority is inconsistent");
+        }
+        const base = await carrier.openRevision(admission.request.base_revision_id);
+        const head = await carrier.openRevision(admission.request.head_revision_id);
+        const evidence = await createVerifiedWorldChangeset({
+            baseRevision: base,
+            carrier,
+            headRevision: head,
+        });
+        assertApplicationCandidatePathsAllowed(evidence.changeset.changed_paths, binding);
+        let journal = store.readRetainedWorldSettlementJournal(fields.outputId);
+        // Inspection above and this read share one store row; absence here requires store corruption.
+        /* node:coverage ignore next 3 */
+        if (journal === undefined) {
+            throw new TypeError("retained-world apply journal is absent");
+        }
+        let applicationPlan: RetainedWorldApplicationPlanEvidence;
+        let publicationEvidence: Awaited<ReturnType<typeof createVerifiedWorldChangeset>>;
+        if (journal.state === PREPARED_STATE) {
+            const current = await carrier.snapshot(binding);
+            const currentEvidence = await createVerifiedWorldChangeset({
+                baseRevision: base,
+                carrier,
+                headRevision: current,
+            });
+            assertRetainedWorldApplicationPathsDisjoint(
+                evidence.changeset.changed_paths,
+                currentEvidence.changeset.changed_paths,
+            );
+            let applicationCustodyId = admission.request.custody_id;
+            let merged = head;
+            if (current.content_id !== base.content_id) {
+                const application = createReferenceCopyApplicationRevision(carrier, {
+                    candidateChangeset: evidence.changeset,
+                    currentRevisionId: current.revision_id,
+                    operationKey: admission.request_id,
+                });
+                applicationCustodyId = application.custody.custody_id;
+                merged = application.revision;
+            }
+            publicationEvidence = await createVerifiedWorldChangeset({
+                baseRevision: current,
+                carrier,
+                headRevision: merged,
+            });
+            applicationPlan = encodeRetainedWorldApplicationPlan({
+                application_custody_id: applicationCustodyId,
+                base_content_id: base.content_id,
+                base_revision_id: base.revision_id,
+                binding_id: admission.request.binding_id,
+                candidate_changeset_id: evidence.changeset.changeset_id,
+                candidate_content_id: head.content_id,
+                candidate_paths: evidence.changeset.changed_paths,
+                candidate_revision_id: head.revision_id,
+                current_changeset_id: currentEvidence.changeset.changeset_id,
+                current_content_id: current.content_id,
+                current_paths: currentEvidence.changeset.changed_paths,
+                current_revision_id: current.revision_id,
+                merged_content_id: merged.content_id,
+                merged_revision_id: merged.revision_id,
+                publication_changeset_id: publicationEvidence.changeset.changeset_id,
+                reason: (current.content_id === base.content_id
+                    ? workspaceProtocolConfig.settlement.application.reasonRoles.unmoved
+                    : workspaceProtocolConfig.settlement.application.reasonRoles
+                          .disjoint) as RetainedWorldApplicationPlanEvidence["reason"],
+                request_id: admission.request_id,
+                status: workspaceProtocolConfig.settlement.application
+                    .statuses[0] as RetainedWorldApplicationPlanEvidence["status"],
+            });
+            assertApplicationPlanContract(
+                applicationPlan,
+                admission.request_id,
+                evidence,
+                currentEvidence,
+                publicationEvidence,
+            );
+            journal = store.beginRetainedWorldSettlement(fields.outputId, applicationPlan);
+        } else {
+            // Every validated non-prepared journal state requires complete operation evidence.
+            /* node:coverage ignore next 3 */
+            if (journal.operation === null) {
+                throw new TypeError("retained-world apply operation evidence is absent");
+            }
+            const retainedOperation = decodeRetainedWorldSettlementOperation(
+                journal.operation.json,
+                admission,
+            );
+            // The action-discriminated operation decoder requires an application plan for apply.
+            /* node:coverage ignore next 3 */
+            if (!("application_plan" in retainedOperation.value)) {
+                throw new TypeError("retained-world apply plan evidence is absent");
+            }
+            applicationPlan = readRetainedWorldApplicationPlan(
+                retainedOperation.value.application_plan,
+            );
+            const current = await carrier.openRevision(applicationPlan.current_revision_id);
+            const merged = await carrier.openRevision(applicationPlan.merged_revision_id);
+            const currentEvidence = await createVerifiedWorldChangeset({
+                baseRevision: base,
+                carrier,
+                headRevision: current,
+            });
+            publicationEvidence = await createVerifiedWorldChangeset({
+                baseRevision: current,
+                carrier,
+                headRevision: merged,
+            });
+            assertApplicationPlanContract(
+                applicationPlan,
+                admission.request_id,
+                evidence,
+                currentEvidence,
+                publicationEvidence,
+            );
+        }
+        /* The action-bound journal cannot contain another action's terminal state. */
+        /* node:coverage ignore next 5 */
+        if (journal.state !== APPLYING_STATE && journal.state !== APPLIED_STATE) {
+            throw new RetainedWorldSettlementConflictError(
+                workspaceProtocolConfig.settlement.errors.conflictMessage,
+            );
+        }
+        // Both admitted states above require exact operation evidence from the closed store decoder.
+        /* node:coverage ignore next 3 */
+        if (journal.operation === null) {
+            throw new TypeError("retained-world apply operation evidence is incomplete");
+        }
+        const operation = decodeRetainedWorldSettlementOperation(journal.operation.json, admission);
+        /* The store decoder reconstructs this exact operation before returning. */
+        /* node:coverage ignore next 8 */
+        if (
+            journal.operation.id !== operation.id ||
+            journal.operation.digest !== operation.digest ||
+            journal.operation.json !== operation.json
+        ) {
+            throw new TypeError("retained-world apply operation evidence is inconsistent");
+        }
+        const plan = encodeSelectionPublicationPlan(
+            operation,
+            publicationEvidence.changeset,
+            publicationEvidence.baseRevision.content_id,
+            publicationEvidence.headRevision.content_id,
+        );
+        const schedule = encodeSelectionPublicationSchedule(plan);
+        const publication = await publishReferenceCopySelection(carrier, {
+            changeset: publicationEvidence.changeset,
+            observeUserBasis: async () => (await carrier.snapshot(binding)).content_id,
+            operation,
+            plan,
+            schedule,
+        });
+        journal = store.retainRetainedWorldSettlementTerminal(fields.outputId, {
+            action: APPLY_ACTION,
+            applied_revision_id: applicationPlan.merged_revision_id,
+            application_plan_id: applicationPlan.plan_id,
+            publication_id: publication.id,
+            user_basis_after: publication.value.user_basis_after,
+        });
+        /* The atomic store transition returns a freshly validated applied journal. */
+        /* node:coverage ignore next 3 */
+        if (journal.state !== APPLIED_STATE || journal.operation === null) {
+            throw new TypeError("retained-world apply terminal evidence is incomplete");
+        }
+        publishTerminalSettlementCitation(store, journal);
+        if (applicationPlan.application_custody_id !== admission.request.custody_id) {
+            await carrier.discard(applicationPlan.application_custody_id);
+        }
+        return Object.freeze({
+            action: APPLY_ACTION,
+            applied_revision_id: applicationPlan.merged_revision_id,
+            application_plan_id: applicationPlan.plan_id,
+            operation_id: journal.operation.id,
+            output_id: admission.output_id,
+            publication_id: publication.id,
+            plan_reason: applicationPlan.reason,
+            plan_status: applicationPlan.status,
+            request_id: admission.request_id,
+            settlement_version: RETAINED_WORLD_SETTLEMENT_VERSION,
+            state: APPLIED_STATE,
+            user_basis_after: publication.value.user_basis_after,
+        });
+    } catch (error) {
+        if (
+            error instanceof RetainedWorldSettlementInvalidError ||
+            error instanceof RetainedWorldSettlementConflictError ||
+            error instanceof RetainedWorldApplicationConflictError
+        ) {
+            throw error;
+        }
+        throw new RetainedWorldSettlementInvalidError(
+            workspaceProtocolConfig.settlement.errors.invalidMessage,
+            { cause: error },
+        );
+    }
+}
+
+function assertApplicationPlanContract(
+    plan: RetainedWorldApplicationPlanEvidence,
+    requestId: string,
+    candidate: Awaited<ReturnType<typeof createVerifiedWorldChangeset>>,
+    current: Awaited<ReturnType<typeof createVerifiedWorldChangeset>>,
+    publication: Awaited<ReturnType<typeof createVerifiedWorldChangeset>>,
+): void {
+    assertRetainedWorldApplicationPathsDisjoint(
+        candidate.changeset.changed_paths,
+        current.changeset.changed_paths,
+    );
+    const expected = encodeRetainedWorldApplicationPlan({
+        application_custody_id: plan.application_custody_id,
+        base_content_id: candidate.baseRevision.content_id,
+        base_revision_id: candidate.baseRevision.revision_id,
+        binding_id: candidate.baseRevision.binding_id,
+        candidate_changeset_id: candidate.changeset.changeset_id,
+        candidate_content_id: candidate.headRevision.content_id,
+        candidate_paths: candidate.changeset.changed_paths,
+        candidate_revision_id: candidate.headRevision.revision_id,
+        current_changeset_id: current.changeset.changeset_id,
+        current_content_id: current.headRevision.content_id,
+        current_paths: current.changeset.changed_paths,
+        current_revision_id: current.headRevision.revision_id,
+        merged_content_id: publication.headRevision.content_id,
+        merged_revision_id: publication.headRevision.revision_id,
+        publication_changeset_id: publication.changeset.changeset_id,
+        reason: plan.reason,
+        request_id: requestId,
+        status: plan.status,
+    });
+    // Content-addressed plans and authenticated revisions make disagreement reachable only through
+    // a digest collision or an implementation defect after all public decoders have succeeded.
+    /* node:coverage ignore next 12 */
+    if (
+        canonicalizeRecord({
+            changes: candidate.changeset.changes as unknown as SemanticRecord["changes"],
+        }) !==
+            canonicalizeRecord({
+                changes: publication.changeset.changes as unknown as SemanticRecord["changes"],
+            }) ||
+        canonicalizeRecord(plan as unknown as SemanticRecord) !==
+            canonicalizeRecord(expected as unknown as SemanticRecord)
+    ) {
+        throw new TypeError("retained-world application plan evidence is inconsistent");
+    }
+}
+
+function assertApplicationCandidatePathsAllowed(
+    paths: readonly string[],
+    binding: ApplyRetainedWorldSettlementOptions["binding"],
+): void {
+    if (
+        "repository" in binding &&
+        paths.some((candidatePath) =>
+            candidatePath
+                .split("/")
+                .some((segment) => segment === workspaceProtocolConfig.gitMetadataName),
+        )
+    ) {
+        throw new TypeError("retained-world application cannot modify Git administrative paths");
     }
 }
 

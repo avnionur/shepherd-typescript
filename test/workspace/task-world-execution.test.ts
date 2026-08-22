@@ -436,7 +436,7 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
     }
     await assert.rejects(
         prepareRetainedWorldSettlement({
-            action: "apply" as never,
+            action: "unknown" as never,
             binding,
             carrier,
             commandId: "settlement:invalid-action",

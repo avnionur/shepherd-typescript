@@ -5,6 +5,7 @@ import type {
 } from "../protocol/values.generated.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type {
+    RetainedWorldApplicationPlanEvidence,
     RetainedWorldSettlementAdmission,
     RetainedWorldSettlementRequest,
 } from "../store/types.ts";
@@ -90,5 +91,45 @@ export type SelectedRetainedWorldSettlement = {
     /** Configured terminal selected state. */
     readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[2];
     /** Semantic user-basis witness observed after complete carrier publication. */
+    readonly user_basis_after: string;
+};
+
+/** Closed authorities for exact-ID retained-world apply and recovery. */
+export type ApplyRetainedWorldSettlementOptions = {
+    /** Package-created canonical binding cited by the admitted retained output. */
+    readonly binding: WorkspaceBinding;
+    /** Package-created carrier owning current, base, and retained revisions. */
+    readonly carrier: ReferenceCopyCarrier;
+    /** Exact retained-output identity previously admitted for apply. */
+    readonly outputId: string;
+    /** Open trace store retaining the authenticated settlement journal. */
+    readonly store: SQLiteTraceStore;
+};
+
+/** Completed durable apply result after authenticated carrier publication. */
+export type AppliedRetainedWorldSettlement = {
+    /** Configured apply action. */
+    readonly action: (typeof RETAINED_WORLD_SETTLEMENT_ACTIONS)[2];
+    /** Immutable revision published by apply. */
+    readonly applied_revision_id: string;
+    /** Exact content-addressed three-way application plan. */
+    readonly application_plan_id: string;
+    /** Deterministic operation identity retained before publication. */
+    readonly operation_id: string;
+    /** Exact retained-output identity consumed by apply. */
+    readonly output_id: string;
+    /** Exact carrier publication identity cited by the terminal settlement receipt. */
+    readonly publication_id: string;
+    /** Configured reason explaining degenerate or three-way planning. */
+    readonly plan_reason: RetainedWorldApplicationPlanEvidence["reason"];
+    /** Configured successful planning status. */
+    readonly plan_status: RetainedWorldApplicationPlanEvidence["status"];
+    /** Exact authenticated request identity. */
+    readonly request_id: string;
+    /** Public exact-request settlement protocol version. */
+    readonly settlement_version: typeof RETAINED_WORLD_SETTLEMENT_VERSION;
+    /** Configured terminal applied state. */
+    readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[4];
+    /** Semantic user-basis witness observed after complete publication. */
     readonly user_basis_after: string;
 };
