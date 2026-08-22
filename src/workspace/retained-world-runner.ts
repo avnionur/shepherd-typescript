@@ -46,6 +46,18 @@ export function createRetainedWorldRunner<
     O extends TaskSchema<unknown>,
 >(definition: RetainedWorldRunnerDefinition<I, O>): RetainedWorldRunner<I, O> {
     const fields = readDefinition(definition);
+    if (fields.enforcement !== workspaceProtocolConfig.placements.enforcement) {
+        throw new TypeError("retained-world runner enforcement requires an authenticated adapter");
+    }
+    return registerRetainedWorldRunner(fields);
+}
+
+/** Registers one package-authenticated retained-world adapter. @internal */
+export function registerRetainedWorldRunner<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(definition: RetainedWorldRunnerDefinition<I, O>): RetainedWorldRunner<I, O> {
+    const fields = readDefinition(definition);
     const runner = Object.freeze({
         enforcement: fields.enforcement,
         runner_id: fields.runnerId,

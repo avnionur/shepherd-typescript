@@ -86,6 +86,30 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             relativePath: config.workspaces.placements.artifacts.resolutionSchema,
         },
         {
+            content: renderJson(renderNativeJailBackendSchema(config)),
+            relativePath: config.workspaces.placements.nativeJails.artifacts.backendSchema,
+        },
+        {
+            content: renderJson(renderNativeJailCommandSchema(config)),
+            relativePath: config.workspaces.placements.nativeJails.artifacts.commandSchema,
+        },
+        {
+            content: renderJson(renderNativeJailPlanSchema(config)),
+            relativePath: config.workspaces.placements.nativeJails.artifacts.planSchema,
+        },
+        {
+            content: renderJson(renderNativeJailProbeSchema(config)),
+            relativePath: config.workspaces.placements.nativeJails.artifacts.probeSchema,
+        },
+        {
+            content: renderJson(renderNativeJailProcessSchema(config)),
+            relativePath: config.workspaces.placements.nativeJails.artifacts.processSchema,
+        },
+        {
+            content: renderJson(renderNativeJailResolutionSchema(config)),
+            relativePath: config.workspaces.placements.nativeJails.artifacts.resolutionSchema,
+        },
+        {
             content: renderJson(renderEffectIntentSchema(config)),
             relativePath: config.effects.artifacts.intentSchema,
         },
@@ -261,6 +285,8 @@ function renderWorldCaptureJournalSchema(
                 "enforcement",
                 "max_capture_id_bytes",
                 "max_text_bytes",
+                "native_jail_resolution",
+                "native_jail_resolution_id",
                 "placement_resolution",
                 "placement_resolution_id",
                 "repository_grant_plan",
@@ -353,36 +379,50 @@ function renderWorldCaptureJournalSchema(
                                             },
                                         ],
                                     }
-                                  : key === "repository_grant_plan"
+                                  : key === "native_jail_resolution"
                                     ? {
-                                          oneOf: [
-                                              { type: "null" },
-                                              {
-                                                  $ref: config.workspaces.repositoryGrants.schemas
-                                                      .grantPlanId,
-                                              },
-                                          ],
+                                          $ref: config.workspaces.placements.nativeJails.schemas
+                                              .resolutionId,
                                       }
-                                    : key === "repository_grant_plan_id"
+                                    : key === "native_jail_resolution_id"
                                       ? {
-                                            oneOf: [
-                                                { type: "null" },
-                                                {
-                                                    pattern: `^${escapeRegularExpression(
-                                                        config.workspaces.repositoryGrants
-                                                            .planIdPrefix,
-                                                    )}[0-9a-f]{${config.recordId.hexLength}}$`,
-                                                    type: "string",
-                                                },
-                                            ],
+                                            pattern: digestPrefixPattern(
+                                                config.workspaces.placements.nativeJails
+                                                    .resolutionIdPrefix,
+                                                config,
+                                            ),
+                                            type: "string",
                                         }
-                                      : [
-                                              "fencing_token",
-                                              "max_capture_id_bytes",
-                                              "max_text_bytes",
-                                          ].includes(key)
-                                        ? { minimum: 1, type: "integer" }
-                                        : { minLength: 1, type: "string" },
+                                      : key === "repository_grant_plan"
+                                        ? {
+                                              oneOf: [
+                                                  { type: "null" },
+                                                  {
+                                                      $ref: config.workspaces.repositoryGrants
+                                                          .schemas.grantPlanId,
+                                                  },
+                                              ],
+                                          }
+                                        : key === "repository_grant_plan_id"
+                                          ? {
+                                                oneOf: [
+                                                    { type: "null" },
+                                                    {
+                                                        pattern: `^${escapeRegularExpression(
+                                                            config.workspaces.repositoryGrants
+                                                                .planIdPrefix,
+                                                        )}[0-9a-f]{${config.recordId.hexLength}}$`,
+                                                        type: "string",
+                                                    },
+                                                ],
+                                            }
+                                          : [
+                                                  "fencing_token",
+                                                  "max_capture_id_bytes",
+                                                  "max_text_bytes",
+                                              ].includes(key)
+                                            ? { minimum: 1, type: "integer" }
+                                            : { minLength: 1, type: "string" },
                     ]),
                 ),
                 required,
@@ -496,6 +536,325 @@ function renderPlacementResolutionSchema(
         ],
         type: "object",
     };
+}
+
+function renderNativeJailBackendSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
+    const jail = config.workspaces.placements.nativeJails;
+    return {
+        $id: jail.schemas.backendId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            backend_id: {
+                pattern: digestPrefixPattern(jail.descriptorIdPrefix, config),
+                type: "string",
+            },
+            backend_version: { const: jail.descriptorVersion, type: "integer" },
+            compatibility_version: { const: jail.compatibilityVersion, type: "string" },
+            enforcement: { const: jail.enforcement, type: "string" },
+            environments: {
+                items: { enum: config.workspaces.placements.platform.environments },
+                type: "array",
+                uniqueItems: true,
+            },
+            executable: { type: ["string", "null"] },
+            family: { enum: config.workspaces.placements.platform.families, type: "string" },
+            name: { enum: jail.backends.map(({ name }) => name), type: "string" },
+            node_platforms: {
+                items: { minLength: 1, type: "string" },
+                minItems: 1,
+                type: "array",
+                uniqueItems: true,
+            },
+            profile_argument: { type: ["string", "null"] },
+        },
+        required: [
+            "backend_id",
+            "backend_version",
+            "compatibility_version",
+            "enforcement",
+            "environments",
+            "executable",
+            "family",
+            "name",
+            "node_platforms",
+            "profile_argument",
+        ],
+        type: "object",
+    };
+}
+
+function renderNativeJailCommandSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
+    const jail = config.workspaces.placements.nativeJails;
+    return {
+        $id: jail.schemas.commandId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            arguments: { items: { type: "string" }, maxItems: jail.maxArguments, type: "array" },
+            command_id: {
+                pattern: digestPrefixPattern(jail.commandIdPrefix, config),
+                type: "string",
+            },
+            command_version: { const: jail.commandVersion, type: "integer" },
+            environment: {
+                items: {
+                    additionalProperties: false,
+                    properties: {
+                        name: { minLength: 1, type: "string" },
+                        value: { type: "string" },
+                    },
+                    required: ["name", "value"],
+                    type: "object",
+                },
+                maxItems: jail.maxEnvironmentEntries,
+                type: "array",
+            },
+            executable: { minLength: 1, type: "string" },
+        },
+        required: ["arguments", "command_id", "command_version", "environment", "executable"],
+        type: "object",
+    };
+}
+
+function renderNativeJailProbeSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
+    const jail = config.workspaces.placements.nativeJails;
+    return {
+        $id: jail.schemas.probeId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            backend: { oneOf: [{ type: "null" }, { $ref: jail.schemas.backendId }] },
+            compatibility_version: { const: jail.compatibilityVersion, type: "string" },
+            denied_write: { type: "boolean" },
+            enforcement: { const: jail.enforcement, type: "string" },
+            granted_write: { type: "boolean" },
+            helper_digest: { type: ["string", "null"] },
+            platform: { $ref: config.workspaces.placements.schemas.platformEvidenceId },
+            probe_id: { pattern: digestPrefixPattern(jail.probeIdPrefix, config), type: "string" },
+            probe_version: { const: jail.probeVersion, type: "integer" },
+            reason: { enum: jail.probeReasons, type: "string" },
+            status: { enum: jail.probeStatuses, type: "string" },
+        },
+        required: [
+            "backend",
+            "compatibility_version",
+            "denied_write",
+            "enforcement",
+            "granted_write",
+            "helper_digest",
+            "platform",
+            "probe_id",
+            "probe_version",
+            "reason",
+            "status",
+        ],
+        type: "object",
+    };
+}
+
+function renderNativeJailPlanSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
+    const jail = config.workspaces.placements.nativeJails;
+    return {
+        $id: jail.schemas.planId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            backend_id: {
+                pattern: digestPrefixPattern(jail.descriptorIdPrefix, config),
+                type: "string",
+            },
+            command_id: {
+                pattern: digestPrefixPattern(jail.commandIdPrefix, config),
+                type: "string",
+            },
+            compatibility_version: { const: jail.compatibilityVersion, type: "string" },
+            custody_root: { minLength: 1, type: "string" },
+            enforcement: { const: jail.enforcement, type: "string" },
+            plan_id: { pattern: digestPrefixPattern(jail.planIdPrefix, config), type: "string" },
+            plan_version: { const: jail.planVersion, type: "integer" },
+            probe_id: { pattern: digestPrefixPattern(jail.probeIdPrefix, config), type: "string" },
+            profile_digest: { pattern: recordIdPattern(config), type: "string" },
+            writable_roots: {
+                items: { minLength: 1, type: "string" },
+                type: "array",
+                uniqueItems: true,
+            },
+        },
+        required: [
+            "backend_id",
+            "command_id",
+            "compatibility_version",
+            "custody_root",
+            "enforcement",
+            "plan_id",
+            "plan_version",
+            "probe_id",
+            "profile_digest",
+            "writable_roots",
+        ],
+        type: "object",
+    };
+}
+
+function renderNativeJailResolutionSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const jail = config.workspaces.placements.nativeJails;
+    return {
+        $id: jail.schemas.resolutionId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            backend: { $ref: jail.schemas.backendId },
+            backend_probe: { $ref: jail.schemas.probeId },
+            capture_id: { minLength: 1, type: "string" },
+            command: { $ref: jail.schemas.commandId },
+            compatibility_version: { const: jail.compatibilityVersion, type: "string" },
+            enforcement: { const: jail.enforcement, type: "string" },
+            max_output_bytes: { maximum: jail.maxOutputBytes, minimum: 1, type: "integer" },
+            placement_version: { const: jail.placementVersion, type: "integer" },
+            reason: { enum: jail.placementReasons, type: "string" },
+            repository_grant_plan_id: {
+                pattern: digestPrefixPattern(
+                    config.workspaces.repositoryGrants.planIdPrefix,
+                    config,
+                ),
+                type: "string",
+            },
+            requested_placement: { enum: ["auto", "jail"], type: "string" },
+            resolution_id: {
+                pattern: digestPrefixPattern(jail.resolutionIdPrefix, config),
+                type: "string",
+            },
+            resolved_placement: { const: jail.resolvedPlacement, type: "string" },
+            run_id: { minLength: 1, type: "string" },
+            runner_id: { minLength: 1, type: "string" },
+            status: { const: jail.placementStatus, type: "string" },
+            task_artifact_digest: {
+                pattern: `^${escapeRegularExpression(config.tasks.digestPrefix)}[0-9a-f]{${config.tasks.hexLength}}$`,
+                type: "string",
+            },
+            timeout_milliseconds: {
+                maximum: jail.maxTimeoutMilliseconds,
+                minimum: 1,
+                type: "integer",
+            },
+        },
+        required: [
+            "backend",
+            "backend_probe",
+            "capture_id",
+            "command",
+            "compatibility_version",
+            "enforcement",
+            "max_output_bytes",
+            "placement_version",
+            "reason",
+            "repository_grant_plan_id",
+            "requested_placement",
+            "resolution_id",
+            "resolved_placement",
+            "run_id",
+            "runner_id",
+            "status",
+            "task_artifact_digest",
+            "timeout_milliseconds",
+        ],
+        type: "object",
+    };
+}
+
+function renderNativeJailProcessSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
+    const jail = config.workspaces.placements.nativeJails;
+    const intent = {
+        additionalProperties: false,
+        properties: {
+            command_id: {
+                pattern: digestPrefixPattern(jail.commandIdPrefix, config),
+                type: "string",
+            },
+            launch_id: {
+                pattern: digestPrefixPattern(jail.process.launchIdPrefix, config),
+                type: "string",
+            },
+            plan: { $ref: jail.schemas.planId },
+            plan_id: { pattern: digestPrefixPattern(jail.planIdPrefix, config), type: "string" },
+            runner_id: { minLength: 1, type: "string" },
+        },
+        required: ["command_id", "launch_id", "plan", "plan_id", "runner_id"],
+        type: "object",
+    };
+    const started = {
+        additionalProperties: false,
+        properties: {
+            launch_id: {
+                pattern: digestPrefixPattern(jail.process.launchIdPrefix, config),
+                type: "string",
+            },
+            process_id: { minimum: 1, type: "integer" },
+            start_id: {
+                pattern: digestPrefixPattern(jail.process.startIdPrefix, config),
+                type: "string",
+            },
+        },
+        required: ["launch_id", "process_id", "start_id"],
+        type: "object",
+    };
+    const receiptFields = [
+        "exit_code",
+        "launch_id",
+        "process_id",
+        "quiescence",
+        "receipt_id",
+        "receipt_version",
+        "signal",
+        "status",
+        "stderr_base64",
+        "stderr_bytes",
+        "stdout_base64",
+        "stdout_bytes",
+    ];
+    const receipt = {
+        additionalProperties: false,
+        properties: {
+            exit_code: { type: ["integer", "null"] },
+            launch_id: {
+                pattern: digestPrefixPattern(jail.process.launchIdPrefix, config),
+                type: "string",
+            },
+            process_id: { type: ["integer", "null"] },
+            quiescence: { enum: jail.process.quiescenceStatuses, type: "string" },
+            receipt_id: {
+                pattern: digestPrefixPattern(jail.process.receiptIdPrefix, config),
+                type: "string",
+            },
+            receipt_version: { const: jail.process.receiptVersion, type: "integer" },
+            signal: { type: ["string", "null"] },
+            status: { enum: jail.process.statuses, type: "string" },
+            stderr_base64: {
+                maxLength: Math.ceil((jail.maxOutputBytes * 4) / 3) + 4,
+                type: "string",
+            },
+            stderr_bytes: { maximum: jail.maxOutputBytes + 1, minimum: 0, type: "integer" },
+            stdout_base64: {
+                maxLength: Math.ceil((jail.maxOutputBytes * 4) / 3) + 4,
+                type: "string",
+            },
+            stdout_bytes: { maximum: jail.maxOutputBytes + 1, minimum: 0, type: "integer" },
+        },
+        required: receiptFields,
+        type: "object",
+    };
+    return {
+        $id: jail.schemas.processId,
+        $schema: config.kernel.schemas.dialect,
+        oneOf: [intent, started, receipt],
+    };
+}
+
+function digestPrefixPattern(prefix: string, config: ProtocolConfig): string {
+    return `^${escapeRegularExpression(prefix)}[0-9a-f]{${config.recordId.hexLength}}$`;
 }
 
 function renderRepositoryTaskGrantSchema(
@@ -1017,6 +1376,27 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedPlacementEnvironments = config.workspaces.placements.platform.environments
         .map((environment) => JSON.stringify(environment))
         .join(", ");
+    const renderedNativeJailBackends = config.workspaces.placements.nativeJails.backends
+        .map(({ name }) => JSON.stringify(name))
+        .join(", ");
+    const renderedNativeJailProbeReasons = config.workspaces.placements.nativeJails.probeReasons
+        .map((reason) => `    ${JSON.stringify(reason)},`)
+        .join("\n");
+    const renderedNativeJailProbeStatuses = config.workspaces.placements.nativeJails.probeStatuses
+        .map((status) => JSON.stringify(status))
+        .join(", ");
+    const renderedNativeJailPlacementReasons =
+        config.workspaces.placements.nativeJails.placementReasons
+            .map((reason) => `    ${JSON.stringify(reason)},`)
+            .join("\n");
+    const renderedNativeJailProcessStatuses =
+        config.workspaces.placements.nativeJails.process.statuses
+            .map((status) => `    ${JSON.stringify(status)},`)
+            .join("\n");
+    const renderedNativeJailQuiescenceStatuses =
+        config.workspaces.placements.nativeJails.process.quiescenceStatuses
+            .map((status) => JSON.stringify(status))
+            .join(", ");
     const renderedRetainedWorldOutputStatuses = config.workspaces.worldTaskCapture.statuses
         .map((status) => JSON.stringify(status))
         .join(", ");
@@ -1234,6 +1614,30 @@ export const PLACEMENT_PLATFORM_FAMILIES = [${renderedPlacementPlatformFamilies}
 
 /** Configured execution-environment classifications used by placement evidence. @public */
 export const PLACEMENT_ENVIRONMENTS = [${renderedPlacementEnvironments}] as const;
+
+/** Configured native syscall-jail backend names. @public */
+export const NATIVE_JAIL_BACKENDS = [${renderedNativeJailBackends}] as const;
+
+/** Configured native-jail backend probe reasons. @public */
+export const NATIVE_JAIL_PROBE_REASONS = [
+${renderedNativeJailProbeReasons}
+] as const;
+
+/** Configured native-jail backend probe statuses. @public */
+export const NATIVE_JAIL_PROBE_STATUSES = [${renderedNativeJailProbeStatuses}] as const;
+
+/** Configured successful native-jail placement reasons. @public */
+export const NATIVE_JAIL_PLACEMENT_REASONS = [
+${renderedNativeJailPlacementReasons}
+] as const;
+
+/** Configured native judged-process terminal statuses. @public */
+export const NATIVE_JAIL_PROCESS_STATUSES = [
+${renderedNativeJailProcessStatuses}
+] as const;
+
+/** Configured native process-group quiescence statuses. @public */
+export const NATIVE_JAIL_QUIESCENCE_STATUSES = [${renderedNativeJailQuiescenceStatuses}] as const;
 
 /** Configured durable retained-world output statuses. @public */
 export const RETAINED_WORLD_OUTPUT_STATUSES = [${renderedRetainedWorldOutputStatuses}] as const;

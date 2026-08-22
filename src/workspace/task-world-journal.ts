@@ -13,6 +13,11 @@ import { readDurableTaskExecution } from "../run/durable-execution-recovery.ts";
 import { TraceStoreError } from "../store/errors.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { OwnerRecord } from "../store/types.ts";
+import type {
+    NativeJailLaunchIntent,
+    NativeJailLaunchReceipt,
+    NativeJailProcessStarted,
+} from "./native-jail-types.ts";
 import type { TaskWorldCaptureJournalInspection } from "./task-world-journal-types.ts";
 
 const [CAPTURE_MODE] = RECORD_MODES;
@@ -85,6 +90,55 @@ export function appendTaskWorldJournal(
         throw new TraceStoreError("task-world journal append lost its invocation fence");
     const { receipt } = claimed;
     return receipt.record_ids[0] as RecordId;
+}
+
+/** Appends one claim-fenced native process intent, start, or receipt record. @internal */
+export function appendNativeJailProcessEvidence(
+    store: SQLiteTraceStore,
+    runId: string,
+    evidence: NativeJailLaunchIntent | NativeJailProcessStarted | NativeJailLaunchReceipt,
+    parents: readonly RecordId[],
+    authority: TaskWorldJournalAuthority,
+): RecordId {
+    const identity =
+        "receipt_id" in evidence
+            ? evidence.receipt_id
+            : "start_id" in evidence
+              ? evidence.start_id
+              : evidence.launch_id;
+    const request = {
+        append_intent_id: createRecordId({ native_jail_process_evidence_id: identity }),
+        batch: {
+            groups: [
+                {
+                    caused_by_record_ids: parents,
+                    owner_id: runId,
+                    records: [
+                        {
+                            body: evidence,
+                            mode: CAPTURE_MODE,
+                            schema_ref:
+                                workspaceProtocolConfig.placements.nativeJails.schemas.processId,
+                            witness_ref: ROOT_WITNESS_ID,
+                        },
+                    ],
+                },
+            ],
+        },
+    } as const;
+    const claimed = store.appendDurableExecutionTerminal(
+        runId,
+        authority.claimId,
+        authority.fencingToken,
+        request,
+    );
+    /* Store fencing is covered by generic claim-guarded append conformance. */
+    /* node:coverage disable */
+    if (claimed.status !== COMMITTED_STATUS) {
+        throw new TraceStoreError("native jail process append lost its invocation fence");
+    }
+    /* node:coverage enable */
+    return claimed.receipt.record_ids[0] as RecordId;
 }
 
 /**

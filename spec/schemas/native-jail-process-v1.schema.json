@@ -1,0 +1,147 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-process-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "oneOf": [
+        {
+            "additionalProperties": false,
+            "properties": {
+                "command_id": {
+                    "pattern": "^native-jail-command:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "launch_id": {
+                    "pattern": "^native-jail-launch:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "plan": {
+                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-plan-v1.schema.json"
+                },
+                "plan_id": {
+                    "pattern": "^native-jail-plan:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "runner_id": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "command_id",
+                "launch_id",
+                "plan",
+                "plan_id",
+                "runner_id"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "launch_id": {
+                    "pattern": "^native-jail-launch:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "process_id": {
+                    "minimum": 1,
+                    "type": "integer"
+                },
+                "start_id": {
+                    "pattern": "^native-jail-start:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "launch_id",
+                "process_id",
+                "start_id"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "exit_code": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "launch_id": {
+                    "pattern": "^native-jail-launch:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "process_id": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "quiescence": {
+                    "enum": [
+                        "proven",
+                        "uncertain"
+                    ],
+                    "type": "string"
+                },
+                "receipt_id": {
+                    "pattern": "^native-jail-receipt:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "receipt_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "signal": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "status": {
+                    "enum": [
+                        "exited",
+                        "cancelled",
+                        "timed-out",
+                        "output-limit",
+                        "launch-failed",
+                        "quiescence-uncertain"
+                    ],
+                    "type": "string"
+                },
+                "stderr_base64": {
+                    "maxLength": 1398106,
+                    "type": "string"
+                },
+                "stderr_bytes": {
+                    "maximum": 1048577,
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "stdout_base64": {
+                    "maxLength": 1398106,
+                    "type": "string"
+                },
+                "stdout_bytes": {
+                    "maximum": 1048577,
+                    "minimum": 0,
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "exit_code",
+                "launch_id",
+                "process_id",
+                "quiescence",
+                "receipt_id",
+                "receipt_version",
+                "signal",
+                "status",
+                "stderr_base64",
+                "stderr_bytes",
+                "stdout_base64",
+                "stdout_bytes"
+            ],
+            "type": "object"
+        }
+    ]
+}

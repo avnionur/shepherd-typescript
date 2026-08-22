@@ -291,6 +291,10 @@ worktrees, nested superproject/submodule sets, inexact roots, drift, and forged 
 - [x] Complete Phase 4 Task 3 workspace-protocol-v22 platform classification, advisory/auto
   placement resolution, visible fallback, placed journal-v11 recovery, fresh-process replay, and
   explicit jail refusal without claiming native enforcement.
+- [x] Complete Phase 4 Task 4 workspace-protocol-v23 authenticated macOS Seatbelt and Linux/
+  WSL Landlock probes, exact writable-root lowering, structured shell-free launch, durable
+  process/quiescence evidence, journal-v12 recovery, fresh-process replay, and fail-closed
+  uncertain interruption while retaining journal v1-v3 identities.
 
 ## Verification required for this slice
 
@@ -304,9 +308,9 @@ worktrees, nested superproject/submodule sets, inexact roots, drift, and forged 
 
 ## Next slice
 
-Continue Phase 4 with macOS Seatbelt and Linux Landlock launcher evidence over the versioned
-placement resolution. Explicit `jail` must fail closed, and `auto` may resolve to jail only after a
-real backend probe and denial suite pass.
+Continue Phase 4 with the next dependency-unblocked settlement or compatibility issue after the
+native jail slice is merged. Preserve the v9-v12 writer/reader matrix and require production-seam
+evidence for every new authority or mutation path.
 
 ## Notes
 

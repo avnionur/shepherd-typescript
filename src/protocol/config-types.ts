@@ -979,6 +979,151 @@ export type WorkspaceProtocolConfig = {
         readonly journalVersion: number;
         /** Capture-journal versions carrying placement-resolution evidence. */
         readonly journalVersions: readonly number[];
+        /** Native syscall-jail backend and probe protocol. */
+        readonly nativeJails: {
+            /** Generated native-jail artifact destinations. */
+            readonly artifacts: {
+                readonly backendSchema: string;
+                readonly commandSchema: string;
+                readonly planSchema: string;
+                readonly probeSchema: string;
+                readonly processSchema: string;
+                readonly resolutionSchema: string;
+            };
+            /** Configured native backends selected by classified host evidence. */
+            readonly backends: readonly {
+                /** Execution environments on which the backend may be probed. */
+                readonly environments: readonly string[];
+                /** Absolute launcher executable, or `null` for a package helper. */
+                readonly executable: string | null;
+                /** Classified platform family governed by the backend. */
+                readonly family: string;
+                /** Stable backend name. */
+                readonly name: string;
+                /** Node platform spellings on which the backend may be probed. */
+                readonly nodePlatforms: readonly string[];
+                /** Structured profile argument, or `null` for a package helper. */
+                readonly profileArgument: string | null;
+            }[];
+            /** Compatibility namespace included in native-jail evidence. */
+            readonly compatibilityVersion: string;
+            /** Structured compiler arguments for the package Landlock helper. */
+            readonly compilerArguments: readonly string[];
+            /** Absolute compiler candidates for the package Landlock helper. */
+            readonly compilerExecutables: readonly string[];
+            /** Structured compiler argument introducing the output path. */
+            readonly compilerOutputArgument: string;
+            /** Prefix for content-addressed native command identities. */
+            readonly commandIdPrefix: string;
+            /** Public structured native command protocol version. */
+            readonly commandVersion: number;
+            /** Prefix for content-addressed backend-descriptor identities. */
+            readonly descriptorIdPrefix: string;
+            /** Public backend-descriptor protocol version. */
+            readonly descriptorVersion: number;
+            /** Actual native enforcement classification. */
+            readonly enforcement: string;
+            /** Capture-journal version written by native jailed execution. */
+            readonly journalVersion: number;
+            /** Capture-journal versions carrying native-jail resolution evidence. */
+            readonly journalVersions: readonly number[];
+            /** Maximum aggregate UTF-8 bytes across native command arguments. */
+            readonly maxArgumentBytes: number;
+            /** Maximum structured native command argument count. */
+            readonly maxArguments: number;
+            /** Maximum structured native command environment entry count. */
+            readonly maxEnvironmentEntries: number;
+            /** Maximum aggregate UTF-8 bytes across environment names and values. */
+            readonly maxEnvironmentValueBytes: number;
+            /** Maximum captured bytes per native process output stream. */
+            readonly maxOutputBytes: number;
+            /** Maximum configured native command duration. */
+            readonly maxTimeoutMilliseconds: number;
+            /** Prefix for content-addressed confinement-plan identities. */
+            readonly planIdPrefix: string;
+            /** Public native confinement-plan protocol version. */
+            readonly planVersion: number;
+            /** Configured semantic roles for successful jail placement. */
+            readonly placementReasonRoles: {
+                readonly auto: string;
+                readonly explicit: string;
+            };
+            /** Closed successful native-jail placement reasons. */
+            readonly placementReasons: readonly string[];
+            /** Configured successful native-jail resolution status. */
+            readonly placementStatus: string;
+            /** Public native-jail placement-resolution protocol version. */
+            readonly placementVersion: number;
+            /** Prefix for content-addressed backend-probe identities. */
+            readonly probeIdPrefix: string;
+            /** Configured semantic roles for probe outcomes. */
+            readonly probeReasonRoles: {
+                readonly deniedWriteFailed: string;
+                readonly executableUnavailable: string;
+                readonly helperCompilerUnavailable: string;
+                readonly helperIntegrityFailed: string;
+                readonly grantedWriteFailed: string;
+                readonly platformUnsupported: string;
+                readonly probeError: string;
+                readonly succeeded: string;
+            };
+            /** Closed backend-probe reason vocabulary. */
+            readonly probeReasons: readonly string[];
+            /** Closed backend-probe status vocabulary. */
+            readonly probeStatuses: readonly string[];
+            /** Public backend-probe protocol version. */
+            readonly probeVersion: number;
+            /** Native judged-process lifecycle and receipt protocol. */
+            readonly process: {
+                /** Signal used for fail-closed process-group termination. */
+                readonly killSignal: string;
+                /** Prefix for content-addressed launch-intent identities. */
+                readonly launchIdPrefix: string;
+                /** Bounded process-group quiescence probe attempts. */
+                readonly quiescenceAttempts: number;
+                /** Delay between process-group quiescence probes. */
+                readonly quiescenceDelayMilliseconds: number;
+                /** Closed quiescence classification vocabulary. */
+                readonly quiescenceStatuses: readonly string[];
+                /** Configured semantic roles for quiescence results. */
+                readonly quiescenceStatusRoles: {
+                    readonly proven: string;
+                    readonly uncertain: string;
+                };
+                /** Prefix for content-addressed launch-receipt identities. */
+                readonly receiptIdPrefix: string;
+                /** Public launch-receipt protocol version. */
+                readonly receiptVersion: number;
+                /** Prefix for content-addressed native process-start evidence. */
+                readonly startIdPrefix: string;
+                /** Configured semantic roles for terminal process results. */
+                readonly statusRoles: {
+                    readonly cancelled: string;
+                    readonly exited: string;
+                    readonly launchFailed: string;
+                    readonly outputLimit: string;
+                    readonly quiescenceUncertain: string;
+                    readonly timedOut: string;
+                };
+                /** Closed terminal native-process status vocabulary. */
+                readonly statuses: readonly string[];
+            };
+            /** Prefix for content-addressed native-jail placement resolutions. */
+            readonly resolutionIdPrefix: string;
+            /** Effective placement supplied by native-jail execution. */
+            readonly resolvedPlacement: string;
+            /** Published native-jail schema identifiers. */
+            readonly schemas: {
+                readonly backendId: string;
+                readonly commandId: string;
+                readonly planId: string;
+                readonly probeId: string;
+                readonly processId: string;
+                readonly resolutionId: string;
+            };
+            /** Prefix for private native-probe temporary directories. */
+            readonly temporaryDirectoryPrefix: string;
+        };
         /** Deterministic platform-classification policy. */
         readonly platform: {
             /** Closed execution-environment classifications. */

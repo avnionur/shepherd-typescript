@@ -240,6 +240,21 @@ An immutable content-addressed record binding requested placement, effective pla
 enforcement, reason, platform, grant plan, runner, run, and capture before execution admission.
 _Avoid_: Jail profile, aspirational enforcement, mutable runtime option
 
+**Native Jail Probe**:
+An immutable content-addressed local backend result that reports availability only after a real
+native granted-write and denied-write canary succeeds.
+_Avoid_: Executable presence check, synthetic platform claim, advisory fallback
+
+**Native Confinement Plan**:
+An immutable content-addressed lowering of one exact effective repository grant to canonical
+writable custody roots and a backend-private profile digest.
+_Avoid_: User worktree path, mutable profile file, display-path allowlist
+
+**Native Launch Receipt**:
+An immutable content-addressed terminal record for one structured judged process, including exit,
+signal, bounded output, cancellation/timeout classification, and process-group quiescence.
+_Avoid_: Inferred exit, missing start evidence, automatic uncertain replay
+
 **World Revision**:
 An immutable verified copy-carrier snapshot whose revision identity binds canonical logical
 filesystem content to one exact workspace binding and carrier protocol.

@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.39.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.40.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -109,6 +109,10 @@ trace-record contracts with durable SQLite task and trace stores:
 - workspace protocol v22 content-addressed macOS/Linux/native-Windows/WSL platform evidence,
   advisory/auto placement resolution with visible fallback, exact placed capture/recovery, and
   fail-closed explicit jail refusal without a native-sandbox claim;
+- workspace protocol v23 authenticated macOS Seatbelt and Linux/WSL Landlock probes, exact
+  grant-to-writable-root lowering, structured shell-free native commands, bounded output and
+  timeout/cancellation, process-group quiescence receipts, journal-v12 recovery, and no automatic
+  retry after uncertain process start;
 - a configured reference copy carrier with immutable verified revisions, isolated mutable custody,
   restart reopen, drift verification, deterministic parent-linked custody capture, and exact
   idempotent discard;
@@ -504,6 +508,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Reference copy carrier](./docs/reference-copy-carrier.md)
 - [Repository grants and run authority ceilings](./docs/repository-grants.md)
 - [Placement resolution and reporting](./docs/placement-resolution.md)
+- [Native jail execution](./docs/native-jail-execution.md)
 - [Naming and licensing](./docs/naming-and-licensing.md)
 - [Implementation plan](./.plan/README.md)
 - [Paper coverage map](./.plan/paper-coverage.md)
@@ -548,13 +553,13 @@ paths, and restart recovery.
 
 The [Phase 3 status](./docs/phase-3-l1-alpha.md) and
 [exit audit](./.plan/phase-3-exit-audit.md) map each criterion to repeatable production-seam
-evidence. This is not full Shepherd `0.3.0` parity. Native jail enforcement,
-`apply`, `release`, CLI compatibility, repair commands, installed-package consumer fixtures,
+evidence. This is not full Shepherd `0.3.0` parity. `apply`, `release`, CLI compatibility, repair commands, installed-package consumer fixtures,
 live-provider adapters, scopes, supervision, replay, and paper applications remain later phases.
 Phase 4 now includes exact named multi-repository resources, explicit read-only/read-write task
-grants, a whole-run ceiling, and honest advisory/auto placement reporting. Native syscall jails,
-simultaneous multi-world runner access, and the remaining documented run surface are not
-implemented.
+grants, a whole-run ceiling, honest advisory/auto placement reporting, and authenticated native
+filesystem-write jails for capable macOS Seatbelt and Linux/WSL Landlock hosts. Native Windows,
+simultaneous multi-world runner access, network/read isolation, and the remaining documented run
+surface are not implemented.
 
 ## Attribution
 

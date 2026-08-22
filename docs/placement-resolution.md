@@ -10,7 +10,8 @@ Execution integration:
 Public exports: [`src/index.ts`](../src/index.ts). Tests:
 [`test/workspace/placement-resolution.test.ts`](../test/workspace/placement-resolution.test.ts),
 [`test/workspace/placement-schema-contract.test.ts`](../test/workspace/placement-schema-contract.test.ts),
-and [`test/workspace/task-world-placement.test.ts`](../test/workspace/task-world-placement.test.ts).
+[`test/workspace/task-world-placement.test.ts`](../test/workspace/task-world-placement.test.ts),
+and [`test/workspace/native-jail.test.ts`](../test/workspace/native-jail.test.ts).
 
 ## Platform evidence
 
@@ -69,11 +70,17 @@ Workspace protocol v22 defines the current resolution table entirely in `protoco
 | `auto` | `resolved` | `advisory` | `advisory` | `auto-fallback-unavailable` |
 | `jail` | `refused` | none | none | `explicit-jail-unavailable` |
 
-No jail backend is available in this protocol. Therefore `auto` cannot resolve to jail, and
-explicit `jail` returns no resolution artifact. Adding a native backend requires a later protocol
-version, launcher evidence, platform-gated denial tests, and fail-closed explicit-jail behavior.
-`PlacementUnavailableError` exposes the configured refused request, status, reason, and placement
-protocol version without fabricating effective-placement evidence.
+These placement-v1 rules remain unchanged for advisory runners. `PlacementUnavailableError`
+exposes the configured refused request, status, reason, and placement protocol version without
+fabricating effective-placement evidence.
+
+Workspace protocol v23 adds a separate native-jail resolution artifact rather than redefining
+placement v1. A caller first obtains a real local backend probe and creates an authenticated native
+runner. `createNativeJailPlacementResolution()` may then resolve `jail` or `auto` to effective
+`jail` with `native-syscall-deny` enforcement. This path is impossible when the probe is
+unavailable or copied; `NativeJailUnavailableError` retains the precise backend failure. Thus
+`auto` reaches jail only with successful authenticated evidence, while the placement-v1 auto rule
+continues to make advisory fallback explicit.
 
 ## Placed granted execution
 
@@ -98,13 +105,17 @@ Fresh-process recovery reconstructs and rehashes the complete platform and place
 authenticates newly created package handles, and requires exact equality with prepared evidence.
 Malformed or cross-version evidence fails closed.
 
+Native jailed capture uses additive journal v4/version 12 evidence and the public
+`captureJailedGrantedTaskWorldDurably()` / `recoverJailedGrantedTaskWorldDurably()` APIs. See
+[`native-jail-execution.md`](./native-jail-execution.md) for backend probing, grant lowering,
+process receipts, platform support, and uncertain-interruption recovery.
+
 ## Security boundary
 
-`resolved_placement: "advisory"` means the existing invocation-fenced in-process capability seam.
-It is not an OS sandbox. This slice does not create a child process, install Seatbelt or Landlock,
-claim syscall denial, prove process quiescence, or expose a simultaneous multi-world callback.
-Platform classification reports where an adapter says execution occurs; only a later authenticated
-launcher can support a jailed effective placement.
+`resolved_placement: "advisory"` still means the invocation-fenced in-process capability seam and
+is not an OS sandbox. Only the separately authenticated native-jail resolution may claim native
+filesystem write denial. Platform classification alone never authorizes that claim. Neither path
+exposes a simultaneous multi-world callback.
 
 ## Conformance boundary
 
@@ -121,6 +132,9 @@ launcher can support a jailed effective placement.
 | Exact same-process replay | Committed recovery fixture |
 | Exact fresh-process replay | Child-process recovery fixture |
 | V1/v2 journals and unplaced execution preserved | Existing task-world/grant suites |
+| Auto selects jail only after a real probe | Native resolution fixture |
+| Seatbelt/Landlock deny read-only and alias writes | Platform-gated native denial fixtures |
+| Uncertain process start is not replayed | Interrupted receipt-retention fixture |
 
 Pinned upstream evidence and TypeScript-owned limits are recorded in
 [`../.plan/placement-research.md`](../.plan/placement-research.md).

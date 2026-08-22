@@ -19,6 +19,7 @@ import {
     type SemanticRecord,
 } from "../canonical/canonical-record.ts";
 import { recordIdConfig, runProtocolConfig, workspaceProtocolConfig } from "../protocol/config.ts";
+import { readNativeJailProcessEvidence } from "../protocol/native-jail-evidence.ts";
 import {
     DURABLE_EXECUTION_RECOVERY_STATUSES,
     RECORD_MODES,
@@ -39,6 +40,7 @@ import { retainDurableExecutionCreation } from "../run/durable-execution-creatio
 import { publishDurableExecutionCut } from "../run/durable-execution-cut.ts";
 import { DurableExecutionRecoveryError } from "../run/durable-execution-errors.ts";
 import { readDurableTaskExecution } from "../run/durable-execution-recovery.ts";
+import { executeTask } from "../run/execution.ts";
 import type { PreparedTaskExecution } from "../run/execution-preparation.ts";
 import { prepareTaskExecution } from "../run/execution-preparation.ts";
 import type { TaskExecutionResult } from "../run/execution-types.ts";
@@ -47,6 +49,17 @@ import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { TaskSchema } from "../task/schema.ts";
 import { assertWorkspaceBinding, isGitRepositoryBinding } from "./bindings.ts";
 import { createWorldChangeset } from "./changesets.ts";
+import {
+    assertNativeJailPlacementResolutionContract,
+    createNativeJailConfinementPlan,
+    launchNativeJailRunner,
+    NativeJailExecutionError,
+} from "./native-jail.ts";
+import type {
+    NativeJailLaunchIntent,
+    NativeJailLaunchReceipt,
+    NativeJailPlacementResolution,
+} from "./native-jail-types.ts";
 import { assertGrantedPlacementResolutionContract } from "./placement.ts";
 import type { GrantedPlacementResolution } from "./placement-types.ts";
 import {
@@ -66,16 +79,23 @@ import type {
 } from "./retained-world-runner-types.ts";
 import type {
     CaptureGrantedTaskWorldOptions,
+    CaptureJailedGrantedTaskWorldOptions,
     CapturePlacedGrantedTaskWorldOptions,
     CaptureTaskWorldOptions,
+    JailedTaskWorldCaptureResult,
     PlacedTaskWorldCaptureResult,
     RecoverGrantedTaskWorldOptions,
+    RecoverJailedGrantedTaskWorldOptions,
     RecoverPlacedGrantedTaskWorldOptions,
     RecoverTaskWorldOptions,
     RetainedWorldOutput,
     TaskWorldCaptureResult,
 } from "./task-world-execution-types.ts";
-import { appendTaskWorldJournal, inspectTaskWorldCaptureJournal } from "./task-world-journal.ts";
+import {
+    appendNativeJailProcessEvidence,
+    appendTaskWorldJournal,
+    inspectTaskWorldCaptureJournal,
+} from "./task-world-journal.ts";
 import type { GitRepositoryBinding, WorldCustody, WorldRevision } from "./types.ts";
 
 const [RETAINED_STATUS] = RETAINED_WORLD_OUTPUT_STATUSES;
@@ -86,15 +106,18 @@ const [PREPARED_PHASE, FORKED_PHASE, EXECUTING_PHASE, CAPTURED_PHASE] =
 const [FINISHED_STATUS] = RUN_TERMINAL_STATUSES;
 const [, BLOB_ARTIFACT_TYPE] = RUN_ARTIFACT_CONTENT_TYPES;
 const [CAPTURE_MODE] = RECORD_MODES;
+const NATIVE_JAIL_PROCESS_RESULTS = new WeakMap<object, NativeJailLaunchReceipt>();
 
 type CaptureTaskWorldFields<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>> =
     | CaptureTaskWorldOptions<I, O>
     | CaptureGrantedTaskWorldOptions<I, O>
+    | CaptureJailedGrantedTaskWorldOptions<I, O>
     | CapturePlacedGrantedTaskWorldOptions<I, O>;
 
 type RecoverTaskWorldFields<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>> =
     | RecoverTaskWorldOptions<I, O>
     | RecoverGrantedTaskWorldOptions<I, O>
+    | RecoverJailedGrantedTaskWorldOptions<I, O>
     | RecoverPlacedGrantedTaskWorldOptions<I, O>;
 
 /**
@@ -202,6 +225,50 @@ export async function capturePlacedGrantedTaskWorldDurably<
 }
 
 /**
+ * Executes one granted retained-world task through an authenticated native syscall jail.
+ *
+ * The structured judged process runs before provider invocation. Its confinement plan is compiled
+ * from the selected binding's exact effective write grant, and execution continues only after a
+ * successful exit and proven process-group quiescence.
+ *
+ * @param options - Exact granted capture contract plus authenticated native-jail resolution.
+ * @returns Durable task-world result with exact native placement and process receipt.
+ * @throws {TypeError} If placement, grant, task, resource, runner, or options are inconsistent.
+ * @throws {NativeJailExecutionError} If launch, exit, cancellation, timeout, output, or quiescence fails.
+ *
+ * @example
+ * ```ts
+ * const result = await captureJailedGrantedTaskWorldDurably({
+ *     ...grantedCaptureOptions,
+ *     nativeJailResolution,
+ *     runner: nativeRunner,
+ * });
+ * result.process.quiescence;
+ * ```
+ *
+ * @public
+ */
+export async function captureJailedGrantedTaskWorldDurably<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(options: CaptureJailedGrantedTaskWorldOptions<I, O>): Promise<JailedTaskWorldCaptureResult> {
+    const fields = readJailedOptions(options);
+    const retainedBase = await validateCaptureAuthority(fields);
+    const result = await executeTaskWorld(fields, retainedBase, null);
+    const processReceipt = NATIVE_JAIL_PROCESS_RESULTS.get(result);
+    /* Successful native execution always retains its exact receipt before capture. */
+    /* node:coverage disable */
+    if (processReceipt === undefined) throw new TypeError("native jail receipt is unavailable");
+    /* node:coverage enable */
+    await assertRetainedNativeJailPlanContract(fields, result);
+    return Object.freeze({
+        ...result,
+        placement: fields.nativeJailResolution,
+        process: processReceipt,
+    });
+}
+
+/**
  * Resumes one pre-execution task-world capture under an explicit durable recovery command.
  *
  * Recovery reuses exact `forked` custody and creation evidence, acquires a command-authorized
@@ -287,6 +354,39 @@ export async function recoverPlacedGrantedTaskWorldDurably<
     const fields = readPlacedRecoveryOptions(options);
     const result = await recoverTaskWorld(fields);
     return Object.freeze({ ...result, placement: fields.placementResolution });
+}
+
+/**
+ * Reopens one native-jailed capture without repeating uncertain external process work.
+ *
+ * @param options - Exact jailed capture contract plus recovery command identity.
+ * @returns Recovered task-world result with reconstructed native placement and process receipt.
+ * @throws {DurableExecutionRecoveryError} If process start is uncertain or evidence is incomplete.
+ * @throws {TypeError} If retained native-jail evidence differs from current authority.
+ *
+ * @example
+ * ```ts
+ * const result = await recoverJailedGrantedTaskWorldDurably({
+ *     ...jailedCaptureOptions,
+ *     commandId: "command:recover-native:1",
+ * });
+ * ```
+ *
+ * @public
+ */
+export async function recoverJailedGrantedTaskWorldDurably<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(options: RecoverJailedGrantedTaskWorldOptions<I, O>): Promise<JailedTaskWorldCaptureResult> {
+    const fields = readJailedRecoveryOptions(options);
+    const result = await recoverTaskWorld(fields);
+    const processReceipt = readRetainedNativeJailReceipt(fields.store, fields.execution.runId);
+    await assertRetainedNativeJailPlanContract(fields, result);
+    return Object.freeze({
+        ...result,
+        placement: fields.nativeJailResolution,
+        process: processReceipt,
+    });
 }
 
 async function recoverTaskWorld<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
@@ -410,7 +510,15 @@ function assertPreparedRecoveryContract<
         canonicalizeRecord({ placement_resolution: preparedBody.placement_resolution ?? null }) !==
             canonicalizeRecord({ placement_resolution: placementResolution(fields) }) ||
         (preparedBody.placement_resolution_id ?? null) !==
-            (placementResolution(fields)?.resolution_id ?? null)
+            (placementResolution(fields)?.resolution_id ?? null) ||
+        canonicalizeRecord({
+            native_jail_resolution: preparedBody.native_jail_resolution ?? null,
+        }) !==
+            canonicalizeRecord({
+                native_jail_resolution: nativeJailPlacementResolution(fields),
+            }) ||
+        (preparedBody.native_jail_resolution_id ?? null) !==
+            (nativeJailPlacementResolution(fields)?.resolution_id ?? null)
     ) {
         throw new TypeError("task-world recovery contract differs from prepared evidence");
     }
@@ -508,6 +616,16 @@ async function validateCaptureAuthority<
         assertGrantedPlacementResolutionContract(placement, {
             captureId: fields.captureId,
             repositoryGrantPlan: (fields as CapturePlacedGrantedTaskWorldOptions<I, O>)
+                .repositoryGrantPlan,
+            runId: fields.execution.runId,
+            runner: fields.runner,
+        });
+    }
+    const nativePlacement = nativeJailPlacementResolution(fields);
+    if (nativePlacement !== null) {
+        assertNativeJailPlacementResolutionContract(nativePlacement, {
+            captureId: fields.captureId,
+            repositoryGrantPlan: (fields as CaptureJailedGrantedTaskWorldOptions<I, O>)
                 .repositoryGrantPlan,
             runId: fields.execution.runId,
             runner: fields.runner,
@@ -639,8 +757,72 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
                 world,
             }) satisfies RetainedWorldExecutionContext<I, O>;
             let execution: TaskExecutionResult;
+            let capturedParentRecordId = executingRecordId;
+            let nativeProcessReceipt: NativeJailLaunchReceipt | null = null;
             try {
-                execution = await invokeRetainedWorldRunner(fields.runner, runnerContext);
+                if (nativeJailPlacementResolution(fields) === null) {
+                    execution = await invokeRetainedWorldRunner(fields.runner, runnerContext);
+                } else {
+                    const grant = activeRepositoryGrant(fields);
+                    assert.ok(grant !== null);
+                    const plan = createNativeJailConfinementPlan(
+                        fields.runner,
+                        custody.path,
+                        grant.authority.includes(
+                            workspaceProtocolConfig.repositoryGrants.operations
+                                .writeText as RepositoryGrantAtom,
+                        ),
+                    );
+                    let processParentRecordId = executingRecordId;
+                    nativeProcessReceipt = await launchNativeJailRunner(
+                        fields.runner,
+                        plan,
+                        runnerContext.signal,
+                        {
+                            onIntent: (intent) => {
+                                processParentRecordId = appendNativeJailProcessEvidence(
+                                    fields.store,
+                                    prepared.definition.runId,
+                                    intent,
+                                    [processParentRecordId],
+                                    authority,
+                                );
+                            },
+                            onReceipt: (receipt) => {
+                                processParentRecordId = appendNativeJailProcessEvidence(
+                                    fields.store,
+                                    prepared.definition.runId,
+                                    receipt,
+                                    [processParentRecordId],
+                                    authority,
+                                );
+                            },
+                            onStarted: (started) => {
+                                processParentRecordId = appendNativeJailProcessEvidence(
+                                    fields.store,
+                                    prepared.definition.runId,
+                                    started,
+                                    [processParentRecordId],
+                                    authority,
+                                );
+                            },
+                        },
+                    );
+                    capturedParentRecordId = processParentRecordId;
+                    const processPolicy = workspaceProtocolConfig.placements.nativeJails.process;
+                    /* Each non-success classification is covered by native process fixtures. */
+                    /* node:coverage disable */
+                    if (
+                        nativeProcessReceipt.status !== processPolicy.statusRoles.exited ||
+                        nativeProcessReceipt.exit_code !== 0 ||
+                        nativeProcessReceipt.quiescence !==
+                            processPolicy.quiescenceStatusRoles.proven
+                    ) {
+                        throw new NativeJailExecutionError(nativeProcessReceipt);
+                    }
+                    /* node:coverage enable */
+                    execution = await executeTask(prepared.definition);
+                }
             } finally {
                 active = false;
             }
@@ -676,7 +858,7 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
                     user_basis_after: observedAfter.content_id,
                     user_basis_before: observedBefore.content_id,
                 },
-                [executingRecordId],
+                [capturedParentRecordId],
                 taskWorldJournalWriter(fields),
                 authority,
             );
@@ -725,7 +907,7 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
         RetainedWorldOutput,
         "capture_record_id" | "execution_cut" | "execution_outcome_record_id"
     >;
-    return Object.freeze({
+    const result = Object.freeze({
         ...durable.result,
         changeset: changesetResult,
         output: Object.freeze({
@@ -735,6 +917,11 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
             execution_outcome_record_id: durable.result.ledger.outcome_record_id,
         }),
     });
+    if (nativeJailPlacementResolution(fields) !== null) {
+        const processReceipt = readRetainedNativeJailReceipt(fields.store, fields.execution.runId);
+        NATIVE_JAIL_PROCESS_RESULTS.set(result, processReceipt);
+    }
+    return result;
 }
 
 function taskWorldCustodyId(runId: string, captureId: string): string {
@@ -839,15 +1026,24 @@ function placementResolution<I extends TaskSchema<unknown>, O extends TaskSchema
     return "placementResolution" in fields ? fields.placementResolution : null;
 }
 
+function nativeJailPlacementResolution<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(fields: CaptureTaskWorldFields<I, O>): NativeJailPlacementResolution | null {
+    return "nativeJailResolution" in fields ? fields.nativeJailResolution : null;
+}
+
 function taskWorldJournalWriter<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
     fields: CaptureTaskWorldFields<I, O>,
 ): { readonly schemaId: string; readonly version: number } {
     const version =
-        placementResolution(fields) !== null
-            ? workspaceProtocolConfig.placements.journalVersion
-            : repositoryGrantPlan(fields) !== null
-              ? workspaceProtocolConfig.repositoryGrants.journalVersion
-              : workspaceProtocolConfig.worldTaskCapture.ordinaryJournalVersion;
+        nativeJailPlacementResolution(fields) !== null
+            ? workspaceProtocolConfig.placements.nativeJails.journalVersion
+            : placementResolution(fields) !== null
+              ? workspaceProtocolConfig.placements.journalVersion
+              : repositoryGrantPlan(fields) !== null
+                ? workspaceProtocolConfig.repositoryGrants.journalVersion
+                : workspaceProtocolConfig.worldTaskCapture.ordinaryJournalVersion;
     const writer = workspaceProtocolConfig.worldTaskCapture.journalReaders.find(
         (reader) => reader.version === version,
     );
@@ -865,9 +1061,18 @@ function taskWorldPreparedAuthorityEvidence<
 >(fields: CaptureTaskWorldFields<I, O>): SemanticRecord {
     const grantPlan = repositoryGrantPlan(fields);
     const placement = placementResolution(fields);
+    const nativePlacement = nativeJailPlacementResolution(fields);
     return {
-        ...(placement === null
+        ...(nativePlacement === null
             ? {}
+            : {
+                  native_jail_resolution: nativePlacement,
+                  native_jail_resolution_id: nativePlacement.resolution_id,
+              }),
+        ...(placement === null
+            ? nativePlacement === null
+                ? {}
+                : { placement_resolution: null, placement_resolution_id: null }
             : {
                   placement_resolution: placement,
                   placement_resolution_id: placement.resolution_id,
@@ -1064,6 +1269,22 @@ function readPlacedOptions<I extends TaskSchema<unknown>, O extends TaskSchema<u
     ]) as unknown as CapturePlacedGrantedTaskWorldOptions<I, O>;
 }
 
+function readJailedOptions<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    value: CaptureJailedGrantedTaskWorldOptions<I, O>,
+): CaptureJailedGrantedTaskWorldOptions<I, O> {
+    return readExactOptions(value, [
+        "baseRevision",
+        "binding",
+        "captureId",
+        "carrier",
+        "execution",
+        "nativeJailResolution",
+        "repositoryGrantPlan",
+        "runner",
+        "store",
+    ]) as unknown as CaptureJailedGrantedTaskWorldOptions<I, O>;
+}
+
 function readExactOptions(value: unknown, expected: readonly string[]): Record<string, unknown> {
     if (
         value === null ||
@@ -1142,6 +1363,91 @@ function readPlacedRecoveryOptions<I extends TaskSchema<unknown>, O extends Task
     ]);
     assertRunText(fields.commandId, "commandId");
     return fields as unknown as RecoverPlacedGrantedTaskWorldOptions<I, O>;
+}
+
+function readJailedRecoveryOptions<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
+    value: RecoverJailedGrantedTaskWorldOptions<I, O>,
+): RecoverJailedGrantedTaskWorldOptions<I, O> {
+    const fields = readExactOptions(value, [
+        "baseRevision",
+        "binding",
+        "captureId",
+        "carrier",
+        "commandId",
+        "execution",
+        "nativeJailResolution",
+        "repositoryGrantPlan",
+        "runner",
+        "store",
+    ]);
+    assertRunText(fields.commandId, "commandId");
+    return fields as unknown as RecoverJailedGrantedTaskWorldOptions<I, O>;
+}
+
+function readRetainedNativeJailReceipt(
+    store: SQLiteTraceStore,
+    runId: string,
+): NativeJailLaunchReceipt {
+    const receipts = store
+        .readOwner(runId)
+        .filter(
+            (record) =>
+                record.envelope.schema_ref ===
+                    workspaceProtocolConfig.placements.nativeJails.schemas.processId &&
+                "receipt_id" in record.body,
+        )
+        .map((record) => readNativeJailProcessEvidence(record.body));
+    /* A successful captured native run retains exactly one validated receipt. */
+    /* node:coverage disable */
+    if (receipts.length !== 1) {
+        throw new TypeError("native jail launch receipt is unavailable or ambiguous");
+    }
+    /* node:coverage enable */
+    return receipts[0] as unknown as NativeJailLaunchReceipt;
+}
+
+async function assertRetainedNativeJailPlanContract<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+>(
+    fields: CaptureJailedGrantedTaskWorldOptions<I, O> | RecoverJailedGrantedTaskWorldOptions<I, O>,
+    result: TaskWorldCaptureResult,
+): Promise<void> {
+    const intents = fields.store
+        .readOwner(fields.execution.runId)
+        .filter(
+            (record) =>
+                record.envelope.schema_ref ===
+                    workspaceProtocolConfig.placements.nativeJails.schemas.processId &&
+                "command_id" in record.body,
+        )
+        .map((record) => readNativeJailProcessEvidence(record.body));
+    /* Successful native capture has one claim-fenced launch intent. */
+    /* node:coverage disable */
+    if (intents.length !== 1) {
+        throw new TypeError("native jail launch intent is unavailable or ambiguous");
+    }
+    /* node:coverage enable */
+    const intent = intents[0] as unknown as NativeJailLaunchIntent;
+    const custody = await fields.carrier.openCustody(result.output.custody_id);
+    const grant = activeRepositoryGrant(fields);
+    assert.ok(grant !== null);
+    const expected = createNativeJailConfinementPlan(
+        fields.runner,
+        custody.path,
+        grant.authority.includes(
+            workspaceProtocolConfig.repositoryGrants.operations.writeText as RepositoryGrantAtom,
+        ),
+    );
+    /* Substitution is exercised through exact changed-resolution recovery refusal. */
+    /* node:coverage disable */
+    if (
+        canonicalizeRecord(intent.plan as unknown as SemanticRecord) !==
+        canonicalizeRecord(expected as unknown as SemanticRecord)
+    ) {
+        throw new TypeError("native jail confinement plan differs from reopened authority");
+    }
+    /* node:coverage enable */
 }
 
 function assertText(value: unknown, subject: string, maxBytes: number): asserts value is string {

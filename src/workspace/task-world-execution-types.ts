@@ -4,6 +4,10 @@ import type { TaskExecutionOptions } from "../run/execution-types.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { Cut } from "../store/types.ts";
 import type { TaskSchema } from "../task/schema.ts";
+import type {
+    NativeJailLaunchReceipt,
+    NativeJailPlacementResolution,
+} from "./native-jail-types.ts";
 import type { GrantedPlacementResolution } from "./placement-types.ts";
 import type { GitRepositoryGrantPlan } from "./repository-grant-types.ts";
 import type { RetainedWorldRunner } from "./retained-world-runner-types.ts";
@@ -65,12 +69,30 @@ export type CapturePlacedGrantedTaskWorldOptions<
     readonly placementResolution: GrantedPlacementResolution;
 };
 
+/** Closed options for native-jailed repository-granted retained-world execution. */
+export type CaptureJailedGrantedTaskWorldOptions<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+> = CaptureGrantedTaskWorldOptions<I, O> & {
+    /** Authenticated exact native-jail placement resolution for this run and capture. */
+    readonly nativeJailResolution: NativeJailPlacementResolution;
+};
+
 /** Closed options for exact recovery of placement-resolved granted execution. */
 export type RecoverPlacedGrantedTaskWorldOptions<
     I extends TaskSchema<unknown>,
     O extends TaskSchema<unknown>,
 > = CapturePlacedGrantedTaskWorldOptions<I, O> & {
     /** Stable identity reused for every retry of this exact placed recovery request. */
+    readonly commandId: string;
+};
+
+/** Closed options for exact recovery of native-jailed granted execution. */
+export type RecoverJailedGrantedTaskWorldOptions<
+    I extends TaskSchema<unknown>,
+    O extends TaskSchema<unknown>,
+> = CaptureJailedGrantedTaskWorldOptions<I, O> & {
+    /** Stable identity reused for every retry of this exact jailed recovery request. */
     readonly commandId: string;
 };
 
@@ -129,4 +151,12 @@ export type TaskWorldCaptureResult = DurableTaskExecutionResult & {
 export type PlacedTaskWorldCaptureResult = TaskWorldCaptureResult & {
     /** Exact authenticated requested/resolved placement evidence. */
     readonly placement: GrantedPlacementResolution;
+};
+
+/** Durable native-jailed task result with exact process and placement evidence. */
+export type JailedTaskWorldCaptureResult = TaskWorldCaptureResult & {
+    /** Exact authenticated native-jail placement evidence. */
+    readonly placement: NativeJailPlacementResolution;
+    /** Exact quiescent judged-process launch receipt. */
+    readonly process: NativeJailLaunchReceipt;
 };

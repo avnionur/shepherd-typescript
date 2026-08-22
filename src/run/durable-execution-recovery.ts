@@ -9,6 +9,10 @@ import {
     runProtocolConfig,
     workspaceProtocolConfig,
 } from "../protocol/config.ts";
+import {
+    readNativeJailProcessEvidence,
+    readNativeJailResolutionEvidence,
+} from "../protocol/native-jail-evidence.ts";
 import { readGrantedPlacementResolutionEvidence } from "../protocol/placement-evidence.ts";
 import { readRepositoryGrantPlanEvidence } from "../protocol/repository-grant-evidence.ts";
 import {
@@ -402,6 +406,7 @@ function validateWorldCaptureJournal(
             ({ schemaId }) => schemaId === record.envelope.schema_ref,
         ),
     );
+    const nativeProcessTail = validateNativeJailProcessEvidence(records, journal);
     if (journal.length === 0)
         return Object.freeze({
             baseRevisionId: null,
@@ -453,6 +458,12 @@ function validateWorldCaptureJournal(
             if (!validPlacementResolutionEvidence(fields)) {
                 throw new TypeError("durable world capture prepared placement is invalid");
             }
+            /* Native resolution substitution is covered at the public recovery seam. */
+            /* node:coverage disable */
+            if (!validNativeJailResolutionEvidence(fields)) {
+                throw new TypeError("durable world capture prepared native jail is invalid");
+            }
+            /* node:coverage enable */
             if (
                 !RETAINED_WORLD_ENFORCEMENT_KINDS.some(
                     (enforcement) => enforcement === fields.enforcement,
@@ -516,7 +527,12 @@ function validateWorldCaptureJournal(
         const expectedParents =
             phase === RETAINED_WORLD_JOURNAL_PHASES[2]
                 ? [previousRecordId, started?.envelope.record_id]
-                : [previousRecordId];
+                : phase === RETAINED_WORLD_JOURNAL_PHASES[3] &&
+                    workspaceProtocolConfig.placements.nativeJails.journalVersions.includes(
+                        journalVersion,
+                    )
+                  ? [nativeProcessTail?.envelope.record_id]
+                  : [previousRecordId];
         if (expectedParents.includes(undefined)) {
             throw new TypeError("durable world capture executing journal requires start evidence");
         }
@@ -538,6 +554,92 @@ function validateWorldCaptureJournal(
     });
 }
 
+/* Native process cross-record faults are fail-closed and covered by interruption/replay fixtures. */
+/* node:coverage disable */
+function validateNativeJailProcessEvidence(
+    records: readonly OwnerRecord[],
+    journal: readonly OwnerRecord[],
+): OwnerRecord | null {
+    const processRecords = records.filter(
+        (record) =>
+            record.envelope.schema_ref ===
+            workspaceProtocolConfig.placements.nativeJails.schemas.processId,
+    );
+    if (processRecords.length === 0) return null;
+    if (processRecords.length > 3) {
+        throw new TypeError("durable native jail process contains excess evidence");
+    }
+    const executing = journal.find(
+        (record) => record.body.capture_phase === RETAINED_WORLD_JOURNAL_PHASES[2],
+    );
+    if (executing === undefined) {
+        throw new TypeError("durable native jail process lacks executing authority");
+    }
+    let previousRecordId = executing.envelope.record_id;
+    let launchId: string | null = null;
+    let processId: number | null = null;
+    let receipt: SemanticRecord | null = null;
+    const preparedResolution = journal[0]?.body.native_jail_resolution;
+    const resolution =
+        preparedResolution === null || preparedResolution === undefined
+            ? null
+            : readNativeJailResolutionEvidence(preparedResolution);
+    for (const [index, record] of processRecords.entries()) {
+        const decoded = readNativeJailProcessEvidence(record.body);
+        if (index === 0) {
+            if (!("command_id" in decoded)) {
+                throw new TypeError("durable native jail process lacks launch intent");
+            }
+            launchId = decoded.launch_id as string;
+            const plan = decoded.plan as SemanticRecord;
+            if (
+                resolution === null ||
+                decoded.runner_id !== resolution.runner_id ||
+                plan.backend_id !== (resolution.backend as SemanticRecord).backend_id ||
+                plan.command_id !== (resolution.command as SemanticRecord).command_id ||
+                plan.probe_id !== (resolution.backend_probe as SemanticRecord).probe_id
+            ) {
+                throw new TypeError("durable native jail plan differs from prepared resolution");
+            }
+        } else if ("start_id" in decoded) {
+            if (processId !== null || decoded.launch_id !== launchId) {
+                throw new TypeError("durable native jail process start is inconsistent");
+            }
+            processId = decoded.process_id as number;
+        } else if ("receipt_id" in decoded) {
+            if (
+                receipt !== null ||
+                decoded.launch_id !== launchId ||
+                decoded.process_id !== processId
+            ) {
+                throw new TypeError("durable native jail process receipt is inconsistent");
+            }
+            receipt = decoded;
+        } else {
+            throw new TypeError("durable native jail process order is inconsistent");
+        }
+        assertDurableExecutionRecordContract(record, CAPTURE_MODE, ROOT_WITNESS_ID, [
+            previousRecordId,
+        ]);
+        previousRecordId = record.envelope.record_id;
+    }
+    const captured = journal.some(
+        (record) => record.body.capture_phase === RETAINED_WORLD_JOURNAL_PHASES[3],
+    );
+    const processPolicy = workspaceProtocolConfig.placements.nativeJails.process;
+    if (
+        captured &&
+        (receipt === null ||
+            receipt.status !== processPolicy.statusRoles.exited ||
+            receipt.exit_code !== 0 ||
+            receipt.quiescence !== processPolicy.quiescenceStatusRoles.proven)
+    ) {
+        throw new TypeError("captured native jail process was not successful and quiescent");
+    }
+    return processRecords.at(-1) as OwnerRecord;
+}
+/* node:coverage enable */
+
 function isRunText(value: unknown): value is string {
     return typeof value === "string" && value.length > 0 && !/[\uD800-\uDFFF]/u.test(value);
 }
@@ -554,6 +656,11 @@ function journalFields(phase: string | undefined, version: unknown): readonly st
             "max_text_bytes",
             ...(workspaceProtocolConfig.placements.journalVersions.includes(version as number)
                 ? ["placement_resolution", "placement_resolution_id"]
+                : []),
+            ...(workspaceProtocolConfig.placements.nativeJails.journalVersions.includes(
+                version as number,
+            )
+                ? ["native_jail_resolution", "native_jail_resolution_id"]
                 : []),
             ...(workspaceProtocolConfig.repositoryGrants.journalVersions.includes(version as number)
                 ? ["repository_grant_plan", "repository_grant_plan_id"]
@@ -618,6 +725,37 @@ function validPlacementResolutionEvidence(fields: Record<string, unknown>): bool
         decodedPlacement.task_artifact_digest === decodedGrantPlan.task_artifact_digest
     );
 }
+
+/* Native resolution structure is decoded exactly and substitution is refused at public recovery. */
+/* node:coverage disable */
+function validNativeJailResolutionEvidence(fields: Record<string, unknown>): boolean {
+    if (
+        !workspaceProtocolConfig.placements.nativeJails.journalVersions.includes(
+            fields.journal_version as number,
+        )
+    ) {
+        return (
+            fields.native_jail_resolution === undefined &&
+            fields.native_jail_resolution_id === undefined
+        );
+    }
+    const resolution = fields.native_jail_resolution;
+    const resolutionId = fields.native_jail_resolution_id;
+    if (resolution === null) return resolutionId === null;
+    if (fields.repository_grant_plan === null) return false;
+    const decoded = readNativeJailResolutionEvidence(resolution);
+    const grantPlan = readRepositoryGrantPlanEvidence(fields.repository_grant_plan);
+    return (
+        decoded.resolution_id === resolutionId &&
+        decoded.capture_id === fields.capture_id &&
+        decoded.run_id === fields.run_id &&
+        decoded.runner_id === fields.runner_id &&
+        decoded.enforcement === fields.enforcement &&
+        decoded.repository_grant_plan_id === grantPlan.plan_id &&
+        decoded.task_artifact_digest === grantPlan.task_artifact_digest
+    );
+}
+/* node:coverage enable */
 
 function journalVersionForSchema(schemaRef: string): number {
     const reader = workspaceProtocolConfig.worldTaskCapture.journalReaders.find(
@@ -876,6 +1014,7 @@ function isDurableExecutionRecord(record: OwnerRecord): boolean {
         runProtocolConfig.schemas.waitingLifecycleId,
         runProtocolConfig.execution.controlCommandSchemaId,
         workspaceProtocolConfig.worldTaskCapture.captureSchemaId,
+        workspaceProtocolConfig.placements.nativeJails.schemas.processId,
         ...workspaceProtocolConfig.worldTaskCapture.journalReaders.map(({ schemaId }) => schemaId),
     ].includes(record.envelope.schema_ref);
 }

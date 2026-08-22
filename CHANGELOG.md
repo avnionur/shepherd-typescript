@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.40.0] - 2026-08-21
+
+### New Feature
+
+- Added workspace protocol v23 authenticated macOS Seatbelt and Linux/WSL Landlock backend
+  descriptors and real allow/deny probes, with explicit unavailable evidence for native Windows,
+  missing launchers/compilers, blocked syscalls, profile failure, and helper-integrity failure.
+- Added structured shell-free native runner commands, exact repository-grant writable-root
+  lowering, read-only/ungranted/symlink-alias syscall denial, bounded output, cancellation,
+  timeout, process-group quiescence, and terminal launch receipts.
+- Added native jail placement and durable capture/recovery APIs with complete backend, probe,
+  command, confinement-plan, process, grant, task, runner, run, and capture evidence under
+  journal v12/v4, including same/fresh-process replay and no automatic retry after uncertain start.
+- Added generated language-neutral native backend, probe, command, resolution, confinement-plan,
+  process, and world-capture journal v4 schemas plus real platform-gated denial and malformed-
+  evidence suites.
+
+### Impact
+
+Callers can run a structured judged filesystem command with native write denial on a capable
+macOS Seatbelt or Linux/WSL Landlock host. Explicit jail fails before runner/provider execution
+when the backend cannot be proved, and auto reaches jail only with authenticated successful probe
+evidence; advisory fallback remains visible. Ordinary v9/v1, granted v10/v2, and advisory placed
+v11/v3 journal writers/readers and their public behavior remain unchanged.
+
 ## [1.39.0] - 2026-08-19
 
 ### New Feature

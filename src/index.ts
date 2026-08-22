@@ -73,6 +73,12 @@ export type {
     PublishedRecord,
 } from "./projection/types.ts";
 export {
+    NATIVE_JAIL_BACKENDS,
+    NATIVE_JAIL_PLACEMENT_REASONS,
+    NATIVE_JAIL_PROBE_REASONS,
+    NATIVE_JAIL_PROBE_STATUSES,
+    NATIVE_JAIL_PROCESS_STATUSES,
+    NATIVE_JAIL_QUIESCENCE_STATUSES,
     PLACEMENT_ENVIRONMENTS,
     PLACEMENT_PLATFORM_FAMILIES,
     PLACEMENT_REQUESTS,
@@ -347,6 +353,35 @@ export { createGitAwareCustody } from "./workspace/git-aware-custody.ts";
 export { createGitChangesetInspection } from "./workspace/git-changeset-inspection.ts";
 export { initializeWorkspace, openWorkspace } from "./workspace/initialization.ts";
 export {
+    createNativeJailCommand,
+    createNativeJailPlacementResolution,
+    createNativeJailRunner,
+    inspectLocalNativeJailBackend,
+    NativeJailExecutionError,
+    NativeJailUnavailableError,
+} from "./workspace/native-jail.ts";
+export type {
+    NativeJailBackendDescriptor,
+    NativeJailBackendName,
+    NativeJailBackendProbeEvidence,
+    NativeJailCommand,
+    NativeJailCommandDefinition,
+    NativeJailConfinementPlan,
+    NativeJailEnvironmentEntry,
+    NativeJailLaunchIntent,
+    NativeJailLaunchReceipt,
+    NativeJailPlacementReason,
+    NativeJailPlacementResolution,
+    NativeJailPlacementResolutionOptions,
+    NativeJailProbeReason,
+    NativeJailProbeStatus,
+    NativeJailProcessStarted,
+    NativeJailProcessStatus,
+    NativeJailQuiescenceStatus,
+    NativeJailRunner,
+    NativeJailRunnerDefinition,
+} from "./workspace/native-jail-types.ts";
+export {
     createGrantedPlacementResolution,
     createPlacementPlatformEvidence,
     inspectLocalPlacementPlatformEvidence,
@@ -425,18 +460,23 @@ export type {
 } from "./workspace/retained-world-settlement-types.ts";
 export {
     captureGrantedTaskWorldDurably,
+    captureJailedGrantedTaskWorldDurably,
     capturePlacedGrantedTaskWorldDurably,
     captureTaskWorldDurably,
     recoverGrantedTaskWorldDurably,
+    recoverJailedGrantedTaskWorldDurably,
     recoverPlacedGrantedTaskWorldDurably,
     recoverTaskWorldDurably,
 } from "./workspace/task-world-execution.ts";
 export type {
     CaptureGrantedTaskWorldOptions,
+    CaptureJailedGrantedTaskWorldOptions,
     CapturePlacedGrantedTaskWorldOptions,
     CaptureTaskWorldOptions,
+    JailedTaskWorldCaptureResult,
     PlacedTaskWorldCaptureResult,
     RecoverGrantedTaskWorldOptions,
+    RecoverJailedGrantedTaskWorldOptions,
     RecoverPlacedGrantedTaskWorldOptions,
     RecoverTaskWorldOptions,
     RetainedWorldOutput,

@@ -1,0 +1,64 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-plan-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "backend_id": {
+            "pattern": "^native-jail-backend:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "command_id": {
+            "pattern": "^native-jail-command:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "compatibility_version": {
+            "const": "shepherd.workspace.native-jails.v1",
+            "type": "string"
+        },
+        "custody_root": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "enforcement": {
+            "const": "native-syscall-deny",
+            "type": "string"
+        },
+        "plan_id": {
+            "pattern": "^native-jail-plan:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "plan_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "probe_id": {
+            "pattern": "^native-jail-probe:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "profile_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "writable_roots": {
+            "items": {
+                "minLength": 1,
+                "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+        }
+    },
+    "required": [
+        "backend_id",
+        "command_id",
+        "compatibility_version",
+        "custody_root",
+        "enforcement",
+        "plan_id",
+        "plan_version",
+        "probe_id",
+        "profile_digest",
+        "writable_roots"
+    ],
+    "type": "object"
+}

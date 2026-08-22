@@ -85,10 +85,11 @@ discard converges after restart. The reproducible evidence is recorded in
 [`phase-3-exit-audit.md`](./phase-3-exit-audit.md).
 
 `L1-alpha` does not mark the entire upstream column complete. Explicit grant identity, advisory
-capability checks, and advisory/auto placement reporting are implemented, while native jail
-enforcement, `apply`, `release`, CLI compatibility, repair, installed-package consumer fixtures,
-and remaining P1 rows stay assigned to Phase 4. Platform completion is limited to the named
-macOS/Linux scope; no optimized carrier or final native-Windows CI result is claimed.
+capability checks, advisory/auto placement reporting, and authenticated native filesystem-write
+jails are implemented, while `apply`, `release`, CLI compatibility, repair, installed-package
+consumer fixtures, and remaining P1 rows stay assigned to Phase 4. Platform completion is limited
+to probed macOS Seatbelt and Linux/WSL Landlock; no optimized carrier, AppContainer, or native-
+Windows jail claim is made.
 
 ## Permissions, placement, and safety
 
@@ -97,13 +98,13 @@ macOS/Linux scope; no optimized carrier or final native-Windows CI result is cla
 | Runtime permission descriptors | shipped | required | P0 | protocol-v21 companion artifacts and independent canonical fixture implemented |
 | `ReadOnly`/`ReadWrite` per binding | shipped | required | P0 | exact-resource admission and advisory capability matrix implemented |
 | Whole-run permission ceiling | shipped | useful | P1 | configured atom intersection and non-amplification property implemented |
-| Deny by default | shipped | required | P0 | missing/extra resources and read-only writes fail closed at granted public seams; OS/process denial follows placement |
+| Deny by default | shipped | required | P0 | missing/extra resources and read-only writes fail closed at advisory and native public seams |
 | Advisory placement | shipped | useful | P0 | protocol-v22 requested/resolved/actual evidence and placed capture/recovery implemented |
-| Auto placement | shipped | useful | P0 | visible advisory fallback and exact replay/recovery matrix implemented; jail resolution follows native backends |
-| Jail placement fails closed | shipped | safety critical | P1 | unsupported/jail-failure tests |
-| macOS Seatbelt | shipped | platform | P1 | macOS CI |
-| Linux Landlock/container jail | shipped | platform | P1 | privileged Linux CI |
-| Windows/WSL policy | WSL advised | platform | P1 | protocol-v22 native-Windows/WSL classification implemented; jail support policy remains pending |
+| Auto placement | shipped | useful | P0 | visible advisory fallback; native auto requires an authenticated successful probe |
+| Jail placement fails closed | shipped | safety critical | P1 | probe/helper/profile/launch/interruption refusal fixtures implemented |
+| macOS Seatbelt | shipped | platform | P1 | real local syscall-denial, read-only, alias, process, and recovery suite implemented |
+| Linux Landlock/container jail | shipped | platform | P1 | package helper and Linux-gated real denial suite implemented; capable Linux host required |
+| Windows/WSL policy | WSL advised | platform | P1 | native Windows unsupported; WSL uses Landlock only when its Linux probe and denial suite pass |
 | Capability attenuation/delegation | not complete | meta-agent need | P2 | no-amplification property |
 | Irreversible-effect approval gate | research direction | safety need | P2 | interception tests |
 

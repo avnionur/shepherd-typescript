@@ -25,6 +25,13 @@ before runner/provider invocation and is returned with the task-world result. Ne
 journal v11/v3; unchanged v9/v1 and v10/v2 evidence remains readable. See
 [`placement-resolution.md`](./placement-resolution.md).
 
+`captureJailedGrantedTaskWorldDurably` composes the exact grant plan with an authenticated native
+jail resolution and structured judged-process command. Native attempts use journal v12/v4 and
+retain the complete backend/probe/command/resolution plus confinement plan, process start, bounded
+output, terminal receipt, and quiescence evidence. Provider execution and custody capture continue
+only after exit code zero and proven process-group quiescence. See
+[`native-jail-execution.md`](./native-jail-execution.md).
+
 The current advisory capability reads and replaces existing regular UTF-8 files beneath custody.
 Paths are binding-relative; absolute paths, traversal, Shepherd control-directory access, symbolic
 links, non-files, malformed UTF-8, and configured size-limit violations fail closed. Granted Git
@@ -50,7 +57,8 @@ result. `inspectTaskWorldCaptureJournal` exposes the validated ordered prefix wi
 runner or carrier and reconstructs the same retained projection after the SQLite store reopens.
 World records created under protocol v8 remain readable without journal transitions and are
 therefore legacy retained evidence. Ordinary capture writes journal v9/v1, unplaced granted capture
-writes v10/v2, and placed granted capture writes v11/v3. All three exact pairs remain readable.
+writes v10/v2, advisory placed granted capture writes v11/v3, and native jailed granted capture
+writes v12/v4. All four exact pairs remain readable.
 
 `recoverTaskWorldDurably` validates the exact original task, provider, budget, binding, base,
 runner, capture, and configured limits before recovery. An explicit globally idempotent command
@@ -67,6 +75,7 @@ cross-base custody and output evidence fails closed.
 
 A runner that returns after cooperative cancellation is quiescent at the callback boundary; its
 verified partial custody is retained beside the cancelled outcome while the user binding remains
-unchanged. Process-jail enforcement, external-process termination proof, create/delete authority,
-and phase-specific administrative discard remain later runtime/settlement work. No uncertain
-writer is captured or retried automatically.
+unchanged. Native jailed execution separately requires terminal process and process-group
+quiescence evidence before capture. A launch intent without terminal evidence remains uncertain
+and is never replayed automatically. Create/delete capability methods, simultaneous multi-world
+custody, and phase-specific administrative discard remain later runtime/settlement work.

@@ -57,8 +57,10 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   v21 task-grant companion identity, exact repository admission, monotone whole-run attenuation,
   advisory capability enforcement, and exact recovery evidence.
 - [Placement resolution and reporting](./placement-resolution.md) defines workspace protocol v22
-  platform evidence, advisory/auto resolution, visible fallback, placed recovery, and explicit
-  native-jail non-claims.
+  platform evidence, advisory/auto resolution, visible fallback, and placed recovery.
+- [Native jail execution](./native-jail-execution.md) defines workspace protocol v23 authenticated
+  Seatbelt/Landlock probes, exact grant lowering, structured process launch, durable receipts,
+  platform support, threat limits, and no-retry uncertain recovery.
 - [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,
   isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
   idempotent discard.

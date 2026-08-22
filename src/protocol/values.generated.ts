@@ -206,7 +206,7 @@ export const WORKSPACE_ADOPTION_MODES = ["none", "git-head", "worktree"] as cons
 export const WORLD_ENTRY_KINDS = ["directory", "file", "symlink"] as const;
 
 /** Configured retained-world runner enforcement classifications. @public */
-export const RETAINED_WORLD_ENFORCEMENT_KINDS = ["advisory"] as const;
+export const RETAINED_WORLD_ENFORCEMENT_KINDS = ["advisory", "native-syscall-deny"] as const;
 
 /** Configured repository authority atoms. @public */
 export const REPOSITORY_GRANT_ATOMS = ["read", "write"] as const;
@@ -235,6 +235,43 @@ export const PLACEMENT_PLATFORM_FAMILIES = ["macos", "linux", "windows", "unsupp
 
 /** Configured execution-environment classifications used by placement evidence. @public */
 export const PLACEMENT_ENVIRONMENTS = ["native", "wsl", "unsupported"] as const;
+
+/** Configured native syscall-jail backend names. @public */
+export const NATIVE_JAIL_BACKENDS = ["seatbelt", "landlock"] as const;
+
+/** Configured native-jail backend probe reasons. @public */
+export const NATIVE_JAIL_PROBE_REASONS = [
+    "probe-succeeded",
+    "platform-unsupported",
+    "backend-executable-unavailable",
+    "helper-compiler-unavailable",
+    "helper-integrity-failed",
+    "native-denial-failed",
+    "native-write-failed",
+    "native-probe-error",
+] as const;
+
+/** Configured native-jail backend probe statuses. @public */
+export const NATIVE_JAIL_PROBE_STATUSES = ["available", "unavailable"] as const;
+
+/** Configured successful native-jail placement reasons. @public */
+export const NATIVE_JAIL_PLACEMENT_REASONS = [
+    "requested-native-jail",
+    "auto-selected-native-jail",
+] as const;
+
+/** Configured native judged-process terminal statuses. @public */
+export const NATIVE_JAIL_PROCESS_STATUSES = [
+    "exited",
+    "cancelled",
+    "timed-out",
+    "output-limit",
+    "launch-failed",
+    "quiescence-uncertain",
+] as const;
+
+/** Configured native process-group quiescence statuses. @public */
+export const NATIVE_JAIL_QUIESCENCE_STATUSES = ["proven", "uncertain"] as const;
 
 /** Configured durable retained-world output statuses. @public */
 export const RETAINED_WORLD_OUTPUT_STATUSES = ["retained"] as const;
