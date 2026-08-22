@@ -63,6 +63,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   platform support, threat limits, and no-retry uncertain recovery.
 - [Retained-world application](./retained-world-application.md) defines portable path-conflict
   evidence, exact three-way plans, merged-revision custody, publication, and restart recovery.
+- [Receipt-only retained-world release](./retained-world-release.md) defines current-basis
+  witnesses, preserved retained custody, consume-once terminal evidence, and restart recovery.
 - [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,
   isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
   idempotent discard.

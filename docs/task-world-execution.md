@@ -77,7 +77,7 @@ A runner that returns after cooperative cancellation is quiescent at the callbac
 verified partial custody is retained beside the cancelled outcome while the user binding remains
 unchanged. Native jailed execution separately requires terminal process and process-group
 quiescence evidence before capture. A launch intent without terminal evidence remains uncertain
-and is never replayed automatically. Create/delete capability methods, simultaneous multi-world
-custody, and an explicit `release` transition remain later runtime/settlement work. Captured
-outputs can use the separate path-disjoint application coordinator described in
+and is never replayed automatically. Create/delete capability methods and simultaneous multi-world
+custody remain later runtime work. Captured outputs can use the receipt-only release coordinator in
+[`retained-world-release.md`](./retained-world-release.md) or the path-disjoint application coordinator in
 [`retained-world-application.md`](./retained-world-application.md).

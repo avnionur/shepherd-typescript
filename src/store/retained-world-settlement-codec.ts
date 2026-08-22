@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import {
+    RETAINED_WORLD_RELEASE_COMPATIBILITY_VERSION,
+    RETAINED_WORLD_RELEASE_RECEIPT_VERSION,
     RETAINED_WORLD_SETTLEMENT_ACTIONS,
     RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION,
     RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION,
@@ -15,8 +17,10 @@ import type {
     RetainedWorldSettlementAdmission,
 } from "./types.ts";
 
-const [, , SELECTED_STATE, DISCARDED_STATE, APPLIED_STATE] = RETAINED_WORLD_SETTLEMENT_STATES;
-const [SELECT_ACTION, DISCARD_ACTION, APPLY_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
+const [, , SELECTED_STATE, DISCARDED_STATE, APPLIED_STATE, RELEASED_STATE] =
+    RETAINED_WORLD_SETTLEMENT_STATES;
+const [SELECT_ACTION, DISCARD_ACTION, APPLY_ACTION, RELEASE_ACTION] =
+    RETAINED_WORLD_SETTLEMENT_ACTIONS;
 
 type RetainedWorldSettlementOperation =
     | Readonly<{
@@ -29,6 +33,13 @@ type RetainedWorldSettlementOperation =
           action: typeof APPLY_ACTION;
           application_plan: RetainedWorldApplicationPlanEvidence;
           operation_version: typeof RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION;
+          request: RetainedWorldSettlementAdmission["request"];
+          request_id: string;
+      }>
+    | Readonly<{
+          action: typeof RELEASE_ACTION;
+          operation_version: typeof RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION;
+          release_basis_id: string;
           request: RetainedWorldSettlementAdmission["request"];
           request_id: string;
       }>;
@@ -70,6 +81,22 @@ type RetainedWorldSettlementTerminalReceipt =
           request_id: string;
           state: typeof APPLIED_STATE;
           user_basis_after: string;
+      }>
+    | Readonly<{
+          action: typeof RELEASE_ACTION;
+          base_revision_id: string;
+          binding_id: string;
+          changeset_id: string;
+          compatibility_version: typeof RETAINED_WORLD_RELEASE_COMPATIBILITY_VERSION;
+          custody_id: string;
+          head_revision_id: string;
+          operation_id: string;
+          output_id: string;
+          receipt_version: typeof RETAINED_WORLD_RELEASE_RECEIPT_VERSION;
+          request_id: string;
+          state: typeof RELEASED_STATE;
+          user_basis_after: string;
+          user_basis_before: string;
       }>;
 
 /** @internal Canonical terminal-receipt encoding retained by the settlement journal. */
@@ -97,12 +124,21 @@ export type RetainedWorldSettlementTerminalEvidence =
           application_plan_id: string;
           publication_id: string;
           user_basis_after: string;
+      }>
+    | Readonly<{
+          action: typeof RELEASE_ACTION;
+          changeset_id: string;
+          custody_id: string;
+          head_revision_id: string;
+          user_basis_after: string;
+          user_basis_before: string;
       }>;
 
 /** Canonically encodes the deterministic operation bound to one authenticated admission. */
 export function encodeRetainedWorldSettlementOperation(
     admission: RetainedWorldSettlementAdmission,
     applicationPlan: RetainedWorldApplicationPlanEvidence | null = null,
+    releaseBasisId: string | null = null,
 ): RetainedWorldSettlementOperationEncoding {
     const common = {
         action: admission.action,
@@ -112,6 +148,9 @@ export function encodeRetainedWorldSettlementOperation(
     } as const;
     let value: RetainedWorldSettlementOperation;
     if (admission.action === APPLY_ACTION) {
+        if (releaseBasisId !== null) {
+            throw new TypeError("apply settlement operation cannot carry a release basis");
+        }
         if (applicationPlan === null) {
             throw new TypeError("apply settlement operation requires an application plan");
         }
@@ -126,9 +165,19 @@ export function encodeRetainedWorldSettlementOperation(
             throw new TypeError("application plan differs from settlement admission");
         }
         value = Object.freeze({ ...common, action: APPLY_ACTION, application_plan: plan });
-    } else {
+    } else if (admission.action === RELEASE_ACTION) {
         if (applicationPlan !== null) {
-            throw new TypeError("non-apply settlement operation cannot carry an application plan");
+            throw new TypeError("release settlement operation cannot carry an application plan");
+        }
+        assertNonEmptyString(releaseBasisId, "release_basis_id");
+        value = Object.freeze({
+            ...common,
+            action: RELEASE_ACTION,
+            release_basis_id: releaseBasisId,
+        });
+    } else {
+        if (applicationPlan !== null || releaseBasisId !== null) {
+            throw new TypeError("receipt operation cannot carry action-specific planning evidence");
         }
         value = Object.freeze({ ...common, action: admission.action });
     }
@@ -148,6 +197,7 @@ export function decodeRetainedWorldSettlementOperation(
     admission: RetainedWorldSettlementAdmission,
 ): RetainedWorldSettlementOperationEncoding {
     let applicationPlan: RetainedWorldApplicationPlanEvidence | null = null;
+    let releaseBasisId: string | null = null;
     if (admission.action === APPLY_ACTION) {
         let parsed: unknown;
         try {
@@ -161,8 +211,24 @@ export function decodeRetainedWorldSettlementOperation(
         applicationPlan = readRetainedWorldApplicationPlan(
             (parsed as Record<string, unknown>).application_plan,
         );
+    } else if (admission.action === RELEASE_ACTION) {
+        let parsed: unknown;
+        try {
+            parsed = JSON.parse(json);
+        } catch (error) {
+            throw new TypeError("settlement operation evidence is invalid", { cause: error });
+        }
+        if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+            throw new TypeError("settlement operation evidence is invalid");
+        }
+        const descriptor = Object.getOwnPropertyDescriptor(parsed, "release_basis_id");
+        releaseBasisId = "value" in (descriptor ?? {}) ? (descriptor?.value as string) : null;
     }
-    const expected = encodeRetainedWorldSettlementOperation(admission, applicationPlan);
+    const expected = encodeRetainedWorldSettlementOperation(
+        admission,
+        applicationPlan,
+        releaseBasisId,
+    );
     if (json !== expected.json) throw new TypeError("settlement operation evidence is invalid");
     return expected;
 }
@@ -196,6 +262,26 @@ export function encodeRetainedWorldSettlementTerminalReceipt(
             throw new TypeError("apply settlement receipt differs from its application plan");
         }
     }
+    if (evidence.action === RELEASE_ACTION) {
+        assertNonEmptyString(evidence.changeset_id, "changeset_id");
+        assertNonEmptyString(evidence.custody_id, "custody_id");
+        assertNonEmptyString(evidence.head_revision_id, "head_revision_id");
+        assertNonEmptyString(evidence.user_basis_before, "user_basis_before");
+        // The action equality above establishes this discriminant for every public caller.
+        /* node:coverage ignore next 3 */
+        if (operation.value.action !== RELEASE_ACTION) {
+            throw new TypeError("release settlement operation basis is absent");
+        }
+        if (
+            evidence.changeset_id !== operation.value.request.changeset_id ||
+            evidence.custody_id !== operation.value.request.custody_id ||
+            evidence.head_revision_id !== operation.value.request.head_revision_id ||
+            evidence.user_basis_before !== operation.value.release_basis_id ||
+            evidence.user_basis_after !== operation.value.release_basis_id
+        ) {
+            throw new TypeError("release settlement receipt differs from its retained output");
+        }
+    }
     if (
         evidence.action === DISCARD_ACTION &&
         evidence.user_basis_after !== operation.value.request.user_basis_before
@@ -223,14 +309,29 @@ export function encodeRetainedWorldSettlementTerminalReceipt(
                     cleanup_completed: evidence.cleanup_completed,
                     state: DISCARDED_STATE,
                 }
-              : {
-                    ...common,
-                    action: APPLY_ACTION,
-                    applied_revision_id: evidence.applied_revision_id,
-                    application_plan_id: evidence.application_plan_id,
-                    publication_id: evidence.publication_id,
-                    state: APPLIED_STATE,
-                },
+              : evidence.action === APPLY_ACTION
+                ? {
+                      ...common,
+                      action: APPLY_ACTION,
+                      applied_revision_id: evidence.applied_revision_id,
+                      application_plan_id: evidence.application_plan_id,
+                      publication_id: evidence.publication_id,
+                      state: APPLIED_STATE,
+                  }
+                : {
+                      ...common,
+                      action: RELEASE_ACTION,
+                      base_revision_id: operation.value.request.base_revision_id,
+                      binding_id: operation.value.request.binding_id,
+                      changeset_id: evidence.changeset_id,
+                      compatibility_version: RETAINED_WORLD_RELEASE_COMPATIBILITY_VERSION,
+                      custody_id: evidence.custody_id,
+                      head_revision_id: evidence.head_revision_id,
+                      output_id: operation.value.request.output_id,
+                      receipt_version: RETAINED_WORLD_RELEASE_RECEIPT_VERSION,
+                      state: RELEASED_STATE,
+                      user_basis_before: evidence.user_basis_before,
+                  },
     ) as RetainedWorldSettlementTerminalReceipt;
     const json = canonicalizeRecord(value as unknown as SemanticRecord);
     return Object.freeze({ digest: digestText(json), json, value });
@@ -265,24 +366,42 @@ export function decodeRetainedWorldSettlementTerminalReceipt(
                     cleanup_completed: record.cleanup_completed,
                     user_basis_after: record.user_basis_after,
                 }
-              : {
-                    action,
-                    applied_revision_id: record.applied_revision_id,
-                    application_plan_id: record.application_plan_id,
-                    publication_id: record.publication_id,
-                    user_basis_after: record.user_basis_after,
-                };
+              : action === APPLY_ACTION
+                ? {
+                      action,
+                      applied_revision_id: record.applied_revision_id,
+                      application_plan_id: record.application_plan_id,
+                      publication_id: record.publication_id,
+                      user_basis_after: record.user_basis_after,
+                  }
+                : {
+                      action,
+                      base_revision_id: record.base_revision_id,
+                      binding_id: record.binding_id,
+                      changeset_id: record.changeset_id,
+                      custody_id: record.custody_id,
+                      head_revision_id: record.head_revision_id,
+                      output_id: record.output_id,
+                      user_basis_after: record.user_basis_after,
+                      user_basis_before: record.user_basis_before,
+                  };
     if (
         (evidence.action !== SELECT_ACTION &&
             evidence.action !== DISCARD_ACTION &&
-            evidence.action !== APPLY_ACTION) ||
+            evidence.action !== APPLY_ACTION &&
+            evidence.action !== RELEASE_ACTION) ||
         typeof evidence.user_basis_after !== "string" ||
         (evidence.action === SELECT_ACTION && typeof evidence.publication_id !== "string") ||
         (evidence.action === DISCARD_ACTION && typeof evidence.cleanup_completed !== "boolean") ||
         (evidence.action === APPLY_ACTION &&
             (typeof evidence.applied_revision_id !== "string" ||
                 typeof evidence.application_plan_id !== "string" ||
-                typeof evidence.publication_id !== "string"))
+                typeof evidence.publication_id !== "string")) ||
+        (evidence.action === RELEASE_ACTION &&
+            (typeof evidence.changeset_id !== "string" ||
+                typeof evidence.custody_id !== "string" ||
+                typeof evidence.head_revision_id !== "string" ||
+                typeof evidence.user_basis_before !== "string"))
     ) {
         throw new TypeError("settlement receipt evidence is invalid");
     }

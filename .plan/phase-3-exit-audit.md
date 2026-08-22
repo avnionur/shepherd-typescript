@@ -58,7 +58,7 @@ The audit baseline passed all 34 focused tests.
   is manually disabled and no final Windows lane is claimed by this audit.
 - The reference copy carrier is the correctness oracle. No optimized carrier claims parity.
 - Runtime grants, advisory/auto placement reporting, native Seatbelt/Landlock filesystem-write
-  enforcement, and path-disjoint `apply` are now implemented in Phase 4. `release`, CLI compatibility, and the
+  enforcement, path-disjoint `apply`, and receipt-only `release` are now implemented in Phase 4. CLI compatibility and the
   installed-package quickstart remain open.
 - `npm pack --dry-run` verifies package contents only. Installed consumer import/type fixtures and
   publication readiness remain Phase 4/5; npm publication stays disabled.
@@ -68,5 +68,5 @@ The audit baseline passed all 34 focused tests.
 ## Phase boundary
 
 After this audit merges, close Phase 3 epic #16 and activate Phase 4 epic #17. Phase 4 owns the
-remaining documented `0.3.0` `release` settlement, CLI, repair, and
+remaining documented `0.3.0` CLI, repair, and
 installed-package compatibility work.

@@ -1,0 +1,80 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-release-receipt-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "action": {
+            "const": "release",
+            "type": "string"
+        },
+        "base_revision_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "binding_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "changeset_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "compatibility_version": {
+            "const": "shepherd.workspace.retained-world-release.v1",
+            "type": "string"
+        },
+        "custody_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "head_revision_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "operation_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "output_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "receipt_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "request_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "state": {
+            "const": "released",
+            "type": "string"
+        },
+        "user_basis_after": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "user_basis_before": {
+            "minLength": 1,
+            "type": "string"
+        }
+    },
+    "required": [
+        "action",
+        "base_revision_id",
+        "binding_id",
+        "changeset_id",
+        "compatibility_version",
+        "custody_id",
+        "head_revision_id",
+        "operation_id",
+        "output_id",
+        "receipt_version",
+        "request_id",
+        "state",
+        "user_basis_after",
+        "user_basis_before"
+    ],
+    "type": "object"
+}

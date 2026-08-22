@@ -16,7 +16,7 @@ fail closed with versioned evidence.
 
 Phase 4 has since added explicit runtime grants, honest advisory/auto placement resolution,
 authenticated native Seatbelt/Landlock filesystem-write enforcement, and path-disjoint three-way
-application. `release`, CLI compatibility, repair commands, installed-package
+application, and receipt-only release. CLI compatibility, repair commands, installed-package
 consumer fixtures, and the remaining documented `0.3.0` surface remain open. Native Windows policy
 is configured and platform-gated, but no final Windows CI lane is claimed while the repository
 workflow remains manually disabled.

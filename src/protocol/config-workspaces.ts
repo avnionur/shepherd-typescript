@@ -823,6 +823,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "operationIdPrefix",
             "operationVersion",
             "receiptVersion",
+            "release",
             "requestIdPrefix",
             "states",
             "version",
@@ -893,6 +894,16 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "workspaces.settlement.application.reasonRoles.unmoved",
         ),
     };
+    const settlementRelease = readObject(
+        settlement.release,
+        ["artifacts", "compatibilityVersion", "receiptVersion", "schemaId"],
+        "workspaces.settlement.release",
+    );
+    const settlementReleaseArtifacts = readObject(
+        settlementRelease.artifacts,
+        ["receiptSchema"],
+        "workspaces.settlement.release.artifacts",
+    );
     if (
         settlementApplicationConflictKinds.length === 0 ||
         settlementApplicationReasons.length === 0 ||
@@ -1713,6 +1724,26 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
                 settlement.receiptVersion,
                 "workspaces.settlement.receiptVersion",
             ),
+            release: {
+                artifacts: {
+                    receiptSchema: readNonEmptyString(
+                        settlementReleaseArtifacts.receiptSchema,
+                        "workspaces.settlement.release.artifacts.receiptSchema",
+                    ),
+                },
+                compatibilityVersion: readNonEmptyString(
+                    settlementRelease.compatibilityVersion,
+                    "workspaces.settlement.release.compatibilityVersion",
+                ),
+                receiptVersion: readPositiveInteger(
+                    settlementRelease.receiptVersion,
+                    "workspaces.settlement.release.receiptVersion",
+                ),
+                schemaId: readAbsoluteUrl(
+                    settlementRelease.schemaId,
+                    "workspaces.settlement.release.schemaId",
+                ),
+            },
             requestIdPrefix: readNonEmptyString(
                 settlement.requestIdPrefix,
                 "workspaces.settlement.requestIdPrefix",

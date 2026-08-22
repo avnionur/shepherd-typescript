@@ -48,5 +48,6 @@ publication; the immutable merged revision remains available as evidence.
 
 Application is strictly path-disjoint. It does not perform textual conflict resolution, rename
 detection, directory synthesis beyond the canonical changeset, Git commit/index mutation, or an
-upstream `release` custody transition. `release`, repair commands, and CLI settlement commands
-remain separate Phase 4 work.
+upstream receipt-only `release`. Release is implemented separately in
+[`retained-world-release.md`](./retained-world-release.md); repair and CLI settlement commands
+remain later Phase 4 work.

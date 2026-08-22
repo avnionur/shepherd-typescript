@@ -79,6 +79,9 @@ Workspace protocol v24 extends settlement with configured `apply`/`applied` voca
 case-folded equal/prefix/alias conflict classification, bounded conflict evidence, exact
 application-plan and receipt identities, reason/status roles, and generated schema destinations
 without redefining existing select/discard or journal-v1-v4 evidence.
+Workspace protocol v25 adds configured `release`/`released` vocabulary, a receipt-only release
+compatibility namespace/version, and a generated closed release-receipt schema without redefining
+existing select, discard, apply, citation, store, or task-world journal evidence.
 Store schema
 v6 owns the consume-once
 settlement decision table without changing kernel record identity.
@@ -141,7 +144,7 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   schema paths, identity prefixes, limits, statuses, and version are closed. Settlement request,
   effect-journal, and selection-publication vocabularies, identity prefixes, resource bounds,
   descriptor names, errors, schema destinations, and versions are closed. Every value matches the
-  immutable workspace protocol v24 contract. Protocols v1 through v23 remain unchanged historical
+  immutable workspace protocol v25 contract. Protocols v1 through v24 remain unchanged historical
   subsets. Native-jail backend names/platforms, probe/placement/process vocabularies, compiler and
   command bounds, schema paths, journal readers/writers, and semantic roles are closed and
   internally consistent. Platform probes contain valid path-token arguments and regular expressions, fault

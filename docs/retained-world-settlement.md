@@ -17,6 +17,8 @@ Public exact-ID selection and store-terminal repair is covered by
 [`test/workspace/retained-world-select.test.ts`](../test/workspace/retained-world-select.test.ts).
 Public path-disjoint application and recovery is covered by
 [`test/workspace/retained-world-apply.test.ts`](../test/workspace/retained-world-apply.test.ts).
+Public receipt-only release and recovery is covered by
+[`test/workspace/retained-world-release.test.ts`](../test/workspace/retained-world-release.test.ts).
 
 ## Implemented foundation
 
@@ -121,12 +123,22 @@ current revision. It then reuses the dependency-scheduled publication journal, r
 terminal receipt and citation, and cleans only the temporary merge custody. See
 [Retained-world application](./retained-world-application.md).
 
+Workspace protocol v25 extends the vocabulary with receipt-only `release` and `released` plus a
+generated release-receipt schema. Release authenticates the existing candidate/custody, observes
+the current parent basis without requiring it to match the fork basis, retains equal before/after
+witnesses and a terminal citation, and preserves custody for read-only inspection. It creates no
+new authority handle; current-basis observation may publish immutable snapshot evidence, but release
+does not materialize the candidate or mutate/clean custody. See
+[Receipt-only retained-world release](./retained-world-release.md).
+
 Task 9.2B2 implements those trace-store writers. One `BEGIN IMMEDIATE` transaction derives and
 retains the exact operation while moving `prepared` to `applying`; another retains the exact
-action-specific terminal receipt while moving `applying` to `selected` or `discarded`. Equal
+action-specific terminal receipt while moving `applying` to `selected`, `discarded`, `applied`, or
+`released`. Equal
 retries replay the validated journal, different receipts conflict, skipped transitions fail before
-mutation, and every restart read validates the complete nullable-column combination. Selection
-keeps discard cleanup evidence null; discard retains its explicit cleanup-progress boolean. These
+mutation, and every restart read validates the complete nullable-column combination. Selection,
+application, and release keep cleanup evidence null; discard retains its explicit cleanup-progress
+boolean. These
 internal transitions also advance a discarded receipt from cleanup-pending to cleanup-complete
 without changing its logical terminal state. They perform no carrier or user-filesystem operation.
 
@@ -164,7 +176,7 @@ filesystem operation.
 The store primitive deliberately remains internal and trusts only the authenticated coordinator.
 Preparation authenticates retained evidence and, for `apply`, snapshots the current user basis for
 read-only conflict analysis before mutating only the durable settlement-admission row. It does not
-mutate user files or physical custody. Public `select`, `apply`, and `discard` compose this authority
+mutate user files or physical custody. Public `select`, `apply`, `release`, and `discard` compose this authority
 with the effect journal and publish terminal trace citations only after the relevant terminal
 receipt is durable. Carrier-level scheduled publication and `discard(custodyId)` remain internal
 physical primitives and cannot create or bypass a settlement decision by themselves.

@@ -228,7 +228,9 @@ Work:
 - add `apply` with path-disjoint three-way semantics; **implemented in 1.41.0** with workspace
   protocol v24 bounded portable conflicts, exact durable plans, protected merged revisions,
   consume-once terminal citations, and restart/concurrent recovery;
-- add `release` custody transition;
+- add receipt-only `release`; **implemented in 1.42.0** with workspace protocol v25 current-parent
+  basis witnesses, preserved readable custody, exact consume-once receipts/citations, and
+  interruption/concurrency/fresh-process recovery;
 - implement task/run ledgers and selectors;
 - implement output citations, trace revisions, and recovery records;
 - implement repair for orphaned operations;

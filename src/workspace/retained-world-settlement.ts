@@ -17,6 +17,7 @@ import {
 } from "../store/retained-world-application-codec.ts";
 import {
     decodeRetainedWorldSettlementOperation,
+    decodeRetainedWorldSettlementTerminalReceipt,
     encodeRetainedWorldSettlementOperation,
 } from "../store/retained-world-settlement-codec.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
@@ -46,6 +47,8 @@ import type {
     DiscardRetainedWorldSettlementOptions,
     PreparedRetainedWorldSettlement,
     PrepareRetainedWorldSettlementOptions,
+    ReleasedRetainedWorldSettlement,
+    ReleaseRetainedWorldSettlementOptions,
     SelectedRetainedWorldSettlement,
     SelectRetainedWorldSettlementOptions,
 } from "./retained-world-settlement-types.ts";
@@ -58,9 +61,16 @@ import { inspectTaskWorldCaptureJournal } from "./task-world-journal.ts";
 import type { ReferenceCopyCarrier, WorldRevision } from "./types.ts";
 
 const [, , , , COMMITTED_RECOVERY_STATUS] = DURABLE_EXECUTION_RECOVERY_STATUSES;
-const [SELECT_ACTION, DISCARD_ACTION, APPLY_ACTION] = RETAINED_WORLD_SETTLEMENT_ACTIONS;
-const [PREPARED_STATE, APPLYING_STATE, SELECTED_STATE, DISCARDED_STATE, APPLIED_STATE] =
-    RETAINED_WORLD_SETTLEMENT_STATES;
+const [SELECT_ACTION, DISCARD_ACTION, APPLY_ACTION, RELEASE_ACTION] =
+    RETAINED_WORLD_SETTLEMENT_ACTIONS;
+const [
+    PREPARED_STATE,
+    APPLYING_STATE,
+    SELECTED_STATE,
+    DISCARDED_STATE,
+    APPLIED_STATE,
+    RELEASED_STATE,
+] = RETAINED_WORLD_SETTLEMENT_STATES;
 
 /**
  * Authenticates one exact retained output and atomically prepares its consume-once settlement.
@@ -307,6 +317,45 @@ export function inspectRetainedWorldApplicationPlan(
             throw new TypeError("retained-world application plan is absent");
         }
         return readRetainedWorldApplicationPlan(operation.value.application_plan);
+    } catch (error) {
+        if (error instanceof RetainedWorldSettlementInvalidError) throw error;
+        throw new RetainedWorldSettlementInvalidError(
+            workspaceProtocolConfig.settlement.errors.invalidMessage,
+            { cause: error },
+        );
+    }
+}
+
+/**
+ * Reads one terminal receipt-only release without touching carrier or user files.
+ *
+ * @param store - Open trace store containing the settlement journal and execution evidence.
+ * @param outputId - Exact retained-output identity.
+ * @returns Frozen release evidence after terminalization, otherwise `undefined`.
+ * @throws {RetainedWorldSettlementInvalidError} If retained release evidence is malformed.
+ * @throws {TypeError} If the output identity is malformed.
+ *
+ * @public
+ */
+export function inspectRetainedWorldRelease(
+    store: SQLiteTraceStore,
+    outputId: string,
+): ReleasedRetainedWorldSettlement | undefined {
+    if (typeof outputId !== "string" || outputId.length === 0) {
+        throw new TypeError("retained-world release output identity is invalid");
+    }
+    try {
+        const admission = inspectRetainedWorldSettlement(store, outputId);
+        if (admission?.action !== RELEASE_ACTION) return undefined;
+        const journal = store.readRetainedWorldSettlementJournal(outputId);
+        if (
+            journal?.state !== RELEASED_STATE ||
+            journal.operation === null ||
+            journal.receipt === null
+        ) {
+            return undefined;
+        }
+        return releasedResult(journal);
     } catch (error) {
         if (error instanceof RetainedWorldSettlementInvalidError) throw error;
         throw new RetainedWorldSettlementInvalidError(
@@ -711,6 +760,106 @@ export async function applyRetainedWorldSettlement(
     }
 }
 
+/**
+ * Durably releases one exact retained output without materializing it or deleting its custody.
+ *
+ * Release is receipt-only: it authenticates the existing immutable candidate and mutable custody,
+ * retains a terminal consume-once receipt, publishes the execution citation, and leaves both the
+ * user world and retained custody unchanged. Exact retries revalidate custody and replay the same
+ * result after restart. Current-basis observation may retain an immutable carrier snapshot but
+ * never writes candidate content to the user binding.
+ *
+ * @param options - Exact output identity plus authenticated carrier and trace-store authority.
+ * @returns Frozen released result citing the preserved custody, revision, and changeset.
+ * @throws {RetainedWorldSettlementInvalidError} If trace, revision, changeset, custody, or journal
+ * evidence is absent, malformed, forged, discarded, or inconsistent.
+ * @throws {RetainedWorldSettlementConflictError} If another action owns the admission or terminal.
+ *
+ * @public
+ */
+export async function releaseRetainedWorldSettlement(
+    options: ReleaseRetainedWorldSettlementOptions,
+): Promise<ReleasedRetainedWorldSettlement> {
+    try {
+        const fields = exactObject(options, ["binding", "carrier", "outputId", "store"]);
+        if (typeof fields.outputId !== "string" || fields.outputId.length === 0) {
+            throw new TypeError("retained-world settlement output identity is invalid");
+        }
+        const binding = fields.binding as ReleaseRetainedWorldSettlementOptions["binding"];
+        const carrier = fields.carrier as ReferenceCopyCarrier;
+        const store = fields.store as SQLiteTraceStore;
+        assertWorkspaceBinding(binding);
+        if (isGitRepositoryBinding(binding)) assertCurrentGitRepositoryBinding(binding);
+        assertReferenceCopyCarrier(carrier);
+        const admission = inspectRetainedWorldSettlement(store, fields.outputId);
+        if (admission === undefined) {
+            throw new TypeError("retained-world release admission is absent");
+        }
+        if (admission.action !== RELEASE_ACTION) {
+            throw new RetainedWorldSettlementConflictError(
+                workspaceProtocolConfig.settlement.errors.conflictMessage,
+            );
+        }
+        if (binding.binding_id !== admission.request.binding_id) {
+            throw new TypeError("retained-world release binding authority is inconsistent");
+        }
+        await verifyReleaseEvidence(carrier, admission.request);
+        let journal = store.readRetainedWorldSettlementJournal(fields.outputId);
+        // Inspection above and this read share one store row; absence requires store corruption.
+        /* node:coverage ignore next 3 */
+        if (journal === undefined) {
+            throw new TypeError("retained-world release journal is absent");
+        }
+        if (journal.state === PREPARED_STATE) {
+            const observed = await carrier.snapshot(binding);
+            journal = store.beginRetainedWorldSettlement(
+                fields.outputId,
+                null,
+                observed.content_id,
+            );
+        }
+        // Release admission always begins with its exact observed parent basis in the operation.
+        /* node:coverage ignore next 3 */
+        if (journal.operation === null) {
+            throw new TypeError("retained-world release operation evidence is absent");
+        }
+        const operation = decodeRetainedWorldSettlementOperation(journal.operation.json, admission);
+        // The action-discriminated operation decoder requires a release basis for release.
+        /* node:coverage ignore next 3 */
+        if (!("release_basis_id" in operation.value)) {
+            throw new TypeError("retained-world release basis evidence is absent");
+        }
+        if (journal.state === APPLYING_STATE) {
+            journal = store.retainRetainedWorldSettlementTerminal(fields.outputId, {
+                action: RELEASE_ACTION,
+                changeset_id: admission.request.changeset_id,
+                custody_id: admission.request.custody_id,
+                head_revision_id: admission.request.head_revision_id,
+                user_basis_after: operation.value.release_basis_id,
+                user_basis_before: operation.value.release_basis_id,
+            });
+        }
+        // The validated closed journal and deterministic store transitions are exhaustive here.
+        /* node:coverage ignore next 3 */
+        if (journal.state !== RELEASED_STATE || journal.operation === null) {
+            throw new TypeError("retained-world release journal is inconsistent");
+        }
+        publishTerminalSettlementCitation(store, journal);
+        return releasedResult(journal);
+    } catch (error) {
+        if (
+            error instanceof RetainedWorldSettlementInvalidError ||
+            error instanceof RetainedWorldSettlementConflictError
+        ) {
+            throw error;
+        }
+        throw new RetainedWorldSettlementInvalidError(
+            workspaceProtocolConfig.settlement.errors.invalidMessage,
+            { cause: error },
+        );
+    }
+}
+
 function assertApplicationPlanContract(
     plan: RetainedWorldApplicationPlanEvidence,
     requestId: string,
@@ -772,6 +921,75 @@ function assertApplicationCandidatePathsAllowed(
         )
     ) {
         throw new TypeError("retained-world application cannot modify Git administrative paths");
+    }
+}
+
+function releasedResult(journal: RetainedWorldSettlementJournal): ReleasedRetainedWorldSettlement {
+    // Public release/inspection and the closed journal decoder establish these invariants.
+    /* node:coverage ignore next 9 */
+    if (
+        journal.admission.action !== RELEASE_ACTION ||
+        journal.state !== RELEASED_STATE ||
+        journal.operation === null ||
+        journal.receipt === null
+    ) {
+        throw new TypeError("retained-world release evidence is incomplete");
+    }
+    const operation = decodeRetainedWorldSettlementOperation(
+        journal.operation.json,
+        journal.admission,
+    );
+    const receipt = decodeRetainedWorldSettlementTerminalReceipt(journal.receipt.json, operation);
+    /* node:coverage ignore next 3 */
+    if (receipt.value.action !== RELEASE_ACTION) {
+        throw new TypeError("retained-world release receipt action is inconsistent");
+    }
+    return Object.freeze({
+        action: RELEASE_ACTION,
+        base_revision_id: receipt.value.base_revision_id,
+        binding_id: receipt.value.binding_id,
+        changeset_id: receipt.value.changeset_id,
+        compatibility_version: receipt.value.compatibility_version,
+        custody_id: receipt.value.custody_id,
+        head_revision_id: receipt.value.head_revision_id,
+        operation_id: operation.id,
+        output_id: journal.admission.output_id,
+        request_id: journal.admission.request_id,
+        release_receipt_version: receipt.value.receipt_version,
+        settlement_version: RETAINED_WORLD_SETTLEMENT_VERSION,
+        state: RELEASED_STATE,
+        user_basis_after: receipt.value.user_basis_after,
+        user_basis_before: receipt.value.user_basis_before,
+    });
+}
+
+async function verifyReleaseEvidence(
+    carrier: ReferenceCopyCarrier,
+    request: RetainedWorldSettlementRequest,
+): Promise<void> {
+    const base = await carrier.openRevision(request.base_revision_id);
+    const head = await carrier.openRevision(request.head_revision_id);
+    const changeset = await createVerifiedWorldChangeset({
+        baseRevision: base,
+        carrier,
+        headRevision: head,
+    });
+    const custody = await carrier.openCustody(request.custody_id);
+    const custodyVerification = await carrier.verifyCustody(request.custody_id);
+    // Authenticated content-addressed carrier reads reject these contradictions first.
+    /* node:coverage ignore next 13 */
+    if (
+        base.binding_id !== request.binding_id ||
+        base.content_id !== request.user_basis_before ||
+        head.binding_id !== request.binding_id ||
+        head.parent_revision_id !== base.revision_id ||
+        changeset.changeset.changeset_id !== request.changeset_id ||
+        custody.binding_id !== request.binding_id ||
+        custody.base_revision_id !== request.base_revision_id ||
+        custody.base_content_id !== base.content_id ||
+        custodyVerification.content_id !== head.content_id
+    ) {
+        throw new TypeError("retained-world release evidence is inconsistent");
     }
 }
 

@@ -785,6 +785,19 @@ export type WorkspaceProtocolConfig = {
         readonly operationVersion: number;
         /** Closed settlement-receipt codec version. */
         readonly receiptVersion: number;
+        /** Receipt-only retained-world release protocol. */
+        readonly release: {
+            /** Generated release artifact destinations. */
+            readonly artifacts: {
+                readonly receiptSchema: string;
+            };
+            /** Compatibility namespace governing release evidence. */
+            readonly compatibilityVersion: string;
+            /** Public release-receipt protocol version. */
+            readonly receiptVersion: number;
+            /** Published release-receipt schema identifier. */
+            readonly schemaId: string;
+        };
         /** Prefix for content-addressed exact settlement requests. */
         readonly requestIdPrefix: string;
         /** Ordered durable settlement state vocabulary. */

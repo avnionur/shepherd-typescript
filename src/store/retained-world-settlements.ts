@@ -43,8 +43,14 @@ type SettlementRow = {
     readonly state: string;
 };
 
-const [PREPARED_STATE, APPLYING_STATE, SELECTED_STATE, DISCARDED_STATE, APPLIED_STATE] =
-    RETAINED_WORLD_SETTLEMENT_STATES;
+const [
+    PREPARED_STATE,
+    APPLYING_STATE,
+    SELECTED_STATE,
+    DISCARDED_STATE,
+    APPLIED_STATE,
+    RELEASED_STATE,
+] = RETAINED_WORLD_SETTLEMENT_STATES;
 const ROW_COLUMNS = `output_id, command_id, request_id, request_digest, request_json, action, state,
                      operation_id, operation_digest, operation_json,
                      receipt_digest, receipt_json, cleanup_completed`;
@@ -136,6 +142,7 @@ export function beginRetainedWorldSettlement(
     database: DatabaseSync,
     outputId: string,
     applicationPlan: RetainedWorldApplicationPlanEvidence | null = null,
+    releaseBasisId: string | null = null,
 ): RetainedWorldSettlementJournal {
     assertNonEmptyString(outputId, "outputId");
     database.exec(STORE_TRANSACTION_SQL.begin);
@@ -143,6 +150,16 @@ export function beginRetainedWorldSettlement(
         const row = requiredRow(database, outputId);
         const current = journalFromStoredRow(row);
         if (current.state !== PREPARED_STATE) {
+            if (
+                releaseBasisId !== null &&
+                current.admission.action !== RETAINED_WORLD_SETTLEMENT_ACTIONS[3]
+            ) {
+                encodeRetainedWorldSettlementOperation(
+                    current.admission,
+                    applicationPlan,
+                    releaseBasisId,
+                );
+            }
             if (applicationPlan !== null) {
                 // Every validated non-prepared state has an operation.
                 /* node:coverage ignore next 2 */
@@ -167,6 +184,7 @@ export function beginRetainedWorldSettlement(
         const operation = encodeRetainedWorldSettlementOperation(
             current.admission,
             applicationPlan,
+            releaseBasisId,
         );
         const result = database
             .prepare(
@@ -226,7 +244,8 @@ export function retainRetainedWorldSettlementTerminal(
         if (
             current.state === SELECTED_STATE ||
             current.state === DISCARDED_STATE ||
-            current.state === APPLIED_STATE
+            current.state === APPLIED_STATE ||
+            current.state === RELEASED_STATE
         ) {
             if (
                 current.state === DISCARDED_STATE &&
@@ -519,7 +538,8 @@ function journalFromRow(
     if (
         row.state !== SELECTED_STATE &&
         row.state !== DISCARDED_STATE &&
-        row.state !== APPLIED_STATE
+        row.state !== APPLIED_STATE &&
+        row.state !== RELEASED_STATE
     ) {
         throw invalidSettlement();
     }

@@ -100,7 +100,8 @@ The runtime areas are intentionally shallow:
   recovery, plus authenticated exact-output
   settlement preparation, restart-safe settlement inspection, and closed selection-publication
   plan, ordered path-step, and terminal carrier-receipt codecs, portable application-conflict
-  inspection, exact three-way plans, protected merged revisions, and path-disjoint apply recovery.
+  inspection, exact three-way plans, protected merged revisions, path-disjoint apply recovery, and
+  receipt-only release with preserved custody and terminal inspection.
 
 ## Module rules
 

@@ -92,6 +92,8 @@ export {
     RETAINED_WORLD_APPLICATION_STATUSES,
     RETAINED_WORLD_MAX_CAPTURE_ID_BYTES,
     RETAINED_WORLD_MAX_TEXT_BYTES,
+    RETAINED_WORLD_RELEASE_COMPATIBILITY_VERSION,
+    RETAINED_WORLD_RELEASE_RECEIPT_VERSION,
     RETAINED_WORLD_SELECTION_ATOMICITY_KINDS,
     RETAINED_WORLD_SELECTION_MAX_STEPS,
     RETAINED_WORLD_SELECTION_PLAN_VERSION,
@@ -460,8 +462,10 @@ export {
     applyRetainedWorldSettlement,
     discardRetainedWorldSettlement,
     inspectRetainedWorldApplicationPlan,
+    inspectRetainedWorldRelease,
     inspectRetainedWorldSettlement,
     prepareRetainedWorldSettlement,
+    releaseRetainedWorldSettlement,
     selectRetainedWorldSettlement,
 } from "./workspace/retained-world-settlement.ts";
 export type {
@@ -471,6 +475,8 @@ export type {
     DiscardRetainedWorldSettlementOptions,
     PreparedRetainedWorldSettlement,
     PrepareRetainedWorldSettlementOptions,
+    ReleasedRetainedWorldSettlement,
+    ReleaseRetainedWorldSettlementOptions,
     SelectedRetainedWorldSettlement,
     SelectRetainedWorldSettlementOptions,
 } from "./workspace/retained-world-settlement-types.ts";

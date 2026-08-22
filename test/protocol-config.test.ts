@@ -30,6 +30,8 @@ import {
     WORKSPACE_PROTOCOL_V20_CONTRACT,
     WORKSPACE_PROTOCOL_V21_CONTRACT,
     WORKSPACE_PROTOCOL_V22_CONTRACT,
+    WORKSPACE_PROTOCOL_V24_CONTRACT,
+    WORKSPACE_PROTOCOL_V25_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -90,19 +92,27 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.workspaces.settlement.version, 12);
     assert.equal(parsed.workspaces.settlement.operationVersion, 1);
     assert.equal(parsed.workspaces.settlement.receiptVersion, 1);
-    assert.deepEqual(parsed.workspaces.settlement.actions, ["select", "discard", "apply"]);
+    assert.deepEqual(parsed.workspaces.settlement.actions, [
+        "select",
+        "discard",
+        "apply",
+        "release",
+    ]);
     assert.deepEqual(parsed.workspaces.settlement.states, [
         "prepared",
         "applying",
         "selected",
         "discarded",
         "applied",
+        "released",
     ]);
     assert.deepEqual(parsed.workspaces.settlement.application.reasons, [
         "unmoved-parent",
         "path-disjoint",
     ]);
     assert.equal(Object.isFrozen(parsed.workspaces.settlement.application), true);
+    assert.equal(parsed.workspaces.settlement.release.receiptVersion, 1);
+    assert.equal(Object.isFrozen(parsed.workspaces.settlement.release), true);
     assert.equal(parsed.workspaces.selectionPublication.version, 16);
     assert.equal(parsed.workspaces.selectionPublication.planVersion, 1);
     assert.equal(parsed.workspaces.selectionPublication.stepVersion, 1);
@@ -158,6 +168,8 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V20_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V21_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V22_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V25_CONTRACT), true);
+    assert.equal("release" in WORKSPACE_PROTOCOL_V24_CONTRACT.settlement, false);
     assert.equal("placements" in WORKSPACE_PROTOCOL_V21_CONTRACT, false);
     assert.equal("repositoryGrants" in WORKSPACE_PROTOCOL_V20_CONTRACT, false);
     assert.equal("repositoryBindings" in WORKSPACE_PROTOCOL_V19_CONTRACT, false);
@@ -900,6 +912,12 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             objectAt(settlementApplicationConfigOf(config), "schemas").planId = "relative";
         },
         (config) => {
+            settlementReleaseConfigOf(config).receiptVersion = 0;
+        },
+        (config) => {
+            settlementReleaseConfigOf(config).schemaId = "relative";
+        },
+        (config) => {
             objectAt(workspaceConfigOf(config), "selectionPublication").atomicityKinds = [];
         },
         (config) => {
@@ -1418,6 +1436,10 @@ function nativeJailConfigOf(config: Record<string, unknown>): Record<string, unk
 
 function settlementApplicationConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(objectAt(workspaceConfigOf(config), "settlement"), "application");
+}
+
+function settlementReleaseConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(workspaceConfigOf(config), "settlement"), "release");
 }
 
 function carrierConfigOf(config: Record<string, unknown>): Record<string, unknown> {

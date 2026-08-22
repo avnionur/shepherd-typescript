@@ -162,6 +162,10 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
             relativePath: config.workspaces.settlement.application.artifacts.receiptSchema,
         },
         {
+            content: renderJson(renderRetainedWorldReleaseReceiptSchema(config)),
+            relativePath: config.workspaces.settlement.release.artifacts.receiptSchema,
+        },
+        {
             content: renderJson(renderSelectionPublicationSchema(config)),
             relativePath: config.workspaces.selectionPublication.schemaPath,
         },
@@ -368,6 +372,42 @@ function renderRetainedWorldApplicationReceiptSchema(
             },
             receipt_version: { const: application.receiptVersion, type: "integer" },
             state: { const: config.workspaces.settlement.states[4], type: "string" },
+        },
+        required: fields,
+        type: "object",
+    };
+}
+
+function renderRetainedWorldReleaseReceiptSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const release = config.workspaces.settlement.release;
+    const fields = [
+        "action",
+        "base_revision_id",
+        "binding_id",
+        "changeset_id",
+        "compatibility_version",
+        "custody_id",
+        "head_revision_id",
+        "operation_id",
+        "output_id",
+        "receipt_version",
+        "request_id",
+        "state",
+        "user_basis_after",
+        "user_basis_before",
+    ];
+    return {
+        $id: release.schemaId,
+        $schema: config.kernel.schemas.dialect,
+        additionalProperties: false,
+        properties: {
+            ...Object.fromEntries(fields.map((field) => [field, { minLength: 1, type: "string" }])),
+            action: { const: config.workspaces.settlement.actions[3], type: "string" },
+            compatibility_version: { const: release.compatibilityVersion, type: "string" },
+            receipt_version: { const: release.receiptVersion, type: "integer" },
+            state: { const: config.workspaces.settlement.states[5], type: "string" },
         },
         required: fields,
         type: "object",
@@ -1826,6 +1866,13 @@ export const RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION = ${config.workspaces.s
 
 /** Configured deterministic settlement-receipt codec version. @public */
 export const RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION = ${config.workspaces.settlement.receiptVersion} as const;
+
+/** Configured receipt-only retained-world release receipt version. @public */
+export const RETAINED_WORLD_RELEASE_RECEIPT_VERSION = ${config.workspaces.settlement.release.receiptVersion} as const;
+
+/** Configured receipt-only retained-world release compatibility namespace. @public */
+export const RETAINED_WORLD_RELEASE_COMPATIBILITY_VERSION =
+    ${JSON.stringify(config.workspaces.settlement.release.compatibilityVersion)} as const;
 
 /** Configured execution-trace settlement-citation version. @public */
 export const RETAINED_WORLD_SETTLEMENT_CITATION_VERSION = ${config.workspaces.settlement.citationVersion} as const;

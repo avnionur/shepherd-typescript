@@ -116,6 +116,9 @@ trace-record contracts with durable SQLite task and trace stores:
 - workspace protocol v24 bounded portable path-conflict evidence, exact durable three-way
   application plans, path-disjoint retained-world `apply`, protected merged-revision custody,
   consume-once terminal citations, and concurrent/fresh-process recovery;
+- workspace protocol v25 receipt-only retained-world release with current-parent basis witnesses,
+  preserved readable custody, consume-once terminal citations, and interruption/concurrency/
+  fresh-process recovery;
 - a configured reference copy carrier with immutable verified revisions, isolated mutable custody,
   restart reopen, drift verification, deterministic parent-linked custody capture, and exact
   idempotent discard;
@@ -513,6 +516,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Placement resolution and reporting](./docs/placement-resolution.md)
 - [Native jail execution](./docs/native-jail-execution.md)
 - [Retained-world path-disjoint application](./docs/retained-world-application.md)
+- [Receipt-only retained-world release](./docs/retained-world-release.md)
 - [Naming and licensing](./docs/naming-and-licensing.md)
 - [Implementation plan](./.plan/README.md)
 - [Paper coverage map](./.plan/paper-coverage.md)
@@ -557,12 +561,12 @@ paths, and restart recovery.
 
 The [Phase 3 status](./docs/phase-3-l1-alpha.md) and
 [exit audit](./.plan/phase-3-exit-audit.md) map each criterion to repeatable production-seam
-evidence. This is not full Shepherd `0.3.0` parity. `release`, CLI compatibility, repair commands, installed-package consumer fixtures,
+evidence. This is not full Shepherd `0.3.0` parity. CLI compatibility, repair commands, installed-package consumer fixtures,
 live-provider adapters, scopes, supervision, replay, and paper applications remain later phases.
 Phase 4 now includes exact named multi-repository resources, explicit read-only/read-write task
 grants, a whole-run ceiling, honest advisory/auto placement reporting, authenticated native
 filesystem-write jails for capable macOS Seatbelt and Linux/WSL Landlock hosts, and path-disjoint
-three-way retained-world application. Native Windows,
+three-way retained-world application and receipt-only release. Native Windows,
 simultaneous multi-world runner access, network/read isolation, and the remaining documented run
 surface are not implemented.
 

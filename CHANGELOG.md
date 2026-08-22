@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.42.0] - 2026-08-22
+
+### New Feature
+
+- Added workspace protocol v25 receipt-only `release`/`released` settlement vocabulary and a
+  generated closed release-receipt schema.
+- Added public exact-ID release execution and read-only inspection with current-basis witnesses,
+  preserved retained custody, terminal citations, concurrent/fresh-process replay, and interrupted
+  terminal/citation recovery.
+- Added pinned Shepherd 0.3.0 contract research plus public Git-state, parent-drift,
+  missing-custody, consume-once, schema, corruption, and restart evidence.
+
+### Impact
+
+Callers can deliberately settle a retained output without publishing it into the user world or
+deleting its custody. Released content remains inspectable, while all competing settlement verbs
+remain consume-once and user/Git state remains unchanged.
+
 ## [1.41.0] - 2026-08-22
 
 ### New Feature

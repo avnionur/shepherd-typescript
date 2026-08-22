@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-22
 
-Current version: `1.41.0`
+Current version: `1.42.0`
 
 Current level: L1-alpha — P0 retained-world settlement loop
 
@@ -133,6 +133,10 @@ path-disjoint three-way application. It binds one exact base/current/candidate/m
 publishes through the existing dependency-scheduled carrier journal, preserves unrelated user and
 Git state, converges across interruption/concurrency/restart, and retains applied terminal
 citations without consuming overlap refusals.
+Workspace protocol v25 now adds receipt-only release. It authenticates the retained candidate and
+existing custody, permits current-parent drift, records equal observed basis witnesses, preserves
+released custody/readability, and converges across interruption, concurrency, and restart without
+publishing or deleting user files.
 
 ## Progress
 
@@ -303,6 +307,9 @@ citations without consuming overlap refusals.
 - [x] Complete Phase 4 Task 5 workspace-protocol-v24 portable path-conflict inspection, exact
   three-way application plans, protected merged revisions, consume-once applied receipts/citations,
   Git-state preservation, and interruption/concurrency/fresh-process recovery.
+- [x] Complete Phase 4 Task 6 workspace-protocol-v25 receipt-only release, current-parent basis
+  witnesses, preserved readable custody, consume-once receipts/citations, Git-state preservation,
+  and interruption/concurrency/fresh-process recovery.
 
 ## Verification required for this slice
 
@@ -316,8 +323,8 @@ citations without consuming overlap refusals.
 
 ## Next slice
 
-Continue Phase 4 with the next dependency-unblocked `release` or compatibility issue after the
-path-disjoint application slice is merged. Preserve the v9-v12 writer/reader matrix and require production-seam
+Continue Phase 4 with the next dependency-unblocked task/run ledger or selector issue after the
+receipt-only release slice is merged. Preserve the v9-v12 writer/reader matrix and require production-seam
 evidence for every new authority or mutation path.
 
 ## Notes
