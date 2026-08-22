@@ -296,6 +296,11 @@ An immutable content-addressed settlement record binding one shared base, curren
 candidate, path-disjoint merged revision, input changesets, and exact publication changeset.
 _Avoid_: Mutable merge workspace, Git merge commit, inferred conflict resolution
 
+**Retained-World Release**:
+A consume-once receipt-only settlement that records deliberate non-selection against the current
+parent-basis witness while preserving the existing retained custody for read-only inspection.
+_Avoid_: Filesystem handoff, new authority handle, custody cleanup, parent publication
+
 **Durable Resume Command**:
 A globally idempotent canonical request naming one exact suspension acknowledgement and its
 continuation descriptor. Successful application atomically acquires the next worker fence and

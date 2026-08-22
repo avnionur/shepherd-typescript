@@ -1,4 +1,6 @@
 import type {
+    RETAINED_WORLD_RELEASE_COMPATIBILITY_VERSION,
+    RETAINED_WORLD_RELEASE_RECEIPT_VERSION,
     RETAINED_WORLD_SETTLEMENT_ACTIONS,
     RETAINED_WORLD_SETTLEMENT_STATES,
     RETAINED_WORLD_SETTLEMENT_VERSION,
@@ -60,6 +62,52 @@ export type DiscardedRetainedWorldSettlement = {
     readonly settlement_version: typeof RETAINED_WORLD_SETTLEMENT_VERSION;
     /** Configured terminal discarded state. */
     readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[3];
+};
+
+/** Closed authorities for exact-ID receipt-only release and recovery. */
+export type ReleaseRetainedWorldSettlementOptions = {
+    /** Package-created canonical binding whose current basis is observed without mutation. */
+    readonly binding: WorkspaceBinding;
+    /** Package-created carrier owning the admitted custody and immutable revisions. */
+    readonly carrier: ReferenceCopyCarrier;
+    /** Exact retained-output identity previously admitted for release. */
+    readonly outputId: string;
+    /** Open trace store retaining the authenticated settlement journal. */
+    readonly store: SQLiteTraceStore;
+};
+
+/** Durable receipt-only release result preserving the existing retained custody. */
+export type ReleasedRetainedWorldSettlement = {
+    /** Configured release action. */
+    readonly action: (typeof RETAINED_WORLD_SETTLEMENT_ACTIONS)[3];
+    /** Exact immutable base revision cited by the released output. */
+    readonly base_revision_id: string;
+    /** Exact workspace binding identity cited by the released output. */
+    readonly binding_id: string;
+    /** Exact canonical changeset retained for read-only inspection. */
+    readonly changeset_id: string;
+    /** Compatibility namespace retained in the release receipt. */
+    readonly compatibility_version: typeof RETAINED_WORLD_RELEASE_COMPATIBILITY_VERSION;
+    /** Existing authenticated mutable custody preserved by release. */
+    readonly custody_id: string;
+    /** Existing immutable retained candidate revision. */
+    readonly head_revision_id: string;
+    /** Deterministic operation identity retained before the terminal receipt. */
+    readonly operation_id: string;
+    /** Exact retained-output identity consumed by release. */
+    readonly output_id: string;
+    /** Exact authenticated request identity. */
+    readonly request_id: string;
+    /** Public release-receipt protocol version. */
+    readonly release_receipt_version: typeof RETAINED_WORLD_RELEASE_RECEIPT_VERSION;
+    /** Public exact-request settlement protocol version. */
+    readonly settlement_version: typeof RETAINED_WORLD_SETTLEMENT_VERSION;
+    /** Configured terminal released state. */
+    readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[5];
+    /** Current semantic user-basis witness observed after receipt-only settlement. */
+    readonly user_basis_after: string;
+    /** Current semantic user-basis witness observed before receipt-only settlement. */
+    readonly user_basis_before: string;
 };
 
 /** Closed authorities for exact-ID retained-world selection and recovery. */

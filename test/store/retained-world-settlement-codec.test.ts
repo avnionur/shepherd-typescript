@@ -217,3 +217,65 @@ test("apply operations bind the exact three-way plan and applied receipt", () =>
         );
     }
 });
+
+test("release operations bind the preserved custody and receipt-only basis", () => {
+    const releaseRequest = Object.freeze({
+        ...request,
+        action: "release",
+    }) satisfies RetainedWorldSettlementRequest;
+    const releaseAdmission = Object.freeze({
+        ...admission,
+        action: releaseRequest.action,
+        request: releaseRequest,
+    }) satisfies RetainedWorldSettlementAdmission;
+    const releaseBasis = "basis:current";
+    assert.throws(() => encodeRetainedWorldSettlementOperation(releaseAdmission), TypeError);
+    const operation = encodeRetainedWorldSettlementOperation(releaseAdmission, null, releaseBasis);
+    const receipt = encodeRetainedWorldSettlementTerminalReceipt(operation, {
+        action: "release",
+        changeset_id: releaseRequest.changeset_id,
+        custody_id: releaseRequest.custody_id,
+        head_revision_id: releaseRequest.head_revision_id,
+        user_basis_after: releaseBasis,
+        user_basis_before: releaseBasis,
+    });
+    assert.equal(receipt.value.state, "released");
+    assert.deepEqual(
+        decodeRetainedWorldSettlementTerminalReceipt(receipt.json, operation),
+        receipt,
+    );
+    for (const invalid of [
+        { changeset_id: "changeset:different" },
+        { custody_id: "custody:different" },
+        { head_revision_id: "revision:different" },
+        { user_basis_after: "basis:different" },
+    ]) {
+        assert.throws(
+            () =>
+                encodeRetainedWorldSettlementTerminalReceipt(operation, {
+                    action: "release",
+                    changeset_id: releaseRequest.changeset_id,
+                    custody_id: releaseRequest.custody_id,
+                    head_revision_id: releaseRequest.head_revision_id,
+                    user_basis_after: releaseBasis,
+                    user_basis_before: releaseBasis,
+                    ...invalid,
+                }),
+            TypeError,
+        );
+    }
+    for (const invalid of [
+        { ...receipt.value, base_revision_id: "revision:different" },
+        { ...receipt.value, binding_id: "binding:different" },
+        { ...receipt.value, changeset_id: 1 },
+        { ...receipt.value, compatibility_version: "other" },
+        { ...receipt.value, custody_id: 1 },
+        { ...receipt.value, head_revision_id: 1 },
+        { ...receipt.value, output_id: "output:different" },
+    ]) {
+        assert.throws(
+            () => decodeRetainedWorldSettlementTerminalReceipt(JSON.stringify(invalid), operation),
+            TypeError,
+        );
+    }
+});

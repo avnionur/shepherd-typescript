@@ -195,9 +195,15 @@ export class SQLiteTraceStore implements Disposable {
     beginRetainedWorldSettlement(
         outputId: string,
         applicationPlan: RetainedWorldApplicationPlanEvidence | null = null,
+        releaseBasisId: string | null = null,
     ): RetainedWorldSettlementJournal {
         this.#assertOpen();
-        return beginRetainedWorldSettlement(this.#database, outputId, applicationPlan);
+        return beginRetainedWorldSettlement(
+            this.#database,
+            outputId,
+            applicationPlan,
+            releaseBasisId,
+        );
     }
 
     /** @internal Atomically retains or replays the exact terminal settlement receipt. */

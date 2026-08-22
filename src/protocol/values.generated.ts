@@ -285,7 +285,7 @@ export const RETAINED_WORLD_JOURNAL_PHASES = [
 ] as const;
 
 /** Configured consume-once retained-world settlement actions. @public */
-export const RETAINED_WORLD_SETTLEMENT_ACTIONS = ["select", "discard", "apply"] as const;
+export const RETAINED_WORLD_SETTLEMENT_ACTIONS = ["select", "discard", "apply", "release"] as const;
 
 /** Configured retained-world application conflict classifications. @public */
 export const RETAINED_WORLD_APPLICATION_CONFLICT_KINDS = [
@@ -307,6 +307,7 @@ export const RETAINED_WORLD_SETTLEMENT_STATES = [
     "selected",
     "discarded",
     "applied",
+    "released",
 ] as const;
 
 /** Configured public retained-world settlement protocol version. @public */
@@ -317,6 +318,13 @@ export const RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION = 1 as const;
 
 /** Configured deterministic settlement-receipt codec version. @public */
 export const RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION = 1 as const;
+
+/** Configured receipt-only retained-world release receipt version. @public */
+export const RETAINED_WORLD_RELEASE_RECEIPT_VERSION = 1 as const;
+
+/** Configured receipt-only retained-world release compatibility namespace. @public */
+export const RETAINED_WORLD_RELEASE_COMPATIBILITY_VERSION =
+    "shepherd.workspace.retained-world-release.v1" as const;
 
 /** Configured execution-trace settlement-citation version. @public */
 export const RETAINED_WORLD_SETTLEMENT_CITATION_VERSION = 1 as const;

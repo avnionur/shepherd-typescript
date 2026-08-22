@@ -565,7 +565,7 @@
             "version": 11
         },
         "settlement": {
-            "actions": ["select", "discard", "apply"],
+            "actions": ["select", "discard", "apply", "release"],
             "application": {
                 "artifacts": {
                     "conflictSchema": "spec/schemas/retained-world-application-conflict-v1.schema.json",
@@ -612,8 +612,16 @@
             "operationIdPrefix": "world-settlement-operation:sha256:",
             "operationVersion": 1,
             "receiptVersion": 1,
+            "release": {
+                "artifacts": {
+                    "receiptSchema": "spec/schemas/retained-world-release-receipt-v1.schema.json"
+                },
+                "compatibilityVersion": "shepherd.workspace.retained-world-release.v1",
+                "receiptVersion": 1,
+                "schemaId": "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-release-receipt-v1.schema.json"
+            },
             "requestIdPrefix": "world-settlement:sha256:",
-            "states": ["prepared", "applying", "selected", "discarded", "applied"],
+            "states": ["prepared", "applying", "selected", "discarded", "applied", "released"],
             "version": 12
         },
         "selectionPublication": {

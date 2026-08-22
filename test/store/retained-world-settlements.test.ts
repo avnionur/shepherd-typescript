@@ -296,6 +296,57 @@ test("application journal binds one exact plan and applied terminal receipt", ()
     );
 });
 
+test("release journal preserves custody evidence without cleanup state", () => {
+    using store = new SQLiteTraceStore();
+    const releaseRequest = Object.freeze({
+        ...request,
+        action: "release",
+        command_id: "settlement-command:release",
+        output_id: "world-output:release",
+    }) satisfies RetainedWorldSettlementRequest;
+    store.admitRetainedWorldSettlement(releaseRequest);
+    const releaseBasis = "world-content:current";
+    const applying = store.beginRetainedWorldSettlement(
+        releaseRequest.output_id,
+        null,
+        releaseBasis,
+    );
+    assert.equal(applying.state, "applying");
+    assert.deepEqual(
+        store.beginRetainedWorldSettlement(
+            releaseRequest.output_id,
+            null,
+            "world-content:later-observation",
+        ),
+        applying,
+    );
+    const released = store.retainRetainedWorldSettlementTerminal(releaseRequest.output_id, {
+        action: "release",
+        changeset_id: releaseRequest.changeset_id,
+        custody_id: releaseRequest.custody_id,
+        head_revision_id: releaseRequest.head_revision_id,
+        user_basis_after: releaseBasis,
+        user_basis_before: releaseBasis,
+    });
+    assert.equal(released.state, "released");
+    assert.equal(released.cleanup_completed, null);
+    assert.deepEqual(
+        store.retainRetainedWorldSettlementTerminal(releaseRequest.output_id, {
+            action: "release",
+            changeset_id: releaseRequest.changeset_id,
+            custody_id: releaseRequest.custody_id,
+            head_revision_id: releaseRequest.head_revision_id,
+            user_basis_after: releaseBasis,
+            user_basis_before: releaseBasis,
+        }),
+        released,
+    );
+    assert.throws(
+        () => store.completeRetainedWorldSettlementCleanup(releaseRequest.output_id),
+        RetainedWorldSettlementConflictError,
+    );
+});
+
 test("settlement journal reads fail closed for corrupt nullable evidence combinations", async (context) => {
     const directory = await mkdtemp(path.join(tmpdir(), "shepherd-settlement-journal-corrupt-"));
     context.after(() => rm(directory, { recursive: true, force: true }));

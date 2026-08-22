@@ -1406,3 +1406,22 @@ export const WORKSPACE_PROTOCOL_V24_CONTRACT = deepFreeze({
         states: ["prepared", "applying", "selected", "discarded", "applied"],
     },
 } as const);
+
+/** Immutable receipt-only release vocabulary extension implemented by workspace protocol v25. */
+export const WORKSPACE_PROTOCOL_V25_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V24_CONTRACT,
+    settlement: {
+        ...WORKSPACE_PROTOCOL_V24_CONTRACT.settlement,
+        actions: ["select", "discard", "apply", "release"],
+        release: {
+            artifacts: {
+                receiptSchema: "spec/schemas/retained-world-release-receipt-v1.schema.json",
+            },
+            compatibilityVersion: "shepherd.workspace.retained-world-release.v1",
+            receiptVersion: 1,
+            schemaId:
+                "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-release-receipt-v1.schema.json",
+        },
+        states: ["prepared", "applying", "selected", "discarded", "applied", "released"],
+    },
+} as const);
