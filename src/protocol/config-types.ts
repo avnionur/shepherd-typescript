@@ -134,9 +134,47 @@ export type ExecutionHistoryProjectionConfig = {
     readonly relationSchemaRef: string;
 };
 
+/** Configured bounded task/run ledger read projection and selector contract. */
+export type TaskRunLedgerProjectionConfig = {
+    /** Generated language-neutral projection schemas. */
+    readonly artifacts: {
+        readonly runEntrySchema: string;
+        readonly taskEntrySchema: string;
+    };
+    /** Compatibility namespace for disposable ledger projections. */
+    readonly compatibilityVersion: string;
+    /** Default bounded list page size. */
+    readonly defaultPageSize: number;
+    /** Stable selector error codes and generic messages. */
+    readonly errors: {
+        readonly ambiguousCode: string;
+        readonly ambiguousMessage: string;
+        readonly notFoundCode: string;
+        readonly notFoundMessage: string;
+    };
+    /** Configured read-only latest-selector token. */
+    readonly latestSelector: string;
+    /** Maximum canonical JSON bytes for one projected entry. */
+    readonly maxCanonicalEntryBytes: number;
+    /** Maximum requested result count for one list call. */
+    readonly maxPageSize: number;
+    /** Maximum UTF-8 bytes accepted for one selector. */
+    readonly maxSelectorBytes: number;
+    /** Published projection schema identifiers. */
+    readonly schemas: {
+        readonly runEntryId: string;
+        readonly taskEntryId: string;
+    };
+    /** Separator between exact task identity and logical version. */
+    readonly taskVersionSeparator: string;
+    /** Public disposable projection version. */
+    readonly version: number;
+};
+
 /** Validated disposable projection configuration. */
 export type ProjectionProtocolConfig = {
     readonly executionHistory: ExecutionHistoryProjectionConfig;
+    readonly taskRunLedgers: TaskRunLedgerProjectionConfig;
 };
 
 /** Validated provider-neutral and deterministic-provider configuration. */

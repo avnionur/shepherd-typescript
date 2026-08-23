@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.40.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.43.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -545,6 +545,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Offline task execution](./docs/task-execution.md)
 - [Durable task execution](./docs/durable-task-execution.md)
 - [Durable execution inspection](./docs/durable-execution-inspection.md)
+- [Task and run ledger projections](./docs/task-run-ledgers.md)
 - [Durable execution control](./docs/durable-execution-control.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
@@ -566,7 +567,8 @@ live-provider adapters, scopes, supervision, replay, and paper applications rema
 Phase 4 now includes exact named multi-repository resources, explicit read-only/read-write task
 grants, a whole-run ceiling, honest advisory/auto placement reporting, authenticated native
 filesystem-write jails for capable macOS Seatbelt and Linux/WSL Landlock hosts, and path-disjoint
-three-way retained-world application and receipt-only release. Native Windows,
+three-way retained-world application, receipt-only release, and bounded task/run ledger read
+selectors. Native Windows,
 simultaneous multi-world runner access, network/read isolation, and the remaining documented run
 surface are not implemented.
 

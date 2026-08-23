@@ -19,9 +19,11 @@ import {
     grantTaskRepositories,
     initializeWorkspace,
     inspectLocalNativeJailBackend,
+    listRunLedger,
     NativeJailExecutionError,
     NativeJailUnavailableError,
     recoverJailedGrantedTaskWorldDurably,
+    resolveRunLedgerSelector,
     SQLiteTraceStore,
     schema,
     task,
@@ -403,6 +405,48 @@ test("native jailed granted capture enforces at the public durable task-world se
         result.changeset.changes.map(({ path: changedPath }) => changedPath),
         ["jailed.txt"],
     );
+    using postTerminalStore = new SQLiteTraceStore();
+    postTerminalStore.importTrace(store.exportTrace());
+    const retainedProcessReceipt = postTerminalStore
+        .readOwner(result.output.run_id)
+        .find((record) => record.body.receipt_id === result.process.receipt_id);
+    assert.ok(retainedProcessReceipt);
+    postTerminalStore.append({
+        append_intent_id: "test:post-terminal-native-process-receipt",
+        batch: {
+            groups: [
+                {
+                    owner_id: result.output.run_id,
+                    records: [
+                        {
+                            body: retainedProcessReceipt.body,
+                            caused_by_record_ids:
+                                retainedProcessReceipt.envelope.caused_by_record_ids,
+                            mode: retainedProcessReceipt.envelope.mode,
+                            schema_ref: retainedProcessReceipt.envelope.schema_ref,
+                            witness_ref: retainedProcessReceipt.envelope.witness_ref,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    const ledger = resolveRunLedgerSelector(postTerminalStore, result.output.run_id);
+    assert.deepEqual(ledger.output, result.output);
+    assert.equal(ledger.native_jail_processes.length, 3);
+    assert.equal(
+        ledger.native_jail_processes.some(
+            ({ body }) => body.receipt_id === result.process.receipt_id,
+        ),
+        true,
+    );
+    assert.equal(
+        ledger.world_capture.transitions[0]?.body.native_jail_resolution_id,
+        result.placement.resolution_id,
+    );
+    using importedLedgerStore = new SQLiteTraceStore();
+    importedLedgerStore.importTrace(store.exportTrace());
+    assert.deepEqual(listRunLedger(importedLedgerStore), listRunLedger(store));
     const replay = await recoverJailedGrantedTaskWorldDurably({
         baseRevision,
         binding,

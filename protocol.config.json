@@ -345,6 +345,30 @@
             "publishedRecordSchemaRef": "shepherd2.runtime.published_fact.v1",
             "relationKinds": ["spawned", "adopted", "abandoned"],
             "relationSchemaRef": "shepherd2.execution_relation.created.v1"
+        },
+        "taskRunLedgers": {
+            "artifacts": {
+                "runEntrySchema": "spec/schemas/run-ledger-entry-v1.schema.json",
+                "taskEntrySchema": "spec/schemas/task-ledger-entry-v1.schema.json"
+            },
+            "compatibilityVersion": "shepherd.task-run-ledgers.v1",
+            "defaultPageSize": 50,
+            "errors": {
+                "ambiguousCode": "LEDGER_SELECTOR_AMBIGUOUS",
+                "ambiguousMessage": "ledger selector is ambiguous",
+                "notFoundCode": "LEDGER_SELECTOR_NOT_FOUND",
+                "notFoundMessage": "ledger selector was not found"
+            },
+            "latestSelector": "@latest",
+            "maxCanonicalEntryBytes": 67108864,
+            "maxPageSize": 100,
+            "maxSelectorBytes": 512,
+            "schemas": {
+                "runEntryId": "https://avnionur.github.io/shepherd-typescript/schemas/run-ledger-entry-v1.schema.json",
+                "taskEntryId": "https://avnionur.github.io/shepherd-typescript/schemas/task-ledger-entry-v1.schema.json"
+            },
+            "taskVersionSeparator": "@",
+            "version": 1
         }
     },
     "providers": {

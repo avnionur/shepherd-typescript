@@ -1,0 +1,902 @@
+{
+    "$defs": {
+        "budget": {
+            "additionalProperties": false,
+            "properties": {
+                "maxCostUsd": {
+                    "minimum": 0,
+                    "type": "number"
+                },
+                "maxDurationMilliseconds": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "maxEffects": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "maxInputTokens": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "maxOutputTokens": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "maxTurns": {
+                    "minimum": 0,
+                    "type": "integer"
+                }
+            },
+            "required": [],
+            "type": "object"
+        },
+        "cut": {
+            "additionalProperties": false,
+            "properties": {
+                "created_by_record_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "cut_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "publisher_owner_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "target_owner_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "through_owner_ordinal": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "through_record_id": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "created_by_record_id",
+                "cut_id",
+                "publisher_owner_id",
+                "target_owner_id",
+                "through_owner_ordinal",
+                "through_record_id"
+            ],
+            "type": "object"
+        },
+        "continuationInspection": {
+            "additionalProperties": false,
+            "properties": {
+                "constituents": {
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "kind": {
+                                "enum": [
+                                    "world",
+                                    "provider_session",
+                                    "process",
+                                    "prerequisite"
+                                ],
+                                "type": "string"
+                            },
+                            "receipt_id": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "status": {
+                                "enum": [
+                                    "verified",
+                                    "not_required",
+                                    "unavailable"
+                                ],
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "kind",
+                            "receipt_id",
+                            "status"
+                        ],
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "record_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "trace_cut": {
+                    "$ref": "#/$defs/cut"
+                }
+            },
+            "required": [
+                "constituents",
+                "record_id",
+                "trace_cut"
+            ],
+            "type": "object"
+        },
+        "inspection": {
+            "additionalProperties": false,
+            "properties": {
+                "artifacts": {
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "artifact": {
+                                "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/run-artifact-v1.schema.json"
+                            },
+                            "record_id": {
+                                "minLength": 1,
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "artifact",
+                            "record_id"
+                        ],
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "causal_edges": {
+                    "items": {
+                        "items": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "maxItems": 2,
+                        "minItems": 2,
+                        "type": "array"
+                    },
+                    "type": "array"
+                },
+                "cut": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/cut"
+                        }
+                    ]
+                },
+                "lifecycle": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "created_record_id": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "quiescent": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "$ref": "#/$defs/quiescent"
+                                }
+                            ]
+                        },
+                        "running_continuation_record_id": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "started_record_id": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "terminal_record_id": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "terminal_schema_ref": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    },
+                    "required": [
+                        "created_record_id",
+                        "quiescent",
+                        "running_continuation_record_id",
+                        "started_record_id",
+                        "terminal_record_id",
+                        "terminal_schema_ref"
+                    ],
+                    "type": "object"
+                },
+                "outcome": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "outcome": {
+                                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/run-outcome-v1.schema.json"
+                                },
+                                "record_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "outcome",
+                                "record_id"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                "run_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "settlements": {
+                    "items": {
+                        "$ref": "#/$defs/settlement"
+                    },
+                    "type": "array"
+                },
+                "status": {
+                    "enum": [
+                        "absent",
+                        "created",
+                        "started",
+                        "terminal_pending_cut",
+                        "committed"
+                    ],
+                    "type": "string"
+                },
+                "usage": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "record_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                },
+                                "usage": {
+                                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/run-usage-v1.schema.json"
+                                }
+                            },
+                            "required": [
+                                "record_id",
+                                "usage"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "artifacts",
+                "causal_edges",
+                "cut",
+                "lifecycle",
+                "outcome",
+                "run_id",
+                "settlements",
+                "status",
+                "usage"
+            ],
+            "type": "object"
+        },
+        "jsonValue": {
+            "oneOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "items": {
+                        "$ref": "#/$defs/jsonValue"
+                    },
+                    "type": "array"
+                },
+                {
+                    "additionalProperties": {
+                        "$ref": "#/$defs/jsonValue"
+                    },
+                    "type": "object"
+                }
+            ]
+        },
+        "provider": {
+            "additionalProperties": false,
+            "properties": {
+                "capabilities": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "streaming": {
+                            "type": "boolean"
+                        },
+                        "structuredOutput": {
+                            "type": "boolean"
+                        },
+                        "tools": {
+                            "type": "boolean"
+                        }
+                    },
+                    "required": [
+                        "streaming",
+                        "structuredOutput",
+                        "tools"
+                    ],
+                    "type": "object"
+                },
+                "id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "kind": {
+                    "enum": [
+                        "static"
+                    ],
+                    "type": "string"
+                },
+                "model": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "capabilities",
+                "id",
+                "kind",
+                "model"
+            ],
+            "type": "object"
+        },
+        "quiescent": {
+            "oneOf": [
+                {
+                    "additionalProperties": false,
+                    "properties": {
+                        "acknowledgement_record_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "acknowledgement_schema_ref": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "continuation": {
+                            "$ref": "#/$defs/continuationInspection"
+                        },
+                        "pause_command_record_id": {
+                            "type": "null"
+                        },
+                        "prerequisite": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "kind": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                },
+                                "prerequisite_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "kind",
+                                "prerequisite_id"
+                            ],
+                            "type": "object"
+                        },
+                        "status": {
+                            "const": "waiting",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "acknowledgement_record_id",
+                        "acknowledgement_schema_ref",
+                        "continuation",
+                        "pause_command_record_id",
+                        "prerequisite",
+                        "status"
+                    ],
+                    "type": "object"
+                },
+                {
+                    "additionalProperties": false,
+                    "properties": {
+                        "acknowledgement_record_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "acknowledgement_schema_ref": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "continuation": {
+                            "$ref": "#/$defs/continuationInspection"
+                        },
+                        "pause_command_record_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "prerequisite": {
+                            "type": "null"
+                        },
+                        "status": {
+                            "const": "suspended",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "acknowledgement_record_id",
+                        "acknowledgement_schema_ref",
+                        "continuation",
+                        "pause_command_record_id",
+                        "prerequisite",
+                        "status"
+                    ],
+                    "type": "object"
+                }
+            ]
+        },
+        "settlement": {
+            "additionalProperties": false,
+            "properties": {
+                "action": {
+                    "enum": [
+                        "select",
+                        "discard",
+                        "apply",
+                        "release"
+                    ],
+                    "type": "string"
+                },
+                "citation_cut": {
+                    "$ref": "#/$defs/cut"
+                },
+                "citation_record_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "citation_version": {
+                    "type": "integer"
+                },
+                "command_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "operation": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "digest": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "json": {
+                            "minLength": 1,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "digest",
+                        "id",
+                        "json"
+                    ],
+                    "type": "object"
+                },
+                "output_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "receipt": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "digest": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "json": {
+                            "minLength": 1,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "digest",
+                        "json"
+                    ],
+                    "type": "object"
+                },
+                "request_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "state": {
+                    "enum": [
+                        "prepared",
+                        "applying",
+                        "selected",
+                        "discarded",
+                        "applied",
+                        "released"
+                    ],
+                    "type": "string"
+                },
+                "trace": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "capture_record_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "execution_cut_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "outcome_record_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "terminal_record_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "capture_record_id",
+                        "execution_cut_id",
+                        "outcome_record_id",
+                        "terminal_record_id"
+                    ],
+                    "type": "object"
+                }
+            },
+            "required": [
+                "action",
+                "citation_cut",
+                "citation_record_id",
+                "citation_version",
+                "command_id",
+                "operation",
+                "output_id",
+                "receipt",
+                "request_id",
+                "state",
+                "trace"
+            ],
+            "type": "object"
+        },
+        "worldCapture": {
+            "additionalProperties": false,
+            "properties": {
+                "capture_id": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "output_record_id": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "recovery_status": {
+                    "enum": [
+                        "absent",
+                        "created",
+                        "started",
+                        "terminal_pending_cut",
+                        "committed"
+                    ],
+                    "type": "string"
+                },
+                "run_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "status": {
+                    "enum": [
+                        "absent",
+                        "prepared",
+                        "forked",
+                        "executing",
+                        "captured",
+                        "retained"
+                    ],
+                    "type": "string"
+                },
+                "transitions": {
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "body": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v1.schema.json"
+                                    },
+                                    {
+                                        "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v2.schema.json"
+                                    },
+                                    {
+                                        "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v3.schema.json"
+                                    },
+                                    {
+                                        "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/world-capture-journal-v4.schema.json"
+                                    }
+                                ]
+                            },
+                            "phase": {
+                                "enum": [
+                                    "prepared",
+                                    "forked",
+                                    "executing",
+                                    "captured"
+                                ],
+                                "type": "string"
+                            },
+                            "record_id": {
+                                "minLength": 1,
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "body",
+                            "phase",
+                            "record_id"
+                        ],
+                        "type": "object"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "capture_id",
+                "output_record_id",
+                "recovery_status",
+                "run_id",
+                "status",
+                "transitions"
+            ],
+            "type": "object"
+        }
+    },
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/run-ledger-entry-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "additionalProperties": false,
+    "properties": {
+        "budget": {
+            "$ref": "#/$defs/budget"
+        },
+        "compatibility_version": {
+            "const": "shepherd.task-run-ledgers.v1",
+            "type": "string"
+        },
+        "created_record_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "input": {
+            "$ref": "#/$defs/jsonValue"
+        },
+        "inspection": {
+            "$ref": "#/$defs/inspection"
+        },
+        "ledger_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "native_jail_processes": {
+            "items": {
+                "additionalProperties": false,
+                "properties": {
+                    "body": {
+                        "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/native-jail-process-v1.schema.json"
+                    },
+                    "record_id": {
+                        "minLength": 1,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "body",
+                    "record_id"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        },
+        "output": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "additionalProperties": false,
+                    "properties": {
+                        "base_revision_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "binding_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "capture_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "capture_record_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "custody_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "changeset_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "execution_cut": {
+                            "$ref": "#/$defs/cut"
+                        },
+                        "execution_outcome_record_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "head_revision_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "output_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "run_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "schema_version": {
+                            "const": 8,
+                            "type": "integer"
+                        },
+                        "status": {
+                            "enum": [
+                                "retained"
+                            ],
+                            "type": "string"
+                        },
+                        "user_basis_after": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "user_basis_before": {
+                            "minLength": 1,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "base_revision_id",
+                        "binding_id",
+                        "capture_id",
+                        "capture_record_id",
+                        "custody_id",
+                        "changeset_id",
+                        "execution_cut",
+                        "execution_outcome_record_id",
+                        "head_revision_id",
+                        "output_id",
+                        "run_id",
+                        "schema_version",
+                        "status",
+                        "user_basis_after",
+                        "user_basis_before"
+                    ],
+                    "type": "object"
+                }
+            ]
+        },
+        "provider": {
+            "$ref": "#/$defs/provider"
+        },
+        "run_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "task_artifact_lock": {
+            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/task-artifact-lock-v1.schema.json"
+        },
+        "world_capture": {
+            "$ref": "#/$defs/worldCapture"
+        }
+    },
+    "required": [
+        "budget",
+        "compatibility_version",
+        "created_record_id",
+        "input",
+        "inspection",
+        "ledger_version",
+        "native_jail_processes",
+        "output",
+        "provider",
+        "run_id",
+        "task_artifact_lock",
+        "world_capture"
+    ],
+    "type": "object",
+    "x-shepherd-max-canonical-bytes": 67108864
+}

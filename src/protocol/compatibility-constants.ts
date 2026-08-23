@@ -157,6 +157,34 @@ export const EXECUTION_HISTORY_PROJECTION_V1_CONTRACT = deepFreeze({
     relationSchemaRef: "shepherd2.execution_relation.created.v1",
 } as const);
 
+/** Immutable bounded task/run ledger read projection implemented by projection v1. */
+export const TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT = deepFreeze({
+    artifacts: {
+        runEntrySchema: "spec/schemas/run-ledger-entry-v1.schema.json",
+        taskEntrySchema: "spec/schemas/task-ledger-entry-v1.schema.json",
+    },
+    compatibilityVersion: "shepherd.task-run-ledgers.v1",
+    defaultPageSize: 50,
+    errors: {
+        ambiguousCode: "LEDGER_SELECTOR_AMBIGUOUS",
+        ambiguousMessage: "ledger selector is ambiguous",
+        notFoundCode: "LEDGER_SELECTOR_NOT_FOUND",
+        notFoundMessage: "ledger selector was not found",
+    },
+    latestSelector: "@latest",
+    maxCanonicalEntryBytes: 67_108_864,
+    maxPageSize: 100,
+    maxSelectorBytes: 512,
+    schemas: {
+        runEntryId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/run-ledger-entry-v1.schema.json",
+        taskEntryId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/task-ledger-entry-v1.schema.json",
+    },
+    taskVersionSeparator: "@",
+    version: 1,
+} as const);
+
 /** Immutable provider-neutral contract implemented by provider protocol v1. */
 export const PROVIDER_PROTOCOL_V1_CONTRACT = deepFreeze({
     kinds: ["static"],

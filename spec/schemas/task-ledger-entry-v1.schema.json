@@ -1,0 +1,54 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/task-ledger-entry-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "additionalProperties": false,
+    "properties": {
+        "artifact": {
+            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/task-descriptor-v1.schema.json"
+        },
+        "artifact_lock": {
+            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/task-artifact-lock-v1.schema.json"
+        },
+        "compatibility_version": {
+            "const": "shepherd.task-run-ledgers.v1",
+            "type": "string"
+        },
+        "ledger_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "repository_grant": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "additionalProperties": false,
+                    "properties": {
+                        "artifact": {
+                            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/repository-task-grant-v1.schema.json"
+                        },
+                        "artifact_lock": {
+                            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/repository-task-grant-lock-v1.schema.json"
+                        }
+                    },
+                    "required": [
+                        "artifact",
+                        "artifact_lock"
+                    ],
+                    "type": "object"
+                }
+            ]
+        }
+    },
+    "required": [
+        "artifact",
+        "artifact_lock",
+        "compatibility_version",
+        "ledger_version",
+        "repository_grant"
+    ],
+    "type": "object",
+    "x-shepherd-max-canonical-bytes": 67108864
+}

@@ -58,6 +58,19 @@ export type {
     TypedEffectTraceValidationOptions,
 } from "./formal/types.ts";
 export type { TraceImportReceipt } from "./interchange/types.ts";
+export { listRunLedger, resolveRunLedgerSelector } from "./ledger/run-ledger.ts";
+export {
+    LedgerSelectorAmbiguousError,
+    LedgerSelectorNotFoundError,
+} from "./ledger/selector-errors.ts";
+export { listTaskLedger, resolveTaskLedgerSelector } from "./ledger/task-ledger.ts";
+export type {
+    LedgerListOptions,
+    RunLedgerEntry,
+    RunLedgerNativeJailProcessEvidence,
+    TaskLedgerEntry,
+    TaskLedgerRepositoryGrantEvidence,
+} from "./ledger/types.ts";
 export { projectExecution } from "./projection/execution.ts";
 export { projectEffectiveHistory } from "./projection/history.ts";
 export {
@@ -109,6 +122,8 @@ export {
     RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION,
     RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION,
     RETAINED_WORLD_SETTLEMENT_VERSION,
+    TASK_RUN_LEDGER_LATEST_SELECTOR,
+    TASK_RUN_LEDGER_LIMITS,
     WORLD_CHANGESET_ERROR_CODES,
     WORLD_CHANGESET_INSPECTION_LIMITS,
 } from "./protocol/values.generated.ts";

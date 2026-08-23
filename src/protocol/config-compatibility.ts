@@ -7,6 +7,7 @@ import {
     PROVIDER_PROTOCOL_V1_CONTRACT,
     RUN_PROTOCOL_V1_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
+    TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V25_CONTRACT,
 } from "./compatibility-constants.ts";
 import type { ProtocolConfig } from "./config-types.ts";
@@ -48,6 +49,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     const artifactDestinations = [
         ...Object.values(config.effects.artifacts),
         ...Object.values(config.kernel.artifacts),
+        ...Object.values(config.projections.taskRunLedgers.artifacts),
         ...Object.values(config.runs.artifacts),
         ...Object.values(config.tasks.artifacts),
         ...Object.values(config.workspaces.placements.artifacts),
@@ -77,6 +79,9 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     if (!sameJson(config.projections.executionHistory, EXECUTION_HISTORY_PROJECTION_V1_CONTRACT)) {
         throw new TypeError("execution-history projection constants require a new projection");
+    }
+    if (!sameJson(config.projections.taskRunLedgers, TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT)) {
+        throw new TypeError("task/run ledger projection constants require a new projection");
     }
     if (!sameJson(config.providers, PROVIDER_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("provider constants require a new provider protocol");

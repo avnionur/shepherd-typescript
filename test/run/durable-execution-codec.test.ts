@@ -48,6 +48,7 @@ function creation(overrides: Readonly<Record<string, unknown>> = {}): Record<str
 test("durable creation codec validates identity, ancestry, lock, and canonical input", () => {
     const decoded = readDurableCreation(creation(), "run:codec");
     assert.deepEqual(Object.keys(decoded.budget), []);
+    assert.equal(decoded.input, null);
     assert.deepEqual(decoded.provider, provider);
     assert.deepEqual(decoded.taskArtifactLock, fixtureTask.artifactLock);
     for (const value of [
@@ -55,6 +56,7 @@ test("durable creation codec validates identity, ancestry, lock, and canonical i
         creation({ parent_execution_id: "run:parent" }),
         creation({ task_ref: "sha256:wrong" }),
         creation({ inputs: null }),
+        creation({ inputs: {} }),
         creation({ inputs: { value: Number.NaN } }),
     ]) {
         assert.throws(() => readDurableCreation(value, "run:codec"), TypeError);

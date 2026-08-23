@@ -231,7 +231,9 @@ Work:
 - add receipt-only `release`; **implemented in 1.42.0** with workspace protocol v25 current-parent
   basis witnesses, preserved readable custody, exact consume-once receipts/citations, and
   interruption/concurrency/fresh-process recovery;
-- implement task/run ledgers and selectors;
+- implement task/run ledgers and selectors; **implemented in 1.43.0** with versioned bounded task
+  and run projections, exact/unique-prefix/canonical-latest read selectors, typed failures,
+  authenticated task-grant companions, composed durable world evidence, and import-stable order;
 - implement output citations, trace revisions, and recovery records;
 - implement repair for orphaned operations;
 - implement CLI groups: `init`, `doctor`, `run`, `task`, `demo`, `package`;

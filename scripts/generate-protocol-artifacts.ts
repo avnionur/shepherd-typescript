@@ -18,6 +18,10 @@ import {
     renderTaskArtifactLockSchema,
     renderTaskDescriptorSchema,
 } from "./task-protocol-schemas.ts";
+import {
+    renderRunLedgerEntrySchema,
+    renderTaskLedgerEntrySchema,
+} from "./task-run-ledger-schemas.ts";
 import { renderTraceArchiveSchema } from "./trace-archive-schema.ts";
 
 type ArtifactOptions = {
@@ -64,6 +68,14 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
         {
             content: renderJson(renderTaskArtifactLockSchema(config)),
             relativePath: config.tasks.artifacts.artifactLockSchema,
+        },
+        {
+            content: renderJson(renderTaskLedgerEntrySchema(config)),
+            relativePath: config.projections.taskRunLedgers.artifacts.taskEntrySchema,
+        },
+        {
+            content: renderJson(renderRunLedgerEntrySchema(config)),
+            relativePath: config.projections.taskRunLedgers.artifacts.runEntrySchema,
         },
         {
             content: renderJson(renderRepositoryTaskGrantSchema(config)),
@@ -1676,6 +1688,17 @@ export const WORLD_CHANGESET_INSPECTION_LIMITS = {
     maxReadBytes: ${config.workspaces.changesetInspection.maxReadBytes},
     maxVerificationConcurrency: ${config.workspaces.changesetInspection.maxVerificationConcurrency},
 } as const;
+
+/** Configured public task/run ledger selector and projection bounds. @public */
+export const TASK_RUN_LEDGER_LIMITS = {
+    defaultPageSize: ${config.projections.taskRunLedgers.defaultPageSize},
+    maxCanonicalEntryBytes: ${config.projections.taskRunLedgers.maxCanonicalEntryBytes},
+    maxPageSize: ${config.projections.taskRunLedgers.maxPageSize},
+    maxSelectorBytes: ${config.projections.taskRunLedgers.maxSelectorBytes},
+} as const;
+
+/** Configured canonical latest read selector. @public */
+export const TASK_RUN_LEDGER_LATEST_SELECTOR = ${JSON.stringify(config.projections.taskRunLedgers.latestSelector)} as const;
 
 /** Configured public world-changeset error codes. @public */
 export const WORLD_CHANGESET_ERROR_CODES = {

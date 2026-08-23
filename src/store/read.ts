@@ -57,6 +57,37 @@ export function readOwnerRecords(database: DatabaseSync, ownerId: string): reado
     );
 }
 
+/** Lists a bounded owner slice by canonical creation-record/owner byte order. */
+export function listOwnerIdsBySchema(
+    database: DatabaseSync,
+    schemaRef: string,
+    limit: number,
+    offset: number,
+    descending: boolean,
+    ownerPrefix?: string,
+): readonly string[] {
+    const direction = descending ? "DESC" : "ASC";
+    const prefixClause =
+        ownerPrefix === undefined ? "" : "AND substr(v.owner_id, 1, length(?)) = ?";
+    const rows = database
+        .prepare(
+            `SELECT v.owner_id
+             FROM ${STORE_TABLES.recordViews} AS v
+             INNER JOIN ${STORE_TABLES.records} AS r ON r.record_id = v.record_id
+             WHERE r.schema_ref = ?
+             ${prefixClause}
+             GROUP BY v.owner_id
+             ORDER BY CAST(MIN(r.record_id) AS BLOB) ${direction}, CAST(v.owner_id AS BLOB) ${direction}
+             LIMIT ? OFFSET ?`,
+        )
+        .all(
+            ...(ownerPrefix === undefined
+                ? [schemaRef, limit, offset]
+                : [schemaRef, ownerPrefix, ownerPrefix, limit, offset]),
+        ) as { owner_id: string }[];
+    return Object.freeze(rows.map(({ owner_id: ownerId }) => ownerId));
+}
+
 function decodeRecordRow(row: Record<string, unknown>): {
     readonly body: RecordBody;
     readonly envelope: RecordEnvelope;
