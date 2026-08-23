@@ -20,6 +20,8 @@ type StoredRegistrationRow = {
     readonly artifact_digest: string;
     readonly artifact_json: string;
     readonly artifact_lock_json: string;
+    readonly task_id?: string;
+    readonly task_version?: string;
 };
 
 /** Synchronous SQLite-backed registry for exact immutable task artifact versions. */
@@ -120,6 +122,78 @@ export class SQLiteTaskRegistry implements Disposable {
         this.#assertOpen();
         const exact = readExactTaskReference(reference);
         return this.#read(exact.taskId, exact.version);
+    }
+
+    /**
+     * Lists one trusted bounded registration slice in canonical or reverse byte order.
+     *
+     * @param limit - Positive trusted maximum row count.
+     * @param offset - Non-negative trusted canonical row offset.
+     * @param descending - Whether to reverse both task-ID and version ordering.
+     * @returns Frozen verified registrations.
+     * @throws {TaskRegistryError} If the registry is closed or retained data is corrupt.
+     * @internal
+     */
+    listRegistrations(
+        limit: number,
+        offset: number,
+        descending = false,
+    ): readonly TaskRegistration[] {
+        this.#assertOpen();
+        const direction = descending ? "DESC" : "ASC";
+        const rows = this.#database
+            .prepare(
+                `SELECT task_id, task_version, artifact_digest, artifact_json, artifact_lock_json
+                 FROM ${TASK_REGISTRY_TABLES.registrations}
+                 ORDER BY CAST(task_id AS BLOB) ${direction}, CAST(task_version AS BLOB) ${direction}
+                 LIMIT ? OFFSET ?`,
+            )
+            .all(limit, offset) as StoredRegistrationRow[];
+        return this.#decodeRows(rows);
+    }
+
+    /**
+     * Lists a bounded canonical slice whose task IDs start with an exact prefix.
+     *
+     * @param prefix - Validated task-ID prefix.
+     * @param limit - Positive trusted maximum match count.
+     * @returns Frozen verified matching registrations.
+     * @throws {TaskRegistryError} If the registry is closed or retained data is corrupt.
+     * @internal
+     */
+    listTaskIdPrefix(prefix: string, limit: number): readonly TaskRegistration[] {
+        this.#assertOpen();
+        const rows = this.#database
+            .prepare(
+                `SELECT task_id, task_version, artifact_digest, artifact_json, artifact_lock_json
+                 FROM ${TASK_REGISTRY_TABLES.registrations}
+                 WHERE substr(task_id, 1, length(?)) = ?
+                 ORDER BY CAST(task_id AS BLOB), CAST(task_version AS BLOB)
+                 LIMIT ?`,
+            )
+            .all(prefix, prefix, limit) as StoredRegistrationRow[];
+        return this.#decodeRows(rows);
+    }
+
+    #decodeRows(rows: readonly StoredRegistrationRow[]): readonly TaskRegistration[] {
+        return Object.freeze(
+            rows.map((row) => {
+                const registration = decodeTaskRegistration(
+                    row.artifact_json,
+                    row.artifact_lock_json,
+                    row.artifact_digest,
+                );
+                if (
+                    registration.artifactLock.task_id !== row.task_id ||
+                    registration.artifactLock.task_version !== row.task_version
+                ) {
+                    throw new TaskRegistryError(
+                        "stored task registration key disagrees with its artifact lock",
+                    );
+                }
+                return registration;
+            }),
+        );
     }
 
     /** Closes the SQLite connection. Repeated calls are harmless. */

@@ -41,6 +41,15 @@ const PROFILE_ATOMS = new Map(
     workspaceProtocolConfig.repositoryGrants.profiles.map(({ atoms, name }) => [name, atoms]),
 );
 
+/** Rejects structurally forged repository-granted task handles. @internal */
+export function assertRepositoryGrantedTaskHandle(
+    task: RepositoryGrantedTask<TaskSchema<unknown>, TaskSchema<unknown>>,
+): void {
+    if (!AUTHENTICATED_GRANTED_TASKS.has(task)) {
+        throw new TypeError("repository-granted task must be created by this package instance");
+    }
+}
+
 /** Rejects structurally forged repository grant-plan handles. @internal */
 export function assertGitRepositoryGrantPlanHandle(plan: GitRepositoryGrantPlan): void {
     if (!AUTHENTICATED_GRANT_PLANS.has(plan)) {

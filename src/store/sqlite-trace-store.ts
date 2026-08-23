@@ -39,7 +39,7 @@ import { TraceStoreError } from "./errors.ts";
 import { verifyTraceStoreIntegrity } from "./integrity.ts";
 import type { AppendRecoveryDiagnostic, TraceIntegrityReport } from "./integrity-types.ts";
 import { migrateTraceStore } from "./migrations.ts";
-import { readOwnerRecords, readStoredRecord } from "./read.ts";
+import { listOwnerIdsBySchema, readOwnerRecords, readStoredRecord } from "./read.ts";
 import type { RetainedWorldSettlementTerminalEvidence } from "./retained-world-settlement-codec.ts";
 import {
     admitRetainedWorldSettlement,
@@ -681,6 +681,38 @@ export class SQLiteTraceStore implements Disposable {
         this.#assertOpen();
         assertNonEmptyString(ownerId, "ownerId");
         return readOwnerRecords(this.#database, ownerId);
+    }
+
+    /**
+     * Lists a trusted bounded owner slice containing an exact record schema.
+     *
+     * @param schemaRef - Exact retained record schema identifier.
+     * @param limit - Positive trusted maximum owner count.
+     * @param offset - Non-negative trusted canonical owner offset.
+     * @param descending - Whether canonical creation-record/owner ordering is reversed.
+     * @param ownerPrefix - Optional validated exact owner-ID prefix.
+     * @returns Frozen matching owner identities.
+     * @throws {TraceStoreError} If the store is closed.
+     * @throws {TypeError} If the schema identifier is malformed.
+     * @internal
+     */
+    listOwnersBySchema(
+        schemaRef: string,
+        limit: number,
+        offset: number,
+        descending = false,
+        ownerPrefix?: string,
+    ): readonly string[] {
+        this.#assertOpen();
+        assertNonEmptyString(schemaRef, "schemaRef");
+        return listOwnerIdsBySchema(
+            this.#database,
+            schemaRef,
+            limit,
+            offset,
+            descending,
+            ownerPrefix,
+        );
     }
 
     /**

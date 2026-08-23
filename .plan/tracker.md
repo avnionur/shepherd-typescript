@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-22
+Last updated: 2026-08-23
 
-Current version: `1.42.0`
+Current version: `1.43.0`
 
 Current level: L1-alpha — P0 retained-world settlement loop
 
@@ -137,6 +137,10 @@ Workspace protocol v25 now adds receipt-only release. It authenticates the retai
 existing custody, permits current-parent drift, records equal observed basis witnesses, preserves
 released custody/readability, and converges across interruption, concurrency, and restart without
 publishing or deleting user files.
+Task/run ledger projection v1 now adds bounded public task and run list/show APIs with exact,
+unique-prefix, and canonical-latest read selectors. It composes exact task/grant locks, durable
+lifecycle, usage, artifacts, outcomes, cuts, settlements, and task-world placement/jail/output
+evidence while preserving exact-ID-only mutation and import-stable canonical ordering.
 
 ## Progress
 
@@ -310,6 +314,9 @@ publishing or deleting user files.
 - [x] Complete Phase 4 Task 6 workspace-protocol-v25 receipt-only release, current-parent basis
   witnesses, preserved readable custody, consume-once receipts/citations, Git-state preservation,
   and interruption/concurrency/fresh-process recovery.
+- [x] Complete Phase 4 Task 7 task/run ledger projection v1 with generated bounded schemas,
+  authenticated task-grant companions, composed durable world evidence, exact/prefix/latest read
+  selectors, typed failures, incomplete-state honesty, and reopen/import-stable ordering.
 
 ## Verification required for this slice
 
@@ -323,9 +330,9 @@ publishing or deleting user files.
 
 ## Next slice
 
-Continue Phase 4 with the next dependency-unblocked task/run ledger or selector issue after the
-receipt-only release slice is merged. Preserve the v9-v12 writer/reader matrix and require production-seam
-evidence for every new authority or mutation path.
+Continue Phase 4 with the next dependency-unblocked output citation, trace revision, or recovery
+record issue after the task/run ledger slice is merged. Preserve the v9-v12 writer/reader matrix,
+exact-ID mutation authority, and production-seam evidence for every new authority path.
 
 ## Notes
 

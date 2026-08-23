@@ -8,6 +8,7 @@ import {
     KERNEL_ABI_V0_CONTRACT,
     KERNEL_ABI_V0_STORE_V7_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
+    TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V2_CONTRACT,
     WORKSPACE_PROTOCOL_V3_CONTRACT,
@@ -61,6 +62,11 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT.store.migrations), true);
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_STORE_V7_CONTRACT), true);
     assert.equal(Object.isFrozen(EXECUTION_HISTORY_PROJECTION_V1_CONTRACT), true);
+    assert.equal(parsed.projections.taskRunLedgers.latestSelector, "@latest");
+    assert.equal(parsed.projections.taskRunLedgers.taskVersionSeparator, "@");
+    assert.equal(parsed.projections.taskRunLedgers.defaultPageSize, 50);
+    assert.equal(Object.isFrozen(parsed.projections.taskRunLedgers), true);
+    assert.equal(Object.isFrozen(TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT), true);
     assert.equal(parsed.tasks.compatibilityVersion, "shepherd.tasks.v1");
     assert.equal(parsed.tasks.registry.schemaVersion, 1);
     assert.equal(parsed.tasks.registry.transactionMode, "IMMEDIATE");
@@ -505,6 +511,30 @@ test("protocol configuration rejects invalid or drifted projection contracts", (
         },
         (config) => {
             objectAt(config, "projections").extra = true;
+        },
+        (config) => {
+            ledgerProjectionConfigOf(config).defaultPageSize = 101;
+        },
+        (config) => {
+            ledgerProjectionConfigOf(config).maxPageSize = 0;
+        },
+        (config) => {
+            ledgerProjectionConfigOf(config).latestSelector = "latest";
+        },
+        (config) => {
+            ledgerProjectionConfigOf(config).taskVersionSeparator = ":";
+        },
+        (config) => {
+            ledgerProjectionConfigOf(config).version = 2;
+        },
+        (config) => {
+            objectAt(ledgerProjectionConfigOf(config), "errors").ambiguousCode = "changed";
+        },
+        (config) => {
+            objectAt(ledgerProjectionConfigOf(config), "schemas").runEntryId = "relative";
+        },
+        (config) => {
+            objectAt(ledgerProjectionConfigOf(config), "artifacts").taskEntrySchema = "";
         },
     ]);
 });
@@ -1392,6 +1422,10 @@ function queryConfigOf(config: Record<string, unknown>): Record<string, unknown>
 
 function projectionConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(objectAt(config, "projections"), "executionHistory");
+}
+
+function ledgerProjectionConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "projections"), "taskRunLedgers");
 }
 
 function interchangeConfigOf(config: Record<string, unknown>): Record<string, unknown> {

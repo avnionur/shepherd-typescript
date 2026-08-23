@@ -38,6 +38,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   schemas, content identity, and exact artifact locks.
 - [Task registry](./task-registry.md) defines durable exact version registration, idempotency,
   conflict detection, migration, and verified resolution.
+- [Task and run ledger projections](./task-run-ledgers.md) define bounded immutable list/show
+  views, exact/prefix/latest read selectors, composed retained evidence, and exact-ID authority
+  separation.
 - [Effect records](./effect-records.md) defines versioned intent/outcome records, reversibility
   tiers, immutable semantic values, and exact content-bound correlation.
 - [Ordered effect handlers](./effect-handlers.md) defines immutable exact-kind stacks,

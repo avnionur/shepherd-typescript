@@ -44,8 +44,10 @@ const [
     COST_METRIC,
 ] = RUN_BUDGET_METRICS;
 
-type DurableCreationEvidence = {
+/** Validated immutable creation evidence used by durable read projections. @internal */
+export type DurableCreationEvidence = {
     readonly budget: RunBudgetDefinition;
+    readonly input: SemanticValue;
     readonly provider: ProviderDescriptor;
     readonly taskArtifactLock: TaskArtifactLock;
 };
@@ -74,9 +76,11 @@ export function readDurableCreation(value: unknown, runId: string): DurableCreat
         throw new TypeError("durable execution task reference does not match its lock");
     }
     const inputs = readRunDataObject(fields.inputs, ["value"], "durable execution inputs");
-    canonicalizeRecord({ value: inputs.value as SemanticValue });
+    const input = inputs.value as SemanticValue;
+    canonicalizeRecord({ value: input });
     return Object.freeze({
         budget,
+        input,
         provider: readProviderDescriptor(fields.provider),
         taskArtifactLock: lock,
     });

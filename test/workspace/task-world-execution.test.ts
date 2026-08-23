@@ -31,6 +31,7 @@ import {
     readDurableTaskExecution,
     recoverTaskDurably,
     recoverTaskWorldDurably,
+    resolveRunLedgerSelector,
     SQLiteTraceStore,
     type StoreAppendRequest,
     schema,
@@ -1279,6 +1280,13 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         readDurableTaskExecution(interruptedCutStore, cutRecoveryExecution.runId).status,
         "terminal_pending_cut",
     );
+    const pendingCutLedger = resolveRunLedgerSelector(
+        interruptedCutStore,
+        cutRecoveryExecution.runId,
+    );
+    assert.equal(pendingCutLedger.inspection.status, "terminal_pending_cut");
+    assert.equal(pendingCutLedger.output, null);
+    assert.deepEqual(pendingCutLedger.native_jail_processes, []);
     interruptedCutStore.close();
     using reopenedCutRecoveryStore = new SQLiteTraceStore(cutRecoveryStorePath);
     const repairedCutWorld = await recoverTaskWorldDurably({

@@ -126,7 +126,7 @@ export async function prepareRetainedWorldSettlement(
         assertWorkspaceBinding(binding);
         if (isGitRepositoryBinding(binding)) assertCurrentGitRepositoryBinding(binding);
         assertReferenceCopyCarrier(carrier);
-        const output = readOutput(fields.output);
+        const output = readRetainedWorldOutput(fields.output);
         const recovery = readDurableTaskExecution(store, output.run_id);
         if (recovery.status !== COMMITTED_RECOVERY_STATUS) {
             throw new TypeError("retained-world execution is not committed");
@@ -1173,7 +1173,8 @@ function assertRevisionContract(
     }
 }
 
-function readOutput(value: unknown): RetainedWorldOutput {
+/** Reads one exact cut-bounded retained-world output value. @internal */
+export function readRetainedWorldOutput(value: unknown): RetainedWorldOutput {
     const fields = exactObject(value, [
         "base_revision_id",
         "binding_id",

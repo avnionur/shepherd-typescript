@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.43.0] - 2026-08-23
+
+### New Feature
+
+- Added configured task/run ledger projection v1 with bounded closed pagination, canonical entry
+  limits, stable selector errors, and generated language-neutral task/run entry schemas.
+- Added public immutable task and durable-run list/show APIs with exact, unique-prefix, and
+  canonical-latest read selectors; task entries accept authenticated repository-grant companion
+  evidence and run entries compose lifecycle, usage, artifacts, outcomes, cuts, settlements, and
+  task-world placement/jail/output evidence.
+- Added pinned Shepherd `0.3.0` selector research plus incomplete, duplicate, malformed,
+  reopen/import, ordering, pagination, and exact-ID authority evidence.
+
+### Impact
+
+Callers can inspect and select retained tasks and runs deterministically without granting recovery,
+execution, filesystem, provider, or settlement authority. Native latest ordering is stable across
+trace export/import and deliberately avoids clocks, filesystem metadata, and SQLite row order.
+
 ## [1.42.0] - 2026-08-22
 
 ### New Feature

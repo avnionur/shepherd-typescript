@@ -154,6 +154,9 @@ record and public API must declare a protocol/compatibility version.
   claim boundaries.
 - [Placement research](./placement-research.md) — pinned advisory/auto/jail behavior, platform
   reporting, TypeScript-owned identity, and the native-launcher claim boundary.
+- [Task/run ledger research](./task-run-ledger-research.md) — pinned list/show fields, ordering,
+  selector grammar, latest semantics, exact-ID authority boundary, and deliberate native
+  projection differences.
 - [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
   snapshot, mutable custody, verification, discard, durability, and Task 4 Git boundary.
 - [Git-aware custody research](./git-aware-custody-research.md) — shipped Git baseline,
@@ -222,5 +225,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 4 with macOS Seatbelt and Linux Landlock launcher evidence over the completed
-protocol-v22 placement resolution, preserving fail-closed explicit jail and visible auto fallback.
+Continue Phase 4 with output citations, trace revisions, and recovery records over the completed
+task/run read projection, preserving exact-ID mutation authority and cut-bounded evidence.

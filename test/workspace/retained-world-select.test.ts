@@ -16,10 +16,12 @@ import {
     executeTask,
     initializeWorkspace,
     inspectDurableTaskExecution,
+    listRunLedger,
     prepareRetainedWorldSettlement,
     RETAINED_WORLD_SETTLEMENT_VERSION,
     RetainedWorldSettlementConflictError,
     RetainedWorldSettlementInvalidError,
+    resolveRunLedgerSelector,
     SQLiteTraceStore,
     schema,
     selectRetainedWorldSettlement,
@@ -114,6 +116,37 @@ test("public select publishes one exact retained world and replays after reopen"
     assert.equal(settlement.citation_cut.target_owner_id, fixture.captured.output.run_id);
     assert.equal(settlement.citation_cut.through_record_id, settlement.citation_record_id);
     assert.equal(Object.isFrozen(settlement), true);
+    const retainedOutputRecord = fixture.store.readRecord(
+        fixture.captured.output.capture_record_id,
+    );
+    assert.ok(retainedOutputRecord);
+    fixture.store.append({
+        append_intent_id: "test:post-terminal-world-output",
+        batch: {
+            groups: [
+                {
+                    owner_id: fixture.captured.output.run_id,
+                    records: [
+                        {
+                            body: retainedOutputRecord.body,
+                            caused_by_record_ids:
+                                retainedOutputRecord.envelope.caused_by_record_ids,
+                            mode: retainedOutputRecord.envelope.mode,
+                            schema_ref: retainedOutputRecord.envelope.schema_ref,
+                            witness_ref: retainedOutputRecord.envelope.witness_ref,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    const runLedger = resolveRunLedgerSelector(fixture.store, fixture.captured.output.run_id);
+    assert.deepEqual(runLedger.output, fixture.captured.output);
+    assert.deepEqual(runLedger.inspection.settlements, [settlement]);
+    assert.deepEqual(
+        runLedger.world_capture.transitions.map(({ phase }) => phase),
+        ["prepared", "forked", "executing", "captured"],
+    );
     const retainedCitation = fixture.store.readRecord(settlement.citation_record_id);
     assert.ok(retainedCitation);
     fixture.store.append({
@@ -142,6 +175,7 @@ test("public select publishes one exact retained world and replays after reopen"
     );
     using imported = new SQLiteTraceStore();
     imported.importTrace(fixture.store.exportTrace());
+    assert.deepEqual(listRunLedger(imported), listRunLedger(fixture.store));
     assert.deepEqual(
         inspectDurableTaskExecution(imported, fixture.captured.output.run_id).settlements,
         [settlement],
