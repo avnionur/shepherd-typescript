@@ -44,7 +44,7 @@
         "verify:serial": "pnpm check:protocol && pnpm lint && pnpm typecheck && pnpm test:serial && pnpm build && pnpm test:package-cli"
     },
     "devDependencies": {
-        "@biomejs/biome": "2.5.7",
+        "@biomejs/biome": "2.5.9",
         "@types/node": "26.1.2",
         "ajv": "8.20.0",
         "typescript": "7.0.2",
