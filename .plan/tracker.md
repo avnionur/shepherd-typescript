@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-23
+Last updated: 2026-08-24
 
-Current version: `1.44.0`
+Current version: `1.45.0`
 
 Current level: L1-alpha — P0 retained-world settlement loop
 
@@ -324,6 +324,10 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 - [x] Complete Phase 4 Task 8 evidence-record projection v1 with generated closed output/trace/
   recovery schemas, cut-bounded citations and slices, canonical command effects, exact/prefix/latest
   reads, incomplete/post-cut exclusion, and archive/fresh-process reconstruction.
+- [x] Complete Phase 4 Task 9 orphaned-operation repair with pinned v0.3.0 semantics, store schema
+  v8 bookkeeping, externally proven session death, bounded closed diagnosis/command/receipt
+  schemas, exact idempotent two-phase repair, scope/provider/live refusal, fail-soft pre-run
+  reclaim, and reopen/import/concurrent/interruption evidence.
 
 ## Verification required for this slice
 
@@ -337,9 +341,10 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 
 ## Next slice
 
-Continue Phase 4 with the next dependency-unblocked orphaned-operation repair issue after the
-output/trace/recovery read slice is merged. Preserve exact command authority, fail-soft pre-run
-behavior, native archive identities, and explicit separation between inspection and repair.
+Continue Phase 4 with the next dependency-unblocked CLI compatibility slice: command groups for
+`init`, `doctor`, `run`, `task`, `demo`, and `package`. Preserve the public exact repair authority,
+stable machine evidence, native archive identities, and explicit separation between reads and
+mutations.
 
 ## Notes
 

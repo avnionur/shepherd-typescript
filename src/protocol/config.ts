@@ -3,6 +3,7 @@ import type {
     EffectProtocolConfig,
     FormalAssuranceProtocolConfig,
     KernelProtocolConfig,
+    OrphanRepairProtocolConfig,
     ProjectionProtocolConfig,
     ProtocolConfig,
     ProviderProtocolConfig,
@@ -31,6 +32,9 @@ export const formalAssuranceProtocolConfig: FormalAssuranceProtocolConfig =
 
 /** Runtime kernel ABI and canonicalization configuration. */
 export const kernelProtocolConfig: KernelProtocolConfig = protocolConfig.kernel;
+
+/** Runtime orphaned-operation diagnosis and exact repair configuration. */
+export const orphanRepairProtocolConfig: OrphanRepairProtocolConfig = protocolConfig.orphanRepair;
 
 /** Runtime contracts for disposable projections over trace slices. */
 export const projectionProtocolConfig: ProjectionProtocolConfig = protocolConfig.projections;

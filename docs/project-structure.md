@@ -82,6 +82,8 @@ The runtime areas are intentionally shallow:
 - `provider/` owns provider-neutral descriptors, structured invocation values, exact deterministic
   cassettes, typed failures, and closed validation;
 - `record/` owns versioned envelopes, record validation, guards, and immutable body snapshots.
+- `repair/` owns public orphan-operation bookkeeping, diagnosis, command, receipt, pre-run result,
+  and typed-error contracts without runtime mutation authority.
 - `run/` owns transient and durable task orchestration, versioned terminal outcomes, ordered
   artifact and aggregate usage construction, cooperative budget/cancellation control, closed
   validation, exact task-lock citations, the configured normative lifecycle transition matrix,
@@ -91,7 +93,7 @@ The runtime areas are intentionally shallow:
   resume, suspension, and safe-boundary cancellation;
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
-  recovery and orphan-collection diagnostics.
+  recovery, orphan-collection diagnostics, and exact bookkeeping-only orphan-operation repair.
 - `task/` owns bodyless descriptor construction, inferred runtime schemas, validation snapshots,
   canonical task artifacts, exact artifact locks, and the independently migrated SQLite task
   registry.

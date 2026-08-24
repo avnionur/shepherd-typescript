@@ -112,6 +112,12 @@ export {
     NATIVE_JAIL_PROBE_STATUSES,
     NATIVE_JAIL_PROCESS_STATUSES,
     NATIVE_JAIL_QUIESCENCE_STATUSES,
+    ORPHAN_REPAIR_BLOCKERS,
+    ORPHAN_REPAIR_ERROR_CODES,
+    ORPHAN_REPAIR_LIMITS,
+    ORPHAN_REPAIR_PRE_RUN_STATUSES,
+    ORPHAN_REPAIR_SESSION_STATUSES,
+    ORPHAN_REPAIR_VERSIONS,
     PLACEMENT_ENVIRONMENTS,
     PLACEMENT_PLATFORM_FAMILIES,
     PLACEMENT_REQUESTS,
@@ -179,6 +185,20 @@ export {
     type RecordMode,
 } from "./record/types.ts";
 export { validateRecordEnvelope } from "./record/validation.ts";
+export { OrphanRepairError } from "./repair/errors.ts";
+export type {
+    OperationBookkeepingDefinition,
+    OperationSessionDeathEvidence,
+    OrphanOperationDiagnosis,
+    OrphanOperationDiagnosisOptions,
+    OrphanOperationDiagnosisReport,
+    OrphanPreRunReclaimResult,
+    OrphanRepairBlocker,
+    OrphanRepairCommand,
+    OrphanRepairErrorCode,
+    OrphanRepairPreparation,
+    OrphanRepairReceipt,
+} from "./repair/types.ts";
 export type {
     RunArtifact,
     RunArtifactContentDefinition,

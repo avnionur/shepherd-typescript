@@ -1,0 +1,173 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/orphan-operation-diagnosis-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Orphaned Operation Diagnosis v1",
+    "additionalProperties": false,
+    "properties": {
+        "basis_id": {
+            "pattern": "^orphan-diagnosis:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "blocked_count": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+        },
+        "diagnosis_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "limit": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+        },
+        "offset": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+        },
+        "operations": {
+            "items": {
+                "additionalProperties": false,
+                "properties": {
+                    "blockers": {
+                        "items": {
+                            "enum": [
+                                "live_session",
+                                "provider_call_started",
+                                "scope_owned"
+                            ],
+                            "type": "string"
+                        },
+                        "maxItems": 3,
+                        "type": "array",
+                        "uniqueItems": true
+                    },
+                    "cause_record_id": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "pattern": "^sha256:[0-9a-f]{64}$",
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "death_evidence_id": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "maxLength": 512,
+                                "minLength": 1,
+                                "type": "string",
+                                "x-shepherd-max-utf8-bytes": 512
+                            }
+                        ]
+                    },
+                    "operation_id": {
+                        "maxLength": 512,
+                        "minLength": 1,
+                        "type": "string",
+                        "x-shepherd-max-utf8-bytes": 512
+                    },
+                    "operation_version": {
+                        "const": 1,
+                        "type": "integer"
+                    },
+                    "owner_id": {
+                        "maxLength": 512,
+                        "minLength": 1,
+                        "type": "string",
+                        "x-shepherd-max-utf8-bytes": 512
+                    },
+                    "provider_call_started": {
+                        "type": "boolean"
+                    },
+                    "repairable": {
+                        "type": "boolean"
+                    },
+                    "retained_cause": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string",
+                        "x-shepherd-max-utf8-bytes": 4096
+                    },
+                    "scope_id": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "maxLength": 512,
+                                "minLength": 1,
+                                "type": "string",
+                                "x-shepherd-max-utf8-bytes": 512
+                            }
+                        ]
+                    },
+                    "scope_owned": {
+                        "type": "boolean"
+                    },
+                    "session_id": {
+                        "maxLength": 512,
+                        "minLength": 1,
+                        "type": "string",
+                        "x-shepherd-max-utf8-bytes": 512
+                    },
+                    "session_status": {
+                        "enum": [
+                            "dead",
+                            "live"
+                        ],
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "blockers",
+                    "cause_record_id",
+                    "death_evidence_id",
+                    "operation_id",
+                    "operation_version",
+                    "owner_id",
+                    "provider_call_started",
+                    "repairable",
+                    "retained_cause",
+                    "scope_id",
+                    "scope_owned",
+                    "session_id",
+                    "session_status"
+                ],
+                "type": "object"
+            },
+            "maxItems": 100,
+            "type": "array"
+        },
+        "repairable_count": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+        },
+        "total_count": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+        }
+    },
+    "required": [
+        "basis_id",
+        "blocked_count",
+        "diagnosis_version",
+        "limit",
+        "offset",
+        "operations",
+        "repairable_count",
+        "total_count"
+    ],
+    "type": "object",
+    "x-shepherd-max-canonical-bytes": 1048576
+}

@@ -237,7 +237,10 @@ Work:
 - implement output citations, trace revisions, and recovery records; **implemented in 1.44.0**
   with configured bounded public projections, exact/prefix/latest reads, cut-bounded output and
   graph evidence, canonical command/effect records, and archive/fresh-process reconstruction;
-- implement repair for orphaned operations;
+- implement repair for orphaned operations; **implemented in 1.45.0** with store schema v8,
+  externally proven session-death evidence, bounded diagnosis, globally idempotent exact
+  commands, atomic bookkeeping-only receipts, interruption/concurrency convergence, and fail-soft
+  pre-run reclaim;
 - implement CLI groups: `init`, `doctor`, `run`, `task`, `demo`, `package`;
 - provide stable JSON output and generated command reference;
 - reproduce the upstream offline quickstart as a compatibility fixture.

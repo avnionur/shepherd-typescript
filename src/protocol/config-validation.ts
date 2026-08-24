@@ -1,6 +1,7 @@
 import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
 import { readEffectConfig } from "./config-effects.ts";
 import { readFormalAssuranceConfig } from "./config-formal-assurance.ts";
+import { readOrphanRepairConfig } from "./config-orphan-repair.ts";
 import { readProjectionConfig } from "./config-projections.ts";
 import { readProviderConfig } from "./config-providers.ts";
 import { readRunConfig } from "./config-runs.ts";
@@ -52,6 +53,7 @@ export function parseProtocolConfig(
             "effects",
             "formalAssurance",
             "kernel",
+            "orphanRepair",
             "projections",
             "providers",
             "recordId",
@@ -74,6 +76,7 @@ export function parseProtocolConfig(
         effects: readEffectConfig(root.effects),
         formalAssurance: readFormalAssuranceConfig(root.formalAssurance),
         kernel,
+        orphanRepair: readOrphanRepairConfig(root.orphanRepair),
         projections,
         providers: readProviderConfig(root.providers),
         recordId,

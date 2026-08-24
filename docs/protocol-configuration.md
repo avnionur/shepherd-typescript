@@ -33,6 +33,9 @@ constituent/evidence vocabularies, the receipt-bearing evidence status, their ve
 generated continuation, waiting, and suspension schema contracts.
 The provider section fixes provider kinds, static-provider capabilities, and stable typed-error
 codes and messages.
+The orphan-repair section fixes versioned operation, diagnosis, command, and receipt contracts;
+canonical identity domains; command/receipt trace schemas; blocker and error codes; generated
+schema destinations; and count, page, identifier, cause, and canonical-byte bounds.
 The workspace section fixes the control directory and manifest names, format version, adoption
 vocabulary and defaults, Git discovery command, baseline-reference hashing, binding-identity
 domain, copy-carrier layout and identity vocabulary, and stable control, conflict, binding, and
@@ -85,6 +88,9 @@ existing select, discard, apply, citation, store, or task-world journal evidence
 Store schema
 v6 owns the consume-once
 settlement decision table without changing kernel record identity.
+Store schema v7 adds nullable retained-world effect-journal evidence. Store schema v8 adds narrow
+open-operation bookkeeping and repair commit-marker tables without changing canonical record,
+settlement, custody, or native trace archive identity.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -135,6 +141,9 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   non-terminal states and outcomes, and all values match the immutable run protocol v1 contract.
 - provider kinds are unique, static capabilities are booleans, error codes/messages are non-empty,
   and every value matches the immutable provider protocol v1 contract.
+- orphan-repair digest length matches its configured algorithm; blocker codes are unique; page
+  bounds are ordered within the total operation limit; schema IDs and artifact destinations are
+  closed; and every value matches the immutable orphan-repair protocol v1 contract.
 - workspace adoption modes are unique and include the configured default, path components are safe
   simple names, digest and reference settings agree, binding identity and errors are non-empty, and
   copy-carrier descriptor, collection, entry-kind, identity, and error values are closed and

@@ -141,6 +141,92 @@ export const KERNEL_ABI_V0_STORE_V7_CONTRACT = deepFreeze({
     schemaVersion: 7,
 } as const);
 
+/** Immutable schema-v8 store extension for orphaned-operation bookkeeping. */
+export const KERNEL_ABI_V0_STORE_V8_CONTRACT = deepFreeze({
+    ...KERNEL_ABI_V0_STORE_V7_CONTRACT,
+    migrations: [
+        ...KERNEL_ABI_V0_STORE_V7_CONTRACT.migrations,
+        {
+            firstOwnerOrdinal: 0,
+            lastOwnerOrdinal: 9_007_199_254_740_990,
+            version: 8,
+        },
+    ],
+    schemaVersion: 8,
+} as const);
+
+/** Immutable bounded orphaned-operation diagnosis and repair contract implemented by v1. */
+export const ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT = deepFreeze({
+    artifacts: {
+        commandSchema: "spec/schemas/orphan-repair-command-v1.schema.json",
+        diagnosisSchema: "spec/schemas/orphan-operation-diagnosis-v1.schema.json",
+        receiptSchema: "spec/schemas/orphan-repair-receipt-v1.schema.json",
+    },
+    blockers: {
+        liveSession: "live_session",
+        providerStarted: "provider_call_started",
+        scopeOwned: "scope_owned",
+    },
+    compatibilityVersion: "shepherd.orphan-operation-repair.v1",
+    errors: {
+        blockedCode: "ORPHAN_REPAIR_BLOCKED",
+        blockedMessage: "orphaned operation repair is blocked by retained safety evidence",
+        commandConflictCode: "ORPHAN_REPAIR_COMMAND_CONFLICT",
+        commandConflictMessage: "orphan repair command identity already names different content",
+        corruptCode: "ORPHAN_REPAIR_CORRUPT",
+        corruptMessage: "orphaned operation bookkeeping is corrupt",
+        staleCode: "ORPHAN_REPAIR_STALE_BASIS",
+        staleMessage: "orphan repair basis is stale or incomplete; diagnose again",
+        unsupportedCode: "ORPHAN_REPAIR_UNSUPPORTED_VERSION",
+        unsupportedMessage: "orphan repair evidence uses an unsupported version",
+    },
+    identity: {
+        algorithm: "sha256",
+        commandAppendIntentPrefix: "orphan-repair-command:",
+        commandOwnerPrefix: "orphan-repair:",
+        diagnosisPrefix: "orphan-diagnosis:sha256:",
+        hexLength: 64,
+        receiptAppendIntentPrefix: "orphan-repair-receipt:",
+        receiptPrefix: "orphan-repair-receipt:sha256:",
+    },
+    limits: {
+        defaultPageSize: 50,
+        maxCanonicalBytes: 1_048_576,
+        maxCauseBytes: 4_096,
+        maxIdentifierBytes: 512,
+        maxOperations: 100,
+        maxPageSize: 100,
+    },
+    schemas: {
+        commandId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/orphan-repair-command-v1.schema.json",
+        diagnosisId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/orphan-operation-diagnosis-v1.schema.json",
+        receiptId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/orphan-repair-receipt-v1.schema.json",
+    },
+    statuses: {
+        preRun: {
+            declined: "declined",
+            repaired: "repaired",
+        },
+        session: {
+            dead: "dead",
+            live: "live",
+        },
+    },
+    traceSchemas: {
+        command: "shepherd.orphan-repair.command.v1",
+        receipt: "shepherd.orphan-repair.receipt.v1",
+    },
+    versions: {
+        command: 1,
+        diagnosis: 1,
+        operation: 1,
+        receipt: 1,
+    },
+} as const);
+
 /** Immutable execution-history projection contract implemented by schema-library v1. */
 export const EXECUTION_HISTORY_PROJECTION_V1_CONTRACT = deepFreeze({
     activeRelationKinds: ["spawned", "adopted"],

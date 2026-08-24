@@ -11,6 +11,7 @@ export function evidenceSchemaValidators(): {
 } {
     const validator = new Ajv2020({ strict: true });
     validator.addKeyword("x-shepherd-max-canonical-bytes");
+    validator.addKeyword("x-shepherd-max-utf8-bytes");
     const schemaDirectory = new URL("../../spec/schemas/", import.meta.url);
     for (const name of readdirSync(schemaDirectory).filter((candidate) =>
         candidate.endsWith(".schema.json"),

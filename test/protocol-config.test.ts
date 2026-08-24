@@ -288,7 +288,7 @@ test("protocol configuration rejects invalid append and migration bounds", () =>
             firstMigrationOf(config).version = 2;
         },
         (config) => {
-            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 8;
+            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 9;
         },
         (config) => {
             firstMigrationOf(config).firstOwnerOrdinal = 1;
@@ -387,6 +387,44 @@ test("protocol configuration rejects weakened or unsafe store settings", () => {
         },
         (config) => {
             blobConfigOf(config).temporaryFilePrefix = ".partial-";
+        },
+    ]);
+});
+
+test("protocol configuration rejects invalid or drifted orphan repair contracts", () => {
+    assertInvalid([
+        (config) => {
+            objectAt(objectAt(config, "orphanRepair"), "identity").algorithm = "md5";
+        },
+        (config) => {
+            objectAt(objectAt(config, "orphanRepair"), "identity").hexLength = 63;
+        },
+        (config) => {
+            objectAt(objectAt(config, "orphanRepair"), "limits").defaultPageSize = 101;
+        },
+        (config) => {
+            objectAt(objectAt(config, "orphanRepair"), "limits").maxPageSize = 101;
+        },
+        (config) => {
+            const blockers = objectAt(objectAt(config, "orphanRepair"), "blockers");
+            blockers.scopeOwned = blockers.liveSession;
+        },
+        (config) => {
+            objectAt(config, "orphanRepair").compatibilityVersion = "changed";
+        },
+        (config) => {
+            const preRun = objectAt(
+                objectAt(objectAt(config, "orphanRepair"), "statuses"),
+                "preRun",
+            );
+            preRun.repaired = preRun.declined;
+        },
+        (config) => {
+            const session = objectAt(
+                objectAt(objectAt(config, "orphanRepair"), "statuses"),
+                "session",
+            );
+            session.live = session.dead;
         },
     ]);
 });

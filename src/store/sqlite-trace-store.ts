@@ -14,6 +14,16 @@ import { kernelProtocolConfig, runProtocolConfig } from "../protocol/config.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { createConfiguredRootWitness } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
+import type {
+    OperationBookkeepingDefinition,
+    OperationSessionDeathEvidence,
+    OrphanOperationDiagnosisOptions,
+    OrphanOperationDiagnosisReport,
+    OrphanPreRunReclaimResult,
+    OrphanRepairCommand,
+    OrphanRepairPreparation,
+    OrphanRepairReceipt,
+} from "../repair/types.ts";
 import type { DurableExecutionPrerequisiteSatisfaction } from "../run/durable-execution-control-types.ts";
 import { appendToTraceStore } from "./append.ts";
 import { diagnoseStoredAppend } from "./append-recovery.ts";
@@ -39,6 +49,15 @@ import { TraceStoreError } from "./errors.ts";
 import { verifyTraceStoreIntegrity } from "./integrity.ts";
 import type { AppendRecoveryDiagnostic, TraceIntegrityReport } from "./integrity-types.ts";
 import { migrateTraceStore } from "./migrations.ts";
+import {
+    completeOpenOperation,
+    diagnoseOpenOperations,
+    prepareOpenOperationRepair,
+    reclaimOpenOperationsBeforeRun,
+    repairOpenOperations,
+    retainOpenOperation,
+    retainOperationSessionDeath,
+} from "./orphan-operations.ts";
 import {
     listOwnerIdsBySchema,
     listOwnerIdsBySchemaBodyText,
@@ -161,6 +180,136 @@ export class SQLiteTraceStore implements Disposable {
     append(request: StoreAppendRequest): AppendReceipt {
         this.#assertOpen();
         return appendToTraceStore(this.#database, request);
+    }
+
+    /**
+     * Retains or idempotently replays exact reversible-operation bookkeeping.
+     *
+     * This method records bookkeeping only. It performs no provider, filesystem, Git, custody,
+     * settlement, or scope operation.
+     *
+     * @param definition - Closed versioned operation identity and safety evidence.
+     * @returns The frozen canonical definition retained by the store.
+     * @throws {OrphanRepairError} If the operation identity conflicts with retained evidence.
+     * @throws {TypeError} If the definition is malformed, unsupported, or exceeds bounds.
+     * @throws {TraceStoreError} If the store is closed.
+     *
+     * @public
+     */
+    recordOpenOperation(
+        definition: OperationBookkeepingDefinition,
+    ): OperationBookkeepingDefinition {
+        this.#assertOpen();
+        return retainOpenOperation(this.#database, definition);
+    }
+
+    /**
+     * Records externally proven death for one exact operation-owning session.
+     *
+     * The external session authority must prove death before calling this narrow bookkeeping API.
+     * The store never infers death from elapsed time or a missing provider response.
+     *
+     * @param evidence - Exact session identity and external death-evidence identity.
+     * @returns Number of retained open operations owned by the session.
+     * @throws {OrphanRepairError} If death evidence conflicts with retained evidence.
+     * @throws {TypeError} If the evidence is malformed or exceeds bounds.
+     * @throws {TraceStoreError} If the store is closed.
+     *
+     * @public
+     */
+    recordOperationSessionDeath(evidence: OperationSessionDeathEvidence): number {
+        this.#assertOpen();
+        return retainOperationSessionDeath(this.#database, evidence);
+    }
+
+    /**
+     * Removes bookkeeping for one normally completed operation owned by an exact session.
+     *
+     * @param operationId - Exact open operation identity.
+     * @param sessionId - Exact owning session identity.
+     * @returns Whether matching bookkeeping was removed.
+     * @throws {TypeError} If either identity is malformed or exceeds bounds.
+     * @throws {TraceStoreError} If the store is closed.
+     *
+     * @public
+     */
+    completeOpenOperation(operationId: string, sessionId: string): boolean {
+        this.#assertOpen();
+        return completeOpenOperation(this.#database, operationId, sessionId);
+    }
+
+    /**
+     * Diagnoses retained open operations without mutation.
+     *
+     * @param options - Optional configured page limit and canonical offset.
+     * @returns A frozen page plus an exact digest over the complete open-operation basis.
+     * @throws {OrphanRepairError} If retained bookkeeping is corrupt.
+     * @throws {TypeError} If options or retained evidence are malformed or out of bounds.
+     * @throws {TraceStoreError} If the store is closed.
+     *
+     * @public
+     */
+    diagnoseOrphanedOperations(
+        options: OrphanOperationDiagnosisOptions = {},
+    ): OrphanOperationDiagnosisReport {
+        this.#assertOpen();
+        return diagnoseOpenOperations(this.#database, options);
+    }
+
+    /**
+     * Durably prepares canonical repair-command evidence without mutating bookkeeping.
+     *
+     * This explicit phase makes an interruption before repair diagnosable and retryable. Replaying
+     * the same command is idempotent; reusing its identity for different content fails closed.
+     *
+     * @param command - Globally idempotent exact orphan set and diagnosis basis.
+     * @returns Canonical command plus its retained trace-record identity.
+     * @throws {OrphanRepairError} If command identity conflicts or its version is unsupported.
+     * @throws {TypeError} If the command is malformed or exceeds bounds.
+     * @throws {TraceStoreError} If the store is closed.
+     *
+     * @public
+     */
+    prepareOrphanedOperationRepair(command: OrphanRepairCommand): OrphanRepairPreparation {
+        this.#assertOpen();
+        return prepareOpenOperationRepair(this.#database, command);
+    }
+
+    /**
+     * Explicitly repairs the complete exact set of proven-dead operation bookkeeping.
+     *
+     * The complete basis is rechecked under the store write lock. Live, provider-started,
+     * scope-owned, stale, changed, or malformed evidence fails closed. Success removes only exact
+     * bookkeeping rows and atomically retains a canonical receipt; no provider, user-file, Git,
+     * custody, settlement, lifecycle, outcome, cut, or scope state is changed.
+     *
+     * @param command - Globally idempotent exact orphan set and diagnosis basis.
+     * @returns Canonical successful or empty no-op receipt and trace-record identities.
+     * @throws {OrphanRepairError} If repair is blocked, stale, conflicting, corrupt, or unsupported.
+     * @throws {TypeError} If the command is malformed or exceeds bounds.
+     * @throws {TraceStoreError} If the store is closed.
+     *
+     * @public
+     */
+    repairOrphanedOperations(command: OrphanRepairCommand): OrphanRepairReceipt {
+        this.#assertOpen();
+        return repairOpenOperations(this.#database, command);
+    }
+
+    /**
+     * Attempts best-effort pre-run reclaim without ever blocking the caller's run start.
+     *
+     * @param commandId - Globally idempotent command identity for this reclaim attempt.
+     * @returns A repaired receipt or a declined result retaining exact manual diagnosis.
+     * @throws {TypeError} Only when command identity or diagnosis inputs are malformed before the
+     * fail-soft repair boundary.
+     * @throws {TraceStoreError} If the store is closed.
+     *
+     * @public
+     */
+    reclaimOrphanedOperationsBeforeRun(commandId: string): OrphanPreRunReclaimResult {
+        this.#assertOpen();
+        return reclaimOpenOperationsBeforeRun(this.#database, commandId);
     }
 
     /**
