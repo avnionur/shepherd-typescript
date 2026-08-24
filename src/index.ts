@@ -18,6 +18,8 @@ export {
     type SemanticScalar,
     type SemanticValue,
 } from "./canonical/canonical-record.ts";
+export { runCli } from "./cli/cli.ts";
+export type { CliIo } from "./cli/types.ts";
 export { EffectHandlerNotFoundError } from "./effect/handler-errors.ts";
 export type {
     EffectHandler,
@@ -390,6 +392,7 @@ export {
 export { SQLiteTaskRegistry } from "./task/sqlite-task-registry.ts";
 export type {
     ExactTaskReference,
+    SQLiteTaskRegistryOptions,
     TaskArtifact,
     TaskArtifactLock,
     TaskDefinition,

@@ -288,3 +288,22 @@ export function migrateTraceStore(database: DatabaseSync): number {
         .get() as { readonly version: number };
     return migrated.version;
 }
+
+/** Reads and requires the exact current trace-store schema without mutation. @internal */
+export function readCurrentTraceStoreSchemaVersion(database: DatabaseSync): number {
+    let version: number;
+    try {
+        const row = database
+            .prepare(`SELECT COALESCE(MAX(version), 0) AS version FROM ${STORE_TABLES.migrations}`)
+            .get() as { readonly version: number };
+        version = row.version;
+    } catch (error) {
+        throw new UnsupportedStoreSchemaError("trace store is not initialized", { cause: error });
+    }
+    if (version !== kernelProtocolConfig.store.schemaVersion) {
+        throw new UnsupportedStoreSchemaError(
+            `read-only trace store requires schema ${kernelProtocolConfig.store.schemaVersion}; found ${version}`,
+        );
+    }
+    return version;
+}

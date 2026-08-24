@@ -12,9 +12,17 @@ import {
     TASK_REGISTRY_TRANSACTION_SQL,
 } from "./registry-constants.ts";
 import { TaskRegistryError, TaskVersionConflictError } from "./registry-errors.ts";
-import { migrateTaskRegistry } from "./registry-migrations.ts";
+import {
+    migrateTaskRegistry,
+    readCurrentTaskRegistrySchemaVersion,
+} from "./registry-migrations.ts";
 import type { TaskSchema } from "./schema.ts";
-import type { ExactTaskReference, TaskDescriptor, TaskRegistration } from "./types.ts";
+import type {
+    ExactTaskReference,
+    SQLiteTaskRegistryOptions,
+    TaskDescriptor,
+    TaskRegistration,
+} from "./types.ts";
 
 type StoredRegistrationRow = {
     readonly artifact_digest: string;
@@ -34,19 +42,30 @@ export class SQLiteTaskRegistry implements Disposable {
      * Opens or creates a durable task registry.
      *
      * @param databasePath - SQLite file path, or the configured in-memory default.
-     * @throws {UnsupportedTaskRegistrySchemaError} If the schema is newer than supported.
+     * @param options - Optional exact read-only open policy.
+     * @throws {UnsupportedTaskRegistrySchemaError} If the schema is not current and supported.
+     * @throws {TypeError} If options are malformed or contain unsupported fields.
      * @throws {Error} If SQLite cannot open or migrate the registry.
      */
-    constructor(databasePath = taskProtocolConfig.registry.defaultDatabasePath) {
+    constructor(
+        databasePath = taskProtocolConfig.registry.defaultDatabasePath,
+        options: SQLiteTaskRegistryOptions = {},
+    ) {
+        const readOnly = readRegistryOptions(options);
         this.#database = new DatabaseSync(databasePath, {
             defensive: taskProtocolConfig.registry.defensive,
+            readOnly,
             timeout: taskProtocolConfig.registry.busyTimeoutMilliseconds,
         });
         try {
             this.#database.exec(TASK_REGISTRY_PRAGMA_SQL.foreignKeys);
-            this.#database.exec(TASK_REGISTRY_PRAGMA_SQL.journalMode);
-            this.#database.exec(TASK_REGISTRY_PRAGMA_SQL.synchronous);
-            this.#schemaVersion = migrateTaskRegistry(this.#database);
+            if (readOnly) {
+                this.#schemaVersion = readCurrentTaskRegistrySchemaVersion(this.#database);
+            } else {
+                this.#database.exec(TASK_REGISTRY_PRAGMA_SQL.journalMode);
+                this.#database.exec(TASK_REGISTRY_PRAGMA_SQL.synchronous);
+                this.#schemaVersion = migrateTaskRegistry(this.#database);
+            }
         } catch (error) {
             this.#database.close();
             throw error;
@@ -241,4 +260,27 @@ export class SQLiteTaskRegistry implements Disposable {
         }
         return registration;
     }
+}
+
+function readRegistryOptions(value: unknown): boolean {
+    if (
+        value === null ||
+        typeof value !== "object" ||
+        Array.isArray(value) ||
+        (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null)
+    ) {
+        throw new TypeError("task registry options must be a plain object");
+    }
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    if (
+        Object.keys(descriptors).some((key) => key !== "readOnly") ||
+        Object.values(descriptors).some((descriptor) => !("value" in descriptor))
+    ) {
+        throw new TypeError("task registry options must contain only readOnly");
+    }
+    const readOnly = (value as SQLiteTaskRegistryOptions).readOnly ?? false;
+    if (typeof readOnly !== "boolean") {
+        throw new TypeError("task registry readOnly must be boolean");
+    }
+    return readOnly;
 }

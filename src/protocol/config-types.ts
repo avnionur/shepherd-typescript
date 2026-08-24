@@ -19,6 +19,89 @@ export const EFFECT_UNHANDLED_POLICIES = ["throw"] as const;
 /** Provider kinds implemented by the current provider protocol. */
 export const PROVIDER_KINDS = ["static"] as const;
 
+/** Validated configured CLI command descriptor. */
+export type CliCommandConfig = {
+    readonly handler: string;
+    readonly name: string;
+};
+
+/** Validated configured CLI top-level group or command descriptor. */
+export type CliGroupConfig = {
+    readonly commands: readonly CliCommandConfig[];
+    readonly handler: string | null;
+    readonly name: string;
+};
+
+/** Validated human-facing CLI topology and resource policy. */
+export type CliProtocolConfig = {
+    readonly compatibilityVersion: string;
+    readonly defaults: {
+        readonly bindingName: string;
+        readonly bindingRoot: string;
+        readonly taskRegistryPath: string;
+        readonly traceStorePath: string;
+        readonly workspacePath: string;
+    };
+    readonly executableName: string;
+    readonly executablePath: string;
+    readonly exitCodes: {
+        readonly failure: number;
+        readonly success: number;
+        readonly unavailable: number;
+        readonly usage: number;
+    };
+    readonly handlerRoles: {
+        readonly doctor: string;
+        readonly runApply: string;
+        readonly runDiscard: string;
+        readonly runList: string;
+        readonly runOutputCitations: string;
+        readonly runRecoveryRecords: string;
+        readonly runRelease: string;
+        readonly runRepair: string;
+        readonly runSelect: string;
+        readonly runShow: string;
+        readonly runTrace: string;
+        readonly taskList: string;
+        readonly taskResolve: string;
+        readonly taskShow: string;
+        readonly unsupportedDemoWrite: string;
+        readonly unsupportedPackageInit: string;
+        readonly unsupportedStart: string;
+        readonly unsupportedTaskRegister: string;
+        readonly workspaceInit: string;
+    };
+    readonly helpAliases: readonly string[];
+    readonly groups: readonly CliGroupConfig[];
+    readonly limits: {
+        readonly defaultPageSize: number;
+        readonly maxArgumentBytes: number;
+        readonly maxArguments: number;
+        readonly maxOutputBytes: number;
+        readonly maxPageSize: number;
+    };
+    readonly options: {
+        readonly adopt: string;
+        readonly bindingName: string;
+        readonly bindingRoot: string;
+        readonly command: string;
+        readonly initializeGit: string;
+        readonly limit: string;
+        readonly noInitializeGit: string;
+        readonly offset: string;
+        readonly registry: string;
+        readonly store: string;
+        readonly workspace: string;
+    };
+    readonly remedies: {
+        readonly demoWrite: string;
+        readonly fencedStart: string;
+        readonly packageInit: string;
+        readonly taskRegister: string;
+    };
+    readonly version: number;
+};
+
 /** One immutable historical trace-store migration contract. */
 export type StoreMigrationConfig = {
     readonly firstOwnerOrdinal: number;
@@ -1561,6 +1644,7 @@ export type WorkspaceProtocolConfig = {
 
 /** Complete validated language-neutral protocol configuration. */
 export type ProtocolConfig = {
+    readonly cli: CliProtocolConfig;
     readonly effects: EffectProtocolConfig;
     readonly formalAssurance: FormalAssuranceProtocolConfig;
     readonly kernel: KernelProtocolConfig;

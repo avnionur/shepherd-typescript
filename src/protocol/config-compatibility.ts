@@ -1,4 +1,5 @@
 import {
+    CLI_PROTOCOL_V1_CONTRACT,
     EFFECT_PROTOCOL_V1_CONTRACT,
     EVIDENCE_RECORD_PROJECTION_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
@@ -18,6 +19,9 @@ import { sameStrings } from "./config-value-readers.ts";
 /** Rejects valid configuration that would redefine the implemented ABI or store schema. */
 export function assertSupportedProtocolCompatibility(config: ProtocolConfig): void {
     const expected = KERNEL_ABI_V0_CONTRACT;
+    if (!sameJson(config.cli, CLI_PROTOCOL_V1_CONTRACT)) {
+        throw new TypeError("CLI constants require a new CLI protocol");
+    }
     if (
         config.kernel.abiVersion !== expected.abiVersion ||
         config.kernel.canonicalVersion !== expected.canonicalVersion ||

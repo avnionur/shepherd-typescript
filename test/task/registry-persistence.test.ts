@@ -33,6 +33,41 @@ test("SQLiteTaskRegistry preserves exact registrations across reopening", async 
     );
 });
 
+test("read-only task registries require current schema without migration", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-read-only-registry-test-"));
+    context.after(() => rm(directory, { force: true, recursive: true }));
+    const databasePath = path.join(directory, "tasks.sqlite");
+    const descriptor = task(taskDefinition());
+    const writable = new SQLiteTaskRegistry(databasePath);
+    writable.register(descriptor);
+    writable.close();
+    using current = new SQLiteTaskRegistry(databasePath, { readOnly: true });
+    assert.ok(
+        current.resolve({ taskId: descriptor.artifactLock.task_id, version: descriptor.version }),
+    );
+    current.close();
+
+    const database = new DatabaseSync(databasePath);
+    database.prepare("DELETE FROM task_schema_migrations").run();
+    database.close();
+    assert.throws(
+        () => new SQLiteTaskRegistry(databasePath, { readOnly: true }),
+        UnsupportedTaskRegistrySchemaError,
+    );
+    const inspected = new DatabaseSync(databasePath);
+    assert.equal(
+        inspected.prepare("SELECT COUNT(*) AS count FROM task_schema_migrations").get()?.count,
+        0,
+    );
+    inspected.close();
+    const uninitializedPath = path.join(directory, "uninitialized.sqlite");
+    new DatabaseSync(uninitializedPath).close();
+    assert.throws(
+        () => new SQLiteTaskRegistry(uninitializedPath, { readOnly: true }),
+        UnsupportedTaskRegistrySchemaError,
+    );
+});
+
 test("SQLiteTaskRegistry rejects corrupt retained artifacts through resolution", async (context) => {
     const directory = await mkdtemp(path.join(tmpdir(), "shepherd-task-corruption-test-"));
     context.after(() => rm(directory, { force: true, recursive: true }));

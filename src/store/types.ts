@@ -295,6 +295,8 @@ export type BlobOrphanCollectionReport = {
 export type SQLiteTraceStoreOptions = {
     /** Blob root directory. Defaults beside a file database or to an owned temporary directory. */
     readonly blobDirectory?: string;
+    /** Opens current-schema state without migrations or retained-state writes. */
+    readonly readOnly?: boolean;
 };
 
 /** Classified integrity failure for one durable blob receipt. */

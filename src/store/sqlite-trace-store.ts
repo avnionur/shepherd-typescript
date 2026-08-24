@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 
 import { BlobFilesystem } from "../blob/filesystem.ts";
@@ -48,7 +49,7 @@ import {
 import { TraceStoreError } from "./errors.ts";
 import { verifyTraceStoreIntegrity } from "./integrity.ts";
 import type { AppendRecoveryDiagnostic, TraceIntegrityReport } from "./integrity-types.ts";
-import { migrateTraceStore } from "./migrations.ts";
+import { migrateTraceStore, readCurrentTraceStoreSchemaVersion } from "./migrations.ts";
 import {
     completeOpenOperation,
     diagnoseOpenOperations,
@@ -103,8 +104,9 @@ import type {
 /**
  * Synchronous SQLite-backed content-addressed trace store.
  *
- * Construction opens the database, enables configured durability settings,
- * applies pending migrations, and ensures the configured root witness exists.
+ * Writable construction enables configured durability, applies pending migrations, and ensures
+ * the configured root witness. Read-only construction requires existing current-schema database,
+ * blob-directory, and root-witness state without modifying them.
  *
  * @public
  */
@@ -116,11 +118,13 @@ export class SQLiteTraceStore implements Disposable {
     readonly #schemaVersion: number;
 
     /**
-     * Opens or creates a trace-store database.
+     * Opens or creates a writable trace store, or opens exact current state read-only.
      *
      * @param databasePath - SQLite file path, or `:memory:` for an ephemeral store.
-     * @param options - Optional external blob-directory configuration.
-     * @throws {UnsupportedStoreSchemaError} If the database schema is newer than supported.
+     * @param options - Optional external blob directory and read-only policy.
+     * @throws {UnsupportedStoreSchemaError} If read-only schema is absent/non-current or writable
+     * schema is newer than supported.
+     * @throws {TraceStoreError} If required read-only blob or root-witness state is unavailable.
      * @throws {TypeError} If options or the blob-directory shape are invalid.
      * @throws {Error} If SQLite or durable blob-directory setup fails.
      *
@@ -128,6 +132,10 @@ export class SQLiteTraceStore implements Disposable {
      */
     constructor(databasePath = DEFAULT_STORE_DATABASE_PATH, options: SQLiteTraceStoreOptions = {}) {
         const blobDirectory = resolveBlobDirectory(databasePath, options);
+        const readOnly = options.readOnly ?? false;
+        if (readOnly && !existsSync(blobDirectory.path)) {
+            throw new TraceStoreError("read-only trace store blob directory is unavailable");
+        }
         this.#cleanupBlobDirectory = blobDirectory.cleanup;
         let blobFilesystem: BlobFilesystem;
         let database: DatabaseSync;
@@ -135,6 +143,7 @@ export class SQLiteTraceStore implements Disposable {
             blobFilesystem = new BlobFilesystem(blobDirectory.path);
             database = new DatabaseSync(databasePath, {
                 defensive: kernelProtocolConfig.store.defensive,
+                readOnly,
                 timeout: kernelProtocolConfig.store.busyTimeoutMilliseconds,
             });
         } catch (error) {
@@ -145,10 +154,22 @@ export class SQLiteTraceStore implements Disposable {
         this.#database = database;
         try {
             this.#database.exec(STORE_PRAGMA_SQL.foreignKeys);
-            this.#database.exec(STORE_PRAGMA_SQL.journalMode);
-            this.#database.exec(STORE_PRAGMA_SQL.synchronous);
-            this.#schemaVersion = migrateTraceStore(this.#database);
-            this.#ensureRootWitness();
+            if (readOnly) {
+                this.#schemaVersion = readCurrentTraceStoreSchemaVersion(this.#database);
+                if (
+                    readStoredRecord(
+                        this.#database,
+                        createConfiguredRootWitness().envelope.record_id,
+                    ) === undefined
+                ) {
+                    throw new TraceStoreError("read-only trace store root witness is unavailable");
+                }
+            } else {
+                this.#database.exec(STORE_PRAGMA_SQL.journalMode);
+                this.#database.exec(STORE_PRAGMA_SQL.synchronous);
+                this.#schemaVersion = migrateTraceStore(this.#database);
+                this.#ensureRootWitness();
+            }
         } catch (error) {
             this.#database.close();
             this.#cleanupBlobDirectory();

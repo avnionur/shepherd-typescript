@@ -4,6 +4,19 @@ import { test } from "node:test";
 import { SQLiteTaskRegistry, task } from "../../src/index.ts";
 import { createFixtureArtifactLock, taskDefinition } from "./registry-fixtures.ts";
 
+test("SQLiteTaskRegistry validates closed read-only options", () => {
+    for (const options of [
+        null,
+        [],
+        new (class Options {})(),
+        { extra: true },
+        { readOnly: "yes" },
+        Object.defineProperty({}, "readOnly", { get: () => true }),
+    ]) {
+        assert.throws(() => new SQLiteTaskRegistry(":memory:", options as never), TypeError);
+    }
+});
+
 test("SQLiteTaskRegistry rejects malformed exact references", () => {
     using registry = new SQLiteTaskRegistry();
     const descriptor = task(taskDefinition());
