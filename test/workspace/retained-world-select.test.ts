@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -13,14 +14,19 @@ import {
     createRetainedWorldRunner,
     createStaticProvider,
     createWorkspaceBindings,
+    EVIDENCE_RECORD_LATEST_SELECTOR,
+    EVIDENCE_RECORD_LIMITS,
     executeTask,
     initializeWorkspace,
     inspectDurableTaskExecution,
+    LedgerSelectorAmbiguousError,
+    listOutputCitations,
     listRunLedger,
     prepareRetainedWorldSettlement,
     RETAINED_WORLD_SETTLEMENT_VERSION,
     RetainedWorldSettlementConflictError,
     RetainedWorldSettlementInvalidError,
+    resolveOutputCitationSelector,
     resolveRunLedgerSelector,
     SQLiteTraceStore,
     schema,
@@ -28,6 +34,7 @@ import {
     TraceStoreError,
     task,
 } from "../../src/index.ts";
+import { evidenceSchemaValidators } from "../ledger/schema-validators.ts";
 
 class InterruptedSelectedTerminalStore extends SQLiteTraceStore {
     override retainRetainedWorldSettlementTerminal(): never {
@@ -147,6 +154,123 @@ test("public select publishes one exact retained world and replays after reopen"
         runLedger.world_capture.transitions.map(({ phase }) => phase),
         ["prepared", "forked", "executing", "captured"],
     );
+    const outputCitations = listOutputCitations(fixture.store);
+    assert.equal(outputCitations.length, 1);
+    const outputCitation = resolveOutputCitationSelector(
+        fixture.store,
+        fixture.captured.output.output_id,
+    );
+    const { outputCitation: validateOutputCitation } = evidenceSchemaValidators();
+    assert.equal(
+        validateOutputCitation(outputCitation),
+        true,
+        JSON.stringify(validateOutputCitation.errors),
+    );
+    assert.equal(validateOutputCitation({ ...outputCitation, output_citation_version: 2 }), false);
+    assert.deepEqual(outputCitation.output, fixture.captured.output);
+    assert.equal(
+        outputCitation.task_artifact_lock.artifact_digest,
+        fixture.captured.execution.outcome.task_artifact_lock.artifact_digest,
+    );
+    assert.deepEqual(outputCitation.settlements, [settlement]);
+    assert.equal(
+        resolveOutputCitationSelector(fixture.store, "world-output:").output.output_id,
+        fixture.captured.output.output_id,
+    );
+    assert.deepEqual(
+        resolveOutputCitationSelector(fixture.store, EVIDENCE_RECORD_LATEST_SELECTOR),
+        outputCitations.at(-1),
+    );
+    const secondBase = await fixture.carrier.snapshot(fixture.binding);
+    const secondTask = task({
+        input: schema.void(),
+        instruction: "Return a second retained output.",
+        name: "second-output-citation",
+        output: schema.string(),
+        version: "1",
+    });
+    const secondProvider = createStaticProvider({
+        descriptor: { id: "second-output-provider", model: "offline-v1" },
+        exchanges: [
+            {
+                request: {
+                    input: null,
+                    instruction: secondTask.instruction,
+                    outputSchema: secondTask.artifact.output_schema,
+                },
+                response: {
+                    output: "complete",
+                    usage: {
+                        cacheCreationInputTokens: 0,
+                        cacheReadInputTokens: 0,
+                        costUsd: null,
+                        inputTokens: 1,
+                        outputTokens: 1,
+                    },
+                },
+            },
+        ],
+    });
+    const secondRunner = createRetainedWorldRunner({
+        enforcement: "advisory",
+        runnerId: "runner:second-output-citation",
+        run: async (context) => {
+            await context.world.writeText("message.txt", "second\n");
+            return executeTask(context.execution);
+        },
+    });
+    await captureTaskWorldDurably({
+        baseRevision: secondBase,
+        binding: fixture.binding,
+        captureId: "capture:second-output-citation",
+        carrier: fixture.carrier,
+        execution: {
+            budget: { maxTurns: 1 },
+            input: undefined,
+            provider: secondProvider,
+            runId: "run:second-output-citation",
+            task: secondTask,
+        },
+        runner: secondRunner,
+        store: fixture.store,
+    });
+    const allOutputCitations = listOutputCitations(fixture.store);
+    assert.equal(allOutputCitations.length, 2);
+    assert.throws(
+        () => resolveOutputCitationSelector(fixture.store, "world-output:"),
+        LedgerSelectorAmbiguousError,
+    );
+    assert.deepEqual(
+        resolveOutputCitationSelector(fixture.store, EVIDENCE_RECORD_LATEST_SELECTOR),
+        allOutputCitations.at(-1),
+    );
+    const freshOutput = execFileSync(
+        process.execPath,
+        [
+            "--experimental-strip-types",
+            "--input-type=module",
+            "-e",
+            `
+                import {
+                    listOutputCitations,
+                    resolveOutputCitationSelector,
+                    SQLiteTraceStore,
+                } from "./src/index.ts";
+                using store = new SQLiteTraceStore(process.argv[1]);
+                process.stdout.write(JSON.stringify({
+                    count: listOutputCitations(store).length,
+                    outputId: resolveOutputCitationSelector(store, process.argv[2]).output.output_id,
+                }));
+            `,
+            fixture.databasePath,
+            fixture.captured.output.output_id,
+        ],
+        { cwd: path.resolve("."), encoding: "utf8" },
+    );
+    assert.deepEqual(JSON.parse(freshOutput), {
+        count: 2,
+        outputId: fixture.captured.output.output_id,
+    });
     const retainedCitation = fixture.store.readRecord(settlement.citation_record_id);
     assert.ok(retainedCitation);
     fixture.store.append({
@@ -176,9 +300,41 @@ test("public select publishes one exact retained world and replays after reopen"
     using imported = new SQLiteTraceStore();
     imported.importTrace(fixture.store.exportTrace());
     assert.deepEqual(listRunLedger(imported), listRunLedger(fixture.store));
+    assert.deepEqual(listOutputCitations(imported), allOutputCitations);
     assert.deepEqual(
         inspectDurableTaskExecution(imported, fixture.captured.output.run_id).settlements,
         [settlement],
+    );
+    using boundedOutputStore = new SQLiteTraceStore();
+    boundedOutputStore.importTrace(fixture.store.exportTrace());
+    boundedOutputStore.append({
+        append_intent_id: "append:synthetic-output-citation-candidates",
+        batch: {
+            groups: Array.from({ length: EVIDENCE_RECORD_LIMITS.maxPageSize - 1 }, (_, index) => ({
+                owner_id: `run:synthetic-output-candidate:${index}`,
+                records: [
+                    {
+                        body: {
+                            ...retainedOutputRecord.body,
+                            output_id: `world-output:synthetic:${index}`,
+                            run_id: `run:synthetic-output-candidate:${index}`,
+                        },
+                        mode: retainedOutputRecord.envelope.mode,
+                        schema_ref: retainedOutputRecord.envelope.schema_ref,
+                        witness_ref: retainedOutputRecord.envelope.witness_ref,
+                    },
+                ],
+            })),
+        },
+    });
+    assert.equal(
+        resolveOutputCitationSelector(boundedOutputStore, fixture.captured.output.output_id).output
+            .output_id,
+        fixture.captured.output.output_id,
+    );
+    assert.throws(
+        () => listOutputCitations(boundedOutputStore),
+        /candidates exceed the configured bound/u,
     );
     const citationRecord = imported.readRecord(settlement.citation_record_id);
     assert.ok(citationRecord);

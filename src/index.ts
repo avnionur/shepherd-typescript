@@ -58,18 +58,36 @@ export type {
     TypedEffectTraceValidationOptions,
 } from "./formal/types.ts";
 export type { TraceImportReceipt } from "./interchange/types.ts";
+export {
+    listOutputCitations,
+    resolveOutputCitationSelector,
+} from "./ledger/output-citations.ts";
+export {
+    listRecoveryRecords,
+    resolveRecoveryRecordSelector,
+} from "./ledger/recovery-records.ts";
 export { listRunLedger, resolveRunLedgerSelector } from "./ledger/run-ledger.ts";
 export {
     LedgerSelectorAmbiguousError,
     LedgerSelectorNotFoundError,
 } from "./ledger/selector-errors.ts";
 export { listTaskLedger, resolveTaskLedgerSelector } from "./ledger/task-ledger.ts";
+export {
+    listTraceRevisions,
+    resolveTraceRevisionSelector,
+} from "./ledger/trace-revisions.ts";
 export type {
     LedgerListOptions,
+    OutputCitationEntry,
+    RecoveryCommandEvidence,
+    RecoveryCommandResult,
+    RecoveryInvocationClaimEvidence,
+    RecoveryRecordEntry,
     RunLedgerEntry,
     RunLedgerNativeJailProcessEvidence,
     TaskLedgerEntry,
     TaskLedgerRepositoryGrantEvidence,
+    TraceRevisionEntry,
 } from "./ledger/types.ts";
 export { projectExecution } from "./projection/execution.ts";
 export { projectEffectiveHistory } from "./projection/history.ts";
@@ -86,6 +104,8 @@ export type {
     PublishedRecord,
 } from "./projection/types.ts";
 export {
+    EVIDENCE_RECORD_LATEST_SELECTOR,
+    EVIDENCE_RECORD_LIMITS,
     NATIVE_JAIL_BACKENDS,
     NATIVE_JAIL_PLACEMENT_REASONS,
     NATIVE_JAIL_PROBE_REASONS,

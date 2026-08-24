@@ -5,6 +5,11 @@ import { assertSupportedProtocolCompatibility } from "../src/protocol/config-com
 import type { ProtocolConfig } from "../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 import { renderEffectIntentSchema, renderEffectOutcomeSchema } from "./effect-protocol-schemas.ts";
+import {
+    renderOutputCitationEntrySchema,
+    renderRecoveryRecordEntrySchema,
+    renderTraceRevisionEntrySchema,
+} from "./evidence-record-schemas.ts";
 import { renderRunArtifactSchema } from "./run-artifact-schema.ts";
 import {
     renderRunContinuationDescriptorSchema,
@@ -76,6 +81,18 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
         {
             content: renderJson(renderRunLedgerEntrySchema(config)),
             relativePath: config.projections.taskRunLedgers.artifacts.runEntrySchema,
+        },
+        {
+            content: renderJson(renderOutputCitationEntrySchema(config)),
+            relativePath: config.projections.evidenceRecords.artifacts.outputCitationSchema,
+        },
+        {
+            content: renderJson(renderTraceRevisionEntrySchema(config)),
+            relativePath: config.projections.evidenceRecords.artifacts.traceRevisionSchema,
+        },
+        {
+            content: renderJson(renderRecoveryRecordEntrySchema(config)),
+            relativePath: config.projections.evidenceRecords.artifacts.recoveryRecordSchema,
         },
         {
             content: renderJson(renderRepositoryTaskGrantSchema(config)),
@@ -1688,6 +1705,17 @@ export const WORLD_CHANGESET_INSPECTION_LIMITS = {
     maxReadBytes: ${config.workspaces.changesetInspection.maxReadBytes},
     maxVerificationConcurrency: ${config.workspaces.changesetInspection.maxVerificationConcurrency},
 } as const;
+
+/** Configured public output/trace/recovery selector and projection bounds. @public */
+export const EVIDENCE_RECORD_LIMITS = {
+    defaultPageSize: ${config.projections.evidenceRecords.defaultPageSize},
+    maxCanonicalEntryBytes: ${config.projections.evidenceRecords.maxCanonicalEntryBytes},
+    maxPageSize: ${config.projections.evidenceRecords.maxPageSize},
+    maxSelectorBytes: ${config.projections.evidenceRecords.maxSelectorBytes},
+} as const;
+
+/** Configured canonical latest evidence-record read selector. @public */
+export const EVIDENCE_RECORD_LATEST_SELECTOR = ${JSON.stringify(config.projections.evidenceRecords.latestSelector)} as const;
 
 /** Configured public task/run ledger selector and projection bounds. @public */
 export const TASK_RUN_LEDGER_LIMITS = {

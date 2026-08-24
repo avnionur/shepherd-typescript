@@ -51,7 +51,7 @@ and any applicable pinned upstream-oracle comparison.
 | Atomic append batches | vNext reference | required | P0 | crash/fault injection |
 | Idempotent append intent | vNext reference | required | P0 | retry conflict tests |
 | Owner/cut/slice addressing | vNext reference | graph access | P1 | projection fixtures |
-| Trace query and materialization | shipped | core | P1 | public cut-bounded durable execution inspection API implemented; broader CLI/API golden output remains |
+| Trace query and materialization | shipped | core | P1 | public bounded output-citation, published-cut trace-revision, and durable recovery-record list/show selectors now expose exact owner paths, causality, witnesses, command effects, cut-bounded outputs/settlements, native import, and fresh-process reconstruction; upstream event verbs and CLI golden output remain |
 | Live trace subscription | not public complete | explicit | P2 | backpressure/reconnect tests |
 | Arbitrary rewind | not public API | explicit | P2 | byte-equivalence tests |
 | Suffix replay | deferred | explicit | P2 | deterministic and provider-cache tests |

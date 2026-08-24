@@ -2,12 +2,20 @@ import { canonicalizeSemanticValue, type SemanticValue } from "../canonical/cano
 import { projectionProtocolConfig } from "../protocol/config.ts";
 import type { LedgerListOptions } from "./types.ts";
 
+type LedgerBoundPolicy = {
+    readonly defaultPageSize: number;
+    readonly maxPageSize: number;
+    readonly maxSelectorBytes: number;
+};
+
 /** Reads one closed bounded pagination container. @internal */
-export function readLedgerListOptions(value: LedgerListOptions | undefined): {
+export function readLedgerListOptions(
+    value: LedgerListOptions | undefined,
+    policy: LedgerBoundPolicy = projectionProtocolConfig.taskRunLedgers,
+): {
     readonly limit: number;
     readonly offset: number;
 } {
-    const policy = projectionProtocolConfig.taskRunLedgers;
     if (value === undefined) return { limit: policy.defaultPageSize, offset: 0 };
     if (
         value === null ||
@@ -42,12 +50,16 @@ export function readLedgerListOptions(value: LedgerListOptions | undefined): {
 }
 
 /** Validates and bounds one configured read selector. @internal */
-export function readLedgerSelector(value: unknown, subject: string): string {
+export function readLedgerSelector(
+    value: unknown,
+    subject: string,
+    policy: LedgerBoundPolicy = projectionProtocolConfig.taskRunLedgers,
+): string {
     if (
         typeof value !== "string" ||
         value.length === 0 ||
         /\s/u.test(value) ||
-        Buffer.byteLength(value) > projectionProtocolConfig.taskRunLedgers.maxSelectorBytes
+        Buffer.byteLength(value) > policy.maxSelectorBytes
     ) {
         throw new TypeError(`${subject} must be a bounded non-empty string without whitespace`);
     }

@@ -21,7 +21,7 @@ import { resolveBlobDirectory } from "./blob-options.ts";
 import { collectStoredBlobOrphans } from "./blob-orphans.ts";
 import { putStoredBlob, readStoredBlob, verifyStoredBlobs } from "./blobs.ts";
 import { DEFAULT_STORE_DATABASE_PATH, STORE_PRAGMA_SQL, STORE_TABLES } from "./constants.ts";
-import { publishStoredCut, readStoredCut } from "./cuts.ts";
+import { listStoredCuts, publishStoredCut, readOptionalStoredCut, readStoredCut } from "./cuts.ts";
 import {
     appendDurableExecutionStart,
     appendDurableExecutionTerminal,
@@ -39,7 +39,12 @@ import { TraceStoreError } from "./errors.ts";
 import { verifyTraceStoreIntegrity } from "./integrity.ts";
 import type { AppendRecoveryDiagnostic, TraceIntegrityReport } from "./integrity-types.ts";
 import { migrateTraceStore } from "./migrations.ts";
-import { listOwnerIdsBySchema, readOwnerRecords, readStoredRecord } from "./read.ts";
+import {
+    listOwnerIdsBySchema,
+    listOwnerIdsBySchemaBodyText,
+    readOwnerRecords,
+    readStoredRecord,
+} from "./read.ts";
 import type { RetainedWorldSettlementTerminalEvidence } from "./retained-world-settlement-codec.ts";
 import {
     admitRetainedWorldSettlement,
@@ -716,6 +721,27 @@ export class SQLiteTraceStore implements Disposable {
     }
 
     /**
+     * Lists trusted bounded owners whose exact-schema body has one exact JSON text field.
+     *
+     * @param schemaRef - Exact retained record schema identifier.
+     * @param jsonPath - Trusted SQLite JSON path for one configured text field.
+     * @param textValue - Exact text value required at the path.
+     * @param limit - Positive trusted maximum owner count.
+     * @returns Frozen matching owner identities in canonical record/owner order.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    listOwnersBySchemaBodyText(
+        schemaRef: string,
+        jsonPath: string,
+        textValue: string,
+        limit: number,
+    ): readonly string[] {
+        this.#assertOpen();
+        return listOwnerIdsBySchemaBodyText(this.#database, schemaRef, jsonPath, textValue, limit);
+    }
+
+    /**
      * Publishes an immutable address through one retained owner-path occurrence.
      *
      * Publication appends a semantic cut record and its resolver index atomically.
@@ -745,6 +771,41 @@ export class SQLiteTraceStore implements Disposable {
     readCut(cutId: CutId): Cut {
         this.#assertOpen();
         return readStoredCut(this.#database, cutId);
+    }
+
+    /**
+     * Reads one published cut when present without weakening retained validation.
+     *
+     * @param cutId - Validated exact published cut identifier.
+     * @returns Verified cut, or undefined when absent.
+     * @throws {TraceStoreError} If retained cut evidence is corrupt or the store is closed.
+     * @throws {TypeError} If the identifier is malformed.
+     * @internal
+     */
+    readOptionalCut(cutId: CutId): Cut | undefined {
+        this.#assertOpen();
+        return readOptionalStoredCut(this.#database, cutId);
+    }
+
+    /**
+     * Lists a trusted bounded slice of published cuts in canonical record/cut order.
+     *
+     * @param limit - Positive trusted maximum result count.
+     * @param offset - Non-negative trusted canonical offset.
+     * @param descending - Whether canonical ordering is reversed.
+     * @param cutPrefix - Optional validated exact cut-ID prefix.
+     * @returns Frozen verified cuts.
+     * @throws {TraceStoreError} If retained cut evidence is corrupt or the store is closed.
+     * @internal
+     */
+    listCuts(
+        limit: number,
+        offset: number,
+        descending = false,
+        cutPrefix?: string,
+    ): readonly Cut[] {
+        this.#assertOpen();
+        return listStoredCuts(this.#database, limit, offset, descending, cutPrefix);
     }
 
     /**

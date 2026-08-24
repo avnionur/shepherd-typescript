@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-23
 
-Current version: `1.43.0`
+Current version: `1.44.0`
 
 Current level: L1-alpha — P0 retained-world settlement loop
 
@@ -141,6 +141,10 @@ Task/run ledger projection v1 now adds bounded public task and run list/show API
 unique-prefix, and canonical-latest read selectors. It composes exact task/grant locks, durable
 lifecycle, usage, artifacts, outcomes, cuts, settlements, and task-world placement/jail/output
 evidence while preserving exact-ID-only mutation and import-stable canonical ordering.
+Evidence-record projection v1 now adds bounded public retained-output citation, published-cut
+trace-revision, and durable recovery-record list/show APIs. Exact/prefix/latest reads expose
+cut-bounded output/settlement, graph-shaped owner/causal/witness, canonical command/effect,
+lifecycle, and archive-stable claim/fence evidence without performing recovery or repair.
 
 ## Progress
 
@@ -317,6 +321,9 @@ evidence while preserving exact-ID-only mutation and import-stable canonical ord
 - [x] Complete Phase 4 Task 7 task/run ledger projection v1 with generated bounded schemas,
   authenticated task-grant companions, composed durable world evidence, exact/prefix/latest read
   selectors, typed failures, incomplete-state honesty, and reopen/import-stable ordering.
+- [x] Complete Phase 4 Task 8 evidence-record projection v1 with generated closed output/trace/
+  recovery schemas, cut-bounded citations and slices, canonical command effects, exact/prefix/latest
+  reads, incomplete/post-cut exclusion, and archive/fresh-process reconstruction.
 
 ## Verification required for this slice
 
@@ -330,9 +337,9 @@ evidence while preserving exact-ID-only mutation and import-stable canonical ord
 
 ## Next slice
 
-Continue Phase 4 with the next dependency-unblocked output citation, trace revision, or recovery
-record issue after the task/run ledger slice is merged. Preserve the v9-v12 writer/reader matrix,
-exact-ID mutation authority, and production-seam evidence for every new authority path.
+Continue Phase 4 with the next dependency-unblocked orphaned-operation repair issue after the
+output/trace/recovery read slice is merged. Preserve exact command authority, fail-soft pre-run
+behavior, native archive identities, and explicit separation between inspection and repair.
 
 ## Notes
 

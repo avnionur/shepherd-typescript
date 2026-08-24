@@ -11,6 +11,7 @@ import { Ajv2020, type AnySchemaObject, type ValidateFunction } from "ajv/dist/2
 
 import {
     createStaticProvider,
+    EVIDENCE_RECORD_LATEST_SELECTOR,
     executeTaskDurably,
     grantTaskRepositories,
     LedgerSelectorAmbiguousError,
@@ -18,6 +19,7 @@ import {
     listRunLedger,
     listTaskLedger,
     type OwnerRecord,
+    resolveRecoveryRecordSelector,
     resolveRunLedgerSelector,
     resolveTaskLedgerSelector,
     SQLiteTaskRegistry,
@@ -354,6 +356,10 @@ test("run ledger composes durable evidence and resolves import-stable selectors"
     });
     assert.equal(
         resolveRunLedgerSelector(collision, TASK_RUN_LEDGER_LATEST_SELECTOR).run_id,
+        TASK_RUN_LEDGER_LATEST_SELECTOR,
+    );
+    assert.equal(
+        resolveRecoveryRecordSelector(collision, EVIDENCE_RECORD_LATEST_SELECTOR).run_id,
         TASK_RUN_LEDGER_LATEST_SELECTOR,
     );
 });

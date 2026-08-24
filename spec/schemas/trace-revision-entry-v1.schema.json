@@ -1,0 +1,211 @@
+{
+    "$defs": {
+        "externalAnchor": {
+            "additionalProperties": false,
+            "properties": {
+                "hidden_reason": {
+                    "const": "outside_slice",
+                    "type": "string"
+                },
+                "ref": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "hidden_reason",
+                "ref"
+            ],
+            "type": "object"
+        },
+        "recordShape": {
+            "additionalProperties": false,
+            "properties": {
+                "envelope": {
+                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/record-envelope-v0.schema.json"
+                },
+                "hidden_reason": {
+                    "const": "payload_hidden",
+                    "type": "string"
+                },
+                "view": {
+                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/record-view-v0.schema.json"
+                }
+            },
+            "required": [
+                "envelope",
+                "hidden_reason"
+            ],
+            "type": "object"
+        },
+        "sliceRecord": {
+            "additionalProperties": false,
+            "properties": {
+                "body": {
+                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/record-body-v0.schema.json"
+                },
+                "envelope": {
+                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/record-envelope-v0.schema.json"
+                },
+                "view": {
+                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/record-view-v0.schema.json"
+                }
+            },
+            "required": [
+                "body",
+                "envelope"
+            ],
+            "type": "object"
+        },
+        "witnessAnchor": {
+            "additionalProperties": false,
+            "properties": {
+                "hidden_reason": {
+                    "const": "hidden_by_visibility",
+                    "type": "string"
+                },
+                "visible_shape": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "schema_ref": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "witness_ref": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "schema_ref",
+                        "witness_ref"
+                    ],
+                    "type": "object"
+                },
+                "witness_ref": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "hidden_reason",
+                "visible_shape",
+                "witness_ref"
+            ],
+            "type": "object"
+        }
+    },
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/trace-revision-entry-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "additionalProperties": false,
+    "properties": {
+        "compatibility_version": {
+            "const": "shepherd.output-trace-recovery.v1",
+            "type": "string"
+        },
+        "cut": {
+            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/run-ledger-entry-v1.schema.json#/$defs/cut"
+        },
+        "slice": {
+            "additionalProperties": false,
+            "properties": {
+                "causal_edges": {
+                    "items": {
+                        "items": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "maxItems": 2,
+                        "minItems": 2,
+                        "type": "array"
+                    },
+                    "type": "array"
+                },
+                "external_anchors": {
+                    "items": {
+                        "$ref": "#/$defs/externalAnchor"
+                    },
+                    "type": "array"
+                },
+                "mode_filter": {
+                    "enum": [
+                        "both",
+                        "captures_only",
+                        "declarations_only"
+                    ],
+                    "type": "string"
+                },
+                "owner_paths": {
+                    "additionalProperties": {
+                        "items": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "type": "array"
+                    },
+                    "type": "object"
+                },
+                "read_address": {
+                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/run-ledger-entry-v1.schema.json#/$defs/cut"
+                },
+                "visible_records_by_id": {
+                    "additionalProperties": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/$defs/recordShape"
+                            },
+                            {
+                                "$ref": "#/$defs/sliceRecord"
+                            }
+                        ]
+                    },
+                    "type": "object"
+                },
+                "visible_witnesses_by_id": {
+                    "additionalProperties": {
+                        "$ref": "#/$defs/sliceRecord"
+                    },
+                    "type": "object"
+                },
+                "visibility_profile": {
+                    "enum": [
+                        "payload",
+                        "shape_only",
+                        "full_internal"
+                    ],
+                    "type": "string"
+                },
+                "witness_anchors": {
+                    "items": {
+                        "$ref": "#/$defs/witnessAnchor"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "causal_edges",
+                "external_anchors",
+                "mode_filter",
+                "owner_paths",
+                "read_address",
+                "visible_records_by_id",
+                "visible_witnesses_by_id",
+                "visibility_profile",
+                "witness_anchors"
+            ],
+            "type": "object"
+        },
+        "trace_revision_version": {
+            "const": 1,
+            "type": "integer"
+        }
+    },
+    "required": [
+        "compatibility_version",
+        "cut",
+        "slice",
+        "trace_revision_version"
+    ],
+    "type": "object",
+    "x-shepherd-max-canonical-bytes": 67108864
+}

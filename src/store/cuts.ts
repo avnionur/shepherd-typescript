@@ -173,6 +173,38 @@ export function readStoredCut(database: DatabaseSync, cutId: CutId): Cut {
     return cut;
 }
 
+/** Reads one cut when retained, otherwise returns undefined. @internal */
+export function readOptionalStoredCut(database: DatabaseSync, cutId: CutId): Cut | undefined {
+    assertNonEmptyString(cutId, "cutId");
+    const retained = database
+        .prepare(`SELECT 1 FROM ${STORE_TABLES.cuts} WHERE cut_id = ?`)
+        .get(cutId);
+    return retained === undefined ? undefined : readStoredCut(database, cutId);
+}
+
+/** Lists a bounded canonical or reverse-canonical cut slice. @internal */
+export function listStoredCuts(
+    database: DatabaseSync,
+    limit: number,
+    offset: number,
+    descending: boolean,
+    cutPrefix?: string,
+): readonly Cut[] {
+    const direction = descending ? "DESC" : "ASC";
+    const prefixClause = cutPrefix === undefined ? "" : "WHERE substr(cut_id, 1, length(?)) = ?";
+    const rows = database
+        .prepare(
+            `SELECT cut_id FROM ${STORE_TABLES.cuts}
+             ${prefixClause}
+             ORDER BY CAST(created_by_record_id AS BLOB) ${direction}, CAST(cut_id AS BLOB) ${direction}
+             LIMIT ? OFFSET ?`,
+        )
+        .all(
+            ...(cutPrefix === undefined ? [limit, offset] : [cutPrefix, cutPrefix, limit, offset]),
+        ) as { cut_id: string }[];
+    return Object.freeze(rows.map(({ cut_id: cutId }) => readStoredCut(database, cutId)));
+}
+
 function freezeCut(cut: Cut): Cut {
     return Object.freeze(cut);
 }

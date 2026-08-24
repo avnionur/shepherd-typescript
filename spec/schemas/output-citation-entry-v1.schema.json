@@ -1,0 +1,58 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/output-citation-entry-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "additionalProperties": false,
+    "properties": {
+        "compatibility_version": {
+            "const": "shepherd.output-trace-recovery.v1",
+            "type": "string"
+        },
+        "output": {
+            "allOf": [
+                {
+                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/run-ledger-entry-v1.schema.json#/properties/output"
+                },
+                {
+                    "type": "object"
+                }
+            ]
+        },
+        "output_citation_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "run_created_record_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "run_id": {
+            "minLength": 1,
+            "type": "string"
+        },
+        "settlements": {
+            "items": {
+                "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/run-ledger-entry-v1.schema.json#/$defs/settlement"
+            },
+            "type": "array"
+        },
+        "task_artifact_lock": {
+            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/task-artifact-lock-v1.schema.json"
+        },
+        "world_capture": {
+            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/run-ledger-entry-v1.schema.json#/$defs/worldCapture"
+        }
+    },
+    "required": [
+        "compatibility_version",
+        "output",
+        "output_citation_version",
+        "run_created_record_id",
+        "run_id",
+        "settlements",
+        "task_artifact_lock",
+        "world_capture"
+    ],
+    "type": "object",
+    "x-shepherd-max-canonical-bytes": 67108864
+}

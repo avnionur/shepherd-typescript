@@ -234,7 +234,9 @@ Work:
 - implement task/run ledgers and selectors; **implemented in 1.43.0** with versioned bounded task
   and run projections, exact/unique-prefix/canonical-latest read selectors, typed failures,
   authenticated task-grant companions, composed durable world evidence, and import-stable order;
-- implement output citations, trace revisions, and recovery records;
+- implement output citations, trace revisions, and recovery records; **implemented in 1.44.0**
+  with configured bounded public projections, exact/prefix/latest reads, cut-bounded output and
+  graph evidence, canonical command/effect records, and archive/fresh-process reconstruction;
 - implement repair for orphaned operations;
 - implement CLI groups: `init`, `doctor`, `run`, `task`, `demo`, `package`;
 - provide stable JSON output and generated command reference;

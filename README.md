@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.43.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.44.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -170,6 +170,9 @@ trace-record contracts with durable SQLite task and trace stores:
 - read-only durable execution inspection with configured recovery status, lifecycle, artifact,
   usage, and outcome record identities, immutable terminal cuts, canonical causal edges, and
   cut-bound waiting/suspension evidence, plus exact import-safe terminal settlement citations;
+- bounded retained-output citation, published-cut trace-revision, and durable recovery-record
+  list/show projections with exact/prefix/latest reads, generated closed schemas, post-cut
+  exclusion, and native import/fresh-process reconstruction;
 - globally idempotent durable recovery commands with canonical command evidence, expired-lease
   takeover, command-bound start/cut transitions, and fail-closed absent/started handling;
 - globally idempotent pause requests bound atomically to the exact current started lifecycle head,
@@ -546,6 +549,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Durable task execution](./docs/durable-task-execution.md)
 - [Durable execution inspection](./docs/durable-execution-inspection.md)
 - [Task and run ledger projections](./docs/task-run-ledgers.md)
+- [Output citations, trace revisions, and recovery records](./docs/output-trace-recovery-records.md)
 - [Durable execution control](./docs/durable-execution-control.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
@@ -567,8 +571,8 @@ live-provider adapters, scopes, supervision, replay, and paper applications rema
 Phase 4 now includes exact named multi-repository resources, explicit read-only/read-write task
 grants, a whole-run ceiling, honest advisory/auto placement reporting, authenticated native
 filesystem-write jails for capable macOS Seatbelt and Linux/WSL Landlock hosts, and path-disjoint
-three-way retained-world application, receipt-only release, and bounded task/run ledger read
-selectors. Native Windows,
+three-way retained-world application, receipt-only release, bounded task/run ledgers, and
+cut-bounded output-citation, trace-revision, and recovery-record read selectors. Native Windows,
 simultaneous multi-world runner access, network/read isolation, and the remaining documented run
 surface are not implemented.
 

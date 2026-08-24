@@ -134,6 +134,45 @@ export type ExecutionHistoryProjectionConfig = {
     readonly relationSchemaRef: string;
 };
 
+/** Configured bounded output-citation, trace-revision, and recovery-record contract. */
+export type EvidenceRecordProjectionConfig = {
+    /** Generated language-neutral projection schemas. */
+    readonly artifacts: {
+        readonly outputCitationSchema: string;
+        readonly recoveryRecordSchema: string;
+        readonly traceRevisionSchema: string;
+    };
+    /** Compatibility namespace for disposable evidence projections. */
+    readonly compatibilityVersion: string;
+    /** Default bounded list page size. */
+    readonly defaultPageSize: number;
+    /** Stable selector error codes and generic messages. */
+    readonly errors: {
+        readonly ambiguousCode: string;
+        readonly ambiguousMessage: string;
+        readonly notFoundCode: string;
+        readonly notFoundMessage: string;
+    };
+    /** Configured read-only latest-selector token. */
+    readonly latestSelector: string;
+    /** Maximum canonical JSON bytes for one projected entry. */
+    readonly maxCanonicalEntryBytes: number;
+    /** Maximum requested or selector candidate count. */
+    readonly maxPageSize: number;
+    /** Maximum UTF-8 bytes accepted for one selector. */
+    readonly maxSelectorBytes: number;
+    /** SQLite JSON path selecting exact retained output identity. */
+    readonly outputIdJsonPath: string;
+    /** Published projection schema identifiers. */
+    readonly schemas: {
+        readonly outputCitationId: string;
+        readonly recoveryRecordId: string;
+        readonly traceRevisionId: string;
+    };
+    /** Public disposable evidence projection version. */
+    readonly version: number;
+};
+
 /** Configured bounded task/run ledger read projection and selector contract. */
 export type TaskRunLedgerProjectionConfig = {
     /** Generated language-neutral projection schemas. */
@@ -173,6 +212,7 @@ export type TaskRunLedgerProjectionConfig = {
 
 /** Validated disposable projection configuration. */
 export type ProjectionProtocolConfig = {
+    readonly evidenceRecords: EvidenceRecordProjectionConfig;
     readonly executionHistory: ExecutionHistoryProjectionConfig;
     readonly taskRunLedgers: TaskRunLedgerProjectionConfig;
 };

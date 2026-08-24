@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
+    EVIDENCE_RECORD_PROJECTION_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
@@ -62,6 +63,13 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_CONTRACT.store.migrations), true);
     assert.equal(Object.isFrozen(KERNEL_ABI_V0_STORE_V7_CONTRACT), true);
     assert.equal(Object.isFrozen(EXECUTION_HISTORY_PROJECTION_V1_CONTRACT), true);
+    assert.equal(
+        parsed.projections.evidenceRecords.compatibilityVersion,
+        "shepherd.output-trace-recovery.v1",
+    );
+    assert.equal(parsed.projections.evidenceRecords.latestSelector, "@latest");
+    assert.equal(Object.isFrozen(parsed.projections.evidenceRecords), true);
+    assert.equal(Object.isFrozen(EVIDENCE_RECORD_PROJECTION_V1_CONTRACT), true);
     assert.equal(parsed.projections.taskRunLedgers.latestSelector, "@latest");
     assert.equal(parsed.projections.taskRunLedgers.taskVersionSeparator, "@");
     assert.equal(parsed.projections.taskRunLedgers.defaultPageSize, 50);
@@ -535,6 +543,30 @@ test("protocol configuration rejects invalid or drifted projection contracts", (
         },
         (config) => {
             objectAt(ledgerProjectionConfigOf(config), "artifacts").taskEntrySchema = "";
+        },
+        (config) => {
+            evidenceProjectionConfigOf(config).defaultPageSize = 101;
+        },
+        (config) => {
+            evidenceProjectionConfigOf(config).maxPageSize = 0;
+        },
+        (config) => {
+            evidenceProjectionConfigOf(config).latestSelector = "latest";
+        },
+        (config) => {
+            evidenceProjectionConfigOf(config).version = 2;
+        },
+        (config) => {
+            evidenceProjectionConfigOf(config).outputIdJsonPath = "$.changed";
+        },
+        (config) => {
+            objectAt(evidenceProjectionConfigOf(config), "errors").ambiguousCode = "changed";
+        },
+        (config) => {
+            objectAt(evidenceProjectionConfigOf(config), "schemas").traceRevisionId = "relative";
+        },
+        (config) => {
+            objectAt(evidenceProjectionConfigOf(config), "artifacts").outputCitationSchema = "";
         },
     ]);
 });
@@ -1422,6 +1454,10 @@ function queryConfigOf(config: Record<string, unknown>): Record<string, unknown>
 
 function projectionConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(objectAt(config, "projections"), "executionHistory");
+}
+
+function evidenceProjectionConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(objectAt(config, "projections"), "evidenceRecords");
 }
 
 function ledgerProjectionConfigOf(config: Record<string, unknown>): Record<string, unknown> {
