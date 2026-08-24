@@ -13,7 +13,7 @@ implementation documentation, and forward-looking plans.
 │   ├── effect/             Intent/outcome records and ordered exact-kind handlers
 │   ├── formal/             Typed-effect reference validation and proof-envelope classification
 │   ├── interchange/        Native archive encoding, validation, and import storage
-│   ├── ledger/             Bounded task/run read projections and selectors
+│   ├── ledger/             Bounded task/run/output/trace/recovery read projections
 │   ├── projection/         Disposable execution, relation, and history folds
 │   ├── provider/           Provider-neutral contracts and deterministic offline invocation
 │   ├── protocol/           Runtime configuration and generated literals
@@ -42,7 +42,7 @@ public exports → append area → record area → canonical area → protocol c
 public exports → store area → append and record areas
 public exports → store area → blob filesystem and identity
 public exports → interchange area → store, record, blob, and protocol areas
-public exports → ledger area → task registry, run inspection, workspace journal, and protocol areas
+public exports → ledger area → task registry, cuts/slices, run control, workspace evidence, and protocol areas
 public exports → projection area → immutable store slice types
 public exports → provider area → canonical snapshots and protocol configuration
 public exports → task area → canonical identity and protocol configuration
@@ -69,8 +69,9 @@ The runtime areas are intentionally shallow:
 - `canonical/` owns language-neutral semantic encoding, unversioned record hashing, and immutable
   semantic snapshots;
 - `interchange/` owns native archive encoding, decoding, staging, and validated storage transfer;
-- `ledger/` owns bounded immutable task/run projections, canonical read ordering, and
-  exact/unique-prefix/latest selector resolution without mutation authority;
+- `ledger/` owns bounded immutable task/run/output/trace/recovery projections, canonical read
+  ordering, cut/lifecycle evidence bounds, and exact/unique-prefix/latest selectors without
+  mutation authority;
 - `effect/` owns versioned intent/outcome construction, exact correlation, validation, and
   immutable ordered handler dispatch;
 - `formal/` owns the executable typed-effect trace lifecycle machine and conservative

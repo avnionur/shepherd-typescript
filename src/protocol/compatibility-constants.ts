@@ -157,6 +157,37 @@ export const EXECUTION_HISTORY_PROJECTION_V1_CONTRACT = deepFreeze({
     relationSchemaRef: "shepherd2.execution_relation.created.v1",
 } as const);
 
+/** Immutable bounded output/trace/recovery evidence projection implemented by v1. */
+export const EVIDENCE_RECORD_PROJECTION_V1_CONTRACT = deepFreeze({
+    artifacts: {
+        outputCitationSchema: "spec/schemas/output-citation-entry-v1.schema.json",
+        recoveryRecordSchema: "spec/schemas/recovery-record-entry-v1.schema.json",
+        traceRevisionSchema: "spec/schemas/trace-revision-entry-v1.schema.json",
+    },
+    compatibilityVersion: "shepherd.output-trace-recovery.v1",
+    defaultPageSize: 50,
+    errors: {
+        ambiguousCode: "LEDGER_SELECTOR_AMBIGUOUS",
+        ambiguousMessage: "evidence selector is ambiguous",
+        notFoundCode: "LEDGER_SELECTOR_NOT_FOUND",
+        notFoundMessage: "evidence selector was not found",
+    },
+    latestSelector: "@latest",
+    maxCanonicalEntryBytes: 67_108_864,
+    maxPageSize: 100,
+    maxSelectorBytes: 512,
+    outputIdJsonPath: "$.output_id",
+    schemas: {
+        outputCitationId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/output-citation-entry-v1.schema.json",
+        recoveryRecordId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/recovery-record-entry-v1.schema.json",
+        traceRevisionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/trace-revision-entry-v1.schema.json",
+    },
+    version: 1,
+} as const);
+
 /** Immutable bounded task/run ledger read projection implemented by projection v1. */
 export const TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT = deepFreeze({
     artifacts: {

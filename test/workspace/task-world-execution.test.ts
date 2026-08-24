@@ -21,6 +21,8 @@ import {
     initializeWorkspace,
     inspectRetainedWorldSettlement,
     inspectTaskWorldCaptureJournal,
+    LedgerSelectorNotFoundError,
+    listOutputCitations,
     type OwnerRecord,
     prepareRetainedWorldSettlement,
     RETAINED_WORLD_MAX_CAPTURE_ID_BYTES,
@@ -31,6 +33,8 @@ import {
     readDurableTaskExecution,
     recoverTaskDurably,
     recoverTaskWorldDurably,
+    resolveOutputCitationSelector,
+    resolveRecoveryRecordSelector,
     resolveRunLedgerSelector,
     SQLiteTraceStore,
     type StoreAppendRequest,
@@ -1287,6 +1291,21 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
     assert.equal(pendingCutLedger.inspection.status, "terminal_pending_cut");
     assert.equal(pendingCutLedger.output, null);
     assert.deepEqual(pendingCutLedger.native_jail_processes, []);
+    assert.deepEqual(listOutputCitations(interruptedCutStore), []);
+    const pendingOutputId = interruptedCutStore
+        .readOwner(cutRecoveryExecution.runId)
+        .find((record) => typeof record.body.output_id === "string")?.body.output_id;
+    assert.equal(typeof pendingOutputId, "string");
+    assert.throws(
+        () => resolveOutputCitationSelector(interruptedCutStore, pendingOutputId as string),
+        LedgerSelectorNotFoundError,
+    );
+    const pendingRecoveryRecord = resolveRecoveryRecordSelector(
+        interruptedCutStore,
+        cutRecoveryExecution.runId,
+    );
+    assert.equal(pendingRecoveryRecord.recovery_status, "terminal_pending_cut");
+    assert.deepEqual(pendingRecoveryRecord.commands, []);
     interruptedCutStore.close();
     using reopenedCutRecoveryStore = new SQLiteTraceStore(cutRecoveryStorePath);
     const repairedCutWorld = await recoverTaskWorldDurably({

@@ -88,6 +88,30 @@ export function listOwnerIdsBySchema(
     return Object.freeze(rows.map(({ owner_id: ownerId }) => ownerId));
 }
 
+/** Lists owners whose exact-schema record contains one exact JSON text value. @internal */
+export function listOwnerIdsBySchemaBodyText(
+    database: DatabaseSync,
+    schemaRef: string,
+    jsonPath: string,
+    textValue: string,
+    limit: number,
+): readonly string[] {
+    const rows = database
+        .prepare(
+            `SELECT v.owner_id
+             FROM ${STORE_TABLES.recordViews} AS v
+             INNER JOIN ${STORE_TABLES.records} AS r ON r.record_id = v.record_id
+             WHERE r.schema_ref = ?
+               AND json_type(r.body_json, ?) = 'text'
+               AND json_extract(r.body_json, ?) = ?
+             GROUP BY v.owner_id
+             ORDER BY CAST(MIN(r.record_id) AS BLOB), CAST(v.owner_id AS BLOB)
+             LIMIT ?`,
+        )
+        .all(schemaRef, jsonPath, jsonPath, textValue, limit) as { owner_id: string }[];
+    return Object.freeze(rows.map(({ owner_id: ownerId }) => ownerId));
+}
+
 function decodeRecordRow(row: Record<string, unknown>): {
     readonly body: RecordBody;
     readonly envelope: RecordEnvelope;

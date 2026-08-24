@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -16,8 +17,11 @@ import {
     DurableExecutionClaimFencedError,
     DurableExecutionRecoveryAbsentError,
     DurableExecutionRecoveryError,
+    EVIDENCE_RECORD_LATEST_SELECTOR,
     executeTaskDurably,
     inspectDurableTaskExecution,
+    LedgerSelectorAmbiguousError,
+    listRecoveryRecords,
     type ModelProvider,
     type OwnerRecord,
     type RecordId,
@@ -28,6 +32,7 @@ import {
     recoverTaskDurably,
     requestDurableTaskCancellation,
     requestDurableTaskPause,
+    resolveRecoveryRecordSelector,
     resumeDurableTask,
     SQLiteTraceStore,
     schema,
@@ -42,6 +47,7 @@ import {
     createDurableResumeCommand,
 } from "../../src/run/durable-execution-control-codec.ts";
 import { appendDurableExecutionResume } from "../../src/store/durable-execution-control.ts";
+import { evidenceSchemaValidators } from "../ledger/schema-validators.ts";
 
 type StoredRecordRow = Readonly<Record<string, unknown>>;
 type AppendBody = Parameters<
@@ -240,6 +246,10 @@ test("created cancellation atomically terminalizes and fences pre-start authorit
     assert.equal(cancelled.execution.outcome.outcome.status, "cancelled");
     assert.equal(cancelled.ledger.started, false);
     assert.equal(inspectDurableTaskExecution(store, runId).status, "committed");
+    assert.equal(
+        resolveRecoveryRecordSelector(store, runId).commands[0]?.command.command_kind,
+        "cancel",
+    );
     assert.throws(
         () =>
             cancelDurableTask(store, {
@@ -850,6 +860,7 @@ test("waiting acknowledgement atomically releases the worker at a prerequisite b
     reachSafeBoundary?.();
     await assert.rejects(running, DurableExecutionClaimFencedError);
     assert.ok(waitingReceipt);
+    const retainedWaitingReceipt = waitingReceipt;
     const inspection = inspectDurableTaskExecution(store, runId);
     assert.equal(inspection.lifecycle.quiescent?.status, "waiting");
     assert.deepEqual(inspection.lifecycle.quiescent?.prerequisite, {
@@ -862,11 +873,57 @@ test("waiting acknowledgement atomically releases the worker at a prerequisite b
     using reopened = new SQLiteTraceStore(databasePath);
     assert.deepEqual(
         acknowledgeDurableTaskWaiting(reopened, retainedWaitingOptions),
-        waitingReceipt,
+        retainedWaitingReceipt,
     );
     assert.equal(
         inspectDurableTaskExecution(reopened, runId).lifecycle.quiescent?.status,
         "waiting",
+    );
+    const waitingRecords = reopened.readOwner(runId);
+    const waitingHead = waitingRecords.find(
+        (record) => record.envelope.record_id === retainedWaitingReceipt.acknowledgement_record_id,
+    );
+    assert.ok(waitingHead);
+    const spoofedRunningBody = {
+        claim_id: "claim:spoofed-running-history",
+        continuation_descriptor_id: retainedWaitingReceipt.continuation_descriptor_record_id,
+        execution_id: runId,
+        fencing_token: 99,
+        lease_expires_at: 999,
+        lifecycle_version: runProtocolConfig.execution.lifecycleVersion,
+        resume_command_id: ROOT_WITNESS_ID,
+        status: runProtocolConfig.execution.lifecycleRunningStatus,
+    } as const;
+    const spoofedRunningEnvelope = createRecordEnvelope({
+        body: spoofedRunningBody,
+        caused_by_record_ids: [
+            retainedWaitingReceipt.acknowledgement_record_id,
+            retainedWaitingReceipt.continuation_descriptor_record_id,
+        ],
+        mode: "capture",
+        schema_ref: runProtocolConfig.schemas.runningLifecycleId,
+        witness_ref: ROOT_WITNESS_ID,
+    });
+    const waitingHeadIndex = waitingRecords.indexOf(waitingHead);
+    using spoofedRunningHistory = new OwnerProjectionStore(
+        runId,
+        [
+            ...waitingRecords.slice(0, waitingHeadIndex),
+            {
+                body: spoofedRunningBody,
+                envelope: spoofedRunningEnvelope,
+                view: {
+                    ...waitingHead.view,
+                    owner_ordinal: waitingHead.view.owner_ordinal - 1,
+                },
+            },
+            ...waitingRecords.slice(waitingHeadIndex),
+        ],
+        reopened,
+    );
+    assert.equal(
+        resolveRecoveryRecordSelector(spoofedRunningHistory, runId).invocation_claim.status,
+        "unavailable",
     );
     const resumeBase = {
         commandId: "command:resume:waiting-acknowledgement",
@@ -910,6 +967,43 @@ test("waiting acknowledgement atomically releases the worker at a prerequisite b
     );
     const resumed = resumeDurableTask(reopened, resumeOptions);
     assert.equal(resumed.fencing_token, fencingToken + 1);
+    const resumedRecovery = resolveRecoveryRecordSelector(reopened, runId);
+    assert.equal(resumedRecovery.commands[0]?.command.command_kind, "resume");
+    assert.equal(resumedRecovery.invocation_claim.status, "verified");
+    if (resumedRecovery.invocation_claim.status === "verified") {
+        assert.equal(resumedRecovery.invocation_claim.claim_id, resumed.claim_id);
+        assert.equal(resumedRecovery.invocation_claim.fencing_token, resumed.fencing_token);
+    }
+    reopened.append({
+        append_intent_id: "append:forged-pause-causality",
+        batch: {
+            groups: [
+                {
+                    owner_id: runId,
+                    records: [
+                        {
+                            body: {
+                                command_id: "command:forged-pause-causality",
+                                command_kind: "pause",
+                                execution_id: runId,
+                                expected_lifecycle_record_id: resumed.running_record_id,
+                                fencing_token: resumed.fencing_token,
+                                reason: "forged causal parent",
+                            },
+                            caused_by_record_ids: [ROOT_WITNESS_ID],
+                            mode: "capture",
+                            schema_ref: runProtocolConfig.execution.controlCommandSchemaId,
+                            witness_ref: ROOT_WITNESS_ID,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    assert.throws(
+        () => resolveRecoveryRecordSelector(reopened, runId),
+        /command causality is inconsistent/u,
+    );
     assert.equal(
         inspectDurableTaskExecution(reopened, runId).lifecycle.running_continuation_record_id,
         resumed.running_record_id,
@@ -1250,6 +1344,26 @@ test("requestDurableTaskPause retains one exact command without changing lifecyc
         runId,
     } as const;
 
+    store.append({
+        append_intent_id: "append:spoofed-claim-evidence",
+        batch: {
+            groups: [
+                {
+                    owner_id: runId,
+                    records: [
+                        {
+                            body: { claim_id: "claim:spoofed", fencing_token: fencingToken },
+                            caused_by_record_ids: [expectedLifecycleRecordId],
+                            mode: "capture",
+                            schema_ref: "example.unrelated-claim.v1",
+                            witness_ref: ROOT_WITNESS_ID,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+
     const retained = requestDurableTaskPause(store, options);
     const commandRecord = store.readRecord(retained.record_id);
     assert.deepEqual(commandRecord?.body, {
@@ -1263,6 +1377,36 @@ test("requestDurableTaskPause retains one exact command without changing lifecyc
     assert.deepEqual(commandRecord?.envelope.caused_by_record_ids, [expectedLifecycleRecordId]);
     assert.equal(readDurableTaskExecution(store, runId).status, "started");
     assert.equal(inspectDurableTaskExecution(store, runId).lifecycle.quiescent, null);
+    const pauseRecoveryRecord = resolveRecoveryRecordSelector(store, runId);
+    assert.equal(pauseRecoveryRecord.commands[0]?.command.command_kind, "pause");
+    assert.equal(pauseRecoveryRecord.invocation_claim.status, "unavailable");
+    store.append({
+        append_intent_id: "append:unsupported-control-command",
+        batch: {
+            groups: [
+                {
+                    owner_id: runId,
+                    records: [
+                        {
+                            body: {
+                                command_id: "command:unsupported",
+                                command_kind: "unsupported",
+                                execution_id: runId,
+                            },
+                            caused_by_record_ids: [expectedLifecycleRecordId],
+                            mode: "capture",
+                            schema_ref: runProtocolConfig.execution.controlCommandSchemaId,
+                            witness_ref: ROOT_WITNESS_ID,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    assert.throws(
+        () => resolveRecoveryRecordSelector(store, runId),
+        /command kind is unsupported/u,
+    );
 
     using reopened = new SQLiteTraceStore(databasePath);
     assert.deepEqual(requestDurableTaskPause(reopened, options), retained);
@@ -2766,6 +2910,13 @@ test("recoverTaskDurably idempotently resumes created evidence under a stable co
         executeTaskDurably(interrupted, execution),
         /start publication interrupted/u,
     );
+    const pendingRecovery = resolveRecoveryRecordSelector(interrupted, execution.runId);
+    assert.equal(pendingRecovery.recovery_status, "created");
+    assert.deepEqual(pendingRecovery.commands, []);
+    assert.equal(
+        pendingRecovery.lifecycle_head_record_id,
+        pendingRecovery.lifecycle.created_record_id,
+    );
     interrupted.close();
     nowMilliseconds = 30_000;
     const recoveredStore = new SQLiteTraceStore(databasePath);
@@ -2775,6 +2926,93 @@ test("recoverTaskDurably idempotently resumes created evidence under a stable co
     });
     const commandRecord = recoveredStore.readRecord(recovered.command.record_id);
     const startRecord = recoveredStore.readRecord(recovered.result.ledger.started_record_id ?? "");
+    const recoveryRecords = listRecoveryRecords(recoveredStore);
+    const recoveryRecord = resolveRecoveryRecordSelector(recoveredStore, "run:control-rec");
+    const { recoveryRecord: validateRecoveryRecord } = evidenceSchemaValidators();
+    assert.equal(
+        validateRecoveryRecord(recoveryRecord),
+        true,
+        JSON.stringify(validateRecoveryRecord.errors),
+    );
+    assert.equal(validateRecoveryRecord({ ...recoveryRecord, recovery_record_version: 2 }), false);
+    assert.equal(recoveryRecord.recovery_status, "committed");
+    assert.equal(recoveryRecord.commands.length, 1);
+    assert.equal(recoveryRecord.commands[0]?.command.command_kind, "recover");
+    assert.equal(recoveryRecord.commands[0]?.record_id, recovered.command.record_id);
+    assert.equal(
+        recoveryRecord.command_results[0]?.effect_record_ids.includes(
+            recovered.result.ledger.started_record_id ?? "",
+        ),
+        true,
+    );
+    assert.equal(
+        recoveryRecord.lifecycle_head_record_id,
+        recovered.result.ledger.lifecycle_record_id,
+    );
+    assert.equal(recoveryRecord.invocation_claim.status, "unavailable");
+    assert.deepEqual(
+        resolveRecoveryRecordSelector(recoveredStore, EVIDENCE_RECORD_LATEST_SELECTOR),
+        recoveryRecords.at(-1),
+    );
+    const freshRecovery = execFileSync(
+        process.execPath,
+        [
+            "--experimental-strip-types",
+            "--input-type=module",
+            "-e",
+            `
+                import {
+                    listRecoveryRecords,
+                    resolveRecoveryRecordSelector,
+                    SQLiteTraceStore,
+                } from "./src/index.ts";
+                using store = new SQLiteTraceStore(process.argv[1]);
+                const record = resolveRecoveryRecordSelector(store, process.argv[2]);
+                process.stdout.write(JSON.stringify({
+                    commandKind: record.commands[0]?.command.command_kind,
+                    count: listRecoveryRecords(store).length,
+                    status: record.recovery_status,
+                }));
+            `,
+            databasePath,
+            execution.runId,
+        ],
+        { cwd: path.resolve("."), encoding: "utf8" },
+    );
+    assert.deepEqual(JSON.parse(freshRecovery), {
+        commandKind: "recover",
+        count: 1,
+        status: "committed",
+    });
+    using importedRecoveryStore = new SQLiteTraceStore();
+    importedRecoveryStore.importTrace(recoveredStore.exportTrace());
+    assert.deepEqual(listRecoveryRecords(importedRecoveryStore), recoveryRecords);
+    importedRecoveryStore.append({
+        append_intent_id: "append:post-cut-recovery-command",
+        batch: {
+            groups: [
+                {
+                    owner_id: execution.runId,
+                    records: [
+                        {
+                            body: {
+                                command_id: "command:post-cut",
+                                command_kind: "recover",
+                                execution_id: execution.runId,
+                            },
+                            mode: "capture",
+                            schema_ref: "shepherd2.execution.control_command.v1",
+                            witness_ref: ROOT_WITNESS_ID,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    assert.deepEqual(
+        resolveRecoveryRecordSelector(importedRecoveryStore, execution.runId),
+        recoveryRecord,
+    );
     recoveredStore.close();
     using replayStore = new SQLiteTraceStore(databasePath);
     const replayed = await recoverTaskDurably(replayStore, {
@@ -2854,6 +3092,10 @@ test("recoverTaskDurably rejects reuse of one command identity for another run",
             execution: second,
         }),
         TraceStoreError,
+    );
+    assert.throws(
+        () => resolveRecoveryRecordSelector(store, "run:command-identity:"),
+        LedgerSelectorAmbiguousError,
     );
     assert.equal(invocationCounts.get("command-provider:first"), 1);
     assert.equal(invocationCounts.get("command-provider:second") ?? 0, 0);
@@ -2974,6 +3216,14 @@ test("recoverTaskDurably idempotently repairs a missing terminal cut without pro
         recovered.result.ledger.lifecycle_record_id,
         recovered.command.record_id,
     ]);
+    const repairRecord = resolveRecoveryRecordSelector(store, execution.runId);
+    assert.equal(repairRecord.commands[0]?.record_id, recovered.command.record_id);
+    assert.equal(
+        repairRecord.command_results[0]?.effect_record_ids.includes(
+            recovered.result.ledger.cut.created_by_record_id,
+        ),
+        true,
+    );
 });
 
 test("recoverTaskDurably rejects absent and uncertain started executions", async () => {

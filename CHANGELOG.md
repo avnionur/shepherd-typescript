@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.44.0] - 2026-08-23
+
+### New Feature
+
+- Added configured output/trace/recovery evidence projection v1 with bounded closed inputs,
+  canonical result limits, stable typed selectors, and three generated language-neutral schemas.
+- Added public retained-output citation, published-cut trace-revision, and durable recovery-record
+  list/show APIs with exact, unique-prefix, and canonical-latest reads.
+- Added cut-bounded output/settlement, owner-path/causal/witness, command/effect, lifecycle, and
+  archive-stable claim/fence evidence with incomplete, post-cut, import, and fresh-process tests.
+- Added pinned Shepherd `0.3.0` output/trace/recovery research and kept orphan repair, CLI
+  rendering, output hydration, and upstream trace-event verbs explicitly out of scope.
+
+### Impact
+
+Callers can inspect exact retained outputs, immutable native trace revisions, and recovery/control
+history without invoking a provider, acquiring a claim, reading user files, performing settlement,
+or repairing evidence. Existing canonical identities and exact mutation authority are unchanged.
+
 ## [1.43.0] - 2026-08-23
 
 ### New Feature

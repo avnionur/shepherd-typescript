@@ -41,6 +41,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Task and run ledger projections](./task-run-ledgers.md) define bounded immutable list/show
   views, exact/prefix/latest read selectors, composed retained evidence, and exact-ID authority
   separation.
+- [Output citations, trace revisions, and recovery records](./output-trace-recovery-records.md)
+  define cut-bounded read projections, canonical command effects, archive-stable claim evidence,
+  and the no-repair authority boundary.
 - [Effect records](./effect-records.md) defines versioned intent/outcome records, reversibility
   tiers, immutable semantic values, and exact content-bound correlation.
 - [Ordered effect handlers](./effect-handlers.md) defines immutable exact-kind stacks,

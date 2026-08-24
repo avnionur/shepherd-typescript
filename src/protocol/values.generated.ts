@@ -77,6 +77,17 @@ export const WORLD_CHANGESET_INSPECTION_LIMITS = {
     maxVerificationConcurrency: 2,
 } as const;
 
+/** Configured public output/trace/recovery selector and projection bounds. @public */
+export const EVIDENCE_RECORD_LIMITS = {
+    defaultPageSize: 50,
+    maxCanonicalEntryBytes: 67108864,
+    maxPageSize: 100,
+    maxSelectorBytes: 512,
+} as const;
+
+/** Configured canonical latest evidence-record read selector. @public */
+export const EVIDENCE_RECORD_LATEST_SELECTOR = "@latest" as const;
+
 /** Configured public task/run ledger selector and projection bounds. @public */
 export const TASK_RUN_LEDGER_LIMITS = {
     defaultPageSize: 50,

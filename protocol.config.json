@@ -332,6 +332,32 @@
         "taskIdPrefix": "task:sha256:"
     },
     "projections": {
+        "evidenceRecords": {
+            "artifacts": {
+                "outputCitationSchema": "spec/schemas/output-citation-entry-v1.schema.json",
+                "recoveryRecordSchema": "spec/schemas/recovery-record-entry-v1.schema.json",
+                "traceRevisionSchema": "spec/schemas/trace-revision-entry-v1.schema.json"
+            },
+            "compatibilityVersion": "shepherd.output-trace-recovery.v1",
+            "defaultPageSize": 50,
+            "errors": {
+                "ambiguousCode": "LEDGER_SELECTOR_AMBIGUOUS",
+                "ambiguousMessage": "evidence selector is ambiguous",
+                "notFoundCode": "LEDGER_SELECTOR_NOT_FOUND",
+                "notFoundMessage": "evidence selector was not found"
+            },
+            "latestSelector": "@latest",
+            "maxCanonicalEntryBytes": 67108864,
+            "maxPageSize": 100,
+            "maxSelectorBytes": 512,
+            "outputIdJsonPath": "$.output_id",
+            "schemas": {
+                "outputCitationId": "https://avnionur.github.io/shepherd-typescript/schemas/output-citation-entry-v1.schema.json",
+                "recoveryRecordId": "https://avnionur.github.io/shepherd-typescript/schemas/recovery-record-entry-v1.schema.json",
+                "traceRevisionId": "https://avnionur.github.io/shepherd-typescript/schemas/trace-revision-entry-v1.schema.json"
+            },
+            "version": 1
+        },
         "executionHistory": {
             "activeRelationKinds": ["spawned", "adopted"],
             "executionSchemas": {

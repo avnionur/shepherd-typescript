@@ -1,5 +1,6 @@
 import {
     EFFECT_PROTOCOL_V1_CONTRACT,
+    EVIDENCE_RECORD_PROJECTION_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
@@ -49,6 +50,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     const artifactDestinations = [
         ...Object.values(config.effects.artifacts),
         ...Object.values(config.kernel.artifacts),
+        ...Object.values(config.projections.evidenceRecords.artifacts),
         ...Object.values(config.projections.taskRunLedgers.artifacts),
         ...Object.values(config.runs.artifacts),
         ...Object.values(config.tasks.artifacts),
@@ -79,6 +81,9 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     if (!sameJson(config.projections.executionHistory, EXECUTION_HISTORY_PROJECTION_V1_CONTRACT)) {
         throw new TypeError("execution-history projection constants require a new projection");
+    }
+    if (!sameJson(config.projections.evidenceRecords, EVIDENCE_RECORD_PROJECTION_V1_CONTRACT)) {
+        throw new TypeError("output/trace/recovery constants require a new evidence projection");
     }
     if (!sameJson(config.projections.taskRunLedgers, TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT)) {
         throw new TypeError("task/run ledger projection constants require a new projection");
