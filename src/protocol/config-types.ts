@@ -118,6 +118,85 @@ export type RecordIdConfig = {
     readonly prefix: string;
 };
 
+/** Versioned bounded orphaned-operation diagnosis and repair configuration. */
+export type OrphanRepairProtocolConfig = {
+    /** Generated language-neutral evidence schema destinations. */
+    readonly artifacts: {
+        readonly commandSchema: string;
+        readonly diagnosisSchema: string;
+        readonly receiptSchema: string;
+    };
+    /** Stable blocker codes derived from retained operation evidence. */
+    readonly blockers: {
+        readonly liveSession: string;
+        readonly providerStarted: string;
+        readonly scopeOwned: string;
+    };
+    /** Compatibility namespace for orphan bookkeeping and repair evidence. */
+    readonly compatibilityVersion: string;
+    /** Wire versions for each evidence contract. */
+    readonly versions: {
+        readonly command: number;
+        readonly diagnosis: number;
+        readonly operation: number;
+        readonly receipt: number;
+    };
+    /** Digest and identity domains for exact basis, command, and receipt evidence. */
+    readonly identity: {
+        readonly algorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
+        readonly commandAppendIntentPrefix: string;
+        readonly commandOwnerPrefix: string;
+        readonly diagnosisPrefix: string;
+        readonly hexLength: number;
+        readonly receiptAppendIntentPrefix: string;
+        readonly receiptPrefix: string;
+    };
+    /** Resource limits applied to inputs, pages, and canonical evidence. */
+    readonly limits: {
+        readonly defaultPageSize: number;
+        readonly maxCanonicalBytes: number;
+        readonly maxCauseBytes: number;
+        readonly maxIdentifierBytes: number;
+        readonly maxOperations: number;
+        readonly maxPageSize: number;
+    };
+    /** Published language-neutral evidence schema identifiers. */
+    readonly schemas: {
+        readonly commandId: string;
+        readonly diagnosisId: string;
+        readonly receiptId: string;
+    };
+    /** Closed public status discriminants used by diagnosis and fail-soft reclaim. */
+    readonly statuses: {
+        readonly preRun: {
+            readonly declined: string;
+            readonly repaired: string;
+        };
+        readonly session: {
+            readonly dead: string;
+            readonly live: string;
+        };
+    };
+    /** Canonical trace record schemas used for repair audit evidence. */
+    readonly traceSchemas: {
+        readonly command: string;
+        readonly receipt: string;
+    };
+    /** Stable public error codes and remediation messages. */
+    readonly errors: {
+        readonly blockedCode: string;
+        readonly blockedMessage: string;
+        readonly commandConflictCode: string;
+        readonly commandConflictMessage: string;
+        readonly corruptCode: string;
+        readonly corruptMessage: string;
+        readonly staleCode: string;
+        readonly staleMessage: string;
+        readonly unsupportedCode: string;
+        readonly unsupportedMessage: string;
+    };
+};
+
 /** Configured execution-history projection contract. */
 export type ExecutionHistoryProjectionConfig = {
     readonly activeRelationKinds: readonly string[];
@@ -1485,6 +1564,7 @@ export type ProtocolConfig = {
     readonly effects: EffectProtocolConfig;
     readonly formalAssurance: FormalAssuranceProtocolConfig;
     readonly kernel: KernelProtocolConfig;
+    readonly orphanRepair: OrphanRepairProtocolConfig;
     readonly projections: ProjectionProtocolConfig;
     readonly providers: ProviderProtocolConfig;
     readonly recordId: RecordIdConfig;

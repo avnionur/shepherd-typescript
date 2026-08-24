@@ -10,6 +10,11 @@ import {
     renderRecoveryRecordEntrySchema,
     renderTraceRevisionEntrySchema,
 } from "./evidence-record-schemas.ts";
+import {
+    renderOrphanOperationDiagnosisSchema,
+    renderOrphanRepairCommandSchema,
+    renderOrphanRepairReceiptSchema,
+} from "./orphan-repair-schemas.ts";
 import { renderRunArtifactSchema } from "./run-artifact-schema.ts";
 import {
     renderRunContinuationDescriptorSchema,
@@ -93,6 +98,18 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
         {
             content: renderJson(renderRecoveryRecordEntrySchema(config)),
             relativePath: config.projections.evidenceRecords.artifacts.recoveryRecordSchema,
+        },
+        {
+            content: renderJson(renderOrphanOperationDiagnosisSchema(config)),
+            relativePath: config.orphanRepair.artifacts.diagnosisSchema,
+        },
+        {
+            content: renderJson(renderOrphanRepairCommandSchema(config)),
+            relativePath: config.orphanRepair.artifacts.commandSchema,
+        },
+        {
+            content: renderJson(renderOrphanRepairReceiptSchema(config)),
+            relativePath: config.orphanRepair.artifacts.receiptSchema,
         },
         {
             content: renderJson(renderRepositoryTaskGrantSchema(config)),
@@ -1716,6 +1733,52 @@ export const EVIDENCE_RECORD_LIMITS = {
 
 /** Configured canonical latest evidence-record read selector. @public */
 export const EVIDENCE_RECORD_LATEST_SELECTOR = ${JSON.stringify(config.projections.evidenceRecords.latestSelector)} as const;
+
+/** Configured orphaned-operation diagnosis and repair resource bounds. @public */
+export const ORPHAN_REPAIR_LIMITS = {
+    defaultPageSize: ${config.orphanRepair.limits.defaultPageSize},
+    maxCanonicalBytes: ${config.orphanRepair.limits.maxCanonicalBytes},
+    maxCauseBytes: ${config.orphanRepair.limits.maxCauseBytes},
+    maxIdentifierBytes: ${config.orphanRepair.limits.maxIdentifierBytes},
+    maxOperations: ${config.orphanRepair.limits.maxOperations},
+    maxPageSize: ${config.orphanRepair.limits.maxPageSize},
+} as const;
+
+/** Configured stable blockers for bookkeeping-only orphan repair. @public */
+export const ORPHAN_REPAIR_BLOCKERS = {
+    liveSession: ${JSON.stringify(config.orphanRepair.blockers.liveSession)},
+    providerStarted: ${JSON.stringify(config.orphanRepair.blockers.providerStarted)},
+    scopeOwned: ${JSON.stringify(config.orphanRepair.blockers.scopeOwned)},
+} as const;
+
+/** Configured orphan-repair error codes. @public */
+export const ORPHAN_REPAIR_ERROR_CODES = {
+    blocked: ${JSON.stringify(config.orphanRepair.errors.blockedCode)},
+    commandConflict: ${JSON.stringify(config.orphanRepair.errors.commandConflictCode)},
+    corrupt: ${JSON.stringify(config.orphanRepair.errors.corruptCode)},
+    stale: ${JSON.stringify(config.orphanRepair.errors.staleCode)},
+    unsupported: ${JSON.stringify(config.orphanRepair.errors.unsupportedCode)},
+} as const;
+
+/** Configured session-liveness diagnosis statuses. @public */
+export const ORPHAN_REPAIR_SESSION_STATUSES = {
+    dead: ${JSON.stringify(config.orphanRepair.statuses.session.dead)},
+    live: ${JSON.stringify(config.orphanRepair.statuses.session.live)},
+} as const;
+
+/** Configured fail-soft pre-run reclaim statuses. @public */
+export const ORPHAN_REPAIR_PRE_RUN_STATUSES = {
+    declined: ${JSON.stringify(config.orphanRepair.statuses.preRun.declined)},
+    repaired: ${JSON.stringify(config.orphanRepair.statuses.preRun.repaired)},
+} as const;
+
+/** Configured orphan diagnosis, command, operation, and receipt versions. @public */
+export const ORPHAN_REPAIR_VERSIONS = {
+    command: ${config.orphanRepair.versions.command},
+    diagnosis: ${config.orphanRepair.versions.diagnosis},
+    operation: ${config.orphanRepair.versions.operation},
+    receipt: ${config.orphanRepair.versions.receipt},
+} as const;
 
 /** Configured public task/run ledger selector and projection bounds. @public */
 export const TASK_RUN_LEDGER_LIMITS = {

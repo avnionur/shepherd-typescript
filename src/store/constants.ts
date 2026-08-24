@@ -12,6 +12,8 @@ export const STORE_TABLES = Object.freeze({
     durableExecutionClaims: "durable_execution_claims",
     migrations: "schema_migrations",
     ownerOrdinals: "owner_ordinals",
+    orphanOperations: "orphan_operations",
+    orphanOperationRepairs: "orphan_operation_repairs",
     recordParents: "record_parents",
     recordViews: "record_views",
     records: "records",

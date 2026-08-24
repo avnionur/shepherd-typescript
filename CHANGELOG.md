@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.45.0] - 2026-08-24
+
+### New Feature
+
+- Added store schema v8 reversible-operation bookkeeping with externally proven session-death
+  evidence and bounded read-only orphan diagnosis.
+- Added public globally idempotent exact repair commands, durable prepare/receipt trace evidence,
+  atomic bookkeeping-only mutation, empty replay, concurrent/interrupted retry convergence, and
+  fail-soft pre-run reclaim.
+- Added generated closed diagnosis, command, and receipt schemas plus pinned Shepherd `0.3.0`
+  research and normative API/security documentation.
+
+### Impact
+
+Interrupted reversible operations can now be diagnosed and repaired safely through public
+TypeScript APIs without invoking providers, changing lifecycle/outcome/cut evidence, mutating user
+files or Git state, settling outputs, deleting custody, or reclaiming orphaned scopes. CLI
+presentation remains a later compatibility slice.
+
 ## [1.44.0] - 2026-08-23
 
 ### New Feature

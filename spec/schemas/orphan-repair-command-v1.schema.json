@@ -1,0 +1,42 @@
+{
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/orphan-repair-command-v1.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Orphan Repair Command v1",
+    "additionalProperties": false,
+    "properties": {
+        "basis_id": {
+            "pattern": "^orphan-diagnosis:sha256:[0-9a-f]{64}$",
+            "type": "string"
+        },
+        "command_id": {
+            "maxLength": 512,
+            "minLength": 1,
+            "type": "string",
+            "x-shepherd-max-utf8-bytes": 512
+        },
+        "command_version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "operation_ids": {
+            "items": {
+                "maxLength": 512,
+                "minLength": 1,
+                "type": "string",
+                "x-shepherd-max-utf8-bytes": 512
+            },
+            "maxItems": 100,
+            "type": "array",
+            "uniqueItems": true
+        }
+    },
+    "required": [
+        "basis_id",
+        "command_id",
+        "command_version",
+        "operation_ids"
+    ],
+    "type": "object",
+    "x-shepherd-max-canonical-bytes": 1048576
+}

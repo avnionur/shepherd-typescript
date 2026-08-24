@@ -174,6 +174,34 @@ const migrations: readonly Migration[] = [
                 ADD COLUMN cleanup_completed INTEGER CHECK (cleanup_completed IN (0, 1));
         `,
     },
+    {
+        version: 8,
+        createSql: () => `
+            CREATE TABLE ${STORE_TABLES.orphanOperations} (
+                operation_id TEXT PRIMARY KEY CHECK (operation_id <> ''),
+                owner_id TEXT NOT NULL CHECK (owner_id <> ''),
+                session_id TEXT NOT NULL CHECK (session_id <> ''),
+                operation_digest TEXT NOT NULL CHECK (operation_digest <> ''),
+                operation_json TEXT NOT NULL,
+                session_dead INTEGER NOT NULL DEFAULT 0 CHECK (session_dead IN (0, 1)),
+                death_evidence_id TEXT,
+                CHECK (
+                    (session_dead = 0 AND death_evidence_id IS NULL)
+                    OR (session_dead = 1 AND death_evidence_id IS NOT NULL)
+                )
+            ) STRICT;
+
+            CREATE TABLE ${STORE_TABLES.orphanOperationRepairs} (
+                command_id TEXT PRIMARY KEY CHECK (command_id <> ''),
+                basis_id TEXT NOT NULL CHECK (basis_id <> ''),
+                command_record_id TEXT NOT NULL UNIQUE,
+                receipt_record_id TEXT NOT NULL UNIQUE,
+                receipt_json TEXT NOT NULL,
+                FOREIGN KEY (command_record_id) REFERENCES ${STORE_TABLES.records}(record_id),
+                FOREIGN KEY (receipt_record_id) REFERENCES ${STORE_TABLES.records}(record_id)
+            ) STRICT;
+        `,
+    },
 ];
 
 /**

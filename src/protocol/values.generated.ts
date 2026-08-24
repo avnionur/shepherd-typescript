@@ -88,6 +88,52 @@ export const EVIDENCE_RECORD_LIMITS = {
 /** Configured canonical latest evidence-record read selector. @public */
 export const EVIDENCE_RECORD_LATEST_SELECTOR = "@latest" as const;
 
+/** Configured orphaned-operation diagnosis and repair resource bounds. @public */
+export const ORPHAN_REPAIR_LIMITS = {
+    defaultPageSize: 50,
+    maxCanonicalBytes: 1048576,
+    maxCauseBytes: 4096,
+    maxIdentifierBytes: 512,
+    maxOperations: 100,
+    maxPageSize: 100,
+} as const;
+
+/** Configured stable blockers for bookkeeping-only orphan repair. @public */
+export const ORPHAN_REPAIR_BLOCKERS = {
+    liveSession: "live_session",
+    providerStarted: "provider_call_started",
+    scopeOwned: "scope_owned",
+} as const;
+
+/** Configured orphan-repair error codes. @public */
+export const ORPHAN_REPAIR_ERROR_CODES = {
+    blocked: "ORPHAN_REPAIR_BLOCKED",
+    commandConflict: "ORPHAN_REPAIR_COMMAND_CONFLICT",
+    corrupt: "ORPHAN_REPAIR_CORRUPT",
+    stale: "ORPHAN_REPAIR_STALE_BASIS",
+    unsupported: "ORPHAN_REPAIR_UNSUPPORTED_VERSION",
+} as const;
+
+/** Configured session-liveness diagnosis statuses. @public */
+export const ORPHAN_REPAIR_SESSION_STATUSES = {
+    dead: "dead",
+    live: "live",
+} as const;
+
+/** Configured fail-soft pre-run reclaim statuses. @public */
+export const ORPHAN_REPAIR_PRE_RUN_STATUSES = {
+    declined: "declined",
+    repaired: "repaired",
+} as const;
+
+/** Configured orphan diagnosis, command, operation, and receipt versions. @public */
+export const ORPHAN_REPAIR_VERSIONS = {
+    command: 1,
+    diagnosis: 1,
+    operation: 1,
+    receipt: 1,
+} as const;
+
 /** Configured public task/run ledger selector and projection bounds. @public */
 export const TASK_RUN_LEDGER_LIMITS = {
     defaultPageSize: 50,

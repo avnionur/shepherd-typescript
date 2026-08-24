@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.44.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.45.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -173,6 +173,9 @@ trace-record contracts with durable SQLite task and trace stores:
 - bounded retained-output citation, published-cut trace-revision, and durable recovery-record
   list/show projections with exact/prefix/latest reads, generated closed schemas, post-cut
   exclusion, and native import/fresh-process reconstruction;
+- bounded orphaned-operation diagnosis plus globally idempotent exact bookkeeping repair with
+  externally proven session death, live/provider/scope refusal, durable command/receipt evidence,
+  interruption and concurrent retry convergence, and fail-soft pre-run reclaim;
 - globally idempotent durable recovery commands with canonical command evidence, expired-lease
   takeover, command-bound start/cut transitions, and fail-closed absent/started handling;
 - globally idempotent pause requests bound atomically to the exact current started lifecycle head,
@@ -550,6 +553,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Durable execution inspection](./docs/durable-execution-inspection.md)
 - [Task and run ledger projections](./docs/task-run-ledgers.md)
 - [Output citations, trace revisions, and recovery records](./docs/output-trace-recovery-records.md)
+- [Orphaned operation diagnosis and repair](./docs/orphan-operation-repair.md)
 - [Durable execution control](./docs/durable-execution-control.md)
 - [Protocol configuration](./docs/protocol-configuration.md)
 - [Trace kernel vocabulary](./CONTEXT.md)
@@ -566,13 +570,14 @@ paths, and restart recovery.
 
 The [Phase 3 status](./docs/phase-3-l1-alpha.md) and
 [exit audit](./.plan/phase-3-exit-audit.md) map each criterion to repeatable production-seam
-evidence. This is not full Shepherd `0.3.0` parity. CLI compatibility, repair commands, installed-package consumer fixtures,
+evidence. This is not full Shepherd `0.3.0` parity. CLI compatibility, installed-package consumer fixtures,
 live-provider adapters, scopes, supervision, replay, and paper applications remain later phases.
 Phase 4 now includes exact named multi-repository resources, explicit read-only/read-write task
 grants, a whole-run ceiling, honest advisory/auto placement reporting, authenticated native
 filesystem-write jails for capable macOS Seatbelt and Linux/WSL Landlock hosts, and path-disjoint
-three-way retained-world application, receipt-only release, bounded task/run ledgers, and
-cut-bounded output-citation, trace-revision, and recovery-record read selectors. Native Windows,
+three-way retained-world application, receipt-only release, bounded task/run ledgers,
+cut-bounded output-citation/trace-revision/recovery-record read selectors, and public exact
+orphaned-operation repair. Native Windows,
 simultaneous multi-world runner access, network/read isolation, and the remaining documented run
 surface are not implemented.
 

@@ -160,6 +160,9 @@ record and public API must declare a protocol/compatibility version.
 - [Output/trace/recovery research](./output-trace-recovery-research.md) — pinned raw output
   citations, immutable trace heads, operation/revision references, orphan-repair boundary, and
   native cut/command mapping.
+- [Orphaned operation repair research](./orphan-operation-repair-research.md) — pinned run-repair,
+  liveness, operation/scope separation, idempotency, fail-soft reclaim, and TypeScript exact-basis
+  mapping.
 - [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
   snapshot, mutable custody, verification, discard, durability, and Task 4 Git boundary.
 - [Git-aware custody research](./git-aware-custody-research.md) — shipped Git baseline,
@@ -228,5 +231,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 4 with orphaned-operation repair over the completed read-only recovery projection,
-preserving exact command authority and keeping inspection free of mutation.
+Continue Phase 4 with the dependency-unblocked CLI group surface over the completed public
+orphan-repair capability, preserving exact mutation identities and stable machine evidence.

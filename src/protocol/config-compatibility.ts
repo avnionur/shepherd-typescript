@@ -4,7 +4,8 @@ import {
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
-    KERNEL_ABI_V0_STORE_V7_CONTRACT,
+    KERNEL_ABI_V0_STORE_V8_CONTRACT,
+    ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT,
     PROVIDER_PROTOCOL_V1_CONTRACT,
     RUN_PROTOCOL_V1_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
@@ -35,7 +36,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (config.kernel.store.appendIntentDigestAlgorithm !== expected.appendIntentDigestAlgorithm) {
         throw new TypeError("append intent digest requires a new store migration");
     }
-    if (!sameJson(config.kernel.store.blobs, KERNEL_ABI_V0_STORE_V7_CONTRACT.blobs)) {
+    if (!sameJson(config.kernel.store.blobs, KERNEL_ABI_V0_STORE_V8_CONTRACT.blobs)) {
         throw new TypeError("blob identity and filesystem constants require a new store migration");
     }
     if (!sameJson(config.kernel.queries, expected.queries)) {
@@ -50,6 +51,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     const artifactDestinations = [
         ...Object.values(config.effects.artifacts),
         ...Object.values(config.kernel.artifacts),
+        ...Object.values(config.orphanRepair.artifacts),
         ...Object.values(config.projections.evidenceRecords.artifacts),
         ...Object.values(config.projections.taskRunLedgers.artifacts),
         ...Object.values(config.runs.artifacts),
@@ -71,8 +73,8 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         throw new TypeError("protocol artifact destinations do not match the repository contract");
     }
     if (
-        config.kernel.store.schemaVersion !== KERNEL_ABI_V0_STORE_V7_CONTRACT.schemaVersion ||
-        !sameMigrations(config.kernel.store.migrations, KERNEL_ABI_V0_STORE_V7_CONTRACT.migrations)
+        config.kernel.store.schemaVersion !== KERNEL_ABI_V0_STORE_V8_CONTRACT.schemaVersion ||
+        !sameMigrations(config.kernel.store.migrations, KERNEL_ABI_V0_STORE_V8_CONTRACT.migrations)
     ) {
         throw new TypeError("store migration constants do not match the implemented schema");
     }
@@ -81,6 +83,9 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     if (!sameJson(config.projections.executionHistory, EXECUTION_HISTORY_PROJECTION_V1_CONTRACT)) {
         throw new TypeError("execution-history projection constants require a new projection");
+    }
+    if (!sameJson(config.orphanRepair, ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT)) {
+        throw new TypeError("orphan repair constants require a new repair protocol");
     }
     if (!sameJson(config.projections.evidenceRecords, EVIDENCE_RECORD_PROJECTION_V1_CONTRACT)) {
         throw new TypeError("output/trace/recovery constants require a new evidence projection");
@@ -110,7 +115,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
 
 function sameMigrations(
     actual: ProtocolConfig["kernel"]["store"]["migrations"],
-    expected: typeof KERNEL_ABI_V0_STORE_V7_CONTRACT.migrations,
+    expected: typeof KERNEL_ABI_V0_STORE_V8_CONTRACT.migrations,
 ): boolean {
     return (
         actual.length === expected.length &&

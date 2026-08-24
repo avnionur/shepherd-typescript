@@ -77,6 +77,13 @@ consumed during migration because their prior start state cannot be proven safel
 and append methods serialize takeover and start publication with the configured immediate
 transaction.
 
+Schema v6 adds consume-once retained-world settlement admission and schema v7 adds nullable
+effect-journal operation, receipt, and cleanup evidence. Schema v8 adds bounded open-operation
+bookkeeping and atomic repair commit markers used only by
+[orphaned operation diagnosis and repair](./orphan-operation-repair.md).
+It does not grant authority over canonical records, providers, worlds, custody, settlements, Git,
+or user files.
+
 Execution projections are disposable reads and therefore add no schema migration. The
 `projectExecution(cutId)` and `projectEffectiveHistory(cutId)` facades resolve payload-visible,
 both-mode slices at verified immutable cuts and fold the configured lifecycle and relation
@@ -111,4 +118,6 @@ Append and read operations after closure throw `TraceStoreError`.
 This slice provides exact-ID, owner-path, immutable-cut, causal-closure, execution, and
 effective-history reads, content-addressed external blob storage, whole-store integrity scans,
 append recovery diagnosis, native trace interchange, and verified blob-orphan collection.
+It also provides bounded read-only orphaned-operation diagnosis and explicit exact
+bookkeeping-only repair with canonical audit evidence.
 Remote-store abstractions remain planned TypeScript trace-kernel work.
