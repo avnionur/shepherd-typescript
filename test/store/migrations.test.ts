@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -28,6 +28,39 @@ test("SQLiteTraceStore migrates file databases in WAL mode", async (context) => 
         8,
     );
     database.close();
+});
+
+test("read-only trace stores require current schema without migration", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-read-only-store-test-"));
+    context.after(() => rm(directory, { force: true, recursive: true }));
+    const databasePath = path.join(directory, "trace.sqlite");
+    new SQLiteTraceStore(databasePath).close();
+    using current = new SQLiteTraceStore(databasePath, { readOnly: true });
+    assert.equal(current.schemaVersion, 8);
+    current.close();
+
+    const database = new DatabaseSync(databasePath);
+    database.prepare("DELETE FROM schema_migrations WHERE version = 8").run();
+    database.close();
+    assert.throws(
+        () => new SQLiteTraceStore(databasePath, { readOnly: true }),
+        UnsupportedStoreSchemaError,
+    );
+    const inspected = new DatabaseSync(databasePath);
+    assert.equal(
+        inspected.prepare("SELECT MAX(version) AS version FROM schema_migrations").get()?.version,
+        7,
+    );
+    inspected.close();
+    assert.throws(() => new SQLiteTraceStore(":memory:", { readOnly: true }), TypeError);
+    const uninitializedPath = path.join(directory, "uninitialized.sqlite");
+    new DatabaseSync(uninitializedPath).close();
+    const blobDirectory = path.join(directory, "uninitialized.blobs");
+    await mkdir(blobDirectory);
+    assert.throws(
+        () => new SQLiteTraceStore(uninitializedPath, { blobDirectory, readOnly: true }),
+        UnsupportedStoreSchemaError,
+    );
 });
 
 test("SQLiteTraceStore upgrades a version-one database for blob receipts", async (context) => {

@@ -1,6 +1,12 @@
 import type { SemanticRecord } from "../canonical/canonical-record.ts";
 import type { InferTaskSchema, TaskSchema } from "./schema.ts";
 
+/** Options controlling task-registry open behavior. */
+export type SQLiteTaskRegistryOptions = {
+    /** Opens current-schema registrations without migrations or writes. */
+    readonly readOnly?: boolean;
+};
+
 /** Canonical bodyless task contract included in task artifact identity. */
 export type TaskArtifact = {
     /** Compatibility namespace governing descriptor semantics. */

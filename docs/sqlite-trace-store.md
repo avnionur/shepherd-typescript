@@ -113,6 +113,11 @@ contract.
 Call `close()` when finished, use `using` with `Symbol.dispose`, or both. Closing is idempotent.
 Append and read operations after closure throw `TraceStoreError`.
 
+Passing `{ readOnly: true }` opens only an existing current-schema file database and existing blob
+directory. It skips writable PRAGMAs, migrations, and root-witness insertion; absent or older
+schema state fails closed. This is the CLI diagnostic/read boundary, not a way to bypass ordinary
+write validation.
+
 ## Current boundary
 
 This slice provides exact-ID, owner-path, immutable-cut, causal-closure, execution, and

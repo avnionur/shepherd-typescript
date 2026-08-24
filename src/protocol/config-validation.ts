@@ -1,3 +1,4 @@
+import { readCliConfig } from "./config-cli.ts";
 import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
 import { readEffectConfig } from "./config-effects.ts";
 import { readFormalAssuranceConfig } from "./config-formal-assurance.ts";
@@ -51,6 +52,7 @@ export function parseProtocolConfig(
         value,
         [
             "effects",
+            "cli",
             "formalAssurance",
             "kernel",
             "orphanRepair",
@@ -73,6 +75,7 @@ export function parseProtocolConfig(
         throw new TypeError("kernel.recordModes is not synchronized with generated constants");
     }
     const config = {
+        cli: readCliConfig(root.cli),
         effects: readEffectConfig(root.effects),
         formalAssurance: readFormalAssuranceConfig(root.formalAssurance),
         kernel,

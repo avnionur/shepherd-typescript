@@ -68,6 +68,8 @@ The runtime areas are intentionally shallow:
   orphan discovery/deletion;
 - `canonical/` owns language-neutral semantic encoding, unversioned record hashing, and immutable
   semantic snapshots;
+- `cli/` owns configured bounded human command dispatch, process/I/O adaptation, help, exit
+  classification, and delegation to existing public APIs without adding mutation authority;
 - `interchange/` owns native archive encoding, decoding, staging, and validated storage transfer;
 - `ledger/` owns bounded immutable task/run/output/trace/recovery projections, canonical read
   ordering, cut/lifecycle evidence bounds, and exact/unique-prefix/latest selectors without

@@ -87,7 +87,8 @@ discard converges after restart. The reproducible evidence is recorded in
 
 `L1-alpha` does not mark the entire upstream column complete. Explicit grant identity, advisory
 capability checks, advisory/auto placement reporting, authenticated native filesystem-write jails,
-path-disjoint `apply`, receipt-only `release`, and public orphaned-operation repair are implemented, while CLI compatibility, installed-package
+path-disjoint `apply`, receipt-only `release`, public orphaned-operation repair, and configured
+human CLI command groups are implemented, while stable CLI JSON/reference generation, installed-package
 consumer fixtures, and remaining P1 rows stay assigned to Phase 4. Platform completion is limited
 to probed macOS Seatbelt and Linux/WSL Landlock; no optimized carrier, AppContainer, or native-
 Windows jail claim is made.
@@ -154,17 +155,17 @@ Windows jail claim is made.
 
 | Command family | Priority | Compatibility requirement |
 | --- | --- | --- |
-| `init` | P0 | backend/adopt selection and no silent Git-history mutation |
-| `doctor` | P0 | human and stable JSON output |
-| `run list/show/trace/changeset` | P0 | selectors for reads; stable machine output |
-| `run select/discard` | P0 | exact IDs and consume-once behavior |
-| `run apply/release` | P1 | exact IDs and documented settlement semantics |
-| `run outputs/output-citations/vcscore` | P1 | protocol-versioned JSON |
-| `run repair` | P1 | idempotent recovery |
-| `task list/register/resolve/show` | P1 | artifact lock and grant display |
-| `demo write` | P1 | checked-in, tested examples |
-| `package init` | P2 | reproducible extension scaffold |
-| fenced `run start` compatibility | P3 | disabled by default |
+| `init` | P0 | configured protected initialization implemented; no silent Git-history mutation |
+| `doctor` | P0 | bounded human diagnostics implemented; stable JSON follows |
+| `run list/show/trace/changeset` | P0 | configured run/trace reads implemented; changeset/stable machine output follows |
+| `run select/discard` | P0 | exact IDs and consume-once CLI delegation implemented |
+| `run apply/release` | P1 | exact IDs and documented settlement CLI delegation implemented |
+| `run outputs/output-citations/vcscore` | P1 | output-citation reads implemented; remaining views/protocol JSON follow |
+| `run repair` | P1 | exact globally idempotent CLI recovery implemented |
+| `task list/register/resolve/show` | P1 | list/resolve/show implemented; dynamic source registration fails closed |
+| `demo write` | P1 | configured honest refusal; checked-in fixture follows |
+| `package init` | P2 | configured honest refusal; reproducible scaffold follows |
+| fenced `run start` compatibility | P3 | configured and disabled by default |
 
 ## Parity reporting rules
 

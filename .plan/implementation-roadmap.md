@@ -241,7 +241,10 @@ Work:
   externally proven session-death evidence, bounded diagnosis, globally idempotent exact
   commands, atomic bookkeeping-only receipts, interruption/concurrency convergence, and fail-soft
   pre-run reclaim;
-- implement CLI groups: `init`, `doctor`, `run`, `task`, `demo`, `package`;
+- implement CLI groups: `init`, `doctor`, `run`, `task`, `demo`, `package`; **implemented in
+  1.46.0** with configured distinct executable topology, bounded human help/output, workspace
+  initialization and diagnostics, run/task reads, exact settlements/repair, honest unsupported
+  remedies, and source/installed-package seams;
 - provide stable JSON output and generated command reference;
 - reproduce the upstream offline quickstart as a compatibility fixture.
 

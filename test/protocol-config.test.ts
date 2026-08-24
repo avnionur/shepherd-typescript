@@ -391,6 +391,62 @@ test("protocol configuration rejects weakened or unsafe store settings", () => {
     ]);
 });
 
+test("protocol configuration rejects invalid or drifted CLI topology", () => {
+    assertInvalid([
+        (config) => {
+            objectAt(config, "cli").groups = [];
+        },
+        (config) => {
+            const groups = objectAt(config, "cli").groups as Record<string, unknown>[];
+            groups[1] = { ...groups[0] };
+        },
+        (config) => {
+            const exitCodes = objectAt(objectAt(config, "cli"), "exitCodes");
+            exitCodes.failure = exitCodes.usage;
+        },
+        (config) => {
+            objectAt(objectAt(config, "cli"), "limits").defaultPageSize = 65;
+        },
+        (config) => {
+            const groups = objectAt(config, "cli").groups as Record<string, unknown>[];
+            const commands = groups[2]?.commands as Record<string, unknown>[];
+            commands[1] = { ...commands[0] };
+        },
+        (config) => {
+            const groups = objectAt(config, "cli").groups as Record<string, unknown>[];
+            groups[0] = {
+                ...groups[0],
+                commands: [{ handler: "duplicate", name: "duplicate" }],
+            };
+        },
+        (config) => {
+            const groups = objectAt(config, "cli").groups as Record<string, unknown>[];
+            groups[2] = { ...groups[2], commands: [] };
+        },
+        (config) => {
+            objectAt(config, "cli").compatibilityVersion = "changed";
+        },
+        (config) => {
+            const roles = objectAt(objectAt(config, "cli"), "handlerRoles");
+            roles.doctor = roles.workspaceInit;
+        },
+        (config) => {
+            const groups = objectAt(config, "cli").groups as Record<string, unknown>[];
+            groups[0] = { ...groups[0], handler: "unknown-handler" };
+        },
+        (config) => {
+            const options = objectAt(objectAt(config, "cli"), "options");
+            options.store = options.registry;
+        },
+        (config) => {
+            objectAt(config, "cli").helpAliases = [];
+        },
+        (config) => {
+            objectAt(config, "cli").helpAliases = ["--help", "--help"];
+        },
+    ]);
+});
+
 test("protocol configuration rejects invalid or drifted orphan repair contracts", () => {
     assertInvalid([
         (config) => {

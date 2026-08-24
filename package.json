@@ -1,6 +1,6 @@
 {
     "name": "@avnionur/shepherd-typescript",
-    "version": "1.45.0",
+    "version": "1.46.0",
     "packageManager": "pnpm@10.32.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
     "license": "MIT",
@@ -11,6 +11,9 @@
     "homepage": "https://github.com/avnionur/shepherd-typescript#readme",
     "bugs": {
         "url": "https://github.com/avnionur/shepherd-typescript/issues"
+    },
+    "bin": {
+        "shepherd-ts": "dist/src/cli/main.js"
     },
     "type": "module",
     "private": true,
@@ -33,11 +36,12 @@
         "generate:protocol": "node scripts/generate-protocol-artifacts-cli.ts",
         "lint": "biome check .",
         "sync:version": "node scripts/sync-version-cli.ts",
+        "test:package-cli": "node scripts/test-packaged-cli.ts",
         "test": "node --test --experimental-test-coverage --test-coverage-branches=100 --test-coverage-functions=100 --test-coverage-lines=100 --test-coverage-include=\"src/**/*.ts\" --test-coverage-include=\"scripts/build-output.ts\" --test-coverage-include=\"scripts/sync-version.ts\" --test-coverage-include=\"scripts/generate-protocol-artifacts.ts\" \"test/**/*.test.ts\"",
         "test:serial": "node --test --test-concurrency=1 --experimental-test-coverage --test-coverage-branches=100 --test-coverage-functions=100 --test-coverage-lines=100 --test-coverage-include=\"src/**/*.ts\" --test-coverage-include=\"scripts/build-output.ts\" --test-coverage-include=\"scripts/sync-version.ts\" --test-coverage-include=\"scripts/generate-protocol-artifacts.ts\" \"test/**/*.test.ts\"",
         "typecheck": "tsc --noEmit",
-        "verify": "pnpm check:protocol && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-        "verify:serial": "pnpm check:protocol && pnpm lint && pnpm typecheck && pnpm test:serial && pnpm build"
+        "verify": "pnpm check:protocol && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:package-cli",
+        "verify:serial": "pnpm check:protocol && pnpm lint && pnpm typecheck && pnpm test:serial && pnpm build && pnpm test:package-cli"
     },
     "devDependencies": {
         "@biomejs/biome": "2.5.7",

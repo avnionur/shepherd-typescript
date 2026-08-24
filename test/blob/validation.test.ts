@@ -14,6 +14,7 @@ test("SQLiteTraceStore validates blob inputs and closed options", () => {
         new (class Options {})(),
         { blobDirectory: "" },
         { blobDirectory: 1 },
+        { readOnly: "yes" },
         { extra: true },
         { [Symbol("unsupported")]: true },
         Object.defineProperty({}, "blobDirectory", { get: () => "/tmp/invalid" }),

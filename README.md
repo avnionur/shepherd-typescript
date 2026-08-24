@@ -58,7 +58,7 @@ point for repository development only.
 
 ## Current capability
 
-Version `1.45.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.46.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -176,6 +176,9 @@ trace-record contracts with durable SQLite task and trace stores:
 - bounded orphaned-operation diagnosis plus globally idempotent exact bookkeeping repair with
   externally proven session death, live/provider/scope refusal, durable command/receipt evidence,
   interruption and concurrent retry convergence, and fail-soft pre-run reclaim;
+- a configured distinct `shepherd-ts` executable with bounded human help/output, protected
+  initialization, read-only diagnostics, run/task/trace/evidence reads, exact settlements and
+  repair, and honest fenced/unavailable command remedies;
 - globally idempotent durable recovery commands with canonical command evidence, expired-lease
   takeover, command-bound start/cut transitions, and fail-closed absent/started handling;
 - globally idempotent pause requests bound atomically to the exact current started lifecycle head,
@@ -210,6 +213,9 @@ replay-safe.
 ```sh
 pnpm install
 ```
+
+The source CLI runs with `node src/cli/main.ts`; built/package consumers use `shepherd-ts`.
+Run `shepherd-ts --help` for the configured command groups. Stable JSON output is not yet claimed.
 
 ## API
 
@@ -516,6 +522,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 ## Documentation
 
 - [Documentation index](./docs/README.md)
+- [Command-line interface](./docs/cli.md)
 - [Project structure](./docs/project-structure.md)
 - [Reference copy carrier](./docs/reference-copy-carrier.md)
 - [Repository grants and run authority ceilings](./docs/repository-grants.md)
@@ -570,14 +577,14 @@ paths, and restart recovery.
 
 The [Phase 3 status](./docs/phase-3-l1-alpha.md) and
 [exit audit](./.plan/phase-3-exit-audit.md) map each criterion to repeatable production-seam
-evidence. This is not full Shepherd `0.3.0` parity. CLI compatibility, installed-package consumer fixtures,
+evidence. This is not full Shepherd `0.3.0` parity. Stable CLI JSON/reference generation, installed-package consumer fixtures,
 live-provider adapters, scopes, supervision, replay, and paper applications remain later phases.
 Phase 4 now includes exact named multi-repository resources, explicit read-only/read-write task
 grants, a whole-run ceiling, honest advisory/auto placement reporting, authenticated native
 filesystem-write jails for capable macOS Seatbelt and Linux/WSL Landlock hosts, and path-disjoint
 three-way retained-world application, receipt-only release, bounded task/run ledgers,
 cut-bounded output-citation/trace-revision/recovery-record read selectors, and public exact
-orphaned-operation repair. Native Windows,
+orphaned-operation repair plus configured human CLI groups. Native Windows,
 simultaneous multi-world runner access, network/read isolation, and the remaining documented run
 surface are not implemented.
 

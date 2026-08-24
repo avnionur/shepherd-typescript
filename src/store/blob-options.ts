@@ -17,6 +17,9 @@ export function resolveBlobDirectory(
     options: SQLiteTraceStoreOptions,
 ): ResolvedBlobDirectory {
     validateStoreOptions(options);
+    if (options.readOnly === true && databasePath === ":memory:") {
+        throw new TypeError("read-only trace stores require a file database");
+    }
     const trustedBases = createTrustedPathBases(databasePath);
     if (options.blobDirectory !== undefined) {
         if (options.blobDirectory.length === 0) {
@@ -89,10 +92,13 @@ function validateStoreOptions(options: SQLiteTraceStoreOptions): void {
     }
     const descriptors = Object.getOwnPropertyDescriptors(options);
     if (
-        Object.keys(descriptors).some((key) => key !== "blobDirectory") ||
+        Object.keys(descriptors).some((key) => key !== "blobDirectory" && key !== "readOnly") ||
         Object.values(descriptors).some((descriptor) => !("value" in descriptor)) ||
-        (options.blobDirectory !== undefined && typeof options.blobDirectory !== "string")
+        (options.blobDirectory !== undefined && typeof options.blobDirectory !== "string") ||
+        (options.readOnly !== undefined && typeof options.readOnly !== "boolean")
     ) {
-        throw new TypeError("SQLiteTraceStore options must contain only blobDirectory");
+        throw new TypeError(
+            "SQLiteTraceStore options must contain only blobDirectory and readOnly",
+        );
     }
 }

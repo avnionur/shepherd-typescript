@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import type {
+    CliProtocolConfig,
     EffectProtocolConfig,
     FormalAssuranceProtocolConfig,
     KernelProtocolConfig,
@@ -25,6 +26,9 @@ const protocolConfig: ProtocolConfig = parseProtocolConfig(
 
 /** Runtime effect intent, outcome, identity, and schema configuration. */
 export const effectProtocolConfig: EffectProtocolConfig = protocolConfig.effects;
+
+/** Runtime human-facing command topology and CLI resource policy. */
+export const cliProtocolConfig: CliProtocolConfig = protocolConfig.cli;
 
 /** Executable reference-machine and proof-envelope configuration. */
 export const formalAssuranceProtocolConfig: FormalAssuranceProtocolConfig =

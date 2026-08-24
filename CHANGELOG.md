@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.46.0] - 2026-08-24
+
+### New Feature
+
+- Added the configured `shepherd-ts` executable with deterministic root/group help and bounded
+  human output for `init`, `doctor`, `run`, `task`, `demo`, and `package` command families.
+- Added protected workspace initialization, read-only diagnostics, run/task/trace/evidence reads,
+  exact retained-world settlements, and globally idempotent orphan repair through existing public
+  authority seams.
+- Added configured exit classes, command/path/argument/output bounds, fenced and unavailable
+  remedies, fresh-process and package-bin tests, pinned research, and normative CLI documentation.
+- Added current-schema read-only trace-store and task-registry open policies so diagnostics and
+  CLI reads never migrate retained state.
+- Added a post-build pack/install/invoke conformance gate for the installed `shepherd-ts` binary.
+
+### Impact
+
+Users can operate the shipped public TypeScript capabilities from a distinct bounded executable
+without granting new mutation authority or claiming stable JSON. Dynamic task source loading,
+demo/package scaffolding, generated command reference, and the packaged offline quickstart remain
+explicit later slices.
+
 ## [1.45.0] - 2026-08-24
 
 ### New Feature

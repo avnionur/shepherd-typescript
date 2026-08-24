@@ -62,6 +62,29 @@ export function migrateTaskRegistry(database: DatabaseSync): number {
     return taskProtocolConfig.registry.schemaVersion;
 }
 
+/** Reads and requires the exact current task-registry schema without mutation. @internal */
+export function readCurrentTaskRegistrySchemaVersion(database: DatabaseSync): number {
+    let version: number;
+    try {
+        const row = database
+            .prepare(
+                `SELECT COALESCE(MAX(version), 0) AS version FROM ${TASK_REGISTRY_TABLES.migrations}`,
+            )
+            .get() as { readonly version: number };
+        version = row.version;
+    } catch (error) {
+        throw new UnsupportedTaskRegistrySchemaError("task registry is not initialized", {
+            cause: error,
+        });
+    }
+    if (version !== taskProtocolConfig.registry.schemaVersion) {
+        throw new UnsupportedTaskRegistrySchemaError(
+            `read-only task registry requires schema ${taskProtocolConfig.registry.schemaVersion}; found ${version}`,
+        );
+    }
+    return version;
+}
+
 /** Verifies that implemented task-registry migrations match configured support. @internal */
 export function validateTaskRegistryMigrationVersions(
     versions: readonly number[],

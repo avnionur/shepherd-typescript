@@ -41,6 +41,10 @@ digests, reconstructs the exact lock, and verifies the stored digest and primary
 Malformed or corrupt retained values throw `TaskRegistryError` rather than returning an unverified
 registration.
 
+Passing `{ readOnly: true }` opens only an existing current-schema registry. It skips writable
+PRAGMAs and migrations and fails closed for absent or older schema state. CLI task reads use this
+boundary.
+
 ## Boundary
 
 Resolution is exact: there is no `latest`, active-version alias, range selection, or fallback.

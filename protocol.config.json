@@ -1,4 +1,120 @@
 {
+    "cli": {
+        "compatibilityVersion": "shepherd.cli.v1",
+        "defaults": {
+            "bindingName": "workspace",
+            "bindingRoot": ".",
+            "taskRegistryPath": "tasks.sqlite",
+            "traceStorePath": "trace.sqlite",
+            "workspacePath": "."
+        },
+        "executableName": "shepherd-ts",
+        "executablePath": "dist/src/cli/main.js",
+        "exitCodes": {
+            "failure": 1,
+            "success": 0,
+            "unavailable": 3,
+            "usage": 2
+        },
+        "handlerRoles": {
+            "doctor": "doctor",
+            "runApply": "run-apply",
+            "runDiscard": "run-discard",
+            "runList": "run-list",
+            "runOutputCitations": "run-output-citations",
+            "runRecoveryRecords": "run-recovery-records",
+            "runRelease": "run-release",
+            "runRepair": "run-repair",
+            "runSelect": "run-select",
+            "runShow": "run-show",
+            "runTrace": "run-trace",
+            "taskList": "task-list",
+            "taskResolve": "task-resolve",
+            "taskShow": "task-show",
+            "unsupportedDemoWrite": "unsupported-demo-write",
+            "unsupportedPackageInit": "unsupported-package-init",
+            "unsupportedStart": "unsupported-start",
+            "unsupportedTaskRegister": "unsupported-task-register",
+            "workspaceInit": "workspace-init"
+        },
+        "helpAliases": ["--help", "-h"],
+        "groups": [
+            {
+                "commands": [],
+                "handler": "workspace-init",
+                "name": "init"
+            },
+            {
+                "commands": [],
+                "handler": "doctor",
+                "name": "doctor"
+            },
+            {
+                "commands": [
+                    { "handler": "run-list", "name": "list" },
+                    { "handler": "run-show", "name": "show" },
+                    { "handler": "run-trace", "name": "trace" },
+                    { "handler": "run-output-citations", "name": "output-citations" },
+                    { "handler": "run-recovery-records", "name": "recovery-records" },
+                    { "handler": "run-select", "name": "select" },
+                    { "handler": "run-apply", "name": "apply" },
+                    { "handler": "run-release", "name": "release" },
+                    { "handler": "run-discard", "name": "discard" },
+                    { "handler": "run-repair", "name": "repair" },
+                    { "handler": "unsupported-start", "name": "start" }
+                ],
+                "handler": null,
+                "name": "run"
+            },
+            {
+                "commands": [
+                    { "handler": "task-list", "name": "list" },
+                    { "handler": "task-show", "name": "show" },
+                    { "handler": "task-resolve", "name": "resolve" },
+                    { "handler": "unsupported-task-register", "name": "register" }
+                ],
+                "handler": null,
+                "name": "task"
+            },
+            {
+                "commands": [{ "handler": "unsupported-demo-write", "name": "write" }],
+                "handler": null,
+                "name": "demo"
+            },
+            {
+                "commands": [{ "handler": "unsupported-package-init", "name": "init" }],
+                "handler": null,
+                "name": "package"
+            }
+        ],
+        "limits": {
+            "defaultPageSize": 25,
+            "maxArgumentBytes": 4096,
+            "maxArguments": 64,
+            "maxOutputBytes": 1048576,
+            "maxPageSize": 100
+        },
+        "options": {
+            "adopt": "adopt",
+            "bindingName": "binding-name",
+            "bindingRoot": "binding-root",
+            "command": "command",
+            "initializeGit": "initialize-git",
+            "limit": "limit",
+            "noInitializeGit": "no-initialize-git",
+            "offset": "offset",
+            "registry": "registry",
+            "store": "store",
+            "workspace": "workspace"
+        },
+        "remedies": {
+            "demoWrite": "demo write requires the checked-in offline quickstart fixture",
+            "fencedStart": "run start is fenced; use the public task execution APIs",
+            "packageInit": "package init requires the reproducible extension scaffold capability",
+            "taskRegister": "task register does not execute dynamic source modules; register through the public descriptor API"
+        },
+        "version": 1
+    },
     "effects": {
         "artifacts": {
             "intentSchema": "spec/schemas/effect-intent-v1.schema.json",

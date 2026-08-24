@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-24
 
-Current version: `1.45.0`
+Current version: `1.46.0`
 
 Current level: L1-alpha — P0 retained-world settlement loop
 
@@ -328,6 +328,10 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
   v8 bookkeeping, externally proven session death, bounded closed diagnosis/command/receipt
   schemas, exact idempotent two-phase repair, scope/provider/live refusal, fail-soft pre-run
   reclaim, and reopen/import/concurrent/interruption evidence.
+- [x] Complete Phase 4 Task 10 configured `shepherd-ts` command groups with bounded help/human
+  output, protected initialization, read-only diagnostics, run/task ledgers, exact settlement and
+  repair delegation, fenced/unsupported remedies, source/fresh-process/package-bin tests, and no
+  stable-JSON claim.
 
 ## Verification required for this slice
 
@@ -341,10 +345,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 
 ## Next slice
 
-Continue Phase 4 with the next dependency-unblocked CLI compatibility slice: command groups for
-`init`, `doctor`, `run`, `task`, `demo`, and `package`. Preserve the public exact repair authority,
-stable machine evidence, native archive identities, and explicit separation between reads and
-mutations.
+Continue Phase 4 with the next dependency-unblocked stable JSON output and generated command
+reference slice. Preserve configured command topology, public exact mutation authority, and the
+human/machine output distinction.
 
 ## Notes
 
