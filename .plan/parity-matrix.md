@@ -161,6 +161,7 @@ Windows jail claim is made.
 | `run select/discard` | P0 | exact IDs and consume-once CLI delegation implemented |
 | `run apply/release` | P1 | exact IDs and documented settlement CLI delegation implemented |
 | `run outputs/output-citations/vcscore` | P1 | validated retained products, raw output citations, native vcs-core evidence, and protocol JSON implemented |
+| `run publish-retained-workspace-output` | P1 | exact committed native citation verification implemented; raw missing-cut repair fails closed without managed recovery authority |
 | `run repair` | P1 | exact globally idempotent CLI recovery implemented |
 | `task list/register/resolve/show` | P1 | list/resolve/show implemented; dynamic source registration fails closed |
 | `demo write` | P1 | checked-in `quickstart` fixture and installed-package execution implemented |

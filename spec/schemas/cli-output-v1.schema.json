@@ -770,6 +770,50 @@
                 "command": {
                     "const": [
                         "run",
+                        "publish-retained-workspace-output"
+                    ],
+                    "type": "array"
+                },
+                "ok": {
+                    "const": true,
+                    "type": "boolean"
+                },
+                "result": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "publication": {
+                            "$ref": "#/$defs/jsonValue"
+                        }
+                    },
+                    "required": [
+                        "publication"
+                    ],
+                    "type": "object"
+                }
+            },
+            "required": [
+                "cli_compatibility_version",
+                "cli_output_version",
+                "command",
+                "ok",
+                "result"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "cli_compatibility_version": {
+                    "const": "shepherd.cli.json.v1",
+                    "type": "string"
+                },
+                "cli_output_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "command": {
+                    "const": [
+                        "run",
                         "recovery-records"
                     ],
                     "type": "array"

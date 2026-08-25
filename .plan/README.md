@@ -172,6 +172,8 @@ record and public API must declare a protocol/compatibility version.
   changeset reads, vcs-core citations, native mapping, and read-only/archive boundaries.
 - [Trace-revision CLI research](./trace-revision-cli-research.md) — pinned distinct command
   spelling and its mapping to immutable native cut/slice evidence.
+- [Output publication CLI research](./output-publication-cli-research.md) — pinned repair intent,
+  native immutable-citation mapping, and managed-recovery authority boundary.
 - [Phase 4 exit audit](./phase-4-exit-audit.md) — completed package-seam evidence and remaining
   documented CLI blockers before L1 stable.
 - [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
@@ -242,4 +244,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 4 with retained-output publication and repair identified by the updated exit audit.
+Begin Phase 5 with the native TypeScript product surface over the completed L1 compatibility
+package.

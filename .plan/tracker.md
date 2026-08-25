@@ -344,6 +344,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 - [x] Complete Phase 4 Task 14 configured `run trace-revision` list/show command with human parity,
   distinct stable JSON identity, immutable cut/slice selectors, archive/reopen behavior, and
   installed-package evidence.
+- [x] Complete Phase 4 Task 15 exact-run retained-output publication compatibility with idempotent
+  native citation verification and fail-closed managed-recovery remedy for insufficient raw CLI
+  authority.
 
 ## Verification required for this slice
 
@@ -357,8 +360,8 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 
 ## Next slice
 
-Continue Phase 4 with the remaining exit-audit blocker for retained-output publication and repair.
-Preserve the installed quickstart, read-only views, stable JSON, and exact mutation authority.
+Begin Phase 5 with the next dependency-unblocked native TypeScript product-surface issue. Preserve
+the completed L1 compatibility package, installed quickstart, stable JSON, and exact authority.
 
 ## Notes
 

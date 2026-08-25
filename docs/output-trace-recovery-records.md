@@ -31,6 +31,10 @@ Pagination is applied after incomplete captures are removed. Exact output IDs us
 indexed JSON field lookup, while prefix/latest reads scan only the configured bounded candidate
 set; an oversized candidate set fails closed instead of returning a partial page.
 
+`run publish-retained-workspace-output RUN_ID` is the native compatibility verification seam. A
+committed output already has this immutable citation and is returned exactly on repeat. Missing-cut
+repair remains unavailable from raw CLI authority and requires managed task-world recovery.
+
 ## Trace revisions
 
 `listTraceRevisions` and `resolveTraceRevisionSelector` treat every published cut as an immutable

@@ -58,6 +58,7 @@ export function createCliHandlers(): ReadonlyMap<string, CliHandler> {
         [HANDLERS.runVcsCore, runVcsCore],
         [HANDLERS.runOutputCitations, runOutputCitations],
         [HANDLERS.runOutputs, runOutputs],
+        [HANDLERS.runPublishRetainedWorkspaceOutput, runPublishRetainedWorkspaceOutput],
         [HANDLERS.runRecoveryRecords, runRecoveryRecords],
         [HANDLERS.runSelect, settle(SELECT_ACTION)],
         [HANDLERS.runApply, settle(APPLY_ACTION)],
@@ -250,6 +251,27 @@ async function runOutputs(args: readonly string[], io: CliHandlerIo): Promise<vo
 
 function outputState(entry: ReturnType<typeof resolveOutputCitationSelector>): string {
     return entry.settlements.at(-1)?.state ?? entry.output.status;
+}
+
+async function runPublishRetainedWorkspaceOutput(
+    args: readonly string[],
+    io: CliHandlerIo,
+): Promise<void> {
+    const parsed = parseOptions(args, new Set([OPTIONS.store]));
+    const selector = requireOnePositional(parsed);
+    using store = openStore(parsed, io);
+    const run = resolveRunLedgerSelector(store, selector);
+    if (run.run_id !== selector) {
+        throw new CliUsageError(cliProtocolConfig.messages.publicationExactRun);
+    }
+    if (run.output === null) {
+        throw new CliUnavailableError(cliProtocolConfig.messages.publicationUnavailable);
+    }
+    const citation = resolveOutputCitationSelector(store, run.output.output_id);
+    io.output(
+        `Output citation already published.\nRun: ${citation.run_id}\nOutput: ${citation.output.output_id}\nCut: ${citation.output.execution_cut.cut_id}\n`,
+        { publication: citation as unknown as SemanticRecord },
+    );
 }
 
 async function runChangeset(args: readonly string[], io: CliHandlerIo): Promise<void> {

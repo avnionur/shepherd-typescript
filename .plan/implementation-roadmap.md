@@ -258,6 +258,9 @@ Work:
 - add the distinct documented trace-revision CLI spelling; **implemented in 1.50.0** as a
   configured read-only handler over the existing immutable cut/slice projection with identical
   human bytes, distinct stable JSON command identity, and installed-package evidence.
+- add retained-output publication compatibility; **implemented in 1.51.0** as exact-run,
+  read-only idempotent verification of the existing immutable output citation with configured
+  fail-closed managed-recovery remedy when raw CLI authority is insufficient.
 
 Exit criteria:
 
@@ -271,9 +274,7 @@ Exit criteria:
 
 Milestone: **L1 stable**.
 
-Exit audit: **open after the 1.50.0 trace-revision command**; see
-[`phase-4-exit-audit.md`](./phase-4-exit-audit.md) for the remaining documented compatibility
-blockers.
+Exit audit: **complete in 1.51.0**; see [`phase-4-exit-audit.md`](./phase-4-exit-audit.md).
 
 ## Phase 5 — Native TypeScript product surface
 

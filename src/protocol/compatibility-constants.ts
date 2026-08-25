@@ -32,6 +32,7 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
         runList: "run-list",
         runOutputCitations: "run-output-citations",
         runOutputs: "run-outputs",
+        runPublishRetainedWorkspaceOutput: "run-publish-retained-workspace-output",
         runRecoveryRecords: "run-recovery-records",
         runRelease: "run-release",
         runRepair: "run-repair",
@@ -63,6 +64,10 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
                 { handler: "run-output-citations", name: "output-citations" },
                 { handler: "run-outputs", name: "outputs" },
                 { handler: "run-vcscore", name: "vcscore" },
+                {
+                    handler: "run-publish-retained-workspace-output",
+                    name: "publish-retained-workspace-output",
+                },
                 { handler: "run-recovery-records", name: "recovery-records" },
                 { handler: "run-select", name: "select" },
                 { handler: "run-apply", name: "apply" },
@@ -129,6 +134,7 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
             "run-list": [["runs"]],
             "run-output-citations": [["output_citation"], ["output_citations"]],
             "run-outputs": [["output"], ["outputs"]],
+            "run-publish-retained-workspace-output": [["publication"]],
             "run-recovery-records": [["recovery_record"], ["recovery_records"]],
             "run-release": [["settlement"]],
             "run-repair": [["repair_receipt"]],
@@ -160,6 +166,9 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
         changesetPathUnavailable: "retained changeset path is unavailable",
         changesetUnavailable: "retained changeset evidence is unavailable",
         demoNameUsage: "demo write requires exactly one configured demo name",
+        publicationExactRun: "retained-output publication requires an exact run identity",
+        publicationUnavailable:
+            "retained-output citation repair requires managed recovery authority",
         quickstartUnavailable: "quickstart demo artifact is unavailable",
     },
     options: {
