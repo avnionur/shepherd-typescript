@@ -335,6 +335,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 - [x] Complete Phase 4 Task 11 protocol-versioned canonical CLI JSON with closed bounded success
   and error envelopes, exact evidence IDs, generated command/schema references, preserved 1.46.0
   human bytes, and source/built/packed/installed conformance.
+- [x] Complete Phase 4 Task 12 packaged offline quickstart with pinned installed-wheel semantics,
+  checked-in/configured demo bytes, deterministic static execution, missing-file creation inside
+  isolated custody, retained inspection, exact selection, installed ESM root, and CLI JSON evidence.
 
 ## Verification required for this slice
 
@@ -348,9 +351,8 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 
 ## Next slice
 
-Continue Phase 4 with the next dependency-unblocked packaged offline quickstart fixture. Preserve
-configured command topology, public exact mutation authority, and the human/machine output
-distinction.
+Continue Phase 4 with the exit-audit blockers for documented changeset/output/vcs-core CLI views.
+Preserve the installed quickstart, stable JSON, and exact mutation authority.
 
 ## Notes
 

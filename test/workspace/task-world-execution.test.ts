@@ -300,9 +300,35 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
                 runnerContext.world.writeText("message.txt", oversizedText),
                 TypeError,
             );
+            await assert.rejects(
+                runnerContext.world.writeText(".vcscore/created.txt", "created\n"),
+                TypeError,
+            );
+            await assert.rejects(
+                runnerContext.world.writeText("missing/created.txt", "created\n"),
+                TypeError,
+            );
+            await assert.rejects(
+                runnerContext.world.writeText("directory/created.txt", "created\n"),
+                TypeError,
+            );
+            await assert.rejects(
+                runnerContext.world.writeText("message.txt/created.txt", "created\n"),
+                TypeError,
+            );
+            await assert.rejects(
+                runnerContext.world.writeText("message-link", "created\n"),
+                TypeError,
+            );
+            await assert.rejects(
+                runnerContext.world.writeText("directory", "created\n"),
+                TypeError,
+            );
             assert.equal(await runnerContext.world.readText("message.txt"), "before\n");
             assert.equal(await runnerContext.world.readText(".git/legacy-visible.txt"), "legacy\n");
             await runnerContext.world.writeText("message.txt", "after\n");
+            await runnerContext.world.writeText("created.txt", "created\n");
+            assert.equal(await runnerContext.world.readText("created.txt"), "created\n");
             return executeTask(runnerContext.execution);
         },
     });
@@ -369,6 +395,7 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
     assert.equal(result.output.status, "retained");
     assert.equal(result.output.user_basis_before, result.output.user_basis_after);
     assert.equal(await readFile(path.join(sourceRoot, "message.txt"), "utf8"), "before\n");
+    await assert.rejects(readFile(path.join(sourceRoot, "created.txt"), "utf8"), /ENOENT/u);
     assert.equal(
         await readFile(
             path.join(
@@ -379,7 +406,7 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
         ),
         "after\n",
     );
-    assert.equal(result.changeset.changed_paths[0], "message.txt");
+    assert.deepEqual(result.changeset.changed_paths, ["created.txt", "message.txt"]);
     assert.equal(result.execution.outcome.outcome.status, "finished");
     const staleWorld = leakedWorld as RetainedWorldCapability | null;
     assert.ok(staleWorld);

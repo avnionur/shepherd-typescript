@@ -63,8 +63,10 @@ accept configured selectors. Settlement requires the exact output identity plus 
 source registration is unavailable because the package does not execute caller modules merely
 because a CLI string names them.
 
-`demo write` and `package init` appear in help but return the configured unavailable remedy until
-their checked-in fixture and reproducible scaffold capabilities are delivered.
+`demo write quickstart` emits the checked-in offline package fixture byte-for-byte. JSON mode
+returns its configured name and byte length without embedding source. Missing, unknown, or extra
+demo selectors fail with the configured usage class. `package init` remains unavailable until its
+reproducible scaffold capability is delivered.
 
 ## Resource limits and security
 

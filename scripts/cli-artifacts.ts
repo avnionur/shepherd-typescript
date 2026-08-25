@@ -50,6 +50,16 @@ export function renderCliCommandReference(config: ProtocolConfig): string {
             ];
         }),
     );
+    const demoCommand = config.cli.groups
+        .flatMap((group) =>
+            group.commands.map((command) => ({
+                command: command.name,
+                group: group.name,
+                handler: command.handler,
+            })),
+        )
+        .find(({ handler }) => handler === config.cli.handlerRoles.demoWrite);
+    if (demoCommand === undefined) throw new TypeError("configured demo handler is unavailable");
     return `# Generated CLI reference
 
 This file is generated from \`protocol.config.json\`. Do not edit it directly.
@@ -70,6 +80,10 @@ ${optionLines.join("\n")}
 ## Fenced or unavailable commands
 
 ${unavailableLines.join("\n")}
+
+## Offline demo
+
+- \`${config.cli.executableName} ${demoCommand.group} ${demoCommand.command} ${config.cli.defaults.quickstartDemoName}\`: emits \`${config.cli.artifacts.quickstartDemo}\`
 
 Pass \`--${config.cli.options.json}\` anywhere in an invocation to emit one canonical JSON object followed by a newline. Successful output is written to stdout; errors are written to stderr. The envelope is bounded to ${config.cli.machineOutput.maxCanonicalBytes} UTF-8 bytes and never includes error messages, stack traces, or resolved filesystem paths.
 `;

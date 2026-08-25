@@ -28,12 +28,12 @@ export type RetainedWorldCapability = {
      */
     readonly readText: (relativePath: string) => Promise<string>;
     /**
-     * Replaces one existing regular UTF-8 file beneath isolated custody.
+     * Creates one binding-root file or replaces one regular UTF-8 file beneath isolated custody.
      *
      * @param relativePath - Canonical binding-relative path.
      * @param text - UTF-8 text within the configured operation bound.
      * @returns Completion after the fenced write closes.
-     * @throws {TypeError} If the path, text, file, or current fence is invalid.
+     * @throws {TypeError} If the path, text, parent, file, or current fence is invalid.
      */
     readonly writeText: (relativePath: string, text: string) => Promise<void>;
 };

@@ -249,7 +249,9 @@ Work:
   configured compatibility/version/error contract, canonical bounded envelopes, exact public
   evidence payloads, generated closed schema/reference artifacts, and source/built/installed
   package conformance;
-- reproduce the upstream offline quickstart as a compatibility fixture.
+- reproduce the upstream offline quickstart as a compatibility fixture; **implemented in 1.48.0**
+  with a checked-in configured demo, installed ESM-root execution, deterministic static provider,
+  retained-file inspection, exact selection, CLI JSON evidence, and fresh-tarball conformance.
 
 Exit criteria:
 
@@ -262,6 +264,9 @@ Exit criteria:
 - installed-package tests pass, not only source-tree tests.
 
 Milestone: **L1 stable**.
+
+Exit audit: **open after the 1.48.0 quickstart**; see
+[`phase-4-exit-audit.md`](./phase-4-exit-audit.md) for the remaining documented CLI view blockers.
 
 ## Phase 5 — Native TypeScript product surface
 

@@ -76,5 +76,6 @@ The executable name is deliberately `shepherd-ts`; no `shepherd` compatibility a
 The CLI delegates mutations to existing exact public APIs and introduces no new provider,
 filesystem, Git, custody, settlement, or repair authority. Stable JSON and the generated command
 reference are TypeScript-owned compatibility surfaces: they preserve exact native evidence IDs
-without claiming byte compatibility with upstream command-specific JSON. Demo/package scaffolding,
-dynamic source loading, and the packaged offline quickstart remain later issues.
+without claiming byte compatibility with upstream command-specific JSON. The packaged offline
+quickstart and configured demo emission are implemented; package scaffolding and dynamic source
+loading remain later issues.

@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.48.0] - 2026-08-25
+
+### New Feature
+
+- Added the checked-in `shepherd-ts demo write quickstart` fixture with stable human/script bytes
+  and bounded JSON metadata generated from validated CLI configuration.
+- Added an installed-package offline walkthrough that initializes a fresh workspace, runs a
+  bodyless task through the static provider and isolated retained world, inspects the proposed
+  `NOTE.txt`, and selects the exact output.
+- Added safe missing-file creation to the existing fenced `writeText` capability while preserving
+  path, parent, symlink, metadata, grant, size, and stale-fence refusal.
+- Declared the established ESM package root and type declarations, and verified emitted-script,
+  run, output-citation, and trace evidence against a freshly packed and installed tarball.
+
+### Impact
+
+Installed consumers can run the deterministic keyless retained-output walkthrough without the
+repository source tree or unpublished imports. Existing replacement writes and exact settlement,
+repair, archive, and native-platform behavior remain compatible; subpath/CommonJS packaging and
+the remaining documented CLI views are still later work.
+
 ## [1.47.0] - 2026-08-25
 
 ### New Feature

@@ -32,7 +32,9 @@ output, terminal receipt, and quiescence evidence. Provider execution and custod
 only after exit code zero and proven process-group quiescence. See
 [`native-jail-execution.md`](./native-jail-execution.md).
 
-The current advisory capability reads and replaces existing regular UTF-8 files beneath custody.
+The current advisory capability reads existing regular UTF-8 files and creates or replaces regular
+UTF-8 files beneath custody. Creation is limited to a missing file directly beneath the binding
+root and uses exclusive no-follow publication; it never creates directories or nested paths.
 Paths are binding-relative; absolute paths, traversal, Shepherd control-directory access, symbolic
 links, non-files, malformed UTF-8, and configured size-limit violations fail closed. Granted Git
 repository capture additionally denies Git administrative paths; legacy ordinary capture retains
@@ -77,7 +79,7 @@ A runner that returns after cooperative cancellation is quiescent at the callbac
 verified partial custody is retained beside the cancelled outcome while the user binding remains
 unchanged. Native jailed execution separately requires terminal process and process-group
 quiescence evidence before capture. A launch intent without terminal evidence remains uncertain
-and is never replayed automatically. Create/delete capability methods and simultaneous multi-world
+and is never replayed automatically. Directory creation, deletion, and simultaneous multi-world
 custody remain later runtime work. Captured outputs can use the receipt-only release coordinator in
 [`retained-world-release.md`](./retained-world-release.md) or the path-disjoint application coordinator in
 [`retained-world-application.md`](./retained-world-application.md).

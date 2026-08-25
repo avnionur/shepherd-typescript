@@ -92,10 +92,36 @@ test("CLI group help, usage errors, fenced commands, and source process exit cod
         exitCode: 3,
         output: "",
     });
-    assert.match((await invoke(["demo", "write"])).errors, /offline quickstart fixture/u);
+    assert.deepEqual(await invoke(["demo", "write"]), {
+        errors: "demo write requires exactly one configured demo name\n",
+        exitCode: 2,
+        output: "",
+    });
     assert.match((await invoke(["package", "init"])).errors, /extension scaffold/u);
     assert.match((await invoke(["task", "register"])).errors, /dynamic source modules/u);
     assert.equal((await invoke(["demo", "write", "extra"])).exitCode, 2);
+    assert.deepEqual(await invoke(["demo", "write", "unknown", "--json"]), {
+        errors: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["demo","write"],"error":{"code":"CLI_USAGE"},"ok":false}\n',
+        exitCode: 2,
+        output: "",
+    });
+    assert.equal((await invoke(["package", "init", "extra"])).exitCode, 2);
+
+    const quickstart = await invoke(["demo", "write", "quickstart"]);
+    assert.equal(quickstart.exitCode, 0);
+    assert.equal(
+        quickstart.output,
+        await readFile(new URL("../../examples/quickstart.mjs", import.meta.url), "utf8"),
+    );
+    assert.match(quickstart.output, /from "@avnionur\/shepherd-typescript"/u);
+    assert.match(quickstart.output, /NOTE\.txt/u);
+    assert.deepEqual(JSON.parse((await invoke(["demo", "write", "quickstart", "--json"])).output), {
+        cli_compatibility_version: "shepherd.cli.json.v1",
+        cli_output_version: 1,
+        command: ["demo", "write"],
+        ok: true,
+        result: { demo: { byte_length: Buffer.byteLength(quickstart.output), name: "quickstart" } },
+    });
 
     const processResult = await execFileAsync(process.execPath, [
         new URL("../../src/cli/main.ts", import.meta.url).pathname,

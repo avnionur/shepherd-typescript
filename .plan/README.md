@@ -166,6 +166,10 @@ record and public API must declare a protocol/compatibility version.
 - [CLI command-group research](./cli-command-groups-research.md) — pinned run/task topology,
   selectors, human/machine separation, stable errors, generated help/reference behavior, fenced
   start, and explicit init/doctor/demo/package source gaps.
+- [Packaged offline quickstart research](./offline-quickstart-research.md) — pinned installed-wheel
+  hero, transcript, static-provider behavior, retained isolation, and TypeScript package mapping.
+- [Phase 4 exit audit](./phase-4-exit-audit.md) — completed package-seam evidence and remaining
+  documented CLI blockers before L1 stable.
 - [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
   snapshot, mutable custody, verification, discard, durability, and Task 4 Git boundary.
 - [Git-aware custody research](./git-aware-custody-research.md) — shipped Git baseline,
@@ -234,5 +238,4 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 4 with the packaged offline quickstart compatibility fixture over the completed
-configured CLI topology and stable machine-output contract.
+Continue Phase 4 with the documented CLI view blockers identified after the installed quickstart.

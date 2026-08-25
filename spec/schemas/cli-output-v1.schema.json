@@ -1051,6 +1051,50 @@
                 },
                 "command": {
                     "const": [
+                        "demo",
+                        "write"
+                    ],
+                    "type": "array"
+                },
+                "ok": {
+                    "const": true,
+                    "type": "boolean"
+                },
+                "result": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "demo": {
+                            "$ref": "#/$defs/jsonValue"
+                        }
+                    },
+                    "required": [
+                        "demo"
+                    ],
+                    "type": "object"
+                }
+            },
+            "required": [
+                "cli_compatibility_version",
+                "cli_output_version",
+                "command",
+                "ok",
+                "result"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "cli_compatibility_version": {
+                    "const": "shepherd.cli.json.v1",
+                    "type": "string"
+                },
+                "cli_output_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "command": {
+                    "const": [
                         "package"
                     ],
                     "type": "array"

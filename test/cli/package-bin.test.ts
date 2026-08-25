@@ -9,6 +9,8 @@ test("package bin metadata matches the public distinct CLI executable", async ()
     const packageManifest = JSON.parse(readFileSync(new URL("package.json", root), "utf8")) as {
         readonly bin: Readonly<Record<string, string>>;
         readonly files: readonly string[];
+        readonly main: string;
+        readonly types: string;
     };
     const protocol = JSON.parse(readFileSync(new URL("protocol.config.json", root), "utf8")) as {
         readonly cli: { readonly executableName: string; readonly executablePath: string };
@@ -27,4 +29,6 @@ test("package bin metadata matches the public distinct CLI executable", async ()
     assert.equal(executable, protocol.cli.executableName);
     assert.deepEqual(packageManifest.bin, { [executable as string]: protocol.cli.executablePath });
     assert.equal(packageManifest.files.includes("dist/src"), true);
+    assert.equal(packageManifest.main, "dist/src/index.js");
+    assert.equal(packageManifest.types, "dist/src/index.d.ts");
 });

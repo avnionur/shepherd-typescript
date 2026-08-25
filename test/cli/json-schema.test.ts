@@ -17,6 +17,7 @@ test("stable CLI JSON success and error envelopes validate against the generated
         ["run", "--help", "--json"],
         ["unknown", "--json"],
         ["run", "start", "--json"],
+        ["demo", "write", "quickstart", "--json"],
     ]) {
         const output: string[] = [];
         const errors: string[] = [];
