@@ -55,7 +55,7 @@ test("CLI root help emits the stable canonical JSON success envelope", async () 
     assert.deepEqual(await invoke(["run", "--json", "--help"]), {
         errors: "",
         exitCode: 0,
-        output: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["run"],"ok":true,"result":{"commands":["list","show","changeset","trace","trace-revision","output-citations","outputs","vcscore","recovery-records","select","apply","release","discard","repair","start"],"group":"run"}}\n',
+        output: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["run"],"ok":true,"result":{"commands":["list","show","changeset","trace","trace-revision","output-citations","outputs","vcscore","publish-retained-workspace-output","recovery-records","select","apply","release","discard","repair","start"],"group":"run"}}\n',
     });
     assert.deepEqual(await invoke(["unknown", "--json"]), {
         errors: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["unknown"],"error":{"code":"CLI_USAGE"},"ok":false}\n',
@@ -74,7 +74,7 @@ test("CLI group help, usage errors, fenced commands, and source process exit cod
     assert.deepEqual(await invoke(["run", "--help"]), {
         errors: "",
         exitCode: 0,
-        output: "Usage: shepherd-ts run <command> [options]\n\nCommands:\n  list\n  show\n  changeset\n  trace\n  trace-revision\n  output-citations\n  outputs\n  vcscore\n  recovery-records\n  select\n  apply\n  release\n  discard\n  repair\n  start\n",
+        output: "Usage: shepherd-ts run <command> [options]\n\nCommands:\n  list\n  show\n  changeset\n  trace\n  trace-revision\n  output-citations\n  outputs\n  vcscore\n  publish-retained-workspace-output\n  recovery-records\n  select\n  apply\n  release\n  discard\n  repair\n  start\n",
     });
     assert.equal((await invoke(["init", "--help"])).output, "Usage: shepherd-ts init [options]\n");
     assert.deepEqual(await invoke(["unknown"]), {
@@ -303,6 +303,15 @@ test("CLI task and run reads resolve real registry and trace evidence", async (c
         /Recovery: committed/u,
     );
     assert.equal(
+        (
+            await invoke(
+                ["run", "publish-retained-workspace-output", "run:cli", "--store", storePath],
+                directory,
+            )
+        ).exitCode,
+        3,
+    );
+    assert.equal(
         (await invoke(["run", "list", "--store", storePath, "--limit", "bad"], directory)).exitCode,
         2,
     );
@@ -409,6 +418,64 @@ test("CLI exact settlement commands preserve public select/apply/release/discard
             fixture.workspaceRoot,
         );
         assert.match(vcsCore.output, new RegExp(`Output: ${fixture.outputId}`, "u"));
+        const publication = await invoke(
+            [
+                "run",
+                "publish-retained-workspace-output",
+                `run:cli:${action}`,
+                "--store",
+                fixture.storePath,
+            ],
+            fixture.workspaceRoot,
+        );
+        assert.match(publication.output, new RegExp(`Output: ${fixture.outputId}`, "u"));
+        assert.deepEqual(
+            await invoke(
+                [
+                    "run",
+                    "publish-retained-workspace-output",
+                    `run:cli:${action}`,
+                    "--store",
+                    fixture.storePath,
+                ],
+                fixture.workspaceRoot,
+            ),
+            publication,
+        );
+        if (action === "select") {
+            const publicationJson = await invoke(
+                [
+                    "run",
+                    "publish-retained-workspace-output",
+                    "run:cli:select",
+                    "--store",
+                    fixture.storePath,
+                    "--json",
+                ],
+                fixture.workspaceRoot,
+            );
+            assert.equal(
+                JSON.parse(publicationJson.output).result.publication.output.output_id,
+                fixture.outputId,
+            );
+            for (const selector of ["run:cli:sel", "@latest"]) {
+                assert.equal(
+                    (
+                        await invoke(
+                            [
+                                "run",
+                                "publish-retained-workspace-output",
+                                selector,
+                                "--store",
+                                fixture.storePath,
+                            ],
+                            fixture.workspaceRoot,
+                        )
+                    ).exitCode,
+                    2,
+                );
+            }
+        }
         assert.equal(await readFile(fixture.messagePath, "utf8"), "before\n");
         if (action === "select") {
             const outputJson = await invoke(

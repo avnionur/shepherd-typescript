@@ -69,6 +69,11 @@ These views are read-only and documented in
 trace-revision projection. It preserves `run trace` human bytes while stable JSON records the
 distinct command identity.
 
+`run publish-retained-workspace-output RUN_ID` verifies the exact committed native output citation.
+Native outputs are already cited by their immutable execution cut, so equal calls are read-only and
+idempotent. A missing cut fails with the configured managed-recovery remedy because a raw run ID
+cannot grant the complete recovery contract.
+
 `task` supports bounded `list`, `show`, and `resolve` over an existing task registry. Dynamic
 source registration is unavailable because the package does not execute caller modules merely
 because a CLI string names them.

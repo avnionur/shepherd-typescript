@@ -19,6 +19,7 @@ JSON schema: `https://avnionur.github.io/shepherd-typescript/schemas/cli-output-
 - `shepherd-ts run output-citations`
 - `shepherd-ts run outputs`
 - `shepherd-ts run vcscore`
+- `shepherd-ts run publish-retained-workspace-output`
 - `shepherd-ts run recovery-records`
 - `shepherd-ts run select`
 - `shepherd-ts run apply`

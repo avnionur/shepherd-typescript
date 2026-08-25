@@ -77,6 +77,7 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             "runList",
             "runOutputCitations",
             "runOutputs",
+            "runPublishRetainedWorkspaceOutput",
             "runRecoveryRecords",
             "runRelease",
             "runRepair",
@@ -141,6 +142,8 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             "changesetPathUnavailable",
             "changesetUnavailable",
             "demoNameUsage",
+            "publicationExactRun",
+            "publicationUnavailable",
             "quickstartUnavailable",
         ],
         "cli.messages",
@@ -352,6 +355,14 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
                 "cli.messages.changesetUnavailable",
             ),
             demoNameUsage: readNonEmptyString(messages.demoNameUsage, "cli.messages.demoNameUsage"),
+            publicationExactRun: readNonEmptyString(
+                messages.publicationExactRun,
+                "cli.messages.publicationExactRun",
+            ),
+            publicationUnavailable: readNonEmptyString(
+                messages.publicationUnavailable,
+                "cli.messages.publicationUnavailable",
+            ),
             quickstartUnavailable: readNonEmptyString(
                 messages.quickstartUnavailable,
                 "cli.messages.quickstartUnavailable",

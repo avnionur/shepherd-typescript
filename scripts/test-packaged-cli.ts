@@ -160,6 +160,14 @@ try {
         traceStorePath,
     ]);
     assert.equal(vcsCore.result.vcscore?.output.output_id, outputId);
+    const publication = invokeJson(executable, [
+        "run",
+        "publish-retained-workspace-output",
+        "run:quickstart",
+        "--store",
+        traceStorePath,
+    ]);
+    assert.equal(publication.result.publication?.output.output_id, outputId);
     const traces = invokeJson(executable, ["run", "trace", "--store", traceStorePath]);
     assert.equal((traces.result.trace_revisions?.length ?? 0) > 0, true);
     const traceRevisions = invokeJson(executable, [
@@ -187,6 +195,7 @@ type InstalledJsonEnvelope = {
             readonly page: { readonly changes: readonly { readonly path: string }[] };
         };
         readonly output_citations?: readonly { readonly run_id: string }[];
+        readonly publication?: { readonly output: { readonly output_id: string } };
         readonly outputs?: readonly {
             readonly output: { readonly output_id: string };
             readonly run_id: string;

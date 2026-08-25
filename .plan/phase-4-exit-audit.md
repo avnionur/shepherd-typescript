@@ -1,13 +1,14 @@
 # Phase 4 L1-stable exit audit
 
-Status: package/read seams complete in 1.50.0; L1-stable exit blocked
+Status: complete in 1.51.0 on 2026-08-25
 
 ## Scope
 
 This audit checks the documented Shepherd v0.3.0 compatibility slice tracked by epic #17. The
 installed offline quickstart closes the package-fixture checklist item, 1.49.0 closes the read-only
 retained-output/changeset/vcs-core views, and 1.50.0 adds the distinct trace-revision spelling.
-Phase 4 remains open for the remaining mutation-compatible surface.
+The final compatibility command verifies the already-published native citation and fails closed
+when raw CLI authority cannot safely repair a missing cut. Phase 4 exit criteria are satisfied.
 
 ## Exit evidence
 
@@ -31,10 +32,9 @@ Phase 4 remains open for the remaining mutation-compatible surface.
 
 ## Remaining boundaries
 
-L1-stable exit remains blocked by documented retained-output publication/repair. Dynamic source
-registration, `package init`, and fenced `run start` retain their explicit priority/non-claim
-classifications. The publication gap requires a separate issue rather than being hidden inside a
-read-only alias.
+Dynamic source registration, `package init`, and fenced `run start` retain their explicit
+priority/non-claim classifications. They do not grant hidden authority and are not presented as
+implemented. Later Phase 5+ product, runtime, and operational work remains outside L1 parity.
 
 The package now declares its existing ESM root and type declarations so installed examples can
 import the established public facade. Phase 5 still owns facade finalization, subpath exports,

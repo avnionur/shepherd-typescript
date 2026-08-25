@@ -64,6 +64,7 @@ export type CliProtocolConfig = {
         readonly runList: string;
         readonly runOutputCitations: string;
         readonly runOutputs: string;
+        readonly runPublishRetainedWorkspaceOutput: string;
         readonly runRecoveryRecords: string;
         readonly runRelease: string;
         readonly runRepair: string;
@@ -110,6 +111,8 @@ export type CliProtocolConfig = {
         readonly changesetPathUnavailable: string;
         readonly changesetUnavailable: string;
         readonly demoNameUsage: string;
+        readonly publicationExactRun: string;
+        readonly publicationUnavailable: string;
         readonly quickstartUnavailable: string;
     };
     readonly options: {

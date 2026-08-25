@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.51.0] - 2026-08-25
+
+### New Feature
+
+- Added configured exact-run `publish-retained-workspace-output` compatibility over the existing
+  immutable committed output citation.
+- Added idempotent human/JSON verification with exact run, output, capture, cut, changeset, and
+  custody evidence.
+- Added a configured fail-closed managed-recovery remedy when a raw run ID cannot safely repair a
+  missing terminal cut.
+
+### Impact
+
+The documented publication command is available without introducing redundant records or
+granting recovery authority from ergonomic selectors. Phase 4 L1 compatibility evidence is now
+complete while later product/runtime surfaces remain explicitly separate.
+
 ## [1.50.0] - 2026-08-25
 
 ### New Feature

@@ -590,16 +590,17 @@ paths, and restart recovery.
 
 The [Phase 3 status](./docs/phase-3-l1-alpha.md) and
 [exit audit](./.plan/phase-3-exit-audit.md) map each criterion to repeatable production-seam
-evidence. Phase 4 now includes the packaged offline quickstart. Remaining documented CLI views,
-live-provider adapters, scopes, supervision, replay, and paper applications remain later work.
+evidence. Phase 4 now completes the L1 documented compatibility package, including the offline
+quickstart and safe publication compatibility. Live-provider adapters, scopes, supervision,
+replay, and paper applications remain later work.
 Phase 4 now includes exact named multi-repository resources, explicit read-only/read-write task
 grants, a whole-run ceiling, honest advisory/auto placement reporting, authenticated native
 filesystem-write jails for capable macOS Seatbelt and Linux/WSL Landlock hosts, and path-disjoint
 three-way retained-world application, receipt-only release, bounded task/run ledgers,
 cut-bounded output-citation/trace-revision/recovery-record read selectors, and public exact
 orphaned-operation repair plus configured human CLI groups and stable JSON/reference artifacts.
-The [Phase 4 exit audit](./.plan/phase-4-exit-audit.md) records the installed-package and CLI view
-evidence plus remaining compatibility blockers. Native Windows,
+The [Phase 4 exit audit](./.plan/phase-4-exit-audit.md) records the complete installed-package and
+CLI compatibility evidence. Native Windows,
 simultaneous multi-world runner access, network/read isolation, and the remaining documented run
 surface are not implemented.
 
