@@ -34,6 +34,10 @@ export type CliGroupConfig = {
 
 /** Validated human-facing CLI topology and resource policy. */
 export type CliProtocolConfig = {
+    readonly artifacts: {
+        readonly commandReference: string;
+        readonly jsonOutputSchema: string;
+    };
     readonly compatibilityVersion: string;
     readonly defaults: {
         readonly bindingName: string;
@@ -80,12 +84,26 @@ export type CliProtocolConfig = {
         readonly maxOutputBytes: number;
         readonly maxPageSize: number;
     };
+    readonly machineOutput: {
+        readonly compatibilityVersion: string;
+        readonly errorCodes: {
+            readonly failure: string;
+            readonly unavailable: string;
+            readonly usage: string;
+        };
+        readonly maxCanonicalBytes: number;
+        readonly resultShapes: Readonly<Record<string, readonly (readonly string[])[]>>;
+        readonly schemaId: string;
+        readonly unavailableRemedies: Readonly<Record<string, keyof CliProtocolConfig["remedies"]>>;
+        readonly version: number;
+    };
     readonly options: {
         readonly adopt: string;
         readonly bindingName: string;
         readonly bindingRoot: string;
         readonly command: string;
         readonly initializeGit: string;
+        readonly json: string;
         readonly limit: string;
         readonly noInitializeGit: string;
         readonly offset: string;

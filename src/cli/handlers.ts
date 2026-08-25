@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 
+import type { SemanticRecord } from "../canonical/canonical-record.ts";
 import { listOutputCitations, resolveOutputCitationSelector } from "../ledger/output-citations.ts";
 import { listRecoveryRecords, resolveRecoveryRecordSelector } from "../ledger/recovery-records.ts";
 import { listRunLedger, resolveRunLedgerSelector } from "../ledger/run-ledger.ts";
@@ -97,7 +98,10 @@ async function initialize(args: readonly string[], io: CliHandlerIo): Promise<vo
         ...(initializeGit === undefined ? {} : { initializeGit }),
         rootPath,
     });
-    io.output(`Initialized ${state.root_path}\nAdoption: ${state.adoption.mode}\n`);
+    io.output(`Initialized ${state.root_path}\nAdoption: ${state.adoption.mode}\n`, {
+        adoption: state.adoption as unknown as SemanticRecord,
+        format: state.format,
+    });
 }
 
 async function doctor(args: readonly string[], io: CliHandlerIo): Promise<void> {
@@ -133,7 +137,14 @@ async function doctor(args: readonly string[], io: CliHandlerIo): Promise<void> 
     ];
     const native = await inspectLocalNativeJailBackend();
     lines.push(`Native jail: ${native.status} (${native.reason})`);
-    io.output(`${lines.join("\n")}\n`);
+    io.output(`${lines.join("\n")}\n`, {
+        native_jail: native as unknown as SemanticRecord,
+        node_version: process.versions.node,
+        protocol: cliProtocolConfig.compatibilityVersion,
+        task_registry: inspectRegistry(registryPath),
+        trace_store: inspectStore(storePath),
+        workspace: inspectWorkspace(workspacePath),
+    });
 }
 
 async function runList(args: readonly string[], io: CliHandlerIo): Promise<void> {
@@ -146,6 +157,7 @@ async function runList(args: readonly string[], io: CliHandlerIo): Promise<void>
         entries.length === 0
             ? "No runs.\n"
             : entries.map((entry) => `${entry.run_id}\t${entry.inspection.status}\n`).join(""),
+        { runs: entries as unknown as SemanticRecord["runs"] },
     );
 }
 
@@ -156,6 +168,7 @@ async function runShow(args: readonly string[], io: CliHandlerIo): Promise<void>
     const entry = resolveRunLedgerSelector(store, selector);
     io.output(
         `Run: ${entry.run_id}\nStatus: ${entry.inspection.status}\nTask: ${entry.task_artifact_lock.task_id}@${entry.task_artifact_lock.task_version}\n`,
+        { run: entry } as unknown as SemanticRecord,
     );
 }
 
@@ -169,6 +182,7 @@ async function runTrace(args: readonly string[], io: CliHandlerIo): Promise<void
             entries.length === 0
                 ? "No trace revisions.\n"
                 : entries.map(({ cut }) => `${cut.cut_id}\t${cut.target_owner_id}\n`).join(""),
+            { trace_revisions: entries } as unknown as SemanticRecord,
         );
         return;
     }
@@ -176,6 +190,7 @@ async function runTrace(args: readonly string[], io: CliHandlerIo): Promise<void
     const entry = resolveTraceRevisionSelector(store, selector);
     io.output(
         `Trace: ${entry.cut.cut_id}\nOwner: ${entry.cut.target_owner_id}\nRecords: ${Object.keys(entry.slice.visible_records_by_id).length}\n`,
+        { trace_revision: entry } as unknown as SemanticRecord,
     );
 }
 
@@ -189,6 +204,7 @@ async function runOutputCitations(args: readonly string[], io: CliHandlerIo): Pr
             entries.length === 0
                 ? "No output citations.\n"
                 : entries.map(({ output, run_id }) => `${output.output_id}\t${run_id}\n`).join(""),
+            { output_citations: entries } as unknown as SemanticRecord,
         );
         return;
     }
@@ -196,6 +212,7 @@ async function runOutputCitations(args: readonly string[], io: CliHandlerIo): Pr
     const entry = resolveOutputCitationSelector(store, selector);
     io.output(
         `Output: ${entry.output.output_id}\nRun: ${entry.run_id}\nSettlements: ${entry.settlements.length}\n`,
+        { output_citation: entry } as unknown as SemanticRecord,
     );
 }
 
@@ -209,12 +226,14 @@ async function runRecoveryRecords(args: readonly string[], io: CliHandlerIo): Pr
             entries.length === 0
                 ? "No recovery records.\n"
                 : entries.map((entry) => `${entry.run_id}\t${entry.recovery_status}\n`).join(""),
+            { recovery_records: entries } as unknown as SemanticRecord,
         );
         return;
     }
     const entry = resolveRecoveryRecordSelector(store, requireOnePositional(parsed));
     io.output(
         `Run: ${entry.run_id}\nRecovery: ${entry.recovery_status}\nCommands: ${entry.commands.length}\n`,
+        { recovery_record: entry } as unknown as SemanticRecord,
     );
 }
 
@@ -291,7 +310,9 @@ function settle(action: SettlementAction): CliHandler {
                           outputId: outputSelector,
                           store,
                       });
-        io.output(`${result.action}: ${result.output_id}\nState: ${result.state}\n`);
+        io.output(`${result.action}: ${result.output_id}\nState: ${result.state}\n`, {
+            settlement: result as unknown as SemanticRecord,
+        });
     };
 }
 
@@ -313,6 +334,7 @@ async function runRepair(args: readonly string[], io: CliHandlerIo): Promise<voi
         receipt.repaired_count === 0
             ? "Nothing to repair.\n"
             : `Repaired ${receipt.repaired_count} operation(s).\n`,
+        { repair_receipt: receipt as unknown as SemanticRecord },
     );
 }
 
@@ -331,6 +353,7 @@ async function taskList(args: readonly string[], io: CliHandlerIo): Promise<void
                           `${artifact_lock.task_id}@${artifact_lock.task_version}\n`,
                   )
                   .join(""),
+        { tasks: entries } as unknown as SemanticRecord,
     );
 }
 
@@ -341,6 +364,7 @@ async function taskShow(args: readonly string[], io: CliHandlerIo): Promise<void
     const entry = resolveTaskLedgerSelector(registry, selector);
     io.output(
         `Task: ${entry.artifact_lock.task_id}@${entry.artifact_lock.task_version}\nDigest: ${entry.artifact_lock.artifact_digest}\n`,
+        { task: entry } as unknown as SemanticRecord,
     );
 }
 

@@ -52,7 +52,7 @@ and any applicable pinned upstream-oracle comparison.
 | Idempotent append intent | vNext reference | required | P0 | retry conflict tests |
 | Owner/cut/slice addressing | vNext reference | graph access | P1 | projection fixtures |
 | Trace query and materialization | shipped | core | P1 | public bounded output-citation, published-cut trace-revision, and durable recovery-record list/show selectors now expose exact owner paths, causality, witnesses, command effects, cut-bounded outputs/settlements, native import, and fresh-process reconstruction; upstream event verbs and CLI golden output remain |
-| Orphaned operation diagnosis and repair | shipped | required | P1 | public bounded diagnosis plus externally proven session death, exact idempotent command/basis authority, atomic bookkeeping-only receipts, live/provider/scope refusal, fail-soft pre-run reclaim, reopen/import audit evidence, and concurrent/interrupted retry convergence implemented; CLI presentation remains |
+| Orphaned operation diagnosis and repair | shipped | required | P1 | public bounded diagnosis plus externally proven session death, exact idempotent command/basis authority, atomic bookkeeping-only receipts, live/provider/scope refusal, fail-soft pre-run reclaim, reopen/import audit evidence, concurrent/interrupted retry convergence, and stable CLI human/JSON presentation implemented |
 | Live trace subscription | not public complete | explicit | P2 | backpressure/reconnect tests |
 | Arbitrary rewind | not public API | explicit | P2 | byte-equivalence tests |
 | Suffix replay | deferred | explicit | P2 | deterministic and provider-cache tests |
@@ -88,7 +88,7 @@ discard converges after restart. The reproducible evidence is recorded in
 `L1-alpha` does not mark the entire upstream column complete. Explicit grant identity, advisory
 capability checks, advisory/auto placement reporting, authenticated native filesystem-write jails,
 path-disjoint `apply`, receipt-only `release`, public orphaned-operation repair, and configured
-human CLI command groups are implemented, while stable CLI JSON/reference generation, installed-package
+human CLI groups and stable JSON/reference artifacts are implemented, while installed-package
 consumer fixtures, and remaining P1 rows stay assigned to Phase 4. Platform completion is limited
 to probed macOS Seatbelt and Linux/WSL Landlock; no optimized carrier, AppContainer, or native-
 Windows jail claim is made.
@@ -156,11 +156,11 @@ Windows jail claim is made.
 | Command family | Priority | Compatibility requirement |
 | --- | --- | --- |
 | `init` | P0 | configured protected initialization implemented; no silent Git-history mutation |
-| `doctor` | P0 | bounded human diagnostics implemented; stable JSON follows |
-| `run list/show/trace/changeset` | P0 | configured run/trace reads implemented; changeset/stable machine output follows |
+| `doctor` | P0 | bounded human diagnostics and stable closed JSON implemented |
+| `run list/show/trace/changeset` | P0 | configured run/trace reads and stable machine output implemented; changeset follows |
 | `run select/discard` | P0 | exact IDs and consume-once CLI delegation implemented |
 | `run apply/release` | P1 | exact IDs and documented settlement CLI delegation implemented |
-| `run outputs/output-citations/vcscore` | P1 | output-citation reads implemented; remaining views/protocol JSON follow |
+| `run outputs/output-citations/vcscore` | P1 | output-citation reads and protocol JSON implemented; remaining views follow |
 | `run repair` | P1 | exact globally idempotent CLI recovery implemented |
 | `task list/register/resolve/show` | P1 | list/resolve/show implemented; dynamic source registration fails closed |
 | `demo write` | P1 | configured honest refusal; checked-in fixture follows |

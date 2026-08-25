@@ -1,6 +1,6 @@
 {
     "name": "@avnionur/shepherd-typescript",
-    "version": "1.46.0",
+    "version": "1.47.0",
     "packageManager": "pnpm@10.32.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
     "license": "MIT",
@@ -20,6 +20,7 @@
     "files": [
         "dist/src",
         "dist/protocol.config.json",
+        "docs/generated/cli-reference.md",
         "spec/schemas",
         "README.md",
         "LICENSE",

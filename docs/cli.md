@@ -3,7 +3,9 @@
 Implementation: [`src/cli`](../src/cli), configuration:
 [`protocol.config.json`](../protocol.config.json), public runner:
 [`runCli`](../src/cli/cli.ts), executable: `shepherd-ts`. Tests:
-[`test/cli`](../test/cli).
+[`test/cli`](../test/cli). Generated reference:
+[`docs/generated/cli-reference.md`](./generated/cli-reference.md). Machine schema:
+[`spec/schemas/cli-output-v1.schema.json`](../spec/schemas/cli-output-v1.schema.json).
 
 ## Boundary
 
@@ -13,8 +15,27 @@ configuration. The package exposes only the distinct `shepherd-ts` binary; it do
 upstream executable name.
 
 Exit codes are configured as: `0` success, `1` runtime failure, `2` usage refusal, and `3`
-unavailable capability. Errors print one bounded message without a stack. This version does not
-claim stable JSON or a generated command reference.
+unavailable capability. Human errors print one bounded message without a stack. Human output is
+the unchanged `shepherd.cli.v1` contract shipped in 1.46.0.
+
+## Stable JSON
+
+Pass `--json` anywhere in an invocation to select the `shepherd.cli.json.v1` machine contract.
+Success writes one canonical JSON object plus a newline to stdout. Failure writes one canonical
+JSON object plus a newline to stderr and preserves the configured exit class. Every envelope is
+closed and contains `cli_compatibility_version`, `cli_output_version`, `command`, and `ok`;
+success adds one command-specific `result`, while failure adds only a configured error `code`.
+
+Machine results retain exact public ledger, citation, settlement, and repair identities. Error
+envelopes deliberately omit messages, stacks, resolved paths, and exception details. Canonical
+UTF-8 output is bounded independently by `cli.machineOutput.maxCanonicalBytes`. The checked-in
+schema closes envelope and command-result field names; nested semantic records remain governed by
+their existing generated protocol schemas and are not redefined by the CLI.
+
+The generated command reference derives its executable, commands, options, unavailable remedies,
+versions, schema identity, and bounds from `protocol.config.json`. Protocol artifact drift checks,
+source/process tests, and the pack/install/bin gate keep the reference, schema, and executable in
+sync.
 
 ## Commands
 

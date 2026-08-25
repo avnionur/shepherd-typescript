@@ -1,3 +1,5 @@
+import type { SemanticRecord } from "../canonical/canonical-record.ts";
+
 /** Injectable process boundary used by the reusable CLI runner. */
 export type CliIo = {
     /** Current working directory used to resolve configured relative paths. */
@@ -11,8 +13,7 @@ export type CliIo = {
 /** @internal Bounded normalized I/O presented to command handlers. */
 export type CliHandlerIo = {
     readonly cwd: string;
-    readonly error: (text: string) => void;
-    readonly output: (text: string) => void;
+    readonly output: (text: string, result?: SemanticRecord) => void;
 };
 
 /** @internal Asynchronous configured command handler. */

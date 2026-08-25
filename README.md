@@ -176,9 +176,10 @@ trace-record contracts with durable SQLite task and trace stores:
 - bounded orphaned-operation diagnosis plus globally idempotent exact bookkeeping repair with
   externally proven session death, live/provider/scope refusal, durable command/receipt evidence,
   interruption and concurrent retry convergence, and fail-soft pre-run reclaim;
-- a configured distinct `shepherd-ts` executable with bounded human help/output, protected
+- a configured distinct `shepherd-ts` executable with preserved bounded human help/output,
+  protocol-versioned canonical JSON, generated command/schema references, protected
   initialization, read-only diagnostics, run/task/trace/evidence reads, exact settlements and
-  repair, and honest fenced/unavailable command remedies;
+  repair, and stable fenced/unavailable error envelopes;
 - globally idempotent durable recovery commands with canonical command evidence, expired-lease
   takeover, command-bound start/cut transitions, and fail-closed absent/started handling;
 - globally idempotent pause requests bound atomically to the exact current started lifecycle head,
@@ -215,7 +216,9 @@ pnpm install
 ```
 
 The source CLI runs with `node src/cli/main.ts`; built/package consumers use `shepherd-ts`.
-Run `shepherd-ts --help` for the configured command groups. Stable JSON output is not yet claimed.
+Run `shepherd-ts --help` for human help or add `--json` for the stable
+`shepherd.cli.json.v1` envelope. See the [generated command reference](./docs/generated/cli-reference.md)
+and [machine-output schema](./spec/schemas/cli-output-v1.schema.json).
 
 ## API
 
@@ -577,14 +580,15 @@ paths, and restart recovery.
 
 The [Phase 3 status](./docs/phase-3-l1-alpha.md) and
 [exit audit](./.plan/phase-3-exit-audit.md) map each criterion to repeatable production-seam
-evidence. This is not full Shepherd `0.3.0` parity. Stable CLI JSON/reference generation, installed-package consumer fixtures,
+evidence. This is not full Shepherd `0.3.0` parity. The packaged offline quickstart,
 live-provider adapters, scopes, supervision, replay, and paper applications remain later phases.
 Phase 4 now includes exact named multi-repository resources, explicit read-only/read-write task
 grants, a whole-run ceiling, honest advisory/auto placement reporting, authenticated native
 filesystem-write jails for capable macOS Seatbelt and Linux/WSL Landlock hosts, and path-disjoint
 three-way retained-world application, receipt-only release, bounded task/run ledgers,
 cut-bounded output-citation/trace-revision/recovery-record read selectors, and public exact
-orphaned-operation repair plus configured human CLI groups. Native Windows,
+orphaned-operation repair plus configured human CLI groups and stable JSON/reference artifacts.
+Native Windows,
 simultaneous multi-world runner access, network/read isolation, and the remaining documented run
 surface are not implemented.
 

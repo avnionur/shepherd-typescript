@@ -245,7 +245,10 @@ Work:
   1.46.0** with configured distinct executable topology, bounded human help/output, workspace
   initialization and diagnostics, run/task reads, exact settlements/repair, honest unsupported
   remedies, and source/installed-package seams;
-- provide stable JSON output and generated command reference;
+- provide stable JSON output and generated command reference; **implemented in 1.47.0** with a
+  configured compatibility/version/error contract, canonical bounded envelopes, exact public
+  evidence payloads, generated closed schema/reference artifacts, and source/built/installed
+  package conformance;
 - reproduce the upstream offline quickstart as a compatibility fixture.
 
 Exit criteria:

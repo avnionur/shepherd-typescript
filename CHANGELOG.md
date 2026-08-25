@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.47.0] - 2026-08-25
+
+### New Feature
+
+- Added the configured `shepherd.cli.json.v1` canonical success/error envelope across every
+  shipped CLI read and mutation command, with stable error classes for fenced capabilities.
+- Added closed command-result field schemas, canonical byte bounds, exact public evidence payloads,
+  and failure redaction that excludes messages, stacks, and resolved paths.
+- Added a configuration-derived checked-in command reference and machine-output schema, plus
+  source, built, packed, and installed executable conformance gates.
+- Preserved the `shepherd.cli.v1` human output and existing read-only, exact-ID, idempotent repair,
+  settlement, custody, native-platform, and recovery authority boundaries.
+
+### Impact
+
+CLI consumers can now rely on a versioned deterministic JSON protocol and packaged generated
+reference without parsing human text or gaining new mutation authority. Existing human CLI users
+do not need to adapt.
+
 ## [1.46.0] - 2026-08-24
 
 ### New Feature
