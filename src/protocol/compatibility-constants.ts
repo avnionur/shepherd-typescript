@@ -2,6 +2,10 @@ import { deepFreeze } from "./config-value-readers.ts";
 
 /** Immutable human-facing command topology contract implemented by CLI v1. */
 export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
+    artifacts: {
+        commandReference: "docs/generated/cli-reference.md",
+        jsonOutputSchema: "spec/schemas/cli-output-v1.schema.json",
+    },
     compatibilityVersion: "shepherd.cli.v1",
     defaults: {
         bindingName: "workspace",
@@ -88,12 +92,61 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
         maxOutputBytes: 1_048_576,
         maxPageSize: 100,
     },
+    machineOutput: {
+        compatibilityVersion: "shepherd.cli.json.v1",
+        errorCodes: {
+            failure: "CLI_FAILURE",
+            unavailable: "CLI_UNAVAILABLE",
+            usage: "CLI_USAGE",
+        },
+        maxCanonicalBytes: 1_048_576,
+        resultShapes: {
+            doctor: [
+                [
+                    "native_jail",
+                    "node_version",
+                    "protocol",
+                    "task_registry",
+                    "trace_store",
+                    "workspace",
+                ],
+            ],
+            "run-apply": [["settlement"]],
+            "run-discard": [["settlement"]],
+            "run-list": [["runs"]],
+            "run-output-citations": [["output_citation"], ["output_citations"]],
+            "run-recovery-records": [["recovery_record"], ["recovery_records"]],
+            "run-release": [["settlement"]],
+            "run-repair": [["repair_receipt"]],
+            "run-select": [["settlement"]],
+            "run-show": [["run"]],
+            "run-trace": [["trace_revision"], ["trace_revisions"]],
+            "task-list": [["tasks"]],
+            "task-resolve": [["task"]],
+            "task-show": [["task"]],
+            "unsupported-demo-write": [],
+            "unsupported-package-init": [],
+            "unsupported-start": [],
+            "unsupported-task-register": [],
+            "workspace-init": [["adoption", "format"]],
+        },
+        schemaId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/cli-output-v1.schema.json",
+        unavailableRemedies: {
+            "unsupported-demo-write": "demoWrite",
+            "unsupported-package-init": "packageInit",
+            "unsupported-start": "fencedStart",
+            "unsupported-task-register": "taskRegister",
+        },
+        version: 1,
+    },
     options: {
         adopt: "adopt",
         bindingName: "binding-name",
         bindingRoot: "binding-root",
         command: "command",
         initializeGit: "initialize-git",
+        json: "json",
         limit: "limit",
         noInitializeGit: "no-initialize-git",
         offset: "offset",

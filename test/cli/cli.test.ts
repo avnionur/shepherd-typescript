@@ -45,6 +45,31 @@ test("CLI root help exposes the configured documented command groups without sid
     assert.equal((await invoke(["-h"])).exitCode, 0);
 });
 
+test("CLI root help emits the stable canonical JSON success envelope", async () => {
+    const result = await invoke(["--help", "--json"]);
+    assert.deepEqual(result, {
+        errors: "",
+        exitCode: 0,
+        output: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":[],"ok":true,"result":{"groups":["init","doctor","run","task","demo","package"]}}\n',
+    });
+    assert.deepEqual(await invoke(["run", "--json", "--help"]), {
+        errors: "",
+        exitCode: 0,
+        output: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["run"],"ok":true,"result":{"commands":["list","show","trace","output-citations","recovery-records","select","apply","release","discard","repair","start"],"group":"run"}}\n',
+    });
+    assert.deepEqual(await invoke(["unknown", "--json"]), {
+        errors: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["unknown"],"error":{"code":"CLI_USAGE"},"ok":false}\n',
+        exitCode: 2,
+        output: "",
+    });
+    assert.deepEqual(await invoke(["run", "start", "--json"]), {
+        errors: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["run","start"],"error":{"code":"CLI_UNAVAILABLE"},"ok":false}\n',
+        exitCode: 3,
+        output: "",
+    });
+    assert.equal((await invoke(["--json", "--json"])).exitCode, 2);
+});
+
 test("CLI group help, usage errors, fenced commands, and source process exit codes are deterministic", async () => {
     assert.deepEqual(await invoke(["run", "--help"]), {
         errors: "",
@@ -78,6 +103,16 @@ test("CLI group help, usage errors, fenced commands, and source process exit cod
     ]);
     assert.match(processResult.stdout, /^Usage: shepherd-ts/u);
     assert.equal(processResult.stderr, "");
+    const jsonProcessResult = await execFileAsync(process.execPath, [
+        new URL("../../src/cli/main.ts", import.meta.url).pathname,
+        "--json",
+        "--help",
+    ]);
+    assert.equal(
+        JSON.parse(jsonProcessResult.stdout).cli_compatibility_version,
+        "shepherd.cli.json.v1",
+    );
+    assert.equal(jsonProcessResult.stderr, "");
     await assert.rejects(
         execFileAsync(process.execPath, [
             new URL("../../src/cli/main.ts", import.meta.url).pathname,
@@ -195,6 +230,12 @@ test("CLI task and run reads resolve real registry and trace evidence", async (c
         (await invoke(["run", "show", "run:cli", "--store", storePath], directory)).output,
         /Status: committed/u,
     );
+    const jsonRun = await invoke(
+        ["run", "show", "run:cli", "--store", storePath, "--json"],
+        directory,
+    );
+    assert.equal(jsonRun.errors, "");
+    assert.equal(JSON.parse(jsonRun.output).result.run.run_id, "run:cli");
     const traceList = await invoke(["run", "trace", "--store", storePath], directory);
     assert.match(traceList.output, /^sha256:/u);
     const cutId = traceList.output.split("\t")[0] as string;
@@ -277,6 +318,12 @@ test("CLI orphan repair uses exact diagnosis and globally idempotent commands", 
         ).output,
         "Nothing to repair.\n",
     );
+    const jsonRepair = await invoke(
+        ["run", "repair", "--store", storePath, "--command", "repair:cli-json", "--json"],
+        directory,
+    );
+    assert.equal(jsonRepair.errors, "");
+    assert.equal(JSON.parse(jsonRepair.output).result.repair_receipt.command_id, "repair:cli-json");
 });
 
 test("CLI exact settlement commands preserve public select/apply/release/discard authority", async (context) => {
@@ -287,6 +334,14 @@ test("CLI exact settlement commands preserve public select/apply/release/discard
             fixture.workspaceRoot,
         );
         assert.match(citation.output, new RegExp(`Output: ${fixture.outputId}`, "u"));
+        const jsonCitation = await invoke(
+            ["run", "output-citations", fixture.outputId, "--store", fixture.storePath, "--json"],
+            fixture.workspaceRoot,
+        );
+        assert.equal(
+            JSON.parse(jsonCitation.output).result.output_citation.output.output_id,
+            fixture.outputId,
+        );
         assert.match(
             (
                 await invoke(
@@ -454,6 +509,15 @@ test("CLI maps unexpected store failures to the configured failure exit without 
     assert.equal(result.exitCode, 1);
     assert.equal(result.output, "");
     assert.doesNotMatch(result.errors, /src\/|node:sqlite|at /u);
+    const jsonResult = await invoke(["run", "list", "--store", invalidStore, "--json"], directory);
+    assert.deepEqual(JSON.parse(jsonResult.errors), {
+        cli_compatibility_version: "shepherd.cli.json.v1",
+        cli_output_version: 1,
+        command: ["run", "list"],
+        error: { code: "CLI_FAILURE" },
+        ok: false,
+    });
+    assert.doesNotMatch(jsonResult.errors, new RegExp(directory, "u"));
 });
 
 type Invocation = {

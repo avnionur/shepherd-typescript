@@ -16,7 +16,8 @@ ordinal bounds, schema/artifact locations, the root witness, query modes/policie
 identity/layout, trace-store behavior, and execution-history projection contracts. Runtime code
 and protocol artifact generation use the same parser. The CLI section fixes the distinct
 executable name/path, ordered group/command topology, internal handler identities, exit classes,
-default paths, argument/output/page bounds, and explicit unavailable/fenced remedies. The task
+default paths, argument/output/page bounds, explicit unavailable/fenced remedies, stable machine
+version/schema/error codes, canonical byte bound, and generated JSON/reference artifact paths. The task
 section also fixes descriptor and
 artifact-lock versions, hashing, identity prefixes, schema IDs, generated artifact paths, and the
 task registry's SQLite durability and migration contract. The effect section fixes intent/outcome
@@ -111,8 +112,9 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
 - content identities use an approved cryptographic hash, prefix, and hexadecimal length, then
   match the hash contract pinned by ABI v0;
 - CLI groups and nested commands are uniquely named, each group defines either one direct handler
-  or nested commands, exit codes are distinct, defaults/remedies are non-empty, limits are
-  positive and ordered, and all values match the immutable CLI protocol v1 contract;
+  or nested commands, exit and machine error codes are distinct, defaults/remedies are non-empty,
+  schema identity is absolute, limits are positive and ordered, artifact paths are unique, and all
+  values match the immutable CLI protocol v1 contract;
 - kernel record modes are unique, non-empty, and synchronized with generated TypeScript
   constants at runtime;
 - owner ordinals are safe integers with room for a representable next ordinal;

@@ -12,8 +12,11 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   where new files belong.
 - [Protocol configuration](./protocol-configuration.md) defines validation, immutable snapshots,
   migration-bound constants, and safe SQLite settings.
-- [Command-line interface](./cli.md) defines configured command topology, human output, exit
-  classes, executable packaging, exact mutation delegation, and unavailable-capability remedies.
+- [Command-line interface](./cli.md) defines configured command topology, preserved human output,
+  stable canonical JSON, generated reference/schema artifacts, executable packaging, exact
+  mutation delegation, and unavailable-capability remedies.
+- [Generated CLI reference](./generated/cli-reference.md) lists the configured executable,
+  commands, options, and fenced/unavailable remedies.
 - [Naming and licensing](./naming-and-licensing.md) records package identity, attribution, and
   publication boundaries.
 - [Canonical record contract](./canonical-records.md) defines accepted values, deterministic

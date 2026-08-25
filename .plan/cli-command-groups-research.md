@@ -1,6 +1,6 @@
 # CLI command-group research
 
-Status: Phase 4 Task 10 implemented oracle record
+Status: Phase 4 Tasks 10–11 implemented oracle record
 
 ## Pinned oracle
 
@@ -59,16 +59,22 @@ Pinned Click usage errors distinguish missing/conflicting selectors and mutually
 Workspace and vcs-core errors become user-facing `ClickException` messages. Orphan-operation
 errors map to the Shepherd-level repair remedy rather than exposing the lower-layer archive
 function. Human list/show formatting is deterministic and bounded; several pinned commands expose
-`--json`, but stable machine output and generated reference are a separate Phase 4 slice.
+`--json`. Their payload fields vary by command and upstream does not publish one versioned global
+JSON envelope. The upstream CLI reference is generated documentation; Click help remains a
+separate human surface.
 
 The TypeScript executable uses configured exit classes: success, runtime failure, usage refusal,
-and unavailable capability. It emits error messages without stacks. Output, argument count, and
-argument bytes are bounded by protocol configuration.
+and unavailable capability. It emits human error messages without stacks. Machine mode instead
+uses a TypeScript-owned versioned canonical envelope with configured stable error codes and no
+message, path, or exception detail. Output, argument count, argument bytes, and canonical machine
+bytes are bounded by protocol configuration. The generated reference is derived from the validated
+group, option, and remedy topology rather than scraping human help.
 
 ## Compatibility boundary
 
 The executable name is deliberately `shepherd-ts`; no `shepherd` compatibility alias is claimed.
 The CLI delegates mutations to existing exact public APIs and introduces no new provider,
-filesystem, Git, custody, settlement, or repair authority. Stable JSON, generated command
-reference, demo/package scaffolding, dynamic source loading, and the packaged offline quickstart
-remain later issues.
+filesystem, Git, custody, settlement, or repair authority. Stable JSON and the generated command
+reference are TypeScript-owned compatibility surfaces: they preserve exact native evidence IDs
+without claiming byte compatibility with upstream command-specific JSON. Demo/package scaffolding,
+dynamic source loading, and the packaged offline quickstart remain later issues.

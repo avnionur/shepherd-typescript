@@ -332,6 +332,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
   output, protected initialization, read-only diagnostics, run/task ledgers, exact settlement and
   repair delegation, fenced/unsupported remedies, source/fresh-process/package-bin tests, and no
   stable-JSON claim.
+- [x] Complete Phase 4 Task 11 protocol-versioned canonical CLI JSON with closed bounded success
+  and error envelopes, exact evidence IDs, generated command/schema references, preserved 1.46.0
+  human bytes, and source/built/packed/installed conformance.
 
 ## Verification required for this slice
 
@@ -345,9 +348,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 
 ## Next slice
 
-Continue Phase 4 with the next dependency-unblocked stable JSON output and generated command
-reference slice. Preserve configured command topology, public exact mutation authority, and the
-human/machine output distinction.
+Continue Phase 4 with the next dependency-unblocked packaged offline quickstart fixture. Preserve
+configured command topology, public exact mutation authority, and the human/machine output
+distinction.
 
 ## Notes
 

@@ -53,6 +53,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         throw new TypeError("kernel schema constants do not match the implemented ABI");
     }
     const artifactDestinations = [
+        ...Object.values(config.cli.artifacts),
         ...Object.values(config.effects.artifacts),
         ...Object.values(config.kernel.artifacts),
         ...Object.values(config.orphanRepair.artifacts),

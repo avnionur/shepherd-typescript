@@ -164,7 +164,8 @@ record and public API must declare a protocol/compatibility version.
   liveness, operation/scope separation, idempotency, fail-soft reclaim, and TypeScript exact-basis
   mapping.
 - [CLI command-group research](./cli-command-groups-research.md) — pinned run/task topology,
-  selectors, errors, human output, fenced start, and explicit init/doctor/demo/package source gaps.
+  selectors, human/machine separation, stable errors, generated help/reference behavior, fenced
+  start, and explicit init/doctor/demo/package source gaps.
 - [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
   snapshot, mutable custody, verification, discard, durability, and Task 4 Git boundary.
 - [Git-aware custody research](./git-aware-custody-research.md) — shipped Git baseline,
@@ -233,5 +234,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 4 with stable JSON output and generated command-reference contracts over the
-completed configured CLI topology.
+Continue Phase 4 with the packaged offline quickstart compatibility fixture over the completed
+configured CLI topology and stable machine-output contract.

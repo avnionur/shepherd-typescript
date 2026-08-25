@@ -1,3 +1,4 @@
+import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
 import { cliProtocolConfig } from "../protocol/config.ts";
 import type { CliGroupConfig } from "../protocol/config-types.ts";
 import { CliUnavailableError, CliUsageError } from "./errors.ts";
@@ -5,6 +6,10 @@ import { createCliHandlers } from "./handlers.ts";
 import type { CliHandler, CliHandlerIo, CliIo } from "./types.ts";
 
 const handlerRegistry = createCliHandlers();
+
+type BoundedCliIo = CliHandlerIo & {
+    readonly error: (text: string) => void;
+};
 
 /**
  * Runs the configured human-facing CLI without terminating the process.
@@ -18,29 +23,64 @@ const handlerRegistry = createCliHandlers();
  */
 export async function runCli(args: readonly string[], io: CliIo = processIo()): Promise<number> {
     const boundedIo = createBoundedIo(io);
+    const jsonRequested =
+        Array.isArray(args) && args.includes(`--${cliProtocolConfig.options.json}`);
+    let command: readonly string[] = [];
+    let machineResult: SemanticRecord = {};
+    const handlerIo: CliHandlerIo = jsonRequested
+        ? {
+              cwd: boundedIo.cwd,
+              output: (_text, result = {}) => {
+                  machineResult = result;
+              },
+          }
+        : boundedIo;
     try {
-        const parsedArgs = readArgs(args);
+        const allArgs = readArgs(args);
+        const parsedArgs = allArgs.filter(
+            (argument) => argument !== `--${cliProtocolConfig.options.json}`,
+        );
+        if (allArgs.length - parsedArgs.length > 1) {
+            throw new CliUsageError(`duplicate option: --${cliProtocolConfig.options.json}`);
+        }
         if (parsedArgs.length === 0 || isHelp(parsedArgs[0])) {
-            boundedIo.output(
+            handlerIo.output(
                 `Usage: ${cliProtocolConfig.executableName} <command> [options]\n\nCommands:\n${cliProtocolConfig.groups.map(({ name }) => `  ${name}\n`).join("")}`,
+                { groups: cliProtocolConfig.groups.map(({ name }) => name) },
             );
+            if (jsonRequested) boundedIo.output(encodeSuccess(command, machineResult));
             return cliProtocolConfig.exitCodes.success;
         }
+        command = Object.freeze([parsedArgs[0] as string]);
         const group = cliProtocolConfig.groups.find(({ name }) => name === parsedArgs[0]);
         if (group === undefined) throw new CliUsageError(`unknown command: ${parsedArgs[0]}`);
+        command = Object.freeze([group.name]);
         if (isHelp(parsedArgs[1])) {
-            boundedIo.output(groupHelp(group));
+            handlerIo.output(groupHelp(group), {
+                commands: group.commands.map(({ name }) => name),
+                group: group.name,
+            });
+            if (jsonRequested) boundedIo.output(encodeSuccess(command, machineResult));
             return cliProtocolConfig.exitCodes.success;
         }
+        command = Object.freeze([
+            group.name,
+            ...(group.handler === null && parsedArgs[1] !== undefined ? [parsedArgs[1]] : []),
+        ]);
         const handler = resolveHandler(group, parsedArgs);
         await handler(
             group.handler === null ? parsedArgs.slice(2) : parsedArgs.slice(1),
-            boundedIo,
+            handlerIo,
         );
+        if (jsonRequested) boundedIo.output(encodeSuccess(command, machineResult));
         return cliProtocolConfig.exitCodes.success;
     } catch (error) {
         const classified = classifyError(error);
-        boundedIo.error(`${classified.message}\n`);
+        boundedIo.error(
+            jsonRequested
+                ? encodeFailure(command, classified.machineCode)
+                : `${classified.message}\n`,
+        );
         return classified.exitCode;
     }
 }
@@ -60,17 +100,61 @@ function groupHelp(group: CliGroupConfig): string {
     return `Usage: ${cliProtocolConfig.executableName} ${group.name} <command> [options]\n\nCommands:\n${group.commands.map(({ name }) => `  ${name}\n`).join("")}`;
 }
 
-function classifyError(error: unknown): { readonly exitCode: number; readonly message: string } {
+function classifyError(error: unknown): {
+    readonly exitCode: number;
+    readonly machineCode: string;
+    readonly message: string;
+} {
     if (error instanceof CliUsageError) {
-        return { exitCode: cliProtocolConfig.exitCodes.usage, message: error.message };
+        return {
+            exitCode: cliProtocolConfig.exitCodes.usage,
+            machineCode: cliProtocolConfig.machineOutput.errorCodes.usage,
+            message: error.message,
+        };
     }
     if (error instanceof CliUnavailableError) {
-        return { exitCode: cliProtocolConfig.exitCodes.unavailable, message: error.message };
+        return {
+            exitCode: cliProtocolConfig.exitCodes.unavailable,
+            machineCode: cliProtocolConfig.machineOutput.errorCodes.unavailable,
+            message: error.message,
+        };
     }
     return {
         exitCode: cliProtocolConfig.exitCodes.failure,
+        machineCode: cliProtocolConfig.machineOutput.errorCodes.failure,
         message: error instanceof Error ? error.message : "command failed",
     };
+}
+
+function encodeSuccess(command: readonly string[], result: SemanticRecord): string {
+    return encodeMachine({
+        cli_compatibility_version: cliProtocolConfig.machineOutput.compatibilityVersion,
+        cli_output_version: cliProtocolConfig.machineOutput.version,
+        command,
+        ok: true,
+        result,
+    });
+}
+
+function encodeFailure(command: readonly string[], code: string): string {
+    return encodeMachine({
+        cli_compatibility_version: cliProtocolConfig.machineOutput.compatibilityVersion,
+        cli_output_version: cliProtocolConfig.machineOutput.version,
+        command,
+        error: { code },
+        ok: false,
+    });
+}
+
+function encodeMachine(value: SemanticRecord): string {
+    const json = canonicalizeRecord(value);
+    // Configured command/page bounds cap every current machine payload below this ceiling.
+    /* node:coverage disable */
+    if (Buffer.byteLength(json, "utf8") > cliProtocolConfig.machineOutput.maxCanonicalBytes) {
+        throw new CliUnavailableError("machine output exceeds the configured limit");
+    }
+    /* node:coverage enable */
+    return `${json}\n`;
 }
 
 function readArgs(value: unknown): readonly string[] {
@@ -93,7 +177,7 @@ function readArgs(value: unknown): readonly string[] {
     );
 }
 
-function createBoundedIo(value: unknown): CliHandlerIo {
+function createBoundedIo(value: unknown): BoundedCliIo {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
         throw new TypeError("CLI I/O must be an object");
     }

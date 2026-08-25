@@ -4,6 +4,7 @@ import path from "node:path";
 import { assertSupportedProtocolCompatibility } from "../src/protocol/config-compatibility.ts";
 import type { ProtocolConfig } from "../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
+import { renderCliCommandReference, renderCliOutputSchema } from "./cli-artifacts.ts";
 import { renderEffectIntentSchema, renderEffectOutcomeSchema } from "./effect-protocol-schemas.ts";
 import {
     renderOutputCitationEntrySchema,
@@ -47,6 +48,14 @@ export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Pr
         enforceCompatibility: false,
     });
     const artifacts = [
+        {
+            content: renderCliCommandReference(config),
+            relativePath: config.cli.artifacts.commandReference,
+        },
+        {
+            content: renderJson(renderCliOutputSchema(config)),
+            relativePath: config.cli.artifacts.jsonOutputSchema,
+        },
         {
             content: renderProtocolValues(config),
             relativePath: config.kernel.artifacts.recordValues,

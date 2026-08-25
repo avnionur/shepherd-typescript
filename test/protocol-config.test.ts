@@ -444,6 +444,68 @@ test("protocol configuration rejects invalid or drifted CLI topology", () => {
         (config) => {
             objectAt(config, "cli").helpAliases = ["--help", "--help"];
         },
+        (config) => {
+            const errorCodes = objectAt(
+                objectAt(objectAt(config, "cli"), "machineOutput"),
+                "errorCodes",
+            );
+            errorCodes.failure = errorCodes.usage;
+        },
+        (config) => {
+            objectAt(objectAt(config, "cli"), "machineOutput").maxCanonicalBytes = 0;
+        },
+        (config) => {
+            objectAt(objectAt(config, "cli"), "machineOutput").schemaId = "relative.json";
+        },
+        (config) => {
+            const resultShapes = objectAt(objectAt(config, "cli"), "machineOutput")
+                .resultShapes as Record<string, unknown>;
+            delete resultShapes.doctor;
+        },
+        (config) => {
+            const resultShapes = objectAt(objectAt(config, "cli"), "machineOutput")
+                .resultShapes as Record<string, unknown>;
+            delete resultShapes.doctor;
+            resultShapes.unknown = [["unknown"]];
+        },
+        (config) => {
+            const resultShapes = objectAt(objectAt(config, "cli"), "machineOutput")
+                .resultShapes as Record<string, unknown>;
+            resultShapes.doctor = [["same"], ["same"]];
+        },
+        (config) => {
+            const resultShapes = objectAt(objectAt(config, "cli"), "machineOutput")
+                .resultShapes as Record<string, unknown>;
+            resultShapes.doctor = [[]];
+        },
+        (config) => {
+            const resultShapes = objectAt(objectAt(config, "cli"), "machineOutput")
+                .resultShapes as Record<string, unknown>;
+            resultShapes.doctor = [];
+        },
+        (config) => {
+            const machineOutput = objectAt(objectAt(config, "cli"), "machineOutput");
+            const unavailable = machineOutput.unavailableRemedies as Record<string, unknown>;
+            delete unavailable["unsupported-start"];
+            unavailable.doctor = "fencedStart";
+        },
+        (config) => {
+            const unavailable = objectAt(objectAt(config, "cli"), "machineOutput")
+                .unavailableRemedies as Record<string, unknown>;
+            unavailable["unsupported-start"] = "demoWrite";
+        },
+        (config) => {
+            const unavailable = objectAt(objectAt(config, "cli"), "machineOutput")
+                .unavailableRemedies as Record<string, unknown>;
+            unavailable["unsupported-start"] = "unknown";
+        },
+        (config) => {
+            const machineOutput = objectAt(objectAt(config, "cli"), "machineOutput");
+            const resultShapes = machineOutput.resultShapes as Record<string, unknown>;
+            const unavailable = machineOutput.unavailableRemedies as Record<string, unknown>;
+            resultShapes["unsupported-start"] = [["unexpected_success"]];
+            delete unavailable["unsupported-start"];
+        },
     ]);
 });
 
