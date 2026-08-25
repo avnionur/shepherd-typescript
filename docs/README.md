@@ -19,6 +19,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   commands, options, and fenced/unavailable remedies.
 - [Offline retained-output quickstart](./quickstart.md) runs the checked-in deterministic demo
   through a freshly installed package, retained inspection, exact selection, and CLI JSON.
+- [Retained-output CLI views](./retained-output-cli-views.md) defines bounded output,
+  authenticated changeset/content, and native vcs-core citation reads.
 - [Naming and licensing](./naming-and-licensing.md) records package identity, attribution, and
   publication boundaries.
 - [Canonical record contract](./canonical-records.md) defines accepted values, deterministic

@@ -18,6 +18,7 @@ import {
 import { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import { SQLiteTaskRegistry } from "../task/sqlite-task-registry.ts";
 import { createWorkspaceBindings } from "../workspace/bindings.ts";
+import { createWorldChangesetInspection } from "../workspace/changeset-inspection.ts";
 import { initializeWorkspace, openWorkspace } from "../workspace/initialization.ts";
 import { inspectLocalNativeJailBackend } from "../workspace/native-jail.ts";
 import { createReferenceCopyCarrier } from "../workspace/reference-copy-carrier.ts";
@@ -51,8 +52,11 @@ export function createCliHandlers(): ReadonlyMap<string, CliHandler> {
         [HANDLERS.doctor, doctor],
         [HANDLERS.runList, runList],
         [HANDLERS.runShow, runShow],
+        [HANDLERS.runChangeset, runChangeset],
         [HANDLERS.runTrace, runTrace],
+        [HANDLERS.runVcsCore, runVcsCore],
         [HANDLERS.runOutputCitations, runOutputCitations],
+        [HANDLERS.runOutputs, runOutputs],
         [HANDLERS.runRecoveryRecords, runRecoveryRecords],
         [HANDLERS.runSelect, settle(SELECT_ACTION)],
         [HANDLERS.runApply, settle(APPLY_ACTION)],
@@ -215,6 +219,154 @@ async function runOutputCitations(args: readonly string[], io: CliHandlerIo): Pr
         `Output: ${entry.output.output_id}\nRun: ${entry.run_id}\nSettlements: ${entry.settlements.length}\n`,
         { output_citation: entry } as unknown as SemanticRecord,
     );
+}
+
+async function runOutputs(args: readonly string[], io: CliHandlerIo): Promise<void> {
+    const parsed = parseOptions(args, new Set([OPTIONS.limit, OPTIONS.offset, OPTIONS.store]));
+    const page = pagination(parsed);
+    using store = openStore(parsed, io);
+    if (parsed.positionals.length === 0) {
+        const entries = listOutputCitations(store, page);
+        io.output(
+            entries.length === 0
+                ? "No retained outputs.\n"
+                : entries
+                      .map(
+                          (entry) =>
+                              `${entry.output.output_id}\t${entry.run_id}\t${outputState(entry)}\n`,
+                      )
+                      .join(""),
+            { outputs: entries as unknown as SemanticRecord },
+        );
+        return;
+    }
+    const entry = resolveOutputCitationSelector(store, requireOnePositional(parsed));
+    io.output(
+        `Output: ${entry.output.output_id}\nRun: ${entry.run_id}\nChangeset: ${entry.output.changeset_id}\nState: ${outputState(entry)}\n`,
+        { output: entry as unknown as SemanticRecord },
+    );
+}
+
+function outputState(entry: ReturnType<typeof resolveOutputCitationSelector>): string {
+    return entry.settlements.at(-1)?.state ?? entry.output.status;
+}
+
+async function runChangeset(args: readonly string[], io: CliHandlerIo): Promise<void> {
+    const parsed = parseOptions(
+        args,
+        new Set([
+            OPTIONS.limit,
+            OPTIONS.maxBytes,
+            OPTIONS.offset,
+            OPTIONS.read,
+            OPTIONS.store,
+            OPTIONS.workspace,
+        ]),
+    );
+    const selector = requireOnePositional(parsed);
+    using store = openStore(parsed, io);
+    const citation = resolveOutputCitationSelector(store, selector);
+    const workspaceRoot = resolveOptionPath(
+        parsed,
+        OPTIONS.workspace,
+        io,
+        cliProtocolConfig.defaults.workspacePath,
+    );
+    const inspection = await openChangesetInspection(citation, workspaceRoot);
+    const readPath = parsed.options.get(OPTIONS.read);
+    if (readPath !== undefined) {
+        const change = inspection.change(readPath);
+        if (change?.after?.kind !== "file") {
+            throw new CliUsageError(cliProtocolConfig.messages.changesetPathUnavailable);
+        }
+        const maxBytes = retainedReadBytes(parsed);
+        let preview: Awaited<ReturnType<typeof inspection.previewText>>;
+        try {
+            preview = await inspection.previewText({
+                contentId: change.after.content_id,
+                maxBytes,
+            });
+            /* Retained blob/revision corruption is covered at the public inspection seam. */
+            /* node:coverage disable */
+        } catch {
+            throw new CliUnavailableError(cliProtocolConfig.messages.changesetUnavailable);
+        }
+        /* node:coverage enable */
+        if (preview.classification !== "text" || preview.text === null) {
+            throw new CliUnavailableError(cliProtocolConfig.messages.changesetBinary);
+        }
+        io.output(preview.text, {
+            changeset_read: {
+                output_id: citation.output.output_id,
+                path: readPath,
+                preview: preview as unknown as SemanticRecord,
+            },
+        });
+        return;
+    }
+    if (parsed.options.has(OPTIONS.maxBytes)) {
+        throw new CliUsageError(`--${OPTIONS.maxBytes} requires --${OPTIONS.read}`);
+    }
+    const page = inspection.page(pagination(parsed));
+    const changeset = inspection.changeset;
+    const view = {
+        binding_id: citation.output.binding_id,
+        changeset: {
+            base_revision_id: changeset.base_revision_id,
+            binding_id: changeset.binding_id,
+            changeset_id: changeset.changeset_id,
+            head_revision_id: changeset.head_revision_id,
+            schema_version: changeset.schema_version,
+        },
+        inspection_version: inspection.inspection_version,
+        output_id: citation.output.output_id,
+        page: page as unknown as SemanticRecord,
+        run_id: citation.run_id,
+    };
+    io.output(
+        `Changeset: ${changeset.changeset_id}\nOutput: ${citation.output.output_id}\nPaths:\n${page.changes.map(({ path: changedPath }) => `  ${changedPath}\n`).join("")}`,
+        { changeset: view },
+    );
+}
+
+async function openChangesetInspection(
+    citation: ReturnType<typeof resolveOutputCitationSelector>,
+    workspaceRoot: string,
+): Promise<Awaited<ReturnType<typeof createWorldChangesetInspection>>> {
+    try {
+        const carrier = createReferenceCopyCarrier({ workspaceRoot });
+        const [baseRevision, headRevision] = await Promise.all([
+            carrier.openRevision(citation.output.base_revision_id),
+            carrier.openRevision(citation.output.head_revision_id),
+        ]);
+        return createWorldChangesetInspection({ baseRevision, carrier, headRevision });
+    } catch {
+        throw new CliUnavailableError(cliProtocolConfig.messages.changesetUnavailable);
+    }
+}
+
+async function runVcsCore(args: readonly string[], io: CliHandlerIo): Promise<void> {
+    const parsed = parseOptions(args, new Set([OPTIONS.store]));
+    using store = openStore(parsed, io);
+    const citation = resolveOutputCitationSelector(store, requireOnePositional(parsed));
+    io.output(
+        `Output: ${citation.output.output_id}\nRun: ${citation.run_id}\nBinding: ${citation.output.binding_id}\nChangeset: ${citation.output.changeset_id}\nCapture: ${citation.output.capture_record_id}\nCut: ${citation.output.execution_cut.cut_id}\nSettlements: ${citation.settlements.length}\n`,
+        { vcscore: citation as unknown as SemanticRecord },
+    );
+}
+
+function retainedReadBytes(parsed: ParsedOptions): number {
+    const raw = parsed.options.get(OPTIONS.maxBytes);
+    if (raw === undefined) return cliProtocolConfig.limits.defaultRetainedReadBytes;
+    const value = Number(raw);
+    if (
+        !Number.isSafeInteger(value) ||
+        value < 1 ||
+        value > cliProtocolConfig.limits.maxRetainedReadBytes
+    ) {
+        throw new CliUsageError(`--${OPTIONS.maxBytes} exceeds the configured byte bound`);
+    }
+    return value;
 }
 
 async function runRecoveryRecords(args: readonly string[], io: CliHandlerIo): Promise<void> {

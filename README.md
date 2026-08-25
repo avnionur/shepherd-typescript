@@ -178,7 +178,7 @@ trace-record contracts with durable SQLite task and trace stores:
   interruption and concurrent retry convergence, and fail-soft pre-run reclaim;
 - a configured distinct `shepherd-ts` executable with preserved bounded human help/output,
   protocol-versioned canonical JSON, generated command/schema references, protected
-  initialization, read-only diagnostics, run/task/trace/evidence reads, exact settlements and
+  initialization, read-only run/task/trace/output/changeset/vcs-core views, exact settlements and
   repair, a checked-in installed-package offline quickstart, and stable fenced/unavailable error
   envelopes;
 - globally idempotent durable recovery commands with canonical command evidence, expired-lease
@@ -598,8 +598,8 @@ filesystem-write jails for capable macOS Seatbelt and Linux/WSL Landlock hosts, 
 three-way retained-world application, receipt-only release, bounded task/run ledgers,
 cut-bounded output-citation/trace-revision/recovery-record read selectors, and public exact
 orphaned-operation repair plus configured human CLI groups and stable JSON/reference artifacts.
-The [Phase 4 exit audit](./.plan/phase-4-exit-audit.md) records the installed-package evidence and
-remaining CLI blockers. Native Windows,
+The [Phase 4 exit audit](./.plan/phase-4-exit-audit.md) records the installed-package and CLI view
+evidence plus remaining compatibility blockers. Native Windows,
 simultaneous multi-world runner access, network/read isolation, and the remaining documented run
 surface are not implemented.
 

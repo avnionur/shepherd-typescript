@@ -30,6 +30,9 @@ The durable trace store is `.vcscore/quickstart-trace.sqlite`. Inspect it withou
 ```sh
 shepherd-ts run show run:quickstart --store .vcscore/quickstart-trace.sqlite --json
 shepherd-ts run output-citations --store .vcscore/quickstart-trace.sqlite --json
+shepherd-ts run outputs --store .vcscore/quickstart-trace.sqlite --json
+shepherd-ts run changeset @latest --workspace . --store .vcscore/quickstart-trace.sqlite --json
+shepherd-ts run vcscore @latest --store .vcscore/quickstart-trace.sqlite --json
 shepherd-ts run trace --store .vcscore/quickstart-trace.sqlite --json
 ```
 

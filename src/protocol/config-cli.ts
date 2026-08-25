@@ -56,7 +56,15 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
     );
     const limits = readObject(
         config.limits,
-        ["defaultPageSize", "maxArgumentBytes", "maxArguments", "maxOutputBytes", "maxPageSize"],
+        [
+            "defaultPageSize",
+            "defaultRetainedReadBytes",
+            "maxArgumentBytes",
+            "maxArguments",
+            "maxOutputBytes",
+            "maxPageSize",
+            "maxRetainedReadBytes",
+        ],
         "cli.limits",
     );
     const handlerRoles = readObject(
@@ -64,15 +72,18 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
         [
             "doctor",
             "runApply",
+            "runChangeset",
             "runDiscard",
             "runList",
             "runOutputCitations",
+            "runOutputs",
             "runRecoveryRecords",
             "runRelease",
             "runRepair",
             "runSelect",
             "runShow",
             "runTrace",
+            "runVcsCore",
             "taskList",
             "taskResolve",
             "taskShow",
@@ -94,9 +105,11 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             "initializeGit",
             "json",
             "limit",
+            "maxBytes",
             "noInitializeGit",
             "offset",
             "registry",
+            "read",
             "store",
             "workspace",
         ],
@@ -122,7 +135,13 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
     );
     const messages = readObject(
         config.messages,
-        ["demoNameUsage", "quickstartUnavailable"],
+        [
+            "changesetBinary",
+            "changesetPathUnavailable",
+            "changesetUnavailable",
+            "demoNameUsage",
+            "quickstartUnavailable",
+        ],
         "cli.messages",
     );
     const remedies = readObject(
@@ -228,8 +247,21 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
     );
     const maxArguments = readPositiveInteger(limits.maxArguments, "cli.limits.maxArguments");
     const maxPageSize = readPositiveInteger(limits.maxPageSize, "cli.limits.maxPageSize");
+    const defaultRetainedReadBytes = readPositiveInteger(
+        limits.defaultRetainedReadBytes,
+        "cli.limits.defaultRetainedReadBytes",
+    );
+    const maxRetainedReadBytes = readPositiveInteger(
+        limits.maxRetainedReadBytes,
+        "cli.limits.maxRetainedReadBytes",
+    );
     if (defaultPageSize > maxPageSize || defaultPageSize > maxArguments) {
         throw new TypeError("cli default page size must not exceed configured maxima");
+    }
+    if (defaultRetainedReadBytes > maxRetainedReadBytes) {
+        throw new TypeError(
+            "cli default retained read bytes must not exceed the configured maximum",
+        );
     }
     return {
         artifacts: {
@@ -275,6 +307,7 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
         helpAliases,
         limits: {
             defaultPageSize,
+            defaultRetainedReadBytes,
             maxArgumentBytes: readPositiveInteger(
                 limits.maxArgumentBytes,
                 "cli.limits.maxArgumentBytes",
@@ -282,6 +315,7 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             maxArguments,
             maxOutputBytes: readPositiveInteger(limits.maxOutputBytes, "cli.limits.maxOutputBytes"),
             maxPageSize,
+            maxRetainedReadBytes,
         },
         machineOutput: {
             compatibilityVersion: readNonEmptyString(
@@ -304,6 +338,18 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             version: readPositiveInteger(machineOutput.version, "cli.machineOutput.version"),
         },
         messages: {
+            changesetBinary: readNonEmptyString(
+                messages.changesetBinary,
+                "cli.messages.changesetBinary",
+            ),
+            changesetPathUnavailable: readNonEmptyString(
+                messages.changesetPathUnavailable,
+                "cli.messages.changesetPathUnavailable",
+            ),
+            changesetUnavailable: readNonEmptyString(
+                messages.changesetUnavailable,
+                "cli.messages.changesetUnavailable",
+            ),
             demoNameUsage: readNonEmptyString(messages.demoNameUsage, "cli.messages.demoNameUsage"),
             quickstartUnavailable: readNonEmptyString(
                 messages.quickstartUnavailable,

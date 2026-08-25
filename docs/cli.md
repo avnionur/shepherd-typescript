@@ -59,6 +59,12 @@ database and fail visibly when a migration is required.
 accept configured selectors. Settlement requires the exact output identity plus `--command`,
 `--store`, `--workspace`, and optional binding name/root. `run start` remains visibly fenced.
 
+`run outputs` presents validated retained products and their current settlement state. `run
+changeset` authenticates a bounded canonical path page or `--read` UTF-8 preview through retained
+carrier evidence. `run vcscore` presents the complete native output/custody/revision citation.
+These views are read-only and documented in
+[`retained-output-cli-views.md`](./retained-output-cli-views.md).
+
 `task` supports bounded `list`, `show`, and `resolve` over an existing task registry. Dynamic
 source registration is unavailable because the package does not execute caller modules merely
 because a CLI string names them.
