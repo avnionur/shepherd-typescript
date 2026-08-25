@@ -178,9 +178,9 @@ trace-record contracts with durable SQLite task and trace stores:
   interruption and concurrent retry convergence, and fail-soft pre-run reclaim;
 - a configured distinct `shepherd-ts` executable with preserved bounded human help/output,
   protocol-versioned canonical JSON, generated command/schema references, protected
-  initialization, read-only run/task/trace/output/changeset/vcs-core views, exact settlements and
-  repair, a checked-in installed-package offline quickstart, and stable fenced/unavailable error
-  envelopes;
+  initialization, read-only run/task/trace/trace-revision/output/changeset/vcs-core views, exact
+  settlements and repair, a checked-in installed-package offline quickstart, and stable
+  fenced/unavailable error envelopes;
 - globally idempotent durable recovery commands with canonical command evidence, expired-lease
   takeover, command-bound start/cut transitions, and fail-closed absent/started handling;
 - globally idempotent pause requests bound atomically to the exact current started lifecycle head,

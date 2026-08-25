@@ -39,6 +39,10 @@ payload visibility and both record modes. The slice exposes owner paths, selecte
 envelopes, direct causal edges, external anchors, and witness evidence. Records appended after the
 cut's inclusive owner ordinal cannot appear.
 
+The CLI exposes the same projection through both `run trace` and the documented distinct `run
+trace-revision` command. Their human list/show bytes are identical; JSON retains the invoked command
+identity and returns `trace_revisions` or `trace_revision` respectively.
+
 Canonical order is publication-record ID then cut ID. It is independent of SQLite insertion order
 and survives native archive import. Equal cut publication remains idempotent and produces one
 revision.

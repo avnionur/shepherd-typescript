@@ -52,7 +52,7 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   separation.
 - [Output citations, trace revisions, and recovery records](./output-trace-recovery-records.md)
   define cut-bounded read projections, canonical command effects, archive-stable claim evidence,
-  and the no-repair authority boundary.
+  the distinct trace-revision CLI command, and the no-repair authority boundary.
 - [Orphaned operation diagnosis and repair](./orphan-operation-repair.md) defines externally proven
   session death, bounded read-only diagnosis, globally idempotent exact commands, atomic
   bookkeeping-only receipts, scope/provider refusal, and fail-soft pre-run reclaim.

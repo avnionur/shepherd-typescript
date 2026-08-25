@@ -162,6 +162,13 @@ try {
     assert.equal(vcsCore.result.vcscore?.output.output_id, outputId);
     const traces = invokeJson(executable, ["run", "trace", "--store", traceStorePath]);
     assert.equal((traces.result.trace_revisions?.length ?? 0) > 0, true);
+    const traceRevisions = invokeJson(executable, [
+        "run",
+        "trace-revision",
+        "--store",
+        traceStorePath,
+    ]);
+    assert.deepEqual(traceRevisions.result.trace_revisions, traces.result.trace_revisions);
 } finally {
     rmSync(temporaryRoot, { force: true, recursive: true });
 }

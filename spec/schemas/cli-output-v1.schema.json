@@ -546,6 +546,66 @@
                 "command": {
                     "const": [
                         "run",
+                        "trace-revision"
+                    ],
+                    "type": "array"
+                },
+                "ok": {
+                    "const": true,
+                    "type": "boolean"
+                },
+                "result": {
+                    "oneOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "trace_revision": {
+                                    "$ref": "#/$defs/jsonValue"
+                                }
+                            },
+                            "required": [
+                                "trace_revision"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "trace_revisions": {
+                                    "$ref": "#/$defs/jsonValue"
+                                }
+                            },
+                            "required": [
+                                "trace_revisions"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "cli_compatibility_version",
+                "cli_output_version",
+                "command",
+                "ok",
+                "result"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "cli_compatibility_version": {
+                    "const": "shepherd.cli.json.v1",
+                    "type": "string"
+                },
+                "cli_output_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "command": {
+                    "const": [
+                        "run",
                         "output-citations"
                     ],
                     "type": "array"

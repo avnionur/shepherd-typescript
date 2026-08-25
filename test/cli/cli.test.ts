@@ -55,7 +55,7 @@ test("CLI root help emits the stable canonical JSON success envelope", async () 
     assert.deepEqual(await invoke(["run", "--json", "--help"]), {
         errors: "",
         exitCode: 0,
-        output: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["run"],"ok":true,"result":{"commands":["list","show","changeset","trace","output-citations","outputs","vcscore","recovery-records","select","apply","release","discard","repair","start"],"group":"run"}}\n',
+        output: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["run"],"ok":true,"result":{"commands":["list","show","changeset","trace","trace-revision","output-citations","outputs","vcscore","recovery-records","select","apply","release","discard","repair","start"],"group":"run"}}\n',
     });
     assert.deepEqual(await invoke(["unknown", "--json"]), {
         errors: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["unknown"],"error":{"code":"CLI_USAGE"},"ok":false}\n',
@@ -74,7 +74,7 @@ test("CLI group help, usage errors, fenced commands, and source process exit cod
     assert.deepEqual(await invoke(["run", "--help"]), {
         errors: "",
         exitCode: 0,
-        output: "Usage: shepherd-ts run <command> [options]\n\nCommands:\n  list\n  show\n  changeset\n  trace\n  output-citations\n  outputs\n  vcscore\n  recovery-records\n  select\n  apply\n  release\n  discard\n  repair\n  start\n",
+        output: "Usage: shepherd-ts run <command> [options]\n\nCommands:\n  list\n  show\n  changeset\n  trace\n  trace-revision\n  output-citations\n  outputs\n  vcscore\n  recovery-records\n  select\n  apply\n  release\n  discard\n  repair\n  start\n",
     });
     assert.equal((await invoke(["init", "--help"])).output, "Usage: shepherd-ts init [options]\n");
     assert.deepEqual(await invoke(["unknown"]), {
@@ -264,11 +264,22 @@ test("CLI task and run reads resolve real registry and trace evidence", async (c
     assert.equal(JSON.parse(jsonRun.output).result.run.run_id, "run:cli");
     const traceList = await invoke(["run", "trace", "--store", storePath], directory);
     assert.match(traceList.output, /^sha256:/u);
-    const cutId = traceList.output.split("\t")[0] as string;
-    assert.match(
-        (await invoke(["run", "trace", cutId, "--store", storePath], directory)).output,
-        /Records:/u,
+    assert.deepEqual(
+        await invoke(["run", "trace-revision", "--store", storePath], directory),
+        traceList,
     );
+    const cutId = traceList.output.split("\t")[0] as string;
+    const traceShow = await invoke(["run", "trace", cutId, "--store", storePath], directory);
+    assert.match(traceShow.output, /Records:/u);
+    assert.deepEqual(
+        await invoke(["run", "trace-revision", cutId, "--store", storePath], directory),
+        traceShow,
+    );
+    const traceRevisionJson = await invoke(
+        ["run", "trace-revision", "@latest", "--store", storePath, "--json"],
+        directory,
+    );
+    assert.equal(JSON.parse(traceRevisionJson.output).command.join("/"), "run/trace-revision");
     assert.equal(
         (await invoke(["run", "output-citations", "--store", storePath], directory)).output,
         "No output citations.\n",

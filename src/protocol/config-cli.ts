@@ -83,6 +83,7 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             "runSelect",
             "runShow",
             "runTrace",
+            "runTraceRevision",
             "runVcsCore",
             "taskList",
             "taskResolve",

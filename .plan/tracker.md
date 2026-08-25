@@ -341,6 +341,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 - [x] Complete Phase 4 Task 13 read-only retained-output, authenticated changeset/content, and
   native vcs-core CLI views with exact/prefix/latest selectors, configured bounds/errors, closed
   JSON, and installed-package evidence.
+- [x] Complete Phase 4 Task 14 configured `run trace-revision` list/show command with human parity,
+  distinct stable JSON identity, immutable cut/slice selectors, archive/reopen behavior, and
+  installed-package evidence.
 
 ## Verification required for this slice
 
@@ -354,9 +357,8 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 
 ## Next slice
 
-Continue Phase 4 with the remaining exit-audit blockers for retained-output publication repair and
-the documented trace-revision command alias. Preserve the installed quickstart, read-only views,
-stable JSON, and exact mutation authority.
+Continue Phase 4 with the remaining exit-audit blocker for retained-output publication and repair.
+Preserve the installed quickstart, read-only views, stable JSON, and exact mutation authority.
 
 ## Notes
 
