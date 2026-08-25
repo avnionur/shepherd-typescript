@@ -37,11 +37,13 @@ export type CliProtocolConfig = {
     readonly artifacts: {
         readonly commandReference: string;
         readonly jsonOutputSchema: string;
+        readonly quickstartDemo: string;
     };
     readonly compatibilityVersion: string;
     readonly defaults: {
         readonly bindingName: string;
         readonly bindingRoot: string;
+        readonly quickstartDemoName: string;
         readonly taskRegistryPath: string;
         readonly traceStorePath: string;
         readonly workspacePath: string;
@@ -69,7 +71,7 @@ export type CliProtocolConfig = {
         readonly taskList: string;
         readonly taskResolve: string;
         readonly taskShow: string;
-        readonly unsupportedDemoWrite: string;
+        readonly demoWrite: string;
         readonly unsupportedPackageInit: string;
         readonly unsupportedStart: string;
         readonly unsupportedTaskRegister: string;
@@ -97,6 +99,10 @@ export type CliProtocolConfig = {
         readonly unavailableRemedies: Readonly<Record<string, keyof CliProtocolConfig["remedies"]>>;
         readonly version: number;
     };
+    readonly messages: {
+        readonly demoNameUsage: string;
+        readonly quickstartUnavailable: string;
+    };
     readonly options: {
         readonly adopt: string;
         readonly bindingName: string;
@@ -112,7 +118,6 @@ export type CliProtocolConfig = {
         readonly workspace: string;
     };
     readonly remedies: {
-        readonly demoWrite: string;
         readonly fencedStart: string;
         readonly packageInit: string;
         readonly taskRegister: string;

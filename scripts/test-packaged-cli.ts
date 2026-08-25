@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -12,6 +12,7 @@ const protocol = JSON.parse(
         readonly artifacts: {
             readonly commandReference: string;
             readonly jsonOutputSchema: string;
+            readonly quickstartDemo: string;
         };
         readonly executableName: string;
         readonly executablePath: string;
@@ -80,9 +81,68 @@ try {
             readFileSync(path.join(repositoryRoot, artifact), "utf8"),
         );
     }
+    const consumerRoot = path.join(installPath, "quickstart-consumer");
+    mkdirSync(consumerRoot);
+    const quickstartSource = execFileSync(executable, ["demo", "write", "quickstart"], {
+        encoding: "utf8",
+    });
+    assert.equal(
+        quickstartSource,
+        readFileSync(path.join(repositoryRoot, protocol.cli.artifacts.quickstartDemo), "utf8"),
+    );
+    const quickstartPath = path.join(consumerRoot, "quickstart.mjs");
+    writeFileSync(quickstartPath, quickstartSource);
+    const quickstartOutput = execFileSync(process.execPath, [quickstartPath], {
+        cwd: consumerRoot,
+        encoding: "utf8",
+    });
+    assert.equal(quickstartOutput, "['NOTE.txt']\nHello from a Shepherd retained output.\n");
+    assert.equal(
+        readFileSync(path.join(consumerRoot, "NOTE.txt"), "utf8"),
+        "Hello from a Shepherd retained output.\n",
+    );
+    const traceStorePath = path.join(consumerRoot, ".vcscore", "quickstart-trace.sqlite");
+    const run = invokeJson(executable, [
+        "run",
+        "show",
+        "run:quickstart",
+        "--store",
+        traceStorePath,
+    ]);
+    assert.equal(run.result.run?.run_id, "run:quickstart");
+    assert.equal(run.result.run?.inspection.status, "committed");
+    const citations = invokeJson(executable, [
+        "run",
+        "output-citations",
+        "--store",
+        traceStorePath,
+    ]);
+    assert.equal(citations.result.output_citations?.length, 1);
+    assert.equal(citations.result.output_citations?.[0]?.run_id, "run:quickstart");
+    const traces = invokeJson(executable, ["run", "trace", "--store", traceStorePath]);
+    assert.equal((traces.result.trace_revisions?.length ?? 0) > 0, true);
 } finally {
     rmSync(temporaryRoot, { force: true, recursive: true });
 }
+
+function invokeJson(executable: string, args: readonly string[]): InstalledJsonEnvelope {
+    return JSON.parse(
+        execFileSync(executable, [...args, `--${protocol.cli.options.json}`], {
+            encoding: "utf8",
+        }),
+    );
+}
+
+type InstalledJsonEnvelope = {
+    readonly result: {
+        readonly output_citations?: readonly { readonly run_id: string }[];
+        readonly run?: {
+            readonly inspection: { readonly status: string };
+            readonly run_id: string;
+        };
+        readonly trace_revisions?: readonly unknown[];
+    };
+};
 
 function assertStableJsonHelp(executable: string, args: readonly string[]): void {
     const jsonOutput = execFileSync(executable, args, { encoding: "utf8" });

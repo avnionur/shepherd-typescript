@@ -29,6 +29,7 @@ implementation documentation, and forward-looking plans.
 ├── docs/                   Implemented contracts and contributor guidance
 ├── .plan/                  Research, roadmap, decisions, and progress tracker
 ├── project.config.json     CLI ecosystem identity
+├── examples/               Checked-in installed-package examples
 ├── protocol.config.json    Language-neutral protocol constants
 ├── CONTEXT.md              Trace-kernel domain vocabulary
 ├── upstream.lock.json      Pinned upstream development and release revisions

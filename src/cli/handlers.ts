@@ -1,5 +1,6 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import type { SemanticRecord } from "../canonical/canonical-record.ts";
 import { listOutputCitations, resolveOutputCitationSelector } from "../ledger/output-citations.ts";
@@ -63,7 +64,7 @@ export function createCliHandlers(): ReadonlyMap<string, CliHandler> {
         [HANDLERS.taskResolve, taskShow],
         [HANDLERS.unsupportedStart, unsupported(cliProtocolConfig.remedies.fencedStart)],
         [HANDLERS.unsupportedTaskRegister, unsupported(cliProtocolConfig.remedies.taskRegister)],
-        [HANDLERS.unsupportedDemoWrite, unsupported(cliProtocolConfig.remedies.demoWrite)],
+        [HANDLERS.demoWrite, demoWrite],
         [HANDLERS.unsupportedPackageInit, unsupported(cliProtocolConfig.remedies.packageInit)],
     ]);
 }
@@ -368,6 +369,19 @@ async function taskShow(args: readonly string[], io: CliHandlerIo): Promise<void
     );
 }
 
+async function demoWrite(args: readonly string[], io: CliHandlerIo): Promise<void> {
+    if (args.length !== 1 || args[0] !== cliProtocolConfig.defaults.quickstartDemoName) {
+        throw new CliUsageError(cliProtocolConfig.messages.demoNameUsage);
+    }
+    const source = readPackageArtifact(cliProtocolConfig.artifacts.quickstartDemo);
+    io.output(source, {
+        demo: {
+            byte_length: Buffer.byteLength(source, "utf8"),
+            name: cliProtocolConfig.defaults.quickstartDemoName,
+        },
+    });
+}
+
 function unsupported(message: string): CliHandler {
     return async (args) => {
         if (args.length !== 0) {
@@ -375,6 +389,34 @@ function unsupported(message: string): CliHandler {
         }
         throw new CliUnavailableError(message);
     };
+}
+
+function readPackageArtifact(relativePath: string): string {
+    let directory = path.dirname(fileURLToPath(import.meta.url));
+    while (!existsSync(path.join(directory, "package.json"))) {
+        const parent = path.dirname(directory);
+        /* node:coverage disable */
+        if (parent === directory) {
+            throw new CliUnavailableError(cliProtocolConfig.messages.quickstartUnavailable);
+        }
+        /* node:coverage enable */
+        directory = parent;
+    }
+    const artifactPath = path.resolve(directory, relativePath);
+    const relative = path.relative(directory, artifactPath);
+    /* node:coverage disable */
+    if (relative === ".." || relative.startsWith(`..${path.sep}`)) {
+        throw new CliUnavailableError(cliProtocolConfig.messages.quickstartUnavailable);
+    }
+    /* node:coverage enable */
+    /* Package/source gates require this configured artifact at every shipped seam. */
+    /* node:coverage disable */
+    try {
+        return readFileSync(artifactPath, "utf8");
+    } catch {
+        throw new CliUnavailableError(cliProtocolConfig.messages.quickstartUnavailable);
+    }
+    /* node:coverage enable */
 }
 
 function parseOptions(

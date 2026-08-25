@@ -88,8 +88,8 @@ discard converges after restart. The reproducible evidence is recorded in
 `L1-alpha` does not mark the entire upstream column complete. Explicit grant identity, advisory
 capability checks, advisory/auto placement reporting, authenticated native filesystem-write jails,
 path-disjoint `apply`, receipt-only `release`, public orphaned-operation repair, and configured
-human CLI groups and stable JSON/reference artifacts are implemented, while installed-package
-consumer fixtures, and remaining P1 rows stay assigned to Phase 4. Platform completion is limited
+human CLI groups, stable JSON/reference artifacts, and the installed-package offline quickstart
+are implemented, while remaining documented CLI views stay assigned to Phase 4. Platform completion is limited
 to probed macOS Seatbelt and Linux/WSL Landlock; no optimized carrier, AppContainer, or native-
 Windows jail claim is made.
 
@@ -163,7 +163,7 @@ Windows jail claim is made.
 | `run outputs/output-citations/vcscore` | P1 | output-citation reads and protocol JSON implemented; remaining views follow |
 | `run repair` | P1 | exact globally idempotent CLI recovery implemented |
 | `task list/register/resolve/show` | P1 | list/resolve/show implemented; dynamic source registration fails closed |
-| `demo write` | P1 | configured honest refusal; checked-in fixture follows |
+| `demo write` | P1 | checked-in `quickstart` fixture and installed-package execution implemented |
 | `package init` | P2 | configured honest refusal; reproducible scaffold follows |
 | fenced `run start` compatibility | P3 | configured and disabled by default |
 

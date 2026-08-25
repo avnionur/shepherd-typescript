@@ -985,8 +985,18 @@ function createCapability(
                 ) {
                     throw new TypeError("retained-world text is invalid or too large");
                 }
-                const filePath = resolveRegularFile(custody.path, relativePath, protectGitMetadata);
-                const descriptor = openSync(filePath, constants.O_WRONLY | constants.O_NOFOLLOW);
+                const { create, filePath } = resolveWritableFile(
+                    custody.path,
+                    relativePath,
+                    protectGitMetadata,
+                );
+                const descriptor = openSync(
+                    filePath,
+                    constants.O_WRONLY |
+                        constants.O_NOFOLLOW |
+                        (create ? constants.O_CREAT | constants.O_EXCL : 0),
+                    constants.S_IRUSR | constants.S_IWUSR,
+                );
                 try {
                     assertOpenedRegularFile(custody.path, filePath, descriptor);
                     assertFence();
@@ -1128,6 +1138,54 @@ function resolveRegularFile(
     relativePath: string,
     protectGitMetadata: boolean,
 ): string {
+    const parts = readCapabilityPath(relativePath, protectGitMetadata);
+    let current = root;
+    for (const part of parts) {
+        current = path.join(current, part);
+        const status = lstatSync(current);
+        if (status.isSymbolicLink())
+            throw new TypeError("retained-world symbolic links are not file authority");
+    }
+    if (!lstatSync(current).isFile())
+        throw new TypeError("retained-world path is not a regular file");
+    return current;
+}
+
+function resolveWritableFile(
+    root: string,
+    relativePath: string,
+    protectGitMetadata: boolean,
+): { readonly create: boolean; readonly filePath: string } {
+    const parts = readCapabilityPath(relativePath, protectGitMetadata);
+    let current = root;
+    for (const [index, part] of parts.entries()) {
+        current = path.join(current, part);
+        try {
+            const status = lstatSync(current);
+            if (status.isSymbolicLink()) {
+                throw new TypeError("retained-world symbolic links are not file authority");
+            }
+            if (index < parts.length - 1 && !status.isDirectory()) {
+                throw new TypeError("retained-world parent path is not a directory");
+            }
+            if (index === parts.length - 1 && !status.isFile()) {
+                throw new TypeError("retained-world path is not a regular file");
+            }
+        } catch (error) {
+            if (
+                index === parts.length - 1 &&
+                parts.length === 1 &&
+                (error as NodeJS.ErrnoException).code === "ENOENT"
+            ) {
+                return { create: true, filePath: current };
+            }
+            throw error;
+        }
+    }
+    return { create: false, filePath: current };
+}
+
+function readCapabilityPath(relativePath: string, protectGitMetadata: boolean): readonly string[] {
     if (
         typeof relativePath !== "string" ||
         relativePath.length === 0 ||
@@ -1146,17 +1204,7 @@ function resolveRegularFile(
     ) {
         throw new TypeError("retained-world path is invalid");
     }
-    let current = root;
-    const parts = relativePath.split("/");
-    for (const part of parts) {
-        current = path.join(current, part);
-        const status = lstatSync(current);
-        if (status.isSymbolicLink())
-            throw new TypeError("retained-world symbolic links are not file authority");
-    }
-    if (!lstatSync(current).isFile())
-        throw new TypeError("retained-world path is not a regular file");
-    return current;
+    return relativePath.split("/");
 }
 
 function readRunnerResult<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(

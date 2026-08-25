@@ -492,7 +492,7 @@ test("protocol configuration rejects invalid or drifted CLI topology", () => {
         (config) => {
             const unavailable = objectAt(objectAt(config, "cli"), "machineOutput")
                 .unavailableRemedies as Record<string, unknown>;
-            unavailable["unsupported-start"] = "demoWrite";
+            unavailable["unsupported-start"] = "packageInit";
         },
         (config) => {
             const unavailable = objectAt(objectAt(config, "cli"), "machineOutput")

@@ -5,11 +5,13 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
     artifacts: {
         commandReference: "docs/generated/cli-reference.md",
         jsonOutputSchema: "spec/schemas/cli-output-v1.schema.json",
+        quickstartDemo: "examples/quickstart.mjs",
     },
     compatibilityVersion: "shepherd.cli.v1",
     defaults: {
         bindingName: "workspace",
         bindingRoot: ".",
+        quickstartDemoName: "quickstart",
         taskRegistryPath: "tasks.sqlite",
         traceStorePath: "trace.sqlite",
         workspacePath: ".",
@@ -37,7 +39,7 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
         taskList: "task-list",
         taskResolve: "task-resolve",
         taskShow: "task-show",
-        unsupportedDemoWrite: "unsupported-demo-write",
+        demoWrite: "demo-write",
         unsupportedPackageInit: "unsupported-package-init",
         unsupportedStart: "unsupported-start",
         unsupportedTaskRegister: "unsupported-task-register",
@@ -75,7 +77,7 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
             name: "task",
         },
         {
-            commands: [{ handler: "unsupported-demo-write", name: "write" }],
+            commands: [{ handler: "demo-write", name: "write" }],
             handler: null,
             name: "demo",
         },
@@ -124,7 +126,7 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
             "task-list": [["tasks"]],
             "task-resolve": [["task"]],
             "task-show": [["task"]],
-            "unsupported-demo-write": [],
+            "demo-write": [["demo"]],
             "unsupported-package-init": [],
             "unsupported-start": [],
             "unsupported-task-register": [],
@@ -133,12 +135,15 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
         schemaId:
             "https://avnionur.github.io/shepherd-typescript/schemas/cli-output-v1.schema.json",
         unavailableRemedies: {
-            "unsupported-demo-write": "demoWrite",
             "unsupported-package-init": "packageInit",
             "unsupported-start": "fencedStart",
             "unsupported-task-register": "taskRegister",
         },
         version: 1,
+    },
+    messages: {
+        demoNameUsage: "demo write requires exactly one configured demo name",
+        quickstartUnavailable: "quickstart demo artifact is unavailable",
     },
     options: {
         adopt: "adopt",
@@ -155,7 +160,6 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
         workspace: "workspace",
     },
     remedies: {
-        demoWrite: "demo write requires the checked-in offline quickstart fixture",
         fencedStart: "run start is fenced; use the public task execution APIs",
         packageInit: "package init requires the reproducible extension scaffold capability",
         taskRegister:

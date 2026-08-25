@@ -17,6 +17,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   mutation delegation, and unavailable-capability remedies.
 - [Generated CLI reference](./generated/cli-reference.md) lists the configured executable,
   commands, options, and fenced/unavailable remedies.
+- [Offline retained-output quickstart](./quickstart.md) runs the checked-in deterministic demo
+  through a freshly installed package, retained inspection, exact selection, and CLI JSON.
 - [Naming and licensing](./naming-and-licensing.md) records package identity, attribution, and
   publication boundaries.
 - [Canonical record contract](./canonical-records.md) defines accepted values, deterministic

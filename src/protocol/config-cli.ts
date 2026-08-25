@@ -25,6 +25,7 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             "helpAliases",
             "limits",
             "machineOutput",
+            "messages",
             "options",
             "remedies",
             "version",
@@ -33,12 +34,19 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
     );
     const artifacts = readObject(
         config.artifacts,
-        ["commandReference", "jsonOutputSchema"],
+        ["commandReference", "jsonOutputSchema", "quickstartDemo"],
         "cli.artifacts",
     );
     const defaults = readObject(
         config.defaults,
-        ["bindingName", "bindingRoot", "taskRegistryPath", "traceStorePath", "workspacePath"],
+        [
+            "bindingName",
+            "bindingRoot",
+            "quickstartDemoName",
+            "taskRegistryPath",
+            "traceStorePath",
+            "workspacePath",
+        ],
         "cli.defaults",
     );
     const exitCodes = readObject(
@@ -68,7 +76,7 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             "taskList",
             "taskResolve",
             "taskShow",
-            "unsupportedDemoWrite",
+            "demoWrite",
             "unsupportedPackageInit",
             "unsupportedStart",
             "unsupportedTaskRegister",
@@ -112,9 +120,14 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
         ["failure", "unavailable", "usage"],
         "cli.machineOutput.errorCodes",
     );
+    const messages = readObject(
+        config.messages,
+        ["demoNameUsage", "quickstartUnavailable"],
+        "cli.messages",
+    );
     const remedies = readObject(
         config.remedies,
-        ["demoWrite", "fencedStart", "packageInit", "taskRegister"],
+        ["fencedStart", "packageInit", "taskRegister"],
         "cli.remedies",
     );
     const groups = readArray(config.groups, "cli.groups").map(readGroup);
@@ -228,6 +241,10 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
                 artifacts.jsonOutputSchema,
                 "cli.artifacts.jsonOutputSchema",
             ),
+            quickstartDemo: readNonEmptyString(
+                artifacts.quickstartDemo,
+                "cli.artifacts.quickstartDemo",
+            ),
         },
         compatibilityVersion: readNonEmptyString(
             config.compatibilityVersion,
@@ -236,6 +253,10 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
         defaults: {
             bindingName: readNonEmptyString(defaults.bindingName, "cli.defaults.bindingName"),
             bindingRoot: readNonEmptyString(defaults.bindingRoot, "cli.defaults.bindingRoot"),
+            quickstartDemoName: readNonEmptyString(
+                defaults.quickstartDemoName,
+                "cli.defaults.quickstartDemoName",
+            ),
             taskRegistryPath: readNonEmptyString(
                 defaults.taskRegistryPath,
                 "cli.defaults.taskRegistryPath",
@@ -282,9 +303,15 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
                 unavailableRemedies as ProtocolConfig["cli"]["machineOutput"]["unavailableRemedies"],
             version: readPositiveInteger(machineOutput.version, "cli.machineOutput.version"),
         },
+        messages: {
+            demoNameUsage: readNonEmptyString(messages.demoNameUsage, "cli.messages.demoNameUsage"),
+            quickstartUnavailable: readNonEmptyString(
+                messages.quickstartUnavailable,
+                "cli.messages.quickstartUnavailable",
+            ),
+        },
         options: configuredOptions as ProtocolConfig["cli"]["options"],
         remedies: {
-            demoWrite: configuredRemedies.demoWrite as string,
             fencedStart: configuredRemedies.fencedStart as string,
             packageInit: configuredRemedies.packageInit as string,
             taskRegister: configuredRemedies.taskRegister as string,

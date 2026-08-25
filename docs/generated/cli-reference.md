@@ -48,7 +48,10 @@ JSON schema: `https://avnionur.github.io/shepherd-typescript/schemas/cli-output-
 
 - `shepherd-ts run start`: run start is fenced; use the public task execution APIs
 - `shepherd-ts task register`: task register does not execute dynamic source modules; register through the public descriptor API
-- `shepherd-ts demo write`: demo write requires the checked-in offline quickstart fixture
 - `shepherd-ts package init`: package init requires the reproducible extension scaffold capability
+
+## Offline demo
+
+- `shepherd-ts demo write quickstart`: emits `examples/quickstart.mjs`
 
 Pass `--json` anywhere in an invocation to emit one canonical JSON object followed by a newline. Successful output is written to stdout; errors are written to stderr. The envelope is bounded to 1048576 UTF-8 bytes and never includes error messages, stack traces, or resolved filesystem paths.
