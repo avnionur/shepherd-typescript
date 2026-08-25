@@ -119,6 +119,47 @@ try {
     ]);
     assert.equal(citations.result.output_citations?.length, 1);
     assert.equal(citations.result.output_citations?.[0]?.run_id, "run:quickstart");
+    const outputs = invokeJson(executable, ["run", "outputs", "--store", traceStorePath]);
+    assert.equal(outputs.result.outputs?.[0]?.run_id, "run:quickstart");
+    const outputId = outputs.result.outputs?.[0]?.output.output_id;
+    assert.equal(typeof outputId, "string");
+    const changeset = invokeJson(executable, [
+        "run",
+        "changeset",
+        outputId as string,
+        "--store",
+        traceStorePath,
+        "--workspace",
+        consumerRoot,
+    ]);
+    assert.deepEqual(
+        changeset.result.changeset?.page.changes.map(({ path: changedPath }) => changedPath),
+        ["NOTE.txt"],
+    );
+    const retainedText = execFileSync(
+        executable,
+        [
+            "run",
+            "changeset",
+            outputId as string,
+            "--read",
+            "NOTE.txt",
+            "--store",
+            traceStorePath,
+            "--workspace",
+            consumerRoot,
+        ],
+        { encoding: "utf8" },
+    );
+    assert.equal(retainedText, "Hello from a Shepherd retained output.\n");
+    const vcsCore = invokeJson(executable, [
+        "run",
+        "vcscore",
+        outputId as string,
+        "--store",
+        traceStorePath,
+    ]);
+    assert.equal(vcsCore.result.vcscore?.output.output_id, outputId);
     const traces = invokeJson(executable, ["run", "trace", "--store", traceStorePath]);
     assert.equal((traces.result.trace_revisions?.length ?? 0) > 0, true);
 } finally {
@@ -135,12 +176,20 @@ function invokeJson(executable: string, args: readonly string[]): InstalledJsonE
 
 type InstalledJsonEnvelope = {
     readonly result: {
+        readonly changeset?: {
+            readonly page: { readonly changes: readonly { readonly path: string }[] };
+        };
         readonly output_citations?: readonly { readonly run_id: string }[];
+        readonly outputs?: readonly {
+            readonly output: { readonly output_id: string };
+            readonly run_id: string;
+        }[];
         readonly run?: {
             readonly inspection: { readonly status: string };
             readonly run_id: string;
         };
         readonly trace_revisions?: readonly unknown[];
+        readonly vcscore?: { readonly output: { readonly output_id: string } };
     };
 };
 

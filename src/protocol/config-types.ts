@@ -59,15 +59,18 @@ export type CliProtocolConfig = {
     readonly handlerRoles: {
         readonly doctor: string;
         readonly runApply: string;
+        readonly runChangeset: string;
         readonly runDiscard: string;
         readonly runList: string;
         readonly runOutputCitations: string;
+        readonly runOutputs: string;
         readonly runRecoveryRecords: string;
         readonly runRelease: string;
         readonly runRepair: string;
         readonly runSelect: string;
         readonly runShow: string;
         readonly runTrace: string;
+        readonly runVcsCore: string;
         readonly taskList: string;
         readonly taskResolve: string;
         readonly taskShow: string;
@@ -81,10 +84,12 @@ export type CliProtocolConfig = {
     readonly groups: readonly CliGroupConfig[];
     readonly limits: {
         readonly defaultPageSize: number;
+        readonly defaultRetainedReadBytes: number;
         readonly maxArgumentBytes: number;
         readonly maxArguments: number;
         readonly maxOutputBytes: number;
         readonly maxPageSize: number;
+        readonly maxRetainedReadBytes: number;
     };
     readonly machineOutput: {
         readonly compatibilityVersion: string;
@@ -100,6 +105,9 @@ export type CliProtocolConfig = {
         readonly version: number;
     };
     readonly messages: {
+        readonly changesetBinary: string;
+        readonly changesetPathUnavailable: string;
+        readonly changesetUnavailable: string;
         readonly demoNameUsage: string;
         readonly quickstartUnavailable: string;
     };
@@ -111,9 +119,11 @@ export type CliProtocolConfig = {
         readonly initializeGit: string;
         readonly json: string;
         readonly limit: string;
+        readonly maxBytes: string;
         readonly noInitializeGit: string;
         readonly offset: string;
         readonly registry: string;
+        readonly read: string;
         readonly store: string;
         readonly workspace: string;
     };

@@ -408,6 +408,9 @@ test("protocol configuration rejects invalid or drifted CLI topology", () => {
             objectAt(objectAt(config, "cli"), "limits").defaultPageSize = 65;
         },
         (config) => {
+            objectAt(objectAt(config, "cli"), "limits").defaultRetainedReadBytes = 1_048_577;
+        },
+        (config) => {
             const groups = objectAt(config, "cli").groups as Record<string, unknown>[];
             const commands = groups[2]?.commands as Record<string, unknown>[];
             commands[1] = { ...commands[0] };

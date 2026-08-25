@@ -25,15 +25,18 @@
         "handlerRoles": {
             "doctor": "doctor",
             "runApply": "run-apply",
+            "runChangeset": "run-changeset",
             "runDiscard": "run-discard",
             "runList": "run-list",
             "runOutputCitations": "run-output-citations",
+            "runOutputs": "run-outputs",
             "runRecoveryRecords": "run-recovery-records",
             "runRelease": "run-release",
             "runRepair": "run-repair",
             "runSelect": "run-select",
             "runShow": "run-show",
             "runTrace": "run-trace",
+            "runVcsCore": "run-vcscore",
             "taskList": "task-list",
             "taskResolve": "task-resolve",
             "taskShow": "task-show",
@@ -59,8 +62,11 @@
                 "commands": [
                     { "handler": "run-list", "name": "list" },
                     { "handler": "run-show", "name": "show" },
+                    { "handler": "run-changeset", "name": "changeset" },
                     { "handler": "run-trace", "name": "trace" },
                     { "handler": "run-output-citations", "name": "output-citations" },
+                    { "handler": "run-outputs", "name": "outputs" },
+                    { "handler": "run-vcscore", "name": "vcscore" },
                     { "handler": "run-recovery-records", "name": "recovery-records" },
                     { "handler": "run-select", "name": "select" },
                     { "handler": "run-apply", "name": "apply" },
@@ -95,10 +101,12 @@
         ],
         "limits": {
             "defaultPageSize": 25,
+            "defaultRetainedReadBytes": 65536,
             "maxArgumentBytes": 4096,
             "maxArguments": 64,
             "maxOutputBytes": 1048576,
-            "maxPageSize": 100
+            "maxPageSize": 100,
+            "maxRetainedReadBytes": 1048576
         },
         "machineOutput": {
             "compatibilityVersion": "shepherd.cli.json.v1",
@@ -120,15 +128,18 @@
                     ]
                 ],
                 "run-apply": [["settlement"]],
+                "run-changeset": [["changeset"], ["changeset_read"]],
                 "run-discard": [["settlement"]],
                 "run-list": [["runs"]],
                 "run-output-citations": [["output_citation"], ["output_citations"]],
+                "run-outputs": [["output"], ["outputs"]],
                 "run-recovery-records": [["recovery_record"], ["recovery_records"]],
                 "run-release": [["settlement"]],
                 "run-repair": [["repair_receipt"]],
                 "run-select": [["settlement"]],
                 "run-show": [["run"]],
                 "run-trace": [["trace_revision"], ["trace_revisions"]],
+                "run-vcscore": [["vcscore"]],
                 "task-list": [["tasks"]],
                 "task-resolve": [["task"]],
                 "task-show": [["task"]],
@@ -147,6 +158,9 @@
             "version": 1
         },
         "messages": {
+            "changesetBinary": "retained changeset path is not UTF-8 text",
+            "changesetPathUnavailable": "retained changeset path is unavailable",
+            "changesetUnavailable": "retained changeset evidence is unavailable",
             "demoNameUsage": "demo write requires exactly one configured demo name",
             "quickstartUnavailable": "quickstart demo artifact is unavailable"
         },
@@ -158,9 +172,11 @@
             "initializeGit": "initialize-git",
             "json": "json",
             "limit": "limit",
+            "maxBytes": "max-bytes",
             "noInitializeGit": "no-initialize-git",
             "offset": "offset",
             "registry": "registry",
+            "read": "read",
             "store": "store",
             "workspace": "workspace"
         },

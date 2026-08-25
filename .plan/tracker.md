@@ -338,6 +338,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 - [x] Complete Phase 4 Task 12 packaged offline quickstart with pinned installed-wheel semantics,
   checked-in/configured demo bytes, deterministic static execution, missing-file creation inside
   isolated custody, retained inspection, exact selection, installed ESM root, and CLI JSON evidence.
+- [x] Complete Phase 4 Task 13 read-only retained-output, authenticated changeset/content, and
+  native vcs-core CLI views with exact/prefix/latest selectors, configured bounds/errors, closed
+  JSON, and installed-package evidence.
 
 ## Verification required for this slice
 
@@ -351,8 +354,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 
 ## Next slice
 
-Continue Phase 4 with the exit-audit blockers for documented changeset/output/vcs-core CLI views.
-Preserve the installed quickstart, stable JSON, and exact mutation authority.
+Continue Phase 4 with the remaining exit-audit blockers for retained-output publication repair and
+the documented trace-revision command alias. Preserve the installed quickstart, read-only views,
+stable JSON, and exact mutation authority.
 
 ## Notes
 

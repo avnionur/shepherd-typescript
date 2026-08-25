@@ -157,10 +157,10 @@ Windows jail claim is made.
 | --- | --- | --- |
 | `init` | P0 | configured protected initialization implemented; no silent Git-history mutation |
 | `doctor` | P0 | bounded human diagnostics and stable closed JSON implemented |
-| `run list/show/trace/changeset` | P0 | configured run/trace reads and stable machine output implemented; changeset follows |
+| `run list/show/trace/changeset` | P0 | configured run/trace reads plus authenticated bounded changeset summary/content and stable machine output implemented |
 | `run select/discard` | P0 | exact IDs and consume-once CLI delegation implemented |
 | `run apply/release` | P1 | exact IDs and documented settlement CLI delegation implemented |
-| `run outputs/output-citations/vcscore` | P1 | output-citation reads and protocol JSON implemented; remaining views follow |
+| `run outputs/output-citations/vcscore` | P1 | validated retained products, raw output citations, native vcs-core evidence, and protocol JSON implemented |
 | `run repair` | P1 | exact globally idempotent CLI recovery implemented |
 | `task list/register/resolve/show` | P1 | list/resolve/show implemented; dynamic source registration fails closed |
 | `demo write` | P1 | checked-in `quickstart` fixture and installed-package execution implemented |

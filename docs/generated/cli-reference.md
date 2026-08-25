@@ -13,8 +13,11 @@ JSON schema: `https://avnionur.github.io/shepherd-typescript/schemas/cli-output-
 - `shepherd-ts doctor`
 - `shepherd-ts run list`
 - `shepherd-ts run show`
+- `shepherd-ts run changeset`
 - `shepherd-ts run trace`
 - `shepherd-ts run output-citations`
+- `shepherd-ts run outputs`
+- `shepherd-ts run vcscore`
 - `shepherd-ts run recovery-records`
 - `shepherd-ts run select`
 - `shepherd-ts run apply`
@@ -38,9 +41,11 @@ JSON schema: `https://avnionur.github.io/shepherd-typescript/schemas/cli-output-
 - `--initialize-git`
 - `--json`
 - `--limit`
+- `--max-bytes`
 - `--no-initialize-git`
 - `--offset`
 - `--registry`
+- `--read`
 - `--store`
 - `--workspace`
 

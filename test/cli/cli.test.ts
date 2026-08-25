@@ -55,7 +55,7 @@ test("CLI root help emits the stable canonical JSON success envelope", async () 
     assert.deepEqual(await invoke(["run", "--json", "--help"]), {
         errors: "",
         exitCode: 0,
-        output: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["run"],"ok":true,"result":{"commands":["list","show","trace","output-citations","recovery-records","select","apply","release","discard","repair","start"],"group":"run"}}\n',
+        output: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["run"],"ok":true,"result":{"commands":["list","show","changeset","trace","output-citations","outputs","vcscore","recovery-records","select","apply","release","discard","repair","start"],"group":"run"}}\n',
     });
     assert.deepEqual(await invoke(["unknown", "--json"]), {
         errors: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":["unknown"],"error":{"code":"CLI_USAGE"},"ok":false}\n',
@@ -74,7 +74,7 @@ test("CLI group help, usage errors, fenced commands, and source process exit cod
     assert.deepEqual(await invoke(["run", "--help"]), {
         errors: "",
         exitCode: 0,
-        output: "Usage: shepherd-ts run <command> [options]\n\nCommands:\n  list\n  show\n  trace\n  output-citations\n  recovery-records\n  select\n  apply\n  release\n  discard\n  repair\n  start\n",
+        output: "Usage: shepherd-ts run <command> [options]\n\nCommands:\n  list\n  show\n  changeset\n  trace\n  output-citations\n  outputs\n  vcscore\n  recovery-records\n  select\n  apply\n  release\n  discard\n  repair\n  start\n",
     });
     assert.equal((await invoke(["init", "--help"])).output, "Usage: shepherd-ts init [options]\n");
     assert.deepEqual(await invoke(["unknown"]), {
@@ -360,6 +360,192 @@ test("CLI exact settlement commands preserve public select/apply/release/discard
             fixture.workspaceRoot,
         );
         assert.match(citation.output, new RegExp(`Output: ${fixture.outputId}`, "u"));
+        const outputs = await invoke(
+            ["run", "outputs", "--store", fixture.storePath],
+            fixture.workspaceRoot,
+        );
+        assert.match(outputs.output, new RegExp(fixture.outputId, "u"));
+        const changeset = await invoke(
+            [
+                "run",
+                "changeset",
+                fixture.outputId,
+                "--store",
+                fixture.storePath,
+                "--workspace",
+                fixture.workspaceRoot,
+            ],
+            fixture.workspaceRoot,
+        );
+        assert.match(changeset.output, /message\.txt/u);
+        const retainedText = await invoke(
+            [
+                "run",
+                "changeset",
+                fixture.outputId,
+                "--read",
+                "message.txt",
+                "--store",
+                fixture.storePath,
+                "--workspace",
+                fixture.workspaceRoot,
+            ],
+            fixture.workspaceRoot,
+        );
+        assert.equal(retainedText.output, "candidate\n");
+        const vcsCore = await invoke(
+            ["run", "vcscore", fixture.outputId, "--store", fixture.storePath],
+            fixture.workspaceRoot,
+        );
+        assert.match(vcsCore.output, new RegExp(`Output: ${fixture.outputId}`, "u"));
+        assert.equal(await readFile(fixture.messagePath, "utf8"), "before\n");
+        if (action === "select") {
+            const outputJson = await invoke(
+                ["run", "outputs", fixture.outputId, "--store", fixture.storePath, "--json"],
+                fixture.workspaceRoot,
+            );
+            assert.equal(
+                JSON.parse(outputJson.output).result.output.output.output_id,
+                fixture.outputId,
+            );
+            const changesetJson = await invoke(
+                [
+                    "run",
+                    "changeset",
+                    fixture.outputId,
+                    "--store",
+                    fixture.storePath,
+                    "--workspace",
+                    fixture.workspaceRoot,
+                    "--json",
+                ],
+                fixture.workspaceRoot,
+            );
+            assert.equal(
+                JSON.parse(changesetJson.output).result.changeset.output_id,
+                fixture.outputId,
+            );
+            const boundedRead = await invoke(
+                [
+                    "run",
+                    "changeset",
+                    fixture.outputId,
+                    "--read",
+                    "message.txt",
+                    "--max-bytes",
+                    "4",
+                    "--store",
+                    fixture.storePath,
+                    "--workspace",
+                    fixture.workspaceRoot,
+                ],
+                fixture.workspaceRoot,
+            );
+            assert.equal(boundedRead.output, "cand");
+            const vcsCoreJson = await invoke(
+                ["run", "vcscore", fixture.outputId, "--store", fixture.storePath, "--json"],
+                fixture.workspaceRoot,
+            );
+            assert.equal(
+                JSON.parse(vcsCoreJson.output).result.vcscore.output.output_id,
+                fixture.outputId,
+            );
+            assert.equal(
+                (
+                    await invoke(
+                        [
+                            "run",
+                            "changeset",
+                            fixture.outputId,
+                            "--max-bytes",
+                            "4",
+                            "--store",
+                            fixture.storePath,
+                            "--workspace",
+                            fixture.workspaceRoot,
+                        ],
+                        fixture.workspaceRoot,
+                    )
+                ).exitCode,
+                2,
+            );
+            assert.equal(
+                (
+                    await invoke(
+                        [
+                            "run",
+                            "changeset",
+                            fixture.outputId,
+                            "--read",
+                            "binary.txt",
+                            "--store",
+                            fixture.storePath,
+                            "--workspace",
+                            fixture.workspaceRoot,
+                        ],
+                        fixture.workspaceRoot,
+                    )
+                ).exitCode,
+                3,
+            );
+            const unavailable = await invoke(
+                [
+                    "run",
+                    "changeset",
+                    fixture.outputId,
+                    "--store",
+                    fixture.storePath,
+                    "--workspace",
+                    path.join(fixture.workspaceRoot, "missing"),
+                ],
+                fixture.workspaceRoot,
+            );
+            assert.equal(unavailable.exitCode, 3);
+            assert.equal(unavailable.errors, "retained changeset evidence is unavailable\n");
+            assert.doesNotMatch(unavailable.errors, new RegExp(fixture.workspaceRoot, "u"));
+            for (const maxBytes of ["0", "1048577"]) {
+                assert.equal(
+                    (
+                        await invoke(
+                            [
+                                "run",
+                                "changeset",
+                                fixture.outputId,
+                                "--read",
+                                "message.txt",
+                                "--max-bytes",
+                                maxBytes,
+                                "--store",
+                                fixture.storePath,
+                                "--workspace",
+                                fixture.workspaceRoot,
+                            ],
+                            fixture.workspaceRoot,
+                        )
+                    ).exitCode,
+                    2,
+                );
+            }
+            assert.equal(
+                (
+                    await invoke(
+                        [
+                            "run",
+                            "changeset",
+                            fixture.outputId,
+                            "--read",
+                            "missing.txt",
+                            "--store",
+                            fixture.storePath,
+                            "--workspace",
+                            fixture.workspaceRoot,
+                        ],
+                        fixture.workspaceRoot,
+                    )
+                ).exitCode,
+                2,
+            );
+        }
         const jsonCitation = await invoke(
             ["run", "output-citations", fixture.outputId, "--store", fixture.storePath, "--json"],
             fixture.workspaceRoot,
@@ -438,6 +624,18 @@ test("CLI exact settlement commands preserve public select/apply/release/discard
             await readFile(fixture.messagePath, "utf8"),
             action === "select" || action === "apply" ? "candidate\n" : "before\n",
         );
+        assert.match(
+            (
+                await invoke(
+                    ["run", "outputs", fixture.outputId, "--store", fixture.storePath],
+                    fixture.workspaceRoot,
+                )
+            ).output,
+            new RegExp(
+                `State: ${action === "apply" ? "applied" : action === "release" ? "released" : `${action}ed`}`,
+                "u",
+            ),
+        );
     }
 });
 
@@ -472,6 +670,22 @@ test("CLI validates options, paths, pagination, argument bounds, and I/O contain
     assert.equal(
         (await invoke(["run", "recovery-records", "--store", storePath], directory)).output,
         "No recovery records.\n",
+    );
+    assert.equal(
+        (await invoke(["run", "outputs", "--store", storePath], directory)).output,
+        "No retained outputs.\n",
+    );
+    assert.equal(
+        (await invoke(["run", "changeset", "@latest", "--store", storePath], directory)).exitCode,
+        1,
+    );
+    assert.equal(
+        (await invoke(["run", "vcscore", "@latest", "--store", storePath], directory)).exitCode,
+        1,
+    );
+    assert.equal(
+        (await invoke(["run", "vcscore", "a", "b", "--store", storePath], directory)).exitCode,
+        2,
     );
     assert.equal(
         (await invoke(["task", "list", "--registry", registryPath], directory)).output,
@@ -615,6 +829,9 @@ async function createSettlementFixture(
         runnerId: `runner:cli:${action}`,
         run: async (runnerContext) => {
             await runnerContext.world.writeText("message.txt", "candidate\n");
+            if (action === "select") {
+                await runnerContext.world.writeText("binary.txt", "\0binary");
+            }
             return executeTask(runnerContext.execution);
         },
     });

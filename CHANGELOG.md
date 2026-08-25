@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.49.0] - 2026-08-25
+
+### New Feature
+
+- Added configured `run outputs` list/show views over validated cut-bounded retained products and
+  their exact run, changeset, custody, binding, and settlement evidence.
+- Added authenticated `run changeset` summary and bounded retained UTF-8 content reads with
+  exact/prefix/latest selectors, paging, binary/missing/corrupt refusal, and no user-workspace read.
+- Added the native `run vcscore` citation view without synthesizing upstream-private record fields.
+- Extended the stable closed CLI JSON schema/reference and fresh installed-package quickstart gate
+  across all three read-only commands.
+
+### Impact
+
+CLI consumers can inspect retained products, canonical changed paths/content, and native custody
+citations without invoking providers or granting settlement, repair, Git, or filesystem mutation
+authority. Existing evidence schemas and archive identities are unchanged.
+
 ## [1.48.0] - 2026-08-25
 
 ### New Feature

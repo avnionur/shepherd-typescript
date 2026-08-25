@@ -252,6 +252,9 @@ Work:
 - reproduce the upstream offline quickstart as a compatibility fixture; **implemented in 1.48.0**
   with a checked-in configured demo, installed ESM-root execution, deterministic static provider,
   retained-file inspection, exact selection, CLI JSON evidence, and fresh-tarball conformance.
+- add documented retained-output, changeset, and vcs-core CLI views; **implemented in 1.49.0**
+  over cut-bounded output citations and authenticated carrier inspection with configured selectors,
+  paging/read bounds, stable JSON, archive/reopen evidence, and fresh-package conformance.
 
 Exit criteria:
 
@@ -265,8 +268,9 @@ Exit criteria:
 
 Milestone: **L1 stable**.
 
-Exit audit: **open after the 1.48.0 quickstart**; see
-[`phase-4-exit-audit.md`](./phase-4-exit-audit.md) for the remaining documented CLI view blockers.
+Exit audit: **open after the 1.49.0 read views**; see
+[`phase-4-exit-audit.md`](./phase-4-exit-audit.md) for the remaining documented compatibility
+blockers.
 
 ## Phase 5 — Native TypeScript product surface
 

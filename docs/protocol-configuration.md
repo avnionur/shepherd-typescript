@@ -18,7 +18,8 @@ and protocol artifact generation use the same parser. The CLI section fixes the 
 executable name/path, ordered group/command topology, internal handler identities, exit classes,
 default paths, quickstart name/artifact, stable demo errors, argument/output/page bounds, explicit
 unavailable/fenced remedies, stable machine version/schema/error codes, canonical byte bound, and
-generated JSON/reference artifact paths. The task
+generated JSON/reference artifact paths. It also fixes retained-content preview option names,
+default/maximum bytes, and stable unavailable/binary messages. The task
 section also fixes descriptor and
 artifact-lock versions, hashing, identity prefixes, schema IDs, generated artifact paths, and the
 task registry's SQLite durability and migration contract. The effect section fixes intent/outcome
