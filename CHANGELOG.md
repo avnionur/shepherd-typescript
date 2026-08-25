@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.50.0] - 2026-08-25
+
+### New Feature
+
+- Added the configured distinct `run trace-revision` list/show command over the existing immutable
+  trace-revision cut/slice projection.
+- Preserved byte-identical human behavior with `run trace` while stable JSON records the distinct
+  command identity and exact trace revision evidence.
+- Extended generated command/schema artifacts and fresh installed-package conformance without
+  changing trace, archive, selector, repair, settlement, or provider authority.
+
+### Impact
+
+CLI consumers can use the documented trace-revision spelling with the same bounded immutable
+evidence and archive/reopen behavior already provided by the native trace projection.
+
 ## [1.49.0] - 2026-08-25
 
 ### New Feature

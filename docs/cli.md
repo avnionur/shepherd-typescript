@@ -65,6 +65,10 @@ carrier evidence. `run vcscore` presents the complete native output/custody/revi
 These views are read-only and documented in
 [`retained-output-cli-views.md`](./retained-output-cli-views.md).
 
+`run trace-revision` is the configured documented spelling for the existing immutable
+trace-revision projection. It preserves `run trace` human bytes while stable JSON records the
+distinct command identity.
+
 `task` supports bounded `list`, `show`, and `resolve` over an existing task registry. Dynamic
 source registration is unavailable because the package does not execute caller modules merely
 because a CLI string names them.

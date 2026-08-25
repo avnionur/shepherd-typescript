@@ -70,6 +70,7 @@ export type CliProtocolConfig = {
         readonly runSelect: string;
         readonly runShow: string;
         readonly runTrace: string;
+        readonly runTraceRevision: string;
         readonly runVcsCore: string;
         readonly taskList: string;
         readonly taskResolve: string;

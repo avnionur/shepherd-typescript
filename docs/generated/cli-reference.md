@@ -15,6 +15,7 @@ JSON schema: `https://avnionur.github.io/shepherd-typescript/schemas/cli-output-
 - `shepherd-ts run show`
 - `shepherd-ts run changeset`
 - `shepherd-ts run trace`
+- `shepherd-ts run trace-revision`
 - `shepherd-ts run output-citations`
 - `shepherd-ts run outputs`
 - `shepherd-ts run vcscore`

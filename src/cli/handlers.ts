@@ -54,6 +54,7 @@ export function createCliHandlers(): ReadonlyMap<string, CliHandler> {
         [HANDLERS.runShow, runShow],
         [HANDLERS.runChangeset, runChangeset],
         [HANDLERS.runTrace, runTrace],
+        [HANDLERS.runTraceRevision, runTrace],
         [HANDLERS.runVcsCore, runVcsCore],
         [HANDLERS.runOutputCitations, runOutputCitations],
         [HANDLERS.runOutputs, runOutputs],

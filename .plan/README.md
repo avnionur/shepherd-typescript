@@ -170,6 +170,8 @@ record and public API must declare a protocol/compatibility version.
   hero, transcript, static-provider behavior, retained isolation, and TypeScript package mapping.
 - [Retained-output CLI view research](./retained-output-cli-views-research.md) — pinned selectors,
   changeset reads, vcs-core citations, native mapping, and read-only/archive boundaries.
+- [Trace-revision CLI research](./trace-revision-cli-research.md) — pinned distinct command
+  spelling and its mapping to immutable native cut/slice evidence.
 - [Phase 4 exit audit](./phase-4-exit-audit.md) — completed package-seam evidence and remaining
   documented CLI blockers before L1 stable.
 - [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
@@ -240,5 +242,4 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 4 with retained-output publication repair and the documented trace-revision alias
-identified by the updated exit audit.
+Continue Phase 4 with retained-output publication and repair identified by the updated exit audit.

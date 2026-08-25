@@ -255,6 +255,9 @@ Work:
 - add documented retained-output, changeset, and vcs-core CLI views; **implemented in 1.49.0**
   over cut-bounded output citations and authenticated carrier inspection with configured selectors,
   paging/read bounds, stable JSON, archive/reopen evidence, and fresh-package conformance.
+- add the distinct documented trace-revision CLI spelling; **implemented in 1.50.0** as a
+  configured read-only handler over the existing immutable cut/slice projection with identical
+  human bytes, distinct stable JSON command identity, and installed-package evidence.
 
 Exit criteria:
 
@@ -268,7 +271,7 @@ Exit criteria:
 
 Milestone: **L1 stable**.
 
-Exit audit: **open after the 1.49.0 read views**; see
+Exit audit: **open after the 1.50.0 trace-revision command**; see
 [`phase-4-exit-audit.md`](./phase-4-exit-audit.md) for the remaining documented compatibility
 blockers.
 
