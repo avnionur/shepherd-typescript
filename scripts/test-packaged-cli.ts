@@ -96,11 +96,11 @@ try {
     const facadeProbe = path.join(consumerRoot, "facade-probe.mjs");
     writeFileSync(
         facadeProbe,
-        `import { canonicalizeRecord as rootCanonical, runCli as rootRunCli } from ${JSON.stringify(packageManifest.name)};\nimport { canonicalizeRecord } from ${JSON.stringify(`${packageManifest.name}/canonical`)};\nimport { runCli } from ${JSON.stringify(`${packageManifest.name}/cli`)};\nif (canonicalizeRecord !== rootCanonical || runCli !== rootRunCli) throw new Error("facade mismatch");\nprocess.stdout.write(canonicalizeRecord({ ready: true }) + "\\n");\n`,
+        `import { canonicalizeRecord as rootCanonical, runCli as rootRunCli, task as rootTask } from ${JSON.stringify(packageManifest.name)};\nimport { canonicalizeRecord } from ${JSON.stringify(`${packageManifest.name}/canonical`)};\nimport { runCli } from ${JSON.stringify(`${packageManifest.name}/cli`)};\nimport { listTaskLedger, resolveTaskLedgerSelector, schema, SQLiteTaskRegistry, task } from ${JSON.stringify(`${packageManifest.name}/tasks`)};\nif (canonicalizeRecord !== rootCanonical || runCli !== rootRunCli || task !== rootTask) throw new Error("facade mismatch");\nconst descriptor = task({ input: schema.string(), instruction: "Return input.", name: "facade-probe", output: schema.string(), version: "1" });\nusing registry = new SQLiteTaskRegistry();\nregistry.register(descriptor);\nconst entries = listTaskLedger(registry);\nconst exact = resolveTaskLedgerSelector(registry, descriptor.artifactLock.task_id + "@1");\nif (entries.length !== 1 || exact.artifact_lock.artifact_digest !== descriptor.artifactLock.artifact_digest) throw new Error("task facade mismatch");\nprocess.stdout.write(canonicalizeRecord({ ready: true }) + "\\n" + entries.length + "\\n");\n`,
     );
     assert.equal(
         execFileSync(process.execPath, [facadeProbe], { cwd: consumerRoot, encoding: "utf8" }),
-        '{"ready":true}\n',
+        '{"ready":true}\n1\n',
     );
     assert.throws(
         () =>
@@ -131,7 +131,7 @@ try {
     const typeProbe = path.join(consumerRoot, "facade-probe.ts");
     writeFileSync(
         typeProbe,
-        `import { task } from ${JSON.stringify(packageManifest.name)};\nimport { canonicalizeRecord } from ${JSON.stringify(`${packageManifest.name}/canonical`)};\nimport { runCli, type CliIo } from ${JSON.stringify(`${packageManifest.name}/cli`)};\nvoid task; void canonicalizeRecord; void runCli; const io: CliIo | null = null; void io;\n`,
+        `import { task } from ${JSON.stringify(packageManifest.name)};\nimport { canonicalizeRecord } from ${JSON.stringify(`${packageManifest.name}/canonical`)};\nimport { runCli, type CliIo } from ${JSON.stringify(`${packageManifest.name}/cli`)};\nimport { listTaskLedger, schema, SQLiteTaskRegistry, type TaskLedgerEntry } from ${JSON.stringify(`${packageManifest.name}/tasks`)};\nvoid task; void canonicalizeRecord; void runCli; void listTaskLedger; void schema; void SQLiteTaskRegistry; const io: CliIo | null = null; const entry: TaskLedgerEntry | null = null; void io; void entry;\n`,
     );
     const typeConfig = path.join(consumerRoot, "tsconfig.json");
     writeFileSync(

@@ -7,8 +7,9 @@ Status: Phase 5 Task 1 implemented inventory
 | `.` | `src/index.ts` | Node 24 ESM | Existing public root | Preserves every Phase 4 export; includes SQLite, filesystem, Git, and native surfaces |
 | `./canonical` | `src/facades/canonical.ts` | ESM, web-safe logic | Stable additive subpath | Canonical encoding, identity, and semantic value types only |
 | `./cli` | `src/facades/cli.ts` | Node 24 ESM | Stable additive subpath | Reusable runner and injectable I/O type; no process exit |
+| `./tasks` | `src/facades/tasks.ts` | Node 24 ESM | Stable additive subpath | Task/schema builders, registry contract/errors, and bounded task-ledger reads |
 
-Task, run, trace, store, and workspace subpaths are deferred until their ownership and native/web
+Run, trace, store, and workspace subpaths are deferred until their ownership and native/web
 dependency boundaries can be declared cohesively. Direct `dist/src/...` imports are not public.
 
 The package is ESM-only. No `require` condition or CommonJS artifact is shipped; CommonJS consumers

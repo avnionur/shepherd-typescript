@@ -4,7 +4,8 @@ Implementation:
 [`src/task/sqlite-task-registry.ts`](../src/task/sqlite-task-registry.ts),
 [`src/task/registry-codec.ts`](../src/task/registry-codec.ts), and
 [`src/task/registry-migrations.ts`](../src/task/registry-migrations.ts). Public exports:
-[`src/index.ts`](../src/index.ts). Tests:
+[`src/index.ts`](../src/index.ts) and package subpath
+`@avnionur/shepherd-typescript/tasks`. Tests:
 [`test/task/registry.test.ts`](../test/task/registry.test.ts),
 [`test/task/registry-validation.test.ts`](../test/task/registry-validation.test.ts),
 [`test/task/registry-persistence.test.ts`](../test/task/registry-persistence.test.ts), and
