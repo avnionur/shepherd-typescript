@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.53.0] - 2026-08-26
+
+### New Feature
+
+- Added the stable `./tasks` ESM facade for task/schema builders, registry APIs/errors, task
+  artifact types, and bounded task-ledger reads.
+- Added fresh-tarball runtime and TypeScript conformance for descriptor creation, exact
+  registration/resolution, ledger projection, declarations, and maps.
+- Kept providers, run execution/control, trace stores, workspace grants, and private migrations
+  outside the task-owned entry.
+
+### Impact
+
+Task-library consumers can use a cohesive supported subpath without importing or depending on
+unowned execution and workspace authority surfaces. The root API remains unchanged.
+
 ## [1.52.0] - 2026-08-26
 
 ### New Feature

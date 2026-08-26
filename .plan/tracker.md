@@ -350,6 +350,8 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 - [x] Complete Phase 5 Task 1 ESM-only root/canonical/CLI export map with preserved root API,
   explicit CommonJS/deep-import refusal, declaration/source maps, and fresh consumer type/runtime
   conformance.
+- [x] Complete Phase 5 Task 2 additive task-domain facade with descriptor/schema builders, exact
+  registry API/errors, bounded task-ledger reads, explicit exclusions, and fresh consumer evidence.
 
 ## Verification required for this slice
 
