@@ -23,6 +23,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   authenticated changeset/content, and native vcs-core citation reads.
 - [Naming and licensing](./naming-and-licensing.md) records package identity, attribution, and
   publication boundaries.
+- [Package exports and module policy](./package-exports.md) defines supported ESM entries,
+  TypeScript requirements, CommonJS refusal, and deep-import boundaries.
 - [Canonical record contract](./canonical-records.md) defines accepted values, deterministic
   encoding, identifiers, and error behavior.
 - [Record body and envelope contract](./record-envelope.md) defines kernel ABI v0 semantic

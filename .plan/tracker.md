@@ -347,6 +347,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 - [x] Complete Phase 4 Task 15 exact-run retained-output publication compatibility with idempotent
   native citation verification and fail-closed managed-recovery remedy for insufficient raw CLI
   authority.
+- [x] Complete Phase 5 Task 1 ESM-only root/canonical/CLI export map with preserved root API,
+  explicit CommonJS/deep-import refusal, declaration/source maps, and fresh consumer type/runtime
+  conformance.
 
 ## Verification required for this slice
 
@@ -360,8 +363,8 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 
 ## Next slice
 
-Begin Phase 5 with the next dependency-unblocked native TypeScript product-surface issue. Preserve
-the completed L1 compatibility package, installed quickstart, stable JSON, and exact authority.
+Continue Phase 5 with the next dependency-unblocked owned domain subpath or typed-helper slice.
+Preserve the root facade, ESM-only policy, installed quickstart, and exact authority.
 
 ## Notes
 

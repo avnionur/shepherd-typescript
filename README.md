@@ -47,18 +47,17 @@ Coverage is earned in explicit levels so planned behavior is never presented as 
 | Level | Meaning | Status |
 | --- | --- | --- |
 | L0 | Canonical schemas, identities, trace storage, and projections | Complete |
-| L1 | Shepherd `0.3.0` settlement compatibility | L1-alpha: P0 loop complete; full Phase 4 surface planned |
+| L1 | Shepherd `0.3.0` settlement compatibility | Complete in 1.51.0 |
 | L2 | Scope and versioned-world substrate parity | Planned |
 | L3 | Paper programming-model parity | Planned |
 | L4 | Production security, recovery, performance, packaging, and releases | Planned |
 
-Naming and MIT licensing are defined, but publication remains disabled until package exports,
-consumer compatibility, and release checks are complete. Current examples import the source entry
-point for repository development only.
+Naming, MIT licensing, ESM package exports, and installed consumer compatibility are defined.
+Publication remains disabled until registry ownership and release checks are complete.
 
 ## Current capability
 
-Version `1.46.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.52.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -231,6 +230,10 @@ node quickstart.mjs
 See the [offline retained-output quickstart](./docs/quickstart.md).
 
 ## API
+
+The package is ESM-only. Supported entries are `.`, `./canonical`, and `./cli`; see
+[Package exports and module policy](./docs/package-exports.md). CommonJS must use dynamic
+`import()`, and undeclared deep imports are unsupported.
 
 ```ts
 import {

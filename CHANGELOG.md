@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.52.0] - 2026-08-26
+
+### New Feature
+
+- Added an explicit ESM package export map preserving the complete root facade and adding cohesive
+  `./canonical` and `./cli` subpaths.
+- Added fresh-tarball runtime and TypeScript consumer conformance for every declared entry,
+  declaration/source maps, and the existing offline quickstart.
+- Added tested CommonJS and undeclared deep-import refusal with a documented ESM-only policy.
+
+### Impact
+
+Consumers have stable supported import boundaries and clear module-system behavior without losing
+any root export or receiving a misleading partial CommonJS build.
+
 ## [1.51.0] - 2026-08-25
 
 ### New Feature
