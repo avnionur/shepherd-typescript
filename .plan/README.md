@@ -174,6 +174,8 @@ record and public API must declare a protocol/compatibility version.
   spelling and its mapping to immutable native cut/slice evidence.
 - [Output publication CLI research](./output-publication-cli-research.md) — pinned repair intent,
   native immutable-citation mapping, and managed-recovery authority boundary.
+- [Package export inventory](./package-export-inventory.md) — supported ESM entries, ownership,
+  runtime/web boundaries, deferred subpaths, and explicit CommonJS policy.
 - [Phase 4 exit audit](./phase-4-exit-audit.md) — completed package-seam evidence and remaining
   documented CLI blockers before L1 stable.
 - [Reference copy-carrier research](./reference-copy-carrier-research.md) — correctness-reference
@@ -244,5 +246,5 @@ The project is complete only when:
 
 ## Immediate next step
 
-Begin Phase 5 with the native TypeScript product surface over the completed L1 compatibility
-package.
+Continue Phase 5 with the next owned domain subpath or typed-helper slice over the explicit ESM
+package boundary.

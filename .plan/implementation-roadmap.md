@@ -282,8 +282,10 @@ Goal: make the TypeScript experience idiomatic without weakening parity.
 
 Work:
 
-- finalize TypeScript facade and subpath exports;
-- generate ESM-first packages with declared CommonJS policy;
+- finalize TypeScript facade and subpath exports; **initial root/canonical/CLI slice implemented in
+  1.52.0** with remaining domain subpaths deferred to owned follow-ups;
+- generate ESM-first packages with declared CommonJS policy; **implemented in 1.52.0** as explicit
+  ESM-only exports with tested CommonJS/deep-import refusal;
 - add explicit task builder, schema adapters, typed provider/tool helpers;
 - implement async-iterable trace queries and web-safe read-only types where
   sensible;

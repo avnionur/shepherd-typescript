@@ -9,6 +9,7 @@ test("package bin metadata matches the public distinct CLI executable", async ()
     const packageManifest = JSON.parse(readFileSync(new URL("package.json", root), "utf8")) as {
         readonly bin: Readonly<Record<string, string>>;
         readonly files: readonly string[];
+        readonly exports: Readonly<Record<string, unknown>>;
         readonly main: string;
         readonly types: string;
     };
@@ -31,4 +32,15 @@ test("package bin metadata matches the public distinct CLI executable", async ()
     assert.equal(packageManifest.files.includes("dist/src"), true);
     assert.equal(packageManifest.main, "dist/src/index.js");
     assert.equal(packageManifest.types, "dist/src/index.d.ts");
+    assert.deepEqual(packageManifest.exports, {
+        ".": { import: "./dist/src/index.js", types: "./dist/src/index.d.ts" },
+        "./canonical": {
+            import: "./dist/src/facades/canonical.js",
+            types: "./dist/src/facades/canonical.d.ts",
+        },
+        "./cli": {
+            import: "./dist/src/facades/cli.js",
+            types: "./dist/src/facades/cli.d.ts",
+        },
+    });
 });
