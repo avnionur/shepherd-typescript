@@ -6,6 +6,7 @@ The package is ESM-only on Node 24 or newer. Supported imports are:
 import { task } from "@avnionur/shepherd-typescript";
 import { canonicalizeRecord } from "@avnionur/shepherd-typescript/canonical";
 import { runCli, type CliIo } from "@avnionur/shepherd-typescript/cli";
+import { createStaticProvider } from "@avnionur/shepherd-typescript/providers";
 import { schema, SQLiteTaskRegistry, task } from "@avnionur/shepherd-typescript/tasks";
 ```
 
@@ -13,7 +14,9 @@ The root preserves the complete existing public API. `./canonical` is the cohesi
 encoding/identity surface. `./cli` contains the reusable runner and injectable I/O boundary.
 `./tasks` owns task/schema construction, task registry contracts/errors, and bounded task-ledger
 reads; it intentionally excludes providers, run execution/control, trace stores, workspace grants,
-and private migrations. Undeclared deep imports are unsupported and rejected by the export map.
+and private migrations. `./providers` owns the provider-neutral contract, descriptors,
+artifact/usage response types, deterministic static adapter, and stable errors; execution, tools,
+credentials, and workspace authority remain excluded. Undeclared deep imports are rejected.
 
 CommonJS `require()` is intentionally unsupported; use ESM or dynamic `import()`. The package does
 not ship a partial CommonJS transform. TypeScript consumers use `moduleResolution: "NodeNext"`,

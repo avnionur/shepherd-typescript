@@ -352,6 +352,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
   conformance.
 - [x] Complete Phase 5 Task 2 additive task-domain facade with descriptor/schema builders, exact
   registry API/errors, bounded task-ledger reads, explicit exclusions, and fresh consumer evidence.
+- [x] Complete Phase 5 Task 3 additive provider-domain facade with provider-neutral types,
+  deterministic static exchanges, stable errors, explicit execution/tool/credential exclusions,
+  and fresh consumer evidence.
 
 ## Verification required for this slice
 
