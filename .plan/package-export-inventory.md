@@ -9,8 +9,9 @@ Status: Phase 5 Task 1 implemented inventory
 | `./cli` | `src/facades/cli.ts` | Node 24 ESM | Stable additive subpath | Reusable runner and injectable I/O type; no process exit |
 | `./providers` | `src/facades/providers.ts` | ESM | Stable additive subpath | Provider contract/types, deterministic static adapter, and stable public errors |
 | `./tasks` | `src/facades/tasks.ts` | Node 24 ESM | Stable additive subpath | Task/schema builders, registry contract/errors, and bounded task-ledger reads |
+| `./trace` | `src/facades/trace.ts` | Node 24 ESM | Stable additive subpath | Write-capable trace store, cuts/slices/blobs, integrity/archive, and bounded trace/run evidence reads |
 
-Run, trace, store, and workspace subpaths are deferred until their ownership and native/web
+Run and workspace subpaths are deferred until their ownership and native/web
 dependency boundaries can be declared cohesively. Direct `dist/src/...` imports are not public.
 
 The package is ESM-only. No `require` condition or CommonJS artifact is shipped; CommonJS consumers

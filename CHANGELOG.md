@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.55.0] - 2026-08-27
+
+### New Feature
+
+- Added the stable Node-only `./trace` ESM facade for the write-capable trace store, public
+  append/cut/slice/blob contracts, integrity/archive methods, and bounded evidence projections.
+- Added fresh-tarball append, immutable-cut, trace-revision, archive round-trip, type, declaration,
+  and map conformance.
+- Kept task registry, providers, executors, workspace carriers/settlements, private SQL/migrations,
+  and protocol configuration outside the trace-owned entry.
+
+### Impact
+
+Trace consumers have a cohesive supported Node subpath with explicit persistence authority and no
+false browser-safe claim. Existing root and domain facades remain unchanged.
+
 ## [1.54.0] - 2026-08-27
 
 ### New Feature

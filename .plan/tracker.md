@@ -355,6 +355,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 - [x] Complete Phase 5 Task 3 additive provider-domain facade with provider-neutral types,
   deterministic static exchanges, stable errors, explicit execution/tool/credential exclusions,
   and fresh consumer evidence.
+- [x] Complete Phase 5 Task 4 additive Node trace-domain facade with append/cut/slice/blob store
+  authority, integrity/archive methods, bounded evidence projections, explicit exclusions, and
+  fresh append/cut/archive consumer evidence.
 
 ## Verification required for this slice
 

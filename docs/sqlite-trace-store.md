@@ -3,7 +3,8 @@
 Implementation:
 [`src/store/sqlite-trace-store.ts`](../src/store/sqlite-trace-store.ts) and the
 [`src/store`](../src/store) module. Public exports:
-[`src/index.ts`](../src/index.ts). Tests:
+[`src/index.ts`](../src/index.ts) and Node package subpath
+`@avnionur/shepherd-typescript/trace`. Tests:
 [`test/store`](../test/store).
 
 ## Scope
