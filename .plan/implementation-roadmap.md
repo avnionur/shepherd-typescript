@@ -287,6 +287,8 @@ Work:
   follow-ups;
 - add typed provider helpers; **provider contract/static-adapter facade implemented in 1.54.0**
   with execution, tools, credentials, and workspace authority explicitly excluded;
+- add trace queries; **Node trace persistence/query/interchange facade implemented in 1.55.0**
+  with write authority explicit and web-safe read types deferred to a separate split;
 - generate ESM-first packages with declared CommonJS policy; **implemented in 1.52.0** as explicit
   ESM-only exports with tested CommonJS/deep-import refusal;
 - add explicit task builder, schema adapters, typed provider/tool helpers;

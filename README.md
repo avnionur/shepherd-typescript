@@ -57,7 +57,7 @@ Publication remains disabled until registry ownership and release checks are com
 
 ## Current capability
 
-Version `1.54.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.55.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -231,8 +231,8 @@ See the [offline retained-output quickstart](./docs/quickstart.md).
 
 ## API
 
-The package is ESM-only. Supported entries are `.`, `./canonical`, `./cli`, `./providers`, and
-`./tasks`; see
+The package is ESM-only. Supported entries are `.`, `./canonical`, `./cli`, `./providers`,
+`./tasks`, and `./trace`; see
 [Package exports and module policy](./docs/package-exports.md). CommonJS must use dynamic
 `import()`, and undeclared deep imports are unsupported.
 

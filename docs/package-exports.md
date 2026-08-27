@@ -8,6 +8,7 @@ import { canonicalizeRecord } from "@avnionur/shepherd-typescript/canonical";
 import { runCli, type CliIo } from "@avnionur/shepherd-typescript/cli";
 import { createStaticProvider } from "@avnionur/shepherd-typescript/providers";
 import { schema, SQLiteTaskRegistry, task } from "@avnionur/shepherd-typescript/tasks";
+import { listTraceRevisions, SQLiteTraceStore } from "@avnionur/shepherd-typescript/trace";
 ```
 
 The root preserves the complete existing public API. `./canonical` is the cohesive canonical
@@ -17,6 +18,12 @@ reads; it intentionally excludes providers, run execution/control, trace stores,
 and private migrations. `./providers` owns the provider-neutral contract, descriptors,
 artifact/usage response types, deterministic static adapter, and stable errors; execution, tools,
 credentials, and workspace authority remain excluded. Undeclared deep imports are rejected.
+
+`./trace` is Node-only and explicitly write-capable through `SQLiteTraceStore`. It owns public
+append/cut/slice/blob contracts, integrity and native archive methods, store errors/types, and
+bounded run/output/trace/recovery evidence reads. It excludes task registry, providers, executors,
+workspace carriers/settlements, private SQL/migrations, and protocol configuration. A future
+web-safe type-only/read split must not be inferred from this Node entry.
 
 CommonJS `require()` is intentionally unsupported; use ESM or dynamic `import()`. The package does
 not ship a partial CommonJS transform. TypeScript consumers use `moduleResolution: "NodeNext"`,

@@ -50,5 +50,9 @@ test("package bin metadata matches the public distinct CLI executable", async ()
             import: "./dist/src/facades/tasks.js",
             types: "./dist/src/facades/tasks.d.ts",
         },
+        "./trace": {
+            import: "./dist/src/facades/trace.js",
+            types: "./dist/src/facades/trace.d.ts",
+        },
     });
 });
