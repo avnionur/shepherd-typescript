@@ -7,6 +7,10 @@ types and errors: [`src/provider/types.ts`](../src/provider/types.ts) and
 [`test/provider/static-provider-validation.test.ts`](../test/provider/static-provider-validation.test.ts),
 and [`test/provider/protocol.test.ts`](../test/provider/protocol.test.ts).
 
+Package consumers may import the owned provider contract, deterministic adapter, response
+artifact/usage types, and stable errors from `@avnionur/shepherd-typescript/providers` without
+importing task execution, tools, credentials, or workspace authority.
+
 ## Provider-neutral boundary
 
 `ModelProvider` exposes `descriptor()` and `invoke(request, signal)`. The immutable descriptor

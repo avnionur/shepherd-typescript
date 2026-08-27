@@ -42,6 +42,10 @@ test("package bin metadata matches the public distinct CLI executable", async ()
             import: "./dist/src/facades/cli.js",
             types: "./dist/src/facades/cli.d.ts",
         },
+        "./providers": {
+            import: "./dist/src/facades/providers.js",
+            types: "./dist/src/facades/providers.d.ts",
+        },
         "./tasks": {
             import: "./dist/src/facades/tasks.js",
             types: "./dist/src/facades/tasks.d.ts",
