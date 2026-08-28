@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.58.0] - 2026-08-29
+
+### New Feature
+
+- Added the stable Node-only `./effects` ESM facade for immutable intent/outcome construction,
+  exact correlation, ordered exact-kind handler stacks, stable errors, and public types.
+- Added fresh-package runtime and type evidence for success/failure correlation, last-matching
+  dispatch precedence, and typed unhandled-effect behavior.
+- Kept formal proof/reference machinery, task/provider/run execution, trace persistence, workspace
+  settlement, interception/replay claims, private validation, and protocol configuration outside
+  the effect-owned entry.
+
+### Impact
+
+Effect consumers have a cohesive supported subpath while handler callbacks remain explicit,
+in-process, and non-durable. Existing root and domain facades remain unchanged.
+
 ## [1.57.0] - 2026-08-28
 
 ### New Feature

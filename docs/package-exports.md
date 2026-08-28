@@ -6,6 +6,7 @@ The package is ESM-only on Node 24 or newer. Supported imports are:
 import { task } from "@avnionur/shepherd-typescript";
 import { canonicalizeRecord } from "@avnionur/shepherd-typescript/canonical";
 import { runCli, type CliIo } from "@avnionur/shepherd-typescript/cli";
+import { createEffectHandlerStack, createEffectIntent } from "@avnionur/shepherd-typescript/effects";
 import { createStaticProvider } from "@avnionur/shepherd-typescript/providers";
 import { executeTask, executeTaskDurably } from "@avnionur/shepherd-typescript/runs";
 import { schema, SQLiteTaskRegistry, task } from "@avnionur/shepherd-typescript/tasks";
@@ -23,6 +24,13 @@ reads; it intentionally excludes providers, run execution/control, trace stores,
 and private migrations. `./providers` owns the provider-neutral contract, descriptors,
 artifact/usage response types, deterministic static adapter, and stable errors; execution, tools,
 credentials, and workspace authority remain excluded. Undeclared deep imports are rejected.
+
+`./effects` owns immutable effect intent/outcome builders, exact correlation validation, ordered
+exact-kind handler stacks, their public types, and stable unhandled-effect errors. Handlers are
+caller-supplied in-process callbacks and dispatch is non-durable. The facade does not append trace
+records, materialize world changes, intercept execution, provide replay, or create a sandbox. It
+excludes formal proof/reference machinery, task/provider/run execution, trace persistence,
+workspace settlement, private validators, migrations, and protocol configuration.
 
 `./trace` is Node-only and explicitly write-capable through `SQLiteTraceStore`. It owns public
 append/cut/slice/blob contracts, integrity and native archive methods, store errors/types, and
@@ -52,7 +60,7 @@ not ship a partial CommonJS transform. TypeScript consumers use `moduleResolutio
 the `ESNext` disposable library, and Node declarations.
 
 Fresh-tarball conformance imports every entry at runtime, typechecks every declaration entry,
-rejects CommonJS and deep imports, verifies declaration/source maps, and composes the task,
-provider, run, trace, and workspace facades through an installed offline retained-output consumer,
-read-only changeset inspection, and exact settlement. It separately reruns the unchanged root-facade
-quickstart.
+rejects CommonJS and deep imports, verifies declaration/source maps, validates effect records and
+handler precedence, and composes the task, provider, run, trace, and workspace facades through an
+installed offline retained-output consumer, read-only changeset inspection, and exact settlement.
+It separately reruns the unchanged root-facade quickstart.

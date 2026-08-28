@@ -2,7 +2,8 @@
 
 Implementation: [`src/effect/handlers.ts`](../src/effect/handlers.ts), public types:
 [`src/effect/handler-types.ts`](../src/effect/handler-types.ts), errors:
-[`src/effect/handler-errors.ts`](../src/effect/handler-errors.ts). Tests:
+[`src/effect/handler-errors.ts`](../src/effect/handler-errors.ts), public package entry:
+[`src/facades/effects.ts`](../src/facades/effects.ts). Tests:
 [`test/effect/handlers.test.ts`](../test/effect/handlers.test.ts).
 
 ## Stack construction
