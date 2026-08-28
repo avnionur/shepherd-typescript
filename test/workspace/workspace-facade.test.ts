@@ -1,0 +1,71 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import * as workspace from "../../src/facades/workspace.ts";
+
+test("workspace facade exposes only workspace-owned runtime symbols", () => {
+    assert.deepEqual(Object.keys(workspace), [
+        "GitCustodyError",
+        "NativeJailExecutionError",
+        "NativeJailUnavailableError",
+        "PlacementUnavailableError",
+        "RetainedWorldApplicationConflictError",
+        "RetainedWorldSettlementConflictError",
+        "RetainedWorldSettlementInvalidError",
+        "WorkspaceBindingError",
+        "WorkspaceControlError",
+        "WorkspaceCustodyFaultError",
+        "WorkspaceInitializationConflictError",
+        "WorkspaceProtectedPathError",
+        "WorldCarrierError",
+        "WorldChangesetError",
+        "applyRetainedWorldSettlement",
+        "captureGrantedTaskWorldDurably",
+        "captureJailedGrantedTaskWorldDurably",
+        "capturePlacedGrantedTaskWorldDurably",
+        "captureTaskWorldDurably",
+        "createGitAwareCustody",
+        "createGitChangesetInspection",
+        "createGitRepositoryBindings",
+        "createGitRepositoryGrantPlan",
+        "createGrantedPlacementResolution",
+        "createNativeJailCommand",
+        "createNativeJailPlacementResolution",
+        "createNativeJailRunner",
+        "createPlacementPlatformEvidence",
+        "createReferenceCopyCarrier",
+        "createRetainedWorldRunner",
+        "createWorkspaceBindings",
+        "createWorldChangeset",
+        "createWorldChangesetInspection",
+        "discardRetainedWorldSettlement",
+        "grantTaskRepositories",
+        "initializeWorkspace",
+        "inspectLocalNativeJailBackend",
+        "inspectLocalPlacementPlatformEvidence",
+        "inspectRetainedWorldApplicationConflicts",
+        "inspectRetainedWorldApplicationPlan",
+        "inspectRetainedWorldRelease",
+        "inspectRetainedWorldSettlement",
+        "inspectTaskWorldCaptureJournal",
+        "inspectWorkspacePathProtection",
+        "inspectWorkspacePlatformConformance",
+        "openWorkspace",
+        "prepareRetainedWorldSettlement",
+        "recoverGrantedTaskWorldDurably",
+        "recoverJailedGrantedTaskWorldDurably",
+        "recoverPlacedGrantedTaskWorldDurably",
+        "recoverTaskWorldDurably",
+        "releaseRetainedWorldSettlement",
+        "selectRetainedWorldSettlement",
+    ]);
+    for (const excluded of [
+        "createRunControl",
+        "createStaticProvider",
+        "executeTask",
+        "SQLiteTaskRegistry",
+        "SQLiteTraceStore",
+    ]) {
+        assert.equal(excluded in workspace, false);
+    }
+});
