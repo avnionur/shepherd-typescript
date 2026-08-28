@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-28
 
-Current version: `1.56.0`
+Current version: `1.57.0`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -150,6 +150,11 @@ budget/cancellation control, provider-neutral task execution, and durable execut
 recovery, and control APIs. It requires task, provider, and trace authorities from their owning
 facades and exports no registry, provider adapter, SQLite constructor, workspace handle, private
 codec, migration, or protocol configuration.
+The additive Node-only `./workspace` package facade now exposes workspace initialization and
+bindings, copy/Git custody and changeset inspection, repository grants, placement/native-jail
+evidence, retained-world execution/recovery journals, and exact settlements. It requires explicit
+task/provider/run/trace/carrier/runner/grant handles and exports no registry, adapter, run control,
+SQLite constructor, low-level trace mutation, private codec, migration, or protocol configuration.
 
 ## Progress
 
@@ -366,6 +371,9 @@ codec, migration, or protocol configuration.
 - [x] Complete Phase 5 Task 5 additive Node run-domain facade with run construction,
   budget/cancellation, provider-neutral offline execution, durable execution/control/recovery/
   inspection, explicit injected authority, and fresh composed consumer evidence.
+- [x] Complete Phase 5 Task 6 additive Node workspace-domain facade with initialization/bindings,
+  custody/inspection, grants/placement, retained execution/recovery, exact settlement authority,
+  explicit exclusions, and a freshly installed facade-composed retained-output consumer.
 
 ## Verification required for this slice
 

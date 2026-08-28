@@ -102,6 +102,50 @@ try {
         execFileSync(process.execPath, [facadeProbe], { cwd: consumerRoot, encoding: "utf8" }),
         '{"ready":true}\n1\noutput\n2\ncommitted\n',
     );
+    const workspaceFacadeRoot = path.join(installPath, "workspace-facade-consumer");
+    mkdirSync(workspaceFacadeRoot);
+    const workspaceFacadeProbe = path.join(workspaceFacadeRoot, "workspace-facade-probe.mjs");
+    writeFileSync(
+        workspaceFacadeProbe,
+        `import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { createStaticProvider } from ${JSON.stringify(`${packageManifest.name}/providers`)};
+import { executeTask } from ${JSON.stringify(`${packageManifest.name}/runs`)};
+import { schema, task } from ${JSON.stringify(`${packageManifest.name}/tasks`)};
+import { SQLiteTraceStore } from ${JSON.stringify(`${packageManifest.name}/trace`)};
+import { captureTaskWorldDurably, createReferenceCopyCarrier, createRetainedWorldRunner, createWorkspaceBindings, createWorldChangesetInspection, initializeWorkspace, prepareRetainedWorldSettlement, selectRetainedWorldSettlement } from ${JSON.stringify(`${packageManifest.name}/workspace`)};
+const outputPath = "WORKSPACE-FACADE.txt";
+const outputText = "workspace facade output\\n";
+const workspaceRoot = process.cwd();
+const workspace = initializeWorkspace({ adopt: "none", initializeGit: false, rootPath: workspaceRoot });
+const binding = createWorkspaceBindings({ bindings: [{ name: "workspace", root: "." }], workspaceRoot }).bindings[0];
+if (binding === undefined) throw new Error("workspace binding is unavailable");
+const carrier = createReferenceCopyCarrier({ workspaceRoot });
+const baseRevision = await carrier.snapshot(binding);
+const descriptor = task({ input: schema.void(), instruction: "Return the workspace facade result.", name: "workspace-facade", output: schema.string(), version: "1" });
+const provider = createStaticProvider({ descriptor: { id: "provider:workspace-facade", model: "offline-v1" }, exchanges: [{ request: { input: null, instruction: descriptor.instruction, outputSchema: descriptor.artifact.output_schema }, response: { output: "complete", usage: { cacheCreationInputTokens: 0, cacheReadInputTokens: 0, costUsd: null, inputTokens: 1, outputTokens: 1 } } }] });
+const runner = createRetainedWorldRunner({ enforcement: "advisory", runnerId: "runner:workspace-facade", run: async (context) => { await context.world.writeText(outputPath, outputText); return executeTask(context.execution); } });
+using store = new SQLiteTraceStore(path.join(workspace.control_path, "workspace-facade-trace.sqlite"));
+const captured = await captureTaskWorldDurably({ baseRevision, binding, captureId: "capture:workspace-facade", carrier, execution: { budget: { maxTurns: 1 }, input: undefined, provider, runId: "run:workspace-facade", task: descriptor }, runner, store });
+if (existsSync(path.join(workspaceRoot, outputPath))) throw new Error("workspace changed before settlement");
+const headRevision = await carrier.openRevision(captured.output.head_revision_id);
+const inspection = await createWorldChangesetInspection({ baseRevision, carrier, headRevision });
+const change = inspection.change(outputPath);
+if (change?.after?.kind !== "file") throw new Error("retained output is unavailable");
+const retained = await inspection.readContent({ contentId: change.after.content_id });
+if (new TextDecoder().decode(retained.bytes) !== outputText) throw new Error("retained output differs");
+await prepareRetainedWorldSettlement({ action: "select", binding, carrier, commandId: "settlement:workspace-facade", output: captured.output, store });
+await selectRetainedWorldSettlement({ binding, carrier, outputId: captured.output.output_id, store });
+process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"));
+`,
+    );
+    assert.equal(
+        execFileSync(process.execPath, [workspaceFacadeProbe], {
+            cwd: workspaceFacadeRoot,
+            encoding: "utf8",
+        }),
+        "workspace facade output\n",
+    );
     assert.throws(
         () =>
             execFileSync(
@@ -133,6 +177,11 @@ try {
         typeProbe,
         `import { task } from ${JSON.stringify(packageManifest.name)};\nimport { canonicalizeRecord } from ${JSON.stringify(`${packageManifest.name}/canonical`)};\nimport { runCli, type CliIo } from ${JSON.stringify(`${packageManifest.name}/cli`)};\nimport { createStaticProvider, type ModelArtifactDefinition, type ModelUsage } from ${JSON.stringify(`${packageManifest.name}/providers`)};\nimport { createRunControl, executeTask, executeTaskDurably, type DurableTaskExecutionResult, type RunControl, type TaskExecutionResult } from ${JSON.stringify(`${packageManifest.name}/runs`)};\nimport { listTaskLedger, schema, SQLiteTaskRegistry, type TaskLedgerEntry } from ${JSON.stringify(`${packageManifest.name}/tasks`)};\nimport { listTraceRevisions, SQLiteTraceStore, type TraceRevisionEntry } from ${JSON.stringify(`${packageManifest.name}/trace`)};\nvoid task; void canonicalizeRecord; void runCli; void createStaticProvider; void createRunControl; void executeTask; void executeTaskDurably; void listTaskLedger; void schema; void SQLiteTaskRegistry; void listTraceRevisions; void SQLiteTraceStore; const io: CliIo | null = null; const entry: TaskLedgerEntry | null = null; const artifact: ModelArtifactDefinition | null = null; const usage: ModelUsage | null = null; const runControl: RunControl | null = null; const execution: TaskExecutionResult | null = null; const durable: DurableTaskExecutionResult | null = null; const revision: TraceRevisionEntry | null = null; void io; void entry; void artifact; void usage; void runControl; void execution; void durable; void revision;\n`,
     );
+    const workspaceTypeProbe = path.join(consumerRoot, "workspace-facade-probe.ts");
+    writeFileSync(
+        workspaceTypeProbe,
+        `import { captureTaskWorldDurably, createReferenceCopyCarrier, initializeWorkspace, prepareRetainedWorldSettlement, type RetainedWorldOutput, type TaskWorldCaptureResult, type WorkspaceState } from ${JSON.stringify(`${packageManifest.name}/workspace`)};\nvoid captureTaskWorldDurably; void createReferenceCopyCarrier; void initializeWorkspace; void prepareRetainedWorldSettlement; const workspace: WorkspaceState | null = null; const output: RetainedWorldOutput | null = null; const capture: TaskWorldCaptureResult | null = null; void workspace; void output; void capture;\n`,
+    );
     const typeConfig = path.join(consumerRoot, "tsconfig.json");
     writeFileSync(
         typeConfig,
@@ -147,7 +196,7 @@ try {
                 typeRoots: [path.join(repositoryRoot, "node_modules", "@types")],
                 types: ["node"],
             },
-            files: [typeProbe],
+            files: [typeProbe, workspaceTypeProbe],
         }),
     );
     execFileSync(

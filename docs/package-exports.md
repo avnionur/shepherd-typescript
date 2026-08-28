@@ -10,6 +10,10 @@ import { createStaticProvider } from "@avnionur/shepherd-typescript/providers";
 import { executeTask, executeTaskDurably } from "@avnionur/shepherd-typescript/runs";
 import { schema, SQLiteTaskRegistry, task } from "@avnionur/shepherd-typescript/tasks";
 import { listTraceRevisions, SQLiteTraceStore } from "@avnionur/shepherd-typescript/trace";
+import {
+    createWorkspaceBindings,
+    initializeWorkspace,
+} from "@avnionur/shepherd-typescript/workspace";
 ```
 
 The root preserves the complete existing public API. `./canonical` is the cohesive canonical
@@ -34,11 +38,21 @@ The facade creates no ambient provider, persistence, or workspace authority. It 
 registries, provider adapters, the SQLite store constructor, workspace carrier/settlement handles,
 private codecs, migrations, and protocol configuration.
 
+`./workspace` is Node-only and owns workspace initialization/bindings, copy and Git custody,
+changeset inspection, repository grants, placement/native-jail evidence, retained-world runners
+and execution journals, and exact prepare/select/apply/release/discard settlement operations. These
+APIs can read or mutate caller-selected filesystem/Git state, and native runners can launch a
+capability-probed process. Consumers must explicitly supply the required task, provider, run,
+trace-store, carrier, runner, and grant handles from their owning domains. The facade excludes task
+registries, provider adapters, run builders/controls, the SQLite store constructor, low-level trace
+mutation, private codecs, migrations, and protocol configuration; it creates no ambient authority.
+
 CommonJS `require()` is intentionally unsupported; use ESM or dynamic `import()`. The package does
 not ship a partial CommonJS transform. TypeScript consumers use `moduleResolution: "NodeNext"`,
 the `ESNext` disposable library, and Node declarations.
 
 Fresh-tarball conformance imports every entry at runtime, typechecks every declaration entry,
-rejects CommonJS and deep imports, verifies declaration/source maps, composes the task, provider,
-run, and trace facades for offline and durable execution, and reruns the offline quickstart through
-the root facade.
+rejects CommonJS and deep imports, verifies declaration/source maps, and composes the task,
+provider, run, trace, and workspace facades through an installed offline retained-output consumer,
+read-only changeset inspection, and exact settlement. It separately reruns the unchanged root-facade
+quickstart.

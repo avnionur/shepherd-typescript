@@ -284,7 +284,8 @@ Work:
 
 - finalize TypeScript facade and subpath exports; **initial root/canonical/CLI slice implemented in
   1.52.0, task-domain facade added in 1.53.0, and run-domain construction/execution/control facade
-  added in 1.56.0** with remaining domain subpaths deferred to owned follow-ups;
+  added in 1.56.0, and workspace authority/settlement facade added in 1.57.0** with remaining
+  typed or web-safe splits deferred to owned follow-ups;
 - add typed provider helpers; **provider contract/static-adapter facade implemented in 1.54.0**
   with execution, tools, credentials, and workspace authority explicitly excluded;
 - add trace queries; **Node trace persistence/query/interchange facade implemented in 1.55.0**
@@ -292,6 +293,9 @@ Work:
 - expose cohesive run helpers; **Node run construction, budget/cancellation, provider-neutral
   execution, and durable execution/control/recovery/inspection facade implemented in 1.56.0**
   with task/provider/trace authorities explicitly supplied by their owning domains;
+- expose cohesive workspace helpers; **Node workspace initialization/bindings, custody/inspection,
+  grants/placement, retained execution/recovery, and exact settlement facade implemented in
+  1.57.0** with filesystem/Git/native/mutation authority explicit and injected;
 - generate ESM-first packages with declared CommonJS policy; **implemented in 1.52.0** as explicit
   ESM-only exports with tested CommonJS/deep-import refusal;
 - add explicit task builder, schema adapters, typed provider/tool helpers;

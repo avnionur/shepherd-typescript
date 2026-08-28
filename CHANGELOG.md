@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.57.0] - 2026-08-28
+
+### New Feature
+
+- Added the stable Node-only `./workspace` ESM facade for initialization/bindings, copy and Git
+  custody, changeset inspection, repository grants, placement/native-jail evidence, retained-world
+  execution/recovery journals, and exact settlement operations.
+- Added fresh-package composition across the task, provider, run, trace, and workspace facades,
+  including retained-output capture, read-only content inspection, and exact selection.
+- Kept task registries, provider adapters, run builders/controls, the SQLite store constructor,
+  low-level trace mutation, private codecs/migrations, and protocol configuration outside the
+  workspace-owned entry.
+
+### Impact
+
+Workspace consumers have a cohesive supported subpath with explicit filesystem, Git, native,
+persistence, and mutation authority. Existing root and domain facades remain unchanged.
+
 ## [1.56.0] - 2026-08-28
 
 ### New Feature
