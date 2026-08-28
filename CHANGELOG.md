@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.56.0] - 2026-08-28
+
+### New Feature
+
+- Added the stable Node-only `./runs` ESM facade for run builders and errors, budgets and
+  cancellation, provider-neutral task execution, and durable execution/control/recovery/
+  inspection.
+- Added fresh-tarball runtime and type composition across task, provider, run, and trace facades,
+  including finished offline/durable runs, budget exhaustion, cancellation, archive import, and
+  durable inspection.
+- Kept task registries, provider adapters, the SQLite store constructor, workspace handles,
+  private codecs/migrations, and protocol configuration outside the run-owned entry.
+
+### Impact
+
+Run consumers have a cohesive supported subpath while retaining explicit task, provider, and
+trace authority injection. Existing root and domain facades remain unchanged.
+
 ## [1.55.0] - 2026-08-27
 
 ### New Feature

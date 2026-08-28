@@ -1,10 +1,10 @@
 # Implementation Tracker
 
-Last updated: 2026-08-24
+Last updated: 2026-08-28
 
-Current version: `1.46.0`
+Current version: `1.56.0`
 
-Current level: L1-alpha — P0 retained-world settlement loop
+Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
 ## Current position
 
@@ -145,6 +145,11 @@ Evidence-record projection v1 now adds bounded public retained-output citation, 
 trace-revision, and durable recovery-record list/show APIs. Exact/prefix/latest reads expose
 cut-bounded output/settlement, graph-shaped owner/causal/witness, canonical command/effect,
 lifecycle, and archive-stable claim/fence evidence without performing recovery or repair.
+The additive Node-only `./runs` package facade now exposes run builders, structured errors,
+budget/cancellation control, provider-neutral task execution, and durable execution, inspection,
+recovery, and control APIs. It requires task, provider, and trace authorities from their owning
+facades and exports no registry, provider adapter, SQLite constructor, workspace handle, private
+codec, migration, or protocol configuration.
 
 ## Progress
 
@@ -358,6 +363,9 @@ lifecycle, and archive-stable claim/fence evidence without performing recovery o
 - [x] Complete Phase 5 Task 4 additive Node trace-domain facade with append/cut/slice/blob store
   authority, integrity/archive methods, bounded evidence projections, explicit exclusions, and
   fresh append/cut/archive consumer evidence.
+- [x] Complete Phase 5 Task 5 additive Node run-domain facade with run construction,
+  budget/cancellation, provider-neutral offline execution, durable execution/control/recovery/
+  inspection, explicit injected authority, and fresh composed consumer evidence.
 
 ## Verification required for this slice
 

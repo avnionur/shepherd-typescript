@@ -2,6 +2,7 @@
 
 Implementation: [`src/run/execution.ts`](../src/run/execution.ts), with terminal-result construction
 in [`src/run/execution-results.ts`](../src/run/execution-results.ts). Public entry point:
+[`src/facades/runs.ts`](../src/facades/runs.ts), with compatibility exports from
 [`src/index.ts`](../src/index.ts). Tests:
 [`test/run/execution.test.ts`](../test/run/execution.test.ts).
 
