@@ -2,6 +2,7 @@
 
 Implementation:
 [`src/run/durable-execution.ts`](../src/run/durable-execution.ts). Public entry point:
+[`src/facades/runs.ts`](../src/facades/runs.ts), with compatibility exports from
 [`src/index.ts`](../src/index.ts). Tests:
 [`test/run/durable-execution.test.ts`](../test/run/durable-execution.test.ts) and
 [`test/run/durable-execution-replay.test.ts`](../test/run/durable-execution-replay.test.ts), with
