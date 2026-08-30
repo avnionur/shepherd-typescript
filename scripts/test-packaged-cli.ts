@@ -125,6 +125,34 @@ process.stdout.write(dispatch.handlerId + "\\n" + success.result.ok + "\\n" + fa
         }),
         "nearest\ntrue\nfalse\ntrue\n",
     );
+    const publicErrorProbe = path.join(consumerRoot, "public-error-probe.mjs");
+    writeFileSync(
+        publicErrorProbe,
+        `import { isPublicError } from ${JSON.stringify(packageManifest.name)};
+import { canonicalizeRecord } from ${JSON.stringify(`${packageManifest.name}/canonical`)};
+import { EffectHandlerNotFoundError } from ${JSON.stringify(`${packageManifest.name}/effects`)};
+import { StaticProviderExhaustedError } from ${JSON.stringify(`${packageManifest.name}/providers`)};
+import { RunCancelledError } from ${JSON.stringify(`${packageManifest.name}/runs`)};
+import { TaskRegistryError } from ${JSON.stringify(`${packageManifest.name}/tasks`)};
+import { TraceStoreError } from ${JSON.stringify(`${packageManifest.name}/trace`)};
+import { WorkspaceControlError } from ${JSON.stringify(`${packageManifest.name}/workspace`)};
+const cause = new Error("private cause");
+const errors = [new EffectHandlerNotFoundError("effect:missing", "tool.call"), new StaticProviderExhaustedError(0), new RunCancelledError("cancelled", cause), new TaskRegistryError("task"), new TraceStoreError("trace"), new WorkspaceControlError()];
+const expected = ["EFFECT_HANDLER_NOT_FOUND", "STATIC_PROVIDER_EXHAUSTED", "RUN_CANCELLED", "TASK_REGISTRY_ERROR", "TRACE_STORE_ERROR", "WORKSPACE_CONTROL_ERROR"];
+if (!errors.every((error, index) => isPublicError(error) && error.code === expected[index])) throw new Error("public error code mismatch");
+if (errors[2].cause !== cause) throw new Error("public error cause mismatch");
+let validationUnclassified = false;
+try { canonicalizeRecord({ invalid: Infinity }); } catch (error) { validationUnclassified = error instanceof TypeError && !isPublicError(error); }
+process.stdout.write(errors.map(({ code }) => code).join(",") + "\\n" + validationUnclassified + "\\n");
+`,
+    );
+    assert.equal(
+        execFileSync(process.execPath, [publicErrorProbe], {
+            cwd: consumerRoot,
+            encoding: "utf8",
+        }),
+        "EFFECT_HANDLER_NOT_FOUND,STATIC_PROVIDER_EXHAUSTED,RUN_CANCELLED,TASK_REGISTRY_ERROR,TRACE_STORE_ERROR,WORKSPACE_CONTROL_ERROR\ntrue\n",
+    );
     const workspaceFacadeRoot = path.join(installPath, "workspace-facade-consumer");
     mkdirSync(workspaceFacadeRoot);
     const workspaceFacadeProbe = path.join(workspaceFacadeRoot, "workspace-facade-probe.mjs");
@@ -210,6 +238,11 @@ process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"))
         effectsTypeProbe,
         `import { createEffectHandlerStack, createEffectIntent, type EffectHandler, type EffectHandlerDispatch, type EffectIntent, type EffectOutcome } from ${JSON.stringify(`${packageManifest.name}/effects`)};\nvoid createEffectHandlerStack; void createEffectIntent; const handler: EffectHandler | null = null; const dispatch: EffectHandlerDispatch | null = null; const intent: EffectIntent | null = null; const outcome: EffectOutcome | null = null; void handler; void dispatch; void intent; void outcome;\n`,
     );
+    const publicErrorTypeProbe = path.join(consumerRoot, "public-error-probe.ts");
+    writeFileSync(
+        publicErrorTypeProbe,
+        `import { isPublicError, type PublicError, type PublicErrorCode } from ${JSON.stringify(packageManifest.name)};\nvoid isPublicError; const error: PublicError | null = null; const code: PublicErrorCode | null = null; void error; void code;\n`,
+    );
     const typeConfig = path.join(consumerRoot, "tsconfig.json");
     writeFileSync(
         typeConfig,
@@ -224,7 +257,7 @@ process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"))
                 typeRoots: [path.join(repositoryRoot, "node_modules", "@types")],
                 types: ["node"],
             },
-            files: [typeProbe, workspaceTypeProbe, effectsTypeProbe],
+            files: [typeProbe, workspaceTypeProbe, effectsTypeProbe, publicErrorTypeProbe],
         }),
     );
     execFileSync(

@@ -19,6 +19,8 @@ import {
 
 The root preserves the complete existing public API. `./canonical` is the cohesive canonical
 encoding/identity surface. `./cli` contains the reusable runner and injectable I/O boundary.
+The root also exports `PublicError`, `PublicErrorCode`, and `isPublicError` for additive in-memory
+classification without adding error metadata to canonical records or CLI JSON.
 `./tasks` owns task/schema construction, task registry contracts/errors, and bounded task-ledger
 reads; it intentionally excludes providers, run execution/control, trace stores, workspace grants,
 and private migrations. `./providers` owns the provider-neutral contract, descriptors,

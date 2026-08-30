@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.59.0] - 2026-08-30
+
+### New Feature
+
+- Added stable configuration-owned machine codes to every exported fixed-class error that lacked
+  one, preserving existing classes, prototypes, constructors, messages, and `instanceof` behavior.
+- Added the root `PublicError`, `PublicErrorCode`, and accessor-safe `isPublicError` in-memory
+  contract, plus a complete exported-error and intentionally-unclassified failure matrix.
+- Preserved existing standard causes without adding messages, stacks, paths, credentials, or
+  causes to canonical evidence, trace archives, or the closed CLI JSON protocol.
+
+### Impact
+
+Consumers can branch on stable error codes across every supported facade without parsing messages
+or losing existing error identity. Validation and caller-owned failures remain honestly
+unclassified, and no recovery or mutation authority changes.
+
 ## [1.58.0] - 2026-08-29
 
 ### New Feature

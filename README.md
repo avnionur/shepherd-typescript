@@ -57,7 +57,7 @@ Publication remains disabled until registry ownership and release checks are com
 
 ## Current capability
 
-Version `1.58.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.59.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -255,6 +255,7 @@ import {
     executeTaskDurably,
     captureTaskWorldDurably,
     inspectDurableTaskExecution,
+    isPublicError,
     planAppendBatch,
     ROOT_WITNESS_ID,
     readDurableTaskExecution,
@@ -567,6 +568,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Task registry](./docs/task-registry.md)
 - [Effect intent/outcome records](./docs/effect-records.md)
 - [Ordered effect handlers](./docs/effect-handlers.md)
+- [Structured public errors](./docs/public-errors.md)
 - [Run outcomes](./docs/run-outcomes.md)
 - [Run artifacts and usage](./docs/run-artifacts-and-usage.md)
 - [Run budgets and cancellation](./docs/run-control.md)

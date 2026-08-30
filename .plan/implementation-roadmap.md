@@ -304,7 +304,9 @@ Work:
 - add explicit task builder, schema adapters, typed provider/tool helpers;
 - implement async-iterable trace queries and web-safe read-only types where
   sensible;
-- expose rich structured errors with stable codes;
+- expose rich structured errors with stable codes; **implemented in 1.59.0** with one validated
+  configuration-owned in-memory contract, preserved class/message identity and existing causes,
+  explicit unclassified validation/callback failures, and unchanged CLI/evidence redaction;
 - add source maps and stack/cause preservation;
 - publish API Extractor or TypeDoc reference;
 - build TypeScript-first examples for retained coding work, read-only review,

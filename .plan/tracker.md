@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-29
 
-Current version: `1.58.0`
+Current version: `1.59.0`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -159,6 +159,10 @@ The additive Node-only `./effects` package facade now exposes immutable intent/o
 exact correlation, ordered exact-kind handler stacks, stable errors, and public types. Handler
 callbacks remain explicit, in-process, and non-durable; formal, task/provider/run, trace,
 workspace, interception, replay, private validation, and protocol authority remain excluded.
+Structured public errors now provide one validated configuration-owned in-memory `code` contract
+across every exported error class while preserving class identity, constructors, messages, and
+existing causes. Validation `TypeError`, caller callback failures, and unchanged external failures
+remain explicitly unclassified; canonical evidence and stable CLI JSON remain closed and redacted.
 
 ## Progress
 
@@ -381,6 +385,9 @@ workspace, interception, replay, private validation, and protocol authority rema
 - [x] Complete Phase 5 Task 7 additive Node effect-domain facade with intent/outcome construction,
   exact correlation, last-matching exact-kind handler dispatch, stable unhandled errors, explicit
   non-durable exclusions, and fresh installed runtime/type evidence.
+- [x] Complete Phase 5 Task 8 stable structured public-error codes with validated shipped
+  configuration, preserved class/message/cause behavior, accessor-safe in-memory classification,
+  complete facade inventory, explicit unclassified failures, and unchanged CLI/evidence redaction.
 
 ## Verification required for this slice
 
