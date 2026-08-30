@@ -49,7 +49,8 @@ execution, recovery, settlement, and codec wrappers that pass `{ cause }` keep d
 Causes are in-memory diagnostics only. They are not added to canonical records, trace archives,
 receipts, generated schemas, or the stable CLI JSON envelope. The CLI continues returning its
 closed configured error codes and remedies without messages, stacks, resolved paths, credentials,
-or nested causes.
+or nested causes. Packaged stack and cause behavior is specified in
+[`source-maps-and-causes.md`](./source-maps-and-causes.md).
 
 ## Intentionally unclassified failures
 

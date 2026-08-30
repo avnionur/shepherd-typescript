@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.59.1] - 2026-08-30
+
+### Improvement
+
+- Added repository-built and freshly installed conformance for every supported runtime and
+  declaration map, including portable relative sources, no embedded source content, and no host or
+  temporary absolute paths.
+- Added installed Node source-map evidence that public failure stacks resolve to TypeScript source
+  frames, plus representative standard-cause and intentionally-unclassified validation behavior.
+- Documented cause/original-failure propagation and confirmed stacks/causes remain absent from
+  closed CLI JSON, canonical records, trace archives, receipts, and schemas.
+
+### Impact
+
+Consumers can rely on portable package maps and opt-in mapped TypeScript stacks without any error,
+recovery, mutation, or serialization behavior change.
+
 ## [1.59.0] - 2026-08-30
 
 ### New Feature

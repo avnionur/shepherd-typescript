@@ -1,6 +1,6 @@
 # Package export inventory
 
-Status: Phase 5 Task 8 implemented inventory
+Status: Phase 5 Task 9 implemented inventory
 
 | Entry | Owner | Runtime | Stability | Notes |
 | --- | --- | --- | --- | --- |
@@ -43,3 +43,6 @@ can be declared cohesively. Direct `dist/src/...` imports are not public.
 The package is ESM-only. No `require` condition or CommonJS artifact is shipped; CommonJS consumers
 must use dynamic `import()`. This avoids a partial interop claim across `using`, Node SQLite, ESM
 URLs, and package-owned native helpers.
+
+Every declared entry ships portable JavaScript and declaration maps with package-relative source
+paths, no embedded source content, and no repository-host or temporary absolute paths.

@@ -28,6 +28,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   TypeScript requirements, CommonJS refusal, and deep-import boundaries.
 - [Structured public errors](./public-errors.md) inventories exported error classes, stable
   machine codes, in-memory causes, intentionally unclassified failures, and CLI redaction.
+- [Source maps, stacks, and causes](./source-maps-and-causes.md) defines portable installed map
+  policy, in-memory propagation boundaries, and durable/CLI redaction.
 - [Canonical record contract](./canonical-records.md) defines accepted values, deterministic
   encoding, identifiers, and error behavior.
 - [Record body and envelope contract](./record-envelope.md) defines kernel ABI v0 semantic
