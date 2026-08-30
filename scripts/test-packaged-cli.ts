@@ -102,6 +102,29 @@ try {
         execFileSync(process.execPath, [facadeProbe], { cwd: consumerRoot, encoding: "utf8" }),
         '{"ready":true}\n1\noutput\n2\ncommitted\n',
     );
+    const effectsFacadeProbe = path.join(consumerRoot, "effects-facade-probe.mjs");
+    writeFileSync(
+        effectsFacadeProbe,
+        `import { EffectHandlerNotFoundError, createEffectHandlerStack, createEffectIntent, createEffectOutcome, validateEffectCorrelation } from ${JSON.stringify(`${packageManifest.name}/effects`)};
+const intent = createEffectIntent({ effectId: "effect:facade", kind: "tool.call", payload: { command: "verify" }, reversibility: "irreversible" });
+const success = createEffectOutcome(intent, { ok: true, value: { exitCode: 0 } });
+const failure = createEffectOutcome(intent, { ok: false, error: { code: "denied" } });
+validateEffectCorrelation(intent, success);
+validateEffectCorrelation(intent, failure);
+const handlers = createEffectHandlerStack([{ handlerId: "fallback", kind: "tool.call", handle: () => ({ ok: true, value: "fallback" }) }, { handlerId: "nearest", kind: "tool.call", handle: () => ({ ok: true, value: "nearest" }) }]);
+const dispatch = await handlers.dispatch(intent);
+let unhandled = false;
+try { await handlers.dispatch(createEffectIntent({ effectId: "effect:unhandled", kind: "other", payload: null, reversibility: "reversible" })); } catch (error) { if (!(error instanceof EffectHandlerNotFoundError)) throw error; unhandled = error.effectId === "effect:unhandled" && error.kind === "other"; }
+process.stdout.write(dispatch.handlerId + "\\n" + success.result.ok + "\\n" + failure.result.ok + "\\n" + unhandled + "\\n");
+`,
+    );
+    assert.equal(
+        execFileSync(process.execPath, [effectsFacadeProbe], {
+            cwd: consumerRoot,
+            encoding: "utf8",
+        }),
+        "nearest\ntrue\nfalse\ntrue\n",
+    );
     const workspaceFacadeRoot = path.join(installPath, "workspace-facade-consumer");
     mkdirSync(workspaceFacadeRoot);
     const workspaceFacadeProbe = path.join(workspaceFacadeRoot, "workspace-facade-probe.mjs");
@@ -182,6 +205,11 @@ process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"))
         workspaceTypeProbe,
         `import { captureTaskWorldDurably, createReferenceCopyCarrier, initializeWorkspace, prepareRetainedWorldSettlement, type RetainedWorldOutput, type TaskWorldCaptureResult, type WorkspaceState } from ${JSON.stringify(`${packageManifest.name}/workspace`)};\nvoid captureTaskWorldDurably; void createReferenceCopyCarrier; void initializeWorkspace; void prepareRetainedWorldSettlement; const workspace: WorkspaceState | null = null; const output: RetainedWorldOutput | null = null; const capture: TaskWorldCaptureResult | null = null; void workspace; void output; void capture;\n`,
     );
+    const effectsTypeProbe = path.join(consumerRoot, "effects-facade-probe.ts");
+    writeFileSync(
+        effectsTypeProbe,
+        `import { createEffectHandlerStack, createEffectIntent, type EffectHandler, type EffectHandlerDispatch, type EffectIntent, type EffectOutcome } from ${JSON.stringify(`${packageManifest.name}/effects`)};\nvoid createEffectHandlerStack; void createEffectIntent; const handler: EffectHandler | null = null; const dispatch: EffectHandlerDispatch | null = null; const intent: EffectIntent | null = null; const outcome: EffectOutcome | null = null; void handler; void dispatch; void intent; void outcome;\n`,
+    );
     const typeConfig = path.join(consumerRoot, "tsconfig.json");
     writeFileSync(
         typeConfig,
@@ -196,7 +224,7 @@ process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"))
                 typeRoots: [path.join(repositoryRoot, "node_modules", "@types")],
                 types: ["node"],
             },
-            files: [typeProbe, workspaceTypeProbe],
+            files: [typeProbe, workspaceTypeProbe, effectsTypeProbe],
         }),
     );
     execFileSync(

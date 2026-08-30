@@ -286,6 +286,9 @@ Work:
   1.52.0, task-domain facade added in 1.53.0, and run-domain construction/execution/control facade
   added in 1.56.0, and workspace authority/settlement facade added in 1.57.0** with remaining
   typed or web-safe splits deferred to owned follow-ups;
+- expose cohesive effect helpers; **Node effect intent/outcome construction, exact correlation,
+  ordered in-process handler dispatch, and stable error facade implemented in 1.58.0** with formal,
+  persistence, interception, replay, and workspace authority explicitly excluded;
 - add typed provider helpers; **provider contract/static-adapter facade implemented in 1.54.0**
   with execution, tools, credentials, and workspace authority explicitly excluded;
 - add trace queries; **Node trace persistence/query/interchange facade implemented in 1.55.0**

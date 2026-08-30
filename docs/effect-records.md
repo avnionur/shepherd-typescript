@@ -1,7 +1,8 @@
 # Effect Intent and Outcome Records
 
 Implementation: [`src/effect/records.ts`](../src/effect/records.ts), public types:
-[`src/effect/types.ts`](../src/effect/types.ts), runtime validation:
+[`src/effect/types.ts`](../src/effect/types.ts), public package entry:
+[`src/facades/effects.ts`](../src/facades/effects.ts), runtime validation:
 [`src/effect/validation.ts`](../src/effect/validation.ts). Tests:
 [`test/effect/records.test.ts`](../test/effect/records.test.ts) and
 [`test/effect/protocol.test.ts`](../test/effect/protocol.test.ts). Fixture:

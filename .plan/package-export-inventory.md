@@ -1,12 +1,13 @@
 # Package export inventory
 
-Status: Phase 5 Task 6 implemented inventory
+Status: Phase 5 Task 7 implemented inventory
 
 | Entry | Owner | Runtime | Stability | Notes |
 | --- | --- | --- | --- | --- |
 | `.` | `src/index.ts` | Node 24 ESM | Existing public root | Preserves every Phase 4 export; includes SQLite, filesystem, Git, and native surfaces |
 | `./canonical` | `src/facades/canonical.ts` | ESM, web-safe logic | Stable additive subpath | Canonical encoding, identity, and semantic value types only |
 | `./cli` | `src/facades/cli.ts` | Node 24 ESM | Stable additive subpath | Reusable runner and injectable I/O type; no process exit |
+| `./effects` | `src/facades/effects.ts` | Node 24 ESM | Stable additive subpath | Effect intent/outcome construction, exact correlation, ordered handler stacks, and stable errors |
 | `./providers` | `src/facades/providers.ts` | ESM | Stable additive subpath | Provider contract/types, deterministic static adapter, and stable public errors |
 | `./runs` | `src/facades/runs.ts` | Node 24 ESM | Stable additive subpath | Run builders/types/errors, budgets/cancellation, provider-neutral execution, and durable execution/control/recovery/inspection |
 | `./tasks` | `src/facades/tasks.ts` | Node 24 ESM | Stable additive subpath | Task/schema builders, registry contract/errors, and bounded task-ledger reads |
@@ -19,6 +20,13 @@ descriptor and provider supplied by the consumer; durable APIs additionally requ
 does not export task registries, provider adapters, the SQLite store constructor, workspace
 carrier/settlement handles, private codecs, migrations, or protocol configuration. Its SQLite
 type dependency makes the entry Node-only; no web-safe or ambient-execution claim is made.
+
+`./effects` owns immutable effect intent/outcome construction, exact correlation validation, and
+ordered exact-kind in-process handler dispatch. Handler callbacks are explicit caller-supplied
+authority and dispatch is non-durable: the facade does not append trace records, materialize world
+changes, intercept execution, provide replay, or create a sandbox. It excludes formal classifiers
+and reference machines, task/provider/run execution, trace persistence, workspace settlement,
+private validators, and protocol configuration.
 
 `./workspace` owns workspace authority construction and retained-world operations. Its APIs may
 read or mutate caller-selected filesystem/Git state, launch capability-probed native processes,

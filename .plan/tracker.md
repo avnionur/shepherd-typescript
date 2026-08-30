@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-28
+Last updated: 2026-08-29
 
-Current version: `1.57.0`
+Current version: `1.58.0`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -155,6 +155,10 @@ bindings, copy/Git custody and changeset inspection, repository grants, placemen
 evidence, retained-world execution/recovery journals, and exact settlements. It requires explicit
 task/provider/run/trace/carrier/runner/grant handles and exports no registry, adapter, run control,
 SQLite constructor, low-level trace mutation, private codec, migration, or protocol configuration.
+The additive Node-only `./effects` package facade now exposes immutable intent/outcome builders,
+exact correlation, ordered exact-kind handler stacks, stable errors, and public types. Handler
+callbacks remain explicit, in-process, and non-durable; formal, task/provider/run, trace,
+workspace, interception, replay, private validation, and protocol authority remain excluded.
 
 ## Progress
 
@@ -374,6 +378,9 @@ SQLite constructor, low-level trace mutation, private codec, migration, or proto
 - [x] Complete Phase 5 Task 6 additive Node workspace-domain facade with initialization/bindings,
   custody/inspection, grants/placement, retained execution/recovery, exact settlement authority,
   explicit exclusions, and a freshly installed facade-composed retained-output consumer.
+- [x] Complete Phase 5 Task 7 additive Node effect-domain facade with intent/outcome construction,
+  exact correlation, last-matching exact-kind handler dispatch, stable unhandled errors, explicit
+  non-durable exclusions, and fresh installed runtime/type evidence.
 
 ## Verification required for this slice
 
