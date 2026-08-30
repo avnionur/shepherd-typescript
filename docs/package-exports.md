@@ -66,3 +66,7 @@ rejects CommonJS and deep imports, verifies declaration/source maps, validates e
 handler precedence, and composes the task, provider, run, trace, and workspace facades through an
 installed offline retained-output consumer, read-only changeset inspection, and exact settlement.
 It separately reruns the unchanged root-facade quickstart.
+
+Every supported entry includes JavaScript and declaration maps. Their portable source-path,
+embedded-content, installed-stack, and redaction policy is defined in
+[`source-maps-and-causes.md`](./source-maps-and-causes.md).

@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-29
 
-Current version: `1.59.0`
+Current version: `1.59.1`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -163,6 +163,10 @@ Structured public errors now provide one validated configuration-owned in-memory
 across every exported error class while preserving class identity, constructors, messages, and
 existing causes. Validation `TypeError`, caller callback failures, and unchanged external failures
 remain explicitly unclassified; canonical evidence and stable CLI JSON remain closed and redacted.
+Repository-built and freshly installed runtime/declaration source maps now have enforced portable
+relative paths, no host/temporary paths, and no embedded source content. Installed Node stack
+frames map to TypeScript while existing in-memory cause/original-failure propagation remains
+intact and durable/CLI serialization stays closed.
 
 ## Progress
 
@@ -388,6 +392,9 @@ remain explicitly unclassified; canonical evidence and stable CLI JSON remain cl
 - [x] Complete Phase 5 Task 8 stable structured public-error codes with validated shipped
   configuration, preserved class/message/cause behavior, accessor-safe in-memory classification,
   complete facade inventory, explicit unclassified failures, and unchanged CLI/evidence redaction.
+- [x] Complete Phase 5 Task 9 repository-built and installed runtime/declaration map conformance,
+  mapped TypeScript stack evidence, cause/original-failure propagation inventory, no embedded or
+  host-path source leakage, and unchanged durable/CLI redaction.
 
 ## Verification required for this slice
 

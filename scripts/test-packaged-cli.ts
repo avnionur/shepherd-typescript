@@ -80,9 +80,8 @@ try {
     );
     for (const entry of Object.values(packageManifest.exports)) {
         for (const target of [entry.import, entry.types]) {
-            const installedTarget = path.join(installedPackageRoot, target);
-            assert.equal(readFileSync(installedTarget).byteLength > 0, true);
-            assert.equal(readFileSync(`${installedTarget}.map`).byteLength > 0, true);
+            assertPortableSourceMap(repositoryRoot, target);
+            assertPortableSourceMap(installedPackageRoot, target);
         }
     }
     for (const artifact of Object.values(protocol.cli.artifacts)) {
@@ -153,6 +152,38 @@ process.stdout.write(errors.map(({ code }) => code).join(",") + "\\n" + validati
         }),
         "EFFECT_HANDLER_NOT_FOUND,STATIC_PROVIDER_EXHAUSTED,RUN_CANCELLED,TASK_REGISTRY_ERROR,TRACE_STORE_ERROR,WORKSPACE_CONTROL_ERROR\ntrue\n",
     );
+    const sourceMapProbe = path.join(consumerRoot, "source-map-probe.mjs");
+    writeFileSync(
+        sourceMapProbe,
+        `import { createEffectHandlerStack, createEffectIntent } from ${JSON.stringify(`${packageManifest.name}/effects`)};
+import { isPublicError } from ${JSON.stringify(packageManifest.name)};
+const intent = createEffectIntent({ effectId: "effect:stack", kind: "tool.call", payload: null, reversibility: "reversible" });
+let mappedStack = "";
+try { await createEffectHandlerStack([]).dispatch(intent); } catch (error) { mappedStack = error instanceof Error ? error.stack ?? "" : ""; }
+const privateCause = new Error("private validation cause");
+const causeCarrier = new Error("public wrapper", { cause: privateCause });
+let validationCausePreserved = false;
+try { createEffectIntent({ effectId: "effect:invalid", kind: "tool.call", payload: { invalid: Infinity }, reversibility: "reversible" }); } catch (error) { validationCausePreserved = error instanceof TypeError && error.cause instanceof Error && !isPublicError(error); }
+process.stdout.write(JSON.stringify({ causeIdentity: causeCarrier.cause === privateCause, mappedStack, validationCausePreserved }));
+`,
+    );
+    const sourceMapResult = JSON.parse(
+        execFileSync(process.execPath, ["--enable-source-maps", sourceMapProbe], {
+            cwd: consumerRoot,
+            encoding: "utf8",
+        }),
+    ) as {
+        readonly causeIdentity: boolean;
+        readonly mappedStack: string;
+        readonly validationCausePreserved: boolean;
+    };
+    assert.equal(sourceMapResult.causeIdentity, true);
+    assert.equal(sourceMapResult.validationCausePreserved, true);
+    assert.match(
+        sourceMapResult.mappedStack,
+        /node_modules[\\/]@avnionur[\\/]shepherd-typescript[\\/]src[\\/]effect[\\/]handlers\.ts:\d+:\d+/u,
+    );
+    assert.doesNotMatch(sourceMapResult.mappedStack, /dist[\\/]src[\\/]effect[\\/]handlers\.js/u);
     const workspaceFacadeRoot = path.join(installPath, "workspace-facade-consumer");
     mkdirSync(workspaceFacadeRoot);
     const workspaceFacadeProbe = path.join(workspaceFacadeRoot, "workspace-facade-probe.mjs");
@@ -405,4 +436,35 @@ function assertStableJsonHelp(executable: string, args: readonly string[]): void
         ok: true,
         result: { groups: protocol.cli.groups.map(({ name }) => name) },
     });
+}
+
+function assertPortableSourceMap(packageRoot: string, target: string): void {
+    const targetPath = path.join(packageRoot, target);
+    const mapPath = `${targetPath}.map`;
+    assert.equal(readFileSync(targetPath).byteLength > 0, true);
+    const rawMap = readFileSync(mapPath, "utf8");
+    assert.equal(rawMap.length > 0, true);
+    assert.equal(rawMap.includes(repositoryRoot), false);
+    assert.equal(rawMap.includes(temporaryRoot), false);
+    const sourceMap = JSON.parse(rawMap) as {
+        readonly file: string;
+        readonly sourceRoot: string;
+        readonly sources: readonly string[];
+        readonly sourcesContent?: readonly string[];
+        readonly version: number;
+    };
+    assert.equal(sourceMap.version, 3);
+    assert.equal(sourceMap.file, path.basename(targetPath));
+    assert.equal(sourceMap.sourceRoot, "");
+    assert.equal(sourceMap.sources.length > 0, true);
+    assert.equal(sourceMap.sourcesContent, undefined);
+    for (const source of sourceMap.sources) {
+        assert.equal(path.isAbsolute(source), false);
+        assert.equal(source.includes("\\"), false);
+        const resolved = path.resolve(path.dirname(mapPath), source);
+        assert.equal(
+            resolved === packageRoot || resolved.startsWith(`${packageRoot}${path.sep}`),
+            true,
+        );
+    }
 }

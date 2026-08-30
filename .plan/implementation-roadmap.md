@@ -307,7 +307,9 @@ Work:
 - expose rich structured errors with stable codes; **implemented in 1.59.0** with one validated
   configuration-owned in-memory contract, preserved class/message identity and existing causes,
   explicit unclassified validation/callback failures, and unchanged CLI/evidence redaction;
-- add source maps and stack/cause preservation;
+- add source maps and stack/cause preservation; **verified and documented in 1.59.1** across
+  repository-built and freshly installed runtime/declaration maps, mapped TypeScript stack frames,
+  existing in-memory cause boundaries, and unchanged CLI/canonical redaction;
 - publish API Extractor or TypeDoc reference;
 - build TypeScript-first examples for retained coding work, read-only review,
   multiple bindings, and custom effects;
