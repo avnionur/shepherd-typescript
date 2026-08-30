@@ -1,5 +1,9 @@
+import { publicErrorCodes } from "../errors/public-errors.ts";
+
 /** Raised when normalized typed-effect records violate the executable Core-A lifecycle. */
 export class TypedEffectTraceValidationError extends Error {
+    /** Stable configured machine-readable error code. */
+    readonly code = publicErrorCodes.formal.typedTraceInvalid;
     /**
      * Creates a typed-effect trace validation failure.
      *

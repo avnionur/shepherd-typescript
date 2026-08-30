@@ -1,7 +1,10 @@
+import { publicErrorCodes } from "../errors/public-errors.ts";
 import type { RunBudgetExhaustionReason } from "./control-types.ts";
 
 /** Error carried by a run-control signal after budget exhaustion. */
 export class RunBudgetExhaustedError extends Error {
+    /** Stable configured machine-readable budget-exhaustion code. */
+    readonly code = publicErrorCodes.runs.budgetExhausted;
     /** Configured limit that was exceeded. */
     readonly limit: number;
     /** First configured metric that exceeded its limit. */
@@ -30,6 +33,8 @@ export function formatRunBudgetExhaustionReason(reason: RunBudgetExhaustionReaso
 
 /** Error carried by a run-control signal after cancellation. */
 export class RunCancelledError extends Error {
+    /** Stable configured machine-readable cancellation code. */
+    readonly code = publicErrorCodes.runs.cancelled;
     /**
      * Creates a stable cancellation error while retaining the caller's reason as its cause.
      *

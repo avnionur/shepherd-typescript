@@ -331,3 +331,8 @@ _Avoid_: Task implementation, ambient global model, credential store
 A deterministic offline model provider that consumes an exact ordered request/response cassette
 and fails closed on mismatch or exhaustion.
 _Avoid_: Test-only mock, live model adapter, fallback response generator
+
+**Structured Public Error**:
+An exported in-memory `Error` instance carrying a stable configuration-owned machine code and,
+where already available, its original in-memory cause without changing class identity or message.
+_Avoid_: Validation `TypeError`, serialized CLI error, canonical failure record, recovery authority

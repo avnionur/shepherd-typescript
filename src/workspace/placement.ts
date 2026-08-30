@@ -1,6 +1,7 @@
 import { release } from "node:os";
 import { createRecordId } from "../canonical/canonical-record.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
+import { publicErrorCodes } from "../errors/public-errors.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import {
     readGrantedPlacementResolutionEvidence,
@@ -41,6 +42,8 @@ const AUTHENTICATED_PLACEMENT_RESOLUTIONS = new WeakMap<
 
 /** Raised when an explicit placement request cannot resolve without weakening enforcement. */
 export class PlacementUnavailableError extends TypeError {
+    /** Stable configured machine-readable unavailable-placement code. */
+    readonly code = publicErrorCodes.workspace.placementUnavailable;
     /** Frozen configured refusal status and reason. */
     readonly evidence: PlacementRefusalEvidence;
 

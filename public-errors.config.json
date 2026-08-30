@@ -1,0 +1,33 @@
+{
+    "compatibilityVersion": "shepherd.public-errors.v1",
+    "codes": {
+        "effects": {
+            "handlerNotFound": "EFFECT_HANDLER_NOT_FOUND"
+        },
+        "formal": {
+            "typedTraceInvalid": "TYPED_EFFECT_TRACE_INVALID"
+        },
+        "runs": {
+            "budgetExhausted": "RUN_BUDGET_EXHAUSTED",
+            "cancelled": "RUN_CANCELLED"
+        },
+        "tasks": {
+            "registry": "TASK_REGISTRY_ERROR",
+            "schemaUnsupported": "TASK_REGISTRY_SCHEMA_UNSUPPORTED",
+            "versionConflict": "TASK_VERSION_CONFLICT"
+        },
+        "trace": {
+            "appendIntentConflict": "APPEND_INTENT_CONFLICT",
+            "blobIntegrity": "BLOB_INTEGRITY_ERROR",
+            "projectionCompatibility": "PROJECTION_COMPATIBILITY_ERROR",
+            "schemaUnsupported": "TRACE_STORE_SCHEMA_UNSUPPORTED",
+            "store": "TRACE_STORE_ERROR"
+        },
+        "workspace": {
+            "nativeJailExecutionFailed": "NATIVE_JAIL_EXECUTION_FAILED",
+            "nativeJailUnavailable": "NATIVE_JAIL_UNAVAILABLE",
+            "placementUnavailable": "PLACEMENT_UNAVAILABLE"
+        }
+    },
+    "version": 1
+}

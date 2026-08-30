@@ -1,5 +1,9 @@
+import { publicErrorCodes } from "../errors/public-errors.ts";
+
 /** Error thrown when an effect handler stack has no exact-kind match. */
 export class EffectHandlerNotFoundError extends Error {
+    /** Stable configured machine-readable error code. */
+    readonly code = publicErrorCodes.effects.handlerNotFound;
     /** Caller-assigned identity of the unhandled effect intent. */
     public readonly effectId: string;
 

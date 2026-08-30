@@ -1,10 +1,10 @@
 # Package export inventory
 
-Status: Phase 5 Task 7 implemented inventory
+Status: Phase 5 Task 8 implemented inventory
 
 | Entry | Owner | Runtime | Stability | Notes |
 | --- | --- | --- | --- | --- |
-| `.` | `src/index.ts` | Node 24 ESM | Existing public root | Preserves every Phase 4 export; includes SQLite, filesystem, Git, and native surfaces |
+| `.` | `src/index.ts` | Node 24 ESM | Existing public root | Preserves every Phase 4 export; includes SQLite, filesystem, Git, native surfaces, and the structured public-error contract |
 | `./canonical` | `src/facades/canonical.ts` | ESM, web-safe logic | Stable additive subpath | Canonical encoding, identity, and semantic value types only |
 | `./cli` | `src/facades/cli.ts` | Node 24 ESM | Stable additive subpath | Reusable runner and injectable I/O type; no process exit |
 | `./effects` | `src/facades/effects.ts` | Node 24 ESM | Stable additive subpath | Effect intent/outcome construction, exact correlation, ordered handler stacks, and stable errors |

@@ -8,6 +8,7 @@ import { promisify } from "node:util";
 
 import { createRecordId } from "../canonical/canonical-record.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
+import { publicErrorCodes } from "../errors/public-errors.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import {
     readNativeJailBackendEvidence,
@@ -164,6 +165,8 @@ class NativeProcessEvidenceRetentionError extends Error {
 
 /** Raised when native-jail runner admission lacks a successful authenticated host probe. */
 export class NativeJailUnavailableError extends TypeError {
+    /** Stable configured machine-readable unavailable-native-jail code. */
+    readonly code = publicErrorCodes.workspace.nativeJailUnavailable;
     /** Exact authenticated unavailable backend probe. */
     readonly evidence: NativeJailBackendProbeEvidence;
 
@@ -181,6 +184,8 @@ export class NativeJailUnavailableError extends TypeError {
 
 /** Raised after a native judged process reaches a non-success or uncertain terminal state. */
 export class NativeJailExecutionError extends Error {
+    /** Stable configured machine-readable native-execution failure code. */
+    readonly code = publicErrorCodes.workspace.nativeJailExecutionFailed;
     /** Exact durable terminal launch receipt. */
     readonly receipt: NativeJailLaunchReceipt;
 

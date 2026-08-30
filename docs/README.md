@@ -26,6 +26,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Package exports and module policy](./package-exports.md) defines supported ESM entries,
   including the Node-only effects, run execution/control, and workspace authority facades,
   TypeScript requirements, CommonJS refusal, and deep-import boundaries.
+- [Structured public errors](./public-errors.md) inventories exported error classes, stable
+  machine codes, in-memory causes, intentionally unclassified failures, and CLI redaction.
 - [Canonical record contract](./canonical-records.md) defines accepted values, deterministic
   encoding, identifiers, and error behavior.
 - [Record body and envelope contract](./record-envelope.md) defines kernel ABI v0 semantic
