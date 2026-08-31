@@ -167,6 +167,11 @@ Repository-built and freshly installed runtime/declaration source maps now have 
 relative paths, no host/temporary paths, and no embedded source content. Installed Node stack
 frames map to TypeScript while existing in-memory cause/original-failure propagation remains
 intact and durable/CLI serialization stays closed.
+The checked-in and packaged generated API reference now indexes all nine supported entries from
+their emitted declarations. It classifies every export as type-only, runtime-only, or
+runtime-and-type; retains public signatures, generics, JSDoc, thrown errors, runtime requirements,
+and entry-owned authority notes; excludes private/internal declaration members and configured
+leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Progress
 
@@ -395,6 +400,10 @@ intact and durable/CLI serialization stays closed.
 - [x] Complete Phase 5 Task 9 repository-built and installed runtime/declaration map conformance,
   mapped TypeScript stack evidence, cause/original-failure propagation inventory, no embedded or
   host-path source leakage, and unchanged durable/CLI redaction.
+- [x] Complete Phase 5 Task 10 deterministic generated API reference for every supported package
+  entry with emitted-declaration provenance, export completeness, type/runtime classification,
+  public JSDoc/error/authority contracts, private/internal exclusion, stale-artifact refusal, and
+  fresh-package discovery/type evidence.
 
 ## Verification required for this slice
 
@@ -408,8 +417,9 @@ intact and durable/CLI serialization stays closed.
 
 ## Next slice
 
-Continue Phase 5 with the next dependency-unblocked owned domain subpath or typed-helper slice.
-Preserve the root facade, ESM-only policy, installed quickstart, and exact authority.
+Continue Phase 5 with the next dependency-unblocked TypeScript-first example or migration slice.
+Preserve the generated reference, root facade, ESM-only policy, installed quickstart, and exact
+authority.
 
 ## Notes
 

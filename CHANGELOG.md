@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.60.0] - 2026-08-31
+
+### New Feature
+
+- Added a deterministic checked-in and packaged API reference for the root, canonical, CLI,
+  effects, providers, runs, tasks, trace, and workspace entries, generated strictly from emitted
+  public declarations.
+- Added explicit type-only/runtime classification, signatures and generics, public JSDoc and
+  thrown-error contracts, Node requirements, and configuration-owned authority/mutation notes.
+- Added fail-closed export/config agreement, private/internal and local-path leakage checks, stale
+  artifact rejection in ordinary verification, and fresh-package artifact/import conformance.
+
+### Impact
+
+TypeScript consumers can discover and verify the complete supported API without relying on private
+deep modules or stale hand-maintained documentation. Runtime behavior, authority boundaries,
+ESM/deep-import policy, recovery, settlement, source maps, and redaction remain unchanged.
+
 ## [1.59.1] - 2026-08-30
 
 ### Improvement

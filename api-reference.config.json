@@ -1,0 +1,121 @@
+{
+    "artifact": "docs/generated/api-reference.md",
+    "declarationRoot": "dist/src",
+    "runtime": "ESM on Node 24 or newer.",
+    "entries": {
+        ".": {
+            "authority": "This aggregate entry includes pure helpers and explicit Node-backed persistence, execution, and workspace APIs. Mutation authority is never ambient and remains visible in each signature.",
+            "summary": "Complete supported package surface preserved for existing consumers.",
+            "title": "Root"
+        },
+        "./canonical": {
+            "authority": "Pure canonical encoding and identity operations; no filesystem, process, network, persistence, or mutation authority.",
+            "summary": "Canonical semantic-record encoding and identity.",
+            "title": "Canonical"
+        },
+        "./cli": {
+            "authority": "The reusable runner uses caller-supplied I/O and command arguments. Command-specific filesystem or persistence authority remains explicit in those arguments.",
+            "summary": "Reusable command-line runner and injectable I/O contract.",
+            "title": "CLI"
+        },
+        "./effects": {
+            "authority": "Handlers are caller-supplied in-process callbacks. Dispatch is non-durable and grants no trace, workspace, interception, replay, or sandbox authority.",
+            "summary": "Immutable effect records, correlation, and ordered in-process dispatch.",
+            "title": "Effects"
+        },
+        "./providers": {
+            "authority": "Provider authority is supplied explicitly by the consumer. The deterministic static adapter owns no credentials, network access, execution, or workspace authority.",
+            "summary": "Provider-neutral contracts and deterministic static-provider fixtures.",
+            "title": "Providers"
+        },
+        "./runs": {
+            "authority": "Execution requires caller-supplied task and provider authority; durable operations additionally require an explicit trace-store handle. No ambient provider, persistence, or workspace authority is created.",
+            "summary": "Run construction, control, execution, recovery, and inspection.",
+            "title": "Runs"
+        },
+        "./tasks": {
+            "authority": "Descriptor and schema helpers are pure. SQLiteTaskRegistry reads or mutates only the caller-selected registry database and must be closed by the caller.",
+            "summary": "Task descriptors, schemas, registry operations, and bounded ledger reads.",
+            "title": "Tasks"
+        },
+        "./trace": {
+            "authority": "SQLiteTraceStore is explicitly read/write capable for caller-selected storage. Projection helpers remain bounded reads and no workspace authority is created.",
+            "summary": "Trace persistence, interchange, integrity, cuts, slices, and bounded evidence queries.",
+            "title": "Trace"
+        },
+        "./workspace": {
+            "authority": "These APIs may read or mutate caller-selected filesystem and Git state, and native runners may launch capability-probed processes. Required task, provider, run, trace, carrier, runner, and grant handles stay explicit.",
+            "summary": "Workspace bindings, custody, grants, placement, retained execution, and exact settlement.",
+            "title": "Workspace"
+        }
+    },
+    "forbiddenDeclarationPatterns": [
+        {
+            "flags": "iu",
+            "label": "private codec",
+            "pattern": "(?:^|/)\\w*codec\\.d\\.ts#"
+        },
+        {
+            "flags": "iu",
+            "label": "private migration",
+            "pattern": "(?:^|/)\\w*migrations?\\.d\\.ts#"
+        },
+        {
+            "flags": "iu",
+            "label": "private SQL implementation",
+            "pattern": "(?:^|/)(?:sql[-_]|sqlite-internal)[^/]*\\.d\\.ts#"
+        },
+        {
+            "flags": "iu",
+            "label": "private store implementation",
+            "pattern": "(?:^|/)store/(?!errors|integrity-types|sqlite-trace-store|types)[^#]+#"
+        },
+        {
+            "flags": "iu",
+            "label": "protocol configuration implementation",
+            "pattern": "(?:^|/)protocol/(?!values\\.generated\\.d\\.ts#)[^#]+#"
+        },
+        {
+            "flags": "iu",
+            "label": "private validator",
+            "pattern": "(?:^|/)(?:validation|guards)\\.d\\.ts#(?!validateRecordBody$|validateRecordEnvelope$)"
+        },
+        {
+            "flags": "iu",
+            "label": "credential implementation",
+            "pattern": "(?:^|/)[^#]*(?:credential|secret|access[-_]?token)[^#]*#|#\\w*(?:Credential|Secret|AccessToken)"
+        }
+    ],
+    "forbiddenPatterns": [
+        {
+            "flags": "u",
+            "label": "internal annotation",
+            "pattern": "@internal"
+        },
+        {
+            "flags": "u",
+            "label": "private declaration member",
+            "pattern": "#private"
+        },
+        {
+            "flags": "u",
+            "label": "dependency path",
+            "pattern": "node_modules"
+        },
+        {
+            "flags": "u",
+            "label": "local POSIX path",
+            "pattern": "\\/(?:Users|home|private|tmp)\\/"
+        },
+        {
+            "flags": "u",
+            "label": "local Windows path",
+            "pattern": "[A-Za-z]:\\\\"
+        },
+        {
+            "flags": "iu",
+            "label": "credential declaration",
+            "pattern": "(?:class|interface|type|function|const)\\s+\\w*(?:Credential|Secret|AccessToken)"
+        }
+    ]
+}

@@ -310,7 +310,9 @@ Work:
 - add source maps and stack/cause preservation; **verified and documented in 1.59.1** across
   repository-built and freshly installed runtime/declaration maps, mapped TypeScript stack frames,
   existing in-memory cause boundaries, and unchanged CLI/canonical redaction;
-- publish API Extractor or TypeDoc reference;
+- publish API Extractor or TypeDoc reference; **implemented in 1.60.0** with a deterministic
+  TypeScript-compiler declaration index, exact export/config drift checks, public JSDoc/error and
+  authority metadata, private/internal leakage refusal, and fresh-package discovery/type evidence;
 - build TypeScript-first examples for retained coding work, read-only review,
   multiple bindings, and custom effects;
 - add migration guide from upstream Python examples to TypeScript;

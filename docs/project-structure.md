@@ -29,6 +29,8 @@ implementation documentation, and forward-looking plans.
 ├── docs/                   Implemented contracts and contributor guidance
 ├── .plan/                  Research, roadmap, decisions, and progress tracker
 ├── project.config.json     CLI ecosystem identity
+├── api-reference.config.json Generated API-reference ownership and leakage policy
+├── test-runner.config.json  Test discovery, coverage, and serial-priority policy
 ├── examples/               Checked-in installed-package examples
 ├── protocol.config.json    Language-neutral protocol constants
 ├── CONTEXT.md              Trace-kernel domain vocabulary
@@ -52,6 +54,7 @@ public exports → formal area → canonical encoding and protocol configuration
 public exports → run area → task, provider, store, canonical snapshots, and protocol configuration
 public exports → workspace area → filesystem, Git, hashing, and protocol configuration
 build/release scripts → repository configuration
+API-reference generator → emitted public declarations and package/config metadata
 tests → public exports
 ```
 

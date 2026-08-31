@@ -25,6 +25,8 @@ pnpm build:desktop
 - Keep modules cohesive and avoid hard-coded static configuration.
 - Regenerate protocol artifacts with `pnpm generate:protocol` after changing
   `protocol.config.json`.
+- Regenerate the API reference with `pnpm generate:api-reference` after changing package exports or
+  public declarations; `pnpm check:api-reference` rejects stale output.
 - Use strict, erasable TypeScript without `any` or inline imports.
 - Document every public TypeScript API with JSDoc.
 - Keep implemented contracts in `docs/` and unfinished work in `.plan/`.

@@ -29,8 +29,12 @@ const packageManifest = JSON.parse(
     readFileSync(path.join(repositoryRoot, "package.json"), "utf8"),
 ) as {
     readonly exports: Readonly<Record<string, { readonly import: string; readonly types: string }>>;
+    readonly files: readonly string[];
     readonly name: string;
 };
+const apiReferenceConfiguration = JSON.parse(
+    readFileSync(path.join(repositoryRoot, "api-reference.config.json"), "utf8"),
+) as { readonly artifact: string };
 const temporaryRoot = mkdtempSync(path.join(tmpdir(), "shepherd-packaged-cli-"));
 const cachePath = path.join(temporaryRoot, "cache");
 const installPath = path.join(temporaryRoot, "install");
@@ -90,6 +94,11 @@ try {
             readFileSync(path.join(repositoryRoot, artifact), "utf8"),
         );
     }
+    assert.equal(packageManifest.files.includes(apiReferenceConfiguration.artifact), true);
+    assert.equal(
+        readFileSync(path.join(installedPackageRoot, apiReferenceConfiguration.artifact), "utf8"),
+        readFileSync(path.join(repositoryRoot, apiReferenceConfiguration.artifact), "utf8"),
+    );
     const consumerRoot = path.join(installPath, "quickstart-consumer");
     mkdirSync(consumerRoot);
     const facadeProbe = path.join(consumerRoot, "facade-probe.mjs");
@@ -274,6 +283,20 @@ process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"))
         publicErrorTypeProbe,
         `import { isPublicError, type PublicError, type PublicErrorCode } from ${JSON.stringify(packageManifest.name)};\nvoid isPublicError; const error: PublicError | null = null; const code: PublicErrorCode | null = null; void error; void code;\n`,
     );
+    const apiReferenceTypeProbe = path.join(consumerRoot, "api-reference-imports.ts");
+    writeFileSync(
+        apiReferenceTypeProbe,
+        Object.keys(packageManifest.exports)
+            .sort()
+            .map((entry, index) => {
+                const moduleSpecifier =
+                    entry === "."
+                        ? packageManifest.name
+                        : `${packageManifest.name}/${entry.slice(2)}`;
+                return `import * as Entry${index} from ${JSON.stringify(moduleSpecifier)}; void Entry${index};\n`;
+            })
+            .join(""),
+    );
     const typeConfig = path.join(consumerRoot, "tsconfig.json");
     writeFileSync(
         typeConfig,
@@ -288,7 +311,13 @@ process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"))
                 typeRoots: [path.join(repositoryRoot, "node_modules", "@types")],
                 types: ["node"],
             },
-            files: [typeProbe, workspaceTypeProbe, effectsTypeProbe, publicErrorTypeProbe],
+            files: [
+                typeProbe,
+                workspaceTypeProbe,
+                effectsTypeProbe,
+                publicErrorTypeProbe,
+                apiReferenceTypeProbe,
+            ],
         }),
     );
     execFileSync(

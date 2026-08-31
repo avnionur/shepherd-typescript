@@ -70,3 +70,9 @@ It separately reruns the unchanged root-facade quickstart.
 Every supported entry includes JavaScript and declaration maps. Their portable source-path,
 embedded-content, installed-stack, and redaction policy is defined in
 [`source-maps-and-causes.md`](./source-maps-and-causes.md).
+
+The [generated API reference](./generated/api-reference.md) is built only from these emitted
+declaration targets. Its [generation policy](./api-reference.md) requires exact export-map/config
+agreement, explicit type/runtime classification, public JSDoc and thrown-error retention,
+entry-owned authority notes, private/internal exclusion, deterministic check mode, and packaged
+consumer typechecking for every subpath.
