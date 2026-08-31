@@ -26,6 +26,11 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Package exports and module policy](./package-exports.md) defines supported ESM entries,
   including the Node-only effects, run execution/control, and workspace authority facades,
   TypeScript requirements, CommonJS refusal, and deep-import boundaries.
+- [Generated API-reference policy](./api-reference.md) defines declaration-only generation,
+  export completeness, type/runtime classification, authority notes, privacy checks, drift
+  rejection, and fresh-package conformance.
+- [Generated API reference](./generated/api-reference.md) indexes every supported entry and public
+  symbol with signatures and JSDoc contracts.
 - [Structured public errors](./public-errors.md) inventories exported error classes, stable
   machine codes, in-memory causes, intentionally unclassified failures, and CLI redaction.
 - [Source maps, stacks, and causes](./source-maps-and-causes.md) defines portable installed map

@@ -1,6 +1,6 @@
 # Package export inventory
 
-Status: Phase 5 Task 9 implemented inventory
+Status: Phase 5 Task 10 implemented inventory and generated reference
 
 | Entry | Owner | Runtime | Stability | Notes |
 | --- | --- | --- | --- | --- |
@@ -46,3 +46,8 @@ URLs, and package-owned native helpers.
 
 Every declared entry ships portable JavaScript and declaration maps with package-relative source
 paths, no embedded source content, and no repository-host or temporary absolute paths.
+
+Every declared entry is also indexed in the checked-in and packaged generated API reference. The
+index resolves symbols from emitted declarations, classifies type/runtime availability, retains
+public signatures/JSDoc/error contracts, records domain authority, excludes internal/private
+members, and is rejected as stale by ordinary and fresh-package verification.

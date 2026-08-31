@@ -1,0 +1,21 @@
+{
+    "coverage": {
+        "branches": 100,
+        "functions": 100,
+        "include": [
+            "src/**/*.ts",
+            "scripts/api-reference.ts",
+            "scripts/build-output.ts",
+            "scripts/sync-version.ts",
+            "scripts/generate-protocol-artifacts.ts"
+        ],
+        "lines": 100
+    },
+    "serialPriorityPatterns": [
+        "test/workspace/native-jail-schema-contract.test.ts",
+        "test/workspace/native-jail.test.ts",
+        "test/workspace/task-world-execution.test.ts"
+    ],
+    "testRoot": "test",
+    "testSuffix": ".test.ts"
+}

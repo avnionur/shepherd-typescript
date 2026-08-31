@@ -57,7 +57,7 @@ Publication remains disabled until registry ownership and release checks are com
 
 ## Current capability
 
-Version `1.59.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.60.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -233,8 +233,11 @@ See the [offline retained-output quickstart](./docs/quickstart.md).
 
 The package is ESM-only. Supported entries are `.`, `./canonical`, `./cli`, `./effects`,
 `./providers`, `./runs`, `./tasks`, `./trace`, and `./workspace`; see
-[Package exports and module policy](./docs/package-exports.md). CommonJS must use dynamic
-`import()`, and undeclared deep imports are unsupported.
+[Package exports and module policy](./docs/package-exports.md). The checked-in and packaged
+[generated API reference](./docs/generated/api-reference.md) lists every supported symbol,
+signature, JSDoc contract, runtime requirement, and authority note; its
+[generation policy](./docs/api-reference.md) defines drift and privacy checks. CommonJS must use
+dynamic `import()`, and undeclared deep imports are unsupported.
 
 ```ts
 import {

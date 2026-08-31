@@ -1,6 +1,6 @@
 {
     "name": "@avnionur/shepherd-typescript",
-    "version": "1.59.1",
+    "version": "1.60.0",
     "packageManager": "pnpm@10.32.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
     "license": "MIT",
@@ -61,6 +61,8 @@
         "dist/src",
         "dist/protocol.config.json",
         "dist/public-errors.config.json",
+        "api-reference.config.json",
+        "docs/generated/api-reference.md",
         "docs/generated/cli-reference.md",
         "examples/quickstart.mjs",
         "spec/schemas",
@@ -74,17 +76,19 @@
     "scripts": {
         "build": "node scripts/clean-build.ts && tsc -p tsconfig.build.json && node scripts/copy-runtime-config.ts",
         "build:desktop": "pnpm build",
+        "check:api-reference": "node scripts/generate-api-reference-cli.ts --check",
         "check:protocol": "node scripts/generate-protocol-artifacts-cli.ts --check",
         "format": "biome format --write .",
+        "generate:api-reference": "pnpm build && node scripts/generate-api-reference-cli.ts",
         "generate:protocol": "node scripts/generate-protocol-artifacts-cli.ts",
         "lint": "biome check .",
         "sync:version": "node scripts/sync-version-cli.ts",
         "test:package-cli": "node scripts/test-packaged-cli.ts",
-        "test": "node --test --experimental-test-coverage --test-coverage-branches=100 --test-coverage-functions=100 --test-coverage-lines=100 --test-coverage-include=\"src/**/*.ts\" --test-coverage-include=\"scripts/build-output.ts\" --test-coverage-include=\"scripts/sync-version.ts\" --test-coverage-include=\"scripts/generate-protocol-artifacts.ts\" \"test/**/*.test.ts\"",
-        "test:serial": "node --test --test-concurrency=1 --experimental-test-coverage --test-coverage-branches=100 --test-coverage-functions=100 --test-coverage-lines=100 --test-coverage-include=\"src/**/*.ts\" --test-coverage-include=\"scripts/build-output.ts\" --test-coverage-include=\"scripts/sync-version.ts\" --test-coverage-include=\"scripts/generate-protocol-artifacts.ts\" \"test/**/*.test.ts\"",
+        "test": "node scripts/run-tests.ts --parallel",
+        "test:serial": "node scripts/run-tests.ts --serial",
         "typecheck": "tsc --noEmit",
-        "verify": "pnpm check:protocol && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:package-cli",
-        "verify:serial": "pnpm check:protocol && pnpm lint && pnpm typecheck && pnpm test:serial && pnpm build && pnpm test:package-cli"
+        "verify": "pnpm check:protocol && pnpm build && pnpm check:api-reference && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:package-cli",
+        "verify:serial": "pnpm check:protocol && pnpm build && pnpm check:api-reference && pnpm lint && pnpm typecheck && pnpm test:serial && pnpm build && pnpm test:package-cli"
     },
     "devDependencies": {
         "@biomejs/biome": "2.5.7",
