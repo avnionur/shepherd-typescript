@@ -3,16 +3,29 @@ import path from "node:path";
 
 import { parse } from "yaml";
 
-type ReleaseConfig = {
+/** Validated release version and repository-relative manifest targets. */
+export type ReleaseConfig = {
+    /** Semantic version copied to every configured manifest. */
     readonly version: string;
+    /** Repository-relative JSON manifests updated by version synchronization. */
     readonly versionFiles: readonly string[];
 };
 
-type SynchronizeVersionOptions = {
+/** Repository paths required for version synchronization. */
+export type SynchronizeVersionOptions = {
+    /** Release-configuration YAML path. */
     readonly configPath: string;
+    /** Repository root containing every configured manifest. */
     readonly repositoryRoot: string;
 };
 
+/**
+ * Synchronizes every configured JSON manifest to the release version.
+ *
+ * @param options - Repository root and release-configuration path.
+ * @returns The number of updated manifest files.
+ * @throws {Error} If configuration, containment validation, parsing, or writing fails.
+ */
 export async function synchronizeVersions(options: SynchronizeVersionOptions): Promise<number> {
     const repositoryRoot = await realpath(options.repositoryRoot);
     const config = parseReleaseConfig(await readFile(options.configPath, "utf8"));
@@ -35,6 +48,13 @@ export async function synchronizeVersions(options: SynchronizeVersionOptions): P
     return updates.length;
 }
 
+/**
+ * Parses and validates the repository release-version configuration.
+ *
+ * @param configText - YAML release configuration.
+ * @returns The validated semantic version and manifest paths.
+ * @throws {Error} If the configuration shape or semantic version is invalid.
+ */
 export function parseReleaseConfig(configText: string): ReleaseConfig {
     const parsed: unknown = parse(configText);
     if (!isRecord(parsed) || !isRecord(parsed.cognia)) {

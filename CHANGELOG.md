@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.60.1] - 2026-09-01
+
+### Improvement
+
+- Separated thin package-script command adapters from cohesive build, protocol-generation,
+  API-reference, release, and installed-package testing modules under `tooling/`.
+- Grouped protocol schema renderers under their owning generator and retained their existing
+  deterministic, fail-closed artifact interface and focused test seams.
+- Restricted production compilation to runtime source, eliminating accidental `dist/scripts/`
+  and `dist/tooling/` output while preserving all package targets and runtime configuration files.
+- Aligned the pnpm workspace declaration and project-structure documentation with the actual
+  single-package repository, public facade entries, and tooling dependency direction.
+
+### Impact
+
+Contributors get explicit ownership and placement rules for repository tooling, while consumers
+receive the same runtime exports, protocol artifacts, CLI behavior, installed-package conformance,
+and generated reference as before.
+
 ## [1.60.0] - 2026-08-31
 
 ### New Feature

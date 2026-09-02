@@ -1,6 +1,11 @@
-import type { ProtocolConfig } from "../src/protocol/config-types.ts";
+import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
-/** Renders the configured continuation-descriptor JSON Schema. */
+/**
+ * Renders the configured continuation-descriptor JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed continuation-descriptor schema.
+ */
 export function renderRunContinuationDescriptorSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {
@@ -54,7 +59,12 @@ export function renderRunContinuationDescriptorSchema(
     };
 }
 
-/** Renders the configured prerequisite-driven waiting lifecycle JSON Schema. */
+/**
+ * Renders the configured prerequisite-driven waiting lifecycle JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed waiting-lifecycle schema.
+ */
 export function renderRunWaitingLifecycleSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {
@@ -77,7 +87,12 @@ export function renderRunWaitingLifecycleSchema(
     );
 }
 
-/** Renders the configured control-driven suspended lifecycle JSON Schema. */
+/**
+ * Renders the configured control-driven suspended lifecycle JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed suspended-lifecycle schema.
+ */
 export function renderRunSuspendedLifecycleSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {
@@ -95,7 +110,12 @@ export function renderRunSuspendedLifecycleSchema(
     );
 }
 
-/** Renders the configured command-bound running-continuation lifecycle JSON Schema. */
+/**
+ * Renders the configured command-bound running-continuation lifecycle JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed running-continuation schema.
+ */
 export function renderRunRunningLifecycleSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {

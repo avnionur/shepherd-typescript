@@ -1,6 +1,11 @@
-import type { ProtocolConfig } from "../src/protocol/config-types.ts";
+import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
-/** Renders the normative bodyless task descriptor v1 JSON Schema. */
+/**
+ * Renders the normative bodyless task descriptor v1 JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed task-descriptor schema.
+ */
 export function renderTaskDescriptorSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {
@@ -69,7 +74,12 @@ export function renderTaskDescriptorSchema(
     };
 }
 
-/** Renders the normative exact task artifact-lock v1 JSON Schema. */
+/**
+ * Renders the normative exact task artifact-lock v1 JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed task artifact-lock schema.
+ */
 export function renderTaskArtifactLockSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {

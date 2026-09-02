@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { synchronizeProtocolArtifacts } from "../scripts/generate-protocol-artifacts.ts";
+import { synchronizeProtocolArtifacts } from "../tooling/protocol/generator.ts";
 
 const sourceConfigUrl = new URL("../protocol.config.json", import.meta.url);
 

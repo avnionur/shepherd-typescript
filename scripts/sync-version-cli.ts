@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 
-import { synchronizeVersions } from "./sync-version.ts";
+import { synchronizeVersions } from "../tooling/release/version.ts";
 
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 const updatedFiles = await synchronizeVersions({

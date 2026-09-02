@@ -525,6 +525,10 @@ The test command enforces 100% line, branch, and function coverage for runtime s
 verification variant retains the same gates while avoiding native-probe process contention on the
 Windows CI runner. TypeScript builds declarations and JavaScript into `dist/`.
 
+Package-script entry points under `scripts/` are thin command adapters. Tested build, generation,
+release, and conformance implementations live under `tooling/`. The production compiler includes
+only `src/`, so repository tooling is typechecked but is not emitted into `dist/`.
+
 Release versions are configured in `release-config.yaml`. After changing the version, run
 `pnpm sync:version` to update every configured JSON manifest.
 

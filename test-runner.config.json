@@ -4,10 +4,10 @@
         "functions": 100,
         "include": [
             "src/**/*.ts",
-            "scripts/api-reference.ts",
-            "scripts/build-output.ts",
-            "scripts/sync-version.ts",
-            "scripts/generate-protocol-artifacts.ts"
+            "tooling/api-reference/generator.ts",
+            "tooling/build/output.ts",
+            "tooling/release/version.ts",
+            "tooling/protocol/generator.ts"
         ],
         "lines": 100
     },

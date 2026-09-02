@@ -1,7 +1,3 @@
-import { rm } from "node:fs/promises";
+import { cleanBuildOutput } from "../tooling/build/output.ts";
 
-import { assertSafeBuildOutputDirectory, resolveBuildOutputDirectory } from "./build-output.ts";
-
-const outputDirectory = resolveBuildOutputDirectory();
-await assertSafeBuildOutputDirectory(outputDirectory);
-await rm(outputDirectory, { force: true, recursive: true });
+await cleanBuildOutput();

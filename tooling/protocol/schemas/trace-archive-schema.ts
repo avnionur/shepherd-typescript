@@ -1,8 +1,13 @@
 import { createHash } from "node:crypto";
 
-import type { ProtocolConfig } from "../src/protocol/config-types.ts";
+import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
-/** Renders the configured native trace archive JSON Schema. */
+/**
+ * Renders the configured native trace archive JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed native trace-archive schema.
+ */
 export function renderTraceArchiveSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {

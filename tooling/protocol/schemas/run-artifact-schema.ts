@@ -1,6 +1,11 @@
-import type { ProtocolConfig } from "../src/protocol/config-types.ts";
+import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
-/** Renders the normative ordered run-artifact v1 JSON Schema. */
+/**
+ * Renders the normative ordered run-artifact v1 JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed run-artifact schema.
+ */
 export function renderRunArtifactSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
     const [textContentType, blobContentType] = config.runs.artifactContentTypes;
     return {

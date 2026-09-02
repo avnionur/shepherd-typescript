@@ -1,47 +1,62 @@
 import { lstat, mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { assertSupportedProtocolCompatibility } from "../src/protocol/config-compatibility.ts";
-import type { ProtocolConfig } from "../src/protocol/config-types.ts";
-import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
-import { renderCliCommandReference, renderCliOutputSchema } from "./cli-artifacts.ts";
-import { renderEffectIntentSchema, renderEffectOutcomeSchema } from "./effect-protocol-schemas.ts";
+import { assertSupportedProtocolCompatibility } from "../../src/protocol/config-compatibility.ts";
+import type { ProtocolConfig } from "../../src/protocol/config-types.ts";
+import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
+import { renderCliCommandReference, renderCliOutputSchema } from "./schemas/cli-artifacts.ts";
+import {
+    renderEffectIntentSchema,
+    renderEffectOutcomeSchema,
+} from "./schemas/effect-protocol-schemas.ts";
 import {
     renderOutputCitationEntrySchema,
     renderRecoveryRecordEntrySchema,
     renderTraceRevisionEntrySchema,
-} from "./evidence-record-schemas.ts";
+} from "./schemas/evidence-record-schemas.ts";
 import {
     renderOrphanOperationDiagnosisSchema,
     renderOrphanRepairCommandSchema,
     renderOrphanRepairReceiptSchema,
-} from "./orphan-repair-schemas.ts";
-import { renderRunArtifactSchema } from "./run-artifact-schema.ts";
+} from "./schemas/orphan-repair-schemas.ts";
+import { renderRunArtifactSchema } from "./schemas/run-artifact-schema.ts";
 import {
     renderRunContinuationDescriptorSchema,
     renderRunRunningLifecycleSchema,
     renderRunSuspendedLifecycleSchema,
     renderRunWaitingLifecycleSchema,
-} from "./run-lifecycle-schemas.ts";
-import { renderRunOutcomeSchema } from "./run-protocol-schema.ts";
-import { renderRunUsageSchema } from "./run-usage-schema.ts";
+} from "./schemas/run-lifecycle-schemas.ts";
+import { renderRunOutcomeSchema } from "./schemas/run-protocol-schema.ts";
+import { renderRunUsageSchema } from "./schemas/run-usage-schema.ts";
 import {
     renderTaskArtifactLockSchema,
     renderTaskDescriptorSchema,
-} from "./task-protocol-schemas.ts";
+} from "./schemas/task-protocol-schemas.ts";
 import {
     renderRunLedgerEntrySchema,
     renderTaskLedgerEntrySchema,
-} from "./task-run-ledger-schemas.ts";
-import { renderTraceArchiveSchema } from "./trace-archive-schema.ts";
+} from "./schemas/task-run-ledger-schemas.ts";
+import { renderTraceArchiveSchema } from "./schemas/trace-archive-schema.ts";
 
-type ArtifactOptions = {
+/** Repository and execution mode for deterministic protocol artifact synchronization. */
+export type ProtocolArtifactOptions = {
+    /** Whether to reject drift instead of writing generated artifacts. */
     readonly check?: boolean;
+    /** Repository root containing protocol configuration and artifact destinations. */
     readonly repositoryRoot: string;
 };
 
-/** Generates or checks protocol artifacts derived from `protocol.config.json`. */
-export async function synchronizeProtocolArtifacts(options: ArtifactOptions): Promise<void> {
+/**
+ * Generates or checks protocol artifacts derived from `protocol.config.json`.
+ *
+ * @param options - Repository root and optional drift-check mode.
+ * @returns A promise that resolves after all configured artifacts are validated or written.
+ * @throws {TypeError} If configuration or an artifact destination is unsafe.
+ * @throws {Error} If compatibility validation, reading, generation, or writing fails.
+ */
+export async function synchronizeProtocolArtifacts(
+    options: ProtocolArtifactOptions,
+): Promise<void> {
     const repositoryRoot = await realpath(options.repositoryRoot);
     const configPath = path.join(repositoryRoot, "protocol.config.json");
     const config = parseProtocolConfig(JSON.parse(await readFile(configPath, "utf8")), {

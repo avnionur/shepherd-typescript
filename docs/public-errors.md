@@ -4,7 +4,7 @@ Implementation: [`src/errors/public-errors.ts`](../src/errors/public-errors.ts).
 [`public-errors.config.json`](../public-errors.config.json). Public entry point:
 [`src/index.ts`](../src/index.ts). Tests:
 [`test/errors/public-error-codes.test.ts`](../test/errors/public-error-codes.test.ts) and the fresh
-installed consumer in [`scripts/test-packaged-cli.ts`](../scripts/test-packaged-cli.ts).
+installed consumer in [`tooling/testing/packaged-cli.ts`](../tooling/testing/packaged-cli.ts).
 
 ## Contract
 

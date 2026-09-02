@@ -1,4 +1,4 @@
-import { checkApiReference, writeApiReference } from "./api-reference.ts";
+import { checkApiReference, writeApiReference } from "../tooling/api-reference/generator.ts";
 
 const [mode, ...rest] = process.argv.slice(2);
 if (rest.length > 0 || (mode !== undefined && mode !== "--check")) {

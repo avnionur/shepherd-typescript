@@ -2,7 +2,7 @@
 
 Implementation fixture: [`examples/quickstart.mjs`](../examples/quickstart.mjs). CLI implementation:
 [`src/cli/handlers.ts`](../src/cli/handlers.ts). Installed-package conformance:
-[`scripts/test-packaged-cli.ts`](../scripts/test-packaged-cli.ts).
+[`tooling/testing/packaged-cli.ts`](../tooling/testing/packaged-cli.ts).
 
 Install the package, create a fresh directory, emit the checked-in demo, and run it:
 

@@ -30,9 +30,13 @@ import {
     type Symbol as TypeScriptSymbol,
 } from "typescript/unstable/sync";
 
-type ApiReferenceOptions = {
+/** Repository paths used to generate, write, or check the public API reference. */
+export type ApiReferenceOptions = {
+    /** Optional generator-configuration path. */
     readonly configurationPath?: string;
+    /** Optional package-manifest path. */
     readonly packagePath?: string;
+    /** Optional repository root; defaults to this package root. */
     readonly repositoryRoot?: string;
 };
 
@@ -80,7 +84,7 @@ type ResolvedApiReferenceOptions = {
     readonly repositoryRoot: string;
 };
 
-const defaultRepositoryRoot = fileURLToPath(new URL("../", import.meta.url));
+const defaultRepositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 /**
  * Generates the deterministic public API reference from emitted package declarations.
