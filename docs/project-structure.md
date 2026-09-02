@@ -5,12 +5,15 @@ implementation documentation, and forward-looking plans.
 
 ```text
 .
-├── src/                    Public TypeScript runtime
-│   ├── index.ts            Package export boundary
+├── src/                    Public TypeScript runtime and private implementations
+│   ├── index.ts            Root package entry
 │   ├── append/             Append drafts, validation, and pure planning
 │   ├── blob/               Binary identity and crash-safe filesystem objects
 │   ├── canonical/          Deterministic semantic encoding, hashing, and snapshots
+│   ├── cli/                Configured command dispatch and I/O adaptation
 │   ├── effect/             Intent/outcome records and ordered exact-kind handlers
+│   ├── errors/             Shared structured public-error classification
+│   ├── facades/            Supported package subpath entries
 │   ├── formal/             Typed-effect reference validation and proof-envelope classification
 │   ├── interchange/        Native archive encoding, validation, and import storage
 │   ├── ledger/             Bounded task/run/output/trace/recovery read projections
@@ -18,13 +21,20 @@ implementation documentation, and forward-looking plans.
 │   ├── provider/           Provider-neutral contracts and deterministic offline invocation
 │   ├── protocol/           Runtime configuration and generated literals
 │   ├── record/             Record types, envelopes, guards, and snapshots
+│   ├── repair/             Orphan-operation diagnosis and repair contracts
 │   ├── run/                Outcomes, artifacts, usage, budgets, and cancellation
 │   ├── store/              SQLite migrations, transactions, codecs, and reads
 │   ├── task/               Descriptors, runtime schemas, locks, and durable registration
 │   └── workspace/          Initialization, bindings, and reference retained-world custody
 ├── test/                   Public-seam unit tests and fixture assets
 ├── spec/                   Language-neutral JSON Schema contracts
-├── scripts/                Build and release utilities
+├── scripts/                Thin executable command adapters for package scripts
+├── tooling/                Tested repository-tooling implementations
+│   ├── api-reference/      Emitted-declaration reference generation
+│   ├── build/              Safe cleanup and runtime-configuration copying
+│   ├── protocol/           Protocol artifact generation and schema renderers
+│   ├── release/            Validated semantic-version synchronization
+│   └── testing/            Test-runner and installed-package conformance modules
 ├── .github/                CI, security automation, and contribution templates
 ├── docs/                   Implemented contracts and contributor guidance
 ├── .plan/                  Research, roadmap, decisions, and progress tracker
@@ -35,12 +45,16 @@ implementation documentation, and forward-looking plans.
 ├── protocol.config.json    Language-neutral protocol constants
 ├── CONTEXT.md              Trace-kernel domain vocabulary
 ├── upstream.lock.json      Pinned upstream development and release revisions
-└── release-config.yaml     Repository version source
+├── release-config.yaml     Repository version source
+├── pnpm-workspace.yaml     Single-package workspace and build-script policy
+├── tsconfig.json           Runtime, tooling, command, and test typechecking
+└── tsconfig.build.json     Runtime-only production compilation
 ```
 
 ## Dependency direction
 
 ```text
+package exports → root entry and subpath facades → owned runtime areas
 public exports → append area → record area → canonical area → protocol configuration
 public exports → store area → append and record areas
 public exports → store area → blob filesystem and identity
@@ -53,19 +67,21 @@ public exports → effect area → canonical snapshots and protocol configuratio
 public exports → formal area → canonical encoding and protocol configuration
 public exports → run area → task, provider, store, canonical snapshots, and protocol configuration
 public exports → workspace area → filesystem, Git, hashing, and protocol configuration
-build/release scripts → repository configuration
-API-reference generator → emitted public declarations and package/config metadata
-tests → public exports
+script command adapters → tooling module interfaces
+build/release tooling → repository configuration
+protocol tooling → protocol configuration, validators, schemas, and generated runtime literals
+API-reference tooling → emitted public declarations and package/config metadata
+tests → public runtime exports, owned tooling module interfaces, or explicit internal contract seams
 ```
 
-Runtime modules must not import build scripts or planning documents. Public behavior tests use
-`src/index.ts` so they exercise the same seam as consumers. Narrow migration-registry invariant
-tests may import the internal migration validator directly because malformed compiled registries
-cannot be constructed through a public runtime seam. Narrow versioned protocol and persisted-codec
-tests may likewise import internal encoders/decoders for malformed control and terminal values that
-public builders reject; observable recovery behavior remains tested through `src/index.ts`.
+Runtime modules must not import `scripts/`, `tooling/`, or planning documents. Public behavior
+tests prefer the supported root or facade entry so they exercise the same seam as consumers.
+Focused contract tests may import an owned private runtime module when they must construct
+malformed, versioned, platform-specific, migration, protocol, or persisted-codec states that a
+public builder intentionally rejects; observable behavior remains tested through supported public
+entries.
 
-The runtime areas are intentionally shallow:
+The runtime areas are organized around cohesive protocol responsibilities:
 
 - `append/` owns draft wire-shape validation, parent resolution, and ordinal planning;
 - `blob/` owns configured binary identity, content-addressed filesystem durability, and safe
@@ -116,9 +132,21 @@ The runtime areas are intentionally shallow:
   inspection, exact three-way plans, protected merged revisions, path-disjoint apply recovery, and
   receipt-only release with preserved custody and terminal inspection.
 
+## Tooling ownership
+
+Files under `scripts/` parse command-line input and invoke one tooling module interface. They do not
+own generation, build, release, or conformance behavior. Reusable repository-only implementations
+live under `tooling/`, and focused tests import those modules directly.
+
+The ordinary typecheck covers `src/`, `scripts/`, `tooling/`, and `test/`. The production build has
+an explicit runtime-only include and preserves package targets under `dist/src/`; it must not emit
+`dist/scripts/` or `dist/tooling/`. Generated protocol artifacts remain checked in under
+`src/protocol/`, `spec/schemas/`, `docs/generated/`, and `examples/` according to configuration.
+
 ## Module rules
 
-- `src/index.ts` is the only public export boundary.
+- `package.json` is the public export map: `src/index.ts` owns the root entry and `src/facades/`
+  owns the supported subpath entries.
 - Each module owns one cohesive protocol responsibility.
 - Split a module when configuration, persistence, transport, or another independent responsibility
   would otherwise be mixed into its domain logic.
@@ -127,8 +155,10 @@ The runtime areas are intentionally shallow:
   in versioned constants rather than mutable deployment configuration.
 - Public types and functions require JSDoc with behavior, parameters, results, and failure modes.
 - Unit tests and their assets live under `test/` and describe externally observable behavior
-  through `src/index.ts`.
+  through a supported package entry; tooling tests use the owned tooling module interface.
 - Pure planning modules do not perform storage I/O; adapters commit their outputs atomically.
+- Repository command adapters remain thin; reusable tooling behavior and tests meet at an owned
+  interface under `tooling/`.
 
 ## Documentation ownership
 
@@ -138,6 +168,8 @@ The runtime areas are intentionally shallow:
 | `docs/` | Implemented behavior and repository structure |
 | `spec/` | Language-neutral, versioned wire schemas |
 | `test/` | Unit tests and implementation-neutral conformance fixtures |
+| `scripts/` | Thin executable adapters invoked by package scripts |
+| `tooling/` | Repository-only build, generation, release, and test implementations |
 | `CONTEXT.md` | Canonical trace-kernel domain terms |
 | `.plan/` | Research, architecture proposals, roadmap, risks, and tracking |
 | `CHANGELOG.md` | Versioned user-visible changes |

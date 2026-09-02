@@ -313,6 +313,9 @@ Work:
 - publish API Extractor or TypeDoc reference; **implemented in 1.60.0** with a deterministic
   TypeScript-compiler declaration index, exact export/config drift checks, public JSDoc/error and
   authority metadata, private/internal leakage refusal, and fresh-package discovery/type evidence;
+- separate repository command adapters from cohesive tooling modules and runtime-only production
+  compilation; **implemented in 1.60.1** with grouped protocol schema renderers, preserved focused
+  tooling seams, no emitted repository tooling, and current single-package structure documentation;
 - build TypeScript-first examples for retained coding work, read-only review,
   multiple bindings, and custom effects;
 - add migration guide from upstream Python examples to TypeScript;

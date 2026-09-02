@@ -1,6 +1,11 @@
-import type { ProtocolConfig } from "../src/protocol/config-types.ts";
+import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
-/** Renders the versioned exact retained-output citation projection schema. */
+/**
+ * Renders the versioned exact retained-output citation projection schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed output-citation entry schema.
+ */
 export function renderOutputCitationEntrySchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {
@@ -30,7 +35,12 @@ export function renderOutputCitationEntrySchema(
     };
 }
 
-/** Renders the versioned immutable published-cut trace-revision projection schema. */
+/**
+ * Renders the versioned immutable published-cut trace-revision projection schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed trace-revision entry schema.
+ */
 export function renderTraceRevisionEntrySchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {
@@ -117,7 +127,12 @@ export function renderTraceRevisionEntrySchema(
     };
 }
 
-/** Renders the versioned durable recovery/control record projection schema. */
+/**
+ * Renders the versioned durable recovery/control record projection schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed recovery-record entry schema.
+ */
 export function renderRecoveryRecordEntrySchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {

@@ -1,6 +1,11 @@
-import type { ProtocolConfig } from "../src/protocol/config-types.ts";
+import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
-/** Renders the normative terminal run-outcome v1 JSON Schema. */
+/**
+ * Renders the normative terminal run-outcome v1 JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed run-outcome schema.
+ */
 export function renderRunOutcomeSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
     const [finished, failed, exhausted, cancelled] = config.runs.terminalStatuses;
     return {

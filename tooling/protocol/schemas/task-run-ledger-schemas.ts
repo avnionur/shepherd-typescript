@@ -1,6 +1,11 @@
-import type { ProtocolConfig } from "../src/protocol/config-types.ts";
+import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
-/** Renders the versioned registered-task ledger entry schema. */
+/**
+ * Renders the versioned registered-task ledger entry schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed task-ledger entry schema.
+ */
 export function renderTaskLedgerEntrySchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {
@@ -48,7 +53,12 @@ export function renderTaskLedgerEntrySchema(
     };
 }
 
-/** Renders the versioned durable-run ledger entry schema. */
+/**
+ * Renders the versioned durable-run ledger entry schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed run-ledger entry schema.
+ */
 export function renderRunLedgerEntrySchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {

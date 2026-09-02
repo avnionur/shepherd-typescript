@@ -1,6 +1,11 @@
-import type { ProtocolConfig } from "../src/protocol/config-types.ts";
+import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
-/** Renders the normative aggregate run-usage v1 JSON Schema. */
+/**
+ * Renders the normative aggregate run-usage v1 JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed run-usage schema.
+ */
 export function renderRunUsageSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
     const tokenCount = {
         type: "integer",

@@ -1,6 +1,11 @@
-import type { ProtocolConfig } from "../src/protocol/config-types.ts";
+import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
-/** Renders the normative effect intent v1 JSON Schema. */
+/**
+ * Renders the normative effect intent v1 JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed effect-intent schema.
+ */
 export function renderEffectIntentSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {
@@ -25,7 +30,12 @@ export function renderEffectIntentSchema(
     };
 }
 
-/** Renders the normative effect outcome v1 JSON Schema. */
+/**
+ * Renders the normative effect outcome v1 JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed effect-outcome schema.
+ */
 export function renderEffectOutcomeSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {

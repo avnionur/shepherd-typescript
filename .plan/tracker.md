@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-08-29
+Last updated: 2026-09-01
 
-Current version: `1.59.1`
+Current version: `1.60.1`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -404,6 +404,9 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
   entry with emitted-declaration provenance, export completeness, type/runtime classification,
   public JSDoc/error/authority contracts, private/internal exclusion, stale-artifact refusal, and
   fresh-package discovery/type evidence.
+- [x] Complete Phase 5 Task 11 repository-tooling ownership with thin command adapters, cohesive
+  build/protocol/API-reference/release/testing modules, grouped schema renderers, runtime-only
+  production output, explicit single-package workspace configuration, and current structure docs.
 
 ## Verification required for this slice
 

@@ -3,11 +3,14 @@ import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { pathToFileURL } from "node:url";
 
 import {
     assertSafeBuildOutputDirectory,
+    cleanBuildOutput,
+    copyRuntimeConfiguration,
     resolveBuildOutputDirectory,
-} from "../scripts/build-output.ts";
+} from "../tooling/build/output.ts";
 
 test("resolveBuildOutputDirectory returns the repository build directory", () => {
     assert.equal(
@@ -71,4 +74,55 @@ test("assertSafeBuildOutputDirectory rejects symlink ancestors without touching 
         /must not contain symlinks/,
     );
     assert.equal(await readFile(markerPath, "utf8"), "preserved");
+});
+
+test("build output cleanup and runtime configuration copying use the validated output seam", async (context) => {
+    const repositoryRoot = await mkdtemp(path.join(tmpdir(), "shepherd-build-actions-test-"));
+    const externalRoot = await mkdtemp(path.join(tmpdir(), "shepherd-build-actions-external-"));
+    context.after(() => rm(repositoryRoot, { force: true, recursive: true }));
+    context.after(() => rm(externalRoot, { force: true, recursive: true }));
+    const configurationPath = path.join(repositoryRoot, "tsconfig.build.json");
+    const firstConfigPath = path.join(repositoryRoot, "protocol.config.json");
+    const secondConfigPath = path.join(repositoryRoot, "public-errors.config.json");
+    const outputDirectory = path.join(repositoryRoot, "dist");
+    const options = {
+        configurationPath,
+        configurationUrls: [pathToFileURL(firstConfigPath), pathToFileURL(secondConfigPath)],
+        repositoryRoot,
+    };
+    await writeFile(configurationPath, JSON.stringify({ compilerOptions: { outDir: "dist" } }));
+    await writeFile(firstConfigPath, "protocol\n");
+    await writeFile(secondConfigPath, "errors\n");
+
+    await copyRuntimeConfiguration(options);
+    assert.equal(
+        await readFile(path.join(outputDirectory, "protocol.config.json"), "utf8"),
+        "protocol\n",
+    );
+    assert.equal(
+        await readFile(path.join(outputDirectory, "public-errors.config.json"), "utf8"),
+        "errors\n",
+    );
+
+    await cleanBuildOutput(options);
+    await assert.rejects(readFile(outputDirectory), { code: "ENOENT" });
+
+    await copyRuntimeConfiguration({ configurationPath, repositoryRoot });
+    assert.deepEqual(
+        JSON.parse(await readFile(path.join(outputDirectory, "protocol.config.json"), "utf8")),
+        JSON.parse(await readFile(new URL("../protocol.config.json", import.meta.url), "utf8")),
+    );
+    assert.deepEqual(
+        JSON.parse(await readFile(path.join(outputDirectory, "public-errors.config.json"), "utf8")),
+        JSON.parse(
+            await readFile(new URL("../public-errors.config.json", import.meta.url), "utf8"),
+        ),
+    );
+    await cleanBuildOutput({ configurationPath, repositoryRoot });
+
+    await symlink(externalRoot, outputDirectory, "dir");
+    await assert.rejects(copyRuntimeConfiguration(options), /must not contain symlinks/u);
+    await assert.rejects(readFile(path.join(externalRoot, "protocol.config.json")), {
+        code: "ENOENT",
+    });
 });

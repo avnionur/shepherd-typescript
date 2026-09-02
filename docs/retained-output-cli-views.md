@@ -4,7 +4,7 @@ Implementations: [`src/cli/handlers.ts`](../src/cli/handlers.ts),
 [`src/ledger/output-citations.ts`](../src/ledger/output-citations.ts), and
 [`src/workspace/changeset-inspection.ts`](../src/workspace/changeset-inspection.ts). Tests:
 [`test/cli/cli.test.ts`](../test/cli/cli.test.ts) and
-[`scripts/test-packaged-cli.ts`](../scripts/test-packaged-cli.ts).
+[`tooling/testing/packaged-cli.ts`](../tooling/testing/packaged-cli.ts).
 
 ## Outputs
 

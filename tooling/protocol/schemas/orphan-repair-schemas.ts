@@ -1,6 +1,11 @@
-import type { ProtocolConfig } from "../src/protocol/config-types.ts";
+import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
-/** Renders the configured bounded orphaned-operation diagnosis schema. */
+/**
+ * Renders the configured bounded orphaned-operation diagnosis schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed diagnosis schema.
+ */
 export function renderOrphanOperationDiagnosisSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {
@@ -93,7 +98,12 @@ export function renderOrphanOperationDiagnosisSchema(
     };
 }
 
-/** Renders the configured exact orphan-repair command schema. */
+/**
+ * Renders the configured exact orphan-repair command schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed repair-command schema.
+ */
 export function renderOrphanRepairCommandSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {
@@ -118,7 +128,12 @@ export function renderOrphanRepairCommandSchema(
     };
 }
 
-/** Renders the configured successful orphan-repair receipt schema. */
+/**
+ * Renders the configured successful orphan-repair receipt schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed repair-receipt schema.
+ */
 export function renderOrphanRepairReceiptSchema(
     config: ProtocolConfig,
 ): Readonly<Record<string, unknown>> {

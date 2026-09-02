@@ -8,7 +8,7 @@ import {
     checkApiReference,
     generateApiReference,
     writeApiReference,
-} from "../scripts/api-reference.ts";
+} from "../tooling/api-reference/generator.ts";
 
 test("API reference is deterministic, complete, and safe for every supported package entry", async () => {
     const packageManifest = JSON.parse(

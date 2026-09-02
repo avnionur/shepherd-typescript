@@ -1,8 +1,13 @@
-import type { CliGroupConfig, ProtocolConfig } from "../src/protocol/config-types.ts";
+import type { CliGroupConfig, ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
 type JsonSchema = Readonly<Record<string, unknown>>;
 
-/** Renders the closed stable CLI JSON envelope schema from protocol configuration. */
+/**
+ * Renders the closed stable CLI JSON envelope schema from protocol configuration.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured CLI output schema.
+ */
 export function renderCliOutputSchema(config: ProtocolConfig): JsonSchema {
     const commandSchemas = config.cli.groups.flatMap((group) => successSchemas(config, group));
     return {
@@ -31,7 +36,13 @@ export function renderCliOutputSchema(config: ProtocolConfig): JsonSchema {
     };
 }
 
-/** Renders the checked-in CLI command and JSON contract reference from configuration. */
+/**
+ * Renders the checked-in CLI command and JSON contract reference from configuration.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns Deterministic Markdown for the configured CLI surface.
+ * @throws {TypeError} If the configured demo command is unavailable.
+ */
 export function renderCliCommandReference(config: ProtocolConfig): string {
     const commandLines = config.cli.groups.flatMap((group) =>
         group.handler === null

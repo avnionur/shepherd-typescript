@@ -1,7 +1,7 @@
 # Source Maps, Stacks, and Causes
 
 Build configuration: [`tsconfig.build.json`](../tsconfig.build.json). Installed conformance:
-[`scripts/test-packaged-cli.ts`](../scripts/test-packaged-cli.ts). Structured error contract:
+[`tooling/testing/packaged-cli.ts`](../tooling/testing/packaged-cli.ts). Structured error contract:
 [`public-errors.md`](./public-errors.md).
 
 ## Package map policy

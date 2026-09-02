@@ -6,10 +6,11 @@ targets named by `package.json`, not from implementation modules or a separately
 
 ## Generator and configuration
 
-The repository-owned generator in `scripts/api-reference.ts` uses the pinned TypeScript 7 compiler
-API. TypeDoc 0.28 does not declare TypeScript 7 compatibility, while API Extractor 7.59 carries a
-separate TypeScript 5.9 compiler; using the existing compiler keeps declaration resolution aligned
-with the package build and adds no dependency lifecycle scripts or lockfile authority.
+The repository-owned generator in `tooling/api-reference/generator.ts` uses the pinned TypeScript 7
+compiler API. TypeDoc 0.28 does not declare TypeScript 7 compatibility, while API Extractor 7.59
+carries a separate TypeScript 5.9 compiler; using the existing compiler keeps declaration
+resolution aligned with the package build and adds no dependency lifecycle scripts or lockfile
+authority.
 
 `api-reference.config.json` owns the artifact and emitted-declaration roots, shared runtime
 statement, source-origin/leakage policies, and each entry's title, domain summary, and
