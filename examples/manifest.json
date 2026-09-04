@@ -1,0 +1,19 @@
+{
+    "examples": [
+        {
+            "source": "examples/retained-coding.ts",
+            "configuration": "examples/retained-coding.json",
+            "expectedResult": {
+                "changedPaths": ["greet.ts"],
+                "beforeSelection": "export function greet(): string { return \"Hello\"; }\n",
+                "retainedSource": "export function greet(name: string): string { return \"Hello, \" + name + \"!\"; }\n",
+                "afterSelection": "export function greet(name: string): string { return \"Hello, \" + name + \"!\"; }\n",
+                "runStatus": "committed",
+                "settlementStates": ["selected"]
+            },
+            "expectedFiles": {
+                "greet.ts": "export function greet(name: string): string { return \"Hello, \" + name + \"!\"; }\n"
+            }
+        }
+    ]
+}

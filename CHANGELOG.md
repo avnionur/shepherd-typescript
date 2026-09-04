@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.61.0] - 2026-09-04
+
+### New Feature
+
+- Added a shipped TypeScript retained-coding example using supported domain facades and an offline,
+  configuration-owned scenario: isolated capture, retained inspection, exact selection, and
+  read-only reopened settlement evidence.
+- Added manifest-driven fresh-install example typechecking and execution, independent transcript
+  and file expectations, and existing-directory refusal to the ordinary packaged conformance gate.
+- Documented source-checkout and installed-tarball usage, explicit approval points, retained-state
+  handling, and advisory/offline limits. Created Phase 5 child issues #98–#102 with blocking links.
+
+### Impact
+
+TypeScript consumers can run and adapt a verified retained source-edit workflow without credentials
+or private imports. Runtime contracts, protocol bytes, public exports, source maps, and the original
+offline quickstart remain unchanged.
+
 ## [1.60.1] - 2026-09-01
 
 ### Improvement

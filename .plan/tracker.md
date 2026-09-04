@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-09-01
+Last updated: 2026-09-04
 
-Current version: `1.60.1`
+Current version: `1.61.0`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -408,21 +408,29 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
   build/protocol/API-reference/release/testing modules, grouped schema renderers, runtime-only
   production output, explicit single-package workspace configuration, and current structure docs.
 
+- [x] Complete Phase 5 Task 12 (#98) packaged TypeScript retained coding with configuration-owned
+  scenario data, inferred task inputs, exact offline capture/inspection/selection, read-only reopen
+  evidence, manifest-driven installed typechecking/execution, and existing-directory refusal.
+
 ## Verification required for this slice
 
 - [x] `pnpm sync:version`
-- [x] `pnpm verify`
-- [x] `pnpm verify:serial`
+- [x] `CI=true pnpm verify` (host execution: 100% configured line/branch/function coverage)
 - [x] `pnpm build:desktop`
-- [x] `npm pack --dry-run` with an isolated cache
-- [x] production dependency audit and lockfile review
-- [x] standards, specification, and capability review
+- [x] installed example typecheck, transcript, selected bytes, and existing-directory refusal
+- [x] source-checkout example invocation in a fresh temporary directory
+- [x] standards, specification, and capability review (packaged documentation links corrected)
 
 ## Next slice
 
-Continue Phase 5 with the next dependency-unblocked TypeScript-first example or migration slice.
-Preserve the generated reference, root facade, ESM-only policy, installed quickstart, and exact
-authority.
+Phase 5 Task 12 ([#98](https://github.com/avnionur/shepherd-typescript/issues/98)) implements the
+packaged retained-coding example and shared verification support. After its merge, read-only review
+([#99](https://github.com/avnionur/shepherd-typescript/issues/99)), multiple bindings
+([#100](https://github.com/avnionur/shepherd-typescript/issues/100)), and custom effects
+([#101](https://github.com/avnionur/shepherd-typescript/issues/101)) become unblocked.
+Migration guidance ([#102](https://github.com/avnionur/shepherd-typescript/issues/102)) depends on
+all four examples. Preserve the generated reference, root facade, ESM-only policy, original
+quickstart, and exact authority throughout.
 
 ## Notes
 

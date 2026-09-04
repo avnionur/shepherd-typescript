@@ -1,0 +1,16 @@
+{
+    "sourceFile": "greet.ts",
+    "before": "export function greet(): string { return \"Hello\"; }\n",
+    "after": "export function greet(name: string): string { return \"Hello, \" + name + \"!\"; }\n",
+    "storeFile": "retained-coding.sqlite",
+    "bindingName": "source",
+    "taskName": "personalize-greeting",
+    "taskVersion": "1",
+    "instruction": "Update the greeting function to accept a name and return a personalized greeting.",
+    "providerId": "provider:retained-coding",
+    "model": "offline-cassette",
+    "runnerId": "runner:retained-coding",
+    "runId": "run:retained-coding",
+    "captureId": "capture:retained-coding",
+    "commandId": "select:retained-coding"
+}

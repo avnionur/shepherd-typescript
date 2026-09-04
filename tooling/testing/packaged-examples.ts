@@ -1,0 +1,131 @@
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import {
+    copyFileSync,
+    lstatSync,
+    mkdtempSync,
+    readFileSync,
+    realpathSync,
+    writeFileSync,
+} from "node:fs";
+import path from "node:path";
+
+/** Locations supplied by the isolated installed-package conformance runner. */
+export type PackagedExampleOptions = {
+    /** Checkout providing the pinned compiler and Node declarations. */
+    readonly repositoryRoot: string;
+    /** Freshly installed package, never the source checkout. */
+    readonly installedPackageRoot: string;
+    /** Isolated parent beside the installed node_modules directory. */
+    readonly consumerParent: string;
+};
+
+type ExampleManifest = {
+    readonly examples: readonly {
+        readonly source: string;
+        readonly configuration: string;
+        readonly expectedResult: unknown;
+        readonly expectedFiles: Readonly<Record<string, string>>;
+    }[];
+};
+
+/**
+ * Typechecks and executes every configured shipped TypeScript example as an installed consumer.
+ *
+ * @param options - Fresh installation, isolated consumer parent, and compiler checkout.
+ * @returns Nothing after transcripts, selected files, and existing-directory refusal pass.
+ * @throws {Error} If artifacts are unsafe/missing, compilation or execution fails, or evidence
+ * differs from the independent manifest expectations.
+ */
+export function testPackagedExamples(options: PackagedExampleOptions): void {
+    const packageManifest = JSON.parse(
+        readFileSync(path.join(options.installedPackageRoot, "package.json"), "utf8"),
+    ) as { readonly exampleManifest: string };
+    const manifestPath = packageFile(options.installedPackageRoot, packageManifest.exampleManifest);
+    assert.deepEqual(
+        readFileSync(manifestPath),
+        readFileSync(packageFile(options.repositoryRoot, packageManifest.exampleManifest)),
+    );
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as ExampleManifest;
+    assert.ok(Array.isArray(manifest.examples) && manifest.examples.length > 0);
+    for (const example of manifest.examples) {
+        const consumerRoot = mkdtempSync(path.join(options.consumerParent, "example-"));
+        const source = path.join(consumerRoot, "example.ts");
+        const configuration = path.join(consumerRoot, "example.json");
+        for (const [relative, destination] of [
+            [example.source, source],
+            [example.configuration, configuration],
+        ] as const) {
+            const installed = packageFile(options.installedPackageRoot, relative);
+            assert.deepEqual(
+                readFileSync(installed),
+                readFileSync(packageFile(options.repositoryRoot, relative)),
+            );
+            copyFileSync(installed, destination);
+        }
+        writeFileSync(path.join(consumerRoot, "package.json"), '{"type":"module"}\n');
+        const typeConfiguration = path.join(consumerRoot, "tsconfig.json");
+        writeFileSync(
+            typeConfiguration,
+            JSON.stringify({
+                compilerOptions: {
+                    erasableSyntaxOnly: true,
+                    exactOptionalPropertyTypes: true,
+                    lib: ["ESNext"],
+                    module: "NodeNext",
+                    moduleResolution: "NodeNext",
+                    noEmit: true,
+                    noUncheckedIndexedAccess: true,
+                    strict: true,
+                    target: "ESNext",
+                    typeRoots: [path.join(options.repositoryRoot, "node_modules", "@types")],
+                    types: ["node"],
+                    verbatimModuleSyntax: true,
+                },
+                files: [source],
+            }),
+        );
+        execFileSync(
+            path.join(
+                options.repositoryRoot,
+                "node_modules",
+                ".bin",
+                process.platform === "win32" ? "tsc.cmd" : "tsc",
+            ),
+            ["--project", typeConfiguration],
+            { cwd: consumerRoot, stdio: "pipe" },
+        );
+        const workspaceRoot = path.join(consumerRoot, "workspace");
+        const args = [source, workspaceRoot, configuration];
+        const output = execFileSync(process.execPath, args, {
+            cwd: consumerRoot,
+            encoding: "utf8",
+        });
+        assert.deepEqual(JSON.parse(output), example.expectedResult);
+        for (const [relative, expected] of Object.entries(example.expectedFiles)) {
+            assert.equal(readFileSync(packageFile(workspaceRoot, relative), "utf8"), expected);
+        }
+        assert.throws(
+            () => execFileSync(process.execPath, args, { cwd: consumerRoot, stdio: "pipe" }),
+            /EEXIST/u,
+        );
+        for (const [relative, expected] of Object.entries(example.expectedFiles)) {
+            assert.equal(readFileSync(packageFile(workspaceRoot, relative), "utf8"), expected);
+        }
+    }
+}
+
+function packageFile(root: string, relative: string): string {
+    assert.equal(typeof relative, "string", "package example manifest/path is required");
+    assert.ok(relative.length > 0 && !path.isAbsolute(relative) && !relative.includes("\\"));
+    const resolvedRoot = realpathSync(root);
+    const candidate = path.resolve(resolvedRoot, relative);
+    assert.ok(candidate.startsWith(`${resolvedRoot}${path.sep}`), "example path escapes its root");
+    const resolved = realpathSync(candidate);
+    assert.ok(
+        resolved.startsWith(`${resolvedRoot}${path.sep}`),
+        "example real path escapes its root",
+    );
+    assert.ok(lstatSync(candidate).isFile(), "example path must be a regular file");
+    return resolved;
+}
