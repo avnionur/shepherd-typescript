@@ -1,6 +1,6 @@
 {
     "name": "@avnionur/shepherd-typescript",
-    "version": "1.64.2",
+    "version": "1.64.3",
     "packageManager": "pnpm@10.32.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
     "license": "MIT",
@@ -95,8 +95,10 @@
     },
     "devDependencies": {
         "@biomejs/biome": "2.5.7",
+        "@rollup/plugin-node-resolve": "16.0.3",
         "@types/node": "26.1.2",
         "ajv": "8.20.0",
+        "rollup": "npm:@rollup/wasm-node@4.63.1",
         "typescript": "7.0.2",
         "yaml": "2.9.0"
     }

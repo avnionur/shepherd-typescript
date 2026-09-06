@@ -632,7 +632,8 @@ surface are not implemented.
 
 The [package policy](./docs/package-exports.md#installed-import-loading) now records verified
 per-entry Node module loading. Narrow imports avoid SQLite/process support where documented;
-filesystem configuration remains required and bundler tree-shaking is a separate verification.
+filesystem configuration remains required. The same policy documents tested Rollup Node
+tree-shaking fixtures and their required configuration-asset layout.
 
 ## Attribution
 

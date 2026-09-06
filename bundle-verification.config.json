@@ -1,0 +1,44 @@
+{
+    "output": "chunks/nested/bundle.mjs",
+    "allowedWarnings": ["THIS_IS_UNDEFINED", "CIRCULAR_DEPENDENCY"],
+    "fixtures": [
+        {
+            "entry": "./canonical",
+            "symbol": "canonicalizeRecord",
+            "argument": { "z": 2, "a": 1 },
+            "stdout": "{\"a\":1,\"z\":2}\n",
+            "requiredModules": [
+                "dist/src/canonical/canonical-record.js",
+                "dist/src/protocol/config.js"
+            ],
+            "forbiddenModules": [
+                "dist/src/store/sqlite-trace-store.js",
+                "dist/src/workspace/native-jail.js"
+            ],
+            "removedExports": { "dist/src/canonical/canonical-record.js": ["createRecordId"] },
+            "assets": [
+                { "source": "dist/protocol.config.json", "destination": "protocol.config.json" }
+            ]
+        },
+        {
+            "entry": ".",
+            "symbol": "canonicalizeRecord",
+            "argument": { "z": 2, "a": 1 },
+            "stdout": "{\"a\":1,\"z\":2}\n",
+            "requiredModules": [
+                "dist/src/canonical/canonical-record.js",
+                "dist/src/protocol/config.js",
+                "dist/src/errors/public-errors.js"
+            ],
+            "forbiddenModules": [],
+            "removedExports": {},
+            "assets": [
+                { "source": "dist/protocol.config.json", "destination": "protocol.config.json" },
+                {
+                    "source": "dist/public-errors.config.json",
+                    "destination": "public-errors.config.json"
+                }
+            ]
+        }
+    ]
+}

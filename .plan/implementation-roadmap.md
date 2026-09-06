@@ -328,7 +328,9 @@ Work:
   checked against installed, typechecked, executed examples;
 - verify tree-shaking and optional native dependency loading; **installed ESM import matrix
   verified in 1.64.2 (#108)** with fresh-process required/forbidden builtin checks; bundler
-  tree-shaking and configuration assets remain Task 18, and absent optional adapters are unverified.
+  **Rollup Node root/narrow canonical fixtures verified in 1.64.3 (#109)** with retained-code,
+  execution, and missing/malformed configuration-asset checks. Other bundlers/entry combinations
+  and absent optional adapters remain unverified.
 
 Exit criteria:
 
