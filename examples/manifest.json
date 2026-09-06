@@ -1,6 +1,23 @@
 {
     "examples": [
         {
+            "source": "examples/multiple-bindings.ts",
+            "configuration": "examples/multiple-bindings.json",
+            "expectedResult": {
+                "bindings": ["application", "documentation"],
+                "beforeSelection": ["original application\n", "original documentation\n"],
+                "afterEachSelection": [
+                    ["updated application\n", "original documentation\n"],
+                    ["updated application\n", "updated documentation\n"]
+                ],
+                "settlementStates": [["selected"], ["selected"]]
+            },
+            "expectedFiles": {
+                "application/content.txt": "updated application\n",
+                "documentation/content.txt": "updated documentation\n"
+            }
+        },
+        {
             "source": "examples/retained-coding.ts",
             "configuration": "examples/retained-coding.json",
             "expectedResult": {

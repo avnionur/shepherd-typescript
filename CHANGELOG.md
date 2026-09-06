@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.63.0] - 2026-09-06
+
+### New Feature
+
+- Ship a configured TypeScript multiple-binding example with independent sequential captures,
+  exact per-output selection, sibling-file preservation, and reopened settlement evidence.
+- Add independent installed-package transcript and final-file expectations through the existing
+  manifest-driven verifier, and document per-binding approval and partial-completion semantics.
+
+### Impact
+
+Consumers can compose separate retained workflows across disjoint bindings without implying
+simultaneous multi-world execution or atomic settlement across bindings. Existing runtime
+contracts and examples remain unchanged.
+
 ## [1.62.0] - 2026-09-06
 
 ### New Feature

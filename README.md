@@ -234,6 +234,8 @@ For a typed source-file edit using the domain facades, see the
 workspace bytes before selection and durable selected evidence after reopening.
 The same guide includes a repeatable read-only review of an existing retained output with bounded
 previews and verification that workspace and trace evidence remain unchanged.
+It also demonstrates independent captures and settlements across disjoint bindings, checking
+sibling files after each selection.
 
 ## API
 

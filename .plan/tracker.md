@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-06
 
-Current version: `1.62.0`
+Current version: `1.63.0`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -414,6 +414,10 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Task 14 (#100): full local verification passed with 100% configured coverage, including installed
+multiple-binding typechecking, intermediate sibling states, final bytes, and reopen citations.
+Production build and diff checks passed; runtime, lockfile, and existing examples are unchanged.
+
 Task 13 (#99): local full verification, installed repeated-review checks, file/trace preservation,
 production build, and dependency audit passed. Runtime and protocol source remain unchanged.
 
@@ -425,6 +429,10 @@ production build, and dependency audit passed. Runtime and protocol source remai
 - [x] standards, specification, and capability review (packaged documentation links corrected)
 
 ## Next slice
+
+Phase 5 Task 14 (#100) adds the installed multiple-binding example with independent captures,
+sibling-preserving selection, and reopened settlement identity. Next is custom effects (#101),
+followed by migration guidance (#102).
 
 Phase 5 Task 13 (#99) adds packaged read-only review with repeated inspection and file/trace
 preservation checks. Next is the multiple-binding example (#100); migration guide #102 remains

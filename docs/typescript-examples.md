@@ -81,7 +81,7 @@ of an existing destination. Example code is not emitted into the production runt
 New compatible examples extend the manifest rather than adding named branches to the verifier.
 The original [offline quickstart](https://github.com/avnionur/shepherd-typescript/blob/main/docs/quickstart.md)
 remains unchanged and is tested separately.
-Multiple-binding and custom-effect examples remain tracked follow-ups.
+The custom-effect example remains a tracked follow-up.
 
 ## Review existing retained output
 
@@ -117,3 +117,38 @@ interface, but the example uses only reopening existing revisions and inspection
 may ensure internal directories exist, so this example requires an intact captured workspace.
 It is not a capability-limited carrier handle, a native sandbox, live observation, or recovery.
 Missing/corrupt evidence causes failure; review does not repair it.
+
+## Separate bindings and settlements
+
+Run the [multiple-binding example](../examples/multiple-bindings.ts) with its
+[scenario](../examples/multiple-bindings.json) and a new destination:
+
+```sh
+node examples/multiple-bindings.ts ./bindings-demo examples/multiple-bindings.json
+```
+
+Installed consumers copy these two files out of the package's examples directory before executing
+them, as with the retained-coding example. The destination must not exist. The scenario owns the
+binding names, subdirectories, contents, and task/run/capture/settlement identities.
+
+The example creates disjoint application and documentation binding roots. Each runner receives
+one binding and performs one independent capture, sequentially. Both captures complete before
+either is selected. Every capture verifies that all user files still contain their original bytes.
+The program then selects each exact output separately and checks the complete user-file state:
+
+| Moment | Application | Documentation |
+| --- | --- | --- |
+| Both captures retained | Original | Original |
+| Application selected | Updated | Original |
+| Documentation selected | Updated | Updated |
+
+The JSON transcript records this sequence and one selected settlement per run, verified after
+reopening the trace database read-only. The installed manifest supplies independent expected
+transcript and final-file values. Existing-directory refusal is also tested.
+
+This demonstrates multiple disjoint bindings, not a simultaneous multi-world runner, an atomic
+multi-binding transaction, or an operating-system sandbox. Each selection has its own explicit
+approval point and durable identity. The demo automatically selects each output at those points.
+If a later selection fails, an earlier completed selection remains committed; use the documented
+settlement/recovery interfaces for the affected output. Rerunning this setup program refuses the
+existing destination and does not attempt recovery.

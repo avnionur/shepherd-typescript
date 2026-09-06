@@ -1,0 +1,36 @@
+{
+    "settings": {
+        "storeFile": "multiple-bindings.sqlite",
+        "instruction": "Return the configured updated content for this binding.",
+        "taskVersion": "1",
+        "model": "offline-cassette"
+    },
+    "bindings": [
+        {
+            "name": "application",
+            "directory": "application",
+            "file": "content.txt",
+            "before": "original application\n",
+            "after": "updated application\n",
+            "taskName": "update-application",
+            "providerId": "provider:application",
+            "runnerId": "runner:application",
+            "runId": "run:application",
+            "captureId": "capture:application",
+            "commandId": "select:application"
+        },
+        {
+            "name": "documentation",
+            "directory": "documentation",
+            "file": "content.txt",
+            "before": "original documentation\n",
+            "after": "updated documentation\n",
+            "taskName": "update-documentation",
+            "providerId": "provider:documentation",
+            "runnerId": "runner:documentation",
+            "runId": "run:documentation",
+            "captureId": "capture:documentation",
+            "commandId": "select:documentation"
+        }
+    ]
+}

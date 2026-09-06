@@ -3,6 +3,8 @@
 - `retained-coding.ts` plus `retained-coding.json`: offline capture, inspection, and exact selection
   of a source-file edit. Requires a new destination directory.
 - `quickstart.mjs`: the unchanged original offline retained-output quickstart.
+- `multiple-bindings.ts` plus `multiple-bindings.json`: independent sequential captures and exact
+  settlements for disjoint bindings, with sibling-file preservation.
 - `read-only-review.ts` plus `read-only-review.json`: repeatable bounded inspection of an existing
   retained-coding workspace, without new capture or settlement.
 
