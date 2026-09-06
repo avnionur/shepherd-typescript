@@ -236,6 +236,8 @@ The same guide includes a repeatable read-only review of an existing retained ou
 previews and verification that workspace and trace evidence remain unchanged.
 It also demonstrates independent captures and settlements across disjoint bindings, checking
 sibling files after each selection.
+The custom-effect example covers exact-kind handler precedence, outcome correlation, and failure
+handling for non-durable in-process dispatch.
 
 ## API
 

@@ -321,7 +321,8 @@ Work:
   manifest-driven installed typechecking/execution, exact selection, and read-only reopen evidence;
   **read-only review implemented in 1.62.0 (#99)** with bounded previews and unchanged file/trace
   evidence across repeated installed runs; **multiple bindings implemented in 1.63.0 (#100)**
-  with independent captures and sibling-preserving settlements; custom effects (#101) follows;
+  with independent captures and sibling-preserving settlements; **custom effects implemented in
+  1.64.0 (#101)** with handler precedence, outcome correlation, and explicit non-durable limits;
 - add migration guide from upstream Python examples to TypeScript;
 - verify tree-shaking and optional native dependency loading.
 

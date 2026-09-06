@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.64.0] - 2026-09-06
+
+### New Feature
+
+- Ship a configured TypeScript custom-effect example demonstrating exact-kind handler precedence,
+  typed payload validation, correlated success/failure outcomes, and stable unhandled-effect errors.
+- Verify manual outcome construction and rejection of an outcome paired with a changed intent
+  through the installed package; document in-process, non-durable authority and recovery limits.
+
+### Impact
+
+Consumers can adapt a tested custom-effect dispatch example without private imports or live
+providers. Runtime contracts and existing examples remain unchanged.
+
 ## [1.63.0] - 2026-09-06
 
 ### New Feature

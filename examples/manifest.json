@@ -1,6 +1,20 @@
 {
     "examples": [
         {
+            "source": "examples/custom-effects.ts",
+            "configuration": "examples/custom-effects.json",
+            "expectedResult": {
+                "successHandler": "format:local",
+                "success": { "ok": true, "value": "Reviewed: sample" },
+                "failureHandler": "format:local",
+                "failure": { "ok": false, "error": { "code": "CONTENT_DECLINED" } },
+                "manualOutcomeCorrelated": true,
+                "changedIntentRejected": true,
+                "unhandledCode": "EFFECT_HANDLER_NOT_FOUND"
+            },
+            "expectedFiles": {}
+        },
+        {
             "source": "examples/multiple-bindings.ts",
             "configuration": "examples/multiple-bindings.json",
             "expectedResult": {

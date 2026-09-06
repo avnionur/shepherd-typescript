@@ -81,7 +81,7 @@ of an existing destination. Example code is not emitted into the production runt
 New compatible examples extend the manifest rather than adding named branches to the verifier.
 The original [offline quickstart](https://github.com/avnionur/shepherd-typescript/blob/main/docs/quickstart.md)
 remains unchanged and is tested separately.
-The custom-effect example remains a tracked follow-up.
+The custom-effect example below completes the initial four-example collection.
 
 ## Review existing retained output
 
@@ -152,3 +152,41 @@ approval point and durable identity. The demo automatically selects each output 
 If a later selection fails, an earlier completed selection remains committed; use the documented
 settlement/recovery interfaces for the affected output. Rerunning this setup program refuses the
 existing destination and does not attempt recovery.
+
+## Custom effect handlers
+
+Run [custom-effects.ts](../examples/custom-effects.ts) with its
+[scenario](../examples/custom-effects.json):
+
+```sh
+node examples/custom-effects.ts ./effects-demo examples/custom-effects.json
+```
+
+Installed consumers copy the two files out of the package before running them. The new empty
+directory is only a demo-run marker; existing destinations are refused. The handlers themselves
+perform pure text formatting and make no filesystem, provider, or network calls.
+
+The example constructs a typed text payload, installs fallback and local handlers for the same
+kind, then installs an unrelated kind. Dispatch chooses the last matching handler, not merely the
+last installed handler. The local handler validates the application payload schema and returns
+either formatted text or explicit failure data. Canonical validation alone does not establish
+application-specific payload semantics.
+
+Expected response fields:
+
+- `successHandler` and `failureHandler`: `format:local`;
+- `success`: `{"ok":true,"value":"Reviewed: sample"}`;
+- `failure`: `{"ok":false,"error":{"code":"CONTENT_DECLINED"}}`;
+- `manualOutcomeCorrelated` and `changedIntentRejected`: `true`;
+- `unhandledCode`: `EFFECT_HANDLER_NOT_FOUND`.
+
+The example validates correlations for both dispatch results, constructs a manual outcome, and
+proves that reusing its effect ID with a different payload does not satisfy correlation. An
+unhandled kind throws the exported error with the original kind and effect ID. The manifest's
+independent expected response is checked after typechecking and running the installed example.
+
+Handler dispatch is in-process and non-durable. It creates no trace-store records, recovery
+journal, provider execution, interception, or replay facility. The reversible annotation describes
+this pure operation; it does not implement compensation for arbitrary external effects. Explicit
+failure data and thrown handler errors are distinct: the latter propagate to the caller. None of
+these interfaces confines callback filesystem or network authority.
