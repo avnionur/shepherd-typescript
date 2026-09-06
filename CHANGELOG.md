@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.61.4] - 2026-09-06
+
+### Defect Fixes
+
+- Replace unavailable GitHub Dependency Review with a frozen-lockfile audit covering production
+  and development dependencies, failing on high/critical advisories and service errors.
+- Pin Ajv's transitive fast-uri dependency to patched 3.1.6 to address five high-severity advisories.
+
+### Impact
+
+Dependency vulnerability checks run without repository security-plan features. Lifecycle scripts
+remain disabled in the audit job; license policies and base-branch dependency comparisons remain
+manual review responsibilities. Runtime interfaces are unchanged.
+
 ## [1.61.3] - 2026-09-06
 
 ### Defect Fixes

@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-06
 
-Current version: `1.61.3`
+Current version: `1.61.4`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -425,7 +425,8 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 PR #103 verification follow-up: LF checkout policy now covers Markdown and module fixtures,
 and CodeQL action revisions are aligned. Compiler output paths now normalize before containment
-checks on Windows. Dependency Review requires repository security support;
+checks on Windows. Dependency Review is replaced by a full locked-dependency audit;
+CodeQL result upload still requires code scanning to be enabled on the repository;
 the next child remains blocked until #98 merges.
 
 Phase 5 Task 12 ([#98](https://github.com/avnionur/shepherd-typescript/issues/98)) implements the
