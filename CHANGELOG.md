@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.62.0] - 2026-09-06
+
+### New Feature
+
+- Ship a TypeScript read-only retained-output review example with configurable selectors,
+  pagination, bounded text previews, and before/after trace archive verification.
+- Extend installed-example conformance to typecheck and run review twice after setup, asserting
+  independent expected results and unchanged workspace/control-file bytes and directory membership.
+- Document read authority, setup prerequisites, selected-output semantics, and inspection limits.
+
+### Impact
+
+Consumers can review existing retained output without adding capture or settlement evidence.
+Runtime interfaces and the original retained-coding and quickstart behavior remain unchanged.
+
 ## [1.61.4] - 2026-09-06
 
 ### Defect Fixes

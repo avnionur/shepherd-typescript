@@ -232,6 +232,8 @@ See the [offline retained-output quickstart](./docs/quickstart.md).
 For a typed source-file edit using the domain facades, see the
 [packaged TypeScript retained-coding example](./docs/typescript-examples.md). It verifies original
 workspace bytes before selection and durable selected evidence after reopening.
+The same guide includes a repeatable read-only review of an existing retained output with bounded
+previews and verification that workspace and trace evidence remain unchanged.
 
 ## API
 

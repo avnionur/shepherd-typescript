@@ -81,4 +81,39 @@ of an existing destination. Example code is not emitted into the production runt
 New compatible examples extend the manifest rather than adding named branches to the verifier.
 The original [offline quickstart](https://github.com/avnionur/shepherd-typescript/blob/main/docs/quickstart.md)
 remains unchanged and is tested separately.
-Read-only review, multiple-binding, and custom-effect examples remain tracked follow-ups.
+Multiple-binding and custom-effect examples remain tracked follow-ups.
+
+## Review existing retained output
+
+After the retained-coding command has completed, run:
+
+```sh
+node examples/read-only-review.ts ./coding-demo examples/read-only-review.json
+```
+
+For an installed consumer, copy `read-only-review.ts` and `read-only-review.json` out of the
+package's examples directory just as above, then use those local filenames. Both examples use
+only supported installed package entries.
+
+The [review example](../examples/read-only-review.ts) opens an existing workspace and current
+trace database read-only. The [review configuration](../examples/read-only-review.json) selects
+the latest retained output, a file, a page limit, and preview byte/line limits. Limits are positive
+integer strings parsed and checked before inspection; the public inspection interface also enforces
+its configured bounds. An exact output ID can replace `@latest` to fix the review target.
+
+For the default scenario the JSON response names `run:retained-coding`, lists `greet.ts`, reports
+one change with no next page, and shows the personalized source without truncation. The existing
+settlement state is `selected` because the setup example already selected it. Review only reports
+that state; it never prepares, selects, releases, or discards an output. The same public inspection
+also reads existing unsettled output when supplied an appropriate workspace and selector.
+
+The review compares the public trace archive before and after inspection. Installed conformance
+runs the review in a separate process twice, compares the expected transcript, and checks every
+workspace/control file's bytes and directory membership before and after. The original setup's
+existing-directory refusal remains independently tested.
+
+The trace handle enforces read-only SQLite access. The reference carrier exposes a broader
+interface, but the example uses only reopening existing revisions and inspection. Carrier setup
+may ensure internal directories exist, so this example requires an intact captured workspace.
+It is not a capability-limited carrier handle, a native sandbox, live observation, or recovery.
+Missing/corrupt evidence causes failure; review does not repair it.
