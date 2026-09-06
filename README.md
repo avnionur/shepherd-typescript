@@ -630,6 +630,10 @@ CLI compatibility evidence. Native Windows,
 simultaneous multi-world runner access, network/read isolation, and the remaining documented run
 surface are not implemented.
 
+The [package policy](./docs/package-exports.md#installed-import-loading) now records verified
+per-entry Node module loading. Narrow imports avoid SQLite/process support where documented;
+filesystem configuration remains required and bundler tree-shaking is a separate verification.
+
 ## Attribution
 
 The design is informed by the MIT-licensed

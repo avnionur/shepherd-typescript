@@ -32,7 +32,7 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   publication boundaries.
 - [Package exports and module policy](./package-exports.md) defines supported ESM entries,
   including the Node-only effects, run execution/control, and workspace authority facades,
-  TypeScript requirements, CommonJS refusal, and deep-import boundaries.
+  TypeScript requirements, CommonJS refusal, deep-import boundaries, and installed import loading.
 - [Generated API-reference policy](./api-reference.md) defines declaration-only generation,
   export completeness, type/runtime classification, authority notes, privacy checks, drift
   rejection, and fresh-package conformance.

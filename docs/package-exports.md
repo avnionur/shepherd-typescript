@@ -76,3 +76,32 @@ declaration targets. Its [generation policy](./api-reference.md) requires exact 
 agreement, explicit type/runtime classification, public JSDoc and thrown-error retention,
 entry-owned authority notes, private/internal exclusion, deterministic check mode, and packaged
 consumer typechecking for every subpath.
+
+## Installed import loading
+
+Fresh-process conformance imports every installed export and observes Node builtin module loads
+with synchronous module hooks. The repository's
+[`entry-loading.config.json`](../entry-loading.config.json) requires complete agreement with the
+export map and records the following dependencies:
+
+| Entry | Filesystem configuration | SQLite loaded | Process-execution module loaded |
+| --- | --- | --- | --- |
+| Root, CLI, tasks, trace | Yes | Yes | Yes |
+| Canonical, effects, providers, runs | Yes | No | No |
+| Workspace | Yes | No | Yes |
+
+The tasks entry exports its SQLite registry as well as task builders; task-ledger/grant support
+also reaches process-related modules. The runs entry accepts store/provider authority from callers
+and does not load SQLite merely by being imported. The workspace entry loads filesystem and
+process support but does not construct the caller's trace store.
+
+“Loaded” is an import observation, not a claim that a subprocess ran or a database opened.
+Every entry reads and validates filesystem-backed protocol configuration, so the narrow entries
+are still Node-only. This test does not prove browser compatibility or bundler dead-code removal.
+There are currently no separately installed optional provider/native adapter packages to test;
+their future loading behavior is not inferred from this matrix.
+
+The [installed loading verifier](../tooling/testing/entry-loading.ts) is invoked by the ordinary
+package conformance command. Each export gets a fresh process to avoid module-cache contamination;
+required loads act as positive controls alongside forbidden loads. Bundler tree-shaking and
+configuration-asset handling are tracked separately in Phase 5 Task 18.
