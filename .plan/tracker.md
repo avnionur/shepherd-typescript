@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-06
 
-Current version: `1.61.2`
+Current version: `1.61.3`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 

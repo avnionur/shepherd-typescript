@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.61.3] - 2026-09-06
+
+### Defect Fixes
+
+- Grant CodeQL read access to workflow metadata required by its analysis action.
+
+### Impact
+
+CodeQL can read its workflow run without adding write authority or bypassing security checks.
+
 ## [1.61.2] - 2026-09-06
 
 ### Defect Fixes
