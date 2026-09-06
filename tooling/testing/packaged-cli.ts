@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
+import { testEntryLoading } from "./entry-loading.ts";
 import { testPackagedExamples } from "./packaged-examples.ts";
 
 const repositoryRoot = path.resolve(fileURLToPath(new URL("../../", import.meta.url)));
@@ -104,6 +104,7 @@ export function testPackagedCli(): void {
             ...packageManifest.name.split("/"),
         );
         testPackagedExamples({ repositoryRoot, installedPackageRoot, consumerParent: installPath });
+        testEntryLoading({ repositoryRoot, installedPackageRoot, consumerParent: installPath });
         for (const entry of Object.values(packageManifest.exports)) {
             for (const target of [entry.import, entry.types]) {
                 assertPortableSourceMap(repositoryRoot, target, temporaryRoot);

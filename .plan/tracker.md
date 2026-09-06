@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-06
 
-Current version: `1.64.1`
+Current version: `1.64.2`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -414,6 +414,10 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Task 17 (#108): all nine installed exports pass fresh-process builtin loading expectations;
+full local verification and production build pass with 100% configured coverage. Runtime,
+protocol and dependency lockfile are unchanged. Bundler verification follows in #109.
+
 Task 16 (#102): pinned upstream release sources inspected; guide excerpts match installed examples
 that typecheck and execute. Full local verification passed with 100% configured coverage, plus
 production build and unchanged-runtime/protocol/lock checks. Python tests were not executed.
@@ -437,6 +441,9 @@ production build, and dependency audit passed. Runtime and protocol source remai
 - [x] standards, specification, and capability review (packaged documentation links corrected)
 
 ## Next slice
+
+Task 17 (#108) verifies the installed ESM entry loading matrix. Task 18 verifies actual bundler
+tree-shaking and runtime-configuration assets after that matrix is delivered.
 
 Phase 5 Task 16 (#102) documents Python-to-TypeScript migration from pinned release sources with
 installed-example-verified code excerpts. The example and migration-guide frontier is complete;

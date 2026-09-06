@@ -1,0 +1,31 @@
+{
+    "entries": {
+        ".": { "required": ["node:fs", "node:sqlite", "node:child_process"], "forbidden": [] },
+        "./canonical": {
+            "required": ["node:fs"],
+            "forbidden": ["node:sqlite", "node:child_process"]
+        },
+        "./cli": { "required": ["node:fs", "node:sqlite", "node:child_process"], "forbidden": [] },
+        "./effects": {
+            "required": ["node:fs"],
+            "forbidden": ["node:sqlite", "node:child_process"]
+        },
+        "./providers": {
+            "required": ["node:fs"],
+            "forbidden": ["node:sqlite", "node:child_process"]
+        },
+        "./runs": { "required": ["node:fs"], "forbidden": ["node:sqlite", "node:child_process"] },
+        "./tasks": {
+            "required": ["node:fs", "node:sqlite", "node:child_process"],
+            "forbidden": []
+        },
+        "./trace": {
+            "required": ["node:fs", "node:sqlite", "node:child_process"],
+            "forbidden": []
+        },
+        "./workspace": {
+            "required": ["node:fs", "node:child_process"],
+            "forbidden": ["node:sqlite"]
+        }
+    }
+}

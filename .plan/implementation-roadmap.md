@@ -326,7 +326,9 @@ Work:
 - add migration guide from upstream Python examples to TypeScript; **implemented in 1.64.1
   (#102)** with pinned release provenance, classified adaptations/non-claims, and code excerpts
   checked against installed, typechecked, executed examples;
-- verify tree-shaking and optional native dependency loading.
+- verify tree-shaking and optional native dependency loading; **installed ESM import matrix
+  verified in 1.64.2 (#108)** with fresh-process required/forbidden builtin checks; bundler
+  tree-shaking and configuration assets remain Task 18, and absent optional adapters are unverified.
 
 Exit criteria:
 
