@@ -1,3 +1,5 @@
 # Protocol artifacts are byte-compared with canonical LF generator output.
 *.json text eol=lf
 *.ts text eol=lf
+*.md text eol=lf
+*.mjs text eol=lf

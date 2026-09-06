@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.61.1] - 2026-09-06
+
+### Defect Fixes
+
+- Preserve LF line endings for Markdown and JavaScript module fixtures so Windows checkouts
+  match deterministic generated references and packaged quickstart bytes.
+- Align the CodeQL analyze action with the existing init/autobuild revision to avoid incompatible
+  action configuration during analysis.
+
+### Impact
+
+Cross-platform verification can compare the same artifact bytes, and CodeQL steps use a consistent
+version. Dependency Review still requires repository security features; no check is bypassed.
+
 ## [1.61.0] - 2026-09-04
 
 ### New Feature
