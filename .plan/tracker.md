@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-06
 
-Current version: `1.61.4`
+Current version: `1.62.0`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -414,6 +414,9 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Task 13 (#99): local full verification, installed repeated-review checks, file/trace preservation,
+production build, and dependency audit passed. Runtime and protocol source remain unchanged.
+
 - [x] `pnpm sync:version`
 - [x] `CI=true pnpm verify` (host execution: 100% configured line/branch/function coverage)
 - [x] `pnpm build:desktop`
@@ -422,6 +425,10 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 - [x] standards, specification, and capability review (packaged documentation links corrected)
 
 ## Next slice
+
+Phase 5 Task 13 (#99) adds packaged read-only review with repeated inspection and file/trace
+preservation checks. Next is the multiple-binding example (#100); migration guide #102 remains
+blocked on the remaining examples. Hosted workflows remain disabled at the owner's request.
 
 PR #103 verification follow-up: LF checkout policy now covers Markdown and module fixtures,
 and CodeQL action revisions are aligned. Compiler output paths now normalize before containment

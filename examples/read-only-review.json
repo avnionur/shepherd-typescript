@@ -1,0 +1,8 @@
+{
+    "storeFile": "retained-coding.sqlite",
+    "outputSelector": "@latest",
+    "sourceFile": "greet.ts",
+    "pageLimit": "10",
+    "previewBytes": "1024",
+    "previewLines": "20"
+}

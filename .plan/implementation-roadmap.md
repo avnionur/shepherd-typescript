@@ -319,7 +319,8 @@ Work:
 - build TypeScript-first examples for retained coding work, read-only review,
   multiple bindings, and custom effects; **retained coding implemented in 1.61.0 (#98)** with
   manifest-driven installed typechecking/execution, exact selection, and read-only reopen evidence;
-  read-only review (#99), multiple bindings (#100), and custom effects (#101) follow that support;
+  **read-only review implemented in 1.62.0 (#99)** with bounded previews and unchanged file/trace
+  evidence across repeated installed runs; multiple bindings (#100) and custom effects (#101) follow;
 - add migration guide from upstream Python examples to TypeScript;
 - verify tree-shaking and optional native dependency loading.
 

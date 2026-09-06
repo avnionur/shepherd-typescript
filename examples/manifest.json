@@ -11,6 +11,22 @@
                 "runStatus": "committed",
                 "settlementStates": ["selected"]
             },
+            "reviews": [
+                {
+                    "source": "examples/read-only-review.ts",
+                    "configuration": "examples/read-only-review.json",
+                    "expectedResult": {
+                        "runId": "run:retained-coding",
+                        "changedPaths": ["greet.ts"],
+                        "total": 1,
+                        "nextOffset": null,
+                        "preview": "export function greet(name: string): string { return \"Hello, \" + name + \"!\"; }\n",
+                        "truncated": false,
+                        "settlementStates": ["selected"],
+                        "traceUnchanged": true
+                    }
+                }
+            ],
             "expectedFiles": {
                 "greet.ts": "export function greet(name: string): string { return \"Hello, \" + name + \"!\"; }\n"
             }

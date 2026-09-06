@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
     copyFileSync,
     lstatSync,
     mkdtempSync,
+    readdirSync,
     readFileSync,
     realpathSync,
     writeFileSync,
@@ -26,6 +28,11 @@ type ExampleManifest = {
         readonly configuration: string;
         readonly expectedResult: unknown;
         readonly expectedFiles: Readonly<Record<string, string>>;
+        readonly reviews?: readonly {
+            readonly source: string;
+            readonly configuration: string;
+            readonly expectedResult: unknown;
+        }[];
     }[];
 };
 
@@ -112,7 +119,68 @@ export function testPackagedExamples(options: PackagedExampleOptions): void {
         for (const [relative, expected] of Object.entries(example.expectedFiles)) {
             assert.equal(readFileSync(packageFile(workspaceRoot, relative), "utf8"), expected);
         }
+        for (const review of example.reviews ?? []) {
+            for (const [relative, destination] of [
+                [review.source, source],
+                [review.configuration, configuration],
+            ] as const) {
+                const installed = packageFile(options.installedPackageRoot, relative);
+                assert.deepEqual(
+                    readFileSync(installed),
+                    readFileSync(packageFile(options.repositoryRoot, relative)),
+                );
+                copyFileSync(installed, destination);
+            }
+            execFileSync(
+                path.join(
+                    options.repositoryRoot,
+                    "node_modules",
+                    ".bin",
+                    process.platform === "win32" ? "tsc.cmd" : "tsc",
+                ),
+                ["--project", typeConfiguration],
+                { cwd: consumerRoot, stdio: "pipe" },
+            );
+            for (let attempt = 0; attempt < 2; attempt++) {
+                const beforeReview = snapshotFiles(workspaceRoot);
+                const reviewed = execFileSync(process.execPath, args, {
+                    cwd: consumerRoot,
+                    encoding: "utf8",
+                });
+                assert.deepEqual(JSON.parse(reviewed), review.expectedResult);
+                assert.deepEqual(
+                    snapshotFiles(workspaceRoot),
+                    beforeReview,
+                    "review changed workspace or retained evidence files",
+                );
+                for (const [relative, expected] of Object.entries(example.expectedFiles)) {
+                    assert.equal(
+                        readFileSync(packageFile(workspaceRoot, relative), "utf8"),
+                        expected,
+                    );
+                }
+            }
+        }
+        for (const [relative, expected] of Object.entries(example.expectedFiles)) {
+            assert.equal(readFileSync(packageFile(workspaceRoot, relative), "utf8"), expected);
+        }
     }
+}
+
+function snapshotFiles(root: string): readonly string[] {
+    return readdirSync(root, { recursive: true, withFileTypes: true })
+        .map((entry) => {
+            const absolute = path.join(entry.parentPath, entry.name);
+            const relative = path.relative(root, absolute).split(path.sep).join("/");
+            assert.ok(
+                entry.isDirectory() || entry.isFile(),
+                "fixture contains an unsupported file type",
+            );
+            return entry.isDirectory()
+                ? `directory:${relative}`
+                : `file:${relative}:${createHash("sha256").update(readFileSync(absolute)).digest("hex")}`;
+        })
+        .sort();
 }
 
 function packageFile(root: string, relative: string): string {
