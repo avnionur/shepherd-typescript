@@ -1,0 +1,16 @@
+{
+    "kind": "text.format",
+    "unrelatedKind": "text.other",
+    "missingKind": "text.missing",
+    "fallbackHandler": "format:fallback",
+    "localHandler": "format:local",
+    "unrelatedHandler": "format:unrelated",
+    "successId": "effect:format:success",
+    "failureId": "effect:format:declined",
+    "missingId": "effect:format:missing",
+    "text": "sample",
+    "declinedText": "declined",
+    "prefix": "Reviewed: ",
+    "fallbackValue": "fallback",
+    "failureCode": "CONTENT_DECLINED"
+}
