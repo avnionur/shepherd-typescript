@@ -96,7 +96,7 @@
     "devDependencies": {
         "@biomejs/biome": "2.5.7",
         "@rollup/plugin-node-resolve": "16.0.3",
-        "@types/node": "26.1.2",
+        "@types/node": "26.4.1",
         "ajv": "8.20.0",
         "rollup": "npm:@rollup/wasm-node@4.63.1",
         "typescript": "7.0.2",
