@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.64.3] - 2026-09-06
+
+### Improvement
+
+- Verify narrow and root installed imports with pinned Rollup WASM and the official Node resolver,
+  comparing unoptimized/optimized output and checking retained modules and unused exports.
+- Execute optimized Node ESM bundles with copied runtime configuration assets, and verify that
+  missing or malformed assets fail before successful execution resumes after restoration.
+- Document the tested layout, preserved initialization, known root warnings, and limits of the
+  bundle evidence. Added dependencies are development-only with no build-script allowlist changes.
+
+### Impact
+
+Consumers have reproducible evidence for the documented Node bundle fixtures without assuming
+browser support, universal tree-shaking, or self-contained single-file output.
+
 ## [1.64.2] - 2026-09-06
 
 ### Improvement

@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-06
 
-Current version: `1.64.2`
+Current version: `1.64.3`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -414,6 +414,10 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Task 18 (#109): installed Rollup root/narrow fixtures pass retained-code checks, optimized execution,
+and missing/malformed/restored asset cases. Full local verification passes with 100% configured
+coverage; production build, dependency audit, and lockfile review passed. Build allowlist unchanged.
+
 Task 17 (#108): all nine installed exports pass fresh-process builtin loading expectations;
 full local verification and production build pass with 100% configured coverage. Runtime,
 protocol and dependency lockfile are unchanged. Bundler verification follows in #109.
@@ -441,6 +445,9 @@ production build, and dependency audit passed. Runtime and protocol source remai
 - [x] standards, specification, and capability review (packaged documentation links corrected)
 
 ## Next slice
+
+Task 18 (#109) verifies pinned Rollup Node bundles and asset validation for root/narrow canonical
+fixtures. Remaining ergonomic/schema/read-surface work needs concrete scopes before Phase 5 exit.
 
 Task 17 (#108) verifies the installed ESM entry loading matrix. Task 18 verifies actual bundler
 tree-shaking and runtime-configuration assets after that matrix is delivered.
