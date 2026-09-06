@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.64.1] - 2026-09-06
+
+### Improvement
+
+- Publish a Python-to-TypeScript migration guide grounded in the pinned upstream v0.3.0 examples
+  and concept sources, mapping tasks, providers, retained outputs, bindings, effects, and settlements.
+- Classify equivalent goals, required adaptations, and unsupported facilities explicitly, including
+  release versus selection, separate binding captures, and non-durable handler dispatch.
+- Verify every guide TypeScript excerpt against an installed example that is typechecked and
+  executed by package conformance. Preserve the existing example result assertions.
+
+### Impact
+
+Consumers can migrate supported workflows using tested examples without assuming Python storage
+compatibility, live-provider availability, or broader runtime/formal guarantees.
+
 ## [1.64.0] - 2026-09-06
 
 ### New Feature

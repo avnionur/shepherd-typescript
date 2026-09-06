@@ -1,4 +1,5 @@
 {
+    "documentation": ["docs/python-to-typescript.md"],
     "examples": [
         {
             "source": "examples/custom-effects.ts",

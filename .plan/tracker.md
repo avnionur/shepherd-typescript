@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-06
 
-Current version: `1.64.0`
+Current version: `1.64.1`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -414,6 +414,10 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Task 16 (#102): pinned upstream release sources inspected; guide excerpts match installed examples
+that typecheck and execute. Full local verification passed with 100% configured coverage, plus
+production build and unchanged-runtime/protocol/lock checks. Python tests were not executed.
+
 Task 15 (#101): full local verification passed with 100% configured coverage, installed custom-effect
 typechecking/execution, independent result checks, and unchanged runtime/protocol/verifier sources.
 Production build and version synchronization passed; hosted workflows remain disabled.
@@ -434,31 +438,18 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Phase 5 Task 15 (#101) adds the installed custom-effect example. Once merged, all four example
-prerequisites for migration guidance (#102) are closed; #102 is the next task.
+Phase 5 Task 16 (#102) documents Python-to-TypeScript migration from pinned release sources with
+installed-example-verified code excerpts. The example and migration-guide frontier is complete;
+remaining Phase 5 work needs explicit slices for ergonomic helpers, web-safe/read surfaces, and
+tree-shaking/optional loading before the epic can close.
 
-Phase 5 Task 14 (#100) adds the installed multiple-binding example with independent captures,
-sibling-preserving selection, and reopened settlement identity. Next is custom effects (#101),
-followed by migration guidance (#102).
+Completed prerequisites: retained coding (#98/PR #103), read-only review (#99/PR #104), multiple
+bindings (#100/PR #105), and custom effects (#101/PR #106). Preserve their installed verification,
+the original quickstart, and exact authority throughout later work.
 
-Phase 5 Task 13 (#99) adds packaged read-only review with repeated inspection and file/trace
-preservation checks. Next is the multiple-binding example (#100); migration guide #102 remains
-blocked on the remaining examples. Hosted workflows remain disabled at the owner's request.
-
-PR #103 verification follow-up: LF checkout policy now covers Markdown and module fixtures,
-and CodeQL action revisions are aligned. Compiler output paths now normalize before containment
-checks on Windows. Dependency Review is replaced by a full locked-dependency audit;
-CodeQL result upload still requires code scanning to be enabled on the repository;
-the next child remains blocked until #98 merges.
-
-Phase 5 Task 12 ([#98](https://github.com/avnionur/shepherd-typescript/issues/98)) implements the
-packaged retained-coding example and shared verification support. After its merge, read-only review
-([#99](https://github.com/avnionur/shepherd-typescript/issues/99)), multiple bindings
-([#100](https://github.com/avnionur/shepherd-typescript/issues/100)), and custom effects
-([#101](https://github.com/avnionur/shepherd-typescript/issues/101)) become unblocked.
-Migration guidance ([#102](https://github.com/avnionur/shepherd-typescript/issues/102)) depends on
-all four examples. Preserve the generated reference, root facade, ESM-only policy, original
-quickstart, and exact authority throughout.
+Hosted workflows remain disabled at the owner's request. The delivered CI fixes preserve LF
+artifacts and normalize Windows compiler paths; CodeQL revisions and metadata permissions are
+aligned. Dependency auditing uses the locked graph. CodeQL upload requires code scanning support.
 
 ## Notes
 
