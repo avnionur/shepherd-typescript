@@ -41,7 +41,7 @@ implementation documentation, and forward-looking plans.
 ├── project.config.json     CLI ecosystem identity
 ├── api-reference.config.json Generated API-reference ownership and leakage policy
 ├── test-runner.config.json  Test discovery, coverage, and serial-priority policy
-├── examples/               Checked-in installed-package examples
+├── examples/               Installed examples, scenario configuration, and conformance manifest
 ├── protocol.config.json    Language-neutral protocol constants
 ├── CONTEXT.md              Trace-kernel domain vocabulary
 ├── upstream.lock.json      Pinned upstream development and release revisions
@@ -142,6 +142,10 @@ The ordinary typecheck covers `src/`, `scripts/`, `tooling/`, and `test/`. The p
 an explicit runtime-only include and preserves package targets under `dist/src/`; it must not emit
 `dist/scripts/` or `dist/tooling/`. Generated protocol artifacts remain checked in under
 `src/protocol/`, `spec/schemas/`, `docs/generated/`, and `examples/` according to configuration.
+
+Standalone TypeScript examples are checked against a freshly installed package by
+`tooling/testing/packaged-examples.ts`, using the manifest named in `package.json.exampleManifest`.
+They are deliberately not compiled with the runtime or resolved against private source modules.
 
 ## Module rules
 

@@ -57,7 +57,7 @@ Publication remains disabled until registry ownership and release checks are com
 
 ## Current capability
 
-Version `1.60.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.61.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -228,6 +228,10 @@ node quickstart.mjs
 ```
 
 See the [offline retained-output quickstart](./docs/quickstart.md).
+
+For a typed source-file edit using the domain facades, see the
+[packaged TypeScript retained-coding example](./docs/typescript-examples.md). It verifies original
+workspace bytes before selection and durable selected evidence after reopening.
 
 ## API
 

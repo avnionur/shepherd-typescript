@@ -5,6 +5,74 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.61.4] - 2026-09-06
+
+### Defect Fixes
+
+- Replace unavailable GitHub Dependency Review with a frozen-lockfile audit covering production
+  and development dependencies, failing on high/critical advisories and service errors.
+- Pin Ajv's transitive fast-uri dependency to patched 3.1.6 to address five high-severity advisories.
+
+### Impact
+
+Dependency vulnerability checks run without repository security-plan features. Lifecycle scripts
+remain disabled in the audit job; license policies and base-branch dependency comparisons remain
+manual review responsibilities. Runtime interfaces are unchanged.
+
+## [1.61.3] - 2026-09-06
+
+### Defect Fixes
+
+- Grant CodeQL read access to workflow metadata required by its analysis action.
+
+### Impact
+
+CodeQL can read its workflow run without adding write authority or bypassing security checks.
+
+## [1.61.2] - 2026-09-06
+
+### Defect Fixes
+
+- Normalize compiler output paths before checking repository containment on Windows, preserving
+  rejection of unsafe cleanup destinations. Correct the build-output test's file-URL conversion.
+
+### Impact
+
+Windows builds accept the compiler's slash-normalized output directory while retaining the
+existing containment and symlink checks.
+
+## [1.61.1] - 2026-09-06
+
+### Defect Fixes
+
+- Preserve LF line endings for Markdown and JavaScript module fixtures so Windows checkouts
+  match deterministic generated references and packaged quickstart bytes.
+- Align the CodeQL analyze action with the existing init/autobuild revision to avoid incompatible
+  action configuration during analysis.
+
+### Impact
+
+Cross-platform verification can compare the same artifact bytes, and CodeQL steps use a consistent
+version. Dependency Review still requires repository security features; no check is bypassed.
+
+## [1.61.0] - 2026-09-04
+
+### New Feature
+
+- Added a shipped TypeScript retained-coding example using supported domain facades and an offline,
+  configuration-owned scenario: isolated capture, retained inspection, exact selection, and
+  read-only reopened settlement evidence.
+- Added manifest-driven fresh-install example typechecking and execution, independent transcript
+  and file expectations, and existing-directory refusal to the ordinary packaged conformance gate.
+- Documented source-checkout and installed-tarball usage, explicit approval points, retained-state
+  handling, and advisory/offline limits. Created Phase 5 child issues #98–#102 with blocking links.
+
+### Impact
+
+TypeScript consumers can run and adapt a verified retained source-edit workflow without credentials
+or private imports. Runtime contracts, protocol bytes, public exports, source maps, and the original
+offline quickstart remain unchanged.
+
 ## [1.60.1] - 2026-09-01
 
 ### Improvement

@@ -317,7 +317,9 @@ Work:
   compilation; **implemented in 1.60.1** with grouped protocol schema renderers, preserved focused
   tooling seams, no emitted repository tooling, and current single-package structure documentation;
 - build TypeScript-first examples for retained coding work, read-only review,
-  multiple bindings, and custom effects;
+  multiple bindings, and custom effects; **retained coding implemented in 1.61.0 (#98)** with
+  manifest-driven installed typechecking/execution, exact selection, and read-only reopen evidence;
+  read-only review (#99), multiple bindings (#100), and custom effects (#101) follow that support;
 - add migration guide from upstream Python examples to TypeScript;
 - verify tree-shaking and optional native dependency loading.
 

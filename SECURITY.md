@@ -29,6 +29,13 @@ and disclosure based on severity. This policy does not promise a fixed response 
 
 ## Security boundary
 
+Pull requests run a lockfile-based dependency audit using `pnpm audit --audit-level=high`.
+It checks production and development dependencies against registry advisories and fails for
+high/critical vulnerabilities or audit-service errors. Installation uses the frozen lockfile
+with lifecycle scripts disabled. This replaces GitHub Dependency Review, which is unavailable
+for this repository; it does not provide license-policy checks or a comparison of introduced
+dependencies against the base branch. Dependency and lockfile diffs still require review.
+
 The project can only reverse state owned by a supported trace, workspace, process, provider, or
 compensation backend. It cannot inherently reverse external network actions, sent messages,
 consumed API cost, leaked credentials, or unsupported host state.

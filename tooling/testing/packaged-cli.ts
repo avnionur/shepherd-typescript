@@ -5,6 +5,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { testPackagedExamples } from "./packaged-examples.ts";
+
 const repositoryRoot = path.resolve(fileURLToPath(new URL("../../", import.meta.url)));
 const protocol = JSON.parse(
     readFileSync(path.join(repositoryRoot, "protocol.config.json"), "utf8"),
@@ -101,6 +103,7 @@ export function testPackagedCli(): void {
             "node_modules",
             ...packageManifest.name.split("/"),
         );
+        testPackagedExamples({ repositoryRoot, installedPackageRoot, consumerParent: installPath });
         for (const entry of Object.values(packageManifest.exports)) {
             for (const target of [entry.import, entry.types]) {
                 assertPortableSourceMap(repositoryRoot, target, temporaryRoot);
