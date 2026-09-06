@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
     assertSafeBuildOutputDirectory,
@@ -15,7 +15,7 @@ import {
 test("resolveBuildOutputDirectory returns the repository build directory", () => {
     assert.equal(
         resolveBuildOutputDirectory(),
-        path.resolve(new URL("../dist", import.meta.url).pathname),
+        path.resolve(fileURLToPath(new URL("../dist", import.meta.url))),
     );
 });
 

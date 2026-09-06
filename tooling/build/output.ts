@@ -46,13 +46,13 @@ export function resolveBuildOutputDirectory(options: BuildOutputOptions = {}): s
     const outputDirectory = buildConfiguration.options.outDir;
     if (
         typeof outputDirectory !== "string" ||
-        !outputDirectory.startsWith(`${repositoryRoot}${path.sep}`)
+        !path.resolve(outputDirectory).startsWith(`${repositoryRoot}${path.sep}`)
     ) {
         throw new Error(
             "tsconfig.build.json compilerOptions.outDir must remain inside the repository",
         );
     }
-    return outputDirectory;
+    return path.resolve(outputDirectory);
 }
 
 /**
