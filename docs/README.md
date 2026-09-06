@@ -21,7 +21,7 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   through a freshly installed package, retained inspection, exact selection, and CLI JSON.
 - [Packaged TypeScript examples](./typescript-examples.md) demonstrates offline retained coding
   through typed domain facades with fresh-install typechecking, exact selection, reopen evidence,
-  and repeatable read-only output review.
+  repeatable read-only output review, and sibling-preserving multiple-binding settlement.
 - [Retained-output CLI views](./retained-output-cli-views.md) defines bounded output,
   authenticated changeset/content, and native vcs-core citation reads.
 - [Naming and licensing](./naming-and-licensing.md) records package identity, attribution, and
