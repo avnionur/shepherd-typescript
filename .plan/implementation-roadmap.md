@@ -323,7 +323,9 @@ Work:
   evidence across repeated installed runs; **multiple bindings implemented in 1.63.0 (#100)**
   with independent captures and sibling-preserving settlements; **custom effects implemented in
   1.64.0 (#101)** with handler precedence, outcome correlation, and explicit non-durable limits;
-- add migration guide from upstream Python examples to TypeScript;
+- add migration guide from upstream Python examples to TypeScript; **implemented in 1.64.1
+  (#102)** with pinned release provenance, classified adaptations/non-claims, and code excerpts
+  checked against installed, typechecked, executed examples;
 - verify tree-shaking and optional native dependency loading.
 
 Exit criteria:

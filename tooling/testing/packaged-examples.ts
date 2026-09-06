@@ -23,6 +23,7 @@ export type PackagedExampleOptions = {
 };
 
 type ExampleManifest = {
+    readonly documentation?: readonly string[];
     readonly examples: readonly {
         readonly source: string;
         readonly configuration: string;
@@ -55,6 +56,34 @@ export function testPackagedExamples(options: PackagedExampleOptions): void {
     );
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as ExampleManifest;
     assert.ok(Array.isArray(manifest.examples) && manifest.examples.length > 0);
+    const verifiedSources = new Set(
+        manifest.examples.flatMap((example) => [
+            example.source,
+            ...(example.reviews ?? []).map((review: { readonly source: string }) => review.source),
+        ]),
+    );
+    for (const document of manifest.documentation ?? []) {
+        const markdown = readFileSync(packageFile(options.installedPackageRoot, document), "utf8");
+        assert.equal(markdown, readFileSync(packageFile(options.repositoryRoot, document), "utf8"));
+        const snippets = [...markdown.matchAll(/^```ts(?: ([^\r\n]+))?\r?\n([\s\S]*?)^```/gm)];
+        assert.ok(snippets.length > 0, "configured guide must contain tested TypeScript excerpts");
+        for (const snippet of snippets) {
+            const source = snippet[1]?.replace(/^source=/u, "");
+            assert.ok(
+                source && snippet[1]?.startsWith("source=") && verifiedSources.has(source),
+                "guide excerpt must name a typechecked and executed example",
+            );
+            const code = snippet[2]?.trim();
+            assert.ok(
+                code &&
+                    readFileSync(
+                        packageFile(options.installedPackageRoot, source),
+                        "utf8",
+                    ).includes(code),
+                "guide TypeScript excerpt differs from the executed installed example",
+            );
+        }
+    }
     for (const example of manifest.examples) {
         const consumerRoot = mkdtempSync(path.join(options.consumerParent, "example-"));
         const source = path.join(consumerRoot, "example.ts");

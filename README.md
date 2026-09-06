@@ -57,7 +57,7 @@ Publication remains disabled until registry ownership and release checks are com
 
 ## Current capability
 
-Version `1.61.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.64.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -238,6 +238,8 @@ It also demonstrates independent captures and settlements across disjoint bindin
 sibling files after each selection.
 The custom-effect example covers exact-kind handler precedence, outcome correlation, and failure
 handling for non-durable in-process dispatch.
+The [Python-to-TypeScript migration guide](./docs/python-to-typescript.md) maps the pinned upstream
+examples to these programs and identifies adapted and unsupported behavior.
 
 ## API
 

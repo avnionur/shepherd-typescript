@@ -14,3 +14,5 @@ See the packaged [TypeScript example guide](../docs/typescript-examples.md) for 
 expected results, authority limits, and installed-package verification.
 
 `manifest.json` lists the TypeScript scenarios and independent conformance expectations.
+It also links the [migration guide](../docs/python-to-typescript.md), whose TypeScript excerpts
+are checked against the installed example source before full-example typechecking and execution.

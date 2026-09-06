@@ -5,6 +5,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 
 ## Guides
 
+- [Python-to-TypeScript migration](./python-to-typescript.md) maps pinned release sources to all
+  four executable examples, with verified code excerpts and explicit compatibility limits.
+
 - [Contributing](../CONTRIBUTING.md) defines implementation, verification, documentation, and pull
   request requirements.
 - [Security policy](../SECURITY.md) defines private reporting and the supported security boundary.
