@@ -34,6 +34,8 @@ format, HTTP client, redaction layer, or serialization guarantee. The producer m
 appropriate [slice visibility](./trace-queries.md) and control disclosure before data reaches a UI.
 
 Store handles, append requests, settlement commands, runtime constants, projection functions,
-and query methods are deliberately absent. Async iteration and broader read projections remain
-separately scoped work. Verification covers installed declaration compilation and dependency-free
+and query methods are deliberately absent. The Node store's
+[`iterateCutRecords`](./trace-queries.md#async-owner-record-iteration) yields the same `OwnerRecord`
+type but is not exported here. Broader read projections remain separately scoped work.
+Verification covers installed declaration compilation and dependency-free
 Node ESM import, not execution in a browser engine or universal browser bundler support.

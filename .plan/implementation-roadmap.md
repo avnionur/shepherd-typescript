@@ -307,7 +307,8 @@ Work:
   typing and equivalent builder identity; broader vocabulary/typed result surfaces remain separate;
 - implement async-iterable trace queries and web-safe read-only types where sensible;
   **type-only `/read` entry implemented in 1.67.0 (#119)** with strict installed no-Node
-  compilation and empty-runtime import checks; async queries remain a separate slice;
+  compilation and empty-runtime import checks; **lazy published-cut owner-record iteration added
+  in 1.68.0 (#121)** with fixed endpoints, incremental integrity and explicit full-payload limits;
 - expose rich structured errors with stable codes; **implemented in 1.59.0** with one validated
   configuration-owned in-memory contract, preserved class/message identity and existing causes,
   explicit unclassified validation/callback failures, and unchanged CLI/evidence redaction;
