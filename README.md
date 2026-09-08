@@ -57,7 +57,7 @@ Publication remains disabled until registry ownership and release checks are com
 
 ## Current capability
 
-Version `1.67.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.68.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -259,6 +259,10 @@ For browser-facing TypeScript, use `import type { Slice }` from
 `@avnionur/shepherd-typescript/read`. The [web-safe read entry](./docs/web-safe-read-types.md)
 exposes existing readonly trace data without Node declarations, runtime values, or storage
 authority. It does not validate or redact data and does not make other entries browser-safe.
+
+On Node, `store.iterateCutRecords(cutId)` lazily yields owner-record occurrences through a
+published cut without retaining a database cursor across pulls. See
+[trace iteration and integrity limits](./docs/trace-queries.md#async-owner-record-iteration).
 
 ```ts
 import {

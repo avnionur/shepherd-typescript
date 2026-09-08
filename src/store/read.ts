@@ -6,6 +6,7 @@ import { createRecordBodySnapshot } from "../record/snapshot.ts";
 import type { RecordBody, RecordEnvelope, RecordId, RecordMode } from "../record/types.ts";
 import { validateRecordEnvelope } from "../record/validation.ts";
 import { STORE_TABLES } from "./constants.ts";
+import { TraceStoreError } from "./errors.ts";
 import type { OwnerRecord, RetainedRecord } from "./types.ts";
 
 /** Reads one semantic record and every owner-local view. */
@@ -55,6 +56,28 @@ export function readOwnerRecords(database: DatabaseSync, ownerId: string): reado
                 });
             }),
     );
+}
+
+/** Reads one required owner occurrence without retaining a cursor or loading sibling views. @internal */
+export function readOwnerRecordAtOrdinal(
+    database: DatabaseSync,
+    ownerId: string,
+    ordinal: number,
+): OwnerRecord {
+    const row = database
+        .prepare(
+            `SELECT r.record_id, r.digest, r.schema_ref, r.mode, r.witness_ref,
+                    r.caused_by_json, r.body_json, v.append_intent_id, v.owner_id,
+                    v.owner_ordinal
+             FROM ${STORE_TABLES.recordViews} v
+             JOIN ${STORE_TABLES.records} r ON r.record_id = v.record_id
+             WHERE v.owner_id = ? AND v.owner_ordinal = ?`,
+        )
+        .get(ownerId, ordinal);
+    if (row === undefined) {
+        throw new TraceStoreError("cut owner occurrence or its retained record is missing");
+    }
+    return Object.freeze({ ...decodeRecordRow(row), view: decodeViewRow(row) });
 }
 
 /** Lists a bounded owner slice by canonical creation-record/owner byte order. */

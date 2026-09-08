@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 1.67.0
+Package: `@avnionur/shepherd-typescript` 1.68.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -6176,6 +6176,7 @@ export declare class SQLiteTraceStore implements Disposable {
     readOwner(ownerId: string): readonly OwnerRecord[];
     publishCut(spec: CutSpec): Cut;
     readCut(cutId: CutId): Cut;
+    iterateCutRecords(cutId: CutId): AsyncGenerator<OwnerRecord, void, unknown>;
     readOwnerPrefix(ownerId: string, through: number, options?: SliceReadOptions): Slice;
     resolveCut(cutId: CutId, options?: SliceReadOptions): Slice;
     projectExecution(cutId: CutId): Execution;
@@ -6895,6 +6896,49 @@ Throws:
 Throws:
 
 - {TypeError} If the identifier is malformed.
+
+#### `iterateCutRecords`
+
+Lazily yields payload-visible owner occurrences through one published cut, in ordinal order.
+
+Cut authentication and input validation occur on the first pull. Each subsequent pull reads
+one occurrence synchronously, without a live cursor or transaction across yields. Later
+appends are excluded. Integrity is incremental, not a cross-pull database snapshot: an error
+cannot retract earlier yields. No graph closure, filtering, or redaction is performed.
+Early termination releases iteration state but never closes the caller-owned store.
+
+```ts
+iterateCutRecords(cutId: CutId): AsyncGenerator<OwnerRecord, void, unknown>;
+```
+
+Parameter:
+
+- cutId - Exact published cut identifier.
+
+Returns:
+
+- A single-use async iterator of frozen owner occurrences, including repeated IDs.
+
+Throws:
+
+- {TraceStoreError} On a pull if the store is closed, the cut is absent/corrupt, an
+occurrence is missing, or the terminal occurrence no longer matches the cut.
+
+Throws:
+
+- {TypeError} On a pull if the identifier or encountered stored data is malformed.
+
+Throws:
+
+- {Error} On a pull if SQLite or canonical record decoding fails.
+
+Example:
+
+- ```ts
+for await (const record of store.iterateCutRecords("cut:review")) {
+    console.log(record.view.owner_ordinal, record.envelope.record_id);
+}
+```
 
 #### `readOwnerPrefix`
 
@@ -17643,6 +17687,7 @@ export declare class SQLiteTraceStore implements Disposable {
     readOwner(ownerId: string): readonly OwnerRecord[];
     publishCut(spec: CutSpec): Cut;
     readCut(cutId: CutId): Cut;
+    iterateCutRecords(cutId: CutId): AsyncGenerator<OwnerRecord, void, unknown>;
     readOwnerPrefix(ownerId: string, through: number, options?: SliceReadOptions): Slice;
     resolveCut(cutId: CutId, options?: SliceReadOptions): Slice;
     projectExecution(cutId: CutId): Execution;
@@ -18362,6 +18407,49 @@ Throws:
 Throws:
 
 - {TypeError} If the identifier is malformed.
+
+#### `iterateCutRecords`
+
+Lazily yields payload-visible owner occurrences through one published cut, in ordinal order.
+
+Cut authentication and input validation occur on the first pull. Each subsequent pull reads
+one occurrence synchronously, without a live cursor or transaction across yields. Later
+appends are excluded. Integrity is incremental, not a cross-pull database snapshot: an error
+cannot retract earlier yields. No graph closure, filtering, or redaction is performed.
+Early termination releases iteration state but never closes the caller-owned store.
+
+```ts
+iterateCutRecords(cutId: CutId): AsyncGenerator<OwnerRecord, void, unknown>;
+```
+
+Parameter:
+
+- cutId - Exact published cut identifier.
+
+Returns:
+
+- A single-use async iterator of frozen owner occurrences, including repeated IDs.
+
+Throws:
+
+- {TraceStoreError} On a pull if the store is closed, the cut is absent/corrupt, an
+occurrence is missing, or the terminal occurrence no longer matches the cut.
+
+Throws:
+
+- {TypeError} On a pull if the identifier or encountered stored data is malformed.
+
+Throws:
+
+- {Error} On a pull if SQLite or canonical record decoding fails.
+
+Example:
+
+- ```ts
+for await (const record of store.iterateCutRecords("cut:review")) {
+    console.log(record.view.owner_ordinal, record.envelope.record_id);
+}
+```
 
 #### `readOwnerPrefix`
 

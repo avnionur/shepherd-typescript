@@ -41,6 +41,9 @@ workspace settlement, private validators, migrations, and protocol configuration
 append/cut/slice/blob contracts, integrity and native archive methods, store errors/types, and
 bounded run/output/trace/recovery evidence reads. It excludes task registry, providers, executors,
 workspace carriers/settlements, private SQL/migrations, and protocol configuration.
+Its `SQLiteTraceStore.iterateCutRecords` method provides
+[lazy owner-record iteration](./trace-queries.md#async-owner-record-iteration) over a fixed published
+cut, without a cursor across pulls; it does not provide graph closure or redaction.
 
 `./read` is the separate [web-safe type-only entry](./web-safe-read-types.md) for existing readonly
 semantic/record/owner/cut/slice data. It exports no runtime values, store handles or mutation

@@ -332,6 +332,24 @@ process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"))
                 })
                 .join(""),
         );
+        const cutIterationProbe = path.join(consumerRoot, "cut-iteration.mts");
+        writeFileSync(
+            cutIterationProbe,
+            `import assert from "node:assert/strict";
+import { ROOT_WITNESS_ID, SQLiteTraceStore } from ${JSON.stringify(`${packageManifest.name}/trace`)};
+import type { OwnerRecord } from ${JSON.stringify(`${packageManifest.name}/read`)};
+using store = new SQLiteTraceStore();
+const ids = store.append({ append_intent_id: "intent:iteration", batch: { groups: [{ owner_id: "run:iteration", records: ["first", "second", "first"].map(value => ({ body: { value }, mode: "capture" as const, schema_ref: "example.iteration.v1", witness_ref: ROOT_WITNESS_ID })) }] } }).record_ids;
+store.publishCut({ cut_id: "cut:iteration", target_owner_id: "run:iteration", through_record_id: ids[2] });
+const archive = store.exportTrace();
+const iterator: AsyncGenerator<OwnerRecord, void, unknown> = store.iterateCutRecords("cut:iteration");
+const values: unknown[] = [];
+for await (const record of iterator) values.push(record.body.value);
+assert.deepEqual(values, ["first", "second", "first"]);
+assert.equal(store.exportTrace(), archive);
+process.stdout.write(values.join(",") + "\\n");
+`,
+        );
         const typeConfig = path.join(consumerRoot, "tsconfig.json");
         writeFileSync(
             typeConfig,
@@ -352,6 +370,7 @@ process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"))
                     effectsTypeProbe,
                     publicErrorTypeProbe,
                     apiReferenceTypeProbe,
+                    cutIterationProbe,
                 ],
             }),
         );
@@ -364,6 +383,13 @@ process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"))
             ),
             ["--project", typeConfig],
             { cwd: consumerRoot, stdio: "pipe" },
+        );
+        assert.equal(
+            execFileSync(process.execPath, [cutIterationProbe], {
+                cwd: consumerRoot,
+                encoding: "utf8",
+            }),
+            "first,second,first\n",
         );
         const quickstartSource = execFileSync(executable, ["demo", "write", "quickstart"], {
             encoding: "utf8",

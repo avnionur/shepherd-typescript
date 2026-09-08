@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-08
 
-Current version: `1.67.0`
+Current version: `1.68.0`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -414,6 +414,15 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Task 22 (#121): focused public cut/iteration/slice tests pass (13 tests), including lazy reads,
+post-cut exclusion, repeated occurrences, early termination, corruption/close/range refusal,
+read-only reopen/import and unchanged archive evidence. Full verification passes: 497 tests,
+zero skips and 100% configured coverage, including installed types/runtime, examples, source maps,
+entry loading and bundles. Reviews have no remaining findings after a red/green cut-boundary
+regression and explicit endpoint guard. Version synchronization and production build pass.
+Protocol, store schema and dependency locks are unchanged. Implementation is verified for PR delivery;
+hosted and Windows execution remain unverified, with hosted workflows disabled by owner request.
+
 Task 21 (#119): installed no-Node Bundler/NodeNext compilation and empty runtime import checks
 pass. Source type-identity checks and full verification pass: 491 tests, zero skips, and 100%
 configured coverage, including installed examples, loading, bundles and source maps. Standards and
@@ -421,7 +430,7 @@ specification reviews have no remaining findings. Version synchronization and `p
 pass. Existing runtime, protocol and dependency
 lockfiles are unchanged. The initial export-map assertion failure was corrected without removing
 existing expectations; the new compiler probe uses a shell-independent launch. Hosted/Windows
-execution remains unverified. Implementation is verified; pull-request review and merge remain.
+execution remains unverified. Delivered through merged PR #120; #119 is closed.
 
 Task 20 (#117): adapter identity/registry/execution tests and unsafe-document regressions pass,
 including hidden property keys and inherited required-array methods. Full local verification
@@ -464,8 +473,9 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Task 21 (#119) adds the type-only web-safe trace read surface. Async-iterable queries are the next
-area to scope before the Phase 5 exit audit; broader read projections remain separate work.
+Task 22 (#121) adds lazy published-cut owner-record iteration. The next frontier is a Phase 5
+exit audit mapping remaining criteria to evidence and explicitly identifying any gaps; broader
+read projections, live subscriptions and visibility-filtered iteration are not implied.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration

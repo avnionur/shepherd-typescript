@@ -62,6 +62,7 @@ import {
 import {
     listOwnerIdsBySchema,
     listOwnerIdsBySchemaBodyText,
+    readOwnerRecordAtOrdinal,
     readOwnerRecords,
     readStoredRecord,
 } from "./read.ts";
@@ -941,6 +942,57 @@ export class SQLiteTraceStore implements Disposable {
     readCut(cutId: CutId): Cut {
         this.#assertOpen();
         return readStoredCut(this.#database, cutId);
+    }
+
+    /**
+     * Lazily yields payload-visible owner occurrences through one published cut, in ordinal order.
+     *
+     * Cut authentication and input validation occur on the first pull. Each subsequent pull reads
+     * one occurrence synchronously, without a live cursor or transaction across yields. Later
+     * appends are excluded. Integrity is incremental, not a cross-pull database snapshot: an error
+     * cannot retract earlier yields. No graph closure, filtering, or redaction is performed.
+     * Early termination releases iteration state but never closes the caller-owned store.
+     *
+     * @param cutId - Exact published cut identifier.
+     * @returns A single-use async iterator of frozen owner occurrences, including repeated IDs.
+     * @throws {TraceStoreError} On a pull if the store is closed, the cut is absent/corrupt, an
+     * occurrence is missing, or the terminal occurrence no longer matches the cut.
+     * @throws {TypeError} On a pull if the identifier or encountered stored data is malformed.
+     * @throws {Error} On a pull if SQLite or canonical record decoding fails.
+     *
+     * @example
+     * ```ts
+     * for await (const record of store.iterateCutRecords("cut:review")) {
+     *     console.log(record.view.owner_ordinal, record.envelope.record_id);
+     * }
+     * ```
+     *
+     * @public
+     */
+    async *iterateCutRecords(cutId: CutId): AsyncGenerator<OwnerRecord, void, unknown> {
+        this.#assertOpen();
+        const cut = readStoredCut(this.#database, cutId);
+        if (
+            cut.through_owner_ordinal < kernelProtocolConfig.append.firstOwnerOrdinal ||
+            cut.through_owner_ordinal > kernelProtocolConfig.append.lastOwnerOrdinal
+        ) {
+            throw new TraceStoreError("cut endpoint is outside the configured ordinal range");
+        }
+        for (
+            let ordinal = kernelProtocolConfig.append.firstOwnerOrdinal;
+            ordinal <= cut.through_owner_ordinal;
+            ordinal += 1
+        ) {
+            this.#assertOpen();
+            const record = readOwnerRecordAtOrdinal(this.#database, cut.target_owner_id, ordinal);
+            if (
+                ordinal === cut.through_owner_ordinal &&
+                record.envelope.record_id !== cut.through_record_id
+            ) {
+                throw new TraceStoreError("cut terminal occurrence no longer matches its address");
+            }
+            yield record;
+        }
     }
 
     /**

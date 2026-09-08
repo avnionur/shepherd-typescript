@@ -23,6 +23,41 @@ the result, including when the target owner also publishes the cut. Store schema
 `trace_cuts` resolver table and migrates existing stores without rewriting records, blob receipts,
 or append receipts.
 
+## Async owner-record iteration
+
+`SQLiteTraceStore.iterateCutRecords(cutId)` returns a single-use
+`AsyncGenerator<OwnerRecord, void, unknown>`. It is available through the Node root and trace
+entries; `OwnerRecord` is also available through the type-only `/read` entry.
+
+```ts
+for await (const record of store.iterateCutRecords("cut:review")) {
+    console.log(record.view.owner_ordinal, record.envelope.record_id);
+}
+```
+
+The first pull validates the identifier and authenticates the published cut. Each pull reads one
+occurrence in ascending order from the configured first ordinal through the inclusive cut address.
+Repeated semantic IDs retain distinct occurrences. Later appends, including the cut-publication
+record on the target owner, cannot extend that address. Iterators have independent progress.
+
+The implementation uses exact-ordinal reads, not a materialized owner array or a suspended SQLite
+cursor. No transaction or cursor remains open across yields. Database work is synchronous per pull;
+the async interface provides pull-based consumption, not worker-thread offloading or a live feed.
+Bounded reading means one occurrence at a time, not a fixed payload-byte ceiling. Cut authentication
+also reads its publication evidence. `break`, `return()` and consumer exceptions stop iteration
+without closing the caller-owned store; the store must remain open for subsequent reads.
+
+Canonical bodies/envelopes and owner views are validated before each yield. Missing occurrences
+or payload records cause errors instead of silent truncation, and the terminal occurrence must
+still match the cut address. Integrity is incremental: a later error does not retract earlier
+values. This is not a cross-pull SQL snapshot or protection against out-of-band database mutation.
+
+These are full-payload owner records, not graph-shaped slices: no witness closure, causal anchors,
+mode filtering, visibility/redaction, authorization, resume tokens, or transport is provided.
+Existing synchronous reads and slice semantics are unchanged. Tests:
+[`cut-iteration.test.ts`](../test/store/cut-iteration.test.ts) and
+[`installed package conformance`](../tooling/testing/packaged-cli.ts).
+
 ## Graph-shaped slices
 
 `readOwnerPrefix(ownerId, through, options)` selects retained occurrences on one owner through an
