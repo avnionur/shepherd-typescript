@@ -29,6 +29,32 @@ void outputs. Object validation rejects missing or additional fields, accessors,
 and class instances. Validated object inputs are immutable snapshots. A void output accepts
 TypeScript `undefined` or JSON `null` and resolves to `undefined`.
 
+## Adapting supported JSON Schema documents
+
+`schema.fromJSONSchema(document)` accepts the existing schema language as data and returns an
+authenticated `TaskSchema<unknown>`. Accepted forms are exactly `{ type: "string" }`,
+`{ type: "null" }`, or an object with `type: "object"`, `additionalProperties: false`,
+`properties`, and a `required` array containing every property name exactly once.
+Properties recursively use the same supported forms.
+
+The adapter validates the original data without invoking accessors, snapshots it, and rebuilds it
+using the ordinary schema constructors. Property and required-field order normalize to builder
+order, preserving the task artifact lock of the equivalent builder declaration. Mutating the
+input document afterward cannot alter parsing or identity. Required-field equality compares
+individual strings, including unusual field names, rather than joining them with a delimiter.
+Non-enumerable own property names participate in that comparison. Required arrays are normalized
+before iteration so inherited getters and iterator methods are not invoked during validation.
+
+This is not a general JSON Schema engine. Arrays, numbers, unions, references, optional fields,
+constraints such as minLength, annotations such as title, and extra keys such as $schema are
+rejected rather than silently dropped. Null adapts to the existing void schema, whose parsed
+value is undefined. Dynamic documents yield unknown; the API does not accept an unchecked generic
+type assertion. Use ordinary builders when compile-time field inference is needed.
+
+Adapted schemas work with task construction, registration/reopen, execution, and the typed-effect
+adapter. [Public tests](../test/task/json-schema-adapter.test.ts) cover identity, validation,
+mutation safety, and execution; the installed custom-effect example exercises schema adaptation.
+
 ## Identity and artifact locks
 
 The canonical task artifact contains the configured compatibility and descriptor versions,

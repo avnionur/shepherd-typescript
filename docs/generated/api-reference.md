@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 1.65.0
+Package: `@avnionur/shepherd-typescript` 1.66.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -7670,6 +7670,7 @@ Signature:
 
 ```ts
 export type TaskSchemaFactory = {
+    readonly fromJSONSchema: (document: unknown) => TaskSchema<unknown>;
     readonly object: <S extends TaskSchemaShape>(shape: S) => TaskSchema<InferTaskSchemaShape<S>>;
     readonly string: () => TaskSchema<string>;
     readonly void: () => TaskSchema<void>;
@@ -16397,6 +16398,7 @@ Signature:
 
 ```ts
 export type TaskSchemaFactory = {
+    readonly fromJSONSchema: (document: unknown) => TaskSchema<unknown>;
     readonly object: <S extends TaskSchemaShape>(shape: S) => TaskSchema<InferTaskSchemaShape<S>>;
     readonly string: () => TaskSchema<string>;
     readonly void: () => TaskSchema<void>;

@@ -240,6 +240,8 @@ The custom-effect example covers exact-kind handler precedence, outcome correlat
 handling for non-durable in-process dispatch.
 Use `createTypedEffectHandler` to infer and validate a callback payload from a package-created
 schema; the returned handler composes with the existing effect stack.
+Use `schema.fromJSONSchema` for dynamic documents in the supported string/null/strict-object
+subset; it returns an authenticated schema with an honest unknown result type.
 The [Python-to-TypeScript migration guide](./docs/python-to-typescript.md) maps the pinned upstream
 examples to these programs and identifies adapted and unsupported behavior.
 
