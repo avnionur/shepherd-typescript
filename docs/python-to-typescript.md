@@ -54,7 +54,9 @@ Python annotations do not translate into runtime validation automatically. The c
 schema factory supports strings, strict objects, and void. Object fields are required; do not
 assume general Pydantic, arbitrary JSON Schema, optional-field, or numeric-builder compatibility.
 Void is normalized to canonical null by execution. Inspect each supported interface rather than
-casting a TypeScript type over unvalidated input.
+casting a TypeScript type over unvalidated input. `schema.fromJSONSchema` adapts only this
+supported subset into authenticated schemas; it returns unknown for dynamic documents, validates
+all supplied keywords, and normalizes property/required order through the existing builders.
 
 The retained-coding example declares its runtime schemas explicitly:
 

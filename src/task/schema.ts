@@ -1,5 +1,7 @@
 import type { SemanticRecord } from "../canonical/canonical-record.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
+import { assertSupportedTaskSchemaDocument } from "./schema-document.ts";
+import { assertTaskSemanticRecord } from "./validation.ts";
 
 type SchemaParser<T> = (value: unknown, path: string) => T;
 
@@ -43,6 +45,14 @@ export type InferTaskSchemaShape<S extends TaskSchemaShape> = {
 /** Public factory surface for the supported task schema primitives. */
 export type TaskSchemaFactory = {
     /**
+     * Adapts the supported JSON Schema subset into an authenticated runtime schema.
+     *
+     * @param document - Untrusted string, null, or strict required-field object schema document.
+     * @returns A frozen schema yielding unknown, with builder-normalized required-field order.
+     * @throws {TypeError} If the document is unsafe or uses unsupported schema vocabulary.
+     */
+    readonly fromJSONSchema: (document: unknown) => TaskSchema<unknown>;
+    /**
      * Creates a strict object schema whose declared fields are all required.
      *
      * @param shape - Named fields mapped to package-created task schemas.
@@ -58,10 +68,28 @@ export type TaskSchemaFactory = {
 
 /** Task input/output schema builders with static type inference and runtime validation. */
 export const schema: TaskSchemaFactory = Object.freeze({
+    fromJSONSchema: createSchemaFromJSONSchema,
     object: createObjectSchema,
     string: createStringSchema,
     void: createVoidSchema,
 });
+
+function createSchemaFromJSONSchema(value: unknown): TaskSchema<unknown> {
+    assertTaskSemanticRecord(value, "task schema document");
+    assertSupportedTaskSchemaDocument(value, "task schema document");
+    const document = createCanonicalSnapshot(value);
+    if (document.type === "string") return createStringSchema();
+    if (document.type === "null") return createVoidSchema();
+    const properties = document.properties as Readonly<Record<string, SemanticRecord>>;
+    return createObjectSchema(
+        Object.fromEntries(
+            Object.entries(properties).map(([key, child]) => [
+                key,
+                createSchemaFromJSONSchema(child),
+            ]),
+        ),
+    );
+}
 
 /**
  * Returns trusted internal metadata for a schema produced by this package.

@@ -42,6 +42,12 @@ assert.notEqual(configuration.text, configuration.declinedText);
 // This empty directory is only a demo-run marker; effect handlers perform no filesystem writes.
 mkdirSync(path.resolve(directory));
 const payloadSchema = schema.object({ text: schema.string() });
+// Dynamic documents yield unknown, while the ordinary builder retains static field inference.
+const importedPayloadSchema = schema.fromJSONSchema(payloadSchema.toJSONSchema());
+assert.deepEqual(
+    importedPayloadSchema.parse({ text: configuration.text }),
+    payloadSchema.parse({ text: configuration.text }),
+);
 const successIntent: EffectIntent<string, { readonly text: string }> = createEffectIntent({
     effectId: configuration.successId,
     kind: configuration.kind,

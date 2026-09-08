@@ -1,4 +1,5 @@
-import type { SemanticRecord } from "../canonical/canonical-record.ts";
+import type { SemanticRecord, SemanticValue } from "../canonical/canonical-record.ts";
+import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import { assertTaskSemanticRecord, assertTaskText, readTaskDataObject } from "./validation.ts";
 
 /** Validates one canonical document against the supported task-schema language. @internal */
@@ -23,10 +24,15 @@ export function assertSupportedTaskSchemaDocument(value: SemanticRecord, subject
         throw new TypeError(`${subject} must reject additional properties`);
     }
     const properties = readSchemaProperties(fields.properties, `${subject} properties`);
+    const propertyKeys = Object.keys(properties).sort();
+    const required = createCanonicalSnapshot({
+        required: fields.required as SemanticValue,
+    }).required;
     if (
-        !Array.isArray(fields.required) ||
-        fields.required.some((field) => typeof field !== "string") ||
-        [...fields.required].sort().join("\0") !== Object.keys(properties).sort().join("\0")
+        !Array.isArray(required) ||
+        required.some((field) => typeof field !== "string") ||
+        required.length !== propertyKeys.length ||
+        [...required].sort().some((field, index) => field !== propertyKeys[index])
     ) {
         throw new TypeError(`${subject} required fields must equal its property keys`);
     }
@@ -39,7 +45,7 @@ function readSchemaProperties(value: unknown, subject: string): Record<string, S
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
         throw new TypeError(`${subject} must be a plain data object`);
     }
-    const properties = value as Record<string, unknown>;
+    const properties = readTaskDataObject(value, Object.getOwnPropertyNames(value), subject);
     for (const [key, property] of Object.entries(properties)) {
         assertTaskText(key, `${subject} field name`);
         assertTaskSemanticRecord(property, `${subject}.${key}`);

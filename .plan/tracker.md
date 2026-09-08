@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-08
 
-Current version: `1.65.0`
+Current version: `1.66.0`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -414,6 +414,11 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Task 20 (#117): adapter identity/registry/execution tests and unsafe-document regressions pass,
+including hidden property keys and inherited required-array methods. Full local verification
+passes with 100% configured coverage, installed examples, loading/bundling, and production build.
+Focused review confirmed both validation fixes; protocol and dependency lockfiles are unchanged.
+
 Task 19 (#115): public typed-handler and existing stack tests, installed inference/dispatch,
 entry-loading and bundling gates, full local verification (100% configured coverage), and production
 build passed. Focused API review found no actionable issues; protocol/dependency locks unchanged.
@@ -449,6 +454,10 @@ production build, and dependency audit passed. Runtime and protocol source remai
 - [x] standards, specification, and capability review (packaged documentation links corrected)
 
 ## Next slice
+
+Task 20 (#117) adds supported JSON Schema document adaptation with builder identity preservation.
+Read/web-safe interfaces remain the next Phase 5 area to scope; broader schema vocabulary is not
+implicitly supported by this adapter.
 
 Task 19 (#115) introduces schema-validated typed effect payload callbacks. Remaining schema
 adapters and read/web-safe surfaces still need scoped issues; Phase 5 is not closed.

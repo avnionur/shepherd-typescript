@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.66.0] - 2026-09-08
+
+### New Feature
+
+- Add schema.fromJSONSchema for existing string, null/void, and strict required-field object
+  documents, returning authenticated dynamic schemas with snapshot and builder-identity guarantees.
+- Reject unsupported/unsafe documents without invoking accessors and compare required property
+  names individually, avoiding delimiter ambiguity in schema validation.
+- Verify registry reopen, execution, dynamic unknown typing, and installed schema adaptation.
+
+### Impact
+
+Configuration-owned schema documents can compose with task and effect APIs without widening the
+protocol language or claiming unchecked static types. Equivalent builder identities remain stable.
+
 ## [1.65.0] - 2026-09-08
 
 ### New Feature

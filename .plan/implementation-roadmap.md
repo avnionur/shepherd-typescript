@@ -303,7 +303,8 @@ Work:
   ESM-only exports with tested CommonJS/deep-import refusal;
 - add explicit task builder, schema adapters, typed provider/tool helpers; **typed effect payload
   adapter implemented in 1.65.0 (#115)** using existing authenticated schemas and ordinary stacks;
-  broader schema adapters and typed result surfaces remain separately scoped work;
+  **supported JSON Schema document adapter implemented in 1.66.0 (#117)** with dynamic unknown
+  typing and equivalent builder identity; broader vocabulary/typed result surfaces remain separate;
 - implement async-iterable trace queries and web-safe read-only types where
   sensible;
 - expose rich structured errors with stable codes; **implemented in 1.59.0** with one validated

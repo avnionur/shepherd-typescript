@@ -64,7 +64,7 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Native trace interchange](./trace-interchange.md) defines deterministic full-store export,
   staged pristine-store import, version compatibility, and conformance fixtures.
 - [Task descriptors](./task-descriptors.md) defines bodyless task contracts, inferred runtime
-  schemas, content identity, and exact artifact locks.
+  schemas, supported JSON Schema adaptation, content identity, and exact artifact locks.
 - [Task registry](./task-registry.md) defines durable exact version registration, idempotency,
   conflict detection, migration, and verified resolution.
 - [Task and run ledger projections](./task-run-ledgers.md) define bounded immutable list/show
