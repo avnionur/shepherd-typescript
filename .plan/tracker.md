@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-08
 
-Current version: `1.68.0`
+Current version: `1.68.1`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -414,13 +414,20 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Task 23 (#123): Phase 5 exit audit maps all criteria and 22 completed implementation children.
+The runtime-range mismatch is tracked in #124; Phase 5 must remain open. Fresh full verification
+passes: 497 tests, zero skips, 100% configured coverage and installed-package gates. Version sync,
+production build and local audit-link checks pass. Reviews have no remaining findings.
+This is a documentation-only PATCH slice with
+no runtime/support-policy changes; verified for PR delivery while Phase 5 remains open for #124.
+
 Task 22 (#121): focused public cut/iteration/slice tests pass (13 tests), including lazy reads,
 post-cut exclusion, repeated occurrences, early termination, corruption/close/range refusal,
 read-only reopen/import and unchanged archive evidence. Full verification passes: 497 tests,
 zero skips and 100% configured coverage, including installed types/runtime, examples, source maps,
 entry loading and bundles. Reviews have no remaining findings after a red/green cut-boundary
 regression and explicit endpoint guard. Version synchronization and production build pass.
-Protocol, store schema and dependency locks are unchanged. Implementation is verified for PR delivery;
+Protocol, store schema and dependency locks are unchanged. Delivered through merged PR #122;
 hosted and Windows execution remain unverified, with hosted workflows disabled by owner request.
 
 Task 21 (#119): installed no-Node Bundler/NodeNext compilation and empty runtime import checks
@@ -473,9 +480,9 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Task 22 (#121) adds lazy published-cut owner-record iteration. The next frontier is a Phase 5
-exit audit mapping remaining criteria to evidence and explicitly identifying any gaps; broader
-read projections, live subscriptions and visibility-filtered iteration are not implied.
+Task 23 (#123) audits Phase 5 without approving closure. Next: #124, runtime-support alignment,
+after approval of the supported-version policy. The audit documents the required evidence and
+preserves actual Phase 6 dependency semantics; it does not activate that phase automatically.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration

@@ -57,7 +57,7 @@ Publication remains disabled until registry ownership and release checks are com
 
 ## Current capability
 
-Version `1.68.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.68.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -205,6 +205,11 @@ incomplete evidence. A retained start remains fail-closed because provider execu
 replay-safe.
 
 ## Requirements
+
+The [Phase 5 audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-5-exit-audit.md) identifies a runtime-range mismatch in the
+current package metadata. Local verification uses Node 24.17.0; the broad Node 24+ declaration
+must not be taken as verified support for every minor release. Remediation is tracked in
+[#124](https://github.com/avnionur/shepherd-typescript/issues/124).
 
 - Node.js 24 or newer
 - pnpm 10
@@ -619,6 +624,10 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Changelog](./CHANGELOG.md)
 
 ## Status
+
+The [Phase 5 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-5-exit-audit.md) maps delivered product-surface evidence
+but does not approve phase closure: runtime support must first be aligned with required SQLite
+capabilities in #124. No runtime support has been silently removed by this documentation update.
 
 The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
 execution, durable lifecycle/control evidence, and conservative formal-claim boundary. Phase 3 now
