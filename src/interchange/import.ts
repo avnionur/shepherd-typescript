@@ -6,6 +6,7 @@ import { DatabaseSync } from "node:sqlite";
 import { BlobFilesystem } from "../blob/filesystem.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
 import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
+import { assertSQLiteDefensiveSupport } from "../runtime/sqlite.ts";
 import { STORE_PRAGMA_SQL, STORE_TABLES, STORE_TRANSACTION_SQL } from "../store/constants.ts";
 import { TraceStoreError } from "../store/errors.ts";
 import { scanTraceStoreIntegrity, verifyTraceStoreIntegrity } from "../store/integrity.ts";
@@ -44,6 +45,7 @@ export function importTraceArchive(
 }
 
 function validateInStagingStore(archive: DecodedTraceArchive): void {
+    assertSQLiteDefensiveSupport(kernelProtocolConfig.store.defensive);
     const directory = mkdtempSync(path.join(tmpdir(), "shepherd-import-stage-"));
     const database = new DatabaseSync(":memory:", {
         defensive: kernelProtocolConfig.store.defensive,

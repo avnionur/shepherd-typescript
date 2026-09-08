@@ -26,14 +26,14 @@ separate consumer directory. Copy the example outside `node_modules` because Nod
 TypeScript inside dependency directories:
 
 ```sh
-npm install /absolute/path/to/avnionur-shepherd-typescript-1.61.0.tgz
+npm install /absolute/path/to/avnionur-shepherd-typescript-2.0.0.tgz
 npm pkg set type=module
 cp node_modules/@avnionur/shepherd-typescript/examples/retained-coding.ts .
 cp node_modules/@avnionur/shepherd-typescript/examples/retained-coding.json .
 node retained-coding.ts ./coding-demo retained-coding.json
 ```
 
-Use Node 24 or newer. The `cp` commands are POSIX shell examples; on Windows copy the same two files
+Use Node >=24.12.0 <25. The `cp` commands are POSIX shell examples; on Windows copy the same two files
 with your shell or file manager. No transpilation step is needed to execute the copied example.
 
 ## What it proves

@@ -118,6 +118,10 @@ test("build output cleanup and runtime configuration copying use the validated o
             await readFile(new URL("../public-errors.config.json", import.meta.url), "utf8"),
         ),
     );
+    assert.deepEqual(
+        JSON.parse(await readFile(path.join(outputDirectory, "runtime.config.json"), "utf8")),
+        JSON.parse(await readFile(new URL("../runtime.config.json", import.meta.url), "utf8")),
+    );
     await cleanBuildOutput({ configurationPath, repositoryRoot });
 
     await symlink(externalRoot, outputDirectory, "dir");

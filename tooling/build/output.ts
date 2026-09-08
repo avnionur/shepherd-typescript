@@ -6,6 +6,7 @@ import { API } from "typescript/unstable/sync";
 
 import { publicErrorConfigUrl } from "../../src/errors/public-errors.ts";
 import { protocolConfigUrl } from "../../src/protocol/config.ts";
+import { runtimePolicyConfigUrl } from "../../src/runtime/policy.ts";
 
 /** Repository and compiler configuration used to locate production build output. */
 export type BuildOutputOptions = {
@@ -17,7 +18,7 @@ export type BuildOutputOptions = {
 
 /** Runtime-configuration inputs copied beside emitted production source. */
 export type RuntimeConfigurationCopyOptions = BuildOutputOptions & {
-    /** Optional configuration sources; defaults to the runtime protocol and public-error files. */
+    /** Optional sources; defaults to protocol, public-error and runtime-policy files. */
     readonly configurationUrls?: readonly URL[];
 };
 
@@ -121,6 +122,7 @@ export async function copyRuntimeConfiguration(
     const configurationUrls = options.configurationUrls ?? [
         protocolConfigUrl,
         publicErrorConfigUrl,
+        runtimePolicyConfigUrl,
     ];
 
     await assertSafeBuildOutputDirectory(outputDirectory, options.repositoryRoot);

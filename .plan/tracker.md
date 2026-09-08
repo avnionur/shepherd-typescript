@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-08
 
-Current version: `1.68.1`
+Current version: `2.0.0`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -414,6 +414,16 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Task 24 (#124): owner approved Node >=24.12.0 <25 and breaking version 2.0.0. Focused policy/
+pre-write capability tests and installed store/registry/CLI boundary checks pass on supported
+24.12.0/24.17.0 and unsupported 24.11.1. Full verification passes on both supported versions:
+501 tests each, zero skips, 100% configured coverage and installed-package gates. The minimum
+initially exposed host-warning stderr in one CLI test; exact assertions are preserved with a
+Node warning flag limited to those subprocesses. Reviews have no remaining findings.
+No protocol/schema/dependency changes; runtime policy is a new required distribution asset.
+Production builds pass on both supported runtimes, and the final 2.0.0 boundary rerun passes.
+Implementation is verified for PR delivery; hosted workflows remain disabled.
+
 Task 23 (#123): Phase 5 exit audit maps all criteria and 22 completed implementation children.
 The runtime-range mismatch is tracked in #124; Phase 5 must remain open. Fresh full verification
 passes: 497 tests, zero skips, 100% configured coverage and installed-package gates. Version sync,
@@ -480,9 +490,9 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Task 23 (#123) audits Phase 5 without approving closure. Next: #124, runtime-support alignment,
-after approval of the supported-version policy. The audit documents the required evidence and
-preserves actual Phase 6 dependency semantics; it does not activate that phase automatically.
+Task 24 (#124) implements approved runtime-support alignment. After verified delivery, refresh the
+Phase 5 exit verdict and tracking before selecting Phase 6 work. Do not equate major version 2.0.0
+with production readiness or alter actual phase dependencies.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration

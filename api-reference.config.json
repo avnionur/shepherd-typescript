@@ -1,7 +1,7 @@
 {
     "artifact": "docs/generated/api-reference.md",
     "declarationRoot": "dist/src",
-    "runtime": "ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).",
+    "runtime": "ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).",
     "entries": {
         ".": {
             "authority": "This aggregate entry includes pure helpers and explicit Node-backed persistence, execution, and workspace APIs. Mutation authority is never ambient and remains visible in each signature.",

@@ -1,12 +1,12 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 1.68.1
+Package: `@avnionur/shepherd-typescript` 2.0.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
 `pnpm check:api-reference` to reject drift.
 
-Package runtime requirement: `>=24.0.0`.
+Package runtime requirement: `>=24.12.0 <25`.
 
 ## Root
 
@@ -14,7 +14,7 @@ Package entry: `.`
 
 Complete supported package surface preserved for existing consumers.
 
-Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: This aggregate entry includes pure helpers and explicit Node-backed persistence, execution, and workspace APIs. Mutation authority is never ambient and remains visible in each signature.
 
@@ -6036,7 +6036,7 @@ Throws:
 
 Throws:
 
-- {Error} If SQLite cannot open or migrate the registry.
+- {Error} If required SQLite defensive behavior is unavailable, or opening/migration fails.
 
 #### `schemaVersion`
 
@@ -6218,7 +6218,7 @@ Throws:
 
 Throws:
 
-- {Error} If SQLite or durable blob-directory setup fails.
+- {Error} If required SQLite defensive behavior is unavailable, or SQLite/blob setup fails.
 
 #### `schemaVersion`
 
@@ -12482,7 +12482,7 @@ Package entry: `./canonical`
 
 Canonical semantic-record encoding and identity.
 
-Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Pure canonical encoding and identity operations; no filesystem, process, network, persistence, or mutation authority.
 
@@ -12607,7 +12607,7 @@ Package entry: `./cli`
 
 Reusable command-line runner and injectable I/O contract.
 
-Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: The reusable runner uses caller-supplied I/O and command arguments. Command-specific filesystem or persistence authority remains explicit in those arguments.
 
@@ -12670,7 +12670,7 @@ Package entry: `./effects`
 
 Immutable effect records, correlation, and ordered in-process dispatch.
 
-Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Handlers are caller-supplied in-process callbacks. Dispatch is non-durable and grants no trace, workspace, interception, replay, or sandbox authority.
 
@@ -13096,7 +13096,7 @@ Package entry: `./providers`
 
 Provider-neutral contracts and deterministic static-provider fixtures.
 
-Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Provider authority is supplied explicitly by the consumer. The deterministic static adapter owns no credentials, network access, execution, or workspace authority.
 
@@ -13409,7 +13409,7 @@ Package entry: `./read`
 
 Web-safe semantic records, owner occurrences, cut addresses, slices, and anchors.
 
-Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Type-only readonly trace data; no runtime exports, validation, transport, storage, mutation, or authorization. Installed declarations compile without Node types; the ESM module has no runtime dependencies.
 
@@ -13762,7 +13762,7 @@ Package entry: `./runs`
 
 Run construction, control, execution, recovery, and inspection.
 
-Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Execution requires caller-supplied task and provider authority; durable operations additionally require an explicit trace-store handle. No ambient provider, persistence, or workspace authority is created.
 
@@ -16326,7 +16326,7 @@ Package entry: `./tasks`
 
 Task descriptors, schemas, registry operations, and bounded ledger reads.
 
-Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Descriptor and schema helpers are pure. SQLiteTaskRegistry reads or mutates only the caller-selected registry database and must be closed by the caller.
 
@@ -16518,7 +16518,7 @@ Throws:
 
 Throws:
 
-- {Error} If SQLite cannot open or migrate the registry.
+- {Error} If required SQLite defensive behavior is unavailable, or opening/migration fails.
 
 #### `schemaVersion`
 
@@ -17004,7 +17004,7 @@ Package entry: `./trace`
 
 Trace persistence, interchange, integrity, cuts, slices, and bounded evidence queries.
 
-Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: SQLiteTraceStore is explicitly read/write capable for caller-selected storage. Projection helpers remain bounded reads and no workspace authority is created.
 
@@ -17729,7 +17729,7 @@ Throws:
 
 Throws:
 
-- {Error} If SQLite or durable blob-directory setup fails.
+- {Error} If required SQLite defensive behavior is unavailable, or SQLite/blob setup fails.
 
 #### `schemaVersion`
 
@@ -19190,7 +19190,7 @@ Package entry: `./workspace`
 
 Workspace bindings, custody, grants, placement, retained execution, and exact settlement.
 
-Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: These APIs may read or mutate caller-selected filesystem and Git state, and native runners may launch capability-probed processes. Required task, provider, run, trace, carrier, runner, and grant handles stay explicit.
 

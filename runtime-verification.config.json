@@ -1,0 +1,25 @@
+{
+    "boundaries": [
+        { "environmentVariable": "SHEPHERD_MINIMUM_NODE", "version": "24.12.0", "supported": true },
+        {
+            "environmentVariable": "SHEPHERD_UNSUPPORTED_NODE",
+            "version": "24.11.1",
+            "supported": false
+        }
+    ],
+    "probes": [
+        {
+            "source": "test/fixtures/runtime-trace.mjs",
+            "entry": "./trace",
+            "stdout": "trace preserved\n"
+        },
+        {
+            "source": "test/fixtures/runtime-registry.mjs",
+            "entry": "./tasks",
+            "stdout": "registry preserved\n"
+        }
+    ],
+    "cliArguments": ["init", "{destination}", "--adopt", "none", "--no-initialize-git"],
+    "cliOutputPattern": "^Initialized ",
+    "refusalPattern": "Unsupported Node\\.js runtime"
+}

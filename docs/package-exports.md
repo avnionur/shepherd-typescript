@@ -1,10 +1,9 @@
 # Package exports and module policy
 
-Runtime APIs are ESM-only on Node 24 or newer; the type-only `/read` entry requires no Node
-runtime or declarations. This is the current declared policy, not a verified lower boundary:
-the [Phase 5 audit](../.plan/phase-5-exit-audit.md) identifies required SQLite capability gaps in
-that range, tracked in #124. Local conformance uses Node 24.17.0; support-policy remediation is
-pending approval. Supported imports are:
+Runtime APIs are ESM-only on Node >=24.12.0 <25; the type-only `/read` entry requires no Node
+runtime or declarations. Version 2.0.0 narrows the previous range with owner approval and enforces
+it before runtime operations. See [runtime support](./runtime-support.md) for pre-initialization
+CLI errors, required SQLite checks, and boundary verification. Supported imports are:
 
 ```ts
 import { task } from "@avnionur/shepherd-typescript";
@@ -145,6 +144,7 @@ Configuration URLs remain relative to `import.meta.url`. The tested output layou
 ```text
 bundle-root/
   protocol.config.json
+  runtime.config.json
   public-errors.config.json   # additionally required by the root fixture
   chunks/nested/bundle.mjs
 ```

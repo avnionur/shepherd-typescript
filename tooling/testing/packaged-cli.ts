@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { testInstalledBundles } from "./bundles.ts";
 import { testEntryLoading } from "./entry-loading.ts";
 import { testPackagedExamples } from "./packaged-examples.ts";
+import { testInstalledRuntimeBoundaries } from "./runtime-boundaries.ts";
 
 const repositoryRoot = path.resolve(fileURLToPath(new URL("../../", import.meta.url)));
 const protocol = JSON.parse(
@@ -42,11 +43,12 @@ const apiReferenceConfiguration = JSON.parse(
 /**
  * Exercises the built package through a fresh archive installation and consumer project.
  *
+ * @param runtimeBoundaries - Require the configured additional Node boundary executables.
  * @returns A promise resolving after every conformance assertion passes.
  * @throws {AssertionError} If build output or installed-package behavior differs from contract.
  * @throws {Error} If packaging, installation, filesystem access, or a consumer process fails.
  */
-export async function testPackagedCli(): Promise<void> {
+export async function testPackagedCli(runtimeBoundaries = false): Promise<void> {
     assert.equal(existsSync(path.join(repositoryRoot, "dist", "scripts")), false);
     assert.equal(existsSync(path.join(repositoryRoot, "dist", "tooling")), false);
     const temporaryRoot = mkdtempSync(path.join(tmpdir(), "shepherd-packaged-cli-"));
@@ -103,6 +105,12 @@ export async function testPackagedCli(): Promise<void> {
             installPath,
             "node_modules",
             ...packageManifest.name.split("/"),
+        );
+        testInstalledRuntimeBoundaries(
+            repositoryRoot,
+            installedPackageRoot,
+            installPath,
+            runtimeBoundaries,
         );
         testPackagedExamples({ repositoryRoot, installedPackageRoot, consumerParent: installPath });
         testEntryLoading({ repositoryRoot, installedPackageRoot, consumerParent: installPath });
