@@ -14,6 +14,11 @@
             "required": ["node:fs"],
             "forbidden": ["node:sqlite", "node:child_process"]
         },
+        "./read": {
+            "required": [],
+            "forbidden": [],
+            "webSafeTypeProbe": "test/fixtures/read-surface.ts.txt"
+        },
         "./runs": { "required": ["node:fs"], "forbidden": ["node:sqlite", "node:child_process"] },
         "./tasks": {
             "required": ["node:fs", "node:sqlite", "node:child_process"],

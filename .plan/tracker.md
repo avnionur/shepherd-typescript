@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-08
 
-Current version: `1.66.0`
+Current version: `1.67.0`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -167,7 +167,7 @@ Repository-built and freshly installed runtime/declaration source maps now have 
 relative paths, no host/temporary paths, and no embedded source content. Installed Node stack
 frames map to TypeScript while existing in-memory cause/original-failure propagation remains
 intact and durable/CLI serialization stays closed.
-The checked-in and packaged generated API reference now indexes all nine supported entries from
+The checked-in and packaged generated API reference now indexes all supported entries from
 their emitted declarations. It classifies every export as type-only, runtime-only, or
 runtime-and-type; retains public signatures, generics, JSDoc, thrown errors, runtime requirements,
 and entry-owned authority notes; excludes private/internal declaration members and configured
@@ -414,6 +414,15 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Task 21 (#119): installed no-Node Bundler/NodeNext compilation and empty runtime import checks
+pass. Source type-identity checks and full verification pass: 491 tests, zero skips, and 100%
+configured coverage, including installed examples, loading, bundles and source maps. Standards and
+specification reviews have no remaining findings. Version synchronization and `pnpm build:desktop`
+pass. Existing runtime, protocol and dependency
+lockfiles are unchanged. The initial export-map assertion failure was corrected without removing
+existing expectations; the new compiler probe uses a shell-independent launch. Hosted/Windows
+execution remains unverified. Implementation is verified; pull-request review and merge remain.
+
 Task 20 (#117): adapter identity/registry/execution tests and unsafe-document regressions pass,
 including hidden property keys and inherited required-array methods. Full local verification
 passes with 100% configured coverage, installed examples, loading/bundling, and production build.
@@ -455,23 +464,13 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Task 20 (#117) adds supported JSON Schema document adaptation with builder identity preservation.
-Read/web-safe interfaces remain the next Phase 5 area to scope; broader schema vocabulary is not
-implicitly supported by this adapter.
+Task 21 (#119) adds the type-only web-safe trace read surface. Async-iterable queries are the next
+area to scope before the Phase 5 exit audit; broader read projections remain separate work.
 
-Task 19 (#115) introduces schema-validated typed effect payload callbacks. Remaining schema
-adapters and read/web-safe surfaces still need scoped issues; Phase 5 is not closed.
-
-Task 18 (#109) verifies pinned Rollup Node bundles and asset validation for root/narrow canonical
-fixtures. Remaining ergonomic/schema/read-surface work needs concrete scopes before Phase 5 exit.
-
-Task 17 (#108) verifies the installed ESM entry loading matrix. Task 18 verifies actual bundler
-tree-shaking and runtime-configuration assets after that matrix is delivered.
-
-Phase 5 Task 16 (#102) documents Python-to-TypeScript migration from pinned release sources with
-installed-example-verified code excerpts. The example and migration-guide frontier is complete;
-remaining Phase 5 work needs explicit slices for ergonomic helpers, web-safe/read surfaces, and
-tree-shaking/optional loading before the epic can close.
+Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
+(#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration
+guide (#102). They do not imply broader schema vocabulary, typed effect results, universal
+bundler support, or a completed Phase 5 exit audit.
 
 Completed prerequisites: retained coding (#98/PR #103), read-only review (#99/PR #104), multiple
 bindings (#100/PR #105), and custom effects (#101/PR #106). Preserve their installed verification,

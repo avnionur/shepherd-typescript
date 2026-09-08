@@ -1,6 +1,7 @@
 # Package exports and module policy
 
-The package is ESM-only on Node 24 or newer. Supported imports are:
+Runtime APIs are ESM-only on Node 24 or newer; the type-only `/read` entry requires no Node
+runtime or declarations. Supported imports are:
 
 ```ts
 import { task } from "@avnionur/shepherd-typescript";
@@ -8,6 +9,7 @@ import { canonicalizeRecord } from "@avnionur/shepherd-typescript/canonical";
 import { runCli, type CliIo } from "@avnionur/shepherd-typescript/cli";
 import { createEffectHandlerStack, createEffectIntent } from "@avnionur/shepherd-typescript/effects";
 import { createStaticProvider } from "@avnionur/shepherd-typescript/providers";
+import type { Slice } from "@avnionur/shepherd-typescript/read";
 import { executeTask, executeTaskDurably } from "@avnionur/shepherd-typescript/runs";
 import { schema, SQLiteTaskRegistry, task } from "@avnionur/shepherd-typescript/tasks";
 import { listTraceRevisions, SQLiteTraceStore } from "@avnionur/shepherd-typescript/trace";
@@ -38,8 +40,12 @@ workspace settlement, private validators, migrations, and protocol configuration
 `./trace` is Node-only and explicitly write-capable through `SQLiteTraceStore`. It owns public
 append/cut/slice/blob contracts, integrity and native archive methods, store errors/types, and
 bounded run/output/trace/recovery evidence reads. It excludes task registry, providers, executors,
-workspace carriers/settlements, private SQL/migrations, and protocol configuration. A future
-web-safe type-only/read split must not be inferred from this Node entry.
+workspace carriers/settlements, private SQL/migrations, and protocol configuration.
+
+`./read` is the separate [web-safe type-only entry](./web-safe-read-types.md) for existing readonly
+semantic/record/owner/cut/slice data. It exports no runtime values, store handles or mutation
+requests. Its installed declarations compile without Node declarations in strict Bundler and
+NodeNext consumers; its ESM module is empty. It provides no runtime validation or redaction.
 
 `./runs` is Node-only and owns public run builders/types/errors, budgets and cancellation,
 provider-neutral task execution, and durable execution/control/recovery/inspection. Consumers
@@ -59,7 +65,7 @@ registries, provider adapters, run builders/controls, the SQLite store construct
 mutation, private codecs, migrations, and protocol configuration; it creates no ambient authority.
 
 CommonJS `require()` is intentionally unsupported; use ESM or dynamic `import()`. The package does
-not ship a partial CommonJS transform. TypeScript consumers use `moduleResolution: "NodeNext"`,
+not ship a partial CommonJS transform. Node TypeScript consumers use `moduleResolution: "NodeNext"`,
 the `ESNext` disposable library, and Node declarations.
 
 Fresh-tarball conformance imports every entry at runtime, typechecks every declaration entry,
@@ -90,6 +96,7 @@ export map and records the following dependencies:
 | Root, CLI, tasks, trace | Yes | Yes | Yes |
 | Canonical, effects, providers, runs | Yes | No | No |
 | Workspace | Yes | No | Yes |
+| Read (type-only) | No | No | No |
 
 The tasks entry exports its SQLite registry as well as task builders; task-ledger/grant support
 also reaches process-related modules. The runs entry accepts store/provider authority from callers
@@ -97,8 +104,10 @@ and does not load SQLite merely by being imported. The workspace entry loads fil
 process support but does not construct the caller's trace store.
 
 “Loaded” is an import observation, not a claim that a subprocess ran or a database opened.
-Every entry reads and validates filesystem-backed protocol configuration, so the narrow entries
-are still Node-only. This test does not prove browser compatibility or bundler dead-code removal.
+Every runtime-capable entry reads and validates filesystem-backed protocol configuration, so
+those narrow entries are still Node-only. The read entry must load zero Node builtins and expose
+an empty runtime namespace. Separate installed no-Node declaration checks cover its type-only
+usage; these checks do not prove browser-engine execution or bundler dead-code removal.
 There are currently no separately installed optional provider/native adapter packages to test;
 their future loading behavior is not inferred from this matrix.
 

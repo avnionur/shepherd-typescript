@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.67.0] - 2026-09-08
+
+### New Feature
+
+- Add the type-only `/read` entry for existing readonly semantic records, owner occurrences,
+  cuts, slices, and anchors without store handles, mutation requests, or runtime values.
+- Verify installed declarations with strict Bundler and NodeNext consumers without Node types,
+  readonly assignment rejection, empty runtime namespace, and zero Node builtin loads.
+
+### Impact
+
+Browser-facing TypeScript can share trace read contracts without importing Node runtime APIs.
+Existing contracts are unchanged; validation, transport, redaction, and async queries are not added.
+
 ## [1.66.0] - 2026-09-08
 
 ### New Feature

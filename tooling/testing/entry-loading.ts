@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 
 /** Fresh installation locations for package-entry import conformance. */
@@ -14,7 +15,7 @@ export type EntryLoadingOptions = {
 };
 
 /**
- * Imports every supported installed entry in a fresh process and checks builtin dependencies.
+ * Checks installed entry loading and configured type-only consumers without Node declarations.
  *
  * @param options - Repository policy and isolated installed-package locations.
  * @returns Nothing when the export map and all loading expectations agree.
@@ -36,6 +37,7 @@ export function testEntryLoading(options: EntryLoadingOptions): void {
                 {
                     readonly required: readonly string[];
                     readonly forbidden: readonly string[];
+                    readonly webSafeTypeProbe?: string;
                 }
             >
         >;
@@ -62,7 +64,12 @@ process.on("exit", () => process.stdout.write(JSON.stringify([...loaded].sort())
     for (const [entry, expected] of Object.entries(policy.entries)) {
         const specifier = entry === "." ? manifest.name : `${manifest.name}/${entry.slice(2)}`;
         const probePath = path.join(consumer, "probe.mjs");
-        writeFileSync(probePath, `import ${JSON.stringify(specifier)};\n`);
+        writeFileSync(
+            probePath,
+            expected.webSafeTypeProbe === undefined
+                ? `import ${JSON.stringify(specifier)};\n`
+                : `import * as entry from ${JSON.stringify(specifier)};\nif (Object.keys(entry).length !== 0) throw new Error("type-only entry exported runtime values");\n`,
+        );
         const observed: unknown = JSON.parse(
             execFileSync(process.execPath, ["--import", hookPath, probePath], {
                 cwd: consumer,
@@ -70,6 +77,51 @@ process.on("exit", () => process.stdout.write(JSON.stringify([...loaded].sort())
             }),
         );
         assert.ok(Array.isArray(observed) && observed.every((value) => typeof value === "string"));
+        if (expected.webSafeTypeProbe !== undefined) {
+            assert.deepEqual(observed, [], `${entry} must not load any Node builtins`);
+            const compilerManifestPath = createRequire(import.meta.url).resolve(
+                "typescript/package.json",
+            );
+            const compilerManifest = JSON.parse(readFileSync(compilerManifestPath, "utf8")) as {
+                readonly bin: { readonly tsc: string };
+            };
+            const typeProbe = path.join(consumer, "probe.ts");
+            writeFileSync(
+                typeProbe,
+                readFileSync(
+                    path.join(options.repositoryRoot, expected.webSafeTypeProbe),
+                    "utf8",
+                ).replaceAll("PACKAGE_READ_ENTRY", specifier),
+            );
+            for (const resolution of ["Bundler", "NodeNext"]) {
+                const typeConfig = path.join(consumer, "tsconfig.json");
+                writeFileSync(
+                    typeConfig,
+                    JSON.stringify({
+                        compilerOptions: {
+                            lib: ["ESNext", "DOM"],
+                            module: resolution === "Bundler" ? "ESNext" : "NodeNext",
+                            moduleResolution: resolution,
+                            noEmit: true,
+                            strict: true,
+                            skipLibCheck: false,
+                            target: "ESNext",
+                            types: [],
+                        },
+                        files: [typeProbe],
+                    }),
+                );
+                execFileSync(
+                    process.execPath,
+                    [
+                        path.resolve(path.dirname(compilerManifestPath), compilerManifest.bin.tsc),
+                        "--project",
+                        typeConfig,
+                    ],
+                    { cwd: consumer, stdio: "inherit" },
+                );
+            }
+        }
         for (const required of expected.required) {
             assert.ok(observed.includes(required), `${entry} did not load required ${required}`);
         }

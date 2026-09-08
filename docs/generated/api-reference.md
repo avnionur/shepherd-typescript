@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 1.66.0
+Package: `@avnionur/shepherd-typescript` 1.67.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -14,7 +14,7 @@ Package entry: `.`
 
 Complete supported package surface preserved for existing consumers.
 
-Runtime: ESM on Node 24 or newer.
+Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: This aggregate entry includes pure helpers and explicit Node-backed persistence, execution, and workspace APIs. Mutation authority is never ambient and remains visible in each signature.
 
@@ -12438,7 +12438,7 @@ Package entry: `./canonical`
 
 Canonical semantic-record encoding and identity.
 
-Runtime: ESM on Node 24 or newer.
+Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Pure canonical encoding and identity operations; no filesystem, process, network, persistence, or mutation authority.
 
@@ -12563,7 +12563,7 @@ Package entry: `./cli`
 
 Reusable command-line runner and injectable I/O contract.
 
-Runtime: ESM on Node 24 or newer.
+Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: The reusable runner uses caller-supplied I/O and command arguments. Command-specific filesystem or persistence authority remains explicit in those arguments.
 
@@ -12626,7 +12626,7 @@ Package entry: `./effects`
 
 Immutable effect records, correlation, and ordered in-process dispatch.
 
-Runtime: ESM on Node 24 or newer.
+Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Handlers are caller-supplied in-process callbacks. Dispatch is non-durable and grants no trace, workspace, interception, replay, or sandbox authority.
 
@@ -13052,7 +13052,7 @@ Package entry: `./providers`
 
 Provider-neutral contracts and deterministic static-provider fixtures.
 
-Runtime: ESM on Node 24 or newer.
+Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Provider authority is supplied explicitly by the consumer. The deterministic static adapter owns no credentials, network access, execution, or workspace authority.
 
@@ -13359,13 +13359,366 @@ const provider = createStaticProvider({
 await provider.invoke(request, new AbortController().signal);
 ```
 
+## Read
+
+Package entry: `./read`
+
+Web-safe semantic records, owner occurrences, cut addresses, slices, and anchors.
+
+Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
+
+Authority and mutation: Type-only readonly trace data; no runtime exports, validation, transport, storage, mutation, or authorization. Installed declarations compile without Node types; the ESM module has no runtime dependencies.
+
+Import example:
+
+```ts
+import * as api from "@avnionur/shepherd-typescript/read";
+void api;
+```
+
+Exported symbols: 22.
+
+### `ClosurePolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Whether omitted causal parents are represented as anchors.
+
+Signature:
+
+```ts
+export type ClosurePolicy = "include_external_anchors" | "visible_only";
+```
+
+### `Cut`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable immutable address of an owner-path prefix.
+
+Signature:
+
+```ts
+export type Cut = {
+    readonly created_by_record_id: RecordId;
+    readonly cut_id: CutId;
+    readonly publisher_owner_id: TraceOwnerId;
+    readonly target_owner_id: TraceOwnerId;
+    readonly through_owner_ordinal: OwnerOrdinal;
+    readonly through_record_id: RecordId;
+};
+```
+
+### `CutId`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Stable identifier for one published immutable trace cut.
+
+Signature:
+
+```ts
+export type CutId = string;
+```
+
+### `ExternalAnchor`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Visible placeholder for a direct causal parent omitted from a slice.
+
+Signature:
+
+```ts
+export type ExternalAnchor = {
+    readonly hidden_reason: "outside_slice";
+    readonly ref: RecordId;
+};
+```
+
+### `ModeFilter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured record-mode selection applied to traversal records.
+
+Signature:
+
+```ts
+export type ModeFilter = "both" | "captures_only" | "declarations_only";
+```
+
+### `OwnerOrdinal`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured-floor position of a retained record on an owner path.
+
+Signature:
+
+```ts
+export type OwnerOrdinal = number;
+```
+
+### `OwnerRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read result for one owner-local record occurrence.
+
+Signature:
+
+```ts
+export type OwnerRecord = PlannedRecord;
+```
+
+### `RecordBody`
+
+Classification: `type-only`. Kind: `type alias`.
+
+A schema-specific semantic payload retained by a record.
+
+Record bodies accept the same plain, canonicalizable values as semantic
+records. Storage metadata does not belong in a record body.
+
+Signature:
+
+```ts
+export type RecordBody = SemanticRecord;
+```
+
+### `RecordEnvelope`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Stable semantic identity and ordered causality for one retained record.
+
+Owner paths, ordinals, receipts, and local timestamps are intentionally
+excluded because they do not change record identity.
+
+Signature:
+
+```ts
+export type RecordEnvelope = {
+    readonly caused_by_record_ids: readonly RecordId[];
+    readonly digest: RecordId;
+    readonly mode: RecordMode;
+    readonly record_id: RecordId;
+    readonly schema_ref: string;
+    readonly witness_ref: RecordId | "";
+};
+```
+
+### `RecordId`
+
+Classification: `type-only`. Kind: `type alias`.
+
+A content-addressed retained-record identifier.
+
+Runtime validation enforces the configured digest prefix and length.
+
+Signature:
+
+```ts
+export type RecordId = string;
+```
+
+### `RecordMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Whether a record declares intended state or captures observed state.
+
+Signature:
+
+```ts
+export type RecordMode = (typeof RECORD_MODES)[number];
+```
+
+### `RecordShape`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Visibility-filtered record shape without its semantic body.
+
+Signature:
+
+```ts
+export type RecordShape = {
+    readonly envelope: RecordEnvelope;
+    readonly hidden_reason: "payload_hidden";
+    readonly view?: RecordView;
+};
+```
+
+### `RecordView`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Path-local metadata assigned without changing semantic record identity.
+
+Signature:
+
+```ts
+export type RecordView = {
+    readonly append_intent_id?: string;
+    readonly owner_id: TraceOwnerId;
+    readonly owner_ordinal: OwnerOrdinal;
+};
+```
+
+### `RetainedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One semantic record and every retained owner-local occurrence.
+
+Signature:
+
+```ts
+export type RetainedRecord = {
+    readonly body: RecordBody;
+    readonly envelope: RecordEnvelope;
+    readonly views: readonly RecordView[];
+};
+```
+
+### `SemanticRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+A plain object containing semantic values.
+
+Properties whose value is `undefined` are omitted during canonicalization.
+Symbol and accessor properties are rejected.
+
+Signature:
+
+```ts
+export type SemanticRecord = {
+    readonly [key: string]: SemanticValue | undefined;
+};
+```
+
+### `SemanticScalar`
+
+Classification: `type-only`. Kind: `type alias`.
+
+A scalar value accepted by the canonical semantic record format.
+
+Numbers must be finite. Strings must contain well-formed Unicode.
+
+Signature:
+
+```ts
+export type SemanticScalar = boolean | null | number | string;
+```
+
+### `SemanticValue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Any recursively representable value accepted in a semantic record.
+
+Arrays must be dense data arrays without accessors or custom properties.
+
+Signature:
+
+```ts
+export type SemanticValue = SemanticRecord | SemanticScalar | readonly SemanticValue[];
+```
+
+### `Slice`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable graph-shaped trace read.
+
+Signature:
+
+```ts
+export type Slice = {
+    readonly causal_edges: readonly (readonly [
+        RecordId,
+        RecordId
+    ])[];
+    readonly external_anchors: readonly ExternalAnchor[];
+    readonly mode_filter: ModeFilter;
+    readonly owner_paths: Readonly<Record<TraceOwnerId, readonly RecordId[]>>;
+    readonly read_address?: Cut;
+    readonly visible_records_by_id: Readonly<Record<RecordId, RecordShape | SliceRecord>>;
+    readonly visible_witnesses_by_id: Readonly<Record<RecordId, SliceRecord>>;
+    readonly visibility_profile: VisibilityProfile;
+    readonly witness_anchors: readonly WitnessAnchor[];
+};
+```
+
+### `SliceRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One selected payload-visible record occurrence.
+
+Signature:
+
+```ts
+export type SliceRecord = {
+    readonly body: RecordBody;
+    readonly envelope: RecordEnvelope;
+    readonly view?: RecordView;
+};
+```
+
+### `TraceOwnerId`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Stable identifier for one owner-local trace path.
+
+Signature:
+
+```ts
+export type TraceOwnerId = string;
+```
+
+### `VisibilityProfile`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Payload disclosure level for a graph-shaped trace read.
+
+Signature:
+
+```ts
+export type VisibilityProfile = "full_internal" | "payload" | "shape_only";
+```
+
+### `WitnessAnchor`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Visible placeholder for witness support whose payload is hidden.
+
+Signature:
+
+```ts
+export type WitnessAnchor = {
+    readonly hidden_reason: "hidden_by_visibility";
+    readonly visible_shape: {
+        readonly schema_ref: string;
+        readonly witness_ref: RecordId | "";
+    };
+    readonly witness_ref: RecordId;
+};
+```
+
 ## Runs
 
 Package entry: `./runs`
 
 Run construction, control, execution, recovery, and inspection.
 
-Runtime: ESM on Node 24 or newer.
+Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Execution requires caller-supplied task and provider authority; durable operations additionally require an explicit trace-store handle. No ambient provider, persistence, or workspace authority is created.
 
@@ -15929,7 +16282,7 @@ Package entry: `./tasks`
 
 Task descriptors, schemas, registry operations, and bounded ledger reads.
 
-Runtime: ESM on Node 24 or newer.
+Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Descriptor and schema helpers are pure. SQLiteTaskRegistry reads or mutates only the caller-selected registry database and must be closed by the caller.
 
@@ -16607,7 +16960,7 @@ Package entry: `./trace`
 
 Trace persistence, interchange, integrity, cuts, slices, and bounded evidence queries.
 
-Runtime: ESM on Node 24 or newer.
+Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: SQLiteTraceStore is explicitly read/write capable for caller-selected storage. Projection helpers remain bounded reads and no workspace authority is created.
 
@@ -18749,7 +19102,7 @@ Package entry: `./workspace`
 
 Workspace bindings, custody, grants, placement, retained execution, and exact settlement.
 
-Runtime: ESM on Node 24 or newer.
+Runtime: ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: These APIs may read or mutate caller-selected filesystem and Git state, and native runners may launch capability-probed processes. Required task, provider, run, trace, carrier, runner, and grant handles stay explicit.
 
