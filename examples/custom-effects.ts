@@ -6,6 +6,7 @@ import {
     createEffectHandlerStack,
     createEffectIntent,
     createEffectOutcome,
+    createTypedEffectHandler,
     EffectHandlerNotFoundError,
     type EffectIntent,
     validateEffectCorrelation,
@@ -59,18 +60,17 @@ const stack = createEffectHandlerStack([
         kind: configuration.kind,
         handle: () => ({ ok: true, value: configuration.fallbackValue }),
     },
-    {
+    createTypedEffectHandler({
         handlerId: configuration.localHandler,
         kind: configuration.kind,
-        handle: (intent) => {
-            // The generic dispatch interface validates canonical data; application schemas
-            // validate the payload meaning before using it.
-            const payload = payloadSchema.parse(intent.payload);
+        payloadSchema,
+        handle: (payload) => {
+            // Payload type inference and runtime validation share the same schema.
             return payload.text === configuration.declinedText
                 ? { ok: false, error: { code: configuration.failureCode } }
                 : { ok: true, value: configuration.prefix + payload.text };
         },
-    },
+    }),
     {
         handlerId: configuration.unrelatedHandler,
         kind: configuration.unrelatedKind,

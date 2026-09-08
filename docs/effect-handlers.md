@@ -51,3 +51,26 @@ Malformed results fail with `TypeError`.
 This stack interprets an intent in-process but does not append records, materialize world changes,
 install dynamic async-context bindings, intercept execution, notify observers, or create receipts.
 Those responsibilities remain separate runtime slices.
+
+## Typed payload adapter
+
+`createTypedEffectHandler({ handlerId, kind, payloadSchema, handle })` adapts a callback whose
+payload type is inferred from an existing package-created schema. It is exported by the root
+and effects entries; construct schemas through the tasks entry. It returns an ordinary frozen
+`EffectHandler`, so stack precedence and outcome correlation are unchanged.
+
+The adapter authenticates the schema and snapshots the option fields without evaluating accessors.
+On each call it validates the canonical intent, checks the exact kind, freezes the intent, parses
+the application payload, and only then invokes `handle(payload, intent)`. The callback receives
+the parsed value separately from the original intent, preserving canonical identity even when
+a void schema parses null into undefined. Canonical success/failure result validation and freezing
+also apply to direct `handler.handle(intent)` calls. Callback errors propagate unchanged.
+
+This initial helper validates payload schemas; it does not infer a narrower return type from
+`EffectHandlerStack.dispatch`, add output schemas, translate undefined results to null, register
+effect kinds globally, or create durable execution. Callbacks return the ordinary semantic result
+contract. Return explicit null for a successful operation with no value.
+
+Implementation: [typed-handler.ts](../src/effect/typed-handler.ts). Public-interface tests:
+[typed-handlers.test.ts](../test/effect/typed-handlers.test.ts). The installed
+[custom-effects example](../examples/custom-effects.ts) proves callback inference and dispatch.

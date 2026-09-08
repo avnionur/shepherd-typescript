@@ -110,7 +110,8 @@ function assertText(value: unknown, subject: string): asserts value is string {
     }
 }
 
-function readDataObject(
+/** Reads an exact descriptor-safe effect option object. @internal */
+export function readDataObject(
     value: unknown,
     keys: readonly string[],
     subject: string,

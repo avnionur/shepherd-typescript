@@ -28,7 +28,8 @@ artifact/usage response types, deterministic static adapter, and stable errors; 
 credentials, and workspace authority remain excluded. Undeclared deep imports are rejected.
 
 `./effects` owns immutable effect intent/outcome builders, exact correlation validation, ordered
-exact-kind handler stacks, their public types, and stable unhandled-effect errors. Handlers are
+exact-kind handler stacks, schema-validated typed payload adapters, their public types, and stable
+unhandled-effect errors. Handlers are
 caller-supplied in-process callbacks and dispatch is non-durable. The facade does not append trace
 records, materialize world changes, intercept execution, provide replay, or create a sandbox. It
 excludes formal proof/reference machinery, task/provider/run execution, trace persistence,

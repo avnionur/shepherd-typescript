@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.65.0] - 2026-09-08
+
+### New Feature
+
+- Add createTypedEffectHandler and its options type to root/effects entries, inferring callback
+  payloads from authenticated package schemas and rejecting malformed payloads before invocation.
+- Preserve immutable canonical intent/result data, exact-kind checks, callback errors, and stack
+  correlation, including direct handler calls. Validate construction without invoking accessors.
+- Demonstrate the helper in the installed custom-effect example with unchanged expected results.
+
+### Impact
+
+Typed effect callbacks can share one runtime schema and inferred payload type without repeating
+validation logic. The adapter is in-process and non-durable; protocol contracts are unchanged.
+
 ## [1.64.3] - 2026-09-06
 
 ### Improvement

@@ -9,6 +9,7 @@ test("effects facade exposes only effect-owned runtime symbols", () => {
         "createEffectHandlerStack",
         "createEffectIntent",
         "createEffectOutcome",
+        "createTypedEffectHandler",
         "validateEffectCorrelation",
     ]);
     for (const excluded of [
