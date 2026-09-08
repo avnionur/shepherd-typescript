@@ -292,7 +292,7 @@ Work:
 - add typed provider helpers; **provider contract/static-adapter facade implemented in 1.54.0**
   with execution, tools, credentials, and workspace authority explicitly excluded;
 - add trace queries; **Node trace persistence/query/interchange facade implemented in 1.55.0**
-  with write authority explicit and web-safe read types deferred to a separate split;
+  with write authority explicit; **type-only web-safe trace data added in 1.67.0 (#119)**;
 - expose cohesive run helpers; **Node run construction, budget/cancellation, provider-neutral
   execution, and durable execution/control/recovery/inspection facade implemented in 1.56.0**
   with task/provider/trace authorities explicitly supplied by their owning domains;
@@ -305,8 +305,9 @@ Work:
   adapter implemented in 1.65.0 (#115)** using existing authenticated schemas and ordinary stacks;
   **supported JSON Schema document adapter implemented in 1.66.0 (#117)** with dynamic unknown
   typing and equivalent builder identity; broader vocabulary/typed result surfaces remain separate;
-- implement async-iterable trace queries and web-safe read-only types where
-  sensible;
+- implement async-iterable trace queries and web-safe read-only types where sensible;
+  **type-only `/read` entry implemented in 1.67.0 (#119)** with strict installed no-Node
+  compilation and empty-runtime import checks; async queries remain a separate slice;
 - expose rich structured errors with stable codes; **implemented in 1.59.0** with one validated
   configuration-owned in-memory contract, preserved class/message identity and existing causes,
   explicit unclassified validation/callback failures, and unchanged CLI/evidence redaction;

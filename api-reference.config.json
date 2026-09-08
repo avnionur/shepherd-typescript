@@ -1,7 +1,7 @@
 {
     "artifact": "docs/generated/api-reference.md",
     "declarationRoot": "dist/src",
-    "runtime": "ESM on Node 24 or newer.",
+    "runtime": "ESM on Node 24 or newer, except the type-only /read entry (no Node runtime required).",
     "entries": {
         ".": {
             "authority": "This aggregate entry includes pure helpers and explicit Node-backed persistence, execution, and workspace APIs. Mutation authority is never ambient and remains visible in each signature.",
@@ -27,6 +27,11 @@
             "authority": "Provider authority is supplied explicitly by the consumer. The deterministic static adapter owns no credentials, network access, execution, or workspace authority.",
             "summary": "Provider-neutral contracts and deterministic static-provider fixtures.",
             "title": "Providers"
+        },
+        "./read": {
+            "authority": "Type-only readonly trace data; no runtime exports, validation, transport, storage, mutation, or authorization. Installed declarations compile without Node types; the ESM module has no runtime dependencies.",
+            "summary": "Web-safe semantic records, owner occurrences, cut addresses, slices, and anchors.",
+            "title": "Read"
         },
         "./runs": {
             "authority": "Execution requires caller-supplied task and provider authority; durable operations additionally require an explicit trace-store handle. No ambient provider, persistence, or workspace authority is created.",

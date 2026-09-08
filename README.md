@@ -57,7 +57,7 @@ Publication remains disabled until registry ownership and release checks are com
 
 ## Current capability
 
-Version `1.64.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `1.67.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -248,12 +248,17 @@ examples to these programs and identifies adapted and unsupported behavior.
 ## API
 
 The package is ESM-only. Supported entries are `.`, `./canonical`, `./cli`, `./effects`,
-`./providers`, `./runs`, `./tasks`, `./trace`, and `./workspace`; see
+`./providers`, `./read`, `./runs`, `./tasks`, `./trace`, and `./workspace`; see
 [Package exports and module policy](./docs/package-exports.md). The checked-in and packaged
 [generated API reference](./docs/generated/api-reference.md) lists every supported symbol,
 signature, JSDoc contract, runtime requirement, and authority note; its
 [generation policy](./docs/api-reference.md) defines drift and privacy checks. CommonJS must use
 dynamic `import()`, and undeclared deep imports are unsupported.
+
+For browser-facing TypeScript, use `import type { Slice }` from
+`@avnionur/shepherd-typescript/read`. The [web-safe read entry](./docs/web-safe-read-types.md)
+exposes existing readonly trace data without Node declarations, runtime values, or storage
+authority. It does not validate or redact data and does not make other entries browser-safe.
 
 ```ts
 import {
@@ -636,7 +641,8 @@ surface are not implemented.
 
 The [package policy](./docs/package-exports.md#installed-import-loading) now records verified
 per-entry Node module loading. Narrow imports avoid SQLite/process support where documented;
-filesystem configuration remains required. The same policy documents tested Rollup Node
+filesystem configuration remains required for those runtime entries. The type-only `/read` entry
+has no runtime dependencies. The same policy documents tested Rollup Node
 tree-shaking fixtures and their required configuration-asset layout.
 
 ## Attribution

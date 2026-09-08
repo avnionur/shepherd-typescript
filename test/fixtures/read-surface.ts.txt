@@ -1,0 +1,24 @@
+// Installed consumer template; the verifier substitutes the configured package entry.
+import type { Cut, RecordEnvelope, SemanticRecord, Slice } from "PACKAGE_READ_ENTRY";
+// @ts-expect-error Type-only read entry has no store constructor.
+import { SQLiteTraceStore } from "PACKAGE_READ_ENTRY";
+// @ts-expect-error Read entry exposes no append request authority.
+import type { StoreAppendRequest } from "PACKAGE_READ_ENTRY";
+
+function renderTrace(slice: Slice, element: HTMLElement): void {
+    element.textContent = Object.keys(slice.visible_records_by_id).join(", ");
+    // @ts-expect-error Slice arrays are readonly.
+    slice.external_anchors.push({ ref: "record", hidden_reason: "outside_slice" });
+    // @ts-expect-error Slice properties are readonly.
+    slice.visibility_profile = "shape_only";
+}
+
+function inspectRecord(envelope: RecordEnvelope, body: SemanticRecord, cut: Cut): string {
+    // @ts-expect-error Envelope identity cannot be reassigned.
+    envelope.record_id = "changed";
+    // @ts-expect-error Semantic payload properties are readonly.
+    body.changed = true;
+    // @ts-expect-error Cut addresses cannot be reassigned.
+    cut.through_record_id = "changed";
+    return envelope.record_id;
+}

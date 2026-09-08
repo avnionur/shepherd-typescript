@@ -34,6 +34,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   including the Node-only effects, run execution/control, and workspace authority facades,
   TypeScript requirements, CommonJS refusal, deep-import boundaries, installed import loading,
   and tested Rollup Node bundle/asset behavior.
+- [Web-safe trace read types](./web-safe-read-types.md) defines the type-only `/read` entry,
+  no-Node installed compilation, readonly contracts, and validation/authority limits.
 - [Generated API-reference policy](./api-reference.md) defines declaration-only generation,
   export completeness, type/runtime classification, authority notes, privacy checks, drift
   rejection, and fresh-package conformance.
