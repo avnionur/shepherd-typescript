@@ -5,6 +5,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 
 ## Guides
 
+- [Phase 5 exit audit](../.plan/phase-5-exit-audit.md) maps product-surface evidence and records
+  the runtime-support blocker that keeps the phase open.
+
 - [Python-to-TypeScript migration](./python-to-typescript.md) maps pinned release sources to all
   four executable examples, with verified code excerpts and explicit compatibility limits.
 

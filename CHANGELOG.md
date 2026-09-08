@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.68.1] - 2026-09-08
+
+### Improvement
+
+- Audit Phase 5 exit criteria against installed-package and public API evidence, with explicit
+  optional-adapter, platform, browser and bundler limits.
+- Record a blocking mismatch between the declared Node range and required SQLite capabilities;
+  retain Phase 5 as open and track runtime-policy remediation separately.
+
+### Impact
+
+The audit distinguishes delivered product features from unresolved exit requirements. Runtime,
+protocol, dependencies and the declared support range are unchanged.
+
 ## [1.68.0] - 2026-09-08
 
 ### New Feature

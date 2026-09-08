@@ -1,7 +1,10 @@
 # Package exports and module policy
 
 Runtime APIs are ESM-only on Node 24 or newer; the type-only `/read` entry requires no Node
-runtime or declarations. Supported imports are:
+runtime or declarations. This is the current declared policy, not a verified lower boundary:
+the [Phase 5 audit](../.plan/phase-5-exit-audit.md) identifies required SQLite capability gaps in
+that range, tracked in #124. Local conformance uses Node 24.17.0; support-policy remediation is
+pending approval. Supported imports are:
 
 ```ts
 import { task } from "@avnionur/shepherd-typescript";

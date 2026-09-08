@@ -345,6 +345,10 @@ Exit criteria:
 - ESM/CJS/runtime support matches the published matrix;
 - TypeScript examples are tested in packaged form.
 
+Exit audit: **blocked in 1.68.1 by runtime-support alignment (#124)**; see
+[`phase-5-exit-audit.md`](./phase-5-exit-audit.md). Delivered features and local verification do not
+override the declared-runtime mismatch. Phase 5 remains open.
+
 ## Phase 6 — Scope algebra and versioned-world substrate
 
 Goal: provide first-class isolated branches independent of high-level
