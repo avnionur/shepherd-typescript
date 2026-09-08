@@ -301,7 +301,9 @@ Work:
   1.57.0** with filesystem/Git/native/mutation authority explicit and injected;
 - generate ESM-first packages with declared CommonJS policy; **implemented in 1.52.0** as explicit
   ESM-only exports with tested CommonJS/deep-import refusal;
-- add explicit task builder, schema adapters, typed provider/tool helpers;
+- add explicit task builder, schema adapters, typed provider/tool helpers; **typed effect payload
+  adapter implemented in 1.65.0 (#115)** using existing authenticated schemas and ordinary stacks;
+  broader schema adapters and typed result surfaces remain separately scoped work;
 - implement async-iterable trace queries and web-safe read-only types where
   sensible;
 - expose rich structured errors with stable codes; **implemented in 1.59.0** with one validated

@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-09-06
+Last updated: 2026-09-08
 
-Current version: `1.64.3`
+Current version: `1.65.0`
 
 Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
 
@@ -414,6 +414,10 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Task 19 (#115): public typed-handler and existing stack tests, installed inference/dispatch,
+entry-loading and bundling gates, full local verification (100% configured coverage), and production
+build passed. Focused API review found no actionable issues; protocol/dependency locks unchanged.
+
 Task 18 (#109): installed Rollup root/narrow fixtures pass retained-code checks, optimized execution,
 and missing/malformed/restored asset cases. Full local verification passes with 100% configured
 coverage; production build, dependency audit, and lockfile review passed. Build allowlist unchanged.
@@ -445,6 +449,9 @@ production build, and dependency audit passed. Runtime and protocol source remai
 - [x] standards, specification, and capability review (packaged documentation links corrected)
 
 ## Next slice
+
+Task 19 (#115) introduces schema-validated typed effect payload callbacks. Remaining schema
+adapters and read/web-safe surfaces still need scoped issues; Phase 5 is not closed.
 
 Task 18 (#109) verifies pinned Rollup Node bundles and asset validation for root/narrow canonical
 fixtures. Remaining ergonomic/schema/read-surface work needs concrete scopes before Phase 5 exit.

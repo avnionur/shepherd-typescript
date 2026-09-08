@@ -238,6 +238,8 @@ It also demonstrates independent captures and settlements across disjoint bindin
 sibling files after each selection.
 The custom-effect example covers exact-kind handler precedence, outcome correlation, and failure
 handling for non-durable in-process dispatch.
+Use `createTypedEffectHandler` to infer and validate a callback payload from a package-created
+schema; the returned handler composes with the existing effect stack.
 The [Python-to-TypeScript migration guide](./docs/python-to-typescript.md) maps the pinned upstream
 examples to these programs and identifies adapted and unsupported behavior.
 

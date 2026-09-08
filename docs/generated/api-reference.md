@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 1.64.3
+Package: `@avnionur/shepherd-typescript` 1.65.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 524.
+Exported symbols: 526.
 
 ### `AppendBatchDraft`
 
@@ -7888,6 +7888,23 @@ Stable configured machine-readable trace-store error code.
 readonly code: string;
 ```
 
+### `TypedEffectHandlerOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Definition of an in-process effect handler with an inferred, validated payload.
+
+Signature:
+
+```ts
+export type TypedEffectHandlerOptions<P> = {
+    readonly handlerId: string;
+    readonly kind: string;
+    readonly payloadSchema: TaskSchema<P>;
+    readonly handle: (payload: P, intent: EffectIntent) => EffectResult<SemanticValue, SemanticValue> | Promise<EffectResult<SemanticValue, SemanticValue>>;
+};
+```
+
 ### `TypedEffectTraceRecord`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -10314,6 +10331,44 @@ const provider = createStaticProvider({
 await provider.invoke(request, new AbortController().signal);
 ```
 
+### `createTypedEffectHandler`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Adapts a schema-validated typed callback to an ordinary immutable effect handler.
+
+Signature:
+
+```ts
+export declare function createTypedEffectHandler<P>(options: TypedEffectHandlerOptions<P>): EffectHandler;
+```
+
+Parameter:
+
+- options - Exact kind/identity, package-created payload schema, and callback.
+
+Returns:
+
+- A frozen handler accepted by createEffectHandlerStack. Direct handle calls also
+validate the canonical intent, kind, payload, and returned semantic result.
+
+Throws:
+
+- {TypeError} If options or schema are invalid. Returned handle calls reject invalid
+intents, wrong kinds, malformed payloads, or malformed results before exposing them.
+
+Throws:
+
+- Returned handle calls propagate callback errors unchanged.
+
+Example:
+
+- const handler = createTypedEffectHandler({
+  handlerId: "format", kind: "text.format",
+  payloadSchema: schema.object({ text: schema.string() }),
+  handle: ({ text }) => ({ ok: true, value: text.toUpperCase() }),
+});
+
 ### `createWorkspaceBindings`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -12581,7 +12636,7 @@ import * as api from "@avnionur/shepherd-typescript/effects";
 void api;
 ```
 
-Exported symbols: 15.
+Exported symbols: 17.
 
 ### `EffectFailure`
 
@@ -12794,6 +12849,23 @@ export type EffectSuccess<V extends SemanticValue> = {
 };
 ```
 
+### `TypedEffectHandlerOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Definition of an in-process effect handler with an inferred, validated payload.
+
+Signature:
+
+```ts
+export type TypedEffectHandlerOptions<P> = {
+    readonly handlerId: string;
+    readonly kind: string;
+    readonly payloadSchema: TaskSchema<P>;
+    readonly handle: (payload: P, intent: EffectIntent) => EffectResult<SemanticValue, SemanticValue> | Promise<EffectResult<SemanticValue, SemanticValue>>;
+};
+```
+
 ### `createEffectHandlerStack`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -12903,6 +12975,44 @@ const outcome = createEffectOutcome(intent, {
     value: { exitCode: 0 },
 });
 ```
+
+### `createTypedEffectHandler`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Adapts a schema-validated typed callback to an ordinary immutable effect handler.
+
+Signature:
+
+```ts
+export declare function createTypedEffectHandler<P>(options: TypedEffectHandlerOptions<P>): EffectHandler;
+```
+
+Parameter:
+
+- options - Exact kind/identity, package-created payload schema, and callback.
+
+Returns:
+
+- A frozen handler accepted by createEffectHandlerStack. Direct handle calls also
+validate the canonical intent, kind, payload, and returned semantic result.
+
+Throws:
+
+- {TypeError} If options or schema are invalid. Returned handle calls reject invalid
+intents, wrong kinds, malformed payloads, or malformed results before exposing them.
+
+Throws:
+
+- Returned handle calls propagate callback errors unchanged.
+
+Example:
+
+- const handler = createTypedEffectHandler({
+  handlerId: "format", kind: "text.format",
+  payloadSchema: schema.object({ text: schema.string() }),
+  handle: ({ text }) => ({ ok: true, value: text.toUpperCase() }),
+});
 
 ### `validateEffectCorrelation`
 

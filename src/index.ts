@@ -32,6 +32,10 @@ export {
     createEffectOutcome,
     validateEffectCorrelation,
 } from "./effect/records.ts";
+export {
+    createTypedEffectHandler,
+    type TypedEffectHandlerOptions,
+} from "./effect/typed-handler.ts";
 export type {
     EffectFailure,
     EffectIntent,

@@ -79,7 +79,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Effect records](./effect-records.md) defines versioned intent/outcome records, reversibility
   tiers, immutable semantic values, and exact content-bound correlation.
 - [Ordered effect handlers](./effect-handlers.md) defines immutable exact-kind stacks,
-  last-matching precedence, validation-before-invocation, and unhandled behavior.
+  last-matching precedence, typed schema-validated payload adapters, validation-before-invocation,
+  and unhandled behavior.
 - [Typed-effect reference validation and proof envelopes](./formal-assurance.md) defines the
   executable Core-A machine, pinned static-lowering/theorem evidence boundary, and fail-closed
   Core-0H sidecar gate.
