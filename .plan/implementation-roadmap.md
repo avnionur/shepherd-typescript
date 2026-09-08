@@ -345,9 +345,10 @@ Exit criteria:
 - ESM/CJS/runtime support matches the published matrix;
 - TypeScript examples are tested in packaged form.
 
-Exit audit: **blocked in 1.68.1 by runtime-support alignment (#124)**; see
-[`phase-5-exit-audit.md`](./phase-5-exit-audit.md). Delivered features and local verification do not
-override the declared-runtime mismatch. Phase 5 remains open.
+Exit audit: **runtime-support finding remediated in 2.0.0 (#124), pending reviewed delivery**; see
+[`phase-5-exit-audit.md`](./phase-5-exit-audit.md). Approved Node policy, pre-write capability checks,
+minimum/current full verification and actual unsupported-boundary refusal support phase exit after
+the remediation merges. Phase 5 remains open until then.
 
 ## Phase 6 — Scope algebra and versioned-world substrate
 

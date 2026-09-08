@@ -26,6 +26,7 @@ import type {
     OrphanRepairReceipt,
 } from "../repair/types.ts";
 import type { DurableExecutionPrerequisiteSatisfaction } from "../run/durable-execution-control-types.ts";
+import { assertSQLiteDefensiveSupport } from "../runtime/sqlite.ts";
 import { appendToTraceStore } from "./append.ts";
 import { diagnoseStoredAppend } from "./append-recovery.ts";
 import { resolveBlobDirectory } from "./blob-options.ts";
@@ -127,11 +128,12 @@ export class SQLiteTraceStore implements Disposable {
      * schema is newer than supported.
      * @throws {TraceStoreError} If required read-only blob or root-witness state is unavailable.
      * @throws {TypeError} If options or the blob-directory shape are invalid.
-     * @throws {Error} If SQLite or durable blob-directory setup fails.
+     * @throws {Error} If required SQLite defensive behavior is unavailable, or SQLite/blob setup fails.
      *
      * @public
      */
     constructor(databasePath = DEFAULT_STORE_DATABASE_PATH, options: SQLiteTraceStoreOptions = {}) {
+        assertSQLiteDefensiveSupport(kernelProtocolConfig.store.defensive);
         const blobDirectory = resolveBlobDirectory(databasePath, options);
         const readOnly = options.readOnly ?? false;
         if (readOnly && !existsSync(blobDirectory.path)) {

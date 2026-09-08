@@ -123,13 +123,16 @@ test("CLI group help, usage errors, fenced commands, and source process exit cod
         result: { demo: { byte_length: Buffer.byteLength(quickstart.output), name: "quickstart" } },
     });
 
+    // Compare CLI-owned bytes without Node's SQLite experimental warning on earlier 24.x releases.
     const processResult = await execFileAsync(process.execPath, [
+        "--disable-warning=ExperimentalWarning",
         new URL("../../src/cli/main.ts", import.meta.url).pathname,
         "--help",
     ]);
     assert.match(processResult.stdout, /^Usage: shepherd-ts/u);
     assert.equal(processResult.stderr, "");
     const jsonProcessResult = await execFileAsync(process.execPath, [
+        "--disable-warning=ExperimentalWarning",
         new URL("../../src/cli/main.ts", import.meta.url).pathname,
         "--json",
         "--help",
@@ -141,6 +144,7 @@ test("CLI group help, usage errors, fenced commands, and source process exit cod
     assert.equal(jsonProcessResult.stderr, "");
     await assert.rejects(
         execFileAsync(process.execPath, [
+            "--disable-warning=ExperimentalWarning",
             new URL("../../src/cli/main.ts", import.meta.url).pathname,
             "unknown",
         ]),

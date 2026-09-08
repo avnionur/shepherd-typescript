@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-09-08
+
+### Breaking Changes
+
+- Narrow runtime support to Node >=24.12.0 <25 with owner approval. Unsupported versions and
+  prereleases are rejected during Node runtime initialization; the type-only read entry is exempt.
+- Prove required SQLite defensive behavior in memory before persistent trace/registry/staging
+  setup, preserving existing required settings and refusing unavailable or ineffective support.
+- Ship a validated runtime-policy asset, verify package-engine agreement, and add explicit
+  installed minimum/unsupported runtime checks. Bundled consumers must include the new policy asset.
+
+### Impact
+
+Consumers on Node 24.0–24.11 or other majors must move to the supported range. CLI bootstrap refusal
+precedes JSON command handling. Public APIs, protocol identities and database schemas are unchanged;
+no storage migration is required. Version 2.0.0 is not a production-readiness certification.
+
 ## [1.68.1] - 2026-09-08
 
 ### Improvement

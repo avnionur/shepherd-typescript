@@ -57,7 +57,7 @@ Publication remains disabled until registry ownership and release checks are com
 
 ## Current capability
 
-Version `1.68.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `2.0.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -206,12 +206,11 @@ replay-safe.
 
 ## Requirements
 
-The [Phase 5 audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-5-exit-audit.md) identifies a runtime-range mismatch in the
-current package metadata. Local verification uses Node 24.17.0; the broad Node 24+ declaration
-must not be taken as verified support for every minor release. Remediation is tracked in
-[#124](https://github.com/avnionur/shepherd-typescript/issues/124).
+Version 2.0.0 narrows Node support to the approved range below and rejects unsupported runtimes
+before storage setup. See [runtime support](./docs/runtime-support.md) for the breaking-change,
+capability checks and verification policy. Public storage formats are unchanged.
 
-- Node.js 24 or newer
+- Node.js >=24.12.0 <25
 - pnpm 10
 
 ## Install
@@ -625,9 +624,9 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 
 ## Status
 
-The [Phase 5 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-5-exit-audit.md) maps delivered product-surface evidence
-but does not approve phase closure: runtime support must first be aligned with required SQLite
-capabilities in #124. No runtime support has been silently removed by this documentation update.
+The [Phase 5 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-5-exit-audit.md) maps delivered product-surface evidence.
+Version 2.0.0 implements the approved runtime-support remedy for #124; phase closure still requires
+reviewed verification and issue delivery. The major version does not imply production readiness.
 
 The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
 execution, durable lifecycle/control evidence, and conservative formal-claim boundary. Phase 3 now

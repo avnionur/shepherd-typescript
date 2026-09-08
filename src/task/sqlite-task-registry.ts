@@ -1,6 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 
 import { taskProtocolConfig } from "../protocol/config.ts";
+import { assertSQLiteDefensiveSupport } from "../runtime/sqlite.ts";
 import {
     decodeTaskRegistration,
     readExactTaskReference,
@@ -45,12 +46,13 @@ export class SQLiteTaskRegistry implements Disposable {
      * @param options - Optional exact read-only open policy.
      * @throws {UnsupportedTaskRegistrySchemaError} If the schema is not current and supported.
      * @throws {TypeError} If options are malformed or contain unsupported fields.
-     * @throws {Error} If SQLite cannot open or migrate the registry.
+     * @throws {Error} If required SQLite defensive behavior is unavailable, or opening/migration fails.
      */
     constructor(
         databasePath = taskProtocolConfig.registry.defaultDatabasePath,
         options: SQLiteTaskRegistryOptions = {},
     ) {
+        assertSQLiteDefensiveSupport(taskProtocolConfig.registry.defensive);
         const readOnly = readRegistryOptions(options);
         this.#database = new DatabaseSync(databasePath, {
             defensive: taskProtocolConfig.registry.defensive,

@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { assertNodeRuntime } from "../runtime/policy.ts";
 import type {
     CliProtocolConfig,
     EffectProtocolConfig,
@@ -18,6 +19,8 @@ import { RECORD_MODES } from "./values.generated.ts";
 
 /** Location of the protocol configuration relative to this source or built module. */
 export const protocolConfigUrl = new URL("../../protocol.config.json", import.meta.url);
+
+assertNodeRuntime();
 
 const protocolConfig: ProtocolConfig = parseProtocolConfig(
     JSON.parse(readFileSync(protocolConfigUrl, "utf8")),

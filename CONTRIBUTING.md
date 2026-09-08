@@ -6,7 +6,7 @@ Contributions should implement observable protocol behavior in small, reviewable
 
 Requirements:
 
-- Node.js 24 or newer;
+- Node.js >=24.12.0 <25;
 - pnpm 10.32.1.
 
 Install and verify:

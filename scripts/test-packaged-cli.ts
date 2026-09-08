@@ -1,3 +1,3 @@
 import { testPackagedCli } from "../tooling/testing/packaged-cli.ts";
 
-await testPackagedCli();
+await testPackagedCli(process.argv.includes("--runtime-boundaries"));
