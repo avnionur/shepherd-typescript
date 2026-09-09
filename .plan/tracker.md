@@ -1,10 +1,10 @@
 # Implementation Tracker
 
-Last updated: 2026-09-08
+Last updated: 2026-09-09
 
-Current version: `2.0.0`
+Current version: `2.0.1`
 
-Current level: L1 stable — Phase 4 compatibility complete; Phase 5 product surface active
+Current level: L1 stable — Phases 4–5 complete; Phase 6 contract work active
 
 ## Current position
 
@@ -414,6 +414,14 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 
 ## Verification required for this slice
 
+Phase 6 Task 1 (#127): proposed scope contract distinguishes ownership/origin/attached children,
+isolated forks, local emission, consume-once integration, current-parent preservation and honest
+checkpoint/recovery claims. Pinned source reviewed; no Python or new scope-runtime tests executed.
+Documentation-only PATCH; full local verification passes (501 tests, zero skips, 100% configured
+coverage and installed gates), production build and local links pass. Reviews clarified completed
+receipt replay versus new authority and contribution deduplication; no findings remain. Commit/PR
+delivery and the proposed implementation-ticket scopes await approval.
+
 Task 24 (#124): owner approved Node >=24.12.0 <25 and breaking version 2.0.0. Focused policy/
 pre-write capability tests and installed store/registry/CLI boundary checks pass on supported
 24.12.0/24.17.0 and unsupported 24.11.1. Full verification passes on both supported versions:
@@ -422,7 +430,7 @@ initially exposed host-warning stderr in one CLI test; exact assertions are pres
 Node warning flag limited to those subprocesses. Reviews have no remaining findings.
 No protocol/schema/dependency changes; runtime policy is a new required distribution asset.
 Production builds pass on both supported runtimes, and the final 2.0.0 boundary rerun passes.
-Implementation is verified for PR delivery; hosted workflows remain disabled.
+Delivered through PR #126; #124 and Phase 5 epic #18 are closed. Hosted workflows remain disabled.
 
 Task 23 (#123): Phase 5 exit audit maps all criteria and 22 completed implementation children.
 The runtime-range mismatch is tracked in #124; Phase 5 must remain open. Fresh full verification
@@ -490,9 +498,10 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Task 24 (#124) implements approved runtime-support alignment. After verified delivery, refresh the
-Phase 5 exit verdict and tracking before selecting Phase 6 work. Do not equate major version 2.0.0
-with production readiness or alter actual phase dependencies.
+Phase 6 Task 1 (#127) proposes the initial scope contract. After its reviewed delivery, the first
+proposed implementation slice is durable scope registration and fenced local emission, followed
+by reference-copy isolated fork/recovery and consume-once scope merge/discard. These child scopes
+must be reviewed before publication; no scope API or L2 claim is yet implemented.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration
