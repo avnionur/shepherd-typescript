@@ -3,9 +3,9 @@
 Initial audit: 1.68.1, 2026-09-08, #123; baseline `a913b03` (1.68.0).
 Remediation review: 2.0.0, #124.
 
-Verdict: **exit evidence is satisfied for the documented scope, pending #124 review/merge**.
-The owner-approved runtime policy and behavioral/boundary checks resolve the original finding.
-Do not close the epic before the remediation is delivered; phase exit is not production readiness.
+Verdict: **complete for the documented scope**. Remediation #124 merged through PR #126 as
+`7d978c1`, all 24 children are closed, and epic #18 is closed. The owner-approved runtime policy
+and behavioral/boundary checks resolve the original finding. Phase exit is not production readiness.
 
 ## Scope and evidence boundary
 
@@ -28,12 +28,12 @@ and dependency locks unchanged; the narrower support range is an approved breaki
 | A new TypeScript user completes the offline settlement loop from docs | [Quickstart](../docs/quickstart.md), [example guide](../docs/typescript-examples.md), [installed CLI/quickstart verifier](../tooling/testing/packaged-cli.ts): isolated capture, inspection, exact selection, selected bytes, reopen/CLI citations | Verified on the recorded host/runtime; automated walkthrough, not a human usability study |
 | Public API reports no unexpected types | [Export map](../package.json), [generated reference](../docs/generated/api-reference.md), [reference policy](../api-reference.config.json), [positive/negative generator tests](../test/api-reference.test.ts), strict installed entry and example consumers | Verified for declared exports/configured privacy policy; no claim of exhaustive semantic type equivalence for every API |
 | Optional provider/platform packages do not load when unused | Package manifest has no runtime dependencies, optionalDependencies or peerDependencies; [loading policy](../entry-loading.config.json) and [fresh-process checks](../tooling/testing/entry-loading.ts) record actual builtin loads | Separate optional adapters: not applicable because none ship. Existing builtin loading: verified, including explicit eager Node entries; future adapters are not credited as tested |
-| ESM/CJS/runtime support matches the published matrix | Installed ESM entry imports, CommonJS/deep-import refusal, no-Node `/read` compilation and [runtime support](../docs/runtime-support.md) | Verified on approved minimum 24.12.0 and current 24.17.0; actual 24.11.1 refusal and modeled other-major/prerelease exclusions; #124 must merge before closure |
+| ESM/CJS/runtime support matches the published matrix | Installed ESM entry imports, CommonJS/deep-import refusal, no-Node `/read` compilation and [runtime support](../docs/runtime-support.md) | Verified on approved minimum 24.12.0 and current 24.17.0; actual 24.11.1 refusal and modeled other-major/prerelease exclusions; delivered through #124 |
 | TypeScript examples are tested in packaged form | [Manifest](../examples/manifest.json) and [installed-example verifier](../tooling/testing/packaged-examples.ts) compile and execute all four examples outside node_modules, compare independent transcripts/files, and verify guide excerpts | Verified on recorded host/runtime, including repeat review preservation and existing-directory refusal |
 
 The epic's “Packaged examples complete the offline settlement loop” checkbox is supported by the
 first and fifth rows. Its “Public API, module formats, runtime support, and optional loading match
-the published matrix” checkbox is supported by the remediation evidence below, once #124 is merged.
+the published matrix” checkbox is supported by the delivered remediation evidence below.
 
 ## Work-item coverage
 
@@ -115,7 +115,6 @@ The full local suite includes capability-probed native tests, not new evidence f
 Publication remains disabled (`private: true`). This audit does not grant release readiness,
 security certification, L2 scope algebra, live providers, supervision, replay or paper-level parity.
 
-Next action is to deliver #124, confirm its closure and update #18 against this evidence.
-Phase 6 (#19) declares Phase 3 as its blocker, not Phase 5;
-Phase 3 is already closed, so its old blocked tracking text needs reconciliation when that phase
-is selected. This audit does not invent a Phase 5 dependency or activate Phase 6 automatically.
+Phase 6 (#19) is now active; its declared Phase 3 prerequisite is closed. Task #127 defines the
+initial scope contract proposal. The transition preserves the actual roadmap dependency and does
+not imply that scope algebra, optimized carriers or L2 parity are already implemented.

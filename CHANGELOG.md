@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-09-09
+
+### Improvement
+
+- Propose the Phase 6 isolated-scope ownership, authority, command/recovery and checkpoint
+  contract with pinned-source distinctions and dependency-ordered implementation slices.
+- Clarify local emission, explicit parent integration, current-parent preservation on discard,
+  immutable evidence, writer fencing and the separate user-workspace materialization boundary.
+- Reconcile Phase 5 completion and Phase 6 planning status after delivered runtime remediation.
+
+### Impact
+
+The next scope implementation has explicit review and acceptance boundaries. Runtime, protocols,
+schemas, dependencies and supported Node versions are unchanged; no scope API or L2 parity is claimed.
+
 ## [2.0.0] - 2026-09-08
 
 ### Breaking Changes

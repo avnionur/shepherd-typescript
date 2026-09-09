@@ -126,6 +126,9 @@ record and public API must declare a protocol/compatibility version.
 
 ## Planning documents
 
+- [Durable isolated-scope contract proposal](./scope-ownership-contract.md) — Phase 6 ownership,
+  authority, primitive/recovery boundaries and implementation slices; not implemented.
+
 - [Upstream compatibility baseline](./upstream-baseline.md) — exact Git revisions, evidence scope,
   compatibility boundaries, and drift procedure.
 - [Research notes](./research-notes.md) — source audit, upstream evolution, and
@@ -246,5 +249,6 @@ The project is complete only when:
 
 ## Immediate next step
 
-Continue Phase 5 with the next owned domain subpath or typed-helper slice over the explicit ESM
-package boundary.
+Phase 5 is complete through version 2.0.0. Review the Phase 6
+[scope contract proposal](./scope-ownership-contract.md), then publish its first implementation
+slice with explicit prerequisites and production-seam acceptance tests.

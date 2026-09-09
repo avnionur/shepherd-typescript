@@ -57,7 +57,7 @@ Publication remains disabled until registry ownership and release checks are com
 
 ## Current capability
 
-Version `2.0.0` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
+Version `2.0.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
 trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
@@ -625,8 +625,9 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 ## Status
 
 The [Phase 5 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-5-exit-audit.md) maps delivered product-surface evidence.
-Version 2.0.0 implements the approved runtime-support remedy for #124; phase closure still requires
-reviewed verification and issue delivery. The major version does not imply production readiness.
+Phase 5 is complete through the approved 2.0.0 runtime-support remedy. Phase 6 starts with the
+[scope ownership/authority proposal](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/scope-ownership-contract.md);
+it adds no executable scope API yet. The major version does not imply production readiness.
 
 The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
 execution, durable lifecycle/control evidence, and conservative formal-claim boundary. Phase 3 now

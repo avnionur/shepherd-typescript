@@ -345,15 +345,18 @@ Exit criteria:
 - ESM/CJS/runtime support matches the published matrix;
 - TypeScript examples are tested in packaged form.
 
-Exit audit: **runtime-support finding remediated in 2.0.0 (#124), pending reviewed delivery**; see
-[`phase-5-exit-audit.md`](./phase-5-exit-audit.md). Approved Node policy, pre-write capability checks,
-minimum/current full verification and actual unsupported-boundary refusal support phase exit after
-the remediation merges. Phase 5 remains open until then.
+Exit audit: **complete in 2.0.0 (#124 / PR #126); Phase 5 epic #18 is closed**. See
+[`phase-5-exit-audit.md`](./phase-5-exit-audit.md) for the approved Node policy, pre-write capability
+checks, minimum/current verification, actual unsupported-boundary refusal and remaining claim limits.
 
 ## Phase 6 — Scope algebra and versioned-world substrate
 
 Goal: provide first-class isolated branches independent of high-level
 settlement.
+
+Task 1 (#127) proposes the [durable isolated-scope ownership/authority contract](./scope-ownership-contract.md)
+and dependency-ordered implementation slices. The contract is planning material; no scope runtime
+or L2 claim is implemented by this documentation slice.
 
 Work:
 
