@@ -34,7 +34,10 @@ export type BundleVerificationOptions = {
 export async function testInstalledBundles(options: BundleVerificationOptions): Promise<void> {
     const installedRoot = realpathSync(options.installedPackageRoot);
     const policy = JSON.parse(
-        readFileSync(path.join(options.repositoryRoot, "bundle-verification.config.json"), "utf8"),
+        readFileSync(
+            path.join(options.repositoryRoot, "config/bundle-verification.config.json"),
+            "utf8",
+        ),
     ) as {
         readonly output: string;
         readonly allowedWarnings: readonly string[];

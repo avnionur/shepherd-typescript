@@ -29,7 +29,7 @@ export function testEntryLoading(options: EntryLoadingOptions): void {
         readonly exports: Readonly<Record<string, unknown>>;
     };
     const policy = JSON.parse(
-        readFileSync(path.join(options.repositoryRoot, "entry-loading.config.json"), "utf8"),
+        readFileSync(path.join(options.repositoryRoot, "config/entry-loading.config.json"), "utf8"),
     ) as {
         readonly entries: Readonly<
             Record<

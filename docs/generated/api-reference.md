@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.0.1
+Package: `@avnionur/shepherd-typescript` 2.0.2
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or

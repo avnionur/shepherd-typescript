@@ -93,8 +93,8 @@ consumer typechecking for every subpath.
 
 Fresh-process conformance imports every installed export and observes Node builtin module loads
 with synchronous module hooks. The repository's
-[`entry-loading.config.json`](../entry-loading.config.json) requires complete agreement with the
-export map and records the following dependencies:
+[`config/entry-loading.config.json`](../config/entry-loading.config.json) requires complete
+agreement with the export map and records the following dependencies:
 
 | Entry | Filesystem configuration | SQLite loaded | Process-execution module loaded |
 | --- | --- | --- | --- |
@@ -128,8 +128,8 @@ Node resolver 16.0.3. These are development-only dependencies, installed without
 the build allowlist remains empty. Rollup's optional filesystem/compression packages remain
 development dependencies, not optional Shepherd runtime adapters.
 
-The [bundle policy](../bundle-verification.config.json) defines two installed consumer fixtures:
-importing `canonicalizeRecord` through `/canonical` and through the root. Each is built with
+The [bundle policy](../config/bundle-verification.config.json) defines two installed consumer
+fixtures: importing `canonicalizeRecord` through `/canonical` and through the root. Each is built with
 tree-shaking off and on; the optimized chunk must be smaller. Module metadata must retain canonical
 encoding and configuration validation. The narrow fixture additionally excludes SQLite-store and
 native-jail implementation modules and removes the unused `createRecordId` export.

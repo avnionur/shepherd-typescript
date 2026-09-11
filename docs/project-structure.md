@@ -38,9 +38,9 @@ implementation documentation, and forward-looking plans.
 ├── .github/                CI, security automation, and contribution templates
 ├── docs/                   Implemented contracts and contributor guidance
 ├── .plan/                  Research, roadmap, decisions, and progress tracker
+├── config/                 Repository test-runner, entry-loading, bundle, and runtime-boundary policy
 ├── project.config.json     CLI ecosystem identity
 ├── api-reference.config.json Generated API-reference ownership and leakage policy
-├── test-runner.config.json  Test discovery, coverage, and serial-priority policy
 ├── examples/               Installed examples, scenario configuration, and conformance manifest
 ├── protocol.config.json    Language-neutral protocol constants
 ├── CONTEXT.md              Trace-kernel domain vocabulary
