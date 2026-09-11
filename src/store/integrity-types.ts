@@ -25,6 +25,7 @@ export type TraceIntegrityIssueKind =
     | "owner_ordinal_mismatch"
     | "parent_index_mismatch"
     | "record_mismatch"
+    | "scope_registration_mismatch"
     | "sqlite_integrity_mismatch"
     | "witness_mismatch";
 
@@ -48,6 +49,8 @@ export type TraceIntegrityReport = {
     readonly checked_owner_count: number;
     /** Number of canonical record rows examined, including the root witness. */
     readonly checked_record_count: number;
+    /** Number of live scope registration rows examined against their retained records. */
+    readonly checked_scope_count: number;
     /** Frozen classified defects in deterministic scan order. */
     readonly issues: readonly TraceIntegrityIssue[];
     /** Whether every examined store area passed verification. */

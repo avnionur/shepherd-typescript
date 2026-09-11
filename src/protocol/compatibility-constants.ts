@@ -351,6 +351,20 @@ export const KERNEL_ABI_V0_STORE_V8_CONTRACT = deepFreeze({
     schemaVersion: 8,
 } as const);
 
+/** Immutable schema-v9 store extension for durable scope registrations and writer claims. */
+export const KERNEL_ABI_V0_STORE_V9_CONTRACT = deepFreeze({
+    ...KERNEL_ABI_V0_STORE_V8_CONTRACT,
+    migrations: [
+        ...KERNEL_ABI_V0_STORE_V8_CONTRACT.migrations,
+        {
+            firstOwnerOrdinal: 0,
+            lastOwnerOrdinal: 9_007_199_254_740_990,
+            version: 9,
+        },
+    ],
+    schemaVersion: 9,
+} as const);
+
 /** Immutable bounded orphaned-operation diagnosis and repair contract implemented by v1. */
 export const ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT = deepFreeze({
     artifacts: {
@@ -841,6 +855,62 @@ export const RUN_PROTOCOL_V1_CONTRACT = deepFreeze({
     },
     terminalStatuses: ["finished", "failed", "exhausted", "cancelled"],
     usageVersion: 1,
+} as const);
+
+/** Immutable durable isolated-scope registration and emission contract implemented by v1. */
+export const SCOPE_PROTOCOL_V1_CONTRACT = deepFreeze({
+    artifacts: {
+        childRegisteredSchema: "spec/schemas/scope-child-registered-v1.schema.json",
+        emissionSchema: "spec/schemas/scope-emission-v1.schema.json",
+        registrationSchema: "spec/schemas/scope-registration-v1.schema.json",
+    },
+    authority: {
+        atoms: ["read", "write"],
+        resourceKinds: ["repository_binding"],
+    },
+    commandKinds: ["register_root", "register_child", "emit"],
+    compatibilityVersion: "shepherd.scope.v1",
+    errors: {
+        authorityCode: "SCOPE_AUTHORITY_REFUSED",
+        authorityMessage:
+            "scope authority request cites unknown resources or exceeds parent or ceiling authority",
+        evidenceCode: "SCOPE_EVIDENCE_INVALID",
+        evidenceMessage: "scope evidence is absent, malformed, or inconsistent",
+        headConflictCode: "SCOPE_HEAD_CONFLICT",
+        headConflictMessage: "scope command expected head is not the current scope head",
+        writerConflictCode: "SCOPE_WRITER_CONFLICT",
+        writerConflictMessage: "scope writer claim is held by another unexpired caller",
+        writerFencedCode: "SCOPE_WRITER_FENCED",
+        writerFencedMessage: "scope writer claim is released, expired, superseded, or unknown",
+    },
+    evidenceKinds: ["registration", "origin_cut", "child_registered", "emission"],
+    identity: {
+        originCutIdPrefix: "scope-origin:",
+        scopeIdPrefix: "scope:sha256:",
+    },
+    kinds: ["root", "child"],
+    limits: {
+        maxCitedRecords: 64,
+        maxDataCanonicalBytes: 65_536,
+        maxResources: 64,
+    },
+    recordVersion: 1,
+    schemas: {
+        childRegisteredId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/scope-child-registered-v1.schema.json",
+        emissionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/scope-emission-v1.schema.json",
+        registrationId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/scope-registration-v1.schema.json",
+    },
+    states: ["open", "merged", "discarded"],
+    traceSchemas: {
+        childRegistered: "shepherd.scope.child_registered.v1",
+        emission: "shepherd.scope.emission.v1",
+        registration: "shepherd.scope.registration.v1",
+    },
+    worldCapabilities: ["trace_only"],
+    writerClaimLeaseMilliseconds: 30_000,
 } as const);
 
 /** Immutable workspace initialization and adoption contract implemented by protocol v1. */

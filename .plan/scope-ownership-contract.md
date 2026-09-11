@@ -1,8 +1,9 @@
 # Durable isolated-scope ownership and authority
 
-Status: proposed TypeScript contract, Phase 6 task #127, 2.0.1. **Not implemented.**
-No new public API, schema, storage table, runtime grant or parity claim is introduced by this page.
-The implementation slices below require review, versioned contracts and executable evidence.
+Status: reviewed TypeScript contract, Phase 6 task #127, 2.0.1. Slice A (#129) is implemented in
+2.1.0 as [trace-only scope registration and fenced emission](../docs/scope-registration.md);
+slices B and C are not implemented. This page itself introduces no API, schema, storage table,
+runtime grant or parity claim; normative behavior lives in `docs/`.
 
 ## Evidence and deliberate native choices
 

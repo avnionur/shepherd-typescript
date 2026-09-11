@@ -83,7 +83,9 @@ effect-journal operation, receipt, and cleanup evidence. Schema v8 adds bounded 
 bookkeeping and atomic repair commit markers used only by
 [orphaned operation diagnosis and repair](./orphan-operation-repair.md).
 It does not grant authority over canonical records, providers, worlds, custody, settlements, Git,
-or user files.
+or user files. Schema v9 adds live scope registration and single-writer claim tables used by
+[durable scope registration](./scope-registration.md); scope evidence itself remains canonical
+records, and the tables are verified indexes that are never exported.
 
 Execution projections are disposable reads and therefore add no schema migration. The
 `projectExecution(cutId)` and `projectEffectiveHistory(cutId)` facades resolve payload-visible,

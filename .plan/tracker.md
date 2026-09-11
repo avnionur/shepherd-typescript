@@ -1,10 +1,10 @@
 # Implementation Tracker
 
-Last updated: 2026-09-09
+Last updated: 2026-09-10
 
-Current version: `2.0.1`
+Current version: `2.1.0`
 
-Current level: L1 stable — Phases 4–5 complete; Phase 6 contract work active
+Current level: L1 stable — Phases 4–5 complete; Phase 6 scope substrate active
 
 ## Current position
 
@@ -412,7 +412,29 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
   scenario data, inferred task inputs, exact offline capture/inspection/selection, read-only reopen
   evidence, manifest-driven installed typechecking/execution, and existing-directory refusal.
 
+Phase 6 slice A now registers content-addressed root and child scopes as canonical trace records
+with exact parent origin cuts, retains per-resource attenuated ceiling/effective authority,
+admits single fenced writers with monotonic tokens, emits validated application data under
+globally idempotent commands with replay before liveness validation, reconstructs the same
+inspection after reopen or import while refusing mutation on imported evidence, and verifies live
+registration rows during integrity scans. The slice is explicitly trace-only.
+
 ## Verification required for this slice
+
+Phase 6 Task 2 (#129): slice A implements trace-only durable scope registration and fenced
+emission through the new `./scopes` entry. Focused public-seam tests cover root/child
+registration, origin cuts, parent/request/ceiling attenuation, unknown resource/atom refusal,
+forged handles, malformed options, writer conflict/expiry/release/fencing, exact replay after
+head advance, release, reopen, and import, changed-content conflict, cross-kind identity reuse,
+stale heads, unknown citations, byte-equivalent reopen/import with import-only inspection,
+receipt replay without writer authority, intent-bound detection of bypassed raw appends,
+foreign-store handle refusal, integrity classification of corrupted rows, lost-response and
+pre-admission interruption convergence, and generated schema contracts. Full local verification
+passes with zero skips and 100% configured coverage, including installed package and entry-loading
+gates; version synchronization, generated reference, protocol artifacts, and production build
+pass. Specification review findings on handle binding, authority-free receipt replay, bypass
+detection, and per-scope claim identity were fixed; standards review is recorded in the PR.
+No world fork, merge, discard, provider, or process behavior is executed or claimed.
 
 Phase 6 Task 1 (#127): proposed scope contract distinguishes ownership/origin/attached children,
 isolated forks, local emission, consume-once integration, current-parent preservation and honest
@@ -498,10 +520,11 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Phase 6 Task 1 (#127) proposes the initial scope contract. After its reviewed delivery, the first
-proposed implementation slice is durable scope registration and fenced local emission, followed
-by reference-copy isolated fork/recovery and consume-once scope merge/discard. These child scopes
-must be reviewed before publication; no scope API or L2 claim is yet implemented.
+Phase 6 Task 1 (#127) delivered the scope contract and Task 2 (#129) delivers slice A: trace-only
+registration and fenced emission. The next slice is #130, reference-copy isolated fork and restart
+recovery for one active bound resource, followed by #131 consume-once merge/discard. Slice B must
+bind scope resource identities to authenticated workspace resources and cite the retained origin
+cut; no world fork, merge, discard, or L2 claim is implemented yet.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration

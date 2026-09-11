@@ -21,7 +21,8 @@ frozen `TraceIntegrityReport`. It checks:
 - append receipts against their committed rows and append positions;
 - owner-ordinal contiguity and each owner's persisted next ordinal;
 - published cut indexes against their authoritative publication records;
-- registered blob metadata, receipts, and filesystem content.
+- registered blob metadata, receipts, and filesystem content;
+- live scope registration rows against the registration record at each scope's first ordinal.
 
 Issues contain a stable `kind` and `subject_id`; they do not expose backend exception text. Counts
 describe the rows and owner paths examined. `ok` is true only when the issue list is empty.

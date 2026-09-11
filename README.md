@@ -105,6 +105,10 @@ trace-record contracts with durable SQLite task and trace stores:
 - workspace protocol v21 explicit per-binding repository task-grant companion artifacts, exact
   multi-resource admission plans, non-amplifying whole-run ceilings, advisory read/write capability
   enforcement, stale-resource refusal, and exact journaled recovery identity;
+- trace-only durable scope registration: content-addressed root and child scopes, exact
+  parent origin cuts, per-resource attenuation of parent, request, and whole-run ceiling,
+  single-writer monotonic fencing, globally idempotent emission of validated application data,
+  reconstructed inspection after reopen or import, and store schema v9 integrity checks;
 - workspace protocol v22 content-addressed macOS/Linux/native-Windows/WSL platform evidence,
   advisory/auto placement resolution with visible fallback, exact placed capture/recovery, and
   fail-closed explicit jail refusal without a native-sandbox claim;
@@ -252,7 +256,7 @@ examples to these programs and identifies adapted and unsupported behavior.
 ## API
 
 The package is ESM-only. Supported entries are `.`, `./canonical`, `./cli`, `./effects`,
-`./providers`, `./read`, `./runs`, `./tasks`, `./trace`, and `./workspace`; see
+`./providers`, `./read`, `./runs`, `./scopes`, `./tasks`, `./trace`, and `./workspace`; see
 [Package exports and module policy](./docs/package-exports.md). The checked-in and packaged
 [generated API reference](./docs/generated/api-reference.md) lists every supported symbol,
 signature, JSDoc contract, runtime requirement, and authority note; its
@@ -580,6 +584,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Project structure](./docs/project-structure.md)
 - [Reference copy carrier](./docs/reference-copy-carrier.md)
 - [Repository grants and run authority ceilings](./docs/repository-grants.md)
+- [Durable scope registration and fenced local emission](./docs/scope-registration.md)
 - [Placement resolution and reporting](./docs/placement-resolution.md)
 - [Native jail execution](./docs/native-jail-execution.md)
 - [Retained-world path-disjoint application](./docs/retained-world-application.md)
@@ -625,9 +630,11 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 ## Status
 
 The [Phase 5 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-5-exit-audit.md) maps delivered product-surface evidence.
-Phase 5 is complete through the approved 2.0.0 runtime-support remedy. Phase 6 starts with the
+Phase 5 is complete through the approved 2.0.0 runtime-support remedy. Phase 6 follows the
 [scope ownership/authority proposal](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/scope-ownership-contract.md);
-it adds no executable scope API yet. The major version does not imply production readiness.
+its first slice, [trace-only scope registration and fenced emission](./docs/scope-registration.md),
+is implemented. World fork, merge, discard, and L2 parity are not. The major version does not
+imply production readiness.
 
 The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
 execution, durable lifecycle/control evidence, and conservative formal-claim boundary. Phase 3 now

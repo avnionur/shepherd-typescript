@@ -6,6 +6,7 @@ import { readOrphanRepairConfig } from "./config-orphan-repair.ts";
 import { readProjectionConfig } from "./config-projections.ts";
 import { readProviderConfig } from "./config-providers.ts";
 import { readRunConfig } from "./config-runs.ts";
+import { readScopeConfig } from "./config-scopes.ts";
 import {
     readArtifacts,
     readBlobConfig,
@@ -60,6 +61,7 @@ export function parseProtocolConfig(
             "providers",
             "recordId",
             "runs",
+            "scopes",
             "tasks",
             "workspaces",
         ],
@@ -74,6 +76,7 @@ export function parseProtocolConfig(
     ) {
         throw new TypeError("kernel.recordModes is not synchronized with generated constants");
     }
+    const workspaces = readWorkspaceConfig(root.workspaces);
     const config = {
         cli: readCliConfig(root.cli),
         effects: readEffectConfig(root.effects),
@@ -84,8 +87,9 @@ export function parseProtocolConfig(
         providers: readProviderConfig(root.providers),
         recordId,
         runs: readRunConfig(root.runs),
+        scopes: readScopeConfig(root.scopes, workspaces.repositoryGrants.atoms),
         tasks: readTaskConfig(root.tasks),
-        workspaces: readWorkspaceConfig(root.workspaces),
+        workspaces,
     };
     if (options.enforceCompatibility !== false) {
         assertSupportedProtocolCompatibility(config);

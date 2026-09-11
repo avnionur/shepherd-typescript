@@ -13,6 +13,7 @@ import { createEffectHandlerStack, createEffectIntent } from "@avnionur/shepherd
 import { createStaticProvider } from "@avnionur/shepherd-typescript/providers";
 import type { Slice } from "@avnionur/shepherd-typescript/read";
 import { executeTask, executeTaskDurably } from "@avnionur/shepherd-typescript/runs";
+import { registerRootScope, emitScopeRecord } from "@avnionur/shepherd-typescript/scopes";
 import { schema, SQLiteTaskRegistry, task } from "@avnionur/shepherd-typescript/tasks";
 import { listTraceRevisions, SQLiteTraceStore } from "@avnionur/shepherd-typescript/trace";
 import {
@@ -60,6 +61,13 @@ The facade creates no ambient provider, persistence, or workspace authority. It 
 registries, provider adapters, the SQLite store constructor, workspace carrier/settlement handles,
 private codecs, migrations, and protocol configuration.
 
+`./scopes` is Node-only and owns trace-only durable scope registration, single-writer claims,
+fenced scope-local emission, inspection, generated scope constants, and the scope error classes,
+plus the shared append-conflict and trace-store base errors those commands raise. Consumers supply
+an open trace store from `./trace`; the facade creates no world, provider, filesystem, or
+settlement authority and excludes the store constructor, private codecs, migrations, and protocol
+configuration. See [scope registration](./scope-registration.md).
+
 `./workspace` is Node-only and owns workspace initialization/bindings, copy and Git custody,
 changeset inspection, repository grants, placement/native-jail evidence, retained-world runners
 and execution journals, and exact prepare/select/apply/release/discard settlement operations. These
@@ -99,13 +107,13 @@ agreement with the export map and records the following dependencies:
 | Entry | Filesystem configuration | SQLite loaded | Process-execution module loaded |
 | --- | --- | --- | --- |
 | Root, CLI, tasks, trace | Yes | Yes | Yes |
-| Canonical, effects, providers, runs | Yes | No | No |
+| Canonical, effects, providers, runs, scopes | Yes | No | No |
 | Workspace | Yes | No | Yes |
 | Read (type-only) | No | No | No |
 
 The tasks entry exports its SQLite registry as well as task builders; task-ledger/grant support
-also reaches process-related modules. The runs entry accepts store/provider authority from callers
-and does not load SQLite merely by being imported. The workspace entry loads filesystem and
+also reaches process-related modules. The runs and scopes entries accept store authority from
+callers and do not load SQLite merely by being imported. The workspace entry loads filesystem and
 process support but does not construct the caller's trace store.
 
 “Loaded” is an import observation, not a claim that a subprocess ran or a database opened.

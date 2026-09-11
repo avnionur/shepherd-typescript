@@ -5,8 +5,11 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 
 ## Guides
 
+- [Durable scope registration and fenced local emission](./scope-registration.md) defines the
+  trace-only Phase 6 slice: content-addressed root/child scopes, exact origin cuts, attenuated
+  authority, single-writer fencing, idempotent emission, inspection, and import limits.
 - [Scope ownership/authority proposal](../.plan/scope-ownership-contract.md) defines the planned
-  Phase 6 contract and implementation slices; it is not an implemented runtime capability.
+  Phase 6 contract and remaining implementation slices beyond registration and emission.
 
 - [Phase 5 exit audit](../.plan/phase-5-exit-audit.md) maps product-surface evidence and records
   runtime-support remediation and phase-exit verification.

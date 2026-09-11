@@ -1,0 +1,119 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/scope-child-registered-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Scope Child Registered v1",
+    "description": "Parent-owned control record retaining one exact child registration and its fork origin.",
+    "type": "object",
+    "required": [
+        "child_scope_id",
+        "command_id",
+        "compatibility_version",
+        "origin_cut_id",
+        "origin_record_id",
+        "parent_scope_id",
+        "scope_version"
+    ],
+    "properties": {
+        "child_scope_id": {
+            "$ref": "#/$defs/scopeId"
+        },
+        "command_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "compatibility_version": {
+            "const": "shepherd.scope.v1"
+        },
+        "origin_cut_id": {
+            "$ref": "#/$defs/originCutId"
+        },
+        "origin_record_id": {
+            "$ref": "#/$defs/recordId"
+        },
+        "parent_scope_id": {
+            "$ref": "#/$defs/scopeId"
+        },
+        "scope_version": {
+            "const": 1
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "originCutId": {
+            "type": "string",
+            "pattern": "^scope-origin:[0-9a-f]{64}$"
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "resources": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "atoms",
+                    "resource_id",
+                    "resource_kind"
+                ],
+                "properties": {
+                    "atoms": {
+                        "type": "array",
+                        "items": {
+                            "enum": [
+                                "read",
+                                "write"
+                            ]
+                        },
+                        "maxItems": 2,
+                        "uniqueItems": true
+                    },
+                    "resource_id": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "resource_kind": {
+                        "enum": [
+                            "repository_binding"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "maxItems": 64
+        },
+        "scopeId": {
+            "type": "string",
+            "pattern": "^scope:sha256:[0-9a-f]{64}$"
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        }
+    }
+}

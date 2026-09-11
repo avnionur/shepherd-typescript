@@ -11,6 +11,9 @@ package and suitable for independent compatibility implementations.
   diagnosis.
 - `schemas/orphan-repair-command-v1.schema.json` and
   `schemas/orphan-repair-receipt-v1.schema.json` define exact bookkeeping-only repair evidence.
+- `schemas/scope-registration-v1.schema.json`, `schemas/scope-child-registered-v1.schema.json`,
+  and `schemas/scope-emission-v1.schema.json` define trace-only scope ownership, origin, authority,
+  and fenced emission records.
 
 Runtime implementations must validate the semantic rules that JSON Schema cannot express, such as
 `record_id == digest`, versioned digest input, root-witness constraints, parent existence,

@@ -502,6 +502,56 @@
         "terminalStatuses": ["finished", "failed", "exhausted", "cancelled"],
         "usageVersion": 1
     },
+    "scopes": {
+        "artifacts": {
+            "childRegisteredSchema": "spec/schemas/scope-child-registered-v1.schema.json",
+            "emissionSchema": "spec/schemas/scope-emission-v1.schema.json",
+            "registrationSchema": "spec/schemas/scope-registration-v1.schema.json"
+        },
+        "authority": {
+            "atoms": ["read", "write"],
+            "resourceKinds": ["repository_binding"]
+        },
+        "commandKinds": ["register_root", "register_child", "emit"],
+        "compatibilityVersion": "shepherd.scope.v1",
+        "errors": {
+            "authorityCode": "SCOPE_AUTHORITY_REFUSED",
+            "authorityMessage": "scope authority request cites unknown resources or exceeds parent or ceiling authority",
+            "evidenceCode": "SCOPE_EVIDENCE_INVALID",
+            "evidenceMessage": "scope evidence is absent, malformed, or inconsistent",
+            "headConflictCode": "SCOPE_HEAD_CONFLICT",
+            "headConflictMessage": "scope command expected head is not the current scope head",
+            "writerConflictCode": "SCOPE_WRITER_CONFLICT",
+            "writerConflictMessage": "scope writer claim is held by another unexpired caller",
+            "writerFencedCode": "SCOPE_WRITER_FENCED",
+            "writerFencedMessage": "scope writer claim is released, expired, superseded, or unknown"
+        },
+        "evidenceKinds": ["registration", "origin_cut", "child_registered", "emission"],
+        "identity": {
+            "originCutIdPrefix": "scope-origin:",
+            "scopeIdPrefix": "scope:sha256:"
+        },
+        "kinds": ["root", "child"],
+        "limits": {
+            "maxCitedRecords": 64,
+            "maxDataCanonicalBytes": 65536,
+            "maxResources": 64
+        },
+        "recordVersion": 1,
+        "schemas": {
+            "childRegisteredId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-child-registered-v1.schema.json",
+            "emissionId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-emission-v1.schema.json",
+            "registrationId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-registration-v1.schema.json"
+        },
+        "states": ["open", "merged", "discarded"],
+        "traceSchemas": {
+            "childRegistered": "shepherd.scope.child_registered.v1",
+            "emission": "shepherd.scope.emission.v1",
+            "registration": "shepherd.scope.registration.v1"
+        },
+        "worldCapabilities": ["trace_only"],
+        "writerClaimLeaseMilliseconds": 30000
+    },
     "tasks": {
         "artifactLockVersion": 1,
         "artifacts": {
@@ -763,9 +813,14 @@
                     "firstOwnerOrdinal": 0,
                     "lastOwnerOrdinal": 9007199254740990,
                     "version": 8
+                },
+                {
+                    "firstOwnerOrdinal": 0,
+                    "lastOwnerOrdinal": 9007199254740990,
+                    "version": 9
                 }
             ],
-            "schemaVersion": 8,
+            "schemaVersion": 9,
             "synchronous": "FULL",
             "transactionMode": "IMMEDIATE"
         },

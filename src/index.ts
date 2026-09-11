@@ -156,6 +156,16 @@ export {
     RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION,
     RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION,
     RETAINED_WORLD_SETTLEMENT_VERSION,
+    SCOPE_AUTHORITY_ATOMS,
+    SCOPE_COMMAND_KINDS,
+    SCOPE_COMPATIBILITY_VERSION,
+    SCOPE_EVIDENCE_KINDS,
+    SCOPE_KINDS,
+    SCOPE_LIMITS,
+    SCOPE_RECORD_VERSION,
+    SCOPE_RESOURCE_KINDS,
+    SCOPE_STATES,
+    SCOPE_WORLD_CAPABILITIES,
     TASK_RUN_LEDGER_LATEST_SELECTOR,
     TASK_RUN_LEDGER_LIMITS,
     WORLD_CHANGESET_ERROR_CODES,
@@ -330,6 +340,48 @@ export type {
 } from "./run/types.ts";
 export { createRunUsage } from "./run/usage.ts";
 export type { RunUsage, RunUsageDefinition } from "./run/usage-types.ts";
+export { emitScopeRecord } from "./scope/emission.ts";
+export {
+    ScopeAuthorityError,
+    ScopeEvidenceError,
+    ScopeHeadConflictError,
+    ScopeWriterConflictError,
+    ScopeWriterFencedError,
+} from "./scope/errors.ts";
+export { inspectScope } from "./scope/inspection.ts";
+export { registerChildScope, registerRootScope } from "./scope/registration.ts";
+export { readScopeCommandReceipt } from "./scope/replay.ts";
+export type {
+    ClaimScopeWriterOptions,
+    EmitScopeRecordOptions,
+    RegisterChildScopeOptions,
+    RegisterRootScopeOptions,
+    ReleaseScopeWriterOptions,
+    ScopeAuthority,
+    ScopeAuthorityAtom,
+    ScopeChildRegisteredRecord,
+    ScopeChildRegistrationReceipt,
+    ScopeCommandKind,
+    ScopeCommandReplay,
+    ScopeEmissionReceipt,
+    ScopeEmissionRecord,
+    ScopeEvidenceKind,
+    ScopeHeadAddress,
+    ScopeHistoryEntry,
+    ScopeInspection,
+    ScopeKind,
+    ScopeParentOrigin,
+    ScopeRegistrationRecord,
+    ScopeResourceGrant,
+    ScopeResourceGrantRequest,
+    ScopeResourceKind,
+    ScopeRootRegistrationReceipt,
+    ScopeState,
+    ScopeWorldCapability,
+    ScopeWriter,
+    ScopeWriterRelease,
+} from "./scope/types.ts";
+export { claimScopeWriter, releaseScopeWriter } from "./scope/writer.ts";
 export {
     AppendIntentConflictError,
     BlobIntegrityError,

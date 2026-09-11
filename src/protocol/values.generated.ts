@@ -438,3 +438,42 @@ export const RETAINED_WORLD_MAX_CAPTURE_ID_BYTES = 256 as const;
 
 /** Configured Git HEAD-state discriminants. @public */
 export const GIT_HEAD_KINDS = ["attached", "unborn", "detached"] as const;
+
+/** Configured scope kinds ordered root then child. @public */
+export const SCOPE_KINDS = ["root", "child"] as const;
+
+/** Configured scope branch-lifecycle states ordered open, merged, discarded. @public */
+export const SCOPE_STATES = ["open", "merged", "discarded"] as const;
+
+/** Configured scope-local history evidence classifications. @public */
+export const SCOPE_EVIDENCE_KINDS = [
+    "registration",
+    "origin_cut",
+    "child_registered",
+    "emission",
+] as const;
+
+/** Configured scope world-capability declarations. @public */
+export const SCOPE_WORLD_CAPABILITIES = ["trace_only"] as const;
+
+/** Configured scope authority atoms shared with repository grants. @public */
+export const SCOPE_AUTHORITY_ATOMS = ["read", "write"] as const;
+
+/** Configured resource kinds that scope authority may cite. @public */
+export const SCOPE_RESOURCE_KINDS = ["repository_binding"] as const;
+
+/** Configured scope command kinds ordered root registration, child registration, emission. @public */
+export const SCOPE_COMMAND_KINDS = ["register_root", "register_child", "emit"] as const;
+
+/** Configured canonical scope record version. @public */
+export const SCOPE_RECORD_VERSION = 1 as const;
+
+/** Configured scope evidence compatibility namespace. @public */
+export const SCOPE_COMPATIBILITY_VERSION = "shepherd.scope.v1" as const;
+
+/** Configured scope command resource bounds. @public */
+export const SCOPE_LIMITS = Object.freeze({
+    maxCitedRecords: 64,
+    maxDataCanonicalBytes: 65536,
+    maxResources: 64,
+} as const);
