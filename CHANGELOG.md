@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-09-11
+
+### Improvement
+
+- Move repository-only verification policy (test runner, entry loading, bundle fixtures and
+  runtime boundaries) from the repository root into `config/`, updating the tooling readers and
+  documentation links.
+
+### Impact
+
+The repository root keeps only shipped runtime configuration, project identity and standard tool
+files. The published package, runtime behavior, protocols, schemas and dependencies are unchanged.
+
 ## [2.1.0] - 2026-09-10
 
 ### New Feature
