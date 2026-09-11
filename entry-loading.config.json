@@ -20,6 +20,10 @@
             "webSafeTypeProbe": "test/fixtures/read-surface.ts.txt"
         },
         "./runs": { "required": ["node:fs"], "forbidden": ["node:sqlite", "node:child_process"] },
+        "./scopes": {
+            "required": ["node:fs"],
+            "forbidden": ["node:sqlite", "node:child_process"]
+        },
         "./tasks": {
             "required": ["node:fs", "node:sqlite", "node:child_process"],
             "forbidden": []

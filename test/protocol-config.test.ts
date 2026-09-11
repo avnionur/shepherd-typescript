@@ -288,7 +288,7 @@ test("protocol configuration rejects invalid append and migration bounds", () =>
             firstMigrationOf(config).version = 2;
         },
         (config) => {
-            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 9;
+            objectAt(objectAt(config, "kernel"), "store").schemaVersion = 10;
         },
         (config) => {
             firstMigrationOf(config).firstOwnerOrdinal = 1;
@@ -832,6 +832,98 @@ test("protocol configuration rejects invalid or drifted task contracts", () => {
         },
         (config) => {
             taskRegistryConfigOf(config).transactionMode = "DEFERRED";
+        },
+    ]);
+});
+
+test("protocol configuration rejects invalid or drifted scope contracts", () => {
+    assertInvalid([
+        (config) => {
+            scopeConfigOf(config).extra = true;
+        },
+        (config) => {
+            scopeConfigOf(config).compatibilityVersion = "";
+        },
+        (config) => {
+            scopeConfigOf(config).compatibilityVersion = "shepherd.scope.v2";
+        },
+        (config) => {
+            scopeConfigOf(config).recordVersion = 0;
+        },
+        (config) => {
+            scopeConfigOf(config).writerClaimLeaseMilliseconds = 0;
+        },
+        (config) => {
+            scopeConfigOf(config).kinds = ["root"];
+        },
+        (config) => {
+            scopeConfigOf(config).kinds = ["root", "child", "other"];
+        },
+        (config) => {
+            scopeConfigOf(config).states = ["open", "merged"];
+        },
+        (config) => {
+            scopeConfigOf(config).commandKinds = ["register_root", "emit"];
+        },
+        (config) => {
+            scopeConfigOf(config).evidenceKinds = ["registration"];
+        },
+        (config) => {
+            scopeConfigOf(config).worldCapabilities = [];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "authority").atoms = ["read"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "authority").atoms = ["write", "read"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "authority").resourceKinds = [];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "identity").scopeIdPrefix = "";
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "identity").originCutIdPrefix = "origin:";
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "limits").maxCitedRecords = 0;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "limits").maxDataCanonicalBytes = -1;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "limits").maxResources = 1.5;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "errors").authorityCode = "";
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "errors").extra = true;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "schemas").registrationId = "relative";
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "artifacts").emissionSchema = "";
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "artifacts").emissionSchema = objectAt(
+                objectAt(config, "kernel"),
+                "artifacts",
+            ).recordBodySchema;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "traceSchemas").emission = objectAt(
+                scopeConfigOf(config),
+                "traceSchemas",
+            ).registration;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "traceSchemas").registration = "";
+        },
+        (config) => {
+            delete config.scopes;
         },
     ]);
 });
@@ -1649,6 +1741,10 @@ function blobConfigOf(config: Record<string, unknown>): Record<string, unknown> 
 
 function taskConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(config, "tasks");
+}
+
+function scopeConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(config, "scopes");
 }
 
 function taskRegistryConfigOf(config: Record<string, unknown>): Record<string, unknown> {

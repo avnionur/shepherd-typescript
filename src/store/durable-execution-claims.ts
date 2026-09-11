@@ -277,7 +277,8 @@ export function appendDurableExecutionTerminal(
     }
 }
 
-function assertNonNegativeMilliseconds(value: number, subject: string): void {
+/** Validates one non-negative safe-integer Unix-millisecond value. @internal */
+export function assertNonNegativeMilliseconds(value: number, subject: string): void {
     if (!Number.isSafeInteger(value) || value < 0) {
         throw new TypeError(`${subject} must be a non-negative safe integer`);
     }

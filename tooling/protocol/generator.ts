@@ -29,6 +29,11 @@ import {
 import { renderRunOutcomeSchema } from "./schemas/run-protocol-schema.ts";
 import { renderRunUsageSchema } from "./schemas/run-usage-schema.ts";
 import {
+    renderScopeChildRegisteredSchema,
+    renderScopeEmissionSchema,
+    renderScopeRegistrationSchema,
+} from "./schemas/scope-schemas.ts";
+import {
     renderTaskArtifactLockSchema,
     renderTaskDescriptorSchema,
 } from "./schemas/task-protocol-schemas.ts";
@@ -206,6 +211,18 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderRunUsageSchema(config)),
             relativePath: config.runs.artifacts.usageSchema,
+        },
+        {
+            content: renderJson(renderScopeRegistrationSchema(config)),
+            relativePath: config.scopes.artifacts.registrationSchema,
+        },
+        {
+            content: renderJson(renderScopeChildRegisteredSchema(config)),
+            relativePath: config.scopes.artifacts.childRegisteredSchema,
+        },
+        {
+            content: renderJson(renderScopeEmissionSchema(config)),
+            relativePath: config.scopes.artifacts.emissionSchema,
         },
         {
             content: renderJson(renderWorldCaptureSchema(config)),
@@ -1590,6 +1607,25 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedGitHeadKinds = config.workspaces.gitCustody.headKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
+    const renderedScopeKinds = config.scopes.kinds.map((kind) => JSON.stringify(kind)).join(", ");
+    const renderedScopeStates = config.scopes.states
+        .map((state) => JSON.stringify(state))
+        .join(", ");
+    const renderedScopeEvidenceKinds = config.scopes.evidenceKinds
+        .map((kind) => `    ${JSON.stringify(kind)},`)
+        .join("\n");
+    const renderedScopeWorldCapabilities = config.scopes.worldCapabilities
+        .map((capability) => JSON.stringify(capability))
+        .join(", ");
+    const renderedScopeAuthorityAtoms = config.scopes.authority.atoms
+        .map((atom) => JSON.stringify(atom))
+        .join(", ");
+    const renderedScopeResourceKinds = config.scopes.authority.resourceKinds
+        .map((kind) => JSON.stringify(kind))
+        .join(", ");
+    const renderedScopeCommandKinds = config.scopes.commandKinds
+        .map((kind) => JSON.stringify(kind))
+        .join(", ");
     const renderedWorldChangeOperations = config.workspaces.changesets.operations
         .map((operation) => JSON.stringify(operation))
         .join(", ");
@@ -2056,6 +2092,42 @@ export const RETAINED_WORLD_MAX_CAPTURE_ID_BYTES = ${config.workspaces.worldTask
 
 /** Configured Git HEAD-state discriminants. @public */
 export const GIT_HEAD_KINDS = [${renderedGitHeadKinds}] as const;
+
+/** Configured scope kinds ordered root then child. @public */
+export const SCOPE_KINDS = [${renderedScopeKinds}] as const;
+
+/** Configured scope branch-lifecycle states ordered open, merged, discarded. @public */
+export const SCOPE_STATES = [${renderedScopeStates}] as const;
+
+/** Configured scope-local history evidence classifications. @public */
+export const SCOPE_EVIDENCE_KINDS = [
+${renderedScopeEvidenceKinds}
+] as const;
+
+/** Configured scope world-capability declarations. @public */
+export const SCOPE_WORLD_CAPABILITIES = [${renderedScopeWorldCapabilities}] as const;
+
+/** Configured scope authority atoms shared with repository grants. @public */
+export const SCOPE_AUTHORITY_ATOMS = [${renderedScopeAuthorityAtoms}] as const;
+
+/** Configured resource kinds that scope authority may cite. @public */
+export const SCOPE_RESOURCE_KINDS = [${renderedScopeResourceKinds}] as const;
+
+/** Configured scope command kinds ordered root registration, child registration, emission. @public */
+export const SCOPE_COMMAND_KINDS = [${renderedScopeCommandKinds}] as const;
+
+/** Configured canonical scope record version. @public */
+export const SCOPE_RECORD_VERSION = ${config.scopes.recordVersion} as const;
+
+/** Configured scope evidence compatibility namespace. @public */
+export const SCOPE_COMPATIBILITY_VERSION = ${JSON.stringify(config.scopes.compatibilityVersion)} as const;
+
+/** Configured scope command resource bounds. @public */
+export const SCOPE_LIMITS = Object.freeze({
+    maxCitedRecords: ${config.scopes.limits.maxCitedRecords},
+    maxDataCanonicalBytes: ${config.scopes.limits.maxDataCanonicalBytes},
+    maxResources: ${config.scopes.limits.maxResources},
+} as const);
 `;
 }
 

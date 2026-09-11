@@ -108,6 +108,21 @@ _Avoid_: Database dump, ATIF trajectory, mutable backup
 A store-layout filesystem object without durable blob metadata and a matching storage receipt.
 _Avoid_: Unowned semantic record, corrupt registered blob, disposable projection
 
+**Scope**:
+One owned branch identity whose append-only local history is a trace owner path holding its
+registration, origin, and emitted records.
+_Avoid_: Run, Git branch, filesystem path, mutable checkpoint
+
+**Scope Writer**:
+Package-authenticated live authority over one scope, admitted by a monotonically fenced
+single-writer claim.
+_Avoid_: Serialized handle, permission string, imported record
+
+**Scope Emission**:
+Validated application data retained on one scope's local history under an exact head and command
+identity.
+_Avoid_: Effect outcome, parent-visible publication, external execution
+
 **Task Descriptor**:
 An immutable bodyless behavioral contract containing a logical identity, instruction, and runtime
 input/output schemas.

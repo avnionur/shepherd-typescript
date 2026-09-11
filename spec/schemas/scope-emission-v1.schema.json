@@ -1,0 +1,128 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/scope-emission-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Scope Emission v1",
+    "description": "Scope-local validated application data emitted under one exact head and command identity.",
+    "type": "object",
+    "required": [
+        "cited_record_ids",
+        "command_id",
+        "compatibility_version",
+        "data",
+        "expected_head_record_id",
+        "scope_id",
+        "scope_version"
+    ],
+    "properties": {
+        "cited_record_ids": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/recordId"
+            },
+            "maxItems": 64,
+            "uniqueItems": true
+        },
+        "command_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "compatibility_version": {
+            "const": "shepherd.scope.v1"
+        },
+        "data": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/semanticValue"
+            },
+            "x-shepherd-max-canonical-bytes": 65536
+        },
+        "expected_head_record_id": {
+            "$ref": "#/$defs/recordId"
+        },
+        "scope_id": {
+            "$ref": "#/$defs/scopeId"
+        },
+        "scope_version": {
+            "const": 1
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "originCutId": {
+            "type": "string",
+            "pattern": "^scope-origin:[0-9a-f]{64}$"
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "resources": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "atoms",
+                    "resource_id",
+                    "resource_kind"
+                ],
+                "properties": {
+                    "atoms": {
+                        "type": "array",
+                        "items": {
+                            "enum": [
+                                "read",
+                                "write"
+                            ]
+                        },
+                        "maxItems": 2,
+                        "uniqueItems": true
+                    },
+                    "resource_id": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "resource_kind": {
+                        "enum": [
+                            "repository_binding"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "maxItems": 64
+        },
+        "scopeId": {
+            "type": "string",
+            "pattern": "^scope:sha256:[0-9a-f]{64}$"
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        }
+    }
+}

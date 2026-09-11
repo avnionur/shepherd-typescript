@@ -9,6 +9,8 @@ import { addIntegrityIssue } from "./integrity-issues.ts";
 import { readOrphanedAppendIntentIds, verifyOwnerOrdinalIntegrity } from "./integrity-owners.ts";
 import { verifyRecordIntegrity } from "./integrity-records.ts";
 import type { TraceIntegrityIssue, TraceIntegrityReport } from "./integrity-types.ts";
+import { verifyScopeRegistrationRow } from "./scope-integrity.ts";
+import { readScopeRegistrationRows } from "./scope-registrations.ts";
 
 /** Verifies every currently retained trace-store area without modifying it. */
 export function verifyTraceStoreIntegrity(
@@ -67,6 +69,15 @@ export function scanTraceStoreIntegrity(
         }
     }
 
+    const scopeRows = readScopeRegistrationRows(database);
+    for (const row of scopeRows) {
+        try {
+            verifyScopeRegistrationRow(database, row);
+        } catch {
+            addIntegrityIssue(issues, "scope_registration_mismatch", row.scope_id);
+        }
+    }
+
     const blobReport = verifyStoredBlobs(database, filesystem);
     for (const issue of blobReport.issues) {
         addIntegrityIssue(issues, `blob_${issue.kind}`, issue.blob_id);
@@ -77,6 +88,7 @@ export function scanTraceStoreIntegrity(
         checked_cut_count: cutIds.length,
         checked_owner_count: verifyOwnerOrdinalIntegrity(database, issues),
         checked_record_count: checkedRecordCount,
+        checked_scope_count: scopeRows.length,
         issues: Object.freeze(issues),
         ok: issues.length === 0,
     });
