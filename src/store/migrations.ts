@@ -202,6 +202,29 @@ const migrations: readonly Migration[] = [
             ) STRICT;
         `,
     },
+    {
+        version: 9,
+        createSql: () => `
+            CREATE TABLE ${STORE_TABLES.scopeRegistrations} (
+                scope_id TEXT PRIMARY KEY CHECK (scope_id <> ''),
+                parent_scope_id TEXT CHECK (parent_scope_id <> ''),
+                registration_record_id TEXT NOT NULL UNIQUE,
+                state TEXT NOT NULL CHECK (state <> ''),
+                FOREIGN KEY (parent_scope_id)
+                    REFERENCES ${STORE_TABLES.scopeRegistrations}(scope_id),
+                FOREIGN KEY (registration_record_id) REFERENCES ${STORE_TABLES.records}(record_id)
+            ) STRICT;
+
+            CREATE TABLE ${STORE_TABLES.scopeWriterClaims} (
+                scope_id TEXT PRIMARY KEY CHECK (scope_id <> ''),
+                claim_id TEXT NOT NULL CHECK (claim_id <> ''),
+                fencing_token INTEGER NOT NULL CHECK (fencing_token > 0),
+                lease_expires_at INTEGER NOT NULL CHECK (lease_expires_at >= 0),
+                released INTEGER NOT NULL DEFAULT 0 CHECK (released IN (0, 1)),
+                FOREIGN KEY (scope_id) REFERENCES ${STORE_TABLES.scopeRegistrations}(scope_id)
+            ) STRICT;
+        `,
+    },
 ];
 
 /**

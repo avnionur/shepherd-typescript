@@ -13,108 +13,113 @@ import type { Cut, CutId, CutSpec } from "./types.ts";
 
 /** Publishes one immutable owner-prefix cut and its semantic record atomically. */
 export function publishStoredCut(database: DatabaseSync, spec: CutSpec): Cut {
-    const normalized = normalizeCutSpec(spec);
-    const publisherOwnerId = normalized.publisher_owner_id ?? normalized.target_owner_id;
-    const appendIntentId =
-        normalized.append_intent_id ??
-        `${kernelProtocolConfig.queries.cutAppendIntentPrefix}${normalized.cut_id}`;
     database.exec(STORE_TRANSACTION_SQL.begin);
     try {
-        const existing = database
-            .prepare(`SELECT append_intent_id FROM ${STORE_TABLES.cuts} WHERE cut_id = ?`)
-            .get(normalized.cut_id);
-        if (existing !== undefined) {
-            const retained = readStoredCut(database, normalized.cut_id);
-            const publication = readStoredRecord(database, retained.created_by_record_id);
-            if (
-                existing.append_intent_id !== appendIntentId ||
-                publication === undefined ||
-                publication.envelope.witness_ref !== (normalized.witness_ref ?? ROOT_WITNESS_ID) ||
-                !sameRecordIds(publication.envelope.caused_by_record_ids, [
-                    normalized.through_record_id,
-                    ...(normalized.caused_by_record_ids ?? []),
-                ]) ||
-                retained.publisher_owner_id !== publisherOwnerId ||
-                retained.target_owner_id !== normalized.target_owner_id ||
-                retained.through_record_id !== normalized.through_record_id
-            ) {
-                throw new TraceStoreError(
-                    `cut ${normalized.cut_id} already names a different publication`,
-                );
-            }
-            database.exec(STORE_TRANSACTION_SQL.commit);
-            return retained;
-        }
-        const through = database
-            .prepare(
-                `SELECT owner_ordinal FROM ${STORE_TABLES.recordViews}
-                 WHERE owner_id = ? AND record_id = ?
-                 ORDER BY owner_ordinal DESC LIMIT 1`,
-            )
-            .get(normalized.target_owner_id, normalized.through_record_id);
-        if (through === undefined) {
-            throw new TraceStoreError("cut through record is not retained on the target owner");
-        }
-        const throughOrdinal = Number(through.owner_ordinal);
-        const body: RecordBody = {
-            cut_id: normalized.cut_id,
-            publisher_owner_id: publisherOwnerId,
-            target_owner_id: normalized.target_owner_id,
-            through_owner_ordinal: throughOrdinal,
-            through_record_id: normalized.through_record_id,
-        };
-        const receipt = appendWithinTraceStoreTransaction(database, {
-            append_intent_id: appendIntentId,
-            batch: {
-                groups: [
-                    {
-                        owner_id: publisherOwnerId,
-                        records: [
-                            {
-                                body,
-                                caused_by_record_ids: [
-                                    normalized.through_record_id,
-                                    ...(normalized.caused_by_record_ids ?? []),
-                                ],
-                                mode: "capture",
-                                schema_ref: kernelProtocolConfig.queries.cutSchemaRef,
-                                witness_ref: normalized.witness_ref ?? ROOT_WITNESS_ID,
-                            },
-                        ],
-                    },
-                ],
-            },
-        });
-        const cut = freezeCut({
-            created_by_record_id: receipt.record_ids[0] as RecordId,
-            cut_id: normalized.cut_id,
-            publisher_owner_id: publisherOwnerId,
-            target_owner_id: normalized.target_owner_id,
-            through_owner_ordinal: throughOrdinal,
-            through_record_id: normalized.through_record_id,
-        });
-        database
-            .prepare(
-                `INSERT INTO ${STORE_TABLES.cuts}(
-                    cut_id, target_owner_id, through_record_id, through_owner_ordinal,
-                    publisher_owner_id, created_by_record_id, append_intent_id
-                 ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            )
-            .run(
-                cut.cut_id,
-                cut.target_owner_id,
-                cut.through_record_id,
-                cut.through_owner_ordinal,
-                cut.publisher_owner_id,
-                cut.created_by_record_id,
-                appendIntentId,
-            );
+        const cut = publishStoredCutWithinTransaction(database, spec);
         database.exec(STORE_TRANSACTION_SQL.commit);
         return cut;
     } catch (error) {
         database.exec(STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
+}
+
+/** Publishes or identically replays one cut inside a transaction owned by the caller. @internal */
+export function publishStoredCutWithinTransaction(database: DatabaseSync, spec: CutSpec): Cut {
+    const normalized = normalizeCutSpec(spec);
+    const publisherOwnerId = normalized.publisher_owner_id ?? normalized.target_owner_id;
+    const appendIntentId =
+        normalized.append_intent_id ??
+        `${kernelProtocolConfig.queries.cutAppendIntentPrefix}${normalized.cut_id}`;
+    const existing = database
+        .prepare(`SELECT append_intent_id FROM ${STORE_TABLES.cuts} WHERE cut_id = ?`)
+        .get(normalized.cut_id);
+    if (existing !== undefined) {
+        const retained = readStoredCut(database, normalized.cut_id);
+        const publication = readStoredRecord(database, retained.created_by_record_id);
+        if (
+            existing.append_intent_id !== appendIntentId ||
+            publication === undefined ||
+            publication.envelope.witness_ref !== (normalized.witness_ref ?? ROOT_WITNESS_ID) ||
+            !sameRecordIds(publication.envelope.caused_by_record_ids, [
+                normalized.through_record_id,
+                ...(normalized.caused_by_record_ids ?? []),
+            ]) ||
+            retained.publisher_owner_id !== publisherOwnerId ||
+            retained.target_owner_id !== normalized.target_owner_id ||
+            retained.through_record_id !== normalized.through_record_id
+        ) {
+            throw new TraceStoreError(
+                `cut ${normalized.cut_id} already names a different publication`,
+            );
+        }
+        return retained;
+    }
+    const through = database
+        .prepare(
+            `SELECT owner_ordinal FROM ${STORE_TABLES.recordViews}
+             WHERE owner_id = ? AND record_id = ?
+             ORDER BY owner_ordinal DESC LIMIT 1`,
+        )
+        .get(normalized.target_owner_id, normalized.through_record_id);
+    if (through === undefined) {
+        throw new TraceStoreError("cut through record is not retained on the target owner");
+    }
+    const throughOrdinal = Number(through.owner_ordinal);
+    const body: RecordBody = {
+        cut_id: normalized.cut_id,
+        publisher_owner_id: publisherOwnerId,
+        target_owner_id: normalized.target_owner_id,
+        through_owner_ordinal: throughOrdinal,
+        through_record_id: normalized.through_record_id,
+    };
+    const receipt = appendWithinTraceStoreTransaction(database, {
+        append_intent_id: appendIntentId,
+        batch: {
+            groups: [
+                {
+                    owner_id: publisherOwnerId,
+                    records: [
+                        {
+                            body,
+                            caused_by_record_ids: [
+                                normalized.through_record_id,
+                                ...(normalized.caused_by_record_ids ?? []),
+                            ],
+                            mode: "capture",
+                            schema_ref: kernelProtocolConfig.queries.cutSchemaRef,
+                            witness_ref: normalized.witness_ref ?? ROOT_WITNESS_ID,
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+    const cut = freezeCut({
+        created_by_record_id: receipt.record_ids[0] as RecordId,
+        cut_id: normalized.cut_id,
+        publisher_owner_id: publisherOwnerId,
+        target_owner_id: normalized.target_owner_id,
+        through_owner_ordinal: throughOrdinal,
+        through_record_id: normalized.through_record_id,
+    });
+    database
+        .prepare(
+            `INSERT INTO ${STORE_TABLES.cuts}(
+                cut_id, target_owner_id, through_record_id, through_owner_ordinal,
+                publisher_owner_id, created_by_record_id, append_intent_id
+             ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+            cut.cut_id,
+            cut.target_owner_id,
+            cut.through_record_id,
+            cut.through_owner_ordinal,
+            cut.publisher_owner_id,
+            cut.created_by_record_id,
+            appendIntentId,
+        );
+    return cut;
 }
 
 /** Reads and verifies one published cut. */

@@ -249,6 +249,6 @@ The project is complete only when:
 
 ## Immediate next step
 
-Phase 5 is complete through version 2.0.0. Review the Phase 6
-[scope contract proposal](./scope-ownership-contract.md), then publish its first implementation
-slice with explicit prerequisites and production-seam acceptance tests.
+Phase 6 slice A (#129) is delivered in 2.1.0. Continue with #130, reference-copy isolated fork
+and restart recovery, binding scope resources to authenticated workspace resources and citing the
+retained origin cut, with production-seam acceptance tests.

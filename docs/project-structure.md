@@ -23,6 +23,7 @@ implementation documentation, and forward-looking plans.
 │   ├── record/             Record types, envelopes, guards, and snapshots
 │   ├── repair/             Orphan-operation diagnosis and repair contracts
 │   ├── run/                Outcomes, artifacts, usage, budgets, and cancellation
+│   ├── scope/              Trace-only scope registration, writer fencing, emission, and inspection
 │   ├── store/              SQLite migrations, transactions, codecs, and reads
 │   ├── task/               Descriptors, runtime schemas, locks, and durable registration
 │   └── workspace/          Initialization, bindings, and reference retained-world custody
@@ -66,6 +67,8 @@ public exports → task area → canonical identity and protocol configuration
 public exports → effect area → canonical snapshots and protocol configuration
 public exports → formal area → canonical encoding and protocol configuration
 public exports → run area → task, provider, store, canonical snapshots, and protocol configuration
+public exports → scope area → store, record, canonical snapshots, and protocol configuration
+store area → scope record codecs and errors, and run control codecs, for transactional admission
 public exports → workspace area → filesystem, Git, hashing, and protocol configuration
 script command adapters → tooling module interfaces
 build/release tooling → repository configuration
@@ -113,6 +116,10 @@ The runtime areas are organized around cohesive protocol responsibilities:
   recovery classification and reconstruction, durable blob-receipt references, and disposable
   cut-bounded durable execution inspection views plus idempotent command-bound recovery, pause,
   resume, suspension, and safe-boundary cancellation;
+- `scope/` owns content-addressed scope identity, per-resource authority attenuation, closed
+  scope record codecs, package-authenticated writer handles, globally idempotent root/child
+  registration and emission commands, and record-derived inspection without world, provider, or
+  settlement authority;
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
   recovery, orphan-collection diagnostics, and exact bookkeeping-only orphan-operation repair.

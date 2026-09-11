@@ -48,6 +48,7 @@ test("SQLiteTraceStore verifies every retained store area after reopen", async (
         checked_cut_count: 1,
         checked_owner_count: 1,
         checked_record_count: 3,
+        checked_scope_count: 0,
         issues: [],
         ok: true,
     });

@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-09-10
+
+### New Feature
+
+- Add the `./scopes` entry with trace-only durable scope registration: content-addressed root
+  and child scopes, parent-owned child-registration control records, deterministic immutable
+  origin cuts through the exact parent head, and retained ceiling/effective authority attenuated
+  per exact resource from parent, request, and whole-run ceiling.
+- Add single-writer scope claims with monotonic fencing tokens, configured leases, idempotent
+  release, expiry takeover, and package-authenticated writer handles that reject forged copies.
+- Add globally idempotent scope-local emission of validated canonical application data with
+  exact-head admission, retained-record citations, replay before liveness validation, and
+  conflict on changed content.
+- Add record-derived scope inspection that reconstructs the same value after reopen, read-only
+  reopen, and native archive import, verifies every record against its command intent, and
+  reports whether live mutation is registered, plus a receipt-replay read that returns the exact
+  original receipt of a completed command without writer authority.
+- Add store schema v9 scope registration and writer-claim tables, integrity verification of
+  registration rows, the `scopes` protocol section, immutable scope v1 contract, generated
+  constants, and three generated JSON Schemas.
+
+### Impact
+
+Consumers can register isolated scope identities and retain fenced scope-local evidence through
+`@avnionur/shepherd-typescript/scopes`. Existing stores migrate to schema v9 without rewriting
+records; imported archives expose scopes as inspection evidence only. No world fork, merge,
+discard, provider, process, or materialization capability is added, and no L2 parity is claimed.
+Runtime, dependencies, and supported Node versions are unchanged.
+
 ## [2.0.1] - 2026-09-09
 
 ### Improvement

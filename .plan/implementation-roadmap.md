@@ -354,9 +354,12 @@ checks, minimum/current verification, actual unsupported-boundary refusal and re
 Goal: provide first-class isolated branches independent of high-level
 settlement.
 
-Task 1 (#127) proposes the [durable isolated-scope ownership/authority contract](./scope-ownership-contract.md)
-and dependency-ordered implementation slices. The contract is planning material; no scope runtime
-or L2 claim is implemented by this documentation slice.
+Task 1 (#127) delivered the [durable isolated-scope ownership/authority contract](./scope-ownership-contract.md)
+and dependency-ordered implementation slices. Task 2 (#129) implements slice A,
+[trace-only scope registration and fenced emission](../docs/scope-registration.md): owner/child
+records, per-resource authority attenuation, scope-local writer exclusivity, and record-derived
+inspection. Fork, merge, discard, carriers, scheduling, checkpoint descriptors, laws, and
+benchmarks remain open; no L2 claim is implemented.
 
 Work:
 

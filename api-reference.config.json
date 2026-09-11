@@ -38,6 +38,11 @@
             "summary": "Run construction, control, execution, recovery, and inspection.",
             "title": "Runs"
         },
+        "./scopes": {
+            "authority": "Registration, writer claims, and emission require an explicit open trace-store handle and package-minted writer handles; inspection is a bounded read. No world, provider, filesystem, or settlement authority is created.",
+            "summary": "Durable trace-only scope registration, fenced scope-local emission, and inspection.",
+            "title": "Scopes"
+        },
         "./tasks": {
             "authority": "Descriptor and schema helpers are pure. SQLiteTaskRegistry reads or mutates only the caller-selected registry database and must be closed by the caller.",
             "summary": "Task descriptors, schemas, registry operations, and bounded ledger reads.",

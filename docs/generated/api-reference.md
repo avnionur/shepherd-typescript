@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.0.1
+Package: `@avnionur/shepherd-typescript` 2.1.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 526.
+Exported symbols: 576.
 
 ### `AppendBatchDraft`
 
@@ -471,6 +471,22 @@ Signature:
 ```ts
 export type CausalClosureOptions = SliceReadOptions & {
     readonly closure_policy?: ClosurePolicy;
+};
+```
+
+### `ClaimScopeWriterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for claiming scope writer authority.
+
+Signature:
+
+```ts
+export type ClaimScopeWriterOptions = {
+    readonly claimId: string;
+    readonly nowMilliseconds?: number;
+    readonly scopeId: string;
 };
 ```
 
@@ -1883,6 +1899,25 @@ export type EffectiveHistory = {
     readonly published_records: readonly PublishedRecord[];
     readonly relations: readonly ExecutionRelation[];
     readonly root: Execution;
+};
+```
+
+### `EmitScopeRecordOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for one fenced scope-local emission.
+
+Signature:
+
+```ts
+export type EmitScopeRecordOptions = {
+    readonly citedRecordIds?: readonly RecordId[];
+    readonly commandId: string;
+    readonly data: SemanticRecord;
+    readonly expectedHeadRecordId: RecordId;
+    readonly nowMilliseconds?: number;
+    readonly writer: ScopeWriter;
 };
 ```
 
@@ -4830,6 +4865,44 @@ export type ReferenceCopyCarrierOptions = {
 };
 ```
 
+### `RegisterChildScopeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for registering one child scope under a parent writer.
+
+Signature:
+
+```ts
+export type RegisterChildScopeOptions = {
+    readonly commandId: string;
+    readonly executionId?: string;
+    readonly expectedHeadRecordId: RecordId;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly nowMilliseconds?: number;
+    readonly parent: ScopeWriter;
+};
+```
+
+### `RegisterRootScopeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for registering one root scope.
+
+Signature:
+
+```ts
+export type RegisterRootScopeOptions = {
+    readonly authority: {
+        readonly ceiling: ScopeResourceGrantRequest;
+        readonly grant: ScopeResourceGrantRequest;
+    };
+    readonly commandId: string;
+    readonly executionId?: string;
+};
+```
+
 ### `ReleaseRetainedWorldSettlementOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -4844,6 +4917,20 @@ export type ReleaseRetainedWorldSettlementOptions = {
     readonly carrier: ReferenceCopyCarrier;
     readonly outputId: string;
     readonly store: SQLiteTraceStore;
+};
+```
+
+### `ReleaseScopeWriterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for releasing scope writer authority.
+
+Signature:
+
+```ts
+export type ReleaseScopeWriterOptions = {
+    readonly writer: ScopeWriter;
 };
 ```
 
@@ -5991,6 +6078,153 @@ export type RunUsageDefinition = {
 };
 ```
 
+### `SCOPE_AUTHORITY_ATOMS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope authority atoms shared with repository grants.
+
+Signature:
+
+```ts
+export declare const SCOPE_AUTHORITY_ATOMS: readonly [
+    "read",
+    "write"
+];
+```
+
+### `SCOPE_COMMAND_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope command kinds ordered root registration, child registration, emission.
+
+Signature:
+
+```ts
+export declare const SCOPE_COMMAND_KINDS: readonly [
+    "register_root",
+    "register_child",
+    "emit"
+];
+```
+
+### `SCOPE_COMPATIBILITY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope evidence compatibility namespace.
+
+Signature:
+
+```ts
+export declare const SCOPE_COMPATIBILITY_VERSION: "shepherd.scope.v1";
+```
+
+### `SCOPE_EVIDENCE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope-local history evidence classifications.
+
+Signature:
+
+```ts
+export declare const SCOPE_EVIDENCE_KINDS: readonly [
+    "registration",
+    "origin_cut",
+    "child_registered",
+    "emission"
+];
+```
+
+### `SCOPE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope kinds ordered root then child.
+
+Signature:
+
+```ts
+export declare const SCOPE_KINDS: readonly [
+    "root",
+    "child"
+];
+```
+
+### `SCOPE_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope command resource bounds.
+
+Signature:
+
+```ts
+export declare const SCOPE_LIMITS: Readonly<{
+    readonly maxCitedRecords: 64;
+    readonly maxDataCanonicalBytes: 65536;
+    readonly maxResources: 64;
+}>;
+```
+
+### `SCOPE_RECORD_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured canonical scope record version.
+
+Signature:
+
+```ts
+export declare const SCOPE_RECORD_VERSION: 1;
+```
+
+### `SCOPE_RESOURCE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured resource kinds that scope authority may cite.
+
+Signature:
+
+```ts
+export declare const SCOPE_RESOURCE_KINDS: readonly [
+    "repository_binding"
+];
+```
+
+### `SCOPE_STATES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope branch-lifecycle states ordered open, merged, discarded.
+
+Signature:
+
+```ts
+export declare const SCOPE_STATES: readonly [
+    "open",
+    "merged",
+    "discarded"
+];
+```
+
+### `SCOPE_WORLD_CAPABILITIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope world-capability declarations.
+
+Signature:
+
+```ts
+export declare const SCOPE_WORLD_CAPABILITIES: readonly [
+    "trace_only"
+];
+```
+
 ### `SQLiteTaskRegistry`
 
 Classification: `runtime-and-type`. Kind: `class`.
@@ -7121,6 +7355,630 @@ export type SQLiteTraceStoreOptions = {
 };
 ```
 
+### `ScopeAuthority`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Whole-run ceiling and effective attenuated authority retained by a scope.
+
+Signature:
+
+```ts
+export type ScopeAuthority = {
+    readonly ceiling: readonly ScopeResourceGrant[];
+    readonly effective: readonly ScopeResourceGrant[];
+};
+```
+
+### `ScopeAuthorityAtom`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured authority atom shared with repository grants.
+
+Signature:
+
+```ts
+export type ScopeAuthorityAtom = (typeof SCOPE_AUTHORITY_ATOMS)[number];
+```
+
+### `ScopeAuthorityError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a scope authority request cites unknown resources or exceeds parent or ceiling authority.
+
+Signature:
+
+```ts
+export declare class ScopeAuthorityError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail?: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned refused-authority code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a refused-authority failure.
+
+```ts
+constructor(detail?: string);
+```
+
+Parameter:
+
+- detail - Optional specific refusal description appended to the configured message.
+
+### `ScopeChildRegisteredRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical parent-owned child-registration control record body.
+
+Signature:
+
+```ts
+export type ScopeChildRegisteredRecord = {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly origin_cut_id: CutId;
+    readonly origin_record_id: RecordId;
+    readonly parent_scope_id: string;
+    readonly scope_version: number;
+};
+```
+
+### `ScopeChildRegistrationReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of registering one child scope.
+
+Signature:
+
+```ts
+export type ScopeChildRegistrationReceipt = {
+    readonly authority: ScopeAuthority;
+    readonly command_id: string;
+    readonly head: ScopeHeadAddress;
+    readonly kind: ScopeKind;
+    readonly origin: ScopeParentOrigin;
+    readonly parent_head: ScopeHeadAddress;
+    readonly registration_record_id: RecordId;
+    readonly scope_id: string;
+};
+```
+
+### `ScopeCommandKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured scope command kind: root registration, child registration, or emission.
+
+Signature:
+
+```ts
+export type ScopeCommandKind = (typeof SCOPE_COMMAND_KINDS)[number];
+```
+
+### `ScopeCommandReplay`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Classified original receipt of one completed scope command, reconstructed from records.
+
+Signature:
+
+```ts
+export type ScopeCommandReplay = {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[0];
+    readonly receipt: ScopeRootRegistrationReceipt;
+} | {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[1];
+    readonly receipt: ScopeChildRegistrationReceipt;
+} | {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[2];
+    readonly receipt: ScopeEmissionReceipt;
+};
+```
+
+### `ScopeEmissionReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of one scope-local emission.
+
+Signature:
+
+```ts
+export type ScopeEmissionReceipt = {
+    readonly command_id: string;
+    readonly head: ScopeHeadAddress;
+    readonly previous_head_record_id: RecordId;
+    readonly scope_id: string;
+};
+```
+
+### `ScopeEmissionRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical scope-local application-data emission record body.
+
+Signature:
+
+```ts
+export type ScopeEmissionRecord = {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly data: SemanticRecord;
+    readonly expected_head_record_id: RecordId;
+    readonly scope_id: string;
+    readonly scope_version: number;
+};
+```
+
+### `ScopeEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or cited scope evidence is absent, malformed, or inconsistent.
+
+Signature:
+
+```ts
+export declare class ScopeEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail?: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail?: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Optional specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ScopeEvidenceKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured classification of one retained scope-local history entry.
+
+Signature:
+
+```ts
+export type ScopeEvidenceKind = (typeof SCOPE_EVIDENCE_KINDS)[number];
+```
+
+### `ScopeHeadAddress`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained head address of one scope owner path.
+
+Signature:
+
+```ts
+export type ScopeHeadAddress = {
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+};
+```
+
+### `ScopeHeadConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a scope command names an expected head that is no longer current.
+
+Signature:
+
+```ts
+export declare class ScopeHeadConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly scope_id: string;
+    constructor(scopeId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned stale-head code.
+
+```ts
+readonly code: string;
+```
+
+#### `scope_id`
+
+Scope whose head advanced past the caller's expectation.
+
+```ts
+readonly scope_id: string;
+```
+
+#### `constructor`
+
+Creates a stale expected-head failure.
+
+```ts
+constructor(scopeId: string);
+```
+
+Parameter:
+
+- scopeId - Scope whose current head disagrees with the command.
+
+### `ScopeHistoryEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One validated scope-local history entry.
+
+Signature:
+
+```ts
+export type ScopeHistoryEntry = {
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[0];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+} | {
+    readonly cut_id: CutId;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[1];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+} | {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[2];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+} | {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[3];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+};
+```
+
+### `ScopeInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only validated projection of one scope reconstructed from retained records.
+
+Signature:
+
+```ts
+export type ScopeInspection = {
+    readonly authority: ScopeAuthority;
+    readonly children: readonly string[];
+    readonly execution_id: string | null;
+    readonly head: ScopeHeadAddress;
+    readonly history: readonly ScopeHistoryEntry[];
+    readonly kind: ScopeKind;
+    readonly parent: ScopeParentOrigin | null;
+    readonly registered_for_mutation: boolean;
+    readonly registration_record_id: RecordId;
+    readonly scope_id: string;
+    readonly state: ScopeState;
+    readonly world_capability: ScopeWorldCapability;
+};
+```
+
+### `ScopeKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured scope kind: root or child.
+
+Signature:
+
+```ts
+export type ScopeKind = (typeof SCOPE_KINDS)[number];
+```
+
+### `ScopeParentOrigin`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact ownership and fork-origin evidence retained by a child scope.
+
+Signature:
+
+```ts
+export type ScopeParentOrigin = {
+    readonly child_registered_record_id: RecordId;
+    readonly origin_cut_id: CutId;
+    readonly origin_record_id: RecordId;
+    readonly scope_id: string;
+};
+```
+
+### `ScopeRegistrationRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical scope registration record body.
+
+Signature:
+
+```ts
+export type ScopeRegistrationRecord = {
+    readonly authority: ScopeAuthority;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly execution_id: string | null;
+    readonly kind: ScopeKind;
+    readonly parent: ScopeParentOrigin | null;
+    readonly scope_id: string;
+    readonly scope_version: number;
+    readonly world_capability: ScopeWorldCapability;
+};
+```
+
+### `ScopeResourceGrant`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Authority atoms bound to one exact resource identity.
+
+Signature:
+
+```ts
+export type ScopeResourceGrant = {
+    readonly atoms: readonly ScopeAuthorityAtom[];
+    readonly resource_id: string;
+    readonly resource_kind: ScopeResourceKind;
+};
+```
+
+### `ScopeResourceGrantRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Requested root or child resource authority.
+
+Signature:
+
+```ts
+export type ScopeResourceGrantRequest = readonly ScopeResourceGrant[];
+```
+
+### `ScopeResourceKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured resource kind that scope authority may cite.
+
+Signature:
+
+```ts
+export type ScopeResourceKind = (typeof SCOPE_RESOURCE_KINDS)[number];
+```
+
+### `ScopeRootRegistrationReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of registering one root scope.
+
+Signature:
+
+```ts
+export type ScopeRootRegistrationReceipt = {
+    readonly authority: ScopeAuthority;
+    readonly command_id: string;
+    readonly head: ScopeHeadAddress;
+    readonly kind: ScopeKind;
+    readonly registration_record_id: RecordId;
+    readonly scope_id: string;
+};
+```
+
+### `ScopeState`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured branch-lifecycle state of one scope.
+
+Signature:
+
+```ts
+export type ScopeState = (typeof SCOPE_STATES)[number];
+```
+
+### `ScopeWorldCapability`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured world capability declared by a scope registration.
+
+Signature:
+
+```ts
+export type ScopeWorldCapability = (typeof SCOPE_WORLD_CAPABILITIES)[number];
+```
+
+### `ScopeWriter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Package-authenticated live writer authority for one scope.
+
+Signature:
+
+```ts
+export type ScopeWriter = {
+    readonly claim_id: string;
+    readonly fencing_token: number;
+    readonly lease_expires_at: number;
+    readonly scope_id: string;
+    readonly [scopeWriterContract]?: true;
+};
+```
+
+### `ScopeWriterConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when another unexpired caller holds the scope writer claim.
+
+Signature:
+
+```ts
+export declare class ScopeWriterConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly scope_id: string;
+    constructor(scopeId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned writer-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Claim identity currently holding the scope.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `scope_id`
+
+Scope whose writer authority is held by another caller.
+
+```ts
+readonly scope_id: string;
+```
+
+#### `constructor`
+
+Creates a lost writer-claim failure.
+
+```ts
+constructor(scopeId: string, claimId: string);
+```
+
+Parameter:
+
+- scopeId - Scope whose writer claim is held.
+
+Parameter:
+
+- claimId - Winning claim identity.
+
+### `ScopeWriterFencedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a scope writer fence is released, expired, superseded, or unknown.
+
+Signature:
+
+```ts
+export declare class ScopeWriterFencedError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly scope_id: string;
+    constructor(scopeId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned fenced-writer code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Claim identity rejected at the command boundary.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `scope_id`
+
+Scope whose command was fenced.
+
+```ts
+readonly scope_id: string;
+```
+
+#### `constructor`
+
+Creates a fenced-writer failure.
+
+```ts
+constructor(scopeId: string, claimId: string);
+```
+
+Parameter:
+
+- scopeId - Scope whose command was rejected.
+
+Parameter:
+
+- claimId - Rejected claim identity.
+
+### `ScopeWriterRelease`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of releasing one exact scope writer.
+
+Signature:
+
+```ts
+export type ScopeWriterRelease = {
+    readonly claim_id: string;
+    readonly fencing_token: number;
+    readonly scope_id: string;
+};
+```
+
 ### `SelectRetainedWorldSettlementOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -7859,7 +8717,7 @@ Stable classification for one whole-store integrity defect.
 Signature:
 
 ```ts
-export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "sqlite_integrity_mismatch" | "witness_mismatch";
+export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "scope_registration_mismatch" | "sqlite_integrity_mismatch" | "witness_mismatch";
 ```
 
 ### `TraceIntegrityReport`
@@ -7877,6 +8735,7 @@ export type TraceIntegrityReport = {
     readonly checked_cut_count: number;
     readonly checked_owner_count: number;
     readonly checked_record_count: number;
+    readonly checked_scope_count: number;
     readonly issues: readonly TraceIntegrityIssue[];
     readonly ok: boolean;
 };
@@ -9547,6 +10406,58 @@ const result = await captureTaskWorldDurably({
 result.output.head_revision_id;
 ```
 
+### `claimScopeWriter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Atomically claims single-writer authority for one registered open scope.
+
+A fresh claim receives fencing token one. An exact unexpired active claim is returned again.
+A released or expired claim is superseded by a new claim with the next monotonic token, so a
+stale holder's later commands are fenced; expiry alone does not prove the previous holder
+stopped. An unexpired active claim held by another identity fails closed. Imported scopes have
+no live registration and cannot be claimed.
+
+Signature:
+
+```ts
+export declare function claimScopeWriter(store: SQLiteTraceStore, options: ClaimScopeWriterOptions): ScopeWriter;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the scope registration.
+
+Parameter:
+
+- options - Exact scope, proposed claim identity, and optional deterministic time.
+
+Returns:
+
+- A frozen package-authenticated writer handle.
+
+Throws:
+
+- {ScopeWriterConflictError} If another unexpired active claim holds the scope.
+
+Throws:
+
+- {ScopeEvidenceError} If the scope is not registered for mutation in this store or not open.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const writer = claimScopeWriter(store, { claimId: "claim:worker-1", scopeId: root.scope_id });
+```
+
 ### `classifyProofEnvelope`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -10572,6 +11483,71 @@ const discarded = await discardRetainedWorldSettlement({
 discarded.cleanup_completed;
 ```
 
+### `emitScopeRecord`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably emits validated application data onto one scope-local history under a current fence.
+
+The emission record is caused by the exact expected head and every cited retained record, so
+it extends only the emitting scope's path; it never appears in a parent's effective history,
+fabricates an outcome, or authorizes external execution. An exact retry of the same command
+returns the original receipt across restart, including after the head advanced, the fence was
+released, or a new writer was admitted; changed content conflicts.
+
+Signature:
+
+```ts
+export declare function emitScopeRecord(store: SQLiteTraceStore, options: EmitScopeRecordOptions): ScopeEmissionReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the scope registration.
+
+Parameter:
+
+- options - Authenticated writer, exact head, command identity, data, and citations.
+
+Returns:
+
+- Frozen durable emission receipt.
+
+Throws:
+
+- {ScopeWriterFencedError} If the writer fence is released, expired, or superseded.
+
+Throws:
+
+- {ScopeHeadConflictError} If the expected head is not current.
+
+Throws:
+
+- {ScopeEvidenceError} If the scope is not registered for mutation or a citation is absent.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the writer is forged, data is not canonical, or options are malformed.
+
+Example:
+
+- ```ts
+const emitted = emitScopeRecord(store, {
+    commandId: "scope-command:emit:1",
+    data: { note: "draft" },
+    expectedHeadRecordId: root.head.record_id,
+    writer,
+});
+```
+
 ### `executeTask`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -10961,6 +11937,54 @@ Example:
 - ```ts
 const settlement = inspectRetainedWorldSettlement(store, captured.output.output_id);
 settlement?.request.execution_cut_id;
+```
+
+### `inspectScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reconstructs and validates one scope from its retained owner path without mutation.
+
+The projection is derived from canonical records, so a read-only reopen or a native archive
+import produces the same result. Live registration admitting mutation is reported separately:
+an imported archive carries inspection evidence only and reports `registered_for_mutation`
+false. Slice A retains only open scopes; merge and discard evidence are later slices.
+
+Signature:
+
+```ts
+export declare function inspectScope(store: SQLiteTraceStore, scopeId: string): ScopeInspection | undefined;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- scopeId - Exact configured scope identity.
+
+Returns:
+
+- Frozen validated inspection, or `undefined` when the owner path retains nothing.
+
+Throws:
+
+- {ScopeEvidenceError} If retained scope evidence is malformed or inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or a cited cut is absent or corrupt.
+
+Throws:
+
+- {TypeError} If the scope identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectScope(store, root.scope_id);
+console.log(inspection?.head.record_id, inspection?.history.length);
 ```
 
 ### `inspectTaskWorldCaptureJournal`
@@ -11576,6 +12600,56 @@ Throws:
 
 - {TraceStoreError} If retained execution evidence is malformed or inconsistent.
 
+### `readScopeCommandReceipt`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads the exact retained receipt of one completed scope command without any writer authority.
+
+Receipt replay is a read: it reconstructs the original registration or emission receipt from
+the records retained under the command's append intent, so a caller that lost its response,
+restarted, or whose fence is stale or superseded still receives the original result. It grants
+no mutation authority and works on read-only and imported stores.
+
+Signature:
+
+```ts
+export declare function readScopeCommandReceipt(store: SQLiteTraceStore, commandId: string): ScopeCommandReplay | undefined;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- commandId - Globally idempotent scope command identity.
+
+Returns:
+
+- The classified original receipt, or `undefined` when the command was never retained.
+
+Throws:
+
+- {ScopeEvidenceError} If retained command evidence is not well-formed scope evidence.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or a cited cut is absent or corrupt.
+
+Throws:
+
+- {TypeError} If the command identity is malformed.
+
+Example:
+
+- ```ts
+const replay = readScopeCommandReceipt(store, "scope-command:emit-1");
+if (replay?.command === "emit") {
+    console.log(replay.receipt.head.record_id);
+}
+```
+
 ### `recoverGrantedTaskWorldDurably`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -11811,6 +12885,128 @@ const result = await recoverTaskWorldDurably({
 result.output.custody_id;
 ```
 
+### `registerChildScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably registers one isolated child scope under explicit parent writer authority.
+
+One transaction appends a parent-owned child-registration control record caused by the exact
+expected parent head, the child registration record, and a deterministic immutable origin cut
+through that parent head published on the child path. Child effective authority is the
+per-resource intersection of the parent's effective authority, the requested grant, and the
+whole-run ceiling. The parent's managed content and earlier records are unchanged; only its
+head advances by the control record. Exact replay returns the original receipt even after the
+parent fence is later released; changed content conflicts.
+
+Signature:
+
+```ts
+export declare function registerChildScope(store: SQLiteTraceStore, options: RegisterChildScopeOptions): ScopeChildRegistrationReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the parent registration.
+
+Parameter:
+
+- options - Authenticated parent writer, exact parent head, requested grant, and command.
+
+Returns:
+
+- Frozen durable child registration receipt.
+
+Throws:
+
+- {ScopeAuthorityError} If the grant exceeds the parent or ceiling or cites unknown atoms.
+
+Throws:
+
+- {ScopeWriterFencedError} If the parent fence is released, expired, or superseded.
+
+Throws:
+
+- {ScopeHeadConflictError} If the expected parent head is not current.
+
+Throws:
+
+- {ScopeEvidenceError} If parent or execution evidence is absent or the child exists.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the parent handle is forged or options are malformed.
+
+### `registerRootScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably registers one root scope with explicit trace authority and a whole-run ceiling.
+
+The registration record is the first occurrence on the new scope owner path. Effective
+authority is the per-resource intersection of the requested grant and the ceiling. An exact
+retry of the same command returns the original receipt across restart; reusing the command
+identity for different content fails closed. Registration is trace-only: it forks no world,
+invokes no provider, and materializes nothing.
+
+Signature:
+
+```ts
+export declare function registerRootScope(store: SQLiteTraceStore, options: RegisterRootScopeOptions): ScopeRootRegistrationReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Closed command identity, authority, and optional execution association.
+
+Returns:
+
+- Frozen durable registration receipt.
+
+Throws:
+
+- {ScopeAuthorityError} If the grant cites resources outside the ceiling or unknown atoms.
+
+Throws:
+
+- {ScopeEvidenceError} If the scope already exists or execution evidence is absent.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const root = registerRootScope(store, {
+    authority: {
+        ceiling: [{ atoms: ["read", "write"], resource_id: "sha256:...", resource_kind: "repository_binding" }],
+        grant: [{ atoms: ["read"], resource_id: "sha256:...", resource_kind: "repository_binding" }],
+    },
+    commandId: "scope-command:root:1",
+});
+```
+
 ### `releaseRetainedWorldSettlement`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -11845,6 +13041,45 @@ evidence is absent, malformed, forged, discarded, or inconsistent.
 Throws:
 
 - {RetainedWorldSettlementConflictError} If another action owns the admission or terminal.
+
+### `releaseScopeWriter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Releases one exact scope writer so a later claim may proceed without waiting for expiry.
+
+Releasing an already released exact claim is idempotent. A superseded or unknown fence fails
+closed. Released handles remain authenticated objects whose later commands are fenced.
+
+Signature:
+
+```ts
+export declare function releaseScopeWriter(store: SQLiteTraceStore, options: ReleaseScopeWriterOptions): ScopeWriterRelease;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the claim.
+
+Parameter:
+
+- options - Authenticated writer to release.
+
+Returns:
+
+- Frozen released-claim evidence.
+
+Throws:
+
+- {ScopeWriterFencedError} If the fence is superseded or unknown.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the writer handle is forged or options are malformed.
 
 ### `requestDurableTaskCancellation`
 
@@ -16320,6 +17555,1303 @@ const authority = resumeDurableTask(store, {
 authority.fencing_token;
 ```
 
+## Scopes
+
+Package entry: `./scopes`
+
+Durable trace-only scope registration, fenced scope-local emission, and inspection.
+
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+
+Authority and mutation: Registration, writer claims, and emission require an explicit open trace-store handle and package-minted writer handles; inspection is a bounded read. No world, provider, filesystem, or settlement authority is created.
+
+Import example:
+
+```ts
+import * as api from "@avnionur/shepherd-typescript/scopes";
+void api;
+```
+
+Exported symbols: 52.
+
+### `AppendIntentConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an append intent is replayed with different semantic content.
+
+Signature:
+
+```ts
+export declare class AppendIntentConflictError extends TraceStoreError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable append-conflict code.
+
+```ts
+readonly code: string;
+```
+
+### `ClaimScopeWriterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for claiming scope writer authority.
+
+Signature:
+
+```ts
+export type ClaimScopeWriterOptions = {
+    readonly claimId: string;
+    readonly nowMilliseconds?: number;
+    readonly scopeId: string;
+};
+```
+
+### `EmitScopeRecordOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for one fenced scope-local emission.
+
+Signature:
+
+```ts
+export type EmitScopeRecordOptions = {
+    readonly citedRecordIds?: readonly RecordId[];
+    readonly commandId: string;
+    readonly data: SemanticRecord;
+    readonly expectedHeadRecordId: RecordId;
+    readonly nowMilliseconds?: number;
+    readonly writer: ScopeWriter;
+};
+```
+
+### `RegisterChildScopeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for registering one child scope under a parent writer.
+
+Signature:
+
+```ts
+export type RegisterChildScopeOptions = {
+    readonly commandId: string;
+    readonly executionId?: string;
+    readonly expectedHeadRecordId: RecordId;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly nowMilliseconds?: number;
+    readonly parent: ScopeWriter;
+};
+```
+
+### `RegisterRootScopeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for registering one root scope.
+
+Signature:
+
+```ts
+export type RegisterRootScopeOptions = {
+    readonly authority: {
+        readonly ceiling: ScopeResourceGrantRequest;
+        readonly grant: ScopeResourceGrantRequest;
+    };
+    readonly commandId: string;
+    readonly executionId?: string;
+};
+```
+
+### `ReleaseScopeWriterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for releasing scope writer authority.
+
+Signature:
+
+```ts
+export type ReleaseScopeWriterOptions = {
+    readonly writer: ScopeWriter;
+};
+```
+
+### `SCOPE_AUTHORITY_ATOMS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope authority atoms shared with repository grants.
+
+Signature:
+
+```ts
+export declare const SCOPE_AUTHORITY_ATOMS: readonly [
+    "read",
+    "write"
+];
+```
+
+### `SCOPE_COMMAND_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope command kinds ordered root registration, child registration, emission.
+
+Signature:
+
+```ts
+export declare const SCOPE_COMMAND_KINDS: readonly [
+    "register_root",
+    "register_child",
+    "emit"
+];
+```
+
+### `SCOPE_COMPATIBILITY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope evidence compatibility namespace.
+
+Signature:
+
+```ts
+export declare const SCOPE_COMPATIBILITY_VERSION: "shepherd.scope.v1";
+```
+
+### `SCOPE_EVIDENCE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope-local history evidence classifications.
+
+Signature:
+
+```ts
+export declare const SCOPE_EVIDENCE_KINDS: readonly [
+    "registration",
+    "origin_cut",
+    "child_registered",
+    "emission"
+];
+```
+
+### `SCOPE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope kinds ordered root then child.
+
+Signature:
+
+```ts
+export declare const SCOPE_KINDS: readonly [
+    "root",
+    "child"
+];
+```
+
+### `SCOPE_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope command resource bounds.
+
+Signature:
+
+```ts
+export declare const SCOPE_LIMITS: Readonly<{
+    readonly maxCitedRecords: 64;
+    readonly maxDataCanonicalBytes: 65536;
+    readonly maxResources: 64;
+}>;
+```
+
+### `SCOPE_RECORD_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured canonical scope record version.
+
+Signature:
+
+```ts
+export declare const SCOPE_RECORD_VERSION: 1;
+```
+
+### `SCOPE_RESOURCE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured resource kinds that scope authority may cite.
+
+Signature:
+
+```ts
+export declare const SCOPE_RESOURCE_KINDS: readonly [
+    "repository_binding"
+];
+```
+
+### `SCOPE_STATES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope branch-lifecycle states ordered open, merged, discarded.
+
+Signature:
+
+```ts
+export declare const SCOPE_STATES: readonly [
+    "open",
+    "merged",
+    "discarded"
+];
+```
+
+### `SCOPE_WORLD_CAPABILITIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope world-capability declarations.
+
+Signature:
+
+```ts
+export declare const SCOPE_WORLD_CAPABILITIES: readonly [
+    "trace_only"
+];
+```
+
+### `ScopeAuthority`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Whole-run ceiling and effective attenuated authority retained by a scope.
+
+Signature:
+
+```ts
+export type ScopeAuthority = {
+    readonly ceiling: readonly ScopeResourceGrant[];
+    readonly effective: readonly ScopeResourceGrant[];
+};
+```
+
+### `ScopeAuthorityAtom`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured authority atom shared with repository grants.
+
+Signature:
+
+```ts
+export type ScopeAuthorityAtom = (typeof SCOPE_AUTHORITY_ATOMS)[number];
+```
+
+### `ScopeAuthorityError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a scope authority request cites unknown resources or exceeds parent or ceiling authority.
+
+Signature:
+
+```ts
+export declare class ScopeAuthorityError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail?: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned refused-authority code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a refused-authority failure.
+
+```ts
+constructor(detail?: string);
+```
+
+Parameter:
+
+- detail - Optional specific refusal description appended to the configured message.
+
+### `ScopeChildRegisteredRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical parent-owned child-registration control record body.
+
+Signature:
+
+```ts
+export type ScopeChildRegisteredRecord = {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly origin_cut_id: CutId;
+    readonly origin_record_id: RecordId;
+    readonly parent_scope_id: string;
+    readonly scope_version: number;
+};
+```
+
+### `ScopeChildRegistrationReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of registering one child scope.
+
+Signature:
+
+```ts
+export type ScopeChildRegistrationReceipt = {
+    readonly authority: ScopeAuthority;
+    readonly command_id: string;
+    readonly head: ScopeHeadAddress;
+    readonly kind: ScopeKind;
+    readonly origin: ScopeParentOrigin;
+    readonly parent_head: ScopeHeadAddress;
+    readonly registration_record_id: RecordId;
+    readonly scope_id: string;
+};
+```
+
+### `ScopeCommandKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured scope command kind: root registration, child registration, or emission.
+
+Signature:
+
+```ts
+export type ScopeCommandKind = (typeof SCOPE_COMMAND_KINDS)[number];
+```
+
+### `ScopeCommandReplay`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Classified original receipt of one completed scope command, reconstructed from records.
+
+Signature:
+
+```ts
+export type ScopeCommandReplay = {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[0];
+    readonly receipt: ScopeRootRegistrationReceipt;
+} | {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[1];
+    readonly receipt: ScopeChildRegistrationReceipt;
+} | {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[2];
+    readonly receipt: ScopeEmissionReceipt;
+};
+```
+
+### `ScopeEmissionReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of one scope-local emission.
+
+Signature:
+
+```ts
+export type ScopeEmissionReceipt = {
+    readonly command_id: string;
+    readonly head: ScopeHeadAddress;
+    readonly previous_head_record_id: RecordId;
+    readonly scope_id: string;
+};
+```
+
+### `ScopeEmissionRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical scope-local application-data emission record body.
+
+Signature:
+
+```ts
+export type ScopeEmissionRecord = {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly data: SemanticRecord;
+    readonly expected_head_record_id: RecordId;
+    readonly scope_id: string;
+    readonly scope_version: number;
+};
+```
+
+### `ScopeEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or cited scope evidence is absent, malformed, or inconsistent.
+
+Signature:
+
+```ts
+export declare class ScopeEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail?: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail?: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Optional specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ScopeEvidenceKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured classification of one retained scope-local history entry.
+
+Signature:
+
+```ts
+export type ScopeEvidenceKind = (typeof SCOPE_EVIDENCE_KINDS)[number];
+```
+
+### `ScopeHeadAddress`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained head address of one scope owner path.
+
+Signature:
+
+```ts
+export type ScopeHeadAddress = {
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+};
+```
+
+### `ScopeHeadConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a scope command names an expected head that is no longer current.
+
+Signature:
+
+```ts
+export declare class ScopeHeadConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly scope_id: string;
+    constructor(scopeId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned stale-head code.
+
+```ts
+readonly code: string;
+```
+
+#### `scope_id`
+
+Scope whose head advanced past the caller's expectation.
+
+```ts
+readonly scope_id: string;
+```
+
+#### `constructor`
+
+Creates a stale expected-head failure.
+
+```ts
+constructor(scopeId: string);
+```
+
+Parameter:
+
+- scopeId - Scope whose current head disagrees with the command.
+
+### `ScopeHistoryEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One validated scope-local history entry.
+
+Signature:
+
+```ts
+export type ScopeHistoryEntry = {
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[0];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+} | {
+    readonly cut_id: CutId;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[1];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+} | {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[2];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+} | {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[3];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+};
+```
+
+### `ScopeInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only validated projection of one scope reconstructed from retained records.
+
+Signature:
+
+```ts
+export type ScopeInspection = {
+    readonly authority: ScopeAuthority;
+    readonly children: readonly string[];
+    readonly execution_id: string | null;
+    readonly head: ScopeHeadAddress;
+    readonly history: readonly ScopeHistoryEntry[];
+    readonly kind: ScopeKind;
+    readonly parent: ScopeParentOrigin | null;
+    readonly registered_for_mutation: boolean;
+    readonly registration_record_id: RecordId;
+    readonly scope_id: string;
+    readonly state: ScopeState;
+    readonly world_capability: ScopeWorldCapability;
+};
+```
+
+### `ScopeKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured scope kind: root or child.
+
+Signature:
+
+```ts
+export type ScopeKind = (typeof SCOPE_KINDS)[number];
+```
+
+### `ScopeParentOrigin`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact ownership and fork-origin evidence retained by a child scope.
+
+Signature:
+
+```ts
+export type ScopeParentOrigin = {
+    readonly child_registered_record_id: RecordId;
+    readonly origin_cut_id: CutId;
+    readonly origin_record_id: RecordId;
+    readonly scope_id: string;
+};
+```
+
+### `ScopeRegistrationRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical scope registration record body.
+
+Signature:
+
+```ts
+export type ScopeRegistrationRecord = {
+    readonly authority: ScopeAuthority;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly execution_id: string | null;
+    readonly kind: ScopeKind;
+    readonly parent: ScopeParentOrigin | null;
+    readonly scope_id: string;
+    readonly scope_version: number;
+    readonly world_capability: ScopeWorldCapability;
+};
+```
+
+### `ScopeResourceGrant`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Authority atoms bound to one exact resource identity.
+
+Signature:
+
+```ts
+export type ScopeResourceGrant = {
+    readonly atoms: readonly ScopeAuthorityAtom[];
+    readonly resource_id: string;
+    readonly resource_kind: ScopeResourceKind;
+};
+```
+
+### `ScopeResourceGrantRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Requested root or child resource authority.
+
+Signature:
+
+```ts
+export type ScopeResourceGrantRequest = readonly ScopeResourceGrant[];
+```
+
+### `ScopeResourceKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured resource kind that scope authority may cite.
+
+Signature:
+
+```ts
+export type ScopeResourceKind = (typeof SCOPE_RESOURCE_KINDS)[number];
+```
+
+### `ScopeRootRegistrationReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of registering one root scope.
+
+Signature:
+
+```ts
+export type ScopeRootRegistrationReceipt = {
+    readonly authority: ScopeAuthority;
+    readonly command_id: string;
+    readonly head: ScopeHeadAddress;
+    readonly kind: ScopeKind;
+    readonly registration_record_id: RecordId;
+    readonly scope_id: string;
+};
+```
+
+### `ScopeState`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured branch-lifecycle state of one scope.
+
+Signature:
+
+```ts
+export type ScopeState = (typeof SCOPE_STATES)[number];
+```
+
+### `ScopeWorldCapability`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured world capability declared by a scope registration.
+
+Signature:
+
+```ts
+export type ScopeWorldCapability = (typeof SCOPE_WORLD_CAPABILITIES)[number];
+```
+
+### `ScopeWriter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Package-authenticated live writer authority for one scope.
+
+Signature:
+
+```ts
+export type ScopeWriter = {
+    readonly claim_id: string;
+    readonly fencing_token: number;
+    readonly lease_expires_at: number;
+    readonly scope_id: string;
+    readonly [scopeWriterContract]?: true;
+};
+```
+
+### `ScopeWriterConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when another unexpired caller holds the scope writer claim.
+
+Signature:
+
+```ts
+export declare class ScopeWriterConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly scope_id: string;
+    constructor(scopeId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned writer-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Claim identity currently holding the scope.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `scope_id`
+
+Scope whose writer authority is held by another caller.
+
+```ts
+readonly scope_id: string;
+```
+
+#### `constructor`
+
+Creates a lost writer-claim failure.
+
+```ts
+constructor(scopeId: string, claimId: string);
+```
+
+Parameter:
+
+- scopeId - Scope whose writer claim is held.
+
+Parameter:
+
+- claimId - Winning claim identity.
+
+### `ScopeWriterFencedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a scope writer fence is released, expired, superseded, or unknown.
+
+Signature:
+
+```ts
+export declare class ScopeWriterFencedError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly scope_id: string;
+    constructor(scopeId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned fenced-writer code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Claim identity rejected at the command boundary.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `scope_id`
+
+Scope whose command was fenced.
+
+```ts
+readonly scope_id: string;
+```
+
+#### `constructor`
+
+Creates a fenced-writer failure.
+
+```ts
+constructor(scopeId: string, claimId: string);
+```
+
+Parameter:
+
+- scopeId - Scope whose command was rejected.
+
+Parameter:
+
+- claimId - Rejected claim identity.
+
+### `ScopeWriterRelease`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of releasing one exact scope writer.
+
+Signature:
+
+```ts
+export type ScopeWriterRelease = {
+    readonly claim_id: string;
+    readonly fencing_token: number;
+    readonly scope_id: string;
+};
+```
+
+### `TraceStoreError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Base error for trace-store contract violations.
+
+Signature:
+
+```ts
+export declare class TraceStoreError extends Error {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable trace-store error code.
+
+```ts
+readonly code: string;
+```
+
+### `claimScopeWriter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Atomically claims single-writer authority for one registered open scope.
+
+A fresh claim receives fencing token one. An exact unexpired active claim is returned again.
+A released or expired claim is superseded by a new claim with the next monotonic token, so a
+stale holder's later commands are fenced; expiry alone does not prove the previous holder
+stopped. An unexpired active claim held by another identity fails closed. Imported scopes have
+no live registration and cannot be claimed.
+
+Signature:
+
+```ts
+export declare function claimScopeWriter(store: SQLiteTraceStore, options: ClaimScopeWriterOptions): ScopeWriter;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the scope registration.
+
+Parameter:
+
+- options - Exact scope, proposed claim identity, and optional deterministic time.
+
+Returns:
+
+- A frozen package-authenticated writer handle.
+
+Throws:
+
+- {ScopeWriterConflictError} If another unexpired active claim holds the scope.
+
+Throws:
+
+- {ScopeEvidenceError} If the scope is not registered for mutation in this store or not open.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const writer = claimScopeWriter(store, { claimId: "claim:worker-1", scopeId: root.scope_id });
+```
+
+### `emitScopeRecord`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably emits validated application data onto one scope-local history under a current fence.
+
+The emission record is caused by the exact expected head and every cited retained record, so
+it extends only the emitting scope's path; it never appears in a parent's effective history,
+fabricates an outcome, or authorizes external execution. An exact retry of the same command
+returns the original receipt across restart, including after the head advanced, the fence was
+released, or a new writer was admitted; changed content conflicts.
+
+Signature:
+
+```ts
+export declare function emitScopeRecord(store: SQLiteTraceStore, options: EmitScopeRecordOptions): ScopeEmissionReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the scope registration.
+
+Parameter:
+
+- options - Authenticated writer, exact head, command identity, data, and citations.
+
+Returns:
+
+- Frozen durable emission receipt.
+
+Throws:
+
+- {ScopeWriterFencedError} If the writer fence is released, expired, or superseded.
+
+Throws:
+
+- {ScopeHeadConflictError} If the expected head is not current.
+
+Throws:
+
+- {ScopeEvidenceError} If the scope is not registered for mutation or a citation is absent.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the writer is forged, data is not canonical, or options are malformed.
+
+Example:
+
+- ```ts
+const emitted = emitScopeRecord(store, {
+    commandId: "scope-command:emit:1",
+    data: { note: "draft" },
+    expectedHeadRecordId: root.head.record_id,
+    writer,
+});
+```
+
+### `inspectScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reconstructs and validates one scope from its retained owner path without mutation.
+
+The projection is derived from canonical records, so a read-only reopen or a native archive
+import produces the same result. Live registration admitting mutation is reported separately:
+an imported archive carries inspection evidence only and reports `registered_for_mutation`
+false. Slice A retains only open scopes; merge and discard evidence are later slices.
+
+Signature:
+
+```ts
+export declare function inspectScope(store: SQLiteTraceStore, scopeId: string): ScopeInspection | undefined;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- scopeId - Exact configured scope identity.
+
+Returns:
+
+- Frozen validated inspection, or `undefined` when the owner path retains nothing.
+
+Throws:
+
+- {ScopeEvidenceError} If retained scope evidence is malformed or inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or a cited cut is absent or corrupt.
+
+Throws:
+
+- {TypeError} If the scope identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectScope(store, root.scope_id);
+console.log(inspection?.head.record_id, inspection?.history.length);
+```
+
+### `readScopeCommandReceipt`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads the exact retained receipt of one completed scope command without any writer authority.
+
+Receipt replay is a read: it reconstructs the original registration or emission receipt from
+the records retained under the command's append intent, so a caller that lost its response,
+restarted, or whose fence is stale or superseded still receives the original result. It grants
+no mutation authority and works on read-only and imported stores.
+
+Signature:
+
+```ts
+export declare function readScopeCommandReceipt(store: SQLiteTraceStore, commandId: string): ScopeCommandReplay | undefined;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- commandId - Globally idempotent scope command identity.
+
+Returns:
+
+- The classified original receipt, or `undefined` when the command was never retained.
+
+Throws:
+
+- {ScopeEvidenceError} If retained command evidence is not well-formed scope evidence.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or a cited cut is absent or corrupt.
+
+Throws:
+
+- {TypeError} If the command identity is malformed.
+
+Example:
+
+- ```ts
+const replay = readScopeCommandReceipt(store, "scope-command:emit-1");
+if (replay?.command === "emit") {
+    console.log(replay.receipt.head.record_id);
+}
+```
+
+### `registerChildScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably registers one isolated child scope under explicit parent writer authority.
+
+One transaction appends a parent-owned child-registration control record caused by the exact
+expected parent head, the child registration record, and a deterministic immutable origin cut
+through that parent head published on the child path. Child effective authority is the
+per-resource intersection of the parent's effective authority, the requested grant, and the
+whole-run ceiling. The parent's managed content and earlier records are unchanged; only its
+head advances by the control record. Exact replay returns the original receipt even after the
+parent fence is later released; changed content conflicts.
+
+Signature:
+
+```ts
+export declare function registerChildScope(store: SQLiteTraceStore, options: RegisterChildScopeOptions): ScopeChildRegistrationReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the parent registration.
+
+Parameter:
+
+- options - Authenticated parent writer, exact parent head, requested grant, and command.
+
+Returns:
+
+- Frozen durable child registration receipt.
+
+Throws:
+
+- {ScopeAuthorityError} If the grant exceeds the parent or ceiling or cites unknown atoms.
+
+Throws:
+
+- {ScopeWriterFencedError} If the parent fence is released, expired, or superseded.
+
+Throws:
+
+- {ScopeHeadConflictError} If the expected parent head is not current.
+
+Throws:
+
+- {ScopeEvidenceError} If parent or execution evidence is absent or the child exists.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the parent handle is forged or options are malformed.
+
+### `registerRootScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably registers one root scope with explicit trace authority and a whole-run ceiling.
+
+The registration record is the first occurrence on the new scope owner path. Effective
+authority is the per-resource intersection of the requested grant and the ceiling. An exact
+retry of the same command returns the original receipt across restart; reusing the command
+identity for different content fails closed. Registration is trace-only: it forks no world,
+invokes no provider, and materializes nothing.
+
+Signature:
+
+```ts
+export declare function registerRootScope(store: SQLiteTraceStore, options: RegisterRootScopeOptions): ScopeRootRegistrationReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Closed command identity, authority, and optional execution association.
+
+Returns:
+
+- Frozen durable registration receipt.
+
+Throws:
+
+- {ScopeAuthorityError} If the grant cites resources outside the ceiling or unknown atoms.
+
+Throws:
+
+- {ScopeEvidenceError} If the scope already exists or execution evidence is absent.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const root = registerRootScope(store, {
+    authority: {
+        ceiling: [{ atoms: ["read", "write"], resource_id: "sha256:...", resource_kind: "repository_binding" }],
+        grant: [{ atoms: ["read"], resource_id: "sha256:...", resource_kind: "repository_binding" }],
+    },
+    commandId: "scope-command:root:1",
+});
+```
+
+### `releaseScopeWriter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Releases one exact scope writer so a later claim may proceed without waiting for expiry.
+
+Releasing an already released exact claim is idempotent. A superseded or unknown fence fails
+closed. Released handles remain authenticated objects whose later commands are fenced.
+
+Signature:
+
+```ts
+export declare function releaseScopeWriter(store: SQLiteTraceStore, options: ReleaseScopeWriterOptions): ScopeWriterRelease;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the claim.
+
+Parameter:
+
+- options - Authenticated writer to release.
+
+Returns:
+
+- Frozen released-claim evidence.
+
+Throws:
+
+- {ScopeWriterFencedError} If the fence is superseded or unknown.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the writer handle is forged or options are malformed.
+
 ## Tasks
 
 Package entry: `./tasks`
@@ -18745,7 +21277,7 @@ Stable classification for one whole-store integrity defect.
 Signature:
 
 ```ts
-export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "sqlite_integrity_mismatch" | "witness_mismatch";
+export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "scope_registration_mismatch" | "sqlite_integrity_mismatch" | "witness_mismatch";
 ```
 
 ### `TraceIntegrityReport`
@@ -18763,6 +21295,7 @@ export type TraceIntegrityReport = {
     readonly checked_cut_count: number;
     readonly checked_owner_count: number;
     readonly checked_record_count: number;
+    readonly checked_scope_count: number;
     readonly issues: readonly TraceIntegrityIssue[];
     readonly ok: boolean;
 };

@@ -11,7 +11,11 @@ import { projectExecution } from "../projection/execution.ts";
 import { projectEffectiveHistory } from "../projection/history.ts";
 import { activeExecutionRelations, projectExecutionRelations } from "../projection/relations.ts";
 import type { EffectiveHistory, Execution } from "../projection/types.ts";
-import { kernelProtocolConfig, runProtocolConfig } from "../protocol/config.ts";
+import {
+    kernelProtocolConfig,
+    runProtocolConfig,
+    scopeProtocolConfig,
+} from "../protocol/config.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { createConfiguredRootWitness } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
@@ -76,6 +80,19 @@ import {
     readRetainedWorldSettlementJournal,
     retainRetainedWorldSettlementTerminal,
 } from "./retained-world-settlements.ts";
+import {
+    type ChildScopeRegistrationRequest,
+    claimScopeWriterInStore,
+    emitScopeRecordInStore,
+    readAppendIntentRecords,
+    readScopeRegistrationRow,
+    registerChildScopeInStore,
+    registerRootScopeInStore,
+    releaseScopeWriterInStore,
+    type ScopeRegistrationRow,
+    type ScopeWriterClaimRow,
+    type ScopeWriterFence,
+} from "./scope-registrations.ts";
 import { readCausalClosureSlice, readOwnerPrefixSlice } from "./slices.ts";
 import type {
     AppendReceipt,
@@ -397,6 +414,80 @@ export class SQLiteTraceStore implements Disposable {
     completeRetainedWorldSettlementCleanup(outputId: string): RetainedWorldSettlementJournal {
         this.#assertOpen();
         return completeRetainedWorldSettlementCleanup(this.#database, outputId);
+    }
+
+    /** @internal Atomically registers or identically replays one root scope. */
+    registerRootScope(
+        scopeId: string,
+        executionId: string | null,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return registerRootScopeInStore(this.#database, scopeId, executionId, request);
+    }
+
+    /** @internal Atomically registers or identically replays one child scope under its parent fence. */
+    registerChildScope(registration: ChildScopeRegistrationRequest): {
+        readonly cut: Cut;
+        readonly receipt: AppendReceipt;
+    } {
+        this.#assertOpen();
+        return registerChildScopeInStore(this.#database, registration);
+    }
+
+    /** @internal Atomically admits, renews, or refuses one scope writer claim. */
+    claimScopeWriter(
+        scopeId: string,
+        claimId: string,
+        nowMilliseconds: number,
+    ): ScopeWriterClaimRow {
+        this.#assertOpen();
+        return claimScopeWriterInStore(
+            this.#database,
+            scopeId,
+            claimId,
+            nowMilliseconds,
+            scopeProtocolConfig.writerClaimLeaseMilliseconds,
+        );
+    }
+
+    /** @internal Atomically releases or identically replays the release of one exact writer. */
+    releaseScopeWriter(scopeId: string, fence: ScopeWriterFence): ScopeWriterClaimRow {
+        this.#assertOpen();
+        return releaseScopeWriterInStore(this.#database, scopeId, fence);
+    }
+
+    /** @internal Atomically retains or identically replays one fenced scope-local emission. */
+    emitScopeRecord(
+        scopeId: string,
+        fence: ScopeWriterFence,
+        expectedHeadRecordId: RecordId,
+        citedRecordIds: readonly RecordId[],
+        nowMilliseconds: number,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return emitScopeRecordInStore(
+            this.#database,
+            scopeId,
+            fence,
+            expectedHeadRecordId,
+            citedRecordIds,
+            nowMilliseconds,
+            request,
+        );
+    }
+
+    /** @internal Reads the owner occurrences retained by one append intent in append order. */
+    readAppendIntentRecords(appendIntentId: string): readonly OwnerRecord[] {
+        this.#assertOpen();
+        return readAppendIntentRecords(this.#database, appendIntentId);
+    }
+
+    /** @internal Reads one live scope registration row admitting mutation in this store. */
+    readScopeRegistration(scopeId: string): ScopeRegistrationRow | undefined {
+        this.#assertOpen();
+        return readScopeRegistrationRow(this.#database, scopeId);
     }
 
     /**

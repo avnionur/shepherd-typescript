@@ -11,6 +11,7 @@ import type {
     ProviderProtocolConfig,
     RecordIdConfig,
     RunProtocolConfig,
+    ScopeProtocolConfig,
     TaskProtocolConfig,
     WorkspaceProtocolConfig,
 } from "./config-types.ts";
@@ -54,6 +55,9 @@ export const recordIdConfig: RecordIdConfig = protocolConfig.recordId;
 
 /** Runtime terminal run-outcome and schema configuration. */
 export const runProtocolConfig: RunProtocolConfig = protocolConfig.runs;
+
+/** Runtime durable isolated-scope registration, authority, and emission configuration. */
+export const scopeProtocolConfig: ScopeProtocolConfig = protocolConfig.scopes;
 
 /** Runtime task descriptor, schema, and artifact-lock protocol configuration. */
 export const taskProtocolConfig: TaskProtocolConfig = protocolConfig.tasks;

@@ -701,6 +701,99 @@ export type FormalAssuranceProtocolConfig = {
     };
 };
 
+/** Validated durable isolated-scope registration and fenced emission configuration. */
+export type ScopeProtocolConfig = {
+    /** Generated language-neutral scope record artifacts. */
+    readonly artifacts: {
+        /** Repository-relative parent-side child-registration schema destination. */
+        readonly childRegisteredSchema: string;
+        /** Repository-relative scope-local emission schema destination. */
+        readonly emissionSchema: string;
+        /** Repository-relative scope registration schema destination. */
+        readonly registrationSchema: string;
+    };
+    /** Closed scope authority vocabulary attenuated per exact resource identity. */
+    readonly authority: {
+        /** Closed ordered authority atoms shared with repository grants. */
+        readonly atoms: readonly string[];
+        /** Closed resource kinds that scope authority may cite. */
+        readonly resourceKinds: readonly string[];
+    };
+    /** Closed scope command kinds ordered root registration, child registration, emission. */
+    readonly commandKinds: readonly string[];
+    /** Compatibility namespace governing scope record evidence. */
+    readonly compatibilityVersion: string;
+    /** Stable scope error codes and descriptions. */
+    readonly errors: {
+        /** Stable code for refused authority requests. */
+        readonly authorityCode: string;
+        /** Stable description for refused authority requests. */
+        readonly authorityMessage: string;
+        /** Stable code for absent, malformed, or inconsistent scope evidence. */
+        readonly evidenceCode: string;
+        /** Stable description for absent, malformed, or inconsistent scope evidence. */
+        readonly evidenceMessage: string;
+        /** Stable code for a stale expected scope head. */
+        readonly headConflictCode: string;
+        /** Stable description for a stale expected scope head. */
+        readonly headConflictMessage: string;
+        /** Stable code for a writer claim held by another caller. */
+        readonly writerConflictCode: string;
+        /** Stable description for a writer claim held by another caller. */
+        readonly writerConflictMessage: string;
+        /** Stable code for a released, expired, superseded, or unknown writer fence. */
+        readonly writerFencedCode: string;
+        /** Stable description for a released, expired, superseded, or unknown writer fence. */
+        readonly writerFencedMessage: string;
+    };
+    /** Closed ordered vocabulary classifying retained scope-local history entries. */
+    readonly evidenceKinds: readonly string[];
+    /** Content-addressed scope identity domains. */
+    readonly identity: {
+        /** Deterministic fork-origin cut identity prefix. */
+        readonly originCutIdPrefix: string;
+        /** Content-addressed scope identity prefix. */
+        readonly scopeIdPrefix: string;
+    };
+    /** Closed scope kinds ordered root then child. */
+    readonly kinds: readonly string[];
+    /** Resource bounds for scope commands. */
+    readonly limits: {
+        /** Maximum retained records one emission may cite. */
+        readonly maxCitedRecords: number;
+        /** Maximum canonical JSON bytes for one emitted application-data value. */
+        readonly maxDataCanonicalBytes: number;
+        /** Maximum exact resources in one scope authority surface. */
+        readonly maxResources: number;
+    };
+    /** Wire version for canonical scope records. */
+    readonly recordVersion: number;
+    /** Absolute JSON Schema identifiers for scope records. */
+    readonly schemas: {
+        /** Parent-side child-registration schema identifier. */
+        readonly childRegisteredId: string;
+        /** Scope-local emission schema identifier. */
+        readonly emissionId: string;
+        /** Scope registration schema identifier. */
+        readonly registrationId: string;
+    };
+    /** Closed branch-lifecycle states ordered open, merged, discarded. */
+    readonly states: readonly string[];
+    /** Trace record schema references retained for scope evidence. */
+    readonly traceSchemas: {
+        /** Parent-owned child-registration control record schema. */
+        readonly childRegistered: string;
+        /** Scope-local application-data emission record schema. */
+        readonly emission: string;
+        /** Scope registration record schema. */
+        readonly registration: string;
+    };
+    /** Closed world-capability vocabulary declared by scope registrations. */
+    readonly worldCapabilities: readonly string[];
+    /** Duration granted to a scope writer claim before expiry-based takeover. */
+    readonly writerClaimLeaseMilliseconds: number;
+};
+
 /** Validated terminal run-outcome protocol configuration. */
 export type RunProtocolConfig = {
     /** Closed artifact-content representation vocabulary. */
@@ -1690,6 +1783,7 @@ export type ProtocolConfig = {
     readonly providers: ProviderProtocolConfig;
     readonly recordId: RecordIdConfig;
     readonly runs: RunProtocolConfig;
+    readonly scopes: ScopeProtocolConfig;
     readonly tasks: TaskProtocolConfig;
     readonly workspaces: WorkspaceProtocolConfig;
 };

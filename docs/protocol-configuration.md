@@ -39,6 +39,11 @@ constituent/evidence vocabularies, the receipt-bearing evidence status, their ve
 generated continuation, waiting, and suspension schema contracts.
 The provider section fixes provider kinds, static-provider capabilities, and stable typed-error
 codes and messages.
+The scope section fixes the scope record version and compatibility namespace, root/child kinds,
+open/merged/discarded states, history evidence kinds, the trace-only world capability, authority
+atoms (equal to repository grant atoms) and resource kinds, scope and origin-cut identity prefixes,
+citation/data/resource bounds, writer-claim lease duration, trace schema references, generated
+schema identifiers and destinations, and stable authority, evidence, head, and writer error codes.
 The orphan-repair section fixes versioned operation, diagnosis, command, and receipt contracts;
 canonical identity domains; command/receipt trace schemas; blocker and error codes; generated
 schema destinations; and count, page, identifier, cause, and canonical-byte bounds.
@@ -96,7 +101,9 @@ v6 owns the consume-once
 settlement decision table without changing kernel record identity.
 Store schema v7 adds nullable retained-world effect-journal evidence. Store schema v8 adds narrow
 open-operation bookkeeping and repair commit-marker tables without changing canonical record,
-settlement, custody, or native trace archive identity.
+settlement, custody, or native trace archive identity. Store schema v9 adds live scope
+registration and writer-claim tables that are verified against canonical records and never
+exported.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -151,6 +158,10 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   non-terminal states and outcomes, and all values match the immutable run protocol v1 contract.
 - provider kinds are unique, static capabilities are booleans, error codes/messages are non-empty,
   and every value matches the immutable provider protocol v1 contract.
+- scope kinds are exactly two, states exactly three, evidence kinds exactly four, authority atoms
+  equal the configured repository grant atoms, trace schema references are distinct, identity
+  prefixes, bounds, lease, versions, schema identifiers, and error codes are closed, and every
+  value matches the immutable scope protocol v1 contract.
 - orphan-repair digest length matches its configured algorithm; blocker codes are unique; page
   bounds are ordered within the total operation limit; schema IDs and artifact destinations are
   closed; and every value matches the immutable orphan-repair protocol v1 contract.

@@ -22,7 +22,9 @@ Tests and fixtures:
 - the kernel ABI, canonicalization version, and archive format version.
 
 Export first verifies SQLite, records, parents, witnesses, views, receipts, cuts, and blobs. A
-store with classified corruption is not exportable. Unknown schema-specific record-body fields
+store with classified corruption is not exportable. Live authority tables, including durable
+invocation claims, settlement admissions, orphan bookkeeping, and scope registration or writer
+rows, are never exported; imported scopes are inspection evidence only. Unknown schema-specific record-body fields
 remain canonical semantic data and round-trip without interpretation.
 
 ## Import contract
