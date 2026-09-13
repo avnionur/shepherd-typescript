@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.2] - 2026-09-12
+
+### Improvement
+
+- Cover scope inspection's fail-closed checks for emission and child-registration evidence that is
+  retained by its own command intent on the current head but names another scope, restoring the
+  configured 100% line and branch coverage gate.
+
+### Impact
+
+Repository verification passes again after the scope registration slice. Runtime behavior, public
+API, protocols, schemas and dependencies are unchanged.
+
 ## [2.1.1] - 2026-09-11
 
 ### Improvement
