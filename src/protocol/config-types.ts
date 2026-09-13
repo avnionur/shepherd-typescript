@@ -705,12 +705,18 @@ export type FormalAssuranceProtocolConfig = {
 export type ScopeProtocolConfig = {
     /** Generated language-neutral scope record artifacts. */
     readonly artifacts: {
+        /** Repository-relative parent-side child-merge integration schema destination. */
+        readonly childMergedSchema: string;
         /** Repository-relative parent-side child-registration schema destination. */
         readonly childRegisteredSchema: string;
+        /** Repository-relative scope discard journal schema destination. */
+        readonly discardSchema: string;
         /** Repository-relative scope-local emission schema destination. */
         readonly emissionSchema: string;
         /** Repository-relative scope fork journal schema destination. */
         readonly forkSchema: string;
+        /** Repository-relative scope merge journal schema destination. */
+        readonly mergeSchema: string;
         /** Repository-relative scope registration schema destination. */
         readonly registrationSchema: string;
     };
@@ -730,10 +736,12 @@ export type ScopeProtocolConfig = {
         /** Closed resource kinds that scope authority may cite. */
         readonly resourceKinds: readonly string[];
     };
-    /** Closed scope command kinds ordered root registration, child registration, emission. */
+    /** Closed scope command kinds ordered root registration, child registration, emission, fork, merge, discard. */
     readonly commandKinds: readonly string[];
     /** Compatibility namespace governing scope record evidence. */
     readonly compatibilityVersion: string;
+    /** Closed discard journal phases ordered decided then cleaned. */
+    readonly discardPhases: readonly string[];
     /** Stable scope error codes and descriptions. */
     readonly errors: {
         /** Stable code for refused authority requests. */
@@ -748,6 +756,18 @@ export type ScopeProtocolConfig = {
         readonly headConflictCode: string;
         /** Stable description for a stale expected scope head. */
         readonly headConflictMessage: string;
+        /** Stable code for overlapping child and current-parent merge changes. */
+        readonly mergeConflictCode: string;
+        /** Stable description for overlapping child and current-parent merge changes. */
+        readonly mergeConflictMessage: string;
+        /** Stable code for a scope operation refused because affected scopes are not quiescent. */
+        readonly quiescenceCode: string;
+        /** Stable description for a scope operation refused because affected scopes are not quiescent. */
+        readonly quiescenceMessage: string;
+        /** Stable code for a scope that is not open or retains another terminal decision. */
+        readonly terminalConflictCode: string;
+        /** Stable description for a scope that is not open or retains another terminal decision. */
+        readonly terminalConflictMessage: string;
         /** Stable code for a writer claim held by another caller. */
         readonly writerConflictCode: string;
         /** Stable description for a writer claim held by another caller. */
@@ -765,6 +785,8 @@ export type ScopeProtocolConfig = {
     readonly identity: {
         /** Deterministic custody identity kind derived for one scope fork. */
         readonly custodyIdentityKind: string;
+        /** Deterministic merge child-cut identity prefix. */
+        readonly mergeCutIdPrefix: string;
         /** Deterministic fork-origin cut identity prefix. */
         readonly originCutIdPrefix: string;
         /** Content-addressed scope identity prefix. */
@@ -776,21 +798,33 @@ export type ScopeProtocolConfig = {
     readonly limits: {
         /** Maximum retained records one emission may cite. */
         readonly maxCitedRecords: number;
+        /** Maximum selected-history contributions one merge may integrate. */
+        readonly maxContributions: number;
         /** Maximum canonical JSON bytes for one emitted application-data value. */
         readonly maxDataCanonicalBytes: number;
+        /** Maximum scopes one discard may seal. */
+        readonly maxDiscardScopes: number;
         /** Maximum exact resources in one scope authority surface. */
         readonly maxResources: number;
     };
+    /** Closed merge journal phases ordered prepared then completed. */
+    readonly mergePhases: readonly string[];
     /** Wire version for canonical scope records. */
     readonly recordVersion: number;
     /** Absolute JSON Schema identifiers for scope records. */
     readonly schemas: {
+        /** Parent-side child-merge integration schema identifier. */
+        readonly childMergedId: string;
         /** Parent-side child-registration schema identifier. */
         readonly childRegisteredId: string;
+        /** Scope discard journal schema identifier. */
+        readonly discardId: string;
         /** Scope-local emission schema identifier. */
         readonly emissionId: string;
         /** Scope fork journal schema identifier. */
         readonly forkId: string;
+        /** Scope merge journal schema identifier. */
+        readonly mergeId: string;
         /** Scope registration schema identifier. */
         readonly registrationId: string;
     };
@@ -798,12 +832,18 @@ export type ScopeProtocolConfig = {
     readonly states: readonly string[];
     /** Trace record schema references retained for scope evidence. */
     readonly traceSchemas: {
+        /** Parent-owned child-merge integration record schema. */
+        readonly childMerged: string;
         /** Parent-owned child-registration control record schema. */
         readonly childRegistered: string;
+        /** Scope discard journal record schema. */
+        readonly discard: string;
         /** Scope-local application-data emission record schema. */
         readonly emission: string;
         /** Scope fork journal record schema. */
         readonly fork: string;
+        /** Scope merge journal record schema. */
+        readonly merge: string;
         /** Scope registration record schema. */
         readonly registration: string;
     };

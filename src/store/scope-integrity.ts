@@ -3,6 +3,7 @@ import type { DatabaseSync } from "node:sqlite";
 import { kernelProtocolConfig, scopeProtocolConfig } from "../protocol/config.ts";
 import { SCOPE_STATES } from "../protocol/values.generated.ts";
 import { readScopeRegistrationRecord } from "../scope/records.ts";
+import { STORE_TABLES } from "./constants.ts";
 import { TraceStoreError } from "./errors.ts";
 import { readOwnerRecordAtOrdinal } from "./read.ts";
 import type { ScopeRegistrationRow } from "./scope-registrations.ts";
@@ -33,4 +34,26 @@ export function verifyScopeRegistrationRow(
     ) {
         throw new TraceStoreError(`scope ${row.scope_id} registration row is inconsistent`);
     }
+    const [openState, mergedState, discardedState] = SCOPE_STATES;
+    const expectedState =
+        countScopeRecords(database, row.scope_id, scopeProtocolConfig.traceSchemas.discard) > 0
+            ? discardedState
+            : countScopeRecords(database, row.scope_id, scopeProtocolConfig.traceSchemas.merge) ===
+                scopeProtocolConfig.mergePhases.length
+              ? mergedState
+              : openState;
+    if (row.state !== expectedState) {
+        throw new TraceStoreError(
+            `scope ${row.scope_id} registration state disagrees with its terminal evidence`,
+        );
+    }
+}
+
+function countScopeRecords(database: DatabaseSync, scopeId: string, schemaRef: string): number {
+    const row = database
+        .prepare(
+            `SELECT COUNT(*) AS count FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND record.schema_ref = ?`,
+        )
+        .get(scopeId, schemaRef) as { readonly count: number };
+    return row.count;
 }

@@ -453,6 +453,12 @@ export const SCOPE_EVIDENCE_KINDS = [
     "emission",
     "fork_prepared",
     "fork_completed",
+    "merge_cut",
+    "merge_prepared",
+    "merge_completed",
+    "child_merged",
+    "discard_decided",
+    "discard_cleaned",
 ] as const;
 
 /** Configured scope world-capability declarations. @public */
@@ -464,11 +470,24 @@ export const SCOPE_AUTHORITY_ATOMS = ["read", "write"] as const;
 /** Configured resource kinds that scope authority may cite. @public */
 export const SCOPE_RESOURCE_KINDS = ["repository_binding", "workspace_binding"] as const;
 
-/** Configured scope command kinds ordered root registration, child registration, emission. @public */
-export const SCOPE_COMMAND_KINDS = ["register_root", "register_child", "emit", "fork"] as const;
+/** Configured scope command kinds ordered root registration, child registration, emission, fork, merge, discard. @public */
+export const SCOPE_COMMAND_KINDS = [
+    "register_root",
+    "register_child",
+    "emit",
+    "fork",
+    "merge",
+    "discard",
+] as const;
 
 /** Configured scope fork journal phases ordered prepared then completed. @public */
 export const SCOPE_FORK_PHASES = ["prepared", "completed"] as const;
+
+/** Configured scope merge journal phases ordered prepared then completed. @public */
+export const SCOPE_MERGE_PHASES = ["prepared", "completed"] as const;
+
+/** Configured scope discard journal phases ordered decided then cleaned. @public */
+export const SCOPE_DISCARD_PHASES = ["decided", "cleaned"] as const;
 
 /** Configured scope checkpoint constituent kinds in classification order. @public */
 export const SCOPE_CHECKPOINT_CONSTITUENT_KINDS = [
@@ -504,6 +523,8 @@ export const SCOPE_COMPATIBILITY_VERSION = "shepherd.scope.v1" as const;
 /** Configured scope command resource bounds. @public */
 export const SCOPE_LIMITS = Object.freeze({
     maxCitedRecords: 64,
+    maxContributions: 1024,
     maxDataCanonicalBytes: 65536,
+    maxDiscardScopes: 256,
     maxResources: 64,
 } as const);

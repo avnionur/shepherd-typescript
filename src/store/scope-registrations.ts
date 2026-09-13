@@ -7,6 +7,8 @@ import type { RecordId } from "../record/types.ts";
 import {
     ScopeEvidenceError,
     ScopeHeadConflictError,
+    ScopeQuiescenceError,
+    ScopeTerminalConflictError,
     ScopeWriterConflictError,
     ScopeWriterFencedError,
 } from "../scope/errors.ts";
@@ -253,6 +255,8 @@ export function registerChildScopeInStore(
         assertOpenRegistration(database, parentScopeId);
         assertCurrentFence(database, parentScopeId, parentFence, nowMilliseconds);
         const head = assertExpectedHead(database, parentScopeId, parentExpectedHeadRecordId);
+        assertNoPendingMergeInto(database, parentScopeId);
+        assertNoMergeReservation(database, parentScopeId);
         assertScopeUnregistered(database, scopeId);
         assertExecutionEvidence(database, executionId);
         const receipt = appendWithinTraceStoreTransaction(database, request);
@@ -461,6 +465,7 @@ function assertForkBoundary(database: DatabaseSync, boundary: ScopeForkBoundary)
     assertRecordId(preparedRecordId, "preparedRecordId");
     assertOpenRegistration(database, parentScopeId);
     assertCurrentFence(database, parentScopeId, parentFence, nowMilliseconds);
+    assertNoPendingMergeInto(database, parentScopeId);
     const child = assertOpenRegistration(database, childScopeId);
     if (child.parent_scope_id !== parentScopeId) {
         throw new ScopeEvidenceError(`scope ${childScopeId} is not owned by ${parentScopeId}`);
@@ -473,7 +478,8 @@ function assertForkBoundary(database: DatabaseSync, boundary: ScopeForkBoundary)
     }
 }
 
-function assertForkCompleteOrAbsent(database: DatabaseSync, scopeId: string): void {
+/** Refuses a scope whose owner path retains an incomplete reference-copy fork. @internal */
+export function assertForkCompleteOrAbsent(database: DatabaseSync, scopeId: string): void {
     const row = database
         .prepare(
             `SELECT COUNT(*) AS count FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND record.schema_ref = ?`,
@@ -539,6 +545,8 @@ export function emitScopeRecordInStore(
         assertOpenRegistration(database, scopeId);
         assertCurrentFence(database, scopeId, fence, nowMilliseconds);
         assertExpectedHead(database, scopeId, expectedHeadRecordId);
+        assertNoPendingMergeInto(database, scopeId);
+        assertNoMergeReservation(database, scopeId);
         const recordExists = database.prepare(
             `SELECT 1 FROM ${STORE_TABLES.records} WHERE record_id = ?`,
         );
@@ -556,7 +564,8 @@ export function emitScopeRecordInStore(
     }
 }
 
-function hasAppendIntent(database: DatabaseSync, appendIntentId: string): boolean {
+/** Reports whether one append intent is retained. @internal */
+export function hasAppendIntent(database: DatabaseSync, appendIntentId: string): boolean {
     return (
         database
             .prepare(`SELECT 1 FROM ${STORE_TABLES.appendIntents} WHERE append_intent_id = ?`)
@@ -570,20 +579,62 @@ function assertScopeUnregistered(database: DatabaseSync, scopeId: string): void 
     }
 }
 
-function assertOpenRegistration(database: DatabaseSync, scopeId: string): ScopeRegistrationRow {
+/** Requires a live open registration row, refusing merged or discarded scopes. @internal */
+export function assertOpenRegistration(
+    database: DatabaseSync,
+    scopeId: string,
+): ScopeRegistrationRow {
     const row = readScopeRegistrationRow(database, scopeId);
     if (row === undefined) {
         throw new ScopeEvidenceError(
             `scope ${scopeId} is not registered for mutation in this store`,
         );
     }
-    if (row.state !== OPEN_STATE) {
-        throw new ScopeEvidenceError(`scope ${scopeId} is not open`);
+    if (row.state === OPEN_STATE) {
+        return row;
     }
-    return row;
+    if (SCOPE_STATES.includes(row.state as (typeof SCOPE_STATES)[number])) {
+        throw new ScopeTerminalConflictError(scopeId);
+    }
+    throw new ScopeEvidenceError(`scope ${scopeId} registration state is unsupported`);
 }
 
-function assertCurrentFence(
+/** Counts retained merge journal records on one scope owner path. @internal */
+export function readScopeMergeJournalCount(database: DatabaseSync, scopeId: string): number {
+    const row = database
+        .prepare(
+            `SELECT COUNT(*) AS count FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND record.schema_ref = ?`,
+        )
+        .get(scopeId, scopeProtocolConfig.traceSchemas.merge) as { readonly count: number };
+    return row.count;
+}
+
+/** Refuses mutation of a scope whose own merge into its parent is reserved. @internal */
+export function assertNoMergeReservation(database: DatabaseSync, scopeId: string): void {
+    if (readScopeMergeJournalCount(database, scopeId) !== 0) {
+        throw new ScopeTerminalConflictError(scopeId);
+    }
+}
+
+/** Refuses parent mutation while a child merge into that parent is reserved but incomplete. @internal */
+export function assertNoPendingMergeInto(database: DatabaseSync, parentScopeId: string): void {
+    const children = database
+        .prepare(
+            `SELECT scope_id FROM ${STORE_TABLES.scopeRegistrations} WHERE parent_scope_id = ? AND state = ? ORDER BY scope_id`,
+        )
+        .all(parentScopeId, OPEN_STATE);
+    for (const child of children) {
+        if (readScopeMergeJournalCount(database, String(child.scope_id)) !== 0) {
+            throw new ScopeQuiescenceError(
+                parentScopeId,
+                `child ${String(child.scope_id)} merge is in flight`,
+            );
+        }
+    }
+}
+
+/** Requires the exact current unexpired writer fence. @internal */
+export function assertCurrentFence(
     database: DatabaseSync,
     scopeId: string,
     fence: ScopeWriterFence,
@@ -602,7 +653,8 @@ function assertCurrentFence(
     }
 }
 
-function assertExpectedHead(
+/** Requires the exact current owner-path head. @internal */
+export function assertExpectedHead(
     database: DatabaseSync,
     scopeId: string,
     expectedHeadRecordId: RecordId,

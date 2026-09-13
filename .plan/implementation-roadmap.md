@@ -360,8 +360,13 @@ and dependency-ordered implementation slices. Task 2 (#129) implements slice A,
 records, per-resource authority attenuation, scope-local writer exclusivity, and record-derived
 inspection. Task 3 (#130) implements slice B,
 [reference-copy scope fork and restart recovery](../docs/scope-fork.md), with coupled checkpoint
-descriptors for one bound resource. Merge, discard, optimized carriers, scheduling, full laws, and
-benchmarks remain open; no L2 claim is implemented.
+descriptors for one bound resource. Task 4 (#131) implements slice C,
+[consume-once merge and discard](../docs/scope-merge-discard.md): three-way world plans with overlap
+refusal, single-winner reservations, verified parent-managed publication, exact selected-history
+contributions, subtree discard preserving the current parent, and retained-identity cleanup.
+Vocabulary mapping (#137), scheduling and orphan recovery (#138), optimized carriers and scaling
+benchmarks (#139), reference-model laws (#140), and the exit audit (#141) remain open; no L2 claim
+is implemented.
 
 Work:
 

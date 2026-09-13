@@ -263,6 +263,68 @@ export function createReferenceCopyApplicationRevision(
 }
 
 /**
+ * Publishes one verified changeset onto owned mutable custody, converging from any prefix.
+ *
+ * The changeset base and head must be owned verified revisions of the custody binding. Each path
+ * already in its head state is skipped, a path in its base state is replaced from the head
+ * revision, and any third state fails closed as an unknown physical state. @internal
+ */
+export function publishReferenceCopyCustodyChangeset(
+    carrier: ReferenceCopyCarrier,
+    custodyId: string,
+    changeset: WorldChangeset,
+): WorldVerification {
+    assertReferenceCopyCarrier(carrier);
+    const paths = REFERENCE_CARRIER_PATHS.get(carrier);
+    assert.ok(paths, "reference carrier paths are unavailable");
+    return invokeCarrier(() => {
+        const custody = loadCustody(paths, custodyId);
+        verifyRevision(paths, changeset.base_revision_id);
+        verifyRevision(paths, changeset.head_revision_id);
+        const head = loadRevision(paths, changeset.head_revision_id);
+        const base = loadRevision(paths, changeset.base_revision_id);
+        assert.equal(base.binding_id, custody.binding_id, "changeset base binding differs");
+        assert.equal(head.binding_id, custody.binding_id, "changeset head binding differs");
+        const descriptor = readOwnedRevisionDescriptor(paths, custody.base_revision_id);
+        assertChangesetPathsUnprotected(
+            changeset,
+            pathProtection(paths.workspaceRoot, descriptor.binding_root),
+        );
+        for (const change of orderWorldPathChangesForPublication(changeset.changes)) {
+            const observed = readPathNode(custody.path, change.path);
+            if (sameNode(observed, change.after)) continue;
+            if (!sameNode(observed, change.before)) throw selectionError("recovery");
+            applyPathChange(custody.path, head.path, change);
+        }
+        return verifyCustody(paths, custodyId);
+    });
+}
+
+/**
+ * Durably discards one exact custody identity whether or not it was ever published.
+ *
+ * The discard decision is retained first, so a late publication under the identity can never be
+ * reopened, and an existing custody tree is removed only after verification. Retries converge.
+ * @internal
+ */
+export function discardReferenceCopyCustodyIdentity(
+    carrier: ReferenceCopyCarrier,
+    custodyId: string,
+): void {
+    assertReferenceCopyCarrier(carrier);
+    const paths = REFERENCE_CARRIER_PATHS.get(carrier);
+    assert.ok(paths, "reference carrier paths are unavailable");
+    invokeCarrier(() => {
+        const marker = discardMarker(paths, custodyId);
+        if (!existsSync(marker) && !existsSync(custodyRoot(paths, custodyId))) {
+            publishDiscardDescriptor(paths, marker, custodyId);
+            return;
+        }
+        discardCustody(paths, custodyId);
+    });
+}
+
+/**
  * Authenticates and durably stages one exact retained-world selection plan.
  *
  * Staging copies only from the immutable retained head revision into deterministic protected

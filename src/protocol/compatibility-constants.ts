@@ -965,6 +965,63 @@ export const SCOPE_PROTOCOL_V2_CONTRACT = deepFreeze({
     worldCapabilities: ["trace_only", "reference_copy"],
 } as const);
 
+/** Immutable consume-once merge and discard extension implemented by scope v3. */
+export const SCOPE_PROTOCOL_V3_CONTRACT = deepFreeze({
+    ...SCOPE_PROTOCOL_V2_CONTRACT,
+    artifacts: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.artifacts,
+        childMergedSchema: "spec/schemas/scope-child-merged-v1.schema.json",
+        discardSchema: "spec/schemas/scope-discard-v1.schema.json",
+        mergeSchema: "spec/schemas/scope-merge-v1.schema.json",
+    },
+    commandKinds: ["register_root", "register_child", "emit", "fork", "merge", "discard"],
+    discardPhases: ["decided", "cleaned"],
+    errors: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.errors,
+        mergeConflictCode: "SCOPE_MERGE_CONFLICT",
+        mergeConflictMessage: "scope merge child and current parent changes overlap",
+        quiescenceCode: "SCOPE_NOT_QUIESCENT",
+        quiescenceMessage:
+            "scope operation requires quiescent scopes without live descendants, pending commands, or unreleased writers",
+        terminalConflictCode: "SCOPE_TERMINAL_CONFLICT",
+        terminalConflictMessage: "scope is not open or already retains another terminal decision",
+    },
+    evidenceKinds: [
+        ...SCOPE_PROTOCOL_V2_CONTRACT.evidenceKinds,
+        "merge_cut",
+        "merge_prepared",
+        "merge_completed",
+        "child_merged",
+        "discard_decided",
+        "discard_cleaned",
+    ],
+    identity: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.identity,
+        mergeCutIdPrefix: "scope-merge:",
+    },
+    limits: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.limits,
+        maxContributions: 1_024,
+        maxDiscardScopes: 256,
+    },
+    mergePhases: ["prepared", "completed"],
+    schemas: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.schemas,
+        childMergedId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/scope-child-merged-v1.schema.json",
+        discardId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/scope-discard-v1.schema.json",
+        mergeId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/scope-merge-v1.schema.json",
+    },
+    traceSchemas: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.traceSchemas,
+        childMerged: "shepherd.scope.child_merged.v1",
+        discard: "shepherd.scope.discard.v1",
+        merge: "shepherd.scope.merge.v1",
+    },
+} as const);
+
 /** Immutable workspace initialization and adoption contract implemented by protocol v1. */
 export const WORKSPACE_PROTOCOL_V1_CONTRACT = deepFreeze({
     adoptionModes: ["none", "git-head", "worktree"],

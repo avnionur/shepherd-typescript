@@ -162,10 +162,12 @@ export {
     SCOPE_CHECKPOINT_VERSION,
     SCOPE_COMMAND_KINDS,
     SCOPE_COMPATIBILITY_VERSION,
+    SCOPE_DISCARD_PHASES,
     SCOPE_EVIDENCE_KINDS,
     SCOPE_FORK_PHASES,
     SCOPE_KINDS,
     SCOPE_LIMITS,
+    SCOPE_MERGE_PHASES,
     SCOPE_RECORD_VERSION,
     SCOPE_RESOURCE_KINDS,
     SCOPE_STATES,
@@ -349,6 +351,9 @@ export {
     ScopeAuthorityError,
     ScopeEvidenceError,
     ScopeHeadConflictError,
+    ScopeMergeConflictError,
+    ScopeQuiescenceError,
+    ScopeTerminalConflictError,
     ScopeWriterConflictError,
     ScopeWriterFencedError,
 } from "./scope/errors.ts";
@@ -369,10 +374,16 @@ export type {
     ScopeCheckpointConstituent,
     ScopeCheckpointConstituentKind,
     ScopeCheckpointEvidenceStatus,
+    ScopeChildMergedRecord,
     ScopeChildRegisteredRecord,
     ScopeChildRegistrationReceipt,
     ScopeCommandKind,
     ScopeCommandReplay,
+    ScopeContribution,
+    ScopeDiscardCleanedRecord,
+    ScopeDiscardDecidedRecord,
+    ScopeDiscardPhase,
+    ScopeDiscardReceipt,
     ScopeEmissionReceipt,
     ScopeEmissionRecord,
     ScopeEvidenceKind,
@@ -384,6 +395,11 @@ export type {
     ScopeHistoryEntry,
     ScopeInspection,
     ScopeKind,
+    ScopeMergeCompletedRecord,
+    ScopeMergePhase,
+    ScopeMergePreparedRecord,
+    ScopeMergeReceipt,
+    ScopeMergeWorldPlan,
     ScopeParentOrigin,
     ScopeRegistrationRecord,
     ScopeResourceGrant,
@@ -391,6 +407,7 @@ export type {
     ScopeResourceKind,
     ScopeRootRegistrationReceipt,
     ScopeState,
+    ScopeTerminalInspection,
     ScopeWorldCapability,
     ScopeWorldInspection,
     ScopeWriter,
@@ -612,8 +629,14 @@ export type {
     SelectedRetainedWorldSettlement,
     SelectRetainedWorldSettlementOptions,
 } from "./workspace/retained-world-settlement-types.ts";
+export { discardScope } from "./workspace/scope-discard.ts";
 export { forkScope } from "./workspace/scope-fork.ts";
 export type { ForkScopeOptions } from "./workspace/scope-fork-types.ts";
+export { mergeScope } from "./workspace/scope-merge.ts";
+export type {
+    DiscardScopeOptions,
+    MergeScopeOptions,
+} from "./workspace/scope-terminal-types.ts";
 export {
     captureGrantedTaskWorldDurably,
     captureJailedGrantedTaskWorldDurably,

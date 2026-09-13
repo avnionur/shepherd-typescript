@@ -1,5 +1,6 @@
 import { scopeProtocolConfig } from "../protocol/config.ts";
 import { TraceStoreError } from "../store/errors.ts";
+import type { RetainedWorldApplicationConflictEvidence } from "../workspace/retained-world-application-types.ts";
 
 /**
  * Raised when a scope authority request cites unknown resources or exceeds parent or ceiling authority.
@@ -120,5 +121,75 @@ export class ScopeWriterFencedError extends TraceStoreError {
         super(scopeProtocolConfig.errors.writerFencedMessage);
         this.scope_id = scopeId;
         this.claim_id = claimId;
+    }
+}
+
+/**
+ * Raised when a merge's child delta and current-parent delta from their common origin overlap.
+ *
+ * The refusal retains nothing and consumes neither scope.
+ *
+ * @public
+ */
+export class ScopeMergeConflictError extends TraceStoreError {
+    /** Stable configuration-owned merge-conflict code. */
+    override readonly code = scopeProtocolConfig.errors.mergeConflictCode;
+    /** Content-addressed bounded portable path-conflict evidence. */
+    readonly conflict: RetainedWorldApplicationConflictEvidence;
+
+    /**
+     * Creates an overlapping-merge failure.
+     *
+     * @param conflict - Exact conflict evidence between the child and current-parent changed paths.
+     */
+    constructor(conflict: RetainedWorldApplicationConflictEvidence) {
+        super(scopeProtocolConfig.errors.mergeConflictMessage);
+        this.conflict = conflict;
+    }
+}
+
+/**
+ * Raised when affected scopes are not quiescent: a live descendant, a pending command, or an
+ * unreleased writer claim.
+ *
+ * @public
+ */
+export class ScopeQuiescenceError extends TraceStoreError {
+    /** Stable configuration-owned not-quiescent code. */
+    override readonly code = scopeProtocolConfig.errors.quiescenceCode;
+    /** Scope whose state blocks the operation. */
+    readonly scope_id: string;
+
+    /**
+     * Creates a not-quiescent failure.
+     *
+     * @param scopeId - Scope whose live state blocks the operation.
+     * @param detail - Specific description appended to the configured message.
+     */
+    constructor(scopeId: string, detail: string) {
+        super(`${scopeProtocolConfig.errors.quiescenceMessage}: ${detail}`);
+        this.scope_id = scopeId;
+    }
+}
+
+/**
+ * Raised when a scope is merged, discarded, or reserved by another terminal decision.
+ *
+ * @public
+ */
+export class ScopeTerminalConflictError extends TraceStoreError {
+    /** Stable configuration-owned terminal-conflict code. */
+    override readonly code = scopeProtocolConfig.errors.terminalConflictCode;
+    /** Scope whose terminal state refuses the command. */
+    readonly scope_id: string;
+
+    /**
+     * Creates a terminal-conflict failure.
+     *
+     * @param scopeId - Scope that is not open or already retains another terminal decision.
+     */
+    constructor(scopeId: string) {
+        super(scopeProtocolConfig.errors.terminalConflictMessage);
+        this.scope_id = scopeId;
     }
 }

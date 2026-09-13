@@ -20,8 +20,9 @@ the fork types from [`src/facades/scopes.ts`](../src/facades/scopes.ts), and bot
 bound resource, published by the existing [reference copy carrier](./reference-copy-carrier.md).
 It builds on [trace-only scope registration](./scope-registration.md): the child is registered,
 fenced, inspected, and replayed through the same records and commands. The copy is a quiescent
-**verified copy** of an immutable origin revision, not a kernel-atomic snapshot. No merge, discard,
-multi-resource fork, optimized carrier, scheduling, or provider or process restoration is added.
+**verified copy** of an immutable origin revision, not a kernel-atomic snapshot. No multi-resource
+fork, optimized carrier, scheduling, or provider or process restoration is added. A forked child
+ends through [consume-once merge or discard](./scope-merge-discard.md).
 
 Scope protocol v2 appends the `reference_copy` world capability, the `fork` command kind, the
 `fork_prepared` and `fork_completed` history kinds, the `workspace_binding` resource kind, the fork
@@ -151,5 +152,5 @@ custody lives under the workspace control root and is not part of a trace archiv
 | Malformed journal and checkpoint evidence, and concurrent completion replay | `scope-fork-codec.test.ts` |
 | Generated fork schema and scope v2 compatibility with v1 | `scope-schema.test.ts` |
 
-Hosted execution, Windows and Linux runs, optimized carriers, merge, discard, and coordinated
-multi-resource forks are not claimed.
+Hosted execution, Windows and Linux runs, optimized carriers, and coordinated multi-resource forks
+are not claimed.

@@ -29,9 +29,12 @@ import {
 import { renderRunOutcomeSchema } from "./schemas/run-protocol-schema.ts";
 import { renderRunUsageSchema } from "./schemas/run-usage-schema.ts";
 import {
+    renderScopeChildMergedSchema,
     renderScopeChildRegisteredSchema,
+    renderScopeDiscardSchema,
     renderScopeEmissionSchema,
     renderScopeForkSchema,
+    renderScopeMergeSchema,
     renderScopeRegistrationSchema,
 } from "./schemas/scope-schemas.ts";
 import {
@@ -228,6 +231,18 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderScopeForkSchema(config)),
             relativePath: config.scopes.artifacts.forkSchema,
+        },
+        {
+            content: renderJson(renderScopeMergeSchema(config)),
+            relativePath: config.scopes.artifacts.mergeSchema,
+        },
+        {
+            content: renderJson(renderScopeChildMergedSchema(config)),
+            relativePath: config.scopes.artifacts.childMergedSchema,
+        },
+        {
+            content: renderJson(renderScopeDiscardSchema(config)),
+            relativePath: config.scopes.artifacts.discardSchema,
         },
         {
             content: renderJson(renderWorldCaptureSchema(config)),
@@ -1629,9 +1644,15 @@ function renderProtocolValues(config: ProtocolConfig): string {
         .map((kind) => JSON.stringify(kind))
         .join(", ");
     const renderedScopeCommandKinds = config.scopes.commandKinds
-        .map((kind) => JSON.stringify(kind))
-        .join(", ");
+        .map((kind) => `    ${JSON.stringify(kind)},`)
+        .join("\n");
     const renderedScopeForkPhases = config.scopes.forkPhases
+        .map((phase) => JSON.stringify(phase))
+        .join(", ");
+    const renderedScopeMergePhases = config.scopes.mergePhases
+        .map((phase) => JSON.stringify(phase))
+        .join(", ");
+    const renderedScopeDiscardPhases = config.scopes.discardPhases
         .map((phase) => JSON.stringify(phase))
         .join(", ");
     const renderedScopeCheckpointKinds = config.scopes.checkpoint.constituentKinds
@@ -2127,11 +2148,19 @@ export const SCOPE_AUTHORITY_ATOMS = [${renderedScopeAuthorityAtoms}] as const;
 /** Configured resource kinds that scope authority may cite. @public */
 export const SCOPE_RESOURCE_KINDS = [${renderedScopeResourceKinds}] as const;
 
-/** Configured scope command kinds ordered root registration, child registration, emission. @public */
-export const SCOPE_COMMAND_KINDS = [${renderedScopeCommandKinds}] as const;
+/** Configured scope command kinds ordered root registration, child registration, emission, fork, merge, discard. @public */
+export const SCOPE_COMMAND_KINDS = [
+${renderedScopeCommandKinds}
+] as const;
 
 /** Configured scope fork journal phases ordered prepared then completed. @public */
 export const SCOPE_FORK_PHASES = [${renderedScopeForkPhases}] as const;
+
+/** Configured scope merge journal phases ordered prepared then completed. @public */
+export const SCOPE_MERGE_PHASES = [${renderedScopeMergePhases}] as const;
+
+/** Configured scope discard journal phases ordered decided then cleaned. @public */
+export const SCOPE_DISCARD_PHASES = [${renderedScopeDiscardPhases}] as const;
 
 /** Configured scope checkpoint constituent kinds in classification order. @public */
 export const SCOPE_CHECKPOINT_CONSTITUENT_KINDS = [
@@ -2155,7 +2184,9 @@ export const SCOPE_COMPATIBILITY_VERSION = ${JSON.stringify(config.scopes.compat
 /** Configured scope command resource bounds. @public */
 export const SCOPE_LIMITS = Object.freeze({
     maxCitedRecords: ${config.scopes.limits.maxCitedRecords},
+    maxContributions: ${config.scopes.limits.maxContributions},
     maxDataCanonicalBytes: ${config.scopes.limits.maxDataCanonicalBytes},
+    maxDiscardScopes: ${config.scopes.limits.maxDiscardScopes},
     maxResources: ${config.scopes.limits.maxResources},
 } as const);
 `;

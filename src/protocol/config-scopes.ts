@@ -21,12 +21,14 @@ export function readScopeConfig(
             "checkpoint",
             "commandKinds",
             "compatibilityVersion",
+            "discardPhases",
             "errors",
             "evidenceKinds",
             "forkPhases",
             "identity",
             "kinds",
             "limits",
+            "mergePhases",
             "recordVersion",
             "schemas",
             "states",
@@ -38,7 +40,15 @@ export function readScopeConfig(
     );
     const artifacts = readObject(
         scopes.artifacts,
-        ["childRegisteredSchema", "emissionSchema", "forkSchema", "registrationSchema"],
+        [
+            "childMergedSchema",
+            "childRegisteredSchema",
+            "discardSchema",
+            "emissionSchema",
+            "forkSchema",
+            "mergeSchema",
+            "registrationSchema",
+        ],
         "scopes.artifacts",
     );
     const authority = readObject(scopes.authority, ["atoms", "resourceKinds"], "scopes.authority");
@@ -51,6 +61,12 @@ export function readScopeConfig(
             "evidenceMessage",
             "headConflictCode",
             "headConflictMessage",
+            "mergeConflictCode",
+            "mergeConflictMessage",
+            "quiescenceCode",
+            "quiescenceMessage",
+            "terminalConflictCode",
+            "terminalConflictMessage",
             "writerConflictCode",
             "writerConflictMessage",
             "writerFencedCode",
@@ -65,22 +81,36 @@ export function readScopeConfig(
     );
     const identity = readObject(
         scopes.identity,
-        ["custodyIdentityKind", "originCutIdPrefix", "scopeIdPrefix"],
+        ["custodyIdentityKind", "mergeCutIdPrefix", "originCutIdPrefix", "scopeIdPrefix"],
         "scopes.identity",
     );
     const limits = readObject(
         scopes.limits,
-        ["maxCitedRecords", "maxDataCanonicalBytes", "maxResources"],
+        [
+            "maxCitedRecords",
+            "maxContributions",
+            "maxDataCanonicalBytes",
+            "maxDiscardScopes",
+            "maxResources",
+        ],
         "scopes.limits",
     );
     const schemas = readObject(
         scopes.schemas,
-        ["childRegisteredId", "emissionId", "forkId", "registrationId"],
+        [
+            "childMergedId",
+            "childRegisteredId",
+            "discardId",
+            "emissionId",
+            "forkId",
+            "mergeId",
+            "registrationId",
+        ],
         "scopes.schemas",
     );
     const traceSchemas = readObject(
         scopes.traceSchemas,
-        ["childRegistered", "emission", "fork", "registration"],
+        ["childMerged", "childRegistered", "discard", "emission", "fork", "merge", "registration"],
         "scopes.traceSchemas",
     );
     const atoms = readUniqueStrings(authority.atoms, "scopes.authority.atoms");
@@ -94,14 +124,22 @@ export function readScopeConfig(
         throw new TypeError("scopes.kinds must contain exactly a root kind and a child kind");
     }
     const commandKinds = readUniqueStrings(scopes.commandKinds, "scopes.commandKinds");
-    if (commandKinds.length !== 4) {
+    if (commandKinds.length !== 6) {
         throw new TypeError(
-            "scopes.commandKinds must classify root registration, child registration, emission, and fork",
+            "scopes.commandKinds must classify root registration, child registration, emission, fork, merge, and discard",
         );
     }
     const forkPhases = readUniqueStrings(scopes.forkPhases, "scopes.forkPhases");
     if (forkPhases.length !== 2) {
         throw new TypeError("scopes.forkPhases must contain exactly prepared and completed");
+    }
+    const mergePhases = readUniqueStrings(scopes.mergePhases, "scopes.mergePhases");
+    if (mergePhases.length !== 2) {
+        throw new TypeError("scopes.mergePhases must contain exactly prepared and completed");
+    }
+    const discardPhases = readUniqueStrings(scopes.discardPhases, "scopes.discardPhases");
+    if (discardPhases.length !== 2) {
+        throw new TypeError("scopes.discardPhases must contain exactly decided and cleaned");
     }
     const worldCapabilities = readUniqueStrings(
         scopes.worldCapabilities,
@@ -135,15 +173,18 @@ export function readScopeConfig(
         throw new TypeError("scopes.states must contain exactly open, merged, and discarded");
     }
     const evidenceKinds = readUniqueStrings(scopes.evidenceKinds, "scopes.evidenceKinds");
-    if (evidenceKinds.length !== 6) {
+    if (evidenceKinds.length !== 12) {
         throw new TypeError(
-            "scopes.evidenceKinds must classify registration, origin cut, child registration, emission, and fork phases",
+            "scopes.evidenceKinds must classify registration, origin cut, child registration, emission, fork, merge, and discard evidence",
         );
     }
     const traceSchemaValues = [
+        readNonEmptyString(traceSchemas.childMerged, "scopes.traceSchemas.childMerged"),
         readNonEmptyString(traceSchemas.childRegistered, "scopes.traceSchemas.childRegistered"),
+        readNonEmptyString(traceSchemas.discard, "scopes.traceSchemas.discard"),
         readNonEmptyString(traceSchemas.emission, "scopes.traceSchemas.emission"),
         readNonEmptyString(traceSchemas.fork, "scopes.traceSchemas.fork"),
+        readNonEmptyString(traceSchemas.merge, "scopes.traceSchemas.merge"),
         readNonEmptyString(traceSchemas.registration, "scopes.traceSchemas.registration"),
     ];
     if (new Set(traceSchemaValues).size !== traceSchemaValues.length) {
@@ -151,15 +192,24 @@ export function readScopeConfig(
     }
     return {
         artifacts: {
+            childMergedSchema: readNonEmptyString(
+                artifacts.childMergedSchema,
+                "scopes.artifacts.childMergedSchema",
+            ),
             childRegisteredSchema: readNonEmptyString(
                 artifacts.childRegisteredSchema,
                 "scopes.artifacts.childRegisteredSchema",
+            ),
+            discardSchema: readNonEmptyString(
+                artifacts.discardSchema,
+                "scopes.artifacts.discardSchema",
             ),
             emissionSchema: readNonEmptyString(
                 artifacts.emissionSchema,
                 "scopes.artifacts.emissionSchema",
             ),
             forkSchema: readNonEmptyString(artifacts.forkSchema, "scopes.artifacts.forkSchema"),
+            mergeSchema: readNonEmptyString(artifacts.mergeSchema, "scopes.artifacts.mergeSchema"),
             registrationSchema: readNonEmptyString(
                 artifacts.registrationSchema,
                 "scopes.artifacts.registrationSchema",
@@ -182,6 +232,7 @@ export function readScopeConfig(
             scopes.compatibilityVersion,
             "scopes.compatibilityVersion",
         ),
+        discardPhases,
         errors: {
             authorityCode: readNonEmptyString(errors.authorityCode, "scopes.errors.authorityCode"),
             authorityMessage: readNonEmptyString(
@@ -200,6 +251,30 @@ export function readScopeConfig(
             headConflictMessage: readNonEmptyString(
                 errors.headConflictMessage,
                 "scopes.errors.headConflictMessage",
+            ),
+            mergeConflictCode: readNonEmptyString(
+                errors.mergeConflictCode,
+                "scopes.errors.mergeConflictCode",
+            ),
+            mergeConflictMessage: readNonEmptyString(
+                errors.mergeConflictMessage,
+                "scopes.errors.mergeConflictMessage",
+            ),
+            quiescenceCode: readNonEmptyString(
+                errors.quiescenceCode,
+                "scopes.errors.quiescenceCode",
+            ),
+            quiescenceMessage: readNonEmptyString(
+                errors.quiescenceMessage,
+                "scopes.errors.quiescenceMessage",
+            ),
+            terminalConflictCode: readNonEmptyString(
+                errors.terminalConflictCode,
+                "scopes.errors.terminalConflictCode",
+            ),
+            terminalConflictMessage: readNonEmptyString(
+                errors.terminalConflictMessage,
+                "scopes.errors.terminalConflictMessage",
             ),
             writerConflictCode: readNonEmptyString(
                 errors.writerConflictCode,
@@ -225,6 +300,10 @@ export function readScopeConfig(
                 identity.custodyIdentityKind,
                 "scopes.identity.custodyIdentityKind",
             ),
+            mergeCutIdPrefix: readNonEmptyString(
+                identity.mergeCutIdPrefix,
+                "scopes.identity.mergeCutIdPrefix",
+            ),
             originCutIdPrefix: readNonEmptyString(
                 identity.originCutIdPrefix,
                 "scopes.identity.originCutIdPrefix",
@@ -240,20 +319,32 @@ export function readScopeConfig(
                 limits.maxCitedRecords,
                 "scopes.limits.maxCitedRecords",
             ),
+            maxContributions: readPositiveInteger(
+                limits.maxContributions,
+                "scopes.limits.maxContributions",
+            ),
             maxDataCanonicalBytes: readPositiveInteger(
                 limits.maxDataCanonicalBytes,
                 "scopes.limits.maxDataCanonicalBytes",
             ),
+            maxDiscardScopes: readPositiveInteger(
+                limits.maxDiscardScopes,
+                "scopes.limits.maxDiscardScopes",
+            ),
             maxResources: readPositiveInteger(limits.maxResources, "scopes.limits.maxResources"),
         },
+        mergePhases,
         recordVersion: readPositiveInteger(scopes.recordVersion, "scopes.recordVersion"),
         schemas: {
+            childMergedId: readAbsoluteUrl(schemas.childMergedId, "scopes.schemas.childMergedId"),
             childRegisteredId: readAbsoluteUrl(
                 schemas.childRegisteredId,
                 "scopes.schemas.childRegisteredId",
             ),
+            discardId: readAbsoluteUrl(schemas.discardId, "scopes.schemas.discardId"),
             emissionId: readAbsoluteUrl(schemas.emissionId, "scopes.schemas.emissionId"),
             forkId: readAbsoluteUrl(schemas.forkId, "scopes.schemas.forkId"),
+            mergeId: readAbsoluteUrl(schemas.mergeId, "scopes.schemas.mergeId"),
             registrationId: readAbsoluteUrl(
                 schemas.registrationId,
                 "scopes.schemas.registrationId",
@@ -261,10 +352,13 @@ export function readScopeConfig(
         },
         states,
         traceSchemas: {
-            childRegistered: traceSchemaValues[0] as string,
-            emission: traceSchemaValues[1] as string,
-            fork: traceSchemaValues[2] as string,
-            registration: traceSchemaValues[3] as string,
+            childMerged: traceSchemaValues[0] as string,
+            childRegistered: traceSchemaValues[1] as string,
+            discard: traceSchemaValues[2] as string,
+            emission: traceSchemaValues[3] as string,
+            fork: traceSchemaValues[4] as string,
+            merge: traceSchemaValues[5] as string,
+            registration: traceSchemaValues[6] as string,
         },
         worldCapabilities,
         writerClaimLeaseMilliseconds: readPositiveInteger(

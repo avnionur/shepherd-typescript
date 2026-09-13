@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-09-13
+
+### New Feature
+
+- Add `mergeScope` on the workspace entry: a consume-once merge of a quiescent child into its
+  owning parent under both writer fences. For reference-copy children it derives an exact three-way
+  plan from the common origin, the captured child world, and the captured current parent world.
+  Overlapping changed paths fail with `ScopeMergeConflictError` without consuming either scope.
+  Disjoint changes publish into parent-managed custody, converging from any prefix and completing
+  only on verified merged content.
+- Add a single-winner merge reservation that publishes the fixed child cut, refuses competing
+  terminal decisions and child writes, and keeps the parent quiescent until completion. The
+  completion appends a parent-side integration and a child seal.
+- Add selected history to `inspectScope`: a scope's own emissions plus exact child contributions
+  identified by owner, ordinal, and record. Common-origin history is never re-added and
+  grandchild contributions arrive once.
+- Add `discardScope`: a logical subtree discard under the owning parent's fence that seals every
+  open descendant and requires no unreleased writer claims. The parent keeps its current state.
+  Custody cleanup, separate progress with its own record, discards only identities named by
+  retained fork journals and resumes after interruption or without a carrier.
+- Add scope protocol v3 with merge and discard vocabulary appended to v2, generated merge,
+  child-merged, and discard schemas, derived `merged`/`discarded` branch state, terminal receipt
+  replay, row-state integrity checks, and the `ScopeQuiescenceError` and
+  `ScopeTerminalConflictError` refusals.
+
+### Impact
+
+Scope branches now end in exactly one verified merge or discard with restart recovery through
+public APIs. Scope v1 and v2 records decode unchanged, no store migration is required, and
+retained-world settlement to user workspaces keeps its exact contract. Scheduling, optimized
+carriers, vocabulary mapping, and algebraic law suites remain open.
+
 ## [2.2.0] - 2026-09-13
 
 ### New Feature

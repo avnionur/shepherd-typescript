@@ -1,0 +1,209 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/scope-discard-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Scope Discard v1",
+    "description": "Scope discard journal: a logical decision sealing each open scope of an owned subtree, then cleanup progress naming the exact proven-owned custody identities removed.",
+    "oneOf": [
+        {
+            "type": "object",
+            "required": [
+                "command_id",
+                "compatibility_version",
+                "custody_ids",
+                "discard_scope_id",
+                "parent_scope_id",
+                "phase",
+                "scope_id",
+                "scope_version",
+                "sealed_scope_ids"
+            ],
+            "properties": {
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.scope.v1"
+                },
+                "custody_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^world-custody:[0-9a-f]{64}$"
+                    },
+                    "uniqueItems": true
+                },
+                "scope_id": {
+                    "$ref": "#/$defs/scopeId"
+                },
+                "scope_version": {
+                    "const": 1
+                },
+                "discard_scope_id": {
+                    "$ref": "#/$defs/scopeId"
+                },
+                "parent_scope_id": {
+                    "$ref": "#/$defs/scopeId"
+                },
+                "phase": {
+                    "const": "decided"
+                },
+                "sealed_scope_ids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/scopeId"
+                    },
+                    "maxItems": 256,
+                    "uniqueItems": true
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "command_id",
+                "compatibility_version",
+                "custody_ids",
+                "phase",
+                "scope_id",
+                "scope_version"
+            ],
+            "properties": {
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.scope.v1"
+                },
+                "custody_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^world-custody:[0-9a-f]{64}$"
+                    },
+                    "uniqueItems": true
+                },
+                "scope_id": {
+                    "$ref": "#/$defs/scopeId"
+                },
+                "scope_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "cleaned"
+                }
+            },
+            "additionalProperties": false
+        }
+    ],
+    "$defs": {
+        "contributions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "owner_id",
+                    "owner_ordinal",
+                    "record_id"
+                ],
+                "properties": {
+                    "owner_id": {
+                        "$ref": "#/$defs/scopeId"
+                    },
+                    "owner_ordinal": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "record_id": {
+                        "$ref": "#/$defs/recordId"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "maxItems": 1024
+        },
+        "mergeCutId": {
+            "type": "string",
+            "pattern": "^scope-merge:[0-9a-f]{64}$"
+        },
+        "originCutId": {
+            "type": "string",
+            "pattern": "^scope-origin:[0-9a-f]{64}$"
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "resources": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "atoms",
+                    "resource_id",
+                    "resource_kind"
+                ],
+                "properties": {
+                    "atoms": {
+                        "type": "array",
+                        "items": {
+                            "enum": [
+                                "read",
+                                "write"
+                            ]
+                        },
+                        "maxItems": 2,
+                        "uniqueItems": true
+                    },
+                    "resource_id": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "resource_kind": {
+                        "enum": [
+                            "repository_binding",
+                            "workspace_binding"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "maxItems": 64
+        },
+        "scopeId": {
+            "type": "string",
+            "pattern": "^scope:sha256:[0-9a-f]{64}$"
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        }
+    }
+}

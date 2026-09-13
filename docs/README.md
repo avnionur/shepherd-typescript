@@ -11,8 +11,11 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Reference-copy scope fork](./scope-fork.md) defines single-resource isolated fork custody,
   verified fixed origins, the prepared/completed fork journal, honest checkpoint descriptors,
   receipt-based restart recovery, and atomic multi-scope writer claims.
-- [Scope ownership/authority proposal](../.plan/scope-ownership-contract.md) defines the planned
-  Phase 6 contract and the remaining merge/discard slice.
+- [Consume-once scope merge and discard](./scope-merge-discard.md) defines three-way merge plans,
+  single-winner reservations, verified parent-managed publication, selected-history
+  contributions, subtree discard with retained-identity cleanup, and terminal recovery.
+- [Scope ownership/authority proposal](../.plan/scope-ownership-contract.md) defines the reviewed
+  Phase 6 contract behind the implemented scope slices.
 
 - [Phase 5 exit audit](../.plan/phase-5-exit-audit.md) maps product-surface evidence and records
   runtime-support remediation and phase-exit verification.

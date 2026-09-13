@@ -94,7 +94,11 @@ test("inspection reconstructs the same scope after reopen, read-only reopen, and
         registered_for_mutation: true,
         registration_record_id: root.registration_record_id,
         scope_id: root.scope_id,
+        selected_history: [
+            { owner_id: root.scope_id, owner_ordinal: 1, record_id: emitted.head.record_id },
+        ],
         state: "open",
+        terminal: null,
         world: null,
         world_capability: "trace_only",
     });
@@ -132,7 +136,15 @@ test("inspection reconstructs the same scope after reopen, read-only reopen, and
         registered_for_mutation: true,
         registration_record_id: child.registration_record_id,
         scope_id: child.scope_id,
+        selected_history: [
+            {
+                owner_id: child.scope_id,
+                owner_ordinal: 2,
+                record_id: childEmission.head.record_id,
+            },
+        ],
         state: "open",
+        terminal: null,
         world: null,
         world_capability: "trace_only",
     });

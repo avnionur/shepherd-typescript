@@ -504,9 +504,12 @@
     },
     "scopes": {
         "artifacts": {
+            "childMergedSchema": "spec/schemas/scope-child-merged-v1.schema.json",
             "childRegisteredSchema": "spec/schemas/scope-child-registered-v1.schema.json",
+            "discardSchema": "spec/schemas/scope-discard-v1.schema.json",
             "emissionSchema": "spec/schemas/scope-emission-v1.schema.json",
             "forkSchema": "spec/schemas/scope-fork-v1.schema.json",
+            "mergeSchema": "spec/schemas/scope-merge-v1.schema.json",
             "registrationSchema": "spec/schemas/scope-registration-v1.schema.json"
         },
         "checkpoint": {
@@ -529,8 +532,9 @@
             "atoms": ["read", "write"],
             "resourceKinds": ["repository_binding", "workspace_binding"]
         },
-        "commandKinds": ["register_root", "register_child", "emit", "fork"],
+        "commandKinds": ["register_root", "register_child", "emit", "fork", "merge", "discard"],
         "compatibilityVersion": "shepherd.scope.v1",
+        "discardPhases": ["decided", "cleaned"],
         "errors": {
             "authorityCode": "SCOPE_AUTHORITY_REFUSED",
             "authorityMessage": "scope authority request cites unknown resources or exceeds parent or ceiling authority",
@@ -538,6 +542,12 @@
             "evidenceMessage": "scope evidence is absent, malformed, or inconsistent",
             "headConflictCode": "SCOPE_HEAD_CONFLICT",
             "headConflictMessage": "scope command expected head is not the current scope head",
+            "mergeConflictCode": "SCOPE_MERGE_CONFLICT",
+            "mergeConflictMessage": "scope merge child and current parent changes overlap",
+            "quiescenceCode": "SCOPE_NOT_QUIESCENT",
+            "quiescenceMessage": "scope operation requires quiescent scopes without live descendants, pending commands, or unreleased writers",
+            "terminalConflictCode": "SCOPE_TERMINAL_CONFLICT",
+            "terminalConflictMessage": "scope is not open or already retains another terminal decision",
             "writerConflictCode": "SCOPE_WRITER_CONFLICT",
             "writerConflictMessage": "scope writer claim is held by another unexpired caller",
             "writerFencedCode": "SCOPE_WRITER_FENCED",
@@ -549,32 +559,48 @@
             "child_registered",
             "emission",
             "fork_prepared",
-            "fork_completed"
+            "fork_completed",
+            "merge_cut",
+            "merge_prepared",
+            "merge_completed",
+            "child_merged",
+            "discard_decided",
+            "discard_cleaned"
         ],
         "forkPhases": ["prepared", "completed"],
         "identity": {
             "custodyIdentityKind": "scope-fork-custody",
+            "mergeCutIdPrefix": "scope-merge:",
             "originCutIdPrefix": "scope-origin:",
             "scopeIdPrefix": "scope:sha256:"
         },
         "kinds": ["root", "child"],
         "limits": {
             "maxCitedRecords": 64,
+            "maxContributions": 1024,
             "maxDataCanonicalBytes": 65536,
+            "maxDiscardScopes": 256,
             "maxResources": 64
         },
+        "mergePhases": ["prepared", "completed"],
         "recordVersion": 1,
         "schemas": {
+            "childMergedId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-child-merged-v1.schema.json",
             "childRegisteredId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-child-registered-v1.schema.json",
+            "discardId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-discard-v1.schema.json",
             "emissionId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-emission-v1.schema.json",
             "forkId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-fork-v1.schema.json",
+            "mergeId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-merge-v1.schema.json",
             "registrationId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-registration-v1.schema.json"
         },
         "states": ["open", "merged", "discarded"],
         "traceSchemas": {
+            "childMerged": "shepherd.scope.child_merged.v1",
             "childRegistered": "shepherd.scope.child_registered.v1",
+            "discard": "shepherd.scope.discard.v1",
             "emission": "shepherd.scope.emission.v1",
             "fork": "shepherd.scope.fork.v1",
+            "merge": "shepherd.scope.merge.v1",
             "registration": "shepherd.scope.registration.v1"
         },
         "worldCapabilities": ["trace_only", "reference_copy"],

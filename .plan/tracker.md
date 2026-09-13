@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-09-10
+Last updated: 2026-09-13
 
-Current version: `2.2.0`
+Current version: `2.3.0`
 
 Current level: L1 stable — Phases 4–5 complete; Phase 6 scope substrate active
 
@@ -424,7 +424,30 @@ origins of the parent world, retains a prepared journal record before custody, c
 parent fence with an honest checkpoint descriptor, converges across restart from receipts, blocks
 unknown physical state, and admits atomic multi-scope writer claims.
 
+Phase 6 slice C now merges quiescent children exactly once into parent-managed custody from exact
+three-way plans with portable overlap refusal and a single terminal reservation. Publication
+converges path by path under the rechecked parent head and fence and completes only on verified
+merged content. Selected history integrates exact child occurrences without common-origin
+re-addition, and subtree discards seal every open descendant while the parent keeps its current
+state. Cleanup removes only custody named by retained fork journals, as progress separate from
+the logical decision, with receipt-based recovery across every boundary.
+
 ## Verification required for this slice
+
+Phase 6 Task 4 (#131): slice C implements consume-once scope merge and discard through scope
+protocol v3. Focused public-seam tests cover disjoint world merges, trace-only merges, common-origin
+exclusion, nested deduplication and distinct repeated occurrences, equal-path and structural
+overlap refusal without consumption, empty deltas, missing custody, write authority, carriers,
+ownership, stale heads and fences, and concurrent merges with exactly one winner. Discard tests
+cover the unchanged current parent, nested subtree sealing with merged and discarded descendants,
+cleanup of every retained custody identity, logical discard without a carrier and resumed partial
+cleanup, discard-after-merge, reserved merges, unreleased writers, roots, and the subtree bound.
+Recovery tests cover crashes before and after the reservation, publication, and completion, lost
+responses, third-state and unverifiable parent custody, publication prefixes, expired fences,
+ancestor discard of a reserved merge, incomplete-fork discard, and discard decision and cleanup
+boundaries. Codec tests cover malformed and forged terminal evidence, in-store completion replay,
+completion rollback, row-state integrity, the contribution bound, generated schemas, and scope v3
+compatibility with v1 and v2. Full local verification and production build pass.
 
 Phase 6 Task 3 (#130): slice B implements reference-copy scope fork of one bound resource.
 Focused public-seam tests cover prepared intent before custody, verified completion under the

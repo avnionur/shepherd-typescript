@@ -19,8 +19,8 @@ This is the first executable slice of the Phase 6 scope contract and is delibera
 **trace-only**. A scope is one owned branch identity whose local history is an append-only trace
 owner path. The slice implements durable root and child registration, single-writer fenced
 claims, idempotent scope-local emission of validated application data, and read-only inspection.
-It forks no world custody, invokes no provider, materializes nothing, and adds no merge or discard
-operation; those remain later Phase 6 slices. Registration and emission declare the configured
+It forks no world custody, invokes no provider, and materializes nothing.
+[Consume-once merge and discard](./scope-merge-discard.md) end a scope's branch lifecycle. Registration and emission declare the configured
 `trace_only` world capability so later readers cannot mistake them for an executable world fork.
 [Reference-copy scope fork](./scope-fork.md) is the separate `reference_copy` world path.
 
@@ -110,9 +110,9 @@ effect, or authorize execution.
 the origin cut for a child, and each later emission or child-registration record, validating that
 every record is caused by the previous head, names this scope, and is retained under the append
 intent derived from its own command (the origin cut under its cut intent). It returns the authority,
-parent origin, execution association, head, ordered history entries, registered children, and
-state, which is `open` in this slice; merged and discarded states and post-terminal refusal
-arrive with merge and discard. The same value is reconstructed after reopen, read-only
+parent origin, execution association, head, ordered history entries, registered children,
+selected history, and state. The state is derived from retained merge and discard evidence, which
+also refuses post-terminal commands; see [merge and discard](./scope-merge-discard.md). The same value is reconstructed after reopen, read-only
 reopen, and native archive import; export bytes are unchanged by reopen. Unsupported schemas,
 mismatched bodies, missing origin cuts, and bypassed raw appends fail closed with
 `ScopeEvidenceError`.
@@ -149,5 +149,6 @@ record at its first owner ordinal and reports `scope_registration_mismatch`, cou
 | Generated schemas accept retained records and reject malformed copies | `test/scope/scope-schema.test.ts` |
 | Configuration drift and rejection | `test/protocol-config.test.ts` |
 
-Hosted execution, world custody, provider or process checkpoints, merge, discard, attached
-children, multi-resource coordination, and scheduling are not claimed by this slice.
+Hosted execution, world custody, provider or process checkpoints, attached children,
+multi-resource coordination, and scheduling are not claimed by this slice. Merge and discard are
+specified separately.

@@ -541,7 +541,8 @@ function assertConstituentKind(
     }
 }
 
-function assertCustodyId(value: unknown): asserts value is string {
+/** Validates one configured carrier custody identity. @internal */
+export function assertCustodyId(value: unknown): asserts value is string {
     assertPrefixedDigest(
         value,
         workspaceProtocolConfig.carrier.custodyIdPrefix,
@@ -570,7 +571,8 @@ function readParentOrigin(value: unknown): ScopeParentOrigin {
     });
 }
 
-function assertCompatibility(compatibilityVersion: unknown, scopeVersion: unknown): void {
+/** Validates the configured scope compatibility namespace and record version. @internal */
+export function assertCompatibility(compatibilityVersion: unknown, scopeVersion: unknown): void {
     if (
         compatibilityVersion !== scopeProtocolConfig.compatibilityVersion ||
         scopeVersion !== scopeProtocolConfig.recordVersion
@@ -579,7 +581,8 @@ function assertCompatibility(compatibilityVersion: unknown, scopeVersion: unknow
     }
 }
 
-function decodeEvidence<T>(subject: string, decode: () => T): T {
+/** Classifies any decoding failure as malformed scope evidence. @internal */
+export function decodeEvidence<T>(subject: string, decode: () => T): T {
     try {
         return decode();
     } catch (error) {
@@ -590,6 +593,7 @@ function decodeEvidence<T>(subject: string, decode: () => T): T {
     }
 }
 
-function digestHex(recordId: string): string {
+/** Returns the hexadecimal digest of one configured record identity. @internal */
+export function digestHex(recordId: string): string {
     return recordId.slice(recordIdConfig.prefix.length);
 }

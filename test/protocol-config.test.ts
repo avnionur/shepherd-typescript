@@ -869,6 +869,27 @@ test("protocol configuration rejects invalid or drifted scope contracts", () => 
             scopeConfigOf(config).forkPhases = ["prepared"];
         },
         (config) => {
+            scopeConfigOf(config).mergePhases = ["prepared"];
+        },
+        (config) => {
+            scopeConfigOf(config).discardPhases = ["decided"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "limits").maxContributions = 0;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "errors").terminalConflictCode = "";
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "identity").mergeCutIdPrefix = "";
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "traceSchemas").merge = objectAt(
+                scopeConfigOf(config),
+                "traceSchemas",
+            ).discard;
+        },
+        (config) => {
             scopeConfigOf(config).worldCapabilities = ["trace_only"];
         },
         (config) => {

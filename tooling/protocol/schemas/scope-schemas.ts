@@ -313,8 +313,293 @@ export function renderScopeForkSchema(config: ProtocolConfig): Readonly<Record<s
     };
 }
 
+/**
+ * Renders the configured scope merge journal JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed prepared/completed child-side merge journal schema.
+ */
+export function renderScopeMergeSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
+    const [preparedPhase, completedPhase] = config.scopes.mergePhases;
+    const carrier = config.workspaces.carrier;
+    const revisionId = {
+        type: "string",
+        pattern: prefixedDigestPattern(carrier.revisionIdPrefix, config),
+    };
+    const contentId = {
+        type: "string",
+        pattern: prefixedDigestPattern(carrier.worldContentIdPrefix, config),
+    };
+    const custodyId = {
+        type: "string",
+        pattern: prefixedDigestPattern(carrier.custodyIdPrefix, config),
+    };
+    const common = {
+        command_id: nonEmptyStringSchema(),
+        compatibility_version: { const: config.scopes.compatibilityVersion },
+        parent_scope_id: { $ref: "#/$defs/scopeId" },
+        scope_id: { $ref: "#/$defs/scopeId" },
+        scope_version: { const: config.scopes.recordVersion },
+    };
+    return {
+        $schema: config.kernel.schemas.dialect,
+        $id: config.scopes.schemas.mergeId,
+        $comment: "Generated from protocol.config.json. Do not edit directly.",
+        title: `Shepherd Scope Merge v${config.scopes.recordVersion}`,
+        description:
+            "Consume-once child-side merge journal: a prepared reservation citing the fixed child cut, three-way world plan, and selected contributions, then a completed seal citing the verified parent publication.",
+        oneOf: [
+            {
+                type: "object",
+                required: [
+                    "child_head_record_id",
+                    "command_id",
+                    "compatibility_version",
+                    "contributions",
+                    "merge_cut_id",
+                    "parent_head_record_id",
+                    "parent_scope_id",
+                    "phase",
+                    "scope_id",
+                    "scope_version",
+                    "world",
+                ],
+                properties: {
+                    ...common,
+                    child_head_record_id: { $ref: "#/$defs/recordId" },
+                    contributions: { $ref: "#/$defs/contributions" },
+                    merge_cut_id: { $ref: "#/$defs/mergeCutId" },
+                    parent_head_record_id: { $ref: "#/$defs/recordId" },
+                    phase: { const: preparedPhase },
+                    world: {
+                        oneOf: [
+                            { type: "null" },
+                            {
+                                type: "object",
+                                required: [
+                                    "application_custody_id",
+                                    "binding_id",
+                                    "child_content_id",
+                                    "child_revision_id",
+                                    "merged_content_id",
+                                    "merged_revision_id",
+                                    "origin_content_id",
+                                    "origin_revision_id",
+                                    "parent_content_id",
+                                    "parent_custody_id",
+                                    "parent_revision_id",
+                                ],
+                                properties: {
+                                    application_custody_id: {
+                                        oneOf: [custodyId, { type: "null" }],
+                                    },
+                                    binding_id: { $ref: "#/$defs/recordId" },
+                                    child_content_id: contentId,
+                                    child_revision_id: revisionId,
+                                    merged_content_id: contentId,
+                                    merged_revision_id: revisionId,
+                                    origin_content_id: contentId,
+                                    origin_revision_id: revisionId,
+                                    parent_content_id: contentId,
+                                    parent_custody_id: custodyId,
+                                    parent_revision_id: revisionId,
+                                },
+                                additionalProperties: false,
+                            },
+                        ],
+                    },
+                },
+                additionalProperties: false,
+            },
+            {
+                type: "object",
+                required: [
+                    "command_id",
+                    "compatibility_version",
+                    "parent_scope_id",
+                    "phase",
+                    "publication_revision_id",
+                    "scope_id",
+                    "scope_version",
+                ],
+                properties: {
+                    ...common,
+                    phase: { const: completedPhase },
+                    publication_revision_id: { oneOf: [revisionId, { type: "null" }] },
+                },
+                additionalProperties: false,
+            },
+        ],
+        $defs: scopeDefinitions(config),
+    };
+}
+
+/**
+ * Renders the configured parent-side child-merge integration JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed child-merged schema.
+ */
+export function renderScopeChildMergedSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const carrier = config.workspaces.carrier;
+    return {
+        $schema: config.kernel.schemas.dialect,
+        $id: config.scopes.schemas.childMergedId,
+        $comment: "Generated from protocol.config.json. Do not edit directly.",
+        title: `Shepherd Scope Child Merged v${config.scopes.recordVersion}`,
+        description:
+            "Parent-owned integration of one consumed child: the fixed child cut, its checkpoint, the selected contributions added to parent history, and the verified parent-managed world publication.",
+        type: "object",
+        required: [
+            "child_checkpoint_record_id",
+            "child_cut_id",
+            "child_scope_id",
+            "command_id",
+            "compatibility_version",
+            "contributions",
+            "merged_content_id",
+            "parent_scope_id",
+            "publication_revision_id",
+            "scope_version",
+        ],
+        properties: {
+            child_checkpoint_record_id: {
+                oneOf: [{ $ref: "#/$defs/recordId" }, { type: "null" }],
+            },
+            child_cut_id: { $ref: "#/$defs/mergeCutId" },
+            child_scope_id: { $ref: "#/$defs/scopeId" },
+            command_id: nonEmptyStringSchema(),
+            compatibility_version: { const: config.scopes.compatibilityVersion },
+            contributions: { $ref: "#/$defs/contributions" },
+            merged_content_id: {
+                oneOf: [
+                    {
+                        type: "string",
+                        pattern: prefixedDigestPattern(carrier.worldContentIdPrefix, config),
+                    },
+                    { type: "null" },
+                ],
+            },
+            parent_scope_id: { $ref: "#/$defs/scopeId" },
+            publication_revision_id: {
+                oneOf: [
+                    {
+                        type: "string",
+                        pattern: prefixedDigestPattern(carrier.revisionIdPrefix, config),
+                    },
+                    { type: "null" },
+                ],
+            },
+            scope_version: { const: config.scopes.recordVersion },
+        },
+        additionalProperties: false,
+        $defs: scopeDefinitions(config),
+    };
+}
+
+/**
+ * Renders the configured scope discard journal JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed decided/cleaned discard journal schema.
+ */
+export function renderScopeDiscardSchema(
+    config: ProtocolConfig,
+): Readonly<Record<string, unknown>> {
+    const [decidedPhase, cleanedPhase] = config.scopes.discardPhases;
+    const custodyIds = {
+        type: "array",
+        items: {
+            type: "string",
+            pattern: prefixedDigestPattern(config.workspaces.carrier.custodyIdPrefix, config),
+        },
+        uniqueItems: true,
+    };
+    const common = {
+        command_id: nonEmptyStringSchema(),
+        compatibility_version: { const: config.scopes.compatibilityVersion },
+        custody_ids: custodyIds,
+        scope_id: { $ref: "#/$defs/scopeId" },
+        scope_version: { const: config.scopes.recordVersion },
+    };
+    return {
+        $schema: config.kernel.schemas.dialect,
+        $id: config.scopes.schemas.discardId,
+        $comment: "Generated from protocol.config.json. Do not edit directly.",
+        title: `Shepherd Scope Discard v${config.scopes.recordVersion}`,
+        description:
+            "Scope discard journal: a logical decision sealing each open scope of an owned subtree, then cleanup progress naming the exact proven-owned custody identities removed.",
+        oneOf: [
+            {
+                type: "object",
+                required: [
+                    "command_id",
+                    "compatibility_version",
+                    "custody_ids",
+                    "discard_scope_id",
+                    "parent_scope_id",
+                    "phase",
+                    "scope_id",
+                    "scope_version",
+                    "sealed_scope_ids",
+                ],
+                properties: {
+                    ...common,
+                    discard_scope_id: { $ref: "#/$defs/scopeId" },
+                    parent_scope_id: { $ref: "#/$defs/scopeId" },
+                    phase: { const: decidedPhase },
+                    sealed_scope_ids: {
+                        type: "array",
+                        items: { $ref: "#/$defs/scopeId" },
+                        maxItems: config.scopes.limits.maxDiscardScopes,
+                        uniqueItems: true,
+                    },
+                },
+                additionalProperties: false,
+            },
+            {
+                type: "object",
+                required: [
+                    "command_id",
+                    "compatibility_version",
+                    "custody_ids",
+                    "phase",
+                    "scope_id",
+                    "scope_version",
+                ],
+                properties: {
+                    ...common,
+                    phase: { const: cleanedPhase },
+                },
+                additionalProperties: false,
+            },
+        ],
+        $defs: scopeDefinitions(config),
+    };
+}
+
 function scopeDefinitions(config: ProtocolConfig): Readonly<Record<string, unknown>> {
     return {
+        contributions: {
+            type: "array",
+            items: {
+                type: "object",
+                required: ["owner_id", "owner_ordinal", "record_id"],
+                properties: {
+                    owner_id: { $ref: "#/$defs/scopeId" },
+                    owner_ordinal: { type: "integer", minimum: 0 },
+                    record_id: { $ref: "#/$defs/recordId" },
+                },
+                additionalProperties: false,
+            },
+            maxItems: config.scopes.limits.maxContributions,
+        },
+        mergeCutId: {
+            type: "string",
+            pattern: prefixedDigestPattern(config.scopes.identity.mergeCutIdPrefix, config),
+        },
         originCutId: {
             type: "string",
             pattern: prefixedDigestPattern(config.scopes.identity.originCutIdPrefix, config),

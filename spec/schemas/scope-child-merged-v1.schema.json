@@ -1,0 +1,184 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/scope-child-merged-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Scope Child Merged v1",
+    "description": "Parent-owned integration of one consumed child: the fixed child cut, its checkpoint, the selected contributions added to parent history, and the verified parent-managed world publication.",
+    "type": "object",
+    "required": [
+        "child_checkpoint_record_id",
+        "child_cut_id",
+        "child_scope_id",
+        "command_id",
+        "compatibility_version",
+        "contributions",
+        "merged_content_id",
+        "parent_scope_id",
+        "publication_revision_id",
+        "scope_version"
+    ],
+    "properties": {
+        "child_checkpoint_record_id": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/recordId"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "child_cut_id": {
+            "$ref": "#/$defs/mergeCutId"
+        },
+        "child_scope_id": {
+            "$ref": "#/$defs/scopeId"
+        },
+        "command_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "compatibility_version": {
+            "const": "shepherd.scope.v1"
+        },
+        "contributions": {
+            "$ref": "#/$defs/contributions"
+        },
+        "merged_content_id": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "pattern": "^world-content:sha256:[0-9a-f]{64}$"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "parent_scope_id": {
+            "$ref": "#/$defs/scopeId"
+        },
+        "publication_revision_id": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "pattern": "^world-revision:sha256:[0-9a-f]{64}$"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "scope_version": {
+            "const": 1
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "contributions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "owner_id",
+                    "owner_ordinal",
+                    "record_id"
+                ],
+                "properties": {
+                    "owner_id": {
+                        "$ref": "#/$defs/scopeId"
+                    },
+                    "owner_ordinal": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "record_id": {
+                        "$ref": "#/$defs/recordId"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "maxItems": 1024
+        },
+        "mergeCutId": {
+            "type": "string",
+            "pattern": "^scope-merge:[0-9a-f]{64}$"
+        },
+        "originCutId": {
+            "type": "string",
+            "pattern": "^scope-origin:[0-9a-f]{64}$"
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "resources": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "atoms",
+                    "resource_id",
+                    "resource_kind"
+                ],
+                "properties": {
+                    "atoms": {
+                        "type": "array",
+                        "items": {
+                            "enum": [
+                                "read",
+                                "write"
+                            ]
+                        },
+                        "maxItems": 2,
+                        "uniqueItems": true
+                    },
+                    "resource_id": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "resource_kind": {
+                        "enum": [
+                            "repository_binding",
+                            "workspace_binding"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "maxItems": 64
+        },
+        "scopeId": {
+            "type": "string",
+            "pattern": "^scope:sha256:[0-9a-f]{64}$"
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        }
+    }
+}

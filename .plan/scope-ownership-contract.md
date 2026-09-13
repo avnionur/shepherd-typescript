@@ -2,8 +2,8 @@
 
 Status: reviewed TypeScript contract, Phase 6 task #127, 2.0.1. Slice A (#129) is implemented in
 2.1.0 as [trace-only scope registration and fenced emission](../docs/scope-registration.md) and
-slice B (#130) in 2.2.0 as [reference-copy scope fork](../docs/scope-fork.md); slice C is not
-implemented. This page itself introduces no API, schema, storage table,
+slice B (#130) in 2.2.0 as [reference-copy scope fork](../docs/scope-fork.md), and slice C (#131)
+in 2.3.0 as [consume-once merge and discard](../docs/scope-merge-discard.md). This page itself introduces no API, schema, storage table,
 runtime grant or parity claim; normative behavior lives in `docs/`.
 
 ## Evidence and deliberate native choices
