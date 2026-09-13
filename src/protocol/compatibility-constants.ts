@@ -1065,6 +1065,18 @@ export const SCOPE_PROTOCOL_V5_CONTRACT = deepFreeze({
     },
 } as const);
 
+/** Immutable checkpoint start-classification extension implemented by scope v6. */
+export const SCOPE_PROTOCOL_V6_CONTRACT = deepFreeze({
+    ...SCOPE_PROTOCOL_V5_CONTRACT,
+    checkpoint: {
+        ...SCOPE_PROTOCOL_V5_CONTRACT.checkpoint,
+        startClassifications: {
+            captureKinds: { "verified-copy": "quiescent_verified_copy" },
+            values: ["atomic_snapshot", "quiescent_verified_copy", "reconstructed"],
+        },
+    },
+} as const);
+
 /** Immutable workspace initialization and adoption contract implemented by protocol v1. */
 export const WORKSPACE_PROTOCOL_V1_CONTRACT = deepFreeze({
     adoptionModes: ["none", "git-head", "worktree"],

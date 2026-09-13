@@ -726,6 +726,13 @@ export type ScopeProtocolConfig = {
         readonly constituentKinds: readonly string[];
         /** Evidence statuses ordered verified, reconstructive, not applicable, unavailable. */
         readonly evidenceStatuses: readonly string[];
+        /** Branch start classifications derived from checkpoint evidence. */
+        readonly startClassifications: {
+            /** Start classification of each supported carrier capture kind. */
+            readonly captureKinds: Readonly<Record<string, string>>;
+            /** Classifications ordered atomic snapshot, quiescent verified copy, reconstructed. */
+            readonly values: readonly string[];
+        };
         /** Wire version for scope checkpoint descriptors. */
         readonly version: number;
     };

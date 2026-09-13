@@ -117,6 +117,8 @@ trace-record contracts with durable SQLite task and trace stores:
   contributions without common-origin re-addition, subtree sealing that preserves the current
   parent, custody cleanup from retained identities, and receipt-based recovery;
 - a read-only spawn/adopt/abandon/publish vocabulary mapping over exact scope evidence;
+- evidence-derived checkpoint start classification proving whether a branch started from an atomic
+  snapshot, a quiescent verified copy, or reconstructed state;
 - bounded parallel and nested scope scheduling with deterministic settlement and restart
   convergence, plus record-derived recovery classification of every live scope;
 - workspace protocol v22 content-addressed macOS/Linux/native-Windows/WSL platform evidence,

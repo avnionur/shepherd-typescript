@@ -547,6 +547,13 @@ export const SCOPE_VOCABULARY_STATUSES = ["pending", "completed"] as const;
 /** Configured scope vocabulary projection version. @public */
 export const SCOPE_VOCABULARY_VERSION = 1 as const;
 
+/** Configured branch start classifications ordered atomic snapshot, quiescent verified copy, reconstructed. @public */
+export const SCOPE_CHECKPOINT_START_CLASSIFICATIONS = [
+    "atomic_snapshot",
+    "quiescent_verified_copy",
+    "reconstructed",
+] as const;
+
 /** Configured scope checkpoint descriptor version. @public */
 export const SCOPE_CHECKPOINT_VERSION = 1 as const;
 

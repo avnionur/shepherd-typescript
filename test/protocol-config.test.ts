@@ -896,6 +896,16 @@ test("protocol configuration rejects invalid or drifted scope contracts", () => 
             objectAt(scopeConfigOf(config), "scheduling").maxParallel = 0;
         },
         (config) => {
+            objectAt(objectAt(scopeConfigOf(config), "checkpoint"), "startClassifications").values =
+                ["reconstructed"];
+        },
+        (config) => {
+            objectAt(
+                objectAt(objectAt(scopeConfigOf(config), "checkpoint"), "startClassifications"),
+                "captureKinds",
+            )["verified-copy"] = "reconstructed";
+        },
+        (config) => {
             objectAt(objectAt(scopeConfigOf(config), "scheduling"), "commandSuffixes").merge =
                 "create";
         },

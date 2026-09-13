@@ -366,7 +366,9 @@ refusal, single-winner reservations, verified parent-managed publication, exact 
 contributions, subtree discard preserving the current parent, and retained-identity cleanup.
 Task 5 (#137) adds the read-only [scope vocabulary mapping](../docs/scope-vocabulary.md), and Task 6 (#138) adds
 [scope scheduling and recovery classification](../docs/scope-scheduling.md). Task 8 (#140) adds
-the seeded [scope algebra law suite](../docs/scope-laws.md) against a reference model. Scheduling and orphan recovery (#138), optimized carriers and scaling
+the seeded [scope algebra law suite](../docs/scope-laws.md) against a reference model, and
+checkpoint [start classification](../docs/scope-fork.md#start-classification) proves how each
+branch started. Scheduling and orphan recovery (#138), optimized carriers and scaling
 benchmarks (#139), reference-model laws (#140), and the exit audit (#141) remain open; no L2 claim
 is implemented.
 

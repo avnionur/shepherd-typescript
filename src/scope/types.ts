@@ -3,6 +3,7 @@ import type {
     SCOPE_AUTHORITY_ATOMS,
     SCOPE_CHECKPOINT_CONSTITUENT_KINDS,
     SCOPE_CHECKPOINT_EVIDENCE_STATUSES,
+    SCOPE_CHECKPOINT_START_CLASSIFICATIONS,
     SCOPE_COMMAND_KINDS,
     SCOPE_DISCARD_PHASES,
     SCOPE_EVIDENCE_KINDS,
@@ -968,4 +969,29 @@ export type ScopeRecoveryReport = {
     readonly evaluated_at: number;
     /** Every live scope in canonical scope-identity order. */
     readonly scopes: readonly ScopeRecoveryEntry[];
+};
+
+/** Configured branch start classification proven by a checkpoint. */
+export type ScopeCheckpointStartClassification =
+    (typeof SCOPE_CHECKPOINT_START_CLASSIFICATIONS)[number];
+
+/** Evidence-derived classification of how a branch started and what it can restore. */
+export type ScopeCheckpointClassification = {
+    /** Constituent kinds that are not applicable to this branch. */
+    readonly not_applicable: readonly ScopeCheckpointConstituentKind[];
+    /** Constituent kinds reconstructed rather than captured. */
+    readonly reconstructive: readonly ScopeCheckpointConstituentKind[];
+    /** Whether every applicable constituent is verified, so the start state is fully restorable. */
+    readonly restorable: boolean;
+    /** Atomic snapshot, quiescent verified copy, or reconstructed start. */
+    readonly start: ScopeCheckpointStartClassification;
+    /** Unavailable constituents with their retained reasons. */
+    readonly unavailable: readonly {
+        /** Unavailable constituent kind. */
+        readonly kind: ScopeCheckpointConstituentKind;
+        /** Retained reason the constituent cannot be proven or restored. */
+        readonly reason: string;
+    }[];
+    /** Constituent kinds proven by retained receipts. */
+    readonly verified: readonly ScopeCheckpointConstituentKind[];
 };

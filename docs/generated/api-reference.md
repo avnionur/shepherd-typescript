@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.5.1
+Package: `@avnionur/shepherd-typescript` 2.6.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 643.
+Exported symbols: 647.
 
 ### `AppendBatchDraft`
 
@@ -6241,6 +6241,22 @@ export declare const SCOPE_CHECKPOINT_EVIDENCE_STATUSES: readonly [
 ];
 ```
 
+### `SCOPE_CHECKPOINT_START_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured branch start classifications ordered atomic snapshot, quiescent verified copy, reconstructed.
+
+Signature:
+
+```ts
+export declare const SCOPE_CHECKPOINT_START_CLASSIFICATIONS: readonly [
+    "atomic_snapshot",
+    "quiescent_verified_copy",
+    "reconstructed"
+];
+```
+
 ### `SCOPE_CHECKPOINT_VERSION`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -7797,6 +7813,28 @@ export type ScopeCheckpoint = {
 };
 ```
 
+### `ScopeCheckpointClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Evidence-derived classification of how a branch started and what it can restore.
+
+Signature:
+
+```ts
+export type ScopeCheckpointClassification = {
+    readonly not_applicable: readonly ScopeCheckpointConstituentKind[];
+    readonly reconstructive: readonly ScopeCheckpointConstituentKind[];
+    readonly restorable: boolean;
+    readonly start: ScopeCheckpointStartClassification;
+    readonly unavailable: readonly {
+        readonly kind: ScopeCheckpointConstituentKind;
+        readonly reason: string;
+    }[];
+    readonly verified: readonly ScopeCheckpointConstituentKind[];
+};
+```
+
 ### `ScopeCheckpointConstituent`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -7845,6 +7883,18 @@ Signature:
 
 ```ts
 export type ScopeCheckpointEvidenceStatus = (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[number];
+```
+
+### `ScopeCheckpointStartClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured branch start classification proven by a checkpoint.
+
+Signature:
+
+```ts
+export type ScopeCheckpointStartClassification = (typeof SCOPE_CHECKPOINT_START_CLASSIFICATIONS)[number];
 ```
 
 ### `ScopeChildMergedRecord`
@@ -11759,6 +11809,44 @@ const envelope = classifyProofEnvelope({
     trace: declarationPrefix,
 });
 envelope.reference_validated;
+```
+
+### `classifyScopeCheckpoint`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Proves from retained checkpoint evidence how a branch started and what it can restore.
+
+Any reconstructive constituent classifies the start as reconstructed. Otherwise the configured
+start classification of the carrier capture kind applies: the reference copy carrier's quiescent
+verified copy is never reported as an atomic snapshot. Every constituent is listed under its
+evidence status, and the branch is restorable only when no applicable constituent is
+reconstructive or unavailable. Identifiers and timestamps alone are never treated as proof.
+
+Signature:
+
+```ts
+export declare function classifyScopeCheckpoint(checkpoint: ScopeCheckpoint): ScopeCheckpointClassification;
+```
+
+Parameter:
+
+- checkpoint - Checkpoint descriptor retained by a completed scope fork.
+
+Returns:
+
+- Frozen classification.
+
+Throws:
+
+- {TypeError} If the checkpoint is malformed or its capture kind has no configured
+start classification.
+
+Example:
+
+- ```ts
+const fork = await forkScope(store, options);
+const { start, restorable } = classifyScopeCheckpoint(fork.world.checkpoint);
 ```
 
 ### `createEffectHandlerStack`
@@ -19321,7 +19409,7 @@ import * as api from "@avnionur/shepherd-typescript/scopes";
 void api;
 ```
 
-Exported symbols: 105.
+Exported symbols: 109.
 
 ### `AppendIntentConflictError`
 
@@ -19513,6 +19601,22 @@ export declare const SCOPE_CHECKPOINT_EVIDENCE_STATUSES: readonly [
     "reconstructive",
     "not_applicable",
     "unavailable"
+];
+```
+
+### `SCOPE_CHECKPOINT_START_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured branch start classifications ordered atomic snapshot, quiescent verified copy, reconstructed.
+
+Signature:
+
+```ts
+export declare const SCOPE_CHECKPOINT_START_CLASSIFICATIONS: readonly [
+    "atomic_snapshot",
+    "quiescent_verified_copy",
+    "reconstructed"
 ];
 ```
 
@@ -19942,6 +20046,28 @@ export type ScopeCheckpoint = {
 };
 ```
 
+### `ScopeCheckpointClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Evidence-derived classification of how a branch started and what it can restore.
+
+Signature:
+
+```ts
+export type ScopeCheckpointClassification = {
+    readonly not_applicable: readonly ScopeCheckpointConstituentKind[];
+    readonly reconstructive: readonly ScopeCheckpointConstituentKind[];
+    readonly restorable: boolean;
+    readonly start: ScopeCheckpointStartClassification;
+    readonly unavailable: readonly {
+        readonly kind: ScopeCheckpointConstituentKind;
+        readonly reason: string;
+    }[];
+    readonly verified: readonly ScopeCheckpointConstituentKind[];
+};
+```
+
 ### `ScopeCheckpointConstituent`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -19990,6 +20116,18 @@ Signature:
 
 ```ts
 export type ScopeCheckpointEvidenceStatus = (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[number];
+```
+
+### `ScopeCheckpointStartClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured branch start classification proven by a checkpoint.
+
+Signature:
+
+```ts
+export type ScopeCheckpointStartClassification = (typeof SCOPE_CHECKPOINT_START_CLASSIFICATIONS)[number];
 ```
 
 ### `ScopeChildMergedRecord`
@@ -21363,6 +21501,44 @@ const [parentWriter, childWriter] = claimScopeWriters(store, {
         { claimId: "claim:worker-1:child", scopeId: child.scope_id },
     ],
 });
+```
+
+### `classifyScopeCheckpoint`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Proves from retained checkpoint evidence how a branch started and what it can restore.
+
+Any reconstructive constituent classifies the start as reconstructed. Otherwise the configured
+start classification of the carrier capture kind applies: the reference copy carrier's quiescent
+verified copy is never reported as an atomic snapshot. Every constituent is listed under its
+evidence status, and the branch is restorable only when no applicable constituent is
+reconstructive or unavailable. Identifiers and timestamps alone are never treated as proof.
+
+Signature:
+
+```ts
+export declare function classifyScopeCheckpoint(checkpoint: ScopeCheckpoint): ScopeCheckpointClassification;
+```
+
+Parameter:
+
+- checkpoint - Checkpoint descriptor retained by a completed scope fork.
+
+Returns:
+
+- Frozen classification.
+
+Throws:
+
+- {TypeError} If the checkpoint is malformed or its capture kind has no configured
+start classification.
+
+Example:
+
+- ```ts
+const fork = await forkScope(store, options);
+const { start, restorable } = classifyScopeCheckpoint(fork.world.checkpoint);
 ```
 
 ### `emitScopeRecord`

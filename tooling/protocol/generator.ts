@@ -2202,6 +2202,11 @@ export const SCOPE_VOCABULARY_STATUSES = [${config.scopes.vocabulary.statuses.ma
 /** Configured scope vocabulary projection version. @public */
 export const SCOPE_VOCABULARY_VERSION = ${config.scopes.vocabulary.version} as const;
 
+/** Configured branch start classifications ordered atomic snapshot, quiescent verified copy, reconstructed. @public */
+export const SCOPE_CHECKPOINT_START_CLASSIFICATIONS = [
+${config.scopes.checkpoint.startClassifications.values.map((value) => `    ${JSON.stringify(value)},`).join("\n")}
+] as const;
+
 /** Configured scope checkpoint descriptor version. @public */
 export const SCOPE_CHECKPOINT_VERSION = ${config.scopes.checkpoint.version} as const;
 

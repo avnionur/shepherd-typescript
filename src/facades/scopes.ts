@@ -3,6 +3,7 @@ export {
     SCOPE_AUTHORITY_ATOMS,
     SCOPE_CHECKPOINT_CONSTITUENT_KINDS,
     SCOPE_CHECKPOINT_EVIDENCE_STATUSES,
+    SCOPE_CHECKPOINT_START_CLASSIFICATIONS,
     SCOPE_CHECKPOINT_VERSION,
     SCOPE_COMMAND_KINDS,
     SCOPE_COMPATIBILITY_VERSION,
@@ -25,6 +26,7 @@ export {
     SCOPE_VOCABULARY_VERSION,
     SCOPE_WORLD_CAPABILITIES,
 } from "../protocol/values.generated.ts";
+export { classifyScopeCheckpoint } from "../scope/checkpoint.ts";
 export { emitScopeRecord } from "../scope/emission.ts";
 export {
     ScopeAuthorityError,
@@ -52,9 +54,11 @@ export type {
     ScopeAuthorityAtom,
     ScopeBoundResource,
     ScopeCheckpoint,
+    ScopeCheckpointClassification,
     ScopeCheckpointConstituent,
     ScopeCheckpointConstituentKind,
     ScopeCheckpointEvidenceStatus,
+    ScopeCheckpointStartClassification,
     ScopeChildMergedRecord,
     ScopeChildRegisteredRecord,
     ScopeChildRegistrationReceipt,

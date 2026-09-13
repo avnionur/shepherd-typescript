@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-09-13
+
+### New Feature
+
+- Add `classifyScopeCheckpoint`: proves from a retained checkpoint descriptor whether a branch
+  started from an atomic snapshot, a quiescent verified copy, or reconstructed state. It lists
+  every constituent by evidence status and reports restorability only when nothing is
+  reconstructive or unavailable.
+- Add scope protocol v6 with the configured start classifications and the capture-kind mapping.
+
+### Impact
+
+Callers can distinguish verified-copy branches from reconstructed ones without trusting
+identifiers or timestamps. Existing fork records and checkpoints decode unchanged.
+
 ## [2.5.1] - 2026-09-13
 
 ### Improvement

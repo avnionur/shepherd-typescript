@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-13
 
-Current version: `2.5.1`
+Current version: `2.6.0`
 
 Current level: L1 stable — Phases 4–5 complete; Phase 6 scope substrate active
 
@@ -433,6 +433,12 @@ state. Cleanup removes only custody named by retained fork journals, as progress
 the logical decision, with receipt-based recovery across every boundary.
 
 ## Verification required for this slice
+
+Phase 6 exit criterion (checkpoint provenance, #139/#141): scope protocol v6 adds
+`classifyScopeCheckpoint`, which derives atomic snapshot, quiescent verified copy, or reconstructed
+start classification and restorability from retained checkpoint constituents. Focused tests cover
+the real fork checkpoint, reconstructive and fully verified variants, unsupported capture kinds,
+configuration drift, and scope v6 compatibility. Full local verification and production build pass.
 
 Phase 6 Task 8 (#140): the seeded scope algebra law suite runs configured operation sequences
 against a pure reference model and the durable store with the reference copy carrier, checking

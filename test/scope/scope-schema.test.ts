@@ -18,6 +18,7 @@ import {
     SCOPE_PROTOCOL_V3_CONTRACT,
     SCOPE_PROTOCOL_V4_CONTRACT,
     SCOPE_PROTOCOL_V5_CONTRACT,
+    SCOPE_PROTOCOL_V6_CONTRACT,
 } from "../../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
 import { registerAndClaim, resource, temporaryDatabasePath } from "./fixtures.ts";
@@ -119,28 +120,30 @@ test("published scope schemas accept retained records and reject malformed copie
     }
 });
 
-test("scope protocol configuration matches v5 and preserves every earlier value", () => {
+test("scope protocol configuration matches v6 and preserves every earlier value", () => {
     const config = JSON.parse(
         readFileSync(new URL("../../protocol.config.json", import.meta.url), "utf8"),
     ) as Record<string, unknown>;
     const parsed = parseProtocolConfig(structuredClone(config));
-    assert.deepEqual(parsed.scopes, SCOPE_PROTOCOL_V5_CONTRACT);
+    assert.deepEqual(parsed.scopes, SCOPE_PROTOCOL_V6_CONTRACT);
     // Later versions only append vocabulary; every earlier value keeps its position and meaning.
     const appended = new Set(["commandKinds", "evidenceKinds", "worldCapabilities"]);
     const merged = new Set([
         "artifacts",
+        "checkpoint",
         "errors",
         "identity",
         "limits",
         "schemas",
         "traceSchemas",
     ]);
-    const current = SCOPE_PROTOCOL_V5_CONTRACT as unknown as Record<string, unknown>;
+    const current = SCOPE_PROTOCOL_V6_CONTRACT as unknown as Record<string, unknown>;
     for (const previousContract of [
         SCOPE_PROTOCOL_V1_CONTRACT,
         SCOPE_PROTOCOL_V2_CONTRACT,
         SCOPE_PROTOCOL_V3_CONTRACT,
         SCOPE_PROTOCOL_V4_CONTRACT,
+        SCOPE_PROTOCOL_V5_CONTRACT,
     ]) {
         for (const [key, value] of Object.entries(previousContract)) {
             if (appended.has(key)) {
@@ -156,11 +159,11 @@ test("scope protocol configuration matches v5 and preserves every earlier value"
                 );
             } else if (key === "authority") {
                 assert.deepEqual(
-                    SCOPE_PROTOCOL_V5_CONTRACT.authority.atoms,
+                    SCOPE_PROTOCOL_V6_CONTRACT.authority.atoms,
                     previousContract.authority.atoms,
                 );
                 assert.deepEqual(
-                    SCOPE_PROTOCOL_V5_CONTRACT.authority.resourceKinds.slice(
+                    SCOPE_PROTOCOL_V6_CONTRACT.authority.resourceKinds.slice(
                         0,
                         previousContract.authority.resourceKinds.length,
                     ),

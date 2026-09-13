@@ -150,9 +150,42 @@ export function readScopeConfig(
     );
     const checkpoint = readObject(
         scopes.checkpoint,
-        ["constituentKinds", "evidenceStatuses", "version"],
+        ["constituentKinds", "evidenceStatuses", "startClassifications", "version"],
         "scopes.checkpoint",
     );
+    const startClassifications = readObject(
+        checkpoint.startClassifications,
+        ["captureKinds", "values"],
+        "scopes.checkpoint.startClassifications",
+    );
+    const startValues = readUniqueStrings(
+        startClassifications.values,
+        "scopes.checkpoint.startClassifications.values",
+    );
+    if (startValues.length !== 3) {
+        throw new TypeError(
+            "scopes.checkpoint.startClassifications.values must contain atomic snapshot, quiescent verified copy, and reconstructed",
+        );
+    }
+    const captureKindEntries = Object.entries(
+        readObject(
+            startClassifications.captureKinds,
+            [],
+            "scopes.checkpoint.startClassifications.captureKinds",
+            true,
+        ),
+    ).map(([captureKind, classification]) => {
+        const value = readNonEmptyString(
+            classification,
+            `scopes.checkpoint.startClassifications.captureKinds.${captureKind}`,
+        );
+        if (!startValues.slice(0, 2).includes(value)) {
+            throw new TypeError(
+                "scopes.checkpoint.startClassifications.captureKinds must map to a non-reconstructed classification",
+            );
+        }
+        return [captureKind, value] as const;
+    });
     const identity = readObject(
         scopes.identity,
         [
@@ -305,6 +338,10 @@ export function readScopeConfig(
         checkpoint: {
             constituentKinds: checkpointConstituentKinds,
             evidenceStatuses: checkpointEvidenceStatuses,
+            startClassifications: {
+                captureKinds: Object.freeze(Object.fromEntries(captureKindEntries)),
+                values: startValues,
+            },
             version: readPositiveInteger(checkpoint.version, "scopes.checkpoint.version"),
         },
         commandKinds,
