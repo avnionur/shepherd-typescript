@@ -50,8 +50,10 @@ const DISCARD_DECIDED_KIND = SCOPE_EVIDENCE_KINDS[10];
  * expired classification, an unreleased claim past its lease whose holder may still be running.
  * Every classification that needs work names the single scope whose writer owns recovery and the
  * exact retained command to resume: the parent for an incomplete fork, a reserved merge, or the
- * discarded subtree root's pending cleanup, and the scope itself for an expired writer, which must
- * be superseded by a new claim. Imported stores hold no live rows and report no scopes.
+ * discarded subtree root's pending cleanup record, even when it names no custody, and the scope
+ * itself for an expired writer, which must be superseded by a new claim. When a sealed parent can no
+ * longer resume a descendant's cleanup, ownership resolves to the sealing ancestor discard that lists
+ * the same identities, and a completed ancestor cleanup makes the descendant terminal. Imported stores hold no live rows and report no scopes.
  *
  * @param store - Open trace store holding live scope registrations.
  * @param options - Optional deterministic evaluation time for writer leases.
@@ -182,13 +184,19 @@ function pendingCleanup(
     const replay = readScopeCommandReceipt(store, decision.command_id);
     if (
         replay?.command !== SCOPE_COMMAND_KINDS[5] ||
-        replay.receipt.cleanup.phase !== DISCARD_DECIDED_PHASE ||
-        replay.receipt.cleanup.custody_ids.length === 0
+        replay.receipt.cleanup.phase !== DISCARD_DECIDED_PHASE
     ) {
         return null;
     }
+    // Only an open owning parent can resume cleanup. A sealed parent was discarded with its
+    // subtree, whose own decision lists and cleans the same identities; a parent with pending child
+    // cleanup can never have been merged.
+    const owner = inspectScope(store, replay.receipt.parent_scope_id) as ScopeInspection;
+    if (owner.state !== OPEN_STATE) {
+        return pendingCleanup(store, owner);
+    }
     return {
-        recovery_owner_scope_id: replay.receipt.parent_scope_id,
+        recovery_owner_scope_id: owner.scope_id,
         resume: { command_id: decision.command_id, kind: DISCARD_RESUME },
     };
 }

@@ -2,9 +2,9 @@
 
 Last updated: 2026-09-13
 
-Current version: `2.7.0`
+Current version: `2.7.1`
 
-Current level: L1 stable — Phases 4–5 complete; Phase 6 scope substrate active
+Current level: L2 substrate parity — Phases 4–6 complete for the documented scope
 
 ## Current position
 
@@ -433,6 +433,13 @@ state. Cleanup removes only custody named by retained fork journals, as progress
 the logical decision, with receipt-based recovery across every boundary.
 
 ## Verification required for this slice
+
+Phase 6 Task 9 (#141): the [exit audit](./phase-6-exit-audit.md) maps all eleven work items and
+seven exit criteria to delivered issues, entry points, docs, and tests, reassigns coordinated
+multi-resource checkpoints to Phase 8, and records the independent review outcomes. Fresh
+`pnpm sync:version`, `CI=true pnpm verify`, `pnpm build:desktop`, `pnpm test:carriers:linux`, and
+`pnpm bench:carriers` pass: 595 tests, zero skips, 100% configured coverage. The same PATCH fixes
+the second independent review's recovery-classification and scheduler findings with tests.
 
 Phase 6 Task 7 (#139): workspace protocol v26 adds clone (Linux FICLONE, macOS clonefile helper) and
 Linux overlay carrier backends with identities equal to the copy reference. The shared carrier

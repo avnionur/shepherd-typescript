@@ -370,9 +370,9 @@ the seeded [scope algebra law suite](../docs/scope-laws.md) against a reference 
 checkpoint [start classification](../docs/scope-fork.md#start-classification) proves how each
 branch started. Task 7 (#139) adds [clone and Linux overlay carriers](../docs/optimized-carriers.md)
 that pass the shared conformance suite and the law suite, with storage scaling by changed data.
-Scheduling and orphan recovery (#138), optimized carriers and scaling
-benchmarks (#139), reference-model laws (#140), and the exit audit (#141) remain open; no L2 claim
-is implemented.
+Task 9 (#141) records the [Phase 6 exit audit](./phase-6-exit-audit.md): every exit criterion has
+verified evidence and L2 substrate parity is reached for the recorded hosts. Coordinated
+multi-resource world checkpoints move to Phase 8.
 
 Work:
 

@@ -9,6 +9,7 @@ import {
     inspectScope,
     releaseScopeWriter,
     runScopeTree,
+    ScopeEvidenceError,
     type ScopeTreeContext,
     type ScopeTreeNode,
     type ScopeTreeOutcome,
@@ -473,4 +474,115 @@ test("a scheduled fork interrupted before completion resumes from its retained o
     });
     assert.equal(report.outcomes[0]?.status, "discarded");
     assert.equal(recovered.verifyIntegrity().ok, true);
+});
+
+class LostFirstMergeResponseStore extends SQLiteTraceStore {
+    #lost = false;
+
+    override completeScopeMerge(
+        ...parameters: Parameters<SQLiteTraceStore["completeScopeMerge"]>
+    ): AppendReceipt {
+        const receipt = super.completeScopeMerge(...parameters);
+        if (!this.#lost) {
+            this.#lost = true;
+            throw new Error("merge response lost after commit");
+        }
+        return receipt;
+    }
+}
+
+test("re-running after a lost merge response cleans protected application custody", async (context) => {
+    const workspace = await createForkWorkspace(
+        context,
+        "tree-lost-merge",
+        LostFirstMergeResponseStore,
+    );
+    const grant = [bindingGrant(workspace.source)];
+    const children = [
+        {
+            children: [
+                {
+                    fork: { binding: workspace.source },
+                    grant,
+                    key: "writer",
+                    run: async (scope: ScopeTreeContext): Promise<"merge"> => {
+                        await writeFile(path.join(scope.custodyPath as string, "new.txt"), "new\n");
+                        return "merge";
+                    },
+                },
+                { grant, key: "notes" },
+            ],
+            fork: { binding: workspace.source },
+            grant,
+            key: "world",
+            run: (): "discard" => "discard",
+        },
+        { grant, key: "plain" },
+    ];
+    const options = {
+        carrier: workspace.carrier,
+        children,
+        commandPrefix: "schedule:lost-merge",
+        maxParallel: 2,
+    };
+    await assert.rejects(
+        runScopeTree(workspace.store, { ...options, parent: workspace.rootWriter }),
+        /merge response lost after commit/u,
+    );
+    workspace.store.close();
+    using recovered = new SQLiteTraceStore(workspace.databasePath);
+    const parent = claimScopeWriter(recovered, {
+        claimId: "claim:root",
+        scopeId: workspace.root.scope_id,
+    });
+    const report = await runScopeTree(recovered, { ...options, parent });
+    const writerScope = report.outcomes[0]?.children[0]?.scope_id as string;
+    const reservation = inspectScope(recovered, writerScope)?.history.find(
+        (entry) => entry.kind === "merge_prepared",
+    );
+    const plan = (
+        (recovered.readRecord(reservation?.record_id as string) as { readonly body: unknown })
+            .body as { readonly world: { readonly application_custody_id: string } }
+    ).world;
+    await assert.rejects(workspace.carrier.openCustody(plan.application_custody_id));
+    assert.deepEqual(
+        statuses(report.outcomes),
+        statuses((await runScopeTree(recovered, { ...options, parent })).outcomes),
+    );
+    // A schedule whose declaration no longer matches retained evidence fails closed.
+    await assert.rejects(
+        runScopeTree(recovered, {
+            ...options,
+            children: [
+                {
+                    ...(children[0] as ScopeTreeNode),
+                    children: [
+                        ...((children[0] as ScopeTreeNode).children as readonly ScopeTreeNode[]),
+                        { grant, key: "extra" },
+                    ],
+                },
+                children[1],
+            ] as never,
+            parent,
+        }),
+        ScopeEvidenceError,
+    );
+});
+
+test("multiple failing sibling subtrees are reported together", async (context) => {
+    const databasePath = await temporaryDatabasePath(context, "tree-aggregate");
+    using store = new NestedRegistrationFailureStore(databasePath);
+    const { writer } = registerAndClaim(store);
+    await assert.rejects(
+        runScopeTree(store, {
+            children: [
+                { children: [{ grant: [], key: "inner" }], grant: [], key: "left" },
+                { children: [{ grant: [], key: "inner" }], grant: [], key: "right" },
+            ],
+            commandPrefix: "schedule:aggregate",
+            maxParallel: 2,
+            parent: writer,
+        }),
+        (error: unknown) => error instanceof AggregateError && error.errors.length === 2,
+    );
 });

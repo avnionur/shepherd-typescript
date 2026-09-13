@@ -48,7 +48,7 @@ Coverage is earned in explicit levels so planned behavior is never presented as 
 | --- | --- | --- |
 | L0 | Canonical schemas, identities, trace storage, and projections | Complete |
 | L1 | Shepherd `0.3.0` settlement compatibility | Complete in 1.51.0 |
-| L2 | Scope and versioned-world substrate parity | Planned |
+| L2 | Scope and versioned-world substrate parity | Complete in 2.7.1 for the recorded hosts |
 | L3 | Paper programming-model parity | Planned |
 | L4 | Production security, recovery, performance, packaging, and releases | Planned |
 
@@ -650,16 +650,14 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 ## Status
 
 The [Phase 5 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-5-exit-audit.md) maps delivered product-surface evidence.
-Phase 5 is complete through the approved 2.0.0 runtime-support remedy. Phase 6 follows the
-[scope ownership/authority proposal](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/scope-ownership-contract.md);
-[trace-only scope registration](./docs/scope-registration.md),
-[reference-copy scope fork](./docs/scope-fork.md), and
-[consume-once merge and discard](./docs/scope-merge-discard.md), and the
-[scope vocabulary mapping](./docs/scope-vocabulary.md), and
-[scope scheduling](./docs/scope-scheduling.md), and
-[optimized carriers](./docs/optimized-carriers.md) are implemented. L2 parity is recorded by the
-Phase 6 exit audit. The major version does not
-imply production readiness.
+Phase 5 is complete through the approved 2.0.0 runtime-support remedy. Phase 6 is complete for its
+documented scope: the
+[Phase 6 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-6-exit-audit.md)
+maps [scope registration](./docs/scope-registration.md), [fork](./docs/scope-fork.md),
+[merge and discard](./docs/scope-merge-discard.md), the
+[vocabulary mapping](./docs/scope-vocabulary.md), [scheduling](./docs/scope-scheduling.md),
+[laws](./docs/scope-laws.md), and [optimized carriers](./docs/optimized-carriers.md) to L2
+substrate parity on the recorded hosts. The major version does not imply production readiness.
 
 The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
 execution, durable lifecycle/control evidence, and conservative formal-claim boundary. Phase 3 now

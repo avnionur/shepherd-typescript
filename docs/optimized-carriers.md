@@ -179,6 +179,16 @@ backend the host reports conformant. On macOS APFS it runs copy and clone. `pnpm
 also runs it on loopback XFS with clone and overlay required, so every backend passes the same
 correctness laws as the copy reference.
 
+## macOS clone helper threat model
+
+The helper's digest, owner, single link, and modes are checked immediately before each execution,
+but the check and the execution are separate steps. A process running as the same user could swap
+the file in between. That user can already write the workspace, and each clone is still reopened
+and compared byte for byte with the verified source with exactly one link, so a substituted helper
+cannot publish unverified content. `clonefile(2)` also copies extended attributes and ACLs, but
+sources carrying unsupported metadata are refused before capture, and captured regular files keep
+only their verified bytes and mode in the manifest.
+
 ## Non-claims
 
 - Captured revisions, selection staging, and user publication under the overlay backend remain full

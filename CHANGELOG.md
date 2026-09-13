@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.1] - 2026-09-13
+
+### Improvement
+
+- Add the Phase 6 exit audit mapping every scope-algebra work item and exit criterion to delivered
+  entry points, documentation, and tests, and update the roadmap, tracker, parity matrix, and
+  README level table to record L2 substrate parity for the recorded hosts.
+
+### Defect Fixes
+
+- Resolve pending discard cleanup ownership through sealed parents, and classify a discard with no
+  custody that was interrupted before its cleanup record as pending instead of terminal.
+- Remove protected merge application custody left by a crash after merge completion when a
+  schedule is re-run, fail closed with `ScopeEvidenceError` when a schedule no longer matches
+  retained evidence, and report several failing sibling subtrees together as an `AggregateError`.
+- Document the macOS clone helper's same-user threat model.
+
+### Impact
+
+Phase 6 is complete for its documented scope. Coordinated multi-resource world checkpoints move to
+Phase 8. Runtime behavior, public API, protocols, and schemas are unchanged.
+
 ## [2.7.0] - 2026-09-13
 
 ### New Feature

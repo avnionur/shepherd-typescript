@@ -206,3 +206,104 @@ test("recovery classification names one owner and the exact command for every li
     imported.importTrace(reopened.exportTrace());
     assert.deepEqual(inspectScopeRecovery(imported).scopes, []);
 });
+
+class InterruptedCleanupRecordStore extends SQLiteTraceStore {
+    interruptCleanup = false;
+
+    override completeScopeDiscardCleanup(
+        ...parameters: Parameters<SQLiteTraceStore["completeScopeDiscardCleanup"]>
+    ): AppendReceipt {
+        if (this.interruptCleanup) {
+            throw new Error("interrupted before cleanup record");
+        }
+        return super.completeScopeDiscardCleanup(...parameters);
+    }
+}
+
+test("cleanup ownership resolves through sealed parents and empty cleanup stays pending", async (context) => {
+    const world = await createNestedWorld(
+        context,
+        "recovery-sealed",
+        InterruptedCleanupRecordStore,
+    );
+    const store = world.store as InterruptedCleanupRecordStore;
+    const { child, childWriter, parent, parentWriter, root, rootWriter } = world;
+    const entry = (scopeId: string) =>
+        inspectScopeRecovery(store, { nowMilliseconds: 1_700 }).scopes.find(
+            (scope) => scope.scope_id === scopeId,
+        );
+
+    // A trace-only discard interrupted before its cleanup record is still pending, not terminal.
+    const trace = registerChildScope(store, {
+        commandId: "scope-command:trace",
+        expectedHeadRecordId: headOf(store, child.scope_id),
+        grant: [],
+        nowMilliseconds: 1_600,
+        parent: childWriter,
+    });
+    store.interruptCleanup = true;
+    await assert.rejects(
+        discardScope(store, {
+            commandId: "scope-command:discard-trace",
+            expectedHeadRecordId: headOf(store, trace.scope_id),
+            nowMilliseconds: 1_600,
+            parent: childWriter,
+            scopeId: trace.scope_id,
+        }),
+        /interrupted before cleanup record/u,
+    );
+    store.interruptCleanup = false;
+    assert.deepEqual(
+        {
+            classification: entry(trace.scope_id)?.classification,
+            owner: entry(trace.scope_id)?.recovery_owner_scope_id,
+            resume: entry(trace.scope_id)?.resume,
+        },
+        {
+            classification: "cleanup_pending",
+            owner: child.scope_id,
+            resume: { command_id: "scope-command:discard-trace", kind: "discard" },
+        },
+    );
+
+    // A world grandchild discarded without a carrier; its parent is then sealed by an ancestor.
+    const grandchild = await forkChild(world, child, childWriter, "scope-command:grandchild");
+    await discardScope(store, {
+        commandId: "scope-command:discard-grandchild",
+        expectedHeadRecordId: headOf(store, grandchild.scope_id),
+        nowMilliseconds: 1_600,
+        parent: childWriter,
+        scopeId: grandchild.scope_id,
+    });
+    releaseScopeWriter(store, { writer: childWriter });
+    releaseScopeWriter(store, { writer: parentWriter });
+    const parentHead = headOf(store, parent.scope_id);
+    await discardScope(store, {
+        commandId: "scope-command:discard-parent",
+        expectedHeadRecordId: parentHead,
+        nowMilliseconds: 1_700,
+        parent: rootWriter,
+        scopeId: parent.scope_id,
+    });
+    for (const scopeId of [grandchild.scope_id, trace.scope_id, child.scope_id]) {
+        assert.deepEqual(
+            { owner: entry(scopeId)?.recovery_owner_scope_id, resume: entry(scopeId)?.resume },
+            {
+                owner: root.scope_id,
+                resume: { command_id: "scope-command:discard-parent", kind: "discard" },
+            },
+        );
+    }
+    // Completing the ancestor cleanup makes every sealed descendant terminal.
+    await discardScope(store, {
+        carrier: world.carrier,
+        commandId: "scope-command:discard-parent",
+        expectedHeadRecordId: parentHead,
+        nowMilliseconds: 1_700,
+        parent: rootWriter,
+        scopeId: parent.scope_id,
+    });
+    for (const scopeId of [grandchild.scope_id, trace.scope_id, child.scope_id, parent.scope_id]) {
+        assert.equal(entry(scopeId)?.classification, "terminal", scopeId);
+    }
+});

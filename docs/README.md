@@ -24,6 +24,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Scope ownership/authority proposal](../.plan/scope-ownership-contract.md) defines the reviewed
   Phase 6 contract behind the implemented scope slices.
 
+- [Phase 6 exit audit](../.plan/phase-6-exit-audit.md) maps scope-algebra evidence and records L2
+  substrate parity for the recorded hosts.
 - [Phase 5 exit audit](../.plan/phase-5-exit-audit.md) maps product-surface evidence and records
   runtime-support remediation and phase-exit verification.
 - [Node runtime support](./runtime-support.md) defines the approved version range, pre-write

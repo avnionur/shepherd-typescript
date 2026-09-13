@@ -97,7 +97,8 @@ and any third state fails with `WorldCarrierError`. The merge completes only whe
 custody verifies as exactly the merged content; otherwise it fails with `ScopeEvidenceError`. The
 parent custody is captured again as an immutable publication receipt. One transaction then appends
 the parent integration and the child seal and records the child as `merged`. The protected
-application custody is discarded afterwards.
+application custody is discarded afterwards. A crash between the completion and that cleanup
+leaves the custody until a scheduled re-run removes it or an ancestor discard lists it.
 
 A trace-only child merge has no world plan and no publication. The merge is purely the
 selected-history integration.

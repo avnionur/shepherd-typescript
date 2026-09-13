@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.7.0
+Package: `@avnionur/shepherd-typescript` 2.7.1
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -13570,8 +13570,10 @@ every open descendant in the same transaction. Orphaned work is therefore detect
 expired classification, an unreleased claim past its lease whose holder may still be running.
 Every classification that needs work names the single scope whose writer owns recovery and the
 exact retained command to resume: the parent for an incomplete fork, a reserved merge, or the
-discarded subtree root's pending cleanup, and the scope itself for an expired writer, which must
-be superseded by a new claim. Imported stores hold no live rows and report no scopes.
+discarded subtree root's pending cleanup record, even when it names no custody, and the scope
+itself for an expired writer, which must be superseded by a new claim. When a sealed parent can no
+longer resume a descendant's cleanup, ownership resolves to the sealing ancestor discard that lists
+the same identities, and a completed ancestor cleanup makes the descendant terminal. Imported stores hold no live rows and report no scopes.
 
 Signature:
 
@@ -21706,8 +21708,10 @@ every open descendant in the same transaction. Orphaned work is therefore detect
 expired classification, an unreleased claim past its lease whose holder may still be running.
 Every classification that needs work names the single scope whose writer owns recovery and the
 exact retained command to resume: the parent for an incomplete fork, a reserved merge, or the
-discarded subtree root's pending cleanup, and the scope itself for an expired writer, which must
-be superseded by a new claim. Imported stores hold no live rows and report no scopes.
+discarded subtree root's pending cleanup record, even when it names no custody, and the scope
+itself for an expired writer, which must be superseded by a new claim. When a sealed parent can no
+longer resume a descendant's cleanup, ownership resolves to the sealing ancestor discard that lists
+the same identities, and a completed ancestor cleanup makes the descendant terminal. Imported stores hold no live rows and report no scopes.
 
 Signature:
 

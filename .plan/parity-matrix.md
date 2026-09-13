@@ -71,8 +71,8 @@ and any applicable pinned upstream-oracle comparison.
 | `release` | shipped | scope handoff analogue | P1 | public receipt-only settlement, parent-drift/current-basis witnesses, preserved readable custody, consume-once conflicts, Git-state preservation, interruption, concurrency, and fresh-process recovery implemented |
 | `discard` | shipped | core | P0 | parent/worktree equivalence |
 | Consume-once settlement | shipped | required | P0 | concurrent CAS tests |
-| Scope `emit/fork/merge/discard` | lower layers/current work | core | P2 | algebraic law suite |
-| Nested/concurrent scopes | future/current lower layer | explicit | P2 | isolation and race suite |
+| Scope `emit/fork/merge/discard` | shipped | core | P2 | durable registration, fenced emission, reference-copy fork, consume-once three-way merge and subtree discard with receipt recovery, and a seeded reference-model law suite on copy, clone, and overlay carriers implemented (Phase 6 exit audit) |
+| Nested/concurrent scopes | shipped | explicit | P2 | nested attenuation, atomic multi-scope claims, bounded parallel nested scheduling with deterministic settlement, recovery ownership classification, and cross-connection merge/discard race tests implemented |
 | Agent + environment atomic fork | research substrate | explicit | P2 | coupled checkpoint fixture |
 | Process checkpoint/resume | research substrate | explicit | P2 | platform-gated continuation suite |
 | Storage sharing by divergent suffix | research substrate | explicit | P2 | disk scaling benchmark |

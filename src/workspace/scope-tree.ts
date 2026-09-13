@@ -10,7 +10,7 @@ import {
 } from "../protocol/values.generated.ts";
 import type { RecordId } from "../record/types.ts";
 import { emitScopeRecord } from "../scope/emission.ts";
-import { ScopeMergeConflictError } from "../scope/errors.ts";
+import { ScopeEvidenceError, ScopeMergeConflictError } from "../scope/errors.ts";
 import { inspectScope } from "../scope/inspection.ts";
 import { createScopeId, readScopeData, readScopeEmissionRecord } from "../scope/records.ts";
 import { registerChildScope } from "../scope/registration.ts";
@@ -29,7 +29,10 @@ import { assertScopeWriter, claimScopeWriter, releaseScopeWriter } from "../scop
 import { AppendIntentConflictError } from "../store/errors.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import { assertWorkspaceBinding } from "./bindings.ts";
-import { assertReferenceCopyCarrier } from "./reference-copy-carrier.ts";
+import {
+    assertReferenceCopyCarrier,
+    discardReferenceCopyCustodyIdentity,
+} from "./reference-copy-carrier.ts";
 import { discardScope } from "./scope-discard.ts";
 import { forkScope } from "./scope-fork.ts";
 import { mergeScope } from "./scope-merge.ts";
@@ -48,6 +51,7 @@ const [MERGE_DECISION, DISCARD_DECISION] = SCOPE_SCHEDULING_DECISIONS;
 const [MERGED_OUTCOME, DISCARDED_OUTCOME, CONFLICTED_OUTCOME, FAILED_OUTCOME] =
     SCOPE_SCHEDULING_OUTCOMES;
 const [, , EMIT_COMMAND, , MERGE_COMMAND] = SCOPE_COMMAND_KINDS;
+const MERGE_PREPARED_KIND = SCOPE_EVIDENCE_KINDS[7];
 const DISCARD_DECIDED_KIND = SCOPE_EVIDENCE_KINDS[10];
 
 type Scheduler = {
@@ -233,11 +237,15 @@ async function settleGroup(
     const runs = await Promise.allSettled(
         created.map((child) => limit(() => runSubtree(scheduler, child))),
     );
+    const failures = runs.flatMap((run) => (run.status === "rejected" ? [run.reason] : []));
+    if (failures.length === 1) {
+        throw failures[0];
+    }
+    if (failures.length > 1) {
+        throw new AggregateError(failures, "multiple scheduled sibling subtrees failed");
+    }
     const outcomes: ScopeTreeOutcome[] = [];
-    for (const run of runs) {
-        if (run.status === "rejected") {
-            throw run.reason;
-        }
+    for (const run of runs as readonly PromiseFulfilledResult<RanChild>[]) {
         outcomes.push(await settle(scheduler, parent, run.value));
     }
     return Object.freeze(outcomes);
@@ -361,6 +369,23 @@ async function settle(
     return parent.lock(async () => {
         const inspection = inspectScope(store, child.scopeId) as ScopeInspection;
         let conflicted = false;
+        if (inspection.state === MERGED_STATE && scheduler.carrier !== undefined) {
+            // A crash after merge completion can leave the protected application custody behind.
+            const reservation = readScopeMergeRecord(
+                readBody(
+                    store,
+                    (
+                        inspection.history.find((entry) => entry.kind === MERGE_PREPARED_KIND) as {
+                            readonly record_id: RecordId;
+                        }
+                    ).record_id,
+                ),
+            ) as ScopeMergePreparedRecord;
+            const applicationCustodyId = reservation.world?.application_custody_id ?? null;
+            if (applicationCustodyId !== null) {
+                discardReferenceCopyCustodyIdentity(scheduler.carrier, applicationCustodyId);
+            }
+        }
         if (ran.decision === MERGE_DECISION && inspection.state !== MERGED_STATE) {
             const reservation =
                 inspection.terminal === null
@@ -444,15 +469,18 @@ function recoveredOutcomes(
                 path: [...parent.path, node.key],
                 scopeId,
             };
+            const inspection = inspectScope(store, scopeId);
+            if (inspection === undefined) {
+                throw new ScopeEvidenceError(
+                    `scheduled node ${child.path.join(pathSeparator)} differs from retained evidence`,
+                );
+            }
             return Object.freeze({
                 children: recoveredOutcomes(store, child),
                 failure: null,
                 key: node.key,
                 scope_id: scopeId,
-                status:
-                    (inspectScope(store, scopeId) as ScopeInspection).state === MERGED_STATE
-                        ? MERGED_OUTCOME
-                        : DISCARDED_OUTCOME,
+                status: inspection.state === MERGED_STATE ? MERGED_OUTCOME : DISCARDED_OUTCOME,
             });
         }),
     );

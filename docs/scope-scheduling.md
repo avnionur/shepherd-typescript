@@ -36,7 +36,8 @@ and optional `run(context)` returning `merge` (the default) or `discard`.
   subtree and reports `failed` with the failure text. A merge refused with
   `ScopeMergeConflictError` discards the child and reports `conflicted`. Every other refusal (a
   held writer, stale evidence, missing authority, carrier faults) fails the schedule closed, but
-  only after every sibling subtree already in flight has finished.
+  only after every sibling subtree already in flight has finished. Several failing siblings are
+  reported together as an `AggregateError`.
 - **Worlds.** A forked node's origin is a binding snapshot under a trace-only parent or a capture of
   the parent world's current custody; `context.custodyPath` is its mutable custody. A world child
   can be merged only into a parent owning reference-copy custody; under a trace-only parent it must
@@ -59,7 +60,10 @@ resumes from retained evidence instead of duplicating it:
 | Discarded with pending cleanup | Work is not run again; cleanup resumes |
 | Open, unsettled | Work runs again; `context.emit(key, data)` replays a retained emission and conflicts if the data differs |
 
-Recovered outcomes report `merged` or `discarded` with no failure text, because a failure message
+A settled node whose declared children no longer match retained evidence fails with
+`ScopeEvidenceError`. Re-running a merged world node also removes protected merge application
+custody that a crash after merge completion left behind. Recovered outcomes report `merged` or
+`discarded` with no failure text, because a failure message
 is not durable evidence. Work of unsettled nodes may run more than once, so its side effects must
 be idempotent. Writers are re-claimed under their deterministic claim identities before each
 mutation: this renews an expired lease held by the same schedule and fails closed with
@@ -75,7 +79,7 @@ apply in precedence order:
 | Classification | Meaning | Recovery owner | Resume |
 | --- | --- | --- | --- |
 | `terminal` | Merged, or discarded with cleanup complete or nothing to clean | none | none |
-| `cleanup_pending` | Discarded while its subtree root's cleanup of named custody is pending | owning parent of the subtree root | `discard` with the retained command |
+| `cleanup_pending` | Discarded while its subtree root's cleanup record is pending, including a discard with no custody interrupted before its record | owning parent of the subtree root, or the sealing ancestor discard's owner when that parent was sealed | `discard` with the retained command |
 | `merge_pending` | A merge reservation is retained without completion | owning parent | `merge` with the retained command |
 | `fork_pending` | A reference-copy fork is prepared without completion | owning parent | `fork` with the retained command |
 | `writer_expired` | An unreleased writer claim is past its lease; its holder may still run | the scope itself | `claim`: supersede, then release or continue |
