@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-09-13
+
+### New Feature
+
+- Add `forkScope` on the workspace entry: an isolated child scope with reference-copy custody of
+  one bound resource. The origin must be a verified revision of the parent world. A prepared fork
+  record is retained before physical custody, and completion under the parent's current writer
+  fence cites the verified custody.
+- Add honest checkpoint descriptors that classify trace cut, execution, binding, world, grants,
+  child frontier, budget, provider session, process, and irreversible effects as verified with a
+  receipt, reconstructive, not applicable, or unavailable with a reason.
+- Add receipt-based fork restart recovery. Interruption before admission, after the prepared
+  record, or before completion converges on retry. A lost completion response replays without
+  carrier work. Every retry re-checks the current parent fence, the prepared child head, and the
+  absence of any admitted child writer before carrier work. Modified or discarded custody stays
+  blocked.
+- Add `claimScopeWriters` for atomic multi-scope writer claims in canonical order with no partial
+  acquisition, and refuse writer claims on a forked child until its fork completes.
+- Add scope protocol v2 with fork, checkpoint, and workspace-binding vocabulary appended to v1, a
+  generated fork journal schema, and fork evidence in inspection and receipt replay.
+
+### Impact
+
+Consumers can fork isolated, fenced scope worlds and recover them after restart through public
+APIs. Scope v1 records decode unchanged and no store migration is required. Merge, discard,
+multi-resource forks, optimized carriers, and provider or process restoration remain unclaimed.
+
 ## [2.1.2] - 2026-09-12
 
 ### Improvement

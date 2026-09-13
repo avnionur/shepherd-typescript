@@ -451,19 +451,49 @@ export const SCOPE_EVIDENCE_KINDS = [
     "origin_cut",
     "child_registered",
     "emission",
+    "fork_prepared",
+    "fork_completed",
 ] as const;
 
 /** Configured scope world-capability declarations. @public */
-export const SCOPE_WORLD_CAPABILITIES = ["trace_only"] as const;
+export const SCOPE_WORLD_CAPABILITIES = ["trace_only", "reference_copy"] as const;
 
 /** Configured scope authority atoms shared with repository grants. @public */
 export const SCOPE_AUTHORITY_ATOMS = ["read", "write"] as const;
 
 /** Configured resource kinds that scope authority may cite. @public */
-export const SCOPE_RESOURCE_KINDS = ["repository_binding"] as const;
+export const SCOPE_RESOURCE_KINDS = ["repository_binding", "workspace_binding"] as const;
 
 /** Configured scope command kinds ordered root registration, child registration, emission. @public */
-export const SCOPE_COMMAND_KINDS = ["register_root", "register_child", "emit"] as const;
+export const SCOPE_COMMAND_KINDS = ["register_root", "register_child", "emit", "fork"] as const;
+
+/** Configured scope fork journal phases ordered prepared then completed. @public */
+export const SCOPE_FORK_PHASES = ["prepared", "completed"] as const;
+
+/** Configured scope checkpoint constituent kinds in classification order. @public */
+export const SCOPE_CHECKPOINT_CONSTITUENT_KINDS = [
+    "trace_cut",
+    "execution",
+    "binding",
+    "world",
+    "grants",
+    "child_frontier",
+    "budget",
+    "provider_session",
+    "process",
+    "irreversible_effects",
+] as const;
+
+/** Configured scope checkpoint evidence statuses. @public */
+export const SCOPE_CHECKPOINT_EVIDENCE_STATUSES = [
+    "verified",
+    "reconstructive",
+    "not_applicable",
+    "unavailable",
+] as const;
+
+/** Configured scope checkpoint descriptor version. @public */
+export const SCOPE_CHECKPOINT_VERSION = 1 as const;
 
 /** Configured canonical scope record version. @public */
 export const SCOPE_RECORD_VERSION = 1 as const;

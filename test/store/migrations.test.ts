@@ -299,6 +299,7 @@ test("SQLiteTraceStore close is idempotent and guards every operation", () => {
                 parentExpectedHeadRecordId: `sha256:${"1".repeat(64)}`,
                 parentFence: { claimId: "claim:closed", fencingToken: 1 },
                 parentScopeId: `scope:sha256:${"2".repeat(64)}`,
+                prepared: null,
                 request: { append_intent_id: "intent:closed", batch: { groups: [] } },
                 scopeId: `scope:sha256:${"1".repeat(64)}`,
             }),

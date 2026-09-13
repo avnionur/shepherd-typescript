@@ -39,6 +39,7 @@ test("workspace facade exposes only workspace-owned runtime symbols", () => {
         "createWorldChangeset",
         "createWorldChangesetInspection",
         "discardRetainedWorldSettlement",
+        "forkScope",
         "grantTaskRepositories",
         "initializeWorkspace",
         "inspectLocalNativeJailBackend",

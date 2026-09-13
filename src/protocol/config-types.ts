@@ -709,8 +709,19 @@ export type ScopeProtocolConfig = {
         readonly childRegisteredSchema: string;
         /** Repository-relative scope-local emission schema destination. */
         readonly emissionSchema: string;
+        /** Repository-relative scope fork journal schema destination. */
+        readonly forkSchema: string;
         /** Repository-relative scope registration schema destination. */
         readonly registrationSchema: string;
+    };
+    /** Closed scope checkpoint descriptor vocabulary. */
+    readonly checkpoint: {
+        /** Ordered constituent kinds classified by every scope checkpoint. */
+        readonly constituentKinds: readonly string[];
+        /** Evidence statuses ordered verified, reconstructive, not applicable, unavailable. */
+        readonly evidenceStatuses: readonly string[];
+        /** Wire version for scope checkpoint descriptors. */
+        readonly version: number;
     };
     /** Closed scope authority vocabulary attenuated per exact resource identity. */
     readonly authority: {
@@ -748,8 +759,12 @@ export type ScopeProtocolConfig = {
     };
     /** Closed ordered vocabulary classifying retained scope-local history entries. */
     readonly evidenceKinds: readonly string[];
+    /** Closed fork journal phases ordered prepared then completed. */
+    readonly forkPhases: readonly string[];
     /** Content-addressed scope identity domains. */
     readonly identity: {
+        /** Deterministic custody identity kind derived for one scope fork. */
+        readonly custodyIdentityKind: string;
         /** Deterministic fork-origin cut identity prefix. */
         readonly originCutIdPrefix: string;
         /** Content-addressed scope identity prefix. */
@@ -774,6 +789,8 @@ export type ScopeProtocolConfig = {
         readonly childRegisteredId: string;
         /** Scope-local emission schema identifier. */
         readonly emissionId: string;
+        /** Scope fork journal schema identifier. */
+        readonly forkId: string;
         /** Scope registration schema identifier. */
         readonly registrationId: string;
     };
@@ -785,10 +802,12 @@ export type ScopeProtocolConfig = {
         readonly childRegistered: string;
         /** Scope-local application-data emission record schema. */
         readonly emission: string;
+        /** Scope fork journal record schema. */
+        readonly fork: string;
         /** Scope registration record schema. */
         readonly registration: string;
     };
-    /** Closed world-capability vocabulary declared by scope registrations. */
+    /** Closed world-capability vocabulary ordered trace-only then reference copy. */
     readonly worldCapabilities: readonly string[];
     /** Duration granted to a scope writer claim before expiry-based takeover. */
     readonly writerClaimLeaseMilliseconds: number;

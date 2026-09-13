@@ -44,6 +44,10 @@ open/merged/discarded states, history evidence kinds, the trace-only world capab
 atoms (equal to repository grant atoms) and resource kinds, scope and origin-cut identity prefixes,
 citation/data/resource bounds, writer-claim lease duration, trace schema references, generated
 schema identifiers and destinations, and stable authority, evidence, head, and writer error codes.
+Scope protocol v2 appends the reference-copy world capability, fork command and history kinds,
+the workspace-binding resource kind, fork journal phases and schema, the deterministic fork custody
+identity kind, and the checkpoint constituent and evidence-status vocabulary without changing any
+v1 value.
 The orphan-repair section fixes versioned operation, diagnosis, command, and receipt contracts;
 canonical identity domains; command/receipt trace schemas; blocker and error codes; generated
 schema destinations; and count, page, identifier, cause, and canonical-byte bounds.

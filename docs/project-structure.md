@@ -70,6 +70,7 @@ public exports → run area → task, provider, store, canonical snapshots, and 
 public exports → scope area → store, record, canonical snapshots, and protocol configuration
 store area → scope record codecs and errors, and run control codecs, for transactional admission
 public exports → workspace area → filesystem, Git, hashing, and protocol configuration
+workspace area → scope commands, codecs, and inspection, and store transactions, for scope forks
 script command adapters → tooling module interfaces
 build/release tooling → repository configuration
 protocol tooling → protocol configuration, validators, schemas, and generated runtime literals
@@ -118,8 +119,8 @@ The runtime areas are organized around cohesive protocol responsibilities:
   resume, suspension, and safe-boundary cancellation;
 - `scope/` owns content-addressed scope identity, per-resource authority attenuation, closed
   scope record codecs, package-authenticated writer handles, globally idempotent root/child
-  registration and emission commands, and record-derived inspection without world, provider, or
-  settlement authority;
+  registration and emission commands, atomic multi-scope claims, fork journal and checkpoint codecs,
+  and record-derived inspection and replay without world, provider, or settlement authority;
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
   recovery, orphan-collection diagnostics, and exact bookkeeping-only orphan-operation repair.
@@ -137,7 +138,8 @@ The runtime areas are organized around cohesive protocol responsibilities:
   settlement preparation, restart-safe settlement inspection, and closed selection-publication
   plan, ordered path-step, and terminal carrier-receipt codecs, portable application-conflict
   inspection, exact three-way plans, protected merged revisions, path-disjoint apply recovery, and
-  receipt-only release with preserved custody and terminal inspection.
+  receipt-only release with preserved custody and terminal inspection, and reference-copy scope
+  forks that retain a prepared journal before verified custody and complete with a checkpoint.
 
 ## Tooling ownership
 

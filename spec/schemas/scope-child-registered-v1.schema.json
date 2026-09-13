@@ -75,7 +75,8 @@
                     },
                     "resource_kind": {
                         "enum": [
-                            "repository_binding"
+                            "repository_binding",
+                            "workspace_binding"
                         ]
                     }
                 },

@@ -31,6 +31,7 @@ import { renderRunUsageSchema } from "./schemas/run-usage-schema.ts";
 import {
     renderScopeChildRegisteredSchema,
     renderScopeEmissionSchema,
+    renderScopeForkSchema,
     renderScopeRegistrationSchema,
 } from "./schemas/scope-schemas.ts";
 import {
@@ -223,6 +224,10 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderScopeEmissionSchema(config)),
             relativePath: config.scopes.artifacts.emissionSchema,
+        },
+        {
+            content: renderJson(renderScopeForkSchema(config)),
+            relativePath: config.scopes.artifacts.forkSchema,
         },
         {
             content: renderJson(renderWorldCaptureSchema(config)),
@@ -1626,6 +1631,15 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedScopeCommandKinds = config.scopes.commandKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
+    const renderedScopeForkPhases = config.scopes.forkPhases
+        .map((phase) => JSON.stringify(phase))
+        .join(", ");
+    const renderedScopeCheckpointKinds = config.scopes.checkpoint.constituentKinds
+        .map((kind) => `    ${JSON.stringify(kind)},`)
+        .join("\n");
+    const renderedScopeCheckpointStatuses = config.scopes.checkpoint.evidenceStatuses
+        .map((status) => `    ${JSON.stringify(status)},`)
+        .join("\n");
     const renderedWorldChangeOperations = config.workspaces.changesets.operations
         .map((operation) => JSON.stringify(operation))
         .join(", ");
@@ -2115,6 +2129,22 @@ export const SCOPE_RESOURCE_KINDS = [${renderedScopeResourceKinds}] as const;
 
 /** Configured scope command kinds ordered root registration, child registration, emission. @public */
 export const SCOPE_COMMAND_KINDS = [${renderedScopeCommandKinds}] as const;
+
+/** Configured scope fork journal phases ordered prepared then completed. @public */
+export const SCOPE_FORK_PHASES = [${renderedScopeForkPhases}] as const;
+
+/** Configured scope checkpoint constituent kinds in classification order. @public */
+export const SCOPE_CHECKPOINT_CONSTITUENT_KINDS = [
+${renderedScopeCheckpointKinds}
+] as const;
+
+/** Configured scope checkpoint evidence statuses. @public */
+export const SCOPE_CHECKPOINT_EVIDENCE_STATUSES = [
+${renderedScopeCheckpointStatuses}
+] as const;
+
+/** Configured scope checkpoint descriptor version. @public */
+export const SCOPE_CHECKPOINT_VERSION = ${config.scopes.checkpoint.version} as const;
 
 /** Configured canonical scope record version. @public */
 export const SCOPE_RECORD_VERSION = ${config.scopes.recordVersion} as const;

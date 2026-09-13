@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-10
 
-Current version: `2.1.0`
+Current version: `2.2.0`
 
 Current level: L1 stable — Phases 4–5 complete; Phase 6 scope substrate active
 
@@ -419,7 +419,23 @@ globally idempotent commands with replay before liveness validation, reconstruct
 inspection after reopen or import while refusing mutation on imported evidence, and verifies live
 registration rows during integrity scans. The slice is explicitly trace-only.
 
+Phase 6 slice B now forks isolated reference-copy scope worlds of one bound resource from verified
+origins of the parent world, retains a prepared journal record before custody, completes under the
+parent fence with an honest checkpoint descriptor, converges across restart from receipts, blocks
+unknown physical state, and admits atomic multi-scope writer claims.
+
 ## Verification required for this slice
+
+Phase 6 Task 3 (#130): slice B implements reference-copy scope fork of one bound resource.
+Focused public-seam tests cover prepared intent before custody, verified completion under the
+parent fence, honest checkpoints with and without an associated run, sibling isolation, nested
+attenuation, origin refusal, repository and directory resources, crashes before admission, after
+prepared, before completion, and after a lost completion, modified, discarded, and absent custody,
+expired fences, stale fences or admitted child writers refused before physical work, writer
+refusal before completion, atomic multi-scope claims, malformed journal and
+checkpoint evidence, concurrent completion replay, the generated fork schema, and scope v2
+compatibility with v1. Full local verification and production build pass. No merge, discard,
+multi-resource fork, or atomic-snapshot behavior is claimed.
 
 Phase 6 Task 2 (#129): slice A implements trace-only durable scope registration and fenced
 emission through the new `./scopes` entry. Focused public-seam tests cover root/child
@@ -520,11 +536,11 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Phase 6 Task 1 (#127) delivered the scope contract and Task 2 (#129) delivers slice A: trace-only
-registration and fenced emission. The next slice is #130, reference-copy isolated fork and restart
-recovery for one active bound resource, followed by #131 consume-once merge/discard. Slice B must
-bind scope resource identities to authenticated workspace resources and cite the retained origin
-cut; no world fork, merge, discard, or L2 claim is implemented yet.
+Phase 6 Tasks 1-3 (#127, #129, #130) delivered the scope contract, trace-only registration and
+emission, and reference-copy fork with restart recovery. The next slice is #131, consume-once scope
+merge and discard with parent-managed publication and subtree cleanup. It must consume the fork
+journal and checkpoint and preserve the current parent. No merge, discard, or L2 claim is
+implemented yet.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration

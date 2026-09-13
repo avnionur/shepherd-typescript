@@ -1,5 +1,10 @@
 import { kernelProtocolConfig, scopeProtocolConfig } from "../protocol/config.ts";
-import { SCOPE_EVIDENCE_KINDS, SCOPE_STATES } from "../protocol/values.generated.ts";
+import {
+    SCOPE_EVIDENCE_KINDS,
+    SCOPE_FORK_PHASES,
+    SCOPE_STATES,
+    SCOPE_WORLD_CAPABILITIES,
+} from "../protocol/values.generated.ts";
 import type { RecordId } from "../record/types.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { OwnerRecord } from "../store/types.ts";
@@ -10,12 +15,26 @@ import {
     readScopeEmissionRecord,
     readScopeRegistrationRecord,
 } from "./records.ts";
-import type { ScopeHistoryEntry, ScopeInspection, ScopeState } from "./types.ts";
+import type {
+    ScopeHistoryEntry,
+    ScopeInspection,
+    ScopeState,
+    ScopeWorldInspection,
+} from "./types.ts";
 import { assertScopeId } from "./validation.ts";
+import { readScopeWorld } from "./world.ts";
 
-const [REGISTRATION_KIND, ORIGIN_CUT_KIND, CHILD_REGISTERED_KIND, EMISSION_KIND] =
-    SCOPE_EVIDENCE_KINDS;
+const [
+    REGISTRATION_KIND,
+    ORIGIN_CUT_KIND,
+    CHILD_REGISTERED_KIND,
+    EMISSION_KIND,
+    FORK_PREPARED_KIND,
+    FORK_COMPLETED_KIND,
+] = SCOPE_EVIDENCE_KINDS;
 const [OPEN_STATE] = SCOPE_STATES;
+const [, REFERENCE_COPY_CAPABILITY] = SCOPE_WORLD_CAPABILITIES;
+const [, FORK_COMPLETED_STATUS] = SCOPE_FORK_PHASES;
 
 /**
  * Reconstructs and validates one scope from its retained owner path without mutation.
@@ -99,11 +118,37 @@ export function inspectScope(
         previous = originRecord;
         nextIndex = 2;
     }
+    const forked = registration.world_capability === REFERENCE_COPY_CAPABILITY;
+    let world: ScopeWorldInspection | null = null;
+    let preparedRecord: OwnerRecord | null = null;
     for (const record of records.slice(nextIndex)) {
         if (record.envelope.caused_by_record_ids[0] !== previous.envelope.record_id) {
             throw new ScopeEvidenceError("scope record is not caused by the previous head");
         }
-        if (record.envelope.schema_ref === scopeProtocolConfig.traceSchemas.emission) {
+        const isFork = record.envelope.schema_ref === scopeProtocolConfig.traceSchemas.fork;
+        if (forked && (world === null || world.status !== FORK_COMPLETED_STATUS) && !isFork) {
+            throw new ScopeEvidenceError("scope world fork is not complete");
+        }
+        if (isFork) {
+            if (!forked || world?.status === FORK_COMPLETED_STATUS) {
+                throw new ScopeEvidenceError("scope path retains an unexpected fork record");
+            }
+            world =
+                preparedRecord === null
+                    ? readScopeWorld(record, null, scopeId, registration.command_id)
+                    : readScopeWorld(preparedRecord, record, scopeId, registration.command_id);
+            preparedRecord = preparedRecord ?? record;
+            history.push({
+                command_id: registration.command_id,
+                custody_id: world.custody_id,
+                kind:
+                    world.status === FORK_COMPLETED_STATUS
+                        ? FORK_COMPLETED_KIND
+                        : FORK_PREPARED_KIND,
+                owner_ordinal: record.view.owner_ordinal,
+                record_id: record.envelope.record_id,
+            });
+        } else if (record.envelope.schema_ref === scopeProtocolConfig.traceSchemas.emission) {
             const emission = readScopeEmissionRecord(record.body);
             assertCommandIntent(record, emission.command_id);
             if (
@@ -147,6 +192,9 @@ export function inspectScope(
         }
         previous = record;
     }
+    if (forked && world === null) {
+        throw new ScopeEvidenceError("reference-copy scope lacks its prepared fork record");
+    }
     const row = store.readScopeRegistration(scopeId);
     let state: ScopeState = OPEN_STATE;
     if (row !== undefined) {
@@ -174,6 +222,7 @@ export function inspectScope(
         registration_record_id: first.envelope.record_id,
         scope_id: scopeId,
         state,
+        world,
         world_capability: registration.world_capability,
     });
 }

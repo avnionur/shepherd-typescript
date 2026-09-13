@@ -866,6 +866,45 @@ test("protocol configuration rejects invalid or drifted scope contracts", () => 
             scopeConfigOf(config).commandKinds = ["register_root", "emit"];
         },
         (config) => {
+            scopeConfigOf(config).forkPhases = ["prepared"];
+        },
+        (config) => {
+            scopeConfigOf(config).worldCapabilities = ["trace_only"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "checkpoint").evidenceStatuses = [
+                "verified",
+                "unavailable",
+            ];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "checkpoint").constituentKinds = [];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "checkpoint").constituentKinds = ["trace_cut", "world"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "checkpoint").version = 0;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "checkpoint").extra = true;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "identity").custodyIdentityKind = "";
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "traceSchemas").fork = objectAt(
+                scopeConfigOf(config),
+                "traceSchemas",
+            ).emission;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "schemas").forkId = "relative";
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "artifacts").forkSchema = "";
+        },
+        (config) => {
             scopeConfigOf(config).evidenceKinds = ["registration"];
         },
         (config) => {

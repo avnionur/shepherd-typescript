@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
     claimScopeWriter,
+    claimScopeWriters,
     emitScopeRecord,
     releaseScopeWriter,
     ScopeEvidenceError,
@@ -188,4 +189,102 @@ test("scope writer claims require a live open registration and closed options", 
     for (const options of [{}, { writer: { ...writer } }, { writer, extra: true }]) {
         assert.throws(() => releaseScopeWriter(store, options as never), TypeError);
     }
+});
+
+test("multi-scope writer claims are canonical-ordered, all-or-nothing, and closed", async (context) => {
+    const databasePath = await temporaryDatabasePath(context, "multi-claims");
+    using store = new SQLiteTraceStore(databasePath);
+    const scopes = ["scope-command:a", "scope-command:b", "scope-command:c"]
+        .map((commandId) => registerFixtureRoot(store, commandId).scope_id)
+        .sort();
+    const [first, middle, last] = scopes as [string, string, string];
+
+    // Handles return in request order regardless of acquisition order.
+    const [lastWriter, firstWriter] = claimScopeWriters(store, {
+        claims: [
+            { claimId: "claim:last", scopeId: last },
+            { claimId: "claim:first", scopeId: first },
+        ],
+        nowMilliseconds: 1_000,
+    });
+    assert.equal(lastWriter?.scope_id, last);
+    assert.equal(firstWriter?.scope_id, first);
+    releaseScopeWriter(store, { writer: firstWriter as never });
+
+    // The canonically earlier scope is admitted first, then rolled back when a later one conflicts.
+    for (const [index, claims] of [
+        [
+            { claimId: "claim:other-last", scopeId: last },
+            { claimId: "claim:other-first", scopeId: first },
+        ],
+        [
+            { claimId: "claim:other-first", scopeId: first },
+            { claimId: "claim:other-last", scopeId: last },
+        ],
+    ].entries()) {
+        assert.throws(
+            () => claimScopeWriters(store, { claims, nowMilliseconds: 1_500 }),
+            (error: unknown) =>
+                error instanceof ScopeWriterConflictError && error.scope_id === last,
+        );
+        const released = claimScopeWriter(store, {
+            claimId: "claim:probe",
+            nowMilliseconds: 1_500,
+            scopeId: first,
+        });
+        // Only the probe advanced the token; the rolled-back attempt left no claim behind.
+        assert.equal(released.fencing_token, index + 2);
+        releaseScopeWriter(store, { writer: released });
+    }
+
+    // With two conflicts, the canonically first scope reports the refusal in either request order.
+    claimScopeWriter(store, {
+        claimId: "claim:hold-first",
+        nowMilliseconds: 1_500,
+        scopeId: first,
+    });
+    for (const claims of [
+        [
+            { claimId: "claim:x-last", scopeId: last },
+            { claimId: "claim:x-first", scopeId: first },
+        ],
+        [
+            { claimId: "claim:x-first", scopeId: first },
+            { claimId: "claim:x-last", scopeId: last },
+        ],
+    ]) {
+        assert.throws(
+            () => claimScopeWriters(store, { claims, nowMilliseconds: 1_500 }),
+            (error: unknown) =>
+                error instanceof ScopeWriterConflictError && error.scope_id === first,
+        );
+    }
+    assert.equal(
+        claimScopeWriter(store, {
+            claimId: "claim:middle",
+            nowMilliseconds: 1_500,
+            scopeId: middle,
+        }).fencing_token,
+        1,
+    );
+    const valid = { claimId: "claim:valid", scopeId: middle };
+    for (const options of [
+        { claims: [] },
+        { claims: [valid, valid] },
+        { claims: [{ claimId: "", scopeId: middle }] },
+        { claims: [{ claimId: "claim:x" }] },
+        { claims: "all" },
+        { claims: [valid], extra: true },
+        { claims: [valid], nowMilliseconds: -1 },
+    ]) {
+        assert.throws(() => claimScopeWriters(store, options as never), TypeError);
+    }
+    assert.throws(
+        () =>
+            store.claimScopeWriters(
+                [{ claimId: "claim:overflow", scopeId: middle }],
+                Number.MAX_SAFE_INTEGER,
+            ),
+        TypeError,
+    );
 });

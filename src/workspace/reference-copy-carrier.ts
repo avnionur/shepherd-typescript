@@ -192,8 +192,8 @@ export function forkReferenceCopyRevisionWithReceipts(
     );
 }
 
-/** @internal Publishes or reopens one exact task-world custody identity. */
-export function forkReferenceCopyRevisionForTaskWorld(
+/** @internal Publishes or reopens one exact deterministic custody identity. */
+export function forkReferenceCopyRevisionWithIdentity(
     carrier: ReferenceCopyCarrier,
     revisionId: string,
     custodyId: string,

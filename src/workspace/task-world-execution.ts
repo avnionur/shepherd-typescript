@@ -64,7 +64,7 @@ import { assertGrantedPlacementResolutionContract } from "./placement.ts";
 import type { GrantedPlacementResolution } from "./placement-types.ts";
 import {
     assertReferenceCopyCarrier,
-    forkReferenceCopyRevisionForTaskWorld,
+    forkReferenceCopyRevisionWithIdentity,
 } from "./reference-copy-carrier.ts";
 import type {
     GitRepositoryGrantPlan,
@@ -451,7 +451,7 @@ async function recoverTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
     );
     const custody =
         retainedForkedTransition === undefined
-            ? forkReferenceCopyRevisionForTaskWorld(
+            ? forkReferenceCopyRevisionWithIdentity(
                   fields.carrier,
                   retainedBase.revision_id,
                   taskWorldCustodyId(prepared.definition.runId, fields.captureId),
@@ -694,7 +694,7 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
                 [createdRecordId],
                 taskWorldJournalWriter(fields),
             );
-            custody = forkReferenceCopyRevisionForTaskWorld(
+            custody = forkReferenceCopyRevisionWithIdentity(
                 fields.carrier,
                 retainedBase.revision_id,
                 taskWorldCustodyId(prepared.definition.runId, fields.captureId),
