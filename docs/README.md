@@ -127,6 +127,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,
   isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
   idempotent discard.
+- [Optimized scope-world carriers](./optimized-carriers.md) defines workspace protocol v26 clone
+  and Linux overlay backends, identity equality with copy, restart remount, fail-closed
+  unavailability, the shared conformance matrix, and measured storage scaling.
 - [Workspace platform and fault conformance](./platform-fault-conformance.md) defines protocol
   v19 metadata refusal, portable name policy, Git platform cases, stable fault evidence, recovery,
   and the optimized-carrier parity gate.

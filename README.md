@@ -590,6 +590,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Command-line interface](./docs/cli.md)
 - [Project structure](./docs/project-structure.md)
 - [Reference copy carrier](./docs/reference-copy-carrier.md)
+- [Optimized scope-world carriers](./docs/optimized-carriers.md)
 - [Repository grants and run authority ceilings](./docs/repository-grants.md)
 - [Durable scope registration and fenced local emission](./docs/scope-registration.md)
 - [Reference-copy scope fork and restart recovery](./docs/scope-fork.md)

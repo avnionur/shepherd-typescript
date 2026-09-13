@@ -32,6 +32,11 @@ mutable custody directory. Repeating the same discard is safe. It never removes 
 or user files, and substituted symlink targets fail closed. Every retry validates the closed
 versioned discard descriptor before treating the decision as authoritative.
 
+Workspace protocol v26 adds an optional exact `backend` option (`copy` when omitted) and a
+readonly `carrier.backend`. The `clone` and `overlay` backends change only physical
+materialization; every revision keeps this page's copy descriptor format and identity, so any
+backend opens any revision. See [Optimized scope-world carriers](./optimized-carriers.md).
+
 ## Logical identity and filesystem coverage
 
 Regular-file bytes receive configured blob IDs. A canonical ordered manifest gives the whole tree
