@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 `;
-let cloneHelper: Readonly<{ digest: string; path: string }> | null = null;
+let cloneHelper: Readonly<{ digest: string; directory: string; path: string }> | null = null;
 
 /**
  * Reads an optional exact carrier backend option.
@@ -455,8 +455,8 @@ function cloneFile(source: string, target: string): void {
 function cloneHelperExecutable(): string {
     const helper = BACKENDS.clone.helper;
     if (cloneHelper !== null) {
-        const bytes = readFileSync(cloneHelper.path);
-        if (digest(bytes) !== cloneHelper.digest) {
+        assertPrivateHelper(cloneHelper.directory, cloneHelper.path);
+        if (digest(readFileSync(cloneHelper.path)) !== cloneHelper.digest) {
             throw controlError("clone helper integrity changed");
         }
         return cloneHelper.path;
@@ -477,22 +477,45 @@ function cloneHelperExecutable(): string {
     if (compiler === undefined) throw unavailable("no configured compiler");
     const directory = mkdtempSync(path.join(tmpdir(), helper.temporaryDirectoryPrefix));
     process.once("exit", () => rmSync(directory, { force: true, recursive: true }));
+    chmodSync(directory, 0o700);
     const sourcePath = path.join(directory, helper.sourceName);
     const executablePath = path.join(directory, helper.executableName);
-    writeFileSync(sourcePath, CLONE_HELPER_SOURCE, { encoding: "utf8", mode: 0o600 });
+    writeFileSync(sourcePath, CLONE_HELPER_SOURCE, { encoding: "utf8", flag: "wx", mode: 0o600 });
     const result = runCommand(compiler, [
         ...helper.compilerArguments,
         helper.compilerOutputArgument,
         executablePath,
         sourcePath,
     ]);
-    if (result !== null) throw unavailable(result);
+    if (result !== null) {
+        rmSync(directory, { force: true, recursive: true });
+        throw unavailable(result);
+    }
     chmodSync(executablePath, 0o500);
+    assertPrivateHelper(directory, executablePath);
     cloneHelper = Object.freeze({
         digest: digest(readFileSync(executablePath)),
+        directory,
         path: executablePath,
     });
     return executablePath;
+}
+
+function assertPrivateHelper(directory: string, executable: string): void {
+    const owner = process.getuid?.();
+    const directoryStatus = lstatSync(directory);
+    const executableStatus = lstatSync(executable);
+    if (
+        !directoryStatus.isDirectory() ||
+        directoryStatus.uid !== owner ||
+        (directoryStatus.mode & 0o777) !== 0o700 ||
+        !executableStatus.isFile() ||
+        executableStatus.uid !== owner ||
+        executableStatus.nlink !== 1 ||
+        (executableStatus.mode & 0o777) !== 0o500
+    ) {
+        throw controlError("clone helper directory or executable is not private");
+    }
 }
 
 function digest(bytes: Buffer): string {

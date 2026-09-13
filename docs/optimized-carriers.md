@@ -51,13 +51,36 @@ custody, merge application custody, selection staging, and user-path publication
 already-read and digested source file, then reopening the clone without following links and
 requiring a single-link regular file whose bytes equal the verified bytes before applying and
 flushing the manifest mode. On Linux the clone is `copyFileSync` with
-`COPYFILE_EXCL | COPYFILE_FICLONE_FORCE` (FICLONE on reflink filesystems). Node's libuv does not
-implement forced cloning on macOS (`COPYFILE_FICLONE_FORCE` returns `ENOSYS`, and `COPYFILE_FICLONE`
-silently byte-copies), and `cp -c` silently falls back to copying, so macOS clones through a small
-`clonefile(2)` helper compiled once per process with a configured compiler into a private temporary
-directory and integrity-checked by digest before every use. Any clone failure, including `ENOTSUP`
-on non-APFS volumes or `EXDEV` across devices, fails closed with the unavailable code. The carrier
-probe clones one file inside carrier staging.
+`COPYFILE_EXCL | COPYFILE_FICLONE_FORCE` (FICLONE on reflink filesystems). Any clone failure,
+including `ENOTSUP` on non-APFS volumes or `EXDEV` across devices, fails closed with the unavailable
+code. The carrier probe clones one file inside carrier staging.
+
+### macOS clone helper
+
+Node v24 (libuv 1.52.1) cannot force a clone on macOS: `COPYFILE_FICLONE_FORCE` returns `ENOSYS`,
+and both `COPYFILE_FICLONE` and `cp -c` silently fall back to byte copies. Measured on APFS, a
+300 MB `COPYFILE_EXCL | COPYFILE_FICLONE` copy consumed about 301 MB of free space, while
+`cp -c` consumed none. A filesystem-type or device probe cannot distinguish that fallback, so the
+macOS clone path calls `clonefile(2)` directly, which fails with `ENOTSUP` or `EXDEV` instead of
+copying.
+
+- Toolchain requirement: selecting `backend: "clone"` on macOS requires one of the configured
+  compilers (`/usr/bin/cc`, `/usr/bin/clang`; Xcode Command Line Tools). The helper is built only
+  when a clone carrier is created on macOS. Without a compiler, or when compilation fails, creation
+  refuses with reason `clone-helper-unavailable`. The copy and overlay backends never compile or
+  spawn it.
+- Process cost: the helper is compiled once per process (about 0.8 s including the probe on the
+  development host) and each cloned regular file spawns one helper process (about 9 ms per file on
+  the development host), so clone trades CPU time for storage. Worlds with many small files may be
+  slower to fork than with copy.
+- Security rationale: the fixed C source is written with exclusive creation into a fresh
+  `mkdtemp` directory, forced to mode 0700; the compiled executable is forced to mode 0500. Before
+  every use the carrier verifies that the directory is a 0700 directory and the executable a
+  single-link 0500 regular file, both owned by the current user, and that the executable digest
+  equals the digest recorded at compilation; any mismatch fails closed as a control error. The
+  helper receives only two paths as arguments, runs without a shell under the configured timeout
+  and output bound, and is removed when the process exits. The helper does not verify content;
+  the carrier reopens every clone and compares it byte for byte with the verified source bytes.
 
 Publication into a user binding clones from control storage, so the binding must share a
 reflink-capable filesystem with the workspace control root. A publication that fails midway keeps
@@ -86,11 +109,11 @@ and proves the write reached only its upper layer before unmounting.
 
 ## Conformance matrix
 
-| Backend | macOS APFS host | macOS HFS+ image | Linux container (tmpfs, privileged) | Linux or Windows without support |
-| ------- | --------------- | ---------------- | ----------------------------------- | -------------------------------- |
-| copy | full suite | not run | full suite | full suite |
-| clone | full suite | refusal: `reflink-unsupported` | refusal: `reflink-unsupported` | refusal |
-| overlay | refusal: `platform-unsupported` | not run | full suite, required | refusal |
+| Backend | macOS APFS host | macOS HFS+ image | Linux container tmpfs | Linux container loopback XFS `reflink=1` | Hosts without support |
+| ------- | --------------- | ---------------- | --------------------- | ---------------------------------------- | --------------------- |
+| copy | full suite | not run | full suite | full suite | full suite |
+| clone | full suite | refusal: `reflink-unsupported` | refusal: `reflink-unsupported` | full suite, required | refusal |
+| overlay | refusal: `platform-unsupported` | not run | full suite, required | full suite, required | refusal |
 
 The suite covers snapshot, fork, capture, `verifyRevision`/`verifyCustody`, discard, restart
 reopen (overlay unmounts first), identity equality with copy, source and base isolation,
@@ -106,8 +129,12 @@ Evidence recorded for this change:
   `node --test test/workspace/carrier-conformance.test.ts` passed 12 of 12 with 0 skipped (copy and
   clone suites, overlay refusal, HFS+ clone refusal).
 - `pnpm test:carriers:linux`: `node:24-bookworm` (Node v24.21.0, linux arm64) under OrbStack,
-  `--privileged`, workspace on tmpfs, dependencies installed with `pnpm install --frozen-lockfile`:
-  12 of 12 passed with 0 skipped (copy and overlay suites, clone refusal, overlay contradictions).
+  `--privileged`, repository copied onto tmpfs without host `node_modules`, dependencies installed
+  with `pnpm install --frozen-lockfile`. On tmpfs with overlay required: 12 of 12 passed, 0 skipped
+  (copy and overlay suites, clone refusal, overlay contradictions). On a 2 GiB loopback XFS image
+  created with `mkfs.xfs -m reflink=1` with clone and overlay required: 15 of 15 passed, 0 skipped
+  (copy, clone, and overlay suites, overlay contradictions). Both benchmarks ran in the same
+  container.
 
 Hosts without host support must not be read as conformant: `inspectWorkspacePlatformConformance`
 reports `optimized_carriers` per workspace filesystem as described in
@@ -127,24 +154,15 @@ overlay branch storage stays within 1.5 times the changed bytes plus 8 MiB.
 
 Measured branch storage (MiB, median of five):
 
-| Host | Backend | World | Changed | Branch | Upper layer |
-| ---- | ------- | ----- | ------- | ------ | ----------- |
-| macOS APFS | copy | 16 | 1 | 16.21 | |
-| macOS APFS | copy | 16 | 4 | 16.14 | |
-| macOS APFS | copy | 64 | 1 | 64.51 | |
-| macOS APFS | copy | 64 | 4 | 64.27 | |
-| macOS APFS | clone | 16 | 1 | 1.32 | |
-| macOS APFS | clone | 16 | 4 | 4.13 | |
-| macOS APFS | clone | 64 | 1 | 1.75 | |
-| macOS APFS | clone | 64 | 4 | 7.52 | |
-| Linux tmpfs | copy | 16 | 1 | 16.00 | |
-| Linux tmpfs | copy | 16 | 4 | 16.00 | |
-| Linux tmpfs | copy | 64 | 1 | 64.00 | |
-| Linux tmpfs | copy | 64 | 4 | 64.00 | |
-| Linux tmpfs | overlay | 16 | 1 | 1.00 | 1.00 |
-| Linux tmpfs | overlay | 16 | 4 | 4.00 | 4.00 |
-| Linux tmpfs | overlay | 64 | 1 | 1.00 | 1.00 |
-| Linux tmpfs | overlay | 64 | 4 | 4.00 | 4.00 |
+| Host | Backend | World 16, changed 1 | World 16, changed 4 | World 64, changed 1 | World 64, changed 4 |
+| ---- | ------- | ------------------- | ------------------- | ------------------- | ------------------- |
+| macOS APFS | copy | 16.02 | 16.26 | 64.05 | 64.04 |
+| macOS APFS | clone | 1.05 | 4.01 | 1.03 | 4.05 |
+| Linux tmpfs | copy | 16.00 | 16.00 | 64.00 | 64.00 |
+| Linux tmpfs | overlay (upper layer) | 1.00 (1.00) | 4.00 (4.00) | 1.00 (1.00) | 4.00 (4.00) |
+| Linux XFS reflink | copy | 16.01 | 16.01 | 64.04 | 64.04 |
+| Linux XFS reflink | clone | 1.01 | 4.01 | 1.04 | 4.04 |
+| Linux XFS reflink | overlay (upper layer) | 1.00 (1.00) | 4.00 (4.00) | 1.00 (1.00) | 4.00 (4.00) |
 
 APFS free-space readings include unrelated host activity, which is why the bound carries fixed
 overhead and the median is reported; tmpfs readings in the container are exact.

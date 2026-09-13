@@ -423,7 +423,14 @@ export type WorldVerification = {
 export type ReferenceCopyCarrierOptions = {
     /**
      * Optional configured physical backend; omitted selects the copy reference backend. Optimized
-     * backends fail closed at creation when the host cannot run them.
+     * backends fail closed at creation when the host cannot run them and never fall back to copy.
+     *
+     * `clone` uses forced FICLONE on Linux reflink filesystems. On macOS, where Node cannot force a
+     * clone, it requires a configured C compiler: a `clonefile(2)` helper is compiled once per
+     * process into a private 0700 temporary directory as a 0500 executable, and its owner, mode,
+     * and digest are rechecked before each use. Every regular file then costs one helper process
+     * spawn. Without a compiler the carrier refuses with the helper-unavailable reason. `overlay`
+     * requires Linux with permission to run the configured mount and unmount executables.
      */
     readonly backend?: WorldCarrierBackend;
     /** Optional deterministic conformance fault injected at one configured custody boundary. */

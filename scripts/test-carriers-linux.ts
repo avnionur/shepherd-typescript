@@ -10,7 +10,6 @@ type LinuxCarrierConfiguration = {
         readonly dockerExecutable: string;
         readonly dockerRunArguments: readonly string[];
         readonly image: string;
-        readonly requiredBackends: readonly string[];
         readonly shellArguments: readonly string[];
         readonly shellExecutable: string;
         readonly steps: readonly string[];
@@ -28,7 +27,6 @@ const configuration = JSON.parse(
 ) as LinuxCarrierConfiguration;
 const linux = configuration.linux;
 const values: Readonly<Record<string, string>> = {
-    requiredBackends: linux.requiredBackends.join(configuration.requiredBackendsSeparator),
     requiredVariable: configuration.requiredBackendsEnvironmentVariable,
     source: linux.containerSource,
     testFile: configuration.testFile,
