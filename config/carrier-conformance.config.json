@@ -3,11 +3,31 @@
         "containerSource": "/source",
         "containerWorkspace": "/workspace",
         "dockerExecutable": "docker",
+        "dockerRunArguments": ["run", "--rm", "--privileged"],
         "image": "node:24-bookworm",
-        "packages": ["acl", "attr"],
+        "shellExecutable": "bash",
+        "shellArguments": ["-euo", "pipefail", "-c"],
+        "steps": [
+            "node --version",
+            "apt-get update -qq",
+            "DEBIAN_FRONTEND=noninteractive apt-get install -y -qq acl attr > /dev/null",
+            "mkdir -p {workspace}/repo {workspace}/tmp",
+            "tar -C {source} --exclude=./node_modules --exclude=./dist --exclude=./.git -cf - . | tar -C {workspace}/repo -xf -",
+            "cd {workspace}/repo",
+            "corepack enable",
+            "COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm install --frozen-lockfile",
+            "TMPDIR={workspace}/tmp {requiredVariable}={requiredBackends} node --test {testFile}",
+            "TMPDIR={workspace}/tmp pnpm bench:carriers"
+        ],
         "requiredBackends": ["overlay"],
-        "sourceExcludes": ["./node_modules", "./dist", "./.git"],
-        "tmpfsOptions": "rw,exec,mode=1777,size=4g"
+        "tmpfsOptions": "rw,exec,mode=1777,size=4g",
+        "tokens": {
+            "requiredBackends": "{requiredBackends}",
+            "requiredVariable": "{requiredVariable}",
+            "source": "{source}",
+            "testFile": "{testFile}",
+            "workspace": "{workspace}"
+        }
     },
     "requiredBackendsEnvironmentVariable": "SHEPHERD_REQUIRED_CARRIER_BACKENDS",
     "requiredBackendsSeparator": ",",

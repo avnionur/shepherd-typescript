@@ -1,0 +1,11 @@
+{
+    "changedFileCounts": [1, 4],
+    "copyMinimumGrowthRatio": 0.75,
+    "fileBytes": 1048576,
+    "flushCommand": ["sync"],
+    "optimizedBoundFactor": 1.5,
+    "optimizedBoundOverheadBytes": 8388608,
+    "repetitions": 5,
+    "temporaryDirectoryPrefix": "shepherd-carrier-bench-",
+    "worldFileCounts": [16, 64]
+}

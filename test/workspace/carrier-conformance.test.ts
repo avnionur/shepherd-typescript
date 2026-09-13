@@ -48,6 +48,7 @@ registerCarrierConformanceSuite({
     backend: backends.defaultBackend as WorldCarrierBackend,
     directoryCustody: true,
     dropVolatileState: () => undefined,
+    releaseHostState: () => undefined,
 });
 
 for (const evidence of hostEvidence) {
@@ -58,6 +59,7 @@ for (const evidence of hostEvidence) {
             backend,
             directoryCustody: !overlay,
             dropVolatileState: overlay ? unmountCustody : () => undefined,
+            releaseHostState: overlay ? unmountBeneath : () => undefined,
         });
         continue;
     }
@@ -224,6 +226,8 @@ if (
         const { binding, workspaceRoot } = await createTreeWorkspace(
             context,
             "overlay-contradiction",
+            tmpdir(),
+            unmountBeneath,
         );
         const backend = backends.overlay.backend as WorldCarrierBackend;
         const carrier = createReferenceCopyCarrier({ backend, workspaceRoot });
@@ -263,4 +267,19 @@ if (
 
 function unmountCustody(custody: WorldCustody): void {
     execFileSync(backends.overlay.unmountExecutable, [custody.path]);
+}
+
+function unmountBeneath(workspaceRoot: string): void {
+    const mounts = readFileSync(backends.overlay.mountInfoPath, "utf8")
+        .split("\n")
+        .map((line) =>
+            (line.split(" ")[4] ?? "").replace(/\\([0-7]{3})/gu, (_match, octal: string) =>
+                String.fromCharCode(Number.parseInt(octal, 8)),
+            ),
+        )
+        .filter((mountPoint) => mountPoint.startsWith(`${workspaceRoot}${path.sep}`))
+        .sort((left, right) => right.length - left.length);
+    for (const mountPoint of mounts) {
+        execFileSync(backends.overlay.unmountExecutable, [mountPoint]);
+    }
 }

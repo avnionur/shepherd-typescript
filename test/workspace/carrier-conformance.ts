@@ -46,6 +46,8 @@ export type CarrierConformanceTarget = {
     readonly directoryCustody: boolean;
     /** Removes volatile host state, such as mounts, to simulate a host or process restart. */
     readonly dropVolatileState: (custody: WorldCustody) => void;
+    /** Releases host state, such as live mounts, beneath one workspace before it is removed. */
+    readonly releaseHostState: (workspaceRoot: string) => void;
 };
 
 /**
@@ -61,6 +63,8 @@ export function registerCarrierConformanceSuite(target: CarrierConformanceTarget
         const { binding, sourceRoot, workspaceRoot } = await createTreeWorkspace(
             context,
             `${backend}-identity`,
+            tmpdir(),
+            target.releaseHostState,
         );
         const carrier = open(workspaceRoot, backend);
         const reference = open(workspaceRoot, REFERENCE_BACKEND);
@@ -132,6 +136,8 @@ export function registerCarrierConformanceSuite(target: CarrierConformanceTarget
         const { binding, workspaceRoot } = await createTreeWorkspace(
             context,
             `${backend}-isolation`,
+            tmpdir(),
+            target.releaseHostState,
         );
         const carrier = open(workspaceRoot, backend);
         const revision = await carrier.snapshot(binding);
@@ -164,7 +170,12 @@ export function registerCarrierConformanceSuite(target: CarrierConformanceTarget
     });
 
     test(`${backend} carrier reopens retained custody after restart and refuses mismatched carriers`, async (context) => {
-        const { binding, workspaceRoot } = await createTreeWorkspace(context, `${backend}-restart`);
+        const { binding, workspaceRoot } = await createTreeWorkspace(
+            context,
+            `${backend}-restart`,
+            tmpdir(),
+            target.releaseHostState,
+        );
         const carrier = open(workspaceRoot, backend);
         const revision = await carrier.snapshot(binding);
         const custody = await carrier.fork(revision.revision_id);
@@ -207,6 +218,10 @@ export function registerCarrierConformanceSuite(target: CarrierConformanceTarget
     });
 
     test(`${backend} carrier composes with scope fork, merge, and discard across restart`, async (context) => {
+        let scopeWorkspace: string | null = null;
+        context.after(() => {
+            if (scopeWorkspace !== null) target.releaseHostState(scopeWorkspace);
+        });
         const world = await createNestedWorld(
             context,
             `${backend}-scope`,
@@ -214,6 +229,7 @@ export function registerCarrierConformanceSuite(target: CarrierConformanceTarget
             backend,
         );
         const { carrier, child, childWriter, parent, parentWriter, store, workspaceRoot } = world;
+        scopeWorkspace = workspaceRoot;
         assert.equal(carrier.backend, backend);
         assert.equal((await carrier.openCustody(child.world.custody_id)).backend, backend);
         await writeCustody(world, child.world.custody_id, "child.txt", "child\n");
@@ -317,6 +333,7 @@ export async function createTreeWorkspace(
     context: TestContext,
     label: string,
     parent = tmpdir(),
+    releaseHostState: (workspaceRoot: string) => void = () => undefined,
 ): Promise<{
     readonly binding: WorkspaceBinding;
     readonly sourceRoot: string;
@@ -325,7 +342,10 @@ export async function createTreeWorkspace(
     const workspaceRoot = await realpath(
         await mkdtemp(path.join(parent, `shepherd-carrier-conformance-${label}-`)),
     );
-    context.after(() => rm(workspaceRoot, { force: true, recursive: true }));
+    context.after(() => {
+        releaseHostState(workspaceRoot);
+        return rm(workspaceRoot, { force: true, recursive: true });
+    });
     initializeWorkspace({ adopt: "none", initializeGit: false, rootPath: workspaceRoot });
     const sourceRoot = path.join(workspaceRoot, "source");
     await mkdir(path.join(sourceRoot, "empty"), { recursive: true });
