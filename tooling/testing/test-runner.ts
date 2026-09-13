@@ -38,7 +38,7 @@ export type RepositoryTestOptions = {
 export async function runRepositoryTests(options: RepositoryTestOptions): Promise<boolean> {
     const repositoryRoot = path.resolve(fileURLToPath(new URL("../../", import.meta.url)));
     const configuration = JSON.parse(
-        await readFile(path.join(repositoryRoot, "test-runner.config.json"), "utf8"),
+        await readFile(path.join(repositoryRoot, "config/test-runner.config.json"), "utf8"),
     ) as TestRunnerConfiguration;
     const testRoot = path.resolve(repositoryRoot, configuration.testRoot);
     const discovered = (await readdir(testRoot, { recursive: true, withFileTypes: true }))

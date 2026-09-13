@@ -64,7 +64,7 @@ agreement, prerelease/other-major refusal, SQLite negative controls, ineffective
 fault injection, and refusal before store/registry files or blob directories are created.
 
 The installed [boundary verifier](https://github.com/avnionur/shepherd-typescript/blob/main/tooling/testing/runtime-boundaries.ts) uses
-[`runtime-verification.config.json`](https://github.com/avnionur/shepherd-typescript/blob/main/runtime-verification.config.json). Ordinary package
+[`config/runtime-verification.config.json`](https://github.com/avnionur/shepherd-typescript/blob/main/config/runtime-verification.config.json). Ordinary package
 conformance exercises the current process runtime. The explicit boundary command additionally
 requires exact minimum and unsupported executables; missing or wrong binaries fail the command:
 

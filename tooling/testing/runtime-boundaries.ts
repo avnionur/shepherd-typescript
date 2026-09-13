@@ -18,7 +18,7 @@ export function testInstalledRuntimeBoundaries(
     requireBoundaries: boolean,
 ): void {
     const policy = JSON.parse(
-        readFileSync(path.join(repositoryRoot, "runtime-verification.config.json"), "utf8"),
+        readFileSync(path.join(repositoryRoot, "config/runtime-verification.config.json"), "utf8"),
     ) as {
         readonly boundaries: readonly {
             readonly environmentVariable: string;

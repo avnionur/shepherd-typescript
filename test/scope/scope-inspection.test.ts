@@ -529,6 +529,53 @@ test("inspection fails closed on malformed or bypassed scope evidence", async (c
     );
     assert.throws(() => inspectScope(store, fourth.root.scope_id), ScopeEvidenceError);
 
+    // Evidence retained by its own command intent on the right head still fails when it names
+    // another scope.
+    const seventh = registerAndClaim(store, "scope-command:root-7", "claim:root-7");
+    store.append(
+        rawAppend(
+            createScopeCommandAppendIntentId("scope-command:stray-emit"),
+            seventh.root.scope_id,
+            "shepherd.scope.emission.v1",
+            {
+                cited_record_ids: [],
+                command_id: "scope-command:stray-emit",
+                compatibility_version: SCOPE_COMPATIBILITY_VERSION,
+                data: {},
+                expected_head_record_id: seventh.root.head.record_id,
+                scope_id: root.scope_id,
+                scope_version: SCOPE_RECORD_VERSION,
+            },
+            [seventh.root.head.record_id],
+        ),
+    );
+    assert.throws(
+        () => inspectScope(store, seventh.root.scope_id),
+        /scope emission disagrees with its retained head/u,
+    );
+    const eighth = registerAndClaim(store, "scope-command:root-8", "claim:root-8");
+    store.append(
+        rawAppend(
+            createScopeCommandAppendIntentId("scope-command:stray-child"),
+            eighth.root.scope_id,
+            "shepherd.scope.child_registered.v1",
+            {
+                child_scope_id: child.scope_id,
+                command_id: "scope-command:stray-child",
+                compatibility_version: SCOPE_COMPATIBILITY_VERSION,
+                origin_cut_id: child.origin.origin_cut_id,
+                origin_record_id: eighth.root.head.record_id,
+                parent_scope_id: root.scope_id,
+                scope_version: SCOPE_RECORD_VERSION,
+            },
+            [eighth.root.head.record_id],
+        ),
+    );
+    assert.throws(
+        () => inspectScope(store, eighth.root.scope_id),
+        /scope child registration disagrees with its retained head/u,
+    );
+
     // A child registration without its origin-cut publication or with a wrong cut fails closed.
     const orphanChild = `scope:sha256:${"9".repeat(64)}`;
     const childRegistration = store.readRecord(child.registration_record_id);

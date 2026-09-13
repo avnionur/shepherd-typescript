@@ -32,6 +32,32 @@ Consumers can fork isolated, fenced scope worlds and recover them after restart 
 APIs. Scope v1 records decode unchanged and no store migration is required. Merge, discard,
 multi-resource forks, optimized carriers, and provider or process restoration remain unclaimed.
 
+## [2.1.2] - 2026-09-12
+
+### Improvement
+
+- Cover scope inspection's fail-closed checks for emission and child-registration evidence that is
+  retained by its own command intent on the current head but names another scope, restoring the
+  configured 100% line and branch coverage gate.
+
+### Impact
+
+Repository verification passes again after the scope registration slice. Runtime behavior, public
+API, protocols, schemas and dependencies are unchanged.
+
+## [2.1.1] - 2026-09-11
+
+### Improvement
+
+- Move repository-only verification policy (test runner, entry loading, bundle fixtures and
+  runtime boundaries) from the repository root into `config/`, updating the tooling readers and
+  documentation links.
+
+### Impact
+
+The repository root keeps only shipped runtime configuration, project identity and standard tool
+files. The published package, runtime behavior, protocols, schemas and dependencies are unchanged.
+
 ## [2.1.0] - 2026-09-10
 
 ### New Feature
