@@ -14,6 +14,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Consume-once scope merge and discard](./scope-merge-discard.md) defines three-way merge plans,
   single-winner reservations, verified parent-managed publication, selected-history
   contributions, subtree discard with retained-identity cleanup, and terminal recovery.
+- [Scope scheduling and recovery classification](./scope-scheduling.md) defines bounded parallel
+  and nested scope trees with deterministic settlement, restart convergence, and record-derived
+  recovery ownership.
 - [Scope vocabulary mapping](./scope-vocabulary.md) maps spawn, adopt, abandon, and publish onto
   exact scope evidence without aliasing version-1 projections.
 - [Scope ownership/authority proposal](../.plan/scope-ownership-contract.md) defines the reviewed

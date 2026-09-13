@@ -17,6 +17,7 @@ import {
     SCOPE_PROTOCOL_V2_CONTRACT,
     SCOPE_PROTOCOL_V3_CONTRACT,
     SCOPE_PROTOCOL_V4_CONTRACT,
+    SCOPE_PROTOCOL_V5_CONTRACT,
 } from "../../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
 import { registerAndClaim, resource, temporaryDatabasePath } from "./fixtures.ts";
@@ -118,12 +119,12 @@ test("published scope schemas accept retained records and reject malformed copie
     }
 });
 
-test("scope protocol configuration matches v4 and preserves every earlier value", () => {
+test("scope protocol configuration matches v5 and preserves every earlier value", () => {
     const config = JSON.parse(
         readFileSync(new URL("../../protocol.config.json", import.meta.url), "utf8"),
     ) as Record<string, unknown>;
     const parsed = parseProtocolConfig(structuredClone(config));
-    assert.deepEqual(parsed.scopes, SCOPE_PROTOCOL_V4_CONTRACT);
+    assert.deepEqual(parsed.scopes, SCOPE_PROTOCOL_V5_CONTRACT);
     // Later versions only append vocabulary; every earlier value keeps its position and meaning.
     const appended = new Set(["commandKinds", "evidenceKinds", "worldCapabilities"]);
     const merged = new Set([
@@ -134,11 +135,12 @@ test("scope protocol configuration matches v4 and preserves every earlier value"
         "schemas",
         "traceSchemas",
     ]);
-    const current = SCOPE_PROTOCOL_V4_CONTRACT as unknown as Record<string, unknown>;
+    const current = SCOPE_PROTOCOL_V5_CONTRACT as unknown as Record<string, unknown>;
     for (const previousContract of [
         SCOPE_PROTOCOL_V1_CONTRACT,
         SCOPE_PROTOCOL_V2_CONTRACT,
         SCOPE_PROTOCOL_V3_CONTRACT,
+        SCOPE_PROTOCOL_V4_CONTRACT,
     ]) {
         for (const [key, value] of Object.entries(previousContract)) {
             if (appended.has(key)) {
@@ -154,11 +156,11 @@ test("scope protocol configuration matches v4 and preserves every earlier value"
                 );
             } else if (key === "authority") {
                 assert.deepEqual(
-                    SCOPE_PROTOCOL_V4_CONTRACT.authority.atoms,
+                    SCOPE_PROTOCOL_V5_CONTRACT.authority.atoms,
                     previousContract.authority.atoms,
                 );
                 assert.deepEqual(
-                    SCOPE_PROTOCOL_V4_CONTRACT.authority.resourceKinds.slice(
+                    SCOPE_PROTOCOL_V5_CONTRACT.authority.resourceKinds.slice(
                         0,
                         previousContract.authority.resourceKinds.length,
                     ),
@@ -270,7 +272,7 @@ test("published merge and discard schemas accept retained journal records and re
     for (const invalid of [
         { ...prepared, extra: true },
         { ...prepared, merge_cut_id: "scope-origin:bad" },
-        { ...prepared, world: { ...plan, merged_revision_id: "bad" } },
+        { ...prepared, world: { ...plan, child_revision_id: "bad" } },
         { ...prepared, contributions: [{ owner_id: child.scope_id, owner_ordinal: -1 }] },
         { ...sealed, phase: "prepared" },
     ]) {

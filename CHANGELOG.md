@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-09-13
+
+### New Feature
+
+- Add `runScopeTree` on the workspace entry: bounded parallel and nested scheduling of declared
+  child scopes with depth-first settlement, deterministic sibling order independent of
+  parallelism, failure and conflict isolation to the affected subtree, world forks, and restart
+  convergence from command identities derived from the node path.
+- Add `inspectScopeRecovery`: a record-derived classification of every live scope as terminal,
+  cleanup pending, merge pending, fork pending, writer expired, writer held, or idle, naming the
+  single recovery owner and the exact retained command to resume.
+- Add scope protocol v5 with the scheduling and recovery vocabulary and bounds.
+
+### Defect Fixes
+
+- Refuse merging a child whose discarded children still have pending cleanup, and return the
+  decided receipt when a discard is retried after its parent was sealed.
+- Verify every unplanned parent custody path before merge publication writes anything.
+- Build the merged revision only after the reservation wins, under a command-derived custody
+  identity that subtree discards also clean, so refused plans leave no protected custody.
+- Refuse merging merged, discarded, or reserved scopes before any carrier work.
+- Validate parent integrations against the exact reservation, integration, and seal, resolve every
+  contribution to its retained occurrence, and require sealed descendants to be named by their
+  subtree root's decision.
+
+### Impact
+
+Callers can run nested scope trees in parallel and resume them after a crash, and operators can
+see exactly which scope owns each recovery. Merge and discard are stricter about quiescence and
+forged evidence. The scope merge world plan no longer retains merged revision fields; merged
+content is reported by the completion and receipt.
+
 ## [2.4.0] - 2026-09-13
 
 ### New Feature

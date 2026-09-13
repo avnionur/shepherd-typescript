@@ -9,6 +9,8 @@ import type {
     SCOPE_FORK_PHASES,
     SCOPE_KINDS,
     SCOPE_MERGE_PHASES,
+    SCOPE_RECOVERY_CLASSIFICATIONS,
+    SCOPE_RECOVERY_RESUME_KINDS,
     SCOPE_RESOURCE_KINDS,
     SCOPE_STATES,
     SCOPE_VOCABULARY_STATUSES,
@@ -638,7 +640,10 @@ export type ScopeContribution = {
 
 /** Exact three-way world plan retained by a merge reservation. */
 export type ScopeMergeWorldPlan = {
-    /** Protected carrier custody used to build the merged revision, or null for an empty child delta. */
+    /**
+     * Deterministic protected custody identity that builds the merged revision only after the
+     * reservation wins, or null for an empty child delta.
+     */
     readonly application_custody_id: string | null;
     /** Exact workspace binding shared by the child and parent worlds. */
     readonly binding_id: string;
@@ -646,10 +651,6 @@ export type ScopeMergeWorldPlan = {
     readonly child_content_id: string;
     /** Captured child custody revision whose parent is the common origin. */
     readonly child_revision_id: string;
-    /** Content of the merged revision the parent custody publishes. */
-    readonly merged_content_id: string;
-    /** Immutable merged revision: the child delta applied to the current parent revision. */
-    readonly merged_revision_id: string;
     /** Content of the common origin revision. */
     readonly origin_content_id: string;
     /** Common origin revision the child world was forked from. */
@@ -807,6 +808,8 @@ export type ScopeMergeReceipt = {
     readonly head: ScopeHeadAddress;
     /** Fixed child cut identity. */
     readonly merge_cut_id: string;
+    /** Verified merged world content published into parent custody, or null for a trace-only child. */
+    readonly merged_content_id: string | null;
     /** Head of the parent path after integration. */
     readonly parent_head: ScopeHeadAddress;
     /** Owning parent scope identity. */
@@ -913,4 +916,56 @@ export type ScopeVocabularyProjection = {
     readonly scope_id: string;
     /** Configured vocabulary projection version. */
     readonly vocabulary_version: number;
+};
+
+/** Configured restart-recovery classification of one live scope. */
+export type ScopeRecoveryClassification = (typeof SCOPE_RECOVERY_CLASSIFICATIONS)[number];
+
+/** Configured recovery action that resumes a scope. */
+export type ScopeRecoveryResumeKind = (typeof SCOPE_RECOVERY_RESUME_KINDS)[number];
+
+/** Closed options for classifying live scopes for recovery. */
+export type InspectScopeRecoveryOptions = {
+    /** Unix time used for deterministic writer lease evaluation; defaults to the current time. */
+    readonly nowMilliseconds?: number;
+};
+
+/** Recovery classification of one live scope with its single recovery owner. */
+export type ScopeRecoveryEntry = {
+    /** Current writer claim evidence, or null when never claimed. */
+    readonly claim: {
+        /** Current claim identity. */
+        readonly claim_id: string;
+        /** Monotonic fencing token. */
+        readonly fencing_token: number;
+        /** Lease expiry in Unix milliseconds. */
+        readonly lease_expires_at: number;
+        /** Whether the holder released the claim. */
+        readonly released: boolean;
+    } | null;
+    /** Configured classification in precedence order. */
+    readonly classification: ScopeRecoveryClassification;
+    /** Owning parent scope, or null for a root. */
+    readonly parent_scope_id: string | null;
+    /** Scope whose writer must resume the scope, or null when nothing needs resuming. */
+    readonly recovery_owner_scope_id: string | null;
+    /** Exact action and retained command identity to resume, or null. */
+    readonly resume: {
+        /** Retained command identity, or null when a new command must be issued. */
+        readonly command_id: string | null;
+        /** Configured resume action. */
+        readonly kind: ScopeRecoveryResumeKind;
+    } | null;
+    /** Classified scope identity. */
+    readonly scope_id: string;
+    /** Branch-lifecycle state derived from retained evidence. */
+    readonly state: ScopeState;
+};
+
+/** Record-derived recovery report over every live scope in one store. */
+export type ScopeRecoveryReport = {
+    /** Lease evaluation time in Unix milliseconds. */
+    readonly evaluated_at: number;
+    /** Every live scope in canonical scope-identity order. */
+    readonly scopes: readonly ScopeRecoveryEntry[];
 };

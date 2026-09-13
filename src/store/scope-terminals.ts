@@ -72,6 +72,8 @@ export type ScopeMergeBoundary = {
 export type ScopeDiscardSubtreeScope = {
     /** First retained fork journal occurrence, when the scope owns reference-copy custody. */
     readonly forkPrepared: OwnerRecord | undefined;
+    /** Retained merge reservation, whose protected application custody the subtree also owns. */
+    readonly mergePrepared: OwnerRecord | undefined;
     /** Current head of the scope path. */
     readonly head: ScopeHeadAddress;
     /** Scope identity. */
@@ -168,7 +170,16 @@ export function prepareScopeMergeInStore(
         );
         assertForkCompleteOrAbsent(database, childScopeId);
         for (const grandchild of readChildRows(database, childScopeId)) {
-            if (grandchild.state === OPEN_STATE) {
+            // A consumed child can no longer authorize a descendant's pending discard cleanup.
+            if (
+                grandchild.state === OPEN_STATE ||
+                (grandchild.state === DISCARDED_STATE &&
+                    countOwnerSchemaRecords(
+                        database,
+                        grandchild.scope_id,
+                        scopeProtocolConfig.traceSchemas.discard,
+                    ) !== scopeProtocolConfig.discardPhases.length)
+            ) {
                 throw new ScopeQuiescenceError(
                     childScopeId,
                     `descendant ${grandchild.scope_id} is unresolved`,
@@ -366,7 +377,16 @@ function readSubtree(database: DatabaseSync, scopeId: string): readonly ScopeDis
                 throw new ScopeEvidenceError(`scope ${id} registration changed during discard`);
             }
             return Object.freeze({
-                forkPrepared: readFirstForkRecord(database, id),
+                forkPrepared: readFirstSchemaRecord(
+                    database,
+                    id,
+                    scopeProtocolConfig.traceSchemas.fork,
+                ),
+                mergePrepared: readFirstSchemaRecord(
+                    database,
+                    id,
+                    scopeProtocolConfig.traceSchemas.merge,
+                ),
                 head: readScopeHead(database, id) as ScopeHeadAddress,
                 scopeId: id,
                 state: row.state,
@@ -375,12 +395,29 @@ function readSubtree(database: DatabaseSync, scopeId: string): readonly ScopeDis
     );
 }
 
-function readFirstForkRecord(database: DatabaseSync, scopeId: string): OwnerRecord | undefined {
+function countOwnerSchemaRecords(
+    database: DatabaseSync,
+    scopeId: string,
+    schemaRef: string,
+): number {
+    const row = database
+        .prepare(
+            `SELECT COUNT(*) AS count FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND record.schema_ref = ?`,
+        )
+        .get(scopeId, schemaRef) as { readonly count: number };
+    return row.count;
+}
+
+function readFirstSchemaRecord(
+    database: DatabaseSync,
+    scopeId: string,
+    schemaRef: string,
+): OwnerRecord | undefined {
     const row = database
         .prepare(
             `SELECT view.owner_ordinal AS owner_ordinal FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND record.schema_ref = ? ORDER BY view.owner_ordinal LIMIT 1`,
         )
-        .get(scopeId, scopeProtocolConfig.traceSchemas.fork);
+        .get(scopeId, schemaRef);
     return row === undefined
         ? undefined
         : readOwnerRecordAtOrdinal(database, scopeId, Number(row.owner_ordinal));

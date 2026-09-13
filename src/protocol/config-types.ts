@@ -785,6 +785,8 @@ export type ScopeProtocolConfig = {
     readonly identity: {
         /** Deterministic custody identity kind derived for one scope fork. */
         readonly custodyIdentityKind: string;
+        /** Deterministic protected application custody identity kind derived for one merge. */
+        readonly mergeCustodyIdentityKind: string;
         /** Deterministic merge child-cut identity prefix. */
         readonly mergeCutIdPrefix: string;
         /** Deterministic fork-origin cut identity prefix. */
@@ -811,6 +813,41 @@ export type ScopeProtocolConfig = {
     readonly mergePhases: readonly string[];
     /** Wire version for canonical scope records. */
     readonly recordVersion: number;
+    /** Closed restart-recovery and orphan classification vocabulary. */
+    readonly recovery: {
+        /** Classifications in precedence order. */
+        readonly classifications: readonly string[];
+        /** Resume actions ordered fork, merge, discard, claim. */
+        readonly resumeKinds: readonly string[];
+    };
+    /** Parallel and nested scope scheduling vocabulary and bounds. */
+    readonly scheduling: {
+        /** Deterministic command identity suffixes per scheduled step. */
+        readonly commandSuffixes: {
+            /** Child creation command suffix. */
+            readonly create: string;
+            /** Child discard command suffix. */
+            readonly discard: string;
+            /** Scheduled emission command segment. */
+            readonly emit: string;
+            /** Child merge command suffix. */
+            readonly merge: string;
+            /** Child writer claim identity suffix. */
+            readonly writer: string;
+        };
+        /** Settlement decisions ordered merge then discard. */
+        readonly decisions: readonly string[];
+        /** Maximum nesting depth of one scheduled tree. */
+        readonly maxDepth: number;
+        /** Maximum scheduled nodes in one tree. */
+        readonly maxNodes: number;
+        /** Maximum sibling subtrees run concurrently. */
+        readonly maxParallel: number;
+        /** Node outcomes ordered merged, discarded, conflicted, failed. */
+        readonly outcomes: readonly string[];
+        /** Separator joining node keys into deterministic paths. */
+        readonly pathSeparator: string;
+    };
     /** Absolute JSON Schema identifiers for scope records. */
     readonly schemas: {
         /** Parent-side child-merge integration schema identifier. */

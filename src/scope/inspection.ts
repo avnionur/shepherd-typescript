@@ -27,6 +27,7 @@ import {
     scopeContributionKey,
 } from "./terminal-records.ts";
 import type {
+    ScopeChildMergedRecord,
     ScopeContribution,
     ScopeDiscardDecidedRecord,
     ScopeHistoryEntry,
@@ -193,7 +194,7 @@ export function inspectScope(
         }
         if (isDiscard) {
             if (discardDecided === null) {
-                discardDecided = readDiscardDecision(record, scopeId, parentScopeId);
+                discardDecided = readDiscardDecision(store, record, scopeId, parentScopeId);
                 terminal = discard(discardDecided.command_id, DISCARD_DECIDED_PHASE, record);
                 history.push(entry(DISCARD_DECIDED_KIND, discardDecided.command_id, record));
                 sealed = true;
@@ -263,7 +264,7 @@ export function inspectScope(
             });
         } else if (schemaRef === scopeProtocolConfig.traceSchemas.childMerged) {
             const integration = readScopeChildMergedRecord(record.body);
-            const reservation = readChildReservation(store, record, integration.command_id);
+            const reservation = readChildReservation(store, record, integration);
             if (
                 integration.parent_scope_id !== scopeId ||
                 !children.includes(integration.child_scope_id) ||
@@ -272,10 +273,14 @@ export function inspectScope(
                 reservation.parent_scope_id !== scopeId ||
                 reservation.parent_head_record_id !== previous.envelope.record_id ||
                 reservation.merge_cut_id !== integration.child_cut_id ||
-                reservation.world?.merged_content_id !==
-                    (integration.merged_content_id ?? undefined) ||
+                (reservation.world === null) !== (integration.merged_content_id === null) ||
                 JSON.stringify(reservation.contributions) !==
-                    JSON.stringify(integration.contributions)
+                    JSON.stringify(integration.contributions) ||
+                integration.contributions.some(
+                    (contribution) =>
+                        store.readOwner(contribution.owner_id)[contribution.owner_ordinal]?.envelope
+                            .record_id !== contribution.record_id,
+                )
             ) {
                 throw new ScopeEvidenceError(
                     "scope child integration disagrees with its reservation",
@@ -409,27 +414,43 @@ function readMergeSeal(record: OwnerRecord, prepared: ScopeMergePreparedRecord):
 function readChildReservation(
     store: SQLiteTraceStore,
     record: OwnerRecord,
-    commandId: string,
+    integration: ScopeChildMergedRecord,
 ): ScopeMergePreparedRecord {
-    const reservationRecordId = record.envelope.caused_by_record_ids[1];
-    const reservation =
-        reservationRecordId === undefined ? undefined : store.readRecord(reservationRecordId);
+    const commandId = integration.command_id;
+    const reservations = store.readAppendIntentRecords(createScopeCommandAppendIntentId(commandId));
+    const completion = store.readAppendIntentRecords(
+        createScopeMergeAppendIntentId(commandId, MERGE_COMPLETED_PHASE),
+    );
+    const [reservation] = reservations;
+    const [integrationOccurrence, seal] = completion;
+    const prepared =
+        reservation?.envelope.schema_ref === scopeProtocolConfig.traceSchemas.merge
+            ? readScopeMergeRecord(reservation.body)
+            : undefined;
+    const sealed =
+        seal?.envelope.schema_ref === scopeProtocolConfig.traceSchemas.merge
+            ? readScopeMergeRecord(seal.body)
+            : undefined;
+    // The reservation, integration, and seal must be exactly the retained journal of one command.
     if (
-        record.view.append_intent_id !==
-            createScopeMergeAppendIntentId(commandId, MERGE_COMPLETED_PHASE) ||
-        reservation === undefined ||
-        reservation.envelope.schema_ref !== scopeProtocolConfig.traceSchemas.merge
+        reservations.length !== 1 ||
+        completion.length !== 2 ||
+        prepared?.phase !== MERGE_PREPARED_PHASE ||
+        prepared.command_id !== commandId ||
+        reservation?.view.owner_id !== integration.child_scope_id ||
+        record.envelope.caused_by_record_ids[1] !== reservation.envelope.record_id ||
+        integrationOccurrence?.envelope.record_id !== record.envelope.record_id ||
+        sealed?.phase !== MERGE_COMPLETED_PHASE ||
+        sealed.publication_revision_id !== integration.publication_revision_id ||
+        seal?.envelope.caused_by_record_ids[0] !== reservation.envelope.record_id
     ) {
-        throw new ScopeEvidenceError("scope child integration lacks its reservation");
-    }
-    const prepared = readScopeMergeRecord(reservation.body);
-    if (prepared.phase !== MERGE_PREPARED_PHASE || prepared.command_id !== commandId) {
-        throw new ScopeEvidenceError("scope child integration lacks its reservation");
+        throw new ScopeEvidenceError("scope child integration lacks its exact merge journal");
     }
     return prepared;
 }
 
 function readDiscardDecision(
+    store: SQLiteTraceStore,
     record: OwnerRecord,
     scopeId: string,
     parentScopeId: string | null,
@@ -439,8 +460,16 @@ function readDiscardDecision(
         throw new ScopeEvidenceError("scope discard cleanup precedes its decision");
     }
     assertCommandIntent(record, decided.command_id);
+    // A sealed descendant must be named by the subtree root's decision under the same command.
+    const [rootRecord] = store.readAppendIntentRecords(
+        createScopeCommandAppendIntentId(decided.command_id),
+    );
+    const root = readScopeDiscardRecord((rootRecord as OwnerRecord).body);
     if (
         decided.scope_id !== scopeId ||
+        root.phase !== DISCARD_DECIDED_PHASE ||
+        root.scope_id !== decided.discard_scope_id ||
+        !root.sealed_scope_ids.includes(scopeId) ||
         (decided.discard_scope_id === scopeId && decided.parent_scope_id !== parentScopeId)
     ) {
         throw new ScopeEvidenceError("scope discard decision disagrees with its scope");

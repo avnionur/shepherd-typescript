@@ -223,43 +223,74 @@ export function createReferenceCopyApplicationRevision(
         if (typeof definition.operationKey !== "string" || definition.operationKey.length === 0) {
             throw new TypeError("application operation key is invalid");
         }
-        const current = loadRevision(paths, definition.currentRevisionId);
-        const candidateBase = loadRevision(paths, definition.candidateChangeset.base_revision_id);
-        const candidate = loadRevision(paths, definition.candidateChangeset.head_revision_id);
-        if (
-            current.binding_id !== definition.candidateChangeset.binding_id ||
-            candidateBase.binding_id !== current.binding_id ||
-            candidate.binding_id !== current.binding_id
-        ) {
-            throw new TypeError("application revisions cite different bindings");
-        }
         const identity = createRecordId({
             candidate_changeset_id: definition.candidateChangeset.changeset_id,
-            current_revision_id: current.revision_id,
+            current_revision_id: definition.currentRevisionId,
             operation_key: definition.operationKey,
         });
-        const custodyId = `${workspaceProtocolConfig.carrier.custodyIdPrefix}${identity.slice(
-            identity.lastIndexOf(":") + 1,
-        )}`;
-        const custody = forkRevision(paths, current.revision_id, NO_ADAPTER_RECEIPTS, custodyId);
-        for (const change of orderWorldPathChangesForPublication(
-            definition.candidateChangeset.changes,
-        )) {
-            const observed = readPathNode(custody.path, change.path);
-            if (sameNode(observed, change.after)) continue;
-            if (!sameNode(observed, change.before)) {
-                throw selectionError("recovery");
-            }
-            applyPathChange(custody.path, candidate.path, change);
-        }
-        const revision = captureCustody(paths, custody.custody_id);
-        // captureCustody constructs this parent from the just-opened custody descriptor.
-        /* node:coverage ignore next 3 */
-        if (revision.parent_revision_id !== current.revision_id) {
-            throw new TypeError("application revision parent is inconsistent");
-        }
-        return Object.freeze({ custody, revision });
+        return applyApplicationRevision(
+            paths,
+            definition.candidateChangeset,
+            definition.currentRevisionId,
+            `${workspaceProtocolConfig.carrier.custodyIdPrefix}${identity.slice(identity.lastIndexOf(":") + 1)}`,
+        );
     });
+}
+
+/** @internal Creates or reopens one merged revision under an exact caller-derived custody identity. */
+export function createReferenceCopyApplicationRevisionWithIdentity(
+    carrier: ReferenceCopyCarrier,
+    definition: Readonly<{
+        candidateChangeset: WorldChangeset;
+        currentRevisionId: string;
+        custodyId: string;
+    }>,
+): Readonly<{ custody: WorldCustody; revision: WorldRevision }> {
+    assertReferenceCopyCarrier(carrier);
+    const paths = REFERENCE_CARRIER_PATHS.get(carrier);
+    assert.ok(paths, "reference carrier paths are unavailable");
+    return invokeCarrier(() =>
+        applyApplicationRevision(
+            paths,
+            definition.candidateChangeset,
+            definition.currentRevisionId,
+            definition.custodyId,
+        ),
+    );
+}
+
+function applyApplicationRevision(
+    paths: CarrierPaths,
+    candidateChangeset: WorldChangeset,
+    currentRevisionId: string,
+    custodyId: string,
+): Readonly<{ custody: WorldCustody; revision: WorldRevision }> {
+    const current = loadRevision(paths, currentRevisionId);
+    const candidateBase = loadRevision(paths, candidateChangeset.base_revision_id);
+    const candidate = loadRevision(paths, candidateChangeset.head_revision_id);
+    if (
+        current.binding_id !== candidateChangeset.binding_id ||
+        candidateBase.binding_id !== current.binding_id ||
+        candidate.binding_id !== current.binding_id
+    ) {
+        throw new TypeError("application revisions cite different bindings");
+    }
+    const custody = forkRevision(paths, current.revision_id, NO_ADAPTER_RECEIPTS, custodyId);
+    for (const change of orderWorldPathChangesForPublication(candidateChangeset.changes)) {
+        const observed = readPathNode(custody.path, change.path);
+        if (sameNode(observed, change.after)) continue;
+        if (!sameNode(observed, change.before)) {
+            throw selectionError("recovery");
+        }
+        applyPathChange(custody.path, candidate.path, change);
+    }
+    const revision = captureCustody(paths, custody.custody_id);
+    // captureCustody constructs this parent from the just-opened custody descriptor.
+    /* node:coverage ignore next 3 */
+    if (revision.parent_revision_id !== current.revision_id) {
+        throw new TypeError("application revision parent is inconsistent");
+    }
+    return Object.freeze({ custody, revision });
 }
 
 /**
@@ -286,10 +317,18 @@ export function publishReferenceCopyCustodyChangeset(
         assert.equal(base.binding_id, custody.binding_id, "changeset base binding differs");
         assert.equal(head.binding_id, custody.binding_id, "changeset head binding differs");
         const descriptor = readOwnedRevisionDescriptor(paths, custody.base_revision_id);
-        assertChangesetPathsUnprotected(
-            changeset,
-            pathProtection(paths.workspaceRoot, descriptor.binding_root),
-        );
+        const protection = pathProtection(paths.workspaceRoot, descriptor.binding_root);
+        assertChangesetPathsUnprotected(changeset, protection);
+        // Every unplanned path must still hold its base state before anything is written.
+        const planned = new Set(changeset.changes.map((change) => change.path));
+        const unplanned = (manifest: readonly WorldManifestEntry[]) =>
+            canonicalManifest(manifest.filter((entry) => !planned.has(entry.path)));
+        if (
+            unplanned(captureTree(custody.path, null, null, protection)) !==
+            unplanned(base.manifest)
+        ) {
+            throw selectionError("recovery");
+        }
         for (const change of orderWorldPathChangesForPublication(changeset.changes)) {
             const observed = readPathNode(custody.path, change.path);
             if (sameNode(observed, change.after)) continue;

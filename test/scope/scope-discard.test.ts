@@ -354,3 +354,101 @@ test("discard refuses a subtree beyond the configured bound", async (context) =>
     );
     assert.equal(inspectScope(store, child.scope_id)?.state, "open");
 });
+
+test("a pending descendant cleanup blocks consuming its parent, and a sealed parent defers cleanup", async (context) => {
+    const world = await createNestedWorld(context, "discard-pending-cleanup");
+    const { carrier, child, childWriter, parent, parentWriter, root, rootWriter, store } = world;
+    const grandchild = await forkChild(world, child, childWriter, "scope-command:fork-grandchild");
+    const request = {
+        commandId: "scope-command:discard-grandchild",
+        expectedHeadRecordId: headOf(store, grandchild.scope_id),
+        nowMilliseconds: 1_600,
+        parent: childWriter,
+        scopeId: grandchild.scope_id,
+    };
+    const logical = await discardScope(store, request);
+    assert.equal(logical.cleanup.phase, "decided");
+    // The child cannot be merged while its discarded child's cleanup is still pending.
+    await assert.rejects(
+        mergeScope(store, {
+            carrier,
+            child: childWriter,
+            commandId: "scope-command:merge-child",
+            expectedChildHeadRecordId: headOf(store, child.scope_id),
+            expectedParentHeadRecordId: headOf(store, parent.scope_id),
+            nowMilliseconds: 1_600,
+            parent: parentWriter,
+        }),
+        ScopeQuiescenceError,
+    );
+    // Sealing the child by an ancestor discard moves cleanup ownership to that ancestor.
+    releaseScopeWriter(store, { writer: childWriter });
+    releaseScopeWriter(store, { writer: parentWriter });
+    const ancestor = await discardScope(store, {
+        carrier,
+        commandId: "scope-command:discard-parent",
+        expectedHeadRecordId: headOf(store, parent.scope_id),
+        nowMilliseconds: 1_700,
+        parent: rootWriter,
+        scopeId: parent.scope_id,
+    });
+    assert.ok(ancestor.cleanup.custody_ids.includes(grandchild.world.custody_id));
+    assert.equal(ancestor.cleanup.phase, "cleaned");
+    // Retrying the descendant discard returns its decided receipt instead of throwing.
+    assert.deepEqual(await discardScope(store, { ...request, carrier }), logical);
+    assert.equal(inspectScope(store, root.scope_id)?.state, "open");
+    // A stale child handle is refused before any carrier work.
+    await assert.rejects(
+        mergeScope(store, {
+            carrier,
+            child: childWriter,
+            commandId: "scope-command:merge-sealed",
+            expectedChildHeadRecordId: headOf(store, child.scope_id),
+            expectedParentHeadRecordId: headOf(store, parent.scope_id),
+            nowMilliseconds: 1_800,
+            parent: parentWriter,
+        }),
+        ScopeTerminalConflictError,
+    );
+});
+
+test("merge and discard racing across store connections admit exactly one terminal decision", async (context) => {
+    const world = await createNestedWorld(context, "discard-race");
+    const { carrier, child, parent, store } = world;
+    releaseScopeWriter(store, { writer: world.childWriter });
+    using other = new SQLiteTraceStore(world.databasePath);
+    const childWriter = claimScopeWriter(store, {
+        claimId: "claim:race-child",
+        nowMilliseconds: 1_600,
+        scopeId: child.scope_id,
+    });
+    const otherParent = claimScopeWriter(other, {
+        claimId: "claim:parent",
+        nowMilliseconds: 1_600,
+        scopeId: parent.scope_id,
+    });
+    const childHead = headOf(store, child.scope_id);
+    const outcomes = await Promise.allSettled([
+        mergeScope(store, {
+            carrier,
+            child: childWriter,
+            commandId: "scope-command:race-merge",
+            expectedChildHeadRecordId: childHead,
+            expectedParentHeadRecordId: headOf(store, parent.scope_id),
+            nowMilliseconds: 1_600,
+            parent: world.parentWriter,
+        }),
+        discardScope(other, {
+            carrier,
+            commandId: "scope-command:race-discard",
+            expectedHeadRecordId: childHead,
+            nowMilliseconds: 1_600,
+            parent: otherParent,
+            scopeId: child.scope_id,
+        }),
+    ]);
+    assert.equal(outcomes.filter((outcome) => outcome.status === "fulfilled").length, 1);
+    const state = inspectScope(store, child.scope_id)?.state;
+    assert.ok(state === "merged" || state === "discarded");
+    assert.equal(store.verifyIntegrity().ok, true);
+});

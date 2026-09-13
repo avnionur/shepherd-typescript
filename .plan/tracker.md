@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-13
 
-Current version: `2.4.0`
+Current version: `2.5.0`
 
 Current level: L1 stable — Phases 4–5 complete; Phase 6 scope substrate active
 
@@ -433,6 +433,19 @@ state. Cleanup removes only custody named by retained fork journals, as progress
 the logical decision, with receipt-based recovery across every boundary.
 
 ## Verification required for this slice
+
+Phase 6 Task 6 (#138): scope protocol v5 adds `runScopeTree` and `inspectScopeRecovery`. Focused
+tests cover nested settlement order, bounded parallelism with deterministic results at parallelism
+one and three, failure and conflict isolation, interruption before merge completion with resumed
+reservations and replayed emissions, emission conflicts, subtree refusals failing closed after
+siblings settle, world forks merging disjoint siblings and discarding conflicts, option bounds, and
+every recovery classification with its owner and resume command. The same change fixes the
+independent slice C review findings: pending descendant cleanup now blocks consuming its parent,
+retries return the decided receipt once the parent is sealed, publication verifies unplanned
+parent paths before writing, merged application custody is built only after the reservation under
+a command-derived identity and is named by subtree discards, merge refuses terminal scopes before
+carrier work, and inspection validates exact merge journals, resolvable contributions, and
+descendant seals. Full local verification and production build pass.
 
 Phase 6 Task 5 (#137): scope protocol v4 adds the read-only spawn/adopt/abandon/publish vocabulary
 mapping. Focused tests cover every term with exact citations, abandon without cleanup, adopt without

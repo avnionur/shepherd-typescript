@@ -90,6 +90,8 @@ import {
     readAppendIntentRecords,
     readScopeForkBoundaryInStore,
     readScopeRegistrationRow,
+    readScopeRegistrationRows,
+    readScopeWriterClaimRow,
     registerChildScopeInStore,
     registerRootScopeInStore,
     releaseScopeWriterInStore,
@@ -563,6 +565,18 @@ export class SQLiteTraceStore implements Disposable {
     readAppendIntentRecords(appendIntentId: string): readonly OwnerRecord[] {
         this.#assertOpen();
         return readAppendIntentRecords(this.#database, appendIntentId);
+    }
+
+    /** @internal Lists every live scope registration row in canonical scope-identity order. */
+    listScopeRegistrations(): readonly ScopeRegistrationRow[] {
+        this.#assertOpen();
+        return readScopeRegistrationRows(this.#database);
+    }
+
+    /** @internal Reads the current writer claim row of one scope. */
+    readScopeWriterClaim(scopeId: string): ScopeWriterClaimRow | undefined {
+        this.#assertOpen();
+        return readScopeWriterClaimRow(this.#database, scopeId);
     }
 
     /** @internal Reads one live scope registration row admitting mutation in this store. */

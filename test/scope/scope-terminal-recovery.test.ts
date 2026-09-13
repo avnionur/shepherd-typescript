@@ -272,6 +272,14 @@ test("a reserved merge blocks competing terminal decisions and mutation of both 
         [...discarded.sealed_scope_ids].sort(),
         [parent.scope_id, child.scope_id, sibling.scope_id].sort(),
     );
+    // The reserved merge's protected application custody is owned by the discarded subtree too.
+    const plan = (
+        (store.readRecord(reserved?.terminal?.record_id as string) as { readonly body: unknown })
+            .body as {
+            readonly world: { readonly application_custody_id: string };
+        }
+    ).world;
+    assert.ok(discarded.cleanup.custody_ids.includes(plan.application_custody_id));
     const sealed = inspectScope(store, child.scope_id);
     assert.equal(sealed?.state, "discarded");
     assert.deepEqual(
@@ -320,10 +328,11 @@ test("a reserved merge refuses contradictory parent custody and resumes from a p
     // A planned path in a third state is unknown physical state.
     await writeFile(path.join(parentCustody.path, "a.txt"), "third state\n");
     await assert.rejects(mergeScope(recovered, retry), WorldCarrierError);
-    // An unplanned path changed outside the merge leaves unverifiable parent content.
+    // An unplanned path changed outside the merge is refused before anything is written.
     await writeFile(path.join(parentCustody.path, "a.txt"), "a\n");
     await writeFile(path.join(parentCustody.path, "file.txt"), "ambient edit\n");
-    await assert.rejects(mergeScope(recovered, retry), ScopeEvidenceError);
+    await assert.rejects(mergeScope(recovered, retry), WorldCarrierError);
+    await assert.rejects(readFile(path.join(parentCustody.path, "b.txt")));
     assert.equal(inspectScope(recovered, world.child.scope_id)?.terminal?.phase, "prepared");
     // Restoring the unplanned path leaves a valid publication prefix that converges.
     await writeFile(path.join(parentCustody.path, "file.txt"), "source\n");
@@ -336,7 +345,7 @@ test("a reserved merge refuses contradictory parent custody and resumes from a p
     assert.equal(await readFile(path.join(parentCustody.path, "b.txt"), "utf8"), "b\n");
     assert.equal(
         (await world.carrier.verifyCustody(world.parent.world.custody_id)).content_id,
-        merged.world?.merged_content_id,
+        merged.merged_content_id,
     );
     assert.equal(recovered.verifyIntegrity().ok, true);
 });

@@ -997,6 +997,7 @@ export const SCOPE_PROTOCOL_V3_CONTRACT = deepFreeze({
     ],
     identity: {
         ...SCOPE_PROTOCOL_V2_CONTRACT.identity,
+        mergeCustodyIdentityKind: "scope-merge-application-custody",
         mergeCutIdPrefix: "scope-merge:",
     },
     limits: {
@@ -1029,6 +1030,38 @@ export const SCOPE_PROTOCOL_V4_CONTRACT = deepFreeze({
         statuses: ["pending", "completed"],
         terms: ["spawn", "adopt", "abandon", "publish"],
         version: 1,
+    },
+} as const);
+
+/** Immutable scheduling, recovery, and orphan-classification extension implemented by scope v5. */
+export const SCOPE_PROTOCOL_V5_CONTRACT = deepFreeze({
+    ...SCOPE_PROTOCOL_V4_CONTRACT,
+    recovery: {
+        classifications: [
+            "terminal",
+            "cleanup_pending",
+            "merge_pending",
+            "fork_pending",
+            "writer_expired",
+            "writer_held",
+            "idle",
+        ],
+        resumeKinds: ["fork", "merge", "discard", "claim"],
+    },
+    scheduling: {
+        commandSuffixes: {
+            create: "create",
+            discard: "discard",
+            emit: "emit",
+            merge: "merge",
+            writer: "writer",
+        },
+        decisions: ["merge", "discard"],
+        maxDepth: 16,
+        maxNodes: 256,
+        maxParallel: 64,
+        outcomes: ["merged", "discarded", "conflicted", "failed"],
+        pathSeparator: "/",
     },
 } as const);
 

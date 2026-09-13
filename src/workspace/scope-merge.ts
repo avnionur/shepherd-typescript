@@ -4,6 +4,7 @@ import {
     SCOPE_AUTHORITY_ATOMS,
     SCOPE_COMMAND_KINDS,
     SCOPE_MERGE_PHASES,
+    SCOPE_STATES,
 } from "../protocol/values.generated.ts";
 import { assertRecordId } from "../record/guards.ts";
 import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
@@ -13,6 +14,7 @@ import {
     ScopeEvidenceError,
     ScopeHeadConflictError,
     ScopeMergeConflictError,
+    ScopeTerminalConflictError,
 } from "../scope/errors.ts";
 import { inspectScope } from "../scope/inspection.ts";
 import { createScopeCommandAppendIntentId } from "../scope/records.ts";
@@ -20,6 +22,7 @@ import { readScopeCommandReceipt } from "../scope/replay.ts";
 import {
     createScopeChildMergedBody,
     createScopeMergeAppendIntentId,
+    createScopeMergeApplicationCustodyId,
     createScopeMergeCompletedBody,
     createScopeMergeCutId,
     createScopeMergePreparedBody,
@@ -39,7 +42,7 @@ import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import { createVerifiedWorldChangeset } from "./changesets.ts";
 import {
     assertReferenceCopyCarrier,
-    createReferenceCopyApplicationRevision,
+    createReferenceCopyApplicationRevisionWithIdentity,
     discardReferenceCopyCustodyIdentity,
     publishReferenceCopyCustodyChangeset,
 } from "./reference-copy-carrier.ts";
@@ -48,6 +51,7 @@ import type { MergeScopeOptions } from "./scope-terminal-types.ts";
 import type { ReferenceCopyCarrier } from "./types.ts";
 
 const [CAPTURE_MODE] = RECORD_MODES;
+const [OPEN_STATE] = SCOPE_STATES;
 const [, WRITE_ATOM] = SCOPE_AUTHORITY_ATOMS;
 const [MERGE_PREPARED_PHASE, MERGE_COMPLETED_PHASE] = SCOPE_MERGE_PHASES;
 const [, , , , MERGE_COMMAND] = SCOPE_COMMAND_KINDS;
@@ -185,10 +189,12 @@ export async function mergeScope(
     };
     const world = prepared.world;
     if (store.readScopeMergeBoundary(boundary, completedIntentId) === "ready") {
-        const publicationRevisionId =
+        const publication =
             world === null
                 ? null
                 : await publishParentWorld(carrier as ReferenceCopyCarrier, world);
+        const publicationRevisionId =
+            publication === null ? null : publication.publication_revision_id;
         const checkpointRecordId =
             (inspectScope(store, child.scope_id) as ScopeInspection).world?.completed_record_id ??
             null;
@@ -209,7 +215,9 @@ export async function mergeScope(
                                         commandId,
                                         contributions: prepared.contributions,
                                         mergedContentId:
-                                            world === null ? null : world.merged_content_id,
+                                            publication === null
+                                                ? null
+                                                : publication.merged_content_id,
                                         parentScopeId: parent.scope_id,
                                         publicationRevisionId,
                                     }) as unknown as RecordBody,
@@ -306,6 +314,12 @@ async function planMerge(
 ): Promise<ScopeMergePreparedRecord> {
     const parent = inspectScope(store, expected.parentScopeId) as ScopeInspection;
     const child = inspectScope(store, expected.childScopeId) as ScopeInspection;
+    // Refuse consumed or reserved scopes before any carrier work.
+    for (const scope of [parent, child]) {
+        if (scope.state !== OPEN_STATE || scope.terminal !== null) {
+            throw new ScopeTerminalConflictError(scope.scope_id);
+        }
+    }
     if (child.parent?.scope_id !== parent.scope_id) {
         throw new ScopeEvidenceError(`scope ${child.scope_id} is not owned by ${parent.scope_id}`);
     }
@@ -337,7 +351,7 @@ async function planMerge(
                       carrier,
                       parent,
                       child,
-                      createScopeCommandAppendIntentId(commandId),
+                      createScopeMergeApplicationCustodyId(commandId, child.scope_id),
                   ),
     });
 }
@@ -346,7 +360,7 @@ async function planWorld(
     carrier: ReferenceCopyCarrier | undefined,
     parent: ScopeInspection,
     child: ScopeInspection,
-    operationKey: string,
+    applicationCustodyId: string,
 ): Promise<ScopeMergeWorldPlan> {
     if (carrier === undefined) {
         throw new TypeError("mergeScope requires a carrier for a reference-copy child");
@@ -387,22 +401,13 @@ async function planWorld(
     if (conflict !== null) {
         throw new ScopeMergeConflictError(conflict);
     }
-    const application =
-        childDelta.changeset.changes.length === 0
-            ? null
-            : createReferenceCopyApplicationRevision(carrier, {
-                  candidateChangeset: childDelta.changeset,
-                  currentRevisionId: parentRevision.revision_id,
-                  operationKey,
-              });
-    const merged = application === null ? parentRevision : application.revision;
+    // Protected merged custody is built only after the reservation wins, under this identity.
     return Object.freeze({
-        application_custody_id: application === null ? null : application.custody.custody_id,
+        application_custody_id:
+            childDelta.changeset.changes.length === 0 ? null : applicationCustodyId,
         binding_id: childWorld.binding_id,
         child_content_id: childRevision.content_id,
         child_revision_id: childRevision.revision_id,
-        merged_content_id: merged.content_id,
-        merged_revision_id: merged.revision_id,
         origin_content_id: origin.content_id,
         origin_revision_id: origin.revision_id,
         parent_content_id: parentRevision.content_id,
@@ -414,20 +419,40 @@ async function planWorld(
 async function publishParentWorld(
     carrier: ReferenceCopyCarrier,
     world: ScopeMergeWorldPlan,
-): Promise<string> {
+): Promise<{ readonly merged_content_id: string; readonly publication_revision_id: string }> {
+    const parentRevision = await carrier.openRevision(world.parent_revision_id);
+    const merged =
+        world.application_custody_id === null
+            ? parentRevision
+            : createReferenceCopyApplicationRevisionWithIdentity(carrier, {
+                  candidateChangeset: (
+                      await createVerifiedWorldChangeset({
+                          baseRevision: await carrier.openRevision(world.origin_revision_id),
+                          carrier,
+                          headRevision: await carrier.openRevision(world.child_revision_id),
+                      })
+                  ).changeset,
+                  currentRevisionId: parentRevision.revision_id,
+                  custodyId: world.application_custody_id,
+              }).revision;
     const publication = await createVerifiedWorldChangeset({
-        baseRevision: await carrier.openRevision(world.parent_revision_id),
+        baseRevision: parentRevision,
         carrier,
-        headRevision: await carrier.openRevision(world.merged_revision_id),
+        headRevision: merged,
     });
     const verification = publishReferenceCopyCustodyChangeset(
         carrier,
         world.parent_custody_id,
         publication.changeset,
     );
-    if (verification.content_id !== world.merged_content_id) {
+    // Unplanned paths were verified before any write; only concurrent ambient mutation differs.
+    /* node:coverage ignore next 3 */
+    if (verification.content_id !== merged.content_id) {
         throw new ScopeEvidenceError("scope merge parent custody is in an unknown physical state");
     }
     const receipt = await carrier.captureCustody(world.parent_custody_id);
-    return receipt.revision_id;
+    return Object.freeze({
+        merged_content_id: merged.content_id,
+        publication_revision_id: receipt.revision_id,
+    });
 }

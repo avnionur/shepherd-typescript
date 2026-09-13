@@ -16,8 +16,9 @@ import {
     createScopeDiscardCleanedBody,
     createScopeDiscardDecidedBody,
     readScopeDiscardRecord,
+    readScopeMergeRecord,
 } from "../scope/terminal-records.ts";
-import type { ScopeDiscardReceipt } from "../scope/types.ts";
+import type { ScopeDiscardReceipt, ScopeMergePreparedRecord } from "../scope/types.ts";
 import {
     assertScopeId,
     assertScopeText,
@@ -28,7 +29,7 @@ import { assertScopeWriter } from "../scope/writer.ts";
 import { AppendIntentConflictError } from "../store/errors.ts";
 import type { ScopeDiscardSubtreeScope } from "../store/scope-terminals.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
-import type { StoreAppendRequest } from "../store/types.ts";
+import type { OwnerRecord, StoreAppendRequest } from "../store/types.ts";
 import {
     assertReferenceCopyCarrier,
     discardReferenceCopyCustodyIdentity,
@@ -135,9 +136,11 @@ export async function discardScope(
         scopeId,
     });
     const decided = readDiscardReceipt(store, commandId);
+    // A sealed parent can no longer authorize cleanup; the ancestor discard owns those identities.
     if (
         decided.cleanup.phase === DECIDED_PHASE &&
-        (carrier !== undefined || decided.cleanup.custody_ids.length === 0)
+        (carrier !== undefined || decided.cleanup.custody_ids.length === 0) &&
+        store.readScopeRegistration(parent.scope_id)?.state === OPEN_STATE
     ) {
         for (const custodyId of decided.cleanup.custody_ids) {
             discardReferenceCopyCustodyIdentity(carrier as ReferenceCopyCarrier, custodyId);
@@ -216,11 +219,14 @@ function decisionRequest(
     const [root] = subtree as readonly [ScopeDiscardSubtreeScope];
     const sealed = subtree.filter((scope) => scope.state === OPEN_STATE);
     const custodyIds = subtree
-        .flatMap((scope) =>
-            scope.forkPrepared === undefined
+        .flatMap((scope) => [
+            ...(scope.forkPrepared === undefined
                 ? []
-                : [readScopeForkRecord(scope.forkPrepared.body).custody_id],
-        )
+                : [readScopeForkRecord(scope.forkPrepared.body).custody_id]),
+            ...(scope.mergePrepared === undefined
+                ? []
+                : applicationCustodyIds(scope.mergePrepared)),
+        ])
         .sort();
     return {
         append_intent_id: commandIntentId,
@@ -247,6 +253,14 @@ function decisionRequest(
             })),
         },
     };
+}
+
+function applicationCustodyIds(reservation: OwnerRecord): readonly string[] {
+    const prepared = readScopeMergeRecord(reservation.body) as ScopeMergePreparedRecord;
+    const applicationCustodyId = prepared.world?.application_custody_id;
+    return applicationCustodyId === undefined || applicationCustodyId === null
+        ? []
+        : [applicationCustodyId];
 }
 
 function readDiscardReceipt(store: SQLiteTraceStore, commandId: string): ScopeDiscardReceipt {

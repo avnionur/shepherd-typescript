@@ -382,6 +382,88 @@ test("inspection refuses forged merge cuts, reservations, seals, and integration
         assert.throws(() => inspectScope(target, rootWriter.scope_id), ScopeEvidenceError, label);
     }
 
+    // An exact-looking forged journal still needs a seal and resolvable contributions.
+    for (const [label, withSeal] of [
+        ["without a seal", false],
+        ["with unresolvable contributions", true],
+    ] as const) {
+        using target = new SQLiteTraceStore(`${cleanPath}-journal-${withSeal}`);
+        target.importTrace(archive);
+        const commandId = `scope-command:forged-journal-${withSeal}`;
+        const contributions = [{ owner_id: lonely.scopeId, owner_ordinal: 99, record_id: RECORD }];
+        const rootHead = headOf(target, rootWriter.scope_id);
+        const reservationId = forge(target, {
+            body: preparedBody({
+                child_head_record_id: headOf(target, lonely.scopeId),
+                command_id: commandId,
+                contributions,
+                merge_cut_id: createScopeMergeCutId(commandId),
+                parent_head_record_id: rootHead,
+                parent_scope_id: rootWriter.scope_id,
+                scope_id: lonely.scopeId,
+            }),
+            causes: [headOf(target, lonely.scopeId)],
+            intent: createScopeCommandAppendIntentId(commandId),
+            owner: lonely.scopeId,
+            schema: schemas.merge,
+        });
+        const record = (
+            owner: string,
+            body: unknown,
+            schema: string,
+            causes: readonly string[],
+        ) => ({
+            owner_id: owner,
+            records: [
+                {
+                    body: body as RecordBody,
+                    caused_by_record_ids: causes,
+                    mode: "capture" as const,
+                    schema_ref: schema,
+                    witness_ref: ROOT_WITNESS_ID,
+                },
+            ],
+        });
+        target.append({
+            append_intent_id: createScopeMergeAppendIntentId(commandId, "completed"),
+            batch: {
+                groups: [
+                    record(
+                        rootWriter.scope_id,
+                        createScopeChildMergedBody({
+                            childCheckpointRecordId: null,
+                            childCutId: createScopeMergeCutId(commandId),
+                            childScopeId: lonely.scopeId,
+                            commandId,
+                            contributions,
+                            mergedContentId: null,
+                            parentScopeId: rootWriter.scope_id,
+                            publicationRevisionId: null,
+                        }),
+                        schemas.childMerged,
+                        [rootHead, reservationId],
+                    ),
+                    ...(withSeal
+                        ? [
+                              record(
+                                  lonely.scopeId,
+                                  createScopeMergeCompletedBody({
+                                      commandId,
+                                      parentScopeId: rootWriter.scope_id,
+                                      publicationRevisionId: null,
+                                      scopeId: lonely.scopeId,
+                                  }),
+                                  schemas.merge,
+                                  [reservationId],
+                              ),
+                          ]
+                        : []),
+                ],
+            },
+        });
+        assert.throws(() => inspectScope(target, rootWriter.scope_id), ScopeEvidenceError, label);
+    }
+
     // Nothing may follow a merge seal on the child path.
     forge(store, {
         body: { note: "after seal" },
@@ -430,6 +512,23 @@ test("inspection and replay refuse forged discard decisions and cleanup", async 
         schema,
     });
     assert.throws(() => inspectScope(store, foreign.scopeId), /disagrees with its scope/u);
+
+    const unlisted = openChild(store, rootWriter, "scope-command:unlisted-descendant");
+    forge(store, {
+        body: createScopeDiscardDecidedBody({
+            commandId: "scope-command:unlisted",
+            custodyIds: [],
+            discardScopeId: SCOPE,
+            parentScopeId: OTHER_SCOPE,
+            scopeId: unlisted.scopeId,
+            sealedScopeIds: [],
+        }),
+        causes: [headOf(store, unlisted.scopeId)],
+        intent: createScopeCommandAppendIntentId("scope-command:unlisted"),
+        owner: unlisted.scopeId,
+        schema,
+    });
+    assert.throws(() => inspectScope(store, unlisted.scopeId), /disagrees with its scope/u);
 
     const decided = openChild(store, rootWriter, "scope-command:decided");
     releaseScopeWriter(store, { writer: decided.writer });

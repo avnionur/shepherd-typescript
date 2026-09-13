@@ -40,6 +40,18 @@ export function createScopeDiscardAppendIntentId(
     return createRecordId({ scope_discard: { command_id: commandId, phase } });
 }
 
+/** Derives the deterministic protected application custody identity of one merge. @internal */
+export function createScopeMergeApplicationCustodyId(commandId: string, scopeId: string): string {
+    return `${workspaceProtocolConfig.carrier.custodyIdPrefix}${digestHex(
+        createRecordId({
+            [scopeProtocolConfig.identity.mergeCustodyIdentityKind]: {
+                command_id: commandId,
+                scope_id: scopeId,
+            },
+        }),
+    )}`;
+}
+
 /** Derives the deterministic fixed child-cut identity of one merge command. @internal */
 export function createScopeMergeCutId(commandId: string): string {
     return `${scopeProtocolConfig.identity.mergeCutIdPrefix}${digestHex(
@@ -377,8 +389,6 @@ function readWorldPlan(value: unknown): ScopeMergeWorldPlan {
             "binding_id",
             "child_content_id",
             "child_revision_id",
-            "merged_content_id",
-            "merged_revision_id",
             "origin_content_id",
             "origin_revision_id",
             "parent_content_id",
@@ -392,7 +402,7 @@ function readWorldPlan(value: unknown): ScopeMergeWorldPlan {
     }
     assertRecordId(fields.binding_id, "scope merge world binding_id");
     assertCustodyId(fields.parent_custody_id);
-    for (const key of ["child", "merged", "origin", "parent"] as const) {
+    for (const key of ["child", "origin", "parent"] as const) {
         assertContentId(fields[`${key}_content_id`], `scope merge world ${key}_content_id`);
         assertRevisionId(fields[`${key}_revision_id`], `scope merge world ${key}_revision_id`);
     }
@@ -401,8 +411,6 @@ function readWorldPlan(value: unknown): ScopeMergeWorldPlan {
         binding_id: fields.binding_id,
         child_content_id: fields.child_content_id as string,
         child_revision_id: fields.child_revision_id as string,
-        merged_content_id: fields.merged_content_id as string,
-        merged_revision_id: fields.merged_revision_id as string,
         origin_content_id: fields.origin_content_id as string,
         origin_revision_id: fields.origin_revision_id as string,
         parent_content_id: fields.parent_content_id as string,

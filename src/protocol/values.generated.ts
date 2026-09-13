@@ -511,6 +511,33 @@ export const SCOPE_CHECKPOINT_EVIDENCE_STATUSES = [
     "unavailable",
 ] as const;
 
+/** Configured scope recovery classifications in precedence order. @public */
+export const SCOPE_RECOVERY_CLASSIFICATIONS = [
+    "terminal",
+    "cleanup_pending",
+    "merge_pending",
+    "fork_pending",
+    "writer_expired",
+    "writer_held",
+    "idle",
+] as const;
+
+/** Configured scope recovery resume actions ordered fork, merge, discard, claim. @public */
+export const SCOPE_RECOVERY_RESUME_KINDS = ["fork", "merge", "discard", "claim"] as const;
+
+/** Configured scope scheduling decisions ordered merge then discard. @public */
+export const SCOPE_SCHEDULING_DECISIONS = ["merge", "discard"] as const;
+
+/** Configured scope scheduling outcomes ordered merged, discarded, conflicted, failed. @public */
+export const SCOPE_SCHEDULING_OUTCOMES = ["merged", "discarded", "conflicted", "failed"] as const;
+
+/** Configured scope scheduling bounds. @public */
+export const SCOPE_SCHEDULING_LIMITS = Object.freeze({
+    maxDepth: 16,
+    maxNodes: 256,
+    maxParallel: 64,
+} as const);
+
 /** Configured scope vocabulary terms ordered spawn, adopt, abandon, publish. @public */
 export const SCOPE_VOCABULARY_TERMS = ["spawn", "adopt", "abandon", "publish"] as const;
 

@@ -364,7 +364,8 @@ descriptors for one bound resource. Task 4 (#131) implements slice C,
 [consume-once merge and discard](../docs/scope-merge-discard.md): three-way world plans with overlap
 refusal, single-winner reservations, verified parent-managed publication, exact selected-history
 contributions, subtree discard preserving the current parent, and retained-identity cleanup.
-Task 5 (#137) adds the read-only [scope vocabulary mapping](../docs/scope-vocabulary.md). Scheduling and orphan recovery (#138), optimized carriers and scaling
+Task 5 (#137) adds the read-only [scope vocabulary mapping](../docs/scope-vocabulary.md), and Task 6 (#138) adds
+[scope scheduling and recovery classification](../docs/scope-scheduling.md). Scheduling and orphan recovery (#138), optimized carriers and scaling
 benchmarks (#139), reference-model laws (#140), and the exit audit (#141) remain open; no L2 claim
 is implemented.
 

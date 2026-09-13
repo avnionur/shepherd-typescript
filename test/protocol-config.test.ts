@@ -881,6 +881,25 @@ test("protocol configuration rejects invalid or drifted scope contracts", () => 
             objectAt(scopeConfigOf(config), "vocabulary").version = 0;
         },
         (config) => {
+            objectAt(scopeConfigOf(config), "recovery").classifications = ["terminal"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "recovery").resumeKinds = ["fork"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "scheduling").decisions = ["merge"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "scheduling").outcomes = ["merged"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "scheduling").maxParallel = 0;
+        },
+        (config) => {
+            objectAt(objectAt(scopeConfigOf(config), "scheduling"), "commandSuffixes").merge =
+                "create";
+        },
+        (config) => {
             scopeConfigOf(config).discardPhases = ["decided"];
         },
         (config) => {

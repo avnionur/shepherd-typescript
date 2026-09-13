@@ -60,6 +60,7 @@ test("workspace facade exposes only workspace-owned runtime symbols", () => {
         "recoverPlacedGrantedTaskWorldDurably",
         "recoverTaskWorldDurably",
         "releaseRetainedWorldSettlement",
+        "runScopeTree",
         "selectRetainedWorldSettlement",
     ]);
     for (const excluded of [

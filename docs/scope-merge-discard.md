@@ -56,8 +56,9 @@ The caller supplies the parent writer, the child writer, both exact current head
 idempotent command identity, and the carrier when the child owns reference-copy custody.
 
 - **Ownership and quiescence.** The child must be open and owned by the parent, with a complete
-  fork and only merged or discarded children. An unresolved grandchild fails with
-  `ScopeQuiescenceError`. Both writer fences must be current.
+  fork and only merged or discarded children whose discard cleanup is recorded. An unresolved
+  grandchild, or one whose cleanup is still pending, fails with `ScopeQuiescenceError`: once the
+  child is consumed nobody could authorize that cleanup. Both writer fences must be current.
 - **Three-way plan.** For a reference-copy child the parent must own reference-copy custody and
   effective `write` authority on the bound resource. A trace-only parent fails with
   `ScopeEvidenceError`, and missing write authority fails with `ScopeAuthorityError`. The merge
@@ -65,8 +66,10 @@ idempotent command identity, and the carrier when the child owns reference-copy 
   current parent custody as immutable revisions. It then compares both deltas from the origin with
   the settlement application's portable conflict classifier. Equal paths, portable aliases, and
   ancestor/descendant paths fail with `ScopeMergeConflictError` carrying content-addressed
-  evidence. Nothing is retained, so neither scope is consumed. Disjoint changes build an immutable
-  merged revision in protected carrier custody. Unsupported objects fail closed during capture.
+  evidence. Nothing is retained, so neither scope is consumed. Planning creates only immutable,
+  content-addressed revisions: no custody exists before the reservation wins. Merging an already
+  merged, discarded, or reserved child fails with `ScopeTerminalConflictError` before any carrier
+  work. Unsupported objects fail closed during capture.
 - **Selected history.** A scope's selected history is its own emissions plus the contributions
   of its completed child merges, in path order, each exact occurrence (owner, ordinal, record)
   once. The merge contributes the child's selected history minus occurrences the parent already
@@ -83,8 +86,12 @@ idempotent command identity, and the carrier when the child owns reference-copy 
 
 Before any carrier work, and on every retry, a read transaction requires positive boundary
 evidence. The parent must be open under its exact current fence at the reserved parent head, and
-the child must be open with the reservation as its head. The carrier then applies the planned
-changes (current parent revision to merged revision) to the parent custody. A path already in its
+the child must be open with the reservation as its head. For a non-empty child delta the carrier
+builds the immutable merged revision (the child delta applied to the captured current parent
+revision) in protected application custody under the deterministic identity named by the plan,
+reopening it on retry. Before writing anything it verifies that every path outside the planned
+changes still holds its captured parent state, otherwise `WorldCarrierError`. It then applies the
+planned changes (current parent revision to merged revision) to the parent custody. A path already in its
 merged state is skipped, a path in its current-parent state is replaced from the merged revision,
 and any third state fails with `WorldCarrierError`. The merge completes only when the parent
 custody verifies as exactly the merged content; otherwise it fails with `ScopeEvidenceError`. The
@@ -114,12 +121,15 @@ identity, and optionally a carrier.
   Discard is not a rollback to fork time. Scope evidence carries application data only, so no
   escaped external effect exists to reverse.
 - **Cleanup.** The decision names every custody identity of the subtree, read from each scope's
-  retained fork journal, never from a directory scan. With a carrier, cleanup discards each
+  retained fork journal and from the plan of any retained merge reservation (its protected
+  application custody), never from a directory scan. With a carrier, cleanup discards each
   identity: a discard marker is retained first, then any custody tree is verified and removed, and
   an identity never published is tombstoned. A cleanup record follows under the parent's current
   fence. Without a carrier, or after an interrupted cleanup, the receipt reports the `decided`
-  phase and the same command resumes cleanup later. Cleanup of a scope whose parent has since
-  been sealed stays `decided`; the ancestor's discard lists and removes the same identities.
+  phase and the same command resumes cleanup later under the parent's current fence. Once the parent
+  has been sealed by an ancestor discard, a retry returns the `decided` receipt without cleanup:
+  the ancestor's discard lists and removes the same identities, and a parent with a pending child
+  cleanup cannot be merged.
 
 ## Replay and restart recovery
 
@@ -135,9 +145,19 @@ heads, or for another command kind, fails with `AppendIntentConflictError`.
 | Before the discard decision | Nothing | Decides normally |
 | After cleanup, before its record | Decision and removed custody | Discards the identities again idempotently and retains the cleanup |
 
-Recovering a reserved merge after restart claims fresh parent and child writers. A merge or
-discard receipt is returned without any fence once its evidence is retained. A completed merge is
-sealed: a restarted caller reads its receipt instead of re-admitting it.
+Recovering a reserved merge after restart claims fresh parent and child writers. A completed merge
+or cleaned discard receipt is returned without any fence; resuming pending discard cleanup needs the
+parent's current fence. A completed merge is sealed: a restarted caller reads its receipt instead
+of re-admitting it.
+
+The positive boundary check runs in its own read transaction before carrier work, so it is not
+atomic with the filesystem writes. A holder whose fence is superseded after that check can still
+write the parent custody until it observes the refusal at completion. Writer fencing therefore
+protects trace commands, and physical custody quiescence remains the caller's obligation, as for
+forks. Inspection validates each parent integration against the child's exact reservation,
+integration, and seal under one command, resolves every contribution to its retained occurrence, and
+requires every sealed descendant to be named by its subtree root's decision, so forged or partial
+terminal evidence fails closed on reopened and imported stores alike.
 
 ## Conformance boundary
 

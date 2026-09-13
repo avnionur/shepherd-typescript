@@ -155,6 +155,16 @@ export type {
     DiscardScopeOptions,
     MergeScopeOptions,
 } from "../workspace/scope-terminal-types.ts";
+export { runScopeTree } from "../workspace/scope-tree.ts";
+export type {
+    RunScopeTreeOptions,
+    ScopeTreeContext,
+    ScopeTreeDecision,
+    ScopeTreeNode,
+    ScopeTreeOutcome,
+    ScopeTreeOutcomeStatus,
+    ScopeTreeReport,
+} from "../workspace/scope-tree-types.ts";
 export {
     captureGrantedTaskWorldDurably,
     captureJailedGrantedTaskWorldDurably,

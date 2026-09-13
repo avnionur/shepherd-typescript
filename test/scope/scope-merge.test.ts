@@ -75,10 +75,10 @@ test("a disjoint world merge publishes the child delta into current parent custo
         "parent edit\n",
     );
     const publication = await carrier.openRevision(merged.publication_revision_id as string);
-    assert.equal(publication.content_id, plan.merged_content_id);
+    assert.equal(publication.content_id, merged.merged_content_id);
     assert.equal(
         (await carrier.verifyCustody(parent.world.custody_id)).content_id,
-        plan.merged_content_id,
+        merged.merged_content_id,
     );
     // The protected application custody is discarded once the merge completes.
     await assert.rejects(
@@ -323,7 +323,7 @@ test("an empty child delta merges history and republishes the unchanged parent c
         parent: parentWriter,
     });
     assert.equal(merged.world?.application_custody_id, null);
-    assert.equal(merged.world?.merged_revision_id, merged.world?.parent_revision_id);
+    assert.equal(merged.merged_content_id, merged.world?.parent_content_id);
     assert.deepEqual(merged.contributions, []);
     const verification = await carrier.verifyCustody(parent.world.custody_id);
     assert.equal(verification.content_id, merged.world?.parent_content_id);

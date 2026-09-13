@@ -2172,6 +2172,27 @@ export const SCOPE_CHECKPOINT_EVIDENCE_STATUSES = [
 ${renderedScopeCheckpointStatuses}
 ] as const;
 
+/** Configured scope recovery classifications in precedence order. @public */
+export const SCOPE_RECOVERY_CLASSIFICATIONS = [
+${config.scopes.recovery.classifications.map((value) => `    ${JSON.stringify(value)},`).join("\n")}
+] as const;
+
+/** Configured scope recovery resume actions ordered fork, merge, discard, claim. @public */
+export const SCOPE_RECOVERY_RESUME_KINDS = [${config.scopes.recovery.resumeKinds.map((value) => JSON.stringify(value)).join(", ")}] as const;
+
+/** Configured scope scheduling decisions ordered merge then discard. @public */
+export const SCOPE_SCHEDULING_DECISIONS = [${config.scopes.scheduling.decisions.map((value) => JSON.stringify(value)).join(", ")}] as const;
+
+/** Configured scope scheduling outcomes ordered merged, discarded, conflicted, failed. @public */
+export const SCOPE_SCHEDULING_OUTCOMES = [${config.scopes.scheduling.outcomes.map((value) => JSON.stringify(value)).join(", ")}] as const;
+
+/** Configured scope scheduling bounds. @public */
+export const SCOPE_SCHEDULING_LIMITS = Object.freeze({
+    maxDepth: ${config.scopes.scheduling.maxDepth},
+    maxNodes: ${config.scopes.scheduling.maxNodes},
+    maxParallel: ${config.scopes.scheduling.maxParallel},
+} as const);
+
 /** Configured scope vocabulary terms ordered spawn, adopt, abandon, publish. @public */
 export const SCOPE_VOCABULARY_TERMS = [${config.scopes.vocabulary.terms.map((term) => JSON.stringify(term)).join(", ")}] as const;
 

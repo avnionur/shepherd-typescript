@@ -169,7 +169,12 @@ export {
     SCOPE_LIMITS,
     SCOPE_MERGE_PHASES,
     SCOPE_RECORD_VERSION,
+    SCOPE_RECOVERY_CLASSIFICATIONS,
+    SCOPE_RECOVERY_RESUME_KINDS,
     SCOPE_RESOURCE_KINDS,
+    SCOPE_SCHEDULING_DECISIONS,
+    SCOPE_SCHEDULING_LIMITS,
+    SCOPE_SCHEDULING_OUTCOMES,
     SCOPE_STATES,
     SCOPE_VOCABULARY_STATUSES,
     SCOPE_VOCABULARY_TERMS,
@@ -361,12 +366,14 @@ export {
     ScopeWriterFencedError,
 } from "./scope/errors.ts";
 export { inspectScope } from "./scope/inspection.ts";
+export { inspectScopeRecovery } from "./scope/recovery.ts";
 export { registerChildScope, registerRootScope } from "./scope/registration.ts";
 export { readScopeCommandReceipt } from "./scope/replay.ts";
 export type {
     ClaimScopeWriterOptions,
     ClaimScopeWritersOptions,
     EmitScopeRecordOptions,
+    InspectScopeRecoveryOptions,
     RegisterChildScopeOptions,
     RegisterRootScopeOptions,
     ReleaseScopeWriterOptions,
@@ -404,6 +411,10 @@ export type {
     ScopeMergeReceipt,
     ScopeMergeWorldPlan,
     ScopeParentOrigin,
+    ScopeRecoveryClassification,
+    ScopeRecoveryEntry,
+    ScopeRecoveryReport,
+    ScopeRecoveryResumeKind,
     ScopeRegistrationRecord,
     ScopeResourceGrant,
     ScopeResourceGrantRequest,
@@ -645,6 +656,16 @@ export type {
     DiscardScopeOptions,
     MergeScopeOptions,
 } from "./workspace/scope-terminal-types.ts";
+export { runScopeTree } from "./workspace/scope-tree.ts";
+export type {
+    RunScopeTreeOptions,
+    ScopeTreeContext,
+    ScopeTreeDecision,
+    ScopeTreeNode,
+    ScopeTreeOutcome,
+    ScopeTreeOutcomeStatus,
+    ScopeTreeReport,
+} from "./workspace/scope-tree-types.ts";
 export {
     captureGrantedTaskWorldDurably,
     captureJailedGrantedTaskWorldDurably,

@@ -237,6 +237,7 @@ export function readScopeCommandReceipt(
                 contributions: integration.contributions,
                 head: headOf(sealRecord),
                 merge_cut_id: prepared.merge_cut_id,
+                merged_content_id: integration.merged_content_id,
                 parent_head: headOf(integrationRecord),
                 parent_scope_id: prepared.parent_scope_id,
                 prepared_record_id: first.envelope.record_id,

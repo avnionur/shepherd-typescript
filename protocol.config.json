@@ -570,6 +570,7 @@
         "forkPhases": ["prepared", "completed"],
         "identity": {
             "custodyIdentityKind": "scope-fork-custody",
+            "mergeCustodyIdentityKind": "scope-merge-application-custody",
             "mergeCutIdPrefix": "scope-merge:",
             "originCutIdPrefix": "scope-origin:",
             "scopeIdPrefix": "scope:sha256:"
@@ -584,6 +585,33 @@
         },
         "mergePhases": ["prepared", "completed"],
         "recordVersion": 1,
+        "recovery": {
+            "classifications": [
+                "terminal",
+                "cleanup_pending",
+                "merge_pending",
+                "fork_pending",
+                "writer_expired",
+                "writer_held",
+                "idle"
+            ],
+            "resumeKinds": ["fork", "merge", "discard", "claim"]
+        },
+        "scheduling": {
+            "commandSuffixes": {
+                "create": "create",
+                "discard": "discard",
+                "emit": "emit",
+                "merge": "merge",
+                "writer": "writer"
+            },
+            "decisions": ["merge", "discard"],
+            "maxDepth": 16,
+            "maxNodes": 256,
+            "maxParallel": 64,
+            "outcomes": ["merged", "discarded", "conflicted", "failed"],
+            "pathSeparator": "/"
+        },
         "schemas": {
             "childMergedId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-child-merged-v1.schema.json",
             "childRegisteredId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-child-registered-v1.schema.json",

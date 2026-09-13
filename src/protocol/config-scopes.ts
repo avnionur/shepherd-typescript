@@ -30,6 +30,8 @@ export function readScopeConfig(
             "limits",
             "mergePhases",
             "recordVersion",
+            "recovery",
+            "scheduling",
             "schemas",
             "states",
             "traceSchemas",
@@ -39,6 +41,60 @@ export function readScopeConfig(
         ],
         "scopes",
     );
+    const recovery = readObject(
+        scopes.recovery,
+        ["classifications", "resumeKinds"],
+        "scopes.recovery",
+    );
+    const recoveryClassifications = readUniqueStrings(
+        recovery.classifications,
+        "scopes.recovery.classifications",
+    );
+    if (recoveryClassifications.length !== 7) {
+        throw new TypeError(
+            "scopes.recovery.classifications must classify terminal, cleanup, merge, fork, expired, held, and idle scopes",
+        );
+    }
+    const resumeKinds = readUniqueStrings(recovery.resumeKinds, "scopes.recovery.resumeKinds");
+    if (resumeKinds.length !== 4) {
+        throw new TypeError(
+            "scopes.recovery.resumeKinds must contain fork, merge, discard, and claim",
+        );
+    }
+    const scheduling = readObject(
+        scopes.scheduling,
+        [
+            "commandSuffixes",
+            "decisions",
+            "maxDepth",
+            "maxNodes",
+            "maxParallel",
+            "outcomes",
+            "pathSeparator",
+        ],
+        "scopes.scheduling",
+    );
+    const suffixes = readObject(
+        scheduling.commandSuffixes,
+        ["create", "discard", "emit", "merge", "writer"],
+        "scopes.scheduling.commandSuffixes",
+    );
+    const suffixValues = (["create", "discard", "emit", "merge", "writer"] as const).map((key) =>
+        readNonEmptyString(suffixes[key], `scopes.scheduling.commandSuffixes.${key}`),
+    );
+    if (new Set(suffixValues).size !== suffixValues.length) {
+        throw new TypeError("scopes.scheduling.commandSuffixes must be distinct");
+    }
+    const decisions = readUniqueStrings(scheduling.decisions, "scopes.scheduling.decisions");
+    if (decisions.length !== 2) {
+        throw new TypeError("scopes.scheduling.decisions must contain exactly merge and discard");
+    }
+    const outcomes = readUniqueStrings(scheduling.outcomes, "scopes.scheduling.outcomes");
+    if (outcomes.length !== 4) {
+        throw new TypeError(
+            "scopes.scheduling.outcomes must contain merged, discarded, conflicted, and failed",
+        );
+    }
     const vocabulary = readObject(
         scopes.vocabulary,
         ["statuses", "terms", "version"],
@@ -99,7 +155,13 @@ export function readScopeConfig(
     );
     const identity = readObject(
         scopes.identity,
-        ["custodyIdentityKind", "mergeCutIdPrefix", "originCutIdPrefix", "scopeIdPrefix"],
+        [
+            "custodyIdentityKind",
+            "mergeCustodyIdentityKind",
+            "mergeCutIdPrefix",
+            "originCutIdPrefix",
+            "scopeIdPrefix",
+        ],
         "scopes.identity",
     );
     const limits = readObject(
@@ -318,6 +380,10 @@ export function readScopeConfig(
                 identity.custodyIdentityKind,
                 "scopes.identity.custodyIdentityKind",
             ),
+            mergeCustodyIdentityKind: readNonEmptyString(
+                identity.mergeCustodyIdentityKind,
+                "scopes.identity.mergeCustodyIdentityKind",
+            ),
             mergeCutIdPrefix: readNonEmptyString(
                 identity.mergeCutIdPrefix,
                 "scopes.identity.mergeCutIdPrefix",
@@ -366,6 +432,28 @@ export function readScopeConfig(
             registrationId: readAbsoluteUrl(
                 schemas.registrationId,
                 "scopes.schemas.registrationId",
+            ),
+        },
+        recovery: { classifications: recoveryClassifications, resumeKinds },
+        scheduling: {
+            commandSuffixes: {
+                create: suffixValues[0] as string,
+                discard: suffixValues[1] as string,
+                emit: suffixValues[2] as string,
+                merge: suffixValues[3] as string,
+                writer: suffixValues[4] as string,
+            },
+            decisions,
+            maxDepth: readPositiveInteger(scheduling.maxDepth, "scopes.scheduling.maxDepth"),
+            maxNodes: readPositiveInteger(scheduling.maxNodes, "scopes.scheduling.maxNodes"),
+            maxParallel: readPositiveInteger(
+                scheduling.maxParallel,
+                "scopes.scheduling.maxParallel",
+            ),
+            outcomes,
+            pathSeparator: readNonEmptyString(
+                scheduling.pathSeparator,
+                "scopes.scheduling.pathSeparator",
             ),
         },
         states,

@@ -64,8 +64,6 @@
                                 "binding_id",
                                 "child_content_id",
                                 "child_revision_id",
-                                "merged_content_id",
-                                "merged_revision_id",
                                 "origin_content_id",
                                 "origin_revision_id",
                                 "parent_content_id",
@@ -92,14 +90,6 @@
                                     "pattern": "^world-content:sha256:[0-9a-f]{64}$"
                                 },
                                 "child_revision_id": {
-                                    "type": "string",
-                                    "pattern": "^world-revision:sha256:[0-9a-f]{64}$"
-                                },
-                                "merged_content_id": {
-                                    "type": "string",
-                                    "pattern": "^world-content:sha256:[0-9a-f]{64}$"
-                                },
-                                "merged_revision_id": {
                                     "type": "string",
                                     "pattern": "^world-revision:sha256:[0-9a-f]{64}$"
                                 },
