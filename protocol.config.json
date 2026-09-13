@@ -995,6 +995,72 @@
             "worldContentIdPrefix": "world-content:sha256:",
             "worldDirectory": "world"
         },
+        "carrierBackends": {
+            "backends": ["copy", "clone", "overlay"],
+            "clone": {
+                "backend": "clone",
+                "helper": {
+                    "compilerArguments": ["-O2", "-std=c11", "-Wall", "-Wextra", "-Werror"],
+                    "compilerExecutables": ["/usr/bin/cc", "/usr/bin/clang"],
+                    "compilerOutputArgument": "-o",
+                    "executableName": "shepherd-clone-helper",
+                    "platforms": ["darwin"],
+                    "sourceName": "shepherd-clone-helper.c",
+                    "temporaryDirectoryPrefix": "shepherd-clone-helper-"
+                }
+            },
+            "commandMaxBytes": 1048576,
+            "commandTimeoutMs": 60000,
+            "conformance": {
+                "reasonRoles": {
+                    "available": "shared-suite-host",
+                    "helperUnavailable": "clone-helper-unavailable",
+                    "mountNotPermitted": "overlay-mount-not-permitted",
+                    "platformUnsupported": "platform-unsupported",
+                    "reflinkUnsupported": "reflink-unsupported"
+                },
+                "reasons": [
+                    "shared-suite-host",
+                    "platform-unsupported",
+                    "clone-helper-unavailable",
+                    "reflink-unsupported",
+                    "overlay-mount-not-permitted"
+                ],
+                "statusRoles": {
+                    "conformant": "conformant",
+                    "unavailable": "unavailable"
+                },
+                "statuses": ["conformant", "unavailable"]
+            },
+            "defaultBackend": "copy",
+            "errors": {
+                "unavailableCode": "WORLD_CARRIER_BACKEND_UNAVAILABLE",
+                "unavailableMessage": "world carrier backend is unavailable on this host"
+            },
+            "overlay": {
+                "backend": "overlay",
+                "filesystemType": "overlay",
+                "mountArguments": ["-t", "overlay", "overlay", "-o", "{options}", "{target}"],
+                "mountExecutable": "/usr/bin/mount",
+                "mountInfoPath": "/proc/self/mountinfo",
+                "mountOptionSeparator": ",",
+                "mountOptions": "lowerdir={lower},upperdir={upper},workdir={work}",
+                "platforms": ["linux"],
+                "reservedPathCharacters": [",", ":", "\\"],
+                "tokens": {
+                    "lower": "{lower}",
+                    "options": "{options}",
+                    "target": "{target}",
+                    "upper": "{upper}",
+                    "work": "{work}"
+                },
+                "unmountArguments": ["{target}"],
+                "unmountExecutable": "/usr/bin/umount",
+                "upperDirectory": "upper",
+                "workDirectory": "work"
+            },
+            "version": 26
+        },
         "changesets": {
             "errors": {
                 "invalidCode": "WORLD_CHANGESET_INVALID",

@@ -9,6 +9,7 @@ import {
     type ScopeForkReceipt,
     type ScopeWriter,
     SQLiteTraceStore,
+    type WorldCarrierBackend,
 } from "../../src/index.ts";
 import {
     bindingGrant,
@@ -30,8 +31,9 @@ export async function createNestedWorld(
     context: TestContext,
     label: string,
     StoreClass: typeof SQLiteTraceStore = SQLiteTraceStore,
+    backend?: WorldCarrierBackend,
 ): Promise<NestedWorld> {
-    const workspace = await createForkWorkspace(context, label, StoreClass);
+    const workspace = await createForkWorkspace(context, label, StoreClass, backend);
     const snapshot = await workspace.carrier.snapshot(workspace.source);
     const parent = await forkScope(workspace.store, {
         ...forkOptions(workspace, snapshot.revision_id),

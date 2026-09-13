@@ -1,6 +1,6 @@
 {
     "name": "@avnionur/shepherd-typescript",
-    "version": "2.6.0",
+    "version": "2.7.0",
     "packageManager": "pnpm@10.32.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
     "license": "MIT",
@@ -88,6 +88,7 @@
     },
     "scripts": {
         "build": "node scripts/clean-build.ts && tsc -p tsconfig.build.json && node scripts/copy-runtime-config.ts",
+        "bench:carriers": "node scripts/bench-carriers.ts",
         "build:desktop": "pnpm build",
         "check:api-reference": "node scripts/generate-api-reference-cli.ts --check",
         "check:protocol": "node scripts/generate-protocol-artifacts-cli.ts --check",
@@ -96,6 +97,7 @@
         "generate:protocol": "node scripts/generate-protocol-artifacts-cli.ts",
         "lint": "biome check .",
         "sync:version": "node scripts/sync-version-cli.ts",
+        "test:carriers:linux": "node scripts/test-carriers-linux.ts",
         "test:package-cli": "node scripts/test-packaged-cli.ts",
         "test:runtime-boundaries": "node scripts/test-packaged-cli.ts --runtime-boundaries",
         "test": "node scripts/run-tests.ts --parallel",

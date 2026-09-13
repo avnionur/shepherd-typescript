@@ -1,14 +1,18 @@
 import assert from "node:assert/strict";
-import { readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
 import {
     claimScopeWriter,
+    createReferenceCopyCarrier,
     discardScope,
     emitScopeRecord,
     forkScope,
+    initializeWorkspace,
     inspectScope,
+    inspectWorkspacePlatformConformance,
     mergeScope,
     type RecordBody,
     type ReferenceCopyCarrier,
@@ -34,16 +38,60 @@ const LAW_CONFIG = JSON.parse(
 ) as {
     readonly operationsPerSeed: number;
     readonly restartEvery: number;
+    readonly optimizedBackends: string[];
     readonly seeds: number[];
 };
+const HOST_CARRIERS = await (async () => {
+    const workspaceRoot = await realpath(await mkdtemp(path.join(tmpdir(), "shepherd-law-probe-")));
+    try {
+        initializeWorkspace({ adopt: "none", initializeGit: false, rootPath: workspaceRoot });
+        return inspectWorkspacePlatformConformance({ workspaceRoot }).optimized_carriers;
+    } finally {
+        await rm(workspaceRoot, { force: true, recursive: true });
+    }
+})();
+const CARRIER_CONFIG = JSON.parse(
+    await readFile(
+        new URL("../../config/carrier-conformance.config.json", import.meta.url),
+        "utf8",
+    ),
+) as {
+    readonly requiredBackendsEnvironmentVariable: string;
+    readonly requiredBackendsSeparator: string;
+};
+// Host runs that require an optimized backend fail instead of silently omitting its laws.
+for (const required of (process.env[CARRIER_CONFIG.requiredBackendsEnvironmentVariable] ?? "")
+    .split(CARRIER_CONFIG.requiredBackendsSeparator)
+    .filter((backend) => backend.length > 0)) {
+    assert.ok(
+        HOST_CARRIERS.some((entry) => entry.backend === required && entry.status === "conformant"),
+        `required carrier backend ${required} is unavailable for scope laws`,
+    );
+}
 const PATHS = ["file.txt", "a.txt", "b.txt", "c.txt"];
 const ROOT = "root";
 
-/** A carrier factory under law test; optimized backends register here once available. */
+/** Reference copy always runs; an optimized backend joins when the host proves it available. */
 const LAW_CARRIERS: readonly {
     readonly create: (workspace: ForkWorkspace) => ReferenceCopyCarrier;
     readonly name: string;
-}[] = [{ create: (workspace) => workspace.carrier, name: "copy" }];
+}[] = [
+    { create: (workspace) => workspace.carrier, name: "copy" },
+    ...LAW_CONFIG.optimizedBackends
+        .filter((backend) =>
+            HOST_CARRIERS.some(
+                (entry) => entry.backend === backend && entry.status === "conformant",
+            ),
+        )
+        .map((backend) => ({
+            create: (workspace: ForkWorkspace) =>
+                createReferenceCopyCarrier({
+                    backend: backend as "clone",
+                    workspaceRoot: workspace.workspaceRoot,
+                }),
+            name: backend,
+        })),
+];
 
 type Environment = {
     carrier: ReferenceCopyCarrier;
@@ -246,35 +294,44 @@ for (const backend of LAW_CARRIERS) {
             const model = new ScopeReferenceModel(ROOT, new Map([["file.txt", "source\n"]]));
             const random = seededRandom(seed);
             const applied: LawOperation[] = [];
-            for (let step = 0; step < LAW_CONFIG.operationsPerSeed; step += 1) {
-                const operation = generate(random, model, step);
-                applied.push(operation);
-                try {
-                    const expected = model.apply(operation);
-                    const actual = await applyReal(environment, model, operation, step);
-                    assert.equal(actual, expected, "refusal classification");
-                    await assertAgreement(environment, model);
-                    if ((step + 1) % LAW_CONFIG.restartEvery === 0) {
-                        const before = [...environment.scopes.values()].map((scopeId) =>
-                            inspectScope(environment.store, scopeId),
-                        );
-                        environment.store.close();
-                        environment.store = new SQLiteTraceStore(environment.databasePath);
-                        assert.deepEqual(
-                            [...environment.scopes.values()].map((scopeId) =>
+            try {
+                for (let step = 0; step < LAW_CONFIG.operationsPerSeed; step += 1) {
+                    const operation = generate(random, model, step);
+                    applied.push(operation);
+                    try {
+                        const expected = model.apply(operation);
+                        const actual = await applyReal(environment, model, operation, step);
+                        assert.equal(actual, expected, "refusal classification");
+                        await assertAgreement(environment, model);
+                        if ((step + 1) % LAW_CONFIG.restartEvery === 0) {
+                            const before = [...environment.scopes.values()].map((scopeId) =>
                                 inspectScope(environment.store, scopeId),
-                            ),
-                            before,
+                            );
+                            environment.store.close();
+                            environment.store = new SQLiteTraceStore(environment.databasePath);
+                            assert.deepEqual(
+                                [...environment.scopes.values()].map((scopeId) =>
+                                    inspectScope(environment.store, scopeId),
+                                ),
+                                before,
+                            );
+                        }
+                    } catch (error) {
+                        throw new Error(
+                            `scope law failed for ${backend.name} seed ${seed} at step ${step}; operations ${JSON.stringify(applied)}`,
+                            { cause: error },
                         );
                     }
-                } catch (error) {
-                    throw new Error(
-                        `scope law failed for ${backend.name} seed ${seed} at step ${step}; operations ${JSON.stringify(applied)}`,
-                        { cause: error },
-                    );
+                }
+                assert.equal(environment.store.verifyIntegrity().ok, true);
+            } finally {
+                // Release every custody, including overlay mounts, before the workspace is removed.
+                for (const custodyId of environment.custodies.values()) {
+                    if (custodyId !== null) {
+                        await environment.carrier.discard(custodyId);
+                    }
                 }
             }
-            assert.equal(environment.store.verifyIntegrity().ok, true);
         });
     }
 }

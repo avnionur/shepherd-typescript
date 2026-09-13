@@ -64,4 +64,16 @@ errors. Callers should omit it outside conformance tests.
 
 The reference carrier remains the correctness oracle. An optimized carrier must pass the same
 platform, metadata, identity, fault-boundary, recovery, Git, and settlement-receipt suite before it
-can claim parity. No optimized carrier is registered or reported as conformant by this release.
+can claim parity.
+
+Workspace protocol v26 adds `optimized_carriers` to the inspection result: one frozen
+`{ backend, reason, status }` entry per optimized backend (`clone`, `overlay`). The status is
+`conformant` with reason `shared-suite-host` only when that backend's host probe succeeds inside
+the inspected workspace's carrier staging. That probe is the exact gate the shared conformance test
+file ([`test/workspace/carrier-conformance.test.ts`](../test/workspace/carrier-conformance.test.ts))
+uses to run the full suite, so a backend is reported conformant only where the suite runs. Every
+other backend is `unavailable` with `platform-unsupported`, `clone-helper-unavailable`,
+`reflink-unsupported`, or `overlay-mount-not-permitted`, and the same test file asserts its
+fail-closed creation refusal. Evidence depends on the workspace filesystem, not only the operating
+system. The conformance matrix and exact runs are in
+[Optimized scope-world carriers](./optimized-carriers.md).

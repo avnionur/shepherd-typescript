@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-13
 
-Current version: `2.6.0`
+Current version: `2.7.0`
 
 Current level: L1 stable — Phases 4–5 complete; Phase 6 scope substrate active
 
@@ -433,6 +433,15 @@ state. Cleanup removes only custody named by retained fork journals, as progress
 the logical decision, with receipt-based recovery across every boundary.
 
 ## Verification required for this slice
+
+Phase 6 Task 7 (#139): workspace protocol v26 adds clone (Linux FICLONE, macOS clonefile helper) and
+Linux overlay carrier backends with identities equal to the copy reference. The shared carrier
+conformance suite passes on macOS APFS (copy, clone; overlay refused; clone refused on HFS+), in a
+privileged Linux container on tmpfs (copy, overlay; clone refused), and on loopback XFS reflink
+(copy, clone, overlay), with zero skips. The scope algebra law suite passes for copy and clone on
+macOS and for copy, clone, and overlay on Linux XFS. The storage benchmark shows copy branches grow
+with world size (16 and 64 MiB) while clone and overlay branches track changed bytes (about 1 and
+4 MiB). Full local verification and production build pass.
 
 Phase 6 exit criterion (checkpoint provenance, #139/#141): scope protocol v6 adds
 `classifyScopeCheckpoint`, which derives atomic snapshot, quiescent verified copy, or reconstructed

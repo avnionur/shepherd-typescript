@@ -78,6 +78,7 @@ export type {
     WorkspaceCustodyFaultEvidence,
     WorkspaceCustodyFaultInjection,
     WorkspaceGitPlatformPolicy,
+    WorkspaceOptimizedCarrierParity,
     WorkspacePlatformConformance,
     WorkspacePlatformConformanceOptions,
 } from "../workspace/platform-conformance.ts";
@@ -226,6 +227,7 @@ export type {
     WorkspaceInitializationOptions,
     WorkspaceRepositoryBindingEvidence,
     WorkspaceState,
+    WorldCarrierBackend,
     WorldChangeNode,
     WorldChangeOperation,
     WorldChangeset,

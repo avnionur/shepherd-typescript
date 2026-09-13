@@ -100,6 +100,11 @@ without redefining existing select/discard or journal-v1-v4 evidence.
 Workspace protocol v25 adds configured `release`/`released` vocabulary, a receipt-only release
 compatibility namespace/version, and a generated closed release-receipt schema without redefining
 existing select, discard, apply, citation, store, or task-world journal evidence.
+Workspace protocol v26 adds the closed `carrierBackends` section: selectable `copy`, `clone`, and
+`overlay` backend vocabulary with the copy default, the macOS clonefile helper compiler policy,
+overlay mount/unmount executables, argument and option templates, layer directory names, reserved
+layer-path characters, command bounds, parity status/reason roles, and the backend-unavailable error
+contract, without changing revision, custody, or discard descriptor formats for the copy backend.
 Store schema
 v6 owns the consume-once
 settlement decision table without changing kernel record identity.
@@ -178,7 +183,7 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   schema paths, identity prefixes, limits, statuses, and version are closed. Settlement request,
   effect-journal, and selection-publication vocabularies, identity prefixes, resource bounds,
   descriptor names, errors, schema destinations, and versions are closed. Every value matches the
-  immutable workspace protocol v25 contract. Protocols v1 through v24 remain unchanged historical
+  immutable workspace protocol v26 contract. Protocols v1 through v25 remain unchanged historical
   subsets. Native-jail backend names/platforms, probe/placement/process vocabularies, compiler and
   command bounds, schema paths, journal readers/writers, and semantic roles are closed and
   internally consistent. Platform probes contain valid path-token arguments and regular expressions, fault

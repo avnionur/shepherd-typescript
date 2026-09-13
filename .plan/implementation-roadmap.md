@@ -368,7 +368,9 @@ Task 5 (#137) adds the read-only [scope vocabulary mapping](../docs/scope-vocabu
 [scope scheduling and recovery classification](../docs/scope-scheduling.md). Task 8 (#140) adds
 the seeded [scope algebra law suite](../docs/scope-laws.md) against a reference model, and
 checkpoint [start classification](../docs/scope-fork.md#start-classification) proves how each
-branch started. Scheduling and orphan recovery (#138), optimized carriers and scaling
+branch started. Task 7 (#139) adds [clone and Linux overlay carriers](../docs/optimized-carriers.md)
+that pass the shared conformance suite and the law suite, with storage scaling by changed data.
+Scheduling and orphan recovery (#138), optimized carriers and scaling
 benchmarks (#139), reference-model laws (#140), and the exit audit (#141) remain open; no L2 claim
 is implemented.
 

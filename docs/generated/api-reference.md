@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.6.0
+Package: `@avnionur/shepherd-typescript` 2.7.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 647.
+Exported symbols: 649.
 
 ### `AppendBatchDraft`
 
@@ -4929,6 +4929,7 @@ Signature:
 
 ```ts
 export type ReferenceCopyCarrier = {
+    readonly backend: WorldCarrierBackend;
     readonly captureCustody: (custodyId: string) => Promise<WorldRevision>;
     readonly discard: (custodyId: string) => Promise<void>;
     readonly fork: (revisionId: string) => Promise<WorldCustody>;
@@ -4950,6 +4951,7 @@ Signature:
 
 ```ts
 export type ReferenceCopyCarrierOptions = {
+    readonly backend?: WorldCarrierBackend;
     readonly faultInjection?: WorkspaceCustodyFaultInjection;
     readonly workspaceRoot: string;
 };
@@ -10597,6 +10599,22 @@ export type WorkspaceInitializationOptions = {
 };
 ```
 
+### `WorkspaceOptimizedCarrierParity`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Host evidence for one optimized carrier backend's parity claim.
+
+Signature:
+
+```ts
+export type WorkspaceOptimizedCarrierParity = {
+    readonly backend: string;
+    readonly reason: string;
+    readonly status: string;
+};
+```
+
 ### `WorkspacePathProtectionOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -10645,6 +10663,7 @@ export type WorkspacePlatformConformance = {
     readonly metadata_policy: string;
     readonly mode_policy: string;
     readonly optimized_carrier_parity: string;
+    readonly optimized_carriers: readonly WorkspaceOptimizedCarrierParity[];
     readonly platform: NodeJS.Platform;
     readonly symlink_policy: string;
     readonly unsupported_metadata: readonly string[];
@@ -10739,6 +10758,18 @@ export type WorkspaceState = {
     readonly initialize_git: boolean;
     readonly root_path: string;
 };
+```
+
+### `WorldCarrierBackend`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured selectable world-carrier backend name.
+
+Signature:
+
+```ts
+export type WorldCarrierBackend = (typeof WORLD_CARRIER_BACKENDS)[number];
 ```
 
 ### `WorldCarrierError`
@@ -13682,6 +13713,10 @@ Returns:
 Throws:
 
 - {WorkspaceControlError} If the workspace cannot be reopened safely.
+
+Throws:
+
+- {WorldCarrierError} If carrier staging is unsafe or a backend probe fails unexpectedly.
 
 Throws:
 
@@ -24861,7 +24896,7 @@ import * as api from "@avnionur/shepherd-typescript/workspace";
 void api;
 ```
 
-Exported symbols: 200.
+Exported symbols: 202.
 
 ### `AppliedRetainedWorldSettlement`
 
@@ -26241,6 +26276,7 @@ Signature:
 
 ```ts
 export type ReferenceCopyCarrier = {
+    readonly backend: WorldCarrierBackend;
     readonly captureCustody: (custodyId: string) => Promise<WorldRevision>;
     readonly discard: (custodyId: string) => Promise<void>;
     readonly fork: (revisionId: string) => Promise<WorldCustody>;
@@ -26262,6 +26298,7 @@ Signature:
 
 ```ts
 export type ReferenceCopyCarrierOptions = {
+    readonly backend?: WorldCarrierBackend;
     readonly faultInjection?: WorkspaceCustodyFaultInjection;
     readonly workspaceRoot: string;
 };
@@ -27278,6 +27315,22 @@ export type WorkspaceInitializationOptions = {
 };
 ```
 
+### `WorkspaceOptimizedCarrierParity`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Host evidence for one optimized carrier backend's parity claim.
+
+Signature:
+
+```ts
+export type WorkspaceOptimizedCarrierParity = {
+    readonly backend: string;
+    readonly reason: string;
+    readonly status: string;
+};
+```
+
 ### `WorkspacePathProtectionOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -27326,6 +27379,7 @@ export type WorkspacePlatformConformance = {
     readonly metadata_policy: string;
     readonly mode_policy: string;
     readonly optimized_carrier_parity: string;
+    readonly optimized_carriers: readonly WorkspaceOptimizedCarrierParity[];
     readonly platform: NodeJS.Platform;
     readonly symlink_policy: string;
     readonly unsupported_metadata: readonly string[];
@@ -27420,6 +27474,18 @@ export type WorkspaceState = {
     readonly initialize_git: boolean;
     readonly root_path: string;
 };
+```
+
+### `WorldCarrierBackend`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured selectable world-carrier backend name.
+
+Signature:
+
+```ts
+export type WorldCarrierBackend = (typeof WORLD_CARRIER_BACKENDS)[number];
 ```
 
 ### `WorldCarrierError`
@@ -29178,6 +29244,10 @@ Returns:
 Throws:
 
 - {WorkspaceControlError} If the workspace cannot be reopened safely.
+
+Throws:
+
+- {WorldCarrierError} If carrier staging is unsafe or a backend probe fails unexpectedly.
 
 Throws:
 

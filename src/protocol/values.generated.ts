@@ -273,6 +273,9 @@ export const WORKSPACE_ADOPTION_MODES = ["none", "git-head", "worktree"] as cons
 /** Configured reference copy-carrier manifest entry kinds. @public */
 export const WORLD_ENTRY_KINDS = ["directory", "file", "symlink"] as const;
 
+/** Configured selectable world-carrier backends. @public */
+export const WORLD_CARRIER_BACKENDS = ["copy", "clone", "overlay"] as const;
+
 /** Configured retained-world runner enforcement classifications. @public */
 export const RETAINED_WORLD_ENFORCEMENT_KINDS = ["advisory", "native-syscall-deny"] as const;
 

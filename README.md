@@ -117,6 +117,8 @@ trace-record contracts with durable SQLite task and trace stores:
   contributions without common-origin re-addition, subtree sealing that preserves the current
   parent, custody cleanup from retained identities, and receipt-based recovery;
 - a read-only spawn/adopt/abandon/publish vocabulary mapping over exact scope evidence;
+- workspace protocol v26 clone and Linux overlay carrier backends with identities equal to the copy
+  reference, shared conformance and law suites, and branch storage that scales with changed data;
 - evidence-derived checkpoint start classification proving whether a branch started from an atomic
   snapshot, a quiescent verified copy, or reconstructed state;
 - bounded parallel and nested scope scheduling with deterministic settlement and restart
@@ -595,6 +597,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Command-line interface](./docs/cli.md)
 - [Project structure](./docs/project-structure.md)
 - [Reference copy carrier](./docs/reference-copy-carrier.md)
+- [Optimized scope-world carriers](./docs/optimized-carriers.md)
 - [Repository grants and run authority ceilings](./docs/repository-grants.md)
 - [Durable scope registration and fenced local emission](./docs/scope-registration.md)
 - [Reference-copy scope fork and restart recovery](./docs/scope-fork.md)
@@ -653,8 +656,9 @@ Phase 5 is complete through the approved 2.0.0 runtime-support remedy. Phase 6 f
 [reference-copy scope fork](./docs/scope-fork.md), and
 [consume-once merge and discard](./docs/scope-merge-discard.md), and the
 [scope vocabulary mapping](./docs/scope-vocabulary.md), and
-[scope scheduling](./docs/scope-scheduling.md) are implemented. Optimized carriers and L2 parity
-are not. The major version does not
+[scope scheduling](./docs/scope-scheduling.md), and
+[optimized carriers](./docs/optimized-carriers.md) are implemented. L2 parity is recorded by the
+Phase 6 exit audit. The major version does not
 imply production readiness.
 
 The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline

@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0] - 2026-09-13
+
+### New Feature
+
+- Add clone and Linux overlay carrier backends selected with `createReferenceCopyCarrier({ backend })`
+  under workspace protocol v26. Clone materializes files with reflinks (Linux `FICLONE`, macOS
+  `clonefile(2)` through a verified private helper) and overlay mounts custody over the immutable
+  revision with private upper and work layers and remounts after restart. Both fail closed when
+  unavailable and keep content, revision, and changeset identities equal to the copy reference.
+- Report per-backend conformance in `inspectWorkspacePlatformConformance`, and add the shared
+  carrier conformance suite, `pnpm test:carriers:linux` (privileged Linux container on tmpfs and
+  loopback XFS reflink), and `pnpm bench:carriers` storage benchmark.
+- Run the scope algebra law suite on every host-conformant optimized backend, with required
+  backends enforced in the Linux run.
+
+### Impact
+
+Scope branches can use copy-on-write storage that scales with changed data while passing the same
+correctness suites as the copy reference. Existing carriers, records, and identities are unchanged;
+the macOS clone backend requires a C compiler and spawns one helper process per cloned file.
+
 ## [2.6.0] - 2026-09-13
 
 ### New Feature

@@ -1,0 +1,46 @@
+{
+    "lawTestFile": "test/scope/scope-laws.test.ts",
+    "linux": {
+        "containerSource": "/source",
+        "containerWorkspace": "/workspace",
+        "dockerExecutable": "docker",
+        "dockerRunArguments": ["run", "--rm", "--privileged"],
+        "image": "node:24-bookworm",
+        "shellExecutable": "bash",
+        "shellArguments": ["-euo", "pipefail", "-c"],
+        "steps": [
+            "node --version",
+            "apt-get update -qq",
+            "DEBIAN_FRONTEND=noninteractive apt-get install -y -qq acl attr xfsprogs > /dev/null",
+            "mkdir -p {workspace}/repo {workspace}/tmp {workspace}/reflink",
+            "tar -C {source} --exclude=./node_modules --exclude=./dist --exclude=./.git -cf - . | tar -C {workspace}/repo -xf -",
+            "cd {workspace}/repo",
+            "corepack enable",
+            "COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm install --frozen-lockfile",
+            "echo 'carrier conformance on tmpfs (overlay required, clone refused)'",
+            "TMPDIR={workspace}/tmp {requiredVariable}=overlay node --test {testFile}",
+            "TMPDIR={workspace}/tmp pnpm bench:carriers",
+            "truncate -s 2g {workspace}/reflink.img",
+            "mkfs.xfs -q -m reflink=1 {workspace}/reflink.img",
+            "mount -o loop {workspace}/reflink.img {workspace}/reflink",
+            "chmod 1777 {workspace}/reflink",
+            "echo 'carrier conformance on loopback XFS reflink=1 (clone and overlay required)'",
+            "TMPDIR={workspace}/reflink {requiredVariable}=clone,overlay node --test {testFile}",
+            "TMPDIR={workspace}/reflink pnpm bench:carriers",
+            "echo 'scope algebra laws on loopback XFS reflink=1 (copy, clone, and overlay required)'",
+            "TMPDIR={workspace}/reflink {requiredVariable}=clone,overlay node --test {lawTestFile}",
+            "umount {workspace}/reflink"
+        ],
+        "tmpfsOptions": "rw,exec,mode=1777,size=4g",
+        "tokens": {
+            "lawTestFile": "{lawTestFile}",
+            "requiredVariable": "{requiredVariable}",
+            "source": "{source}",
+            "testFile": "{testFile}",
+            "workspace": "{workspace}"
+        }
+    },
+    "requiredBackendsEnvironmentVariable": "SHEPHERD_REQUIRED_CARRIER_BACKENDS",
+    "requiredBackendsSeparator": ",",
+    "testFile": "test/workspace/carrier-conformance.test.ts"
+}

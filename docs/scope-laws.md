@@ -51,9 +51,13 @@ operation prefix, so it can be replayed exactly.
 
 ## Carriers
 
-Each generated sequence runs once per registered carrier factory against the same model. The
-reference copy carrier always runs. Optimized carriers join the same suite only after passing
-their own conformance gates; see the Phase 6 exit audit for the carriers exercised in each run.
+Each generated sequence runs once per carrier against the same model. The reference copy carrier
+always runs. An optimized backend from `optimizedBackends` joins when the host's platform
+conformance evidence reports it conformant, and a host run that names required backends through the
+configured environment variable fails if any of them is unavailable instead of omitting its laws.
+On macOS APFS the suite runs copy and clone. The Linux container run (`pnpm test:carriers:linux`)
+runs it on loopback XFS with clone and overlay required. See
+[optimized carriers](./optimized-carriers.md).
 
 ## Boundary
 

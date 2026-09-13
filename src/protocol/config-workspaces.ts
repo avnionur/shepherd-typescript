@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 
+import { readCarrierBackendsConfig } from "./config-carrier-backends.ts";
 import { type ProtocolConfig, SECURE_HASH_ALGORITHMS } from "./config-types.ts";
 import {
     readAbsoluteUrl,
@@ -21,6 +22,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "bindingIdentityKind",
             "bindingVersion",
             "carrier",
+            "carrierBackends",
             "changesetInspection",
             "changesets",
             "controlDirectory",
@@ -1386,6 +1388,17 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "workspaces.bindingIdentityKind",
         ),
         bindingVersion: readPositiveInteger(config.bindingVersion, "workspaces.bindingVersion"),
+        carrierBackends: readCarrierBackendsConfig(config.carrierBackends, {
+            copyBackend: readNonEmptyString(carrier.backendKind, "workspaces.carrier.backendKind"),
+            custodyDescriptorFile: readSimpleName(
+                carrier.custodyDescriptorFile,
+                "workspaces.carrier.custodyDescriptorFile",
+            ),
+            worldDirectory: readSimpleName(
+                carrier.worldDirectory,
+                "workspaces.carrier.worldDirectory",
+            ),
+        }),
         carrier: {
             backendKind: readNonEmptyString(carrier.backendKind, "workspaces.carrier.backendKind"),
             blobIdPrefix,
