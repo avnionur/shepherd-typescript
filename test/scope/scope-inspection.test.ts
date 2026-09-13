@@ -95,6 +95,7 @@ test("inspection reconstructs the same scope after reopen, read-only reopen, and
         registration_record_id: root.registration_record_id,
         scope_id: root.scope_id,
         state: "open",
+        world: null,
         world_capability: "trace_only",
     });
     assert.equal(Object.isFrozen(rootInspection), true);
@@ -132,6 +133,7 @@ test("inspection reconstructs the same scope after reopen, read-only reopen, and
         registration_record_id: child.registration_record_id,
         scope_id: child.scope_id,
         state: "open",
+        world: null,
         world_capability: "trace_only",
     });
     // The parent's effective history never includes child emissions.

@@ -20,8 +20,9 @@ This is the first executable slice of the Phase 6 scope contract and is delibera
 owner path. The slice implements durable root and child registration, single-writer fenced
 claims, idempotent scope-local emission of validated application data, and read-only inspection.
 It forks no world custody, invokes no provider, materializes nothing, and adds no merge or discard
-operation; those remain later Phase 6 slices. Every registration declares the configured
-`trace_only` world capability so later readers cannot mistake it for an executable world fork.
+operation; those remain later Phase 6 slices. Registration and emission declare the configured
+`trace_only` world capability so later readers cannot mistake them for an executable world fork.
+[Reference-copy scope fork](./scope-fork.md) is the separate `reference_copy` world path.
 
 ## Identity and records
 
@@ -73,6 +74,9 @@ unexpired active claim held by another identity fails with `ScopeWriterConflictE
 alone does not prove the previous holder stopped, so its later commands are fenced rather than
 assumed absent. `releaseScopeWriter` is idempotent for the exact claim and admits the next writer
 immediately.
+
+Writer claims on a forked child are refused until its fork completes. `claimScopeWriters` admits
+several scopes atomically in canonical order; see [scope fork](./scope-fork.md).
 
 The returned `ScopeWriter` is a frozen handle authenticated by a private package registry that also
 binds it to the store instance that minted it. Copied, serialized, imported, or foreign-store

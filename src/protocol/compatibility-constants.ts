@@ -913,6 +913,58 @@ export const SCOPE_PROTOCOL_V1_CONTRACT = deepFreeze({
     writerClaimLeaseMilliseconds: 30_000,
 } as const);
 
+/** Immutable reference-copy fork, checkpoint, and multi-writer extension implemented by scope v2. */
+export const SCOPE_PROTOCOL_V2_CONTRACT = deepFreeze({
+    ...SCOPE_PROTOCOL_V1_CONTRACT,
+    artifacts: {
+        ...SCOPE_PROTOCOL_V1_CONTRACT.artifacts,
+        forkSchema: "spec/schemas/scope-fork-v1.schema.json",
+    },
+    authority: {
+        ...SCOPE_PROTOCOL_V1_CONTRACT.authority,
+        resourceKinds: ["repository_binding", "workspace_binding"],
+    },
+    checkpoint: {
+        constituentKinds: [
+            "trace_cut",
+            "execution",
+            "binding",
+            "world",
+            "grants",
+            "child_frontier",
+            "budget",
+            "provider_session",
+            "process",
+            "irreversible_effects",
+        ],
+        evidenceStatuses: ["verified", "reconstructive", "not_applicable", "unavailable"],
+        version: 1,
+    },
+    commandKinds: ["register_root", "register_child", "emit", "fork"],
+    evidenceKinds: [
+        "registration",
+        "origin_cut",
+        "child_registered",
+        "emission",
+        "fork_prepared",
+        "fork_completed",
+    ],
+    forkPhases: ["prepared", "completed"],
+    identity: {
+        ...SCOPE_PROTOCOL_V1_CONTRACT.identity,
+        custodyIdentityKind: "scope-fork-custody",
+    },
+    schemas: {
+        ...SCOPE_PROTOCOL_V1_CONTRACT.schemas,
+        forkId: "https://avnionur.github.io/shepherd-typescript/schemas/scope-fork-v1.schema.json",
+    },
+    traceSchemas: {
+        ...SCOPE_PROTOCOL_V1_CONTRACT.traceSchemas,
+        fork: "shepherd.scope.fork.v1",
+    },
+    worldCapabilities: ["trace_only", "reference_copy"],
+} as const);
+
 /** Immutable workspace initialization and adoption contract implemented by protocol v1. */
 export const WORKSPACE_PROTOCOL_V1_CONTRACT = deepFreeze({
     adoptionModes: ["none", "git-head", "worktree"],

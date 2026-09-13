@@ -1,0 +1,868 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/scope-fork-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Scope Fork v1",
+    "description": "Durable reference-copy fork journal: a prepared declaration before physical custody and a completed record citing the verified custody and checkpoint.",
+    "oneOf": [
+        {
+            "type": "object",
+            "required": [
+                "base_content_id",
+                "base_revision_id",
+                "binding_id",
+                "capture_kind",
+                "command_id",
+                "compatibility_version",
+                "custody_id",
+                "phase",
+                "resource_id",
+                "resource_kind",
+                "scope_id",
+                "scope_version",
+                "world_capability"
+            ],
+            "properties": {
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.scope.v1"
+                },
+                "custody_id": {
+                    "type": "string",
+                    "pattern": "^world-custody:[0-9a-f]{64}$"
+                },
+                "scope_id": {
+                    "$ref": "#/$defs/scopeId"
+                },
+                "scope_version": {
+                    "const": 1
+                },
+                "base_content_id": {
+                    "type": "string",
+                    "pattern": "^world-content:sha256:[0-9a-f]{64}$"
+                },
+                "base_revision_id": {
+                    "type": "string",
+                    "pattern": "^world-revision:sha256:[0-9a-f]{64}$"
+                },
+                "binding_id": {
+                    "$ref": "#/$defs/recordId"
+                },
+                "capture_kind": {
+                    "const": "verified-copy"
+                },
+                "phase": {
+                    "const": "prepared"
+                },
+                "resource_id": {
+                    "$ref": "#/$defs/recordId"
+                },
+                "resource_kind": {
+                    "enum": [
+                        "repository_binding",
+                        "workspace_binding"
+                    ]
+                },
+                "world_capability": {
+                    "const": "reference_copy"
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "checkpoint",
+                "command_id",
+                "compatibility_version",
+                "custody_content_id",
+                "custody_id",
+                "phase",
+                "scope_id",
+                "scope_version"
+            ],
+            "properties": {
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.scope.v1"
+                },
+                "custody_id": {
+                    "type": "string",
+                    "pattern": "^world-custody:[0-9a-f]{64}$"
+                },
+                "scope_id": {
+                    "$ref": "#/$defs/scopeId"
+                },
+                "scope_version": {
+                    "const": 1
+                },
+                "checkpoint": {
+                    "type": "object",
+                    "required": [
+                        "capture_kind",
+                        "checkpoint_version",
+                        "constituents"
+                    ],
+                    "properties": {
+                        "capture_kind": {
+                            "const": "verified-copy"
+                        },
+                        "checkpoint_version": {
+                            "const": 1
+                        },
+                        "constituents": {
+                            "type": "array",
+                            "prefixItems": [
+                                {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "receipt_id",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "trace_cut"
+                                                },
+                                                "receipt_id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "verified"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "reason",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "trace_cut"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "unavailable"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "trace_cut"
+                                                },
+                                                "status": {
+                                                    "enum": [
+                                                        "reconstructive",
+                                                        "not_applicable"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "receipt_id",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "execution"
+                                                },
+                                                "receipt_id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "verified"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "reason",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "execution"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "unavailable"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "execution"
+                                                },
+                                                "status": {
+                                                    "enum": [
+                                                        "reconstructive",
+                                                        "not_applicable"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "receipt_id",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "binding"
+                                                },
+                                                "receipt_id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "verified"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "reason",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "binding"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "unavailable"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "binding"
+                                                },
+                                                "status": {
+                                                    "enum": [
+                                                        "reconstructive",
+                                                        "not_applicable"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "receipt_id",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "world"
+                                                },
+                                                "receipt_id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "verified"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "reason",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "world"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "unavailable"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "world"
+                                                },
+                                                "status": {
+                                                    "enum": [
+                                                        "reconstructive",
+                                                        "not_applicable"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "receipt_id",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "grants"
+                                                },
+                                                "receipt_id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "verified"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "reason",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "grants"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "unavailable"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "grants"
+                                                },
+                                                "status": {
+                                                    "enum": [
+                                                        "reconstructive",
+                                                        "not_applicable"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "receipt_id",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "child_frontier"
+                                                },
+                                                "receipt_id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "verified"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "reason",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "child_frontier"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "unavailable"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "child_frontier"
+                                                },
+                                                "status": {
+                                                    "enum": [
+                                                        "reconstructive",
+                                                        "not_applicable"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "receipt_id",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "budget"
+                                                },
+                                                "receipt_id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "verified"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "reason",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "budget"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "unavailable"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "budget"
+                                                },
+                                                "status": {
+                                                    "enum": [
+                                                        "reconstructive",
+                                                        "not_applicable"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "receipt_id",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "provider_session"
+                                                },
+                                                "receipt_id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "verified"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "reason",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "provider_session"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "unavailable"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "provider_session"
+                                                },
+                                                "status": {
+                                                    "enum": [
+                                                        "reconstructive",
+                                                        "not_applicable"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "receipt_id",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "process"
+                                                },
+                                                "receipt_id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "verified"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "reason",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "process"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "unavailable"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "process"
+                                                },
+                                                "status": {
+                                                    "enum": [
+                                                        "reconstructive",
+                                                        "not_applicable"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "receipt_id",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "irreversible_effects"
+                                                },
+                                                "receipt_id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "verified"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "reason",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "irreversible_effects"
+                                                },
+                                                "reason": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "status": {
+                                                    "const": "unavailable"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "kind",
+                                                "status"
+                                            ],
+                                            "properties": {
+                                                "kind": {
+                                                    "const": "irreversible_effects"
+                                                },
+                                                "status": {
+                                                    "enum": [
+                                                        "reconstructive",
+                                                        "not_applicable"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                }
+                            ],
+                            "minItems": 10,
+                            "maxItems": 10
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "custody_content_id": {
+                    "type": "string",
+                    "pattern": "^world-content:sha256:[0-9a-f]{64}$"
+                },
+                "phase": {
+                    "const": "completed"
+                }
+            },
+            "additionalProperties": false
+        }
+    ],
+    "$defs": {
+        "originCutId": {
+            "type": "string",
+            "pattern": "^scope-origin:[0-9a-f]{64}$"
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "resources": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "atoms",
+                    "resource_id",
+                    "resource_kind"
+                ],
+                "properties": {
+                    "atoms": {
+                        "type": "array",
+                        "items": {
+                            "enum": [
+                                "read",
+                                "write"
+                            ]
+                        },
+                        "maxItems": 2,
+                        "uniqueItems": true
+                    },
+                    "resource_id": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "resource_kind": {
+                        "enum": [
+                            "repository_binding",
+                            "workspace_binding"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "maxItems": 64
+        },
+        "scopeId": {
+            "type": "string",
+            "pattern": "^scope:sha256:[0-9a-f]{64}$"
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        }
+    }
+}

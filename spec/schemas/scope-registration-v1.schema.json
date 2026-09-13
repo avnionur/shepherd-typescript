@@ -96,7 +96,8 @@
         },
         "world_capability": {
             "enum": [
-                "trace_only"
+                "trace_only",
+                "reference_copy"
             ]
         }
     },
@@ -137,7 +138,8 @@
                     },
                     "resource_kind": {
                         "enum": [
-                            "repository_binding"
+                            "repository_binding",
+                            "workspace_binding"
                         ]
                     }
                 },

@@ -1,6 +1,6 @@
 import type { DatabaseSync } from "node:sqlite";
 
-import { projectionProtocolConfig } from "../protocol/config.ts";
+import { projectionProtocolConfig, scopeProtocolConfig } from "../protocol/config.ts";
 import { SCOPE_STATES } from "../protocol/values.generated.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import type { RecordId } from "../record/types.ts";
@@ -12,7 +12,7 @@ import {
 } from "../scope/errors.ts";
 import type { ScopeHeadAddress } from "../scope/types.ts";
 import { appendWithinTraceStoreTransaction } from "./append.ts";
-import { STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
+import { STORE_READ_TRANSACTION_SQL, STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import { publishStoredCutWithinTransaction, readStoredCut } from "./cuts.ts";
 import { assertNonNegativeMilliseconds } from "./durable-execution-claims.ts";
 import { readOwnerRecordAtOrdinal } from "./read.ts";
@@ -191,17 +191,29 @@ export type ChildScopeRegistrationRequest = {
     readonly parentFence: ScopeWriterFence;
     /** Owning parent scope identity. */
     readonly parentScopeId: string;
+    /** Prepared fork journal request derived from the published origin cut, or null. */
+    readonly prepared: ((cut: Cut) => StoreAppendRequest) | null;
     /** Canonical parent control and child registration append request. */
     readonly request: StoreAppendRequest;
     /** Child scope identity and owner path. */
     readonly scopeId: string;
 };
 
+/** Durable result of one child registration, including an optional prepared fork journal. @internal */
+export type ChildScopeRegistrationResult = {
+    /** Published origin cut through the parent head. */
+    readonly cut: Cut;
+    /** Prepared fork journal receipt, or null for a trace-only child. */
+    readonly preparedReceipt: AppendReceipt | null;
+    /** Parent control and child registration receipt. */
+    readonly receipt: AppendReceipt;
+};
+
 /** Atomically registers or identically replays one child scope under its parent's fence. @internal */
 export function registerChildScopeInStore(
     database: DatabaseSync,
     registration: ChildScopeRegistrationRequest,
-): { readonly cut: Cut; readonly receipt: AppendReceipt } {
+): ChildScopeRegistrationResult {
     const {
         executionId,
         nowMilliseconds,
@@ -209,6 +221,7 @@ export function registerChildScopeInStore(
         parentExpectedHeadRecordId,
         parentFence,
         parentScopeId,
+        prepared,
         request,
         scopeId,
     } = registration;
@@ -221,8 +234,21 @@ export function registerChildScopeInStore(
         if (hasAppendIntent(database, request.append_intent_id)) {
             const receipt = appendWithinTraceStoreTransaction(database, request);
             const cut = readStoredCut(database, originCutId);
+            let preparedReceipt: AppendReceipt | null = null;
+            if (prepared !== null) {
+                const preparedRequest = prepared(cut);
+                // The command digest binds the reference-copy registration, which is only ever
+                // committed together with its prepared journal record in this transaction.
+                /* node:coverage ignore next 3 */
+                if (!hasAppendIntent(database, preparedRequest.append_intent_id)) {
+                    throw new ScopeEvidenceError(
+                        "scope fork registration lacks its prepared record",
+                    );
+                }
+                preparedReceipt = appendWithinTraceStoreTransaction(database, preparedRequest);
+            }
             database.exec(STORE_TRANSACTION_SQL.commit);
-            return Object.freeze({ cut, receipt });
+            return Object.freeze({ cut, preparedReceipt, receipt });
         }
         assertOpenRegistration(database, parentScopeId);
         assertCurrentFence(database, parentScopeId, parentFence, nowMilliseconds);
@@ -238,9 +264,85 @@ export function registerChildScopeInStore(
             target_owner_id: parentScopeId,
             through_record_id: head.record_id,
         });
+        const preparedReceipt =
+            prepared === null ? null : appendWithinTraceStoreTransaction(database, prepared(cut));
         insertRegistration(database, scopeId, parentScopeId, registrationRecordId);
         database.exec(STORE_TRANSACTION_SQL.commit);
-        return Object.freeze({ cut, receipt });
+        return Object.freeze({ cut, preparedReceipt, receipt });
+    } catch (error) {
+        database.exec(STORE_TRANSACTION_SQL.rollback);
+        throw error;
+    }
+}
+
+/** Exact evidence proving a prepared fork is at its safe physical boundary. @internal */
+export type ScopeForkBoundary = {
+    /** Forked child scope identity. */
+    readonly childScopeId: string;
+    /** Unix time used for deterministic fence evaluation. */
+    readonly nowMilliseconds: number;
+    /** Exact live parent writer authority. */
+    readonly parentFence: ScopeWriterFence;
+    /** Owning parent scope identity. */
+    readonly parentScopeId: string;
+    /** Prepared journal record that must still be the child head. */
+    readonly preparedRecordId: RecordId;
+};
+
+/** Exact inputs completing one prepared fork under the parent's current fence. @internal */
+export type ScopeForkCompletionRequest = ScopeForkBoundary & {
+    /** Canonical completed fork journal append request. */
+    readonly request: StoreAppendRequest;
+};
+
+/**
+ * Classifies whether a fork is already completed or at its safe physical boundary.
+ *
+ * A retained completed append intent is reported without requiring any fence, so a completion
+ * committed by a concurrent caller replays. Otherwise physical work may run only with positive
+ * evidence: the parent is open under the exact current writer fence, the child is open and owned
+ * by that parent, the prepared record is still the child head, and no writer has ever been
+ * admitted on the child.
+ *
+ * @returns Whether the fork is already completed or ready for physical work.
+ * @internal
+ */
+export function readScopeForkBoundaryInStore(
+    database: DatabaseSync,
+    boundary: ScopeForkBoundary,
+    completedAppendIntentId: string,
+): "completed" | "ready" {
+    database.exec(STORE_READ_TRANSACTION_SQL.begin);
+    try {
+        const status = hasAppendIntent(database, completedAppendIntentId) ? "completed" : "ready";
+        if (status === "ready") {
+            assertForkBoundary(database, boundary);
+        }
+        database.exec(STORE_READ_TRANSACTION_SQL.commit);
+        return status;
+    } catch (error) {
+        database.exec(STORE_READ_TRANSACTION_SQL.rollback);
+        throw error;
+    }
+}
+
+/** Atomically completes or identically replays one fork after verified physical custody. @internal */
+export function completeScopeForkInStore(
+    database: DatabaseSync,
+    completion: ScopeForkCompletionRequest,
+): AppendReceipt {
+    const { request } = completion;
+    database.exec(STORE_TRANSACTION_SQL.begin);
+    try {
+        if (hasAppendIntent(database, request.append_intent_id)) {
+            const receipt = appendWithinTraceStoreTransaction(database, request);
+            database.exec(STORE_TRANSACTION_SQL.commit);
+            return receipt;
+        }
+        assertForkBoundary(database, completion);
+        const receipt = appendWithinTraceStoreTransaction(database, request);
+        database.exec(STORE_TRANSACTION_SQL.commit);
+        return receipt;
     } catch (error) {
         database.exec(STORE_TRANSACTION_SQL.rollback);
         throw error;
@@ -255,50 +357,130 @@ export function claimScopeWriterInStore(
     nowMilliseconds: number,
     leaseMilliseconds: number,
 ): ScopeWriterClaimRow {
-    assertNonEmptyString(scopeId, "scopeId");
-    assertNonEmptyString(claimId, "claimId");
+    const [row] = claimScopeWritersInStore(
+        database,
+        [{ claimId, scopeId }],
+        nowMilliseconds,
+        leaseMilliseconds,
+    );
+    return row as ScopeWriterClaimRow;
+}
+
+/**
+ * Atomically admits writer claims over distinct scopes in canonical scope-identity order.
+ *
+ * Every claim is admitted inside one immediate transaction; any refusal rolls back all of them,
+ * so a failed acquisition leaves no partial claim state.
+ *
+ * @internal
+ */
+export function claimScopeWritersInStore(
+    database: DatabaseSync,
+    claims: readonly { readonly claimId: string; readonly scopeId: string }[],
+    nowMilliseconds: number,
+    leaseMilliseconds: number,
+): readonly ScopeWriterClaimRow[] {
+    for (const { claimId, scopeId } of claims) {
+        assertNonEmptyString(scopeId, "scopeId");
+        assertNonEmptyString(claimId, "claimId");
+    }
     assertNonNegativeMilliseconds(nowMilliseconds, "nowMilliseconds");
     const leaseExpiresAt = nowMilliseconds + leaseMilliseconds;
     if (!Number.isSafeInteger(leaseExpiresAt)) {
         throw new TypeError("scope writer lease expiry exceeds safe integer bounds");
     }
+    const ordered = [...claims].sort((left, right) =>
+        left.scopeId < right.scopeId ? -1 : left.scopeId > right.scopeId ? 1 : 0,
+    );
+    if (new Set(ordered.map(({ scopeId }) => scopeId)).size !== ordered.length) {
+        throw new TypeError("scope writer claims must name distinct scopes");
+    }
     database.exec(STORE_TRANSACTION_SQL.begin);
     try {
-        assertOpenRegistration(database, scopeId);
-        const existing = readScopeWriterClaimRow(database, scopeId);
-        if (existing === undefined) {
-            database
-                .prepare(
-                    `INSERT INTO ${STORE_TABLES.scopeWriterClaims}(scope_id, claim_id, fencing_token, lease_expires_at, released) VALUES (?, ?, 1, ?, 0)`,
-                )
-                .run(scopeId, claimId, leaseExpiresAt);
-        } else if (
-            existing.claim_id === claimId &&
-            !existing.released &&
-            existing.lease_expires_at > nowMilliseconds
-        ) {
-            database.exec(STORE_TRANSACTION_SQL.commit);
-            return existing;
-        } else if (existing.released || existing.lease_expires_at <= nowMilliseconds) {
-            const result = database
-                .prepare(
-                    `UPDATE ${STORE_TABLES.scopeWriterClaims} SET claim_id = ?, fencing_token = fencing_token + 1, lease_expires_at = ?, released = 0 WHERE scope_id = ? AND claim_id = ? AND fencing_token = ?`,
-                )
-                .run(claimId, leaseExpiresAt, scopeId, existing.claim_id, existing.fencing_token);
-            // The row was read under the same immediate write lock, so the guarded update matches.
-            /* node:coverage ignore next 3 */
-            if (result.changes !== 1) {
-                throw new ScopeEvidenceError("scope writer claim changed during admission");
-            }
-        } else {
-            throw new ScopeWriterConflictError(scopeId, existing.claim_id);
+        const admitted = new Map<string, ScopeWriterClaimRow>();
+        for (const { claimId, scopeId } of ordered) {
+            admitted.set(
+                scopeId,
+                claimWithinTransaction(database, scopeId, claimId, nowMilliseconds, leaseExpiresAt),
+            );
         }
-        const current = readScopeWriterClaimRow(database, scopeId) as ScopeWriterClaimRow;
         database.exec(STORE_TRANSACTION_SQL.commit);
-        return current;
+        return Object.freeze(
+            claims.map(({ scopeId }) => admitted.get(scopeId) as ScopeWriterClaimRow),
+        );
     } catch (error) {
         database.exec(STORE_TRANSACTION_SQL.rollback);
         throw error;
+    }
+}
+
+function claimWithinTransaction(
+    database: DatabaseSync,
+    scopeId: string,
+    claimId: string,
+    nowMilliseconds: number,
+    leaseExpiresAt: number,
+): ScopeWriterClaimRow {
+    assertOpenRegistration(database, scopeId);
+    assertForkCompleteOrAbsent(database, scopeId);
+    const existing = readScopeWriterClaimRow(database, scopeId);
+    if (existing === undefined) {
+        database
+            .prepare(
+                `INSERT INTO ${STORE_TABLES.scopeWriterClaims}(scope_id, claim_id, fencing_token, lease_expires_at, released) VALUES (?, ?, 1, ?, 0)`,
+            )
+            .run(scopeId, claimId, leaseExpiresAt);
+    } else if (
+        existing.claim_id === claimId &&
+        !existing.released &&
+        existing.lease_expires_at > nowMilliseconds
+    ) {
+        return existing;
+    } else if (existing.released || existing.lease_expires_at <= nowMilliseconds) {
+        const result = database
+            .prepare(
+                `UPDATE ${STORE_TABLES.scopeWriterClaims} SET claim_id = ?, fencing_token = fencing_token + 1, lease_expires_at = ?, released = 0 WHERE scope_id = ? AND claim_id = ? AND fencing_token = ?`,
+            )
+            .run(claimId, leaseExpiresAt, scopeId, existing.claim_id, existing.fencing_token);
+        // The row was read under the same immediate write lock, so the guarded update matches.
+        /* node:coverage ignore next 3 */
+        if (result.changes !== 1) {
+            throw new ScopeEvidenceError("scope writer claim changed during admission");
+        }
+    } else {
+        throw new ScopeWriterConflictError(scopeId, existing.claim_id);
+    }
+    return readScopeWriterClaimRow(database, scopeId) as ScopeWriterClaimRow;
+}
+
+function assertForkBoundary(database: DatabaseSync, boundary: ScopeForkBoundary): void {
+    const { childScopeId, nowMilliseconds, parentFence, parentScopeId, preparedRecordId } =
+        boundary;
+    assertNonEmptyString(childScopeId, "childScopeId");
+    assertNonEmptyString(parentScopeId, "parentScopeId");
+    assertRecordId(preparedRecordId, "preparedRecordId");
+    assertOpenRegistration(database, parentScopeId);
+    assertCurrentFence(database, parentScopeId, parentFence, nowMilliseconds);
+    const child = assertOpenRegistration(database, childScopeId);
+    if (child.parent_scope_id !== parentScopeId) {
+        throw new ScopeEvidenceError(`scope ${childScopeId} is not owned by ${parentScopeId}`);
+    }
+    assertExpectedHead(database, childScopeId, preparedRecordId);
+    if (readScopeWriterClaimRow(database, childScopeId) !== undefined) {
+        throw new ScopeEvidenceError(
+            `scope ${childScopeId} admitted a writer before fork completion`,
+        );
+    }
+}
+
+function assertForkCompleteOrAbsent(database: DatabaseSync, scopeId: string): void {
+    const row = database
+        .prepare(
+            `SELECT COUNT(*) AS count FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND record.schema_ref = ?`,
+        )
+        .get(scopeId, scopeProtocolConfig.traceSchemas.fork) as { readonly count: number };
+    if (row.count !== 0 && row.count !== scopeProtocolConfig.forkPhases.length) {
+        throw new ScopeEvidenceError(`scope ${scopeId} world fork is not complete`);
     }
 }
 

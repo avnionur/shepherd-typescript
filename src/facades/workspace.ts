@@ -147,6 +147,8 @@ export type {
     SelectedRetainedWorldSettlement,
     SelectRetainedWorldSettlementOptions,
 } from "../workspace/retained-world-settlement-types.ts";
+export { forkScope } from "../workspace/scope-fork.ts";
+export type { ForkScopeOptions } from "../workspace/scope-fork-types.ts";
 export {
     captureGrantedTaskWorldDurably,
     captureJailedGrantedTaskWorldDurably,

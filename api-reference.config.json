@@ -54,7 +54,7 @@
             "title": "Trace"
         },
         "./workspace": {
-            "authority": "These APIs may read or mutate caller-selected filesystem and Git state, and native runners may launch capability-probed processes. Required task, provider, run, trace, carrier, runner, and grant handles stay explicit.",
+            "authority": "These APIs may read or mutate caller-selected filesystem and Git state, and native runners may launch capability-probed processes. Required task, provider, run, trace, carrier, runner, grant, and scope writer handles stay explicit.",
             "summary": "Workspace bindings, custody, grants, placement, retained execution, and exact settlement.",
             "title": "Workspace"
         }

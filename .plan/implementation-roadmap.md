@@ -358,7 +358,9 @@ Task 1 (#127) delivered the [durable isolated-scope ownership/authority contract
 and dependency-ordered implementation slices. Task 2 (#129) implements slice A,
 [trace-only scope registration and fenced emission](../docs/scope-registration.md): owner/child
 records, per-resource authority attenuation, scope-local writer exclusivity, and record-derived
-inspection. Fork, merge, discard, carriers, scheduling, checkpoint descriptors, laws, and
+inspection. Task 3 (#130) implements slice B,
+[reference-copy scope fork and restart recovery](../docs/scope-fork.md), with coupled checkpoint
+descriptors for one bound resource. Merge, discard, optimized carriers, scheduling, full laws, and
 benchmarks remain open; no L2 claim is implemented.
 
 Work:

@@ -161,6 +161,158 @@ export function renderScopeEmissionSchema(
     };
 }
 
+/**
+ * Renders the configured scope fork journal JSON Schema.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The configured closed prepared/completed fork journal schema.
+ */
+export function renderScopeForkSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
+    const [preparedPhase, completedPhase] = config.scopes.forkPhases;
+    const [, referenceCopyCapability] = config.scopes.worldCapabilities;
+    const [verifiedStatus, , , unavailableStatus] = config.scopes.checkpoint.evidenceStatuses;
+    const plainStatuses = config.scopes.checkpoint.evidenceStatuses.filter(
+        (status) => status !== verifiedStatus && status !== unavailableStatus,
+    );
+    const common = {
+        command_id: nonEmptyStringSchema(),
+        compatibility_version: { const: config.scopes.compatibilityVersion },
+        custody_id: {
+            type: "string",
+            pattern: prefixedDigestPattern(config.workspaces.carrier.custodyIdPrefix, config),
+        },
+        scope_id: { $ref: "#/$defs/scopeId" },
+        scope_version: { const: config.scopes.recordVersion },
+    };
+    return {
+        $schema: config.kernel.schemas.dialect,
+        $id: config.scopes.schemas.forkId,
+        $comment: "Generated from protocol.config.json. Do not edit directly.",
+        title: `Shepherd Scope Fork v${config.scopes.recordVersion}`,
+        description:
+            "Durable reference-copy fork journal: a prepared declaration before physical custody and a completed record citing the verified custody and checkpoint.",
+        oneOf: [
+            {
+                type: "object",
+                required: [
+                    "base_content_id",
+                    "base_revision_id",
+                    "binding_id",
+                    "capture_kind",
+                    "command_id",
+                    "compatibility_version",
+                    "custody_id",
+                    "phase",
+                    "resource_id",
+                    "resource_kind",
+                    "scope_id",
+                    "scope_version",
+                    "world_capability",
+                ],
+                properties: {
+                    ...common,
+                    base_content_id: {
+                        type: "string",
+                        pattern: prefixedDigestPattern(
+                            config.workspaces.carrier.worldContentIdPrefix,
+                            config,
+                        ),
+                    },
+                    base_revision_id: {
+                        type: "string",
+                        pattern: prefixedDigestPattern(
+                            config.workspaces.carrier.revisionIdPrefix,
+                            config,
+                        ),
+                    },
+                    binding_id: { $ref: "#/$defs/recordId" },
+                    capture_kind: { const: config.workspaces.carrier.captureKind },
+                    phase: { const: preparedPhase },
+                    resource_id: { $ref: "#/$defs/recordId" },
+                    resource_kind: { enum: [...config.scopes.authority.resourceKinds] },
+                    world_capability: { const: referenceCopyCapability },
+                },
+                additionalProperties: false,
+            },
+            {
+                type: "object",
+                required: [
+                    "checkpoint",
+                    "command_id",
+                    "compatibility_version",
+                    "custody_content_id",
+                    "custody_id",
+                    "phase",
+                    "scope_id",
+                    "scope_version",
+                ],
+                properties: {
+                    ...common,
+                    checkpoint: {
+                        type: "object",
+                        required: ["capture_kind", "checkpoint_version", "constituents"],
+                        properties: {
+                            capture_kind: { const: config.workspaces.carrier.captureKind },
+                            checkpoint_version: { const: config.scopes.checkpoint.version },
+                            constituents: {
+                                type: "array",
+                                prefixItems: config.scopes.checkpoint.constituentKinds.map(
+                                    (kind) => ({
+                                        oneOf: [
+                                            {
+                                                type: "object",
+                                                required: ["kind", "receipt_id", "status"],
+                                                properties: {
+                                                    kind: { const: kind },
+                                                    receipt_id: nonEmptyStringSchema(),
+                                                    status: { const: verifiedStatus },
+                                                },
+                                                additionalProperties: false,
+                                            },
+                                            {
+                                                type: "object",
+                                                required: ["kind", "reason", "status"],
+                                                properties: {
+                                                    kind: { const: kind },
+                                                    reason: nonEmptyStringSchema(),
+                                                    status: { const: unavailableStatus },
+                                                },
+                                                additionalProperties: false,
+                                            },
+                                            {
+                                                type: "object",
+                                                required: ["kind", "status"],
+                                                properties: {
+                                                    kind: { const: kind },
+                                                    status: { enum: plainStatuses },
+                                                },
+                                                additionalProperties: false,
+                                            },
+                                        ],
+                                    }),
+                                ),
+                                minItems: config.scopes.checkpoint.constituentKinds.length,
+                                maxItems: config.scopes.checkpoint.constituentKinds.length,
+                            },
+                        },
+                        additionalProperties: false,
+                    },
+                    custody_content_id: {
+                        type: "string",
+                        pattern: prefixedDigestPattern(
+                            config.workspaces.carrier.worldContentIdPrefix,
+                            config,
+                        ),
+                    },
+                    phase: { const: completedPhase },
+                },
+                additionalProperties: false,
+            },
+        ],
+        $defs: scopeDefinitions(config),
+    };
+}
+
 function scopeDefinitions(config: ProtocolConfig): Readonly<Record<string, unknown>> {
     return {
         originCutId: {

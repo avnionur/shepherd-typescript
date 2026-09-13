@@ -61,16 +61,20 @@ The facade creates no ambient provider, persistence, or workspace authority. It 
 registries, provider adapters, the SQLite store constructor, workspace carrier/settlement handles,
 private codecs, migrations, and protocol configuration.
 
-`./scopes` is Node-only and owns trace-only durable scope registration, single-writer claims,
-fenced scope-local emission, inspection, generated scope constants, and the scope error classes,
+`./scopes` is Node-only and owns trace-only durable scope registration, single and atomic
+multi-scope writer claims, fenced scope-local emission, inspection, receipt replay, fork and
+checkpoint types, generated scope constants, and the scope error classes,
 plus the shared append-conflict and trace-store base errors those commands raise. Consumers supply
 an open trace store from `./trace`; the facade creates no world, provider, filesystem, or
 settlement authority and excludes the store constructor, private codecs, migrations, and protocol
-configuration. See [scope registration](./scope-registration.md).
+configuration. See [scope registration](./scope-registration.md). The world-bearing `forkScope`
+lives on `./workspace` because it composes binding and carrier authority; see
+[scope fork](./scope-fork.md).
 
 `./workspace` is Node-only and owns workspace initialization/bindings, copy and Git custody,
 changeset inspection, repository grants, placement/native-jail evidence, retained-world runners
-and execution journals, and exact prepare/select/apply/release/discard settlement operations. These
+and execution journals, reference-copy scope forks, and exact prepare/select/apply/release/discard
+settlement operations. These
 APIs can read or mutate caller-selected filesystem/Git state, and native runners can launch a
 capability-probed process. Consumers must explicitly supply the required task, provider, run,
 trace-store, carrier, runner, and grant handles from their owning domains. The facade excludes task

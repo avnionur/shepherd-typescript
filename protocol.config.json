@@ -506,13 +506,30 @@
         "artifacts": {
             "childRegisteredSchema": "spec/schemas/scope-child-registered-v1.schema.json",
             "emissionSchema": "spec/schemas/scope-emission-v1.schema.json",
+            "forkSchema": "spec/schemas/scope-fork-v1.schema.json",
             "registrationSchema": "spec/schemas/scope-registration-v1.schema.json"
+        },
+        "checkpoint": {
+            "constituentKinds": [
+                "trace_cut",
+                "execution",
+                "binding",
+                "world",
+                "grants",
+                "child_frontier",
+                "budget",
+                "provider_session",
+                "process",
+                "irreversible_effects"
+            ],
+            "evidenceStatuses": ["verified", "reconstructive", "not_applicable", "unavailable"],
+            "version": 1
         },
         "authority": {
             "atoms": ["read", "write"],
-            "resourceKinds": ["repository_binding"]
+            "resourceKinds": ["repository_binding", "workspace_binding"]
         },
-        "commandKinds": ["register_root", "register_child", "emit"],
+        "commandKinds": ["register_root", "register_child", "emit", "fork"],
         "compatibilityVersion": "shepherd.scope.v1",
         "errors": {
             "authorityCode": "SCOPE_AUTHORITY_REFUSED",
@@ -526,8 +543,17 @@
             "writerFencedCode": "SCOPE_WRITER_FENCED",
             "writerFencedMessage": "scope writer claim is released, expired, superseded, or unknown"
         },
-        "evidenceKinds": ["registration", "origin_cut", "child_registered", "emission"],
+        "evidenceKinds": [
+            "registration",
+            "origin_cut",
+            "child_registered",
+            "emission",
+            "fork_prepared",
+            "fork_completed"
+        ],
+        "forkPhases": ["prepared", "completed"],
         "identity": {
+            "custodyIdentityKind": "scope-fork-custody",
             "originCutIdPrefix": "scope-origin:",
             "scopeIdPrefix": "scope:sha256:"
         },
@@ -541,15 +567,17 @@
         "schemas": {
             "childRegisteredId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-child-registered-v1.schema.json",
             "emissionId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-emission-v1.schema.json",
+            "forkId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-fork-v1.schema.json",
             "registrationId": "https://avnionur.github.io/shepherd-typescript/schemas/scope-registration-v1.schema.json"
         },
         "states": ["open", "merged", "discarded"],
         "traceSchemas": {
             "childRegistered": "shepherd.scope.child_registered.v1",
             "emission": "shepherd.scope.emission.v1",
+            "fork": "shepherd.scope.fork.v1",
             "registration": "shepherd.scope.registration.v1"
         },
-        "worldCapabilities": ["trace_only"],
+        "worldCapabilities": ["trace_only", "reference_copy"],
         "writerClaimLeaseMilliseconds": 30000
     },
     "tasks": {

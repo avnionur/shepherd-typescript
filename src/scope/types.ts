@@ -1,8 +1,11 @@
 import type { SemanticRecord } from "../canonical/canonical-record.ts";
 import type {
     SCOPE_AUTHORITY_ATOMS,
+    SCOPE_CHECKPOINT_CONSTITUENT_KINDS,
+    SCOPE_CHECKPOINT_EVIDENCE_STATUSES,
     SCOPE_COMMAND_KINDS,
     SCOPE_EVIDENCE_KINDS,
+    SCOPE_FORK_PHASES,
     SCOPE_KINDS,
     SCOPE_RESOURCE_KINDS,
     SCOPE_STATES,
@@ -21,6 +24,139 @@ export type ScopeState = (typeof SCOPE_STATES)[number];
 
 /** Configured scope command kind: root registration, child registration, or emission. */
 export type ScopeCommandKind = (typeof SCOPE_COMMAND_KINDS)[number];
+
+/** Configured scope fork journal phase: prepared or completed. */
+export type ScopeForkPhase = (typeof SCOPE_FORK_PHASES)[number];
+
+/** Configured constituent kind classified by a scope checkpoint descriptor. */
+export type ScopeCheckpointConstituentKind = (typeof SCOPE_CHECKPOINT_CONSTITUENT_KINDS)[number];
+
+/** Configured evidence status of one scope checkpoint constituent. */
+export type ScopeCheckpointEvidenceStatus = (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[number];
+
+/**
+ * One classified checkpoint constituent.
+ *
+ * A verified constituent cites a retained receipt identity, an unavailable constituent states why,
+ * and reconstructive or not-applicable constituents carry neither.
+ */
+export type ScopeCheckpointConstituent =
+    | {
+          /** Classified constituent kind. */
+          readonly kind: ScopeCheckpointConstituentKind;
+          /** Retained evidence identity proving the constituent. */
+          readonly receipt_id: string;
+          /** Verified classification. */
+          readonly status: (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[0];
+      }
+    | {
+          /** Classified constituent kind. */
+          readonly kind: ScopeCheckpointConstituentKind;
+          /** Reconstructive or not-applicable classification. */
+          readonly status:
+              | (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[1]
+              | (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[2];
+      }
+    | {
+          /** Classified constituent kind. */
+          readonly kind: ScopeCheckpointConstituentKind;
+          /** Stable description of why the constituent cannot be proven or restored. */
+          readonly reason: string;
+          /** Unavailable classification. */
+          readonly status: (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[3];
+      };
+
+/** Honest coupled checkpoint descriptor retained by a completed scope fork. */
+export type ScopeCheckpoint = {
+    /** Carrier capture classification; a quiescent verified copy, not an atomic snapshot. */
+    readonly capture_kind: string;
+    /** Configured checkpoint descriptor version. */
+    readonly checkpoint_version: number;
+    /** Every configured constituent in configured order. */
+    readonly constituents: readonly ScopeCheckpointConstituent[];
+};
+
+/** Exact resource identity bound to a scope world. */
+export type ScopeBoundResource = {
+    /** Exact resource identity. */
+    readonly resource_id: string;
+    /** Configured resource kind. */
+    readonly resource_kind: ScopeResourceKind;
+};
+
+/** Canonical prepared fork journal record body retained before physical custody. */
+export type ScopeForkPreparedRecord = {
+    /** Exact immutable origin content identity. */
+    readonly base_content_id: string;
+    /** Exact immutable origin revision identity. */
+    readonly base_revision_id: string;
+    /** Exact workspace binding identity. */
+    readonly binding_id: string;
+    /** Carrier capture classification of the origin. */
+    readonly capture_kind: string;
+    /** Globally idempotent fork command identity. */
+    readonly command_id: string;
+    /** Configured scope compatibility namespace. */
+    readonly compatibility_version: string;
+    /** Deterministic custody identity the fork publishes. */
+    readonly custody_id: string;
+    /** Prepared phase. */
+    readonly phase: (typeof SCOPE_FORK_PHASES)[0];
+    /** Exact bound resource identity. */
+    readonly resource_id: string;
+    /** Configured bound resource kind. */
+    readonly resource_kind: ScopeResourceKind;
+    /** Forked child scope identity. */
+    readonly scope_id: string;
+    /** Configured canonical scope record version. */
+    readonly scope_version: number;
+    /** Reference-copy world capability. */
+    readonly world_capability: ScopeWorldCapability;
+};
+
+/** Canonical completed fork journal record body citing verified custody. */
+export type ScopeForkCompletedRecord = {
+    /** Honest coupled checkpoint descriptor. */
+    readonly checkpoint: ScopeCheckpoint;
+    /** Globally idempotent fork command identity. */
+    readonly command_id: string;
+    /** Configured scope compatibility namespace. */
+    readonly compatibility_version: string;
+    /** Verified custody content identity at completion. */
+    readonly custody_content_id: string;
+    /** Exact published custody identity. */
+    readonly custody_id: string;
+    /** Completed phase. */
+    readonly phase: (typeof SCOPE_FORK_PHASES)[1];
+    /** Forked child scope identity. */
+    readonly scope_id: string;
+    /** Configured canonical scope record version. */
+    readonly scope_version: number;
+};
+
+/** Validated reference-copy world of one forked scope. */
+export type ScopeWorldInspection = {
+    /** Exact immutable origin content identity. */
+    readonly base_content_id: string;
+    /** Exact immutable origin revision identity. */
+    readonly base_revision_id: string;
+    /** Exact workspace binding identity. */
+    readonly binding_id: string;
+    /** Carrier capture classification. */
+    readonly capture_kind: string;
+    /** Checkpoint descriptor once the fork completed, otherwise null. */
+    readonly checkpoint: ScopeCheckpoint | null;
+    /** Completed journal record identity, or null while only prepared. */
+    readonly completed_record_id: RecordId | null;
+    /** Deterministic custody identity. */
+    readonly custody_id: string;
+    /** Prepared journal record identity. */
+    readonly prepared_record_id: RecordId;
+    /** Exact bound resource. */
+    readonly resource: ScopeBoundResource;
+    /** Latest retained fork journal phase. */
+    readonly status: ScopeForkPhase;
+};
 
 /** Configured classification of one retained scope-local history entry. */
 export type ScopeEvidenceKind = (typeof SCOPE_EVIDENCE_KINDS)[number];
@@ -246,6 +382,48 @@ export type ScopeChildRegistrationReceipt = {
     readonly scope_id: string;
 };
 
+/** Durable result of one completed reference-copy scope fork. */
+export type ScopeForkReceipt = {
+    /** Retained ceiling and effective authority. */
+    readonly authority: ScopeAuthority;
+    /** Globally idempotent command identity. */
+    readonly command_id: string;
+    /** Completed fork journal record identity. */
+    readonly completed_record_id: RecordId;
+    /** Head of the child path after completion. */
+    readonly head: ScopeHeadAddress;
+    /** Child kind. */
+    readonly kind: ScopeKind;
+    /** Exact parent origin evidence. */
+    readonly origin: ScopeParentOrigin;
+    /** Parent head after the child-registration control record was appended. */
+    readonly parent_head: ScopeHeadAddress;
+    /** Prepared fork journal record identity. */
+    readonly prepared_record_id: RecordId;
+    /** Retained registration record identity. */
+    readonly registration_record_id: RecordId;
+    /** Forked child scope identity and owner path. */
+    readonly scope_id: string;
+    /** Verified reference-copy world with its checkpoint descriptor. */
+    readonly world: ScopeWorldInspection;
+};
+
+/** One requested writer claim in a multi-scope acquisition. */
+export type ScopeWriterClaimRequest = {
+    /** Unique claim identity proposed by this caller. */
+    readonly claimId: string;
+    /** Registered scope to write. */
+    readonly scopeId: string;
+};
+
+/** Closed options for atomically claiming writers over several scopes. */
+export type ClaimScopeWritersOptions = {
+    /** Distinct scopes to claim; acquisition order is canonical scope-identity order. */
+    readonly claims: readonly ScopeWriterClaimRequest[];
+    /** Unix time used for deterministic lease evaluation; defaults to the current time. */
+    readonly nowMilliseconds?: number;
+};
+
 /** Durable result of releasing one exact scope writer. */
 export type ScopeWriterRelease = {
     /** Released claim identity. */
@@ -287,6 +465,12 @@ export type ScopeCommandReplay =
           readonly command: (typeof SCOPE_COMMAND_KINDS)[2];
           /** Original emission receipt. */
           readonly receipt: ScopeEmissionReceipt;
+      }
+    | {
+          /** Reference-copy fork command. */
+          readonly command: (typeof SCOPE_COMMAND_KINDS)[3];
+          /** Original completed fork receipt. */
+          readonly receipt: ScopeForkReceipt;
       };
 
 /** One validated scope-local history entry. */
@@ -334,6 +518,18 @@ export type ScopeHistoryEntry =
           readonly owner_ordinal: number;
           /** Retained record identity. */
           readonly record_id: RecordId;
+      }
+    | {
+          /** Fork command identity. */
+          readonly command_id: string;
+          /** Deterministic custody identity. */
+          readonly custody_id: string;
+          /** Fork journal classification. */
+          readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[4] | (typeof SCOPE_EVIDENCE_KINDS)[5];
+          /** Retained ordinal. */
+          readonly owner_ordinal: number;
+          /** Retained record identity. */
+          readonly record_id: RecordId;
       };
 
 /** Read-only validated projection of one scope reconstructed from retained records. */
@@ -360,6 +556,8 @@ export type ScopeInspection = {
     readonly scope_id: string;
     /** Current branch-lifecycle state. */
     readonly state: ScopeState;
+    /** Reference-copy world evidence for a forked scope, otherwise null. */
+    readonly world: ScopeWorldInspection | null;
     /** Declared world capability. */
     readonly world_capability: ScopeWorldCapability;
 };

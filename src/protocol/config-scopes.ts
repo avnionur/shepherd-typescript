@@ -18,10 +18,12 @@ export function readScopeConfig(
         [
             "artifacts",
             "authority",
+            "checkpoint",
             "commandKinds",
             "compatibilityVersion",
             "errors",
             "evidenceKinds",
+            "forkPhases",
             "identity",
             "kinds",
             "limits",
@@ -36,7 +38,7 @@ export function readScopeConfig(
     );
     const artifacts = readObject(
         scopes.artifacts,
-        ["childRegisteredSchema", "emissionSchema", "registrationSchema"],
+        ["childRegisteredSchema", "emissionSchema", "forkSchema", "registrationSchema"],
         "scopes.artifacts",
     );
     const authority = readObject(scopes.authority, ["atoms", "resourceKinds"], "scopes.authority");
@@ -56,9 +58,14 @@ export function readScopeConfig(
         ],
         "scopes.errors",
     );
+    const checkpoint = readObject(
+        scopes.checkpoint,
+        ["constituentKinds", "evidenceStatuses", "version"],
+        "scopes.checkpoint",
+    );
     const identity = readObject(
         scopes.identity,
-        ["originCutIdPrefix", "scopeIdPrefix"],
+        ["custodyIdentityKind", "originCutIdPrefix", "scopeIdPrefix"],
         "scopes.identity",
     );
     const limits = readObject(
@@ -68,12 +75,12 @@ export function readScopeConfig(
     );
     const schemas = readObject(
         scopes.schemas,
-        ["childRegisteredId", "emissionId", "registrationId"],
+        ["childRegisteredId", "emissionId", "forkId", "registrationId"],
         "scopes.schemas",
     );
     const traceSchemas = readObject(
         scopes.traceSchemas,
-        ["childRegistered", "emission", "registration"],
+        ["childRegistered", "emission", "fork", "registration"],
         "scopes.traceSchemas",
     );
     const atoms = readUniqueStrings(authority.atoms, "scopes.authority.atoms");
@@ -87,9 +94,40 @@ export function readScopeConfig(
         throw new TypeError("scopes.kinds must contain exactly a root kind and a child kind");
     }
     const commandKinds = readUniqueStrings(scopes.commandKinds, "scopes.commandKinds");
-    if (commandKinds.length !== 3) {
+    if (commandKinds.length !== 4) {
         throw new TypeError(
-            "scopes.commandKinds must classify root registration, child registration, and emission",
+            "scopes.commandKinds must classify root registration, child registration, emission, and fork",
+        );
+    }
+    const forkPhases = readUniqueStrings(scopes.forkPhases, "scopes.forkPhases");
+    if (forkPhases.length !== 2) {
+        throw new TypeError("scopes.forkPhases must contain exactly prepared and completed");
+    }
+    const worldCapabilities = readUniqueStrings(
+        scopes.worldCapabilities,
+        "scopes.worldCapabilities",
+    );
+    if (worldCapabilities.length !== 2) {
+        throw new TypeError(
+            "scopes.worldCapabilities must contain exactly trace-only and reference-copy",
+        );
+    }
+    const checkpointConstituentKinds = readUniqueStrings(
+        checkpoint.constituentKinds,
+        "scopes.checkpoint.constituentKinds",
+    );
+    if (checkpointConstituentKinds.length !== 10) {
+        throw new TypeError(
+            "scopes.checkpoint.constituentKinds must classify trace cut, execution, binding, world, grants, child frontier, budget, provider session, process, and irreversible effects",
+        );
+    }
+    const checkpointEvidenceStatuses = readUniqueStrings(
+        checkpoint.evidenceStatuses,
+        "scopes.checkpoint.evidenceStatuses",
+    );
+    if (checkpointEvidenceStatuses.length !== 4) {
+        throw new TypeError(
+            "scopes.checkpoint.evidenceStatuses must contain verified, reconstructive, not applicable, and unavailable",
         );
     }
     const states = readUniqueStrings(scopes.states, "scopes.states");
@@ -97,14 +135,15 @@ export function readScopeConfig(
         throw new TypeError("scopes.states must contain exactly open, merged, and discarded");
     }
     const evidenceKinds = readUniqueStrings(scopes.evidenceKinds, "scopes.evidenceKinds");
-    if (evidenceKinds.length !== 4) {
+    if (evidenceKinds.length !== 6) {
         throw new TypeError(
-            "scopes.evidenceKinds must classify registration, origin cut, child registration, and emission",
+            "scopes.evidenceKinds must classify registration, origin cut, child registration, emission, and fork phases",
         );
     }
     const traceSchemaValues = [
         readNonEmptyString(traceSchemas.childRegistered, "scopes.traceSchemas.childRegistered"),
         readNonEmptyString(traceSchemas.emission, "scopes.traceSchemas.emission"),
+        readNonEmptyString(traceSchemas.fork, "scopes.traceSchemas.fork"),
         readNonEmptyString(traceSchemas.registration, "scopes.traceSchemas.registration"),
     ];
     if (new Set(traceSchemaValues).size !== traceSchemaValues.length) {
@@ -120,6 +159,7 @@ export function readScopeConfig(
                 artifacts.emissionSchema,
                 "scopes.artifacts.emissionSchema",
             ),
+            forkSchema: readNonEmptyString(artifacts.forkSchema, "scopes.artifacts.forkSchema"),
             registrationSchema: readNonEmptyString(
                 artifacts.registrationSchema,
                 "scopes.artifacts.registrationSchema",
@@ -131,6 +171,11 @@ export function readScopeConfig(
                 authority.resourceKinds,
                 "scopes.authority.resourceKinds",
             ),
+        },
+        checkpoint: {
+            constituentKinds: checkpointConstituentKinds,
+            evidenceStatuses: checkpointEvidenceStatuses,
+            version: readPositiveInteger(checkpoint.version, "scopes.checkpoint.version"),
         },
         commandKinds,
         compatibilityVersion: readNonEmptyString(
@@ -174,7 +219,12 @@ export function readScopeConfig(
             ),
         },
         evidenceKinds,
+        forkPhases,
         identity: {
+            custodyIdentityKind: readNonEmptyString(
+                identity.custodyIdentityKind,
+                "scopes.identity.custodyIdentityKind",
+            ),
             originCutIdPrefix: readNonEmptyString(
                 identity.originCutIdPrefix,
                 "scopes.identity.originCutIdPrefix",
@@ -203,6 +253,7 @@ export function readScopeConfig(
                 "scopes.schemas.childRegisteredId",
             ),
             emissionId: readAbsoluteUrl(schemas.emissionId, "scopes.schemas.emissionId"),
+            forkId: readAbsoluteUrl(schemas.forkId, "scopes.schemas.forkId"),
             registrationId: readAbsoluteUrl(
                 schemas.registrationId,
                 "scopes.schemas.registrationId",
@@ -212,9 +263,10 @@ export function readScopeConfig(
         traceSchemas: {
             childRegistered: traceSchemaValues[0] as string,
             emission: traceSchemaValues[1] as string,
-            registration: traceSchemaValues[2] as string,
+            fork: traceSchemaValues[2] as string,
+            registration: traceSchemaValues[3] as string,
         },
-        worldCapabilities: readUniqueStrings(scopes.worldCapabilities, "scopes.worldCapabilities"),
+        worldCapabilities,
         writerClaimLeaseMilliseconds: readPositiveInteger(
             scopes.writerClaimLeaseMilliseconds,
             "scopes.writerClaimLeaseMilliseconds",

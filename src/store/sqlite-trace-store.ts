@@ -82,13 +82,19 @@ import {
 } from "./retained-world-settlements.ts";
 import {
     type ChildScopeRegistrationRequest,
+    type ChildScopeRegistrationResult,
     claimScopeWriterInStore,
+    claimScopeWritersInStore,
+    completeScopeForkInStore,
     emitScopeRecordInStore,
     readAppendIntentRecords,
+    readScopeForkBoundaryInStore,
     readScopeRegistrationRow,
     registerChildScopeInStore,
     registerRootScopeInStore,
     releaseScopeWriterInStore,
+    type ScopeForkBoundary,
+    type ScopeForkCompletionRequest,
     type ScopeRegistrationRow,
     type ScopeWriterClaimRow,
     type ScopeWriterFence,
@@ -427,12 +433,38 @@ export class SQLiteTraceStore implements Disposable {
     }
 
     /** @internal Atomically registers or identically replays one child scope under its parent fence. */
-    registerChildScope(registration: ChildScopeRegistrationRequest): {
-        readonly cut: Cut;
-        readonly receipt: AppendReceipt;
-    } {
+    registerChildScope(registration: ChildScopeRegistrationRequest): ChildScopeRegistrationResult {
         this.#assertOpen();
         return registerChildScopeInStore(this.#database, registration);
+    }
+
+    /** @internal Classifies a fork as completed or at its safe physical boundary. */
+    readScopeForkBoundary(
+        boundary: ScopeForkBoundary,
+        completedAppendIntentId: string,
+    ): "completed" | "ready" {
+        this.#assertOpen();
+        return readScopeForkBoundaryInStore(this.#database, boundary, completedAppendIntentId);
+    }
+
+    /** @internal Atomically completes or replays one prepared fork under the parent fence. */
+    completeScopeFork(completion: ScopeForkCompletionRequest): AppendReceipt {
+        this.#assertOpen();
+        return completeScopeForkInStore(this.#database, completion);
+    }
+
+    /** @internal Atomically admits writer claims over distinct scopes in canonical order. */
+    claimScopeWriters(
+        claims: readonly { readonly claimId: string; readonly scopeId: string }[],
+        nowMilliseconds: number,
+    ): readonly ScopeWriterClaimRow[] {
+        this.#assertOpen();
+        return claimScopeWritersInStore(
+            this.#database,
+            claims,
+            nowMilliseconds,
+            scopeProtocolConfig.writerClaimLeaseMilliseconds,
+        );
     }
 
     /** @internal Atomically admits, renews, or refuses one scope writer claim. */

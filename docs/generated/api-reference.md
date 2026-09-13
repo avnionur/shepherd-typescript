@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.1.0
+Package: `@avnionur/shepherd-typescript` 2.2.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 576.
+Exported symbols: 595.
 
 ### `AppendBatchDraft`
 
@@ -487,6 +487,21 @@ export type ClaimScopeWriterOptions = {
     readonly claimId: string;
     readonly nowMilliseconds?: number;
     readonly scopeId: string;
+};
+```
+
+### `ClaimScopeWritersOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for atomically claiming writers over several scopes.
+
+Signature:
+
+```ts
+export type ClaimScopeWritersOptions = {
+    readonly claims: readonly ScopeWriterClaimRequest[];
+    readonly nowMilliseconds?: number;
 };
 ```
 
@@ -2096,6 +2111,28 @@ Signature:
 export type FinishedRunOutcome<V extends SemanticValue = SemanticValue> = {
     readonly status: (typeof RUN_TERMINAL_STATUSES)[0];
     readonly value: V;
+};
+```
+
+### `ForkScopeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for one reference-copy scope fork under explicit parent writer authority.
+
+Signature:
+
+```ts
+export type ForkScopeOptions = {
+    readonly binding: WorkspaceBinding;
+    readonly carrier: ReferenceCopyCarrier;
+    readonly commandId: string;
+    readonly executionId?: string;
+    readonly expectedHeadRecordId: RecordId;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly nowMilliseconds?: number;
+    readonly originRevisionId: string;
+    readonly parent: ScopeWriter;
 };
 ```
 
@@ -6093,6 +6130,58 @@ export declare const SCOPE_AUTHORITY_ATOMS: readonly [
 ];
 ```
 
+### `SCOPE_CHECKPOINT_CONSTITUENT_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope checkpoint constituent kinds in classification order.
+
+Signature:
+
+```ts
+export declare const SCOPE_CHECKPOINT_CONSTITUENT_KINDS: readonly [
+    "trace_cut",
+    "execution",
+    "binding",
+    "world",
+    "grants",
+    "child_frontier",
+    "budget",
+    "provider_session",
+    "process",
+    "irreversible_effects"
+];
+```
+
+### `SCOPE_CHECKPOINT_EVIDENCE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope checkpoint evidence statuses.
+
+Signature:
+
+```ts
+export declare const SCOPE_CHECKPOINT_EVIDENCE_STATUSES: readonly [
+    "verified",
+    "reconstructive",
+    "not_applicable",
+    "unavailable"
+];
+```
+
+### `SCOPE_CHECKPOINT_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope checkpoint descriptor version.
+
+Signature:
+
+```ts
+export declare const SCOPE_CHECKPOINT_VERSION: 1;
+```
+
 ### `SCOPE_COMMAND_KINDS`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -6105,7 +6194,8 @@ Signature:
 export declare const SCOPE_COMMAND_KINDS: readonly [
     "register_root",
     "register_child",
-    "emit"
+    "emit",
+    "fork"
 ];
 ```
 
@@ -6134,7 +6224,24 @@ export declare const SCOPE_EVIDENCE_KINDS: readonly [
     "registration",
     "origin_cut",
     "child_registered",
-    "emission"
+    "emission",
+    "fork_prepared",
+    "fork_completed"
+];
+```
+
+### `SCOPE_FORK_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope fork journal phases ordered prepared then completed.
+
+Signature:
+
+```ts
+export declare const SCOPE_FORK_PHASES: readonly [
+    "prepared",
+    "completed"
 ];
 ```
 
@@ -6191,7 +6298,8 @@ Signature:
 
 ```ts
 export declare const SCOPE_RESOURCE_KINDS: readonly [
-    "repository_binding"
+    "repository_binding",
+    "workspace_binding"
 ];
 ```
 
@@ -6221,7 +6329,8 @@ Signature:
 
 ```ts
 export declare const SCOPE_WORLD_CAPABILITIES: readonly [
-    "trace_only"
+    "trace_only",
+    "reference_copy"
 ];
 ```
 
@@ -7417,6 +7526,87 @@ Parameter:
 
 - detail - Optional specific refusal description appended to the configured message.
 
+### `ScopeBoundResource`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact resource identity bound to a scope world.
+
+Signature:
+
+```ts
+export type ScopeBoundResource = {
+    readonly resource_id: string;
+    readonly resource_kind: ScopeResourceKind;
+};
+```
+
+### `ScopeCheckpoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Honest coupled checkpoint descriptor retained by a completed scope fork.
+
+Signature:
+
+```ts
+export type ScopeCheckpoint = {
+    readonly capture_kind: string;
+    readonly checkpoint_version: number;
+    readonly constituents: readonly ScopeCheckpointConstituent[];
+};
+```
+
+### `ScopeCheckpointConstituent`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One classified checkpoint constituent.
+
+A verified constituent cites a retained receipt identity, an unavailable constituent states why,
+and reconstructive or not-applicable constituents carry neither.
+
+Signature:
+
+```ts
+export type ScopeCheckpointConstituent = {
+    readonly kind: ScopeCheckpointConstituentKind;
+    readonly receipt_id: string;
+    readonly status: (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[0];
+} | {
+    readonly kind: ScopeCheckpointConstituentKind;
+    readonly status: (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[1] | (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[2];
+} | {
+    readonly kind: ScopeCheckpointConstituentKind;
+    readonly reason: string;
+    readonly status: (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[3];
+};
+```
+
+### `ScopeCheckpointConstituentKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured constituent kind classified by a scope checkpoint descriptor.
+
+Signature:
+
+```ts
+export type ScopeCheckpointConstituentKind = (typeof SCOPE_CHECKPOINT_CONSTITUENT_KINDS)[number];
+```
+
+### `ScopeCheckpointEvidenceStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured evidence status of one scope checkpoint constituent.
+
+Signature:
+
+```ts
+export type ScopeCheckpointEvidenceStatus = (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[number];
+```
+
 ### `ScopeChildRegisteredRecord`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -7488,6 +7678,9 @@ export type ScopeCommandReplay = {
 } | {
     readonly command: (typeof SCOPE_COMMAND_KINDS)[2];
     readonly receipt: ScopeEmissionReceipt;
+} | {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[3];
+    readonly receipt: ScopeForkReceipt;
 };
 ```
 
@@ -7577,6 +7770,89 @@ Signature:
 
 ```ts
 export type ScopeEvidenceKind = (typeof SCOPE_EVIDENCE_KINDS)[number];
+```
+
+### `ScopeForkCompletedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical completed fork journal record body citing verified custody.
+
+Signature:
+
+```ts
+export type ScopeForkCompletedRecord = {
+    readonly checkpoint: ScopeCheckpoint;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly custody_content_id: string;
+    readonly custody_id: string;
+    readonly phase: (typeof SCOPE_FORK_PHASES)[1];
+    readonly scope_id: string;
+    readonly scope_version: number;
+};
+```
+
+### `ScopeForkPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured scope fork journal phase: prepared or completed.
+
+Signature:
+
+```ts
+export type ScopeForkPhase = (typeof SCOPE_FORK_PHASES)[number];
+```
+
+### `ScopeForkPreparedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical prepared fork journal record body retained before physical custody.
+
+Signature:
+
+```ts
+export type ScopeForkPreparedRecord = {
+    readonly base_content_id: string;
+    readonly base_revision_id: string;
+    readonly binding_id: string;
+    readonly capture_kind: string;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly custody_id: string;
+    readonly phase: (typeof SCOPE_FORK_PHASES)[0];
+    readonly resource_id: string;
+    readonly resource_kind: ScopeResourceKind;
+    readonly scope_id: string;
+    readonly scope_version: number;
+    readonly world_capability: ScopeWorldCapability;
+};
+```
+
+### `ScopeForkReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of one completed reference-copy scope fork.
+
+Signature:
+
+```ts
+export type ScopeForkReceipt = {
+    readonly authority: ScopeAuthority;
+    readonly command_id: string;
+    readonly completed_record_id: RecordId;
+    readonly head: ScopeHeadAddress;
+    readonly kind: ScopeKind;
+    readonly origin: ScopeParentOrigin;
+    readonly parent_head: ScopeHeadAddress;
+    readonly prepared_record_id: RecordId;
+    readonly registration_record_id: RecordId;
+    readonly scope_id: string;
+    readonly world: ScopeWorldInspection;
+};
 ```
 
 ### `ScopeHeadAddress`
@@ -7669,6 +7945,12 @@ export type ScopeHistoryEntry = {
     readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[3];
     readonly owner_ordinal: number;
     readonly record_id: RecordId;
+} | {
+    readonly command_id: string;
+    readonly custody_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[4] | (typeof SCOPE_EVIDENCE_KINDS)[5];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
 };
 ```
 
@@ -7693,6 +7975,7 @@ export type ScopeInspection = {
     readonly registration_record_id: RecordId;
     readonly scope_id: string;
     readonly state: ScopeState;
+    readonly world: ScopeWorldInspection | null;
     readonly world_capability: ScopeWorldCapability;
 };
 ```
@@ -7831,6 +8114,29 @@ Signature:
 export type ScopeWorldCapability = (typeof SCOPE_WORLD_CAPABILITIES)[number];
 ```
 
+### `ScopeWorldInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated reference-copy world of one forked scope.
+
+Signature:
+
+```ts
+export type ScopeWorldInspection = {
+    readonly base_content_id: string;
+    readonly base_revision_id: string;
+    readonly binding_id: string;
+    readonly capture_kind: string;
+    readonly checkpoint: ScopeCheckpoint | null;
+    readonly completed_record_id: RecordId | null;
+    readonly custody_id: string;
+    readonly prepared_record_id: RecordId;
+    readonly resource: ScopeBoundResource;
+    readonly status: ScopeForkPhase;
+};
+```
+
 ### `ScopeWriter`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -7846,6 +8152,21 @@ export type ScopeWriter = {
     readonly lease_expires_at: number;
     readonly scope_id: string;
     readonly [scopeWriterContract]?: true;
+};
+```
+
+### `ScopeWriterClaimRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One requested writer claim in a multi-scope acquisition.
+
+Signature:
+
+```ts
+export type ScopeWriterClaimRequest = {
+    readonly claimId: string;
+    readonly scopeId: string;
 };
 ```
 
@@ -10458,6 +10779,62 @@ Example:
 const writer = claimScopeWriter(store, { claimId: "claim:worker-1", scopeId: root.scope_id });
 ```
 
+### `claimScopeWriters`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Atomically claims single-writer authority over several distinct registered open scopes.
+
+Claims are admitted in canonical scope-identity order inside one transaction regardless of
+request order, so concurrent multi-scope callers cannot deadlock on ordering. Any refusal rolls
+back every claim in the request: a failed acquisition leaves no partial writer state. Each
+scope follows the single-claim rules of claimScopeWriter.
+
+Signature:
+
+```ts
+export declare function claimScopeWriters(store: SQLiteTraceStore, options: ClaimScopeWritersOptions): readonly ScopeWriter[];
+```
+
+Parameter:
+
+- store - Open writable trace store holding the scope registrations.
+
+Parameter:
+
+- options - Distinct claim requests and optional deterministic time.
+
+Returns:
+
+- Frozen package-authenticated writer handles in request order.
+
+Throws:
+
+- {ScopeWriterConflictError} If another unexpired active claim holds any requested scope.
+
+Throws:
+
+- {ScopeEvidenceError} If any scope is unregistered, not open, or has an incomplete fork.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed, empty, or name a scope more than once.
+
+Example:
+
+- ```ts
+const [parentWriter, childWriter] = claimScopeWriters(store, {
+    claims: [
+        { claimId: "claim:worker-1:parent", scopeId: parent.scope_id },
+        { claimId: "claim:worker-1:child", scopeId: child.scope_id },
+    ],
+});
+```
+
 ### `classifyProofEnvelope`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -11642,6 +12019,98 @@ const durable = await executeTaskDurably(store, {
 const projected = store.projectExecution(durable.ledger.cut.cut_id);
 ```
 
+### `forkScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably forks one isolated child scope with reference-copy custody of a single bound resource.
+
+One transaction registers the child under the exact parent head, publishes its origin cut, and
+retains a prepared journal record naming the binding, bound resource, immutable origin revision,
+and deterministic custody identity before any physical work. The carrier then publishes that
+custody by identity as a quiescent verified copy of the origin, and the fork is completed only
+after the custody and origin re-verify unmodified, with a checkpoint descriptor that classifies
+every configured constituent. Completion requires the parent's current writer fence.
+
+The origin must be the parent's world: a binding snapshot for a trace-only parent, or a capture
+of the parent world's current custody for a forked parent. The child's effective authority must
+grant read on the bound resource. Parent and sibling custody and the user binding are never
+written. Until completion, writer claims on the child are refused.
+
+Retrying the same command converges: retained registration is replayed, and a completed fork
+returns its original receipt with no carrier work. An incomplete fork runs physical work only
+after positive safe-boundary evidence: the parent's current writer fence, the prepared record as
+the child head, and no writer ever admitted on the child. An interrupted copy is then reopened
+by its deterministic identity. Custody that is modified or discarded before completion is an
+unknown physical state and stays blocked rather than being re-copied over.
+
+Signature:
+
+```ts
+export declare function forkScope(store: SQLiteTraceStore, options: ForkScopeOptions): Promise<ScopeForkReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the parent registration.
+
+Parameter:
+
+- options - Parent writer, exact head, grant, binding, carrier, origin, and command.
+
+Returns:
+
+- Frozen completed fork receipt with its verified world and checkpoint.
+
+Throws:
+
+- {ScopeAuthorityError} If the grant cannot read the bound resource or exceeds authority.
+
+Throws:
+
+- {ScopeWriterFencedError} If the parent fence is released, expired, or superseded.
+
+Throws:
+
+- {ScopeHeadConflictError} If the expected parent head is not current.
+
+Throws:
+
+- {ScopeEvidenceError} If the origin is not the parent world, the custody is in an unknown
+physical state, or retained evidence is inconsistent.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {WorldCarrierError} If carrier evidence is unavailable, corrupt, or discarded.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If a handle is forged or options are malformed.
+
+Example:
+
+- ```ts
+const origin = await carrier.snapshot(binding);
+const fork = await forkScope(store, {
+    binding,
+    carrier,
+    commandId: "scope-command:fork:1",
+    expectedHeadRecordId: root.head.record_id,
+    grant: [{ atoms: ["read", "write"], resource_id: binding.binding_id, resource_kind: "workspace_binding" }],
+    originRevisionId: origin.revision_id,
+    parent: rootWriter,
+});
+const custody = await carrier.openCustody(fork.world.custody_id);
+```
+
 ### `grantTaskRepositories`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -12606,10 +13075,12 @@ Classification: `runtime-only`. Kind: `function`.
 
 Reads the exact retained receipt of one completed scope command without any writer authority.
 
-Receipt replay is a read: it reconstructs the original registration or emission receipt from
-the records retained under the command's append intent, so a caller that lost its response,
-restarted, or whose fence is stale or superseded still receives the original result. It grants
-no mutation authority and works on read-only and imported stores.
+Receipt replay is a read: it reconstructs the original registration, emission, or fork receipt
+from the records retained under the command's append intents, so a caller that lost its
+response, restarted, or whose fence is stale or superseded still receives the original result.
+It grants no mutation authority and works on read-only and imported stores. A fork is complete
+only once its completed journal record is retained; until then no receipt exists, and
+`inspectScope` reports the prepared world.
 
 Signature:
 
@@ -12627,7 +13098,7 @@ Parameter:
 
 Returns:
 
-- The classified original receipt, or `undefined` when the command was never retained.
+- The classified original receipt, or `undefined` when the command has not completed.
 
 Throws:
 
@@ -17572,7 +18043,7 @@ import * as api from "@avnionur/shepherd-typescript/scopes";
 void api;
 ```
 
-Exported symbols: 52.
+Exported symbols: 69.
 
 ### `AppendIntentConflictError`
 
@@ -17609,6 +18080,21 @@ export type ClaimScopeWriterOptions = {
     readonly claimId: string;
     readonly nowMilliseconds?: number;
     readonly scopeId: string;
+};
+```
+
+### `ClaimScopeWritersOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for atomically claiming writers over several scopes.
+
+Signature:
+
+```ts
+export type ClaimScopeWritersOptions = {
+    readonly claims: readonly ScopeWriterClaimRequest[];
+    readonly nowMilliseconds?: number;
 };
 ```
 
@@ -17698,6 +18184,58 @@ export declare const SCOPE_AUTHORITY_ATOMS: readonly [
 ];
 ```
 
+### `SCOPE_CHECKPOINT_CONSTITUENT_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope checkpoint constituent kinds in classification order.
+
+Signature:
+
+```ts
+export declare const SCOPE_CHECKPOINT_CONSTITUENT_KINDS: readonly [
+    "trace_cut",
+    "execution",
+    "binding",
+    "world",
+    "grants",
+    "child_frontier",
+    "budget",
+    "provider_session",
+    "process",
+    "irreversible_effects"
+];
+```
+
+### `SCOPE_CHECKPOINT_EVIDENCE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope checkpoint evidence statuses.
+
+Signature:
+
+```ts
+export declare const SCOPE_CHECKPOINT_EVIDENCE_STATUSES: readonly [
+    "verified",
+    "reconstructive",
+    "not_applicable",
+    "unavailable"
+];
+```
+
+### `SCOPE_CHECKPOINT_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope checkpoint descriptor version.
+
+Signature:
+
+```ts
+export declare const SCOPE_CHECKPOINT_VERSION: 1;
+```
+
 ### `SCOPE_COMMAND_KINDS`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -17710,7 +18248,8 @@ Signature:
 export declare const SCOPE_COMMAND_KINDS: readonly [
     "register_root",
     "register_child",
-    "emit"
+    "emit",
+    "fork"
 ];
 ```
 
@@ -17739,7 +18278,24 @@ export declare const SCOPE_EVIDENCE_KINDS: readonly [
     "registration",
     "origin_cut",
     "child_registered",
-    "emission"
+    "emission",
+    "fork_prepared",
+    "fork_completed"
+];
+```
+
+### `SCOPE_FORK_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope fork journal phases ordered prepared then completed.
+
+Signature:
+
+```ts
+export declare const SCOPE_FORK_PHASES: readonly [
+    "prepared",
+    "completed"
 ];
 ```
 
@@ -17796,7 +18352,8 @@ Signature:
 
 ```ts
 export declare const SCOPE_RESOURCE_KINDS: readonly [
-    "repository_binding"
+    "repository_binding",
+    "workspace_binding"
 ];
 ```
 
@@ -17826,7 +18383,8 @@ Signature:
 
 ```ts
 export declare const SCOPE_WORLD_CAPABILITIES: readonly [
-    "trace_only"
+    "trace_only",
+    "reference_copy"
 ];
 ```
 
@@ -17891,6 +18449,87 @@ constructor(detail?: string);
 Parameter:
 
 - detail - Optional specific refusal description appended to the configured message.
+
+### `ScopeBoundResource`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact resource identity bound to a scope world.
+
+Signature:
+
+```ts
+export type ScopeBoundResource = {
+    readonly resource_id: string;
+    readonly resource_kind: ScopeResourceKind;
+};
+```
+
+### `ScopeCheckpoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Honest coupled checkpoint descriptor retained by a completed scope fork.
+
+Signature:
+
+```ts
+export type ScopeCheckpoint = {
+    readonly capture_kind: string;
+    readonly checkpoint_version: number;
+    readonly constituents: readonly ScopeCheckpointConstituent[];
+};
+```
+
+### `ScopeCheckpointConstituent`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One classified checkpoint constituent.
+
+A verified constituent cites a retained receipt identity, an unavailable constituent states why,
+and reconstructive or not-applicable constituents carry neither.
+
+Signature:
+
+```ts
+export type ScopeCheckpointConstituent = {
+    readonly kind: ScopeCheckpointConstituentKind;
+    readonly receipt_id: string;
+    readonly status: (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[0];
+} | {
+    readonly kind: ScopeCheckpointConstituentKind;
+    readonly status: (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[1] | (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[2];
+} | {
+    readonly kind: ScopeCheckpointConstituentKind;
+    readonly reason: string;
+    readonly status: (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[3];
+};
+```
+
+### `ScopeCheckpointConstituentKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured constituent kind classified by a scope checkpoint descriptor.
+
+Signature:
+
+```ts
+export type ScopeCheckpointConstituentKind = (typeof SCOPE_CHECKPOINT_CONSTITUENT_KINDS)[number];
+```
+
+### `ScopeCheckpointEvidenceStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured evidence status of one scope checkpoint constituent.
+
+Signature:
+
+```ts
+export type ScopeCheckpointEvidenceStatus = (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[number];
+```
 
 ### `ScopeChildRegisteredRecord`
 
@@ -17963,6 +18602,9 @@ export type ScopeCommandReplay = {
 } | {
     readonly command: (typeof SCOPE_COMMAND_KINDS)[2];
     readonly receipt: ScopeEmissionReceipt;
+} | {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[3];
+    readonly receipt: ScopeForkReceipt;
 };
 ```
 
@@ -18052,6 +18694,89 @@ Signature:
 
 ```ts
 export type ScopeEvidenceKind = (typeof SCOPE_EVIDENCE_KINDS)[number];
+```
+
+### `ScopeForkCompletedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical completed fork journal record body citing verified custody.
+
+Signature:
+
+```ts
+export type ScopeForkCompletedRecord = {
+    readonly checkpoint: ScopeCheckpoint;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly custody_content_id: string;
+    readonly custody_id: string;
+    readonly phase: (typeof SCOPE_FORK_PHASES)[1];
+    readonly scope_id: string;
+    readonly scope_version: number;
+};
+```
+
+### `ScopeForkPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured scope fork journal phase: prepared or completed.
+
+Signature:
+
+```ts
+export type ScopeForkPhase = (typeof SCOPE_FORK_PHASES)[number];
+```
+
+### `ScopeForkPreparedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical prepared fork journal record body retained before physical custody.
+
+Signature:
+
+```ts
+export type ScopeForkPreparedRecord = {
+    readonly base_content_id: string;
+    readonly base_revision_id: string;
+    readonly binding_id: string;
+    readonly capture_kind: string;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly custody_id: string;
+    readonly phase: (typeof SCOPE_FORK_PHASES)[0];
+    readonly resource_id: string;
+    readonly resource_kind: ScopeResourceKind;
+    readonly scope_id: string;
+    readonly scope_version: number;
+    readonly world_capability: ScopeWorldCapability;
+};
+```
+
+### `ScopeForkReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of one completed reference-copy scope fork.
+
+Signature:
+
+```ts
+export type ScopeForkReceipt = {
+    readonly authority: ScopeAuthority;
+    readonly command_id: string;
+    readonly completed_record_id: RecordId;
+    readonly head: ScopeHeadAddress;
+    readonly kind: ScopeKind;
+    readonly origin: ScopeParentOrigin;
+    readonly parent_head: ScopeHeadAddress;
+    readonly prepared_record_id: RecordId;
+    readonly registration_record_id: RecordId;
+    readonly scope_id: string;
+    readonly world: ScopeWorldInspection;
+};
 ```
 
 ### `ScopeHeadAddress`
@@ -18144,6 +18869,12 @@ export type ScopeHistoryEntry = {
     readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[3];
     readonly owner_ordinal: number;
     readonly record_id: RecordId;
+} | {
+    readonly command_id: string;
+    readonly custody_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[4] | (typeof SCOPE_EVIDENCE_KINDS)[5];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
 };
 ```
 
@@ -18168,6 +18899,7 @@ export type ScopeInspection = {
     readonly registration_record_id: RecordId;
     readonly scope_id: string;
     readonly state: ScopeState;
+    readonly world: ScopeWorldInspection | null;
     readonly world_capability: ScopeWorldCapability;
 };
 ```
@@ -18306,6 +19038,29 @@ Signature:
 export type ScopeWorldCapability = (typeof SCOPE_WORLD_CAPABILITIES)[number];
 ```
 
+### `ScopeWorldInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated reference-copy world of one forked scope.
+
+Signature:
+
+```ts
+export type ScopeWorldInspection = {
+    readonly base_content_id: string;
+    readonly base_revision_id: string;
+    readonly binding_id: string;
+    readonly capture_kind: string;
+    readonly checkpoint: ScopeCheckpoint | null;
+    readonly completed_record_id: RecordId | null;
+    readonly custody_id: string;
+    readonly prepared_record_id: RecordId;
+    readonly resource: ScopeBoundResource;
+    readonly status: ScopeForkPhase;
+};
+```
+
 ### `ScopeWriter`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -18321,6 +19076,21 @@ export type ScopeWriter = {
     readonly lease_expires_at: number;
     readonly scope_id: string;
     readonly [scopeWriterContract]?: true;
+};
+```
+
+### `ScopeWriterClaimRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One requested writer claim in a multi-scope acquisition.
+
+Signature:
+
+```ts
+export type ScopeWriterClaimRequest = {
+    readonly claimId: string;
+    readonly scopeId: string;
 };
 ```
 
@@ -18528,6 +19298,62 @@ Example:
 const writer = claimScopeWriter(store, { claimId: "claim:worker-1", scopeId: root.scope_id });
 ```
 
+### `claimScopeWriters`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Atomically claims single-writer authority over several distinct registered open scopes.
+
+Claims are admitted in canonical scope-identity order inside one transaction regardless of
+request order, so concurrent multi-scope callers cannot deadlock on ordering. Any refusal rolls
+back every claim in the request: a failed acquisition leaves no partial writer state. Each
+scope follows the single-claim rules of claimScopeWriter.
+
+Signature:
+
+```ts
+export declare function claimScopeWriters(store: SQLiteTraceStore, options: ClaimScopeWritersOptions): readonly ScopeWriter[];
+```
+
+Parameter:
+
+- store - Open writable trace store holding the scope registrations.
+
+Parameter:
+
+- options - Distinct claim requests and optional deterministic time.
+
+Returns:
+
+- Frozen package-authenticated writer handles in request order.
+
+Throws:
+
+- {ScopeWriterConflictError} If another unexpired active claim holds any requested scope.
+
+Throws:
+
+- {ScopeEvidenceError} If any scope is unregistered, not open, or has an incomplete fork.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed, empty, or name a scope more than once.
+
+Example:
+
+- ```ts
+const [parentWriter, childWriter] = claimScopeWriters(store, {
+    claims: [
+        { claimId: "claim:worker-1:parent", scopeId: parent.scope_id },
+        { claimId: "claim:worker-1:child", scopeId: child.scope_id },
+    ],
+});
+```
+
 ### `emitScopeRecord`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -18647,10 +19473,12 @@ Classification: `runtime-only`. Kind: `function`.
 
 Reads the exact retained receipt of one completed scope command without any writer authority.
 
-Receipt replay is a read: it reconstructs the original registration or emission receipt from
-the records retained under the command's append intent, so a caller that lost its response,
-restarted, or whose fence is stale or superseded still receives the original result. It grants
-no mutation authority and works on read-only and imported stores.
+Receipt replay is a read: it reconstructs the original registration, emission, or fork receipt
+from the records retained under the command's append intents, so a caller that lost its
+response, restarted, or whose fence is stale or superseded still receives the original result.
+It grants no mutation authority and works on read-only and imported stores. A fork is complete
+only once its completed journal record is retained; until then no receipt exists, and
+`inspectScope` reports the prepared world.
 
 Signature:
 
@@ -18668,7 +19496,7 @@ Parameter:
 
 Returns:
 
-- The classified original receipt, or `undefined` when the command was never retained.
+- The classified original receipt, or `undefined` when the command has not completed.
 
 Throws:
 
@@ -21725,7 +22553,7 @@ Workspace bindings, custody, grants, placement, retained execution, and exact se
 
 Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
-Authority and mutation: These APIs may read or mutate caller-selected filesystem and Git state, and native runners may launch capability-probed processes. Required task, provider, run, trace, carrier, runner, and grant handles stay explicit.
+Authority and mutation: These APIs may read or mutate caller-selected filesystem and Git state, and native runners may launch capability-probed processes. Required task, provider, run, trace, carrier, runner, grant, and scope writer handles stay explicit.
 
 Import example:
 
@@ -21734,7 +22562,7 @@ import * as api from "@avnionur/shepherd-typescript/workspace";
 void api;
 ```
 
-Exported symbols: 186.
+Exported symbols: 188.
 
 ### `AppliedRetainedWorldSettlement`
 
@@ -21874,6 +22702,28 @@ export type DiscardedRetainedWorldSettlement = {
     readonly request_id: string;
     readonly settlement_version: typeof RETAINED_WORLD_SETTLEMENT_VERSION;
     readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[3];
+};
+```
+
+### `ForkScopeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for one reference-copy scope fork under explicit parent writer authority.
+
+Signature:
+
+```ts
+export type ForkScopeOptions = {
+    readonly binding: WorkspaceBinding;
+    readonly carrier: ReferenceCopyCarrier;
+    readonly commandId: string;
+    readonly executionId?: string;
+    readonly expectedHeadRecordId: RecordId;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly nowMilliseconds?: number;
+    readonly originRevisionId: string;
+    readonly parent: ScopeWriter;
 };
 ```
 
@@ -25338,6 +26188,98 @@ const discarded = await discardRetainedWorldSettlement({
     store,
 });
 discarded.cleanup_completed;
+```
+
+### `forkScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably forks one isolated child scope with reference-copy custody of a single bound resource.
+
+One transaction registers the child under the exact parent head, publishes its origin cut, and
+retains a prepared journal record naming the binding, bound resource, immutable origin revision,
+and deterministic custody identity before any physical work. The carrier then publishes that
+custody by identity as a quiescent verified copy of the origin, and the fork is completed only
+after the custody and origin re-verify unmodified, with a checkpoint descriptor that classifies
+every configured constituent. Completion requires the parent's current writer fence.
+
+The origin must be the parent's world: a binding snapshot for a trace-only parent, or a capture
+of the parent world's current custody for a forked parent. The child's effective authority must
+grant read on the bound resource. Parent and sibling custody and the user binding are never
+written. Until completion, writer claims on the child are refused.
+
+Retrying the same command converges: retained registration is replayed, and a completed fork
+returns its original receipt with no carrier work. An incomplete fork runs physical work only
+after positive safe-boundary evidence: the parent's current writer fence, the prepared record as
+the child head, and no writer ever admitted on the child. An interrupted copy is then reopened
+by its deterministic identity. Custody that is modified or discarded before completion is an
+unknown physical state and stays blocked rather than being re-copied over.
+
+Signature:
+
+```ts
+export declare function forkScope(store: SQLiteTraceStore, options: ForkScopeOptions): Promise<ScopeForkReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the parent registration.
+
+Parameter:
+
+- options - Parent writer, exact head, grant, binding, carrier, origin, and command.
+
+Returns:
+
+- Frozen completed fork receipt with its verified world and checkpoint.
+
+Throws:
+
+- {ScopeAuthorityError} If the grant cannot read the bound resource or exceeds authority.
+
+Throws:
+
+- {ScopeWriterFencedError} If the parent fence is released, expired, or superseded.
+
+Throws:
+
+- {ScopeHeadConflictError} If the expected parent head is not current.
+
+Throws:
+
+- {ScopeEvidenceError} If the origin is not the parent world, the custody is in an unknown
+physical state, or retained evidence is inconsistent.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {WorldCarrierError} If carrier evidence is unavailable, corrupt, or discarded.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If a handle is forged or options are malformed.
+
+Example:
+
+- ```ts
+const origin = await carrier.snapshot(binding);
+const fork = await forkScope(store, {
+    binding,
+    carrier,
+    commandId: "scope-command:fork:1",
+    expectedHeadRecordId: root.head.record_id,
+    grant: [{ atoms: ["read", "write"], resource_id: binding.binding_id, resource_kind: "workspace_binding" }],
+    originRevisionId: origin.revision_id,
+    parent: rootWriter,
+});
+const custody = await carrier.openCustody(fork.world.custody_id);
 ```
 
 ### `grantTaskRepositories`

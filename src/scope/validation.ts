@@ -86,7 +86,8 @@ export function readScopeArray(value: unknown, subject: string): readonly unknow
     return value;
 }
 
-function assertPrefixedDigest(value: unknown, prefix: string, subject: string): void {
+/** Validates one identifier made of a configured prefix and a configured-length digest. @internal */
+export function assertPrefixedDigest(value: unknown, prefix: string, subject: string): void {
     if (typeof value !== "string") {
         throw new TypeError(`${subject} must be a string`);
     }

@@ -109,6 +109,9 @@ trace-record contracts with durable SQLite task and trace stores:
   parent origin cuts, per-resource attenuation of parent, request, and whole-run ceiling,
   single-writer monotonic fencing, globally idempotent emission of validated application data,
   reconstructed inspection after reopen or import, and store schema v9 integrity checks;
+- reference-copy scope fork of one bound resource: verified fixed origins, a prepared journal
+  record before physical custody, verified completion under the parent fence, honest checkpoint
+  descriptors, receipt-based restart convergence, and atomic multi-scope writer claims;
 - workspace protocol v22 content-addressed macOS/Linux/native-Windows/WSL platform evidence,
   advisory/auto placement resolution with visible fallback, exact placed capture/recovery, and
   fail-closed explicit jail refusal without a native-sandbox claim;
@@ -585,6 +588,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Reference copy carrier](./docs/reference-copy-carrier.md)
 - [Repository grants and run authority ceilings](./docs/repository-grants.md)
 - [Durable scope registration and fenced local emission](./docs/scope-registration.md)
+- [Reference-copy scope fork and restart recovery](./docs/scope-fork.md)
 - [Placement resolution and reporting](./docs/placement-resolution.md)
 - [Native jail execution](./docs/native-jail-execution.md)
 - [Retained-world path-disjoint application](./docs/retained-world-application.md)
@@ -632,8 +636,9 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 The [Phase 5 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-5-exit-audit.md) maps delivered product-surface evidence.
 Phase 5 is complete through the approved 2.0.0 runtime-support remedy. Phase 6 follows the
 [scope ownership/authority proposal](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/scope-ownership-contract.md);
-its first slice, [trace-only scope registration and fenced emission](./docs/scope-registration.md),
-is implemented. World fork, merge, discard, and L2 parity are not. The major version does not
+[trace-only scope registration](./docs/scope-registration.md) and
+[reference-copy scope fork](./docs/scope-fork.md) are implemented. Merge, discard, optimized
+carriers, and L2 parity are not. The major version does not
 imply production readiness.
 
 The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline

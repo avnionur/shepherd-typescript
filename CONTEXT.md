@@ -123,6 +123,16 @@ Validated application data retained on one scope's local history under an exact 
 identity.
 _Avoid_: Effect outcome, parent-visible publication, external execution
 
+**Scope Fork**:
+An isolated child scope whose world is separate verified-copy custody of one bound resource,
+admitted by a prepared journal record and completed under the parent's writer fence.
+_Avoid_: Atomic snapshot, Git branch, merge
+
+**Scope Checkpoint**:
+The classified constituents of a completed fork, each verified with a receipt, reconstructive, not
+applicable, or unavailable with a reason.
+_Avoid_: Restorable process snapshot, trace cut alone
+
 **Task Descriptor**:
 An immutable bodyless behavioral contract containing a logical identity, instruction, and runtime
 input/output schemas.

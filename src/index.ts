@@ -157,9 +157,13 @@ export {
     RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION,
     RETAINED_WORLD_SETTLEMENT_VERSION,
     SCOPE_AUTHORITY_ATOMS,
+    SCOPE_CHECKPOINT_CONSTITUENT_KINDS,
+    SCOPE_CHECKPOINT_EVIDENCE_STATUSES,
+    SCOPE_CHECKPOINT_VERSION,
     SCOPE_COMMAND_KINDS,
     SCOPE_COMPATIBILITY_VERSION,
     SCOPE_EVIDENCE_KINDS,
+    SCOPE_FORK_PHASES,
     SCOPE_KINDS,
     SCOPE_LIMITS,
     SCOPE_RECORD_VERSION,
@@ -353,12 +357,18 @@ export { registerChildScope, registerRootScope } from "./scope/registration.ts";
 export { readScopeCommandReceipt } from "./scope/replay.ts";
 export type {
     ClaimScopeWriterOptions,
+    ClaimScopeWritersOptions,
     EmitScopeRecordOptions,
     RegisterChildScopeOptions,
     RegisterRootScopeOptions,
     ReleaseScopeWriterOptions,
     ScopeAuthority,
     ScopeAuthorityAtom,
+    ScopeBoundResource,
+    ScopeCheckpoint,
+    ScopeCheckpointConstituent,
+    ScopeCheckpointConstituentKind,
+    ScopeCheckpointEvidenceStatus,
     ScopeChildRegisteredRecord,
     ScopeChildRegistrationReceipt,
     ScopeCommandKind,
@@ -366,6 +376,10 @@ export type {
     ScopeEmissionReceipt,
     ScopeEmissionRecord,
     ScopeEvidenceKind,
+    ScopeForkCompletedRecord,
+    ScopeForkPhase,
+    ScopeForkPreparedRecord,
+    ScopeForkReceipt,
     ScopeHeadAddress,
     ScopeHistoryEntry,
     ScopeInspection,
@@ -378,10 +392,12 @@ export type {
     ScopeRootRegistrationReceipt,
     ScopeState,
     ScopeWorldCapability,
+    ScopeWorldInspection,
     ScopeWriter,
+    ScopeWriterClaimRequest,
     ScopeWriterRelease,
 } from "./scope/types.ts";
-export { claimScopeWriter, releaseScopeWriter } from "./scope/writer.ts";
+export { claimScopeWriter, claimScopeWriters, releaseScopeWriter } from "./scope/writer.ts";
 export {
     AppendIntentConflictError,
     BlobIntegrityError,
@@ -596,6 +612,8 @@ export type {
     SelectedRetainedWorldSettlement,
     SelectRetainedWorldSettlementOptions,
 } from "./workspace/retained-world-settlement-types.ts";
+export { forkScope } from "./workspace/scope-fork.ts";
+export type { ForkScopeOptions } from "./workspace/scope-fork-types.ts";
 export {
     captureGrantedTaskWorldDurably,
     captureJailedGrantedTaskWorldDurably,

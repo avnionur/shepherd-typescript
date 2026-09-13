@@ -1,9 +1,14 @@
 import { scopeProtocolConfig } from "../protocol/config.ts";
-import { RECORD_MODES, SCOPE_KINDS } from "../protocol/values.generated.ts";
+import {
+    RECORD_MODES,
+    SCOPE_KINDS,
+    SCOPE_WORLD_CAPABILITIES,
+} from "../protocol/values.generated.ts";
 import { createRecordEnvelope } from "../record/envelope.ts";
 import { assertRecordId } from "../record/guards.ts";
 import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
 import type { RecordBody, RecordId } from "../record/types.ts";
+import type { ChildScopeRegistrationRequest } from "../store/scope-registrations.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { AppendReceipt } from "../store/types.ts";
 import { attenuateScopeAuthority, readScopeResourceGrants } from "./authority.ts";
@@ -19,15 +24,19 @@ import {
 import type {
     RegisterChildScopeOptions,
     RegisterRootScopeOptions,
+    ScopeAuthority,
     ScopeChildRegistrationReceipt,
     ScopeHeadAddress,
+    ScopeParentOrigin,
     ScopeRootRegistrationReceipt,
+    ScopeWorldCapability,
 } from "./types.ts";
 import { assertScopeText, readNowMilliseconds, readScopeDataObject } from "./validation.ts";
 import { assertScopeWriter } from "./writer.ts";
 
 const [CAPTURE_MODE] = RECORD_MODES;
 const [ROOT_KIND, CHILD_KIND] = SCOPE_KINDS;
+const [TRACE_ONLY_CAPABILITY] = SCOPE_WORLD_CAPABILITIES;
 const CHILD_REGISTERED_LOCAL_ID = "scope_child_registered";
 
 /**
@@ -154,13 +163,46 @@ export function registerChildScope(
         "registerChildScope options",
         ["executionId", "nowMilliseconds"],
     );
+    const child = prepareChildScopeRegistration(store, fields, TRACE_ONLY_CAPABILITY);
+    const { cut, receipt } = store.registerChildScope({ ...child.registration, prepared: null });
+    return childRegistrationReceipt(child, cut.created_by_record_id, receipt);
+}
+
+/** Validated inputs and canonical requests for one child registration. @internal */
+export type PreparedChildScopeRegistration = {
+    /** Attenuated ceiling and effective authority. */
+    readonly authority: ScopeAuthority;
+    /** Globally idempotent command identity. */
+    readonly commandId: string;
+    /** Exact parent origin evidence. */
+    readonly origin: ScopeParentOrigin;
+    /** Store admission request without an optional prepared journal. */
+    readonly registration: Omit<ChildScopeRegistrationRequest, "prepared">;
+    /** Child scope identity. */
+    readonly scopeId: string;
+};
+
+/**
+ * Validates child registration options and builds the canonical parent-control and child
+ * registration request for the declared world capability.
+ *
+ * @internal
+ */
+export function prepareChildScopeRegistration(
+    store: SQLiteTraceStore,
+    fields: Record<string, unknown>,
+    worldCapability: ScopeWorldCapability,
+): PreparedChildScopeRegistration {
     assertScopeText(fields.commandId, "commandId");
     assertRecordId(fields.expectedHeadRecordId, "expectedHeadRecordId");
     assertScopeWriter(fields.parent, store);
+    const commandId = fields.commandId;
+    const expectedHeadRecordId = fields.expectedHeadRecordId;
+    const parent = fields.parent;
     const executionId = readExecutionId(fields.executionId);
     const nowMilliseconds = readNowMilliseconds(fields.nowMilliseconds, "nowMilliseconds");
     const grant = readScopeResourceGrants(fields.grant, "grant");
-    const parentScopeId = fields.parent.scope_id;
+    const parentScopeId = parent.scope_id;
     const parentRow = store.readScopeRegistration(parentScopeId);
     if (parentRow === undefined) {
         throw new ScopeEvidenceError(
@@ -183,18 +225,18 @@ export function registerChildScope(
         parentRegistration.authority.effective,
         grant,
     );
-    const scopeId = createScopeId(fields.commandId, parentScopeId);
-    const originCutId = createScopeOriginCutId(fields.commandId);
+    const scopeId = createScopeId(commandId, parentScopeId);
+    const originCutId = createScopeOriginCutId(commandId);
     const childRegisteredBody = createScopeChildRegisteredBody({
         childScopeId: scopeId,
-        commandId: fields.commandId,
+        commandId,
         originCutId,
-        originRecordId: fields.expectedHeadRecordId,
+        originRecordId: expectedHeadRecordId,
         parentScopeId,
     });
     const childRegisteredRecordId = createRecordEnvelope({
         body: childRegisteredBody as unknown as RecordBody,
-        caused_by_record_ids: [fields.expectedHeadRecordId],
+        caused_by_record_ids: [expectedHeadRecordId],
         mode: CAPTURE_MODE,
         schema_ref: scopeProtocolConfig.traceSchemas.childRegistered,
         witness_ref: ROOT_WITNESS_ID,
@@ -202,71 +244,90 @@ export function registerChildScope(
     const origin = Object.freeze({
         child_registered_record_id: childRegisteredRecordId,
         origin_cut_id: originCutId,
-        origin_record_id: fields.expectedHeadRecordId,
+        origin_record_id: expectedHeadRecordId,
         scope_id: parentScopeId,
     });
     const registrationBody = createScopeRegistrationBody({
         authority,
-        commandId: fields.commandId,
+        commandId,
         executionId,
         parent: origin,
         scopeId,
+        worldCapability,
     });
-    const { cut, receipt } = store.registerChildScope({
-        executionId,
-        nowMilliseconds,
-        originCutId,
-        parentExpectedHeadRecordId: fields.expectedHeadRecordId,
-        parentFence: { claimId: fields.parent.claim_id, fencingToken: fields.parent.fencing_token },
-        parentScopeId,
-        request: {
-            append_intent_id: createScopeCommandAppendIntentId(fields.commandId),
-            batch: {
-                groups: [
-                    {
-                        caused_by_record_ids: [fields.expectedHeadRecordId],
-                        owner_id: parentScopeId,
-                        records: [
-                            {
-                                append_local_id: CHILD_REGISTERED_LOCAL_ID,
-                                body: childRegisteredBody as unknown as RecordBody,
-                                mode: CAPTURE_MODE,
-                                schema_ref: scopeProtocolConfig.traceSchemas.childRegistered,
-                                witness_ref: ROOT_WITNESS_ID,
-                            },
-                        ],
-                    },
-                    {
-                        owner_id: scopeId,
-                        records: [
-                            {
-                                body: registrationBody as unknown as RecordBody,
-                                caused_by_local_refs: [CHILD_REGISTERED_LOCAL_ID],
-                                mode: CAPTURE_MODE,
-                                schema_ref: scopeProtocolConfig.traceSchemas.registration,
-                                witness_ref: ROOT_WITNESS_ID,
-                            },
-                        ],
-                    },
-                ],
-            },
-        },
-        scopeId,
-    });
-    const registrationRecordId = receipt.record_ids[1] as RecordId;
-    const registrationHead = headAddress(receipt, scopeId, 0, registrationRecordId);
     return Object.freeze({
         authority,
-        command_id: fields.commandId,
+        commandId,
+        origin,
+        registration: Object.freeze({
+            executionId,
+            nowMilliseconds,
+            originCutId,
+            parentExpectedHeadRecordId: expectedHeadRecordId,
+            parentFence: { claimId: parent.claim_id, fencingToken: parent.fencing_token },
+            parentScopeId,
+            request: {
+                append_intent_id: createScopeCommandAppendIntentId(commandId),
+                batch: {
+                    groups: [
+                        {
+                            caused_by_record_ids: [expectedHeadRecordId],
+                            owner_id: parentScopeId,
+                            records: [
+                                {
+                                    append_local_id: CHILD_REGISTERED_LOCAL_ID,
+                                    body: childRegisteredBody as unknown as RecordBody,
+                                    mode: CAPTURE_MODE,
+                                    schema_ref: scopeProtocolConfig.traceSchemas.childRegistered,
+                                    witness_ref: ROOT_WITNESS_ID,
+                                },
+                            ],
+                        },
+                        {
+                            owner_id: scopeId,
+                            records: [
+                                {
+                                    body: registrationBody as unknown as RecordBody,
+                                    caused_by_local_refs: [CHILD_REGISTERED_LOCAL_ID],
+                                    mode: CAPTURE_MODE,
+                                    schema_ref: scopeProtocolConfig.traceSchemas.registration,
+                                    witness_ref: ROOT_WITNESS_ID,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+            scopeId,
+        }),
+        scopeId,
+    });
+}
+
+function childRegistrationReceipt(
+    child: PreparedChildScopeRegistration,
+    originCutRecordId: RecordId,
+    receipt: AppendReceipt,
+): ScopeChildRegistrationReceipt {
+    const registrationRecordId = receipt.record_ids[1] as RecordId;
+    const registrationHead = headAddress(receipt, child.scopeId, 0, registrationRecordId);
+    return Object.freeze({
+        authority: child.authority,
+        command_id: child.commandId,
         head: Object.freeze({
             owner_ordinal: registrationHead.owner_ordinal + 1,
-            record_id: cut.created_by_record_id,
+            record_id: originCutRecordId,
         }),
         kind: CHILD_KIND,
-        origin,
-        parent_head: headAddress(receipt, parentScopeId, 0, receipt.record_ids[0] as RecordId),
+        origin: child.origin,
+        parent_head: headAddress(
+            receipt,
+            child.registration.parentScopeId,
+            0,
+            receipt.record_ids[0] as RecordId,
+        ),
         registration_record_id: registrationRecordId,
-        scope_id: scopeId,
+        scope_id: child.scopeId,
     });
 }
 

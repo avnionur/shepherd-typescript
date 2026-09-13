@@ -249,6 +249,6 @@ The project is complete only when:
 
 ## Immediate next step
 
-Phase 6 slice A (#129) is delivered in 2.1.0. Continue with #130, reference-copy isolated fork
-and restart recovery, binding scope resources to authenticated workspace resources and citing the
-retained origin cut, with production-seam acceptance tests.
+Phase 6 slices A (#129, 2.1.0) and B (#130, 2.2.0) are delivered. Continue with #131,
+consume-once scope merge and discard, consuming the fork journal and checkpoint with
+production-seam acceptance tests.

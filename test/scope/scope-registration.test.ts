@@ -614,9 +614,13 @@ test("the scopes facade exposes the complete runtime surface", () => {
     assert.deepEqual(Object.keys(scopes).sort(), [
         "AppendIntentConflictError",
         "SCOPE_AUTHORITY_ATOMS",
+        "SCOPE_CHECKPOINT_CONSTITUENT_KINDS",
+        "SCOPE_CHECKPOINT_EVIDENCE_STATUSES",
+        "SCOPE_CHECKPOINT_VERSION",
         "SCOPE_COMMAND_KINDS",
         "SCOPE_COMPATIBILITY_VERSION",
         "SCOPE_EVIDENCE_KINDS",
+        "SCOPE_FORK_PHASES",
         "SCOPE_KINDS",
         "SCOPE_LIMITS",
         "SCOPE_RECORD_VERSION",
@@ -630,6 +634,7 @@ test("the scopes facade exposes the complete runtime surface", () => {
         "ScopeWriterFencedError",
         "TraceStoreError",
         "claimScopeWriter",
+        "claimScopeWriters",
         "emitScopeRecord",
         "inspectScope",
         "readScopeCommandReceipt",
@@ -639,7 +644,14 @@ test("the scopes facade exposes the complete runtime surface", () => {
     ]);
     assert.deepEqual(scopes.SCOPE_KINDS, ["root", "child"]);
     assert.deepEqual(scopes.SCOPE_STATES, ["open", "merged", "discarded"]);
-    assert.deepEqual(scopes.SCOPE_COMMAND_KINDS, ["register_root", "register_child", "emit"]);
+    assert.deepEqual(scopes.SCOPE_COMMAND_KINDS, [
+        "register_root",
+        "register_child",
+        "emit",
+        "fork",
+    ]);
+    assert.deepEqual(scopes.SCOPE_FORK_PHASES, ["prepared", "completed"]);
+    assert.deepEqual(scopes.SCOPE_RESOURCE_KINDS, ["repository_binding", "workspace_binding"]);
     assert.deepEqual(scopes.SCOPE_LIMITS, {
         maxCitedRecords: 64,
         maxDataCanonicalBytes: 65_536,
