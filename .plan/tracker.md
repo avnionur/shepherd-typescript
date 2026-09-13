@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-13
 
-Current version: `2.5.0`
+Current version: `2.5.1`
 
 Current level: L1 stable — Phases 4–5 complete; Phase 6 scope substrate active
 
@@ -433,6 +433,13 @@ state. Cleanup removes only custody named by retained fork journals, as progress
 the logical decision, with receipt-based recovery across every boundary.
 
 ## Verification required for this slice
+
+Phase 6 Task 8 (#140): the seeded scope algebra law suite runs configured operation sequences
+against a pure reference model and the durable store with the reference copy carrier, checking
+state, open worlds, ordered selected histories, and refusal classes after every operation and
+byte-equal inspections across periodic restarts. An explicit case proves disjoint sibling merges
+commute to the reference three-way result. The generator found and fixed a fixture authority gap
+before the suite passed. Full local verification and production build pass.
 
 Phase 6 Task 6 (#138): scope protocol v5 adds `runScopeTree` and `inspectScopeRecovery`. Focused
 tests cover nested settlement order, bounded parallelism with deterministic results at parallelism

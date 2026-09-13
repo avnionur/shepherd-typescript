@@ -599,6 +599,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Consume-once scope merge and discard](./docs/scope-merge-discard.md)
 - [Scope vocabulary mapping](./docs/scope-vocabulary.md)
 - [Scope scheduling and recovery classification](./docs/scope-scheduling.md)
+- [Scope algebra laws](./docs/scope-laws.md)
 - [Placement resolution and reporting](./docs/placement-resolution.md)
 - [Native jail execution](./docs/native-jail-execution.md)
 - [Retained-world path-disjoint application](./docs/retained-world-application.md)

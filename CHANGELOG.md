@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.1] - 2026-09-13
+
+### Improvement
+
+- Add a seeded scope algebra law suite that runs configured operation sequences against a pure
+  reference model and the durable store, comparing states, worlds, ordered selected histories,
+  refusal classes, and inspections across restarts, plus an explicit disjoint-merge commutativity
+  law.
+
+### Impact
+
+Scope merge and discard semantics are now checked against an executable reference model on every
+verification run. Runtime behavior, public API, protocols, and schemas are unchanged.
+
 ## [2.5.0] - 2026-09-13
 
 ### New Feature

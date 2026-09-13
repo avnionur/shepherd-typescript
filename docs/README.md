@@ -17,6 +17,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Scope scheduling and recovery classification](./scope-scheduling.md) defines bounded parallel
   and nested scope trees with deterministic settlement, restart convergence, and record-derived
   recovery ownership.
+- [Scope algebra laws](./scope-laws.md) defines the seeded reference-model law suite that checks
+  fork, emit, world writes, merge, and discard across carriers.
 - [Scope vocabulary mapping](./scope-vocabulary.md) maps spawn, adopt, abandon, and publish onto
   exact scope evidence without aliasing version-1 projections.
 - [Scope ownership/authority proposal](../.plan/scope-ownership-contract.md) defines the reviewed

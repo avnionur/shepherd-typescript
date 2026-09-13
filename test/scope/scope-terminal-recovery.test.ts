@@ -14,7 +14,6 @@ import {
     readScopeCommandReceipt,
     registerChildScope,
     releaseScopeWriter,
-    ScopeEvidenceError,
     ScopeQuiescenceError,
     ScopeTerminalConflictError,
     ScopeWriterFencedError,
