@@ -17,6 +17,7 @@ import {
     type ScopeWriter,
     SQLiteTraceStore,
     type WorkspaceBinding,
+    type WorldCarrierBackend,
 } from "../../src/index.ts";
 
 /** One real workspace with two directory bindings, a carrier, and a writer-held root scope. */
@@ -44,6 +45,7 @@ export async function createForkWorkspace(
     context: TestContext,
     label: string,
     StoreClass: typeof SQLiteTraceStore = SQLiteTraceStore,
+    backend?: WorldCarrierBackend,
 ): Promise<ForkWorkspace> {
     const workspaceRoot = await realpath(
         await mkdtemp(path.join(tmpdir(), `shepherd-scope-fork-${label}-`)),
@@ -61,7 +63,9 @@ export async function createForkWorkspace(
         ],
         workspaceRoot,
     }).bindings as readonly [WorkspaceBinding, WorkspaceBinding];
-    const carrier = createReferenceCopyCarrier({ workspaceRoot });
+    const carrier = createReferenceCopyCarrier(
+        backend === undefined ? { workspaceRoot } : { backend, workspaceRoot },
+    );
     const databasePath = path.join(workspaceRoot, "trace.sqlite");
     const store = new StoreClass(databasePath);
     const root = registerRootScope(store, {

@@ -1,0 +1,15 @@
+{
+    "linux": {
+        "containerSource": "/source",
+        "containerWorkspace": "/workspace",
+        "dockerExecutable": "docker",
+        "image": "node:24-bookworm",
+        "packages": ["acl", "attr"],
+        "requiredBackends": ["overlay"],
+        "sourceExcludes": ["./node_modules", "./dist", "./.git"],
+        "tmpfsOptions": "rw,exec,mode=1777,size=4g"
+    },
+    "requiredBackendsEnvironmentVariable": "SHEPHERD_REQUIRED_CARRIER_BACKENDS",
+    "requiredBackendsSeparator": ",",
+    "testFile": "test/workspace/carrier-conformance.test.ts"
+}

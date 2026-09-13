@@ -148,13 +148,18 @@ export function openCarrierBackend(
             writeCopiedFile(source, source, bytes, 0o600);
             materializeClonedFile(source, path.join(root, randomUUID()), bytes, 0o600);
         });
+        /* node:coverage disable */
+        // Reached only when the host clone probe succeeds on a reflink-capable filesystem.
         return Object.freeze({
             materializeFile: materializeClonedFile,
             name: backend,
             overlay: false,
         });
+        /* node:coverage enable */
     }
     if (backend === BACKENDS.overlay.backend) {
+        /* node:coverage disable */
+        // Overlay availability is host-specific: non-Linux hosts refuse here and Linux hosts probe.
         if (!BACKENDS.overlay.platforms.includes(process.platform)) {
             throw new CarrierBackendUnavailableError(
                 backend,
@@ -164,6 +169,7 @@ export function openCarrierBackend(
         }
         probeOverlay(stagingDirectory);
         return Object.freeze({ materializeFile: writeCopiedFile, name: backend, overlay: true });
+        /* node:coverage enable */
     }
     return Object.freeze({ materializeFile: writeCopiedFile, name: backend, overlay: false });
 }
@@ -236,6 +242,9 @@ export function materializeClonedFile(
     mode: number,
 ): void {
     assertAbsent(target);
+    /* node:coverage disable */
+    // Clone verification runs only after a successful host clone, so only reflink-capable hosts
+    // execute it; the shared conformance suite exercises it wherever the clone backend is available.
     cloneFile(source, target);
     const descriptor = openSync(target, constants.O_RDONLY | constants.O_NOFOLLOW);
     try {
@@ -250,6 +259,7 @@ export function materializeClonedFile(
         closeSync(descriptor);
     }
 }
+/* node:coverage enable */
 
 /* node:coverage disable */
 // Overlay custody executes only on Linux hosts with mount permission; the privileged Linux
