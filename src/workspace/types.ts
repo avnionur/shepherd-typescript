@@ -2,6 +2,7 @@ import type {
     GIT_HEAD_KINDS,
     GITLINK_ENTRY_KIND,
     WORKSPACE_ADOPTION_MODES,
+    WORLD_CARRIER_BACKENDS,
     WORLD_CHANGE_OPERATIONS,
     WORLD_DERIVED_MOVE_KINDS,
     WORLD_ENTRY_KINDS,
@@ -156,9 +157,15 @@ export type WorldManifestEntry = {
     readonly symlink_target: string | null;
 };
 
+/** Configured selectable world-carrier backend name. */
+export type WorldCarrierBackend = (typeof WORLD_CARRIER_BACKENDS)[number];
+
 /** Immutable verified copy-world revision retained under carrier custody. */
 export type WorldRevision = {
-    /** Configured copy backend kind. */
+    /**
+     * Configured copy descriptor backend kind. Every carrier backend retains revisions in this one
+     * descriptor format, so revision identity never depends on the physical backend.
+     */
     readonly backend: string;
     /** Exact workspace binding cited by this revision. */
     readonly binding_id: string;
@@ -386,7 +393,7 @@ export type WorldChangesetInspection = {
 
 /** Mutable retained checkout forked from an immutable copy-world revision. */
 export type WorldCustody = {
-    /** Configured copy backend kind. */
+    /** Configured backend that materialized this mutable custody. */
     readonly backend: string;
     /** Immutable content identity present when custody was created. */
     readonly base_content_id: string;
@@ -414,6 +421,11 @@ export type WorldVerification = {
 
 /** Closed options accepted by {@link createReferenceCopyCarrier}. */
 export type ReferenceCopyCarrierOptions = {
+    /**
+     * Optional configured physical backend; omitted selects the copy reference backend. Optimized
+     * backends fail closed at creation when the host cannot run them.
+     */
+    readonly backend?: WorldCarrierBackend;
     /** Optional deterministic conformance fault injected at one configured custody boundary. */
     readonly faultInjection?: WorkspaceCustodyFaultInjection;
     /** Existing initialized workspace whose protected control root owns carrier custody. */
@@ -422,6 +434,8 @@ export type ReferenceCopyCarrierOptions = {
 
 /** Public workspace protocol v6 reference copy-carrier operations. */
 export type ReferenceCopyCarrier = {
+    /** Configured physical backend selected for this carrier. */
+    readonly backend: WorldCarrierBackend;
     /**
      * Publishes the current verified custody as an immutable child world revision.
      *

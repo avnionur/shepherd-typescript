@@ -1,5 +1,9 @@
 import { spawnSync } from "node:child_process";
+import { lstatSync, mkdirSync, realpathSync } from "node:fs";
+import path from "node:path";
+
 import { workspaceProtocolConfig } from "../protocol/config.ts";
+import { inspectCarrierBackendAvailability } from "./carrier-backends.ts";
 import { WorldCarrierError } from "./errors.ts";
 import { openWorkspace } from "./initialization.ts";
 
@@ -64,6 +68,16 @@ export type WorkspaceGitPlatformPolicy = {
     readonly sparse_index: string;
 };
 
+/** Host evidence for one optimized carrier backend's parity claim. */
+export type WorkspaceOptimizedCarrierParity = {
+    /** Configured optimized backend name. */
+    readonly backend: string;
+    /** Configured reason: the shared suite host, or why the backend cannot run here. */
+    readonly reason: string;
+    /** Configured `conformant` or `unavailable` status for this host and workspace filesystem. */
+    readonly status: string;
+};
+
 /** Frozen configured platform policy for retained workspace custody. */
 export type WorkspacePlatformConformance = {
     /** Portable path case-collision policy. */
@@ -76,6 +90,12 @@ export type WorkspacePlatformConformance = {
     readonly mode_policy: string;
     /** Correctness gate for optimized carrier parity claims. */
     readonly optimized_carrier_parity: string;
+    /**
+     * Workspace protocol v26 per-backend evidence. A backend is conformant only when its host probe
+     * succeeds inside this workspace's carrier storage, which is exactly when the shared carrier
+     * conformance suite runs it; otherwise it is unavailable with a configured reason.
+     */
+    readonly optimized_carriers: readonly WorkspaceOptimizedCarrierParity[];
     /** Current Node host platform. */
     readonly platform: NodeJS.Platform;
     /** Symbolic-link retention policy. */
@@ -92,6 +112,7 @@ export type WorkspacePlatformConformance = {
  * @param options - Exact initialized workspace to validate before returning host policy.
  * @returns Frozen configured platform and parity evidence.
  * @throws {WorkspaceControlError} If the workspace cannot be reopened safely.
+ * @throws {WorldCarrierError} If carrier staging is unsafe or a backend probe fails unexpectedly.
  * @throws {TypeError} If options are malformed or the host has no configured policy.
  *
  * @example
@@ -104,13 +125,28 @@ export function inspectWorkspacePlatformConformance(
     options: WorkspacePlatformConformanceOptions,
 ): WorkspacePlatformConformance {
     const workspaceRoot = readOptions(options);
-    openWorkspace(workspaceRoot);
+    const workspace = openWorkspace(workspaceRoot);
     const policy = workspaceProtocolConfig.platformConformance;
     /* node:coverage disable */
     if (!policy.supportedPlatforms.includes(process.platform)) {
         throw new TypeError("workspace host platform has no configured custody policy");
     }
     /* node:coverage enable */
+    const carrier = workspaceProtocolConfig.carrier;
+    const staging = path.join(
+        workspace.control_path,
+        carrier.carrierDirectory,
+        carrier.stagingDirectory,
+    );
+    mkdirSync(staging, { mode: 0o700, recursive: true });
+    const stagingStatus = lstatSync(staging);
+    if (
+        !stagingStatus.isDirectory() ||
+        stagingStatus.isSymbolicLink() ||
+        realpathSync(staging) !== staging
+    ) {
+        throw new WorldCarrierError(carrier.errors.controlCode, carrier.errors.controlMessage);
+    }
     return Object.freeze({
         case_collision_policy: policy.caseCollisionPolicy,
         git: Object.freeze({
@@ -121,6 +157,7 @@ export function inspectWorkspacePlatformConformance(
         metadata_policy: policy.metadataPolicy,
         mode_policy: policy.modePolicy,
         optimized_carrier_parity: policy.optimizedCarrierParity,
+        optimized_carriers: inspectCarrierBackendAvailability(staging),
         platform: process.platform,
         symlink_policy: policy.symlinkPolicy,
         unsupported_metadata: Object.freeze([...policy.unsupportedMetadata]),

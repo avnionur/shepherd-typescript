@@ -1624,6 +1624,9 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedWorldEntryKinds = config.workspaces.carrier.entryKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
+    const renderedWorldCarrierBackends = config.workspaces.carrierBackends.backends
+        .map((backend) => JSON.stringify(backend))
+        .join(", ");
     const renderedGitHeadKinds = config.workspaces.gitCustody.headKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
@@ -1986,6 +1989,9 @@ export const WORKSPACE_ADOPTION_MODES = [${renderedWorkspaceAdoptionModes}] as c
 
 /** Configured reference copy-carrier manifest entry kinds. @public */
 export const WORLD_ENTRY_KINDS = [${renderedWorldEntryKinds}] as const;
+
+/** Configured selectable world-carrier backends. @public */
+export const WORLD_CARRIER_BACKENDS = [${renderedWorldCarrierBackends}] as const;
 
 /** Configured retained-world runner enforcement classifications. @public */
 export const RETAINED_WORLD_ENFORCEMENT_KINDS = [${renderedRetainedWorldEnforcementKinds}] as const;

@@ -1077,6 +1077,103 @@ export type WorkspaceProtocolConfig = {
         /** Managed tree directory within one receipt. */
         readonly worldDirectory: string;
     };
+    /** Optimized world-carrier backend selection, availability, and conformance policy. */
+    readonly carrierBackends: {
+        /** Closed selectable carrier backend vocabulary. */
+        readonly backends: readonly string[];
+        /** Reflink/clonefile backend settings. */
+        readonly clone: {
+            /** Backend name selecting clone materialization. */
+            readonly backend: string;
+            /** Native clonefile helper used where Node exposes no forced clone primitive. */
+            readonly helper: {
+                /** Compiler arguments applied before the output argument. */
+                readonly compilerArguments: readonly string[];
+                /** Absolute compiler executables tried in order. */
+                readonly compilerExecutables: readonly string[];
+                /** Compiler output-path argument. */
+                readonly compilerOutputArgument: string;
+                /** Compiled helper file name inside its private directory. */
+                readonly executableName: string;
+                /** Node platforms that clone through the compiled helper. */
+                readonly platforms: readonly string[];
+                /** Helper source file name inside its private directory. */
+                readonly sourceName: string;
+                /** Private temporary helper directory prefix. */
+                readonly temporaryDirectoryPrefix: string;
+            };
+        };
+        /** Maximum captured bytes from one backend command. */
+        readonly commandMaxBytes: number;
+        /** Maximum milliseconds for one backend command. */
+        readonly commandTimeoutMs: number;
+        /** Optimized-carrier parity evidence vocabulary. */
+        readonly conformance: {
+            /** Semantic roles for availability reasons. */
+            readonly reasonRoles: {
+                readonly available: string;
+                readonly helperUnavailable: string;
+                readonly mountNotPermitted: string;
+                readonly platformUnsupported: string;
+                readonly reflinkUnsupported: string;
+            };
+            /** Closed availability reason vocabulary. */
+            readonly reasons: readonly string[];
+            /** Semantic roles for parity statuses. */
+            readonly statusRoles: {
+                readonly conformant: string;
+                readonly unavailable: string;
+            };
+            /** Closed parity status vocabulary. */
+            readonly statuses: readonly string[];
+        };
+        /** Backend used when carrier options omit a backend. */
+        readonly defaultBackend: string;
+        /** Stable fail-closed availability error contract. */
+        readonly errors: {
+            readonly unavailableCode: string;
+            readonly unavailableMessage: string;
+        };
+        /** Linux overlay custody backend settings. */
+        readonly overlay: {
+            /** Backend name selecting overlay custody. */
+            readonly backend: string;
+            /** Kernel filesystem type reported for owned overlay mounts. */
+            readonly filesystemType: string;
+            /** Mount command argument template. */
+            readonly mountArguments: readonly string[];
+            /** Absolute mount executable. */
+            readonly mountExecutable: string;
+            /** Process mount table consulted to authenticate retained mounts. */
+            readonly mountInfoPath: string;
+            /** Separator between rendered mount options. */
+            readonly mountOptionSeparator: string;
+            /** Mount option template naming lower, upper, and work layers. */
+            readonly mountOptions: string;
+            /** Node platforms on which overlay custody may be attempted. */
+            readonly platforms: readonly string[];
+            /** Characters refused in layer paths because mount options cannot carry them. */
+            readonly reservedPathCharacters: readonly string[];
+            /** Template tokens substituted into mount and unmount arguments. */
+            readonly tokens: {
+                readonly lower: string;
+                readonly options: string;
+                readonly target: string;
+                readonly upper: string;
+                readonly work: string;
+            };
+            /** Unmount command argument template. */
+            readonly unmountArguments: readonly string[];
+            /** Absolute unmount executable. */
+            readonly unmountExecutable: string;
+            /** Private upper-layer directory inside one custody root. */
+            readonly upperDirectory: string;
+            /** Private overlay work directory inside one custody root. */
+            readonly workDirectory: string;
+        };
+        /** Workspace protocol version that introduced configured carrier backends. */
+        readonly version: number;
+    };
     /** Pure world-changeset protocol configuration. */
     readonly changesets: {
         readonly errors: {
