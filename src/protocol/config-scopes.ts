@@ -33,11 +33,29 @@ export function readScopeConfig(
             "schemas",
             "states",
             "traceSchemas",
+            "vocabulary",
             "worldCapabilities",
             "writerClaimLeaseMilliseconds",
         ],
         "scopes",
     );
+    const vocabulary = readObject(
+        scopes.vocabulary,
+        ["statuses", "terms", "version"],
+        "scopes.vocabulary",
+    );
+    const vocabularyTerms = readUniqueStrings(vocabulary.terms, "scopes.vocabulary.terms");
+    if (vocabularyTerms.length !== 4) {
+        throw new TypeError(
+            "scopes.vocabulary.terms must contain spawn, adopt, abandon, and publish",
+        );
+    }
+    const vocabularyStatuses = readUniqueStrings(vocabulary.statuses, "scopes.vocabulary.statuses");
+    if (vocabularyStatuses.length !== 2) {
+        throw new TypeError(
+            "scopes.vocabulary.statuses must contain exactly pending and completed",
+        );
+    }
     const artifacts = readObject(
         scopes.artifacts,
         [
@@ -359,6 +377,11 @@ export function readScopeConfig(
             fork: traceSchemaValues[4] as string,
             merge: traceSchemaValues[5] as string,
             registration: traceSchemaValues[6] as string,
+        },
+        vocabulary: {
+            statuses: vocabularyStatuses,
+            terms: vocabularyTerms,
+            version: readPositiveInteger(vocabulary.version, "scopes.vocabulary.version"),
         },
         worldCapabilities,
         writerClaimLeaseMilliseconds: readPositiveInteger(

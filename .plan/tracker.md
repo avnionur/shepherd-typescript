@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-13
 
-Current version: `2.3.0`
+Current version: `2.4.0`
 
 Current level: L1 stable — Phases 4–5 complete; Phase 6 scope substrate active
 
@@ -433,6 +433,12 @@ state. Cleanup removes only custody named by retained fork journals, as progress
 the logical decision, with receipt-based recovery across every boundary.
 
 ## Verification required for this slice
+
+Phase 6 Task 5 (#137): scope protocol v4 adds the read-only spawn/adopt/abandon/publish vocabulary
+mapping. Focused tests cover every term with exact citations, abandon without cleanup, adopt without
+user publication, pending reserved merges and incomplete forks, ancestor seals not reported as
+abandonment, read-only reopen and import equality, unchanged version-1 relation projections, and
+configuration drift. Full local verification and production build pass.
 
 Phase 6 Task 4 (#131): slice C implements consume-once scope merge and discard through scope
 protocol v3. Focused public-seam tests cover disjoint world merges, trace-only merges, common-origin

@@ -511,6 +511,15 @@ export const SCOPE_CHECKPOINT_EVIDENCE_STATUSES = [
     "unavailable",
 ] as const;
 
+/** Configured scope vocabulary terms ordered spawn, adopt, abandon, publish. @public */
+export const SCOPE_VOCABULARY_TERMS = ["spawn", "adopt", "abandon", "publish"] as const;
+
+/** Configured scope vocabulary mapping statuses ordered pending then completed. @public */
+export const SCOPE_VOCABULARY_STATUSES = ["pending", "completed"] as const;
+
+/** Configured scope vocabulary projection version. @public */
+export const SCOPE_VOCABULARY_VERSION = 1 as const;
+
 /** Configured scope checkpoint descriptor version. @public */
 export const SCOPE_CHECKPOINT_VERSION = 1 as const;
 

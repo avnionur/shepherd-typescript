@@ -1022,6 +1022,16 @@ export const SCOPE_PROTOCOL_V3_CONTRACT = deepFreeze({
     },
 } as const);
 
+/** Immutable spawn/adopt/abandon/publish vocabulary mapping extension implemented by scope v4. */
+export const SCOPE_PROTOCOL_V4_CONTRACT = deepFreeze({
+    ...SCOPE_PROTOCOL_V3_CONTRACT,
+    vocabulary: {
+        statuses: ["pending", "completed"],
+        terms: ["spawn", "adopt", "abandon", "publish"],
+        version: 1,
+    },
+} as const);
+
 /** Immutable workspace initialization and adoption contract implemented by protocol v1. */
 export const WORKSPACE_PROTOCOL_V1_CONTRACT = deepFreeze({
     adoptionModes: ["none", "git-head", "worktree"],

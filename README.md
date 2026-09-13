@@ -116,6 +116,7 @@ trace-record contracts with durable SQLite task and trace stores:
   terminal winner, verified publication into parent-managed custody, exact selected-history
   contributions without common-origin re-addition, subtree sealing that preserves the current
   parent, custody cleanup from retained identities, and receipt-based recovery;
+- a read-only spawn/adopt/abandon/publish vocabulary mapping over exact scope evidence;
 - workspace protocol v22 content-addressed macOS/Linux/native-Windows/WSL platform evidence,
   advisory/auto placement resolution with visible fallback, exact placed capture/recovery, and
   fail-closed explicit jail refusal without a native-sandbox claim;
@@ -594,6 +595,7 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Durable scope registration and fenced local emission](./docs/scope-registration.md)
 - [Reference-copy scope fork and restart recovery](./docs/scope-fork.md)
 - [Consume-once scope merge and discard](./docs/scope-merge-discard.md)
+- [Scope vocabulary mapping](./docs/scope-vocabulary.md)
 - [Placement resolution and reporting](./docs/placement-resolution.md)
 - [Native jail execution](./docs/native-jail-execution.md)
 - [Retained-world path-disjoint application](./docs/retained-world-application.md)
@@ -643,7 +645,8 @@ Phase 5 is complete through the approved 2.0.0 runtime-support remedy. Phase 6 f
 [scope ownership/authority proposal](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/scope-ownership-contract.md);
 [trace-only scope registration](./docs/scope-registration.md),
 [reference-copy scope fork](./docs/scope-fork.md), and
-[consume-once merge and discard](./docs/scope-merge-discard.md) are implemented. Optimized
+[consume-once merge and discard](./docs/scope-merge-discard.md), and the
+[scope vocabulary mapping](./docs/scope-vocabulary.md) are implemented. Optimized
 carriers, scheduling, and L2 parity are not. The major version does not
 imply production readiness.
 

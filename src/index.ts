@@ -171,6 +171,9 @@ export {
     SCOPE_RECORD_VERSION,
     SCOPE_RESOURCE_KINDS,
     SCOPE_STATES,
+    SCOPE_VOCABULARY_STATUSES,
+    SCOPE_VOCABULARY_TERMS,
+    SCOPE_VOCABULARY_VERSION,
     SCOPE_WORLD_CAPABILITIES,
     TASK_RUN_LEDGER_LATEST_SELECTOR,
     TASK_RUN_LEDGER_LIMITS,
@@ -408,12 +411,17 @@ export type {
     ScopeRootRegistrationReceipt,
     ScopeState,
     ScopeTerminalInspection,
+    ScopeVocabularyEntry,
+    ScopeVocabularyProjection,
+    ScopeVocabularyStatus,
+    ScopeVocabularyTerm,
     ScopeWorldCapability,
     ScopeWorldInspection,
     ScopeWriter,
     ScopeWriterClaimRequest,
     ScopeWriterRelease,
 } from "./scope/types.ts";
+export { projectScopeVocabulary } from "./scope/vocabulary.ts";
 export { claimScopeWriter, claimScopeWriters, releaseScopeWriter } from "./scope/writer.ts";
 export {
     AppendIntentConflictError,

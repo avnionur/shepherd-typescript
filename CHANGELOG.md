@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-09-13
+
+### New Feature
+
+- Add `projectScopeVocabulary`: a read-only mapping of `spawn` (child registration or fork),
+  `adopt` (consume-once merge of a verified child cut), `abandon` (logical discard decision, with
+  cleanup progress separate), and `publish` (exact contributions made parent-visible by a merge)
+  onto retained scope evidence, with pending status for reserved merges and incomplete forks.
+- Add scope protocol v4 with the configured vocabulary terms, statuses, and projection version.
+
+### Impact
+
+Consumers using upstream lifecycle vocabulary can read it from exact scope evidence without new
+command aliases. Version-1 execution-history relation and publication projections are unchanged,
+and existing scope records decode unchanged.
+
 ## [2.3.0] - 2026-09-13
 
 ### New Feature

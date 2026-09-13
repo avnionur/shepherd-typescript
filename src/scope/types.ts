@@ -11,6 +11,8 @@ import type {
     SCOPE_MERGE_PHASES,
     SCOPE_RESOURCE_KINDS,
     SCOPE_STATES,
+    SCOPE_VOCABULARY_STATUSES,
+    SCOPE_VOCABULARY_TERMS,
     SCOPE_WORLD_CAPABILITIES,
 } from "../protocol/values.generated.ts";
 import type { RecordId } from "../record/types.ts";
@@ -840,4 +842,75 @@ export type ScopeDiscardReceipt = {
     readonly scope_id: string;
     /** Every scope sealed by the decision, subtree root first. */
     readonly sealed_scope_ids: readonly string[];
+};
+
+/** Configured vocabulary term mapped onto scope evidence. */
+export type ScopeVocabularyTerm = (typeof SCOPE_VOCABULARY_TERMS)[number];
+
+/** Configured vocabulary mapping status: pending while a command is in flight, or completed. */
+export type ScopeVocabularyStatus = (typeof SCOPE_VOCABULARY_STATUSES)[number];
+
+/** One vocabulary term mapped onto exact retained scope command evidence. */
+export type ScopeVocabularyEntry =
+    | {
+          /** Spawned child scope. */
+          readonly child_scope_id: string;
+          /** Child registration or fork command identity. */
+          readonly command_id: string;
+          /** Parent-owned child-registration record. */
+          readonly record_id: RecordId;
+          /** Pending while a reference-copy fork is incomplete, otherwise completed. */
+          readonly status: ScopeVocabularyStatus;
+          /** Spawn: child creation. */
+          readonly term: (typeof SCOPE_VOCABULARY_TERMS)[0];
+          /** World capability the child declared. */
+          readonly world_capability: ScopeWorldCapability;
+      }
+    | {
+          /** Adopted child scope. */
+          readonly child_scope_id: string;
+          /** Merge command identity. */
+          readonly command_id: string;
+          /** Parent integration when completed, or the child reservation while pending. */
+          readonly record_id: RecordId;
+          /** Pending while the merge is reserved, completed once integrated. */
+          readonly status: ScopeVocabularyStatus;
+          /** Adopt: selection of a verified child cut by consume-once merge. */
+          readonly term: (typeof SCOPE_VOCABULARY_TERMS)[1];
+      }
+    | {
+          /** Abandoned child scope. */
+          readonly child_scope_id: string;
+          /** Latest cleanup progress, separate from the abandonment itself. */
+          readonly cleanup_phase: ScopeDiscardPhase;
+          /** Discard command identity. */
+          readonly command_id: string;
+          /** Discard decision retained on the child path. */
+          readonly record_id: RecordId;
+          /** Always completed: the logical decision is retained. */
+          readonly status: ScopeVocabularyStatus;
+          /** Abandon: removal from effective selection by a logical discard decision. */
+          readonly term: (typeof SCOPE_VOCABULARY_TERMS)[2];
+      }
+    | {
+          /** Merge command that made the occurrence parent-visible. */
+          readonly command_id: string;
+          /** Exact published occurrence. */
+          readonly contribution: ScopeContribution;
+          /** Parent integration record carrying the contribution. */
+          readonly record_id: RecordId;
+          /** Always completed: the integration is retained. */
+          readonly status: ScopeVocabularyStatus;
+          /** Publish: parent-visible semantic data selected through a completed merge. */
+          readonly term: (typeof SCOPE_VOCABULARY_TERMS)[3];
+      };
+
+/** Read-only vocabulary mapping of one scope's child lifecycle evidence. */
+export type ScopeVocabularyProjection = {
+    /** Mapped entries: path-ordered spawn, adopt, and publish, then per-child pending adopt and abandon. */
+    readonly entries: readonly ScopeVocabularyEntry[];
+    /** Projected parent scope identity. */
+    readonly scope_id: string;
+    /** Configured vocabulary projection version. */
+    readonly vocabulary_version: number;
 };

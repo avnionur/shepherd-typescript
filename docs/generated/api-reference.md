@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.3.0
+Package: `@avnionur/shepherd-typescript` 2.4.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 616.
+Exported symbols: 624.
 
 ### `AppendBatchDraft`
 
@@ -6398,6 +6398,50 @@ export declare const SCOPE_STATES: readonly [
 ];
 ```
 
+### `SCOPE_VOCABULARY_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary mapping statuses ordered pending then completed.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_STATUSES: readonly [
+    "pending",
+    "completed"
+];
+```
+
+### `SCOPE_VOCABULARY_TERMS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary terms ordered spawn, adopt, abandon, publish.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_TERMS: readonly [
+    "spawn",
+    "adopt",
+    "abandon",
+    "publish"
+];
+```
+
+### `SCOPE_VOCABULARY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary projection version.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_VERSION: 1;
+```
+
 ### `SCOPE_WORLD_CAPABILITIES`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -8585,6 +8629,84 @@ export type ScopeTerminalInspection = {
     readonly phase: ScopeDiscardPhase;
     readonly record_id: RecordId;
 };
+```
+
+### `ScopeVocabularyEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One vocabulary term mapped onto exact retained scope command evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyEntry = {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[0];
+    readonly world_capability: ScopeWorldCapability;
+} | {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[1];
+} | {
+    readonly child_scope_id: string;
+    readonly cleanup_phase: ScopeDiscardPhase;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[2];
+} | {
+    readonly command_id: string;
+    readonly contribution: ScopeContribution;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[3];
+};
+```
+
+### `ScopeVocabularyProjection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only vocabulary mapping of one scope's child lifecycle evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyProjection = {
+    readonly entries: readonly ScopeVocabularyEntry[];
+    readonly scope_id: string;
+    readonly vocabulary_version: number;
+};
+```
+
+### `ScopeVocabularyStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured vocabulary mapping status: pending while a command is in flight, or completed.
+
+Signature:
+
+```ts
+export type ScopeVocabularyStatus = (typeof SCOPE_VOCABULARY_STATUSES)[number];
+```
+
+### `ScopeVocabularyTerm`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured vocabulary term mapped onto scope evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyTerm = (typeof SCOPE_VOCABULARY_TERMS)[number];
 ```
 
 ### `ScopeWorldCapability`
@@ -13719,6 +13841,58 @@ Throws:
 
 - {TypeError} If the parent identifier is empty.
 
+### `projectScopeVocabulary`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Maps the spawn, adopt, abandon, and publish vocabulary onto one scope's retained evidence.
+
+The mapping is a disposable read of validated scope records, never an alias or a second event
+stream: `spawn` cites a child registration, `adopt` a consume-once merge selecting a verified
+child cut, `abandon` a logical discard decision removing a child from effective selection
+(cleanup progress is reported separately), and `publish` an exact child occurrence made
+parent-visible by a completed merge. It is not user-workspace materialization. A reserved merge
+or an incomplete fork maps as pending. Version-1 execution-history relation and publication
+projections keep their own semantics and are neither produced nor reinterpreted. The mapping
+appends nothing, grants no authority, and reads the same after reopen or import.
+
+Signature:
+
+```ts
+export declare function projectScopeVocabulary(store: SQLiteTraceStore, scopeId: string): ScopeVocabularyProjection | undefined;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- scopeId - Exact configured parent scope identity.
+
+Returns:
+
+- Frozen vocabulary projection, or `undefined` when the scope retains nothing.
+
+Throws:
+
+- {ScopeEvidenceError} If retained scope evidence is malformed or inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or a cited cut is absent or corrupt.
+
+Throws:
+
+- {TypeError} If the scope identity is malformed.
+
+Example:
+
+- ```ts
+const vocabulary = projectScopeVocabulary(store, parent.scope_id);
+const adopted = vocabulary?.entries.filter((entry) => entry.term === "adopt");
+```
+
 ### `readDurableTaskExecution`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -18726,7 +18900,7 @@ import * as api from "@avnionur/shepherd-typescript/scopes";
 void api;
 ```
 
-Exported symbols: 86.
+Exported symbols: 94.
 
 ### `AppendIntentConflictError`
 
@@ -19094,6 +19268,50 @@ export declare const SCOPE_STATES: readonly [
     "merged",
     "discarded"
 ];
+```
+
+### `SCOPE_VOCABULARY_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary mapping statuses ordered pending then completed.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_STATUSES: readonly [
+    "pending",
+    "completed"
+];
+```
+
+### `SCOPE_VOCABULARY_TERMS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary terms ordered spawn, adopt, abandon, publish.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_TERMS: readonly [
+    "spawn",
+    "adopt",
+    "abandon",
+    "publish"
+];
+```
+
+### `SCOPE_VOCABULARY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary projection version.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_VERSION: 1;
 ```
 
 ### `SCOPE_WORLD_CAPABILITIES`
@@ -20155,6 +20373,84 @@ export type ScopeTerminalInspection = {
 };
 ```
 
+### `ScopeVocabularyEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One vocabulary term mapped onto exact retained scope command evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyEntry = {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[0];
+    readonly world_capability: ScopeWorldCapability;
+} | {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[1];
+} | {
+    readonly child_scope_id: string;
+    readonly cleanup_phase: ScopeDiscardPhase;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[2];
+} | {
+    readonly command_id: string;
+    readonly contribution: ScopeContribution;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[3];
+};
+```
+
+### `ScopeVocabularyProjection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only vocabulary mapping of one scope's child lifecycle evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyProjection = {
+    readonly entries: readonly ScopeVocabularyEntry[];
+    readonly scope_id: string;
+    readonly vocabulary_version: number;
+};
+```
+
+### `ScopeVocabularyStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured vocabulary mapping status: pending while a command is in flight, or completed.
+
+Signature:
+
+```ts
+export type ScopeVocabularyStatus = (typeof SCOPE_VOCABULARY_STATUSES)[number];
+```
+
+### `ScopeVocabularyTerm`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured vocabulary term mapped onto scope evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyTerm = (typeof SCOPE_VOCABULARY_TERMS)[number];
+```
+
 ### `ScopeWorldCapability`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -20596,6 +20892,58 @@ Example:
 - ```ts
 const inspection = inspectScope(store, root.scope_id);
 console.log(inspection?.state, inspection?.selected_history.length);
+```
+
+### `projectScopeVocabulary`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Maps the spawn, adopt, abandon, and publish vocabulary onto one scope's retained evidence.
+
+The mapping is a disposable read of validated scope records, never an alias or a second event
+stream: `spawn` cites a child registration, `adopt` a consume-once merge selecting a verified
+child cut, `abandon` a logical discard decision removing a child from effective selection
+(cleanup progress is reported separately), and `publish` an exact child occurrence made
+parent-visible by a completed merge. It is not user-workspace materialization. A reserved merge
+or an incomplete fork maps as pending. Version-1 execution-history relation and publication
+projections keep their own semantics and are neither produced nor reinterpreted. The mapping
+appends nothing, grants no authority, and reads the same after reopen or import.
+
+Signature:
+
+```ts
+export declare function projectScopeVocabulary(store: SQLiteTraceStore, scopeId: string): ScopeVocabularyProjection | undefined;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- scopeId - Exact configured parent scope identity.
+
+Returns:
+
+- Frozen vocabulary projection, or `undefined` when the scope retains nothing.
+
+Throws:
+
+- {ScopeEvidenceError} If retained scope evidence is malformed or inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or a cited cut is absent or corrupt.
+
+Throws:
+
+- {TypeError} If the scope identity is malformed.
+
+Example:
+
+- ```ts
+const vocabulary = projectScopeVocabulary(store, parent.scope_id);
+const adopted = vocabulary?.entries.filter((entry) => entry.term === "adopt");
 ```
 
 ### `readScopeCommandReceipt`

@@ -872,6 +872,15 @@ test("protocol configuration rejects invalid or drifted scope contracts", () => 
             scopeConfigOf(config).mergePhases = ["prepared"];
         },
         (config) => {
+            objectAt(scopeConfigOf(config), "vocabulary").terms = ["spawn", "adopt"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "vocabulary").statuses = ["pending"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "vocabulary").version = 0;
+        },
+        (config) => {
             scopeConfigOf(config).discardPhases = ["decided"];
         },
         (config) => {

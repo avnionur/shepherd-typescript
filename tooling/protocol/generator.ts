@@ -2172,6 +2172,15 @@ export const SCOPE_CHECKPOINT_EVIDENCE_STATUSES = [
 ${renderedScopeCheckpointStatuses}
 ] as const;
 
+/** Configured scope vocabulary terms ordered spawn, adopt, abandon, publish. @public */
+export const SCOPE_VOCABULARY_TERMS = [${config.scopes.vocabulary.terms.map((term) => JSON.stringify(term)).join(", ")}] as const;
+
+/** Configured scope vocabulary mapping statuses ordered pending then completed. @public */
+export const SCOPE_VOCABULARY_STATUSES = [${config.scopes.vocabulary.statuses.map((status) => JSON.stringify(status)).join(", ")}] as const;
+
+/** Configured scope vocabulary projection version. @public */
+export const SCOPE_VOCABULARY_VERSION = ${config.scopes.vocabulary.version} as const;
+
 /** Configured scope checkpoint descriptor version. @public */
 export const SCOPE_CHECKPOINT_VERSION = ${config.scopes.checkpoint.version} as const;
 

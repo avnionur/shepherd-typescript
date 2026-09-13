@@ -603,6 +603,11 @@
             "merge": "shepherd.scope.merge.v1",
             "registration": "shepherd.scope.registration.v1"
         },
+        "vocabulary": {
+            "statuses": ["pending", "completed"],
+            "terms": ["spawn", "adopt", "abandon", "publish"],
+            "version": 1
+        },
         "worldCapabilities": ["trace_only", "reference_copy"],
         "writerClaimLeaseMilliseconds": 30000
     },

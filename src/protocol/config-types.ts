@@ -847,6 +847,15 @@ export type ScopeProtocolConfig = {
         /** Scope registration record schema. */
         readonly registration: string;
     };
+    /** Closed spawn/adopt/abandon/publish vocabulary mapped onto scope evidence. */
+    readonly vocabulary: {
+        /** Mapping statuses ordered pending then completed. */
+        readonly statuses: readonly string[];
+        /** Mapped terms ordered spawn, adopt, abandon, publish. */
+        readonly terms: readonly string[];
+        /** Wire version of the vocabulary projection. */
+        readonly version: number;
+    };
     /** Closed world-capability vocabulary ordered trace-only then reference copy. */
     readonly worldCapabilities: readonly string[];
     /** Duration granted to a scope writer claim before expiry-based takeover. */
