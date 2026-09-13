@@ -48,7 +48,7 @@ Coverage is earned in explicit levels so planned behavior is never presented as 
 | --- | --- | --- |
 | L0 | Canonical schemas, identities, trace storage, and projections | Complete |
 | L1 | Shepherd `0.3.0` settlement compatibility | Complete in 1.51.0 |
-| L2 | Scope and versioned-world substrate parity | Planned |
+| L2 | Scope and versioned-world substrate parity | Complete in 2.7.1 for the recorded hosts |
 | L3 | Paper programming-model parity | Planned |
 | L4 | Production security, recovery, performance, packaging, and releases | Planned |
 
@@ -112,6 +112,17 @@ trace-record contracts with durable SQLite task and trace stores:
 - reference-copy scope fork of one bound resource: verified fixed origins, a prepared journal
   record before physical custody, verified completion under the parent fence, honest checkpoint
   descriptors, receipt-based restart convergence, and atomic multi-scope writer claims;
+- consume-once scope merge and discard: three-way world plans with overlap refusal, a single
+  terminal winner, verified publication into parent-managed custody, exact selected-history
+  contributions without common-origin re-addition, subtree sealing that preserves the current
+  parent, custody cleanup from retained identities, and receipt-based recovery;
+- a read-only spawn/adopt/abandon/publish vocabulary mapping over exact scope evidence;
+- workspace protocol v26 clone and Linux overlay carrier backends with identities equal to the copy
+  reference, shared conformance and law suites, and branch storage that scales with changed data;
+- evidence-derived checkpoint start classification proving whether a branch started from an atomic
+  snapshot, a quiescent verified copy, or reconstructed state;
+- bounded parallel and nested scope scheduling with deterministic settlement and restart
+  convergence, plus record-derived recovery classification of every live scope;
 - workspace protocol v22 content-addressed macOS/Linux/native-Windows/WSL platform evidence,
   advisory/auto placement resolution with visible fallback, exact placed capture/recovery, and
   fail-closed explicit jail refusal without a native-sandbox claim;
@@ -586,9 +597,14 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Command-line interface](./docs/cli.md)
 - [Project structure](./docs/project-structure.md)
 - [Reference copy carrier](./docs/reference-copy-carrier.md)
+- [Optimized scope-world carriers](./docs/optimized-carriers.md)
 - [Repository grants and run authority ceilings](./docs/repository-grants.md)
 - [Durable scope registration and fenced local emission](./docs/scope-registration.md)
 - [Reference-copy scope fork and restart recovery](./docs/scope-fork.md)
+- [Consume-once scope merge and discard](./docs/scope-merge-discard.md)
+- [Scope vocabulary mapping](./docs/scope-vocabulary.md)
+- [Scope scheduling and recovery classification](./docs/scope-scheduling.md)
+- [Scope algebra laws](./docs/scope-laws.md)
 - [Placement resolution and reporting](./docs/placement-resolution.md)
 - [Native jail execution](./docs/native-jail-execution.md)
 - [Retained-world path-disjoint application](./docs/retained-world-application.md)
@@ -634,12 +650,14 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 ## Status
 
 The [Phase 5 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-5-exit-audit.md) maps delivered product-surface evidence.
-Phase 5 is complete through the approved 2.0.0 runtime-support remedy. Phase 6 follows the
-[scope ownership/authority proposal](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/scope-ownership-contract.md);
-[trace-only scope registration](./docs/scope-registration.md) and
-[reference-copy scope fork](./docs/scope-fork.md) are implemented. Merge, discard, optimized
-carriers, and L2 parity are not. The major version does not
-imply production readiness.
+Phase 5 is complete through the approved 2.0.0 runtime-support remedy. Phase 6 is complete for its
+documented scope: the
+[Phase 6 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-6-exit-audit.md)
+maps [scope registration](./docs/scope-registration.md), [fork](./docs/scope-fork.md),
+[merge and discard](./docs/scope-merge-discard.md), the
+[vocabulary mapping](./docs/scope-vocabulary.md), [scheduling](./docs/scope-scheduling.md),
+[laws](./docs/scope-laws.md), and [optimized carriers](./docs/optimized-carriers.md) to L2
+substrate parity on the recorded hosts. The major version does not imply production readiness.
 
 The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
 execution, durable lifecycle/control evidence, and conservative formal-claim boundary. Phase 3 now

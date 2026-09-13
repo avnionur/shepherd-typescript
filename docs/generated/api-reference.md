@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.2.0
+Package: `@avnionur/shepherd-typescript` 2.7.1
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 595.
+Exported symbols: 649.
 
 ### `AppendBatchDraft`
 
@@ -633,6 +633,25 @@ export type DiscardRetainedWorldSettlementOptions = {
     readonly carrier: ReferenceCopyCarrier;
     readonly outputId: string;
     readonly store: SQLiteTraceStore;
+};
+```
+
+### `DiscardScopeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for one logical discard of an owned child subtree with custody cleanup.
+
+Signature:
+
+```ts
+export type DiscardScopeOptions = {
+    readonly carrier?: ReferenceCopyCarrier;
+    readonly commandId: string;
+    readonly expectedHeadRecordId: RecordId;
+    readonly nowMilliseconds?: number;
+    readonly parent: ScopeWriter;
+    readonly scopeId: string;
 };
 ```
 
@@ -2634,6 +2653,20 @@ export type InspectRetainedWorldApplicationConflictsOptions = {
 };
 ```
 
+### `InspectScopeRecoveryOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for classifying live scopes for recovery.
+
+Signature:
+
+```ts
+export type InspectScopeRecoveryOptions = {
+    readonly nowMilliseconds?: number;
+};
+```
+
 ### `JailedTaskWorldCaptureResult`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -2765,6 +2798,26 @@ Parameter:
 Parameter:
 
 - code - Stable machine-readable missing-selector code.
+
+### `MergeScopeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for one consume-once merge of a child scope into its owning parent.
+
+Signature:
+
+```ts
+export type MergeScopeOptions = {
+    readonly carrier?: ReferenceCopyCarrier;
+    readonly child: ScopeWriter;
+    readonly commandId: string;
+    readonly expectedChildHeadRecordId: RecordId;
+    readonly expectedParentHeadRecordId: RecordId;
+    readonly nowMilliseconds?: number;
+    readonly parent: ScopeWriter;
+};
+```
 
 ### `ModeFilter`
 
@@ -4876,6 +4929,7 @@ Signature:
 
 ```ts
 export type ReferenceCopyCarrier = {
+    readonly backend: WorldCarrierBackend;
     readonly captureCustody: (custodyId: string) => Promise<WorldRevision>;
     readonly discard: (custodyId: string) => Promise<void>;
     readonly fork: (revisionId: string) => Promise<WorldCustody>;
@@ -4897,6 +4951,7 @@ Signature:
 
 ```ts
 export type ReferenceCopyCarrierOptions = {
+    readonly backend?: WorldCarrierBackend;
     readonly faultInjection?: WorkspaceCustodyFaultInjection;
     readonly workspaceRoot: string;
 };
@@ -6013,6 +6068,24 @@ Signature:
 export type RunOutcomeFor<O extends RunTerminalDefinition> = RunOutcome<O extends FinishedRunDefinition<infer V> ? FinishedRunOutcome<V> : O extends FailedRunDefinition ? FailedRunOutcome : O extends ExhaustedRunDefinition ? ExhaustedRunOutcome : CancelledRunOutcome>;
 ```
 
+### `RunScopeTreeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for scheduling a tree of child scopes under one parent writer.
+
+Signature:
+
+```ts
+export type RunScopeTreeOptions = {
+    readonly carrier?: ReferenceCopyCarrier;
+    readonly children: readonly ScopeTreeNode[];
+    readonly commandPrefix: string;
+    readonly maxParallel: number;
+    readonly parent: ScopeWriter;
+};
+```
+
 ### `RunTerminalDefinition`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -6170,6 +6243,22 @@ export declare const SCOPE_CHECKPOINT_EVIDENCE_STATUSES: readonly [
 ];
 ```
 
+### `SCOPE_CHECKPOINT_START_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured branch start classifications ordered atomic snapshot, quiescent verified copy, reconstructed.
+
+Signature:
+
+```ts
+export declare const SCOPE_CHECKPOINT_START_CLASSIFICATIONS: readonly [
+    "atomic_snapshot",
+    "quiescent_verified_copy",
+    "reconstructed"
+];
+```
+
 ### `SCOPE_CHECKPOINT_VERSION`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -6186,7 +6275,7 @@ export declare const SCOPE_CHECKPOINT_VERSION: 1;
 
 Classification: `runtime-only`. Kind: `variable`.
 
-Configured scope command kinds ordered root registration, child registration, emission.
+Configured scope command kinds ordered root registration, child registration, emission, fork, merge, discard.
 
 Signature:
 
@@ -6195,7 +6284,9 @@ export declare const SCOPE_COMMAND_KINDS: readonly [
     "register_root",
     "register_child",
     "emit",
-    "fork"
+    "fork",
+    "merge",
+    "discard"
 ];
 ```
 
@@ -6209,6 +6300,21 @@ Signature:
 
 ```ts
 export declare const SCOPE_COMPATIBILITY_VERSION: "shepherd.scope.v1";
+```
+
+### `SCOPE_DISCARD_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope discard journal phases ordered decided then cleaned.
+
+Signature:
+
+```ts
+export declare const SCOPE_DISCARD_PHASES: readonly [
+    "decided",
+    "cleaned"
+];
 ```
 
 ### `SCOPE_EVIDENCE_KINDS`
@@ -6226,7 +6332,13 @@ export declare const SCOPE_EVIDENCE_KINDS: readonly [
     "child_registered",
     "emission",
     "fork_prepared",
-    "fork_completed"
+    "fork_completed",
+    "merge_cut",
+    "merge_prepared",
+    "merge_completed",
+    "child_merged",
+    "discard_decided",
+    "discard_cleaned"
 ];
 ```
 
@@ -6271,9 +6383,26 @@ Signature:
 ```ts
 export declare const SCOPE_LIMITS: Readonly<{
     readonly maxCitedRecords: 64;
+    readonly maxContributions: 1024;
     readonly maxDataCanonicalBytes: 65536;
+    readonly maxDiscardScopes: 256;
     readonly maxResources: 64;
 }>;
+```
+
+### `SCOPE_MERGE_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope merge journal phases ordered prepared then completed.
+
+Signature:
+
+```ts
+export declare const SCOPE_MERGE_PHASES: readonly [
+    "prepared",
+    "completed"
+];
 ```
 
 ### `SCOPE_RECORD_VERSION`
@@ -6286,6 +6415,43 @@ Signature:
 
 ```ts
 export declare const SCOPE_RECORD_VERSION: 1;
+```
+
+### `SCOPE_RECOVERY_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope recovery classifications in precedence order.
+
+Signature:
+
+```ts
+export declare const SCOPE_RECOVERY_CLASSIFICATIONS: readonly [
+    "terminal",
+    "cleanup_pending",
+    "merge_pending",
+    "fork_pending",
+    "writer_expired",
+    "writer_held",
+    "idle"
+];
+```
+
+### `SCOPE_RECOVERY_RESUME_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope recovery resume actions ordered fork, merge, discard, claim.
+
+Signature:
+
+```ts
+export declare const SCOPE_RECOVERY_RESUME_KINDS: readonly [
+    "fork",
+    "merge",
+    "discard",
+    "claim"
+];
 ```
 
 ### `SCOPE_RESOURCE_KINDS`
@@ -6303,6 +6469,54 @@ export declare const SCOPE_RESOURCE_KINDS: readonly [
 ];
 ```
 
+### `SCOPE_SCHEDULING_DECISIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope scheduling decisions ordered merge then discard.
+
+Signature:
+
+```ts
+export declare const SCOPE_SCHEDULING_DECISIONS: readonly [
+    "merge",
+    "discard"
+];
+```
+
+### `SCOPE_SCHEDULING_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope scheduling bounds.
+
+Signature:
+
+```ts
+export declare const SCOPE_SCHEDULING_LIMITS: Readonly<{
+    readonly maxDepth: 16;
+    readonly maxNodes: 256;
+    readonly maxParallel: 64;
+}>;
+```
+
+### `SCOPE_SCHEDULING_OUTCOMES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope scheduling outcomes ordered merged, discarded, conflicted, failed.
+
+Signature:
+
+```ts
+export declare const SCOPE_SCHEDULING_OUTCOMES: readonly [
+    "merged",
+    "discarded",
+    "conflicted",
+    "failed"
+];
+```
+
 ### `SCOPE_STATES`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -6317,6 +6531,50 @@ export declare const SCOPE_STATES: readonly [
     "merged",
     "discarded"
 ];
+```
+
+### `SCOPE_VOCABULARY_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary mapping statuses ordered pending then completed.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_STATUSES: readonly [
+    "pending",
+    "completed"
+];
+```
+
+### `SCOPE_VOCABULARY_TERMS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary terms ordered spawn, adopt, abandon, publish.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_TERMS: readonly [
+    "spawn",
+    "adopt",
+    "abandon",
+    "publish"
+];
+```
+
+### `SCOPE_VOCABULARY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary projection version.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_VERSION: 1;
 ```
 
 ### `SCOPE_WORLD_CAPABILITIES`
@@ -7557,6 +7815,28 @@ export type ScopeCheckpoint = {
 };
 ```
 
+### `ScopeCheckpointClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Evidence-derived classification of how a branch started and what it can restore.
+
+Signature:
+
+```ts
+export type ScopeCheckpointClassification = {
+    readonly not_applicable: readonly ScopeCheckpointConstituentKind[];
+    readonly reconstructive: readonly ScopeCheckpointConstituentKind[];
+    readonly restorable: boolean;
+    readonly start: ScopeCheckpointStartClassification;
+    readonly unavailable: readonly {
+        readonly kind: ScopeCheckpointConstituentKind;
+        readonly reason: string;
+    }[];
+    readonly verified: readonly ScopeCheckpointConstituentKind[];
+};
+```
+
 ### `ScopeCheckpointConstituent`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -7607,6 +7887,41 @@ Signature:
 export type ScopeCheckpointEvidenceStatus = (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[number];
 ```
 
+### `ScopeCheckpointStartClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured branch start classification proven by a checkpoint.
+
+Signature:
+
+```ts
+export type ScopeCheckpointStartClassification = (typeof SCOPE_CHECKPOINT_START_CLASSIFICATIONS)[number];
+```
+
+### `ScopeChildMergedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical parent-owned integration of one consumed child.
+
+Signature:
+
+```ts
+export type ScopeChildMergedRecord = {
+    readonly child_checkpoint_record_id: RecordId | null;
+    readonly child_cut_id: string;
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly contributions: readonly ScopeContribution[];
+    readonly merged_content_id: string | null;
+    readonly parent_scope_id: string;
+    readonly publication_revision_id: string | null;
+    readonly scope_version: number;
+};
+```
+
 ### `ScopeChildRegisteredRecord`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -7652,7 +7967,7 @@ export type ScopeChildRegistrationReceipt = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured scope command kind: root registration, child registration, or emission.
+Configured scope command kind: root or child registration, emission, fork, merge, or discard.
 
 Signature:
 
@@ -7681,6 +7996,105 @@ export type ScopeCommandReplay = {
 } | {
     readonly command: (typeof SCOPE_COMMAND_KINDS)[3];
     readonly receipt: ScopeForkReceipt;
+} | {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[4];
+    readonly receipt: ScopeMergeReceipt;
+} | {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[5];
+    readonly receipt: ScopeDiscardReceipt;
+};
+```
+
+### `ScopeContribution`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One exact selected-history occurrence identified by its original owner, ordinal, and record.
+
+Signature:
+
+```ts
+export type ScopeContribution = {
+    readonly owner_id: string;
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+};
+```
+
+### `ScopeDiscardCleanedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical discard cleanup progress retained on the discarded subtree root.
+
+Signature:
+
+```ts
+export type ScopeDiscardCleanedRecord = {
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly custody_ids: readonly string[];
+    readonly phase: (typeof SCOPE_DISCARD_PHASES)[1];
+    readonly scope_id: string;
+    readonly scope_version: number;
+};
+```
+
+### `ScopeDiscardDecidedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical logical discard decision retained on each sealed scope path.
+
+Signature:
+
+```ts
+export type ScopeDiscardDecidedRecord = {
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly custody_ids: readonly string[];
+    readonly discard_scope_id: string;
+    readonly parent_scope_id: string;
+    readonly phase: (typeof SCOPE_DISCARD_PHASES)[0];
+    readonly scope_id: string;
+    readonly scope_version: number;
+    readonly sealed_scope_ids: readonly string[];
+};
+```
+
+### `ScopeDiscardPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured scope discard journal phase: decided or cleaned.
+
+Signature:
+
+```ts
+export type ScopeDiscardPhase = (typeof SCOPE_DISCARD_PHASES)[number];
+```
+
+### `ScopeDiscardReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of one logical scope discard with its cleanup progress.
+
+Signature:
+
+```ts
+export type ScopeDiscardReceipt = {
+    readonly cleanup: {
+        readonly cleaned_record_id: RecordId | null;
+        readonly custody_ids: readonly string[];
+        readonly phase: ScopeDiscardPhase;
+    };
+    readonly command_id: string;
+    readonly decided_record_id: RecordId;
+    readonly head: ScopeHeadAddress;
+    readonly parent_scope_id: string;
+    readonly scope_id: string;
+    readonly sealed_scope_ids: readonly string[];
 };
 ```
 
@@ -7951,6 +8365,22 @@ export type ScopeHistoryEntry = {
     readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[4] | (typeof SCOPE_EVIDENCE_KINDS)[5];
     readonly owner_ordinal: number;
     readonly record_id: RecordId;
+} | {
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[6] | (typeof SCOPE_EVIDENCE_KINDS)[7] | (typeof SCOPE_EVIDENCE_KINDS)[8];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+} | {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[9];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+} | {
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[10] | (typeof SCOPE_EVIDENCE_KINDS)[11];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
 };
 ```
 
@@ -7974,7 +8404,9 @@ export type ScopeInspection = {
     readonly registered_for_mutation: boolean;
     readonly registration_record_id: RecordId;
     readonly scope_id: string;
+    readonly selected_history: readonly ScopeContribution[];
     readonly state: ScopeState;
+    readonly terminal: ScopeTerminalInspection | null;
     readonly world: ScopeWorldInspection | null;
     readonly world_capability: ScopeWorldCapability;
 };
@@ -7992,6 +8424,156 @@ Signature:
 export type ScopeKind = (typeof SCOPE_KINDS)[number];
 ```
 
+### `ScopeMergeCompletedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical child-side merge seal retained with the parent integration.
+
+Signature:
+
+```ts
+export type ScopeMergeCompletedRecord = {
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly parent_scope_id: string;
+    readonly phase: (typeof SCOPE_MERGE_PHASES)[1];
+    readonly publication_revision_id: string | null;
+    readonly scope_id: string;
+    readonly scope_version: number;
+};
+```
+
+### `ScopeMergeConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a merge's child delta and current-parent delta from their common origin overlap.
+
+The refusal retains nothing and consumes neither scope.
+
+Signature:
+
+```ts
+export declare class ScopeMergeConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly conflict: RetainedWorldApplicationConflictEvidence;
+    constructor(conflict: RetainedWorldApplicationConflictEvidence);
+}
+```
+
+#### `code`
+
+Stable configuration-owned merge-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `conflict`
+
+Content-addressed bounded portable path-conflict evidence.
+
+```ts
+readonly conflict: RetainedWorldApplicationConflictEvidence;
+```
+
+#### `constructor`
+
+Creates an overlapping-merge failure.
+
+```ts
+constructor(conflict: RetainedWorldApplicationConflictEvidence);
+```
+
+Parameter:
+
+- conflict - Exact conflict evidence between the child and current-parent changed paths.
+
+### `ScopeMergePhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured scope merge journal phase: prepared or completed.
+
+Signature:
+
+```ts
+export type ScopeMergePhase = (typeof SCOPE_MERGE_PHASES)[number];
+```
+
+### `ScopeMergePreparedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical child-side merge reservation retained before any parent publication.
+
+Signature:
+
+```ts
+export type ScopeMergePreparedRecord = {
+    readonly child_head_record_id: RecordId;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly contributions: readonly ScopeContribution[];
+    readonly merge_cut_id: string;
+    readonly parent_head_record_id: RecordId;
+    readonly parent_scope_id: string;
+    readonly phase: (typeof SCOPE_MERGE_PHASES)[0];
+    readonly scope_id: string;
+    readonly scope_version: number;
+    readonly world: ScopeMergeWorldPlan | null;
+};
+```
+
+### `ScopeMergeReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of one completed consume-once scope merge.
+
+Signature:
+
+```ts
+export type ScopeMergeReceipt = {
+    readonly child_merged_record_id: RecordId;
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly completed_record_id: RecordId;
+    readonly contributions: readonly ScopeContribution[];
+    readonly head: ScopeHeadAddress;
+    readonly merge_cut_id: string;
+    readonly merged_content_id: string | null;
+    readonly parent_head: ScopeHeadAddress;
+    readonly parent_scope_id: string;
+    readonly prepared_record_id: RecordId;
+    readonly publication_revision_id: string | null;
+    readonly world: ScopeMergeWorldPlan | null;
+};
+```
+
+### `ScopeMergeWorldPlan`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact three-way world plan retained by a merge reservation.
+
+Signature:
+
+```ts
+export type ScopeMergeWorldPlan = {
+    readonly application_custody_id: string | null;
+    readonly binding_id: string;
+    readonly child_content_id: string;
+    readonly child_revision_id: string;
+    readonly origin_content_id: string;
+    readonly origin_revision_id: string;
+    readonly parent_content_id: string;
+    readonly parent_custody_id: string;
+    readonly parent_revision_id: string;
+};
+```
+
 ### `ScopeParentOrigin`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -8007,6 +8589,122 @@ export type ScopeParentOrigin = {
     readonly origin_record_id: RecordId;
     readonly scope_id: string;
 };
+```
+
+### `ScopeQuiescenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when affected scopes are not quiescent: a live descendant, a pending command, or an
+unreleased writer claim.
+
+Signature:
+
+```ts
+export declare class ScopeQuiescenceError extends TraceStoreError {
+    readonly code: string;
+    readonly scope_id: string;
+    constructor(scopeId: string, detail: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned not-quiescent code.
+
+```ts
+readonly code: string;
+```
+
+#### `scope_id`
+
+Scope whose state blocks the operation.
+
+```ts
+readonly scope_id: string;
+```
+
+#### `constructor`
+
+Creates a not-quiescent failure.
+
+```ts
+constructor(scopeId: string, detail: string);
+```
+
+Parameter:
+
+- scopeId - Scope whose live state blocks the operation.
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+### `ScopeRecoveryClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured restart-recovery classification of one live scope.
+
+Signature:
+
+```ts
+export type ScopeRecoveryClassification = (typeof SCOPE_RECOVERY_CLASSIFICATIONS)[number];
+```
+
+### `ScopeRecoveryEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Recovery classification of one live scope with its single recovery owner.
+
+Signature:
+
+```ts
+export type ScopeRecoveryEntry = {
+    readonly claim: {
+        readonly claim_id: string;
+        readonly fencing_token: number;
+        readonly lease_expires_at: number;
+        readonly released: boolean;
+    } | null;
+    readonly classification: ScopeRecoveryClassification;
+    readonly parent_scope_id: string | null;
+    readonly recovery_owner_scope_id: string | null;
+    readonly resume: {
+        readonly command_id: string | null;
+        readonly kind: ScopeRecoveryResumeKind;
+    } | null;
+    readonly scope_id: string;
+    readonly state: ScopeState;
+};
+```
+
+### `ScopeRecoveryReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived recovery report over every live scope in one store.
+
+Signature:
+
+```ts
+export type ScopeRecoveryReport = {
+    readonly evaluated_at: number;
+    readonly scopes: readonly ScopeRecoveryEntry[];
+};
+```
+
+### `ScopeRecoveryResumeKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured recovery action that resumes a scope.
+
+Signature:
+
+```ts
+export type ScopeRecoveryResumeKind = (typeof SCOPE_RECOVERY_RESUME_KINDS)[number];
 ```
 
 ### `ScopeRegistrationRecord`
@@ -8100,6 +8798,246 @@ Signature:
 
 ```ts
 export type ScopeState = (typeof SCOPE_STATES)[number];
+```
+
+### `ScopeTerminalConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a scope is merged, discarded, or reserved by another terminal decision.
+
+Signature:
+
+```ts
+export declare class ScopeTerminalConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly scope_id: string;
+    constructor(scopeId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned terminal-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `scope_id`
+
+Scope whose terminal state refuses the command.
+
+```ts
+readonly scope_id: string;
+```
+
+#### `constructor`
+
+Creates a terminal-conflict failure.
+
+```ts
+constructor(scopeId: string);
+```
+
+Parameter:
+
+- scopeId - Scope that is not open or already retains another terminal decision.
+
+### `ScopeTerminalInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Latest retained terminal decision of one scope.
+
+Signature:
+
+```ts
+export type ScopeTerminalInspection = {
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_COMMAND_KINDS)[4];
+    readonly phase: ScopeMergePhase;
+    readonly record_id: RecordId;
+} | {
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_COMMAND_KINDS)[5];
+    readonly phase: ScopeDiscardPhase;
+    readonly record_id: RecordId;
+};
+```
+
+### `ScopeTreeContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Live context handed to one scheduled scope's work after its children settled.
+
+Signature:
+
+```ts
+export type ScopeTreeContext = {
+    readonly children: readonly ScopeTreeOutcome[];
+    readonly custodyPath: string | null;
+    readonly emit: (key: string, data: SemanticRecord) => ScopeEmissionReceipt;
+    readonly path: readonly string[];
+    readonly scopeId: string;
+    readonly writer: ScopeWriter;
+};
+```
+
+### `ScopeTreeDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured settlement decision a scheduled scope returns: merge or discard.
+
+Signature:
+
+```ts
+export type ScopeTreeDecision = (typeof SCOPE_SCHEDULING_DECISIONS)[number];
+```
+
+### `ScopeTreeNode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One declared scope in a scheduled tree.
+
+Signature:
+
+```ts
+export type ScopeTreeNode = {
+    readonly children?: readonly ScopeTreeNode[];
+    readonly fork?: {
+        readonly binding: WorkspaceBinding;
+    };
+    readonly grant: ScopeResourceGrantRequest;
+    readonly key: string;
+    readonly run?: (context: ScopeTreeContext) => Promise<ScopeTreeDecision> | ScopeTreeDecision;
+};
+```
+
+### `ScopeTreeOutcome`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Settled result of one scheduled scope.
+
+Signature:
+
+```ts
+export type ScopeTreeOutcome = {
+    readonly children: readonly ScopeTreeOutcome[];
+    readonly failure: string | null;
+    readonly key: string;
+    readonly scope_id: string;
+    readonly status: ScopeTreeOutcomeStatus;
+};
+```
+
+### `ScopeTreeOutcomeStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured outcome of one scheduled scope: merged, discarded, conflicted, or failed.
+
+Signature:
+
+```ts
+export type ScopeTreeOutcomeStatus = (typeof SCOPE_SCHEDULING_OUTCOMES)[number];
+```
+
+### `ScopeTreeReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Settled report of one scheduled tree.
+
+Signature:
+
+```ts
+export type ScopeTreeReport = {
+    readonly outcomes: readonly ScopeTreeOutcome[];
+    readonly parent_scope_id: string;
+};
+```
+
+### `ScopeVocabularyEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One vocabulary term mapped onto exact retained scope command evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyEntry = {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[0];
+    readonly world_capability: ScopeWorldCapability;
+} | {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[1];
+} | {
+    readonly child_scope_id: string;
+    readonly cleanup_phase: ScopeDiscardPhase;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[2];
+} | {
+    readonly command_id: string;
+    readonly contribution: ScopeContribution;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[3];
+};
+```
+
+### `ScopeVocabularyProjection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only vocabulary mapping of one scope's child lifecycle evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyProjection = {
+    readonly entries: readonly ScopeVocabularyEntry[];
+    readonly scope_id: string;
+    readonly vocabulary_version: number;
+};
+```
+
+### `ScopeVocabularyStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured vocabulary mapping status: pending while a command is in flight, or completed.
+
+Signature:
+
+```ts
+export type ScopeVocabularyStatus = (typeof SCOPE_VOCABULARY_STATUSES)[number];
+```
+
+### `ScopeVocabularyTerm`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured vocabulary term mapped onto scope evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyTerm = (typeof SCOPE_VOCABULARY_TERMS)[number];
 ```
 
 ### `ScopeWorldCapability`
@@ -9661,6 +10599,22 @@ export type WorkspaceInitializationOptions = {
 };
 ```
 
+### `WorkspaceOptimizedCarrierParity`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Host evidence for one optimized carrier backend's parity claim.
+
+Signature:
+
+```ts
+export type WorkspaceOptimizedCarrierParity = {
+    readonly backend: string;
+    readonly reason: string;
+    readonly status: string;
+};
+```
+
 ### `WorkspacePathProtectionOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -9709,6 +10663,7 @@ export type WorkspacePlatformConformance = {
     readonly metadata_policy: string;
     readonly mode_policy: string;
     readonly optimized_carrier_parity: string;
+    readonly optimized_carriers: readonly WorkspaceOptimizedCarrierParity[];
     readonly platform: NodeJS.Platform;
     readonly symlink_policy: string;
     readonly unsupported_metadata: readonly string[];
@@ -9803,6 +10758,18 @@ export type WorkspaceState = {
     readonly initialize_git: boolean;
     readonly root_path: string;
 };
+```
+
+### `WorldCarrierBackend`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured selectable world-carrier backend name.
+
+Signature:
+
+```ts
+export type WorldCarrierBackend = (typeof WORLD_CARRIER_BACKENDS)[number];
 ```
 
 ### `WorldCarrierError`
@@ -10875,6 +11842,44 @@ const envelope = classifyProofEnvelope({
 envelope.reference_validated;
 ```
 
+### `classifyScopeCheckpoint`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Proves from retained checkpoint evidence how a branch started and what it can restore.
+
+Any reconstructive constituent classifies the start as reconstructed. Otherwise the configured
+start classification of the carrier capture kind applies: the reference copy carrier's quiescent
+verified copy is never reported as an atomic snapshot. Every constituent is listed under its
+evidence status, and the branch is restorable only when no applicable constituent is
+reconstructive or unavailable. Identifiers and timestamps alone are never treated as proof.
+
+Signature:
+
+```ts
+export declare function classifyScopeCheckpoint(checkpoint: ScopeCheckpoint): ScopeCheckpointClassification;
+```
+
+Parameter:
+
+- checkpoint - Checkpoint descriptor retained by a completed scope fork.
+
+Returns:
+
+- Frozen classification.
+
+Throws:
+
+- {TypeError} If the checkpoint is malformed or its capture kind has no configured
+start classification.
+
+Example:
+
+- ```ts
+const fork = await forkScope(store, options);
+const { start, restorable } = classifyScopeCheckpoint(fork.world.checkpoint);
+```
+
 ### `createEffectHandlerStack`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -11860,6 +12865,98 @@ const discarded = await discardRetainedWorldSettlement({
 discarded.cleanup_completed;
 ```
 
+### `discardScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably discards one owned child subtree and cleans only its proven-owned custody.
+
+Admission requires the owning parent's writer, the exact current head of the subtree root, an
+open root without a reserved merge, and no unreleased writer claim on any open scope in the
+subtree. One transaction seals every open scope of the subtree with a decision record on its
+own path; merged and already discarded descendants keep their terminal evidence, and a
+descendant's in-flight merge or fork can never complete afterwards. The parent's head,
+managed custody, and effective history are untouched: discard is not a rollback of the parent
+to fork time. Scope evidence retains application data only, so no escaped external effect is
+representable to reverse.
+
+Cleanup progress is separate from the logical decision. The decision names the exact custody
+identities of every forked scope in the subtree, read from their retained fork journals, and
+cleanup discards only those identities through the carrier, never scanning directories. When a
+carrier is supplied and cleanup succeeds, a cleanup record is retained under the parent's
+current fence. Without a carrier, or after an interrupted cleanup, the receipt reports the
+decided phase and a retry of the same command resumes cleanup. Repeating a completed discard
+returns its original receipt without any authority.
+
+Signature:
+
+```ts
+export declare function discardScope(store: SQLiteTraceStore, options: DiscardScopeOptions): Promise<ScopeDiscardReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the parent and subtree registrations.
+
+Parameter:
+
+- options - Parent writer, exact subtree root and head, command, and optional carrier.
+
+Returns:
+
+- Frozen discard receipt with cleanup progress.
+
+Throws:
+
+- {ScopeTerminalConflictError} If the root or parent is not open or the root retains a
+reserved merge.
+
+Throws:
+
+- {ScopeQuiescenceError} If an open subtree scope holds an unreleased writer claim.
+
+Throws:
+
+- {ScopeWriterFencedError} If the parent fence is released, expired, or superseded.
+
+Throws:
+
+- {ScopeHeadConflictError} If the expected root head is not current.
+
+Throws:
+
+- {ScopeEvidenceError} If ownership or retained evidence is inconsistent or the subtree
+exceeds the configured bound.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {WorldCarrierError} If owned custody is in an unknown physical state.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If a handle or carrier is forged or options are malformed.
+
+Example:
+
+- ```ts
+const discarded = await discardScope(store, {
+    carrier,
+    commandId: "scope-command:discard:1",
+    expectedHeadRecordId: inspectScope(store, child.scope_id)?.head.record_id,
+    parent: parentWriter,
+    scopeId: child.scope_id,
+});
+console.log(discarded.cleanup.phase);
+```
+
 ### `emitScopeRecord`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -12417,7 +13514,9 @@ Reconstructs and validates one scope from its retained owner path without mutati
 The projection is derived from canonical records, so a read-only reopen or a native archive
 import produces the same result. Live registration admitting mutation is reported separately:
 an imported archive carries inspection evidence only and reports `registered_for_mutation`
-false. Slice A retains only open scopes; merge and discard evidence are later slices.
+false. The branch state is derived from retained merge and discard evidence, and the selected
+history lists this scope's own emissions plus contributions integrated by completed child
+merges, each exact occurrence once.
 
 Signature:
 
@@ -12453,7 +13552,66 @@ Example:
 
 - ```ts
 const inspection = inspectScope(store, root.scope_id);
-console.log(inspection?.head.record_id, inspection?.history.length);
+console.log(inspection?.state, inspection?.selected_history.length);
+```
+
+### `inspectScopeRecovery`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Classifies every live scope in this store for restart recovery and orphan detection.
+
+The report is derived from live registration rows, writer claims, and validated retained
+records only; it never scans directories, infers ownership from projections, appends, or
+repairs. Each scope receives exactly one configured classification in precedence order:
+terminal, cleanup pending, merge pending, fork pending, writer expired, writer held, or idle.
+Structural orphans cannot exist: registration rows require their parent row, and a discard seals
+every open descendant in the same transaction. Orphaned work is therefore detected as a writer
+expired classification, an unreleased claim past its lease whose holder may still be running.
+Every classification that needs work names the single scope whose writer owns recovery and the
+exact retained command to resume: the parent for an incomplete fork, a reserved merge, or the
+discarded subtree root's pending cleanup record, even when it names no custody, and the scope
+itself for an expired writer, which must be superseded by a new claim. When a sealed parent can no
+longer resume a descendant's cleanup, ownership resolves to the sealing ancestor discard that lists
+the same identities, and a completed ancestor cleanup makes the descendant terminal. Imported stores hold no live rows and report no scopes.
+
+Signature:
+
+```ts
+export declare function inspectScopeRecovery(store: SQLiteTraceStore, options?: InspectScopeRecoveryOptions): ScopeRecoveryReport;
+```
+
+Parameter:
+
+- store - Open trace store holding live scope registrations.
+
+Parameter:
+
+- options - Optional deterministic evaluation time for writer leases.
+
+Returns:
+
+- Frozen report ordered by scope identity.
+
+Throws:
+
+- {ScopeEvidenceError} If retained scope evidence is malformed or inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const report = inspectScopeRecovery(store);
+for (const entry of report.scopes.filter((scope) => scope.resume !== null)) {
+    console.log(entry.scope_id, entry.classification, entry.resume);
+}
 ```
 
 ### `inspectTaskWorldCaptureJournal`
@@ -12557,6 +13715,10 @@ Returns:
 Throws:
 
 - {WorkspaceControlError} If the workspace cannot be reopened safely.
+
+Throws:
+
+- {WorldCarrierError} If carrier staging is unsafe or a backend probe fails unexpectedly.
 
 Throws:
 
@@ -12778,6 +13940,109 @@ Example:
 
 - ```ts
 const revisions = listTraceRevisions(store, { limit: 25, offset: 0 });
+```
+
+### `mergeScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably merges one quiescent child scope into its owning parent exactly once.
+
+Admission requires the parent and child writers, both exact current heads, exact ownership, a
+complete child fork, and only terminal grandchildren. For a reference-copy child the merge
+derives an exact three-way plan from the common origin, the captured child world, and the
+captured current parent world: overlapping changed paths fail with
+ScopeMergeConflictError before anything is retained, so neither scope is consumed.
+Disjoint changes build an immutable merged revision in protected carrier custody.
+
+One transaction then publishes the fixed child cut and a reservation citing the plan and the
+child's selected-history contributions not already selected by the parent. The reservation is
+the single terminal winner: competing merges, a later discard, child writers, and parent
+mutation are refused until completion. Publication applies only the planned changes to the
+parent-managed custody under the rechecked parent head and fence, converging from any prefix,
+and the merge completes only once the parent custody verifies as the merged content. The
+completion appends a parent-side integration and a child seal in one transaction. User
+workspaces are never written; publication to them remains retained settlement.
+
+Retrying the same command converges from retained evidence; a completed merge returns its
+original receipt. A parent custody found in a third state is unknown physical state and stays
+blocked.
+
+Signature:
+
+```ts
+export declare function mergeScope(store: SQLiteTraceStore, options: MergeScopeOptions): Promise<ScopeMergeReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding both registrations.
+
+Parameter:
+
+- options - Parent and child writers, both exact heads, command, and optional carrier.
+
+Returns:
+
+- Frozen completed merge receipt.
+
+Throws:
+
+- {ScopeMergeConflictError} If child and current-parent changes overlap.
+
+Throws:
+
+- {ScopeTerminalConflictError} If either scope is not open or the child retains another
+terminal decision.
+
+Throws:
+
+- {ScopeQuiescenceError} If a grandchild is unresolved or another merge into the parent
+is in flight.
+
+Throws:
+
+- {ScopeAuthorityError} If the parent cannot write the child's bound resource.
+
+Throws:
+
+- {ScopeWriterFencedError} If a writer fence is released, expired, or superseded.
+
+Throws:
+
+- {ScopeHeadConflictError} If an expected head is not current.
+
+Throws:
+
+- {ScopeEvidenceError} If ownership, worlds, or retained evidence are inconsistent.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {WorldCarrierError} If carrier evidence is unavailable, corrupt, or in a third state.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If a handle is forged, a required carrier is absent, or options are malformed.
+
+Example:
+
+- ```ts
+const merged = await mergeScope(store, {
+    carrier,
+    child: childWriter,
+    commandId: "scope-command:merge:1",
+    expectedChildHeadRecordId: inspectScope(store, child.scope_id)?.head.record_id,
+    expectedParentHeadRecordId: inspectScope(store, parent.scope_id)?.head.record_id,
+    parent: parentWriter,
+});
 ```
 
 ### `openWorkspace`
@@ -13037,6 +14302,58 @@ Throws:
 
 - {TypeError} If the parent identifier is empty.
 
+### `projectScopeVocabulary`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Maps the spawn, adopt, abandon, and publish vocabulary onto one scope's retained evidence.
+
+The mapping is a disposable read of validated scope records, never an alias or a second event
+stream: `spawn` cites a child registration, `adopt` a consume-once merge selecting a verified
+child cut, `abandon` a logical discard decision removing a child from effective selection
+(cleanup progress is reported separately), and `publish` an exact child occurrence made
+parent-visible by a completed merge. It is not user-workspace materialization. A reserved merge
+or an incomplete fork maps as pending. Version-1 execution-history relation and publication
+projections keep their own semantics and are neither produced nor reinterpreted. The mapping
+appends nothing, grants no authority, and reads the same after reopen or import.
+
+Signature:
+
+```ts
+export declare function projectScopeVocabulary(store: SQLiteTraceStore, scopeId: string): ScopeVocabularyProjection | undefined;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- scopeId - Exact configured parent scope identity.
+
+Returns:
+
+- Frozen vocabulary projection, or `undefined` when the scope retains nothing.
+
+Throws:
+
+- {ScopeEvidenceError} If retained scope evidence is malformed or inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or a cited cut is absent or corrupt.
+
+Throws:
+
+- {TypeError} If the scope identity is malformed.
+
+Example:
+
+- ```ts
+const vocabulary = projectScopeVocabulary(store, parent.scope_id);
+const adopted = vocabulary?.entries.filter((entry) => entry.term === "adopt");
+```
+
 ### `readDurableTaskExecution`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -13075,12 +14392,13 @@ Classification: `runtime-only`. Kind: `function`.
 
 Reads the exact retained receipt of one completed scope command without any writer authority.
 
-Receipt replay is a read: it reconstructs the original registration, emission, or fork receipt
-from the records retained under the command's append intents, so a caller that lost its
-response, restarted, or whose fence is stale or superseded still receives the original result.
-It grants no mutation authority and works on read-only and imported stores. A fork is complete
-only once its completed journal record is retained; until then no receipt exists, and
-`inspectScope` reports the prepared world.
+Receipt replay is a read: it reconstructs the original registration, emission, fork, merge, or
+discard receipt from the records retained under the command's append intents, so a caller that
+lost its response, restarted, or whose fence is stale or superseded still receives the original
+result. It grants no mutation authority and works on read-only and imported stores. A fork or
+merge is complete only once its completed journal records are retained; until then no receipt
+exists, and `inspectScope` reports the in-flight phase. A discard receipt exists once its
+logical decision is retained and reports cleanup progress separately.
 
 Signature:
 
@@ -13967,6 +15285,91 @@ Returns:
 Throws:
 
 - {TypeError} If the injectable I/O boundary is malformed.
+
+### `runScopeTree`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Schedules a tree of child scopes with bounded sibling parallelism and settles each exactly once.
+
+Children of one parent are created in declared order under that parent's writer, then their
+subtrees run with at most `maxParallel` siblings in flight. Nesting is depth-first: every child's
+own children are created, run, and settled before the child's work runs with their outcomes.
+Settlement of siblings is serialized in declared order under the parent, so results and the
+parent's selected history do not depend on the degree of parallelism. Work returns `merge` or
+`discard` (merge by default). A throwing work function or an invalid decision discards only that
+scope's subtree and reports `failed`; a merge refused for overlapping world changes discards the
+child and reports `conflicted`. Every other refusal fails the schedule closed.
+
+Every command and writer claim identity is derived from `commandPrefix` and the node key path,
+so re-running the same schedule after a crash resumes from retained receipts: created scopes
+are reused, incomplete forks, reserved merges, and pending discard cleanup resume, and settled
+scopes are not run again. Work of unsettled scopes may run again, so its side effects must be
+idempotent; `context.emit` replays retained emissions. Writers are re-claimed under their
+deterministic claim identities before each mutation, which renews an expired lease held by this
+schedule and fails closed when another holder is active. A reference-copy child can be merged
+only into a parent that owns reference-copy custody.
+
+Signature:
+
+```ts
+export declare function runScopeTree(store: SQLiteTraceStore, options: RunScopeTreeOptions): Promise<ScopeTreeReport>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the parent registration.
+
+Parameter:
+
+- options - Parent writer, declared children, deterministic prefix, bound, and carrier.
+
+Returns:
+
+- Frozen report of settled outcomes in declared order.
+
+Throws:
+
+- {ScopeWriterConflictError} If another holder owns a scheduled writer.
+
+Throws:
+
+- {ScopeEvidenceError} If retained evidence is inconsistent or a world child merges into a
+parent without managed custody.
+
+Throws:
+
+- {ScopeAuthorityError} If a node's grant or merge exceeds authority.
+
+Throws:
+
+- {AppendIntentConflictError} If a derived command identity names different content.
+
+Throws:
+
+- {WorldCarrierError} If carrier evidence is unavailable or in an unknown physical state.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options or nodes are malformed or exceed configured bounds.
+
+Example:
+
+- ```ts
+const report = await runScopeTree(store, {
+    children: [
+        { grant: [], key: "draft", run: (scope) => (scope.emit("note", { ok: true }), "merge") },
+        { grant: [], key: "probe", run: () => "discard" },
+    ],
+    commandPrefix: "schedule:review-1",
+    maxParallel: 2,
+    parent: rootWriter,
+});
+```
 
 ### `schema`
 
@@ -18043,7 +19446,7 @@ import * as api from "@avnionur/shepherd-typescript/scopes";
 void api;
 ```
 
-Exported symbols: 69.
+Exported symbols: 109.
 
 ### `AppendIntentConflictError`
 
@@ -18114,6 +19517,20 @@ export type EmitScopeRecordOptions = {
     readonly expectedHeadRecordId: RecordId;
     readonly nowMilliseconds?: number;
     readonly writer: ScopeWriter;
+};
+```
+
+### `InspectScopeRecoveryOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for classifying live scopes for recovery.
+
+Signature:
+
+```ts
+export type InspectScopeRecoveryOptions = {
+    readonly nowMilliseconds?: number;
 };
 ```
 
@@ -18224,6 +19641,22 @@ export declare const SCOPE_CHECKPOINT_EVIDENCE_STATUSES: readonly [
 ];
 ```
 
+### `SCOPE_CHECKPOINT_START_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured branch start classifications ordered atomic snapshot, quiescent verified copy, reconstructed.
+
+Signature:
+
+```ts
+export declare const SCOPE_CHECKPOINT_START_CLASSIFICATIONS: readonly [
+    "atomic_snapshot",
+    "quiescent_verified_copy",
+    "reconstructed"
+];
+```
+
 ### `SCOPE_CHECKPOINT_VERSION`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -18240,7 +19673,7 @@ export declare const SCOPE_CHECKPOINT_VERSION: 1;
 
 Classification: `runtime-only`. Kind: `variable`.
 
-Configured scope command kinds ordered root registration, child registration, emission.
+Configured scope command kinds ordered root registration, child registration, emission, fork, merge, discard.
 
 Signature:
 
@@ -18249,7 +19682,9 @@ export declare const SCOPE_COMMAND_KINDS: readonly [
     "register_root",
     "register_child",
     "emit",
-    "fork"
+    "fork",
+    "merge",
+    "discard"
 ];
 ```
 
@@ -18263,6 +19698,21 @@ Signature:
 
 ```ts
 export declare const SCOPE_COMPATIBILITY_VERSION: "shepherd.scope.v1";
+```
+
+### `SCOPE_DISCARD_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope discard journal phases ordered decided then cleaned.
+
+Signature:
+
+```ts
+export declare const SCOPE_DISCARD_PHASES: readonly [
+    "decided",
+    "cleaned"
+];
 ```
 
 ### `SCOPE_EVIDENCE_KINDS`
@@ -18280,7 +19730,13 @@ export declare const SCOPE_EVIDENCE_KINDS: readonly [
     "child_registered",
     "emission",
     "fork_prepared",
-    "fork_completed"
+    "fork_completed",
+    "merge_cut",
+    "merge_prepared",
+    "merge_completed",
+    "child_merged",
+    "discard_decided",
+    "discard_cleaned"
 ];
 ```
 
@@ -18325,9 +19781,26 @@ Signature:
 ```ts
 export declare const SCOPE_LIMITS: Readonly<{
     readonly maxCitedRecords: 64;
+    readonly maxContributions: 1024;
     readonly maxDataCanonicalBytes: 65536;
+    readonly maxDiscardScopes: 256;
     readonly maxResources: 64;
 }>;
+```
+
+### `SCOPE_MERGE_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope merge journal phases ordered prepared then completed.
+
+Signature:
+
+```ts
+export declare const SCOPE_MERGE_PHASES: readonly [
+    "prepared",
+    "completed"
+];
 ```
 
 ### `SCOPE_RECORD_VERSION`
@@ -18340,6 +19813,43 @@ Signature:
 
 ```ts
 export declare const SCOPE_RECORD_VERSION: 1;
+```
+
+### `SCOPE_RECOVERY_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope recovery classifications in precedence order.
+
+Signature:
+
+```ts
+export declare const SCOPE_RECOVERY_CLASSIFICATIONS: readonly [
+    "terminal",
+    "cleanup_pending",
+    "merge_pending",
+    "fork_pending",
+    "writer_expired",
+    "writer_held",
+    "idle"
+];
+```
+
+### `SCOPE_RECOVERY_RESUME_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope recovery resume actions ordered fork, merge, discard, claim.
+
+Signature:
+
+```ts
+export declare const SCOPE_RECOVERY_RESUME_KINDS: readonly [
+    "fork",
+    "merge",
+    "discard",
+    "claim"
+];
 ```
 
 ### `SCOPE_RESOURCE_KINDS`
@@ -18357,6 +19867,54 @@ export declare const SCOPE_RESOURCE_KINDS: readonly [
 ];
 ```
 
+### `SCOPE_SCHEDULING_DECISIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope scheduling decisions ordered merge then discard.
+
+Signature:
+
+```ts
+export declare const SCOPE_SCHEDULING_DECISIONS: readonly [
+    "merge",
+    "discard"
+];
+```
+
+### `SCOPE_SCHEDULING_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope scheduling bounds.
+
+Signature:
+
+```ts
+export declare const SCOPE_SCHEDULING_LIMITS: Readonly<{
+    readonly maxDepth: 16;
+    readonly maxNodes: 256;
+    readonly maxParallel: 64;
+}>;
+```
+
+### `SCOPE_SCHEDULING_OUTCOMES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope scheduling outcomes ordered merged, discarded, conflicted, failed.
+
+Signature:
+
+```ts
+export declare const SCOPE_SCHEDULING_OUTCOMES: readonly [
+    "merged",
+    "discarded",
+    "conflicted",
+    "failed"
+];
+```
+
 ### `SCOPE_STATES`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -18371,6 +19929,50 @@ export declare const SCOPE_STATES: readonly [
     "merged",
     "discarded"
 ];
+```
+
+### `SCOPE_VOCABULARY_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary mapping statuses ordered pending then completed.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_STATUSES: readonly [
+    "pending",
+    "completed"
+];
+```
+
+### `SCOPE_VOCABULARY_TERMS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary terms ordered spawn, adopt, abandon, publish.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_TERMS: readonly [
+    "spawn",
+    "adopt",
+    "abandon",
+    "publish"
+];
+```
+
+### `SCOPE_VOCABULARY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured scope vocabulary projection version.
+
+Signature:
+
+```ts
+export declare const SCOPE_VOCABULARY_VERSION: 1;
 ```
 
 ### `SCOPE_WORLD_CAPABILITIES`
@@ -18481,6 +20083,28 @@ export type ScopeCheckpoint = {
 };
 ```
 
+### `ScopeCheckpointClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Evidence-derived classification of how a branch started and what it can restore.
+
+Signature:
+
+```ts
+export type ScopeCheckpointClassification = {
+    readonly not_applicable: readonly ScopeCheckpointConstituentKind[];
+    readonly reconstructive: readonly ScopeCheckpointConstituentKind[];
+    readonly restorable: boolean;
+    readonly start: ScopeCheckpointStartClassification;
+    readonly unavailable: readonly {
+        readonly kind: ScopeCheckpointConstituentKind;
+        readonly reason: string;
+    }[];
+    readonly verified: readonly ScopeCheckpointConstituentKind[];
+};
+```
+
 ### `ScopeCheckpointConstituent`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -18531,6 +20155,41 @@ Signature:
 export type ScopeCheckpointEvidenceStatus = (typeof SCOPE_CHECKPOINT_EVIDENCE_STATUSES)[number];
 ```
 
+### `ScopeCheckpointStartClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured branch start classification proven by a checkpoint.
+
+Signature:
+
+```ts
+export type ScopeCheckpointStartClassification = (typeof SCOPE_CHECKPOINT_START_CLASSIFICATIONS)[number];
+```
+
+### `ScopeChildMergedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical parent-owned integration of one consumed child.
+
+Signature:
+
+```ts
+export type ScopeChildMergedRecord = {
+    readonly child_checkpoint_record_id: RecordId | null;
+    readonly child_cut_id: string;
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly contributions: readonly ScopeContribution[];
+    readonly merged_content_id: string | null;
+    readonly parent_scope_id: string;
+    readonly publication_revision_id: string | null;
+    readonly scope_version: number;
+};
+```
+
 ### `ScopeChildRegisteredRecord`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -18576,7 +20235,7 @@ export type ScopeChildRegistrationReceipt = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured scope command kind: root registration, child registration, or emission.
+Configured scope command kind: root or child registration, emission, fork, merge, or discard.
 
 Signature:
 
@@ -18605,6 +20264,105 @@ export type ScopeCommandReplay = {
 } | {
     readonly command: (typeof SCOPE_COMMAND_KINDS)[3];
     readonly receipt: ScopeForkReceipt;
+} | {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[4];
+    readonly receipt: ScopeMergeReceipt;
+} | {
+    readonly command: (typeof SCOPE_COMMAND_KINDS)[5];
+    readonly receipt: ScopeDiscardReceipt;
+};
+```
+
+### `ScopeContribution`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One exact selected-history occurrence identified by its original owner, ordinal, and record.
+
+Signature:
+
+```ts
+export type ScopeContribution = {
+    readonly owner_id: string;
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+};
+```
+
+### `ScopeDiscardCleanedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical discard cleanup progress retained on the discarded subtree root.
+
+Signature:
+
+```ts
+export type ScopeDiscardCleanedRecord = {
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly custody_ids: readonly string[];
+    readonly phase: (typeof SCOPE_DISCARD_PHASES)[1];
+    readonly scope_id: string;
+    readonly scope_version: number;
+};
+```
+
+### `ScopeDiscardDecidedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical logical discard decision retained on each sealed scope path.
+
+Signature:
+
+```ts
+export type ScopeDiscardDecidedRecord = {
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly custody_ids: readonly string[];
+    readonly discard_scope_id: string;
+    readonly parent_scope_id: string;
+    readonly phase: (typeof SCOPE_DISCARD_PHASES)[0];
+    readonly scope_id: string;
+    readonly scope_version: number;
+    readonly sealed_scope_ids: readonly string[];
+};
+```
+
+### `ScopeDiscardPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured scope discard journal phase: decided or cleaned.
+
+Signature:
+
+```ts
+export type ScopeDiscardPhase = (typeof SCOPE_DISCARD_PHASES)[number];
+```
+
+### `ScopeDiscardReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of one logical scope discard with its cleanup progress.
+
+Signature:
+
+```ts
+export type ScopeDiscardReceipt = {
+    readonly cleanup: {
+        readonly cleaned_record_id: RecordId | null;
+        readonly custody_ids: readonly string[];
+        readonly phase: ScopeDiscardPhase;
+    };
+    readonly command_id: string;
+    readonly decided_record_id: RecordId;
+    readonly head: ScopeHeadAddress;
+    readonly parent_scope_id: string;
+    readonly scope_id: string;
+    readonly sealed_scope_ids: readonly string[];
 };
 ```
 
@@ -18875,6 +20633,22 @@ export type ScopeHistoryEntry = {
     readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[4] | (typeof SCOPE_EVIDENCE_KINDS)[5];
     readonly owner_ordinal: number;
     readonly record_id: RecordId;
+} | {
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[6] | (typeof SCOPE_EVIDENCE_KINDS)[7] | (typeof SCOPE_EVIDENCE_KINDS)[8];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+} | {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[9];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+} | {
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[10] | (typeof SCOPE_EVIDENCE_KINDS)[11];
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
 };
 ```
 
@@ -18898,7 +20672,9 @@ export type ScopeInspection = {
     readonly registered_for_mutation: boolean;
     readonly registration_record_id: RecordId;
     readonly scope_id: string;
+    readonly selected_history: readonly ScopeContribution[];
     readonly state: ScopeState;
+    readonly terminal: ScopeTerminalInspection | null;
     readonly world: ScopeWorldInspection | null;
     readonly world_capability: ScopeWorldCapability;
 };
@@ -18916,6 +20692,156 @@ Signature:
 export type ScopeKind = (typeof SCOPE_KINDS)[number];
 ```
 
+### `ScopeMergeCompletedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical child-side merge seal retained with the parent integration.
+
+Signature:
+
+```ts
+export type ScopeMergeCompletedRecord = {
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly parent_scope_id: string;
+    readonly phase: (typeof SCOPE_MERGE_PHASES)[1];
+    readonly publication_revision_id: string | null;
+    readonly scope_id: string;
+    readonly scope_version: number;
+};
+```
+
+### `ScopeMergeConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a merge's child delta and current-parent delta from their common origin overlap.
+
+The refusal retains nothing and consumes neither scope.
+
+Signature:
+
+```ts
+export declare class ScopeMergeConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly conflict: RetainedWorldApplicationConflictEvidence;
+    constructor(conflict: RetainedWorldApplicationConflictEvidence);
+}
+```
+
+#### `code`
+
+Stable configuration-owned merge-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `conflict`
+
+Content-addressed bounded portable path-conflict evidence.
+
+```ts
+readonly conflict: RetainedWorldApplicationConflictEvidence;
+```
+
+#### `constructor`
+
+Creates an overlapping-merge failure.
+
+```ts
+constructor(conflict: RetainedWorldApplicationConflictEvidence);
+```
+
+Parameter:
+
+- conflict - Exact conflict evidence between the child and current-parent changed paths.
+
+### `ScopeMergePhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured scope merge journal phase: prepared or completed.
+
+Signature:
+
+```ts
+export type ScopeMergePhase = (typeof SCOPE_MERGE_PHASES)[number];
+```
+
+### `ScopeMergePreparedRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical child-side merge reservation retained before any parent publication.
+
+Signature:
+
+```ts
+export type ScopeMergePreparedRecord = {
+    readonly child_head_record_id: RecordId;
+    readonly command_id: string;
+    readonly compatibility_version: string;
+    readonly contributions: readonly ScopeContribution[];
+    readonly merge_cut_id: string;
+    readonly parent_head_record_id: RecordId;
+    readonly parent_scope_id: string;
+    readonly phase: (typeof SCOPE_MERGE_PHASES)[0];
+    readonly scope_id: string;
+    readonly scope_version: number;
+    readonly world: ScopeMergeWorldPlan | null;
+};
+```
+
+### `ScopeMergeReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable result of one completed consume-once scope merge.
+
+Signature:
+
+```ts
+export type ScopeMergeReceipt = {
+    readonly child_merged_record_id: RecordId;
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly completed_record_id: RecordId;
+    readonly contributions: readonly ScopeContribution[];
+    readonly head: ScopeHeadAddress;
+    readonly merge_cut_id: string;
+    readonly merged_content_id: string | null;
+    readonly parent_head: ScopeHeadAddress;
+    readonly parent_scope_id: string;
+    readonly prepared_record_id: RecordId;
+    readonly publication_revision_id: string | null;
+    readonly world: ScopeMergeWorldPlan | null;
+};
+```
+
+### `ScopeMergeWorldPlan`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact three-way world plan retained by a merge reservation.
+
+Signature:
+
+```ts
+export type ScopeMergeWorldPlan = {
+    readonly application_custody_id: string | null;
+    readonly binding_id: string;
+    readonly child_content_id: string;
+    readonly child_revision_id: string;
+    readonly origin_content_id: string;
+    readonly origin_revision_id: string;
+    readonly parent_content_id: string;
+    readonly parent_custody_id: string;
+    readonly parent_revision_id: string;
+};
+```
+
 ### `ScopeParentOrigin`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -18931,6 +20857,122 @@ export type ScopeParentOrigin = {
     readonly origin_record_id: RecordId;
     readonly scope_id: string;
 };
+```
+
+### `ScopeQuiescenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when affected scopes are not quiescent: a live descendant, a pending command, or an
+unreleased writer claim.
+
+Signature:
+
+```ts
+export declare class ScopeQuiescenceError extends TraceStoreError {
+    readonly code: string;
+    readonly scope_id: string;
+    constructor(scopeId: string, detail: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned not-quiescent code.
+
+```ts
+readonly code: string;
+```
+
+#### `scope_id`
+
+Scope whose state blocks the operation.
+
+```ts
+readonly scope_id: string;
+```
+
+#### `constructor`
+
+Creates a not-quiescent failure.
+
+```ts
+constructor(scopeId: string, detail: string);
+```
+
+Parameter:
+
+- scopeId - Scope whose live state blocks the operation.
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+### `ScopeRecoveryClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured restart-recovery classification of one live scope.
+
+Signature:
+
+```ts
+export type ScopeRecoveryClassification = (typeof SCOPE_RECOVERY_CLASSIFICATIONS)[number];
+```
+
+### `ScopeRecoveryEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Recovery classification of one live scope with its single recovery owner.
+
+Signature:
+
+```ts
+export type ScopeRecoveryEntry = {
+    readonly claim: {
+        readonly claim_id: string;
+        readonly fencing_token: number;
+        readonly lease_expires_at: number;
+        readonly released: boolean;
+    } | null;
+    readonly classification: ScopeRecoveryClassification;
+    readonly parent_scope_id: string | null;
+    readonly recovery_owner_scope_id: string | null;
+    readonly resume: {
+        readonly command_id: string | null;
+        readonly kind: ScopeRecoveryResumeKind;
+    } | null;
+    readonly scope_id: string;
+    readonly state: ScopeState;
+};
+```
+
+### `ScopeRecoveryReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived recovery report over every live scope in one store.
+
+Signature:
+
+```ts
+export type ScopeRecoveryReport = {
+    readonly evaluated_at: number;
+    readonly scopes: readonly ScopeRecoveryEntry[];
+};
+```
+
+### `ScopeRecoveryResumeKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured recovery action that resumes a scope.
+
+Signature:
+
+```ts
+export type ScopeRecoveryResumeKind = (typeof SCOPE_RECOVERY_RESUME_KINDS)[number];
 ```
 
 ### `ScopeRegistrationRecord`
@@ -19024,6 +21066,150 @@ Signature:
 
 ```ts
 export type ScopeState = (typeof SCOPE_STATES)[number];
+```
+
+### `ScopeTerminalConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a scope is merged, discarded, or reserved by another terminal decision.
+
+Signature:
+
+```ts
+export declare class ScopeTerminalConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly scope_id: string;
+    constructor(scopeId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned terminal-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `scope_id`
+
+Scope whose terminal state refuses the command.
+
+```ts
+readonly scope_id: string;
+```
+
+#### `constructor`
+
+Creates a terminal-conflict failure.
+
+```ts
+constructor(scopeId: string);
+```
+
+Parameter:
+
+- scopeId - Scope that is not open or already retains another terminal decision.
+
+### `ScopeTerminalInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Latest retained terminal decision of one scope.
+
+Signature:
+
+```ts
+export type ScopeTerminalInspection = {
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_COMMAND_KINDS)[4];
+    readonly phase: ScopeMergePhase;
+    readonly record_id: RecordId;
+} | {
+    readonly command_id: string;
+    readonly kind: (typeof SCOPE_COMMAND_KINDS)[5];
+    readonly phase: ScopeDiscardPhase;
+    readonly record_id: RecordId;
+};
+```
+
+### `ScopeVocabularyEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One vocabulary term mapped onto exact retained scope command evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyEntry = {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[0];
+    readonly world_capability: ScopeWorldCapability;
+} | {
+    readonly child_scope_id: string;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[1];
+} | {
+    readonly child_scope_id: string;
+    readonly cleanup_phase: ScopeDiscardPhase;
+    readonly command_id: string;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[2];
+} | {
+    readonly command_id: string;
+    readonly contribution: ScopeContribution;
+    readonly record_id: RecordId;
+    readonly status: ScopeVocabularyStatus;
+    readonly term: (typeof SCOPE_VOCABULARY_TERMS)[3];
+};
+```
+
+### `ScopeVocabularyProjection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only vocabulary mapping of one scope's child lifecycle evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyProjection = {
+    readonly entries: readonly ScopeVocabularyEntry[];
+    readonly scope_id: string;
+    readonly vocabulary_version: number;
+};
+```
+
+### `ScopeVocabularyStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured vocabulary mapping status: pending while a command is in flight, or completed.
+
+Signature:
+
+```ts
+export type ScopeVocabularyStatus = (typeof SCOPE_VOCABULARY_STATUSES)[number];
+```
+
+### `ScopeVocabularyTerm`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured vocabulary term mapped onto scope evidence.
+
+Signature:
+
+```ts
+export type ScopeVocabularyTerm = (typeof SCOPE_VOCABULARY_TERMS)[number];
 ```
 
 ### `ScopeWorldCapability`
@@ -19354,6 +21540,44 @@ const [parentWriter, childWriter] = claimScopeWriters(store, {
 });
 ```
 
+### `classifyScopeCheckpoint`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Proves from retained checkpoint evidence how a branch started and what it can restore.
+
+Any reconstructive constituent classifies the start as reconstructed. Otherwise the configured
+start classification of the carrier capture kind applies: the reference copy carrier's quiescent
+verified copy is never reported as an atomic snapshot. Every constituent is listed under its
+evidence status, and the branch is restorable only when no applicable constituent is
+reconstructive or unavailable. Identifiers and timestamps alone are never treated as proof.
+
+Signature:
+
+```ts
+export declare function classifyScopeCheckpoint(checkpoint: ScopeCheckpoint): ScopeCheckpointClassification;
+```
+
+Parameter:
+
+- checkpoint - Checkpoint descriptor retained by a completed scope fork.
+
+Returns:
+
+- Frozen classification.
+
+Throws:
+
+- {TypeError} If the checkpoint is malformed or its capture kind has no configured
+start classification.
+
+Example:
+
+- ```ts
+const fork = await forkScope(store, options);
+const { start, restorable } = classifyScopeCheckpoint(fork.world.checkpoint);
+```
+
 ### `emitScopeRecord`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -19428,7 +21652,9 @@ Reconstructs and validates one scope from its retained owner path without mutati
 The projection is derived from canonical records, so a read-only reopen or a native archive
 import produces the same result. Live registration admitting mutation is reported separately:
 an imported archive carries inspection evidence only and reports `registered_for_mutation`
-false. Slice A retains only open scopes; merge and discard evidence are later slices.
+false. The branch state is derived from retained merge and discard evidence, and the selected
+history lists this scope's own emissions plus contributions integrated by completed child
+merges, each exact occurrence once.
 
 Signature:
 
@@ -19464,7 +21690,118 @@ Example:
 
 - ```ts
 const inspection = inspectScope(store, root.scope_id);
-console.log(inspection?.head.record_id, inspection?.history.length);
+console.log(inspection?.state, inspection?.selected_history.length);
+```
+
+### `inspectScopeRecovery`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Classifies every live scope in this store for restart recovery and orphan detection.
+
+The report is derived from live registration rows, writer claims, and validated retained
+records only; it never scans directories, infers ownership from projections, appends, or
+repairs. Each scope receives exactly one configured classification in precedence order:
+terminal, cleanup pending, merge pending, fork pending, writer expired, writer held, or idle.
+Structural orphans cannot exist: registration rows require their parent row, and a discard seals
+every open descendant in the same transaction. Orphaned work is therefore detected as a writer
+expired classification, an unreleased claim past its lease whose holder may still be running.
+Every classification that needs work names the single scope whose writer owns recovery and the
+exact retained command to resume: the parent for an incomplete fork, a reserved merge, or the
+discarded subtree root's pending cleanup record, even when it names no custody, and the scope
+itself for an expired writer, which must be superseded by a new claim. When a sealed parent can no
+longer resume a descendant's cleanup, ownership resolves to the sealing ancestor discard that lists
+the same identities, and a completed ancestor cleanup makes the descendant terminal. Imported stores hold no live rows and report no scopes.
+
+Signature:
+
+```ts
+export declare function inspectScopeRecovery(store: SQLiteTraceStore, options?: InspectScopeRecoveryOptions): ScopeRecoveryReport;
+```
+
+Parameter:
+
+- store - Open trace store holding live scope registrations.
+
+Parameter:
+
+- options - Optional deterministic evaluation time for writer leases.
+
+Returns:
+
+- Frozen report ordered by scope identity.
+
+Throws:
+
+- {ScopeEvidenceError} If retained scope evidence is malformed or inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const report = inspectScopeRecovery(store);
+for (const entry of report.scopes.filter((scope) => scope.resume !== null)) {
+    console.log(entry.scope_id, entry.classification, entry.resume);
+}
+```
+
+### `projectScopeVocabulary`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Maps the spawn, adopt, abandon, and publish vocabulary onto one scope's retained evidence.
+
+The mapping is a disposable read of validated scope records, never an alias or a second event
+stream: `spawn` cites a child registration, `adopt` a consume-once merge selecting a verified
+child cut, `abandon` a logical discard decision removing a child from effective selection
+(cleanup progress is reported separately), and `publish` an exact child occurrence made
+parent-visible by a completed merge. It is not user-workspace materialization. A reserved merge
+or an incomplete fork maps as pending. Version-1 execution-history relation and publication
+projections keep their own semantics and are neither produced nor reinterpreted. The mapping
+appends nothing, grants no authority, and reads the same after reopen or import.
+
+Signature:
+
+```ts
+export declare function projectScopeVocabulary(store: SQLiteTraceStore, scopeId: string): ScopeVocabularyProjection | undefined;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- scopeId - Exact configured parent scope identity.
+
+Returns:
+
+- Frozen vocabulary projection, or `undefined` when the scope retains nothing.
+
+Throws:
+
+- {ScopeEvidenceError} If retained scope evidence is malformed or inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or a cited cut is absent or corrupt.
+
+Throws:
+
+- {TypeError} If the scope identity is malformed.
+
+Example:
+
+- ```ts
+const vocabulary = projectScopeVocabulary(store, parent.scope_id);
+const adopted = vocabulary?.entries.filter((entry) => entry.term === "adopt");
 ```
 
 ### `readScopeCommandReceipt`
@@ -19473,12 +21810,13 @@ Classification: `runtime-only`. Kind: `function`.
 
 Reads the exact retained receipt of one completed scope command without any writer authority.
 
-Receipt replay is a read: it reconstructs the original registration, emission, or fork receipt
-from the records retained under the command's append intents, so a caller that lost its
-response, restarted, or whose fence is stale or superseded still receives the original result.
-It grants no mutation authority and works on read-only and imported stores. A fork is complete
-only once its completed journal record is retained; until then no receipt exists, and
-`inspectScope` reports the prepared world.
+Receipt replay is a read: it reconstructs the original registration, emission, fork, merge, or
+discard receipt from the records retained under the command's append intents, so a caller that
+lost its response, restarted, or whose fence is stale or superseded still receives the original
+result. It grants no mutation authority and works on read-only and imported stores. A fork or
+merge is complete only once its completed journal records are retained; until then no receipt
+exists, and `inspectScope` reports the in-flight phase. A discard receipt exists once its
+logical decision is retained and reports cleanup progress separately.
 
 Signature:
 
@@ -22562,7 +24900,7 @@ import * as api from "@avnionur/shepherd-typescript/workspace";
 void api;
 ```
 
-Exported symbols: 188.
+Exported symbols: 202.
 
 ### `AppliedRetainedWorldSettlement`
 
@@ -22682,6 +25020,25 @@ export type DiscardRetainedWorldSettlementOptions = {
     readonly carrier: ReferenceCopyCarrier;
     readonly outputId: string;
     readonly store: SQLiteTraceStore;
+};
+```
+
+### `DiscardScopeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for one logical discard of an owned child subtree with custody cleanup.
+
+Signature:
+
+```ts
+export type DiscardScopeOptions = {
+    readonly carrier?: ReferenceCopyCarrier;
+    readonly commandId: string;
+    readonly expectedHeadRecordId: RecordId;
+    readonly nowMilliseconds?: number;
+    readonly parent: ScopeWriter;
+    readonly scopeId: string;
 };
 ```
 
@@ -23211,6 +25568,26 @@ Signature:
 export type JailedTaskWorldCaptureResult = TaskWorldCaptureResult & {
     readonly placement: NativeJailPlacementResolution;
     readonly process: NativeJailLaunchReceipt;
+};
+```
+
+### `MergeScopeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for one consume-once merge of a child scope into its owning parent.
+
+Signature:
+
+```ts
+export type MergeScopeOptions = {
+    readonly carrier?: ReferenceCopyCarrier;
+    readonly child: ScopeWriter;
+    readonly commandId: string;
+    readonly expectedChildHeadRecordId: RecordId;
+    readonly expectedParentHeadRecordId: RecordId;
+    readonly nowMilliseconds?: number;
+    readonly parent: ScopeWriter;
 };
 ```
 
@@ -23903,6 +26280,7 @@ Signature:
 
 ```ts
 export type ReferenceCopyCarrier = {
+    readonly backend: WorldCarrierBackend;
     readonly captureCustody: (custodyId: string) => Promise<WorldRevision>;
     readonly discard: (custodyId: string) => Promise<void>;
     readonly fork: (revisionId: string) => Promise<WorldCustody>;
@@ -23924,6 +26302,7 @@ Signature:
 
 ```ts
 export type ReferenceCopyCarrierOptions = {
+    readonly backend?: WorldCarrierBackend;
     readonly faultInjection?: WorkspaceCustodyFaultInjection;
     readonly workspaceRoot: string;
 };
@@ -24401,6 +26780,120 @@ export type RetainedWorldSettlementRequest = {
 };
 ```
 
+### `RunScopeTreeOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for scheduling a tree of child scopes under one parent writer.
+
+Signature:
+
+```ts
+export type RunScopeTreeOptions = {
+    readonly carrier?: ReferenceCopyCarrier;
+    readonly children: readonly ScopeTreeNode[];
+    readonly commandPrefix: string;
+    readonly maxParallel: number;
+    readonly parent: ScopeWriter;
+};
+```
+
+### `ScopeTreeContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Live context handed to one scheduled scope's work after its children settled.
+
+Signature:
+
+```ts
+export type ScopeTreeContext = {
+    readonly children: readonly ScopeTreeOutcome[];
+    readonly custodyPath: string | null;
+    readonly emit: (key: string, data: SemanticRecord) => ScopeEmissionReceipt;
+    readonly path: readonly string[];
+    readonly scopeId: string;
+    readonly writer: ScopeWriter;
+};
+```
+
+### `ScopeTreeDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured settlement decision a scheduled scope returns: merge or discard.
+
+Signature:
+
+```ts
+export type ScopeTreeDecision = (typeof SCOPE_SCHEDULING_DECISIONS)[number];
+```
+
+### `ScopeTreeNode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One declared scope in a scheduled tree.
+
+Signature:
+
+```ts
+export type ScopeTreeNode = {
+    readonly children?: readonly ScopeTreeNode[];
+    readonly fork?: {
+        readonly binding: WorkspaceBinding;
+    };
+    readonly grant: ScopeResourceGrantRequest;
+    readonly key: string;
+    readonly run?: (context: ScopeTreeContext) => Promise<ScopeTreeDecision> | ScopeTreeDecision;
+};
+```
+
+### `ScopeTreeOutcome`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Settled result of one scheduled scope.
+
+Signature:
+
+```ts
+export type ScopeTreeOutcome = {
+    readonly children: readonly ScopeTreeOutcome[];
+    readonly failure: string | null;
+    readonly key: string;
+    readonly scope_id: string;
+    readonly status: ScopeTreeOutcomeStatus;
+};
+```
+
+### `ScopeTreeOutcomeStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured outcome of one scheduled scope: merged, discarded, conflicted, or failed.
+
+Signature:
+
+```ts
+export type ScopeTreeOutcomeStatus = (typeof SCOPE_SCHEDULING_OUTCOMES)[number];
+```
+
+### `ScopeTreeReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Settled report of one scheduled tree.
+
+Signature:
+
+```ts
+export type ScopeTreeReport = {
+    readonly outcomes: readonly ScopeTreeOutcome[];
+    readonly parent_scope_id: string;
+};
+```
+
 ### `SelectRetainedWorldSettlementOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -24826,6 +27319,22 @@ export type WorkspaceInitializationOptions = {
 };
 ```
 
+### `WorkspaceOptimizedCarrierParity`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Host evidence for one optimized carrier backend's parity claim.
+
+Signature:
+
+```ts
+export type WorkspaceOptimizedCarrierParity = {
+    readonly backend: string;
+    readonly reason: string;
+    readonly status: string;
+};
+```
+
 ### `WorkspacePathProtectionOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -24874,6 +27383,7 @@ export type WorkspacePlatformConformance = {
     readonly metadata_policy: string;
     readonly mode_policy: string;
     readonly optimized_carrier_parity: string;
+    readonly optimized_carriers: readonly WorkspaceOptimizedCarrierParity[];
     readonly platform: NodeJS.Platform;
     readonly symlink_policy: string;
     readonly unsupported_metadata: readonly string[];
@@ -24968,6 +27478,18 @@ export type WorkspaceState = {
     readonly initialize_git: boolean;
     readonly root_path: string;
 };
+```
+
+### `WorldCarrierBackend`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured selectable world-carrier backend name.
+
+Signature:
+
+```ts
+export type WorldCarrierBackend = (typeof WORLD_CARRIER_BACKENDS)[number];
 ```
 
 ### `WorldCarrierError`
@@ -26190,6 +28712,98 @@ const discarded = await discardRetainedWorldSettlement({
 discarded.cleanup_completed;
 ```
 
+### `discardScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably discards one owned child subtree and cleans only its proven-owned custody.
+
+Admission requires the owning parent's writer, the exact current head of the subtree root, an
+open root without a reserved merge, and no unreleased writer claim on any open scope in the
+subtree. One transaction seals every open scope of the subtree with a decision record on its
+own path; merged and already discarded descendants keep their terminal evidence, and a
+descendant's in-flight merge or fork can never complete afterwards. The parent's head,
+managed custody, and effective history are untouched: discard is not a rollback of the parent
+to fork time. Scope evidence retains application data only, so no escaped external effect is
+representable to reverse.
+
+Cleanup progress is separate from the logical decision. The decision names the exact custody
+identities of every forked scope in the subtree, read from their retained fork journals, and
+cleanup discards only those identities through the carrier, never scanning directories. When a
+carrier is supplied and cleanup succeeds, a cleanup record is retained under the parent's
+current fence. Without a carrier, or after an interrupted cleanup, the receipt reports the
+decided phase and a retry of the same command resumes cleanup. Repeating a completed discard
+returns its original receipt without any authority.
+
+Signature:
+
+```ts
+export declare function discardScope(store: SQLiteTraceStore, options: DiscardScopeOptions): Promise<ScopeDiscardReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the parent and subtree registrations.
+
+Parameter:
+
+- options - Parent writer, exact subtree root and head, command, and optional carrier.
+
+Returns:
+
+- Frozen discard receipt with cleanup progress.
+
+Throws:
+
+- {ScopeTerminalConflictError} If the root or parent is not open or the root retains a
+reserved merge.
+
+Throws:
+
+- {ScopeQuiescenceError} If an open subtree scope holds an unreleased writer claim.
+
+Throws:
+
+- {ScopeWriterFencedError} If the parent fence is released, expired, or superseded.
+
+Throws:
+
+- {ScopeHeadConflictError} If the expected root head is not current.
+
+Throws:
+
+- {ScopeEvidenceError} If ownership or retained evidence is inconsistent or the subtree
+exceeds the configured bound.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {WorldCarrierError} If owned custody is in an unknown physical state.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If a handle or carrier is forged or options are malformed.
+
+Example:
+
+- ```ts
+const discarded = await discardScope(store, {
+    carrier,
+    commandId: "scope-command:discard:1",
+    expectedHeadRecordId: inspectScope(store, child.scope_id)?.head.record_id,
+    parent: parentWriter,
+    scopeId: child.scope_id,
+});
+console.log(discarded.cleanup.phase);
+```
+
 ### `forkScope`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -26637,6 +29251,10 @@ Throws:
 
 Throws:
 
+- {WorldCarrierError} If carrier staging is unsafe or a backend probe fails unexpectedly.
+
+Throws:
+
 - {TypeError} If options are malformed or the host has no configured policy.
 
 Example:
@@ -26644,6 +29262,109 @@ Example:
 - ```ts
 const policy = inspectWorkspacePlatformConformance({ workspaceRoot });
 policy.metadata_policy;
+```
+
+### `mergeScope`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably merges one quiescent child scope into its owning parent exactly once.
+
+Admission requires the parent and child writers, both exact current heads, exact ownership, a
+complete child fork, and only terminal grandchildren. For a reference-copy child the merge
+derives an exact three-way plan from the common origin, the captured child world, and the
+captured current parent world: overlapping changed paths fail with
+ScopeMergeConflictError before anything is retained, so neither scope is consumed.
+Disjoint changes build an immutable merged revision in protected carrier custody.
+
+One transaction then publishes the fixed child cut and a reservation citing the plan and the
+child's selected-history contributions not already selected by the parent. The reservation is
+the single terminal winner: competing merges, a later discard, child writers, and parent
+mutation are refused until completion. Publication applies only the planned changes to the
+parent-managed custody under the rechecked parent head and fence, converging from any prefix,
+and the merge completes only once the parent custody verifies as the merged content. The
+completion appends a parent-side integration and a child seal in one transaction. User
+workspaces are never written; publication to them remains retained settlement.
+
+Retrying the same command converges from retained evidence; a completed merge returns its
+original receipt. A parent custody found in a third state is unknown physical state and stays
+blocked.
+
+Signature:
+
+```ts
+export declare function mergeScope(store: SQLiteTraceStore, options: MergeScopeOptions): Promise<ScopeMergeReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding both registrations.
+
+Parameter:
+
+- options - Parent and child writers, both exact heads, command, and optional carrier.
+
+Returns:
+
+- Frozen completed merge receipt.
+
+Throws:
+
+- {ScopeMergeConflictError} If child and current-parent changes overlap.
+
+Throws:
+
+- {ScopeTerminalConflictError} If either scope is not open or the child retains another
+terminal decision.
+
+Throws:
+
+- {ScopeQuiescenceError} If a grandchild is unresolved or another merge into the parent
+is in flight.
+
+Throws:
+
+- {ScopeAuthorityError} If the parent cannot write the child's bound resource.
+
+Throws:
+
+- {ScopeWriterFencedError} If a writer fence is released, expired, or superseded.
+
+Throws:
+
+- {ScopeHeadConflictError} If an expected head is not current.
+
+Throws:
+
+- {ScopeEvidenceError} If ownership, worlds, or retained evidence are inconsistent.
+
+Throws:
+
+- {AppendIntentConflictError} If the command identity already names different content.
+
+Throws:
+
+- {WorldCarrierError} If carrier evidence is unavailable, corrupt, or in a third state.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If a handle is forged, a required carrier is absent, or options are malformed.
+
+Example:
+
+- ```ts
+const merged = await mergeScope(store, {
+    carrier,
+    child: childWriter,
+    commandId: "scope-command:merge:1",
+    expectedChildHeadRecordId: inspectScope(store, child.scope_id)?.head.record_id,
+    expectedParentHeadRecordId: inspectScope(store, parent.scope_id)?.head.record_id,
+    parent: parentWriter,
+});
 ```
 
 ### `openWorkspace`
@@ -26938,6 +29659,91 @@ evidence is absent, malformed, forged, discarded, or inconsistent.
 Throws:
 
 - {RetainedWorldSettlementConflictError} If another action owns the admission or terminal.
+
+### `runScopeTree`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Schedules a tree of child scopes with bounded sibling parallelism and settles each exactly once.
+
+Children of one parent are created in declared order under that parent's writer, then their
+subtrees run with at most `maxParallel` siblings in flight. Nesting is depth-first: every child's
+own children are created, run, and settled before the child's work runs with their outcomes.
+Settlement of siblings is serialized in declared order under the parent, so results and the
+parent's selected history do not depend on the degree of parallelism. Work returns `merge` or
+`discard` (merge by default). A throwing work function or an invalid decision discards only that
+scope's subtree and reports `failed`; a merge refused for overlapping world changes discards the
+child and reports `conflicted`. Every other refusal fails the schedule closed.
+
+Every command and writer claim identity is derived from `commandPrefix` and the node key path,
+so re-running the same schedule after a crash resumes from retained receipts: created scopes
+are reused, incomplete forks, reserved merges, and pending discard cleanup resume, and settled
+scopes are not run again. Work of unsettled scopes may run again, so its side effects must be
+idempotent; `context.emit` replays retained emissions. Writers are re-claimed under their
+deterministic claim identities before each mutation, which renews an expired lease held by this
+schedule and fails closed when another holder is active. A reference-copy child can be merged
+only into a parent that owns reference-copy custody.
+
+Signature:
+
+```ts
+export declare function runScopeTree(store: SQLiteTraceStore, options: RunScopeTreeOptions): Promise<ScopeTreeReport>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the parent registration.
+
+Parameter:
+
+- options - Parent writer, declared children, deterministic prefix, bound, and carrier.
+
+Returns:
+
+- Frozen report of settled outcomes in declared order.
+
+Throws:
+
+- {ScopeWriterConflictError} If another holder owns a scheduled writer.
+
+Throws:
+
+- {ScopeEvidenceError} If retained evidence is inconsistent or a world child merges into a
+parent without managed custody.
+
+Throws:
+
+- {ScopeAuthorityError} If a node's grant or merge exceeds authority.
+
+Throws:
+
+- {AppendIntentConflictError} If a derived command identity names different content.
+
+Throws:
+
+- {WorldCarrierError} If carrier evidence is unavailable or in an unknown physical state.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options or nodes are malformed or exceed configured bounds.
+
+Example:
+
+- ```ts
+const report = await runScopeTree(store, {
+    children: [
+        { grant: [], key: "draft", run: (scope) => (scope.emit("note", { ok: true }), "merge") },
+        { grant: [], key: "probe", run: () => "discard" },
+    ],
+    commandPrefix: "schedule:review-1",
+    maxParallel: 2,
+    parent: rootWriter,
+});
+```
 
 ### `selectRetainedWorldSettlement`
 

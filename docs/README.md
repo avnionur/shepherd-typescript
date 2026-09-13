@@ -11,9 +11,21 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Reference-copy scope fork](./scope-fork.md) defines single-resource isolated fork custody,
   verified fixed origins, the prepared/completed fork journal, honest checkpoint descriptors,
   receipt-based restart recovery, and atomic multi-scope writer claims.
-- [Scope ownership/authority proposal](../.plan/scope-ownership-contract.md) defines the planned
-  Phase 6 contract and the remaining merge/discard slice.
+- [Consume-once scope merge and discard](./scope-merge-discard.md) defines three-way merge plans,
+  single-winner reservations, verified parent-managed publication, selected-history
+  contributions, subtree discard with retained-identity cleanup, and terminal recovery.
+- [Scope scheduling and recovery classification](./scope-scheduling.md) defines bounded parallel
+  and nested scope trees with deterministic settlement, restart convergence, and record-derived
+  recovery ownership.
+- [Scope algebra laws](./scope-laws.md) defines the seeded reference-model law suite that checks
+  fork, emit, world writes, merge, and discard across carriers.
+- [Scope vocabulary mapping](./scope-vocabulary.md) maps spawn, adopt, abandon, and publish onto
+  exact scope evidence without aliasing version-1 projections.
+- [Scope ownership/authority proposal](../.plan/scope-ownership-contract.md) defines the reviewed
+  Phase 6 contract behind the implemented scope slices.
 
+- [Phase 6 exit audit](../.plan/phase-6-exit-audit.md) maps scope-algebra evidence and records L2
+  substrate parity for the recorded hosts.
 - [Phase 5 exit audit](../.plan/phase-5-exit-audit.md) maps product-surface evidence and records
   runtime-support remediation and phase-exit verification.
 - [Node runtime support](./runtime-support.md) defines the approved version range, pre-write
@@ -124,6 +136,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Reference copy carrier](./reference-copy-carrier.md) defines immutable verified snapshots,
   isolated mutable custody, parent-linked custody capture, restart reopen, verification, and exact
   idempotent discard.
+- [Optimized scope-world carriers](./optimized-carriers.md) defines workspace protocol v26 clone
+  and Linux overlay backends, identity equality with copy, restart remount, fail-closed
+  unavailability, the shared conformance matrix, and measured storage scaling.
 - [Workspace platform and fault conformance](./platform-fault-conformance.md) defines protocol
   v19 metadata refusal, portable name policy, Git platform cases, stable fault evidence, recovery,
   and the optimized-carrier parity gate.

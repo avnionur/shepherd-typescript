@@ -78,6 +78,7 @@ export type {
     WorkspaceCustodyFaultEvidence,
     WorkspaceCustodyFaultInjection,
     WorkspaceGitPlatformPolicy,
+    WorkspaceOptimizedCarrierParity,
     WorkspacePlatformConformance,
     WorkspacePlatformConformanceOptions,
 } from "../workspace/platform-conformance.ts";
@@ -147,8 +148,24 @@ export type {
     SelectedRetainedWorldSettlement,
     SelectRetainedWorldSettlementOptions,
 } from "../workspace/retained-world-settlement-types.ts";
+export { discardScope } from "../workspace/scope-discard.ts";
 export { forkScope } from "../workspace/scope-fork.ts";
 export type { ForkScopeOptions } from "../workspace/scope-fork-types.ts";
+export { mergeScope } from "../workspace/scope-merge.ts";
+export type {
+    DiscardScopeOptions,
+    MergeScopeOptions,
+} from "../workspace/scope-terminal-types.ts";
+export { runScopeTree } from "../workspace/scope-tree.ts";
+export type {
+    RunScopeTreeOptions,
+    ScopeTreeContext,
+    ScopeTreeDecision,
+    ScopeTreeNode,
+    ScopeTreeOutcome,
+    ScopeTreeOutcomeStatus,
+    ScopeTreeReport,
+} from "../workspace/scope-tree-types.ts";
 export {
     captureGrantedTaskWorldDurably,
     captureJailedGrantedTaskWorldDurably,
@@ -210,6 +227,7 @@ export type {
     WorkspaceInitializationOptions,
     WorkspaceRepositoryBindingEvidence,
     WorkspaceState,
+    WorldCarrierBackend,
     WorldChangeNode,
     WorldChangeOperation,
     WorldChangeset,

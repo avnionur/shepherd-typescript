@@ -5,6 +5,158 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.1] - 2026-09-13
+
+### Improvement
+
+- Add the Phase 6 exit audit mapping every scope-algebra work item and exit criterion to delivered
+  entry points, documentation, and tests, and update the roadmap, tracker, parity matrix, and
+  README level table to record L2 substrate parity for the recorded hosts.
+
+### Defect Fixes
+
+- Resolve pending discard cleanup ownership through sealed parents, and classify a discard with no
+  custody that was interrupted before its cleanup record as pending instead of terminal.
+- Remove protected merge application custody left by a crash after merge completion when a
+  schedule is re-run, fail closed with `ScopeEvidenceError` when a schedule no longer matches
+  retained evidence, and report several failing sibling subtrees together as an `AggregateError`.
+- Document the macOS clone helper's same-user threat model.
+
+### Impact
+
+Phase 6 is complete for its documented scope. Coordinated multi-resource world checkpoints move to
+Phase 8. Runtime behavior, public API, protocols, and schemas are unchanged.
+
+## [2.7.0] - 2026-09-13
+
+### New Feature
+
+- Add clone and Linux overlay carrier backends selected with `createReferenceCopyCarrier({ backend })`
+  under workspace protocol v26. Clone materializes files with reflinks (Linux `FICLONE`, macOS
+  `clonefile(2)` through a verified private helper) and overlay mounts custody over the immutable
+  revision with private upper and work layers and remounts after restart. Both fail closed when
+  unavailable and keep content, revision, and changeset identities equal to the copy reference.
+- Report per-backend conformance in `inspectWorkspacePlatformConformance`, and add the shared
+  carrier conformance suite, `pnpm test:carriers:linux` (privileged Linux container on tmpfs and
+  loopback XFS reflink), and `pnpm bench:carriers` storage benchmark.
+- Run the scope algebra law suite on every host-conformant optimized backend, with required
+  backends enforced in the Linux run.
+
+### Impact
+
+Scope branches can use copy-on-write storage that scales with changed data while passing the same
+correctness suites as the copy reference. Existing carriers, records, and identities are unchanged;
+the macOS clone backend requires a C compiler and spawns one helper process per cloned file.
+
+## [2.6.0] - 2026-09-13
+
+### New Feature
+
+- Add `classifyScopeCheckpoint`: proves from a retained checkpoint descriptor whether a branch
+  started from an atomic snapshot, a quiescent verified copy, or reconstructed state. It lists
+  every constituent by evidence status and reports restorability only when nothing is
+  reconstructive or unavailable.
+- Add scope protocol v6 with the configured start classifications and the capture-kind mapping.
+
+### Impact
+
+Callers can distinguish verified-copy branches from reconstructed ones without trusting
+identifiers or timestamps. Existing fork records and checkpoints decode unchanged.
+
+## [2.5.1] - 2026-09-13
+
+### Improvement
+
+- Add a seeded scope algebra law suite that runs configured operation sequences against a pure
+  reference model and the durable store, comparing states, worlds, ordered selected histories,
+  refusal classes, and inspections across restarts, plus an explicit disjoint-merge commutativity
+  law.
+
+### Impact
+
+Scope merge and discard semantics are now checked against an executable reference model on every
+verification run. Runtime behavior, public API, protocols, and schemas are unchanged.
+
+## [2.5.0] - 2026-09-13
+
+### New Feature
+
+- Add `runScopeTree` on the workspace entry: bounded parallel and nested scheduling of declared
+  child scopes with depth-first settlement, deterministic sibling order independent of
+  parallelism, failure and conflict isolation to the affected subtree, world forks, and restart
+  convergence from command identities derived from the node path.
+- Add `inspectScopeRecovery`: a record-derived classification of every live scope as terminal,
+  cleanup pending, merge pending, fork pending, writer expired, writer held, or idle, naming the
+  single recovery owner and the exact retained command to resume.
+- Add scope protocol v5 with the scheduling and recovery vocabulary and bounds.
+
+### Defect Fixes
+
+- Refuse merging a child whose discarded children still have pending cleanup, and return the
+  decided receipt when a discard is retried after its parent was sealed.
+- Verify every unplanned parent custody path before merge publication writes anything.
+- Build the merged revision only after the reservation wins, under a command-derived custody
+  identity that subtree discards also clean, so refused plans leave no protected custody.
+- Refuse merging merged, discarded, or reserved scopes before any carrier work.
+- Validate parent integrations against the exact reservation, integration, and seal, resolve every
+  contribution to its retained occurrence, and require sealed descendants to be named by their
+  subtree root's decision.
+
+### Impact
+
+Callers can run nested scope trees in parallel and resume them after a crash, and operators can
+see exactly which scope owns each recovery. Merge and discard are stricter about quiescence and
+forged evidence. The scope merge world plan no longer retains merged revision fields; merged
+content is reported by the completion and receipt.
+
+## [2.4.0] - 2026-09-13
+
+### New Feature
+
+- Add `projectScopeVocabulary`: a read-only mapping of `spawn` (child registration or fork),
+  `adopt` (consume-once merge of a verified child cut), `abandon` (logical discard decision, with
+  cleanup progress separate), and `publish` (exact contributions made parent-visible by a merge)
+  onto retained scope evidence, with pending status for reserved merges and incomplete forks.
+- Add scope protocol v4 with the configured vocabulary terms, statuses, and projection version.
+
+### Impact
+
+Consumers using upstream lifecycle vocabulary can read it from exact scope evidence without new
+command aliases. Version-1 execution-history relation and publication projections are unchanged,
+and existing scope records decode unchanged.
+
+## [2.3.0] - 2026-09-13
+
+### New Feature
+
+- Add `mergeScope` on the workspace entry: a consume-once merge of a quiescent child into its
+  owning parent under both writer fences. For reference-copy children it derives an exact three-way
+  plan from the common origin, the captured child world, and the captured current parent world.
+  Overlapping changed paths fail with `ScopeMergeConflictError` without consuming either scope.
+  Disjoint changes publish into parent-managed custody, converging from any prefix and completing
+  only on verified merged content.
+- Add a single-winner merge reservation that publishes the fixed child cut, refuses competing
+  terminal decisions and child writes, and keeps the parent quiescent until completion. The
+  completion appends a parent-side integration and a child seal.
+- Add selected history to `inspectScope`: a scope's own emissions plus exact child contributions
+  identified by owner, ordinal, and record. Common-origin history is never re-added and
+  grandchild contributions arrive once.
+- Add `discardScope`: a logical subtree discard under the owning parent's fence that seals every
+  open descendant and requires no unreleased writer claims. The parent keeps its current state.
+  Custody cleanup, separate progress with its own record, discards only identities named by
+  retained fork journals and resumes after interruption or without a carrier.
+- Add scope protocol v3 with merge and discard vocabulary appended to v2, generated merge,
+  child-merged, and discard schemas, derived `merged`/`discarded` branch state, terminal receipt
+  replay, row-state integrity checks, and the `ScopeQuiescenceError` and
+  `ScopeTerminalConflictError` refusals.
+
+### Impact
+
+Scope branches now end in exactly one verified merge or discard with restart recovery through
+public APIs. Scope v1 and v2 records decode unchanged, no store migration is required, and
+retained-world settlement to user workspaces keeps its exact contract. Scheduling, optimized
+carriers, vocabulary mapping, and algebraic law suites remain open.
+
 ## [2.2.0] - 2026-09-13
 
 ### New Feature

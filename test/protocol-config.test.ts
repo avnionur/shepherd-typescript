@@ -34,6 +34,7 @@ import {
     WORKSPACE_PROTOCOL_V22_CONTRACT,
     WORKSPACE_PROTOCOL_V24_CONTRACT,
     WORKSPACE_PROTOCOL_V25_CONTRACT,
+    WORKSPACE_PROTOCOL_V26_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -183,6 +184,11 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V21_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V22_CONTRACT), true);
     assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V25_CONTRACT), true);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V26_CONTRACT), true);
+    assert.equal("carrierBackends" in WORKSPACE_PROTOCOL_V25_CONTRACT, false);
+    assert.deepEqual(parsed.workspaces.carrierBackends.backends, ["copy", "clone", "overlay"]);
+    assert.equal(parsed.workspaces.carrierBackends.version, 26);
+    assert.equal(Object.isFrozen(parsed.workspaces.carrierBackends.overlay.tokens), true);
     assert.equal("release" in WORKSPACE_PROTOCOL_V24_CONTRACT.settlement, false);
     assert.equal("placements" in WORKSPACE_PROTOCOL_V21_CONTRACT, false);
     assert.equal("repositoryGrants" in WORKSPACE_PROTOCOL_V20_CONTRACT, false);
@@ -869,6 +875,65 @@ test("protocol configuration rejects invalid or drifted scope contracts", () => 
             scopeConfigOf(config).forkPhases = ["prepared"];
         },
         (config) => {
+            scopeConfigOf(config).mergePhases = ["prepared"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "vocabulary").terms = ["spawn", "adopt"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "vocabulary").statuses = ["pending"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "vocabulary").version = 0;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "recovery").classifications = ["terminal"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "recovery").resumeKinds = ["fork"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "scheduling").decisions = ["merge"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "scheduling").outcomes = ["merged"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "scheduling").maxParallel = 0;
+        },
+        (config) => {
+            objectAt(objectAt(scopeConfigOf(config), "checkpoint"), "startClassifications").values =
+                ["reconstructed"];
+        },
+        (config) => {
+            objectAt(
+                objectAt(objectAt(scopeConfigOf(config), "checkpoint"), "startClassifications"),
+                "captureKinds",
+            )["verified-copy"] = "reconstructed";
+        },
+        (config) => {
+            objectAt(objectAt(scopeConfigOf(config), "scheduling"), "commandSuffixes").merge =
+                "create";
+        },
+        (config) => {
+            scopeConfigOf(config).discardPhases = ["decided"];
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "limits").maxContributions = 0;
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "errors").terminalConflictCode = "";
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "identity").mergeCutIdPrefix = "";
+        },
+        (config) => {
+            objectAt(scopeConfigOf(config), "traceSchemas").merge = objectAt(
+                scopeConfigOf(config),
+                "traceSchemas",
+            ).discard;
+        },
+        (config) => {
             scopeConfigOf(config).worldCapabilities = ["trace_only"];
         },
         (config) => {
@@ -1262,6 +1327,76 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
         },
         (config) => {
             objectAt(settlementApplicationConfigOf(config), "schemas").planId = "relative";
+        },
+        (config) => {
+            carrierBackendsConfigOf(config).extra = true;
+        },
+        (config) => {
+            carrierBackendsConfigOf(config).defaultBackend = "clone";
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "clone").backend = "copy";
+        },
+        (config) => {
+            carrierBackendsConfigOf(config).backends = ["copy", "clone", "overlay", "extra"];
+        },
+        (config) => {
+            carrierBackendsConfigOf(config).backends = ["copy", "clone", "other"];
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "overlay").mountArguments = [];
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "overlay").mountArguments = ["{target}"];
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "overlay").mountArguments = ["{options}"];
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "overlay").unmountArguments = ["-l"];
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "overlay").mountOptions = "lowerdir={lower}";
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "overlay").upperDirectory = "world";
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "overlay").workDirectory = "../work";
+        },
+        (config) => {
+            objectAt(objectAt(carrierBackendsConfigOf(config), "overlay"), "tokens").lower = "";
+        },
+        (config) => {
+            objectAt(
+                objectAt(carrierBackendsConfigOf(config), "conformance"),
+                "statusRoles",
+            ).unavailable = "conformant";
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "conformance").reasons = [
+                "shared-suite-host",
+                "platform-unsupported",
+                "clone-helper-unavailable",
+                "reflink-unsupported",
+                "overlay-mount-not-permitted",
+                "unmapped",
+            ];
+        },
+        (config) => {
+            objectAt(
+                objectAt(carrierBackendsConfigOf(config), "conformance"),
+                "reasonRoles",
+            ).available = "unknown";
+        },
+        (config) => {
+            objectAt(objectAt(carrierBackendsConfigOf(config), "clone"), "helper").platforms = [];
+        },
+        (config) => {
+            carrierBackendsConfigOf(config).commandTimeoutMs = 0;
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "errors").unavailableCode = "";
         },
         (config) => {
             settlementReleaseConfigOf(config).receiptVersion = 0;
@@ -1804,6 +1939,10 @@ function settlementApplicationConfigOf(config: Record<string, unknown>): Record<
 
 function settlementReleaseConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(objectAt(workspaceConfigOf(config), "settlement"), "release");
+}
+
+function carrierBackendsConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(workspaceConfigOf(config), "carrierBackends");
 }
 
 function carrierConfigOf(config: Record<string, unknown>): Record<string, unknown> {

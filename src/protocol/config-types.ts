@@ -705,12 +705,18 @@ export type FormalAssuranceProtocolConfig = {
 export type ScopeProtocolConfig = {
     /** Generated language-neutral scope record artifacts. */
     readonly artifacts: {
+        /** Repository-relative parent-side child-merge integration schema destination. */
+        readonly childMergedSchema: string;
         /** Repository-relative parent-side child-registration schema destination. */
         readonly childRegisteredSchema: string;
+        /** Repository-relative scope discard journal schema destination. */
+        readonly discardSchema: string;
         /** Repository-relative scope-local emission schema destination. */
         readonly emissionSchema: string;
         /** Repository-relative scope fork journal schema destination. */
         readonly forkSchema: string;
+        /** Repository-relative scope merge journal schema destination. */
+        readonly mergeSchema: string;
         /** Repository-relative scope registration schema destination. */
         readonly registrationSchema: string;
     };
@@ -720,6 +726,13 @@ export type ScopeProtocolConfig = {
         readonly constituentKinds: readonly string[];
         /** Evidence statuses ordered verified, reconstructive, not applicable, unavailable. */
         readonly evidenceStatuses: readonly string[];
+        /** Branch start classifications derived from checkpoint evidence. */
+        readonly startClassifications: {
+            /** Start classification of each supported carrier capture kind. */
+            readonly captureKinds: Readonly<Record<string, string>>;
+            /** Classifications ordered atomic snapshot, quiescent verified copy, reconstructed. */
+            readonly values: readonly string[];
+        };
         /** Wire version for scope checkpoint descriptors. */
         readonly version: number;
     };
@@ -730,10 +743,12 @@ export type ScopeProtocolConfig = {
         /** Closed resource kinds that scope authority may cite. */
         readonly resourceKinds: readonly string[];
     };
-    /** Closed scope command kinds ordered root registration, child registration, emission. */
+    /** Closed scope command kinds ordered root registration, child registration, emission, fork, merge, discard. */
     readonly commandKinds: readonly string[];
     /** Compatibility namespace governing scope record evidence. */
     readonly compatibilityVersion: string;
+    /** Closed discard journal phases ordered decided then cleaned. */
+    readonly discardPhases: readonly string[];
     /** Stable scope error codes and descriptions. */
     readonly errors: {
         /** Stable code for refused authority requests. */
@@ -748,6 +763,18 @@ export type ScopeProtocolConfig = {
         readonly headConflictCode: string;
         /** Stable description for a stale expected scope head. */
         readonly headConflictMessage: string;
+        /** Stable code for overlapping child and current-parent merge changes. */
+        readonly mergeConflictCode: string;
+        /** Stable description for overlapping child and current-parent merge changes. */
+        readonly mergeConflictMessage: string;
+        /** Stable code for a scope operation refused because affected scopes are not quiescent. */
+        readonly quiescenceCode: string;
+        /** Stable description for a scope operation refused because affected scopes are not quiescent. */
+        readonly quiescenceMessage: string;
+        /** Stable code for a scope that is not open or retains another terminal decision. */
+        readonly terminalConflictCode: string;
+        /** Stable description for a scope that is not open or retains another terminal decision. */
+        readonly terminalConflictMessage: string;
         /** Stable code for a writer claim held by another caller. */
         readonly writerConflictCode: string;
         /** Stable description for a writer claim held by another caller. */
@@ -765,6 +792,10 @@ export type ScopeProtocolConfig = {
     readonly identity: {
         /** Deterministic custody identity kind derived for one scope fork. */
         readonly custodyIdentityKind: string;
+        /** Deterministic protected application custody identity kind derived for one merge. */
+        readonly mergeCustodyIdentityKind: string;
+        /** Deterministic merge child-cut identity prefix. */
+        readonly mergeCutIdPrefix: string;
         /** Deterministic fork-origin cut identity prefix. */
         readonly originCutIdPrefix: string;
         /** Content-addressed scope identity prefix. */
@@ -776,21 +807,68 @@ export type ScopeProtocolConfig = {
     readonly limits: {
         /** Maximum retained records one emission may cite. */
         readonly maxCitedRecords: number;
+        /** Maximum selected-history contributions one merge may integrate. */
+        readonly maxContributions: number;
         /** Maximum canonical JSON bytes for one emitted application-data value. */
         readonly maxDataCanonicalBytes: number;
+        /** Maximum scopes one discard may seal. */
+        readonly maxDiscardScopes: number;
         /** Maximum exact resources in one scope authority surface. */
         readonly maxResources: number;
     };
+    /** Closed merge journal phases ordered prepared then completed. */
+    readonly mergePhases: readonly string[];
     /** Wire version for canonical scope records. */
     readonly recordVersion: number;
+    /** Closed restart-recovery and orphan classification vocabulary. */
+    readonly recovery: {
+        /** Classifications in precedence order. */
+        readonly classifications: readonly string[];
+        /** Resume actions ordered fork, merge, discard, claim. */
+        readonly resumeKinds: readonly string[];
+    };
+    /** Parallel and nested scope scheduling vocabulary and bounds. */
+    readonly scheduling: {
+        /** Deterministic command identity suffixes per scheduled step. */
+        readonly commandSuffixes: {
+            /** Child creation command suffix. */
+            readonly create: string;
+            /** Child discard command suffix. */
+            readonly discard: string;
+            /** Scheduled emission command segment. */
+            readonly emit: string;
+            /** Child merge command suffix. */
+            readonly merge: string;
+            /** Child writer claim identity suffix. */
+            readonly writer: string;
+        };
+        /** Settlement decisions ordered merge then discard. */
+        readonly decisions: readonly string[];
+        /** Maximum nesting depth of one scheduled tree. */
+        readonly maxDepth: number;
+        /** Maximum scheduled nodes in one tree. */
+        readonly maxNodes: number;
+        /** Maximum sibling subtrees run concurrently. */
+        readonly maxParallel: number;
+        /** Node outcomes ordered merged, discarded, conflicted, failed. */
+        readonly outcomes: readonly string[];
+        /** Separator joining node keys into deterministic paths. */
+        readonly pathSeparator: string;
+    };
     /** Absolute JSON Schema identifiers for scope records. */
     readonly schemas: {
+        /** Parent-side child-merge integration schema identifier. */
+        readonly childMergedId: string;
         /** Parent-side child-registration schema identifier. */
         readonly childRegisteredId: string;
+        /** Scope discard journal schema identifier. */
+        readonly discardId: string;
         /** Scope-local emission schema identifier. */
         readonly emissionId: string;
         /** Scope fork journal schema identifier. */
         readonly forkId: string;
+        /** Scope merge journal schema identifier. */
+        readonly mergeId: string;
         /** Scope registration schema identifier. */
         readonly registrationId: string;
     };
@@ -798,14 +876,29 @@ export type ScopeProtocolConfig = {
     readonly states: readonly string[];
     /** Trace record schema references retained for scope evidence. */
     readonly traceSchemas: {
+        /** Parent-owned child-merge integration record schema. */
+        readonly childMerged: string;
         /** Parent-owned child-registration control record schema. */
         readonly childRegistered: string;
+        /** Scope discard journal record schema. */
+        readonly discard: string;
         /** Scope-local application-data emission record schema. */
         readonly emission: string;
         /** Scope fork journal record schema. */
         readonly fork: string;
+        /** Scope merge journal record schema. */
+        readonly merge: string;
         /** Scope registration record schema. */
         readonly registration: string;
+    };
+    /** Closed spawn/adopt/abandon/publish vocabulary mapped onto scope evidence. */
+    readonly vocabulary: {
+        /** Mapping statuses ordered pending then completed. */
+        readonly statuses: readonly string[];
+        /** Mapped terms ordered spawn, adopt, abandon, publish. */
+        readonly terms: readonly string[];
+        /** Wire version of the vocabulary projection. */
+        readonly version: number;
     };
     /** Closed world-capability vocabulary ordered trace-only then reference copy. */
     readonly worldCapabilities: readonly string[];
@@ -1036,6 +1129,103 @@ export type WorkspaceProtocolConfig = {
         readonly worldContentIdPrefix: string;
         /** Managed tree directory within one receipt. */
         readonly worldDirectory: string;
+    };
+    /** Optimized world-carrier backend selection, availability, and conformance policy. */
+    readonly carrierBackends: {
+        /** Closed selectable carrier backend vocabulary. */
+        readonly backends: readonly string[];
+        /** Reflink/clonefile backend settings. */
+        readonly clone: {
+            /** Backend name selecting clone materialization. */
+            readonly backend: string;
+            /** Native clonefile helper used where Node exposes no forced clone primitive. */
+            readonly helper: {
+                /** Compiler arguments applied before the output argument. */
+                readonly compilerArguments: readonly string[];
+                /** Absolute compiler executables tried in order. */
+                readonly compilerExecutables: readonly string[];
+                /** Compiler output-path argument. */
+                readonly compilerOutputArgument: string;
+                /** Compiled helper file name inside its private directory. */
+                readonly executableName: string;
+                /** Node platforms that clone through the compiled helper. */
+                readonly platforms: readonly string[];
+                /** Helper source file name inside its private directory. */
+                readonly sourceName: string;
+                /** Private temporary helper directory prefix. */
+                readonly temporaryDirectoryPrefix: string;
+            };
+        };
+        /** Maximum captured bytes from one backend command. */
+        readonly commandMaxBytes: number;
+        /** Maximum milliseconds for one backend command. */
+        readonly commandTimeoutMs: number;
+        /** Optimized-carrier parity evidence vocabulary. */
+        readonly conformance: {
+            /** Semantic roles for availability reasons. */
+            readonly reasonRoles: {
+                readonly available: string;
+                readonly helperUnavailable: string;
+                readonly mountNotPermitted: string;
+                readonly platformUnsupported: string;
+                readonly reflinkUnsupported: string;
+            };
+            /** Closed availability reason vocabulary. */
+            readonly reasons: readonly string[];
+            /** Semantic roles for parity statuses. */
+            readonly statusRoles: {
+                readonly conformant: string;
+                readonly unavailable: string;
+            };
+            /** Closed parity status vocabulary. */
+            readonly statuses: readonly string[];
+        };
+        /** Backend used when carrier options omit a backend. */
+        readonly defaultBackend: string;
+        /** Stable fail-closed availability error contract. */
+        readonly errors: {
+            readonly unavailableCode: string;
+            readonly unavailableMessage: string;
+        };
+        /** Linux overlay custody backend settings. */
+        readonly overlay: {
+            /** Backend name selecting overlay custody. */
+            readonly backend: string;
+            /** Kernel filesystem type reported for owned overlay mounts. */
+            readonly filesystemType: string;
+            /** Mount command argument template. */
+            readonly mountArguments: readonly string[];
+            /** Absolute mount executable. */
+            readonly mountExecutable: string;
+            /** Process mount table consulted to authenticate retained mounts. */
+            readonly mountInfoPath: string;
+            /** Separator between rendered mount options. */
+            readonly mountOptionSeparator: string;
+            /** Mount option template naming lower, upper, and work layers. */
+            readonly mountOptions: string;
+            /** Node platforms on which overlay custody may be attempted. */
+            readonly platforms: readonly string[];
+            /** Characters refused in layer paths because mount options cannot carry them. */
+            readonly reservedPathCharacters: readonly string[];
+            /** Template tokens substituted into mount and unmount arguments. */
+            readonly tokens: {
+                readonly lower: string;
+                readonly options: string;
+                readonly target: string;
+                readonly upper: string;
+                readonly work: string;
+            };
+            /** Unmount command argument template. */
+            readonly unmountArguments: readonly string[];
+            /** Absolute unmount executable. */
+            readonly unmountExecutable: string;
+            /** Private upper-layer directory inside one custody root. */
+            readonly upperDirectory: string;
+            /** Private overlay work directory inside one custody root. */
+            readonly workDirectory: string;
+        };
+        /** Workspace protocol version that introduced configured carrier backends. */
+        readonly version: number;
     };
     /** Pure world-changeset protocol configuration. */
     readonly changesets: {

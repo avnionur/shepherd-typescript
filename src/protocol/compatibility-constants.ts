@@ -965,6 +965,118 @@ export const SCOPE_PROTOCOL_V2_CONTRACT = deepFreeze({
     worldCapabilities: ["trace_only", "reference_copy"],
 } as const);
 
+/** Immutable consume-once merge and discard extension implemented by scope v3. */
+export const SCOPE_PROTOCOL_V3_CONTRACT = deepFreeze({
+    ...SCOPE_PROTOCOL_V2_CONTRACT,
+    artifacts: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.artifacts,
+        childMergedSchema: "spec/schemas/scope-child-merged-v1.schema.json",
+        discardSchema: "spec/schemas/scope-discard-v1.schema.json",
+        mergeSchema: "spec/schemas/scope-merge-v1.schema.json",
+    },
+    commandKinds: ["register_root", "register_child", "emit", "fork", "merge", "discard"],
+    discardPhases: ["decided", "cleaned"],
+    errors: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.errors,
+        mergeConflictCode: "SCOPE_MERGE_CONFLICT",
+        mergeConflictMessage: "scope merge child and current parent changes overlap",
+        quiescenceCode: "SCOPE_NOT_QUIESCENT",
+        quiescenceMessage:
+            "scope operation requires quiescent scopes without live descendants, pending commands, or unreleased writers",
+        terminalConflictCode: "SCOPE_TERMINAL_CONFLICT",
+        terminalConflictMessage: "scope is not open or already retains another terminal decision",
+    },
+    evidenceKinds: [
+        ...SCOPE_PROTOCOL_V2_CONTRACT.evidenceKinds,
+        "merge_cut",
+        "merge_prepared",
+        "merge_completed",
+        "child_merged",
+        "discard_decided",
+        "discard_cleaned",
+    ],
+    identity: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.identity,
+        mergeCustodyIdentityKind: "scope-merge-application-custody",
+        mergeCutIdPrefix: "scope-merge:",
+    },
+    limits: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.limits,
+        maxContributions: 1_024,
+        maxDiscardScopes: 256,
+    },
+    mergePhases: ["prepared", "completed"],
+    schemas: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.schemas,
+        childMergedId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/scope-child-merged-v1.schema.json",
+        discardId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/scope-discard-v1.schema.json",
+        mergeId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/scope-merge-v1.schema.json",
+    },
+    traceSchemas: {
+        ...SCOPE_PROTOCOL_V2_CONTRACT.traceSchemas,
+        childMerged: "shepherd.scope.child_merged.v1",
+        discard: "shepherd.scope.discard.v1",
+        merge: "shepherd.scope.merge.v1",
+    },
+} as const);
+
+/** Immutable spawn/adopt/abandon/publish vocabulary mapping extension implemented by scope v4. */
+export const SCOPE_PROTOCOL_V4_CONTRACT = deepFreeze({
+    ...SCOPE_PROTOCOL_V3_CONTRACT,
+    vocabulary: {
+        statuses: ["pending", "completed"],
+        terms: ["spawn", "adopt", "abandon", "publish"],
+        version: 1,
+    },
+} as const);
+
+/** Immutable scheduling, recovery, and orphan-classification extension implemented by scope v5. */
+export const SCOPE_PROTOCOL_V5_CONTRACT = deepFreeze({
+    ...SCOPE_PROTOCOL_V4_CONTRACT,
+    recovery: {
+        classifications: [
+            "terminal",
+            "cleanup_pending",
+            "merge_pending",
+            "fork_pending",
+            "writer_expired",
+            "writer_held",
+            "idle",
+        ],
+        resumeKinds: ["fork", "merge", "discard", "claim"],
+    },
+    scheduling: {
+        commandSuffixes: {
+            create: "create",
+            discard: "discard",
+            emit: "emit",
+            merge: "merge",
+            writer: "writer",
+        },
+        decisions: ["merge", "discard"],
+        maxDepth: 16,
+        maxNodes: 256,
+        maxParallel: 64,
+        outcomes: ["merged", "discarded", "conflicted", "failed"],
+        pathSeparator: "/",
+    },
+} as const);
+
+/** Immutable checkpoint start-classification extension implemented by scope v6. */
+export const SCOPE_PROTOCOL_V6_CONTRACT = deepFreeze({
+    ...SCOPE_PROTOCOL_V5_CONTRACT,
+    checkpoint: {
+        ...SCOPE_PROTOCOL_V5_CONTRACT.checkpoint,
+        startClassifications: {
+            captureKinds: { "verified-copy": "quiescent_verified_copy" },
+            values: ["atomic_snapshot", "quiescent_verified_copy", "reconstructed"],
+        },
+    },
+} as const);
+
 /** Immutable workspace initialization and adoption contract implemented by protocol v1. */
 export const WORKSPACE_PROTOCOL_V1_CONTRACT = deepFreeze({
     adoptionModes: ["none", "git-head", "worktree"],
@@ -1886,5 +1998,76 @@ export const WORKSPACE_PROTOCOL_V25_CONTRACT = deepFreeze({
                 "https://avnionur.github.io/shepherd-typescript/schemas/retained-world-release-receipt-v1.schema.json",
         },
         states: ["prepared", "applying", "selected", "discarded", "applied", "released"],
+    },
+} as const);
+
+/** Immutable optimized carrier-backend extension implemented by workspace protocol v26. */
+export const WORKSPACE_PROTOCOL_V26_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V25_CONTRACT,
+    carrierBackends: {
+        backends: ["copy", "clone", "overlay"],
+        clone: {
+            backend: "clone",
+            helper: {
+                compilerArguments: ["-O2", "-std=c11", "-Wall", "-Wextra", "-Werror"],
+                compilerExecutables: ["/usr/bin/cc", "/usr/bin/clang"],
+                compilerOutputArgument: "-o",
+                executableName: "shepherd-clone-helper",
+                platforms: ["darwin"],
+                sourceName: "shepherd-clone-helper.c",
+                temporaryDirectoryPrefix: "shepherd-clone-helper-",
+            },
+        },
+        commandMaxBytes: 1048576,
+        commandTimeoutMs: 60000,
+        conformance: {
+            reasonRoles: {
+                available: "shared-suite-host",
+                helperUnavailable: "clone-helper-unavailable",
+                mountNotPermitted: "overlay-mount-not-permitted",
+                platformUnsupported: "platform-unsupported",
+                reflinkUnsupported: "reflink-unsupported",
+            },
+            reasons: [
+                "shared-suite-host",
+                "platform-unsupported",
+                "clone-helper-unavailable",
+                "reflink-unsupported",
+                "overlay-mount-not-permitted",
+            ],
+            statusRoles: {
+                conformant: "conformant",
+                unavailable: "unavailable",
+            },
+            statuses: ["conformant", "unavailable"],
+        },
+        defaultBackend: "copy",
+        errors: {
+            unavailableCode: "WORLD_CARRIER_BACKEND_UNAVAILABLE",
+            unavailableMessage: "world carrier backend is unavailable on this host",
+        },
+        overlay: {
+            backend: "overlay",
+            filesystemType: "overlay",
+            mountArguments: ["-t", "overlay", "overlay", "-o", "{options}", "{target}"],
+            mountExecutable: "/usr/bin/mount",
+            mountInfoPath: "/proc/self/mountinfo",
+            mountOptionSeparator: ",",
+            mountOptions: "lowerdir={lower},upperdir={upper},workdir={work}",
+            platforms: ["linux"],
+            reservedPathCharacters: [",", ":", "\\"],
+            tokens: {
+                lower: "{lower}",
+                options: "{options}",
+                target: "{target}",
+                upper: "{upper}",
+                work: "{work}",
+            },
+            unmountArguments: ["{target}"],
+            unmountExecutable: "/usr/bin/umount",
+            upperDirectory: "upper",
+            workDirectory: "work",
+        },
+        version: 26,
     },
 } as const);

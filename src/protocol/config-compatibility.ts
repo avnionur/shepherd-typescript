@@ -9,10 +9,10 @@ import {
     ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT,
     PROVIDER_PROTOCOL_V1_CONTRACT,
     RUN_PROTOCOL_V1_CONTRACT,
-    SCOPE_PROTOCOL_V2_CONTRACT,
+    SCOPE_PROTOCOL_V6_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
     TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
-    WORKSPACE_PROTOCOL_V25_CONTRACT,
+    WORKSPACE_PROTOCOL_V26_CONTRACT,
 } from "./compatibility-constants.ts";
 import type { ProtocolConfig } from "./config-types.ts";
 import { sameStrings } from "./config-value-readers.ts";
@@ -115,10 +115,10 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (!sameJson(config.runs, RUN_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("run outcome constants require a new run protocol");
     }
-    if (!sameJson(config.scopes, SCOPE_PROTOCOL_V2_CONTRACT)) {
+    if (!sameJson(config.scopes, SCOPE_PROTOCOL_V6_CONTRACT)) {
         throw new TypeError("scope constants require a new scope protocol");
     }
-    if (!sameJson(config.workspaces, WORKSPACE_PROTOCOL_V25_CONTRACT)) {
+    if (!sameJson(config.workspaces, WORKSPACE_PROTOCOL_V26_CONTRACT)) {
         throw new TypeError("workspace constants require a new workspace protocol");
     }
 }

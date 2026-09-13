@@ -1,10 +1,10 @@
 # Implementation Tracker
 
-Last updated: 2026-09-10
+Last updated: 2026-09-13
 
-Current version: `2.2.0`
+Current version: `2.7.1`
 
-Current level: L1 stable — Phases 4–5 complete; Phase 6 scope substrate active
+Current level: L2 substrate parity — Phases 4–6 complete for the documented scope
 
 ## Current position
 
@@ -424,7 +424,78 @@ origins of the parent world, retains a prepared journal record before custody, c
 parent fence with an honest checkpoint descriptor, converges across restart from receipts, blocks
 unknown physical state, and admits atomic multi-scope writer claims.
 
+Phase 6 slice C now merges quiescent children exactly once into parent-managed custody from exact
+three-way plans with portable overlap refusal and a single terminal reservation. Publication
+converges path by path under the rechecked parent head and fence and completes only on verified
+merged content. Selected history integrates exact child occurrences without common-origin
+re-addition, and subtree discards seal every open descendant while the parent keeps its current
+state. Cleanup removes only custody named by retained fork journals, as progress separate from
+the logical decision, with receipt-based recovery across every boundary.
+
 ## Verification required for this slice
+
+Phase 6 Task 9 (#141): the [exit audit](./phase-6-exit-audit.md) maps all eleven work items and
+seven exit criteria to delivered issues, entry points, docs, and tests, reassigns coordinated
+multi-resource checkpoints to Phase 8, and records the independent review outcomes. Fresh
+`pnpm sync:version`, `CI=true pnpm verify`, `pnpm build:desktop`, `pnpm test:carriers:linux`, and
+`pnpm bench:carriers` pass: 595 tests, zero skips, 100% configured coverage. The same PATCH fixes
+the second independent review's recovery-classification and scheduler findings with tests.
+
+Phase 6 Task 7 (#139): workspace protocol v26 adds clone (Linux FICLONE, macOS clonefile helper) and
+Linux overlay carrier backends with identities equal to the copy reference. The shared carrier
+conformance suite passes on macOS APFS (copy, clone; overlay refused; clone refused on HFS+), in a
+privileged Linux container on tmpfs (copy, overlay; clone refused), and on loopback XFS reflink
+(copy, clone, overlay), with zero skips. The scope algebra law suite passes for copy and clone on
+macOS and for copy, clone, and overlay on Linux XFS. The storage benchmark shows copy branches grow
+with world size (16 and 64 MiB) while clone and overlay branches track changed bytes (about 1 and
+4 MiB). Full local verification and production build pass.
+
+Phase 6 exit criterion (checkpoint provenance, #139/#141): scope protocol v6 adds
+`classifyScopeCheckpoint`, which derives atomic snapshot, quiescent verified copy, or reconstructed
+start classification and restorability from retained checkpoint constituents. Focused tests cover
+the real fork checkpoint, reconstructive and fully verified variants, unsupported capture kinds,
+configuration drift, and scope v6 compatibility. Full local verification and production build pass.
+
+Phase 6 Task 8 (#140): the seeded scope algebra law suite runs configured operation sequences
+against a pure reference model and the durable store with the reference copy carrier, checking
+state, open worlds, ordered selected histories, and refusal classes after every operation and
+byte-equal inspections across periodic restarts. An explicit case proves disjoint sibling merges
+commute to the reference three-way result. The generator found and fixed a fixture authority gap
+before the suite passed. Full local verification and production build pass.
+
+Phase 6 Task 6 (#138): scope protocol v5 adds `runScopeTree` and `inspectScopeRecovery`. Focused
+tests cover nested settlement order, bounded parallelism with deterministic results at parallelism
+one and three, failure and conflict isolation, interruption before merge completion with resumed
+reservations and replayed emissions, emission conflicts, subtree refusals failing closed after
+siblings settle, world forks merging disjoint siblings and discarding conflicts, option bounds, and
+every recovery classification with its owner and resume command. The same change fixes the
+independent slice C review findings: pending descendant cleanup now blocks consuming its parent,
+retries return the decided receipt once the parent is sealed, publication verifies unplanned
+parent paths before writing, merged application custody is built only after the reservation under
+a command-derived identity and is named by subtree discards, merge refuses terminal scopes before
+carrier work, and inspection validates exact merge journals, resolvable contributions, and
+descendant seals. Full local verification and production build pass.
+
+Phase 6 Task 5 (#137): scope protocol v4 adds the read-only spawn/adopt/abandon/publish vocabulary
+mapping. Focused tests cover every term with exact citations, abandon without cleanup, adopt without
+user publication, pending reserved merges and incomplete forks, ancestor seals not reported as
+abandonment, read-only reopen and import equality, unchanged version-1 relation projections, and
+configuration drift. Full local verification and production build pass.
+
+Phase 6 Task 4 (#131): slice C implements consume-once scope merge and discard through scope
+protocol v3. Focused public-seam tests cover disjoint world merges, trace-only merges, common-origin
+exclusion, nested deduplication and distinct repeated occurrences, equal-path and structural
+overlap refusal without consumption, empty deltas, missing custody, write authority, carriers,
+ownership, stale heads and fences, and concurrent merges with exactly one winner. Discard tests
+cover the unchanged current parent, nested subtree sealing with merged and discarded descendants,
+cleanup of every retained custody identity, logical discard without a carrier and resumed partial
+cleanup, discard-after-merge, reserved merges, unreleased writers, roots, and the subtree bound.
+Recovery tests cover crashes before and after the reservation, publication, and completion, lost
+responses, third-state and unverifiable parent custody, publication prefixes, expired fences,
+ancestor discard of a reserved merge, incomplete-fork discard, and discard decision and cleanup
+boundaries. Codec tests cover malformed and forged terminal evidence, in-store completion replay,
+completion rollback, row-state integrity, the contribution bound, generated schemas, and scope v3
+compatibility with v1 and v2. Full local verification and production build pass.
 
 Phase 6 Task 3 (#130): slice B implements reference-copy scope fork of one bound resource.
 Focused public-seam tests cover prepared intent before custody, verified completion under the

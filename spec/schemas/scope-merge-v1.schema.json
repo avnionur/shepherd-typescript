@@ -1,0 +1,277 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/scope-merge-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Scope Merge v1",
+    "description": "Consume-once child-side merge journal: a prepared reservation citing the fixed child cut, three-way world plan, and selected contributions, then a completed seal citing the verified parent publication.",
+    "oneOf": [
+        {
+            "type": "object",
+            "required": [
+                "child_head_record_id",
+                "command_id",
+                "compatibility_version",
+                "contributions",
+                "merge_cut_id",
+                "parent_head_record_id",
+                "parent_scope_id",
+                "phase",
+                "scope_id",
+                "scope_version",
+                "world"
+            ],
+            "properties": {
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.scope.v1"
+                },
+                "parent_scope_id": {
+                    "$ref": "#/$defs/scopeId"
+                },
+                "scope_id": {
+                    "$ref": "#/$defs/scopeId"
+                },
+                "scope_version": {
+                    "const": 1
+                },
+                "child_head_record_id": {
+                    "$ref": "#/$defs/recordId"
+                },
+                "contributions": {
+                    "$ref": "#/$defs/contributions"
+                },
+                "merge_cut_id": {
+                    "$ref": "#/$defs/mergeCutId"
+                },
+                "parent_head_record_id": {
+                    "$ref": "#/$defs/recordId"
+                },
+                "phase": {
+                    "const": "prepared"
+                },
+                "world": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "application_custody_id",
+                                "binding_id",
+                                "child_content_id",
+                                "child_revision_id",
+                                "origin_content_id",
+                                "origin_revision_id",
+                                "parent_content_id",
+                                "parent_custody_id",
+                                "parent_revision_id"
+                            ],
+                            "properties": {
+                                "application_custody_id": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string",
+                                            "pattern": "^world-custody:[0-9a-f]{64}$"
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "binding_id": {
+                                    "$ref": "#/$defs/recordId"
+                                },
+                                "child_content_id": {
+                                    "type": "string",
+                                    "pattern": "^world-content:sha256:[0-9a-f]{64}$"
+                                },
+                                "child_revision_id": {
+                                    "type": "string",
+                                    "pattern": "^world-revision:sha256:[0-9a-f]{64}$"
+                                },
+                                "origin_content_id": {
+                                    "type": "string",
+                                    "pattern": "^world-content:sha256:[0-9a-f]{64}$"
+                                },
+                                "origin_revision_id": {
+                                    "type": "string",
+                                    "pattern": "^world-revision:sha256:[0-9a-f]{64}$"
+                                },
+                                "parent_content_id": {
+                                    "type": "string",
+                                    "pattern": "^world-content:sha256:[0-9a-f]{64}$"
+                                },
+                                "parent_custody_id": {
+                                    "type": "string",
+                                    "pattern": "^world-custody:[0-9a-f]{64}$"
+                                },
+                                "parent_revision_id": {
+                                    "type": "string",
+                                    "pattern": "^world-revision:sha256:[0-9a-f]{64}$"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "command_id",
+                "compatibility_version",
+                "parent_scope_id",
+                "phase",
+                "publication_revision_id",
+                "scope_id",
+                "scope_version"
+            ],
+            "properties": {
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.scope.v1"
+                },
+                "parent_scope_id": {
+                    "$ref": "#/$defs/scopeId"
+                },
+                "scope_id": {
+                    "$ref": "#/$defs/scopeId"
+                },
+                "scope_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "completed"
+                },
+                "publication_revision_id": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "pattern": "^world-revision:sha256:[0-9a-f]{64}$"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        }
+    ],
+    "$defs": {
+        "contributions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "owner_id",
+                    "owner_ordinal",
+                    "record_id"
+                ],
+                "properties": {
+                    "owner_id": {
+                        "$ref": "#/$defs/scopeId"
+                    },
+                    "owner_ordinal": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "record_id": {
+                        "$ref": "#/$defs/recordId"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "maxItems": 1024
+        },
+        "mergeCutId": {
+            "type": "string",
+            "pattern": "^scope-merge:[0-9a-f]{64}$"
+        },
+        "originCutId": {
+            "type": "string",
+            "pattern": "^scope-origin:[0-9a-f]{64}$"
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "resources": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "atoms",
+                    "resource_id",
+                    "resource_kind"
+                ],
+                "properties": {
+                    "atoms": {
+                        "type": "array",
+                        "items": {
+                            "enum": [
+                                "read",
+                                "write"
+                            ]
+                        },
+                        "maxItems": 2,
+                        "uniqueItems": true
+                    },
+                    "resource_id": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "resource_kind": {
+                        "enum": [
+                            "repository_binding",
+                            "workspace_binding"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "maxItems": 64
+        },
+        "scopeId": {
+            "type": "string",
+            "pattern": "^scope:sha256:[0-9a-f]{64}$"
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        }
+    }
+}

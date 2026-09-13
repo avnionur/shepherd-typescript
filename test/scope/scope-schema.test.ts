@@ -5,18 +5,25 @@ import { test } from "node:test";
 import { Ajv2020, type AnySchemaObject, type ValidateFunction } from "ajv/dist/2020.js";
 
 import {
+    discardScope,
     emitScopeRecord,
     forkScope,
+    mergeScope,
     registerChildScope,
     SQLiteTraceStore,
 } from "../../src/index.ts";
 import {
     SCOPE_PROTOCOL_V1_CONTRACT,
     SCOPE_PROTOCOL_V2_CONTRACT,
+    SCOPE_PROTOCOL_V3_CONTRACT,
+    SCOPE_PROTOCOL_V4_CONTRACT,
+    SCOPE_PROTOCOL_V5_CONTRACT,
+    SCOPE_PROTOCOL_V6_CONTRACT,
 } from "../../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
 import { registerAndClaim, resource, temporaryDatabasePath } from "./fixtures.ts";
 import { bindingGrant, createForkWorkspace } from "./fork-fixtures.ts";
+import { createNestedWorld, forkChild, headOf, writeCustody } from "./merge-fixtures.ts";
 
 test("published scope schemas accept retained records and reject malformed copies", async (context) => {
     const databasePath = await temporaryDatabasePath(context, "schema");
@@ -113,36 +120,58 @@ test("published scope schemas accept retained records and reject malformed copie
     }
 });
 
-test("scope protocol configuration matches v2 and preserves every v1 value", () => {
+test("scope protocol configuration matches v6 and preserves every earlier value", () => {
     const config = JSON.parse(
         readFileSync(new URL("../../protocol.config.json", import.meta.url), "utf8"),
     ) as Record<string, unknown>;
     const parsed = parseProtocolConfig(structuredClone(config));
-    assert.deepEqual(parsed.scopes, SCOPE_PROTOCOL_V2_CONTRACT);
-    // Version 2 only appends vocabulary; every version 1 value keeps its position and meaning.
+    assert.deepEqual(parsed.scopes, SCOPE_PROTOCOL_V6_CONTRACT);
+    // Later versions only append vocabulary; every earlier value keeps its position and meaning.
     const appended = new Set(["commandKinds", "evidenceKinds", "worldCapabilities"]);
-    const merged = new Set(["artifacts", "identity", "schemas", "traceSchemas"]);
-    const current = SCOPE_PROTOCOL_V2_CONTRACT as unknown as Record<string, unknown>;
-    for (const [key, value] of Object.entries(SCOPE_PROTOCOL_V1_CONTRACT)) {
-        if (appended.has(key)) {
-            const previous = value as readonly string[];
-            assert.deepEqual(
-                (current[key] as readonly string[]).slice(0, previous.length),
-                previous,
-            );
-        } else if (merged.has(key)) {
-            assert.deepEqual({ ...(current[key] as object), ...(value as object) }, current[key]);
-        } else if (key === "authority") {
-            assert.deepEqual(
-                SCOPE_PROTOCOL_V2_CONTRACT.authority.atoms,
-                SCOPE_PROTOCOL_V1_CONTRACT.authority.atoms,
-            );
-            assert.deepEqual(
-                SCOPE_PROTOCOL_V2_CONTRACT.authority.resourceKinds.slice(0, 1),
-                SCOPE_PROTOCOL_V1_CONTRACT.authority.resourceKinds,
-            );
-        } else {
-            assert.deepEqual(current[key], value, key);
+    const merged = new Set([
+        "artifacts",
+        "checkpoint",
+        "errors",
+        "identity",
+        "limits",
+        "schemas",
+        "traceSchemas",
+    ]);
+    const current = SCOPE_PROTOCOL_V6_CONTRACT as unknown as Record<string, unknown>;
+    for (const previousContract of [
+        SCOPE_PROTOCOL_V1_CONTRACT,
+        SCOPE_PROTOCOL_V2_CONTRACT,
+        SCOPE_PROTOCOL_V3_CONTRACT,
+        SCOPE_PROTOCOL_V4_CONTRACT,
+        SCOPE_PROTOCOL_V5_CONTRACT,
+    ]) {
+        for (const [key, value] of Object.entries(previousContract)) {
+            if (appended.has(key)) {
+                const previous = value as readonly string[];
+                assert.deepEqual(
+                    (current[key] as readonly string[]).slice(0, previous.length),
+                    previous,
+                );
+            } else if (merged.has(key)) {
+                assert.deepEqual(
+                    { ...(current[key] as object), ...(value as object) },
+                    current[key],
+                );
+            } else if (key === "authority") {
+                assert.deepEqual(
+                    SCOPE_PROTOCOL_V6_CONTRACT.authority.atoms,
+                    previousContract.authority.atoms,
+                );
+                assert.deepEqual(
+                    SCOPE_PROTOCOL_V6_CONTRACT.authority.resourceKinds.slice(
+                        0,
+                        previousContract.authority.resourceKinds.length,
+                    ),
+                    previousContract.authority.resourceKinds,
+                );
+            } else {
+                assert.deepEqual(current[key], value, key);
+            }
         }
     }
     assert.equal(Object.isFrozen(parsed.scopes.authority.atoms), true);
@@ -202,6 +231,68 @@ test("published fork schema accepts retained journal records and rejects malform
         ]),
     ]) {
         assert.equal(validateFork(invalid), false);
+    }
+});
+
+test("published merge and discard schemas accept retained journal records and reject malformed copies", async (context) => {
+    const world = await createNestedWorld(context, "schema-terminal");
+    const { carrier, child, childWriter, parent, parentWriter, store } = world;
+    await writeCustody(world, child.world.custody_id, "child.txt", "child\n");
+    const merged = await mergeScope(store, {
+        carrier,
+        child: childWriter,
+        commandId: "scope-command:schema-merge",
+        expectedChildHeadRecordId: headOf(store, child.scope_id),
+        expectedParentHeadRecordId: headOf(store, parent.scope_id),
+        nowMilliseconds: 1_700,
+        parent: parentWriter,
+    });
+    const sibling = await forkChild(world, parent, parentWriter, "scope-command:schema-sibling");
+    const discarded = await discardScope(store, {
+        carrier,
+        commandId: "scope-command:schema-discard",
+        expectedHeadRecordId: headOf(store, sibling.scope_id),
+        nowMilliseconds: 1_700,
+        parent: parentWriter,
+        scopeId: sibling.scope_id,
+    });
+    const body = (recordId: string | null) =>
+        store.readRecord(recordId as string)?.body as Record<string, unknown>;
+    const prepared = body(merged.prepared_record_id);
+    const sealed = body(merged.completed_record_id);
+    const integration = body(merged.child_merged_record_id);
+    const decided = body(discarded.decided_record_id);
+    const cleaned = body(discarded.cleanup.cleaned_record_id);
+    const validateMerge = compile("scope-merge-v1.schema.json");
+    const validateChildMerged = compile("scope-child-merged-v1.schema.json");
+    const validateDiscard = compile("scope-discard-v1.schema.json");
+    assert.equal(validateMerge(prepared), true, errors(validateMerge));
+    assert.equal(validateMerge(sealed), true, errors(validateMerge));
+    assert.equal(validateChildMerged(integration), true, errors(validateChildMerged));
+    assert.equal(validateDiscard(decided), true, errors(validateDiscard));
+    assert.equal(validateDiscard(cleaned), true, errors(validateDiscard));
+    const plan = prepared.world as Record<string, unknown>;
+    for (const invalid of [
+        { ...prepared, extra: true },
+        { ...prepared, merge_cut_id: "scope-origin:bad" },
+        { ...prepared, world: { ...plan, child_revision_id: "bad" } },
+        { ...prepared, contributions: [{ owner_id: child.scope_id, owner_ordinal: -1 }] },
+        { ...sealed, phase: "prepared" },
+    ]) {
+        assert.equal(validateMerge(invalid), false);
+    }
+    for (const invalid of [
+        { ...integration, publication_revision_id: "bad" },
+        { ...integration, child_cut_id: "scope-origin:bad" },
+    ]) {
+        assert.equal(validateChildMerged(invalid), false);
+    }
+    for (const invalid of [
+        { ...decided, sealed_scope_ids: ["scope:bad"] },
+        { ...decided, custody_ids: ["world-custody:bad"] },
+        { ...cleaned, phase: "decided" },
+    ]) {
+        assert.equal(validateDiscard(invalid), false);
     }
 });
 

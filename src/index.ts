@@ -159,16 +159,27 @@ export {
     SCOPE_AUTHORITY_ATOMS,
     SCOPE_CHECKPOINT_CONSTITUENT_KINDS,
     SCOPE_CHECKPOINT_EVIDENCE_STATUSES,
+    SCOPE_CHECKPOINT_START_CLASSIFICATIONS,
     SCOPE_CHECKPOINT_VERSION,
     SCOPE_COMMAND_KINDS,
     SCOPE_COMPATIBILITY_VERSION,
+    SCOPE_DISCARD_PHASES,
     SCOPE_EVIDENCE_KINDS,
     SCOPE_FORK_PHASES,
     SCOPE_KINDS,
     SCOPE_LIMITS,
+    SCOPE_MERGE_PHASES,
     SCOPE_RECORD_VERSION,
+    SCOPE_RECOVERY_CLASSIFICATIONS,
+    SCOPE_RECOVERY_RESUME_KINDS,
     SCOPE_RESOURCE_KINDS,
+    SCOPE_SCHEDULING_DECISIONS,
+    SCOPE_SCHEDULING_LIMITS,
+    SCOPE_SCHEDULING_OUTCOMES,
     SCOPE_STATES,
+    SCOPE_VOCABULARY_STATUSES,
+    SCOPE_VOCABULARY_TERMS,
+    SCOPE_VOCABULARY_VERSION,
     SCOPE_WORLD_CAPABILITIES,
     TASK_RUN_LEDGER_LATEST_SELECTOR,
     TASK_RUN_LEDGER_LIMITS,
@@ -344,21 +355,27 @@ export type {
 } from "./run/types.ts";
 export { createRunUsage } from "./run/usage.ts";
 export type { RunUsage, RunUsageDefinition } from "./run/usage-types.ts";
+export { classifyScopeCheckpoint } from "./scope/checkpoint.ts";
 export { emitScopeRecord } from "./scope/emission.ts";
 export {
     ScopeAuthorityError,
     ScopeEvidenceError,
     ScopeHeadConflictError,
+    ScopeMergeConflictError,
+    ScopeQuiescenceError,
+    ScopeTerminalConflictError,
     ScopeWriterConflictError,
     ScopeWriterFencedError,
 } from "./scope/errors.ts";
 export { inspectScope } from "./scope/inspection.ts";
+export { inspectScopeRecovery } from "./scope/recovery.ts";
 export { registerChildScope, registerRootScope } from "./scope/registration.ts";
 export { readScopeCommandReceipt } from "./scope/replay.ts";
 export type {
     ClaimScopeWriterOptions,
     ClaimScopeWritersOptions,
     EmitScopeRecordOptions,
+    InspectScopeRecoveryOptions,
     RegisterChildScopeOptions,
     RegisterRootScopeOptions,
     ReleaseScopeWriterOptions,
@@ -366,13 +383,21 @@ export type {
     ScopeAuthorityAtom,
     ScopeBoundResource,
     ScopeCheckpoint,
+    ScopeCheckpointClassification,
     ScopeCheckpointConstituent,
     ScopeCheckpointConstituentKind,
     ScopeCheckpointEvidenceStatus,
+    ScopeCheckpointStartClassification,
+    ScopeChildMergedRecord,
     ScopeChildRegisteredRecord,
     ScopeChildRegistrationReceipt,
     ScopeCommandKind,
     ScopeCommandReplay,
+    ScopeContribution,
+    ScopeDiscardCleanedRecord,
+    ScopeDiscardDecidedRecord,
+    ScopeDiscardPhase,
+    ScopeDiscardReceipt,
     ScopeEmissionReceipt,
     ScopeEmissionRecord,
     ScopeEvidenceKind,
@@ -384,19 +409,34 @@ export type {
     ScopeHistoryEntry,
     ScopeInspection,
     ScopeKind,
+    ScopeMergeCompletedRecord,
+    ScopeMergePhase,
+    ScopeMergePreparedRecord,
+    ScopeMergeReceipt,
+    ScopeMergeWorldPlan,
     ScopeParentOrigin,
+    ScopeRecoveryClassification,
+    ScopeRecoveryEntry,
+    ScopeRecoveryReport,
+    ScopeRecoveryResumeKind,
     ScopeRegistrationRecord,
     ScopeResourceGrant,
     ScopeResourceGrantRequest,
     ScopeResourceKind,
     ScopeRootRegistrationReceipt,
     ScopeState,
+    ScopeTerminalInspection,
+    ScopeVocabularyEntry,
+    ScopeVocabularyProjection,
+    ScopeVocabularyStatus,
+    ScopeVocabularyTerm,
     ScopeWorldCapability,
     ScopeWorldInspection,
     ScopeWriter,
     ScopeWriterClaimRequest,
     ScopeWriterRelease,
 } from "./scope/types.ts";
+export { projectScopeVocabulary } from "./scope/vocabulary.ts";
 export { claimScopeWriter, claimScopeWriters, releaseScopeWriter } from "./scope/writer.ts";
 export {
     AppendIntentConflictError,
@@ -543,6 +583,7 @@ export type {
     WorkspaceCustodyFaultEvidence,
     WorkspaceCustodyFaultInjection,
     WorkspaceGitPlatformPolicy,
+    WorkspaceOptimizedCarrierParity,
     WorkspacePlatformConformance,
     WorkspacePlatformConformanceOptions,
 } from "./workspace/platform-conformance.ts";
@@ -612,8 +653,24 @@ export type {
     SelectedRetainedWorldSettlement,
     SelectRetainedWorldSettlementOptions,
 } from "./workspace/retained-world-settlement-types.ts";
+export { discardScope } from "./workspace/scope-discard.ts";
 export { forkScope } from "./workspace/scope-fork.ts";
 export type { ForkScopeOptions } from "./workspace/scope-fork-types.ts";
+export { mergeScope } from "./workspace/scope-merge.ts";
+export type {
+    DiscardScopeOptions,
+    MergeScopeOptions,
+} from "./workspace/scope-terminal-types.ts";
+export { runScopeTree } from "./workspace/scope-tree.ts";
+export type {
+    RunScopeTreeOptions,
+    ScopeTreeContext,
+    ScopeTreeDecision,
+    ScopeTreeNode,
+    ScopeTreeOutcome,
+    ScopeTreeOutcomeStatus,
+    ScopeTreeReport,
+} from "./workspace/scope-tree-types.ts";
 export {
     captureGrantedTaskWorldDurably,
     captureJailedGrantedTaskWorldDurably,
@@ -675,6 +732,7 @@ export type {
     WorkspaceInitializationOptions,
     WorkspaceRepositoryBindingEvidence,
     WorkspaceState,
+    WorldCarrierBackend,
     WorldChangeNode,
     WorldChangeOperation,
     WorldChangeset,

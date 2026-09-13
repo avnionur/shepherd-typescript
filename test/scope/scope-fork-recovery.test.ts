@@ -11,7 +11,6 @@ import {
     forkScope,
     inspectScope,
     readScopeCommandReceipt,
-    registerRootScope,
     releaseScopeWriter,
     ScopeEvidenceError,
     ScopeWriterFencedError,

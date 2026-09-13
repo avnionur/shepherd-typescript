@@ -90,6 +90,8 @@ import {
     readAppendIntentRecords,
     readScopeForkBoundaryInStore,
     readScopeRegistrationRow,
+    readScopeRegistrationRows,
+    readScopeWriterClaimRow,
     registerChildScopeInStore,
     registerRootScopeInStore,
     releaseScopeWriterInStore,
@@ -99,6 +101,17 @@ import {
     type ScopeWriterClaimRow,
     type ScopeWriterFence,
 } from "./scope-registrations.ts";
+import {
+    completeScopeDiscardCleanupInStore,
+    completeScopeMergeInStore,
+    discardScopeInStore,
+    prepareScopeMergeInStore,
+    readScopeMergeBoundaryInStore,
+    type ScopeDiscardAdmission,
+    type ScopeDiscardCleanup,
+    type ScopeMergeAdmission,
+    type ScopeMergeBoundary,
+} from "./scope-terminals.ts";
 import { readCausalClosureSlice, readOwnerPrefixSlice } from "./slices.ts";
 import type {
     AppendReceipt,
@@ -510,10 +523,60 @@ export class SQLiteTraceStore implements Disposable {
         );
     }
 
+    /** @internal Atomically reserves or replays one consume-once child merge. */
+    prepareScopeMerge(admission: ScopeMergeAdmission): {
+        readonly cut: Cut;
+        readonly receipt: AppendReceipt;
+    } {
+        this.#assertOpen();
+        return prepareScopeMergeInStore(this.#database, admission);
+    }
+
+    /** @internal Classifies a reserved merge as completed or at its safe publication boundary. */
+    readScopeMergeBoundary(
+        boundary: ScopeMergeBoundary,
+        completedAppendIntentId: string,
+    ): "completed" | "ready" {
+        this.#assertOpen();
+        return readScopeMergeBoundaryInStore(this.#database, boundary, completedAppendIntentId);
+    }
+
+    /** @internal Atomically completes or replays one reserved merge and seals the child. */
+    completeScopeMerge(
+        completion: ScopeMergeBoundary & { readonly request: StoreAppendRequest },
+    ): AppendReceipt {
+        this.#assertOpen();
+        return completeScopeMergeInStore(this.#database, completion);
+    }
+
+    /** @internal Atomically decides or replays one logical subtree discard. */
+    discardScope(admission: ScopeDiscardAdmission): "decided" | "replayed" {
+        this.#assertOpen();
+        return discardScopeInStore(this.#database, admission);
+    }
+
+    /** @internal Atomically retains or replays cleanup progress of one logical discard. */
+    completeScopeDiscardCleanup(cleanup: ScopeDiscardCleanup): AppendReceipt {
+        this.#assertOpen();
+        return completeScopeDiscardCleanupInStore(this.#database, cleanup);
+    }
+
     /** @internal Reads the owner occurrences retained by one append intent in append order. */
     readAppendIntentRecords(appendIntentId: string): readonly OwnerRecord[] {
         this.#assertOpen();
         return readAppendIntentRecords(this.#database, appendIntentId);
+    }
+
+    /** @internal Lists every live scope registration row in canonical scope-identity order. */
+    listScopeRegistrations(): readonly ScopeRegistrationRow[] {
+        this.#assertOpen();
+        return readScopeRegistrationRows(this.#database);
+    }
+
+    /** @internal Reads the current writer claim row of one scope. */
+    readScopeWriterClaim(scopeId: string): ScopeWriterClaimRow | undefined {
+        this.#assertOpen();
+        return readScopeWriterClaimRow(this.#database, scopeId);
     }
 
     /** @internal Reads one live scope registration row admitting mutation in this store. */

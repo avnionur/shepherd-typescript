@@ -103,6 +103,35 @@
     },
     "additionalProperties": false,
     "$defs": {
+        "contributions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "owner_id",
+                    "owner_ordinal",
+                    "record_id"
+                ],
+                "properties": {
+                    "owner_id": {
+                        "$ref": "#/$defs/scopeId"
+                    },
+                    "owner_ordinal": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "record_id": {
+                        "$ref": "#/$defs/recordId"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "maxItems": 1024
+        },
+        "mergeCutId": {
+            "type": "string",
+            "pattern": "^scope-merge:[0-9a-f]{64}$"
+        },
         "originCutId": {
             "type": "string",
             "pattern": "^scope-origin:[0-9a-f]{64}$"

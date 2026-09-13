@@ -35,6 +35,16 @@ import { workspaceProtocolConfig } from "../protocol/config.ts";
 import { WORLD_ENTRY_KINDS } from "../protocol/values.generated.ts";
 import type { RetainedWorldSettlementOperationEncoding } from "../store/retained-world-settlement-codec.ts";
 import { createWorkspaceBindings, createWorkspaceBindingsForRetainedCustody } from "./bindings.ts";
+import {
+    type CarrierBackendRuntime,
+    type CarrierFileMaterializer,
+    mountOverlay,
+    type OverlayLayers,
+    openCarrierBackend,
+    readCarrierBackendOption,
+    readOverlayMountState,
+    unmountOverlay,
+} from "./carrier-backends.ts";
 import { WorldCarrierError } from "./errors.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import {
@@ -76,6 +86,7 @@ import type {
 } from "./types.ts";
 
 type CarrierPaths = {
+    readonly backend: CarrierBackendRuntime;
     readonly carrier: string;
     readonly custodies: string;
     readonly discarded: string;
@@ -112,6 +123,13 @@ type CustodyDescriptor = {
     readonly custody_id: string;
     readonly descriptor_format: string;
     readonly descriptor_version: number;
+    readonly upper_identity?: string;
+    readonly work_identity?: string;
+};
+
+type CaptureTarget = {
+    readonly materialize: CarrierFileMaterializer;
+    readonly root: string;
 };
 
 const snapshotSourceInspectionPhase = workspaceProtocolConfig.platformConformance.faults.phases[0];
@@ -223,42 +241,143 @@ export function createReferenceCopyApplicationRevision(
         if (typeof definition.operationKey !== "string" || definition.operationKey.length === 0) {
             throw new TypeError("application operation key is invalid");
         }
-        const current = loadRevision(paths, definition.currentRevisionId);
-        const candidateBase = loadRevision(paths, definition.candidateChangeset.base_revision_id);
-        const candidate = loadRevision(paths, definition.candidateChangeset.head_revision_id);
-        if (
-            current.binding_id !== definition.candidateChangeset.binding_id ||
-            candidateBase.binding_id !== current.binding_id ||
-            candidate.binding_id !== current.binding_id
-        ) {
-            throw new TypeError("application revisions cite different bindings");
-        }
         const identity = createRecordId({
             candidate_changeset_id: definition.candidateChangeset.changeset_id,
-            current_revision_id: current.revision_id,
+            current_revision_id: definition.currentRevisionId,
             operation_key: definition.operationKey,
         });
-        const custodyId = `${workspaceProtocolConfig.carrier.custodyIdPrefix}${identity.slice(
-            identity.lastIndexOf(":") + 1,
-        )}`;
-        const custody = forkRevision(paths, current.revision_id, NO_ADAPTER_RECEIPTS, custodyId);
-        for (const change of orderWorldPathChangesForPublication(
-            definition.candidateChangeset.changes,
-        )) {
+        return applyApplicationRevision(
+            paths,
+            definition.candidateChangeset,
+            definition.currentRevisionId,
+            `${workspaceProtocolConfig.carrier.custodyIdPrefix}${identity.slice(identity.lastIndexOf(":") + 1)}`,
+        );
+    });
+}
+
+/** @internal Creates or reopens one merged revision under an exact caller-derived custody identity. */
+export function createReferenceCopyApplicationRevisionWithIdentity(
+    carrier: ReferenceCopyCarrier,
+    definition: Readonly<{
+        candidateChangeset: WorldChangeset;
+        currentRevisionId: string;
+        custodyId: string;
+    }>,
+): Readonly<{ custody: WorldCustody; revision: WorldRevision }> {
+    assertReferenceCopyCarrier(carrier);
+    const paths = REFERENCE_CARRIER_PATHS.get(carrier);
+    assert.ok(paths, "reference carrier paths are unavailable");
+    return invokeCarrier(() =>
+        applyApplicationRevision(
+            paths,
+            definition.candidateChangeset,
+            definition.currentRevisionId,
+            definition.custodyId,
+        ),
+    );
+}
+
+function applyApplicationRevision(
+    paths: CarrierPaths,
+    candidateChangeset: WorldChangeset,
+    currentRevisionId: string,
+    custodyId: string,
+): Readonly<{ custody: WorldCustody; revision: WorldRevision }> {
+    const current = loadRevision(paths, currentRevisionId);
+    const candidateBase = loadRevision(paths, candidateChangeset.base_revision_id);
+    const candidate = loadRevision(paths, candidateChangeset.head_revision_id);
+    if (
+        current.binding_id !== candidateChangeset.binding_id ||
+        candidateBase.binding_id !== current.binding_id ||
+        candidate.binding_id !== current.binding_id
+    ) {
+        throw new TypeError("application revisions cite different bindings");
+    }
+    const custody = forkRevision(paths, current.revision_id, NO_ADAPTER_RECEIPTS, custodyId);
+    for (const change of orderWorldPathChangesForPublication(candidateChangeset.changes)) {
+        const observed = readPathNode(custody.path, change.path);
+        if (sameNode(observed, change.after)) continue;
+        if (!sameNode(observed, change.before)) {
+            throw selectionError("recovery");
+        }
+        applyPathChange(custody.path, candidate.path, change, paths.backend.materializeFile);
+    }
+    const revision = captureCustody(paths, custody.custody_id);
+    // captureCustody constructs this parent from the just-opened custody descriptor.
+    /* node:coverage ignore next 3 */
+    if (revision.parent_revision_id !== current.revision_id) {
+        throw new TypeError("application revision parent is inconsistent");
+    }
+    return Object.freeze({ custody, revision });
+}
+
+/**
+ * Publishes one verified changeset onto owned mutable custody, converging from any prefix.
+ *
+ * The changeset base and head must be owned verified revisions of the custody binding. Each path
+ * already in its head state is skipped, a path in its base state is replaced from the head
+ * revision, and any third state fails closed as an unknown physical state. @internal
+ */
+export function publishReferenceCopyCustodyChangeset(
+    carrier: ReferenceCopyCarrier,
+    custodyId: string,
+    changeset: WorldChangeset,
+): WorldVerification {
+    assertReferenceCopyCarrier(carrier);
+    const paths = REFERENCE_CARRIER_PATHS.get(carrier);
+    assert.ok(paths, "reference carrier paths are unavailable");
+    return invokeCarrier(() => {
+        const custody = loadCustody(paths, custodyId);
+        verifyRevision(paths, changeset.base_revision_id);
+        verifyRevision(paths, changeset.head_revision_id);
+        const head = loadRevision(paths, changeset.head_revision_id);
+        const base = loadRevision(paths, changeset.base_revision_id);
+        assert.equal(base.binding_id, custody.binding_id, "changeset base binding differs");
+        assert.equal(head.binding_id, custody.binding_id, "changeset head binding differs");
+        const descriptor = readOwnedRevisionDescriptor(paths, custody.base_revision_id);
+        const protection = pathProtection(paths.workspaceRoot, descriptor.binding_root);
+        assertChangesetPathsUnprotected(changeset, protection);
+        // Every unplanned path must still hold its base state before anything is written.
+        const planned = new Set(changeset.changes.map((change) => change.path));
+        const unplanned = (manifest: readonly WorldManifestEntry[]) =>
+            canonicalManifest(manifest.filter((entry) => !planned.has(entry.path)));
+        if (
+            unplanned(captureTree(custody.path, null, null, protection)) !==
+            unplanned(base.manifest)
+        ) {
+            throw selectionError("recovery");
+        }
+        for (const change of orderWorldPathChangesForPublication(changeset.changes)) {
             const observed = readPathNode(custody.path, change.path);
             if (sameNode(observed, change.after)) continue;
-            if (!sameNode(observed, change.before)) {
-                throw selectionError("recovery");
-            }
-            applyPathChange(custody.path, candidate.path, change);
+            if (!sameNode(observed, change.before)) throw selectionError("recovery");
+            applyPathChange(custody.path, head.path, change, paths.backend.materializeFile);
         }
-        const revision = captureCustody(paths, custody.custody_id);
-        // captureCustody constructs this parent from the just-opened custody descriptor.
-        /* node:coverage ignore next 3 */
-        if (revision.parent_revision_id !== current.revision_id) {
-            throw new TypeError("application revision parent is inconsistent");
+        return verifyCustody(paths, custodyId);
+    });
+}
+
+/**
+ * Durably discards one exact custody identity whether or not it was ever published.
+ *
+ * The discard decision is retained first, so a late publication under the identity can never be
+ * reopened, and an existing custody tree is removed only after verification. Retries converge.
+ * @internal
+ */
+export function discardReferenceCopyCustodyIdentity(
+    carrier: ReferenceCopyCarrier,
+    custodyId: string,
+): void {
+    assertReferenceCopyCarrier(carrier);
+    const paths = REFERENCE_CARRIER_PATHS.get(carrier);
+    assert.ok(paths, "reference carrier paths are unavailable");
+    invokeCarrier(() => {
+        const marker = discardMarker(paths, custodyId);
+        if (!existsSync(marker) && !existsSync(custodyRoot(paths, custodyId))) {
+            publishDiscardDescriptor(paths, marker, custodyId);
+            return;
         }
-        return Object.freeze({ custody, revision });
+        discardCustody(paths, custodyId);
     });
 }
 
@@ -375,11 +494,17 @@ function createCarrier(
     open: typeof openWorkspace,
     createBindings: typeof createWorkspaceBindings,
 ): ReferenceCopyCarrier {
-    const { faultInjection, workspaceRoot } = readOptions(options);
+    const { backend, faultInjection, workspaceRoot } = readOptions(options);
     const workspace = open(workspaceRoot);
-    const paths = createCarrierPaths(workspace.control_path, createBindings, faultInjection);
+    const paths = createCarrierPaths(
+        workspace.control_path,
+        createBindings,
+        faultInjection,
+        backend,
+    );
 
     const carrier = Object.freeze({
+        backend: paths.backend.name as ReferenceCopyCarrier["backend"],
         captureCustody: async (custodyId: string) =>
             invokeCarrier(() => captureCustody(paths, custodyId)),
         discard: async (custodyId: string) => invokeCarrier(() => discardCustody(paths, custodyId)),
@@ -445,7 +570,7 @@ function captureCustody(paths: CarrierPaths, custodyId: string): WorldRevision {
         injectWorkspaceCustodyFault(paths.faultInjection, stagingWrite.name);
         const manifest = captureTree(
             custody.path,
-            stagedWorld,
+            { materialize: paths.backend.materializeFile, root: stagedWorld },
             null,
             protection,
             sourceInspection.name,
@@ -559,6 +684,7 @@ function assertGitStagingSource(controlPath: string, sourceRoot: string): string
 }
 
 function readOptions(value: unknown): Readonly<{
+    backend: string;
     faultInjection: WorkspaceCustodyFaultInjection | null;
     workspaceRoot: string;
 }> {
@@ -569,10 +695,12 @@ function readOptions(value: unknown): Readonly<{
     if (
         Object.getPrototypeOf(value) !== Object.prototype ||
         Object.getOwnPropertySymbols(value).length > 0 ||
-        ![1, 2].includes(Object.keys(descriptors).length) ||
+        Object.keys(descriptors).length > 3 ||
         !("workspaceRoot" in descriptors) ||
-        !("value" in descriptors.workspaceRoot) ||
-        Object.keys(descriptors).some((key) => !["faultInjection", "workspaceRoot"].includes(key))
+        Object.values(descriptors).some((descriptor) => !("value" in descriptor)) ||
+        Object.keys(descriptors).some(
+            (key) => !["backend", "faultInjection", "workspaceRoot"].includes(key),
+        )
     ) {
         throw new TypeError("reference copy carrier options must be exact data");
     }
@@ -581,6 +709,7 @@ function readOptions(value: unknown): Readonly<{
         throw new TypeError("reference copy carrier workspaceRoot must be a non-empty string");
     }
     return {
+        backend: readCarrierBackendOption(descriptors.backend?.value),
         faultInjection: readWorkspaceCustodyFaultInjection(
             "faultInjection" in descriptors ? descriptors.faultInjection?.value : undefined,
         ),
@@ -592,6 +721,7 @@ function createCarrierPaths(
     controlPath: string,
     createBindings: typeof createWorkspaceBindings,
     faultInjection: WorkspaceCustodyFaultInjection | null = null,
+    backendName = workspaceProtocolConfig.carrierBackends.defaultBackend,
 ): CarrierPaths {
     const config = workspaceProtocolConfig.carrier;
     const carrier = path.join(controlPath, config.carrierDirectory);
@@ -622,6 +752,7 @@ function createCarrierPaths(
         }
         return {
             ...basePaths,
+            backend: openCarrierBackend(backendName, basePaths.staging),
             identities: Object.values(basePaths).map((directory) => ({
                 identity: directoryIdentity(directory),
                 path: directory,
@@ -699,7 +830,15 @@ function stageSelection(
         mkdirSync(
             path.join(stagingRoot, workspaceProtocolConfig.selectionPublication.stepsDirectory),
         );
-        assertManifestEqual(head.manifest, captureTree(head.path, stagedWorld, null, protection));
+        assertManifestEqual(
+            head.manifest,
+            captureTree(
+                head.path,
+                { materialize: paths.backend.materializeFile, root: stagedWorld },
+                null,
+                protection,
+            ),
+        );
         writeClosedDescriptor(
             path.join(stagingRoot, workspaceProtocolConfig.selectionPublication.planFile),
             validatedPlan.value,
@@ -836,7 +975,12 @@ async function publishSelection(
         const current = readPathNode(binding.canonical_root, change.path);
         if (!sameNode(current, change.after)) {
             if (!sameNode(current, change.before)) throw selectionError("recovery");
-            applyPathChange(binding.canonical_root, staging.staging_path, change);
+            applyPathChange(
+                binding.canonical_root,
+                staging.staging_path,
+                change,
+                paths.backend.materializeFile,
+            );
         }
         assertPathNode(binding.canonical_root, change.path, change.after);
         publishSelectionStep(paths, stepsRoot, expected);
@@ -964,7 +1108,12 @@ function verifySelectionReceipt(
     assertReceiptRootStable(root, retained);
 }
 
-function applyPathChange(root: string, stagedRoot: string, change: WorldPathChange): void {
+function applyPathChange(
+    root: string,
+    stagedRoot: string,
+    change: WorldPathChange,
+    materialize: CarrierFileMaterializer,
+): void {
     const target = safeManagedPath(root, change.path);
     const before = change.before;
     const after = change.after;
@@ -974,13 +1123,13 @@ function applyPathChange(root: string, stagedRoot: string, change: WorldPathChan
             setDirectoryModeDurably(target, after.mode);
         } else {
             assert.ok(source);
-            replaceLeaf(source, target, after);
+            replaceLeaf(source, target, after, materialize);
         }
     } else {
         if (before !== null) removeManagedNode(target, before);
         if (after !== null) {
             assert.ok(source);
-            createManagedNode(source, target, after);
+            createManagedNode(source, target, after, materialize);
         }
     }
     syncDirectory(path.dirname(target));
@@ -990,10 +1139,11 @@ function replaceLeaf(
     source: string,
     target: string,
     node: Exclude<WorldChangeNode, { kind: typeof DIRECTORY_KIND }>,
+    materialize: CarrierFileMaterializer,
 ): void {
     const temporary = path.join(path.dirname(target), `.${randomUUID()}`);
     try {
-        createManagedNode(source, temporary, node);
+        createManagedNode(source, temporary, node, materialize);
         renameSync(temporary, target);
         syncDirectory(path.dirname(target));
     } finally {
@@ -1001,7 +1151,12 @@ function replaceLeaf(
     }
 }
 
-function createManagedNode(source: string, target: string, node: WorldChangeNode): void {
+function createManagedNode(
+    source: string,
+    target: string,
+    node: WorldChangeNode,
+    materialize: CarrierFileMaterializer,
+): void {
     if (node.kind === DIRECTORY_KIND) {
         mkdirSync(target, { mode: node.mode });
         setDirectoryModeDurably(target, node.mode);
@@ -1015,14 +1170,7 @@ function createManagedNode(source: string, target: string, node: WorldChangeNode
             digestId(workspaceProtocolConfig.carrier.blobIdPrefix, bytes),
             node.content_id,
         );
-        const descriptor = openSync(target, "wx", node.mode);
-        try {
-            writeFileSync(descriptor, bytes);
-            fchmodSync(descriptor, node.mode);
-            fsyncSync(descriptor);
-        } finally {
-            closeSync(descriptor);
-        }
+        materialize(source, target, bytes, node.mode);
         return;
     }
     assert.equal(readlinkSync(source), node.target);
@@ -1143,7 +1291,7 @@ function snapshotBinding(
         injectWorkspaceCustodyFault(paths.faultInjection, stagingWrite.name);
         const manifest = captureTree(
             sourceRoot,
-            stagedWorld,
+            { materialize: paths.backend.materializeFile, root: stagedWorld },
             captureControlPath,
             protection,
             sourceInspection.name,
@@ -1229,15 +1377,23 @@ function forkRevision(
     const stagedWorld = path.join(stagingRoot, workspaceProtocolConfig.carrier.worldDirectory);
     try {
         mkdirSync(stagedWorld);
-        const copied = captureTree(
-            revision.path,
-            stagedWorld,
-            null,
-            pathProtection(paths.workspaceRoot, revisionDescriptor.binding_root),
-        );
-        assertManifestEqual(revision.manifest, copied);
+        let layers: Readonly<{ upper_identity: string; work_identity: string }> | null = null;
+        /* node:coverage disable */
+        // Overlay custody publishes empty private layers; it runs only on Linux overlay hosts.
+        if (paths.backend.overlay) layers = createOverlayLayerIdentities(stagingRoot);
+        /* node:coverage enable */
+        if (layers === null) {
+            const copied = captureTree(
+                revision.path,
+                { materialize: paths.backend.materializeFile, root: stagedWorld },
+                null,
+                pathProtection(paths.workspaceRoot, revisionDescriptor.binding_root),
+            );
+            assertManifestEqual(revision.manifest, copied);
+        }
         const descriptor: CustodyDescriptor = {
-            backend: workspaceProtocolConfig.carrier.backendKind,
+            ...layers,
+            backend: paths.backend.name,
             base_content_id: revision.content_id,
             base_revision_id: revision.revision_id,
             binding_id: revision.binding_id,
@@ -1304,6 +1460,15 @@ function loadCustody(paths: CarrierPaths, custodyId: string, allowDiscarded = fa
     const base = loadRevision(paths, descriptor.base_revision_id);
     assert.equal(descriptor.base_content_id, base.content_id);
     assert.equal(descriptor.binding_id, base.binding_id);
+    const overlayCustody =
+        descriptor.backend === workspaceProtocolConfig.carrierBackends.overlay.backend;
+    if (overlayCustody !== paths.backend.overlay) {
+        throw carrierError("control", "world custody backend differs from the carrier backend");
+    }
+    /* node:coverage disable */
+    // Retained overlay custody is remounted only on Linux overlay hosts.
+    if (overlayCustody) ensureOverlayCustodyMounted(root, descriptor, base.path);
+    /* node:coverage enable */
     return Object.freeze({
         backend: descriptor.backend,
         base_content_id: descriptor.base_content_id,
@@ -1419,6 +1584,8 @@ function discardCustody(paths: CarrierPaths, custodyId: string): void {
             if (!status.isDirectory() || status.isSymbolicLink()) {
                 throw carrierError("control");
             }
+            // Overlay custody is unmounted before its owned root is removed.
+            if (paths.backend.overlay) unmountOverlay(loadCustody(paths, custodyId, true).path);
             /* node:coverage enable */
             rmSync(root, { recursive: true });
             syncDirectory(paths.custodies);
@@ -1427,6 +1594,61 @@ function discardCustody(paths: CarrierPaths, custodyId: string): void {
         throwCarrierError(error);
     }
 }
+
+/* node:coverage disable */
+// Overlay layer management executes only on Linux hosts with mount permission and is exercised by
+// the privileged Linux container run of the shared carrier conformance suite.
+function createOverlayLayerIdentities(
+    stagingRoot: string,
+): Readonly<{ upper_identity: string; work_identity: string }> {
+    const overlay = workspaceProtocolConfig.carrierBackends.overlay;
+    const upper = path.join(stagingRoot, overlay.upperDirectory);
+    const work = path.join(stagingRoot, overlay.workDirectory);
+    mkdirSync(upper, { mode: 0o700 });
+    mkdirSync(work, { mode: 0o700 });
+    return { upper_identity: directoryIdentity(upper), work_identity: directoryIdentity(work) };
+}
+
+function ensureOverlayCustodyMounted(
+    root: string,
+    descriptor: CustodyDescriptor,
+    lower: string,
+): void {
+    const overlay = workspaceProtocolConfig.carrierBackends.overlay;
+    const layers: OverlayLayers = {
+        lower,
+        target: path.join(root, workspaceProtocolConfig.carrier.worldDirectory),
+        upper: path.join(root, overlay.upperDirectory),
+        work: path.join(root, overlay.workDirectory),
+    };
+    for (const [layer, identity] of [
+        [layers.upper, descriptor.upper_identity],
+        [layers.work, descriptor.work_identity],
+    ] as const) {
+        const status = lstatSync(layer);
+        if (
+            !status.isDirectory() ||
+            status.isSymbolicLink() ||
+            directoryIdentity(layer) !== identity
+        ) {
+            throw carrierError("control", "overlay custody layer identity changed");
+        }
+    }
+    const state = readOverlayMountState(layers);
+    if (state === "owned") return;
+    if (state === "foreign") {
+        throw carrierError("control", "overlay custody mount contradicts retained layers");
+    }
+    const world = lstatSync(layers.target);
+    if (!world.isDirectory() || world.isSymbolicLink() || readdirSync(layers.target).length > 0) {
+        throw carrierError("control", "unmounted overlay custody world contains unowned entries");
+    }
+    mountOverlay(layers);
+    if (readOverlayMountState(layers) !== "owned") {
+        throw carrierError("control", "overlay custody remount is not the retained overlay");
+    }
+}
+/* node:coverage enable */
 
 function pathProtection(
     workspaceRoot: string,
@@ -1446,7 +1668,7 @@ function assertChangesetPathsUnprotected(
 
 function captureTree(
     sourceRoot: string,
-    targetRoot: string | null,
+    target: CaptureTarget | null,
     controlPath: string | null,
     protection: WorkspacePathProtectionAuthority,
     platformPhase = SNAPSHOT_SOURCE_INSPECTION_PHASE_NAME,
@@ -1455,7 +1677,7 @@ function captureTree(
     const seenHardLinks = new Set<string>();
     walkDirectory(
         sourceRoot,
-        targetRoot,
+        target,
         "",
         controlPath,
         protection,
@@ -1463,8 +1685,8 @@ function captureTree(
         manifest,
         seenHardLinks,
     );
-    if (targetRoot !== null) {
-        syncDirectory(targetRoot);
+    if (target !== null) {
+        syncDirectory(target.root);
     }
     manifest.sort((left, right) => Buffer.from(left.path).compare(Buffer.from(right.path)));
     return freezeManifest(manifest);
@@ -1472,7 +1694,7 @@ function captureTree(
 
 function walkDirectory(
     sourceRoot: string,
-    targetRoot: string | null,
+    target: CaptureTarget | null,
     relativeDirectory: string,
     controlPath: string | null,
     protection: WorkspacePathProtectionAuthority,
@@ -1524,7 +1746,7 @@ function walkDirectory(
         assertWorkspacePathUnprotected({ ...protection, path: relativePath });
         const before = lstatSync(sourcePath, { bigint: true });
         const targetPath =
-            targetRoot === null ? null : path.join(targetRoot, ...relativePath.split("/"));
+            target === null ? null : path.join(target.root, ...relativePath.split("/"));
         assert.equal(
             !before.isDirectory() && !before.isFile() ? 0n : before.mode & 0o7000n,
             0n,
@@ -1539,7 +1761,7 @@ function walkDirectory(
             );
             walkDirectory(
                 sourceRoot,
-                targetRoot,
+                target,
                 relativePath,
                 controlPath,
                 protection,
@@ -1579,15 +1801,8 @@ function walkDirectory(
             } finally {
                 closeSync(sourceDescriptor);
             }
-            if (targetPath !== null) {
-                const descriptor = openSync(targetPath, "wx", Number(before.mode & 0o777n));
-                try {
-                    writeFileSync(descriptor, bytes);
-                    fchmodSync(descriptor, Number(before.mode & 0o777n));
-                    fsyncSync(descriptor);
-                } finally {
-                    closeSync(descriptor);
-                }
+            if (target !== null && targetPath !== null) {
+                target.materialize(sourcePath, targetPath, bytes, Number(before.mode & 0o777n));
             }
             const blobId = digestId(workspaceProtocolConfig.carrier.blobIdPrefix, bytes);
             manifest.push(
@@ -1809,7 +2024,15 @@ function readOwnedRevisionDescriptor(paths: CarrierPaths, revisionId: string): R
 }
 
 function readCustodyDescriptor(descriptorPath: string): CustodyDescriptor {
-    const value = exactObject(readJson(descriptorPath), [
+    const raw = readJson(descriptorPath);
+    const layerKeys =
+        typeof raw === "object" &&
+        raw !== null &&
+        "backend" in raw &&
+        raw.backend === workspaceProtocolConfig.carrierBackends.overlay.backend
+            ? ["upper_identity", "work_identity"]
+            : [];
+    const value = exactObject(raw, [
         "backend",
         "base_content_id",
         "base_revision_id",
@@ -1817,10 +2040,12 @@ function readCustodyDescriptor(descriptorPath: string): CustodyDescriptor {
         "custody_id",
         "descriptor_format",
         "descriptor_version",
+        ...layerKeys,
     ]);
     assert.equal(
         !(
-            value.backend !== workspaceProtocolConfig.carrier.backendKind ||
+            !workspaceProtocolConfig.carrierBackends.backends.includes(String(value.backend)) ||
+            layerKeys.some((key) => typeof value[key] !== "string") ||
             value.descriptor_format !== workspaceProtocolConfig.carrier.descriptorFormat ||
             value.descriptor_version !== workspaceProtocolConfig.carrier.descriptorVersion ||
             typeof value.base_content_id !== "string" ||

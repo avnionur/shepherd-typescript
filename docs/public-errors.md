@@ -29,7 +29,7 @@ do not grant retry, recovery, settlement, filesystem, provider, or execution aut
 | Run control | `RunBudgetExhaustedError`, `RunCancelledError` | `public-errors.config.json` |
 | Durable runs | `DurableExecutionRecoveryAbsentError`, `DurableExecutionRecoveryError`, `DurableExecutionRecoveryCommandRequiredError`, `DurableExecutionClaimLostError`, `DurableExecutionClaimFencedError` | run protocol configuration |
 | Trace | `TraceStoreError`, `AppendIntentConflictError`, `UnsupportedStoreSchemaError`, `BlobIntegrityError`, `ProjectionCompatibilityError` | `public-errors.config.json` |
-| Scopes | `ScopeAuthorityError`, `ScopeEvidenceError`, `ScopeHeadConflictError`, `ScopeWriterConflictError`, `ScopeWriterFencedError` | scope protocol configuration |
+| Scopes | `ScopeAuthorityError`, `ScopeEvidenceError`, `ScopeHeadConflictError`, `ScopeMergeConflictError`, `ScopeQuiescenceError`, `ScopeTerminalConflictError`, `ScopeWriterConflictError`, `ScopeWriterFencedError` | scope protocol configuration |
 | Tasks | `TaskRegistryError`, `TaskVersionConflictError`, `UnsupportedTaskRegistrySchemaError` | `public-errors.config.json` |
 | Workspace control | `WorkspaceControlError`, `WorkspaceInitializationConflictError`, `WorkspaceBindingError` | workspace protocol configuration or the exact configured binding refusal |
 | Workspace custody | `WorldCarrierError`, `GitCustodyError`, `WorldChangesetError`, `WorkspaceCustodyFaultError`, `WorkspaceProtectedPathError` | the exact configured carrier, Git, changeset, platform-fault, or protected-path refusal |

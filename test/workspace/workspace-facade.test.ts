@@ -39,6 +39,7 @@ test("workspace facade exposes only workspace-owned runtime symbols", () => {
         "createWorldChangeset",
         "createWorldChangesetInspection",
         "discardRetainedWorldSettlement",
+        "discardScope",
         "forkScope",
         "grantTaskRepositories",
         "initializeWorkspace",
@@ -51,6 +52,7 @@ test("workspace facade exposes only workspace-owned runtime symbols", () => {
         "inspectTaskWorldCaptureJournal",
         "inspectWorkspacePathProtection",
         "inspectWorkspacePlatformConformance",
+        "mergeScope",
         "openWorkspace",
         "prepareRetainedWorldSettlement",
         "recoverGrantedTaskWorldDurably",
@@ -58,6 +60,7 @@ test("workspace facade exposes only workspace-owned runtime symbols", () => {
         "recoverPlacedGrantedTaskWorldDurably",
         "recoverTaskWorldDurably",
         "releaseRetainedWorldSettlement",
+        "runScopeTree",
         "selectRetainedWorldSettlement",
     ]);
     for (const excluded of [

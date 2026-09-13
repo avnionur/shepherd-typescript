@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
     claimScopeWriter,
+    classifyScopeCheckpoint,
     forkScope,
     inspectScope,
     type OwnerRecord,
@@ -278,3 +279,54 @@ async function completedFork(workspace: ForkWorkspace) {
 function mutate(record: OwnerRecord, patch: Partial<OwnerRecord>): OwnerRecord {
     return { ...record, ...patch };
 }
+
+test("checkpoint classification proves a quiescent verified-copy start and restorability", async (context) => {
+    const { fork } = await completedFork(await createForkWorkspace(context, "classification"));
+    const checkpoint = fork.world.checkpoint as NonNullable<typeof fork.world.checkpoint>;
+    const classification = classifyScopeCheckpoint(checkpoint);
+    assert.equal(classification.start, "quiescent_verified_copy");
+    assert.equal(classification.restorable, false);
+    assert.deepEqual(
+        classification.unavailable.map((entry) => entry.kind),
+        ["irreversible_effects"],
+    );
+    assert.deepEqual(classification.verified, [
+        "trace_cut",
+        "binding",
+        "world",
+        "grants",
+        "child_frontier",
+    ]);
+    assert.deepEqual(classification.not_applicable, [
+        "execution",
+        "budget",
+        "provider_session",
+        "process",
+    ]);
+    const reconstructed = classifyScopeCheckpoint({
+        ...checkpoint,
+        constituents: checkpoint.constituents.map((constituent) =>
+            constituent.kind === "execution"
+                ? { kind: "execution", status: "reconstructive" }
+                : constituent.kind === "irreversible_effects"
+                  ? { kind: "irreversible_effects", status: "not_applicable" }
+                  : constituent,
+        ),
+    });
+    assert.equal(reconstructed.start, "reconstructed");
+    assert.deepEqual(reconstructed.reconstructive, ["execution"]);
+    const complete = classifyScopeCheckpoint({
+        ...checkpoint,
+        constituents: checkpoint.constituents.map((constituent) =>
+            constituent.kind === "irreversible_effects"
+                ? { kind: "irreversible_effects", status: "not_applicable" }
+                : constituent,
+        ),
+    });
+    assert.equal(complete.restorable, true);
+    assert.equal(complete.start, "quiescent_verified_copy");
+    assert.throws(
+        () => classifyScopeCheckpoint({ ...checkpoint, capture_kind: "atomic" }),
+        TypeError,
+    );
+});

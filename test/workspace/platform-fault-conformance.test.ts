@@ -44,6 +44,11 @@ test("workspace platform inspection publishes the configured fail-closed custody
     assert.equal(inspection.git.sparse_index, "preserve-index-evidence");
     assert.equal(inspection.git.gitlinks, "retain-external-commit-citation");
     assert.equal(inspection.optimized_carrier_parity, "reference-suite-required");
+    assert.deepEqual(
+        inspection.optimized_carriers.map((carrier) => carrier.backend),
+        ["clone", "overlay"],
+    );
+    assert.equal(Object.isFrozen(inspection.optimized_carriers), true);
     assert.equal(Object.isFrozen(inspection), true);
     assert.equal(Object.isFrozen(inspection.git), true);
     assert.equal(Object.isFrozen(inspection.unsupported_metadata), true);

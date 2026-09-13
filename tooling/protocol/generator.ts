@@ -29,9 +29,12 @@ import {
 import { renderRunOutcomeSchema } from "./schemas/run-protocol-schema.ts";
 import { renderRunUsageSchema } from "./schemas/run-usage-schema.ts";
 import {
+    renderScopeChildMergedSchema,
     renderScopeChildRegisteredSchema,
+    renderScopeDiscardSchema,
     renderScopeEmissionSchema,
     renderScopeForkSchema,
+    renderScopeMergeSchema,
     renderScopeRegistrationSchema,
 } from "./schemas/scope-schemas.ts";
 import {
@@ -228,6 +231,18 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderScopeForkSchema(config)),
             relativePath: config.scopes.artifacts.forkSchema,
+        },
+        {
+            content: renderJson(renderScopeMergeSchema(config)),
+            relativePath: config.scopes.artifacts.mergeSchema,
+        },
+        {
+            content: renderJson(renderScopeChildMergedSchema(config)),
+            relativePath: config.scopes.artifacts.childMergedSchema,
+        },
+        {
+            content: renderJson(renderScopeDiscardSchema(config)),
+            relativePath: config.scopes.artifacts.discardSchema,
         },
         {
             content: renderJson(renderWorldCaptureSchema(config)),
@@ -1609,6 +1624,9 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedWorldEntryKinds = config.workspaces.carrier.entryKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
+    const renderedWorldCarrierBackends = config.workspaces.carrierBackends.backends
+        .map((backend) => JSON.stringify(backend))
+        .join(", ");
     const renderedGitHeadKinds = config.workspaces.gitCustody.headKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
@@ -1629,9 +1647,15 @@ function renderProtocolValues(config: ProtocolConfig): string {
         .map((kind) => JSON.stringify(kind))
         .join(", ");
     const renderedScopeCommandKinds = config.scopes.commandKinds
-        .map((kind) => JSON.stringify(kind))
-        .join(", ");
+        .map((kind) => `    ${JSON.stringify(kind)},`)
+        .join("\n");
     const renderedScopeForkPhases = config.scopes.forkPhases
+        .map((phase) => JSON.stringify(phase))
+        .join(", ");
+    const renderedScopeMergePhases = config.scopes.mergePhases
+        .map((phase) => JSON.stringify(phase))
+        .join(", ");
+    const renderedScopeDiscardPhases = config.scopes.discardPhases
         .map((phase) => JSON.stringify(phase))
         .join(", ");
     const renderedScopeCheckpointKinds = config.scopes.checkpoint.constituentKinds
@@ -1966,6 +1990,9 @@ export const WORKSPACE_ADOPTION_MODES = [${renderedWorkspaceAdoptionModes}] as c
 /** Configured reference copy-carrier manifest entry kinds. @public */
 export const WORLD_ENTRY_KINDS = [${renderedWorldEntryKinds}] as const;
 
+/** Configured selectable world-carrier backends. @public */
+export const WORLD_CARRIER_BACKENDS = [${renderedWorldCarrierBackends}] as const;
+
 /** Configured retained-world runner enforcement classifications. @public */
 export const RETAINED_WORLD_ENFORCEMENT_KINDS = [${renderedRetainedWorldEnforcementKinds}] as const;
 
@@ -2127,11 +2154,19 @@ export const SCOPE_AUTHORITY_ATOMS = [${renderedScopeAuthorityAtoms}] as const;
 /** Configured resource kinds that scope authority may cite. @public */
 export const SCOPE_RESOURCE_KINDS = [${renderedScopeResourceKinds}] as const;
 
-/** Configured scope command kinds ordered root registration, child registration, emission. @public */
-export const SCOPE_COMMAND_KINDS = [${renderedScopeCommandKinds}] as const;
+/** Configured scope command kinds ordered root registration, child registration, emission, fork, merge, discard. @public */
+export const SCOPE_COMMAND_KINDS = [
+${renderedScopeCommandKinds}
+] as const;
 
 /** Configured scope fork journal phases ordered prepared then completed. @public */
 export const SCOPE_FORK_PHASES = [${renderedScopeForkPhases}] as const;
+
+/** Configured scope merge journal phases ordered prepared then completed. @public */
+export const SCOPE_MERGE_PHASES = [${renderedScopeMergePhases}] as const;
+
+/** Configured scope discard journal phases ordered decided then cleaned. @public */
+export const SCOPE_DISCARD_PHASES = [${renderedScopeDiscardPhases}] as const;
 
 /** Configured scope checkpoint constituent kinds in classification order. @public */
 export const SCOPE_CHECKPOINT_CONSTITUENT_KINDS = [
@@ -2141,6 +2176,41 @@ ${renderedScopeCheckpointKinds}
 /** Configured scope checkpoint evidence statuses. @public */
 export const SCOPE_CHECKPOINT_EVIDENCE_STATUSES = [
 ${renderedScopeCheckpointStatuses}
+] as const;
+
+/** Configured scope recovery classifications in precedence order. @public */
+export const SCOPE_RECOVERY_CLASSIFICATIONS = [
+${config.scopes.recovery.classifications.map((value) => `    ${JSON.stringify(value)},`).join("\n")}
+] as const;
+
+/** Configured scope recovery resume actions ordered fork, merge, discard, claim. @public */
+export const SCOPE_RECOVERY_RESUME_KINDS = [${config.scopes.recovery.resumeKinds.map((value) => JSON.stringify(value)).join(", ")}] as const;
+
+/** Configured scope scheduling decisions ordered merge then discard. @public */
+export const SCOPE_SCHEDULING_DECISIONS = [${config.scopes.scheduling.decisions.map((value) => JSON.stringify(value)).join(", ")}] as const;
+
+/** Configured scope scheduling outcomes ordered merged, discarded, conflicted, failed. @public */
+export const SCOPE_SCHEDULING_OUTCOMES = [${config.scopes.scheduling.outcomes.map((value) => JSON.stringify(value)).join(", ")}] as const;
+
+/** Configured scope scheduling bounds. @public */
+export const SCOPE_SCHEDULING_LIMITS = Object.freeze({
+    maxDepth: ${config.scopes.scheduling.maxDepth},
+    maxNodes: ${config.scopes.scheduling.maxNodes},
+    maxParallel: ${config.scopes.scheduling.maxParallel},
+} as const);
+
+/** Configured scope vocabulary terms ordered spawn, adopt, abandon, publish. @public */
+export const SCOPE_VOCABULARY_TERMS = [${config.scopes.vocabulary.terms.map((term) => JSON.stringify(term)).join(", ")}] as const;
+
+/** Configured scope vocabulary mapping statuses ordered pending then completed. @public */
+export const SCOPE_VOCABULARY_STATUSES = [${config.scopes.vocabulary.statuses.map((status) => JSON.stringify(status)).join(", ")}] as const;
+
+/** Configured scope vocabulary projection version. @public */
+export const SCOPE_VOCABULARY_VERSION = ${config.scopes.vocabulary.version} as const;
+
+/** Configured branch start classifications ordered atomic snapshot, quiescent verified copy, reconstructed. @public */
+export const SCOPE_CHECKPOINT_START_CLASSIFICATIONS = [
+${config.scopes.checkpoint.startClassifications.values.map((value) => `    ${JSON.stringify(value)},`).join("\n")}
 ] as const;
 
 /** Configured scope checkpoint descriptor version. @public */
@@ -2155,7 +2225,9 @@ export const SCOPE_COMPATIBILITY_VERSION = ${JSON.stringify(config.scopes.compat
 /** Configured scope command resource bounds. @public */
 export const SCOPE_LIMITS = Object.freeze({
     maxCitedRecords: ${config.scopes.limits.maxCitedRecords},
+    maxContributions: ${config.scopes.limits.maxContributions},
     maxDataCanonicalBytes: ${config.scopes.limits.maxDataCanonicalBytes},
+    maxDiscardScopes: ${config.scopes.limits.maxDiscardScopes},
     maxResources: ${config.scopes.limits.maxResources},
 } as const);
 `;

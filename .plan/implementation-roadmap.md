@@ -360,8 +360,19 @@ and dependency-ordered implementation slices. Task 2 (#129) implements slice A,
 records, per-resource authority attenuation, scope-local writer exclusivity, and record-derived
 inspection. Task 3 (#130) implements slice B,
 [reference-copy scope fork and restart recovery](../docs/scope-fork.md), with coupled checkpoint
-descriptors for one bound resource. Merge, discard, optimized carriers, scheduling, full laws, and
-benchmarks remain open; no L2 claim is implemented.
+descriptors for one bound resource. Task 4 (#131) implements slice C,
+[consume-once merge and discard](../docs/scope-merge-discard.md): three-way world plans with overlap
+refusal, single-winner reservations, verified parent-managed publication, exact selected-history
+contributions, subtree discard preserving the current parent, and retained-identity cleanup.
+Task 5 (#137) adds the read-only [scope vocabulary mapping](../docs/scope-vocabulary.md), and Task 6 (#138) adds
+[scope scheduling and recovery classification](../docs/scope-scheduling.md). Task 8 (#140) adds
+the seeded [scope algebra law suite](../docs/scope-laws.md) against a reference model, and
+checkpoint [start classification](../docs/scope-fork.md#start-classification) proves how each
+branch started. Task 7 (#139) adds [clone and Linux overlay carriers](../docs/optimized-carriers.md)
+that pass the shared conformance suite and the law suite, with storage scaling by changed data.
+Task 9 (#141) records the [Phase 6 exit audit](./phase-6-exit-audit.md): every exit criterion has
+verified evidence and L2 substrate parity is reached for the recorded hosts. Coordinated
+multi-resource world checkpoints move to Phase 8.
 
 Work:
 

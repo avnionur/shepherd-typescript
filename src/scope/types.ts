@@ -3,12 +3,19 @@ import type {
     SCOPE_AUTHORITY_ATOMS,
     SCOPE_CHECKPOINT_CONSTITUENT_KINDS,
     SCOPE_CHECKPOINT_EVIDENCE_STATUSES,
+    SCOPE_CHECKPOINT_START_CLASSIFICATIONS,
     SCOPE_COMMAND_KINDS,
+    SCOPE_DISCARD_PHASES,
     SCOPE_EVIDENCE_KINDS,
     SCOPE_FORK_PHASES,
     SCOPE_KINDS,
+    SCOPE_MERGE_PHASES,
+    SCOPE_RECOVERY_CLASSIFICATIONS,
+    SCOPE_RECOVERY_RESUME_KINDS,
     SCOPE_RESOURCE_KINDS,
     SCOPE_STATES,
+    SCOPE_VOCABULARY_STATUSES,
+    SCOPE_VOCABULARY_TERMS,
     SCOPE_WORLD_CAPABILITIES,
 } from "../protocol/values.generated.ts";
 import type { RecordId } from "../record/types.ts";
@@ -22,11 +29,17 @@ export type ScopeKind = (typeof SCOPE_KINDS)[number];
 /** Configured branch-lifecycle state of one scope. */
 export type ScopeState = (typeof SCOPE_STATES)[number];
 
-/** Configured scope command kind: root registration, child registration, or emission. */
+/** Configured scope command kind: root or child registration, emission, fork, merge, or discard. */
 export type ScopeCommandKind = (typeof SCOPE_COMMAND_KINDS)[number];
 
 /** Configured scope fork journal phase: prepared or completed. */
 export type ScopeForkPhase = (typeof SCOPE_FORK_PHASES)[number];
+
+/** Configured scope merge journal phase: prepared or completed. */
+export type ScopeMergePhase = (typeof SCOPE_MERGE_PHASES)[number];
+
+/** Configured scope discard journal phase: decided or cleaned. */
+export type ScopeDiscardPhase = (typeof SCOPE_DISCARD_PHASES)[number];
 
 /** Configured constituent kind classified by a scope checkpoint descriptor. */
 export type ScopeCheckpointConstituentKind = (typeof SCOPE_CHECKPOINT_CONSTITUENT_KINDS)[number];
@@ -471,6 +484,18 @@ export type ScopeCommandReplay =
           readonly command: (typeof SCOPE_COMMAND_KINDS)[3];
           /** Original completed fork receipt. */
           readonly receipt: ScopeForkReceipt;
+      }
+    | {
+          /** Consume-once merge command. */
+          readonly command: (typeof SCOPE_COMMAND_KINDS)[4];
+          /** Original completed merge receipt. */
+          readonly receipt: ScopeMergeReceipt;
+      }
+    | {
+          /** Subtree discard command. */
+          readonly command: (typeof SCOPE_COMMAND_KINDS)[5];
+          /** Original logical discard receipt with current cleanup progress. */
+          readonly receipt: ScopeDiscardReceipt;
       };
 
 /** One validated scope-local history entry. */
@@ -530,6 +555,41 @@ export type ScopeHistoryEntry =
           readonly owner_ordinal: number;
           /** Retained record identity. */
           readonly record_id: RecordId;
+      }
+    | {
+          /** Merge command identity. */
+          readonly command_id: string;
+          /** Fixed child cut publication, merge reservation, or child seal classification. */
+          readonly kind:
+              | (typeof SCOPE_EVIDENCE_KINDS)[6]
+              | (typeof SCOPE_EVIDENCE_KINDS)[7]
+              | (typeof SCOPE_EVIDENCE_KINDS)[8];
+          /** Retained ordinal. */
+          readonly owner_ordinal: number;
+          /** Retained record identity. */
+          readonly record_id: RecordId;
+      }
+    | {
+          /** Consumed child scope identity. */
+          readonly child_scope_id: string;
+          /** Merge command identity. */
+          readonly command_id: string;
+          /** Parent-side child integration classification. */
+          readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[9];
+          /** Retained ordinal. */
+          readonly owner_ordinal: number;
+          /** Retained record identity. */
+          readonly record_id: RecordId;
+      }
+    | {
+          /** Discard command identity. */
+          readonly command_id: string;
+          /** Discard decision or cleanup classification. */
+          readonly kind: (typeof SCOPE_EVIDENCE_KINDS)[10] | (typeof SCOPE_EVIDENCE_KINDS)[11];
+          /** Retained ordinal. */
+          readonly owner_ordinal: number;
+          /** Retained record identity. */
+          readonly record_id: RecordId;
       };
 
 /** Read-only validated projection of one scope reconstructed from retained records. */
@@ -554,10 +614,384 @@ export type ScopeInspection = {
     readonly registration_record_id: RecordId;
     /** Inspected scope identity. */
     readonly scope_id: string;
-    /** Current branch-lifecycle state. */
+    /**
+     * Effective selected history in deterministic order: this scope's own emissions plus
+     * contributions integrated by completed child merges, each occurrence exactly once.
+     */
+    readonly selected_history: readonly ScopeContribution[];
+    /** Current branch-lifecycle state derived from retained terminal evidence. */
     readonly state: ScopeState;
+    /** Latest retained merge or discard decision on this scope path, or null while open. */
+    readonly terminal: ScopeTerminalInspection | null;
     /** Reference-copy world evidence for a forked scope, otherwise null. */
     readonly world: ScopeWorldInspection | null;
     /** Declared world capability. */
     readonly world_capability: ScopeWorldCapability;
+};
+
+/** One exact selected-history occurrence identified by its original owner, ordinal, and record. */
+export type ScopeContribution = {
+    /** Scope owner path that originally retained the occurrence. */
+    readonly owner_id: string;
+    /** Original retained ordinal on that owner path. */
+    readonly owner_ordinal: number;
+    /** Immutable record identity of the occurrence. */
+    readonly record_id: RecordId;
+};
+
+/** Exact three-way world plan retained by a merge reservation. */
+export type ScopeMergeWorldPlan = {
+    /**
+     * Deterministic protected custody identity that builds the merged revision only after the
+     * reservation wins, or null for an empty child delta.
+     */
+    readonly application_custody_id: string | null;
+    /** Exact workspace binding shared by the child and parent worlds. */
+    readonly binding_id: string;
+    /** Content of the captured child revision. */
+    readonly child_content_id: string;
+    /** Captured child custody revision whose parent is the common origin. */
+    readonly child_revision_id: string;
+    /** Content of the common origin revision. */
+    readonly origin_content_id: string;
+    /** Common origin revision the child world was forked from. */
+    readonly origin_revision_id: string;
+    /** Content of the captured current parent revision. */
+    readonly parent_content_id: string;
+    /** Parent-managed custody receiving the publication. */
+    readonly parent_custody_id: string;
+    /** Captured current parent custody revision. */
+    readonly parent_revision_id: string;
+};
+
+/** Canonical child-side merge reservation retained before any parent publication. */
+export type ScopeMergePreparedRecord = {
+    /** Child head the fixed merge cut is published through. */
+    readonly child_head_record_id: RecordId;
+    /** Globally idempotent merge command identity. */
+    readonly command_id: string;
+    /** Configured scope compatibility namespace. */
+    readonly compatibility_version: string;
+    /** Child selected-history occurrences not already selected by the parent, in order. */
+    readonly contributions: readonly ScopeContribution[];
+    /** Deterministic fixed child cut identity. */
+    readonly merge_cut_id: string;
+    /** Exact parent head the merge integrates against. */
+    readonly parent_head_record_id: RecordId;
+    /** Owning parent scope identity. */
+    readonly parent_scope_id: string;
+    /** Prepared phase. */
+    readonly phase: (typeof SCOPE_MERGE_PHASES)[0];
+    /** Consumed child scope identity. */
+    readonly scope_id: string;
+    /** Configured canonical scope record version. */
+    readonly scope_version: number;
+    /** Exact three-way world plan, or null for a trace-only child. */
+    readonly world: ScopeMergeWorldPlan | null;
+};
+
+/** Canonical child-side merge seal retained with the parent integration. */
+export type ScopeMergeCompletedRecord = {
+    /** Globally idempotent merge command identity. */
+    readonly command_id: string;
+    /** Configured scope compatibility namespace. */
+    readonly compatibility_version: string;
+    /** Owning parent scope identity. */
+    readonly parent_scope_id: string;
+    /** Completed phase. */
+    readonly phase: (typeof SCOPE_MERGE_PHASES)[1];
+    /** Verified parent custody revision captured after publication, or null for a trace-only child. */
+    readonly publication_revision_id: string | null;
+    /** Consumed child scope identity. */
+    readonly scope_id: string;
+    /** Configured canonical scope record version. */
+    readonly scope_version: number;
+};
+
+/** Canonical parent-owned integration of one consumed child. */
+export type ScopeChildMergedRecord = {
+    /** Completed fork record carrying the child's checkpoint, or null for a trace-only child. */
+    readonly child_checkpoint_record_id: RecordId | null;
+    /** Fixed child cut cited exactly once. */
+    readonly child_cut_id: string;
+    /** Consumed child scope identity. */
+    readonly child_scope_id: string;
+    /** Globally idempotent merge command identity. */
+    readonly command_id: string;
+    /** Configured scope compatibility namespace. */
+    readonly compatibility_version: string;
+    /** Selected-history occurrences integrated into the parent, in order. */
+    readonly contributions: readonly ScopeContribution[];
+    /** Merged world content published into parent custody, or null for a trace-only child. */
+    readonly merged_content_id: string | null;
+    /** Owning parent scope identity. */
+    readonly parent_scope_id: string;
+    /** Verified parent custody revision captured after publication, or null. */
+    readonly publication_revision_id: string | null;
+    /** Configured canonical scope record version. */
+    readonly scope_version: number;
+};
+
+/** Canonical logical discard decision retained on each sealed scope path. */
+export type ScopeDiscardDecidedRecord = {
+    /** Globally idempotent discard command identity. */
+    readonly command_id: string;
+    /** Configured scope compatibility namespace. */
+    readonly compatibility_version: string;
+    /** Proven-owned custody identities of the whole subtree on the target record, otherwise empty. */
+    readonly custody_ids: readonly string[];
+    /** Discarded subtree root scope identity. */
+    readonly discard_scope_id: string;
+    /** Owning parent of the discarded subtree root. */
+    readonly parent_scope_id: string;
+    /** Decided phase. */
+    readonly phase: (typeof SCOPE_DISCARD_PHASES)[0];
+    /** Sealed scope whose path retains this record. */
+    readonly scope_id: string;
+    /** Configured canonical scope record version. */
+    readonly scope_version: number;
+    /** Every scope sealed by the decision on the target record, otherwise empty. */
+    readonly sealed_scope_ids: readonly string[];
+};
+
+/** Canonical discard cleanup progress retained on the discarded subtree root. */
+export type ScopeDiscardCleanedRecord = {
+    /** Globally idempotent discard command identity. */
+    readonly command_id: string;
+    /** Configured scope compatibility namespace. */
+    readonly compatibility_version: string;
+    /** Exact custody identities whose cleanup is complete. */
+    readonly custody_ids: readonly string[];
+    /** Cleaned phase. */
+    readonly phase: (typeof SCOPE_DISCARD_PHASES)[1];
+    /** Discarded subtree root scope identity. */
+    readonly scope_id: string;
+    /** Configured canonical scope record version. */
+    readonly scope_version: number;
+};
+
+/** Latest retained terminal decision of one scope. */
+export type ScopeTerminalInspection =
+    | {
+          /** Merge command identity. */
+          readonly command_id: string;
+          /** Merge command classification. */
+          readonly kind: (typeof SCOPE_COMMAND_KINDS)[4];
+          /** Latest retained merge phase; prepared is in flight, not a terminal state. */
+          readonly phase: ScopeMergePhase;
+          /** Latest retained merge journal record. */
+          readonly record_id: RecordId;
+      }
+    | {
+          /** Discard command identity. */
+          readonly command_id: string;
+          /** Discard command classification. */
+          readonly kind: (typeof SCOPE_COMMAND_KINDS)[5];
+          /** Latest retained discard phase; cleanup progress is separate from the decision. */
+          readonly phase: ScopeDiscardPhase;
+          /** Latest retained discard journal record. */
+          readonly record_id: RecordId;
+      };
+
+/** Durable result of one completed consume-once scope merge. */
+export type ScopeMergeReceipt = {
+    /** Parent-side child integration record identity. */
+    readonly child_merged_record_id: RecordId;
+    /** Consumed child scope identity. */
+    readonly child_scope_id: string;
+    /** Globally idempotent merge command identity. */
+    readonly command_id: string;
+    /** Child-side seal record identity. */
+    readonly completed_record_id: RecordId;
+    /** Selected-history occurrences integrated into the parent. */
+    readonly contributions: readonly ScopeContribution[];
+    /** Head of the child path after the seal. */
+    readonly head: ScopeHeadAddress;
+    /** Fixed child cut identity. */
+    readonly merge_cut_id: string;
+    /** Verified merged world content published into parent custody, or null for a trace-only child. */
+    readonly merged_content_id: string | null;
+    /** Head of the parent path after integration. */
+    readonly parent_head: ScopeHeadAddress;
+    /** Owning parent scope identity. */
+    readonly parent_scope_id: string;
+    /** Child-side merge reservation record identity. */
+    readonly prepared_record_id: RecordId;
+    /** Verified parent custody revision captured after publication, or null. */
+    readonly publication_revision_id: string | null;
+    /** Exact three-way world plan, or null for a trace-only child. */
+    readonly world: ScopeMergeWorldPlan | null;
+};
+
+/** Durable result of one logical scope discard with its cleanup progress. */
+export type ScopeDiscardReceipt = {
+    /** Cleanup progress, separate from the logical decision. */
+    readonly cleanup: {
+        /** Cleanup record identity once complete, otherwise null. */
+        readonly cleaned_record_id: RecordId | null;
+        /** Proven-owned custody identities the discard removes. */
+        readonly custody_ids: readonly string[];
+        /** Latest retained cleanup phase: decided while pending, cleaned once complete. */
+        readonly phase: ScopeDiscardPhase;
+    };
+    /** Globally idempotent discard command identity. */
+    readonly command_id: string;
+    /** Decision record identity on the discarded subtree root. */
+    readonly decided_record_id: RecordId;
+    /** Head of the discarded subtree root path after the decision. */
+    readonly head: ScopeHeadAddress;
+    /** Owning parent of the discarded subtree root. */
+    readonly parent_scope_id: string;
+    /** Discarded subtree root scope identity. */
+    readonly scope_id: string;
+    /** Every scope sealed by the decision, subtree root first. */
+    readonly sealed_scope_ids: readonly string[];
+};
+
+/** Configured vocabulary term mapped onto scope evidence. */
+export type ScopeVocabularyTerm = (typeof SCOPE_VOCABULARY_TERMS)[number];
+
+/** Configured vocabulary mapping status: pending while a command is in flight, or completed. */
+export type ScopeVocabularyStatus = (typeof SCOPE_VOCABULARY_STATUSES)[number];
+
+/** One vocabulary term mapped onto exact retained scope command evidence. */
+export type ScopeVocabularyEntry =
+    | {
+          /** Spawned child scope. */
+          readonly child_scope_id: string;
+          /** Child registration or fork command identity. */
+          readonly command_id: string;
+          /** Parent-owned child-registration record. */
+          readonly record_id: RecordId;
+          /** Pending while a reference-copy fork is incomplete, otherwise completed. */
+          readonly status: ScopeVocabularyStatus;
+          /** Spawn: child creation. */
+          readonly term: (typeof SCOPE_VOCABULARY_TERMS)[0];
+          /** World capability the child declared. */
+          readonly world_capability: ScopeWorldCapability;
+      }
+    | {
+          /** Adopted child scope. */
+          readonly child_scope_id: string;
+          /** Merge command identity. */
+          readonly command_id: string;
+          /** Parent integration when completed, or the child reservation while pending. */
+          readonly record_id: RecordId;
+          /** Pending while the merge is reserved, completed once integrated. */
+          readonly status: ScopeVocabularyStatus;
+          /** Adopt: selection of a verified child cut by consume-once merge. */
+          readonly term: (typeof SCOPE_VOCABULARY_TERMS)[1];
+      }
+    | {
+          /** Abandoned child scope. */
+          readonly child_scope_id: string;
+          /** Latest cleanup progress, separate from the abandonment itself. */
+          readonly cleanup_phase: ScopeDiscardPhase;
+          /** Discard command identity. */
+          readonly command_id: string;
+          /** Discard decision retained on the child path. */
+          readonly record_id: RecordId;
+          /** Always completed: the logical decision is retained. */
+          readonly status: ScopeVocabularyStatus;
+          /** Abandon: removal from effective selection by a logical discard decision. */
+          readonly term: (typeof SCOPE_VOCABULARY_TERMS)[2];
+      }
+    | {
+          /** Merge command that made the occurrence parent-visible. */
+          readonly command_id: string;
+          /** Exact published occurrence. */
+          readonly contribution: ScopeContribution;
+          /** Parent integration record carrying the contribution. */
+          readonly record_id: RecordId;
+          /** Always completed: the integration is retained. */
+          readonly status: ScopeVocabularyStatus;
+          /** Publish: parent-visible semantic data selected through a completed merge. */
+          readonly term: (typeof SCOPE_VOCABULARY_TERMS)[3];
+      };
+
+/** Read-only vocabulary mapping of one scope's child lifecycle evidence. */
+export type ScopeVocabularyProjection = {
+    /** Mapped entries: path-ordered spawn, adopt, and publish, then per-child pending adopt and abandon. */
+    readonly entries: readonly ScopeVocabularyEntry[];
+    /** Projected parent scope identity. */
+    readonly scope_id: string;
+    /** Configured vocabulary projection version. */
+    readonly vocabulary_version: number;
+};
+
+/** Configured restart-recovery classification of one live scope. */
+export type ScopeRecoveryClassification = (typeof SCOPE_RECOVERY_CLASSIFICATIONS)[number];
+
+/** Configured recovery action that resumes a scope. */
+export type ScopeRecoveryResumeKind = (typeof SCOPE_RECOVERY_RESUME_KINDS)[number];
+
+/** Closed options for classifying live scopes for recovery. */
+export type InspectScopeRecoveryOptions = {
+    /** Unix time used for deterministic writer lease evaluation; defaults to the current time. */
+    readonly nowMilliseconds?: number;
+};
+
+/** Recovery classification of one live scope with its single recovery owner. */
+export type ScopeRecoveryEntry = {
+    /** Current writer claim evidence, or null when never claimed. */
+    readonly claim: {
+        /** Current claim identity. */
+        readonly claim_id: string;
+        /** Monotonic fencing token. */
+        readonly fencing_token: number;
+        /** Lease expiry in Unix milliseconds. */
+        readonly lease_expires_at: number;
+        /** Whether the holder released the claim. */
+        readonly released: boolean;
+    } | null;
+    /** Configured classification in precedence order. */
+    readonly classification: ScopeRecoveryClassification;
+    /** Owning parent scope, or null for a root. */
+    readonly parent_scope_id: string | null;
+    /** Scope whose writer must resume the scope, or null when nothing needs resuming. */
+    readonly recovery_owner_scope_id: string | null;
+    /** Exact action and retained command identity to resume, or null. */
+    readonly resume: {
+        /** Retained command identity, or null when a new command must be issued. */
+        readonly command_id: string | null;
+        /** Configured resume action. */
+        readonly kind: ScopeRecoveryResumeKind;
+    } | null;
+    /** Classified scope identity. */
+    readonly scope_id: string;
+    /** Branch-lifecycle state derived from retained evidence. */
+    readonly state: ScopeState;
+};
+
+/** Record-derived recovery report over every live scope in one store. */
+export type ScopeRecoveryReport = {
+    /** Lease evaluation time in Unix milliseconds. */
+    readonly evaluated_at: number;
+    /** Every live scope in canonical scope-identity order. */
+    readonly scopes: readonly ScopeRecoveryEntry[];
+};
+
+/** Configured branch start classification proven by a checkpoint. */
+export type ScopeCheckpointStartClassification =
+    (typeof SCOPE_CHECKPOINT_START_CLASSIFICATIONS)[number];
+
+/** Evidence-derived classification of how a branch started and what it can restore. */
+export type ScopeCheckpointClassification = {
+    /** Constituent kinds that are not applicable to this branch. */
+    readonly not_applicable: readonly ScopeCheckpointConstituentKind[];
+    /** Constituent kinds reconstructed rather than captured. */
+    readonly reconstructive: readonly ScopeCheckpointConstituentKind[];
+    /** Whether every applicable constituent is verified, so the start state is fully restorable. */
+    readonly restorable: boolean;
+    /** Atomic snapshot, quiescent verified copy, or reconstructed start. */
+    readonly start: ScopeCheckpointStartClassification;
+    /** Unavailable constituents with their retained reasons. */
+    readonly unavailable: readonly {
+        /** Unavailable constituent kind. */
+        readonly kind: ScopeCheckpointConstituentKind;
+        /** Retained reason the constituent cannot be proven or restored. */
+        readonly reason: string;
+    }[];
+    /** Constituent kinds proven by retained receipts. */
+    readonly verified: readonly ScopeCheckpointConstituentKind[];
 };

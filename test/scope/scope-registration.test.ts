@@ -616,27 +616,44 @@ test("the scopes facade exposes the complete runtime surface", () => {
         "SCOPE_AUTHORITY_ATOMS",
         "SCOPE_CHECKPOINT_CONSTITUENT_KINDS",
         "SCOPE_CHECKPOINT_EVIDENCE_STATUSES",
+        "SCOPE_CHECKPOINT_START_CLASSIFICATIONS",
         "SCOPE_CHECKPOINT_VERSION",
         "SCOPE_COMMAND_KINDS",
         "SCOPE_COMPATIBILITY_VERSION",
+        "SCOPE_DISCARD_PHASES",
         "SCOPE_EVIDENCE_KINDS",
         "SCOPE_FORK_PHASES",
         "SCOPE_KINDS",
         "SCOPE_LIMITS",
+        "SCOPE_MERGE_PHASES",
         "SCOPE_RECORD_VERSION",
+        "SCOPE_RECOVERY_CLASSIFICATIONS",
+        "SCOPE_RECOVERY_RESUME_KINDS",
         "SCOPE_RESOURCE_KINDS",
+        "SCOPE_SCHEDULING_DECISIONS",
+        "SCOPE_SCHEDULING_LIMITS",
+        "SCOPE_SCHEDULING_OUTCOMES",
         "SCOPE_STATES",
+        "SCOPE_VOCABULARY_STATUSES",
+        "SCOPE_VOCABULARY_TERMS",
+        "SCOPE_VOCABULARY_VERSION",
         "SCOPE_WORLD_CAPABILITIES",
         "ScopeAuthorityError",
         "ScopeEvidenceError",
         "ScopeHeadConflictError",
+        "ScopeMergeConflictError",
+        "ScopeQuiescenceError",
+        "ScopeTerminalConflictError",
         "ScopeWriterConflictError",
         "ScopeWriterFencedError",
         "TraceStoreError",
         "claimScopeWriter",
         "claimScopeWriters",
+        "classifyScopeCheckpoint",
         "emitScopeRecord",
         "inspectScope",
+        "inspectScopeRecovery",
+        "projectScopeVocabulary",
         "readScopeCommandReceipt",
         "registerChildScope",
         "registerRootScope",
@@ -649,12 +666,18 @@ test("the scopes facade exposes the complete runtime surface", () => {
         "register_child",
         "emit",
         "fork",
+        "merge",
+        "discard",
     ]);
     assert.deepEqual(scopes.SCOPE_FORK_PHASES, ["prepared", "completed"]);
+    assert.deepEqual(scopes.SCOPE_MERGE_PHASES, ["prepared", "completed"]);
+    assert.deepEqual(scopes.SCOPE_DISCARD_PHASES, ["decided", "cleaned"]);
     assert.deepEqual(scopes.SCOPE_RESOURCE_KINDS, ["repository_binding", "workspace_binding"]);
     assert.deepEqual(scopes.SCOPE_LIMITS, {
         maxCitedRecords: 64,
+        maxContributions: 1_024,
         maxDataCanonicalBytes: 65_536,
+        maxDiscardScopes: 256,
         maxResources: 64,
     });
     assert.equal(new scopes.ScopeAuthorityError().code, "SCOPE_AUTHORITY_REFUSED");
@@ -665,4 +688,6 @@ test("the scopes facade exposes the complete runtime surface", () => {
         "SCOPE_WRITER_CONFLICT",
     );
     assert.equal(new scopes.ScopeWriterFencedError("scope", "claim").code, "SCOPE_WRITER_FENCED");
+    assert.equal(new scopes.ScopeQuiescenceError("scope", "detail").code, "SCOPE_NOT_QUIESCENT");
+    assert.equal(new scopes.ScopeTerminalConflictError("scope").code, "SCOPE_TERMINAL_CONFLICT");
 });

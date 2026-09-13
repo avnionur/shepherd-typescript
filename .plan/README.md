@@ -127,7 +127,9 @@ record and public API must declare a protocol/compatibility version.
 ## Planning documents
 
 - [Durable isolated-scope contract proposal](./scope-ownership-contract.md) — Phase 6 ownership,
-  authority, primitive/recovery boundaries and implementation slices; not implemented.
+  authority, primitive/recovery boundaries and implementation slices; implemented through #131.
+- [Phase 6 exit audit](./phase-6-exit-audit.md) — evidence map for every Phase 6 work item and exit
+  criterion, with the multi-resource checkpoint reassignment to Phase 8.
 
 - [Upstream compatibility baseline](./upstream-baseline.md) — exact Git revisions, evidence scope,
   compatibility boundaries, and drift procedure.
@@ -249,6 +251,6 @@ The project is complete only when:
 
 ## Immediate next step
 
-Phase 6 slices A (#129, 2.1.0) and B (#130, 2.2.0) are delivered. Continue with #131,
-consume-once scope merge and discard, consuming the fork journal and checkpoint with
-production-seam acceptance tests.
+Phase 6 is complete for its documented scope; see the [exit audit](./phase-6-exit-audit.md).
+Phase 7 (live observation and interception, epic #20) is the next roadmap phase; its first slice
+should define durable cursor subscription semantics over the record graph before any interceptor.

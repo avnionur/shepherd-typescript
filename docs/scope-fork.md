@@ -20,8 +20,9 @@ the fork types from [`src/facades/scopes.ts`](../src/facades/scopes.ts), and bot
 bound resource, published by the existing [reference copy carrier](./reference-copy-carrier.md).
 It builds on [trace-only scope registration](./scope-registration.md): the child is registered,
 fenced, inspected, and replayed through the same records and commands. The copy is a quiescent
-**verified copy** of an immutable origin revision, not a kernel-atomic snapshot. No merge, discard,
-multi-resource fork, optimized carrier, scheduling, or provider or process restoration is added.
+**verified copy** of an immutable origin revision, not a kernel-atomic snapshot. No multi-resource
+fork, optimized carrier, scheduling, or provider or process restoration is added. A forked child
+ends through [consume-once merge or discard](./scope-merge-discard.md).
 
 Scope protocol v2 appends the `reference_copy` world capability, the `fork` command kind, the
 `fork_prepared` and `fork_completed` history kinds, the `workspace_binding` resource kind, the fork
@@ -89,6 +90,20 @@ reconstructive or not-applicable constituents carry neither. Decoders refuse reo
 unknown statuses, and missing receipts or reasons. This slice produces no reconstructive
 constituent, and nothing here claims provider, process, or atomic-snapshot restoration.
 
+## Start classification
+
+`classifyScopeCheckpoint(checkpoint)` proves from the retained descriptor alone how a branch
+started and whether that start is restorable. Scope protocol v6 configures three start
+classifications (`atomic_snapshot`, `quiescent_verified_copy`, and `reconstructed`) and maps each
+supported carrier capture kind to one of them. Any reconstructive constituent classifies the start
+as `reconstructed`. Otherwise the capture kind's configured classification applies. The reference
+copy carrier, and every optimized carrier whose revisions keep the same capture kind, map to
+`quiescent_verified_copy`: nothing in this phase is reported as an atomic snapshot. The result lists
+verified, reconstructive, not-applicable, and unavailable constituents with their reasons.
+`restorable` is true only when no constituent is reconstructive or unavailable. Because
+irreversible external effects are always unavailable for copies, no current fork claims a fully
+restorable start.
+
 ## Replay and restart recovery
 
 Every step is idempotent under the command identity. Retrying the same request:
@@ -150,6 +165,7 @@ custody lives under the workspace control root and is not part of a trace archiv
 | Deterministic all-or-nothing multi-scope claims | `scope-writer.test.ts` |
 | Malformed journal and checkpoint evidence, and concurrent completion replay | `scope-fork-codec.test.ts` |
 | Generated fork schema and scope v2 compatibility with v1 | `scope-schema.test.ts` |
+| Start classification of verified-copy, reconstructed, and fully verified checkpoints | `scope-fork-codec.test.ts` |
 
-Hosted execution, Windows and Linux runs, optimized carriers, merge, discard, and coordinated
-multi-resource forks are not claimed.
+Hosted execution, Windows and Linux runs, optimized carriers, and coordinated multi-resource forks
+are not claimed.
