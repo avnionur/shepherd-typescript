@@ -1,10 +1,10 @@
 # Implementation Tracker
 
-Last updated: 2026-09-13
+Last updated: 2026-09-14
 
-Current version: `2.7.1`
+Current version: `2.10.1`
 
-Current level: L2 substrate parity — Phases 4–6 complete for the documented scope
+Current level: L2 substrate parity — Phases 4–7 complete for the documented scope; L3 in progress
 
 ## Current position
 
@@ -411,6 +411,17 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 - [x] Complete Phase 5 Task 12 (#98) packaged TypeScript retained coding with configuration-owned
   scenario data, inferred task inputs, exact offline capture/inspection/selection, read-only reopen
   evidence, manifest-driven installed typechecking/execution, and existing-directory refusal.
+- [x] Complete Phase 7 Task 1 (#149) live supervision contract with separate observer/interceptor
+  roles, cursor semantics, the dispatch record sequence, policies, leases, and failure table.
+- [x] Complete Phase 7 Task 2 (#150) durable and ephemeral cursor subscriptions with canonical
+  cursors, backpressure, overflow policy, monotonic acknowledgement, and store schema v10.
+- [x] Complete Phase 7 Task 3 (#151) supervised effect interception with ordered decisions, timeout
+  policy, admission before materialization, fenced decision leases, recovery classification, and
+  store schema v11.
+- [x] Complete Phase 7 Task 4 (#152) approval gates, cited context injection, and supervisor
+  worker control.
+- [x] Complete Phase 7 Task 5 (#153) passive-observation and supervisor-failure conformance and
+  the Phase 7 exit audit.
 
 Phase 6 slice A now registers content-addressed root and child scopes as canonical trace records
 with exact parent origin cuts, retains per-resource attenuated ceiling/effective authority,
@@ -432,7 +443,34 @@ re-addition, and subtree discards seal every open descendant while the parent ke
 state. Cleanup removes only custody named by retained fork journals, as progress separate from
 the logical decision, with receipt-based recovery across every boundary.
 
+Phase 7 now separates observers from interceptors. Durable and ephemeral cursor subscriptions read
+committed records of exact owner paths through a canonical owner-ordinal cursor, apply pull-driven
+backpressure with a declared overflow policy, and retain monotonic acknowledgements outside the
+record graph so reconnects neither lose nor duplicate acknowledged records. Supervised effect
+dispatch retains ordered allow, deny, replace, and pause decisions, declared timeout policy with
+irreversible tiers failing closed, an irreversible approval frontier, admission before
+materialization, and a terminal resolution under fenced renewable decision leases. Approval
+verdicts race fail-closed expiry with one winner, context injections cite retained records as causal
+parents, and supervisors reach fenced durable-run control through `./supervision`. Passive
+observation leaves exported traces byte-identical.
+
 ## Verification required for this slice
+
+Phase 7 Tasks 1–5 (#149–#153): the [live supervision contract](./live-supervision-contract.md),
+[trace subscriptions](../docs/trace-subscriptions.md) (store schema v10),
+[supervised effect interception](../docs/supervised-effects.md) (store schema v11), and
+[approval, context, and worker control](../docs/supervision-control.md) are delivered with the
+[exit audit](./phase-7-exit-audit.md). Focused public-seam tests cover subscription replay, live
+delivery, acknowledgement conflicts, durable reconnect, overflow, abort, read-only stores, and
+corrupt bookkeeping; canonical interceptor order and replay, denial, strengthening replacement,
+failure-policy replacement, pause approval and rejection, frontier expiry, timeout and failure
+policy, cancellation while deciding and waiting, handler failure, lease conflict and takeover,
+lease renewal and loss, uncertain materialization, imported evidence, option validation, moved
+heads, integrity mismatches, protocol-violating dispatch paths, context citations, schema-nine
+upgrade, generated schemas, and configuration drift. Process tests kill a dispatcher while an
+interceptor owns the lease, a dispatcher after admission, and a subscriber after acknowledgement.
+The passive-observation test compares exported archives byte for byte. Fresh `pnpm sync:version`,
+`CI=true pnpm verify`, and `pnpm build:desktop` pass with zero skips and 100% configured coverage.
 
 Phase 6 Task 9 (#141): the [exit audit](./phase-6-exit-audit.md) maps all eleven work items and
 seven exit criteria to delivered issues, entry points, docs, and tests, reassigns coordinated
@@ -607,11 +645,10 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Phase 6 Tasks 1-3 (#127, #129, #130) delivered the scope contract, trace-only registration and
-emission, and reference-copy fork with restart recovery. The next slice is #131, consume-once scope
-merge and discard with parent-managed publication and subtree cleanup. It must consume the fork
-journal and checkpoint and preserve the current parent. No merge, discard, or L2 claim is
-implemented yet.
+Phases 6 and 7 are complete for their documented scope. The next roadmap phase is Phase 8 (#21,
+coupled checkpoints, rewind, and replay). Its first slice should define provider-session and
+process checkpoint adapter contracts, including the coordinated multi-resource world checkpoints
+reassigned from Phase 6, before any rewind or suffix replay.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration

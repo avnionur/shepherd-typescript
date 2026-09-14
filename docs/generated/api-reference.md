@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.7.1
+Package: `@avnionur/shepherd-typescript` 2.10.1
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 649.
+Exported symbols: 715.
 
 ### `AppendBatchDraft`
 
@@ -672,6 +672,28 @@ export type DiscardedRetainedWorldSettlement = {
     readonly request_id: string;
     readonly settlement_version: typeof RETAINED_WORLD_SETTLEMENT_VERSION;
     readonly state: (typeof RETAINED_WORLD_SETTLEMENT_STATES)[3];
+};
+```
+
+### `DispatchSupervisedEffectOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by dispatchSupervisedEffect.
+
+Signature:
+
+```ts
+export type DispatchSupervisedEffectOptions = {
+    readonly approvalTimeoutMilliseconds?: number;
+    readonly citedRecordIds?: readonly RecordId[];
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly handlers: EffectHandlerStack;
+    readonly intent: EffectIntent;
+    readonly interceptors?: readonly SupervisionInterceptor[];
+    readonly signal?: AbortSignal;
 };
 ```
 
@@ -2638,6 +2660,24 @@ export type InferTaskSchemaShape<S extends TaskSchemaShape> = {
 };
 ```
 
+### `InjectSupervisionContextOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by injectSupervisionContext.
+
+Signature:
+
+```ts
+export type InjectSupervisionContextOptions = {
+    readonly channel: string;
+    readonly citedRecordIds: readonly RecordId[];
+    readonly commandId: string;
+    readonly data: RecordBody;
+    readonly supervisorId: string;
+};
+```
+
 ### `InspectRetainedWorldApplicationConflictsOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -2664,6 +2704,20 @@ Signature:
 ```ts
 export type InspectScopeRecoveryOptions = {
     readonly nowMilliseconds?: number;
+};
+```
+
+### `InspectSupervisedDispatchOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by inspectSupervisedDispatch.
+
+Signature:
+
+```ts
+export type InspectSupervisedDispatchOptions = {
+    readonly dispatchId: string;
 };
 ```
 
@@ -3528,6 +3582,26 @@ export declare const ORPHAN_REPAIR_VERSIONS: {
     readonly diagnosis: 1;
     readonly operation: 1;
     readonly receipt: 1;
+};
+```
+
+### `OpenTraceSubscriptionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by openTraceSubscription.
+
+Signature:
+
+```ts
+export type OpenTraceSubscriptionOptions = {
+    readonly bufferCapacity?: number;
+    readonly overflow?: TraceSubscriptionOverflow;
+    readonly owners: readonly string[];
+    readonly pollIntervalMilliseconds?: number;
+    readonly signal?: AbortSignal;
+    readonly start?: TraceSubscriptionCursor | TraceSubscriptionStartPosition;
+    readonly subscriptionId?: string;
 };
 ```
 
@@ -4678,6 +4752,21 @@ Signature:
 export declare const ROOT_WITNESS_ID: string;
 ```
 
+### `ReadSupervisionContextOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by readSupervisionContext.
+
+Signature:
+
+```ts
+export type ReadSupervisionContextOptions = {
+    readonly afterOwnerOrdinal?: number;
+    readonly channel: string;
+};
+```
+
 ### `RecordBody`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -5144,6 +5233,25 @@ Signature:
 export type RepositoryTaskGrantDefinition = {
     readonly binding: string;
     readonly profile: RepositoryGrantProfile;
+};
+```
+
+### `ResolveSupervisedApprovalOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by resolveSupervisedApproval.
+
+Signature:
+
+```ts
+export type ResolveSupervisedApprovalOptions = {
+    readonly approverId: string;
+    readonly commandId: string;
+    readonly dispatchId: string;
+    readonly reason?: string;
+    readonly requestRecordId: RecordId;
+    readonly verdict: "approved" | "rejected";
 };
 ```
 
@@ -6851,7 +6959,8 @@ Throws:
 
 Throws:
 
-- {TraceStoreError} If witnesses are missing or the store is closed.
+- {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
+owner path reserved for supervised dispatches or context channels.
 
 Throws:
 
@@ -7720,6 +7829,285 @@ export type SQLiteTraceStoreOptions = {
     readonly blobDirectory?: string;
     readonly readOnly?: boolean;
 };
+```
+
+### `SUPERVISION_APPROVAL_GATES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured approval gates ordered interceptor pause then irreversible frontier.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_APPROVAL_GATES: readonly [
+    "interceptor_pause",
+    "irreversible_frontier"
+];
+```
+
+### `SUPERVISION_APPROVAL_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured approval wait bounds.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_APPROVAL_LIMITS: Readonly<{
+    readonly defaultWaitMilliseconds: 300000;
+    readonly maxWaitMilliseconds: 3600000;
+    readonly pollIntervalMilliseconds: 10;
+}>;
+```
+
+### `SUPERVISION_APPROVAL_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured approval record phases ordered requested then resolved.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_APPROVAL_PHASES: readonly [
+    "requested",
+    "resolved"
+];
+```
+
+### `SUPERVISION_APPROVAL_REQUIRED_TIERS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured reversibility tiers that require approval before admission.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_APPROVAL_REQUIRED_TIERS: readonly [
+    "irreversible"
+];
+```
+
+### `SUPERVISION_APPROVAL_VERDICTS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured approval verdicts ordered approved, rejected, expired.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_APPROVAL_VERDICTS: readonly [
+    "approved",
+    "rejected",
+    "expired"
+];
+```
+
+### `SUPERVISION_COMPATIBILITY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured supervision evidence compatibility namespace.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_COMPATIBILITY_VERSION: "shepherd.supervision.v1";
+```
+
+### `SUPERVISION_DECISIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured interception decisions ordered allow, deny, replace, pause.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_DECISIONS: readonly [
+    "allow",
+    "deny",
+    "replace",
+    "pause"
+];
+```
+
+### `SUPERVISION_DECISION_SOURCES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured decision sources ordered interceptor, timeout, failure.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_DECISION_SOURCES: readonly [
+    "interceptor",
+    "timeout",
+    "failure"
+];
+```
+
+### `SUPERVISION_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured terminal dispositions ordered materialized, materialization failed, denied, rejected, cancelled.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_DISPOSITIONS: readonly [
+    "materialized",
+    "materialization_failed",
+    "denied",
+    "rejected",
+    "cancelled"
+];
+```
+
+### `SUPERVISION_FAIL_OPEN_FORBIDDEN_TIERS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured reversibility tiers for which fail-open is replaced by fail-closed.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_FAIL_OPEN_FORBIDDEN_TIERS: readonly [
+    "irreversible"
+];
+```
+
+### `SUPERVISION_INTERCEPTION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured interception bounds and decision lease timing.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_INTERCEPTION_LIMITS: Readonly<{
+    readonly decisionLeaseMilliseconds: 30000;
+    readonly leaseRenewalMilliseconds: 10000;
+    readonly maxInterceptors: 16;
+    readonly maxTimeoutMilliseconds: 3600000;
+}>;
+```
+
+### `SUPERVISION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured supervision evidence bounds.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_LIMITS: Readonly<{
+    readonly maxCitedRecords: 64;
+    readonly maxDataCanonicalBytes: 65536;
+    readonly maxReasonBytes: 4096;
+}>;
+```
+
+### `SUPERVISION_RECORD_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured canonical supervision record version.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_RECORD_VERSION: 1;
+```
+
+### `SUPERVISION_RECOVERY_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured recovery classifications ordered resolved, materialization uncertain, resolution, approval, decision pending.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_RECOVERY_CLASSIFICATIONS: readonly [
+    "resolved",
+    "materialization_uncertain",
+    "resolution_pending",
+    "approval_pending",
+    "decision_pending"
+];
+```
+
+### `SUPERVISION_SUBSCRIPTION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured subscription cursor version and bounds.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_SUBSCRIPTION_LIMITS: Readonly<{
+    readonly cursorVersion: 1;
+    readonly defaultBufferCapacity: 64;
+    readonly maxBufferCapacity: 4096;
+    readonly maxOwners: 64;
+    readonly pollIntervalMilliseconds: 10;
+}>;
+```
+
+### `SUPERVISION_SUBSCRIPTION_OVERFLOW_POLICIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured subscription overflow policies ordered backpressure then fail.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_SUBSCRIPTION_OVERFLOW_POLICIES: readonly [
+    "backpressure",
+    "fail"
+];
+```
+
+### `SUPERVISION_SUBSCRIPTION_START_POSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured subscription start positions ordered origin then head.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_SUBSCRIPTION_START_POSITIONS: readonly [
+    "origin",
+    "head"
+];
+```
+
+### `SUPERVISION_TIMEOUT_POLICIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured timeout policies ordered fail open then fail closed.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_TIMEOUT_POLICIES: readonly [
+    "fail_open",
+    "fail_closed"
+];
 ```
 
 ### `ScopeAuthority`
@@ -9569,6 +9957,702 @@ export type StrongProofEvidence = {
 };
 ```
 
+### `SupervisedApprovalReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Receipt returned by resolveSupervisedApproval.
+
+Signature:
+
+```ts
+export type SupervisedApprovalReceipt = {
+    readonly command_id: string;
+    readonly dispatch_id: string;
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+    readonly request_record_id: RecordId;
+    readonly verdict: "approved" | "rejected";
+};
+```
+
+### `SupervisedDispatchInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated read-only view of one supervised dispatch.
+
+Signature:
+
+```ts
+export type SupervisedDispatchInspection = {
+    readonly admission_record_id: RecordId | null;
+    readonly approval_timeout_milliseconds: number;
+    readonly approvals: readonly SupervisionApprovalInspection[];
+    readonly cited_record_ids: readonly RecordId[];
+    readonly command_id: string;
+    readonly decisions: readonly SupervisionDecisionInspection[];
+    readonly dispatch_id: string;
+    readonly dispatch_record_id: RecordId;
+    readonly effective_intent: EffectIntent;
+    readonly head: {
+        readonly owner_ordinal: number;
+        readonly record_id: RecordId;
+    };
+    readonly intent: EffectIntent;
+    readonly interceptors: readonly SupervisionInterceptorDeclaration[];
+    readonly lease: SupervisionLeaseInspection | null;
+    readonly pending_approval: SupervisionApprovalInspection | null;
+    readonly recovery: SupervisionRecoveryClassification;
+    readonly resolution: SupervisionResolutionInspection | null;
+};
+```
+
+### `SupervisionApprovalConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an approval verdict names no current pending approval request.
+
+Signature:
+
+```ts
+export declare class SupervisionApprovalConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly dispatch_id: string;
+    constructor(dispatchId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned approval-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `dispatch_id`
+
+Dispatch the verdict targeted.
+
+```ts
+readonly dispatch_id: string;
+```
+
+#### `constructor`
+
+Creates an approval-conflict failure.
+
+```ts
+constructor(dispatchId: string);
+```
+
+Parameter:
+
+- dispatchId - Dispatch whose pending request does not match.
+
+### `SupervisionApprovalGate`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured approval gate.
+
+Signature:
+
+```ts
+export type SupervisionApprovalGate = (typeof SUPERVISION_APPROVAL_GATES)[number];
+```
+
+### `SupervisionApprovalInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained approval request and its verdict.
+
+Signature:
+
+```ts
+export type SupervisionApprovalInspection = {
+    readonly gate: SupervisionApprovalGate;
+    readonly intent_ref: string;
+    readonly owner_ordinal: number;
+    readonly position: number | null;
+    readonly reason: string | null;
+    readonly request_record_id: RecordId;
+    readonly verdict: SupervisionApprovalVerdictInspection | null;
+};
+```
+
+### `SupervisionApprovalVerdict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured approval verdict.
+
+Signature:
+
+```ts
+export type SupervisionApprovalVerdict = (typeof SUPERVISION_APPROVAL_VERDICTS)[number];
+```
+
+### `SupervisionApprovalVerdictInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained approval verdict.
+
+Signature:
+
+```ts
+export type SupervisionApprovalVerdictInspection = {
+    readonly approver_id: string | null;
+    readonly command_id: string | null;
+    readonly owner_ordinal: number;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly verdict: SupervisionApprovalVerdict;
+};
+```
+
+### `SupervisionContextInjection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained context injection.
+
+Signature:
+
+```ts
+export type SupervisionContextInjection = {
+    readonly channel_id: string;
+    readonly cited_record_ids: readonly RecordId[];
+    readonly command_id: string;
+    readonly data: RecordBody;
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+    readonly supervisor_id: string;
+};
+```
+
+### `SupervisionCursorConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a subscription cursor regresses, passes delivered records, or names different owners.
+
+Signature:
+
+```ts
+export declare class SupervisionCursorConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly subscription_id: string | null;
+    constructor(subscriptionId: string | null, detail: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned cursor-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `subscription_id`
+
+Durable subscription identity, or null for an ephemeral subscription.
+
+```ts
+readonly subscription_id: string | null;
+```
+
+#### `constructor`
+
+Creates a cursor-conflict failure.
+
+```ts
+constructor(subscriptionId: string | null, detail: string);
+```
+
+Parameter:
+
+- subscriptionId - Durable subscription identity, or null when ephemeral.
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+### `SupervisionDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured interception decision.
+
+Signature:
+
+```ts
+export type SupervisionDecision = (typeof SUPERVISION_DECISIONS)[number];
+```
+
+### `SupervisionDecisionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained interception decision.
+
+Signature:
+
+```ts
+export type SupervisionDecisionInspection = {
+    readonly applied_policy: SupervisionTimeoutPolicy | null;
+    readonly decision: SupervisionDecision;
+    readonly intent_ref: string;
+    readonly interceptor_id: string;
+    readonly owner_ordinal: number;
+    readonly position: number;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly replacement: EffectIntent | null;
+    readonly source: SupervisionDecisionSource;
+};
+```
+
+### `SupervisionDecisionSource`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured source of a retained decision.
+
+Signature:
+
+```ts
+export type SupervisionDecisionSource = (typeof SUPERVISION_DECISION_SOURCES)[number];
+```
+
+### `SupervisionDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured terminal dispatch disposition.
+
+Signature:
+
+```ts
+export type SupervisionDisposition = (typeof SUPERVISION_DISPOSITIONS)[number];
+```
+
+### `SupervisionEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or cited supervision evidence is absent, malformed, or inconsistent.
+
+Signature:
+
+```ts
+export declare class SupervisionEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `SupervisionInterceptionRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Frozen request presented to one interceptor.
+
+Signature:
+
+```ts
+export type SupervisionInterceptionRequest = {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly decisions: readonly SupervisionDecisionInspection[];
+    readonly dispatch_id: string;
+    readonly intent: EffectIntent;
+    readonly interceptor_id: string;
+    readonly original_intent: EffectIntent;
+    readonly position: number;
+    readonly signal: AbortSignal;
+};
+```
+
+### `SupervisionInterceptor`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One ordered interceptor supplied to a dispatch.
+
+Signature:
+
+```ts
+export type SupervisionInterceptor = {
+    readonly decide: (request: SupervisionInterceptionRequest) => Promise<SupervisionInterceptorResult> | SupervisionInterceptorResult;
+    readonly interceptorId: string;
+    readonly priority: number;
+    readonly timeoutMilliseconds: number;
+    readonly timeoutPolicy: SupervisionTimeoutPolicy;
+};
+```
+
+### `SupervisionInterceptorDeclaration`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical interceptor declaration retained in dispatch identity.
+
+Signature:
+
+```ts
+export type SupervisionInterceptorDeclaration = {
+    readonly interceptor_id: string;
+    readonly priority: number;
+    readonly timeout_milliseconds: number;
+    readonly timeout_policy: SupervisionTimeoutPolicy;
+};
+```
+
+### `SupervisionInterceptorResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Decision returned by an interceptor.
+
+Signature:
+
+```ts
+export type SupervisionInterceptorResult = {
+    readonly decision: "allow";
+} | {
+    readonly decision: "deny";
+    readonly reason: string;
+} | {
+    readonly decision: "pause";
+    readonly reason: string;
+} | {
+    readonly decision: "replace";
+    readonly payload: SemanticValue;
+    readonly reason: string;
+    readonly reversibility?: EffectReversibility;
+};
+```
+
+### `SupervisionLeaseConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when another unexpired dispatcher holds a supervised dispatch decision lease.
+
+Signature:
+
+```ts
+export declare class SupervisionLeaseConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly dispatch_id: string;
+    constructor(dispatchId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned lease-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Claim identity currently holding the lease.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `dispatch_id`
+
+Dispatch whose lease is held.
+
+```ts
+readonly dispatch_id: string;
+```
+
+#### `constructor`
+
+Creates a held-lease failure.
+
+```ts
+constructor(dispatchId: string, claimId: string);
+```
+
+Parameter:
+
+- dispatchId - Dispatch whose lease is held.
+
+Parameter:
+
+- claimId - Current holder.
+
+### `SupervisionLeaseFencedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a dispatcher's decision lease is released, expired, superseded, or unknown.
+
+Signature:
+
+```ts
+export declare class SupervisionLeaseFencedError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly dispatch_id: string;
+    constructor(dispatchId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned fenced-lease code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Rejected claim identity.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `dispatch_id`
+
+Dispatch whose append was fenced.
+
+```ts
+readonly dispatch_id: string;
+```
+
+#### `constructor`
+
+Creates a fenced-lease failure.
+
+```ts
+constructor(dispatchId: string, claimId: string);
+```
+
+Parameter:
+
+- dispatchId - Dispatch whose command was rejected.
+
+Parameter:
+
+- claimId - Rejected claim identity.
+
+### `SupervisionLeaseInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Live decision lease evidence of a dispatch registered in this store.
+
+Signature:
+
+```ts
+export type SupervisionLeaseInspection = {
+    readonly claim_id: string;
+    readonly fencing_token: number;
+    readonly lease_expires_at: number;
+    readonly released: boolean;
+};
+```
+
+### `SupervisionMaterializationUncertainError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a supervised effect retains admission without resolution.
+
+The handler may have changed the world. The runtime neither retries it nor fabricates an outcome.
+
+Signature:
+
+```ts
+export declare class SupervisionMaterializationUncertainError extends TraceStoreError {
+    readonly code: string;
+    readonly admission_record_id: string;
+    readonly dispatch_id: string;
+    constructor(dispatchId: string, admissionRecordId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned uncertain-materialization code.
+
+```ts
+readonly code: string;
+```
+
+#### `admission_record_id`
+
+Retained admission record.
+
+```ts
+readonly admission_record_id: string;
+```
+
+#### `dispatch_id`
+
+Dispatch requiring manual recovery.
+
+```ts
+readonly dispatch_id: string;
+```
+
+#### `constructor`
+
+Creates an uncertain-materialization failure.
+
+```ts
+constructor(dispatchId: string, admissionRecordId: string);
+```
+
+Parameter:
+
+- dispatchId - Dispatch requiring manual recovery.
+
+Parameter:
+
+- admissionRecordId - Retained admission record.
+
+### `SupervisionRecoveryClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured restart classification of a supervised dispatch.
+
+Signature:
+
+```ts
+export type SupervisionRecoveryClassification = (typeof SUPERVISION_RECOVERY_CLASSIFICATIONS)[number];
+```
+
+### `SupervisionResolutionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained terminal resolution.
+
+Signature:
+
+```ts
+export type SupervisionResolutionInspection = {
+    readonly disposition: SupervisionDisposition;
+    readonly handler_id: string | null;
+    readonly outcome: EffectOutcome | null;
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+};
+```
+
+### `SupervisionSubscriptionOverflowError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when subscription lag exceeds the bound declared with the `fail` overflow policy.
+
+The acknowledged cursor is unchanged, so a reconnect resumes without loss.
+
+Signature:
+
+```ts
+export declare class SupervisionSubscriptionOverflowError extends TraceStoreError {
+    readonly code: string;
+    readonly lag_records: number;
+    readonly max_lag_records: number;
+    constructor(lagRecords: number, maxLagRecords: number);
+}
+```
+
+#### `code`
+
+Stable configuration-owned overflow code.
+
+```ts
+readonly code: string;
+```
+
+#### `lag_records`
+
+Retained records not yet delivered when the bound was exceeded.
+
+```ts
+readonly lag_records: number;
+```
+
+#### `max_lag_records`
+
+Declared maximum lag.
+
+```ts
+readonly max_lag_records: number;
+```
+
+#### `constructor`
+
+Creates an overflow failure.
+
+```ts
+constructor(lagRecords: number, maxLagRecords: number);
+```
+
+Parameter:
+
+- lagRecords - Retained but undelivered record count.
+
+Parameter:
+
+- maxLagRecords - Declared lag bound.
+
+### `SupervisionTimeoutPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured timeout and failure policy.
+
+Signature:
+
+```ts
+export type SupervisionTimeoutPolicy = (typeof SUPERVISION_TIMEOUT_POLICIES)[number];
+```
+
 ### `TASK_RUN_LEDGER_LATEST_SELECTOR`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -9976,7 +11060,7 @@ Stable classification for one whole-store integrity defect.
 Signature:
 
 ```ts
-export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "scope_registration_mismatch" | "sqlite_integrity_mismatch" | "witness_mismatch";
+export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "scope_registration_mismatch" | "sqlite_integrity_mismatch" | "supervised_dispatch_mismatch" | "trace_subscription_mismatch" | "witness_mismatch";
 ```
 
 ### `TraceIntegrityReport`
@@ -10049,6 +11133,131 @@ Stable configured machine-readable trace-store error code.
 
 ```ts
 readonly code: string;
+```
+
+### `TraceSubscription`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Live cursor subscription over committed owner-path records.
+
+Signature:
+
+```ts
+export type TraceSubscription = AsyncIterable<TraceSubscriptionDelivery> & {
+    readonly acknowledgedCursor: TraceSubscriptionCursor;
+    readonly deliveredCursor: TraceSubscriptionCursor;
+    readonly subscriptionId: string | null;
+    readonly acknowledge: (cursor: TraceSubscriptionCursor) => TraceSubscriptionCursor;
+    readonly close: () => void;
+    readonly metrics: () => TraceSubscriptionMetrics;
+    readonly next: () => Promise<TraceSubscriptionDelivery | undefined>;
+};
+```
+
+### `TraceSubscriptionCursor`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical subscription cursor.
+
+Identity covers only the ordered owner positions, never delivery order or time.
+
+Signature:
+
+```ts
+export type TraceSubscriptionCursor = {
+    readonly compatibility_version: string;
+    readonly cursor_id: string;
+    readonly cursor_version: number;
+    readonly positions: readonly TraceSubscriptionPosition[];
+};
+```
+
+### `TraceSubscriptionDelivery`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One record delivered by a subscription.
+
+Signature:
+
+```ts
+export type TraceSubscriptionDelivery = {
+    readonly cursor: TraceSubscriptionCursor;
+    readonly record: OwnerRecord;
+};
+```
+
+### `TraceSubscriptionMetrics`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Non-semantic delivery metrics.
+
+Signature:
+
+```ts
+export type TraceSubscriptionMetrics = {
+    readonly buffered_records: number;
+    readonly delivered_records: number;
+    readonly high_water_lag_records: number;
+    readonly lag_records: number;
+};
+```
+
+### `TraceSubscriptionOverflow`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Declared overflow behavior for a subscription.
+
+Signature:
+
+```ts
+export type TraceSubscriptionOverflow = {
+    readonly maxLagRecords: number;
+    readonly policy: TraceSubscriptionOverflowPolicy;
+};
+```
+
+### `TraceSubscriptionOverflowPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured subscription overflow policy.
+
+Signature:
+
+```ts
+export type TraceSubscriptionOverflowPolicy = (typeof SUPERVISION_SUBSCRIPTION_OVERFLOW_POLICIES)[number];
+```
+
+### `TraceSubscriptionPosition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Next unread ordinal of one owner path selected by a subscription.
+
+Signature:
+
+```ts
+export type TraceSubscriptionPosition = {
+    readonly next_ordinal: number;
+    readonly owner_id: string;
+};
+```
+
+### `TraceSubscriptionStartPosition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured subscription start position.
+
+Signature:
+
+```ts
+export type TraceSubscriptionStartPosition = (typeof SUPERVISION_SUBSCRIPTION_START_POSITIONS)[number];
 ```
 
 ### `TypedEffectHandlerOptions`
@@ -12818,6 +14027,56 @@ const inspection = await createWorldChangesetInspection({
 console.log(inspection.change("src/index.ts"));
 ```
 
+### `deriveSupervisedDispatchId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the dispatch identity and owner path of one supervised dispatch command.
+
+Observers use it to subscribe to a dispatch before or while it runs.
+
+Signature:
+
+```ts
+export declare function deriveSupervisedDispatchId(commandId: string): string;
+```
+
+Parameter:
+
+- commandId - Dispatch command identity.
+
+Returns:
+
+- The configured content-addressed dispatch identity.
+
+Throws:
+
+- {TypeError} If the command identity is empty or malformed.
+
+### `deriveSupervisionContextChannelId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the owner path of one named context channel.
+
+Signature:
+
+```ts
+export declare function deriveSupervisionContextChannelId(channel: string): string;
+```
+
+Parameter:
+
+- channel - Caller-selected channel name.
+
+Returns:
+
+- The configured content-addressed channel identity.
+
+Throws:
+
+- {TypeError} If the channel name is empty or malformed.
+
 ### `discardRetainedWorldSettlement`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -12955,6 +14214,93 @@ const discarded = await discardScope(store, {
     scopeId: child.scope_id,
 });
 console.log(discarded.cleanup.phase);
+```
+
+### `dispatchSupervisedEffect`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably supervises one effect intent through ordered interceptors, approval gates, and a
+handler.
+
+The dispatch record retains the intent, canonical interceptor order (priority, then identity),
+approval wait, and cited records as causal parents. Each decision is retained before the next
+interceptor runs. `deny` resolves without admission, `replace` may keep or strengthen but never
+weaken reversibility, and `pause` waits for an approval verdict. A timed-out, throwing, or
+malformed interceptor applies its declared policy; configured tiers always fail closed. Intents
+on the approval frontier need an approved verdict for that exact intent. Admission is retained
+immediately before the handler runs, and the resolution records the correlated outcome only for
+a materialized effect.
+
+The dispatcher holds a fenced, renewed decision lease. Retrying the same command resumes from
+retained evidence without invoking decided interceptors; a replacement dispatcher may take over
+after lease expiry and the stale one is fenced. A retained admission without resolution fails
+closed with SupervisionMaterializationUncertainError. An aborted signal resolves the
+dispatch as cancelled before admission.
+
+Signature:
+
+```ts
+export declare function dispatchSupervisedEffect(store: SQLiteTraceStore, options: DispatchSupervisedEffectOptions): Promise<SupervisedDispatchInspection>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, lease, intent, handlers, interceptors, citations, wait, and signal.
+
+Returns:
+
+- The validated resolved dispatch inspection.
+
+Throws:
+
+- {SupervisionMaterializationUncertainError} If admission is retained without resolution.
+
+Throws:
+
+- {SupervisionLeaseConflictError} If another unexpired dispatcher holds the lease.
+
+Throws:
+
+- {SupervisionLeaseFencedError} If this dispatcher's lease is lost.
+
+Throws:
+
+- {SupervisionEvidenceError} If retained evidence is inconsistent, a citation is absent, or
+the dispatch was imported.
+
+Throws:
+
+- {AppendIntentConflictError} If the command already names different dispatch content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const result = await dispatchSupervisedEffect(store, {
+    claimId: "worker-1",
+    commandId: "effect:delete-branch:1",
+    handlers,
+    intent,
+    interceptors: [{
+        decide: ({ intent }) => ({ decision: "deny", reason: `blocked ${intent.kind}` }),
+        interceptorId: "policy",
+        priority: 0,
+        timeoutMilliseconds: 1000,
+        timeoutPolicy: "fail_closed",
+    }],
+});
 ```
 
 ### `emitScopeRecord`
@@ -13280,6 +14626,50 @@ Throws:
 Throws:
 
 - {TypeError} If options are malformed.
+
+### `injectSupervisionContext`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Appends validated application context to a named channel, citing retained records.
+
+Every cited record becomes a causal parent of the injection, so injected context is always
+linked to its trace evidence. Workers consume context by reading the channel and citing
+injection records when they dispatch effects. An exact retry returns the original receipt.
+
+Signature:
+
+```ts
+export declare function injectSupervisionContext(store: SQLiteTraceStore, options: InjectSupervisionContextOptions): SupervisionContextInjection;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, channel, supervisor, data, and at least one retained citation.
+
+Returns:
+
+- The frozen retained injection.
+
+Throws:
+
+- {SupervisionEvidenceError} If a cited record is not retained.
+
+Throws:
+
+- {AppendIntentConflictError} If the command already names different content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed, uncited, or exceed configured bounds.
 
 ### `inspectDurableTaskExecution`
 
@@ -13613,6 +15003,44 @@ for (const entry of report.scopes.filter((scope) => scope.resume !== null)) {
     console.log(entry.scope_id, entry.classification, entry.resume);
 }
 ```
+
+### `inspectSupervisedDispatch`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads and validates one supervised dispatch without mutation.
+
+Works on reopened, read-only, and imported stores. Imported dispatches report no lease.
+
+Signature:
+
+```ts
+export declare function inspectSupervisedDispatch(store: SQLiteTraceStore, options: InspectSupervisedDispatchOptions): SupervisedDispatchInspection;
+```
+
+Parameter:
+
+- store - Open trace store.
+
+Parameter:
+
+- options - Exact dispatch identity.
+
+Returns:
+
+- The frozen validated dispatch inspection with its recovery classification.
+
+Throws:
+
+- {SupervisionEvidenceError} If the dispatch is absent or its evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
 
 ### `inspectTaskWorldCaptureJournal`
 
@@ -14045,6 +15473,67 @@ const merged = await mergeScope(store, {
 });
 ```
 
+### `openTraceSubscription`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Opens a live cursor subscription over committed records of exact owner paths.
+
+A subscription is a read-only projection: it never appends records, and its cursor identity is
+the canonical vector of next owner ordinals, never delivery order or time. Records are read only
+when the consumer pulls, so the bounded buffer applies backpressure to the observer and never to
+writers. Owners are interleaved one record per owner per refill in canonical owner order.
+
+A durable subscription (with `subscriptionId`) retains its acknowledged cursor in store
+bookkeeping outside the record graph and trace export. Reopening it resumes strictly after that
+cursor: acknowledged records are never redelivered and none is skipped, while delivered but
+unacknowledged records are delivered again with the same owner ordinals. An ephemeral
+subscription retains nothing and also works on read-only stores.
+
+Signature:
+
+```ts
+export declare function openTraceSubscription(store: SQLiteTraceStore, options: OpenTraceSubscriptionOptions): TraceSubscription;
+```
+
+Parameter:
+
+- store - Open trace store; durable subscriptions require a writable handle.
+
+Parameter:
+
+- options - Owners, optional durable identity, start, buffer, overflow, poll, and signal.
+
+Returns:
+
+- A frozen async-iterable subscription.
+
+Throws:
+
+- {SupervisionCursorConflictError} If a durable subscription names different owners, the
+start cursor differs from the acknowledged cursor, or a cursor passes retained records.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or subscription bookkeeping is corrupt.
+
+Throws:
+
+- {TypeError} If options are malformed or a durable subscription targets a read-only store.
+
+Example:
+
+- ```ts
+const subscription = openTraceSubscription(store, {
+    owners: [dispatchId],
+    subscriptionId: "observer:audit",
+});
+for await (const delivery of subscription) {
+    console.log(delivery.record.envelope.schema_ref);
+    subscription.acknowledge(delivery.cursor);
+}
+```
+
 ### `openWorkspace`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -14438,6 +15927,42 @@ if (replay?.command === "emit") {
     console.log(replay.receipt.head.record_id);
 }
 ```
+
+### `readSupervisionContext`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads validated context injections from a named channel in owner order.
+
+Signature:
+
+```ts
+export declare function readSupervisionContext(store: SQLiteTraceStore, options: ReadSupervisionContextOptions): readonly SupervisionContextInjection[];
+```
+
+Parameter:
+
+- store - Open trace store.
+
+Parameter:
+
+- options - Channel name and optional exclusive owner-ordinal lower bound.
+
+Returns:
+
+- Frozen injections after the bound.
+
+Throws:
+
+- {SupervisionEvidenceError} If retained channel evidence is malformed or inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
 
 ### `recoverGrantedTaskWorldDurably`
 
@@ -15106,6 +16631,67 @@ Example:
 
 - ```ts
 const run = resolveRunLedgerSelector(store, "run:review:1");
+```
+
+### `resolveSupervisedApproval`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Appends one human approval verdict for the exact pending request of a supervised dispatch.
+
+The verdict is accepted only while the request is the dispatch head, so a verdict and the
+dispatcher's expiry race with exactly one winner. An exact retry of the same command returns the
+original receipt, even after the dispatch resolved. Verdicts never extend the dispatcher lease.
+
+Signature:
+
+```ts
+export declare function resolveSupervisedApproval(store: SQLiteTraceStore, options: ResolveSupervisedApprovalOptions): SupervisedApprovalReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the live dispatch.
+
+Parameter:
+
+- options - Verdict command, dispatch, exact request, verdict, approver, and reason.
+
+Returns:
+
+- Frozen verdict receipt.
+
+Throws:
+
+- {SupervisionApprovalConflictError} If the request is not pending at the head.
+
+Throws:
+
+- {SupervisionEvidenceError} If the dispatch is not registered in this store.
+
+Throws:
+
+- {AppendIntentConflictError} If the command already names different content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectSupervisedDispatch(store, { dispatchId });
+resolveSupervisedApproval(store, {
+    approverId: "reviewer@example.com",
+    commandId: "approval:1",
+    dispatchId,
+    requestRecordId: inspection.pending_approval.request_record_id,
+    verdict: "approved",
+});
 ```
 
 ### `resolveTaskLedgerSelector`
@@ -22018,6 +23604,1867 @@ Throws:
 
 - {TypeError} If the writer handle is forged or options are malformed.
 
+## Supervision
+
+Package entry: `./supervision`
+
+Live trace subscriptions, supervised effect interception, approval gates, cited context, and worker control.
+
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+
+Authority and mutation: Subscriptions, dispatch, approval, and context injection require an explicit trace-store handle; interceptors and handlers are caller-supplied callbacks. Subscriptions are read-only and retain only cursor bookkeeping. Worker control re-exports existing fenced durable-run commands. No provider, filesystem, or workspace authority is created.
+
+Import example:
+
+```ts
+import * as api from "@avnionur/shepherd-typescript/supervision";
+void api;
+```
+
+Exported symbols: 72.
+
+### `AppendIntentConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an append intent is replayed with different semantic content.
+
+Signature:
+
+```ts
+export declare class AppendIntentConflictError extends TraceStoreError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable append-conflict code.
+
+```ts
+readonly code: string;
+```
+
+### `DispatchSupervisedEffectOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by dispatchSupervisedEffect.
+
+Signature:
+
+```ts
+export type DispatchSupervisedEffectOptions = {
+    readonly approvalTimeoutMilliseconds?: number;
+    readonly citedRecordIds?: readonly RecordId[];
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly handlers: EffectHandlerStack;
+    readonly intent: EffectIntent;
+    readonly interceptors?: readonly SupervisionInterceptor[];
+    readonly signal?: AbortSignal;
+};
+```
+
+### `InjectSupervisionContextOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by injectSupervisionContext.
+
+Signature:
+
+```ts
+export type InjectSupervisionContextOptions = {
+    readonly channel: string;
+    readonly citedRecordIds: readonly RecordId[];
+    readonly commandId: string;
+    readonly data: RecordBody;
+    readonly supervisorId: string;
+};
+```
+
+### `InspectSupervisedDispatchOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by inspectSupervisedDispatch.
+
+Signature:
+
+```ts
+export type InspectSupervisedDispatchOptions = {
+    readonly dispatchId: string;
+};
+```
+
+### `OpenTraceSubscriptionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by openTraceSubscription.
+
+Signature:
+
+```ts
+export type OpenTraceSubscriptionOptions = {
+    readonly bufferCapacity?: number;
+    readonly overflow?: TraceSubscriptionOverflow;
+    readonly owners: readonly string[];
+    readonly pollIntervalMilliseconds?: number;
+    readonly signal?: AbortSignal;
+    readonly start?: TraceSubscriptionCursor | TraceSubscriptionStartPosition;
+    readonly subscriptionId?: string;
+};
+```
+
+### `ReadSupervisionContextOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by readSupervisionContext.
+
+Signature:
+
+```ts
+export type ReadSupervisionContextOptions = {
+    readonly afterOwnerOrdinal?: number;
+    readonly channel: string;
+};
+```
+
+### `ResolveSupervisedApprovalOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by resolveSupervisedApproval.
+
+Signature:
+
+```ts
+export type ResolveSupervisedApprovalOptions = {
+    readonly approverId: string;
+    readonly commandId: string;
+    readonly dispatchId: string;
+    readonly reason?: string;
+    readonly requestRecordId: RecordId;
+    readonly verdict: "approved" | "rejected";
+};
+```
+
+### `SUPERVISION_APPROVAL_GATES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured approval gates ordered interceptor pause then irreversible frontier.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_APPROVAL_GATES: readonly [
+    "interceptor_pause",
+    "irreversible_frontier"
+];
+```
+
+### `SUPERVISION_APPROVAL_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured approval wait bounds.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_APPROVAL_LIMITS: Readonly<{
+    readonly defaultWaitMilliseconds: 300000;
+    readonly maxWaitMilliseconds: 3600000;
+    readonly pollIntervalMilliseconds: 10;
+}>;
+```
+
+### `SUPERVISION_APPROVAL_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured approval record phases ordered requested then resolved.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_APPROVAL_PHASES: readonly [
+    "requested",
+    "resolved"
+];
+```
+
+### `SUPERVISION_APPROVAL_REQUIRED_TIERS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured reversibility tiers that require approval before admission.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_APPROVAL_REQUIRED_TIERS: readonly [
+    "irreversible"
+];
+```
+
+### `SUPERVISION_APPROVAL_VERDICTS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured approval verdicts ordered approved, rejected, expired.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_APPROVAL_VERDICTS: readonly [
+    "approved",
+    "rejected",
+    "expired"
+];
+```
+
+### `SUPERVISION_COMPATIBILITY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured supervision evidence compatibility namespace.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_COMPATIBILITY_VERSION: "shepherd.supervision.v1";
+```
+
+### `SUPERVISION_DECISIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured interception decisions ordered allow, deny, replace, pause.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_DECISIONS: readonly [
+    "allow",
+    "deny",
+    "replace",
+    "pause"
+];
+```
+
+### `SUPERVISION_DECISION_SOURCES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured decision sources ordered interceptor, timeout, failure.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_DECISION_SOURCES: readonly [
+    "interceptor",
+    "timeout",
+    "failure"
+];
+```
+
+### `SUPERVISION_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured terminal dispositions ordered materialized, materialization failed, denied, rejected, cancelled.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_DISPOSITIONS: readonly [
+    "materialized",
+    "materialization_failed",
+    "denied",
+    "rejected",
+    "cancelled"
+];
+```
+
+### `SUPERVISION_FAIL_OPEN_FORBIDDEN_TIERS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured reversibility tiers for which fail-open is replaced by fail-closed.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_FAIL_OPEN_FORBIDDEN_TIERS: readonly [
+    "irreversible"
+];
+```
+
+### `SUPERVISION_INTERCEPTION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured interception bounds and decision lease timing.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_INTERCEPTION_LIMITS: Readonly<{
+    readonly decisionLeaseMilliseconds: 30000;
+    readonly leaseRenewalMilliseconds: 10000;
+    readonly maxInterceptors: 16;
+    readonly maxTimeoutMilliseconds: 3600000;
+}>;
+```
+
+### `SUPERVISION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured supervision evidence bounds.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_LIMITS: Readonly<{
+    readonly maxCitedRecords: 64;
+    readonly maxDataCanonicalBytes: 65536;
+    readonly maxReasonBytes: 4096;
+}>;
+```
+
+### `SUPERVISION_RECORD_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured canonical supervision record version.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_RECORD_VERSION: 1;
+```
+
+### `SUPERVISION_RECOVERY_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured recovery classifications ordered resolved, materialization uncertain, resolution, approval, decision pending.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_RECOVERY_CLASSIFICATIONS: readonly [
+    "resolved",
+    "materialization_uncertain",
+    "resolution_pending",
+    "approval_pending",
+    "decision_pending"
+];
+```
+
+### `SUPERVISION_SUBSCRIPTION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured subscription cursor version and bounds.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_SUBSCRIPTION_LIMITS: Readonly<{
+    readonly cursorVersion: 1;
+    readonly defaultBufferCapacity: 64;
+    readonly maxBufferCapacity: 4096;
+    readonly maxOwners: 64;
+    readonly pollIntervalMilliseconds: 10;
+}>;
+```
+
+### `SUPERVISION_SUBSCRIPTION_OVERFLOW_POLICIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured subscription overflow policies ordered backpressure then fail.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_SUBSCRIPTION_OVERFLOW_POLICIES: readonly [
+    "backpressure",
+    "fail"
+];
+```
+
+### `SUPERVISION_SUBSCRIPTION_START_POSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured subscription start positions ordered origin then head.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_SUBSCRIPTION_START_POSITIONS: readonly [
+    "origin",
+    "head"
+];
+```
+
+### `SUPERVISION_TIMEOUT_POLICIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured timeout policies ordered fail open then fail closed.
+
+Signature:
+
+```ts
+export declare const SUPERVISION_TIMEOUT_POLICIES: readonly [
+    "fail_open",
+    "fail_closed"
+];
+```
+
+### `SupervisedApprovalReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Receipt returned by resolveSupervisedApproval.
+
+Signature:
+
+```ts
+export type SupervisedApprovalReceipt = {
+    readonly command_id: string;
+    readonly dispatch_id: string;
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+    readonly request_record_id: RecordId;
+    readonly verdict: "approved" | "rejected";
+};
+```
+
+### `SupervisedDispatchInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated read-only view of one supervised dispatch.
+
+Signature:
+
+```ts
+export type SupervisedDispatchInspection = {
+    readonly admission_record_id: RecordId | null;
+    readonly approval_timeout_milliseconds: number;
+    readonly approvals: readonly SupervisionApprovalInspection[];
+    readonly cited_record_ids: readonly RecordId[];
+    readonly command_id: string;
+    readonly decisions: readonly SupervisionDecisionInspection[];
+    readonly dispatch_id: string;
+    readonly dispatch_record_id: RecordId;
+    readonly effective_intent: EffectIntent;
+    readonly head: {
+        readonly owner_ordinal: number;
+        readonly record_id: RecordId;
+    };
+    readonly intent: EffectIntent;
+    readonly interceptors: readonly SupervisionInterceptorDeclaration[];
+    readonly lease: SupervisionLeaseInspection | null;
+    readonly pending_approval: SupervisionApprovalInspection | null;
+    readonly recovery: SupervisionRecoveryClassification;
+    readonly resolution: SupervisionResolutionInspection | null;
+};
+```
+
+### `SupervisionApprovalConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an approval verdict names no current pending approval request.
+
+Signature:
+
+```ts
+export declare class SupervisionApprovalConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly dispatch_id: string;
+    constructor(dispatchId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned approval-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `dispatch_id`
+
+Dispatch the verdict targeted.
+
+```ts
+readonly dispatch_id: string;
+```
+
+#### `constructor`
+
+Creates an approval-conflict failure.
+
+```ts
+constructor(dispatchId: string);
+```
+
+Parameter:
+
+- dispatchId - Dispatch whose pending request does not match.
+
+### `SupervisionApprovalGate`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured approval gate.
+
+Signature:
+
+```ts
+export type SupervisionApprovalGate = (typeof SUPERVISION_APPROVAL_GATES)[number];
+```
+
+### `SupervisionApprovalInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained approval request and its verdict.
+
+Signature:
+
+```ts
+export type SupervisionApprovalInspection = {
+    readonly gate: SupervisionApprovalGate;
+    readonly intent_ref: string;
+    readonly owner_ordinal: number;
+    readonly position: number | null;
+    readonly reason: string | null;
+    readonly request_record_id: RecordId;
+    readonly verdict: SupervisionApprovalVerdictInspection | null;
+};
+```
+
+### `SupervisionApprovalVerdict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured approval verdict.
+
+Signature:
+
+```ts
+export type SupervisionApprovalVerdict = (typeof SUPERVISION_APPROVAL_VERDICTS)[number];
+```
+
+### `SupervisionApprovalVerdictInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained approval verdict.
+
+Signature:
+
+```ts
+export type SupervisionApprovalVerdictInspection = {
+    readonly approver_id: string | null;
+    readonly command_id: string | null;
+    readonly owner_ordinal: number;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly verdict: SupervisionApprovalVerdict;
+};
+```
+
+### `SupervisionContextInjection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained context injection.
+
+Signature:
+
+```ts
+export type SupervisionContextInjection = {
+    readonly channel_id: string;
+    readonly cited_record_ids: readonly RecordId[];
+    readonly command_id: string;
+    readonly data: RecordBody;
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+    readonly supervisor_id: string;
+};
+```
+
+### `SupervisionCursorConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a subscription cursor regresses, passes delivered records, or names different owners.
+
+Signature:
+
+```ts
+export declare class SupervisionCursorConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly subscription_id: string | null;
+    constructor(subscriptionId: string | null, detail: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned cursor-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `subscription_id`
+
+Durable subscription identity, or null for an ephemeral subscription.
+
+```ts
+readonly subscription_id: string | null;
+```
+
+#### `constructor`
+
+Creates a cursor-conflict failure.
+
+```ts
+constructor(subscriptionId: string | null, detail: string);
+```
+
+Parameter:
+
+- subscriptionId - Durable subscription identity, or null when ephemeral.
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+### `SupervisionDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured interception decision.
+
+Signature:
+
+```ts
+export type SupervisionDecision = (typeof SUPERVISION_DECISIONS)[number];
+```
+
+### `SupervisionDecisionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained interception decision.
+
+Signature:
+
+```ts
+export type SupervisionDecisionInspection = {
+    readonly applied_policy: SupervisionTimeoutPolicy | null;
+    readonly decision: SupervisionDecision;
+    readonly intent_ref: string;
+    readonly interceptor_id: string;
+    readonly owner_ordinal: number;
+    readonly position: number;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly replacement: EffectIntent | null;
+    readonly source: SupervisionDecisionSource;
+};
+```
+
+### `SupervisionDecisionSource`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured source of a retained decision.
+
+Signature:
+
+```ts
+export type SupervisionDecisionSource = (typeof SUPERVISION_DECISION_SOURCES)[number];
+```
+
+### `SupervisionDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured terminal dispatch disposition.
+
+Signature:
+
+```ts
+export type SupervisionDisposition = (typeof SUPERVISION_DISPOSITIONS)[number];
+```
+
+### `SupervisionEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or cited supervision evidence is absent, malformed, or inconsistent.
+
+Signature:
+
+```ts
+export declare class SupervisionEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `SupervisionInterceptionRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Frozen request presented to one interceptor.
+
+Signature:
+
+```ts
+export type SupervisionInterceptionRequest = {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly decisions: readonly SupervisionDecisionInspection[];
+    readonly dispatch_id: string;
+    readonly intent: EffectIntent;
+    readonly interceptor_id: string;
+    readonly original_intent: EffectIntent;
+    readonly position: number;
+    readonly signal: AbortSignal;
+};
+```
+
+### `SupervisionInterceptor`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One ordered interceptor supplied to a dispatch.
+
+Signature:
+
+```ts
+export type SupervisionInterceptor = {
+    readonly decide: (request: SupervisionInterceptionRequest) => Promise<SupervisionInterceptorResult> | SupervisionInterceptorResult;
+    readonly interceptorId: string;
+    readonly priority: number;
+    readonly timeoutMilliseconds: number;
+    readonly timeoutPolicy: SupervisionTimeoutPolicy;
+};
+```
+
+### `SupervisionInterceptorDeclaration`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical interceptor declaration retained in dispatch identity.
+
+Signature:
+
+```ts
+export type SupervisionInterceptorDeclaration = {
+    readonly interceptor_id: string;
+    readonly priority: number;
+    readonly timeout_milliseconds: number;
+    readonly timeout_policy: SupervisionTimeoutPolicy;
+};
+```
+
+### `SupervisionInterceptorResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Decision returned by an interceptor.
+
+Signature:
+
+```ts
+export type SupervisionInterceptorResult = {
+    readonly decision: "allow";
+} | {
+    readonly decision: "deny";
+    readonly reason: string;
+} | {
+    readonly decision: "pause";
+    readonly reason: string;
+} | {
+    readonly decision: "replace";
+    readonly payload: SemanticValue;
+    readonly reason: string;
+    readonly reversibility?: EffectReversibility;
+};
+```
+
+### `SupervisionLeaseConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when another unexpired dispatcher holds a supervised dispatch decision lease.
+
+Signature:
+
+```ts
+export declare class SupervisionLeaseConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly dispatch_id: string;
+    constructor(dispatchId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned lease-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Claim identity currently holding the lease.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `dispatch_id`
+
+Dispatch whose lease is held.
+
+```ts
+readonly dispatch_id: string;
+```
+
+#### `constructor`
+
+Creates a held-lease failure.
+
+```ts
+constructor(dispatchId: string, claimId: string);
+```
+
+Parameter:
+
+- dispatchId - Dispatch whose lease is held.
+
+Parameter:
+
+- claimId - Current holder.
+
+### `SupervisionLeaseFencedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a dispatcher's decision lease is released, expired, superseded, or unknown.
+
+Signature:
+
+```ts
+export declare class SupervisionLeaseFencedError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly dispatch_id: string;
+    constructor(dispatchId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned fenced-lease code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Rejected claim identity.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `dispatch_id`
+
+Dispatch whose append was fenced.
+
+```ts
+readonly dispatch_id: string;
+```
+
+#### `constructor`
+
+Creates a fenced-lease failure.
+
+```ts
+constructor(dispatchId: string, claimId: string);
+```
+
+Parameter:
+
+- dispatchId - Dispatch whose command was rejected.
+
+Parameter:
+
+- claimId - Rejected claim identity.
+
+### `SupervisionLeaseInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Live decision lease evidence of a dispatch registered in this store.
+
+Signature:
+
+```ts
+export type SupervisionLeaseInspection = {
+    readonly claim_id: string;
+    readonly fencing_token: number;
+    readonly lease_expires_at: number;
+    readonly released: boolean;
+};
+```
+
+### `SupervisionMaterializationUncertainError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a supervised effect retains admission without resolution.
+
+The handler may have changed the world. The runtime neither retries it nor fabricates an outcome.
+
+Signature:
+
+```ts
+export declare class SupervisionMaterializationUncertainError extends TraceStoreError {
+    readonly code: string;
+    readonly admission_record_id: string;
+    readonly dispatch_id: string;
+    constructor(dispatchId: string, admissionRecordId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned uncertain-materialization code.
+
+```ts
+readonly code: string;
+```
+
+#### `admission_record_id`
+
+Retained admission record.
+
+```ts
+readonly admission_record_id: string;
+```
+
+#### `dispatch_id`
+
+Dispatch requiring manual recovery.
+
+```ts
+readonly dispatch_id: string;
+```
+
+#### `constructor`
+
+Creates an uncertain-materialization failure.
+
+```ts
+constructor(dispatchId: string, admissionRecordId: string);
+```
+
+Parameter:
+
+- dispatchId - Dispatch requiring manual recovery.
+
+Parameter:
+
+- admissionRecordId - Retained admission record.
+
+### `SupervisionRecoveryClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured restart classification of a supervised dispatch.
+
+Signature:
+
+```ts
+export type SupervisionRecoveryClassification = (typeof SUPERVISION_RECOVERY_CLASSIFICATIONS)[number];
+```
+
+### `SupervisionResolutionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained terminal resolution.
+
+Signature:
+
+```ts
+export type SupervisionResolutionInspection = {
+    readonly disposition: SupervisionDisposition;
+    readonly handler_id: string | null;
+    readonly outcome: EffectOutcome | null;
+    readonly owner_ordinal: number;
+    readonly record_id: RecordId;
+};
+```
+
+### `SupervisionSubscriptionOverflowError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when subscription lag exceeds the bound declared with the `fail` overflow policy.
+
+The acknowledged cursor is unchanged, so a reconnect resumes without loss.
+
+Signature:
+
+```ts
+export declare class SupervisionSubscriptionOverflowError extends TraceStoreError {
+    readonly code: string;
+    readonly lag_records: number;
+    readonly max_lag_records: number;
+    constructor(lagRecords: number, maxLagRecords: number);
+}
+```
+
+#### `code`
+
+Stable configuration-owned overflow code.
+
+```ts
+readonly code: string;
+```
+
+#### `lag_records`
+
+Retained records not yet delivered when the bound was exceeded.
+
+```ts
+readonly lag_records: number;
+```
+
+#### `max_lag_records`
+
+Declared maximum lag.
+
+```ts
+readonly max_lag_records: number;
+```
+
+#### `constructor`
+
+Creates an overflow failure.
+
+```ts
+constructor(lagRecords: number, maxLagRecords: number);
+```
+
+Parameter:
+
+- lagRecords - Retained but undelivered record count.
+
+Parameter:
+
+- maxLagRecords - Declared lag bound.
+
+### `SupervisionTimeoutPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured timeout and failure policy.
+
+Signature:
+
+```ts
+export type SupervisionTimeoutPolicy = (typeof SUPERVISION_TIMEOUT_POLICIES)[number];
+```
+
+### `TraceStoreError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Base error for trace-store contract violations.
+
+Signature:
+
+```ts
+export declare class TraceStoreError extends Error {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable trace-store error code.
+
+```ts
+readonly code: string;
+```
+
+### `TraceSubscription`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Live cursor subscription over committed owner-path records.
+
+Signature:
+
+```ts
+export type TraceSubscription = AsyncIterable<TraceSubscriptionDelivery> & {
+    readonly acknowledgedCursor: TraceSubscriptionCursor;
+    readonly deliveredCursor: TraceSubscriptionCursor;
+    readonly subscriptionId: string | null;
+    readonly acknowledge: (cursor: TraceSubscriptionCursor) => TraceSubscriptionCursor;
+    readonly close: () => void;
+    readonly metrics: () => TraceSubscriptionMetrics;
+    readonly next: () => Promise<TraceSubscriptionDelivery | undefined>;
+};
+```
+
+### `TraceSubscriptionCursor`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical subscription cursor.
+
+Identity covers only the ordered owner positions, never delivery order or time.
+
+Signature:
+
+```ts
+export type TraceSubscriptionCursor = {
+    readonly compatibility_version: string;
+    readonly cursor_id: string;
+    readonly cursor_version: number;
+    readonly positions: readonly TraceSubscriptionPosition[];
+};
+```
+
+### `TraceSubscriptionDelivery`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One record delivered by a subscription.
+
+Signature:
+
+```ts
+export type TraceSubscriptionDelivery = {
+    readonly cursor: TraceSubscriptionCursor;
+    readonly record: OwnerRecord;
+};
+```
+
+### `TraceSubscriptionMetrics`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Non-semantic delivery metrics.
+
+Signature:
+
+```ts
+export type TraceSubscriptionMetrics = {
+    readonly buffered_records: number;
+    readonly delivered_records: number;
+    readonly high_water_lag_records: number;
+    readonly lag_records: number;
+};
+```
+
+### `TraceSubscriptionOverflow`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Declared overflow behavior for a subscription.
+
+Signature:
+
+```ts
+export type TraceSubscriptionOverflow = {
+    readonly maxLagRecords: number;
+    readonly policy: TraceSubscriptionOverflowPolicy;
+};
+```
+
+### `TraceSubscriptionOverflowPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured subscription overflow policy.
+
+Signature:
+
+```ts
+export type TraceSubscriptionOverflowPolicy = (typeof SUPERVISION_SUBSCRIPTION_OVERFLOW_POLICIES)[number];
+```
+
+### `TraceSubscriptionPosition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Next unread ordinal of one owner path selected by a subscription.
+
+Signature:
+
+```ts
+export type TraceSubscriptionPosition = {
+    readonly next_ordinal: number;
+    readonly owner_id: string;
+};
+```
+
+### `TraceSubscriptionStartPosition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured subscription start position.
+
+Signature:
+
+```ts
+export type TraceSubscriptionStartPosition = (typeof SUPERVISION_SUBSCRIPTION_START_POSITIONS)[number];
+```
+
+### `cancelDurableTask`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Atomically cancels a created, waiting, or suspended durable run.
+
+The globally idempotent command, cancelled outcome, and terminal lifecycle commit in one store
+transaction after exact-head comparison. Any retained pre-start or released claim is expired in
+that transaction. Running workers must use requestDurableTaskCancellation and
+acknowledgeDurableTaskCancellation instead.
+
+Signature:
+
+```ts
+export declare function cancelDurableTask(store: SQLiteTraceStore, options: DurableTaskDirectCancellationOptions): DurableTaskExecutionResult;
+```
+
+Parameter:
+
+- store - Open trace store containing the inactive durable execution.
+
+Parameter:
+
+- options - Exact command, run, inactive lifecycle head, and reason contract.
+
+Returns:
+
+- Immutable cancelled execution and durable terminal receipt.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Throws:
+
+- {TraceStoreError} If lifecycle authority is active, stale, or inconsistent.
+
+Throws:
+
+- {AppendIntentConflictError} If command identity already names different content.
+
+Example:
+
+- ```ts
+const cancelled = cancelDurableTask(store, {
+    commandId: "command:cancel:created:42",
+    expectedLifecycleRecordId: createdRecordId,
+    reason: "operator request",
+    runId: "run:42",
+});
+cancelled.execution.outcome.outcome.status;
+```
+
+### `deriveSupervisedDispatchId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the dispatch identity and owner path of one supervised dispatch command.
+
+Observers use it to subscribe to a dispatch before or while it runs.
+
+Signature:
+
+```ts
+export declare function deriveSupervisedDispatchId(commandId: string): string;
+```
+
+Parameter:
+
+- commandId - Dispatch command identity.
+
+Returns:
+
+- The configured content-addressed dispatch identity.
+
+Throws:
+
+- {TypeError} If the command identity is empty or malformed.
+
+### `deriveSupervisionContextChannelId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the owner path of one named context channel.
+
+Signature:
+
+```ts
+export declare function deriveSupervisionContextChannelId(channel: string): string;
+```
+
+Parameter:
+
+- channel - Caller-selected channel name.
+
+Returns:
+
+- The configured content-addressed channel identity.
+
+Throws:
+
+- {TypeError} If the channel name is empty or malformed.
+
+### `dispatchSupervisedEffect`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Durably supervises one effect intent through ordered interceptors, approval gates, and a
+handler.
+
+The dispatch record retains the intent, canonical interceptor order (priority, then identity),
+approval wait, and cited records as causal parents. Each decision is retained before the next
+interceptor runs. `deny` resolves without admission, `replace` may keep or strengthen but never
+weaken reversibility, and `pause` waits for an approval verdict. A timed-out, throwing, or
+malformed interceptor applies its declared policy; configured tiers always fail closed. Intents
+on the approval frontier need an approved verdict for that exact intent. Admission is retained
+immediately before the handler runs, and the resolution records the correlated outcome only for
+a materialized effect.
+
+The dispatcher holds a fenced, renewed decision lease. Retrying the same command resumes from
+retained evidence without invoking decided interceptors; a replacement dispatcher may take over
+after lease expiry and the stale one is fenced. A retained admission without resolution fails
+closed with SupervisionMaterializationUncertainError. An aborted signal resolves the
+dispatch as cancelled before admission.
+
+Signature:
+
+```ts
+export declare function dispatchSupervisedEffect(store: SQLiteTraceStore, options: DispatchSupervisedEffectOptions): Promise<SupervisedDispatchInspection>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, lease, intent, handlers, interceptors, citations, wait, and signal.
+
+Returns:
+
+- The validated resolved dispatch inspection.
+
+Throws:
+
+- {SupervisionMaterializationUncertainError} If admission is retained without resolution.
+
+Throws:
+
+- {SupervisionLeaseConflictError} If another unexpired dispatcher holds the lease.
+
+Throws:
+
+- {SupervisionLeaseFencedError} If this dispatcher's lease is lost.
+
+Throws:
+
+- {SupervisionEvidenceError} If retained evidence is inconsistent, a citation is absent, or
+the dispatch was imported.
+
+Throws:
+
+- {AppendIntentConflictError} If the command already names different dispatch content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const result = await dispatchSupervisedEffect(store, {
+    claimId: "worker-1",
+    commandId: "effect:delete-branch:1",
+    handlers,
+    intent,
+    interceptors: [{
+        decide: ({ intent }) => ({ decision: "deny", reason: `blocked ${intent.kind}` }),
+        interceptorId: "policy",
+        priority: 0,
+        timeoutMilliseconds: 1000,
+        timeoutPolicy: "fail_closed",
+    }],
+});
+```
+
+### `injectSupervisionContext`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Appends validated application context to a named channel, citing retained records.
+
+Every cited record becomes a causal parent of the injection, so injected context is always
+linked to its trace evidence. Workers consume context by reading the channel and citing
+injection records when they dispatch effects. An exact retry returns the original receipt.
+
+Signature:
+
+```ts
+export declare function injectSupervisionContext(store: SQLiteTraceStore, options: InjectSupervisionContextOptions): SupervisionContextInjection;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, channel, supervisor, data, and at least one retained citation.
+
+Returns:
+
+- The frozen retained injection.
+
+Throws:
+
+- {SupervisionEvidenceError} If a cited record is not retained.
+
+Throws:
+
+- {AppendIntentConflictError} If the command already names different content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed, uncited, or exceed configured bounds.
+
+### `inspectSupervisedDispatch`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads and validates one supervised dispatch without mutation.
+
+Works on reopened, read-only, and imported stores. Imported dispatches report no lease.
+
+Signature:
+
+```ts
+export declare function inspectSupervisedDispatch(store: SQLiteTraceStore, options: InspectSupervisedDispatchOptions): SupervisedDispatchInspection;
+```
+
+Parameter:
+
+- store - Open trace store.
+
+Parameter:
+
+- options - Exact dispatch identity.
+
+Returns:
+
+- The frozen validated dispatch inspection with its recovery classification.
+
+Throws:
+
+- {SupervisionEvidenceError} If the dispatch is absent or its evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+### `openTraceSubscription`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Opens a live cursor subscription over committed records of exact owner paths.
+
+A subscription is a read-only projection: it never appends records, and its cursor identity is
+the canonical vector of next owner ordinals, never delivery order or time. Records are read only
+when the consumer pulls, so the bounded buffer applies backpressure to the observer and never to
+writers. Owners are interleaved one record per owner per refill in canonical owner order.
+
+A durable subscription (with `subscriptionId`) retains its acknowledged cursor in store
+bookkeeping outside the record graph and trace export. Reopening it resumes strictly after that
+cursor: acknowledged records are never redelivered and none is skipped, while delivered but
+unacknowledged records are delivered again with the same owner ordinals. An ephemeral
+subscription retains nothing and also works on read-only stores.
+
+Signature:
+
+```ts
+export declare function openTraceSubscription(store: SQLiteTraceStore, options: OpenTraceSubscriptionOptions): TraceSubscription;
+```
+
+Parameter:
+
+- store - Open trace store; durable subscriptions require a writable handle.
+
+Parameter:
+
+- options - Owners, optional durable identity, start, buffer, overflow, poll, and signal.
+
+Returns:
+
+- A frozen async-iterable subscription.
+
+Throws:
+
+- {SupervisionCursorConflictError} If a durable subscription names different owners, the
+start cursor differs from the acknowledged cursor, or a cursor passes retained records.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or subscription bookkeeping is corrupt.
+
+Throws:
+
+- {TypeError} If options are malformed or a durable subscription targets a read-only store.
+
+Example:
+
+- ```ts
+const subscription = openTraceSubscription(store, {
+    owners: [dispatchId],
+    subscriptionId: "observer:audit",
+});
+for await (const delivery of subscription) {
+    console.log(delivery.record.envelope.schema_ref);
+    subscription.acknowledge(delivery.cursor);
+}
+```
+
+### `readSupervisionContext`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads validated context injections from a named channel in owner order.
+
+Signature:
+
+```ts
+export declare function readSupervisionContext(store: SQLiteTraceStore, options: ReadSupervisionContextOptions): readonly SupervisionContextInjection[];
+```
+
+Parameter:
+
+- store - Open trace store.
+
+Parameter:
+
+- options - Channel name and optional exclusive owner-ordinal lower bound.
+
+Returns:
+
+- Frozen injections after the bound.
+
+Throws:
+
+- {SupervisionEvidenceError} If retained channel evidence is malformed or inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+### `requestDurableTaskCancellation`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains one globally idempotent cancellation request against the exact running fence.
+
+The command requests cooperative cancellation only. It leaves lifecycle and worker authority
+unchanged until the exact worker acknowledges a safe boundary.
+
+Signature:
+
+```ts
+export declare function requestDurableTaskCancellation(store: SQLiteTraceStore, options: DurableTaskCancellationOptions): DurableTaskCancellationCommandReceipt;
+```
+
+Parameter:
+
+- store - Open trace store containing the running durable execution.
+
+Parameter:
+
+- options - Exact command, run, lifecycle-head, fencing-token, and reason contract.
+
+Returns:
+
+- Canonical retained cancellation-command evidence.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Throws:
+
+- {TraceStoreError} If running authority is no longer current.
+
+Throws:
+
+- {AppendIntentConflictError} If command identity already names different content.
+
+Example:
+
+- ```ts
+const command = requestDurableTaskCancellation(store, {
+    commandId: "command:cancel:42",
+    expectedLifecycleRecordId: startedRecordId,
+    fencingToken,
+    reason: "operator request",
+    runId: "run:42",
+});
+command.record_id;
+```
+
+### `requestDurableTaskPause`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains one globally idempotent pause request against the exact current running fence.
+
+This function records command authority only. It does not interrupt the provider, release the
+invocation lease, append a suspension acknowledgement, or change lifecycle projection. Exact
+replay returns the retained command even if the run later advances; reuse of the command
+identity for different content conflicts.
+
+Signature:
+
+```ts
+export declare function requestDurableTaskPause(store: SQLiteTraceStore, options: DurableTaskPauseOptions): DurableTaskPauseCommandReceipt;
+```
+
+Parameter:
+
+- store - Open trace store containing the running durable execution.
+
+Parameter:
+
+- options - Exact command, run, lifecycle-head, fencing-token, and reason contract.
+
+Returns:
+
+- Canonical retained pause-command evidence.
+
+Throws:
+
+- {TypeError} If the options, identifiers, token, or reason are malformed.
+
+Throws:
+
+- {TraceStoreError} If the expected running head or fencing token is no longer current.
+
+Throws:
+
+- {AppendIntentConflictError} If command identity already names different content.
+
+Example:
+
+- ```ts
+const command = requestDurableTaskPause(store, {
+    commandId: "command:pause:greet:1",
+    expectedLifecycleRecordId: startedRecordId,
+    fencingToken: currentFencingToken,
+    reason: "operator maintenance",
+    runId: "run:greet:1",
+});
+command.record_id;
+```
+
+### `resolveSupervisedApproval`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Appends one human approval verdict for the exact pending request of a supervised dispatch.
+
+The verdict is accepted only while the request is the dispatch head, so a verdict and the
+dispatcher's expiry race with exactly one winner. An exact retry of the same command returns the
+original receipt, even after the dispatch resolved. Verdicts never extend the dispatcher lease.
+
+Signature:
+
+```ts
+export declare function resolveSupervisedApproval(store: SQLiteTraceStore, options: ResolveSupervisedApprovalOptions): SupervisedApprovalReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the live dispatch.
+
+Parameter:
+
+- options - Verdict command, dispatch, exact request, verdict, approver, and reason.
+
+Returns:
+
+- Frozen verdict receipt.
+
+Throws:
+
+- {SupervisionApprovalConflictError} If the request is not pending at the head.
+
+Throws:
+
+- {SupervisionEvidenceError} If the dispatch is not registered in this store.
+
+Throws:
+
+- {AppendIntentConflictError} If the command already names different content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectSupervisedDispatch(store, { dispatchId });
+resolveSupervisedApproval(store, {
+    approverId: "reviewer@example.com",
+    commandId: "approval:1",
+    dispatchId,
+    requestRecordId: inspection.pending_approval.request_record_id,
+    verdict: "approved",
+});
+```
+
+### `resumeDurableTask`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Atomically resumes one exact suspended or satisfied waiting run under an idempotent command.
+
+Resume verifies the quiescent acknowledgement and its continuation descriptor, requires exact
+prerequisite-satisfaction evidence for waiting, rejects satisfaction evidence for suspension,
+acquires the next monotonic worker fence, and publishes a distinct command-bound
+running-continuation acknowledgement. It does not itself restore provider, process, or world
+state; the caller uses the returned authority only after its adapters restore verified receipts.
+
+Signature:
+
+```ts
+export declare function resumeDurableTask(store: SQLiteTraceStore, options: DurableTaskResumeOptions): DurableTaskResumeReceipt;
+```
+
+Parameter:
+
+- store - Open trace store containing the waiting or suspended run.
+
+Parameter:
+
+- options - Exact command, quiescent head, descriptor, satisfaction, and run contract.
+
+Returns:
+
+- Canonical resume evidence and newly fenced worker authority.
+
+Throws:
+
+- {TypeError} If options or identifiers are malformed.
+
+Throws:
+
+- {TraceStoreError} If lifecycle, claim, or continuation evidence is inconsistent.
+
+Throws:
+
+- {AppendIntentConflictError} If command identity already names different content.
+
+Example:
+
+- ```ts
+const authority = resumeDurableTask(store, {
+    commandId: "command:resume:42",
+    continuationDescriptorRecordId: suspension.continuation_descriptor_record_id,
+    expectedLifecycleRecordId: suspension.acknowledgement_record_id,
+    runId: "run:42",
+});
+authority.fencing_token;
+```
+
 ## Tasks
 
 Package entry: `./tasks`
@@ -23459,7 +26906,8 @@ Throws:
 
 Throws:
 
-- {TraceStoreError} If witnesses are missing or the store is closed.
+- {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
+owner path reserved for supervised dispatches or context channels.
 
 Throws:
 
@@ -24443,7 +27891,7 @@ Stable classification for one whole-store integrity defect.
 Signature:
 
 ```ts
-export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "scope_registration_mismatch" | "sqlite_integrity_mismatch" | "witness_mismatch";
+export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "scope_registration_mismatch" | "sqlite_integrity_mismatch" | "supervised_dispatch_mismatch" | "trace_subscription_mismatch" | "witness_mismatch";
 ```
 
 ### `TraceIntegrityReport`

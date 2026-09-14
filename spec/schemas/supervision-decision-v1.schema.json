@@ -1,0 +1,242 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/supervision-decision-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Supervision Decision v1",
+    "description": "One retained interceptor decision at one canonical position, from the interceptor, a timeout, or a failure.",
+    "type": "object",
+    "required": [
+        "compatibility_version",
+        "supervision_version",
+        "applied_policy",
+        "decision",
+        "dispatch_id",
+        "intent_ref",
+        "interceptor_id",
+        "position",
+        "reason",
+        "replacement",
+        "source"
+    ],
+    "properties": {
+        "compatibility_version": {
+            "const": "shepherd.supervision.v1"
+        },
+        "supervision_version": {
+            "const": 1
+        },
+        "applied_policy": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "enum": [
+                        "fail_open",
+                        "fail_closed"
+                    ]
+                }
+            ]
+        },
+        "decision": {
+            "enum": [
+                "allow",
+                "deny",
+                "replace",
+                "pause"
+            ]
+        },
+        "dispatch_id": {
+            "$ref": "#/$defs/dispatchId"
+        },
+        "intent_ref": {
+            "$ref": "#/$defs/intentRef"
+        },
+        "interceptor_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "position": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 15
+        },
+        "reason": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "string",
+                    "minLength": 1,
+                    "x-shepherd-max-utf8-bytes": 4096
+                }
+            ]
+        },
+        "replacement": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "$ref": "#/$defs/effectIntent"
+                }
+            ]
+        },
+        "source": {
+            "enum": [
+                "interceptor",
+                "timeout",
+                "failure"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "dispatchId": {
+            "type": "string",
+            "pattern": "^supervision-dispatch:sha256:[0-9a-f]{64}$"
+        },
+        "effectIntent": {
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_version",
+                "kind",
+                "payload",
+                "phase",
+                "reversibility"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "intent_version": {
+                    "const": 1
+                },
+                "kind": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "payload": {
+                    "$ref": "#/$defs/semanticValue"
+                },
+                "phase": {
+                    "const": "intent"
+                },
+                "reversibility": {
+                    "enum": [
+                        "reversible",
+                        "compensable",
+                        "irreversible"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "effectOutcome": {
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_ref",
+                "kind",
+                "outcome_version",
+                "phase",
+                "result"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "intent_ref": {
+                    "$ref": "#/$defs/intentRef"
+                },
+                "kind": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "outcome_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "outcome"
+                },
+                "result": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "ok",
+                                "value"
+                            ],
+                            "properties": {
+                                "ok": {
+                                    "const": true
+                                },
+                                "value": {
+                                    "$ref": "#/$defs/semanticValue"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "error",
+                                "ok"
+                            ],
+                            "properties": {
+                                "error": {
+                                    "$ref": "#/$defs/semanticValue"
+                                },
+                                "ok": {
+                                    "const": false
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "intentRef": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        }
+    }
+}

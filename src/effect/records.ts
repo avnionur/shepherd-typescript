@@ -105,7 +105,8 @@ export function validateEffectCorrelation<
     return outcome as EffectOutcome<K, V, E>;
 }
 
-function createIntentReference(intent: EffectIntent): string {
+/** Derives the content digest that correlates an outcome with one canonical intent. @internal */
+export function createIntentReference(intent: EffectIntent): string {
     const digest = createHash(effectProtocolConfig.digestAlgorithm)
         .update(canonicalizeRecord(intent), "utf8")
         .digest("hex");

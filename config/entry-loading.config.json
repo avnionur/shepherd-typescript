@@ -24,6 +24,10 @@
             "required": ["node:fs"],
             "forbidden": ["node:sqlite", "node:child_process"]
         },
+        "./supervision": {
+            "required": ["node:fs"],
+            "forbidden": ["node:sqlite", "node:child_process"]
+        },
         "./tasks": {
             "required": ["node:fs", "node:sqlite", "node:child_process"],
             "forbidden": []

@@ -5,6 +5,114 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.1] - 2026-09-14
+
+### Improvement
+
+- Add passive-observation conformance: one worker scenario produces byte-identical exported
+  archives and equal dispatch inspections with zero observers and with durable, ephemeral, and
+  overflowing subscriptions.
+- Add process crash tests for a dispatcher killed while an interceptor owns the decision lease, a
+  dispatcher killed after admission, and a subscriber killed after acknowledging.
+- Add the Phase 7 exit audit mapping every live observation and interception work item and exit
+  criterion to entry points, documentation, and tests, and update the roadmap, tracker, parity
+  matrix, and README level table.
+
+### Defect Fixes
+
+- Renew the dispatch decision lease on a schedule measured across the whole dispatch, so many
+  short waits and appends can no longer outlive the lease and strand a completed effect.
+- Refuse general `SQLiteTraceStore.append` groups on dispatch and context-channel owner paths, and
+  require single-parent causality, configured record modes, and dispatch causes equal to citations
+  during dispatch inspection.
+- Mint a new fencing token on every dispatch reopen, including with the same claim identity.
+- Require a reason for interceptor-sourced deny, replace, and pause decisions.
+- Resolve a synchronously throwing or malformed handler dispatch as `materialization_failed`.
+- Document that the handler wait after admission is unbounded, that redelivered records keep their
+  owner ordinal rather than their cursor, and that a durable subscription identity serves one
+  consumer.
+
+### Impact
+
+Phase 7 is complete for its documented scope. Raw appends to supervision owner paths now fail with
+`TraceStoreError`; protocols and schemas are unchanged from 2.10.0.
+
+## [2.10.0] - 2026-09-14
+
+### New Feature
+
+- Add human approval gates for supervised effects: interceptor pauses and the configured
+  irreversible frontier append approval requests for the exact effective intent, and
+  `resolveSupervisedApproval` appends a globally idempotent `approved` or `rejected` verdict only
+  while that request is the dispatch head, so a verdict and the dispatcher's fail-closed expiry
+  have exactly one winner.
+- Add cited context injection: `injectSupervisionContext` appends bounded application data to a
+  named channel whose cited retained records are its causal parents, and `readSupervisionContext`
+  returns validated injections.
+- Re-export the fenced durable-run `requestDurableTaskPause`, `resumeDurableTask`,
+  `requestDurableTaskCancellation`, and `cancelDurableTask` commands from `./supervision`.
+- Add the `supervision-approval-v1` and `supervision-context-v1` schemas.
+
+### Impact
+
+Supervisors can pause at an effect boundary, approve or reject exact intents, and steer workers
+with cited context. No worker can wait for an approver indefinitely.
+
+## [2.9.0] - 2026-09-14
+
+### New Feature
+
+- Add `dispatchSupervisedEffect`: a durable supervised effect dispatch on its own owner path with
+  interceptors ordered by priority then identity, retained allow, deny, replace, and pause
+  decisions, declared fail-open or fail-closed timeout and failure policy (irreversible tiers
+  always fail closed), admission before materialization, and a terminal resolution that carries
+  the correlated outcome only for a materialized effect.
+- Add fenced renewable decision leases in store schema v11: stale dispatchers are refused, and a
+  replacement resumes from retained decisions without invoking decided interceptors.
+- Add `inspectSupervisedDispatch` with `resolved`, `materialization_uncertain`,
+  `resolution_pending`, `approval_pending`, and `decision_pending` classification. Admission
+  without resolution fails closed with `SupervisionMaterializationUncertainError` and never
+  re-invokes the handler.
+- Add the supervision dispatch, decision, admission, and resolution schemas, the supervision error
+  classes, and `supervised_dispatch_mismatch` integrity issues.
+
+### Impact
+
+Destructive intents can be denied or rewritten before they reach the world, with durable evidence
+and crash-safe ownership. Store schema v11 is additive; existing records and identities are
+unchanged.
+
+## [2.8.0] - 2026-09-14
+
+### New Feature
+
+- Add the Node-only `./supervision` package entry and supervision protocol v1 configuration.
+- Add `openTraceSubscription`: durable and ephemeral cursor subscriptions over exact owner paths
+  with a canonical owner-ordinal cursor identity, pull-driven bounded buffers, lag metrics, a
+  `backpressure` or `fail` overflow policy that never drops records, abort and close, and
+  monotonic acknowledgement.
+- Add store schema v10 subscription cursor bookkeeping outside the record graph and trace export.
+  Reopening a durable subscription resumes strictly after its acknowledged cursor.
+- Add the `supervision-cursor-v1` schema and `trace_subscription_mismatch` integrity issues.
+
+### Impact
+
+Observers can follow live traces and reconnect without losing or duplicating acknowledged records,
+without changing any worker record. Store schema v10 is additive.
+
+## [2.7.2] - 2026-09-14
+
+### Improvement
+
+- Add the Phase 7 live observation, interception, and supervision contract: observer,
+  interceptor, approver, dispatcher, and context roles, cursor semantics, the dispatch record
+  sequence, timeout and approval policy, decision leases, a supervisor failure table, and
+  non-claims.
+
+### Impact
+
+Documentation only. Runtime behavior, public API, protocols, and schemas are unchanged.
+
 ## [2.7.1] - 2026-09-13
 
 ### Improvement

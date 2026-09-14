@@ -38,6 +38,15 @@ import {
     renderScopeRegistrationSchema,
 } from "./schemas/scope-schemas.ts";
 import {
+    renderSupervisionAdmissionSchema,
+    renderSupervisionApprovalSchema,
+    renderSupervisionContextSchema,
+    renderSupervisionCursorSchema,
+    renderSupervisionDecisionSchema,
+    renderSupervisionDispatchSchema,
+    renderSupervisionResolutionSchema,
+} from "./schemas/supervision-schemas.ts";
+import {
     renderTaskArtifactLockSchema,
     renderTaskDescriptorSchema,
 } from "./schemas/task-protocol-schemas.ts";
@@ -243,6 +252,34 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderScopeDiscardSchema(config)),
             relativePath: config.scopes.artifacts.discardSchema,
+        },
+        {
+            content: renderJson(renderSupervisionCursorSchema(config)),
+            relativePath: config.supervision.artifacts.cursorSchema,
+        },
+        {
+            content: renderJson(renderSupervisionDispatchSchema(config)),
+            relativePath: config.supervision.artifacts.dispatchSchema,
+        },
+        {
+            content: renderJson(renderSupervisionDecisionSchema(config)),
+            relativePath: config.supervision.artifacts.decisionSchema,
+        },
+        {
+            content: renderJson(renderSupervisionApprovalSchema(config)),
+            relativePath: config.supervision.artifacts.approvalSchema,
+        },
+        {
+            content: renderJson(renderSupervisionAdmissionSchema(config)),
+            relativePath: config.supervision.artifacts.admissionSchema,
+        },
+        {
+            content: renderJson(renderSupervisionResolutionSchema(config)),
+            relativePath: config.supervision.artifacts.resolutionSchema,
+        },
+        {
+            content: renderJson(renderSupervisionContextSchema(config)),
+            relativePath: config.supervision.artifacts.contextSchema,
         },
         {
             content: renderJson(renderWorldCaptureSchema(config)),
@@ -2230,7 +2267,87 @@ export const SCOPE_LIMITS = Object.freeze({
     maxDiscardScopes: ${config.scopes.limits.maxDiscardScopes},
     maxResources: ${config.scopes.limits.maxResources},
 } as const);
+
+/** Configured supervision evidence compatibility namespace. @public */
+export const SUPERVISION_COMPATIBILITY_VERSION = ${JSON.stringify(config.supervision.compatibilityVersion)} as const;
+
+/** Configured canonical supervision record version. @public */
+export const SUPERVISION_RECORD_VERSION = ${config.supervision.recordVersion} as const;
+
+/** Configured subscription start positions ordered origin then head. @public */
+${renderConstStrings("SUPERVISION_SUBSCRIPTION_START_POSITIONS", config.supervision.subscriptions.startPositions)}
+
+/** Configured subscription overflow policies ordered backpressure then fail. @public */
+${renderConstStrings("SUPERVISION_SUBSCRIPTION_OVERFLOW_POLICIES", config.supervision.subscriptions.overflowPolicies)}
+
+/** Configured subscription cursor version and bounds. @public */
+export const SUPERVISION_SUBSCRIPTION_LIMITS = Object.freeze({
+    cursorVersion: ${config.supervision.subscriptions.cursorVersion},
+    defaultBufferCapacity: ${config.supervision.subscriptions.defaultBufferCapacity},
+    maxBufferCapacity: ${config.supervision.subscriptions.maxBufferCapacity},
+    maxOwners: ${config.supervision.subscriptions.maxOwners},
+    pollIntervalMilliseconds: ${config.supervision.subscriptions.pollIntervalMilliseconds},
+} as const);
+
+/** Configured interception decisions ordered allow, deny, replace, pause. @public */
+${renderConstStrings("SUPERVISION_DECISIONS", config.supervision.interception.decisions)}
+
+/** Configured decision sources ordered interceptor, timeout, failure. @public */
+${renderConstStrings("SUPERVISION_DECISION_SOURCES", config.supervision.interception.decisionSources)}
+
+/** Configured timeout policies ordered fail open then fail closed. @public */
+${renderConstStrings("SUPERVISION_TIMEOUT_POLICIES", config.supervision.interception.timeoutPolicies)}
+
+/** Configured interception bounds and decision lease timing. @public */
+export const SUPERVISION_INTERCEPTION_LIMITS = Object.freeze({
+    decisionLeaseMilliseconds: ${config.supervision.interception.decisionLeaseMilliseconds},
+    leaseRenewalMilliseconds: ${config.supervision.interception.leaseRenewalMilliseconds},
+    maxInterceptors: ${config.supervision.interception.maxInterceptors},
+    maxTimeoutMilliseconds: ${config.supervision.interception.maxTimeoutMilliseconds},
+} as const);
+
+/** Configured reversibility tiers for which fail-open is replaced by fail-closed. @public */
+${renderConstStrings("SUPERVISION_FAIL_OPEN_FORBIDDEN_TIERS", config.supervision.interception.failOpenForbiddenTiers)}
+
+/** Configured approval gates ordered interceptor pause then irreversible frontier. @public */
+${renderConstStrings("SUPERVISION_APPROVAL_GATES", config.supervision.approval.gates)}
+
+/** Configured approval record phases ordered requested then resolved. @public */
+${renderConstStrings("SUPERVISION_APPROVAL_PHASES", config.supervision.approval.phases)}
+
+/** Configured approval verdicts ordered approved, rejected, expired. @public */
+${renderConstStrings("SUPERVISION_APPROVAL_VERDICTS", config.supervision.approval.verdicts)}
+
+/** Configured reversibility tiers that require approval before admission. @public */
+${renderConstStrings("SUPERVISION_APPROVAL_REQUIRED_TIERS", config.supervision.approval.requiredTiers)}
+
+/** Configured approval wait bounds. @public */
+export const SUPERVISION_APPROVAL_LIMITS = Object.freeze({
+    defaultWaitMilliseconds: ${config.supervision.approval.defaultWaitMilliseconds},
+    maxWaitMilliseconds: ${config.supervision.approval.maxWaitMilliseconds},
+    pollIntervalMilliseconds: ${config.supervision.approval.pollIntervalMilliseconds},
+} as const);
+
+/** Configured terminal dispositions ordered materialized, materialization failed, denied, rejected, cancelled. @public */
+${renderConstStrings("SUPERVISION_DISPOSITIONS", config.supervision.resolution.dispositions)}
+
+/** Configured recovery classifications ordered resolved, materialization uncertain, resolution, approval, decision pending. @public */
+${renderConstStrings("SUPERVISION_RECOVERY_CLASSIFICATIONS", config.supervision.recovery.classifications)}
+
+/** Configured supervision evidence bounds. @public */
+export const SUPERVISION_LIMITS = Object.freeze({
+    maxCitedRecords: ${config.supervision.limits.maxCitedRecords},
+    maxDataCanonicalBytes: ${config.supervision.limits.maxDataCanonicalBytes},
+    maxReasonBytes: ${config.supervision.limits.maxReasonBytes},
+} as const);
 `;
+}
+
+function renderConstStrings(name: string, values: readonly string[]): string {
+    const inline = `export const ${name} = [${values.map((value) => JSON.stringify(value)).join(", ")}] as const;`;
+    return inline.length <= 100
+        ? inline
+        : `export const ${name} = [\n${values.map((value) => `    ${JSON.stringify(value)},`).join("\n")}\n] as const;`;
 }
 
 function recordBodySchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {

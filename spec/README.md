@@ -15,6 +15,11 @@ package and suitable for independent compatibility implementations.
   and `schemas/scope-emission-v1.schema.json` define trace-only scope ownership, origin, authority,
   and fenced emission records. `schemas/scope-fork-v1.schema.json` defines the prepared and
   completed reference-copy fork journal and its checkpoint descriptor.
+- `schemas/supervision-cursor-v1.schema.json` defines canonical subscription cursors.
+  `schemas/supervision-dispatch-v1.schema.json`, `schemas/supervision-decision-v1.schema.json`,
+  `schemas/supervision-approval-v1.schema.json`, `schemas/supervision-admission-v1.schema.json`, and
+  `schemas/supervision-resolution-v1.schema.json` define supervised effect dispatch evidence, and
+  `schemas/supervision-context-v1.schema.json` defines cited context injections.
 
 Runtime implementations must validate the semantic rules that JSON Schema cannot express, such as
 `record_id == digest`, versioned digest input, root-witness constraints, parent existence,

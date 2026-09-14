@@ -27,6 +27,8 @@ export type TraceIntegrityIssueKind =
     | "record_mismatch"
     | "scope_registration_mismatch"
     | "sqlite_integrity_mismatch"
+    | "supervised_dispatch_mismatch"
+    | "trace_subscription_mismatch"
     | "witness_mismatch";
 
 /** One classified defect found by a whole-store integrity scan. */

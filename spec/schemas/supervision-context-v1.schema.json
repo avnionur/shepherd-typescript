@@ -1,0 +1,201 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/supervision-context-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Supervision Context Injection v1",
+    "description": "Supervisor-injected application context on a named channel; cited records are its causal parents.",
+    "type": "object",
+    "required": [
+        "compatibility_version",
+        "supervision_version",
+        "channel_id",
+        "cited_record_ids",
+        "command_id",
+        "data",
+        "supervisor_id"
+    ],
+    "properties": {
+        "compatibility_version": {
+            "const": "shepherd.supervision.v1"
+        },
+        "supervision_version": {
+            "const": 1
+        },
+        "channel_id": {
+            "type": "string",
+            "pattern": "^supervision-context:sha256:[0-9a-f]{64}$"
+        },
+        "cited_record_ids": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/recordId"
+            },
+            "minItems": 1,
+            "maxItems": 64,
+            "uniqueItems": true
+        },
+        "command_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "data": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/semanticValue"
+            },
+            "x-shepherd-max-canonical-bytes": 65536
+        },
+        "supervisor_id": {
+            "type": "string",
+            "minLength": 1
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "dispatchId": {
+            "type": "string",
+            "pattern": "^supervision-dispatch:sha256:[0-9a-f]{64}$"
+        },
+        "effectIntent": {
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_version",
+                "kind",
+                "payload",
+                "phase",
+                "reversibility"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "intent_version": {
+                    "const": 1
+                },
+                "kind": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "payload": {
+                    "$ref": "#/$defs/semanticValue"
+                },
+                "phase": {
+                    "const": "intent"
+                },
+                "reversibility": {
+                    "enum": [
+                        "reversible",
+                        "compensable",
+                        "irreversible"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "effectOutcome": {
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_ref",
+                "kind",
+                "outcome_version",
+                "phase",
+                "result"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "intent_ref": {
+                    "$ref": "#/$defs/intentRef"
+                },
+                "kind": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "outcome_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "outcome"
+                },
+                "result": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "ok",
+                                "value"
+                            ],
+                            "properties": {
+                                "ok": {
+                                    "const": true
+                                },
+                                "value": {
+                                    "$ref": "#/$defs/semanticValue"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "error",
+                                "ok"
+                            ],
+                            "properties": {
+                                "error": {
+                                    "$ref": "#/$defs/semanticValue"
+                                },
+                                "ok": {
+                                    "const": false
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "intentRef": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        }
+    }
+}

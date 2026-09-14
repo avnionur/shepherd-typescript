@@ -225,6 +225,32 @@ const migrations: readonly Migration[] = [
             ) STRICT;
         `,
     },
+    {
+        version: 10,
+        createSql: () => `
+            CREATE TABLE ${STORE_TABLES.traceSubscriptions} (
+                subscription_id TEXT PRIMARY KEY CHECK (subscription_id <> ''),
+                owners_json TEXT NOT NULL CHECK (owners_json <> ''),
+                cursor_id TEXT NOT NULL CHECK (cursor_id <> ''),
+                cursor_json TEXT NOT NULL CHECK (cursor_json <> '')
+            ) STRICT;
+        `,
+    },
+    {
+        version: 11,
+        createSql: () => `
+            CREATE TABLE ${STORE_TABLES.supervisedDispatches} (
+                dispatch_id TEXT PRIMARY KEY CHECK (dispatch_id <> ''),
+                dispatch_record_id TEXT NOT NULL UNIQUE,
+                resolved INTEGER NOT NULL DEFAULT 0 CHECK (resolved IN (0, 1)),
+                claim_id TEXT NOT NULL CHECK (claim_id <> ''),
+                fencing_token INTEGER NOT NULL CHECK (fencing_token > 0),
+                lease_expires_at INTEGER NOT NULL CHECK (lease_expires_at >= 0),
+                released INTEGER NOT NULL DEFAULT 0 CHECK (released IN (0, 1)),
+                FOREIGN KEY (dispatch_record_id) REFERENCES ${STORE_TABLES.records}(record_id)
+            ) STRICT;
+        `,
+    },
 ];
 
 /**

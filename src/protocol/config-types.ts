@@ -447,6 +447,177 @@ export type ProviderProtocolConfig = {
     };
 };
 
+/** Validated live subscription, supervised interception, approval, and context configuration. */
+export type SupervisionProtocolConfig = {
+    /** Human approval gate vocabulary and bounded waits. */
+    readonly approval: {
+        /** Approval wait used when a dispatch declares none. */
+        readonly defaultWaitMilliseconds: number;
+        /** Gates ordered interceptor pause, then irreversible frontier. */
+        readonly gates: readonly string[];
+        /** Maximum approval wait a dispatch may declare. */
+        readonly maxWaitMilliseconds: number;
+        /** Approval record phases ordered requested, then resolved. */
+        readonly phases: readonly string[];
+        /** Delay between retained-verdict checks while waiting. */
+        readonly pollIntervalMilliseconds: number;
+        /** Effect reversibility tiers that require an approved verdict before admission. */
+        readonly requiredTiers: readonly string[];
+        /** Verdicts ordered approved, rejected, expired. */
+        readonly verdicts: readonly string[];
+    };
+    /** Generated language-neutral supervision record artifacts. */
+    readonly artifacts: {
+        /** Repository-relative admission record schema destination. */
+        readonly admissionSchema: string;
+        /** Repository-relative approval record schema destination. */
+        readonly approvalSchema: string;
+        /** Repository-relative context injection record schema destination. */
+        readonly contextSchema: string;
+        /** Repository-relative subscription cursor schema destination. */
+        readonly cursorSchema: string;
+        /** Repository-relative interception decision record schema destination. */
+        readonly decisionSchema: string;
+        /** Repository-relative dispatch record schema destination. */
+        readonly dispatchSchema: string;
+        /** Repository-relative resolution record schema destination. */
+        readonly resolutionSchema: string;
+    };
+    /** Compatibility namespace governing supervision evidence. */
+    readonly compatibilityVersion: string;
+    /** Stable public error codes and messages. */
+    readonly errors: {
+        /** Missing or mismatched pending approval code. */
+        readonly approvalConflictCode: string;
+        /** Missing or mismatched pending approval message. */
+        readonly approvalConflictMessage: string;
+        /** Invalid subscription cursor code. */
+        readonly cursorConflictCode: string;
+        /** Invalid subscription cursor message. */
+        readonly cursorConflictMessage: string;
+        /** Invalid supervision evidence code. */
+        readonly evidenceCode: string;
+        /** Invalid supervision evidence message. */
+        readonly evidenceMessage: string;
+        /** Held decision lease code. */
+        readonly leaseConflictCode: string;
+        /** Held decision lease message. */
+        readonly leaseConflictMessage: string;
+        /** Fenced decision lease code. */
+        readonly leaseFencedCode: string;
+        /** Fenced decision lease message. */
+        readonly leaseFencedMessage: string;
+        /** Uncertain materialization code. */
+        readonly materializationUncertainCode: string;
+        /** Uncertain materialization message. */
+        readonly materializationUncertainMessage: string;
+        /** Subscription overflow code. */
+        readonly overflowCode: string;
+        /** Subscription overflow message. */
+        readonly overflowMessage: string;
+    };
+    /** Deterministic identity derivation. */
+    readonly identity: {
+        /** Canonical key naming supervision command append intents. */
+        readonly commandAppendIntentKind: string;
+        /** Prefix of context channel owner identities. */
+        readonly contextChannelIdPrefix: string;
+        /** Prefix of subscription cursor identities. */
+        readonly cursorIdPrefix: string;
+        /** Prefix of supervised dispatch owner identities. */
+        readonly dispatchIdPrefix: string;
+    };
+    /** Interceptor decision vocabulary, ordering bounds, leases, and timeout policy. */
+    readonly interception: {
+        /** Decision lease duration granted to a dispatcher. */
+        readonly decisionLeaseMilliseconds: number;
+        /** Decision sources ordered interceptor, timeout, failure. */
+        readonly decisionSources: readonly string[];
+        /** Decisions ordered allow, deny, replace, pause. */
+        readonly decisions: readonly string[];
+        /** Reversibility tiers for which fail-open is always replaced by fail-closed. */
+        readonly failOpenForbiddenTiers: readonly string[];
+        /** Interval at which a waiting dispatcher renews its decision lease. */
+        readonly leaseRenewalMilliseconds: number;
+        /** Maximum interceptors per dispatch. */
+        readonly maxInterceptors: number;
+        /** Maximum interceptor timeout. */
+        readonly maxTimeoutMilliseconds: number;
+        /** Timeout policies ordered fail open, then fail closed. */
+        readonly timeoutPolicies: readonly string[];
+    };
+    /** Resource bounds for supervision evidence. */
+    readonly limits: {
+        /** Maximum records cited by one dispatch or context injection. */
+        readonly maxCitedRecords: number;
+        /** Maximum canonical bytes of injected context data. */
+        readonly maxDataCanonicalBytes: number;
+        /** Maximum UTF-8 bytes of a retained reason. */
+        readonly maxReasonBytes: number;
+    };
+    /** Supervision record version. */
+    readonly recordVersion: number;
+    /** Restart classification vocabulary. */
+    readonly recovery: {
+        /** Classifications ordered resolved, uncertain, resolution, approval, decision pending. */
+        readonly classifications: readonly string[];
+    };
+    /** Terminal dispatch vocabulary. */
+    readonly resolution: {
+        /** Dispositions ordered materialized, failed, denied, rejected, cancelled. */
+        readonly dispositions: readonly string[];
+    };
+    /** Stable JSON Schema identifiers. */
+    readonly schemas: {
+        /** Admission record schema identifier. */
+        readonly admissionId: string;
+        /** Approval record schema identifier. */
+        readonly approvalId: string;
+        /** Context injection record schema identifier. */
+        readonly contextId: string;
+        /** Subscription cursor schema identifier. */
+        readonly cursorId: string;
+        /** Decision record schema identifier. */
+        readonly decisionId: string;
+        /** Dispatch record schema identifier. */
+        readonly dispatchId: string;
+        /** Resolution record schema identifier. */
+        readonly resolutionId: string;
+    };
+    /** Cursor subscription bounds and vocabulary. */
+    readonly subscriptions: {
+        /** Canonical cursor version. */
+        readonly cursorVersion: number;
+        /** Buffer capacity used when a subscription declares none. */
+        readonly defaultBufferCapacity: number;
+        /** Maximum buffer capacity. */
+        readonly maxBufferCapacity: number;
+        /** Maximum owner paths selected by one subscription. */
+        readonly maxOwners: number;
+        /** Overflow policies ordered backpressure, then fail. */
+        readonly overflowPolicies: readonly string[];
+        /** Delay between store reads while no new record is retained. */
+        readonly pollIntervalMilliseconds: number;
+        /** Start positions ordered origin, then head. */
+        readonly startPositions: readonly string[];
+    };
+    /** Retained record schema references. */
+    readonly traceSchemas: {
+        /** Admission record schema reference. */
+        readonly admission: string;
+        /** Approval record schema reference. */
+        readonly approval: string;
+        /** Context injection record schema reference. */
+        readonly context: string;
+        /** Decision record schema reference. */
+        readonly decision: string;
+        /** Dispatch record schema reference. */
+        readonly dispatch: string;
+        /** Resolution record schema reference. */
+        readonly resolution: string;
+    };
+};
+
 /** Validated task descriptor and artifact-lock protocol configuration. */
 export type TaskProtocolConfig = {
     /** Wire version for exact task artifact locks. */
@@ -1993,6 +2164,7 @@ export type ProtocolConfig = {
     readonly recordId: RecordIdConfig;
     readonly runs: RunProtocolConfig;
     readonly scopes: ScopeProtocolConfig;
+    readonly supervision: SupervisionProtocolConfig;
     readonly tasks: TaskProtocolConfig;
     readonly workspaces: WorkspaceProtocolConfig;
 };

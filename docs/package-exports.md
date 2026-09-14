@@ -71,6 +71,17 @@ configuration. See [scope registration](./scope-registration.md). The world-bear
 lives on `./workspace` because it composes binding and carrier authority; see
 [scope fork](./scope-fork.md).
 
+`./supervision` is Node-only and owns live cursor trace subscriptions, supervised effect dispatch
+with ordered interceptors and fenced decision leases, read-only dispatch inspection, approval
+verdicts, cited context injection and reads, generated supervision constants, and the supervision
+error classes. It re-exports the existing fenced durable-run pause, resume, and cancellation
+commands for supervisors. Consumers supply an open trace store from `./trace` and handler stacks
+from `./effects`; interceptors and handlers stay caller-supplied callbacks. The facade creates no
+provider, filesystem, or workspace authority and excludes the store constructor, private codecs,
+migrations, and protocol configuration. See [trace subscriptions](./trace-subscriptions.md),
+[supervised effects](./supervised-effects.md), and
+[approval, context, and worker control](./supervision-control.md).
+
 `./workspace` is Node-only and owns workspace initialization/bindings, copy and Git custody,
 changeset inspection, repository grants, placement/native-jail evidence, retained-world runners
 and execution journals, reference-copy scope forks, and exact prepare/select/apply/release/discard
@@ -111,12 +122,12 @@ agreement with the export map and records the following dependencies:
 | Entry | Filesystem configuration | SQLite loaded | Process-execution module loaded |
 | --- | --- | --- | --- |
 | Root, CLI, tasks, trace | Yes | Yes | Yes |
-| Canonical, effects, providers, runs, scopes | Yes | No | No |
+| Canonical, effects, providers, runs, scopes, supervision | Yes | No | No |
 | Workspace | Yes | No | Yes |
 | Read (type-only) | No | No | No |
 
 The tasks entry exports its SQLite registry as well as task builders; task-ledger/grant support
-also reaches process-related modules. The runs and scopes entries accept store authority from
+also reaches process-related modules. The runs, scopes, and supervision entries accept store authority from
 callers and do not load SQLite merely by being imported. The workspace entry loads filesystem and
 process support but does not construct the caller's trace store.
 

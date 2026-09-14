@@ -133,6 +133,41 @@ The classified constituents of a completed fork, each verified with a receipt, r
 applicable, or unavailable with a reason.
 _Avoid_: Restorable process snapshot, trace cut alone
 
+**Trace Subscription**:
+A read-only observer over committed records of exact owner paths whose cursor is the canonical
+vector of next owner ordinals.
+_Avoid_: Event stream, message queue, interceptor, timestamp offset
+
+**Subscription Acknowledgement**:
+A monotonic cursor retained outside the record graph after which a reconnecting durable
+subscription resumes.
+_Avoid_: Semantic record, delivery receipt, exported trace state
+
+**Supervised Dispatch**:
+One effect intent carried through ordered interceptor decisions, approval gates, admission, and a
+terminal resolution on its own owner path under a fenced decision lease.
+_Avoid_: In-process handler call, observer notification, provider invocation
+
+**Interceptor Decision**:
+A retained allow, deny, replace, or pause at one canonical interceptor position, produced by the
+interceptor, a timeout, or a failure under declared policy.
+_Avoid_: Observer callback, log line, unrecorded hook result
+
+**Approval Frontier**:
+The configured reversibility tiers whose effective intent needs an approved verdict for that exact
+intent before admission.
+_Avoid_: Advisory warning, interceptor preference, post-hoc audit
+
+**Uncertain Materialization**:
+A supervised dispatch that retains admission without resolution; the world may have changed and the
+runtime neither retries nor fabricates an outcome.
+_Avoid_: Failed effect, retryable dispatch, rolled-back effect
+
+**Context Injection**:
+Supervisor-provided application data on a named channel whose cited retained records are its causal
+parents.
+_Avoid_: Prompt mutation, uncited note, worker record rewrite
+
 **Task Descriptor**:
 An immutable bodyless behavioral contract containing a logical identity, instruction, and runtime
 input/output schemas.

@@ -365,6 +365,34 @@ export const KERNEL_ABI_V0_STORE_V9_CONTRACT = deepFreeze({
     schemaVersion: 9,
 } as const);
 
+/** Immutable durable trace-subscription cursor table implemented by store schema v10. */
+export const KERNEL_ABI_V0_STORE_V10_CONTRACT = deepFreeze({
+    ...KERNEL_ABI_V0_STORE_V9_CONTRACT,
+    migrations: [
+        ...KERNEL_ABI_V0_STORE_V9_CONTRACT.migrations,
+        {
+            firstOwnerOrdinal: 0,
+            lastOwnerOrdinal: 9_007_199_254_740_990,
+            version: 10,
+        },
+    ],
+    schemaVersion: 10,
+} as const);
+
+/** Immutable supervised-dispatch registration and decision-lease table implemented by store schema v11. */
+export const KERNEL_ABI_V0_STORE_V11_CONTRACT = deepFreeze({
+    ...KERNEL_ABI_V0_STORE_V10_CONTRACT,
+    migrations: [
+        ...KERNEL_ABI_V0_STORE_V10_CONTRACT.migrations,
+        {
+            firstOwnerOrdinal: 0,
+            lastOwnerOrdinal: 9_007_199_254_740_990,
+            version: 11,
+        },
+    ],
+    schemaVersion: 11,
+} as const);
+
 /** Immutable bounded orphaned-operation diagnosis and repair contract implemented by v1. */
 export const ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT = deepFreeze({
     artifacts: {
@@ -1074,6 +1102,116 @@ export const SCOPE_PROTOCOL_V6_CONTRACT = deepFreeze({
             captureKinds: { "verified-copy": "quiescent_verified_copy" },
             values: ["atomic_snapshot", "quiescent_verified_copy", "reconstructed"],
         },
+    },
+} as const);
+
+/** Immutable live subscription, supervised interception, approval, and context contract implemented by supervision v1. */
+export const SUPERVISION_PROTOCOL_V1_CONTRACT = deepFreeze({
+    approval: {
+        defaultWaitMilliseconds: 300_000,
+        gates: ["interceptor_pause", "irreversible_frontier"],
+        maxWaitMilliseconds: 3_600_000,
+        phases: ["requested", "resolved"],
+        pollIntervalMilliseconds: 10,
+        requiredTiers: ["irreversible"],
+        verdicts: ["approved", "rejected", "expired"],
+    },
+    artifacts: {
+        admissionSchema: "spec/schemas/supervision-admission-v1.schema.json",
+        approvalSchema: "spec/schemas/supervision-approval-v1.schema.json",
+        contextSchema: "spec/schemas/supervision-context-v1.schema.json",
+        cursorSchema: "spec/schemas/supervision-cursor-v1.schema.json",
+        decisionSchema: "spec/schemas/supervision-decision-v1.schema.json",
+        dispatchSchema: "spec/schemas/supervision-dispatch-v1.schema.json",
+        resolutionSchema: "spec/schemas/supervision-resolution-v1.schema.json",
+    },
+    compatibilityVersion: "shepherd.supervision.v1",
+    errors: {
+        approvalConflictCode: "SUPERVISION_APPROVAL_CONFLICT",
+        approvalConflictMessage: "supervised dispatch has no matching pending approval request",
+        cursorConflictCode: "SUPERVISION_CURSOR_CONFLICT",
+        cursorConflictMessage:
+            "subscription cursor regresses, passes delivered records, or names different owners",
+        evidenceCode: "SUPERVISION_EVIDENCE_INVALID",
+        evidenceMessage: "supervision evidence is absent, malformed, or inconsistent",
+        leaseConflictCode: "SUPERVISION_LEASE_CONFLICT",
+        leaseConflictMessage:
+            "supervised dispatch decision lease is held by another unexpired dispatcher",
+        leaseFencedCode: "SUPERVISION_LEASE_FENCED",
+        leaseFencedMessage:
+            "supervised dispatch decision lease is released, expired, superseded, or unknown",
+        materializationUncertainCode: "SUPERVISION_MATERIALIZATION_UNCERTAIN",
+        materializationUncertainMessage:
+            "supervised effect was admitted without a retained resolution; manual recovery is required",
+        overflowCode: "SUPERVISION_SUBSCRIPTION_OVERFLOW",
+        overflowMessage: "subscription lag exceeds its declared overflow bound",
+    },
+    identity: {
+        commandAppendIntentKind: "supervision_command",
+        contextChannelIdPrefix: "supervision-context:sha256:",
+        cursorIdPrefix: "supervision-cursor:sha256:",
+        dispatchIdPrefix: "supervision-dispatch:sha256:",
+    },
+    interception: {
+        decisionLeaseMilliseconds: 30_000,
+        decisionSources: ["interceptor", "timeout", "failure"],
+        decisions: ["allow", "deny", "replace", "pause"],
+        failOpenForbiddenTiers: ["irreversible"],
+        leaseRenewalMilliseconds: 10_000,
+        maxInterceptors: 16,
+        maxTimeoutMilliseconds: 3_600_000,
+        timeoutPolicies: ["fail_open", "fail_closed"],
+    },
+    limits: {
+        maxCitedRecords: 64,
+        maxDataCanonicalBytes: 65_536,
+        maxReasonBytes: 4096,
+    },
+    recordVersion: 1,
+    recovery: {
+        classifications: [
+            "resolved",
+            "materialization_uncertain",
+            "resolution_pending",
+            "approval_pending",
+            "decision_pending",
+        ],
+    },
+    resolution: {
+        dispositions: ["materialized", "materialization_failed", "denied", "rejected", "cancelled"],
+    },
+    schemas: {
+        admissionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/supervision-admission-v1.schema.json",
+        approvalId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/supervision-approval-v1.schema.json",
+        contextId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/supervision-context-v1.schema.json",
+        cursorId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/supervision-cursor-v1.schema.json",
+        decisionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/supervision-decision-v1.schema.json",
+        dispatchId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/supervision-dispatch-v1.schema.json",
+        resolutionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/supervision-resolution-v1.schema.json",
+    },
+    subscriptions: {
+        cursorVersion: 1,
+        defaultBufferCapacity: 64,
+        maxBufferCapacity: 4096,
+        maxOwners: 64,
+        overflowPolicies: ["backpressure", "fail"],
+        pollIntervalMilliseconds: 10,
+        startPositions: ["origin", "head"],
+    },
+    traceSchemas: {
+        admission: "shepherd.supervision.admission.v1",
+        approval: "shepherd.supervision.approval.v1",
+        context: "shepherd.supervision.context.v1",
+        decision: "shepherd.supervision.decision.v1",
+        dispatch: "shepherd.supervision.dispatch.v1",
+        resolution: "shepherd.supervision.resolution.v1",
     },
 } as const);
 

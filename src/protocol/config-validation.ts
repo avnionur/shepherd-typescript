@@ -14,6 +14,7 @@ import {
     readRootWitness,
     readSchemas,
 } from "./config-sections.ts";
+import { readSupervisionConfig } from "./config-supervision.ts";
 import { readTaskConfig } from "./config-tasks.ts";
 import {
     type NonEmptyReadonlyArray,
@@ -62,6 +63,7 @@ export function parseProtocolConfig(
             "recordId",
             "runs",
             "scopes",
+            "supervision",
             "tasks",
             "workspaces",
         ],
@@ -77,9 +79,10 @@ export function parseProtocolConfig(
         throw new TypeError("kernel.recordModes is not synchronized with generated constants");
     }
     const workspaces = readWorkspaceConfig(root.workspaces);
+    const effects = readEffectConfig(root.effects);
     const config = {
         cli: readCliConfig(root.cli),
-        effects: readEffectConfig(root.effects),
+        effects,
         formalAssurance: readFormalAssuranceConfig(root.formalAssurance),
         kernel,
         orphanRepair: readOrphanRepairConfig(root.orphanRepair),
@@ -88,6 +91,7 @@ export function parseProtocolConfig(
         recordId,
         runs: readRunConfig(root.runs),
         scopes: readScopeConfig(root.scopes, workspaces.repositoryGrants.atoms),
+        supervision: readSupervisionConfig(root.supervision, effects.reversibilityTiers),
         tasks: readTaskConfig(root.tasks),
         workspaces,
     };

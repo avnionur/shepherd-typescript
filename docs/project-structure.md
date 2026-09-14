@@ -25,6 +25,7 @@ implementation documentation, and forward-looking plans.
 │   ├── run/                Outcomes, artifacts, usage, budgets, and cancellation
 │   ├── scope/              Trace-only scope registration, writer fencing, emission, and inspection
 │   ├── store/              SQLite migrations, transactions, codecs, and reads
+│   ├── supervision/        Trace subscriptions, supervised effect dispatch, approval, and context
 │   ├── task/               Descriptors, runtime schemas, locks, and durable registration
 │   └── workspace/          Initialization, bindings, and reference retained-world custody
 ├── test/                   Public-seam unit tests and fixture assets
@@ -69,6 +70,8 @@ public exports → formal area → canonical encoding and protocol configuration
 public exports → run area → task, provider, store, canonical snapshots, and protocol configuration
 public exports → scope area → store, record, canonical snapshots, and protocol configuration
 store area → scope record codecs and errors, and run control codecs, for transactional admission
+public exports → supervision area → effect records, store, scope validation helpers, and protocol configuration
+store area → supervision record codecs and errors for subscription and dispatch bookkeeping
 public exports → workspace area → filesystem, Git, hashing, and protocol configuration
 workspace area → scope commands, codecs, and inspection, and store transactions, for scope forks
 script command adapters → tooling module interfaces
@@ -121,6 +124,11 @@ The runtime areas are organized around cohesive protocol responsibilities:
   scope record codecs, package-authenticated writer handles, globally idempotent root/child
   registration and emission commands, atomic multi-scope claims, fork journal and checkpoint codecs,
   and record-derived inspection and replay without world, provider, or settlement authority;
+- `supervision/` owns canonical subscription cursors and pull-driven delivery, supervised effect
+  dispatch with ordered interceptors, timeout policy, approval gates, fenced decision leases,
+  admission-before-materialization, record-derived dispatch inspection and recovery
+  classification, approval verdicts, and cited context channels, without provider, filesystem, or
+  workspace authority;
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
   recovery, orphan-collection diagnostics, and exact bookkeeping-only orphan-operation repair.
