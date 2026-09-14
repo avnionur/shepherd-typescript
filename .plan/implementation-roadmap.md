@@ -405,6 +405,16 @@ Milestone: **L2 substrate parity**.
 
 Goal: safely supervise running executions.
 
+Task 1 (#149) delivered the [live supervision contract](./live-supervision-contract.md): separate
+observer, interceptor, approver, dispatcher, and context roles, cursor semantics, the dispatch
+record sequence, timeout and approval policy, decision leases, and a failure table. Task 2 (#150)
+implements [durable cursor trace subscriptions](../docs/trace-subscriptions.md). Task 3 (#151)
+implements [supervised effect interception](../docs/supervised-effects.md) with fenced decision
+leases and restart classification. Task 4 (#152) adds
+[approval gates, cited context injection, and worker control](../docs/supervision-control.md).
+Task 5 (#153) adds passive-observation and supervisor-failure conformance and records the
+[Phase 7 exit audit](./phase-7-exit-audit.md): every exit criterion has verified evidence.
+
 Work:
 
 - implement durable cursor-based live subscriptions;

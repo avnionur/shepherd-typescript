@@ -24,6 +24,19 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Scope ownership/authority proposal](../.plan/scope-ownership-contract.md) defines the reviewed
   Phase 6 contract behind the implemented scope slices.
 
+- [Durable cursor trace subscriptions](./trace-subscriptions.md) defines the observer role:
+  canonical owner-ordinal cursors, pull-driven backpressure and overflow policy, monotonic
+  acknowledgement outside the record graph, reconnect semantics, and passive-observation evidence.
+- [Supervised effect interception](./supervised-effects.md) defines ordered allow/deny/replace/pause
+  decisions, timeout policy, the irreversible approval frontier, admission before materialization,
+  fenced decision leases, and restart classification.
+- [Approval gates, cited context, and worker control](./supervision-control.md) defines approval
+  verdicts, cited context channels, supervisor access to durable-run control, and supervisor
+  failure bounds.
+- [Live supervision contract](../.plan/live-supervision-contract.md) defines the Phase 7 roles,
+  record sequence, failure table, and non-claims behind the supervision APIs.
+- [Phase 7 exit audit](../.plan/phase-7-exit-audit.md) maps live observation and interception
+  evidence to every roadmap work item and exit criterion.
 - [Phase 6 exit audit](../.plan/phase-6-exit-audit.md) maps scope-algebra evidence and records L2
   substrate parity for the recorded hosts.
 - [Phase 5 exit audit](../.plan/phase-5-exit-audit.md) maps product-surface evidence and records

@@ -11,6 +11,8 @@ import { verifyRecordIntegrity } from "./integrity-records.ts";
 import type { TraceIntegrityIssue, TraceIntegrityReport } from "./integrity-types.ts";
 import { verifyScopeRegistrationRow } from "./scope-integrity.ts";
 import { readScopeRegistrationRows } from "./scope-registrations.ts";
+import { readSupervisedDispatchIds, verifySupervisedDispatchRow } from "./supervised-dispatches.ts";
+import { readTraceSubscriptionIds, verifyTraceSubscriptionRow } from "./trace-subscriptions.ts";
 
 /** Verifies every currently retained trace-store area without modifying it. */
 export function verifyTraceStoreIntegrity(
@@ -75,6 +77,21 @@ export function scanTraceStoreIntegrity(
             verifyScopeRegistrationRow(database, row);
         } catch {
             addIntegrityIssue(issues, "scope_registration_mismatch", row.scope_id);
+        }
+    }
+
+    for (const dispatchId of readSupervisedDispatchIds(database)) {
+        try {
+            verifySupervisedDispatchRow(database, dispatchId);
+        } catch {
+            addIntegrityIssue(issues, "supervised_dispatch_mismatch", dispatchId);
+        }
+    }
+    for (const subscriptionId of readTraceSubscriptionIds(database)) {
+        try {
+            verifyTraceSubscriptionRow(database, subscriptionId);
+        } catch {
+            addIntegrityIssue(issues, "trace_subscription_mismatch", subscriptionId);
         }
     }
 

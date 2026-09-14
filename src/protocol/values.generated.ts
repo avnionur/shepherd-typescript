@@ -574,3 +574,88 @@ export const SCOPE_LIMITS = Object.freeze({
     maxDiscardScopes: 256,
     maxResources: 64,
 } as const);
+
+/** Configured supervision evidence compatibility namespace. @public */
+export const SUPERVISION_COMPATIBILITY_VERSION = "shepherd.supervision.v1" as const;
+
+/** Configured canonical supervision record version. @public */
+export const SUPERVISION_RECORD_VERSION = 1 as const;
+
+/** Configured subscription start positions ordered origin then head. @public */
+export const SUPERVISION_SUBSCRIPTION_START_POSITIONS = ["origin", "head"] as const;
+
+/** Configured subscription overflow policies ordered backpressure then fail. @public */
+export const SUPERVISION_SUBSCRIPTION_OVERFLOW_POLICIES = ["backpressure", "fail"] as const;
+
+/** Configured subscription cursor version and bounds. @public */
+export const SUPERVISION_SUBSCRIPTION_LIMITS = Object.freeze({
+    cursorVersion: 1,
+    defaultBufferCapacity: 64,
+    maxBufferCapacity: 4096,
+    maxOwners: 64,
+    pollIntervalMilliseconds: 10,
+} as const);
+
+/** Configured interception decisions ordered allow, deny, replace, pause. @public */
+export const SUPERVISION_DECISIONS = ["allow", "deny", "replace", "pause"] as const;
+
+/** Configured decision sources ordered interceptor, timeout, failure. @public */
+export const SUPERVISION_DECISION_SOURCES = ["interceptor", "timeout", "failure"] as const;
+
+/** Configured timeout policies ordered fail open then fail closed. @public */
+export const SUPERVISION_TIMEOUT_POLICIES = ["fail_open", "fail_closed"] as const;
+
+/** Configured interception bounds and decision lease timing. @public */
+export const SUPERVISION_INTERCEPTION_LIMITS = Object.freeze({
+    decisionLeaseMilliseconds: 30000,
+    leaseRenewalMilliseconds: 10000,
+    maxInterceptors: 16,
+    maxTimeoutMilliseconds: 3600000,
+} as const);
+
+/** Configured reversibility tiers for which fail-open is replaced by fail-closed. @public */
+export const SUPERVISION_FAIL_OPEN_FORBIDDEN_TIERS = ["irreversible"] as const;
+
+/** Configured approval gates ordered interceptor pause then irreversible frontier. @public */
+export const SUPERVISION_APPROVAL_GATES = ["interceptor_pause", "irreversible_frontier"] as const;
+
+/** Configured approval record phases ordered requested then resolved. @public */
+export const SUPERVISION_APPROVAL_PHASES = ["requested", "resolved"] as const;
+
+/** Configured approval verdicts ordered approved, rejected, expired. @public */
+export const SUPERVISION_APPROVAL_VERDICTS = ["approved", "rejected", "expired"] as const;
+
+/** Configured reversibility tiers that require approval before admission. @public */
+export const SUPERVISION_APPROVAL_REQUIRED_TIERS = ["irreversible"] as const;
+
+/** Configured approval wait bounds. @public */
+export const SUPERVISION_APPROVAL_LIMITS = Object.freeze({
+    defaultWaitMilliseconds: 300000,
+    maxWaitMilliseconds: 3600000,
+    pollIntervalMilliseconds: 10,
+} as const);
+
+/** Configured terminal dispositions ordered materialized, materialization failed, denied, rejected, cancelled. @public */
+export const SUPERVISION_DISPOSITIONS = [
+    "materialized",
+    "materialization_failed",
+    "denied",
+    "rejected",
+    "cancelled",
+] as const;
+
+/** Configured recovery classifications ordered resolved, materialization uncertain, resolution, approval, decision pending. @public */
+export const SUPERVISION_RECOVERY_CLASSIFICATIONS = [
+    "resolved",
+    "materialization_uncertain",
+    "resolution_pending",
+    "approval_pending",
+    "decision_pending",
+] as const;
+
+/** Configured supervision evidence bounds. @public */
+export const SUPERVISION_LIMITS = Object.freeze({
+    maxCitedRecords: 64,
+    maxDataCanonicalBytes: 65536,
+    maxReasonBytes: 4096,
+} as const);

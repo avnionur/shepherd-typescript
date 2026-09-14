@@ -12,6 +12,7 @@ import type {
     RecordIdConfig,
     RunProtocolConfig,
     ScopeProtocolConfig,
+    SupervisionProtocolConfig,
     TaskProtocolConfig,
     WorkspaceProtocolConfig,
 } from "./config-types.ts";
@@ -58,6 +59,9 @@ export const runProtocolConfig: RunProtocolConfig = protocolConfig.runs;
 
 /** Runtime durable isolated-scope registration, authority, and emission configuration. */
 export const scopeProtocolConfig: ScopeProtocolConfig = protocolConfig.scopes;
+
+/** Runtime live subscription, supervised interception, approval, and context configuration. */
+export const supervisionProtocolConfig: SupervisionProtocolConfig = protocolConfig.supervision;
 
 /** Runtime task descriptor, schema, and artifact-lock protocol configuration. */
 export const taskProtocolConfig: TaskProtocolConfig = protocolConfig.tasks;

@@ -49,7 +49,7 @@ Coverage is earned in explicit levels so planned behavior is never presented as 
 | L0 | Canonical schemas, identities, trace storage, and projections | Complete |
 | L1 | Shepherd `0.3.0` settlement compatibility | Complete in 1.51.0 |
 | L2 | Scope and versioned-world substrate parity | Complete in 2.7.1 for the recorded hosts |
-| L3 | Paper programming-model parity | Planned |
+| L3 | Paper programming-model parity | In progress: live observation and interception (Phase 7) complete in 2.10.1 |
 | L4 | Production security, recovery, performance, packaging, and releases | Planned |
 
 Naming, MIT licensing, ESM package exports, and installed consumer compatibility are defined.
@@ -123,6 +123,16 @@ trace-record contracts with durable SQLite task and trace stores:
   snapshot, a quiescent verified copy, or reconstructed state;
 - bounded parallel and nested scope scheduling with deterministic settlement and restart
   convergence, plus record-derived recovery classification of every live scope;
+- durable and ephemeral cursor trace subscriptions over exact owner paths: canonical
+  owner-ordinal cursors, pull-driven backpressure with lag metrics and a declared overflow policy,
+  monotonic acknowledgement retained outside the record graph, and reconnect without duplicated or
+  lost acknowledged records;
+- supervised effect interception: ordered allow/deny/replace/pause decisions retained before
+  admission, declared fail-open/fail-closed timeout policy with irreversible tiers always failing
+  closed, an irreversible approval frontier, fenced renewable decision leases, and restart
+  classification that refuses to re-materialize an uncertain effect;
+- human approval verdicts that race expiry with exactly one winner, cited context injection
+  channels, and supervisor access to fenced durable-run pause, resume, and cancellation;
 - workspace protocol v22 content-addressed macOS/Linux/native-Windows/WSL platform evidence,
   advisory/auto placement resolution with visible fallback, exact placed capture/recovery, and
   fail-closed explicit jail refusal without a native-sandbox claim;
@@ -270,7 +280,8 @@ examples to these programs and identifies adapted and unsupported behavior.
 ## API
 
 The package is ESM-only. Supported entries are `.`, `./canonical`, `./cli`, `./effects`,
-`./providers`, `./read`, `./runs`, `./scopes`, `./tasks`, `./trace`, and `./workspace`; see
+`./providers`, `./read`, `./runs`, `./scopes`, `./supervision`, `./tasks`, `./trace`, and
+`./workspace`; see
 [Package exports and module policy](./docs/package-exports.md). The checked-in and packaged
 [generated API reference](./docs/generated/api-reference.md) lists every supported symbol,
 signature, JSDoc contract, runtime requirement, and authority note; its
@@ -658,6 +669,12 @@ maps [scope registration](./docs/scope-registration.md), [fork](./docs/scope-for
 [vocabulary mapping](./docs/scope-vocabulary.md), [scheduling](./docs/scope-scheduling.md),
 [laws](./docs/scope-laws.md), and [optimized carriers](./docs/optimized-carriers.md) to L2
 substrate parity on the recorded hosts. The major version does not imply production readiness.
+Phase 7 is complete for its documented scope: the
+[Phase 7 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-7-exit-audit.md)
+maps [trace subscriptions](./docs/trace-subscriptions.md),
+[supervised effect interception](./docs/supervised-effects.md), and
+[approval, context, and worker control](./docs/supervision-control.md) to the live observation and
+interception exit criteria. Phase 8 (coupled checkpoints, rewind, and replay) is next.
 
 The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
 execution, durable lifecycle/control evidence, and conservative formal-claim boundary. Phase 3 now

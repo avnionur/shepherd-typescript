@@ -33,8 +33,8 @@ and any applicable pinned upstream-oracle comparison.
 | Intent/outcome correlation | trace machinery | explicit | P0 | exact content-bound correlation implemented; stream ordering follows |
 | Immutable append stream | shipped | core | P0 | mutation/refusal and digest tests |
 | In-process handlers | shipped but narrowly documented | core | P1 | immutable exact-kind stack implemented; dynamic scope laws follow |
-| Non-perturbing observation | limited public surface | explicit | P2 | identical worker trace with/without observer |
-| Pre-materialization interception | not productized | explicit | P2 | deny/replace/timeout race suite |
+| Non-perturbing observation | limited public surface | explicit | P2 | byte-identical native archives with zero observers and with durable, ephemeral, and overflowing observers implemented |
+| Pre-materialization interception | not productized | explicit | P2 | ordered allow/deny/replace/pause, timeout and failure policy, admission-before-materialization, fenced decision leases, and dispatcher-crash classification implemented |
 | Custom effect families | architectural | explicit | P2 | registry and unknown-record round trip |
 | Reversible tier | partial world behavior | explicit | P1 | rollback fixture |
 | Compensable tier | not public product surface | explicit | P2 | idempotent compensation fixture |
@@ -53,7 +53,7 @@ and any applicable pinned upstream-oracle comparison.
 | Owner/cut/slice addressing | vNext reference | graph access | P1 | projection fixtures |
 | Trace query and materialization | shipped | core | P1 | public bounded output-citation, published-cut trace-revision, and durable recovery-record list/show selectors now expose exact owner paths, causality, witnesses, command effects, cut-bounded outputs/settlements, native import, and fresh-process reconstruction; upstream event verbs and CLI golden output remain |
 | Orphaned operation diagnosis and repair | shipped | required | P1 | public bounded diagnosis plus externally proven session death, exact idempotent command/basis authority, atomic bookkeeping-only receipts, live/provider/scope refusal, fail-soft pre-run reclaim, reopen/import audit evidence, concurrent/interrupted retry convergence, and stable CLI human/JSON presentation implemented |
-| Live trace subscription | not public complete | explicit | P2 | backpressure/reconnect tests |
+| Live trace subscription | not public complete | explicit | P2 | durable and ephemeral cursor subscriptions with backpressure, overflow, monotonic acknowledgement, and subscriber-crash reconnect implemented |
 | Arbitrary rewind | not public API | explicit | P2 | byte-equivalence tests |
 | Suffix replay | deferred | explicit | P2 | deterministic and provider-cache tests |
 | Export/import | upstream package exists | useful | P1 | native archive v1 round trips implemented; ATIF follows runtime records |
@@ -108,7 +108,7 @@ Windows jail claim is made.
 | Linux Landlock/container jail | shipped | platform | P1 | package helper and Linux-gated real denial suite implemented; capable Linux host required |
 | Windows/WSL policy | WSL advised | platform | P1 | native Windows unsupported; WSL uses Landlock only when its Linux probe and denial suite pass |
 | Capability attenuation/delegation | not complete | meta-agent need | P2 | no-amplification property |
-| Irreversible-effect approval gate | research direction | safety need | P2 | interception tests |
+| Irreversible-effect approval gate | research direction | safety need | P2 | configured irreversible approval frontier, exact-intent verdicts, fail-closed expiry, and verdict/expiry one-winner race implemented |
 
 ## Providers and higher-order behavior
 
@@ -122,7 +122,7 @@ Windows jail claim is made.
 | Provider prompt/cache identity | research | replay need | P2 | prefix identity tests |
 | Cancellation and budgets | run model | required | P1 | configured counter/duration controls and executor terminal integration implemented; effect accounting follows |
 | Runtime supervisor | not public productized | case study | P2 | two-worker conflict scenario |
-| Inject/steer | experimental/case study | case study | P2 | ordered-context mutation test |
+| Inject/steer | experimental/case study | case study | P2 | cited context injection channels implemented; ordered provider-context mutation remains |
 | Handoff/redirect | experimental/case study | case study | P2 | ownership transition test |
 | Discard/revert worker | experimental/case study | case study | P2 | restart-from-clean-fork test |
 | Counterfactual replay optimizer | experiment | case study | P3 | reproducible small benchmark |

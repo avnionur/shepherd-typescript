@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
-
+import { normalizeAppendBatchDraft } from "../append/validation.ts";
 import { BlobFilesystem } from "../blob/filesystem.ts";
 import { canonicalizeRecord } from "../canonical/canonical-record.ts";
 import { exportTraceArchive } from "../interchange/export.ts";
@@ -31,6 +31,10 @@ import type {
 } from "../repair/types.ts";
 import type { DurableExecutionPrerequisiteSatisfaction } from "../run/durable-execution-control-types.ts";
 import { assertSQLiteDefensiveSupport } from "../runtime/sqlite.ts";
+import type {
+    TraceSubscriptionCursor,
+    TraceSubscriptionStartPosition,
+} from "../supervision/types.ts";
 import { appendToTraceStore } from "./append.ts";
 import { diagnoseStoredAppend } from "./append-recovery.ts";
 import { resolveBlobDirectory } from "./blob-options.ts";
@@ -113,6 +117,24 @@ import {
     type ScopeMergeBoundary,
 } from "./scope-terminals.ts";
 import { readCausalClosureSlice, readOwnerPrefixSlice } from "./slices.ts";
+import {
+    appendSupervisedDispatchRecordInStore,
+    assertUnreservedSupervisionOwners,
+    injectSupervisionContextInStore,
+    openSupervisedDispatchInStore,
+    readSupervisedDispatchRow,
+    renewSupervisedDispatchLeaseInStore,
+    resolveSupervisedApprovalInStore,
+    type SupervisedDispatchAppend,
+    type SupervisedDispatchRow,
+    type SupervisionFence,
+} from "./supervised-dispatches.ts";
+import {
+    acknowledgeTraceSubscriptionInStore,
+    openTraceSubscriptionInStore,
+    readOwnerNextOrdinals,
+    resolveTraceSubscriptionStart,
+} from "./trace-subscriptions.ts";
 import type {
     AppendReceipt,
     BlobId,
@@ -138,6 +160,7 @@ import type {
     SQLiteTraceStoreOptions,
     StoreAppendRequest,
 } from "./types.ts";
+import { normalizeStoreAppendRequest } from "./validation.ts";
 
 /**
  * Synchronous SQLite-backed content-addressed trace store.
@@ -153,6 +176,7 @@ export class SQLiteTraceStore implements Disposable {
     readonly #cleanupBlobDirectory: () => void;
     readonly #database: DatabaseSync;
     #closed = false;
+    readonly #readOnly: boolean;
     readonly #schemaVersion: number;
 
     /**
@@ -172,6 +196,7 @@ export class SQLiteTraceStore implements Disposable {
         assertSQLiteDefensiveSupport(kernelProtocolConfig.store.defensive);
         const blobDirectory = resolveBlobDirectory(databasePath, options);
         const readOnly = options.readOnly ?? false;
+        this.#readOnly = readOnly;
         if (readOnly && !existsSync(blobDirectory.path)) {
             throw new TraceStoreError("read-only trace store blob directory is unavailable");
         }
@@ -226,12 +251,22 @@ export class SQLiteTraceStore implements Disposable {
     }
 
     /**
+     * Whether this handle was opened read-only.
+     *
+     * @internal
+     */
+    get readOnly(): boolean {
+        return this.#readOnly;
+    }
+
+    /**
      * Atomically commits or idempotently replays one semantic append request.
      *
      * @param request - Stable append intent and semantic batch.
      * @returns The original durable receipt for this intent and content.
      * @throws {AppendIntentConflictError} If the intent already names different content.
-     * @throws {TraceStoreError} If witnesses are missing or the store is closed.
+     * @throws {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
+     * owner path reserved for supervised dispatches or context channels.
      * @throws {TypeError} If the request is malformed.
      * @throws {RangeError} If a causal parent is unknown or owner ordinals are exhausted.
      *
@@ -239,6 +274,9 @@ export class SQLiteTraceStore implements Disposable {
      */
     append(request: StoreAppendRequest): AppendReceipt {
         this.#assertOpen();
+        assertUnreservedSupervisionOwners(
+            normalizeAppendBatchDraft(normalizeStoreAppendRequest(request).batch),
+        );
         return appendToTraceStore(this.#database, request);
     }
 
@@ -841,6 +879,238 @@ export class SQLiteTraceStore implements Disposable {
             runProtocolConfig.execution.invocationClaimLeaseMilliseconds,
             prerequisiteSatisfaction,
         );
+    }
+
+    /**
+     * Creates or resumes one durable subscription cursor row.
+     *
+     * @param subscriptionId - Durable subscription identity.
+     * @param owners - Canonical distinct owner paths.
+     * @param start - Optional start for a new row; an explicit cursor must equal an existing row.
+     * @returns The acknowledged cursor.
+     * @throws {SupervisionCursorConflictError} If owners or the start cursor disagree.
+     * @throws {TraceStoreError} If the store is closed or bookkeeping is corrupt.
+     * @internal
+     */
+    openTraceSubscription(
+        subscriptionId: string,
+        owners: readonly string[],
+        start: TraceSubscriptionCursor | TraceSubscriptionStartPosition | undefined,
+    ): TraceSubscriptionCursor {
+        this.#assertOpen();
+        return openTraceSubscriptionInStore(this.#database, subscriptionId, owners, start);
+    }
+
+    /**
+     * Resolves an ephemeral subscription start cursor without mutation.
+     *
+     * @param owners - Canonical distinct owner paths.
+     * @param start - Start position or explicit cursor.
+     * @returns The validated start cursor.
+     * @throws {SupervisionCursorConflictError} If the cursor names other owners or unretained records.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    resolveTraceSubscriptionStart(
+        owners: readonly string[],
+        start: TraceSubscriptionCursor | TraceSubscriptionStartPosition,
+    ): TraceSubscriptionCursor {
+        this.#assertOpen();
+        return resolveTraceSubscriptionStart(this.#database, owners, start, null);
+    }
+
+    /**
+     * Advances one durable acknowledged cursor monotonically.
+     *
+     * @param subscriptionId - Durable subscription identity.
+     * @param cursor - Validated cursor to acknowledge.
+     * @returns The acknowledged cursor.
+     * @throws {SupervisionCursorConflictError} If the cursor regresses or passes retained records.
+     * @throws {TraceStoreError} If the store is closed or the row is absent or corrupt.
+     * @internal
+     */
+    acknowledgeTraceSubscription(
+        subscriptionId: string,
+        cursor: TraceSubscriptionCursor,
+    ): TraceSubscriptionCursor {
+        this.#assertOpen();
+        return acknowledgeTraceSubscriptionInStore(this.#database, subscriptionId, cursor);
+    }
+
+    /**
+     * Reads the next unallocated ordinal of each owner path.
+     *
+     * @param owners - Exact owner paths.
+     * @returns Next ordinals keyed by owner.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    readOwnerNextOrdinals(owners: readonly string[]): ReadonlyMap<string, number> {
+        this.#assertOpen();
+        return readOwnerNextOrdinals(this.#database, owners);
+    }
+
+    /**
+     * Reads one retained owner occurrence.
+     *
+     * @param ownerId - Exact owner path.
+     * @param ordinal - Retained owner ordinal.
+     * @returns The frozen occurrence.
+     * @throws {TraceStoreError} If the store is closed or the occurrence is absent.
+     * @internal
+     */
+    readOwnerOccurrence(ownerId: string, ordinal: number): OwnerRecord {
+        this.#assertOpen();
+        return readOwnerRecordAtOrdinal(this.#database, ownerId, ordinal);
+    }
+
+    /**
+     * Retains or replays one dispatch record and admits a decision lease.
+     *
+     * @param dispatchId - Dispatch identity and owner path.
+     * @param claimId - Proposed lease holder.
+     * @param nowMilliseconds - Lease clock.
+     * @param citedRecordIds - Records that must be retained before a new dispatch is appended.
+     * @param request - Dispatch record append.
+     * @returns The dispatch row after admission.
+     * @throws {SupervisionLeaseConflictError} If another unexpired holder owns the lease.
+     * @throws {SupervisionEvidenceError} If the dispatch is imported or the owner path is not fresh.
+     * @throws {AppendIntentConflictError} If the command names different dispatch content.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    openSupervisedDispatch(
+        dispatchId: string,
+        claimId: string,
+        nowMilliseconds: number,
+        citedRecordIds: readonly RecordId[],
+        request: StoreAppendRequest,
+    ): SupervisedDispatchRow {
+        this.#assertOpen();
+        return openSupervisedDispatchInStore(
+            this.#database,
+            dispatchId,
+            claimId,
+            nowMilliseconds,
+            citedRecordIds,
+            request,
+        );
+    }
+
+    /**
+     * Renews the current dispatch decision lease.
+     *
+     * @param dispatchId - Dispatch identity.
+     * @param fence - Current lease authority.
+     * @param nowMilliseconds - Lease clock.
+     * @returns The renewed row.
+     * @throws {SupervisionLeaseFencedError} If the fence is not current.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    renewSupervisedDispatchLease(
+        dispatchId: string,
+        fence: SupervisionFence,
+        nowMilliseconds: number,
+    ): SupervisedDispatchRow {
+        this.#assertOpen();
+        return renewSupervisedDispatchLeaseInStore(
+            this.#database,
+            dispatchId,
+            fence,
+            nowMilliseconds,
+        );
+    }
+
+    /**
+     * Appends one fenced dispatcher record at the exact head.
+     *
+     * @param dispatchId - Dispatch identity.
+     * @param fence - Current lease authority.
+     * @param expectedHeadRecordId - Exact current head.
+     * @param nowMilliseconds - Lease clock.
+     * @param request - Record append.
+     * @param resolves - Whether the append resolves the dispatch.
+     * @returns The receipt, or a moved-head signal.
+     * @throws {SupervisionLeaseFencedError} If the fence is not current.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    appendSupervisedDispatchRecord(
+        dispatchId: string,
+        fence: SupervisionFence,
+        expectedHeadRecordId: RecordId,
+        nowMilliseconds: number,
+        request: StoreAppendRequest,
+        resolves: boolean,
+    ): SupervisedDispatchAppend {
+        this.#assertOpen();
+        return appendSupervisedDispatchRecordInStore(
+            this.#database,
+            dispatchId,
+            fence,
+            expectedHeadRecordId,
+            nowMilliseconds,
+            request,
+            resolves,
+        );
+    }
+
+    /**
+     * Appends one approver verdict for the exact pending request.
+     *
+     * @param dispatchId - Dispatch identity.
+     * @param requestRecordId - Exact pending request.
+     * @param request - Verdict append.
+     * @returns The durable receipt.
+     * @throws {SupervisionApprovalConflictError} If the request is not pending at the head.
+     * @throws {SupervisionEvidenceError} If the dispatch is not registered in this store.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    resolveSupervisedApproval(
+        dispatchId: string,
+        requestRecordId: RecordId,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return resolveSupervisedApprovalInStore(
+            this.#database,
+            dispatchId,
+            requestRecordId,
+            request,
+        );
+    }
+
+    /**
+     * Appends one context injection whose citations are retained.
+     *
+     * @param citedRecordIds - Records cited as causal parents.
+     * @param request - Injection append.
+     * @returns The durable receipt.
+     * @throws {SupervisionEvidenceError} If a citation is not retained.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    injectSupervisionContext(
+        citedRecordIds: readonly RecordId[],
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return injectSupervisionContextInStore(this.#database, citedRecordIds, request);
+    }
+
+    /**
+     * Reads one live supervised dispatch row.
+     *
+     * @param dispatchId - Dispatch identity.
+     * @returns The row, or undefined for absent or imported dispatches.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    readSupervisedDispatch(dispatchId: string): SupervisedDispatchRow | undefined {
+        this.#assertOpen();
+        return readSupervisedDispatchRow(this.#database, dispatchId);
     }
 
     /**

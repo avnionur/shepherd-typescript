@@ -48,6 +48,15 @@ Scope protocol v2 appends the reference-copy world capability, fork command and 
 the workspace-binding resource kind, fork journal phases and schema, the deterministic fork custody
 identity kind, and the checkpoint constituent and evidence-status vocabulary without changing any
 v1 value.
+The supervision section fixes the supervision record version and compatibility namespace; cursor
+version, owner, buffer, and poll bounds with origin/head start positions and backpressure/fail
+overflow policies; allow/deny/replace/pause decisions, interceptor/timeout/failure sources,
+fail-open/fail-closed policies, fail-open-forbidden tiers, interceptor and timeout bounds, and the
+decision lease and renewal intervals; approval gates, phases, verdicts, required tiers, and default
+and maximum waits; terminal dispositions and recovery classifications; dispatch, context channel,
+and cursor identity prefixes and the command append-intent key; citation, context-data, and reason
+bounds; trace schema references; generated schema identifiers and destinations; and stable error
+codes and messages.
 The orphan-repair section fixes versioned operation, diagnosis, command, and receipt contracts;
 canonical identity domains; command/receipt trace schemas; blocker and error codes; generated
 schema destinations; and count, page, identifier, cause, and canonical-byte bounds.
@@ -112,7 +121,9 @@ Store schema v7 adds nullable retained-world effect-journal evidence. Store sche
 open-operation bookkeeping and repair commit-marker tables without changing canonical record,
 settlement, custody, or native trace archive identity. Store schema v9 adds live scope
 registration and writer-claim tables that are verified against canonical records and never
-exported.
+exported. Store schema v10 adds durable subscription cursor bookkeeping and schema v11 adds
+supervised-dispatch registration and decision-lease rows; neither is exported or part of record
+identity.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -171,6 +182,11 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   equal the configured repository grant atoms, trace schema references are distinct, identity
   prefixes, bounds, lease, versions, schema identifiers, and error codes are closed, and every
   value matches the immutable scope protocol v1 contract.
+- supervision vocabularies have their exact sizes, approval and fail-open-forbidden tiers cite
+  configured effect reversibility tiers, the lease renewal interval is shorter than the lease, the
+  default buffer and approval wait do not exceed their maximums, trace schema references are
+  distinct, schema identifiers are absolute URLs, and every value matches the immutable supervision
+  protocol v1 contract.
 - orphan-repair digest length matches its configured algorithm; blocker codes are unique; page
   bounds are ordered within the total operation limit; schema IDs and artifact destinations are
   closed; and every value matches the immutable orphan-repair protocol v1 contract.

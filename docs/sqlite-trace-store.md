@@ -85,7 +85,12 @@ bookkeeping and atomic repair commit markers used only by
 It does not grant authority over canonical records, providers, worlds, custody, settlements, Git,
 or user files. Schema v9 adds live scope registration and single-writer claim tables used by
 [durable scope registration](./scope-registration.md); scope evidence itself remains canonical
-records, and the tables are verified indexes that are never exported.
+records, and the tables are verified indexes that are never exported. Schema v10 adds
+`trace_subscriptions`, the acknowledged cursor of each durable
+[trace subscription](./trace-subscriptions.md). Schema v11 adds `supervised_dispatches`, the
+registration and fenced decision lease of each [supervised dispatch](./supervised-effects.md).
+Both are bookkeeping outside the record graph and are never exported. `append` refuses groups
+targeting dispatch or context-channel owner paths, which only the supervision transactions write.
 
 Execution projections are disposable reads and therefore add no schema migration. The
 `projectExecution(cutId)` and `projectEffectiveHistory(cutId)` facades resolve payload-visible,

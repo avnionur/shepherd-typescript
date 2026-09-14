@@ -252,5 +252,8 @@ The project is complete only when:
 ## Immediate next step
 
 Phase 6 is complete for its documented scope; see the [exit audit](./phase-6-exit-audit.md).
-Phase 7 (live observation and interception, epic #20) is the next roadmap phase; its first slice
-should define durable cursor subscription semantics over the record graph before any interceptor.
+Phase 7 (live observation and interception, epic #20) is complete for its documented scope; see
+the [live supervision contract](./live-supervision-contract.md) and the
+[exit audit](./phase-7-exit-audit.md). Phase 8 (coupled checkpoints, rewind, and replay, epic #21)
+is the next roadmap phase; its first slice should define provider-session and process checkpoint
+adapter contracts before any rewind.

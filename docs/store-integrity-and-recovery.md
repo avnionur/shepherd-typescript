@@ -22,7 +22,11 @@ frozen `TraceIntegrityReport`. It checks:
 - owner-ordinal contiguity and each owner's persisted next ordinal;
 - published cut indexes against their authoritative publication records;
 - registered blob metadata, receipts, and filesystem content;
-- live scope registration rows against the registration record at each scope's first ordinal.
+- live scope registration rows against the registration record at each scope's first ordinal;
+- supervised dispatch rows against their first dispatch record, resolution state, and lease
+  release (`supervised_dispatch_mismatch`);
+- durable subscription cursors for canonical identity, owner agreement, and positions within
+  retained owner paths (`trace_subscription_mismatch`).
 
 Issues contain a stable `kind` and `subject_id`; they do not expose backend exception text. Counts
 describe the rows and owner paths examined. `ok` is true only when the issue list is empty.

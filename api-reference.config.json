@@ -43,6 +43,11 @@
             "summary": "Durable trace-only scope registration, fenced scope-local emission, and inspection.",
             "title": "Scopes"
         },
+        "./supervision": {
+            "authority": "Subscriptions, dispatch, approval, and context injection require an explicit trace-store handle; interceptors and handlers are caller-supplied callbacks. Subscriptions are read-only and retain only cursor bookkeeping. Worker control re-exports existing fenced durable-run commands. No provider, filesystem, or workspace authority is created.",
+            "summary": "Live trace subscriptions, supervised effect interception, approval gates, cited context, and worker control.",
+            "title": "Supervision"
+        },
         "./tasks": {
             "authority": "Descriptor and schema helpers are pure. SQLiteTaskRegistry reads or mutates only the caller-selected registry database and must be closed by the caller.",
             "summary": "Task descriptors, schemas, registry operations, and bounded ledger reads.",

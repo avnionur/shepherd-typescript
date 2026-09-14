@@ -21,6 +21,8 @@ export const STORE_TABLES = Object.freeze({
     scopeRegistrations: "scope_registrations",
     scopeWriterClaims: "scope_writer_claims",
     storageReceipts: "storage_receipts",
+    supervisedDispatches: "supervised_dispatches",
+    traceSubscriptions: "trace_subscriptions",
 });
 
 /** Version of filesystem blob receipts stored by schema migration two. */

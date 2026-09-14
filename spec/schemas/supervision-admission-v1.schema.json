@@ -1,0 +1,176 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/supervision-admission-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Supervision Admission v1",
+    "description": "Retained immediately before the handler materializes the effective intent.",
+    "type": "object",
+    "required": [
+        "compatibility_version",
+        "supervision_version",
+        "dispatch_id",
+        "intent_ref"
+    ],
+    "properties": {
+        "compatibility_version": {
+            "const": "shepherd.supervision.v1"
+        },
+        "supervision_version": {
+            "const": 1
+        },
+        "dispatch_id": {
+            "$ref": "#/$defs/dispatchId"
+        },
+        "intent_ref": {
+            "$ref": "#/$defs/intentRef"
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "dispatchId": {
+            "type": "string",
+            "pattern": "^supervision-dispatch:sha256:[0-9a-f]{64}$"
+        },
+        "effectIntent": {
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_version",
+                "kind",
+                "payload",
+                "phase",
+                "reversibility"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "intent_version": {
+                    "const": 1
+                },
+                "kind": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "payload": {
+                    "$ref": "#/$defs/semanticValue"
+                },
+                "phase": {
+                    "const": "intent"
+                },
+                "reversibility": {
+                    "enum": [
+                        "reversible",
+                        "compensable",
+                        "irreversible"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "effectOutcome": {
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_ref",
+                "kind",
+                "outcome_version",
+                "phase",
+                "result"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "intent_ref": {
+                    "$ref": "#/$defs/intentRef"
+                },
+                "kind": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "outcome_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "outcome"
+                },
+                "result": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "ok",
+                                "value"
+                            ],
+                            "properties": {
+                                "ok": {
+                                    "const": true
+                                },
+                                "value": {
+                                    "$ref": "#/$defs/semanticValue"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "error",
+                                "ok"
+                            ],
+                            "properties": {
+                                "error": {
+                                    "$ref": "#/$defs/semanticValue"
+                                },
+                                "ok": {
+                                    "const": false
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "intentRef": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        }
+    }
+}
