@@ -54,8 +54,8 @@ and any applicable pinned upstream-oracle comparison.
 | Trace query and materialization | shipped | core | P1 | public bounded output-citation, published-cut trace-revision, and durable recovery-record list/show selectors now expose exact owner paths, causality, witnesses, command effects, cut-bounded outputs/settlements, native import, and fresh-process reconstruction; upstream event verbs and CLI golden output remain |
 | Orphaned operation diagnosis and repair | shipped | required | P1 | public bounded diagnosis plus externally proven session death, exact idempotent command/basis authority, atomic bookkeeping-only receipts, live/provider/scope refusal, fail-soft pre-run reclaim, reopen/import audit evidence, concurrent/interrupted retry convergence, and stable CLI human/JSON presentation implemented |
 | Live trace subscription | not public complete | explicit | P2 | durable and ephemeral cursor subscriptions with backpressure, overflow, monotonic acknowledgement, and subscriber-crash reconnect implemented |
-| Arbitrary rewind | not public API | explicit | P2 | byte-equivalence tests |
-| Suffix replay | deferred | explicit | P2 | deterministic and provider-cache tests |
+| Arbitrary rewind | not public API | explicit | P2 | verified rewind to retained checkpoints and trace-only step boundaries with byte-equivalent multi-resource world restoration, recorded-prefix copies, imported-archive rewind, and fail-closed unavailable or corrupt targets implemented |
+| Suffix replay | deferred | explicit | P2 | recorded-prefix reconstruction without provider or handler invocation, verified prefix and context prefix identity, changed task/provider/handler suffixes, cache-hit evidence, policy-gated irreversible effects, and divergence analysis with no unexplained divergence implemented |
 | Export/import | upstream package exists | useful | P1 | native archive v1 round trips implemented; ATIF follows runtime records |
 
 ## Worlds, scopes, and settlement
@@ -73,8 +73,8 @@ and any applicable pinned upstream-oracle comparison.
 | Consume-once settlement | shipped | required | P0 | concurrent CAS tests |
 | Scope `emit/fork/merge/discard` | shipped | core | P2 | durable registration, fenced emission, reference-copy fork, consume-once three-way merge and subtree discard with receipt recovery, and a seeded reference-model law suite on copy, clone, and overlay carriers implemented (Phase 6 exit audit) |
 | Nested/concurrent scopes | shipped | explicit | P2 | nested attenuation, atomic multi-scope claims, bounded parallel nested scheduling with deterministic settlement, recovery ownership classification, and cross-connection merge/discard race tests implemented |
-| Agent + environment atomic fork | research substrate | explicit | P2 | coupled checkpoint fixture |
-| Process checkpoint/resume | research substrate | explicit | P2 | platform-gated continuation suite |
+| Agent + environment atomic fork | research substrate | explicit | P2 | coupled checkpoints with coordinated world images, verified provider-session and cooperative process captures, and atomic/reconstructive/unavailable restore records implemented; program memory is re-derived, never captured |
+| Process checkpoint/resume | research substrate | explicit | P2 | cooperative process backend capture and restore implemented; transparent CRIU backend probes and reports unavailability accurately (no transparent image claimed) |
 | Storage sharing by divergent suffix | research substrate | explicit | P2 | disk scaling benchmark |
 
 ### Phase 3 L1-alpha result
@@ -119,7 +119,7 @@ Windows jail claim is made.
 | Codex provider | claimed by project materials | examples | P1 | opt-in integration test |
 | OpenRouter/provider adapter | claimed via Claude path | examples | P2 | contract test |
 | Provider-neutral event model | architectural | core | P0 | request/response, ordered artifact definition, descriptor, and executor normalization contracts implemented; streaming event normalization remains |
-| Provider prompt/cache identity | research | replay need | P2 | prefix identity tests |
+| Provider prompt/cache identity | research | replay need | P2 | runtime-derived prompt, response, prefix, and context prefix identities, adapter-declared cache identity, and observed cache-hit evidence implemented; live provider adapters remain |
 | Cancellation and budgets | run model | required | P1 | configured counter/duration controls and executor terminal integration implemented; effect accounting follows |
 | Runtime supervisor | not public productized | case study | P2 | two-worker conflict scenario |
 | Inject/steer | experimental/case study | case study | P2 | cited context injection channels implemented; ordered provider-context mutation remains |

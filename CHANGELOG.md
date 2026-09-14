@@ -5,6 +5,144 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.1] - 2026-09-14
+
+### Improvement
+
+- Add coupled replay conformance: one scenario records an atomic multi-resource checkpoint with a
+  cooperative process and a verified provider session, imports the exported archive into a fresh
+  store, rewinds byte-equivalent worlds and the process image, replays with a changed provider so
+  only the intended suffix diverges, refuses an unapproved irreversible suffix effect, and reports
+  transparent process checkpointing as unavailable.
+- Add process crash tests for a session writer killed between steps and after an effect admission,
+  each recovered by rewinding a retained checkpoint.
+- Add the Phase 8 exit audit mapping every coupled checkpoint, rewind, and replay work item and exit
+  criterion to entry points, documentation, and tests, and update the roadmap, tracker, parity
+  matrix, and README level table.
+
+### Defect Fixes
+
+- Gate a branch suffix effect whose intent the source admitted without a step, regardless of tier,
+  and report it as re-materialization.
+- Fail cooperative requests on child input, process, and write errors instead of crashing the host
+  with an unhandled `EPIPE`, and bound every protocol line including lines ending in the same chunk.
+- Enforce per-kind checkpoint constituent statuses and evidence, bind restore records, recorded step
+  content, and suffix approvals to the source journal, and classify a live writer inside a handler as
+  running.
+- Resolve the task in force through branch ancestry for nested replays.
+- Enforce the world-entry bound at capture, refuse protected names and untraversable directory modes
+  in restored manifests, and record `cancelled` only for cancellation observed before the program
+  returned.
+
+### Impact
+
+Phase 8 is complete for its documented scope. Protocols and schemas are unchanged from 2.15.0.
+
+## [2.15.0] - 2026-09-14
+
+### New Feature
+
+- Add `analyzeReplayDivergence`: aligns a branch session with its source by step index, classifies
+  steps as identical, diverged, source only, or replay only, and classifies each difference as root,
+  propagated, or unexplained from declared dependencies and declared changes.
+- Add `analyzeReplayDependencies`: the transitive dependents of one step and the later steps
+  independent of it.
+
+### Impact
+
+Deterministic tests can prove that only the intended suffix of a replay diverges.
+
+## [2.14.0] - 2026-09-14
+
+### New Feature
+
+- Add `createCooperativeProcessAdapter`: a process checkpoint adapter that drives a child process
+  through a bounded newline-delimited JSON protocol, captures its image, restores it into a fresh
+  process, and fails closed on errors, exits, timeouts, and malformed messages.
+- Add `createTransparentProcessAdapter`: a CRIU adapter that reports platform, executable, and host
+  check unavailability with configured reasons and never claims transparent image capture.
+
+### Impact
+
+Coupled checkpoints can capture and restore cooperating worker processes, and hosts without
+transparent checkpointing are reported accurately.
+
+## [2.13.0] - 2026-09-14
+
+### New Feature
+
+- Add `rewindReplaySession` and `replayReplaySession`: branch sessions that verify every claimed
+  constituent before writing, restore worlds byte-equivalently into empty roots, hand verified
+  provider-session and process captures to their adapters, and retain an atomic or reconstructive
+  restore record.
+- Rewind copies the verified source prefix as recorded steps. Replay re-executes the program, serves
+  exact recorded requests and intents without provider or handler invocation, fails with retained
+  `ReplayPrefixMismatchError` evidence on any difference, and continues live with a changed task,
+  provider, or handler stack.
+- Approval-required suffix effects run only with replay policy approval; refusals are retained and
+  never reach a handler.
+- Add the `replay-restore-v1` schema and the `ReplayCheckpointUnavailableError`,
+  `ReplayRestoreError`, `ReplayPrefixMismatchError`, and `ReplayEffectRefusedError` classes.
+
+### Impact
+
+Historical agent and environment states can be rewound and continued with verified identities,
+including from imported archives.
+
+## [2.12.0] - 2026-09-14
+
+### New Feature
+
+- Add coupled checkpoints: `context.checkpoint()` publishes a trace cut and retains, under one
+  session fence, content-addressed world images of every bound world, provider-session adapter
+  evidence, process adapter images, and the irreversible-effect frontier.
+- Add `classifyReplayCheckpoint`, deriving atomic, reconstructive, or unavailable classification with
+  configured unavailability reasons.
+- Add the provider-session and process adapter contracts, internal reference copy carrier
+  world-image helpers, and the `replay-checkpoint-v1` schema.
+
+### Impact
+
+Checkpoints state exactly which constituents are verified; coordinated multi-resource world
+checkpoints reassigned from Phase 6 are delivered.
+
+## [2.11.0] - 2026-09-14
+
+### New Feature
+
+- Add the Node-only `./replay` package entry and replay protocol v1 configuration.
+- Add `runReplaySession`: a deterministic session program whose provider exchanges and effects are
+  retained as steps with declared dependencies, runtime-derived prompt, response, prefix, and context
+  prefix identities, cache-hit evidence, and admission before materialization, ending in a finished,
+  failed, or cancelled terminal record.
+- Add store schema v12 replay session leases: single fenced writers, renewal, reserved session owner
+  paths for `append` and `publishCut`, and `replay_session_mismatch` integrity issues.
+- Add `inspectReplaySession` and `deriveReplaySessionId` with terminal, running, interrupted, and
+  materialization-uncertain classification; non-terminal sessions are never resumed in place.
+- Add the replay session, step, admission, and terminal schemas and the `ReplayEvidenceError`,
+  `ReplayCompatibilityError`, `ReplayLeaseConflictError`, `ReplayLeaseFencedError`,
+  `ReplaySessionInterruptedError`, `ReplayMaterializationUncertainError`, and
+  `ReplayStepFailureError` classes.
+
+### Impact
+
+Agent executions can be recorded as replayable journals with verified identities. Store schema v12
+is additive; raw appends and cut publications on replay session owner paths now fail with
+`TraceStoreError`.
+
+## [2.10.2] - 2026-09-14
+
+### Improvement
+
+- Add the Phase 8 coupled checkpoint, rewind, and replay contract: the session step journal,
+  prompt, prefix, and cache identity, checkpoint constituents and classification, rewind and suffix
+  replay, irreversible-effect replay rules, process backends, divergence analysis, a failure table,
+  and non-claims.
+
+### Impact
+
+Documentation only. Runtime behavior, public API, protocols, and schemas are unchanged.
+
 ## [2.10.1] - 2026-09-14
 
 ### Improvement

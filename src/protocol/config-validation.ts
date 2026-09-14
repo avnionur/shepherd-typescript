@@ -5,6 +5,7 @@ import { readFormalAssuranceConfig } from "./config-formal-assurance.ts";
 import { readOrphanRepairConfig } from "./config-orphan-repair.ts";
 import { readProjectionConfig } from "./config-projections.ts";
 import { readProviderConfig } from "./config-providers.ts";
+import { readReplayConfig } from "./config-replay.ts";
 import { readRunConfig } from "./config-runs.ts";
 import { readScopeConfig } from "./config-scopes.ts";
 import {
@@ -61,6 +62,7 @@ export function parseProtocolConfig(
             "projections",
             "providers",
             "recordId",
+            "replay",
             "runs",
             "scopes",
             "supervision",
@@ -89,6 +91,7 @@ export function parseProtocolConfig(
         projections,
         providers: readProviderConfig(root.providers),
         recordId,
+        replay: readReplayConfig(root.replay, effects.reversibilityTiers),
         runs: readRunConfig(root.runs),
         scopes: readScopeConfig(root.scopes, workspaces.repositoryGrants.atoms),
         supervision: readSupervisionConfig(root.supervision, effects.reversibilityTiers),

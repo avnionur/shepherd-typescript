@@ -26,7 +26,9 @@ frozen `TraceIntegrityReport`. It checks:
 - supervised dispatch rows against their first dispatch record, resolution state, and lease
   release (`supervised_dispatch_mismatch`);
 - durable subscription cursors for canonical identity, owner agreement, and positions within
-  retained owner paths (`trace_subscription_mismatch`).
+  retained owner paths (`trace_subscription_mismatch`);
+- replay session rows against their first session record, terminal state, and lease release
+  (`replay_session_mismatch`).
 
 Issues contain a stable `kind` and `subject_id`; they do not expose backend exception text. Counts
 describe the rows and owner paths examined. `ok` is true only when the issue list is empty.

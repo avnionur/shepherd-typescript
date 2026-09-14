@@ -9,6 +9,7 @@ import { addIntegrityIssue } from "./integrity-issues.ts";
 import { readOrphanedAppendIntentIds, verifyOwnerOrdinalIntegrity } from "./integrity-owners.ts";
 import { verifyRecordIntegrity } from "./integrity-records.ts";
 import type { TraceIntegrityIssue, TraceIntegrityReport } from "./integrity-types.ts";
+import { readReplaySessionIds, verifyReplaySessionRow } from "./replay-sessions.ts";
 import { verifyScopeRegistrationRow } from "./scope-integrity.ts";
 import { readScopeRegistrationRows } from "./scope-registrations.ts";
 import { readSupervisedDispatchIds, verifySupervisedDispatchRow } from "./supervised-dispatches.ts";
@@ -85,6 +86,13 @@ export function scanTraceStoreIntegrity(
             verifySupervisedDispatchRow(database, dispatchId);
         } catch {
             addIntegrityIssue(issues, "supervised_dispatch_mismatch", dispatchId);
+        }
+    }
+    for (const sessionId of readReplaySessionIds(database)) {
+        try {
+            verifyReplaySessionRow(database, sessionId);
+        } catch {
+            addIntegrityIssue(issues, "replay_session_mismatch", sessionId);
         }
     }
     for (const subscriptionId of readTraceSubscriptionIds(database)) {

@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.10.1
+Package: `@avnionur/shepherd-typescript` 2.15.1
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,39 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 715.
+Exported symbols: 815.
+
+### `AnalyzeReplayDependenciesOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for analyzeReplayDependencies.
+
+Signature:
+
+```ts
+export type AnalyzeReplayDependenciesOptions = {
+    readonly clock?: () => number;
+    readonly sessionId: string;
+    readonly stepIndex: number;
+};
+```
+
+### `AnalyzeReplayDivergenceOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for analyzeReplayDivergence.
+
+Signature:
+
+```ts
+export type AnalyzeReplayDivergenceOptions = {
+    readonly clock?: () => number;
+    readonly replaySessionId: string;
+    readonly sourceSessionId: string;
+};
+```
 
 ### `AppendBatchDraft`
 
@@ -531,6 +563,39 @@ Signature:
 
 ```ts
 export type ClosurePolicy = "include_external_anchors" | "visible_only";
+```
+
+### `CooperativeProcessAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Cooperative process adapter with an application request channel.
+
+Signature:
+
+```ts
+export type CooperativeProcessAdapter = ReplayProcessAdapter & {
+    readonly close: () => Promise<void>;
+    readonly request: (payload: SemanticValue) => Promise<SemanticValue>;
+};
+```
+
+### `CooperativeProcessAdapterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createCooperativeProcessAdapter.
+
+Signature:
+
+```ts
+export type CooperativeProcessAdapterOptions = {
+    readonly args?: readonly string[];
+    readonly command: string;
+    readonly cwd?: string;
+    readonly processId: string;
+    readonly timeoutMilliseconds?: number;
+};
 ```
 
 ### `Core0hHandlerPhases`
@@ -2678,6 +2743,21 @@ export type InjectSupervisionContextOptions = {
 };
 ```
 
+### `InspectReplaySessionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for inspectReplaySession.
+
+Signature:
+
+```ts
+export type InspectReplaySessionOptions = {
+    readonly clock?: () => number;
+    readonly sessionId: string;
+};
+```
+
 ### `InspectRetainedWorldApplicationConflictsOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -4414,6 +4494,306 @@ export declare const RECORD_MODES: readonly [
 ];
 ```
 
+### `REPLAY_APPROVAL_REQUIRED_TIERS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured reversibility tiers that require replay policy approval in a branch suffix.
+
+Signature:
+
+```ts
+export declare const REPLAY_APPROVAL_REQUIRED_TIERS: readonly [
+    "irreversible"
+];
+```
+
+### `REPLAY_CACHE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured provider cache evidence statuses ordered hit then not observed.
+
+Signature:
+
+```ts
+export declare const REPLAY_CACHE_STATUSES: readonly [
+    "hit",
+    "not_observed"
+];
+```
+
+### `REPLAY_CHANGE_DIMENSIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured declarable replay change dimensions ordered task, provider, handlers.
+
+Signature:
+
+```ts
+export declare const REPLAY_CHANGE_DIMENSIONS: readonly [
+    "task",
+    "provider",
+    "handlers"
+];
+```
+
+### `REPLAY_CHECKPOINT_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured checkpoint classifications ordered atomic, reconstructive, unavailable.
+
+Signature:
+
+```ts
+export declare const REPLAY_CHECKPOINT_CLASSIFICATIONS: readonly [
+    "atomic",
+    "reconstructive",
+    "unavailable"
+];
+```
+
+### `REPLAY_CHECKPOINT_CONSTITUENT_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured checkpoint constituent kinds in descriptor order.
+
+Signature:
+
+```ts
+export declare const REPLAY_CHECKPOINT_CONSTITUENT_KINDS: readonly [
+    "trace_cut",
+    "world",
+    "provider_session",
+    "process",
+    "irreversible_effects"
+];
+```
+
+### `REPLAY_CHECKPOINT_EVIDENCE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured checkpoint evidence statuses ordered verified, reconstructive, not applicable, unavailable.
+
+Signature:
+
+```ts
+export declare const REPLAY_CHECKPOINT_EVIDENCE_STATUSES: readonly [
+    "verified",
+    "reconstructive",
+    "not_applicable",
+    "unavailable"
+];
+```
+
+### `REPLAY_COMPATIBILITY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay evidence compatibility namespace.
+
+Signature:
+
+```ts
+export declare const REPLAY_COMPATIBILITY_VERSION: "shepherd.replay.v1";
+```
+
+### `REPLAY_DIVERGENCE_CAUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured divergence causes ordered root, propagated, unexplained.
+
+Signature:
+
+```ts
+export declare const REPLAY_DIVERGENCE_CAUSES: readonly [
+    "root",
+    "propagated",
+    "unexplained"
+];
+```
+
+### `REPLAY_DIVERGENCE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured divergence alignment statuses ordered identical, diverged, source only, replay only.
+
+Signature:
+
+```ts
+export declare const REPLAY_DIVERGENCE_STATUSES: readonly [
+    "identical",
+    "diverged",
+    "source_only",
+    "replay_only"
+];
+```
+
+### `REPLAY_EFFECT_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay effect dispositions ordered materialized, materialization failed, refused.
+
+Signature:
+
+```ts
+export declare const REPLAY_EFFECT_DISPOSITIONS: readonly [
+    "materialized",
+    "materialization_failed",
+    "refused"
+];
+```
+
+### `REPLAY_LEASE_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay session lease timing.
+
+Signature:
+
+```ts
+export declare const REPLAY_LEASE_LIMITS: Readonly<{
+    readonly leaseMilliseconds: 30000;
+    readonly renewalMilliseconds: 10000;
+}>;
+```
+
+### `REPLAY_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay evidence bounds.
+
+Signature:
+
+```ts
+export declare const REPLAY_LIMITS: Readonly<{
+    readonly maxDependencies: 64;
+    readonly maxErrorMessageBytes: 4096;
+    readonly maxProcessImageBytes: 16777216;
+    readonly maxProcesses: 8;
+    readonly maxReasonBytes: 4096;
+    readonly maxSteps: 4096;
+    readonly maxWorldEntries: 65536;
+    readonly maxWorlds: 16;
+}>;
+```
+
+### `REPLAY_MODES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay session modes ordered root, rewind, replay.
+
+Signature:
+
+```ts
+export declare const REPLAY_MODES: readonly [
+    "root",
+    "rewind",
+    "replay"
+];
+```
+
+### `REPLAY_PROCESS_BACKENDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured process checkpoint backends ordered cooperative then transparent.
+
+Signature:
+
+```ts
+export declare const REPLAY_PROCESS_BACKENDS: readonly [
+    "cooperative",
+    "transparent"
+];
+```
+
+### `REPLAY_RECORD_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured canonical replay record version.
+
+Signature:
+
+```ts
+export declare const REPLAY_RECORD_VERSION: 1;
+```
+
+### `REPLAY_RECOVERY_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured session recovery classifications ordered terminal, running, interrupted, materialization uncertain.
+
+Signature:
+
+```ts
+export declare const REPLAY_RECOVERY_CLASSIFICATIONS: readonly [
+    "terminal",
+    "running",
+    "interrupted",
+    "materialization_uncertain"
+];
+```
+
+### `REPLAY_STEP_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay step kinds ordered provider then effect.
+
+Signature:
+
+```ts
+export declare const REPLAY_STEP_KINDS: readonly [
+    "provider",
+    "effect"
+];
+```
+
+### `REPLAY_STEP_SOURCES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay step sources ordered live then recorded.
+
+Signature:
+
+```ts
+export declare const REPLAY_STEP_SOURCES: readonly [
+    "live",
+    "recorded"
+];
+```
+
+### `REPLAY_TERMINAL_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured session terminal statuses ordered finished, failed, cancelled, rewound.
+
+Signature:
+
+```ts
+export declare const REPLAY_TERMINAL_STATUSES: readonly [
+    "finished",
+    "failed",
+    "cancelled",
+    "rewound"
+];
+```
+
 ### `REPOSITORY_GRANT_ATOMS`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -5143,6 +5523,1472 @@ export type ReleasedRetainedWorldSettlement = {
 };
 ```
 
+### `ReplayBranchOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options shared by rewind and replay.
+
+Signature:
+
+```ts
+export type ReplayBranchOptions = {
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly processes?: readonly ReplayProcessAdapter[];
+    readonly providerSession?: ReplayProviderSessionAdapter;
+    readonly signal?: AbortSignal;
+    readonly sourceSessionId: string;
+    readonly target: ReplayTarget;
+    readonly worlds?: readonly ReplayWorldBinding[];
+};
+```
+
+### `ReplayCacheEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Provider cache evidence retained on a provider step.
+
+Signature:
+
+```ts
+export type ReplayCacheEvidence = {
+    readonly creation_input_tokens: number;
+    readonly identity: string | null;
+    readonly prior_context_prefix_id: string | null;
+    readonly read_input_tokens: number;
+    readonly status: ReplayCacheStatus;
+};
+```
+
+### `ReplayCacheStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured provider cache evidence status.
+
+Signature:
+
+```ts
+export type ReplayCacheStatus = (typeof REPLAY_CACHE_STATUSES)[number];
+```
+
+### `ReplayChangeDimension`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured declarable replay change dimension.
+
+Signature:
+
+```ts
+export type ReplayChangeDimension = (typeof REPLAY_CHANGE_DIMENSIONS)[number];
+```
+
+### `ReplayCheckpointClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured coupled checkpoint classification.
+
+Signature:
+
+```ts
+export type ReplayCheckpointClassification = (typeof REPLAY_CHECKPOINT_CLASSIFICATIONS)[number];
+```
+
+### `ReplayCheckpointClassificationResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Derived classification of retained constituents.
+
+Signature:
+
+```ts
+export type ReplayCheckpointClassificationResult = {
+    readonly classification: ReplayCheckpointClassification;
+    readonly not_applicable: readonly ReplayConstituentName[];
+    readonly reconstructive: readonly ReplayConstituentName[];
+    readonly unavailable: readonly (ReplayConstituentName & {
+        readonly reason: string;
+    })[];
+    readonly verified: readonly ReplayConstituentName[];
+};
+```
+
+### `ReplayCheckpointConstituentKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured coupled checkpoint constituent kind.
+
+Signature:
+
+```ts
+export type ReplayCheckpointConstituentKind = (typeof REPLAY_CHECKPOINT_CONSTITUENT_KINDS)[number];
+```
+
+### `ReplayCheckpointEvidenceStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured coupled checkpoint constituent evidence status.
+
+Signature:
+
+```ts
+export type ReplayCheckpointEvidenceStatus = (typeof REPLAY_CHECKPOINT_EVIDENCE_STATUSES)[number];
+```
+
+### `ReplayCheckpointInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated coupled checkpoint.
+
+Signature:
+
+```ts
+export type ReplayCheckpointInspection = {
+    readonly classification: ReplayCheckpointClassification;
+    readonly checkpoint_id: string;
+    readonly constituents: readonly ReplayConstituent[];
+    readonly context_prefix_id: string | null;
+    readonly prefix_id: string | null;
+    readonly record_id: RecordId;
+    readonly session_id: string;
+    readonly step_count: number;
+    readonly trace_cut_id: string;
+};
+```
+
+### `ReplayCheckpointUnavailableError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a replay target has unavailable constituents.
+
+Signature:
+
+```ts
+export declare class ReplayCheckpointUnavailableError extends TraceStoreError {
+    readonly code: string;
+    readonly unavailable: readonly {
+        readonly kind: string;
+        readonly name: string | null;
+        readonly reason: string;
+    }[];
+    constructor(unavailable: readonly {
+        readonly kind: string;
+        readonly name: string | null;
+        readonly reason: string;
+    }[]);
+}
+```
+
+#### `code`
+
+Stable configuration-owned unavailable-target code.
+
+```ts
+readonly code: string;
+```
+
+#### `unavailable`
+
+Unavailable constituents with their retained reasons.
+
+```ts
+readonly unavailable: readonly {
+    readonly kind: string;
+    readonly name: string | null;
+    readonly reason: string;
+}[];
+```
+
+#### `constructor`
+
+Creates an unavailable-target failure.
+
+```ts
+constructor(unavailable: readonly {
+    readonly kind: string;
+    readonly name: string | null;
+    readonly reason: string;
+}[]);
+```
+
+Parameter:
+
+- unavailable - Unavailable constituents with their retained reasons.
+
+### `ReplayCompatibilityError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained replay evidence names an unsupported compatibility or record version.
+
+Imported archives from other replay protocol versions remain inspectable as ordinary trace records
+but are never replayed.
+
+Signature:
+
+```ts
+export declare class ReplayCompatibilityError extends TraceStoreError {
+    readonly code: string;
+    readonly compatibility_version: unknown;
+    readonly replay_version: unknown;
+    constructor(compatibilityVersion: unknown, replayVersion: unknown);
+}
+```
+
+#### `code`
+
+Stable configuration-owned compatibility code.
+
+```ts
+readonly code: string;
+```
+
+#### `compatibility_version`
+
+Retained compatibility namespace.
+
+```ts
+readonly compatibility_version: unknown;
+```
+
+#### `replay_version`
+
+Retained replay record version.
+
+```ts
+readonly replay_version: unknown;
+```
+
+#### `constructor`
+
+Creates an unsupported-version failure.
+
+```ts
+constructor(compatibilityVersion: unknown, replayVersion: unknown);
+```
+
+Parameter:
+
+- compatibilityVersion - Retained compatibility namespace.
+
+Parameter:
+
+- replayVersion - Retained replay record version.
+
+### `ReplayConstituent`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One classified checkpoint or restore constituent.
+
+Signature:
+
+```ts
+export type ReplayConstituent = {
+    readonly evidence: SemanticRecord | null;
+    readonly kind: ReplayCheckpointConstituentKind;
+    readonly name: string | null;
+    readonly reason: string | null;
+    readonly receipt_id: string | null;
+    readonly status: ReplayCheckpointEvidenceStatus;
+};
+```
+
+### `ReplayConstituentName`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Constituent kind with an optional name.
+
+Signature:
+
+```ts
+export type ReplayConstituentName = {
+    readonly kind: ReplayCheckpointConstituentKind;
+    readonly name: string | null;
+};
+```
+
+### `ReplayDependencyAnalysis`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only dependency analysis of one session step.
+
+Signature:
+
+```ts
+export type ReplayDependencyAnalysis = {
+    readonly dependents: readonly number[];
+    readonly independent: readonly number[];
+    readonly session_id: string;
+    readonly step_index: number;
+};
+```
+
+### `ReplayDivergenceAnalysis`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only divergence analysis of a source and a branch session.
+
+Signature:
+
+```ts
+export type ReplayDivergenceAnalysis = {
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly common_prefix_id: string | null;
+    readonly first_divergence_index: number | null;
+    readonly replay_session_id: string;
+    readonly source_session_id: string;
+    readonly steps: readonly ReplayDivergenceStep[];
+    readonly unexplained: readonly number[];
+};
+```
+
+### `ReplayDivergenceCause`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured divergence cause.
+
+Signature:
+
+```ts
+export type ReplayDivergenceCause = (typeof REPLAY_DIVERGENCE_CAUSES)[number];
+```
+
+### `ReplayDivergenceStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured divergence alignment status.
+
+Signature:
+
+```ts
+export type ReplayDivergenceStatus = (typeof REPLAY_DIVERGENCE_STATUSES)[number];
+```
+
+### `ReplayDivergenceStep`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One aligned step of a divergence analysis.
+
+Signature:
+
+```ts
+export type ReplayDivergenceStep = {
+    readonly cause: ReplayDivergenceCause | null;
+    readonly index: number;
+    readonly replay_step_id: string | null;
+    readonly source_step_id: string | null;
+    readonly status: ReplayDivergenceStatus;
+};
+```
+
+### `ReplayEffectApproval`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained approval of a branch suffix effect.
+
+Signature:
+
+```ts
+export type ReplayEffectApproval = {
+    readonly approver_id: string;
+    readonly reason: string;
+    readonly rematerialization: boolean;
+};
+```
+
+### `ReplayEffectApprovalRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request presented to replay policy for an approval-required branch suffix effect.
+
+Signature:
+
+```ts
+export type ReplayEffectApprovalRequest = {
+    readonly intent: EffectIntent;
+    readonly session_id: string;
+    readonly source_materialized_step_index: number | null;
+    readonly step_index: number;
+};
+```
+
+### `ReplayEffectApprovalVerdict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Replay policy verdict.
+
+Signature:
+
+```ts
+export type ReplayEffectApprovalVerdict = {
+    readonly approved: true;
+    readonly approverId: string;
+    readonly reason: string;
+} | {
+    readonly approved: false;
+    readonly reason: string;
+};
+```
+
+### `ReplayEffectDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured effect step disposition.
+
+Signature:
+
+```ts
+export type ReplayEffectDisposition = (typeof REPLAY_EFFECT_DISPOSITIONS)[number];
+```
+
+### `ReplayEffectRefusedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised to the session program when a branch suffix effect is refused by replay policy.
+
+Signature:
+
+```ts
+export declare class ReplayEffectRefusedError extends TraceStoreError {
+    readonly code: string;
+    readonly step_index: number;
+    constructor(stepIndex: number);
+}
+```
+
+#### `code`
+
+Stable configuration-owned refused-effect code.
+
+```ts
+readonly code: string;
+```
+
+#### `step_index`
+
+Refused step index.
+
+```ts
+readonly step_index: number;
+```
+
+#### `constructor`
+
+Creates a refused-effect failure.
+
+```ts
+constructor(stepIndex: number);
+```
+
+Parameter:
+
+- stepIndex - Refused step index.
+
+### `ReplayEffectStepInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated effect step detail.
+
+Signature:
+
+```ts
+export type ReplayEffectStepInspection = {
+    readonly approval: ReplayEffectApproval | null;
+    readonly admission_record_id: RecordId | null;
+    readonly disposition: ReplayEffectDisposition;
+    readonly failure: ReplayStepFailure | null;
+    readonly handler_id: string | null;
+    readonly intent: EffectIntent;
+    readonly intent_ref: string;
+    readonly outcome: EffectOutcome | null;
+    readonly refusal_reason: string | null;
+};
+```
+
+### `ReplayEffectStepResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one materialized effect step returned to the session program.
+
+Signature:
+
+```ts
+export type ReplayEffectStepResult = {
+    readonly handle: ReplayStepHandle;
+    readonly outcome: EffectOutcome;
+    readonly source: ReplayStepSource;
+};
+```
+
+### `ReplayEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or supplied replay evidence is absent, malformed, or inconsistent.
+
+Signature:
+
+```ts
+export declare class ReplayEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ReplayLeaseConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when another unexpired writer holds a replay session lease.
+
+Signature:
+
+```ts
+export declare class ReplayLeaseConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly session_id: string;
+    constructor(sessionId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned lease-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Claim identity currently holding the lease.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `session_id`
+
+Session whose lease is held.
+
+```ts
+readonly session_id: string;
+```
+
+#### `constructor`
+
+Creates a held-lease failure.
+
+```ts
+constructor(sessionId: string, claimId: string);
+```
+
+Parameter:
+
+- sessionId - Session whose lease is held.
+
+Parameter:
+
+- claimId - Current holder.
+
+### `ReplayLeaseFencedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a session writer's lease is released, expired, superseded, or unknown.
+
+Signature:
+
+```ts
+export declare class ReplayLeaseFencedError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly session_id: string;
+    constructor(sessionId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned fenced-lease code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Rejected claim identity.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `session_id`
+
+Session whose append was fenced.
+
+```ts
+readonly session_id: string;
+```
+
+#### `constructor`
+
+Creates a fenced-lease failure.
+
+```ts
+constructor(sessionId: string, claimId: string);
+```
+
+Parameter:
+
+- sessionId - Session whose append was rejected.
+
+Parameter:
+
+- claimId - Rejected claim identity.
+
+### `ReplayMaterializationUncertainError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a session retains an effect admission without its step.
+
+The handler may have changed the world, so the effect is never re-invoked and the boundary is
+never used as a replay target.
+
+Signature:
+
+```ts
+export declare class ReplayMaterializationUncertainError extends TraceStoreError {
+    readonly code: string;
+    readonly admission_record_id: string;
+    readonly session_id: string;
+    constructor(sessionId: string, admissionRecordId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned uncertain-materialization code.
+
+```ts
+readonly code: string;
+```
+
+#### `admission_record_id`
+
+Retained admission record.
+
+```ts
+readonly admission_record_id: string;
+```
+
+#### `session_id`
+
+Session requiring manual recovery.
+
+```ts
+readonly session_id: string;
+```
+
+#### `constructor`
+
+Creates an uncertain-materialization failure.
+
+```ts
+constructor(sessionId: string, admissionRecordId: string);
+```
+
+Parameter:
+
+- sessionId - Session requiring manual recovery.
+
+Parameter:
+
+- admissionRecordId - Retained admission record.
+
+### `ReplayMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured replay session mode.
+
+Signature:
+
+```ts
+export type ReplayMode = (typeof REPLAY_MODES)[number];
+```
+
+### `ReplayOriginInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Origin of a branch session.
+
+Signature:
+
+```ts
+export type ReplayOriginInspection = {
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly replacement_task: ReplaySessionTask | null;
+    readonly source_session_id: string;
+    readonly source_session_record_id: RecordId;
+    readonly target_checkpoint_id: string | null;
+    readonly target_step_count: number;
+    readonly target_trace_cut_id: string;
+};
+```
+
+### `ReplayPrefixMismatchError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a replayed prefix differs from the recorded prefix.
+
+Signature:
+
+```ts
+export declare class ReplayPrefixMismatchError extends TraceStoreError {
+    readonly code: string;
+    readonly step_index: number | null;
+    constructor(stepIndex: number | null, detail: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned prefix-mismatch code.
+
+```ts
+readonly code: string;
+```
+
+#### `step_index`
+
+First mismatching step index, or null for a whole-prefix identity mismatch.
+
+```ts
+readonly step_index: number | null;
+```
+
+#### `constructor`
+
+Creates a prefix-mismatch failure.
+
+```ts
+constructor(stepIndex: number | null, detail: string);
+```
+
+Parameter:
+
+- stepIndex - First mismatching step index, or null.
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+### `ReplayProcessAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Adapter that captures and restores one process bound to a session.
+
+Signature:
+
+```ts
+export type ReplayProcessAdapter = {
+    readonly backend: ReplayProcessBackend;
+    readonly checkpoint: (context: ReplayProcessCheckpointContext) => Promise<Uint8Array>;
+    readonly probe: () => Promise<ReplayProcessProbe>;
+    readonly processId: string;
+    readonly restore: (image: Uint8Array, context: ReplayProcessCheckpointContext) => Promise<void>;
+};
+```
+
+### `ReplayProcessBackend`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured process checkpoint backend kind.
+
+Signature:
+
+```ts
+export type ReplayProcessBackend = (typeof REPLAY_PROCESS_BACKENDS)[number];
+```
+
+### `ReplayProcessCheckpointContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context presented to a process adapter.
+
+Signature:
+
+```ts
+export type ReplayProcessCheckpointContext = {
+    readonly process_id: string;
+    readonly session_id: string;
+    readonly step_count: number;
+};
+```
+
+### `ReplayProcessProbe`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Probe result of a process checkpoint backend.
+
+Signature:
+
+```ts
+export type ReplayProcessProbe = {
+    readonly available: true;
+} | {
+    readonly available: false;
+    readonly reason: string;
+};
+```
+
+### `ReplayProviderSessionAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Adapter that captures and restores provider-side conversation state.
+
+Signature:
+
+```ts
+export type ReplayProviderSessionAdapter = {
+    readonly adapterId: string;
+    readonly cacheIdentity?: (request: ModelRequest, contextPrefixId: string | null) => string | null;
+    readonly checkpoint: (context: ReplayProviderSessionCheckpointContext) => Promise<ReplayProviderSessionEvidence> | ReplayProviderSessionEvidence;
+    readonly restore: (receiptId: string, context: ReplayProviderSessionCheckpointContext) => Promise<string | null> | string | null;
+};
+```
+
+### `ReplayProviderSessionCheckpointContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context presented to a provider-session adapter at a checkpoint.
+
+Signature:
+
+```ts
+export type ReplayProviderSessionCheckpointContext = {
+    readonly context_prefix_id: string | null;
+    readonly session_id: string;
+    readonly step_count: number;
+};
+```
+
+### `ReplayProviderSessionEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Evidence returned by a provider-session adapter.
+
+Signature:
+
+```ts
+export type ReplayProviderSessionEvidence = {
+    readonly contextPrefixId: string | null;
+    readonly receiptId: string;
+    readonly status: "verified";
+} | {
+    readonly reason: string;
+    readonly status: "unavailable";
+};
+```
+
+### `ReplayProviderStepInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated provider step detail.
+
+Signature:
+
+```ts
+export type ReplayProviderStepInspection = {
+    readonly cache: ReplayCacheEvidence | null;
+    readonly context_prefix_id: string;
+    readonly failure: ReplayStepFailure | null;
+    readonly prompt_id: string;
+    readonly request: ModelRequest;
+    readonly response: {
+        readonly output: SemanticValue;
+        readonly usage: ModelUsage;
+    } | null;
+    readonly response_id: string;
+};
+```
+
+### `ReplayProviderStepResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one provider step returned to the session program.
+
+Signature:
+
+```ts
+export type ReplayProviderStepResult = {
+    readonly handle: ReplayStepHandle;
+    readonly response: {
+        readonly output: SemanticValue;
+        readonly usage: ModelUsage;
+    };
+    readonly source: ReplayStepSource;
+};
+```
+
+### `ReplayRecoveryClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured record-derived session recovery classification.
+
+Signature:
+
+```ts
+export type ReplayRecoveryClassification = (typeof REPLAY_RECOVERY_CLASSIFICATIONS)[number];
+```
+
+### `ReplayReplaySessionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for replaying a session from a checkpoint or step boundary.
+
+Signature:
+
+```ts
+export type ReplayReplaySessionOptions = ReplayBranchOptions & {
+    readonly changes?: readonly ReplayChangeDimension[];
+    readonly handlers?: EffectHandlerStack;
+    readonly policy?: (request: ReplayEffectApprovalRequest) => Promise<ReplayEffectApprovalVerdict> | ReplayEffectApprovalVerdict;
+    readonly program: ReplaySessionProgram;
+    readonly provider?: ModelProvider;
+    readonly task?: ReplaySessionTaskDefinition;
+};
+```
+
+### `ReplayRestoreError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a restoration target or restored constituent fails verification.
+
+Signature:
+
+```ts
+export declare class ReplayRestoreError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned restoration code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a restoration failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ReplayRestoreInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated restore evidence of a branch session.
+
+Signature:
+
+```ts
+export type ReplayRestoreInspection = {
+    readonly classification: ReplayCheckpointClassification;
+    readonly constituents: readonly ReplayConstituent[];
+    readonly context_prefix_id: string | null;
+    readonly prefix_id: string | null;
+    readonly record_id: RecordId;
+};
+```
+
+### `ReplaySessionContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context through which a session program reaches the outside world.
+
+Signature:
+
+```ts
+export type ReplaySessionContext = {
+    readonly checkpoint: () => Promise<ReplayCheckpointInspection>;
+    readonly dispatchEffect: (intent: EffectIntent, options?: ReplayStepOptions) => Promise<ReplayEffectStepResult>;
+    readonly invokeProvider: (request: ModelRequest, options?: ReplayStepOptions) => Promise<ReplayProviderStepResult>;
+    readonly invokeTask: (options?: ReplayStepOptions) => Promise<ReplayProviderStepResult>;
+    readonly mode: ReplayMode;
+    readonly session_id: string;
+    readonly signal: AbortSignal;
+    readonly step_count: number;
+    readonly task: ReplaySessionTask | null;
+};
+```
+
+### `ReplaySessionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one replay session.
+
+Signature:
+
+```ts
+export type ReplaySessionInspection = {
+    readonly checkpoints: readonly ReplayCheckpointInspection[];
+    readonly command_id: string;
+    readonly pending_admission_record_id: RecordId | null;
+    readonly classification: ReplayRecoveryClassification;
+    readonly head_record_id: RecordId;
+    readonly live: boolean;
+    readonly mode: ReplayMode;
+    readonly origin: ReplayOriginInspection | null;
+    readonly processes: readonly {
+        readonly backend: ReplayProcessBackend;
+        readonly process_id: string;
+    }[];
+    readonly program_id: string;
+    readonly provider: ProviderDescriptor | null;
+    readonly provider_session_adapter_id: string | null;
+    readonly restore: ReplayRestoreInspection | null;
+    readonly session_id: string;
+    readonly session_record_id: RecordId;
+    readonly steps: readonly ReplayStepInspection[];
+    readonly task: ReplaySessionTask | null;
+    readonly terminal: ReplayTerminalInspection | null;
+    readonly worlds: readonly string[];
+};
+```
+
+### `ReplaySessionInterruptedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a session command names a non-terminal session that is not held by a live writer.
+
+Sessions are never resumed in place; recovery replays from a retained checkpoint or step
+boundary.
+
+Signature:
+
+```ts
+export declare class ReplaySessionInterruptedError extends TraceStoreError {
+    readonly code: string;
+    readonly classification: string;
+    readonly session_id: string;
+    constructor(sessionId: string, classification: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned interrupted-session code.
+
+```ts
+readonly code: string;
+```
+
+#### `classification`
+
+Record-derived recovery classification.
+
+```ts
+readonly classification: string;
+```
+
+#### `session_id`
+
+Interrupted session.
+
+```ts
+readonly session_id: string;
+```
+
+#### `constructor`
+
+Creates an interrupted-session failure.
+
+```ts
+constructor(sessionId: string, classification: string);
+```
+
+Parameter:
+
+- sessionId - Interrupted session.
+
+Parameter:
+
+- classification - Record-derived recovery classification.
+
+### `ReplaySessionProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Deterministic session program. Its result must be canonical semantic data.
+
+Signature:
+
+```ts
+export type ReplaySessionProgram = (context: ReplaySessionContext) => Promise<unknown> | unknown;
+```
+
+### `ReplaySessionReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Receipt of a root session, rewind, or replay.
+
+Signature:
+
+```ts
+export type ReplaySessionReceipt = {
+    readonly inspection: ReplaySessionInspection;
+};
+```
+
+### `ReplaySessionTask`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Task in force for the next step of a session.
+
+Signature:
+
+```ts
+export type ReplaySessionTask = {
+    readonly artifact_lock: TaskArtifactLock;
+    readonly input: SemanticValue;
+    readonly instruction: string;
+    readonly output_schema: SemanticRecord;
+};
+```
+
+### `ReplaySessionTaskDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Task and input bound to a session.
+
+Signature:
+
+```ts
+export type ReplaySessionTaskDefinition = {
+    readonly descriptor: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>;
+    readonly input: unknown;
+};
+```
+
+### `ReplayStepFailure`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained failure of a provider invocation or effect handler.
+
+Signature:
+
+```ts
+export type ReplayStepFailure = {
+    readonly message: string;
+    readonly name: string;
+};
+```
+
+### `ReplayStepFailureError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised to the session program for a provider or effect step that failed.
+
+The same error is raised when the failure first happens and whenever the failed step is served
+from a recorded prefix, so program control flow is identical in both cases.
+
+Signature:
+
+```ts
+export declare class ReplayStepFailureError extends Error {
+    readonly code: string;
+    readonly failure_name: string;
+    readonly failure_message: string;
+    readonly step_index: number;
+    constructor(stepIndex: number, failureName: string, failureMessage: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned step-failure code.
+
+```ts
+readonly code: string;
+```
+
+#### `failure_name`
+
+Retained failure class name.
+
+```ts
+readonly failure_name: string;
+```
+
+#### `failure_message`
+
+Retained bounded failure message.
+
+```ts
+readonly failure_message: string;
+```
+
+#### `step_index`
+
+Failed step index.
+
+```ts
+readonly step_index: number;
+```
+
+#### `constructor`
+
+Creates a step failure.
+
+```ts
+constructor(stepIndex: number, failureName: string, failureMessage: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- stepIndex - Failed step index.
+
+Parameter:
+
+- failureName - Retained failure class name.
+
+Parameter:
+
+- failureMessage - Retained bounded failure message.
+
+Parameter:
+
+- options - Optional in-memory cause of a live failure.
+
+### `ReplayStepHandle`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained address of one session step.
+
+Signature:
+
+```ts
+export type ReplayStepHandle = {
+    readonly index: number;
+    readonly record_id: RecordId;
+};
+```
+
+### `ReplayStepInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated step of a session.
+
+Signature:
+
+```ts
+export type ReplayStepInspection = {
+    readonly depends_on: readonly number[];
+    readonly effect: ReplayEffectStepInspection | null;
+    readonly index: number;
+    readonly kind: ReplayStepKind;
+    readonly prefix_id: string;
+    readonly provider: ReplayProviderStepInspection | null;
+    readonly record_id: RecordId;
+    readonly source: ReplayStepSource;
+    readonly source_step_record_id: RecordId | null;
+    readonly step_id: string;
+};
+```
+
+### `ReplayStepKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured replay step kind.
+
+Signature:
+
+```ts
+export type ReplayStepKind = (typeof REPLAY_STEP_KINDS)[number];
+```
+
+### `ReplayStepOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by every step-producing session context operation.
+
+Signature:
+
+```ts
+export type ReplayStepOptions = {
+    readonly dependsOn?: readonly ReplayStepHandle[];
+};
+```
+
+### `ReplayStepSource`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured replay step source: executed live or served from a recorded prefix.
+
+Signature:
+
+```ts
+export type ReplayStepSource = (typeof REPLAY_STEP_SOURCES)[number];
+```
+
+### `ReplayTarget`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Target of a rewind or replay.
+
+Signature:
+
+```ts
+export type ReplayTarget = {
+    readonly checkpointId: string;
+} | {
+    readonly stepCount: number;
+};
+```
+
+### `ReplayTerminalInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated terminal record.
+
+Signature:
+
+```ts
+export type ReplayTerminalInspection = {
+    readonly failure: ReplayStepFailure | null;
+    readonly prefix_id: string | null;
+    readonly record_id: RecordId;
+    readonly result: {
+        readonly value: SemanticValue;
+    } | null;
+    readonly status: ReplayTerminalStatus;
+    readonly step_count: number;
+};
+```
+
+### `ReplayTerminalStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured session terminal status.
+
+Signature:
+
+```ts
+export type ReplayTerminalStatus = (typeof REPLAY_TERMINAL_STATUSES)[number];
+```
+
+### `ReplayWorldBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One managed world directory bound to a session.
+
+Signature:
+
+```ts
+export type ReplayWorldBinding = {
+    readonly name: string;
+    readonly root: string;
+};
+```
+
 ### `RepositoryGrantAtom`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -5603,6 +7449,18 @@ export type RetainedWorldSettlementRequest = {
     readonly settlement_version: number;
     readonly user_basis_before: string;
 };
+```
+
+### `RewindReplaySessionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for rewinding a session to a checkpoint or step boundary.
+
+Signature:
+
+```ts
+export type RewindReplaySessionOptions = ReplayBranchOptions;
 ```
 
 ### `RunArtifact`
@@ -6174,6 +8032,31 @@ Signature:
 
 ```ts
 export type RunOutcomeFor<O extends RunTerminalDefinition> = RunOutcome<O extends FinishedRunDefinition<infer V> ? FinishedRunOutcome<V> : O extends FailedRunDefinition ? FailedRunOutcome : O extends ExhaustedRunDefinition ? ExhaustedRunOutcome : CancelledRunOutcome>;
+```
+
+### `RunReplaySessionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for running one root replay session.
+
+Signature:
+
+```ts
+export type RunReplaySessionOptions = {
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly handlers?: EffectHandlerStack;
+    readonly processes?: readonly ReplayProcessAdapter[];
+    readonly program: ReplaySessionProgram;
+    readonly programId: string;
+    readonly provider?: ModelProvider;
+    readonly providerSession?: ReplayProviderSessionAdapter;
+    readonly signal?: AbortSignal;
+    readonly task?: ReplaySessionTaskDefinition;
+    readonly worlds?: readonly ReplayWorldBinding[];
+};
 ```
 
 ### `RunScopeTreeOptions`
@@ -6960,7 +8843,7 @@ Throws:
 Throws:
 
 - {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
-owner path reserved for supervised dispatches or context channels.
+owner path reserved for supervised dispatches, context channels, or replay sessions.
 
 Throws:
 
@@ -7577,7 +9460,8 @@ Returns:
 
 Throws:
 
-- {TraceStoreError} If the target occurrence is absent or the store is closed.
+- {TraceStoreError} If the target occurrence is absent, the publishing owner path is
+reserved for replay sessions, or the store is closed.
 
 Throws:
 
@@ -11060,7 +12944,7 @@ Stable classification for one whole-store integrity defect.
 Signature:
 
 ```ts
-export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "scope_registration_mismatch" | "sqlite_integrity_mismatch" | "supervised_dispatch_mismatch" | "trace_subscription_mismatch" | "witness_mismatch";
+export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "replay_session_mismatch" | "scope_registration_mismatch" | "sqlite_integrity_mismatch" | "supervised_dispatch_mismatch" | "trace_subscription_mismatch" | "witness_mismatch";
 ```
 
 ### `TraceIntegrityReport`
@@ -11258,6 +13142,20 @@ Signature:
 
 ```ts
 export type TraceSubscriptionStartPosition = (typeof SUPERVISION_SUBSCRIPTION_START_POSITIONS)[number];
+```
+
+### `TransparentProcessAdapterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createTransparentProcessAdapter.
+
+Signature:
+
+```ts
+export type TransparentProcessAdapterOptions = {
+    readonly processId: string;
+};
 ```
 
 ### `TypedEffectHandlerOptions`
@@ -12548,6 +14446,94 @@ Returns:
 
 - Frozen active spawned or adopted relations.
 
+### `analyzeReplayDependencies`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Returns the steps a change at one step can affect through declared dependencies.
+
+Dependents are the transitive closure of later steps that declare a dependency on the step or on
+another dependent; every other later step is independent. Analysis is read-only and relies on the
+program's declared dependencies.
+
+Signature:
+
+```ts
+export declare function analyzeReplayDependencies(store: SQLiteTraceStore, options: AnalyzeReplayDependenciesOptions): ReplayDependencyAnalysis;
+```
+
+Parameter:
+
+- store - Open trace store holding the session.
+
+Parameter:
+
+- options - Session identity and step index.
+
+Returns:
+
+- Frozen dependency analysis.
+
+Throws:
+
+- {ReplayEvidenceError} If session evidence is invalid.
+
+Throws:
+
+- {TypeError} If options are malformed or the step is not retained.
+
+Example:
+
+- ```ts
+const { dependents } = analyzeReplayDependencies(store, { sessionId, stepIndex: 0 });
+```
+
+### `analyzeReplayDivergence`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Aligns a branch session with its source and classifies every divergence.
+
+Steps are aligned by index. A step is `identical` when both sessions retain the same content
+identity, `diverged` when both retain different content, and `source_only` or `replay_only` when
+one session ends earlier. A non-identical step is `propagated` when one of its declared
+dependencies is not identical, `root` when its dependencies are identical and its kind is explained
+by a declared change (task or provider for provider steps, handlers or a replay-policy refusal for
+effect steps), and `unexplained` otherwise. Analysis is read-only.
+
+Signature:
+
+```ts
+export declare function analyzeReplayDivergence(store: SQLiteTraceStore, options: AnalyzeReplayDivergenceOptions): ReplayDivergenceAnalysis;
+```
+
+Parameter:
+
+- store - Open trace store holding both sessions.
+
+Parameter:
+
+- options - Source and branch session identities.
+
+Returns:
+
+- Frozen divergence analysis.
+
+Throws:
+
+- {ReplayEvidenceError} If the branch does not originate from the source or evidence is invalid.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const analysis = analyzeReplayDivergence(store, { replaySessionId, sourceSessionId });
+assert.deepEqual(analysis.unexplained, []);
+```
+
 ### `applyRetainedWorldSettlement`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -13051,6 +15037,41 @@ const envelope = classifyProofEnvelope({
 envelope.reference_validated;
 ```
 
+### `classifyReplayCheckpoint`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives from retained constituents how a checkpoint or restore can be reproduced.
+
+`atomic` means every constituent is verified or not applicable, `reconstructive` means some
+constituent is re-derived from recorded evidence and none is unavailable, and `unavailable` means
+at least one constituent cannot be restored. Receipt identifiers alone are never treated as proof:
+rewind and replay re-verify every verified constituent before use.
+
+Signature:
+
+```ts
+export declare function classifyReplayCheckpoint(checkpoint: Pick<ReplayCheckpointInspection, "constituents">): ReplayCheckpointClassificationResult;
+```
+
+Parameter:
+
+- checkpoint - Checkpoint inspection or any value with retained constituents.
+
+Returns:
+
+- Frozen classification with constituents grouped by status.
+
+Throws:
+
+- {TypeError} If the constituents are malformed or out of configured order.
+
+Example:
+
+- ```ts
+const { classification, unavailable } = classifyReplayCheckpoint(inspection.checkpoints[0]);
+```
+
 ### `classifyScopeCheckpoint`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -13087,6 +15108,50 @@ Example:
 - ```ts
 const fork = await forkScope(store, options);
 const { start, restorable } = classifyScopeCheckpoint(fork.world.checkpoint);
+```
+
+### `createCooperativeProcessAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a process adapter that checkpoints a cooperating child process.
+
+The child speaks newline-delimited JSON on standard input and output. Every request carries the
+configured protocol version, a message type, and a correlation number. A checkpoint request is
+answered with an image message holding base64 state bytes; a restore request carries those bytes
+to a freshly started process and is answered with a restored message; application requests are
+answered with response messages; error messages fail the request. Responses are bounded by the
+configured line size and timeout, and a process that exits, times out, or violates the protocol is
+stopped. The image is captured by the process itself, so the backend is cooperative rather than
+transparent.
+
+Signature:
+
+```ts
+export declare function createCooperativeProcessAdapter(options: CooperativeProcessAdapterOptions): CooperativeProcessAdapter;
+```
+
+Parameter:
+
+- options - Process identity, executable, arguments, and working directory.
+
+Returns:
+
+- A process adapter with request and close operations.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const worker = createCooperativeProcessAdapter({
+    args: ["worker.js"],
+    command: process.execPath,
+    processId: "counter",
+});
+await worker.request({ op: "increment" });
 ```
 
 ### `createEffectHandlerStack`
@@ -13878,6 +15943,42 @@ const provider = createStaticProvider({
 await provider.invoke(request, new AbortController().signal);
 ```
 
+### `createTransparentProcessAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a transparent CRIU process adapter that reports host capability accurately.
+
+The probe refuses unsupported platforms, an executable that cannot be started, and a failing
+configured host check, each with its configured reason. Replay protocol v1 does not capture
+transparent process images, so a passing host check is still reported unavailable with the
+configured capture-unsupported reason, and checkpoint and restore always fail.
+
+Signature:
+
+```ts
+export declare function createTransparentProcessAdapter(options: TransparentProcessAdapterOptions): ReplayProcessAdapter;
+```
+
+Parameter:
+
+- options - Process identity.
+
+Returns:
+
+- A process adapter whose probe never claims transparent capture.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const probe = await createTransparentProcessAdapter({ processId: "tool" }).probe();
+console.log(probe.available, "reason" in probe ? probe.reason : "");
+```
+
 ### `createTypedEffectHandler`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -14025,6 +16126,38 @@ const inspection = await createWorldChangesetInspection({
   headRevision,
 });
 console.log(inspection.change("src/index.ts"));
+```
+
+### `deriveReplaySessionId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the replay session identity and owner path of one session command.
+
+Signature:
+
+```ts
+export declare function deriveReplaySessionId(commandId: string): string;
+```
+
+Parameter:
+
+- commandId - Globally idempotent session command identity.
+
+Returns:
+
+- The configured session identity.
+
+Throws:
+
+- {TypeError} If the command identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectReplaySession(store, {
+    sessionId: deriveReplaySessionId("session:review:1"),
+});
 ```
 
 ### `deriveSupervisedDispatchId`
@@ -14762,6 +16895,59 @@ export declare function inspectLocalPlacementPlatformEvidence(): PlacementPlatfo
 Returns:
 
 - Frozen content-addressed classification of the current execution host.
+
+### `inspectReplaySession`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one replay session as an immutable, fully validated, record-derived view.
+
+Every record on the session owner path is checked: versions, schemas, modes, causal parents,
+step order and dependencies, chained prefix and context prefix identities, cache evidence,
+admission-before-materialization, recorded steps against their source records, checkpoint cuts
+and constituents, restore evidence, and terminal consistency. Inspection appends nothing and works
+on read-only and imported stores; an imported session has no live row and is never `running`.
+
+Signature:
+
+```ts
+export declare function inspectReplaySession(store: SQLiteTraceStore, options: InspectReplaySessionOptions): ReplaySessionInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- options - Session identity and optional clock.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ReplayCompatibilityError} If retained evidence names an unsupported replay version.
+
+Throws:
+
+- {ReplayEvidenceError} If the session is absent or its evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectReplaySession(store, { sessionId });
+console.log(inspection.classification, inspection.steps.length);
+```
 
 ### `inspectRetainedWorldApplicationConflicts`
 
@@ -16395,6 +18581,79 @@ Throws:
 
 - {TypeError} If the writer handle is forged or options are malformed.
 
+### `replayReplaySession`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Replays a session from a retained checkpoint or step boundary as a new branch session.
+
+Restoration follows rewindReplaySession. The program is then re-executed: steps before the
+target are served from the source journal only when the program issues the exact recorded request
+or intent with the same dependencies, and are retained as recorded steps with no provider or
+handler invocation. Later steps run live with the supplied provider, handler stack, and declared
+replacement task. Approval-required suffix effects run only when `policy` approves them; otherwise
+they are retained as refused and never reach a handler.
+
+Signature:
+
+```ts
+export declare function replayReplaySession(store: SQLiteTraceStore, options: ReplayReplaySessionOptions): Promise<ReplaySessionReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the source session.
+
+Parameter:
+
+- options - Branch options plus program, suffix provider and handlers, changes, and policy.
+
+Returns:
+
+- The validated terminal branch inspection.
+
+Throws:
+
+- {ReplayCheckpointUnavailableError} If the target has unavailable constituents.
+
+Throws:
+
+- {ReplayRestoreError} If a restoration root or claimed constituent fails verification.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If the branch command names a non-terminal session.
+
+Throws:
+
+- {ReplayLeaseFencedError} If the branch writer loses its lease.
+
+Throws:
+
+- {ReplayEvidenceError} If source or branch evidence is inconsistent.
+
+Throws:
+
+- {ReplayCompatibilityError} If the source uses an unsupported replay version.
+
+Throws:
+
+- {TypeError} If options or declared changes are malformed.
+
+Example:
+
+- ```ts
+const { inspection } = await replayReplaySession(store, {
+    changes: ["provider"],
+    claimId: "operator",
+    commandId: "replay:review:1",
+    program,
+    provider: alternateProvider,
+    sourceSessionId,
+    target: { stepCount: 2 },
+});
+```
+
 ### `requestDurableTaskCancellation`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -16844,6 +19103,73 @@ const authority = resumeDurableTask(store, {
 authority.fencing_token;
 ```
 
+### `rewindReplaySession`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Rewinds a session to a retained checkpoint or step boundary as a new branch session.
+
+Every constituent the target claims verified is re-verified before anything is written; an
+unavailable target is refused. Worlds are restored byte-equivalently into caller-selected empty
+roots, verified provider-session and process captures are handed to their adapters, a restore
+record retains the classification, the source prefix is copied as verified recorded steps, and
+the branch ends `rewound`. No provider or handler is invoked. Repeating a completed branch command
+returns its retained receipt without restoring anything.
+
+Signature:
+
+```ts
+export declare function rewindReplaySession(store: SQLiteTraceStore, options: RewindReplaySessionOptions): Promise<ReplaySessionReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the source session.
+
+Parameter:
+
+- options - Branch command, claim, source, target, restoration roots, and adapters.
+
+Returns:
+
+- The validated branch inspection.
+
+Throws:
+
+- {ReplayCheckpointUnavailableError} If the target has unavailable constituents.
+
+Throws:
+
+- {ReplayRestoreError} If a restoration root or claimed constituent fails verification.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If the branch command names a non-terminal session.
+
+Throws:
+
+- {ReplayEvidenceError} If source or branch evidence is inconsistent.
+
+Throws:
+
+- {ReplayCompatibilityError} If the source uses an unsupported replay version.
+
+Throws:
+
+- {TypeError} If options are malformed or omit a required adapter or root.
+
+Example:
+
+- ```ts
+const { inspection } = await rewindReplaySession(store, {
+    claimId: "operator",
+    commandId: "rewind:review:1",
+    sourceSessionId,
+    target: { checkpointId },
+    worlds: [{ name: "main", root: emptyDirectory }],
+});
+```
+
 ### `runCli`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -16871,6 +19197,81 @@ Returns:
 Throws:
 
 - {TypeError} If the injectable I/O boundary is malformed.
+
+### `runReplaySession`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs one deterministic session program as a durable replay session.
+
+The session record, every provider exchange, every effect admission and step, every checkpoint,
+and the terminal record are retained on the session's own owner path under a fenced lease. A
+program failure is retained as a `failed` terminal and returned; caller cancellation is retained
+as `cancelled`. Repeating a terminal command returns the retained receipt without running the
+program; a non-terminal session is never resumed in place.
+
+Signature:
+
+```ts
+export declare function runReplaySession(store: SQLiteTraceStore, options: RunReplaySessionOptions): Promise<ReplaySessionReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, claim, program, provider, handlers, task, worlds, processes, and signal.
+
+Returns:
+
+- The validated terminal session inspection.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If the command names a non-terminal session.
+
+Throws:
+
+- {ReplayMaterializationUncertainError} If the command names a session with an effect
+admission but no step.
+
+Throws:
+
+- {ReplayLeaseConflictError} If another unexpired writer holds the session.
+
+Throws:
+
+- {ReplayLeaseFencedError} If this writer loses its lease.
+
+Throws:
+
+- {ReplayEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {AppendIntentConflictError} If the command names different session content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const { inspection } = await runReplaySession(store, {
+    claimId: "worker-1",
+    commandId: "session:review:1",
+    programId: "review.v1",
+    provider,
+    program: async (context) => (await context.invokeProvider(request)).response.output,
+});
+```
 
 ### `runScopeTree`
 
@@ -18449,6 +20850,2469 @@ export type WitnessAnchor = {
     };
     readonly witness_ref: RecordId;
 };
+```
+
+## Replay
+
+Package entry: `./replay`
+
+Replay sessions, coupled checkpoints, rewind, suffix replay, process checkpoint backends, and divergence analysis.
+
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+
+Authority and mutation: Sessions, rewinds, replays, inspection, and analysis require an explicit trace-store handle; programs, providers, handler stacks, replay policies, and provider-session adapters are caller-supplied. Rewind and replay write only into caller-selected empty world roots. The cooperative process adapter starts only the caller-named executable without a shell; the transparent adapter only probes the configured CRIU executable. No workspace binding, carrier custody, or settlement authority is created.
+
+Import example:
+
+```ts
+import * as api from "@avnionur/shepherd-typescript/replay";
+void api;
+```
+
+Exported symbols: 102.
+
+### `AnalyzeReplayDependenciesOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for analyzeReplayDependencies.
+
+Signature:
+
+```ts
+export type AnalyzeReplayDependenciesOptions = {
+    readonly clock?: () => number;
+    readonly sessionId: string;
+    readonly stepIndex: number;
+};
+```
+
+### `AnalyzeReplayDivergenceOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for analyzeReplayDivergence.
+
+Signature:
+
+```ts
+export type AnalyzeReplayDivergenceOptions = {
+    readonly clock?: () => number;
+    readonly replaySessionId: string;
+    readonly sourceSessionId: string;
+};
+```
+
+### `AppendIntentConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an append intent is replayed with different semantic content.
+
+Signature:
+
+```ts
+export declare class AppendIntentConflictError extends TraceStoreError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable append-conflict code.
+
+```ts
+readonly code: string;
+```
+
+### `CooperativeProcessAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Cooperative process adapter with an application request channel.
+
+Signature:
+
+```ts
+export type CooperativeProcessAdapter = ReplayProcessAdapter & {
+    readonly close: () => Promise<void>;
+    readonly request: (payload: SemanticValue) => Promise<SemanticValue>;
+};
+```
+
+### `CooperativeProcessAdapterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createCooperativeProcessAdapter.
+
+Signature:
+
+```ts
+export type CooperativeProcessAdapterOptions = {
+    readonly args?: readonly string[];
+    readonly command: string;
+    readonly cwd?: string;
+    readonly processId: string;
+    readonly timeoutMilliseconds?: number;
+};
+```
+
+### `InspectReplaySessionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for inspectReplaySession.
+
+Signature:
+
+```ts
+export type InspectReplaySessionOptions = {
+    readonly clock?: () => number;
+    readonly sessionId: string;
+};
+```
+
+### `REPLAY_APPROVAL_REQUIRED_TIERS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured reversibility tiers that require replay policy approval in a branch suffix.
+
+Signature:
+
+```ts
+export declare const REPLAY_APPROVAL_REQUIRED_TIERS: readonly [
+    "irreversible"
+];
+```
+
+### `REPLAY_CACHE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured provider cache evidence statuses ordered hit then not observed.
+
+Signature:
+
+```ts
+export declare const REPLAY_CACHE_STATUSES: readonly [
+    "hit",
+    "not_observed"
+];
+```
+
+### `REPLAY_CHANGE_DIMENSIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured declarable replay change dimensions ordered task, provider, handlers.
+
+Signature:
+
+```ts
+export declare const REPLAY_CHANGE_DIMENSIONS: readonly [
+    "task",
+    "provider",
+    "handlers"
+];
+```
+
+### `REPLAY_CHECKPOINT_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured checkpoint classifications ordered atomic, reconstructive, unavailable.
+
+Signature:
+
+```ts
+export declare const REPLAY_CHECKPOINT_CLASSIFICATIONS: readonly [
+    "atomic",
+    "reconstructive",
+    "unavailable"
+];
+```
+
+### `REPLAY_CHECKPOINT_CONSTITUENT_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured checkpoint constituent kinds in descriptor order.
+
+Signature:
+
+```ts
+export declare const REPLAY_CHECKPOINT_CONSTITUENT_KINDS: readonly [
+    "trace_cut",
+    "world",
+    "provider_session",
+    "process",
+    "irreversible_effects"
+];
+```
+
+### `REPLAY_CHECKPOINT_EVIDENCE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured checkpoint evidence statuses ordered verified, reconstructive, not applicable, unavailable.
+
+Signature:
+
+```ts
+export declare const REPLAY_CHECKPOINT_EVIDENCE_STATUSES: readonly [
+    "verified",
+    "reconstructive",
+    "not_applicable",
+    "unavailable"
+];
+```
+
+### `REPLAY_COMPATIBILITY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay evidence compatibility namespace.
+
+Signature:
+
+```ts
+export declare const REPLAY_COMPATIBILITY_VERSION: "shepherd.replay.v1";
+```
+
+### `REPLAY_DIVERGENCE_CAUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured divergence causes ordered root, propagated, unexplained.
+
+Signature:
+
+```ts
+export declare const REPLAY_DIVERGENCE_CAUSES: readonly [
+    "root",
+    "propagated",
+    "unexplained"
+];
+```
+
+### `REPLAY_DIVERGENCE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured divergence alignment statuses ordered identical, diverged, source only, replay only.
+
+Signature:
+
+```ts
+export declare const REPLAY_DIVERGENCE_STATUSES: readonly [
+    "identical",
+    "diverged",
+    "source_only",
+    "replay_only"
+];
+```
+
+### `REPLAY_EFFECT_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay effect dispositions ordered materialized, materialization failed, refused.
+
+Signature:
+
+```ts
+export declare const REPLAY_EFFECT_DISPOSITIONS: readonly [
+    "materialized",
+    "materialization_failed",
+    "refused"
+];
+```
+
+### `REPLAY_LEASE_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay session lease timing.
+
+Signature:
+
+```ts
+export declare const REPLAY_LEASE_LIMITS: Readonly<{
+    readonly leaseMilliseconds: 30000;
+    readonly renewalMilliseconds: 10000;
+}>;
+```
+
+### `REPLAY_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay evidence bounds.
+
+Signature:
+
+```ts
+export declare const REPLAY_LIMITS: Readonly<{
+    readonly maxDependencies: 64;
+    readonly maxErrorMessageBytes: 4096;
+    readonly maxProcessImageBytes: 16777216;
+    readonly maxProcesses: 8;
+    readonly maxReasonBytes: 4096;
+    readonly maxSteps: 4096;
+    readonly maxWorldEntries: 65536;
+    readonly maxWorlds: 16;
+}>;
+```
+
+### `REPLAY_MODES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay session modes ordered root, rewind, replay.
+
+Signature:
+
+```ts
+export declare const REPLAY_MODES: readonly [
+    "root",
+    "rewind",
+    "replay"
+];
+```
+
+### `REPLAY_PROCESS_BACKENDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured process checkpoint backends ordered cooperative then transparent.
+
+Signature:
+
+```ts
+export declare const REPLAY_PROCESS_BACKENDS: readonly [
+    "cooperative",
+    "transparent"
+];
+```
+
+### `REPLAY_RECORD_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured canonical replay record version.
+
+Signature:
+
+```ts
+export declare const REPLAY_RECORD_VERSION: 1;
+```
+
+### `REPLAY_RECOVERY_CLASSIFICATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured session recovery classifications ordered terminal, running, interrupted, materialization uncertain.
+
+Signature:
+
+```ts
+export declare const REPLAY_RECOVERY_CLASSIFICATIONS: readonly [
+    "terminal",
+    "running",
+    "interrupted",
+    "materialization_uncertain"
+];
+```
+
+### `REPLAY_STEP_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay step kinds ordered provider then effect.
+
+Signature:
+
+```ts
+export declare const REPLAY_STEP_KINDS: readonly [
+    "provider",
+    "effect"
+];
+```
+
+### `REPLAY_STEP_SOURCES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured replay step sources ordered live then recorded.
+
+Signature:
+
+```ts
+export declare const REPLAY_STEP_SOURCES: readonly [
+    "live",
+    "recorded"
+];
+```
+
+### `REPLAY_TERMINAL_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured session terminal statuses ordered finished, failed, cancelled, rewound.
+
+Signature:
+
+```ts
+export declare const REPLAY_TERMINAL_STATUSES: readonly [
+    "finished",
+    "failed",
+    "cancelled",
+    "rewound"
+];
+```
+
+### `ReplayBranchOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options shared by rewind and replay.
+
+Signature:
+
+```ts
+export type ReplayBranchOptions = {
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly processes?: readonly ReplayProcessAdapter[];
+    readonly providerSession?: ReplayProviderSessionAdapter;
+    readonly signal?: AbortSignal;
+    readonly sourceSessionId: string;
+    readonly target: ReplayTarget;
+    readonly worlds?: readonly ReplayWorldBinding[];
+};
+```
+
+### `ReplayCacheEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Provider cache evidence retained on a provider step.
+
+Signature:
+
+```ts
+export type ReplayCacheEvidence = {
+    readonly creation_input_tokens: number;
+    readonly identity: string | null;
+    readonly prior_context_prefix_id: string | null;
+    readonly read_input_tokens: number;
+    readonly status: ReplayCacheStatus;
+};
+```
+
+### `ReplayCacheStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured provider cache evidence status.
+
+Signature:
+
+```ts
+export type ReplayCacheStatus = (typeof REPLAY_CACHE_STATUSES)[number];
+```
+
+### `ReplayChangeDimension`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured declarable replay change dimension.
+
+Signature:
+
+```ts
+export type ReplayChangeDimension = (typeof REPLAY_CHANGE_DIMENSIONS)[number];
+```
+
+### `ReplayCheckpointClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured coupled checkpoint classification.
+
+Signature:
+
+```ts
+export type ReplayCheckpointClassification = (typeof REPLAY_CHECKPOINT_CLASSIFICATIONS)[number];
+```
+
+### `ReplayCheckpointClassificationResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Derived classification of retained constituents.
+
+Signature:
+
+```ts
+export type ReplayCheckpointClassificationResult = {
+    readonly classification: ReplayCheckpointClassification;
+    readonly not_applicable: readonly ReplayConstituentName[];
+    readonly reconstructive: readonly ReplayConstituentName[];
+    readonly unavailable: readonly (ReplayConstituentName & {
+        readonly reason: string;
+    })[];
+    readonly verified: readonly ReplayConstituentName[];
+};
+```
+
+### `ReplayCheckpointConstituentKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured coupled checkpoint constituent kind.
+
+Signature:
+
+```ts
+export type ReplayCheckpointConstituentKind = (typeof REPLAY_CHECKPOINT_CONSTITUENT_KINDS)[number];
+```
+
+### `ReplayCheckpointEvidenceStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured coupled checkpoint constituent evidence status.
+
+Signature:
+
+```ts
+export type ReplayCheckpointEvidenceStatus = (typeof REPLAY_CHECKPOINT_EVIDENCE_STATUSES)[number];
+```
+
+### `ReplayCheckpointInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated coupled checkpoint.
+
+Signature:
+
+```ts
+export type ReplayCheckpointInspection = {
+    readonly classification: ReplayCheckpointClassification;
+    readonly checkpoint_id: string;
+    readonly constituents: readonly ReplayConstituent[];
+    readonly context_prefix_id: string | null;
+    readonly prefix_id: string | null;
+    readonly record_id: RecordId;
+    readonly session_id: string;
+    readonly step_count: number;
+    readonly trace_cut_id: string;
+};
+```
+
+### `ReplayCheckpointUnavailableError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a replay target has unavailable constituents.
+
+Signature:
+
+```ts
+export declare class ReplayCheckpointUnavailableError extends TraceStoreError {
+    readonly code: string;
+    readonly unavailable: readonly {
+        readonly kind: string;
+        readonly name: string | null;
+        readonly reason: string;
+    }[];
+    constructor(unavailable: readonly {
+        readonly kind: string;
+        readonly name: string | null;
+        readonly reason: string;
+    }[]);
+}
+```
+
+#### `code`
+
+Stable configuration-owned unavailable-target code.
+
+```ts
+readonly code: string;
+```
+
+#### `unavailable`
+
+Unavailable constituents with their retained reasons.
+
+```ts
+readonly unavailable: readonly {
+    readonly kind: string;
+    readonly name: string | null;
+    readonly reason: string;
+}[];
+```
+
+#### `constructor`
+
+Creates an unavailable-target failure.
+
+```ts
+constructor(unavailable: readonly {
+    readonly kind: string;
+    readonly name: string | null;
+    readonly reason: string;
+}[]);
+```
+
+Parameter:
+
+- unavailable - Unavailable constituents with their retained reasons.
+
+### `ReplayCompatibilityError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained replay evidence names an unsupported compatibility or record version.
+
+Imported archives from other replay protocol versions remain inspectable as ordinary trace records
+but are never replayed.
+
+Signature:
+
+```ts
+export declare class ReplayCompatibilityError extends TraceStoreError {
+    readonly code: string;
+    readonly compatibility_version: unknown;
+    readonly replay_version: unknown;
+    constructor(compatibilityVersion: unknown, replayVersion: unknown);
+}
+```
+
+#### `code`
+
+Stable configuration-owned compatibility code.
+
+```ts
+readonly code: string;
+```
+
+#### `compatibility_version`
+
+Retained compatibility namespace.
+
+```ts
+readonly compatibility_version: unknown;
+```
+
+#### `replay_version`
+
+Retained replay record version.
+
+```ts
+readonly replay_version: unknown;
+```
+
+#### `constructor`
+
+Creates an unsupported-version failure.
+
+```ts
+constructor(compatibilityVersion: unknown, replayVersion: unknown);
+```
+
+Parameter:
+
+- compatibilityVersion - Retained compatibility namespace.
+
+Parameter:
+
+- replayVersion - Retained replay record version.
+
+### `ReplayConstituent`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One classified checkpoint or restore constituent.
+
+Signature:
+
+```ts
+export type ReplayConstituent = {
+    readonly evidence: SemanticRecord | null;
+    readonly kind: ReplayCheckpointConstituentKind;
+    readonly name: string | null;
+    readonly reason: string | null;
+    readonly receipt_id: string | null;
+    readonly status: ReplayCheckpointEvidenceStatus;
+};
+```
+
+### `ReplayConstituentName`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Constituent kind with an optional name.
+
+Signature:
+
+```ts
+export type ReplayConstituentName = {
+    readonly kind: ReplayCheckpointConstituentKind;
+    readonly name: string | null;
+};
+```
+
+### `ReplayDependencyAnalysis`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only dependency analysis of one session step.
+
+Signature:
+
+```ts
+export type ReplayDependencyAnalysis = {
+    readonly dependents: readonly number[];
+    readonly independent: readonly number[];
+    readonly session_id: string;
+    readonly step_index: number;
+};
+```
+
+### `ReplayDivergenceAnalysis`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only divergence analysis of a source and a branch session.
+
+Signature:
+
+```ts
+export type ReplayDivergenceAnalysis = {
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly common_prefix_id: string | null;
+    readonly first_divergence_index: number | null;
+    readonly replay_session_id: string;
+    readonly source_session_id: string;
+    readonly steps: readonly ReplayDivergenceStep[];
+    readonly unexplained: readonly number[];
+};
+```
+
+### `ReplayDivergenceCause`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured divergence cause.
+
+Signature:
+
+```ts
+export type ReplayDivergenceCause = (typeof REPLAY_DIVERGENCE_CAUSES)[number];
+```
+
+### `ReplayDivergenceStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured divergence alignment status.
+
+Signature:
+
+```ts
+export type ReplayDivergenceStatus = (typeof REPLAY_DIVERGENCE_STATUSES)[number];
+```
+
+### `ReplayDivergenceStep`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One aligned step of a divergence analysis.
+
+Signature:
+
+```ts
+export type ReplayDivergenceStep = {
+    readonly cause: ReplayDivergenceCause | null;
+    readonly index: number;
+    readonly replay_step_id: string | null;
+    readonly source_step_id: string | null;
+    readonly status: ReplayDivergenceStatus;
+};
+```
+
+### `ReplayEffectApproval`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained approval of a branch suffix effect.
+
+Signature:
+
+```ts
+export type ReplayEffectApproval = {
+    readonly approver_id: string;
+    readonly reason: string;
+    readonly rematerialization: boolean;
+};
+```
+
+### `ReplayEffectApprovalRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request presented to replay policy for an approval-required branch suffix effect.
+
+Signature:
+
+```ts
+export type ReplayEffectApprovalRequest = {
+    readonly intent: EffectIntent;
+    readonly session_id: string;
+    readonly source_materialized_step_index: number | null;
+    readonly step_index: number;
+};
+```
+
+### `ReplayEffectApprovalVerdict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Replay policy verdict.
+
+Signature:
+
+```ts
+export type ReplayEffectApprovalVerdict = {
+    readonly approved: true;
+    readonly approverId: string;
+    readonly reason: string;
+} | {
+    readonly approved: false;
+    readonly reason: string;
+};
+```
+
+### `ReplayEffectDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured effect step disposition.
+
+Signature:
+
+```ts
+export type ReplayEffectDisposition = (typeof REPLAY_EFFECT_DISPOSITIONS)[number];
+```
+
+### `ReplayEffectRefusedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised to the session program when a branch suffix effect is refused by replay policy.
+
+Signature:
+
+```ts
+export declare class ReplayEffectRefusedError extends TraceStoreError {
+    readonly code: string;
+    readonly step_index: number;
+    constructor(stepIndex: number);
+}
+```
+
+#### `code`
+
+Stable configuration-owned refused-effect code.
+
+```ts
+readonly code: string;
+```
+
+#### `step_index`
+
+Refused step index.
+
+```ts
+readonly step_index: number;
+```
+
+#### `constructor`
+
+Creates a refused-effect failure.
+
+```ts
+constructor(stepIndex: number);
+```
+
+Parameter:
+
+- stepIndex - Refused step index.
+
+### `ReplayEffectStepInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated effect step detail.
+
+Signature:
+
+```ts
+export type ReplayEffectStepInspection = {
+    readonly approval: ReplayEffectApproval | null;
+    readonly admission_record_id: RecordId | null;
+    readonly disposition: ReplayEffectDisposition;
+    readonly failure: ReplayStepFailure | null;
+    readonly handler_id: string | null;
+    readonly intent: EffectIntent;
+    readonly intent_ref: string;
+    readonly outcome: EffectOutcome | null;
+    readonly refusal_reason: string | null;
+};
+```
+
+### `ReplayEffectStepResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one materialized effect step returned to the session program.
+
+Signature:
+
+```ts
+export type ReplayEffectStepResult = {
+    readonly handle: ReplayStepHandle;
+    readonly outcome: EffectOutcome;
+    readonly source: ReplayStepSource;
+};
+```
+
+### `ReplayEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or supplied replay evidence is absent, malformed, or inconsistent.
+
+Signature:
+
+```ts
+export declare class ReplayEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ReplayLeaseConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when another unexpired writer holds a replay session lease.
+
+Signature:
+
+```ts
+export declare class ReplayLeaseConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly session_id: string;
+    constructor(sessionId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned lease-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Claim identity currently holding the lease.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `session_id`
+
+Session whose lease is held.
+
+```ts
+readonly session_id: string;
+```
+
+#### `constructor`
+
+Creates a held-lease failure.
+
+```ts
+constructor(sessionId: string, claimId: string);
+```
+
+Parameter:
+
+- sessionId - Session whose lease is held.
+
+Parameter:
+
+- claimId - Current holder.
+
+### `ReplayLeaseFencedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a session writer's lease is released, expired, superseded, or unknown.
+
+Signature:
+
+```ts
+export declare class ReplayLeaseFencedError extends TraceStoreError {
+    readonly code: string;
+    readonly claim_id: string;
+    readonly session_id: string;
+    constructor(sessionId: string, claimId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned fenced-lease code.
+
+```ts
+readonly code: string;
+```
+
+#### `claim_id`
+
+Rejected claim identity.
+
+```ts
+readonly claim_id: string;
+```
+
+#### `session_id`
+
+Session whose append was fenced.
+
+```ts
+readonly session_id: string;
+```
+
+#### `constructor`
+
+Creates a fenced-lease failure.
+
+```ts
+constructor(sessionId: string, claimId: string);
+```
+
+Parameter:
+
+- sessionId - Session whose append was rejected.
+
+Parameter:
+
+- claimId - Rejected claim identity.
+
+### `ReplayMaterializationUncertainError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a session retains an effect admission without its step.
+
+The handler may have changed the world, so the effect is never re-invoked and the boundary is
+never used as a replay target.
+
+Signature:
+
+```ts
+export declare class ReplayMaterializationUncertainError extends TraceStoreError {
+    readonly code: string;
+    readonly admission_record_id: string;
+    readonly session_id: string;
+    constructor(sessionId: string, admissionRecordId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned uncertain-materialization code.
+
+```ts
+readonly code: string;
+```
+
+#### `admission_record_id`
+
+Retained admission record.
+
+```ts
+readonly admission_record_id: string;
+```
+
+#### `session_id`
+
+Session requiring manual recovery.
+
+```ts
+readonly session_id: string;
+```
+
+#### `constructor`
+
+Creates an uncertain-materialization failure.
+
+```ts
+constructor(sessionId: string, admissionRecordId: string);
+```
+
+Parameter:
+
+- sessionId - Session requiring manual recovery.
+
+Parameter:
+
+- admissionRecordId - Retained admission record.
+
+### `ReplayMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured replay session mode.
+
+Signature:
+
+```ts
+export type ReplayMode = (typeof REPLAY_MODES)[number];
+```
+
+### `ReplayOriginInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Origin of a branch session.
+
+Signature:
+
+```ts
+export type ReplayOriginInspection = {
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly replacement_task: ReplaySessionTask | null;
+    readonly source_session_id: string;
+    readonly source_session_record_id: RecordId;
+    readonly target_checkpoint_id: string | null;
+    readonly target_step_count: number;
+    readonly target_trace_cut_id: string;
+};
+```
+
+### `ReplayPrefixMismatchError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a replayed prefix differs from the recorded prefix.
+
+Signature:
+
+```ts
+export declare class ReplayPrefixMismatchError extends TraceStoreError {
+    readonly code: string;
+    readonly step_index: number | null;
+    constructor(stepIndex: number | null, detail: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned prefix-mismatch code.
+
+```ts
+readonly code: string;
+```
+
+#### `step_index`
+
+First mismatching step index, or null for a whole-prefix identity mismatch.
+
+```ts
+readonly step_index: number | null;
+```
+
+#### `constructor`
+
+Creates a prefix-mismatch failure.
+
+```ts
+constructor(stepIndex: number | null, detail: string);
+```
+
+Parameter:
+
+- stepIndex - First mismatching step index, or null.
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+### `ReplayProcessAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Adapter that captures and restores one process bound to a session.
+
+Signature:
+
+```ts
+export type ReplayProcessAdapter = {
+    readonly backend: ReplayProcessBackend;
+    readonly checkpoint: (context: ReplayProcessCheckpointContext) => Promise<Uint8Array>;
+    readonly probe: () => Promise<ReplayProcessProbe>;
+    readonly processId: string;
+    readonly restore: (image: Uint8Array, context: ReplayProcessCheckpointContext) => Promise<void>;
+};
+```
+
+### `ReplayProcessBackend`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured process checkpoint backend kind.
+
+Signature:
+
+```ts
+export type ReplayProcessBackend = (typeof REPLAY_PROCESS_BACKENDS)[number];
+```
+
+### `ReplayProcessCheckpointContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context presented to a process adapter.
+
+Signature:
+
+```ts
+export type ReplayProcessCheckpointContext = {
+    readonly process_id: string;
+    readonly session_id: string;
+    readonly step_count: number;
+};
+```
+
+### `ReplayProcessProbe`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Probe result of a process checkpoint backend.
+
+Signature:
+
+```ts
+export type ReplayProcessProbe = {
+    readonly available: true;
+} | {
+    readonly available: false;
+    readonly reason: string;
+};
+```
+
+### `ReplayProviderSessionAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Adapter that captures and restores provider-side conversation state.
+
+Signature:
+
+```ts
+export type ReplayProviderSessionAdapter = {
+    readonly adapterId: string;
+    readonly cacheIdentity?: (request: ModelRequest, contextPrefixId: string | null) => string | null;
+    readonly checkpoint: (context: ReplayProviderSessionCheckpointContext) => Promise<ReplayProviderSessionEvidence> | ReplayProviderSessionEvidence;
+    readonly restore: (receiptId: string, context: ReplayProviderSessionCheckpointContext) => Promise<string | null> | string | null;
+};
+```
+
+### `ReplayProviderSessionCheckpointContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context presented to a provider-session adapter at a checkpoint.
+
+Signature:
+
+```ts
+export type ReplayProviderSessionCheckpointContext = {
+    readonly context_prefix_id: string | null;
+    readonly session_id: string;
+    readonly step_count: number;
+};
+```
+
+### `ReplayProviderSessionEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Evidence returned by a provider-session adapter.
+
+Signature:
+
+```ts
+export type ReplayProviderSessionEvidence = {
+    readonly contextPrefixId: string | null;
+    readonly receiptId: string;
+    readonly status: "verified";
+} | {
+    readonly reason: string;
+    readonly status: "unavailable";
+};
+```
+
+### `ReplayProviderStepInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated provider step detail.
+
+Signature:
+
+```ts
+export type ReplayProviderStepInspection = {
+    readonly cache: ReplayCacheEvidence | null;
+    readonly context_prefix_id: string;
+    readonly failure: ReplayStepFailure | null;
+    readonly prompt_id: string;
+    readonly request: ModelRequest;
+    readonly response: {
+        readonly output: SemanticValue;
+        readonly usage: ModelUsage;
+    } | null;
+    readonly response_id: string;
+};
+```
+
+### `ReplayProviderStepResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one provider step returned to the session program.
+
+Signature:
+
+```ts
+export type ReplayProviderStepResult = {
+    readonly handle: ReplayStepHandle;
+    readonly response: {
+        readonly output: SemanticValue;
+        readonly usage: ModelUsage;
+    };
+    readonly source: ReplayStepSource;
+};
+```
+
+### `ReplayRecoveryClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured record-derived session recovery classification.
+
+Signature:
+
+```ts
+export type ReplayRecoveryClassification = (typeof REPLAY_RECOVERY_CLASSIFICATIONS)[number];
+```
+
+### `ReplayReplaySessionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for replaying a session from a checkpoint or step boundary.
+
+Signature:
+
+```ts
+export type ReplayReplaySessionOptions = ReplayBranchOptions & {
+    readonly changes?: readonly ReplayChangeDimension[];
+    readonly handlers?: EffectHandlerStack;
+    readonly policy?: (request: ReplayEffectApprovalRequest) => Promise<ReplayEffectApprovalVerdict> | ReplayEffectApprovalVerdict;
+    readonly program: ReplaySessionProgram;
+    readonly provider?: ModelProvider;
+    readonly task?: ReplaySessionTaskDefinition;
+};
+```
+
+### `ReplayRestoreError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a restoration target or restored constituent fails verification.
+
+Signature:
+
+```ts
+export declare class ReplayRestoreError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned restoration code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a restoration failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ReplayRestoreInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated restore evidence of a branch session.
+
+Signature:
+
+```ts
+export type ReplayRestoreInspection = {
+    readonly classification: ReplayCheckpointClassification;
+    readonly constituents: readonly ReplayConstituent[];
+    readonly context_prefix_id: string | null;
+    readonly prefix_id: string | null;
+    readonly record_id: RecordId;
+};
+```
+
+### `ReplaySessionContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context through which a session program reaches the outside world.
+
+Signature:
+
+```ts
+export type ReplaySessionContext = {
+    readonly checkpoint: () => Promise<ReplayCheckpointInspection>;
+    readonly dispatchEffect: (intent: EffectIntent, options?: ReplayStepOptions) => Promise<ReplayEffectStepResult>;
+    readonly invokeProvider: (request: ModelRequest, options?: ReplayStepOptions) => Promise<ReplayProviderStepResult>;
+    readonly invokeTask: (options?: ReplayStepOptions) => Promise<ReplayProviderStepResult>;
+    readonly mode: ReplayMode;
+    readonly session_id: string;
+    readonly signal: AbortSignal;
+    readonly step_count: number;
+    readonly task: ReplaySessionTask | null;
+};
+```
+
+### `ReplaySessionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one replay session.
+
+Signature:
+
+```ts
+export type ReplaySessionInspection = {
+    readonly checkpoints: readonly ReplayCheckpointInspection[];
+    readonly command_id: string;
+    readonly pending_admission_record_id: RecordId | null;
+    readonly classification: ReplayRecoveryClassification;
+    readonly head_record_id: RecordId;
+    readonly live: boolean;
+    readonly mode: ReplayMode;
+    readonly origin: ReplayOriginInspection | null;
+    readonly processes: readonly {
+        readonly backend: ReplayProcessBackend;
+        readonly process_id: string;
+    }[];
+    readonly program_id: string;
+    readonly provider: ProviderDescriptor | null;
+    readonly provider_session_adapter_id: string | null;
+    readonly restore: ReplayRestoreInspection | null;
+    readonly session_id: string;
+    readonly session_record_id: RecordId;
+    readonly steps: readonly ReplayStepInspection[];
+    readonly task: ReplaySessionTask | null;
+    readonly terminal: ReplayTerminalInspection | null;
+    readonly worlds: readonly string[];
+};
+```
+
+### `ReplaySessionInterruptedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a session command names a non-terminal session that is not held by a live writer.
+
+Sessions are never resumed in place; recovery replays from a retained checkpoint or step
+boundary.
+
+Signature:
+
+```ts
+export declare class ReplaySessionInterruptedError extends TraceStoreError {
+    readonly code: string;
+    readonly classification: string;
+    readonly session_id: string;
+    constructor(sessionId: string, classification: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned interrupted-session code.
+
+```ts
+readonly code: string;
+```
+
+#### `classification`
+
+Record-derived recovery classification.
+
+```ts
+readonly classification: string;
+```
+
+#### `session_id`
+
+Interrupted session.
+
+```ts
+readonly session_id: string;
+```
+
+#### `constructor`
+
+Creates an interrupted-session failure.
+
+```ts
+constructor(sessionId: string, classification: string);
+```
+
+Parameter:
+
+- sessionId - Interrupted session.
+
+Parameter:
+
+- classification - Record-derived recovery classification.
+
+### `ReplaySessionProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Deterministic session program. Its result must be canonical semantic data.
+
+Signature:
+
+```ts
+export type ReplaySessionProgram = (context: ReplaySessionContext) => Promise<unknown> | unknown;
+```
+
+### `ReplaySessionReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Receipt of a root session, rewind, or replay.
+
+Signature:
+
+```ts
+export type ReplaySessionReceipt = {
+    readonly inspection: ReplaySessionInspection;
+};
+```
+
+### `ReplaySessionTask`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Task in force for the next step of a session.
+
+Signature:
+
+```ts
+export type ReplaySessionTask = {
+    readonly artifact_lock: TaskArtifactLock;
+    readonly input: SemanticValue;
+    readonly instruction: string;
+    readonly output_schema: SemanticRecord;
+};
+```
+
+### `ReplaySessionTaskDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Task and input bound to a session.
+
+Signature:
+
+```ts
+export type ReplaySessionTaskDefinition = {
+    readonly descriptor: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>;
+    readonly input: unknown;
+};
+```
+
+### `ReplayStepFailure`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained failure of a provider invocation or effect handler.
+
+Signature:
+
+```ts
+export type ReplayStepFailure = {
+    readonly message: string;
+    readonly name: string;
+};
+```
+
+### `ReplayStepFailureError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised to the session program for a provider or effect step that failed.
+
+The same error is raised when the failure first happens and whenever the failed step is served
+from a recorded prefix, so program control flow is identical in both cases.
+
+Signature:
+
+```ts
+export declare class ReplayStepFailureError extends Error {
+    readonly code: string;
+    readonly failure_name: string;
+    readonly failure_message: string;
+    readonly step_index: number;
+    constructor(stepIndex: number, failureName: string, failureMessage: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned step-failure code.
+
+```ts
+readonly code: string;
+```
+
+#### `failure_name`
+
+Retained failure class name.
+
+```ts
+readonly failure_name: string;
+```
+
+#### `failure_message`
+
+Retained bounded failure message.
+
+```ts
+readonly failure_message: string;
+```
+
+#### `step_index`
+
+Failed step index.
+
+```ts
+readonly step_index: number;
+```
+
+#### `constructor`
+
+Creates a step failure.
+
+```ts
+constructor(stepIndex: number, failureName: string, failureMessage: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- stepIndex - Failed step index.
+
+Parameter:
+
+- failureName - Retained failure class name.
+
+Parameter:
+
+- failureMessage - Retained bounded failure message.
+
+Parameter:
+
+- options - Optional in-memory cause of a live failure.
+
+### `ReplayStepHandle`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained address of one session step.
+
+Signature:
+
+```ts
+export type ReplayStepHandle = {
+    readonly index: number;
+    readonly record_id: RecordId;
+};
+```
+
+### `ReplayStepInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated step of a session.
+
+Signature:
+
+```ts
+export type ReplayStepInspection = {
+    readonly depends_on: readonly number[];
+    readonly effect: ReplayEffectStepInspection | null;
+    readonly index: number;
+    readonly kind: ReplayStepKind;
+    readonly prefix_id: string;
+    readonly provider: ReplayProviderStepInspection | null;
+    readonly record_id: RecordId;
+    readonly source: ReplayStepSource;
+    readonly source_step_record_id: RecordId | null;
+    readonly step_id: string;
+};
+```
+
+### `ReplayStepKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured replay step kind.
+
+Signature:
+
+```ts
+export type ReplayStepKind = (typeof REPLAY_STEP_KINDS)[number];
+```
+
+### `ReplayStepOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by every step-producing session context operation.
+
+Signature:
+
+```ts
+export type ReplayStepOptions = {
+    readonly dependsOn?: readonly ReplayStepHandle[];
+};
+```
+
+### `ReplayStepSource`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured replay step source: executed live or served from a recorded prefix.
+
+Signature:
+
+```ts
+export type ReplayStepSource = (typeof REPLAY_STEP_SOURCES)[number];
+```
+
+### `ReplayTarget`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Target of a rewind or replay.
+
+Signature:
+
+```ts
+export type ReplayTarget = {
+    readonly checkpointId: string;
+} | {
+    readonly stepCount: number;
+};
+```
+
+### `ReplayTerminalInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated terminal record.
+
+Signature:
+
+```ts
+export type ReplayTerminalInspection = {
+    readonly failure: ReplayStepFailure | null;
+    readonly prefix_id: string | null;
+    readonly record_id: RecordId;
+    readonly result: {
+        readonly value: SemanticValue;
+    } | null;
+    readonly status: ReplayTerminalStatus;
+    readonly step_count: number;
+};
+```
+
+### `ReplayTerminalStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured session terminal status.
+
+Signature:
+
+```ts
+export type ReplayTerminalStatus = (typeof REPLAY_TERMINAL_STATUSES)[number];
+```
+
+### `ReplayWorldBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One managed world directory bound to a session.
+
+Signature:
+
+```ts
+export type ReplayWorldBinding = {
+    readonly name: string;
+    readonly root: string;
+};
+```
+
+### `RewindReplaySessionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for rewinding a session to a checkpoint or step boundary.
+
+Signature:
+
+```ts
+export type RewindReplaySessionOptions = ReplayBranchOptions;
+```
+
+### `RunReplaySessionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for running one root replay session.
+
+Signature:
+
+```ts
+export type RunReplaySessionOptions = {
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly handlers?: EffectHandlerStack;
+    readonly processes?: readonly ReplayProcessAdapter[];
+    readonly program: ReplaySessionProgram;
+    readonly programId: string;
+    readonly provider?: ModelProvider;
+    readonly providerSession?: ReplayProviderSessionAdapter;
+    readonly signal?: AbortSignal;
+    readonly task?: ReplaySessionTaskDefinition;
+    readonly worlds?: readonly ReplayWorldBinding[];
+};
+```
+
+### `TraceStoreError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Base error for trace-store contract violations.
+
+Signature:
+
+```ts
+export declare class TraceStoreError extends Error {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable trace-store error code.
+
+```ts
+readonly code: string;
+```
+
+### `TransparentProcessAdapterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createTransparentProcessAdapter.
+
+Signature:
+
+```ts
+export type TransparentProcessAdapterOptions = {
+    readonly processId: string;
+};
+```
+
+### `analyzeReplayDependencies`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Returns the steps a change at one step can affect through declared dependencies.
+
+Dependents are the transitive closure of later steps that declare a dependency on the step or on
+another dependent; every other later step is independent. Analysis is read-only and relies on the
+program's declared dependencies.
+
+Signature:
+
+```ts
+export declare function analyzeReplayDependencies(store: SQLiteTraceStore, options: AnalyzeReplayDependenciesOptions): ReplayDependencyAnalysis;
+```
+
+Parameter:
+
+- store - Open trace store holding the session.
+
+Parameter:
+
+- options - Session identity and step index.
+
+Returns:
+
+- Frozen dependency analysis.
+
+Throws:
+
+- {ReplayEvidenceError} If session evidence is invalid.
+
+Throws:
+
+- {TypeError} If options are malformed or the step is not retained.
+
+Example:
+
+- ```ts
+const { dependents } = analyzeReplayDependencies(store, { sessionId, stepIndex: 0 });
+```
+
+### `analyzeReplayDivergence`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Aligns a branch session with its source and classifies every divergence.
+
+Steps are aligned by index. A step is `identical` when both sessions retain the same content
+identity, `diverged` when both retain different content, and `source_only` or `replay_only` when
+one session ends earlier. A non-identical step is `propagated` when one of its declared
+dependencies is not identical, `root` when its dependencies are identical and its kind is explained
+by a declared change (task or provider for provider steps, handlers or a replay-policy refusal for
+effect steps), and `unexplained` otherwise. Analysis is read-only.
+
+Signature:
+
+```ts
+export declare function analyzeReplayDivergence(store: SQLiteTraceStore, options: AnalyzeReplayDivergenceOptions): ReplayDivergenceAnalysis;
+```
+
+Parameter:
+
+- store - Open trace store holding both sessions.
+
+Parameter:
+
+- options - Source and branch session identities.
+
+Returns:
+
+- Frozen divergence analysis.
+
+Throws:
+
+- {ReplayEvidenceError} If the branch does not originate from the source or evidence is invalid.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const analysis = analyzeReplayDivergence(store, { replaySessionId, sourceSessionId });
+assert.deepEqual(analysis.unexplained, []);
+```
+
+### `classifyReplayCheckpoint`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives from retained constituents how a checkpoint or restore can be reproduced.
+
+`atomic` means every constituent is verified or not applicable, `reconstructive` means some
+constituent is re-derived from recorded evidence and none is unavailable, and `unavailable` means
+at least one constituent cannot be restored. Receipt identifiers alone are never treated as proof:
+rewind and replay re-verify every verified constituent before use.
+
+Signature:
+
+```ts
+export declare function classifyReplayCheckpoint(checkpoint: Pick<ReplayCheckpointInspection, "constituents">): ReplayCheckpointClassificationResult;
+```
+
+Parameter:
+
+- checkpoint - Checkpoint inspection or any value with retained constituents.
+
+Returns:
+
+- Frozen classification with constituents grouped by status.
+
+Throws:
+
+- {TypeError} If the constituents are malformed or out of configured order.
+
+Example:
+
+- ```ts
+const { classification, unavailable } = classifyReplayCheckpoint(inspection.checkpoints[0]);
+```
+
+### `createCooperativeProcessAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a process adapter that checkpoints a cooperating child process.
+
+The child speaks newline-delimited JSON on standard input and output. Every request carries the
+configured protocol version, a message type, and a correlation number. A checkpoint request is
+answered with an image message holding base64 state bytes; a restore request carries those bytes
+to a freshly started process and is answered with a restored message; application requests are
+answered with response messages; error messages fail the request. Responses are bounded by the
+configured line size and timeout, and a process that exits, times out, or violates the protocol is
+stopped. The image is captured by the process itself, so the backend is cooperative rather than
+transparent.
+
+Signature:
+
+```ts
+export declare function createCooperativeProcessAdapter(options: CooperativeProcessAdapterOptions): CooperativeProcessAdapter;
+```
+
+Parameter:
+
+- options - Process identity, executable, arguments, and working directory.
+
+Returns:
+
+- A process adapter with request and close operations.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const worker = createCooperativeProcessAdapter({
+    args: ["worker.js"],
+    command: process.execPath,
+    processId: "counter",
+});
+await worker.request({ op: "increment" });
+```
+
+### `createTransparentProcessAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a transparent CRIU process adapter that reports host capability accurately.
+
+The probe refuses unsupported platforms, an executable that cannot be started, and a failing
+configured host check, each with its configured reason. Replay protocol v1 does not capture
+transparent process images, so a passing host check is still reported unavailable with the
+configured capture-unsupported reason, and checkpoint and restore always fail.
+
+Signature:
+
+```ts
+export declare function createTransparentProcessAdapter(options: TransparentProcessAdapterOptions): ReplayProcessAdapter;
+```
+
+Parameter:
+
+- options - Process identity.
+
+Returns:
+
+- A process adapter whose probe never claims transparent capture.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const probe = await createTransparentProcessAdapter({ processId: "tool" }).probe();
+console.log(probe.available, "reason" in probe ? probe.reason : "");
+```
+
+### `deriveReplaySessionId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the replay session identity and owner path of one session command.
+
+Signature:
+
+```ts
+export declare function deriveReplaySessionId(commandId: string): string;
+```
+
+Parameter:
+
+- commandId - Globally idempotent session command identity.
+
+Returns:
+
+- The configured session identity.
+
+Throws:
+
+- {TypeError} If the command identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectReplaySession(store, {
+    sessionId: deriveReplaySessionId("session:review:1"),
+});
+```
+
+### `inspectReplaySession`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one replay session as an immutable, fully validated, record-derived view.
+
+Every record on the session owner path is checked: versions, schemas, modes, causal parents,
+step order and dependencies, chained prefix and context prefix identities, cache evidence,
+admission-before-materialization, recorded steps against their source records, checkpoint cuts
+and constituents, restore evidence, and terminal consistency. Inspection appends nothing and works
+on read-only and imported stores; an imported session has no live row and is never `running`.
+
+Signature:
+
+```ts
+export declare function inspectReplaySession(store: SQLiteTraceStore, options: InspectReplaySessionOptions): ReplaySessionInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- options - Session identity and optional clock.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ReplayCompatibilityError} If retained evidence names an unsupported replay version.
+
+Throws:
+
+- {ReplayEvidenceError} If the session is absent or its evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectReplaySession(store, { sessionId });
+console.log(inspection.classification, inspection.steps.length);
+```
+
+### `replayReplaySession`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Replays a session from a retained checkpoint or step boundary as a new branch session.
+
+Restoration follows rewindReplaySession. The program is then re-executed: steps before the
+target are served from the source journal only when the program issues the exact recorded request
+or intent with the same dependencies, and are retained as recorded steps with no provider or
+handler invocation. Later steps run live with the supplied provider, handler stack, and declared
+replacement task. Approval-required suffix effects run only when `policy` approves them; otherwise
+they are retained as refused and never reach a handler.
+
+Signature:
+
+```ts
+export declare function replayReplaySession(store: SQLiteTraceStore, options: ReplayReplaySessionOptions): Promise<ReplaySessionReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the source session.
+
+Parameter:
+
+- options - Branch options plus program, suffix provider and handlers, changes, and policy.
+
+Returns:
+
+- The validated terminal branch inspection.
+
+Throws:
+
+- {ReplayCheckpointUnavailableError} If the target has unavailable constituents.
+
+Throws:
+
+- {ReplayRestoreError} If a restoration root or claimed constituent fails verification.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If the branch command names a non-terminal session.
+
+Throws:
+
+- {ReplayLeaseFencedError} If the branch writer loses its lease.
+
+Throws:
+
+- {ReplayEvidenceError} If source or branch evidence is inconsistent.
+
+Throws:
+
+- {ReplayCompatibilityError} If the source uses an unsupported replay version.
+
+Throws:
+
+- {TypeError} If options or declared changes are malformed.
+
+Example:
+
+- ```ts
+const { inspection } = await replayReplaySession(store, {
+    changes: ["provider"],
+    claimId: "operator",
+    commandId: "replay:review:1",
+    program,
+    provider: alternateProvider,
+    sourceSessionId,
+    target: { stepCount: 2 },
+});
+```
+
+### `rewindReplaySession`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Rewinds a session to a retained checkpoint or step boundary as a new branch session.
+
+Every constituent the target claims verified is re-verified before anything is written; an
+unavailable target is refused. Worlds are restored byte-equivalently into caller-selected empty
+roots, verified provider-session and process captures are handed to their adapters, a restore
+record retains the classification, the source prefix is copied as verified recorded steps, and
+the branch ends `rewound`. No provider or handler is invoked. Repeating a completed branch command
+returns its retained receipt without restoring anything.
+
+Signature:
+
+```ts
+export declare function rewindReplaySession(store: SQLiteTraceStore, options: RewindReplaySessionOptions): Promise<ReplaySessionReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store holding the source session.
+
+Parameter:
+
+- options - Branch command, claim, source, target, restoration roots, and adapters.
+
+Returns:
+
+- The validated branch inspection.
+
+Throws:
+
+- {ReplayCheckpointUnavailableError} If the target has unavailable constituents.
+
+Throws:
+
+- {ReplayRestoreError} If a restoration root or claimed constituent fails verification.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If the branch command names a non-terminal session.
+
+Throws:
+
+- {ReplayEvidenceError} If source or branch evidence is inconsistent.
+
+Throws:
+
+- {ReplayCompatibilityError} If the source uses an unsupported replay version.
+
+Throws:
+
+- {TypeError} If options are malformed or omit a required adapter or root.
+
+Example:
+
+- ```ts
+const { inspection } = await rewindReplaySession(store, {
+    claimId: "operator",
+    commandId: "rewind:review:1",
+    sourceSessionId,
+    target: { checkpointId },
+    worlds: [{ name: "main", root: emptyDirectory }],
+});
+```
+
+### `runReplaySession`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs one deterministic session program as a durable replay session.
+
+The session record, every provider exchange, every effect admission and step, every checkpoint,
+and the terminal record are retained on the session's own owner path under a fenced lease. A
+program failure is retained as a `failed` terminal and returned; caller cancellation is retained
+as `cancelled`. Repeating a terminal command returns the retained receipt without running the
+program; a non-terminal session is never resumed in place.
+
+Signature:
+
+```ts
+export declare function runReplaySession(store: SQLiteTraceStore, options: RunReplaySessionOptions): Promise<ReplaySessionReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, claim, program, provider, handlers, task, worlds, processes, and signal.
+
+Returns:
+
+- The validated terminal session inspection.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If the command names a non-terminal session.
+
+Throws:
+
+- {ReplayMaterializationUncertainError} If the command names a session with an effect
+admission but no step.
+
+Throws:
+
+- {ReplayLeaseConflictError} If another unexpired writer holds the session.
+
+Throws:
+
+- {ReplayLeaseFencedError} If this writer loses its lease.
+
+Throws:
+
+- {ReplayEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {AppendIntentConflictError} If the command names different session content.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const { inspection } = await runReplaySession(store, {
+    claimId: "worker-1",
+    commandId: "session:review:1",
+    programId: "review.v1",
+    provider,
+    program: async (context) => (await context.invokeProvider(request)).response.output,
+});
 ```
 
 ## Runs
@@ -26907,7 +31771,7 @@ Throws:
 Throws:
 
 - {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
-owner path reserved for supervised dispatches or context channels.
+owner path reserved for supervised dispatches, context channels, or replay sessions.
 
 Throws:
 
@@ -27524,7 +32388,8 @@ Returns:
 
 Throws:
 
-- {TraceStoreError} If the target occurrence is absent or the store is closed.
+- {TraceStoreError} If the target occurrence is absent, the publishing owner path is
+reserved for replay sessions, or the store is closed.
 
 Throws:
 
@@ -27891,7 +32756,7 @@ Stable classification for one whole-store integrity defect.
 Signature:
 
 ```ts
-export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "scope_registration_mismatch" | "sqlite_integrity_mismatch" | "supervised_dispatch_mismatch" | "trace_subscription_mismatch" | "witness_mismatch";
+export type TraceIntegrityIssueKind = `blob_${BlobIntegrityIssue["kind"]}` | "append_receipt_mismatch" | "cut_mismatch" | "orphan_record" | "owner_ordinal_mismatch" | "parent_index_mismatch" | "record_mismatch" | "replay_session_mismatch" | "scope_registration_mismatch" | "sqlite_integrity_mismatch" | "supervised_dispatch_mismatch" | "trace_subscription_mismatch" | "witness_mismatch";
 ```
 
 ### `TraceIntegrityReport`

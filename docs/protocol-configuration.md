@@ -57,6 +57,16 @@ and maximum waits; terminal dispositions and recovery classifications; dispatch,
 and cursor identity prefixes and the command append-intent key; citation, context-data, and reason
 bounds; trace schema references; generated schema identifiers and destinations; and stable error
 codes and messages.
+The replay section fixes the replay record version and compatibility namespace; session modes, step
+kinds and sources, declarable change dimensions, effect dispositions and approval-required tiers,
+cache statuses, checkpoint constituent kinds, evidence statuses, and classifications, terminal
+statuses, recovery classifications, and divergence statuses and causes; configured unavailability
+and refusal reasons; the session lease and renewal intervals; step, dependency, world, world-entry,
+process, image, reason, and error-message bounds; cooperative protocol message types, version,
+line bound, and timeout and transparent CRIU probe platforms, executable, check arguments, timeout,
+and reasons; session, checkpoint, cut, prompt, response, step, prefix, context prefix, and frontier
+identity prefixes and the command append-intent key; trace schema references; generated schema
+identifiers and destinations; and stable error codes and messages.
 The orphan-repair section fixes versioned operation, diagnosis, command, and receipt contracts;
 canonical identity domains; command/receipt trace schemas; blocker and error codes; generated
 schema destinations; and count, page, identifier, cause, and canonical-byte bounds.
@@ -123,7 +133,8 @@ settlement, custody, or native trace archive identity. Store schema v9 adds live
 registration and writer-claim tables that are verified against canonical records and never
 exported. Store schema v10 adds durable subscription cursor bookkeeping and schema v11 adds
 supervised-dispatch registration and decision-lease rows; neither is exported or part of record
-identity.
+identity. Store schema v12 adds replay session registration and writer-lease rows, which are also
+never exported.
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -186,6 +197,11 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   configured effect reversibility tiers, the lease renewal interval is shorter than the lease, the
   default buffer and approval wait do not exceed their maximums, trace schema references are
   distinct, schema identifiers are absolute URLs, and every value matches the immutable supervision
+  protocol v1 contract.
+- replay vocabularies have their exact sizes, approval-required tiers cite configured effect
+  reversibility tiers, the lease renewal interval is shorter than the lease, the cooperative line
+  bound holds a base64-encoded maximum process image, message types and trace schema references are
+  distinct, schema identifiers are absolute URLs, and every value matches the immutable replay
   protocol v1 contract.
 - orphan-repair digest length matches its configured algorithm; blocker codes are unique; page
   bounds are ordered within the total operation limit; schema IDs and artifact destinations are

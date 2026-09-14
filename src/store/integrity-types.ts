@@ -25,6 +25,7 @@ export type TraceIntegrityIssueKind =
     | "owner_ordinal_mismatch"
     | "parent_index_mismatch"
     | "record_mismatch"
+    | "replay_session_mismatch"
     | "scope_registration_mismatch"
     | "sqlite_integrity_mismatch"
     | "supervised_dispatch_mismatch"

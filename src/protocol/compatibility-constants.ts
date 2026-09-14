@@ -393,6 +393,20 @@ export const KERNEL_ABI_V0_STORE_V11_CONTRACT = deepFreeze({
     schemaVersion: 11,
 } as const);
 
+/** Immutable replay session registration and writer-lease table implemented by store schema v12. */
+export const KERNEL_ABI_V0_STORE_V12_CONTRACT = deepFreeze({
+    ...KERNEL_ABI_V0_STORE_V11_CONTRACT,
+    migrations: [
+        ...KERNEL_ABI_V0_STORE_V11_CONTRACT.migrations,
+        {
+            firstOwnerOrdinal: 0,
+            lastOwnerOrdinal: 9_007_199_254_740_990,
+            version: 12,
+        },
+    ],
+    schemaVersion: 12,
+} as const);
+
 /** Immutable bounded orphaned-operation diagnosis and repair contract implemented by v1. */
 export const ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT = deepFreeze({
     artifacts: {
@@ -1102,6 +1116,169 @@ export const SCOPE_PROTOCOL_V6_CONTRACT = deepFreeze({
             captureKinds: { "verified-copy": "quiescent_verified_copy" },
             values: ["atomic_snapshot", "quiescent_verified_copy", "reconstructed"],
         },
+    },
+} as const);
+
+/** Immutable replay session, coupled checkpoint, rewind, replay, and analysis contract implemented by replay v1. */
+export const REPLAY_PROTOCOL_V1_CONTRACT = deepFreeze({
+    artifacts: {
+        admissionSchema: "spec/schemas/replay-admission-v1.schema.json",
+        checkpointSchema: "spec/schemas/replay-checkpoint-v1.schema.json",
+        restoreSchema: "spec/schemas/replay-restore-v1.schema.json",
+        sessionSchema: "spec/schemas/replay-session-v1.schema.json",
+        stepSchema: "spec/schemas/replay-step-v1.schema.json",
+        terminalSchema: "spec/schemas/replay-terminal-v1.schema.json",
+    },
+    cache: {
+        statuses: ["hit", "not_observed"],
+    },
+    changes: ["task", "provider", "handlers"],
+    checkpoint: {
+        classifications: ["atomic", "reconstructive", "unavailable"],
+        constituentKinds: [
+            "trace_cut",
+            "world",
+            "provider_session",
+            "process",
+            "irreversible_effects",
+        ],
+        evidenceStatuses: ["verified", "reconstructive", "not_applicable", "unavailable"],
+        reasons: {
+            adapterFailure: "checkpoint adapter failed",
+            boundaryWithoutCheckpoint: "step boundary has no retained checkpoint",
+            processImageBound: "process image exceeds the configured bound",
+            providerPrefixMismatch: "provider session holds a different context prefix",
+            worldCapture: "world capture failed",
+        },
+    },
+    compatibilityVersion: "shepherd.replay.v1",
+    divergence: {
+        causes: ["root", "propagated", "unexplained"],
+        statuses: ["identical", "diverged", "source_only", "replay_only"],
+    },
+    effects: {
+        approvalRequiredTiers: ["irreversible"],
+        dispositions: ["materialized", "materialization_failed", "refused"],
+        reasons: {
+            missingPolicy: "no replay policy approves this effect",
+            policyFailure: "replay policy failed",
+        },
+    },
+    errors: {
+        checkpointUnavailableCode: "REPLAY_CHECKPOINT_UNAVAILABLE",
+        checkpointUnavailableMessage:
+            "replay target has unavailable constituents and cannot be restored",
+        compatibilityCode: "REPLAY_COMPATIBILITY_UNSUPPORTED",
+        compatibilityMessage: "replay evidence uses an unsupported compatibility or record version",
+        effectRefusedCode: "REPLAY_EFFECT_REFUSED",
+        effectRefusedMessage: "replay suffix effect requires policy approval that was not granted",
+        evidenceCode: "REPLAY_EVIDENCE_INVALID",
+        evidenceMessage: "replay evidence is absent, malformed, or inconsistent",
+        interruptedCode: "REPLAY_SESSION_INTERRUPTED",
+        interruptedMessage:
+            "replay session is not terminal and is never resumed in place; replay from a checkpoint or step boundary",
+        leaseConflictCode: "REPLAY_LEASE_CONFLICT",
+        leaseConflictMessage: "replay session lease is held by another unexpired writer",
+        leaseFencedCode: "REPLAY_LEASE_FENCED",
+        leaseFencedMessage: "replay session lease is released, expired, superseded, or unknown",
+        materializationUncertainCode: "REPLAY_MATERIALIZATION_UNCERTAIN",
+        materializationUncertainMessage:
+            "replay effect was admitted without a retained step; manual recovery is required",
+        prefixMismatchCode: "REPLAY_PREFIX_MISMATCH",
+        prefixMismatchMessage: "replayed prefix differs from the recorded prefix",
+        restoreCode: "REPLAY_RESTORE_FAILED",
+        restoreMessage: "replay restoration target or constituent failed verification",
+        stepFailureCode: "REPLAY_STEP_FAILED",
+        stepFailureMessage: "replay session step failed",
+    },
+    identity: {
+        checkpointIdPrefix: "replay-checkpoint:sha256:",
+        commandAppendIntentKind: "replay_command",
+        contextPrefixIdPrefix: "replay-context:sha256:",
+        cutIdPrefix: "replay-cut:sha256:",
+        frontierIdPrefix: "replay-frontier:sha256:",
+        prefixIdPrefix: "replay-prefix:sha256:",
+        promptIdPrefix: "replay-prompt:sha256:",
+        responseIdPrefix: "replay-response:sha256:",
+        sessionIdPrefix: "replay-session:sha256:",
+        stepIdPrefix: "replay-step:sha256:",
+    },
+    lease: {
+        leaseMilliseconds: 30_000,
+        renewalMilliseconds: 10_000,
+    },
+    limits: {
+        maxDependencies: 64,
+        maxErrorMessageBytes: 4096,
+        maxProcessImageBytes: 16_777_216,
+        maxProcesses: 8,
+        maxReasonBytes: 4096,
+        maxSteps: 4096,
+        maxWorldEntries: 65_536,
+        maxWorlds: 16,
+    },
+    modes: ["root", "rewind", "replay"],
+    processes: {
+        backends: ["cooperative", "transparent"],
+        cooperative: {
+            maxLineBytes: 22_369_824,
+            messageTypes: {
+                checkpoint: "checkpoint",
+                error: "error",
+                image: "image",
+                request: "request",
+                response: "response",
+                restore: "restore",
+                restored: "restored",
+            },
+            protocolVersion: 1,
+            spawnFailedReason: "cooperative process could not be started",
+            timeoutMilliseconds: 30_000,
+        },
+        transparent: {
+            captureUnsupportedReason:
+                "transparent process image capture is not supported by replay protocol v1",
+            checkArguments: ["check"],
+            checkFailedReason: "criu check failed",
+            executable: "criu",
+            executableUnavailableReason: "criu executable is unavailable",
+            platformUnsupportedReason:
+                "transparent process checkpointing is unsupported on this platform",
+            platforms: ["linux"],
+            probeTimeoutMilliseconds: 30_000,
+        },
+    },
+    recordVersion: 1,
+    recovery: {
+        classifications: ["terminal", "running", "interrupted", "materialization_uncertain"],
+    },
+    schemas: {
+        admissionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/replay-admission-v1.schema.json",
+        checkpointId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/replay-checkpoint-v1.schema.json",
+        restoreId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/replay-restore-v1.schema.json",
+        sessionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/replay-session-v1.schema.json",
+        stepId: "https://avnionur.github.io/shepherd-typescript/schemas/replay-step-v1.schema.json",
+        terminalId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/replay-terminal-v1.schema.json",
+    },
+    steps: {
+        kinds: ["provider", "effect"],
+        sources: ["live", "recorded"],
+    },
+    terminal: {
+        statuses: ["finished", "failed", "cancelled", "rewound"],
+    },
+    traceSchemas: {
+        admission: "shepherd.replay.admission.v1",
+        checkpoint: "shepherd.replay.checkpoint.v1",
+        restore: "shepherd.replay.restore.v1",
+        session: "shepherd.replay.session.v1",
+        step: "shepherd.replay.step.v1",
+        terminal: "shepherd.replay.terminal.v1",
     },
 } as const);
 

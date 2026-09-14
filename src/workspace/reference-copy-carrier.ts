@@ -44,6 +44,7 @@ import {
     readCarrierBackendOption,
     readOverlayMountState,
     unmountOverlay,
+    writeCopiedFile,
 } from "./carrier-backends.ts";
 import { WorldCarrierError } from "./errors.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
@@ -486,6 +487,154 @@ export function readReferenceCopyRevisionBlob(
         } finally {
             closeSync(descriptor);
         }
+    });
+}
+
+/**
+ * @internal Captures the verified portable manifest of one managed directory without publication.
+ *
+ * The tree is scanned twice with the copy carrier's traversal and metadata policy; the manifests
+ * must be equal. Protected control names are refused relative to the directory itself.
+ */
+export function captureReferenceCopyTreeManifest(root: string): WorldVerification {
+    return invokeCarrier(() => {
+        const protection = pathProtection(root, root);
+        const manifest = captureTree(root, null, null, protection);
+        assertManifestMetadataSupported(root, manifest, SNAPSHOT_SOURCE_INSPECTION_PHASE_NAME);
+        const second = captureTree(root, null, null, protection);
+        assert.equal(
+            canonicalManifest(manifest),
+            canonicalManifest(second),
+            "managed directory changed during capture",
+        );
+        return freezeVerification(createContentId(manifest), false, manifest);
+    });
+}
+
+/** @internal Reads one regular file of a captured managed directory and verifies its manifest entry. */
+export function readReferenceCopyTreeFile(root: string, entry: WorldManifestEntry): Buffer {
+    return invokeCarrier(() => {
+        assert.equal(entry.kind, FILE_KIND);
+        const filePath = managedPath(root, entry.path);
+        const bytes = readRegularFile(filePath, lstatSync(filePath, { bigint: true }));
+        assert.equal(
+            bytes.length === entry.size &&
+                digestId(workspaceProtocolConfig.carrier.blobIdPrefix, bytes) === entry.blob_id,
+            true,
+            `managed file changed after capture: ${entry.path}`,
+        );
+        return bytes;
+    });
+}
+
+/**
+ * @internal Validates an untrusted manifest and returns its copy-carrier content identity.
+ *
+ * Entries must be canonically ordered, portable, contained, and internally consistent for their kind.
+ */
+export function readReferenceCopyManifest(
+    root: string,
+    value: readonly unknown[],
+): WorldVerification {
+    return invokeCarrier(() => {
+        const manifest = validateManifest(value);
+        const paths = new Set<string>();
+        for (const item of manifest) {
+            const segments = item.path.split("/");
+            segments.forEach(assertSafeName);
+            const parent = segments.slice(0, -1).join("/");
+            assert.equal(
+                !paths.has(item.path) && (parent === "" || paths.has(`${parent}/`)),
+                true,
+                `manifest entry has no directory parent: ${item.path}`,
+            );
+            paths.add(item.path);
+            if (item.kind === DIRECTORY_KIND) {
+                paths.add(`${item.path}/`);
+            }
+            assertWorkspacePathUnprotected({ ...pathProtection(root, root), path: item.path });
+            const directory = item.kind === DIRECTORY_KIND;
+            const file = item.kind === FILE_KIND;
+            assert.equal(
+                (item.mode === null) === !(directory || file) &&
+                    (item.mode === null || (item.mode & ~0o777) === 0) &&
+                    // Restored directories must stay traversable so the result can be re-verified.
+                    (!directory || ((item.mode as number) & 0o500) === 0o500) &&
+                    (item.size === null) === !file &&
+                    (item.blob_id === null) === !file &&
+                    (item.symlink_target === null) === (directory || file),
+                true,
+                `manifest entry fields are inconsistent: ${item.path}`,
+            );
+            if (item.blob_id !== null) {
+                const prefix = workspaceProtocolConfig.carrier.blobIdPrefix;
+                assert.equal(
+                    item.blob_id.startsWith(prefix) &&
+                        item.blob_id.length === digestId(prefix, "").length &&
+                        /^[0-9a-f]+$/u.test(item.blob_id.slice(prefix.length)),
+                    true,
+                    `manifest blob identity is malformed: ${item.path}`,
+                );
+            }
+            if (item.symlink_target !== null) {
+                assertSafeSymlink(root, null, item.path, item.symlink_target);
+            }
+        }
+        return freezeVerification(createContentId(manifest), false, manifest);
+    });
+}
+
+/**
+ * @internal Materializes a validated manifest into an empty directory and verifies the result.
+ *
+ * File bytes come from the caller and must match their entries. Directory modes are applied after
+ * their children, and the materialized tree must recapture to the same content identity.
+ */
+export function materializeReferenceCopyManifest(
+    root: string,
+    manifest: readonly WorldManifestEntry[],
+    readFile: (entry: WorldManifestEntry) => Buffer,
+): WorldVerification {
+    return invokeCarrier(() => {
+        const expected = readReferenceCopyManifest(root, manifest);
+        const status = lstatSync(root);
+        assert.equal(
+            status.isDirectory() && !status.isSymbolicLink() && readdirSync(root).length === 0,
+            true,
+            "restoration root must be an existing empty directory",
+        );
+        assert.equal(realpathSync(root), root, "restoration root must be canonical");
+        for (const item of expected.manifest) {
+            const target = managedPath(root, item.path);
+            if (item.kind === DIRECTORY_KIND) {
+                mkdirSync(target, { mode: 0o700 });
+            } else if (item.kind === FILE_KIND) {
+                const bytes = readFile(item);
+                assert.equal(
+                    bytes.length === item.size &&
+                        digestId(workspaceProtocolConfig.carrier.blobIdPrefix, bytes) ===
+                            item.blob_id,
+                    true,
+                    `restored bytes differ from the manifest: ${item.path}`,
+                );
+                writeCopiedFile(target, target, bytes, item.mode as number);
+            } else {
+                symlinkSync(item.symlink_target as string, target);
+            }
+        }
+        for (const item of [...expected.manifest].reverse()) {
+            if (item.kind === DIRECTORY_KIND) {
+                setDirectoryModeDurably(managedPath(root, item.path), item.mode as number);
+            }
+        }
+        syncDirectory(root);
+        const restored = captureReferenceCopyTreeManifest(root);
+        assert.equal(
+            restored.content_id,
+            expected.content_id,
+            "restored directory differs from the manifest",
+        );
+        return restored;
     });
 }
 

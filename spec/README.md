@@ -20,6 +20,10 @@ package and suitable for independent compatibility implementations.
   `schemas/supervision-approval-v1.schema.json`, `schemas/supervision-admission-v1.schema.json`, and
   `schemas/supervision-resolution-v1.schema.json` define supervised effect dispatch evidence, and
   `schemas/supervision-context-v1.schema.json` defines cited context injections.
+- `schemas/replay-session-v1.schema.json`, `schemas/replay-step-v1.schema.json`,
+  `schemas/replay-admission-v1.schema.json`, `schemas/replay-checkpoint-v1.schema.json`,
+  `schemas/replay-restore-v1.schema.json`, and `schemas/replay-terminal-v1.schema.json` define replay
+  session journals, coupled checkpoints, branch restoration, and terminal evidence.
 
 Runtime implementations must validate the semantic rules that JSON Schema cannot express, such as
 `record_id == digest`, versioned digest input, root-witness constraints, parent existence,

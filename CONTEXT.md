@@ -168,6 +168,46 @@ Supervisor-provided application data on a named channel whose cited retained rec
 parents.
 _Avoid_: Prompt mutation, uncited note, worker record rewrite
 
+**Replay Session**:
+One deterministic session program whose provider exchanges, effects, checkpoints, and terminal
+outcome are retained as ordered steps on its own owner path under a fenced writer lease.
+_Avoid_: Durable run, log of prompts, resumable process
+
+**Session Program**:
+A caller-supplied deterministic function that reaches the world only through its replay session
+context, so its state is a function of prior step results.
+_Avoid_: Agent process, captured memory image, workflow script
+
+**Prefix Identity**:
+A chained digest over every step identity of a session; the context prefix identity chains provider
+exchanges only. Neither includes usage, timestamps, or delivery order.
+_Avoid_: Step count, session hash, cache key
+
+**Coupled Checkpoint**:
+A descriptor retained at one step boundary with a published trace cut, one image per bound world,
+provider-session and process evidence, and the irreversible-effect frontier, each classified.
+_Avoid_: Snapshot claim, trace cut alone, process dump
+
+**World Image**:
+The copy-carrier manifest and file bytes of one managed world retained as content-addressed
+trace-store blobs, verified by content identity before restoration.
+_Avoid_: Carrier custody, directory backup, Git commit
+
+**Branch Session**:
+A rewind or replay session that cites its source session, restores a verified target, and records
+whether its start was atomic or reconstructive.
+_Avoid_: Fork, copy of the source session, retry
+
+**Recorded Step**:
+A branch step served from the source journal because the program issued the exact recorded request
+or intent; no provider or handler is invoked.
+_Avoid_: Cached response, replayed effect, live step
+
+**Divergence**:
+A step whose identity differs between a source and a branch, classified as root, propagated, or
+unexplained from declared dependencies and declared changes.
+_Avoid_: Diff, nondeterminism report, test failure
+
 **Task Descriptor**:
 An immutable bodyless behavioral contract containing a logical identity, instruction, and runtime
 input/output schemas.

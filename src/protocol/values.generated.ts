@@ -659,3 +659,101 @@ export const SUPERVISION_LIMITS = Object.freeze({
     maxDataCanonicalBytes: 65536,
     maxReasonBytes: 4096,
 } as const);
+
+/** Configured replay evidence compatibility namespace. @public */
+export const REPLAY_COMPATIBILITY_VERSION = "shepherd.replay.v1" as const;
+
+/** Configured canonical replay record version. @public */
+export const REPLAY_RECORD_VERSION = 1 as const;
+
+/** Configured replay session modes ordered root, rewind, replay. @public */
+export const REPLAY_MODES = ["root", "rewind", "replay"] as const;
+
+/** Configured replay step kinds ordered provider then effect. @public */
+export const REPLAY_STEP_KINDS = ["provider", "effect"] as const;
+
+/** Configured replay step sources ordered live then recorded. @public */
+export const REPLAY_STEP_SOURCES = ["live", "recorded"] as const;
+
+/** Configured declarable replay change dimensions ordered task, provider, handlers. @public */
+export const REPLAY_CHANGE_DIMENSIONS = ["task", "provider", "handlers"] as const;
+
+/** Configured replay effect dispositions ordered materialized, materialization failed, refused. @public */
+export const REPLAY_EFFECT_DISPOSITIONS = [
+    "materialized",
+    "materialization_failed",
+    "refused",
+] as const;
+
+/** Configured reversibility tiers that require replay policy approval in a branch suffix. @public */
+export const REPLAY_APPROVAL_REQUIRED_TIERS = ["irreversible"] as const;
+
+/** Configured provider cache evidence statuses ordered hit then not observed. @public */
+export const REPLAY_CACHE_STATUSES = ["hit", "not_observed"] as const;
+
+/** Configured checkpoint classifications ordered atomic, reconstructive, unavailable. @public */
+export const REPLAY_CHECKPOINT_CLASSIFICATIONS = [
+    "atomic",
+    "reconstructive",
+    "unavailable",
+] as const;
+
+/** Configured checkpoint constituent kinds in descriptor order. @public */
+export const REPLAY_CHECKPOINT_CONSTITUENT_KINDS = [
+    "trace_cut",
+    "world",
+    "provider_session",
+    "process",
+    "irreversible_effects",
+] as const;
+
+/** Configured checkpoint evidence statuses ordered verified, reconstructive, not applicable, unavailable. @public */
+export const REPLAY_CHECKPOINT_EVIDENCE_STATUSES = [
+    "verified",
+    "reconstructive",
+    "not_applicable",
+    "unavailable",
+] as const;
+
+/** Configured session terminal statuses ordered finished, failed, cancelled, rewound. @public */
+export const REPLAY_TERMINAL_STATUSES = ["finished", "failed", "cancelled", "rewound"] as const;
+
+/** Configured session recovery classifications ordered terminal, running, interrupted, materialization uncertain. @public */
+export const REPLAY_RECOVERY_CLASSIFICATIONS = [
+    "terminal",
+    "running",
+    "interrupted",
+    "materialization_uncertain",
+] as const;
+
+/** Configured divergence alignment statuses ordered identical, diverged, source only, replay only. @public */
+export const REPLAY_DIVERGENCE_STATUSES = [
+    "identical",
+    "diverged",
+    "source_only",
+    "replay_only",
+] as const;
+
+/** Configured divergence causes ordered root, propagated, unexplained. @public */
+export const REPLAY_DIVERGENCE_CAUSES = ["root", "propagated", "unexplained"] as const;
+
+/** Configured process checkpoint backends ordered cooperative then transparent. @public */
+export const REPLAY_PROCESS_BACKENDS = ["cooperative", "transparent"] as const;
+
+/** Configured replay session lease timing. @public */
+export const REPLAY_LEASE_LIMITS = Object.freeze({
+    leaseMilliseconds: 30000,
+    renewalMilliseconds: 10000,
+} as const);
+
+/** Configured replay evidence bounds. @public */
+export const REPLAY_LIMITS = Object.freeze({
+    maxDependencies: 64,
+    maxErrorMessageBytes: 4096,
+    maxProcessImageBytes: 16777216,
+    maxProcesses: 8,
+    maxReasonBytes: 4096,
+    maxSteps: 4096,
+    maxWorldEntries: 65536,
+    maxWorlds: 16,
+} as const);

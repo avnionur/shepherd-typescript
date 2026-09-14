@@ -19,6 +19,14 @@ import {
     renderOrphanRepairCommandSchema,
     renderOrphanRepairReceiptSchema,
 } from "./schemas/orphan-repair-schemas.ts";
+import {
+    renderReplayAdmissionSchema,
+    renderReplayCheckpointSchema,
+    renderReplayRestoreSchema,
+    renderReplaySessionSchema,
+    renderReplayStepSchema,
+    renderReplayTerminalSchema,
+} from "./schemas/replay-schemas.ts";
 import { renderRunArtifactSchema } from "./schemas/run-artifact-schema.ts";
 import {
     renderRunContinuationDescriptorSchema,
@@ -252,6 +260,30 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderScopeDiscardSchema(config)),
             relativePath: config.scopes.artifacts.discardSchema,
+        },
+        {
+            content: renderJson(renderReplaySessionSchema(config)),
+            relativePath: config.replay.artifacts.sessionSchema,
+        },
+        {
+            content: renderJson(renderReplayStepSchema(config)),
+            relativePath: config.replay.artifacts.stepSchema,
+        },
+        {
+            content: renderJson(renderReplayAdmissionSchema(config)),
+            relativePath: config.replay.artifacts.admissionSchema,
+        },
+        {
+            content: renderJson(renderReplayCheckpointSchema(config)),
+            relativePath: config.replay.artifacts.checkpointSchema,
+        },
+        {
+            content: renderJson(renderReplayRestoreSchema(config)),
+            relativePath: config.replay.artifacts.restoreSchema,
+        },
+        {
+            content: renderJson(renderReplayTerminalSchema(config)),
+            relativePath: config.replay.artifacts.terminalSchema,
         },
         {
             content: renderJson(renderSupervisionCursorSchema(config)),
@@ -2339,6 +2371,75 @@ export const SUPERVISION_LIMITS = Object.freeze({
     maxCitedRecords: ${config.supervision.limits.maxCitedRecords},
     maxDataCanonicalBytes: ${config.supervision.limits.maxDataCanonicalBytes},
     maxReasonBytes: ${config.supervision.limits.maxReasonBytes},
+} as const);
+
+/** Configured replay evidence compatibility namespace. @public */
+export const REPLAY_COMPATIBILITY_VERSION = ${JSON.stringify(config.replay.compatibilityVersion)} as const;
+
+/** Configured canonical replay record version. @public */
+export const REPLAY_RECORD_VERSION = ${config.replay.recordVersion} as const;
+
+/** Configured replay session modes ordered root, rewind, replay. @public */
+${renderConstStrings("REPLAY_MODES", config.replay.modes)}
+
+/** Configured replay step kinds ordered provider then effect. @public */
+${renderConstStrings("REPLAY_STEP_KINDS", config.replay.steps.kinds)}
+
+/** Configured replay step sources ordered live then recorded. @public */
+${renderConstStrings("REPLAY_STEP_SOURCES", config.replay.steps.sources)}
+
+/** Configured declarable replay change dimensions ordered task, provider, handlers. @public */
+${renderConstStrings("REPLAY_CHANGE_DIMENSIONS", config.replay.changes)}
+
+/** Configured replay effect dispositions ordered materialized, materialization failed, refused. @public */
+${renderConstStrings("REPLAY_EFFECT_DISPOSITIONS", config.replay.effects.dispositions)}
+
+/** Configured reversibility tiers that require replay policy approval in a branch suffix. @public */
+${renderConstStrings("REPLAY_APPROVAL_REQUIRED_TIERS", config.replay.effects.approvalRequiredTiers)}
+
+/** Configured provider cache evidence statuses ordered hit then not observed. @public */
+${renderConstStrings("REPLAY_CACHE_STATUSES", config.replay.cache.statuses)}
+
+/** Configured checkpoint classifications ordered atomic, reconstructive, unavailable. @public */
+${renderConstStrings("REPLAY_CHECKPOINT_CLASSIFICATIONS", config.replay.checkpoint.classifications)}
+
+/** Configured checkpoint constituent kinds in descriptor order. @public */
+${renderConstStrings("REPLAY_CHECKPOINT_CONSTITUENT_KINDS", config.replay.checkpoint.constituentKinds)}
+
+/** Configured checkpoint evidence statuses ordered verified, reconstructive, not applicable, unavailable. @public */
+${renderConstStrings("REPLAY_CHECKPOINT_EVIDENCE_STATUSES", config.replay.checkpoint.evidenceStatuses)}
+
+/** Configured session terminal statuses ordered finished, failed, cancelled, rewound. @public */
+${renderConstStrings("REPLAY_TERMINAL_STATUSES", config.replay.terminal.statuses)}
+
+/** Configured session recovery classifications ordered terminal, running, interrupted, materialization uncertain. @public */
+${renderConstStrings("REPLAY_RECOVERY_CLASSIFICATIONS", config.replay.recovery.classifications)}
+
+/** Configured divergence alignment statuses ordered identical, diverged, source only, replay only. @public */
+${renderConstStrings("REPLAY_DIVERGENCE_STATUSES", config.replay.divergence.statuses)}
+
+/** Configured divergence causes ordered root, propagated, unexplained. @public */
+${renderConstStrings("REPLAY_DIVERGENCE_CAUSES", config.replay.divergence.causes)}
+
+/** Configured process checkpoint backends ordered cooperative then transparent. @public */
+${renderConstStrings("REPLAY_PROCESS_BACKENDS", config.replay.processes.backends)}
+
+/** Configured replay session lease timing. @public */
+export const REPLAY_LEASE_LIMITS = Object.freeze({
+    leaseMilliseconds: ${config.replay.lease.leaseMilliseconds},
+    renewalMilliseconds: ${config.replay.lease.renewalMilliseconds},
+} as const);
+
+/** Configured replay evidence bounds. @public */
+export const REPLAY_LIMITS = Object.freeze({
+    maxDependencies: ${config.replay.limits.maxDependencies},
+    maxErrorMessageBytes: ${config.replay.limits.maxErrorMessageBytes},
+    maxProcessImageBytes: ${config.replay.limits.maxProcessImageBytes},
+    maxProcesses: ${config.replay.limits.maxProcesses},
+    maxReasonBytes: ${config.replay.limits.maxReasonBytes},
+    maxSteps: ${config.replay.limits.maxSteps},
+    maxWorldEntries: ${config.replay.limits.maxWorldEntries},
+    maxWorlds: ${config.replay.limits.maxWorlds},
 } as const);
 `;
 }

@@ -1,0 +1,645 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/replay-step-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Replay Step v1",
+    "description": "One provider exchange or effect of a replay session with declared dependencies and chained prefix identity.",
+    "type": "object",
+    "required": [
+        "compatibility_version",
+        "replay_version",
+        "depends_on",
+        "effect",
+        "index",
+        "kind",
+        "prefix_id",
+        "provider",
+        "session_id",
+        "source",
+        "source_step_record_id",
+        "step_id"
+    ],
+    "properties": {
+        "compatibility_version": {
+            "const": "shepherd.replay.v1"
+        },
+        "replay_version": {
+            "const": 1
+        },
+        "depends_on": {
+            "type": "array",
+            "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4095
+            },
+            "maxItems": 64,
+            "uniqueItems": true
+        },
+        "effect": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "approval",
+                        "disposition",
+                        "failure",
+                        "handler_id",
+                        "intent",
+                        "intent_ref",
+                        "outcome",
+                        "refusal_reason"
+                    ],
+                    "properties": {
+                        "approval": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "object",
+                                    "required": [
+                                        "approver_id",
+                                        "reason",
+                                        "rematerialization"
+                                    ],
+                                    "properties": {
+                                        "approver_id": {
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "reason": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "x-shepherd-max-utf8-bytes": 4096
+                                        },
+                                        "rematerialization": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
+                        "disposition": {
+                            "enum": [
+                                "materialized",
+                                "materialization_failed",
+                                "refused"
+                            ]
+                        },
+                        "failure": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "$ref": "#/$defs/failure"
+                                }
+                            ]
+                        },
+                        "handler_id": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            ]
+                        },
+                        "intent": {
+                            "$ref": "#/$defs/effectIntent"
+                        },
+                        "intent_ref": {
+                            "$ref": "#/$defs/intentRef"
+                        },
+                        "outcome": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "$ref": "#/$defs/effectOutcome"
+                                }
+                            ]
+                        },
+                        "refusal_reason": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "x-shepherd-max-utf8-bytes": 4096
+                                }
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4095
+        },
+        "kind": {
+            "enum": [
+                "provider",
+                "effect"
+            ]
+        },
+        "prefix_id": {
+            "type": "string",
+            "pattern": "^replay-prefix:sha256:[0-9a-f]{64}$"
+        },
+        "provider": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "cache",
+                        "context_prefix_id",
+                        "failure",
+                        "prompt_id",
+                        "request",
+                        "response",
+                        "response_id"
+                    ],
+                    "properties": {
+                        "cache": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "object",
+                                    "required": [
+                                        "creation_input_tokens",
+                                        "identity",
+                                        "prior_context_prefix_id",
+                                        "read_input_tokens",
+                                        "status"
+                                    ],
+                                    "properties": {
+                                        "creation_input_tokens": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        },
+                                        "identity": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "null"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                }
+                                            ]
+                                        },
+                                        "prior_context_prefix_id": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "null"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "pattern": "^replay-context:sha256:[0-9a-f]{64}$"
+                                                }
+                                            ]
+                                        },
+                                        "read_input_tokens": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        },
+                                        "status": {
+                                            "enum": [
+                                                "hit",
+                                                "not_observed"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
+                        "context_prefix_id": {
+                            "type": "string",
+                            "pattern": "^replay-context:sha256:[0-9a-f]{64}$"
+                        },
+                        "failure": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "$ref": "#/$defs/failure"
+                                }
+                            ]
+                        },
+                        "prompt_id": {
+                            "type": "string",
+                            "pattern": "^replay-prompt:sha256:[0-9a-f]{64}$"
+                        },
+                        "request": {
+                            "type": "object",
+                            "required": [
+                                "input",
+                                "instruction",
+                                "outputSchema"
+                            ],
+                            "properties": {
+                                "input": {
+                                    "$ref": "#/$defs/semanticValue"
+                                },
+                                "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "outputSchema": {
+                                    "type": "object"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "response": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "object",
+                                    "required": [
+                                        "output",
+                                        "usage"
+                                    ],
+                                    "properties": {
+                                        "output": {
+                                            "$ref": "#/$defs/semanticValue"
+                                        },
+                                        "usage": {
+                                            "type": "object",
+                                            "required": [
+                                                "cacheCreationInputTokens",
+                                                "cacheReadInputTokens",
+                                                "costUsd",
+                                                "inputTokens",
+                                                "outputTokens"
+                                            ],
+                                            "properties": {
+                                                "cacheCreationInputTokens": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                },
+                                                "cacheReadInputTokens": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                },
+                                                "costUsd": {
+                                                    "oneOf": [
+                                                        {
+                                                            "type": "null"
+                                                        },
+                                                        {
+                                                            "type": "number",
+                                                            "minimum": 0
+                                                        }
+                                                    ]
+                                                },
+                                                "inputTokens": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                },
+                                                "outputTokens": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
+                        "response_id": {
+                            "type": "string",
+                            "pattern": "^replay-response:sha256:[0-9a-f]{64}$"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "session_id": {
+            "$ref": "#/$defs/sessionId"
+        },
+        "source": {
+            "enum": [
+                "live",
+                "recorded"
+            ]
+        },
+        "source_step_record_id": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "$ref": "#/$defs/recordId"
+                }
+            ]
+        },
+        "step_id": {
+            "type": "string",
+            "pattern": "^replay-step:sha256:[0-9a-f]{64}$"
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "constituents": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "required": [
+                    "evidence",
+                    "kind",
+                    "name",
+                    "reason",
+                    "receipt_id",
+                    "status"
+                ],
+                "properties": {
+                    "evidence": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "$ref": "#/$defs/semanticValue"
+                                }
+                            }
+                        ]
+                    },
+                    "kind": {
+                        "enum": [
+                            "trace_cut",
+                            "world",
+                            "provider_session",
+                            "process",
+                            "irreversible_effects"
+                        ]
+                    },
+                    "name": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        ]
+                    },
+                    "reason": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "string",
+                                "minLength": 1,
+                                "x-shepherd-max-utf8-bytes": 4096
+                            }
+                        ]
+                    },
+                    "receipt_id": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        ]
+                    },
+                    "status": {
+                        "enum": [
+                            "verified",
+                            "reconstructive",
+                            "not_applicable",
+                            "unavailable"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "effectIntent": {
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_version",
+                "kind",
+                "payload",
+                "phase",
+                "reversibility"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "intent_version": {
+                    "const": 1
+                },
+                "kind": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "payload": {
+                    "$ref": "#/$defs/semanticValue"
+                },
+                "phase": {
+                    "const": "intent"
+                },
+                "reversibility": {
+                    "enum": [
+                        "reversible",
+                        "compensable",
+                        "irreversible"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "effectOutcome": {
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_ref",
+                "kind",
+                "outcome_version",
+                "phase",
+                "result"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "intent_ref": {
+                    "$ref": "#/$defs/intentRef"
+                },
+                "kind": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "outcome_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "outcome"
+                },
+                "result": {
+                    "$ref": "#/$defs/semanticValue"
+                }
+            },
+            "additionalProperties": false
+        },
+        "failure": {
+            "type": "object",
+            "required": [
+                "message",
+                "name"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "intentRef": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        },
+        "sessionId": {
+            "type": "string",
+            "pattern": "^replay-session:sha256:[0-9a-f]{64}$"
+        },
+        "task": {
+            "type": "object",
+            "required": [
+                "artifact_lock",
+                "input",
+                "instruction",
+                "output_schema"
+            ],
+            "properties": {
+                "artifact_lock": {
+                    "type": "object",
+                    "required": [
+                        "artifact_digest",
+                        "artifact_lock_version",
+                        "compatibility_version",
+                        "descriptor_version",
+                        "schema_digest",
+                        "task_id",
+                        "task_version"
+                    ],
+                    "properties": {
+                        "artifact_digest": {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        "artifact_lock_version": {
+                            "const": 1
+                        },
+                        "compatibility_version": {
+                            "const": "shepherd.tasks.v1"
+                        },
+                        "descriptor_version": {
+                            "const": 1
+                        },
+                        "schema_digest": {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        "task_id": {
+                            "type": "string",
+                            "pattern": "^task:sha256:[0-9a-f]{64}$"
+                        },
+                        "task_version": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "input": {
+                    "$ref": "#/$defs/semanticValue"
+                },
+                "instruction": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "output_schema": {
+                    "type": "object"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

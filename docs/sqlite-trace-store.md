@@ -91,6 +91,10 @@ records, and the tables are verified indexes that are never exported. Schema v10
 registration and fenced decision lease of each [supervised dispatch](./supervised-effects.md).
 Both are bookkeeping outside the record graph and are never exported. `append` refuses groups
 targeting dispatch or context-channel owner paths, which only the supervision transactions write.
+Schema v12 adds `replay_sessions`, the registration, fenced writer lease, and terminal flag of each
+[replay session](./replay-sessions.md). It is bookkeeping outside the record graph and is never
+exported. `append` refuses groups on replay session owner paths and `publishCut` refuses a replay
+session as the publishing owner, so only fenced session transactions write session evidence.
 
 Execution projections are disposable reads and therefore add no schema migration. The
 `projectExecution(cutId)` and `projectEffectiveHistory(cutId)` facades resolve payload-visible,
