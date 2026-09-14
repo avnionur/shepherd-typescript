@@ -447,6 +447,276 @@ export type ProviderProtocolConfig = {
     };
 };
 
+/** Validated durable replay session, coupled checkpoint, rewind, and replay configuration. */
+export type ReplayProtocolConfig = {
+    /** Generated language-neutral replay record artifacts. */
+    readonly artifacts: {
+        /** Repository-relative effect admission record schema destination. */
+        readonly admissionSchema: string;
+        /** Repository-relative checkpoint record schema destination. */
+        readonly checkpointSchema: string;
+        /** Repository-relative branch restore record schema destination. */
+        readonly restoreSchema: string;
+        /** Repository-relative session record schema destination. */
+        readonly sessionSchema: string;
+        /** Repository-relative step record schema destination. */
+        readonly stepSchema: string;
+        /** Repository-relative terminal record schema destination. */
+        readonly terminalSchema: string;
+    };
+    /** Provider cache evidence vocabulary. */
+    readonly cache: {
+        /** Cache statuses ordered hit, then not observed. */
+        readonly statuses: readonly string[];
+    };
+    /** Declarable replay change dimensions ordered task, provider, handlers. */
+    readonly changes: readonly string[];
+    /** Coupled checkpoint vocabulary. */
+    readonly checkpoint: {
+        /** Classifications ordered atomic, reconstructive, unavailable. */
+        readonly classifications: readonly string[];
+        /** Constituent kinds ordered trace cut, world, provider session, process, irreversible effects. */
+        readonly constituentKinds: readonly string[];
+        /** Evidence statuses ordered verified, reconstructive, not applicable, unavailable. */
+        readonly evidenceStatuses: readonly string[];
+        /** Stable reasons retained for unavailable constituents. */
+        readonly reasons: {
+            /** A provider-session or process adapter threw. */
+            readonly adapterFailure: string;
+            /** A step boundary without checkpoint names a session with worlds or processes. */
+            readonly boundaryWithoutCheckpoint: string;
+            /** A process image exceeds the configured bound. */
+            readonly processImageBound: string;
+            /** A provider-session adapter holds a different context prefix identity. */
+            readonly providerPrefixMismatch: string;
+            /** A bound world cannot be captured. */
+            readonly worldCapture: string;
+        };
+    };
+    /** Compatibility namespace governing replay evidence. */
+    readonly compatibilityVersion: string;
+    /** Divergence analysis vocabulary. */
+    readonly divergence: {
+        /** Divergence causes ordered root, propagated, unexplained. */
+        readonly causes: readonly string[];
+        /** Alignment statuses ordered identical, diverged, source only, replay only. */
+        readonly statuses: readonly string[];
+    };
+    /** Effect step vocabulary and replay approval policy. */
+    readonly effects: {
+        /** Reversibility tiers that require policy approval in a branch suffix. */
+        readonly approvalRequiredTiers: readonly string[];
+        /** Dispositions ordered materialized, materialization failed, refused. */
+        readonly dispositions: readonly string[];
+        /** Stable refusal reasons. */
+        readonly reasons: {
+            /** No replay policy was supplied. */
+            readonly missingPolicy: string;
+            /** The replay policy threw or returned a malformed verdict. */
+            readonly policyFailure: string;
+        };
+    };
+    /** Stable public error codes and messages. */
+    readonly errors: {
+        /** Unavailable replay target code. */
+        readonly checkpointUnavailableCode: string;
+        /** Unavailable replay target message. */
+        readonly checkpointUnavailableMessage: string;
+        /** Unsupported replay evidence version code. */
+        readonly compatibilityCode: string;
+        /** Unsupported replay evidence version message. */
+        readonly compatibilityMessage: string;
+        /** Refused suffix effect code. */
+        readonly effectRefusedCode: string;
+        /** Refused suffix effect message. */
+        readonly effectRefusedMessage: string;
+        /** Invalid replay evidence code. */
+        readonly evidenceCode: string;
+        /** Invalid replay evidence message. */
+        readonly evidenceMessage: string;
+        /** Non-terminal session code. */
+        readonly interruptedCode: string;
+        /** Non-terminal session message. */
+        readonly interruptedMessage: string;
+        /** Held session lease code. */
+        readonly leaseConflictCode: string;
+        /** Held session lease message. */
+        readonly leaseConflictMessage: string;
+        /** Fenced session lease code. */
+        readonly leaseFencedCode: string;
+        /** Fenced session lease message. */
+        readonly leaseFencedMessage: string;
+        /** Uncertain effect materialization code. */
+        readonly materializationUncertainCode: string;
+        /** Uncertain effect materialization message. */
+        readonly materializationUncertainMessage: string;
+        /** Prefix mismatch code. */
+        readonly prefixMismatchCode: string;
+        /** Prefix mismatch message. */
+        readonly prefixMismatchMessage: string;
+        /** Failed restoration code. */
+        readonly restoreCode: string;
+        /** Failed restoration message. */
+        readonly restoreMessage: string;
+        /** Failed provider or effect step code. */
+        readonly stepFailureCode: string;
+        /** Failed provider or effect step message. */
+        readonly stepFailureMessage: string;
+    };
+    /** Deterministic identity derivation. */
+    readonly identity: {
+        /** Prefix of checkpoint identities. */
+        readonly checkpointIdPrefix: string;
+        /** Canonical key naming replay command append intents. */
+        readonly commandAppendIntentKind: string;
+        /** Prefix of chained provider context prefix identities. */
+        readonly contextPrefixIdPrefix: string;
+        /** Prefix of published replay cut identities. */
+        readonly cutIdPrefix: string;
+        /** Prefix of irreversible-effect frontier identities. */
+        readonly frontierIdPrefix: string;
+        /** Prefix of chained session prefix identities. */
+        readonly prefixIdPrefix: string;
+        /** Prefix of provider prompt identities. */
+        readonly promptIdPrefix: string;
+        /** Prefix of provider response output identities. */
+        readonly responseIdPrefix: string;
+        /** Prefix of replay session owner identities. */
+        readonly sessionIdPrefix: string;
+        /** Prefix of step identities. */
+        readonly stepIdPrefix: string;
+    };
+    /** Session writer lease timing. */
+    readonly lease: {
+        /** Lease duration granted to a session writer. */
+        readonly leaseMilliseconds: number;
+        /** Interval after which a running writer renews its lease. */
+        readonly renewalMilliseconds: number;
+    };
+    /** Resource bounds for replay evidence. */
+    readonly limits: {
+        /** Maximum declared dependencies of one step. */
+        readonly maxDependencies: number;
+        /** Maximum UTF-8 bytes of a retained program error message. */
+        readonly maxErrorMessageBytes: number;
+        /** Maximum bytes of one retained process image. */
+        readonly maxProcessImageBytes: number;
+        /** Maximum processes bound to one session. */
+        readonly maxProcesses: number;
+        /** Maximum UTF-8 bytes of a retained reason. */
+        readonly maxReasonBytes: number;
+        /** Maximum steps of one session. */
+        readonly maxSteps: number;
+        /** Maximum manifest entries of one world image. */
+        readonly maxWorldEntries: number;
+        /** Maximum worlds bound to one session. */
+        readonly maxWorlds: number;
+    };
+    /** Session modes ordered root, rewind, replay. */
+    readonly modes: readonly string[];
+    /** Process checkpoint backend configuration. */
+    readonly processes: {
+        /** Backend kinds ordered cooperative, then transparent. */
+        readonly backends: readonly string[];
+        /** Structured cooperative process protocol. */
+        readonly cooperative: {
+            /** Maximum bytes of one protocol line. */
+            readonly maxLineBytes: number;
+            /** Protocol message type names. */
+            readonly messageTypes: {
+                /** Checkpoint request type. */
+                readonly checkpoint: string;
+                /** Child failure response type. */
+                readonly error: string;
+                /** Checkpoint image response type. */
+                readonly image: string;
+                /** Application request type. */
+                readonly request: string;
+                /** Application response type. */
+                readonly response: string;
+                /** Restore request type. */
+                readonly restore: string;
+                /** Restore acknowledgement type. */
+                readonly restored: string;
+            };
+            /** Cooperative protocol version sent with every request. */
+            readonly protocolVersion: number;
+            /** Reason retained when the cooperative process cannot be started. */
+            readonly spawnFailedReason: string;
+            /** Maximum wait for one protocol response. */
+            readonly timeoutMilliseconds: number;
+        };
+        /** Transparent CRIU probe configuration. */
+        readonly transparent: {
+            /** Reason retained when the probe passes but capture is unsupported. */
+            readonly captureUnsupportedReason: string;
+            /** Arguments of the host capability check. */
+            readonly checkArguments: readonly string[];
+            /** Reason prefix retained when the host check fails. */
+            readonly checkFailedReason: string;
+            /** Executable probed for transparent checkpoints. */
+            readonly executable: string;
+            /** Reason retained when the executable cannot be started. */
+            readonly executableUnavailableReason: string;
+            /** Reason retained on unsupported platforms. */
+            readonly platformUnsupportedReason: string;
+            /** Node platforms on which the probe runs. */
+            readonly platforms: readonly string[];
+            /** Maximum wait for the host check. */
+            readonly probeTimeoutMilliseconds: number;
+        };
+    };
+    /** Replay record version. */
+    readonly recordVersion: number;
+    /** Session recovery vocabulary. */
+    readonly recovery: {
+        /** Classifications ordered terminal, running, interrupted, materialization uncertain. */
+        readonly classifications: readonly string[];
+    };
+    /** Stable JSON Schema identifiers. */
+    readonly schemas: {
+        /** Admission record schema identifier. */
+        readonly admissionId: string;
+        /** Checkpoint record schema identifier. */
+        readonly checkpointId: string;
+        /** Restore record schema identifier. */
+        readonly restoreId: string;
+        /** Session record schema identifier. */
+        readonly sessionId: string;
+        /** Step record schema identifier. */
+        readonly stepId: string;
+        /** Terminal record schema identifier. */
+        readonly terminalId: string;
+    };
+    /** Step vocabulary. */
+    readonly steps: {
+        /** Step kinds ordered provider, then effect. */
+        readonly kinds: readonly string[];
+        /** Step sources ordered live, then recorded. */
+        readonly sources: readonly string[];
+    };
+    /** Terminal vocabulary. */
+    readonly terminal: {
+        /** Statuses ordered finished, failed, cancelled, rewound. */
+        readonly statuses: readonly string[];
+    };
+    /** Retained record schema references. */
+    readonly traceSchemas: {
+        /** Admission record schema reference. */
+        readonly admission: string;
+        /** Checkpoint record schema reference. */
+        readonly checkpoint: string;
+        /** Restore record schema reference. */
+        readonly restore: string;
+        /** Session record schema reference. */
+        readonly session: string;
+        /** Step record schema reference. */
+        readonly step: string;
+        /** Terminal record schema reference. */
+        readonly terminal: string;
+    };
+};
+
 /** Validated live subscription, supervised interception, approval, and context configuration. */
 export type SupervisionProtocolConfig = {
     /** Human approval gate vocabulary and bounded waits. */
@@ -2162,6 +2432,7 @@ export type ProtocolConfig = {
     readonly projections: ProjectionProtocolConfig;
     readonly providers: ProviderProtocolConfig;
     readonly recordId: RecordIdConfig;
+    readonly replay: ReplayProtocolConfig;
     readonly runs: RunProtocolConfig;
     readonly scopes: ScopeProtocolConfig;
     readonly supervision: SupervisionProtocolConfig;

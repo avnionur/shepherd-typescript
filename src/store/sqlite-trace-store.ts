@@ -75,6 +75,18 @@ import {
     readOwnerRecords,
     readStoredRecord,
 } from "./read.ts";
+import {
+    appendReplaySessionRecordInStore,
+    assertUnreservedReplayOwner,
+    assertUnreservedReplayOwners,
+    openReplaySessionInStore,
+    type ReplaySessionAppend,
+    type ReplaySessionAppendRequest,
+    type ReplaySessionFence,
+    type ReplaySessionRow,
+    readReplaySessionRow,
+    renewReplaySessionLeaseInStore,
+} from "./replay-sessions.ts";
 import type { RetainedWorldSettlementTerminalEvidence } from "./retained-world-settlement-codec.ts";
 import {
     admitRetainedWorldSettlement,
@@ -266,7 +278,7 @@ export class SQLiteTraceStore implements Disposable {
      * @returns The original durable receipt for this intent and content.
      * @throws {AppendIntentConflictError} If the intent already names different content.
      * @throws {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
-     * owner path reserved for supervised dispatches or context channels.
+     * owner path reserved for supervised dispatches, context channels, or replay sessions.
      * @throws {TypeError} If the request is malformed.
      * @throws {RangeError} If a causal parent is unknown or owner ordinals are exhausted.
      *
@@ -274,9 +286,9 @@ export class SQLiteTraceStore implements Disposable {
      */
     append(request: StoreAppendRequest): AppendReceipt {
         this.#assertOpen();
-        assertUnreservedSupervisionOwners(
-            normalizeAppendBatchDraft(normalizeStoreAppendRequest(request).batch),
-        );
+        const batch = normalizeAppendBatchDraft(normalizeStoreAppendRequest(request).batch);
+        assertUnreservedSupervisionOwners(batch);
+        assertUnreservedReplayOwners(batch);
         return appendToTraceStore(this.#database, request);
     }
 
@@ -1101,6 +1113,97 @@ export class SQLiteTraceStore implements Disposable {
     }
 
     /**
+     * Retains or replays one replay session record and admits the first writer lease.
+     *
+     * @param sessionId - Session identity and owner path.
+     * @param claimId - Proposed lease holder.
+     * @param nowMilliseconds - Lease clock.
+     * @param request - Session record append.
+     * @returns Whether the session was created, and its row (absent for imported sessions).
+     * @throws {ReplayLeaseConflictError} If another unexpired holder owns the lease.
+     * @throws {ReplayEvidenceError} If the owner path is not fresh.
+     * @throws {AppendIntentConflictError} If the command names different session content.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    openReplaySession(
+        sessionId: string,
+        claimId: string,
+        nowMilliseconds: number,
+        request: StoreAppendRequest,
+    ): { readonly created: boolean; readonly row: ReplaySessionRow | undefined } {
+        this.#assertOpen();
+        return openReplaySessionInStore(
+            this.#database,
+            sessionId,
+            claimId,
+            nowMilliseconds,
+            request,
+        );
+    }
+
+    /**
+     * Renews the current replay session writer lease.
+     *
+     * @param sessionId - Session identity.
+     * @param fence - Current lease authority.
+     * @param nowMilliseconds - Lease clock.
+     * @returns The renewed row.
+     * @throws {ReplayLeaseFencedError} If the fence is not current.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    renewReplaySessionLease(
+        sessionId: string,
+        fence: ReplaySessionFence,
+        nowMilliseconds: number,
+    ): ReplaySessionRow {
+        this.#assertOpen();
+        return renewReplaySessionLeaseInStore(this.#database, sessionId, fence, nowMilliseconds);
+    }
+
+    /**
+     * Appends one fenced replay session record at the exact head.
+     *
+     * @param sessionId - Session identity.
+     * @param fence - Current lease authority.
+     * @param nowMilliseconds - Lease clock.
+     * @param append - Optional cut, record builder, expected head, and terminal flag.
+     * @returns The receipt and published cut, or a moved-head signal.
+     * @throws {ReplayLeaseFencedError} If the fence is not current.
+     * @throws {TraceStoreError} If the store is closed or the cut conflicts.
+     * @internal
+     */
+    appendReplaySessionRecord(
+        sessionId: string,
+        fence: ReplaySessionFence,
+        nowMilliseconds: number,
+        append: ReplaySessionAppendRequest,
+    ): ReplaySessionAppend {
+        this.#assertOpen();
+        return appendReplaySessionRecordInStore(
+            this.#database,
+            sessionId,
+            fence,
+            nowMilliseconds,
+            append,
+        );
+    }
+
+    /**
+     * Reads one live replay session row.
+     *
+     * @param sessionId - Session identity.
+     * @returns The row, or undefined for absent or imported sessions.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    readReplaySession(sessionId: string): ReplaySessionRow | undefined {
+        this.#assertOpen();
+        return readReplaySessionRow(this.#database, sessionId);
+    }
+
+    /**
      * Reads one live supervised dispatch row.
      *
      * @param dispatchId - Dispatch identity.
@@ -1377,13 +1480,19 @@ export class SQLiteTraceStore implements Disposable {
      *
      * @param spec - Closed cut publication request.
      * @returns The durable cut address.
-     * @throws {TraceStoreError} If the target occurrence is absent or the store is closed.
+     * @throws {TraceStoreError} If the target occurrence is absent, the publishing owner path is
+     * reserved for replay sessions, or the store is closed.
      * @throws {TypeError} If the request is malformed.
      *
      * @public
      */
     publishCut(spec: CutSpec): Cut {
         this.#assertOpen();
+        const owners = spec as Partial<CutSpec> | null;
+        const publisher = owners?.publisher_owner_id ?? owners?.target_owner_id;
+        if (typeof publisher === "string") {
+            assertUnreservedReplayOwner(publisher);
+        }
         return publishStoredCut(this.#database, spec);
     }
 

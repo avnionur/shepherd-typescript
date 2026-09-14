@@ -32,6 +32,10 @@ mutable custody directory. Repeating the same discard is safe. It never removes 
 or user files, and substituted symlink targets fail closed. Every retry validates the closed
 versioned discard descriptor before treating the decision as authoritative.
 
+Internal world-image helpers reuse the same traversal, metadata policy, manifest validation, and
+content identity to capture managed directories outside carrier custody and to materialize a
+validated manifest into an empty directory for [coupled checkpoints](./coupled-checkpoints.md).
+
 Workspace protocol v26 adds an optional exact `backend` option (`copy` when omitted) and a
 readonly `carrier.backend`. The `clone` and `overlay` backends change only physical
 materialization; every revision keeps this page's copy descriptor format and identity, so any

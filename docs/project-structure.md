@@ -22,6 +22,7 @@ implementation documentation, and forward-looking plans.
 │   ├── protocol/           Runtime configuration and generated literals
 │   ├── record/             Record types, envelopes, guards, and snapshots
 │   ├── repair/             Orphan-operation diagnosis and repair contracts
+│   ├── replay/             Replay sessions, coupled checkpoints, rewind, replay, and analysis
 │   ├── run/                Outcomes, artifacts, usage, budgets, and cancellation
 │   ├── scope/              Trace-only scope registration, writer fencing, emission, and inspection
 │   ├── store/              SQLite migrations, transactions, codecs, and reads
@@ -72,6 +73,8 @@ public exports → scope area → store, record, canonical snapshots, and protoc
 store area → scope record codecs and errors, and run control codecs, for transactional admission
 public exports → supervision area → effect records, store, scope validation helpers, and protocol configuration
 store area → supervision record codecs and errors for subscription and dispatch bookkeeping
+public exports → replay area → effect records, provider validation, task descriptors, store, scope validation helpers, reference copy carrier world-image helpers, and protocol configuration
+store area → replay errors for session lease bookkeeping
 public exports → workspace area → filesystem, Git, hashing, and protocol configuration
 workspace area → scope commands, codecs, and inspection, and store transactions, for scope forks
 script command adapters → tooling module interfaces
@@ -124,6 +127,11 @@ The runtime areas are organized around cohesive protocol responsibilities:
   scope record codecs, package-authenticated writer handles, globally idempotent root/child
   registration and emission commands, atomic multi-scope claims, fork journal and checkpoint codecs,
   and record-derived inspection and replay without world, provider, or settlement authority;
+- `replay/` owns deterministic session programs and their fenced step journals, runtime-derived
+  prompt, prefix, and context prefix identities, coupled checkpoints with trace-store world and
+  process images, verified rewind and recorded-prefix replay, irreversible-effect replay policy,
+  record-derived inspection, divergence and dependency analysis, and the cooperative and transparent
+  process checkpoint adapters, without workspace binding, custody, or settlement authority;
 - `supervision/` owns canonical subscription cursors and pull-driven delivery, supervised effect
   dispatch with ordered interceptors, timeout policy, approval gates, fenced decision leases,
   admission-before-materialization, record-derived dispatch inspection and recovery

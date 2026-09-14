@@ -75,7 +75,13 @@ function semanticValueSchema(): Readonly<Record<string, unknown>> {
     };
 }
 
-function taskArtifactLockSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
+/**
+ * Renders the configured closed task artifact lock schema fragment.
+ *
+ * @param config - Validated protocol configuration.
+ * @returns The inline task artifact lock schema.
+ */
+export function taskArtifactLockSchema(config: ProtocolConfig): Readonly<Record<string, unknown>> {
     const digestPattern = `^${escapeRegularExpression(config.tasks.digestPrefix)}[0-9a-f]{${
         config.tasks.hexLength
     }}$`;

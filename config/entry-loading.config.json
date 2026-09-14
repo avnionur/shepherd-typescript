@@ -19,6 +19,7 @@
             "forbidden": [],
             "webSafeTypeProbe": "test/fixtures/read-surface.ts.txt"
         },
+        "./replay": { "required": ["node:fs", "node:child_process"], "forbidden": ["node:sqlite"] },
         "./runs": { "required": ["node:fs"], "forbidden": ["node:sqlite", "node:child_process"] },
         "./scopes": {
             "required": ["node:fs"],

@@ -82,6 +82,17 @@ migrations, and protocol configuration. See [trace subscriptions](./trace-subscr
 [supervised effects](./supervised-effects.md), and
 [approval, context, and worker control](./supervision-control.md).
 
+`./replay` is Node-only and owns replay sessions, coupled checkpoints, rewind and suffix replay,
+record-derived session inspection, checkpoint classification, divergence and dependency analysis,
+the cooperative and transparent process checkpoint adapters, generated replay constants, and the
+replay error classes. Consumers supply an open trace store from `./trace`, providers from
+`./providers`, handler stacks from `./effects`, and task descriptors from `./tasks`; programs,
+replay policies, and provider-session adapters stay caller-supplied. Rewind and replay write only
+into caller-selected empty world roots. The facade loads process support for the cooperative
+adapter and creates no workspace binding, carrier custody, or settlement authority. See
+[replay sessions](./replay-sessions.md), [coupled checkpoints](./coupled-checkpoints.md), and
+[rewind and replay](./rewind-and-replay.md).
+
 `./workspace` is Node-only and owns workspace initialization/bindings, copy and Git custody,
 changeset inspection, repository grants, placement/native-jail evidence, retained-world runners
 and execution journals, reference-copy scope forks, and exact prepare/select/apply/release/discard
@@ -123,7 +134,7 @@ agreement with the export map and records the following dependencies:
 | --- | --- | --- | --- |
 | Root, CLI, tasks, trace | Yes | Yes | Yes |
 | Canonical, effects, providers, runs, scopes, supervision | Yes | No | No |
-| Workspace | Yes | No | Yes |
+| Replay, workspace | Yes | No | Yes |
 | Read (type-only) | No | No | No |
 
 The tasks entry exports its SQLite registry as well as task builders; task-ledger/grant support

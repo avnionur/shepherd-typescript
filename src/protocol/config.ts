@@ -10,6 +10,7 @@ import type {
     ProtocolConfig,
     ProviderProtocolConfig,
     RecordIdConfig,
+    ReplayProtocolConfig,
     RunProtocolConfig,
     ScopeProtocolConfig,
     SupervisionProtocolConfig,
@@ -53,6 +54,9 @@ export const providerProtocolConfig: ProviderProtocolConfig = protocolConfig.pro
 
 /** Runtime record-identifier configuration loaded from the protocol configuration file. */
 export const recordIdConfig: RecordIdConfig = protocolConfig.recordId;
+
+/** Runtime replay session, coupled checkpoint, rewind, and replay configuration. */
+export const replayProtocolConfig: ReplayProtocolConfig = protocolConfig.replay;
 
 /** Runtime terminal run-outcome and schema configuration. */
 export const runProtocolConfig: RunProtocolConfig = protocolConfig.runs;

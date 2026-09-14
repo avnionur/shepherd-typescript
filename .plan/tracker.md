@@ -2,9 +2,9 @@
 
 Last updated: 2026-09-14
 
-Current version: `2.10.1`
+Current version: `2.15.1`
 
-Current level: L2 substrate parity — Phases 4–7 complete for the documented scope; L3 in progress
+Current level: L2 substrate parity — Phases 4–8 complete for the documented scope; L3 in progress
 
 ## Current position
 
@@ -422,6 +422,34 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
   worker control.
 - [x] Complete Phase 7 Task 5 (#153) passive-observation and supervisor-failure conformance and
   the Phase 7 exit audit.
+- [x] Complete Phase 8 Task 1 (#155) coupled checkpoint, rewind, and replay contract with the
+  session journal, identities, constituent classification, replay rules, and failure table.
+- [x] Complete Phase 8 Task 2 (#156) durable replay sessions with fenced step journals,
+  prompt/prefix/context identities, cache-hit evidence, recovery classification, and store schema v12.
+- [x] Complete Phase 8 Task 3 (#157) coupled checkpoints with coordinated multi-resource world
+  images, provider-session and process adapter evidence, and honest classification.
+- [x] Complete Phase 8 Task 4 (#158) verified rewind and suffix replay with byte-equivalent
+  restoration, recorded-prefix reconstruction, irreversible-effect approval, and imported replay.
+- [x] Complete Phase 8 Task 5 (#159) cooperative process checkpoint backend and accurate transparent
+  CRIU unavailability reporting.
+- [x] Complete Phase 8 Task 6 (#160) divergence and dependency analysis.
+- [x] Complete Phase 8 Task 7 (#161) coupled replay conformance, process crash evidence, and the
+  Phase 8 exit audit.
+
+Phase 8 now runs deterministic session programs as durable replay sessions. Every provider exchange
+and effect is a step on the session's owner path under a fenced writer lease, with runtime-derived
+prompt, response, prefix, and context prefix identities, observed cache-hit evidence, and admission
+before materialization; non-terminal sessions are classified running, interrupted, or
+materialization-uncertain and never resumed in place. Programs capture coupled checkpoints that
+publish a trace cut and retain coordinated world images as trace-store blobs, provider-session and
+process adapter evidence, and the irreversible-effect frontier, each classified so a checkpoint is
+atomic only when every constituent is verified. Rewind verifies every claimed constituent before
+writing and restores byte-equivalent worlds; replay serves the recorded prefix without provider or
+handler invocation when the program issues the exact recorded requests, continues live with a changed
+task, provider, or handler stack, and admits irreversible suffix effects only with policy approval.
+Divergence analysis classifies root, propagated, and unexplained differences from declared
+dependencies. A cooperative process backend captures and restores child processes, and the
+transparent CRIU backend reports unavailability accurately.
 
 Phase 6 slice A now registers content-addressed root and child scopes as canonical trace records
 with exact parent origin cuts, retains per-resource attenuated ceiling/effective authority,
@@ -455,6 +483,25 @@ parents, and supervisors reach fenced durable-run control through `./supervision
 observation leaves exported traces byte-identical.
 
 ## Verification required for this slice
+
+Phase 8 Tasks 1–7 (#155–#161): the [coupled replay contract](./coupled-replay-contract.md),
+[replay sessions](../docs/replay-sessions.md) (store schema v12),
+[coupled checkpoints](../docs/coupled-checkpoints.md), and
+[rewind and replay](../docs/rewind-and-replay.md) are delivered with the
+[exit audit](./phase-8-exit-audit.md). Focused public-seam tests cover provider and effect steps,
+dependencies, chained identities and cache evidence, provider and handler failures, program results,
+tasks, cancellation, lease conflicts, fencing, renewal, interval-detected expiry, reserved owners,
+integrity rows, option validation, step and dependency bounds, multi-world and adapter checkpoints,
+unavailable and malformed adapters, uncapturable worlds, byte-equivalent rewind, refusal before
+writing, corrupt blobs, prefix mismatch and poisoning, changed provider and task suffixes, policy
+approval, refusal, and failure, recorded failures and checkpoints, trace-only and nested step
+boundaries, imported archives, divergence and dependency analysis, the cooperative protocol and
+transparent probe, generated schemas, configuration drift, malformed and incompatible evidence, and
+forged record sequences. Process tests kill a session writer between steps and after an effect
+admission. The conformance scenario rewinds and replays an imported archive with an atomic
+multi-resource checkpoint. Fresh `pnpm sync:version`, `CI=true pnpm verify`, and
+`pnpm build:desktop` pass: 669 tests, zero skips, 100% configured coverage. The replay suite also
+passes in a Linux arm64 container, and the independent review's findings are fixed with tests.
 
 Phase 7 Tasks 1–5 (#149–#153): the [live supervision contract](./live-supervision-contract.md),
 [trace subscriptions](../docs/trace-subscriptions.md) (store schema v10),
@@ -645,10 +692,9 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Phases 6 and 7 are complete for their documented scope. The next roadmap phase is Phase 8 (#21,
-coupled checkpoints, rewind, and replay). Its first slice should define provider-session and
-process checkpoint adapter contracts, including the coordinated multi-resource world checkpoints
-reassigned from Phase 6, before any rewind or suffix replay.
+Phases 6, 7, and 8 are complete for their documented scope. The next roadmap phase is Phase 9 (#22,
+task-as-value meta-agents). Its first slice should define validated task descriptors as values and
+durable child run handles before supervisor operations.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration

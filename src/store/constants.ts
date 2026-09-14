@@ -18,6 +18,7 @@ export const STORE_TABLES = Object.freeze({
     recordViews: "record_views",
     records: "records",
     retainedWorldSettlements: "retained_world_settlements",
+    replaySessions: "replay_sessions",
     scopeRegistrations: "scope_registrations",
     scopeWriterClaims: "scope_writer_claims",
     storageReceipts: "storage_receipts",

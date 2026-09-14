@@ -33,6 +33,11 @@
             "summary": "Web-safe semantic records, owner occurrences, cut addresses, slices, and anchors.",
             "title": "Read"
         },
+        "./replay": {
+            "authority": "Sessions, rewinds, replays, inspection, and analysis require an explicit trace-store handle; programs, providers, handler stacks, replay policies, and provider-session adapters are caller-supplied. Rewind and replay write only into caller-selected empty world roots. The cooperative process adapter starts only the caller-named executable without a shell; the transparent adapter only probes the configured CRIU executable. No workspace binding, carrier custody, or settlement authority is created.",
+            "summary": "Replay sessions, coupled checkpoints, rewind, suffix replay, process checkpoint backends, and divergence analysis.",
+            "title": "Replay"
+        },
         "./runs": {
             "authority": "Execution requires caller-supplied task and provider authority; durable operations additionally require an explicit trace-store handle. No ambient provider, persistence, or workspace authority is created.",
             "summary": "Run construction, control, execution, recovery, and inspection.",

@@ -255,5 +255,7 @@ Phase 6 is complete for its documented scope; see the [exit audit](./phase-6-exi
 Phase 7 (live observation and interception, epic #20) is complete for its documented scope; see
 the [live supervision contract](./live-supervision-contract.md) and the
 [exit audit](./phase-7-exit-audit.md). Phase 8 (coupled checkpoints, rewind, and replay, epic #21)
-is the next roadmap phase; its first slice should define provider-session and process checkpoint
-adapter contracts before any rewind.
+is complete for its documented scope; see the [coupled replay contract](./coupled-replay-contract.md)
+and the [exit audit](./phase-8-exit-audit.md). Phase 9 (task-as-value meta-agents, epic #22) is the
+next roadmap phase; its first slice should define validated task descriptors as values and durable
+child run handles before supervisor operations.

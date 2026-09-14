@@ -444,6 +444,17 @@ Exit criteria:
 
 Goal: navigate and continue historical agent/environment states honestly.
 
+Task 1 (#155) delivered the [coupled replay contract](./coupled-replay-contract.md): the session step
+journal, prompt/prefix/cache identity, coupled checkpoint constituents and classification, rewind and
+suffix replay, irreversible-effect replay rules, process backends, and a failure table. Task 2 (#156)
+implements [replay sessions](../docs/replay-sessions.md) with store schema v12 session leases.
+Task 3 (#157) adds [coupled checkpoints](../docs/coupled-checkpoints.md) with coordinated
+multi-resource world images, reassigned from Phase 6. Task 4 (#158) implements
+[rewind and suffix replay](../docs/rewind-and-replay.md). Task 5 (#159) adds the cooperative and
+transparent process checkpoint backends. Task 6 (#160) adds divergence and dependency analysis.
+Task 7 (#161) adds coupled replay conformance and records the
+[Phase 8 exit audit](./phase-8-exit-audit.md).
+
 Work:
 
 - define provider-session and process checkpoint adapter contracts;

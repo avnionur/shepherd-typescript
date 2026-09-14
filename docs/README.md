@@ -35,6 +35,21 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   failure bounds.
 - [Live supervision contract](../.plan/live-supervision-contract.md) defines the Phase 7 roles,
   record sequence, failure table, and non-claims behind the supervision APIs.
+
+- [Replay sessions](./replay-sessions.md) defines deterministic session programs, provider and
+  effect steps, prompt, prefix, and context prefix identities, cache-hit evidence, fenced session
+  leases, record-derived recovery classification, and inspection.
+- [Coupled checkpoints](./coupled-checkpoints.md) defines coordinated multi-resource world images,
+  provider-session and process adapter evidence, the irreversible-effect frontier, atomic,
+  reconstructive, and unavailable classification, and the cooperative and transparent process
+  backends.
+- [Rewind and replay](./rewind-and-replay.md) defines verification before writing, byte-equivalent
+  restoration, recorded-prefix reconstruction, suffix replay with changed task, provider, or
+  handlers, irreversible-effect approval, imported archives, and divergence and dependency analysis.
+- [Coupled replay contract](../.plan/coupled-replay-contract.md) defines the Phase 8 design
+  constraints, failure table, and non-claims behind the replay APIs.
+- [Phase 8 exit audit](../.plan/phase-8-exit-audit.md) maps coupled checkpoint, rewind, and replay
+  evidence to every roadmap work item and exit criterion.
 - [Phase 7 exit audit](../.plan/phase-7-exit-audit.md) maps live observation and interception
   evidence to every roadmap work item and exit criterion.
 - [Phase 6 exit audit](../.plan/phase-6-exit-audit.md) maps scope-algebra evidence and records L2

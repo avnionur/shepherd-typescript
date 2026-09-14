@@ -24,8 +24,10 @@ Tests and fixtures:
 Export first verifies SQLite, records, parents, witnesses, views, receipts, cuts, and blobs. A
 store with classified corruption is not exportable. Live authority tables, including durable
 invocation claims, settlement admissions, orphan bookkeeping, scope registration or writer
-rows, supervised dispatch leases, and durable subscription cursors, are never exported; imported
-scopes and supervised dispatches are inspection evidence only. Unknown schema-specific record-body fields
+rows, supervised dispatch leases, durable subscription cursors, and replay session leases, are never
+exported; imported scopes and supervised dispatches are inspection evidence only. Imported replay
+sessions, with their world and process image blobs, can be inspected, rewound, and replayed into new
+branch sessions in the importing store. Unknown schema-specific record-body fields
 remain canonical semantic data and round-trip without interpretation.
 
 ## Import contract
