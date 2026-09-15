@@ -50,6 +50,27 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   constraints, failure table, and non-claims behind the replay APIs.
 - [Phase 8 exit audit](../.plan/phase-8-exit-audit.md) maps coupled checkpoint, rewind, and replay
   evidence to every roadmap work item and exit criterion.
+
+- [Task values and child run handles](./task-values.md) defines canonical task values,
+  `schema.task()`, command-derived handle identities, opened and completion records, provider- and
+  program-serviced children, derived status, inspection, and reserved handle owners.
+- [Delegated authority](./delegated-authority.md) defines resource attenuation through the scope
+  rule, budget attenuation, root declarations, bounded parent-handle chains with origin cuts, and
+  record-proven inspection that refuses amplification.
+- [Supervisor operations](./supervisor-operations.md) defines observation over handle and child
+  run owners, ordered context injection with the composed-request rule, fenced supervisor handoff,
+  terminal accept and discard decisions, and retry successors citing their causal replay point.
+- [Task revision and synthesis](./task-revision.md) defines declared, revised, and synthesized
+  provenance, approval gating for model-generated task values, revision retries, and the execution
+  boundary that keeps task values free of code.
+- [Result threading and nested meta-agents](./result-threading.md) defines typed result
+  projection of accepted outputs with caller-schema proof, bounded delegation trees under a handle
+  or supervisor root, and the isolation rules that keep grandchild records, authority, and values
+  out of the root's projection.
+- [Task-as-value contract](../.plan/task-as-value-contract.md) defines the Phase 9 design
+  constraints, supervisor operations, failure table, and non-claims behind the delegation APIs.
+- [Phase 9 exit audit](../.plan/phase-9-exit-audit.md) maps task-as-value, delegation, supervisor
+  operation, revision, and result threading evidence to every roadmap work item and exit criterion.
 - [Phase 7 exit audit](../.plan/phase-7-exit-audit.md) maps live observation and interception
   evidence to every roadmap work item and exit criterion.
 - [Phase 6 exit audit](../.plan/phase-6-exit-audit.md) maps scope-algebra evidence and records L2

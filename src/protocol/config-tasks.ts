@@ -36,10 +36,14 @@ export function readTaskConfig(value: unknown): ProtocolConfig["tasks"] {
     );
     const artifacts = readObject(
         task.artifacts,
-        ["artifactLockSchema", "descriptorSchema"],
+        ["artifactLockSchema", "descriptorSchema", "valueSchema"],
         "tasks.artifacts",
     );
-    const schemas = readObject(task.schemas, ["artifactLockId", "descriptorId"], "tasks.schemas");
+    const schemas = readObject(
+        task.schemas,
+        ["artifactLockId", "descriptorId", "valueId"],
+        "tasks.schemas",
+    );
     const registry = readObject(
         task.registry,
         [
@@ -77,6 +81,7 @@ export function readTaskConfig(value: unknown): ProtocolConfig["tasks"] {
                 artifacts.descriptorSchema,
                 "tasks.artifacts.descriptorSchema",
             ),
+            valueSchema: readNonEmptyString(artifacts.valueSchema, "tasks.artifacts.valueSchema"),
         },
         compatibilityVersion: readNonEmptyString(
             task.compatibilityVersion,
@@ -122,6 +127,7 @@ export function readTaskConfig(value: unknown): ProtocolConfig["tasks"] {
         schemas: {
             artifactLockId: readAbsoluteUrl(schemas.artifactLockId, "tasks.schemas.artifactLockId"),
             descriptorId: readAbsoluteUrl(schemas.descriptorId, "tasks.schemas.descriptorId"),
+            valueId: readAbsoluteUrl(schemas.valueId, "tasks.schemas.valueId"),
         },
         taskIdPrefix: readNonEmptyString(task.taskIdPrefix, "tasks.taskIdPrefix"),
     };

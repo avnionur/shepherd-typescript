@@ -336,6 +336,12 @@ test("the cooperative protocol fails closed on errors, exits, timeouts, and malf
         concurrent.restore("bytes" as never, { process_id: "c", session_id: "s", step_count: 0 }),
         /must be bytes/u,
     );
+    // An oversized request to a stalled process stays queued; the timeout kills the process and the
+    // queued input then fails with a closed pipe, which the channel absorbs instead of surfacing an
+    // unhandled stream error in the host. The wait lets that late error arrive inside the test.
+    const stalled = make({ timeoutMilliseconds: 50 });
+    await assert.rejects(stalled.request({ op: "stall", pad: "x".repeat(1 << 22) }), /timed out/u);
+    await new Promise((resolve) => setTimeout(resolve, 100));
     const missing = make({ command: path.join(COUNTER_WORKER, "missing") });
     assert.deepEqual(await missing.probe(), {
         available: false,

@@ -93,6 +93,24 @@ adapter and creates no workspace binding, carrier custody, or settlement authori
 [replay sessions](./replay-sessions.md), [coupled checkpoints](./coupled-checkpoints.md), and
 [rewind and replay](./rewind-and-replay.md).
 
+`./delegation` is Node-only and owns task values (`readTaskValue`, `taskValueOf`,
+`taskDescriptorOf`), durable child run handles (`openChildRun`, `runChildRun`, `retryChildRun`),
+supervisor operations (`observeChildRun`, `injectChildRunContext`, `handoffChildRun`,
+`discardChildRun`, `acceptChildRunResult`), task approval (`approveChildRunTask`), record-derived
+handle inspection, typed result and tree projections (`projectChildRunResult`,
+`projectDelegationTree`), generated delegation constants, and the delegation error classes. Consumers
+supply an open trace store from `./trace`, task descriptors from `./tasks`, and providers from
+`./providers`; child programs stay caller-supplied callbacks. A handle's authority is derived from a
+caller-declared root ceiling or the parent handle's retained effective authority and never exceeds
+it; revised and synthesized task values run only after the current supervisor's approval. The
+facade creates no provider, filesystem, workspace, custody, or settlement authority and excludes the
+store constructor, private codecs, migrations, and protocol configuration. See
+[task values and child run handles](./task-values.md),
+[delegated authority](./delegated-authority.md),
+[supervisor operations](./supervisor-operations.md),
+[task revision and synthesis](./task-revision.md), and
+[result threading and nested meta-agents](./result-threading.md).
+
 `./workspace` is Node-only and owns workspace initialization/bindings, copy and Git custody,
 changeset inspection, repository grants, placement/native-jail evidence, retained-world runners
 and execution journals, reference-copy scope forks, and exact prepare/select/apply/release/discard
@@ -133,13 +151,13 @@ agreement with the export map and records the following dependencies:
 | Entry | Filesystem configuration | SQLite loaded | Process-execution module loaded |
 | --- | --- | --- | --- |
 | Root, CLI, tasks, trace | Yes | Yes | Yes |
-| Canonical, effects, providers, runs, scopes, supervision | Yes | No | No |
+| Canonical, delegation, effects, providers, runs, scopes, supervision | Yes | No | No |
 | Replay, workspace | Yes | No | Yes |
 | Read (type-only) | No | No | No |
 
 The tasks entry exports its SQLite registry as well as task builders; task-ledger/grant support
-also reaches process-related modules. The runs, scopes, and supervision entries accept store authority from
-callers and do not load SQLite merely by being imported. The workspace entry loads filesystem and
+also reaches process-related modules. The delegation, runs, scopes, and supervision entries accept store
+authority from callers and do not load SQLite merely by being imported. The workspace entry loads filesystem and
 process support but does not construct the caller's trace store.
 
 “Loaded” is an import observation, not a claim that a subprocess ran or a database opened.

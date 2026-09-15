@@ -386,7 +386,8 @@
                 },
                 "kind": {
                     "enum": [
-                        "static"
+                        "static",
+                        "program"
                     ],
                     "type": "string"
                 },

@@ -175,7 +175,8 @@
                         },
                         "kind": {
                             "enum": [
-                                "static"
+                                "static",
+                                "program"
                             ]
                         },
                         "model": {

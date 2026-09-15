@@ -130,6 +130,12 @@ record and public API must declare a protocol/compatibility version.
   authority, primitive/recovery boundaries and implementation slices; implemented through #131.
 - [Phase 6 exit audit](./phase-6-exit-audit.md) — evidence map for every Phase 6 work item and exit
   criterion, with the multi-resource checkpoint reassignment to Phase 8.
+- [Task-as-value meta-agent contract](./task-as-value-contract.md) — Phase 9 task values, child run
+  handles, delegated authority, supervisor operations, revision and synthesis, result threading,
+  failure table, and non-claims; implemented through #164–#168.
+- [Phase 9 exit audit](./phase-9-exit-audit.md) — evidence map for every Phase 9 work item and exit
+  criterion, the recovery classification, the review outcome, and L3 paper programming-model parity
+  for the documented scope.
 
 - [Upstream compatibility baseline](./upstream-baseline.md) — exact Git revisions, evidence scope,
   compatibility boundaries, and drift procedure.
@@ -256,6 +262,10 @@ Phase 7 (live observation and interception, epic #20) is complete for its docume
 the [live supervision contract](./live-supervision-contract.md) and the
 [exit audit](./phase-7-exit-audit.md). Phase 8 (coupled checkpoints, rewind, and replay, epic #21)
 is complete for its documented scope; see the [coupled replay contract](./coupled-replay-contract.md)
-and the [exit audit](./phase-8-exit-audit.md). Phase 9 (task-as-value meta-agents, epic #22) is the
-next roadmap phase; its first slice should define validated task descriptors as values and durable
-child run handles before supervisor operations.
+and the [exit audit](./phase-8-exit-audit.md). Phase 9 (task-as-value meta-agents, epic #22) is
+complete for its documented scope; see the [task-as-value contract](./task-as-value-contract.md)
+and the [exit audit](./phase-9-exit-audit.md), which records L3 paper programming-model parity for
+the documented scope. Phase 10 (research applications, epic #23) is the next roadmap phase; its
+first slice should build the two-worker coding supervisor over child run handles with inject,
+handoff, and discard/restart policies and a versioned protocol manifest before the optimizer,
+trajectory-compression, and Tree-RL applications.

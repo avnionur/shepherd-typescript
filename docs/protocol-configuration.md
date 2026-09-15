@@ -37,8 +37,16 @@ pause, resume, and cooperative cancellation without embedding those discriminant
 The run section also fixes the normative lifecycle statuses and transition matrix, continuation
 constituent/evidence vocabularies, the receipt-bearing evidence status, their versions, and
 generated continuation, waiting, and suspension schema contracts.
-The provider section fixes provider kinds, static-provider capabilities, and stable typed-error
-codes and messages.
+The provider section fixes provider kinds, static-provider and program-provider capabilities, and
+stable typed-error codes and messages. The task section also fixes the published task value schema
+identifier that `schema.task()` references.
+The delegation section fixes the delegation record version and compatibility namespace; parent,
+execution, provenance, context-phase, and decision kinds, approval verdicts, revision fields, and
+derived handle statuses; handle, child run, origin-cut, and retry-cut identity prefixes, the command
+append-intent key, and the request and output digest kinds;
+citation, injection, nesting-depth, reason, supervisor-identity, and tree-entry bounds; tree
+projection root kinds; trace schema references; generated schema identifiers and destinations; and
+stable error codes and messages.
 The scope section fixes the scope record version and compatibility namespace, root/child kinds,
 open/merged/discarded states, history evidence kinds, the trace-only world capability, authority
 atoms (equal to repository grant atoms) and resource kinds, scope and origin-cut identity prefixes,
@@ -187,8 +195,12 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   and artifact paths are valid, recovery and control-command vocabularies and executor errors are
   non-empty, lifecycle and continuation vocabularies are closed, transition pairs cite known
   non-terminal states and outcomes, and all values match the immutable run protocol v1 contract.
-- provider kinds are unique, static capabilities are booleans, error codes/messages are non-empty,
-  and every value matches the immutable provider protocol v1 contract.
+- provider kinds are unique and list the distinct static and program kinds, capabilities are
+  booleans, error codes/messages are non-empty, and every value matches the immutable provider
+  protocol v1 contract.
+- delegation vocabularies have their exact sizes, trace schema references and identity prefixes are
+  distinct, bounds and the record version are positive, schema identifiers are absolute URLs, and
+  every value matches the immutable delegation protocol v1 contract.
 - scope kinds are exactly two, states exactly three, evidence kinds exactly four, authority atoms
   equal the configured repository grant atoms, trace schema references are distinct, identity
   prefixes, bounds, lease, versions, schema identifiers, and error codes are closed, and every

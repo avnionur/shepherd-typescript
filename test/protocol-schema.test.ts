@@ -64,6 +64,15 @@ const selectionPublicationSchema = readJson(
 ) as AnySchemaObject;
 const protocolConfig = readJson("../protocol.config.json") as ProtocolConfiguration;
 const fixture = readJson("./fixtures/kernel-record-envelope-v0.json") as RecordFixture;
+const taskValueSchema = readJson("../spec/schemas/task-value-v1.schema.json") as AnySchemaObject;
+const delegationSchemas = [
+    "delegation-opened-v1",
+    "delegation-context-v1",
+    "delegation-completion-v1",
+    "delegation-approval-v1",
+    "delegation-handoff-v1",
+    "delegation-decision-v1",
+].map((name) => readJson(`../spec/schemas/${name}.schema.json`) as AnySchemaObject);
 
 test("published schemas are valid JSON Schema 2020-12 documents", () => {
     const validator = new Ajv2020({ strict: true });
@@ -78,6 +87,24 @@ test("published schemas are valid JSON Schema 2020-12 documents", () => {
         true,
         validator.errorsText(),
     );
+    assert.equal(validator.validateSchema(taskValueSchema), true, validator.errorsText());
+    for (const delegationSchema of delegationSchemas) {
+        assert.equal(validator.validateSchema(delegationSchema), true, validator.errorsText());
+    }
+});
+
+test("published task value and delegation schemas compile strictly and close their bodies", () => {
+    const validator = new Ajv2020({ strict: true });
+    const validateValue = validator.compile(taskValueSchema);
+    const fixtureValue = readJson("./fixtures/task-descriptor-v1.json") as Record<string, unknown>;
+    assert.equal(validateValue(fixtureValue), true, validator.errorsText(validateValue.errors));
+    assert.equal(validateValue({ ...fixtureValue, extra: true }), false);
+    assert.equal(validateValue({ artifact: fixtureValue.artifact }), false);
+    for (const delegationSchema of delegationSchemas) {
+        const validate = validator.compile(delegationSchema);
+        assert.equal(validate({}), false);
+        assert.equal(validate({ compatibility_version: "shepherd.delegation.v1" }), false);
+    }
 });
 
 test("published trace archive schema accepts the conformance fixture", () => {

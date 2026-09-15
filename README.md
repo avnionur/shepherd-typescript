@@ -49,7 +49,7 @@ Coverage is earned in explicit levels so planned behavior is never presented as 
 | L0 | Canonical schemas, identities, trace storage, and projections | Complete |
 | L1 | Shepherd `0.3.0` settlement compatibility | Complete in 1.51.0 |
 | L2 | Scope and versioned-world substrate parity | Complete in 2.7.1 for the recorded hosts |
-| L3 | Paper programming-model parity | In progress: live observation and interception (Phase 7) complete in 2.10.1; coupled checkpoints, rewind, and replay (Phase 8) complete in 2.15.1 |
+| L3 | Paper programming-model parity | Complete in 2.20.1 for the documented scope: live observation and interception (Phase 7) in 2.10.1, coupled checkpoints, rewind, and replay (Phase 8) in 2.15.1, and task-as-value meta-agents (Phase 9) in 2.20.1 |
 | L4 | Production security, recovery, performance, packaging, and releases | Planned |
 
 Naming, MIT licensing, ESM package exports, and installed consumer compatibility are defined.
@@ -144,6 +144,26 @@ trace-record contracts with durable SQLite task and trace stores:
   prefix without provider or handler invocation and continues with a changed task, provider, or
   handler stack, policy-gated irreversible suffix effects, imported-archive replay, and divergence
   and dependency analysis;
+- task values as data: canonical `{ artifact, artifact_lock }` values with lock re-derivation,
+  descriptor rehydration through the task builder, and the `schema.task()` schema kind published
+  as a JSON Schema reference;
+- durable child run handles on command-derived reserved owner paths: opened and completion
+  records, provider- and program-serviced children under derived durable run identities, idempotent
+  commands with head comparison, record-derived status, and inspection stable across reopen and
+  import;
+- record-proven delegated authority: resource attenuation through the scope rule, budget
+  attenuation, root declarations, bounded parent-handle chains with origin cuts, and inspection that
+  re-derives effective authority and refuses amplification;
+- supervisor operations over child run handles: observation through trace subscriptions, ordered
+  cited context injections folded into the composed provider request under a consumption record,
+  fenced supervisor handoff, terminal accept and discard decisions, and retry successors citing
+  the discarded predecessor, its decision, and the causal replay point;
+- declared, revised, and synthesized task provenance with supervisor approval before a
+  model-generated task value runs, canonical-form refusal of definitions that carry code or foreign
+  schema references, and revision retries with explicit revised identity;
+- typed result threading: accepted outputs re-validated against the retained output schema with
+  digest proof and caller-schema equality, bounded delegation trees under a handle or supervisor
+  root, and nested meta-agents whose records, authority, and values never leak into the root;
 - workspace protocol v22 content-addressed macOS/Linux/native-Windows/WSL platform evidence,
   advisory/auto placement resolution with visible fallback, exact placed capture/recovery, and
   fail-closed explicit jail refusal without a native-sandbox claim;
@@ -291,8 +311,8 @@ examples to these programs and identifies adapted and unsupported behavior.
 ## API
 
 The package is ESM-only. Supported entries are `.`, `./canonical`, `./cli`, `./effects`,
-`./providers`, `./read`, `./replay`, `./runs`, `./scopes`, `./supervision`, `./tasks`, `./trace`,
-and `./workspace`; see
+`./delegation`, `./providers`, `./read`, `./replay`, `./runs`, `./scopes`, `./supervision`,
+`./tasks`, `./trace`, and `./workspace`; see
 [Package exports and module policy](./docs/package-exports.md). The checked-in and packaged
 [generated API reference](./docs/generated/api-reference.md) lists every supported symbol,
 signature, JSDoc contract, runtime requirement, and authority note; its
@@ -689,7 +709,15 @@ interception exit criteria. Phase 8 is complete for its documented scope: the
 [Phase 8 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-8-exit-audit.md)
 maps [replay sessions](./docs/replay-sessions.md), [coupled checkpoints](./docs/coupled-checkpoints.md),
 and [rewind and replay](./docs/rewind-and-replay.md) to the coupled checkpoint, rewind, and replay
-exit criteria. Phase 9 (task-as-value meta-agents) is next.
+exit criteria. Phase 9 is complete for its documented scope: the
+[Phase 9 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-9-exit-audit.md)
+maps [task values and child run handles](./docs/task-values.md),
+[delegated authority](./docs/delegated-authority.md),
+[supervisor operations](./docs/supervisor-operations.md),
+[task revision and synthesis](./docs/task-revision.md), and
+[result threading and nested meta-agents](./docs/result-threading.md) to the task-as-value
+meta-agent exit criteria and records L3 paper programming-model parity for the documented scope.
+Phase 10 (research applications) is next.
 
 The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
 execution, durable lifecycle/control evidence, and conservative formal-claim boundary. Phase 3 now

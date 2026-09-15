@@ -5,6 +5,187 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.20.1] - 2026-09-15
+
+### Improvement
+
+- Add the task-as-value conformance scenario: a supervisor accepts a planner's `schema.task()`
+  output as data, runs it in a child under a root declaration, observes it through
+  `observeChildRun`, inspects its trace, discards it, retries with an approved revised task value
+  whose revised identity and causal replay point are explicit, injects context the retry consumes,
+  hands the handle off to a successor who accepts the result, projects the typed value, proves
+  nested grandchild authority bounds and isolation, refuses synthesized values carrying code, and
+  re-reads identical inspections, trees, and projections from an imported archive.
+- Add process crash evidence: a program-serviced child killed after its durable start stays
+  `running` and fail-closed until the documented cancellation path settles it, then is discarded
+  and retried; a child killed after its terminal but before the completion record settles through
+  `runChildRun` without re-execution.
+- Add the [Phase 9 exit audit](.plan/phase-9-exit-audit.md) and update the roadmap, parity matrix,
+  paper coverage map, tracker, and README level table: Phase 9 is complete for its documented scope
+  and L3 paper programming-model parity is reached for that scope.
+
+### Defect Fixes
+
+- `openChildRun` and `retryChildRun` now refuse an opening command identity that a handle command
+  on another handle already retained, with `DelegationCommandConflictError` before any record;
+  previously such an identity opened a second handle because the opening and command append
+  intents differ.
+
+### Impact
+
+Phase 9 is complete for its documented scope with repeatable conformance and crash evidence;
+protocol values, schemas, and store schema are unchanged from 2.20.0.
+
+## [2.20.0] - 2026-09-15
+
+### New Feature
+
+- Add `projectChildRunResult`: the typed projection of one handle's retained result. An accepted
+  handle's child outcome is re-validated against the retained task value's output schema
+  (rehydrated through the schema factory), normalized, and checked against the accept decision's
+  `output_id`; every other status projects a null value. An optional caller schema proves the
+  static value type and must canonically equal the retained output schema.
+- Add `projectDelegationTree`: the direct handles under a handle root or a supervisor root, folded
+  with `inspectChildRun` into entries carrying status, current supervisor, authority, budget,
+  depth, task value, and result projection in canonical handle-identity order. Grandchildren appear
+  only through the values their parents accepted; a handed-off handle appears under its successor.
+- Add `delegation.limits.maxTreeEntries` and `delegation.treeRootKinds` configuration with the
+  `DELEGATION_TREE_ROOT_KINDS` value tuple; a tree with more direct handles than the bound is
+  refused with `TypeError`.
+- Add nested meta-agent isolation evidence: a program-serviced child opens grandchildren under its
+  own handle with authority and budget bounded by its own, grandchild records stay on their own
+  owner paths, the root's tree never lists them, and discarding the child removes everything
+  threaded through it from the root's projection.
+
+### Impact
+
+Accepted child results thread upward as typed, record-proven values and supervisors read bounded
+delegation trees without exposing grandchild records or authority; see
+[result threading and nested meta-agents](docs/result-threading.md). The delegation configuration
+gains one bound and one vocabulary under the unchanged `shepherd.delegation.v1` record namespace.
+
+## [2.19.0] - 2026-09-15
+
+### New Feature
+
+- Add task provenance to child run handles: `declared` for package-created descriptors, `revised`
+  for a task value that keeps its source task identity and lists exactly the differing configured
+  revision fields, and `synthesized` for a task value produced by a cited record retained on a run's
+  owner path. A task value supplied as data must state its provenance.
+- Add `approveChildRunTask`: revised and synthesized handles open `approval_pending`, `runChildRun`
+  refuses them with `DelegationApprovalRequiredError` without writing child records, and the current
+  supervisor retains one approval with the approver identity, optional reason, and approved task
+  artifact digest; `approved` moves the handle to `ready` and `rejected` is terminal for execution.
+- Retain the causal replay point of a revision retry: the successor's opened record carries both
+  the revised provenance and the discarded predecessor with its decision record and retry cut.
+
+### Impact
+
+Model-generated task definitions execute only as validated, approved task values through the
+provider path or a caller program under the child run identity; see
+[task revision and synthesis](docs/task-revision.md). Protocol values are unchanged from 2.18.0.
+
+## [2.18.0] - 2026-09-15
+
+### New Feature
+
+- Add supervisor operations over child run handles through `./delegation`: `observeChildRun`
+  (trace subscriptions over the handle and child run owners), `injectChildRunContext` (ordered
+  cited context injections folded into the composed provider request `{ input, supervisor_context }`
+  before the child starts, with a consumption record retaining the consumed identities and request
+  digest), `handoffChildRun` (fenced supervisor ownership transfer; commands from former supervisors
+  are refused with `DelegationSupervisorError`), `discardChildRun` and `acceptChildRunResult`
+  (terminal decisions; accept validates the finished output and retains its digest), and
+  `retryChildRun` (a successor handle citing the discarded predecessor, its decision record, and a
+  retry cut).
+- Derive the current supervisor, injections with consumption flags, handoffs, approval, decision,
+  and predecessor in `inspectChildRun`, with the `approval_pending`, `rejected`, `accepted`, and
+  `discarded` statuses now produced.
+- Add `delegation.contextPhases`, `delegation.identity`, and `delegation.errors` configuration and
+  the `DELEGATION_CONTEXT_PHASES` value tuple.
+
+### Impact
+
+Supervisors observe, steer, hand off, discard, retry, and accept delegated children with retained
+evidence for every operation; see [supervisor operations](docs/supervisor-operations.md).
+
+## [2.17.0] - 2026-09-14
+
+### New Feature
+
+- Add record-proven delegated authority for child run handles: resource attenuation through the
+  scope rule against a root ceiling or the parent handle's effective authority, budget attenuation
+  that requires every parent-declared metric no greater than the parent's with the ceiling retained
+  as `budget_ceiling`, nesting depth bounded by `delegation.limits.maxNestingDepth`, parent-handle
+  verification at opening with an origin cut published through the parent handle head, and
+  inspection that re-derives effective authority and refuses disagreeing evidence with
+  `DelegationEvidenceError` and forged or foreign handles with `TypeError`.
+- Add the seeded delegation law suite, driven by `config/delegation-law.config.json`, proving that
+  effective authority is contained in the grant, the parent's effective authority, and the ceiling
+  for every handle of random program-serviced chains and that amplifying grants and budgets are
+  refused before opening.
+
+### Improvement
+
+- Exercise the cooperative replay channel's late input-error path deterministically: the counter
+  worker fixture stalls on an oversized request so the timeout kill fails the queued input with a
+  closed pipe that the channel absorbs, removing a host-dependent coverage gap.
+- Lock the `delegation` and `program` provider configuration, the task value schema reference, and
+  the published task value and delegation schemas in the protocol drift and schema suites, and pin
+  the `./delegation` export in the package metadata test.
+
+### Impact
+
+`./delegation` consumers gain the documented authority guarantees in
+[delegated authority](docs/delegated-authority.md). No schema or configuration values change from
+2.16.0.
+
+## [2.16.0] - 2026-09-14
+
+### New Feature
+
+- Add task values: `readTaskValue`, `taskValueOf`, and `taskDescriptorOf` treat a task as the
+  canonical `{ artifact, artifact_lock }` data pair with lock re-derivation and descriptor
+  rehydration through the task builder, and `schema.task()` types a task value as task input or
+  output through the published `task-value-v1` JSON Schema reference, which `schema.fromJSONSchema`
+  maps back and the descriptor schema admits.
+- Add durable child run handles on command-derived reserved owner paths through the new
+  `./delegation` package entry: `openChildRun` retains the supervisor, parent, task value with
+  declared provenance, validated input, grant, budget, derived authority, and depth; `runChildRun`
+  executes provider- or program-serviced children as ordinary durable executions under derived run
+  identities, validates program output against the task output schema, and retains a head-compared
+  completion citing the child terminal and cut, settling a child that finished before the
+  completion without re-execution; `inspectChildRun` derives `ready`, `running`, and `settling`
+  status from handle records and the child's durable inspection on reopened, read-only, and
+  imported stores.
+- Add the `delegation` protocol configuration section with its compatibility constant, generated
+  constants, and published `delegation-opened-v1`, `delegation-context-v1`,
+  `delegation-completion-v1`, `delegation-approval-v1`, `delegation-handoff-v1`, and
+  `delegation-decision-v1` schemas; add the `program` provider kind used by program-serviced
+  children; refuse raw appends and cut publication on handle owner paths.
+
+### Impact
+
+Consumers can pass tasks as data and delegate durable child runs through `./delegation`; see
+[task values and child run handles](docs/task-values.md). Task protocol v1 gains
+`tasks.schemas.valueId` and `tasks.artifacts.valueSchema`, provider protocol v1 gains the
+`program` kind, and the task descriptor schema admits the task value reference; existing
+descriptors, locks, and records are unchanged. No store schema change.
+
+## [2.15.2] - 2026-09-14
+
+### Improvement
+
+- Add the Phase 9 task-as-value meta-agent contract (`.plan/task-as-value-contract.md`): task
+  values and the task schema kind, child run handle commands with idempotency and head comparison,
+  non-amplifying resource and budget delegation, supervisor operations, task revision and
+  synthesis with provenance and approval, typed result threading, nested isolation, the failure
+  table, and non-claims, with pinned upstream evidence.
+
+### Impact
+
+Documentation only; no runtime, schema, or storage change.
+
 ## [2.15.1] - 2026-09-14
 
 ### Improvement

@@ -6,6 +6,10 @@
             "forbidden": ["node:sqlite", "node:child_process"]
         },
         "./cli": { "required": ["node:fs", "node:sqlite", "node:child_process"], "forbidden": [] },
+        "./delegation": {
+            "required": ["node:fs"],
+            "forbidden": ["node:sqlite", "node:child_process"]
+        },
         "./effects": {
             "required": ["node:fs"],
             "forbidden": ["node:sqlite", "node:child_process"]

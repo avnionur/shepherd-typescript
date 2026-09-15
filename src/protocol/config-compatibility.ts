@@ -1,5 +1,6 @@
 import {
     CLI_PROTOCOL_V1_CONTRACT,
+    DELEGATION_PROTOCOL_V1_CONTRACT,
     EFFECT_PROTOCOL_V1_CONTRACT,
     EVIDENCE_RECORD_PROJECTION_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
@@ -57,6 +58,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     const artifactDestinations = [
         ...Object.values(config.cli.artifacts),
+        ...Object.values(config.delegation.artifacts),
         ...Object.values(config.effects.artifacts),
         ...Object.values(config.kernel.artifacts),
         ...Object.values(config.orphanRepair.artifacts),
@@ -127,6 +129,9 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     if (!sameJson(config.supervision, SUPERVISION_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("supervision constants require a new supervision protocol");
+    }
+    if (!sameJson(config.delegation, DELEGATION_PROTOCOL_V1_CONTRACT)) {
+        throw new TypeError("delegation constants require a new delegation protocol");
     }
     if (!sameJson(config.workspaces, WORKSPACE_PROTOCOL_V26_CONTRACT)) {
         throw new TypeError("workspace constants require a new workspace protocol");

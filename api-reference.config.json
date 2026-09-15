@@ -18,6 +18,11 @@
             "summary": "Reusable command-line runner and injectable I/O contract.",
             "title": "CLI"
         },
+        "./delegation": {
+            "authority": "Opening, running, and inspecting child run handles require an explicit trace-store handle; providers and programs are caller-supplied. A handle's authority is derived from a caller-declared root ceiling or the parent handle's retained effective authority and never exceeds it. Task values carry no code and nothing in them is evaluated. No provider, workspace, custody, or settlement authority is created.",
+            "summary": "Task values, durable child run handles, delegated authority, handle inspection, and typed result and tree projections.",
+            "title": "Delegation"
+        },
         "./effects": {
             "authority": "Handlers are caller-supplied in-process callbacks. Dispatch is non-durable and grants no trace, workspace, interception, replay, or sandbox authority.",
             "summary": "Immutable effect records, correlation, and ordered in-process dispatch.",

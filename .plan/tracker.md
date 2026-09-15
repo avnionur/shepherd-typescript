@@ -1,10 +1,10 @@
 # Implementation Tracker
 
-Last updated: 2026-09-14
+Last updated: 2026-09-15
 
-Current version: `2.15.1`
+Current version: `2.20.1`
 
-Current level: L2 substrate parity — Phases 4–8 complete for the documented scope; L3 in progress
+Current level: L3 paper programming-model parity reached for the documented scope — Phases 4–9 complete for the documented scope (Phase 9 closed by the [exit audit](./phase-9-exit-audit.md))
 
 ## Current position
 
@@ -435,6 +435,54 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 - [x] Complete Phase 8 Task 6 (#160) divergence and dependency analysis.
 - [x] Complete Phase 8 Task 7 (#161) coupled replay conformance, process crash evidence, and the
   Phase 8 exit audit.
+- [x] Complete Phase 9 Task 1 (#163) task-as-value, child run handle, delegation, and supervision
+  contract with task values, handle commands, authority rules, supervisor operations, provenance
+  and approval, result threading, the failure table, and non-claims.
+- [x] Complete Phase 9 Task 2 (#164) task values, `schema.task()`, and durable child run handles
+  with provider- and program-serviced children, completion records, derived status, reserved
+  handle owners, and the `./delegation` package entry.
+- [x] Complete Phase 9 Task 3 (#165) authority-preserving delegation with resource attenuation
+  through the scope rule, budget attenuation, bounded parent-handle chains, record-proven
+  inspection, and the seeded no-amplification law suite.
+- [x] Complete Phase 9 Task 4 (#166) supervisor operations: observation over handle and child run
+  owners, ordered context injection with a consumed composed-request record, fenced supervisor
+  handoff, terminal accept and discard decisions, and retry successors citing the causal replay
+  point.
+- [x] Complete Phase 9 Task 5 (#167) task revision and synthesis with declared, revised, and
+  synthesized provenance, approval gating for model-generated task values, revision retries, and
+  execution-boundary evidence.
+- [x] Complete Phase 9 Task 6 (#168) retained-result threading with typed result projections,
+  bounded delegation trees under handle and supervisor roots, and nested meta-agent isolation
+  evidence.
+- [x] Complete Phase 9 Task 7 (#169) task-as-value conformance, process crash evidence for a child
+  killed before its terminal and between its terminal and completion, the review fix for opening
+  command identities reused by handle commands, and the Phase 9 exit audit.
+
+Phase 9 now treats tasks as data. A task value is the canonical `{ artifact, artifact_lock }` pair
+with lock re-derivation and descriptor rehydration through the task builder, and `schema.task()`
+types a task value as task input or output through a published JSON Schema reference. Child run
+handles live on command-derived reserved owner paths, retain the supervisor, parent, task value,
+declared provenance, validated input, grant, budget, budget ceiling, derived authority, and depth,
+and run provider- or program-serviced children as ordinary durable executions under derived run
+identities before a head-compared completion record cites the child terminal and cut. Delegated
+authority reuses the scope attenuation rule against a root ceiling or the parent handle's effective
+authority, attenuates budgets metric by metric, bounds nesting depth, publishes an origin cut
+through the parent handle head, and is re-derived and verified at inspection on reopened, read-only,
+and imported stores. Supervisors observe a handle and its child through trace subscriptions, inject
+ordered cited context that is folded into the composed provider request `{ input, supervisor_context }`
+under a consumption record before the child starts, hand off ownership under head comparison so
+former supervisors are refused, discard or accept exactly once with the accepted output digest
+retained, and retry a discarded handle through a successor that cites the predecessor, its decision
+record, and a retry cut. Task values carry declared, revised, or synthesized provenance; revised and
+synthesized values are `approval_pending` until the current supervisor approves, rejection is
+terminal for execution, and no path evaluates a task value. Accepted results thread upward as
+typed values: `projectChildRunResult` re-validates the retained outcome against the retained
+output schema and the accept digest and proves a caller schema by canonical document equality,
+and `projectDelegationTree` folds the direct handles under a handle or supervisor root, bounded by
+`delegation.limits.maxTreeEntries`, so grandchildren appear only through the values their parents
+accepted. A program-serviced child opens grandchildren under its own effective authority and
+budget, their records stay on their own owner paths, and discarding the child removes everything
+threaded through it from the root's projection.
 
 Phase 8 now runs deterministic session programs as durable replay sessions. Every provider exchange
 and effect is a step on the session's owner path under a fenced writer lease, with runtime-derived
@@ -483,6 +531,59 @@ parents, and supervisors reach fenced durable-run control through `./supervision
 observation leaves exported traces byte-identical.
 
 ## Verification required for this slice
+
+Phase 9 Task 7 (#169): the [exit audit](./phase-9-exit-audit.md) maps all eight work items and five
+exit criteria to delivered issues, entry points, docs, and tests, and records the recovery
+classification and the review outcome. The conformance scenario accepts a planner's `schema.task()`
+output as data, runs it under a root declaration, observes it, inspects its trace, discards it,
+retries with an approved revised value whose revised identity and causal replay point are explicit,
+injects consumed context, hands off, accepts, projects the typed value, proves grandchild refusal
+and bounded admission with isolation, refuses synthesized values carrying code, and re-reads
+identical evidence from an imported archive that refuses mutation. Process tests kill a
+program-serviced child after its durable start (fail-closed `running` until the documented
+cancellation path, then discard and retry) and a child after its terminal (settled without
+re-execution). The review found that an opening or retry could reuse a command identity retained by
+a handle command on another handle; it is refused with a regression test. Fresh
+`pnpm sync:version`, `pnpm generate:api-reference`, `CI=true pnpm verify`, and
+`pnpm build:desktop` pass: 720 tests, zero skips, 100% configured coverage.
+
+Phase 9 Task 6 (#168): [result threading and nested meta-agents](../docs/result-threading.md) is
+delivered. Focused public-seam tests cover result projection across every handle status including
+void outputs, caller schema match and mismatch, foreign and malformed schemas and options,
+supervisor trees that follow handoffs, handle trees that list only direct children in canonical
+order, absent roots, malformed roots, the configured tree-entry bound with paging, and the nested
+scenario: a program-serviced child opening a provider-serviced and a program-serviced grandchild,
+authority and budget containment, refused over-grants, accepted and discarded grandchildren,
+grandchild records confined to their own owner paths, the root's tree listing exactly the child,
+the threaded value embedding only the accepted grandchild's output, forged accept digests, swapped
+outcome citations and forged outcome values refused by projection, discard removing the threaded
+value, and stability on reopened, read-only, and imported stores. Fresh `pnpm sync:version`,
+`CI=true pnpm verify`, and `pnpm build:desktop` pass with zero skips and 100% configured coverage.
+
+Phase 9 Tasks 4–5 (#166–#167): [supervisor operations](../docs/supervisor-operations.md) and
+[task revision and synthesis](../docs/task-revision.md) are delivered. Focused public-seam tests
+cover observation delivery and reconnect, ordered injection, citation and count bounds, composed
+requests reaching the provider with matching consumption digests, pending injections after start,
+handoff ownership and former-supervisor refusal, discard of live and settled children, accept of
+finished children with output digests, decision terminality, retry successors with predecessor
+citations and retry cuts, revised and synthesized provenance validation, approval and rejection,
+approval refusals, revision retries read from reopened stores, execution-boundary refusals before
+any record, and forged handle record sequences. Fresh `pnpm sync:version`, `CI=true pnpm verify`,
+and `pnpm build:desktop` pass with zero skips and 100% configured coverage.
+
+Phase 9 Tasks 1–3 (#163–#165): the [task-as-value contract](./task-as-value-contract.md),
+[task values and child run handles](../docs/task-values.md), and
+[delegated authority](../docs/delegated-authority.md) are delivered. Focused public-seam tests
+cover task value round trips and refusals, `schema.task()` documents, parsing, adapter round trips,
+and the published task value schema; provider- and program-serviced children, program context,
+invalid output and thrown failures, void outputs, idempotent opening and command conflicts, reserved
+owner refusal for raw appends and cut publication, moved heads, completion after a simulated crash
+between the child terminal and the completion, terminal children without a published cut, reopen,
+read-only, and imported stability, option and handle validation, authority and budget refusals,
+nesting bounds, codec rejection matrices, forged record sequences, generated schemas, facade
+identity, and configuration drift. The seeded law suite proves no amplification across random grant
+and budget chains. Fresh `pnpm sync:version`, `CI=true pnpm verify`, and `pnpm build:desktop` pass
+with zero skips and 100% configured coverage.
 
 Phase 8 Tasks 1–7 (#155–#161): the [coupled replay contract](./coupled-replay-contract.md),
 [replay sessions](../docs/replay-sessions.md) (store schema v12),
@@ -692,9 +793,14 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Phases 6, 7, and 8 are complete for their documented scope. The next roadmap phase is Phase 9 (#22,
-task-as-value meta-agents). Its first slice should define validated task descriptors as values and
-durable child run handles before supervisor operations.
+Phases 6, 7, 8, and 9 are complete for their documented scope; the
+[Phase 9 exit audit](./phase-9-exit-audit.md) records L3 paper programming-model parity for the
+documented scope. Phase 10 (#23, research applications) is the next roadmap phase. Its first slice
+should build the small two-worker coding supervisor over child run handles: two workers on
+conflicting edits of one bound resource, inject, handoff, and discard/restart policies expressed
+through the delegation and supervision APIs, a versioned protocol and artifact manifest, and a
+reproducible offline run against the static provider before the counterfactual optimizer,
+Appendix D trajectory compression, and Tree-RL adapter applications.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration

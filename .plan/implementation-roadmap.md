@@ -485,6 +485,17 @@ Exit criteria:
 
 Goal: implement the paper's higher-order programming model.
 
+Task 1 (#163) delivered the [task-as-value contract](./task-as-value-contract.md): task values,
+child run handles, delegated authority rules, supervisor operations, provenance and approval,
+result threading, the failure table, and non-claims. Task 2 (#164) implements
+[task values and child run handles](../docs/task-values.md) with `schema.task()`. Task 3 (#165)
+adds [delegated authority](../docs/delegated-authority.md) with the seeded no-amplification law
+suite. Task 4 (#166) implements [supervisor operations](../docs/supervisor-operations.md). Task 5
+(#167) adds [task revision and synthesis](../docs/task-revision.md) with provenance and approval.
+Task 6 (#168) adds [result threading and nested meta-agents](../docs/result-threading.md). Task 7
+(#169) adds task-as-value conformance, process crash evidence, and records the
+[Phase 9 exit audit](./phase-9-exit-audit.md).
+
 Work:
 
 - allow validated task descriptors as inputs and outputs;

@@ -1,7 +1,10 @@
 import type { SemanticRecord } from "../canonical/canonical-record.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
-import { assertSupportedTaskSchemaDocument } from "./schema-document.ts";
+import { taskProtocolConfig } from "../protocol/config.ts";
+import { assertSupportedTaskSchemaDocument, isTaskValueSchemaDocument } from "./schema-document.ts";
+import type { TaskValue } from "./types.ts";
 import { assertTaskSemanticRecord } from "./validation.ts";
+import { readTaskValue } from "./value-codec.ts";
 
 type SchemaParser<T> = (value: unknown, path: string) => T;
 
@@ -62,6 +65,17 @@ export type TaskSchemaFactory = {
     readonly object: <S extends TaskSchemaShape>(shape: S) => TaskSchema<InferTaskSchemaShape<S>>;
     /** @returns A schema accepting well-formed strings. */
     readonly string: () => TaskSchema<string>;
+    /**
+     * Creates a schema accepting one canonical task value.
+     *
+     * The document is a reference to the published task value JSON Schema, so a task can accept
+     * another task as data or emit a task definition as its output without embedding the
+     * descriptor grammar. Parsing validates through the task value decoder: extra keys, foreign
+     * schema documents, unsupported grammar, and mismatched locks are refused.
+     *
+     * @returns A schema inferring a task value.
+     */
+    readonly task: () => TaskSchema<TaskValue>;
     /** @returns A void-output schema accepting `undefined` or JSON `null`. */
     readonly void: () => TaskSchema<void>;
 };
@@ -71,6 +85,7 @@ export const schema: TaskSchemaFactory = Object.freeze({
     fromJSONSchema: createSchemaFromJSONSchema,
     object: createObjectSchema,
     string: createStringSchema,
+    task: createTaskValueSchema,
     void: createVoidSchema,
 });
 
@@ -78,6 +93,7 @@ function createSchemaFromJSONSchema(value: unknown): TaskSchema<unknown> {
     assertTaskSemanticRecord(value, "task schema document");
     assertSupportedTaskSchemaDocument(value, "task schema document");
     const document = createCanonicalSnapshot(value);
+    if (isTaskValueSchemaDocument(document)) return createTaskValueSchema();
     if (document.type === "string") return createStringSchema();
     if (document.type === "null") return createVoidSchema();
     const properties = document.properties as Readonly<Record<string, SemanticRecord>>;
@@ -114,6 +130,16 @@ function createStringSchema(): TaskSchema<string> {
             throw new TypeError(`${path} must be a well-formed string`);
         }
         return value;
+    });
+}
+
+function createTaskValueSchema(): TaskSchema<TaskValue> {
+    return createTaskSchema({ $ref: taskProtocolConfig.schemas.valueId }, (value, path) => {
+        try {
+            return readTaskValue(value);
+        } catch (error) {
+            throw new TypeError(`${path} must be a canonical task value`, { cause: error });
+        }
     });
 }
 

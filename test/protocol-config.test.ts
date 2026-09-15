@@ -3,11 +3,13 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
+    DELEGATION_PROTOCOL_V1_CONTRACT,
     EVIDENCE_RECORD_PROJECTION_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
     KERNEL_ABI_V0_STORE_V7_CONTRACT,
+    PROVIDER_PROTOCOL_V1_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
     TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V1_CONTRACT,
@@ -82,6 +84,35 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(parsed.tasks.registry.migrations), true);
     assert.equal(Object.isFrozen(parsed.tasks), true);
     assert.equal(Object.isFrozen(TASK_PROTOCOL_V1_CONTRACT), true);
+    assert.deepEqual(parsed.tasks, TASK_PROTOCOL_V1_CONTRACT);
+    assert.match(parsed.tasks.schemas.valueId, /task-value-v1\.schema\.json$/u);
+    assert.deepEqual(parsed.providers, PROVIDER_PROTOCOL_V1_CONTRACT);
+    assert.deepEqual(parsed.providers.kinds, ["static", "program"]);
+    assert.equal(parsed.providers.program.kind, "program");
+    assert.equal(Object.isFrozen(parsed.providers.program), true);
+    assert.deepEqual(parsed.delegation, DELEGATION_PROTOCOL_V1_CONTRACT);
+    assert.equal(parsed.delegation.compatibilityVersion, "shepherd.delegation.v1");
+    assert.equal(parsed.delegation.recordVersion, 1);
+    assert.deepEqual(parsed.delegation.parentKinds, ["root", "handle"]);
+    assert.deepEqual(parsed.delegation.executionKinds, ["provider", "program"]);
+    assert.deepEqual(parsed.delegation.provenanceKinds, ["declared", "revised", "synthesized"]);
+    assert.deepEqual(parsed.delegation.statuses, [
+        "ready",
+        "running",
+        "settling",
+        "approval_pending",
+        "rejected",
+        "accepted",
+        "discarded",
+    ]);
+    assert.equal(parsed.delegation.identity.handleIdPrefix, "delegation:sha256:");
+    assert.equal(parsed.delegation.identity.childRunIdPrefix, "delegation-run:sha256:");
+    assert.equal(parsed.delegation.limits.maxNestingDepth, 16);
+    assert.equal(parsed.delegation.limits.maxTreeEntries, 256);
+    assert.deepEqual(parsed.delegation.treeRootKinds, ["handle", "supervisor"]);
+    assert.equal(Object.isFrozen(parsed.delegation), true);
+    assert.equal(Object.isFrozen(parsed.delegation.limits), true);
+    assert.equal(Object.isFrozen(DELEGATION_PROTOCOL_V1_CONTRACT), true);
     assert.equal(parsed.formalAssurance.referenceMachine.rootBranchRef, "branch:root");
     assert.equal(parsed.formalAssurance.proofEnvelope.runtimeOnlyProfile, "runtime_only");
     assert.equal(Object.isFrozen(parsed.formalAssurance), true);
@@ -801,6 +832,21 @@ test("protocol configuration rejects invalid or drifted task contracts", () => {
             ).recordBodySchema;
         },
         (config) => {
+            objectAt(taskConfigOf(config), "schemas").valueId = "relative";
+        },
+        (config) => {
+            delete objectAt(taskConfigOf(config), "schemas").valueId;
+        },
+        (config) => {
+            objectAt(taskConfigOf(config), "artifacts").valueSchema = "";
+        },
+        (config) => {
+            objectAt(taskConfigOf(config), "artifacts").valueSchema = objectAt(
+                taskConfigOf(config),
+                "artifacts",
+            ).descriptorSchema;
+        },
+        (config) => {
             taskConfigOf(config).extra = true;
         },
         (config) => {
@@ -838,6 +884,138 @@ test("protocol configuration rejects invalid or drifted task contracts", () => {
         },
         (config) => {
             taskRegistryConfigOf(config).transactionMode = "DEFERRED";
+        },
+    ]);
+});
+
+test("protocol configuration rejects invalid or drifted delegation and provider contracts", () => {
+    assertInvalid([
+        (config) => {
+            delete config.delegation;
+        },
+        (config) => {
+            delegationConfigOf(config).extra = true;
+        },
+        (config) => {
+            delegationConfigOf(config).compatibilityVersion = "";
+        },
+        (config) => {
+            delegationConfigOf(config).compatibilityVersion = "shepherd.delegation.v2";
+        },
+        (config) => {
+            delegationConfigOf(config).recordVersion = 0;
+        },
+        (config) => {
+            delegationConfigOf(config).recordVersion = 2;
+        },
+        (config) => {
+            delegationConfigOf(config).parentKinds = ["root"];
+        },
+        (config) => {
+            delegationConfigOf(config).parentKinds = ["handle", "root"];
+        },
+        (config) => {
+            delegationConfigOf(config).executionKinds = ["provider", "provider"];
+        },
+        (config) => {
+            delegationConfigOf(config).provenanceKinds = ["declared"];
+        },
+        (config) => {
+            delegationConfigOf(config).approvalVerdicts = ["approved", "rejected", "pending"];
+        },
+        (config) => {
+            delegationConfigOf(config).decisionKinds = ["accepted"];
+        },
+        (config) => {
+            delegationConfigOf(config).revisionFields = ["instruction"];
+        },
+        (config) => {
+            delegationConfigOf(config).statuses = ["ready", "running", "settling"];
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "traceSchemas").opened = "";
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "traceSchemas").opened =
+                "shepherd.delegation.completion.v1";
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "traceSchemas").extra = "shepherd.delegation.x.v1";
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "identity").handleIdPrefix = "";
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "identity").handleIdPrefix = "scope:sha256:";
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "identity").childRunIdPrefix =
+                "delegation:sha256:";
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "limits").maxNestingDepth = 0;
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "limits").maxNestingDepth = 17;
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "limits").maxSupervisorIdLength = 1.5;
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "limits").maxTreeEntries = 0;
+        },
+        (config) => {
+            delete objectAt(delegationConfigOf(config), "limits").maxTreeEntries;
+        },
+        (config) => {
+            delegationConfigOf(config).treeRootKinds = ["handle"];
+        },
+        (config) => {
+            delegationConfigOf(config).treeRootKinds = ["supervisor", "handle"];
+        },
+        (config) => {
+            delete delegationConfigOf(config).treeRootKinds;
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "schemas").openedId = "relative";
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "artifacts").openedSchema = "";
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "artifacts").openedSchema = objectAt(
+                objectAt(config, "kernel"),
+                "artifacts",
+            ).recordBodySchema;
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "errors").evidenceCode = "";
+        },
+        (config) => {
+            objectAt(delegationConfigOf(config), "errors").headConflictCode = "OTHER";
+        },
+        (config) => {
+            objectAt(config, "providers").kinds = ["static"];
+        },
+        (config) => {
+            objectAt(config, "providers").kinds = ["static", "program", "remote"];
+        },
+        (config) => {
+            objectAt(objectAt(config, "providers"), "program").kind = "static";
+        },
+        (config) => {
+            objectAt(objectAt(config, "providers"), "program").kind = "remote";
+        },
+        (config) => {
+            objectAt(objectAt(objectAt(config, "providers"), "program"), "capabilities").tools =
+                "no";
+        },
+        (config) => {
+            objectAt(objectAt(objectAt(config, "providers"), "program"), "capabilities").tools =
+                true;
+        },
+        (config) => {
+            delete objectAt(config, "providers").program;
         },
     ]);
 });
@@ -1919,6 +2097,10 @@ function taskConfigOf(config: Record<string, unknown>): Record<string, unknown> 
 
 function scopeConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(config, "scopes");
+}
+
+function delegationConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(config, "delegation");
 }
 
 function taskRegistryConfigOf(config: Record<string, unknown>): Record<string, unknown> {

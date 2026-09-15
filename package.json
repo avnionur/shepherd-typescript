@@ -1,6 +1,6 @@
 {
     "name": "@avnionur/shepherd-typescript",
-    "version": "2.15.1",
+    "version": "2.20.1",
     "packageManager": "pnpm@10.32.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
     "license": "MIT",
@@ -27,6 +27,10 @@
         "./cli": {
             "types": "./dist/src/facades/cli.d.ts",
             "import": "./dist/src/facades/cli.js"
+        },
+        "./delegation": {
+            "types": "./dist/src/facades/delegation.d.ts",
+            "import": "./dist/src/facades/delegation.js"
         },
         "./effects": {
             "types": "./dist/src/facades/effects.d.ts",
