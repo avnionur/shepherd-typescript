@@ -1,10 +1,8 @@
-import { createHash } from "node:crypto";
-
-import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import { taskProtocolConfig } from "../protocol/config.ts";
+import { createTaskArtifactLock } from "./lock.ts";
 import { type TaskSchema, taskSchemaMetadata } from "./schema.ts";
-import type { TaskArtifact, TaskArtifactLock, TaskDefinition, TaskDescriptor } from "./types.ts";
+import type { TaskArtifact, TaskDefinition, TaskDescriptor } from "./types.ts";
 import { assertTaskText, readTaskDataObject } from "./validation.ts";
 
 const authenticatedTaskDescriptors = new WeakSet<object>();
@@ -71,21 +69,7 @@ export function assertTaskDescriptor(
     }
 }
 
-/** Derives the exact configured lock for a validated canonical task artifact. @internal */
-export function createTaskArtifactLock(artifact: TaskArtifact): TaskArtifactLock {
-    return createCanonicalSnapshot({
-        artifact_digest: digest(artifact),
-        artifact_lock_version: taskProtocolConfig.artifactLockVersion,
-        compatibility_version: taskProtocolConfig.compatibilityVersion,
-        descriptor_version: taskProtocolConfig.descriptorVersion,
-        schema_digest: digest({
-            input_schema: artifact.input_schema,
-            output_schema: artifact.output_schema,
-        }),
-        task_id: `${taskProtocolConfig.taskIdPrefix}${digestHex({ name: artifact.name })}`,
-        task_version: artifact.task_version,
-    }) as TaskArtifactLock;
-}
+export { createTaskArtifactLock } from "./lock.ts";
 
 function readDefinition<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
     definition: TaskDefinition<I, O>,
@@ -98,14 +82,4 @@ function readDefinition<I extends TaskSchema<unknown>, O extends TaskSchema<unkn
     taskSchemaMetadata(values.input as I);
     taskSchemaMetadata(values.output as O);
     return values as TaskDefinition<I, O>;
-}
-
-function digest(value: SemanticRecord): string {
-    return `${taskProtocolConfig.digestPrefix}${digestHex(value)}`;
-}
-
-function digestHex(value: SemanticRecord): string {
-    return createHash(taskProtocolConfig.digestAlgorithm)
-        .update(canonicalizeRecord(value), "utf8")
-        .digest("hex");
 }

@@ -757,3 +757,59 @@ export const REPLAY_LIMITS = Object.freeze({
     maxWorldEntries: 65536,
     maxWorlds: 16,
 } as const);
+
+/** Configured delegation evidence compatibility namespace. @public */
+export const DELEGATION_COMPATIBILITY_VERSION = "shepherd.delegation.v1" as const;
+
+/** Configured canonical delegation record version. @public */
+export const DELEGATION_RECORD_VERSION = 1 as const;
+
+/** Configured child run handle parent kinds ordered root then handle. @public */
+export const DELEGATION_PARENT_KINDS = ["root", "handle"] as const;
+
+/** Configured child execution kinds ordered provider then program. @public */
+export const DELEGATION_EXECUTION_KINDS = ["provider", "program"] as const;
+
+/** Configured task provenance kinds ordered declared, revised, synthesized. @public */
+export const DELEGATION_PROVENANCE_KINDS = ["declared", "revised", "synthesized"] as const;
+
+/** Configured task approval verdicts ordered approved then rejected. @public */
+export const DELEGATION_APPROVAL_VERDICTS = ["approved", "rejected"] as const;
+
+/** Configured terminal decision kinds ordered accepted then discarded. @public */
+export const DELEGATION_DECISION_KINDS = ["accepted", "discarded"] as const;
+
+/** Configured context record phases ordered injected then consumed. @public */
+export const DELEGATION_CONTEXT_PHASES = ["injected", "consumed"] as const;
+
+/** Configured task fields a revision may change. @public */
+export const DELEGATION_REVISION_FIELDS = [
+    "instruction",
+    "input_schema",
+    "output_schema",
+    "task_version",
+] as const;
+
+/** Configured derived handle statuses ordered ready, running, settling, approval pending, rejected, accepted, discarded. @public */
+export const DELEGATION_STATUSES = [
+    "ready",
+    "running",
+    "settling",
+    "approval_pending",
+    "rejected",
+    "accepted",
+    "discarded",
+] as const;
+
+/** Configured delegation tree projection root kinds ordered handle then supervisor. @public */
+export const DELEGATION_TREE_ROOT_KINDS = ["handle", "supervisor"] as const;
+
+/** Configured delegation evidence and projection bounds. @public */
+export const DELEGATION_LIMITS = Object.freeze({
+    maxCitedRecords: 32,
+    maxInjections: 64,
+    maxNestingDepth: 16,
+    maxReasonLength: 1024,
+    maxSupervisorIdLength: 256,
+    maxTreeEntries: 256,
+} as const);

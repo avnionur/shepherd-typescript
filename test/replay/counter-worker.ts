@@ -10,6 +10,15 @@ const send = (message: Record<string, unknown>) => {
     process.stdout.write(`${JSON.stringify(message)}\n`);
 };
 
+// A stall request blocks this process on its first input chunk without consuming the rest, so the
+// parent's oversized request stays queued and fails with a closed pipe once the parent kills the
+// process: the late input error path of the cooperative channel.
+process.stdin.on("data", (chunk: Buffer) => {
+    if (chunk.includes('"op":"stall"')) {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0);
+    }
+});
+
 lines.on("line", (line) => {
     const message = JSON.parse(line) as {
         readonly data?: string;

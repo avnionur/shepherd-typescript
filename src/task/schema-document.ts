@@ -1,9 +1,24 @@
 import type { SemanticRecord, SemanticValue } from "../canonical/canonical-record.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
+import { taskProtocolConfig } from "../protocol/config.ts";
 import { assertTaskSemanticRecord, assertTaskText, readTaskDataObject } from "./validation.ts";
+
+const TASK_VALUE_REFERENCE_KEY = "$ref";
+
+/** Whether one canonical document is the published task-value schema reference. @internal */
+export function isTaskValueSchemaDocument(value: SemanticRecord): boolean {
+    return Object.getOwnPropertyDescriptor(value, TASK_VALUE_REFERENCE_KEY) !== undefined;
+}
 
 /** Validates one canonical document against the supported task-schema language. @internal */
 export function assertSupportedTaskSchemaDocument(value: SemanticRecord, subject: string): void {
+    if (isTaskValueSchemaDocument(value)) {
+        const reference = readTaskDataObject(value, [TASK_VALUE_REFERENCE_KEY], subject);
+        if (reference[TASK_VALUE_REFERENCE_KEY] !== taskProtocolConfig.schemas.valueId) {
+            throw new TypeError(`${subject} may only reference the published task value schema`);
+        }
+        return;
+    }
     const typeDescriptor = Object.getOwnPropertyDescriptor(value, "type");
     if (typeDescriptor === undefined || typeof typeDescriptor.value !== "string") {
         throw new TypeError(`${subject} must declare a supported type`);

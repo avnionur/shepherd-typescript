@@ -17,7 +17,7 @@ export const EFFECT_HANDLER_SELECTIONS = ["last_matching"] as const;
 export const EFFECT_UNHANDLED_POLICIES = ["throw"] as const;
 
 /** Provider kinds implemented by the current provider protocol. */
-export const PROVIDER_KINDS = ["static"] as const;
+export const PROVIDER_KINDS = ["static", "program"] as const;
 
 /** Validated configured CLI command descriptor. */
 export type CliCommandConfig = {
@@ -420,6 +420,20 @@ export type ProjectionProtocolConfig = {
 export type ProviderProtocolConfig = {
     /** Closed provider-kind vocabulary. */
     readonly kinds: readonly string[];
+    /** Caller-program provider contract used by program-serviced child runs. */
+    readonly program: {
+        /** Capabilities declared by every program provider. */
+        readonly capabilities: {
+            /** Whether the provider exposes streaming responses. */
+            readonly streaming: boolean;
+            /** Whether the provider returns structured values. */
+            readonly structuredOutput: boolean;
+            /** Whether the provider can invoke tools. */
+            readonly tools: boolean;
+        };
+        /** Configured provider-kind discriminant. */
+        readonly kind: (typeof PROVIDER_KINDS)[number];
+    };
     /** Deterministic static-provider contract. */
     readonly static: {
         /** Capabilities declared by every static provider. */
@@ -898,6 +912,8 @@ export type TaskProtocolConfig = {
         readonly artifactLockSchema: string;
         /** Repository-relative task descriptor schema destination. */
         readonly descriptorSchema: string;
+        /** Repository-relative task value schema destination. */
+        readonly valueSchema: string;
     };
     /** Compatibility namespace included in task identity. */
     readonly compatibilityVersion: string;
@@ -936,6 +952,8 @@ export type TaskProtocolConfig = {
         readonly artifactLockId: string;
         /** Absolute task descriptor schema identifier. */
         readonly descriptorId: string;
+        /** Absolute task value schema identifier, also the `schema.task()` document reference. */
+        readonly valueId: string;
     };
     /** Prefix used for stable logical task identifiers. */
     readonly taskIdPrefix: string;
@@ -2422,9 +2440,144 @@ export type WorkspaceProtocolConfig = {
     };
 };
 
+/** Validated task delegation, child run handle, and delegated authority configuration. */
+export type DelegationProtocolConfig = {
+    /** Approval verdicts ordered approved, then rejected. */
+    readonly approvalVerdicts: readonly string[];
+    /** Generated language-neutral delegation record artifacts. */
+    readonly artifacts: {
+        /** Repository-relative approval record schema destination. */
+        readonly approvalSchema: string;
+        /** Repository-relative completion record schema destination. */
+        readonly completionSchema: string;
+        /** Repository-relative context injection record schema destination. */
+        readonly contextSchema: string;
+        /** Repository-relative decision record schema destination. */
+        readonly decisionSchema: string;
+        /** Repository-relative handoff record schema destination. */
+        readonly handoffSchema: string;
+        /** Repository-relative opened record schema destination. */
+        readonly openedSchema: string;
+    };
+    /** Compatibility namespace governing delegation evidence. */
+    readonly compatibilityVersion: string;
+    /** Context record phases ordered injected, then consumed. */
+    readonly contextPhases: readonly string[];
+    /** Terminal decision kinds ordered accepted, then discarded. */
+    readonly decisionKinds: readonly string[];
+    /** Stable error codes and messages. */
+    readonly errors: {
+        /** Approval-required code. */
+        readonly approvalRequiredCode: string;
+        /** Approval-required message. */
+        readonly approvalRequiredMessage: string;
+        /** Authority amplification code. */
+        readonly authorityCode: string;
+        /** Authority amplification message. */
+        readonly authorityMessage: string;
+        /** Command identity conflict code. */
+        readonly commandConflictCode: string;
+        /** Command identity conflict message. */
+        readonly commandConflictMessage: string;
+        /** Invalid delegation evidence code. */
+        readonly evidenceCode: string;
+        /** Invalid delegation evidence message. */
+        readonly evidenceMessage: string;
+        /** Moved handle head code. */
+        readonly headConflictCode: string;
+        /** Moved handle head message. */
+        readonly headConflictMessage: string;
+        /** Inadmissible handle status code. */
+        readonly statusCode: string;
+        /** Inadmissible handle status message. */
+        readonly statusMessage: string;
+        /** Supervisor mismatch code. */
+        readonly supervisorCode: string;
+        /** Supervisor mismatch message. */
+        readonly supervisorMessage: string;
+    };
+    /** Child execution kinds ordered provider, then program. */
+    readonly executionKinds: readonly string[];
+    /** Deterministic identity derivation. */
+    readonly identity: {
+        /** Prefix of child run identities derived from a handle. */
+        readonly childRunIdPrefix: string;
+        /** Canonical key naming delegation command append intents. */
+        readonly commandAppendIntentKind: string;
+        /** Prefix of child run handle identities and owner paths. */
+        readonly handleIdPrefix: string;
+        /** Prefix of origin cut identities published through a parent handle head. */
+        readonly originCutIdPrefix: string;
+        /** Canonical key naming accepted output digests. */
+        readonly outputDigestKind: string;
+        /** Canonical key naming composed provider request digests. */
+        readonly requestDigestKind: string;
+        /** Prefix of retry cut identities published through a discarded predecessor head. */
+        readonly retryCutIdPrefix: string;
+    };
+    /** Resource bounds for delegation evidence. */
+    readonly limits: {
+        /** Maximum records one injection or decision may cite. */
+        readonly maxCitedRecords: number;
+        /** Maximum context injections retained on one handle. */
+        readonly maxInjections: number;
+        /** Maximum handle nesting depth below a root declaration. */
+        readonly maxNestingDepth: number;
+        /** Maximum characters of a retained reason. */
+        readonly maxReasonLength: number;
+        /** Maximum characters of a supervisor identity. */
+        readonly maxSupervisorIdLength: number;
+        /** Maximum direct handles one delegation tree projection lists. */
+        readonly maxTreeEntries: number;
+    };
+    /** Parent kinds ordered root, then handle. */
+    readonly parentKinds: readonly string[];
+    /** Task provenance kinds ordered declared, revised, synthesized. */
+    readonly provenanceKinds: readonly string[];
+    /** Delegation record version. */
+    readonly recordVersion: number;
+    /** Task fields a revision may change, in configured order. */
+    readonly revisionFields: readonly string[];
+    /** Stable JSON Schema identifiers. */
+    readonly schemas: {
+        /** Approval record schema identifier. */
+        readonly approvalId: string;
+        /** Completion record schema identifier. */
+        readonly completionId: string;
+        /** Context injection record schema identifier. */
+        readonly contextId: string;
+        /** Decision record schema identifier. */
+        readonly decisionId: string;
+        /** Handoff record schema identifier. */
+        readonly handoffId: string;
+        /** Opened record schema identifier. */
+        readonly openedId: string;
+    };
+    /** Derived handle statuses ordered ready, running, settling, approval pending, rejected, accepted, discarded. */
+    readonly statuses: readonly string[];
+    /** Retained record schema references. */
+    readonly traceSchemas: {
+        /** Approval record schema reference. */
+        readonly approval: string;
+        /** Completion record schema reference. */
+        readonly completion: string;
+        /** Context injection record schema reference. */
+        readonly context: string;
+        /** Decision record schema reference. */
+        readonly decision: string;
+        /** Handoff record schema reference. */
+        readonly handoff: string;
+        /** Opened record schema reference. */
+        readonly opened: string;
+    };
+    /** Delegation tree projection root kinds ordered handle, then supervisor. */
+    readonly treeRootKinds: readonly string[];
+};
+
 /** Complete validated language-neutral protocol configuration. */
 export type ProtocolConfig = {
     readonly cli: CliProtocolConfig;
+    readonly delegation: DelegationProtocolConfig;
     readonly effects: EffectProtocolConfig;
     readonly formalAssurance: FormalAssuranceProtocolConfig;
     readonly kernel: KernelProtocolConfig;

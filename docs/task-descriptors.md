@@ -24,8 +24,9 @@ const writeNote = task({
 });
 ```
 
-The current schema factory implements strict required-field objects, well-formed strings, and
-void outputs. Object validation rejects missing or additional fields, accessors, symbols, arrays,
+The current schema factory implements strict required-field objects, well-formed strings,
+void outputs, and task values (`schema.task()`, see
+[task values and child run handles](./task-values.md)). Object validation rejects missing or additional fields, accessors, symbols, arrays,
 and class instances. Validated object inputs are immutable snapshots. A void output accepts
 TypeScript `undefined` or JSON `null` and resolves to `undefined`.
 

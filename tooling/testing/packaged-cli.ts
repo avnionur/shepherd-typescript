@@ -173,6 +173,34 @@ process.stdout.write(dispatch.handlerId + "\\n" + success.result.ok + "\\n" + fa
             }),
             "nearest\ntrue\nfalse\ntrue\n",
         );
+        const delegationFacadeProbe = path.join(consumerRoot, "delegation-facade-probe.mjs");
+        writeFileSync(
+            delegationFacadeProbe,
+            `import { inspectChildRun as rootInspectChildRun, openChildRun as rootOpenChildRun, readTaskValue as rootReadTaskValue } from ${JSON.stringify(packageManifest.name)};
+import { DELEGATION_STATUSES, acceptChildRunResult, inspectChildRun, openChildRun, projectChildRunResult, projectDelegationTree, readTaskValue, runChildRun, taskDescriptorOf, taskValueOf } from ${JSON.stringify(`${packageManifest.name}/delegation`)};
+import { schema, task } from ${JSON.stringify(`${packageManifest.name}/tasks`)};
+import { SQLiteTraceStore } from ${JSON.stringify(`${packageManifest.name}/trace`)};
+if (inspectChildRun !== rootInspectChildRun || openChildRun !== rootOpenChildRun || readTaskValue !== rootReadTaskValue) throw new Error("delegation facade mismatch");
+const descriptor = task({ input: schema.string(), instruction: "Echo the input.", name: "delegation-probe", output: schema.string(), version: "1" });
+const value = readTaskValue(JSON.parse(JSON.stringify(taskValueOf(descriptor))));
+if (taskDescriptorOf(value).artifactLock.artifact_digest !== descriptor.artifactLock.artifact_digest) throw new Error("task value round trip mismatch");
+using store = new SQLiteTraceStore();
+const { handle } = openChildRun(store, { budget: { maxTurns: 1 }, commandId: "delegate:probe", grant: [], input: "probe", parent: { budget: { maxTurns: 2 }, ceiling: [], kind: "root" }, provenance: { kind: "declared" }, supervisorId: "supervisor:probe", task: value });
+const { inspection } = await runChildRun(store, { handle, program: ({ input }) => input + "!" });
+if (inspection.status !== DELEGATION_STATUSES[2] || inspection.completion === null || inspection.child?.outcome?.outcome.outcome.value !== "probe!") throw new Error("child run mismatch");
+acceptChildRunResult(store, { commandId: "accept:probe", handle, supervisorId: "supervisor:probe" });
+const tree = projectDelegationTree(store, { kind: "supervisor", supervisorId: "supervisor:probe" });
+if (tree.entries.length !== 1 || tree.entries[0].result.value !== "probe!" || projectChildRunResult(store, handle.handle_id, { schema: schema.string() }).value !== "probe!") throw new Error("projection mismatch");
+process.stdout.write(inspection.status + "\\n" + inspection.depth + "\\n" + tree.entries[0].status + "\\n");
+`,
+        );
+        assert.equal(
+            execFileSync(process.execPath, [delegationFacadeProbe], {
+                cwd: consumerRoot,
+                encoding: "utf8",
+            }),
+            "settling\n1\naccepted\n",
+        );
         const publicErrorProbe = path.join(consumerRoot, "public-error-probe.mjs");
         writeFileSync(
             publicErrorProbe,

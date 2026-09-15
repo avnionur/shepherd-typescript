@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.15.1
+Package: `@avnionur/shepherd-typescript` 2.20.1
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,24 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 815.
+Exported symbols: 898.
+
+### `AcceptChildRunResultOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for acceptChildRunResult.
+
+Signature:
+
+```ts
+export type AcceptChildRunResultOptions = {
+    readonly commandId: string;
+    readonly expectedHeadRecordId?: RecordId;
+    readonly handle: ChildRunHandle;
+    readonly supervisorId: string;
+};
+```
 
 ### `AnalyzeReplayDependenciesOptions`
 
@@ -275,6 +292,26 @@ export type ApplyRetainedWorldSettlementOptions = {
 };
 ```
 
+### `ApproveChildRunTaskOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for approveChildRunTask.
+
+Signature:
+
+```ts
+export type ApproveChildRunTaskOptions = {
+    readonly approverId?: string;
+    readonly commandId: string;
+    readonly expectedHeadRecordId?: RecordId;
+    readonly handle: ChildRunHandle;
+    readonly reason?: string;
+    readonly supervisorId: string;
+    readonly verdict: ChildRunApprovalVerdict;
+};
+```
+
 ### `BlobId`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -506,6 +543,562 @@ export type CausalClosureOptions = SliceReadOptions & {
 };
 ```
 
+### `ChildRunApprovalInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained approval evidence for a revised or synthesized task value.
+
+Signature:
+
+```ts
+export type ChildRunApprovalInspection = {
+    readonly approver_id: string;
+    readonly command_id: string;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly supervisor_id: string;
+    readonly task_artifact_digest: string;
+    readonly verdict: ChildRunApprovalVerdict;
+};
+```
+
+### `ChildRunApprovalVerdict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured approval verdict for a revised or synthesized task value.
+
+Signature:
+
+```ts
+export type ChildRunApprovalVerdict = (typeof DELEGATION_APPROVAL_VERDICTS)[number];
+```
+
+### `ChildRunBudgetAuthority`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Budget authority retained by a handle: the parent's declared ceiling and the child's budget.
+
+Signature:
+
+```ts
+export type ChildRunBudgetAuthority = {
+    readonly ceiling: RunBudgetDefinition;
+    readonly effective: RunBudgetDefinition;
+};
+```
+
+### `ChildRunCommandReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of a handle command that retained or replayed one record.
+
+Signature:
+
+```ts
+export type ChildRunCommandReceipt = {
+    readonly handle: ChildRunHandle;
+    readonly inspection: ChildRunInspection;
+    readonly record_id: RecordId;
+};
+```
+
+### `ChildRunCompletionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained completion evidence of one handle.
+
+Signature:
+
+```ts
+export type ChildRunCompletionInspection = {
+    readonly child_cut_id: CutId;
+    readonly child_terminal_record_id: RecordId;
+    readonly execution_kind: ChildRunExecutionKind;
+    readonly record_id: RecordId;
+    readonly status: RunTerminalStatus;
+    readonly supervisor_id: string;
+};
+```
+
+### `ChildRunConsumedContextInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained consumption evidence: the injections folded into the composed provider request.
+
+Signature:
+
+```ts
+export type ChildRunConsumedContextInspection = {
+    readonly consumed_record_ids: readonly RecordId[];
+    readonly record_id: RecordId;
+    readonly request_digest: string;
+    readonly supervisor_id: string;
+};
+```
+
+### `ChildRunContextPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured context record phase: an injection or the consumption record.
+
+Signature:
+
+```ts
+export type ChildRunContextPhase = (typeof DELEGATION_CONTEXT_PHASES)[number];
+```
+
+### `ChildRunDecisionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained terminal decision evidence.
+
+Signature:
+
+```ts
+export type ChildRunDecisionInspection = {
+    readonly child_outcome_record_id: RecordId | null;
+    readonly command_id: string;
+    readonly kind: ChildRunDecisionKind;
+    readonly output_id: string | null;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly supervisor_id: string;
+};
+```
+
+### `ChildRunDecisionKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured terminal decision kind.
+
+Signature:
+
+```ts
+export type ChildRunDecisionKind = (typeof DELEGATION_DECISION_KINDS)[number];
+```
+
+### `ChildRunDeclaredProvenance`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained declared provenance: a package-created descriptor or a caller-asserted value.
+
+Signature:
+
+```ts
+export type ChildRunDeclaredProvenance = {
+    readonly kind: (typeof DELEGATION_PROVENANCE_KINDS)[0];
+};
+```
+
+### `ChildRunExecutionKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured way one child run was serviced: a caller-bound provider or a caller program.
+
+Signature:
+
+```ts
+export type ChildRunExecutionKind = (typeof DELEGATION_EXECUTION_KINDS)[number];
+```
+
+### `ChildRunHandle`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Package-authenticated child run handle.
+
+A handle names one delegated execution of one task value under one supervisor. Only handles
+minted by openChildRun or retryChildRun in the same store are accepted as
+parents or command targets; forged, copied, or foreign-store objects are refused.
+
+Signature:
+
+```ts
+export type ChildRunHandle = {
+    readonly authority: ScopeAuthority;
+    readonly budget: ChildRunBudgetAuthority;
+    readonly child_run_id: string;
+    readonly depth: number;
+    readonly handle_id: string;
+    readonly opened_record_id: RecordId;
+    readonly supervisor_id: string;
+    readonly [childRunHandleContract]?: true;
+};
+```
+
+### `ChildRunHandleParentInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained parent handle evidence with the origin cut through the parent head.
+
+Signature:
+
+```ts
+export type ChildRunHandleParentInspection = {
+    readonly handle_id: string;
+    readonly kind: (typeof DELEGATION_PARENT_KINDS)[1];
+    readonly origin_cut_id: CutId;
+    readonly origin_record_id: RecordId;
+};
+```
+
+### `ChildRunHandoffInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained handoff evidence.
+
+Signature:
+
+```ts
+export type ChildRunHandoffInspection = {
+    readonly command_id: string;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly successor_id: string;
+    readonly supervisor_id: string;
+};
+```
+
+### `ChildRunInjectionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained context injection.
+
+Signature:
+
+```ts
+export type ChildRunInjectionInspection = {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly command_id: string;
+    readonly consumed: boolean;
+    readonly data: RecordBody;
+    readonly record_id: RecordId;
+    readonly supervisor_id: string;
+};
+```
+
+### `ChildRunInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one child run handle.
+
+Signature:
+
+```ts
+export type ChildRunInspection = {
+    readonly approval: ChildRunApprovalInspection | null;
+    readonly authority: ScopeAuthority;
+    readonly budget: ChildRunBudgetAuthority;
+    readonly child: DurableTaskExecutionInspection | null;
+    readonly child_run_id: string;
+    readonly command_id: string;
+    readonly completion: ChildRunCompletionInspection | null;
+    readonly consumed_context: ChildRunConsumedContextInspection | null;
+    readonly decision: ChildRunDecisionInspection | null;
+    readonly depth: number;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly handle_id: string;
+    readonly handoffs: readonly ChildRunHandoffInspection[];
+    readonly head_record_id: RecordId;
+    readonly injections: readonly ChildRunInjectionInspection[];
+    readonly input: SemanticValue;
+    readonly opened_record_id: RecordId;
+    readonly opened_supervisor_id: string;
+    readonly parent: ChildRunParentInspection;
+    readonly predecessor: ChildRunPredecessorInspection | null;
+    readonly provenance: ChildRunProvenance;
+    readonly status: ChildRunStatus;
+    readonly supervisor_id: string;
+    readonly task: TaskValue;
+};
+```
+
+### `ChildRunParentInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained parent evidence of one handle.
+
+Signature:
+
+```ts
+export type ChildRunParentInspection = ChildRunHandleParentInspection | ChildRunRootParentInspection;
+```
+
+### `ChildRunParentKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured parent kind of one child run handle: a root declaration or a parent handle.
+
+Signature:
+
+```ts
+export type ChildRunParentKind = (typeof DELEGATION_PARENT_KINDS)[number];
+```
+
+### `ChildRunPredecessorInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained predecessor evidence of a retry: the causal replay point.
+
+Signature:
+
+```ts
+export type ChildRunPredecessorInspection = {
+    readonly cut_id: CutId;
+    readonly decision_record_id: RecordId;
+    readonly handle_id: string;
+};
+```
+
+### `ChildRunProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller program that services one child run under its durable claim.
+
+The returned value is validated against the task output schema; an invalid output or a thrown
+error fails the child.
+
+Signature:
+
+```ts
+export type ChildRunProgram = (context: ChildRunProgramContext) => Promise<unknown> | unknown;
+```
+
+Parameter:
+
+- context - Handle, authority, budget, input, supervisor context, signal, and task.
+
+Returns:
+
+- The child output.
+
+### `ChildRunProgramContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a program-serviced child receives.
+
+Signature:
+
+```ts
+export type ChildRunProgramContext = {
+    readonly authority: ScopeAuthority;
+    readonly budget: RunBudgetDefinition;
+    readonly handle: ChildRunHandle;
+    readonly input: SemanticValue;
+    readonly signal: AbortSignal;
+    readonly supervisor_context: readonly ChildRunSupervisorContextEntry[];
+    readonly task: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>;
+};
+```
+
+### `ChildRunProvenance`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained provenance of a handle's task value.
+
+Signature:
+
+```ts
+export type ChildRunProvenance = ChildRunDeclaredProvenance | ChildRunRevisedProvenance | ChildRunSynthesizedProvenance;
+```
+
+### `ChildRunProvenanceDeclaration`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Provenance a caller states when opening or retrying a handle.
+
+Signature:
+
+```ts
+export type ChildRunProvenanceDeclaration = ChildRunDeclaredProvenance | {
+    readonly changes: readonly ChildRunRevisionField[];
+    readonly kind: (typeof DELEGATION_PROVENANCE_KINDS)[1];
+    readonly source: TaskValue;
+} | {
+    readonly kind: (typeof DELEGATION_PROVENANCE_KINDS)[2];
+    readonly producer: {
+        readonly record_id: RecordId;
+        readonly run_id: string;
+    };
+};
+```
+
+### `ChildRunProvenanceKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured provenance kind of the task value a handle executes.
+
+Signature:
+
+```ts
+export type ChildRunProvenanceKind = (typeof DELEGATION_PROVENANCE_KINDS)[number];
+```
+
+### `ChildRunReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of openChildRun and retryChildRun.
+
+Signature:
+
+```ts
+export type ChildRunReceipt = {
+    readonly handle: ChildRunHandle;
+    readonly inspection: ChildRunInspection;
+};
+```
+
+### `ChildRunResultProjection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Typed projection of one handle's retained result.
+
+`value` and `output_id` are non-null only for an `accepted` handle, where the retained child
+outcome has been re-validated against the retained task value's output schema and its digest
+equals the accept decision's `output_id`.
+
+Signature:
+
+```ts
+export type ChildRunResultProjection<T = SemanticValue> = {
+    readonly child_outcome_record_id: RecordId | null;
+    readonly child_run_id: string;
+    readonly decision_record_id: RecordId | null;
+    readonly handle_id: string;
+    readonly output_id: string | null;
+    readonly status: ChildRunStatus;
+    readonly task: TaskValue;
+    readonly value: T | null;
+};
+```
+
+### `ChildRunRevisedProvenance`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained revised provenance: the source task value and the fields the revision changed.
+
+Signature:
+
+```ts
+export type ChildRunRevisedProvenance = {
+    readonly fields: readonly ChildRunRevisionField[];
+    readonly kind: (typeof DELEGATION_PROVENANCE_KINDS)[1];
+    readonly source_task: TaskValue;
+};
+```
+
+### `ChildRunRevisionField`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured task field a revision may change.
+
+Signature:
+
+```ts
+export type ChildRunRevisionField = (typeof DELEGATION_REVISION_FIELDS)[number];
+```
+
+### `ChildRunRootParent`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Root parent declaration: the whole-tree resource ceiling and budget ceiling.
+
+Signature:
+
+```ts
+export type ChildRunRootParent = {
+    readonly budget: RunBudgetDefinition;
+    readonly ceiling: ScopeResourceGrantRequest;
+    readonly kind: (typeof DELEGATION_PARENT_KINDS)[0];
+};
+```
+
+### `ChildRunRootParentInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained root parent evidence.
+
+Signature:
+
+```ts
+export type ChildRunRootParentInspection = {
+    readonly kind: (typeof DELEGATION_PARENT_KINDS)[0];
+};
+```
+
+### `ChildRunStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured derived status of one child run handle.
+
+Signature:
+
+```ts
+export type ChildRunStatus = (typeof DELEGATION_STATUSES)[number];
+```
+
+### `ChildRunSupervisorContextEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One entry of the supervisor context folded into a child's composed request.
+
+Signature:
+
+```ts
+export type ChildRunSupervisorContextEntry = {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly data: RecordBody;
+    readonly record_id: RecordId;
+};
+```
+
+### `ChildRunSynthesizedProvenance`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained synthesized provenance: the retained record of the run that produced the value.
+
+Signature:
+
+```ts
+export type ChildRunSynthesizedProvenance = {
+    readonly kind: (typeof DELEGATION_PROVENANCE_KINDS)[2];
+    readonly source_record_id: RecordId;
+    readonly source_run_id: string;
+};
+```
+
 ### `ClaimScopeWriterOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -682,6 +1275,656 @@ export type CutSpec = {
     readonly target_owner_id: TraceOwnerId;
     readonly through_record_id: RecordId;
     readonly witness_ref?: RecordId;
+};
+```
+
+### `DELEGATION_APPROVAL_VERDICTS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured task approval verdicts ordered approved then rejected.
+
+Signature:
+
+```ts
+export declare const DELEGATION_APPROVAL_VERDICTS: readonly [
+    "approved",
+    "rejected"
+];
+```
+
+### `DELEGATION_COMPATIBILITY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured delegation evidence compatibility namespace.
+
+Signature:
+
+```ts
+export declare const DELEGATION_COMPATIBILITY_VERSION: "shepherd.delegation.v1";
+```
+
+### `DELEGATION_CONTEXT_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured context record phases ordered injected then consumed.
+
+Signature:
+
+```ts
+export declare const DELEGATION_CONTEXT_PHASES: readonly [
+    "injected",
+    "consumed"
+];
+```
+
+### `DELEGATION_DECISION_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured terminal decision kinds ordered accepted then discarded.
+
+Signature:
+
+```ts
+export declare const DELEGATION_DECISION_KINDS: readonly [
+    "accepted",
+    "discarded"
+];
+```
+
+### `DELEGATION_EXECUTION_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured child execution kinds ordered provider then program.
+
+Signature:
+
+```ts
+export declare const DELEGATION_EXECUTION_KINDS: readonly [
+    "provider",
+    "program"
+];
+```
+
+### `DELEGATION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured delegation evidence and projection bounds.
+
+Signature:
+
+```ts
+export declare const DELEGATION_LIMITS: Readonly<{
+    readonly maxCitedRecords: 32;
+    readonly maxInjections: 64;
+    readonly maxNestingDepth: 16;
+    readonly maxReasonLength: 1024;
+    readonly maxSupervisorIdLength: 256;
+    readonly maxTreeEntries: 256;
+}>;
+```
+
+### `DELEGATION_PARENT_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured child run handle parent kinds ordered root then handle.
+
+Signature:
+
+```ts
+export declare const DELEGATION_PARENT_KINDS: readonly [
+    "root",
+    "handle"
+];
+```
+
+### `DELEGATION_PROVENANCE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured task provenance kinds ordered declared, revised, synthesized.
+
+Signature:
+
+```ts
+export declare const DELEGATION_PROVENANCE_KINDS: readonly [
+    "declared",
+    "revised",
+    "synthesized"
+];
+```
+
+### `DELEGATION_RECORD_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured canonical delegation record version.
+
+Signature:
+
+```ts
+export declare const DELEGATION_RECORD_VERSION: 1;
+```
+
+### `DELEGATION_REVISION_FIELDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured task fields a revision may change.
+
+Signature:
+
+```ts
+export declare const DELEGATION_REVISION_FIELDS: readonly [
+    "instruction",
+    "input_schema",
+    "output_schema",
+    "task_version"
+];
+```
+
+### `DELEGATION_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured derived handle statuses ordered ready, running, settling, approval pending, rejected, accepted, discarded.
+
+Signature:
+
+```ts
+export declare const DELEGATION_STATUSES: readonly [
+    "ready",
+    "running",
+    "settling",
+    "approval_pending",
+    "rejected",
+    "accepted",
+    "discarded"
+];
+```
+
+### `DELEGATION_TREE_ROOT_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured delegation tree projection root kinds ordered handle then supervisor.
+
+Signature:
+
+```ts
+export declare const DELEGATION_TREE_ROOT_KINDS: readonly [
+    "handle",
+    "supervisor"
+];
+```
+
+### `DelegationApprovalRequiredError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a child run whose task value carries revised or synthesized provenance is run before
+the current supervisor approved it.
+
+No child record is written.
+
+Signature:
+
+```ts
+export declare class DelegationApprovalRequiredError extends TraceStoreError {
+    readonly code: string;
+    readonly handle_id: string;
+    constructor(handleId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned approval-required code.
+
+```ts
+readonly code: string;
+```
+
+#### `handle_id`
+
+Handle awaiting approval.
+
+```ts
+readonly handle_id: string;
+```
+
+#### `constructor`
+
+Creates an approval-required failure.
+
+```ts
+constructor(handleId: string);
+```
+
+Parameter:
+
+- handleId - Handle awaiting approval.
+
+### `DelegationAuthorityError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a requested grant or budget would amplify the parent's authority.
+
+Signature:
+
+```ts
+export declare class DelegationAuthorityError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned authority code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an authority failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `DelegationCommandConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a delegation command identity already names a retained command with different
+content.
+
+Signature:
+
+```ts
+export declare class DelegationCommandConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly command_id: string;
+    readonly handle_id: string;
+    constructor(handleId: string, commandId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned command-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `command_id`
+
+Conflicting command identity.
+
+```ts
+readonly command_id: string;
+```
+
+#### `handle_id`
+
+Handle the retained command opened or mutated.
+
+```ts
+readonly handle_id: string;
+```
+
+#### `constructor`
+
+Creates a command-conflict failure.
+
+```ts
+constructor(handleId: string, commandId: string);
+```
+
+Parameter:
+
+- handleId - Handle the retained command belongs to.
+
+Parameter:
+
+- commandId - Conflicting command identity.
+
+### `DelegationEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or supplied delegation evidence is absent, malformed, or inconsistent.
+
+Signature:
+
+```ts
+export declare class DelegationEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `DelegationHeadConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a handle command is admitted against a head that has since moved.
+
+No record is written; the caller re-inspects the handle and decides again.
+
+Signature:
+
+```ts
+export declare class DelegationHeadConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly expected_head_record_id: string;
+    readonly handle_id: string;
+    constructor(handleId: string, expectedHeadRecordId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned head-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `expected_head_record_id`
+
+Head the command expected.
+
+```ts
+readonly expected_head_record_id: string;
+```
+
+#### `handle_id`
+
+Handle whose head moved.
+
+```ts
+readonly handle_id: string;
+```
+
+#### `constructor`
+
+Creates a head-conflict failure.
+
+```ts
+constructor(handleId: string, expectedHeadRecordId: string);
+```
+
+Parameter:
+
+- handleId - Handle whose head moved.
+
+Parameter:
+
+- expectedHeadRecordId - Head the command expected.
+
+### `DelegationStatusError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a handle's derived status does not admit the requested command.
+
+Signature:
+
+```ts
+export declare class DelegationStatusError extends TraceStoreError {
+    readonly code: string;
+    readonly handle_id: string;
+    readonly status: string;
+    constructor(handleId: string, status: string, detail: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned status code.
+
+```ts
+readonly code: string;
+```
+
+#### `handle_id`
+
+Handle whose status refused the command.
+
+```ts
+readonly handle_id: string;
+```
+
+#### `status`
+
+Derived status at refusal.
+
+```ts
+readonly status: string;
+```
+
+#### `constructor`
+
+Creates a status failure.
+
+```ts
+constructor(handleId: string, status: string, detail: string);
+```
+
+Parameter:
+
+- handleId - Handle whose status refused the command.
+
+Parameter:
+
+- status - Derived status at refusal.
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+### `DelegationSupervisorError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a handle command names a supervisor that does not currently own the handle.
+
+Ownership is derived from the opened record and every retained handoff; a former supervisor
+or an unknown supervisor is refused without writing.
+
+Signature:
+
+```ts
+export declare class DelegationSupervisorError extends TraceStoreError {
+    readonly code: string;
+    readonly current_supervisor_id: string;
+    readonly handle_id: string;
+    readonly supervisor_id: string;
+    constructor(handleId: string, supervisorId: string, currentSupervisorId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned supervisor-mismatch code.
+
+```ts
+readonly code: string;
+```
+
+#### `current_supervisor_id`
+
+Supervisor that currently owns the handle.
+
+```ts
+readonly current_supervisor_id: string;
+```
+
+#### `handle_id`
+
+Handle the command addressed.
+
+```ts
+readonly handle_id: string;
+```
+
+#### `supervisor_id`
+
+Supervisor the command named.
+
+```ts
+readonly supervisor_id: string;
+```
+
+#### `constructor`
+
+Creates a supervisor-mismatch failure.
+
+```ts
+constructor(handleId: string, supervisorId: string, currentSupervisorId: string);
+```
+
+Parameter:
+
+- handleId - Handle the command addressed.
+
+Parameter:
+
+- supervisorId - Supervisor the command named.
+
+Parameter:
+
+- currentSupervisorId - Supervisor that currently owns the handle.
+
+### `DelegationTreeEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One direct handle of a delegation tree projection.
+
+Signature:
+
+```ts
+export type DelegationTreeEntry = {
+    readonly authority: ScopeAuthority;
+    readonly budget: ChildRunBudgetAuthority;
+    readonly child_run_id: string;
+    readonly depth: number;
+    readonly handle_id: string;
+    readonly result: ChildRunResultProjection;
+    readonly status: ChildRunStatus;
+    readonly supervisor_id: string;
+    readonly task: TaskValue;
+};
+```
+
+### `DelegationTreeProjection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Direct handles under one root in canonical handle-identity order.
+
+Grandchildren are never listed: a parent's accepted value is the only thing a grandchild
+contributes upward.
+
+Signature:
+
+```ts
+export type DelegationTreeProjection = {
+    readonly entries: readonly DelegationTreeEntry[];
+    readonly root: DelegationTreeRoot;
+};
+```
+
+### `DelegationTreeRoot`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Root of a delegation tree projection.
+
+Signature:
+
+```ts
+export type DelegationTreeRoot = {
+    readonly handleId: string;
+    readonly kind: (typeof DELEGATION_TREE_ROOT_KINDS)[0];
+} | {
+    readonly kind: (typeof DELEGATION_TREE_ROOT_KINDS)[1];
+    readonly supervisorId: string;
+};
+```
+
+### `DelegationTreeRootKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured root kind of a delegation tree projection: a parent handle or a supervisor.
+
+Signature:
+
+```ts
+export type DelegationTreeRootKind = (typeof DELEGATION_TREE_ROOT_KINDS)[number];
+```
+
+### `DiscardChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for discardChildRun.
+
+Signature:
+
+```ts
+export type DiscardChildRunOptions = {
+    readonly commandId: string;
+    readonly expectedHeadRecordId?: RecordId;
+    readonly handle: ChildRunHandle;
+    readonly reason: string;
+    readonly supervisorId: string;
 };
 ```
 
@@ -2699,6 +3942,25 @@ export type GrantedPlacementResolutionOptions<I extends TaskSchema<unknown>, O e
 };
 ```
 
+### `HandoffChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for handoffChildRun.
+
+Signature:
+
+```ts
+export type HandoffChildRunOptions = {
+    readonly commandId: string;
+    readonly expectedHeadRecordId?: RecordId;
+    readonly handle: ChildRunHandle;
+    readonly reason?: string;
+    readonly successorSupervisorId: string;
+    readonly supervisorId: string;
+};
+```
+
 ### `InferTaskSchema`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -2725,6 +3987,25 @@ export type InferTaskSchemaShape<S extends TaskSchemaShape> = {
 };
 ```
 
+### `InjectChildRunContextOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for injectChildRunContext.
+
+Signature:
+
+```ts
+export type InjectChildRunContextOptions = {
+    readonly citedRecordIds: readonly RecordId[];
+    readonly commandId: string;
+    readonly data: RecordBody;
+    readonly expectedHeadRecordId?: RecordId;
+    readonly handle: ChildRunHandle;
+    readonly supervisorId: string;
+};
+```
+
 ### `InjectSupervisionContextOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -2740,6 +4021,20 @@ export type InjectSupervisionContextOptions = {
     readonly commandId: string;
     readonly data: RecordBody;
     readonly supervisorId: string;
+};
+```
+
+### `InspectChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for inspectChildRun.
+
+Signature:
+
+```ts
+export type InspectChildRunOptions = {
+    readonly clock?: () => number;
 };
 ```
 
@@ -3665,6 +4960,44 @@ export declare const ORPHAN_REPAIR_VERSIONS: {
 };
 ```
 
+### `ObserveChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for observeChildRun.
+
+Signature:
+
+```ts
+export type ObserveChildRunOptions = Omit<OpenTraceSubscriptionOptions, "owners"> & ({
+    readonly handle: ChildRunHandle;
+} | {
+    readonly handleId: string;
+});
+```
+
+### `OpenChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for openChildRun.
+
+Signature:
+
+```ts
+export type OpenChildRunOptions = {
+    readonly budget: RunBudgetDefinition;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly input: unknown;
+    readonly parent: ChildRunHandle | ChildRunRootParent;
+    readonly provenance?: ChildRunProvenanceDeclaration;
+    readonly supervisorId: string;
+    readonly task: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>> | TaskValue;
+};
+```
+
 ### `OpenTraceSubscriptionOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -4301,6 +5634,20 @@ Signature:
 ```ts
 export type PreparedRetainedWorldSettlement = RetainedWorldSettlementAdmission & {
     readonly request: RetainedWorldSettlementRequest;
+};
+```
+
+### `ProjectChildRunResultOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for projectChildRunResult.
+
+Signature:
+
+```ts
+export type ProjectChildRunResultOptions<T> = {
+    readonly schema?: TaskSchema<T>;
 };
 ```
 
@@ -7451,6 +8798,27 @@ export type RetainedWorldSettlementRequest = {
 };
 ```
 
+### `RetryChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for retryChildRun.
+
+Signature:
+
+```ts
+export type RetryChildRunOptions = {
+    readonly budget?: RunBudgetDefinition;
+    readonly commandId: string;
+    readonly grant?: ScopeResourceGrantRequest;
+    readonly handle: ChildRunHandle;
+    readonly input?: unknown;
+    readonly provenance?: ChildRunProvenanceDeclaration;
+    readonly supervisorId: string;
+    readonly task?: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>> | TaskValue;
+};
+```
+
 ### `RewindReplaySessionOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -7720,6 +9088,26 @@ Parameter:
 Parameter:
 
 - cause - Optional original caller-signal reason.
+
+### `RunChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for runChildRun.
+
+Signature:
+
+```ts
+export type RunChildRunOptions = {
+    readonly clock?: () => number;
+    readonly handle: ChildRunHandle;
+    readonly program: ChildRunProgram;
+} | {
+    readonly clock?: () => number;
+    readonly handle: ChildRunHandle;
+    readonly provider: ModelProvider;
+};
+```
 
 ### `RunConsumption`
 
@@ -8843,7 +10231,8 @@ Throws:
 Throws:
 
 - {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
-owner path reserved for supervised dispatches, context channels, or replay sessions.
+owner path reserved for supervised dispatches, context channels, replay sessions, or child
+run handles.
 
 Throws:
 
@@ -9461,7 +10850,7 @@ Returns:
 Throws:
 
 - {TraceStoreError} If the target occurrence is absent, the publishing owner path is
-reserved for replay sessions, or the store is closed.
+reserved for replay sessions or child run handles, or the store is closed.
 
 Throws:
 
@@ -12802,6 +14191,7 @@ export type TaskSchemaFactory = {
     readonly fromJSONSchema: (document: unknown) => TaskSchema<unknown>;
     readonly object: <S extends TaskSchemaShape>(shape: S) => TaskSchema<InferTaskSchemaShape<S>>;
     readonly string: () => TaskSchema<string>;
+    readonly task: () => TaskSchema<TaskValue>;
     readonly void: () => TaskSchema<void>;
 };
 ```
@@ -12816,6 +14206,24 @@ Signature:
 
 ```ts
 export type TaskSchemaShape = Readonly<Record<string, TaskSchema<unknown>>>;
+```
+
+### `TaskValue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical serializable task: the bodyless descriptor artifact and its exact artifact lock.
+
+A task value carries no code. It is the form a task takes as data: a supervisor task input, a
+model-serviced task output, or the task retained by a child run handle.
+
+Signature:
+
+```ts
+export type TaskValue = {
+    readonly artifact: TaskArtifact;
+    readonly artifact_lock: TaskArtifactLock;
+};
 ```
 
 ### `TaskVersionConflictError`
@@ -14293,6 +15701,64 @@ export type WorldVerification = {
 };
 ```
 
+### `acceptChildRunResult`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains a terminal accept decision for a finished child.
+
+The child must have finished and its completion must be retained; the retained outcome value
+is validated against the task value's output schema and the decision retains the digest of
+the canonical output value and the outcome record identity. Only accepted results thread into
+the parent. The decision is terminal. Repeating the command returns the retained receipt.
+
+Signature:
+
+```ts
+export declare function acceptChildRunResult(store: SQLiteTraceStore, options: AcceptChildRunResultOptions): ChildRunCommandReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Command, handle, current supervisor, and optional head.
+
+Returns:
+
+- The handle, its inspection, and the decision record identity.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the handle.
+
+Throws:
+
+- {DelegationStatusError} If the child has not finished with a retained completion or the
+handle is already decided.
+
+Throws:
+
+- {DelegationHeadConflictError} If the expected or current head moved.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed or the retained outcome fails the output schema.
+
 ### `acknowledgeDurableTaskCancellation`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -14577,6 +16043,76 @@ const applied = await applyRetainedWorldSettlement({
     store,
 });
 applied.applied_revision_id;
+```
+
+### `approveChildRunTask`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains the current supervisor's approval verdict for a revised or synthesized task value.
+
+The approval retains the approver identity, the verdict, and the digest of the approved task
+artifact. `approved` moves the handle to `ready`; `rejected` is terminal for execution (the
+handle can still be discarded for bookkeeping and handed off). One approval is retained per
+handle; declared provenance needs none. Repeating the command returns the retained receipt.
+
+Signature:
+
+```ts
+export declare function approveChildRunTask(store: SQLiteTraceStore, options: ApproveChildRunTaskOptions): ChildRunCommandReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Command, handle, current supervisor, verdict, optional approver, reason, head.
+
+Returns:
+
+- The handle, its inspection, and the approval record identity.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the handle.
+
+Throws:
+
+- {DelegationStatusError} If the handle needs no approval or is already approved,
+rejected, or decided.
+
+Throws:
+
+- {DelegationHeadConflictError} If the expected or current head moved.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+approveChildRunTask(store, {
+    approverId: "reviewer@example.com",
+    commandId: "approve:review:1",
+    handle,
+    supervisorId: "supervisor:lead",
+    verdict: "approved",
+});
 ```
 
 ### `cancelDurableTask`
@@ -16210,6 +17746,64 @@ Throws:
 
 - {TypeError} If the channel name is empty or malformed.
 
+### `discardChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains a terminal discard decision with a reason.
+
+A started, non-terminal child must first be cancelled through durable run control on the child
+run owner path; discarding a live child is refused. Ready, settling, approval-pending, and
+rejected handles may be discarded. The decision is terminal: no later accept, discard,
+injection, or handoff is admitted, and a successor may be opened with retryChildRun.
+Repeating the command returns the retained receipt.
+
+Signature:
+
+```ts
+export declare function discardChildRun(store: SQLiteTraceStore, options: DiscardChildRunOptions): ChildRunCommandReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Command, handle, current supervisor, reason, and optional head.
+
+Returns:
+
+- The handle, its inspection, and the decision record identity.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the handle.
+
+Throws:
+
+- {DelegationStatusError} If the child is running or the handle is already decided.
+
+Throws:
+
+- {DelegationHeadConflictError} If the expected or current head moved.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
 ### `discardRetainedWorldSettlement`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -16723,6 +18317,63 @@ const granted = grantTaskRepositories({
 });
 ```
 
+### `handoffChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Transfers supervisor ownership of a handle to a named successor.
+
+After the handoff every later command must name the successor; commands naming a former
+supervisor are refused without writing. Handoff transfers ownership of the handle only, never
+a live process, provider session, or world state. Repeating the command returns the retained
+receipt.
+
+Signature:
+
+```ts
+export declare function handoffChildRun(store: SQLiteTraceStore, options: HandoffChildRunOptions): ChildRunCommandReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Command, handle, current supervisor, successor, optional reason and head.
+
+Returns:
+
+- The handle, its inspection, and the handoff record identity.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the handle.
+
+Throws:
+
+- {DelegationStatusError} If the handle is decided.
+
+Throws:
+
+- {DelegationHeadConflictError} If the expected or current head moved.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed or the successor equals the supervisor.
+
 ### `initializeWorkspace`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -16759,6 +18410,77 @@ Throws:
 Throws:
 
 - {TypeError} If options are malformed.
+
+### `injectChildRunContext`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains one ordered supervisor context injection on a handle.
+
+The injection cites at least one retained record; every cited record is a causal parent of the
+injection. Injections retained before the child starts are folded into the composed provider
+request by runChildRun; injections retained after the child started stay pending
+(`consumed: false`) and are consumed only by a successor opened through retryChildRun
+with its own injections. The count of injections on one handle is bounded by
+`limits.maxInjections`. Repeating the command returns the retained receipt.
+
+Signature:
+
+```ts
+export declare function injectChildRunContext(store: SQLiteTraceStore, options: InjectChildRunContextOptions): ChildRunCommandReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Command, handle, current supervisor, cited records, data, and optional head.
+
+Returns:
+
+- The handle, its inspection, and the injection record identity.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the handle.
+
+Throws:
+
+- {DelegationStatusError} If the handle is decided, rejected, or at the injection bound.
+
+Throws:
+
+- {DelegationHeadConflictError} If the expected or current head moved.
+
+Throws:
+
+- {DelegationEvidenceError} If a cited record is not retained or evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed or exceed configured bounds.
+
+Example:
+
+- ```ts
+injectChildRunContext(store, {
+    citedRecordIds: [reviewRecordId],
+    commandId: "inject:review:1",
+    data: { hint: "prefer the shorter draft" },
+    handle,
+    supervisorId: "supervisor:lead",
+});
+```
 
 ### `injectSupervisionContext`
 
@@ -16803,6 +18525,63 @@ Throws:
 Throws:
 
 - {TypeError} If options are malformed, uncited, or exceed configured bounds.
+
+### `inspectChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one child run handle as an immutable, fully validated, record-derived view.
+
+Every record on the handle owner path is checked: versions, schemas, modes, witnesses, causal
+parents, the derived handle and child run identities, the task value and its lock, the input
+against the task input schema, the provenance against the task and the store, effective
+authority re-derived from the retained ceiling and grant, budget attenuation against the
+retained ceiling, the parent handle chain with its origin cut, the discarded predecessor of a
+retry with its retry cut, the supervisor chain through every handoff, injections and their
+consumption, the approval, the completion against the child's durable inspection, and the
+terminal decision. Status is derived from the handle records and the child's durable execution.
+Inspection appends nothing and works on read-only, reopened, and imported stores.
+
+Signature:
+
+```ts
+export declare function inspectChildRun(store: SQLiteTraceStore, handleId: string, options?: InspectChildRunOptions): ChildRunInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- handleId - Handle identity.
+
+Parameter:
+
+- options - Reserved; currently accepts no fields.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {DelegationEvidenceError} If the handle is absent or its evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the handle identity or options are malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectChildRun(store, handle.handle_id);
+console.log(inspection.status, inspection.supervisor_id, inspection.decision);
+```
 
 ### `inspectDurableTaskExecution`
 
@@ -17659,6 +19438,140 @@ const merged = await mergeScope(store, {
 });
 ```
 
+### `observeChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Opens a trace subscription over one handle owner path and its child run owner path.
+
+Observation is the Phase 7 subscription contract applied to the two owners a handle spans: the
+handle path (opened, context, handoff, approval, completion, and decision records) and the
+derived child run path (durable creation, start, artifacts, usage, outcome, terminal, and
+control records). The cursor is the canonical vector of the two owners' next ordinals in
+canonical owner order; because the child run prefix sorts before the handle prefix, the child
+run position is first. A durable subscription (`subscriptionId`) resumes strictly after its
+acknowledged cursor; an ephemeral one retains nothing and works on read-only stores. The handle
+need not be retained yet when given by identity, so an observer can subscribe before opening.
+
+Signature:
+
+```ts
+export declare function observeChildRun(store: SQLiteTraceStore, options: ObserveChildRunOptions): TraceSubscription;
+```
+
+Parameter:
+
+- store - Open trace store; durable subscriptions require a writable handle.
+
+Parameter:
+
+- options - Exactly one of the authenticated handle or its identity, plus subscription
+options.
+
+Returns:
+
+- A frozen async-iterable subscription.
+
+Throws:
+
+- {SupervisionCursorConflictError} If a durable subscription names different owners or
+its start disagrees with the acknowledged cursor.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const subscription = observeChildRun(store, { handle, subscriptionId: "observer:lead" });
+for await (const delivery of subscription) {
+    console.log(delivery.record.envelope.schema_ref);
+    subscription.acknowledge(delivery.cursor);
+}
+```
+
+### `openChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Opens one child run handle: a delegated execution of one task value under one supervisor.
+
+The opened record is retained on the handle's reserved owner path derived from the command
+identity. It retains the supervisor, the parent (a root declaration or the parent handle with an
+origin cut through the parent head), the task value with its provenance, the input validated
+against the task input schema, the requested grant and budget, the derived authority, the
+budget ceiling, and the nesting depth. A package-created descriptor defaults to `declared`
+provenance; a task value must state its provenance. Revised provenance must keep the source
+task identity, differ in at least one configured revision field, and list exactly the differing
+fields; synthesized provenance must cite a record retained by the producing run. Handles with
+revised or synthesized provenance open in `approval_pending`. Repeating the command returns the
+retained receipt.
+
+Signature:
+
+```ts
+export declare function openChildRun(store: SQLiteTraceStore, options: OpenChildRunOptions): ChildRunReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, supervisor, parent, task, provenance, input, grant, and budget.
+
+Returns:
+
+- The authenticated handle and its validated inspection.
+
+Throws:
+
+- {DelegationAuthorityError} If the grant or budget exceeds the parent authority or the
+nesting bound.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content or is
+already retained by a handle command.
+
+Throws:
+
+- {DelegationStatusError} If the parent handle is rejected or discarded.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent or a synthesized
+producer record is absent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options, the task, its provenance, the input, or the parent handle are
+malformed.
+
+Example:
+
+- ```ts
+const { handle } = openChildRun(store, {
+    budget: { maxTurns: 1 },
+    commandId: "delegate:review:1",
+    grant: [],
+    input: { topic: "release notes" },
+    parent: { budget: { maxTurns: 4 }, ceiling: [], kind: "root" },
+    supervisorId: "supervisor:lead",
+    task: reviewTask,
+});
+```
+
 ### `openTraceSubscription`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -17856,6 +19769,126 @@ const prepared = await prepareRetainedWorldSettlement({
     store,
 });
 prepared.state;
+```
+
+### `projectChildRunResult`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Projects the retained result of one child run handle as a typed value.
+
+The handle is folded with inspectChildRun. For an `accepted` handle the retained child
+outcome value is re-validated against the retained task value's output schema, rehydrated
+through the schema factory, normalized, and its digest must equal the accept decision's
+`output_id`; the projection then carries the canonical value and digest. For every other status
+`value` and `output_id` are null, so a discarded handle contributes nothing upward. A caller
+schema proves the projected type: its document must canonically equal the retained output
+schema, and no value is returned for a mismatched schema. The projection appends nothing and
+works on read-only, reopened, and imported stores.
+
+Signature:
+
+```ts
+export declare function projectChildRunResult<T = SemanticValue>(store: SQLiteTraceStore, handleId: string, options?: ProjectChildRunResultOptions<T>): ChildRunResultProjection<T>;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- handleId - Handle identity.
+
+Parameter:
+
+- options - Optional caller schema typing the value.
+
+Returns:
+
+- The frozen result projection.
+
+Throws:
+
+- {DelegationEvidenceError} If the handle is absent, its evidence is inconsistent, or the
+accepted output fails the retained output schema or disagrees with the retained digest.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the handle identity or options are malformed, the schema was not created
+by the schema factory, or its document differs from the retained output schema.
+
+Example:
+
+- ```ts
+const result = projectChildRunResult(store, handle.handle_id, {
+    schema: schema.object({ text: schema.string() }),
+});
+if (result.value !== null) {
+    console.log(result.value.text);
+}
+```
+
+### `projectDelegationTree`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Projects the direct handles under one root as a typed delegation tree.
+
+A handle root lists the handles whose retained parent is that handle; a supervisor root lists
+the root-parent handles whose current supervisor, after every retained handoff, is that
+supervisor. Handles are enumerated through the store's schema-based owner listing over the
+opened record schema and folded with inspectChildRun; each entry carries the handle, its
+status, current supervisor, authority, budget, depth, task value, and result projection, in
+canonical handle-identity order. Grandchildren are never listed and none of their records,
+authority, or values appear: a parent's accepted value is the only thing a grandchild
+contributes upward, and discarding a handle removes its value and everything threaded through
+it. The projection is bounded by `limits.maxTreeEntries` and appends nothing.
+
+Signature:
+
+```ts
+export declare function projectDelegationTree(store: SQLiteTraceStore, root: DelegationTreeRoot): DelegationTreeProjection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- root - Handle root `{ kind: "handle", handleId }` or supervisor root
+`{ kind: "supervisor", supervisorId }`.
+
+Returns:
+
+- The frozen tree projection.
+
+Throws:
+
+- {DelegationEvidenceError} If a handle root is not retained or any direct handle's
+evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the root is malformed or the direct handles exceed the configured
+tree-entry bound.
+
+Example:
+
+- ```ts
+const tree = projectDelegationTree(store, { kind: "supervisor", supervisorId: "supervisor:lead" });
+for (const entry of tree.entries) {
+    console.log(entry.handle_id, entry.status, entry.result.value);
+}
 ```
 
 ### `projectEffectiveHistory`
@@ -18149,6 +20182,41 @@ Throws:
 Throws:
 
 - {TypeError} If options are malformed.
+
+### `readTaskValue`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates one untrusted task value: a plain data object with exactly `artifact` and
+`artifact_lock`, whose lock re-derives from the artifact.
+
+Extra keys, accessors, foreign schema documents, unsupported schema grammar, unsupported
+protocol versions, and a lock that disagrees with the artifact are refused. Nothing in a task
+value is evaluated.
+
+Signature:
+
+```ts
+export declare function readTaskValue(value: unknown): TaskValue;
+```
+
+Parameter:
+
+- value - Untrusted task value.
+
+Returns:
+
+- The frozen canonical task value.
+
+Throws:
+
+- {TypeError} If the value is malformed or its lock does not match its artifact.
+
+Example:
+
+- ```ts
+const value = readTaskValue(JSON.parse(text));
+```
 
 ### `recoverGrantedTaskWorldDurably`
 
@@ -19103,6 +21171,79 @@ const authority = resumeDurableTask(store, {
 authority.fencing_token;
 ```
 
+### `retryChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Opens a successor handle for a discarded predecessor, citing its causal replay point.
+
+The successor is a new handle under the predecessor's parent whose opened record cites the
+predecessor handle, its discard decision record, and a retry cut published through the
+predecessor head inside the opening transaction. Task, input, grant, and budget default to the
+predecessor's; a supplied descriptor is `declared`, a supplied task value must state its
+provenance, and an omitted task inherits the predecessor's task value and provenance, so a
+revised or synthesized successor requires its own approval. Pending injections of the
+predecessor are not copied. Only the current supervisor of the predecessor may retry.
+
+Signature:
+
+```ts
+export declare function retryChildRun(store: SQLiteTraceStore, options: RetryChildRunOptions): ChildRunReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the predecessor.
+
+Parameter:
+
+- options - Successor command, supervisor, and optional task, provenance, input, grant,
+and budget.
+
+Returns:
+
+- The authenticated successor handle and its validated inspection.
+
+Throws:
+
+- {DelegationStatusError} If the predecessor is not discarded or the parent handle no
+longer admits children.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the predecessor.
+
+Throws:
+
+- {DelegationAuthorityError} If the grant or budget exceeds the parent authority.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content or is
+already retained by a handle command.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options, the task, its provenance, the input, or the handle are malformed.
+
+Example:
+
+- ```ts
+const successor = retryChildRun(store, {
+    commandId: "delegate:review:2",
+    handle: discarded.handle,
+    supervisorId: "supervisor:lead",
+});
+```
+
 ### `rewindReplaySession`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -19167,6 +21308,83 @@ const { inspection } = await rewindReplaySession(store, {
     sourceSessionId,
     target: { checkpointId },
     worlds: [{ name: "main", root: emptyDirectory }],
+});
+```
+
+### `runChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Executes one child run once and retains its completion on the handle.
+
+Provider-serviced children run the rehydrated task through the caller's provider as an
+ordinary durable execution under the derived child run identity. Program-serviced children run
+the caller's program under the same durable claim through a program provider: the program
+receives the authenticated handle, the delegated authority, the child budget, the validated
+input, the consumed supervisor context, the cooperative signal, and the task, and its returned
+output is validated against the task output schema; an invalid output or a thrown error fails
+the child. Injections retained before the child starts are consumed: a consumption record
+listing them and the digest of the composed request is retained at the handle head immediately
+before the child starts, and the provider request input becomes
+`{ input, supervisor_context }`; with no injection the request is the plain input. After the
+child terminal, the completion record cites the child's terminal record and published cut and
+names the current supervisor. A child already terminal without a completion, as after a crash
+between the two, retains the completion without re-executing; a completed handle returns the
+retained receipt.
+
+Signature:
+
+```ts
+export declare function runChildRun(store: SQLiteTraceStore, options: RunChildRunOptions): Promise<ChildRunReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Authenticated handle and exactly one of a provider or a program.
+
+Returns:
+
+- The handle and its inspection after completion.
+
+Throws:
+
+- {DelegationApprovalRequiredError} If the task value awaits approval.
+
+Throws:
+
+- {DelegationStatusError} If the child is running, rejected, decided without a
+completion, or terminal without a published cut.
+
+Throws:
+
+- {DelegationHeadConflictError} If the handle head moved while the child ran.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {DurableExecutionRecoveryError} If the child's durable evidence is unsafe to advance.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options or the handle are malformed.
+
+Example:
+
+- ```ts
+const { inspection } = await runChildRun(store, {
+    handle,
+    program: async ({ input }) => ({ summary: String(input) }),
 });
 ```
 
@@ -19452,6 +21670,72 @@ const greet = task({
     input: schema.object({ name: schema.string() }),
     output: schema.void(),
 });
+```
+
+### `taskDescriptorOf`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Rehydrates an authenticated task descriptor from a task value.
+
+The value is validated with readTaskValue, its schemas are rebuilt through the schema
+factory, and the descriptor is rebuilt through the task builder. The recomputed lock must equal
+the value's lock, so a value whose artifact differs from its builder-normalized form is refused
+rather than silently renormalized.
+
+Signature:
+
+```ts
+export declare function taskDescriptorOf(value: unknown): TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>;
+```
+
+Parameter:
+
+- value - Untrusted task value.
+
+Returns:
+
+- A package-created descriptor whose artifact lock equals the value's lock.
+
+Throws:
+
+- {TypeError} If the value is malformed or the rebuilt lock differs.
+
+Example:
+
+- ```ts
+const descriptor = taskDescriptorOf(inspection.task);
+await executeTask({ task: descriptor, input, provider, runId, budget });
+```
+
+### `taskValueOf`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Returns the canonical task value of a package-created descriptor.
+
+Signature:
+
+```ts
+export declare function taskValueOf(descriptor: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>): TaskValue;
+```
+
+Parameter:
+
+- descriptor - Descriptor created by {@link task}.
+
+Returns:
+
+- The frozen `{ artifact, artifact_lock }` value.
+
+Throws:
+
+- {TypeError} If the descriptor was not created by the configured task builder.
+
+Example:
+
+- ```ts
+const value = taskValueOf(greet);
 ```
 
 ### `validateEffectCorrelation`
@@ -19759,6 +22043,2425 @@ Returns:
 Throws:
 
 - {TypeError} If the injectable I/O boundary is malformed.
+
+## Delegation
+
+Package entry: `./delegation`
+
+Task values, durable child run handles, delegated authority, handle inspection, and typed result and tree projections.
+
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+
+Authority and mutation: Opening, running, and inspecting child run handles require an explicit trace-store handle; providers and programs are caller-supplied. A handle's authority is derived from a caller-declared root ceiling or the parent handle's retained effective authority and never exceeds it. Task values carry no code and nothing in them is evaluated. No provider, workspace, custody, or settlement authority is created.
+
+Import example:
+
+```ts
+import * as api from "@avnionur/shepherd-typescript/delegation";
+void api;
+```
+
+Exported symbols: 89.
+
+### `AcceptChildRunResultOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for acceptChildRunResult.
+
+Signature:
+
+```ts
+export type AcceptChildRunResultOptions = {
+    readonly commandId: string;
+    readonly expectedHeadRecordId?: RecordId;
+    readonly handle: ChildRunHandle;
+    readonly supervisorId: string;
+};
+```
+
+### `AppendIntentConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an append intent is replayed with different semantic content.
+
+Signature:
+
+```ts
+export declare class AppendIntentConflictError extends TraceStoreError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable append-conflict code.
+
+```ts
+readonly code: string;
+```
+
+### `ApproveChildRunTaskOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for approveChildRunTask.
+
+Signature:
+
+```ts
+export type ApproveChildRunTaskOptions = {
+    readonly approverId?: string;
+    readonly commandId: string;
+    readonly expectedHeadRecordId?: RecordId;
+    readonly handle: ChildRunHandle;
+    readonly reason?: string;
+    readonly supervisorId: string;
+    readonly verdict: ChildRunApprovalVerdict;
+};
+```
+
+### `ChildRunApprovalInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained approval evidence for a revised or synthesized task value.
+
+Signature:
+
+```ts
+export type ChildRunApprovalInspection = {
+    readonly approver_id: string;
+    readonly command_id: string;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly supervisor_id: string;
+    readonly task_artifact_digest: string;
+    readonly verdict: ChildRunApprovalVerdict;
+};
+```
+
+### `ChildRunApprovalVerdict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured approval verdict for a revised or synthesized task value.
+
+Signature:
+
+```ts
+export type ChildRunApprovalVerdict = (typeof DELEGATION_APPROVAL_VERDICTS)[number];
+```
+
+### `ChildRunBudgetAuthority`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Budget authority retained by a handle: the parent's declared ceiling and the child's budget.
+
+Signature:
+
+```ts
+export type ChildRunBudgetAuthority = {
+    readonly ceiling: RunBudgetDefinition;
+    readonly effective: RunBudgetDefinition;
+};
+```
+
+### `ChildRunCommandReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of a handle command that retained or replayed one record.
+
+Signature:
+
+```ts
+export type ChildRunCommandReceipt = {
+    readonly handle: ChildRunHandle;
+    readonly inspection: ChildRunInspection;
+    readonly record_id: RecordId;
+};
+```
+
+### `ChildRunCompletionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained completion evidence of one handle.
+
+Signature:
+
+```ts
+export type ChildRunCompletionInspection = {
+    readonly child_cut_id: CutId;
+    readonly child_terminal_record_id: RecordId;
+    readonly execution_kind: ChildRunExecutionKind;
+    readonly record_id: RecordId;
+    readonly status: RunTerminalStatus;
+    readonly supervisor_id: string;
+};
+```
+
+### `ChildRunConsumedContextInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained consumption evidence: the injections folded into the composed provider request.
+
+Signature:
+
+```ts
+export type ChildRunConsumedContextInspection = {
+    readonly consumed_record_ids: readonly RecordId[];
+    readonly record_id: RecordId;
+    readonly request_digest: string;
+    readonly supervisor_id: string;
+};
+```
+
+### `ChildRunContextPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured context record phase: an injection or the consumption record.
+
+Signature:
+
+```ts
+export type ChildRunContextPhase = (typeof DELEGATION_CONTEXT_PHASES)[number];
+```
+
+### `ChildRunDecisionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained terminal decision evidence.
+
+Signature:
+
+```ts
+export type ChildRunDecisionInspection = {
+    readonly child_outcome_record_id: RecordId | null;
+    readonly command_id: string;
+    readonly kind: ChildRunDecisionKind;
+    readonly output_id: string | null;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly supervisor_id: string;
+};
+```
+
+### `ChildRunDecisionKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured terminal decision kind.
+
+Signature:
+
+```ts
+export type ChildRunDecisionKind = (typeof DELEGATION_DECISION_KINDS)[number];
+```
+
+### `ChildRunDeclaredProvenance`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained declared provenance: a package-created descriptor or a caller-asserted value.
+
+Signature:
+
+```ts
+export type ChildRunDeclaredProvenance = {
+    readonly kind: (typeof DELEGATION_PROVENANCE_KINDS)[0];
+};
+```
+
+### `ChildRunExecutionKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured way one child run was serviced: a caller-bound provider or a caller program.
+
+Signature:
+
+```ts
+export type ChildRunExecutionKind = (typeof DELEGATION_EXECUTION_KINDS)[number];
+```
+
+### `ChildRunHandle`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Package-authenticated child run handle.
+
+A handle names one delegated execution of one task value under one supervisor. Only handles
+minted by openChildRun or retryChildRun in the same store are accepted as
+parents or command targets; forged, copied, or foreign-store objects are refused.
+
+Signature:
+
+```ts
+export type ChildRunHandle = {
+    readonly authority: ScopeAuthority;
+    readonly budget: ChildRunBudgetAuthority;
+    readonly child_run_id: string;
+    readonly depth: number;
+    readonly handle_id: string;
+    readonly opened_record_id: RecordId;
+    readonly supervisor_id: string;
+    readonly [childRunHandleContract]?: true;
+};
+```
+
+### `ChildRunHandleParentInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained parent handle evidence with the origin cut through the parent head.
+
+Signature:
+
+```ts
+export type ChildRunHandleParentInspection = {
+    readonly handle_id: string;
+    readonly kind: (typeof DELEGATION_PARENT_KINDS)[1];
+    readonly origin_cut_id: CutId;
+    readonly origin_record_id: RecordId;
+};
+```
+
+### `ChildRunHandoffInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained handoff evidence.
+
+Signature:
+
+```ts
+export type ChildRunHandoffInspection = {
+    readonly command_id: string;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly successor_id: string;
+    readonly supervisor_id: string;
+};
+```
+
+### `ChildRunInjectionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained context injection.
+
+Signature:
+
+```ts
+export type ChildRunInjectionInspection = {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly command_id: string;
+    readonly consumed: boolean;
+    readonly data: RecordBody;
+    readonly record_id: RecordId;
+    readonly supervisor_id: string;
+};
+```
+
+### `ChildRunInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one child run handle.
+
+Signature:
+
+```ts
+export type ChildRunInspection = {
+    readonly approval: ChildRunApprovalInspection | null;
+    readonly authority: ScopeAuthority;
+    readonly budget: ChildRunBudgetAuthority;
+    readonly child: DurableTaskExecutionInspection | null;
+    readonly child_run_id: string;
+    readonly command_id: string;
+    readonly completion: ChildRunCompletionInspection | null;
+    readonly consumed_context: ChildRunConsumedContextInspection | null;
+    readonly decision: ChildRunDecisionInspection | null;
+    readonly depth: number;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly handle_id: string;
+    readonly handoffs: readonly ChildRunHandoffInspection[];
+    readonly head_record_id: RecordId;
+    readonly injections: readonly ChildRunInjectionInspection[];
+    readonly input: SemanticValue;
+    readonly opened_record_id: RecordId;
+    readonly opened_supervisor_id: string;
+    readonly parent: ChildRunParentInspection;
+    readonly predecessor: ChildRunPredecessorInspection | null;
+    readonly provenance: ChildRunProvenance;
+    readonly status: ChildRunStatus;
+    readonly supervisor_id: string;
+    readonly task: TaskValue;
+};
+```
+
+### `ChildRunParentInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained parent evidence of one handle.
+
+Signature:
+
+```ts
+export type ChildRunParentInspection = ChildRunHandleParentInspection | ChildRunRootParentInspection;
+```
+
+### `ChildRunParentKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured parent kind of one child run handle: a root declaration or a parent handle.
+
+Signature:
+
+```ts
+export type ChildRunParentKind = (typeof DELEGATION_PARENT_KINDS)[number];
+```
+
+### `ChildRunPredecessorInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained predecessor evidence of a retry: the causal replay point.
+
+Signature:
+
+```ts
+export type ChildRunPredecessorInspection = {
+    readonly cut_id: CutId;
+    readonly decision_record_id: RecordId;
+    readonly handle_id: string;
+};
+```
+
+### `ChildRunProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller program that services one child run under its durable claim.
+
+The returned value is validated against the task output schema; an invalid output or a thrown
+error fails the child.
+
+Signature:
+
+```ts
+export type ChildRunProgram = (context: ChildRunProgramContext) => Promise<unknown> | unknown;
+```
+
+Parameter:
+
+- context - Handle, authority, budget, input, supervisor context, signal, and task.
+
+Returns:
+
+- The child output.
+
+### `ChildRunProgramContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a program-serviced child receives.
+
+Signature:
+
+```ts
+export type ChildRunProgramContext = {
+    readonly authority: ScopeAuthority;
+    readonly budget: RunBudgetDefinition;
+    readonly handle: ChildRunHandle;
+    readonly input: SemanticValue;
+    readonly signal: AbortSignal;
+    readonly supervisor_context: readonly ChildRunSupervisorContextEntry[];
+    readonly task: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>;
+};
+```
+
+### `ChildRunProvenance`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained provenance of a handle's task value.
+
+Signature:
+
+```ts
+export type ChildRunProvenance = ChildRunDeclaredProvenance | ChildRunRevisedProvenance | ChildRunSynthesizedProvenance;
+```
+
+### `ChildRunProvenanceDeclaration`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Provenance a caller states when opening or retrying a handle.
+
+Signature:
+
+```ts
+export type ChildRunProvenanceDeclaration = ChildRunDeclaredProvenance | {
+    readonly changes: readonly ChildRunRevisionField[];
+    readonly kind: (typeof DELEGATION_PROVENANCE_KINDS)[1];
+    readonly source: TaskValue;
+} | {
+    readonly kind: (typeof DELEGATION_PROVENANCE_KINDS)[2];
+    readonly producer: {
+        readonly record_id: RecordId;
+        readonly run_id: string;
+    };
+};
+```
+
+### `ChildRunProvenanceKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured provenance kind of the task value a handle executes.
+
+Signature:
+
+```ts
+export type ChildRunProvenanceKind = (typeof DELEGATION_PROVENANCE_KINDS)[number];
+```
+
+### `ChildRunReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of openChildRun and retryChildRun.
+
+Signature:
+
+```ts
+export type ChildRunReceipt = {
+    readonly handle: ChildRunHandle;
+    readonly inspection: ChildRunInspection;
+};
+```
+
+### `ChildRunResultProjection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Typed projection of one handle's retained result.
+
+`value` and `output_id` are non-null only for an `accepted` handle, where the retained child
+outcome has been re-validated against the retained task value's output schema and its digest
+equals the accept decision's `output_id`.
+
+Signature:
+
+```ts
+export type ChildRunResultProjection<T = SemanticValue> = {
+    readonly child_outcome_record_id: RecordId | null;
+    readonly child_run_id: string;
+    readonly decision_record_id: RecordId | null;
+    readonly handle_id: string;
+    readonly output_id: string | null;
+    readonly status: ChildRunStatus;
+    readonly task: TaskValue;
+    readonly value: T | null;
+};
+```
+
+### `ChildRunRevisedProvenance`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained revised provenance: the source task value and the fields the revision changed.
+
+Signature:
+
+```ts
+export type ChildRunRevisedProvenance = {
+    readonly fields: readonly ChildRunRevisionField[];
+    readonly kind: (typeof DELEGATION_PROVENANCE_KINDS)[1];
+    readonly source_task: TaskValue;
+};
+```
+
+### `ChildRunRevisionField`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured task field a revision may change.
+
+Signature:
+
+```ts
+export type ChildRunRevisionField = (typeof DELEGATION_REVISION_FIELDS)[number];
+```
+
+### `ChildRunRootParent`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Root parent declaration: the whole-tree resource ceiling and budget ceiling.
+
+Signature:
+
+```ts
+export type ChildRunRootParent = {
+    readonly budget: RunBudgetDefinition;
+    readonly ceiling: ScopeResourceGrantRequest;
+    readonly kind: (typeof DELEGATION_PARENT_KINDS)[0];
+};
+```
+
+### `ChildRunRootParentInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained root parent evidence.
+
+Signature:
+
+```ts
+export type ChildRunRootParentInspection = {
+    readonly kind: (typeof DELEGATION_PARENT_KINDS)[0];
+};
+```
+
+### `ChildRunStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured derived status of one child run handle.
+
+Signature:
+
+```ts
+export type ChildRunStatus = (typeof DELEGATION_STATUSES)[number];
+```
+
+### `ChildRunSupervisorContextEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One entry of the supervisor context folded into a child's composed request.
+
+Signature:
+
+```ts
+export type ChildRunSupervisorContextEntry = {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly data: RecordBody;
+    readonly record_id: RecordId;
+};
+```
+
+### `ChildRunSynthesizedProvenance`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained synthesized provenance: the retained record of the run that produced the value.
+
+Signature:
+
+```ts
+export type ChildRunSynthesizedProvenance = {
+    readonly kind: (typeof DELEGATION_PROVENANCE_KINDS)[2];
+    readonly source_record_id: RecordId;
+    readonly source_run_id: string;
+};
+```
+
+### `DELEGATION_APPROVAL_VERDICTS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured task approval verdicts ordered approved then rejected.
+
+Signature:
+
+```ts
+export declare const DELEGATION_APPROVAL_VERDICTS: readonly [
+    "approved",
+    "rejected"
+];
+```
+
+### `DELEGATION_COMPATIBILITY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured delegation evidence compatibility namespace.
+
+Signature:
+
+```ts
+export declare const DELEGATION_COMPATIBILITY_VERSION: "shepherd.delegation.v1";
+```
+
+### `DELEGATION_CONTEXT_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured context record phases ordered injected then consumed.
+
+Signature:
+
+```ts
+export declare const DELEGATION_CONTEXT_PHASES: readonly [
+    "injected",
+    "consumed"
+];
+```
+
+### `DELEGATION_DECISION_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured terminal decision kinds ordered accepted then discarded.
+
+Signature:
+
+```ts
+export declare const DELEGATION_DECISION_KINDS: readonly [
+    "accepted",
+    "discarded"
+];
+```
+
+### `DELEGATION_EXECUTION_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured child execution kinds ordered provider then program.
+
+Signature:
+
+```ts
+export declare const DELEGATION_EXECUTION_KINDS: readonly [
+    "provider",
+    "program"
+];
+```
+
+### `DELEGATION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured delegation evidence and projection bounds.
+
+Signature:
+
+```ts
+export declare const DELEGATION_LIMITS: Readonly<{
+    readonly maxCitedRecords: 32;
+    readonly maxInjections: 64;
+    readonly maxNestingDepth: 16;
+    readonly maxReasonLength: 1024;
+    readonly maxSupervisorIdLength: 256;
+    readonly maxTreeEntries: 256;
+}>;
+```
+
+### `DELEGATION_PARENT_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured child run handle parent kinds ordered root then handle.
+
+Signature:
+
+```ts
+export declare const DELEGATION_PARENT_KINDS: readonly [
+    "root",
+    "handle"
+];
+```
+
+### `DELEGATION_PROVENANCE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured task provenance kinds ordered declared, revised, synthesized.
+
+Signature:
+
+```ts
+export declare const DELEGATION_PROVENANCE_KINDS: readonly [
+    "declared",
+    "revised",
+    "synthesized"
+];
+```
+
+### `DELEGATION_RECORD_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured canonical delegation record version.
+
+Signature:
+
+```ts
+export declare const DELEGATION_RECORD_VERSION: 1;
+```
+
+### `DELEGATION_REVISION_FIELDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured task fields a revision may change.
+
+Signature:
+
+```ts
+export declare const DELEGATION_REVISION_FIELDS: readonly [
+    "instruction",
+    "input_schema",
+    "output_schema",
+    "task_version"
+];
+```
+
+### `DELEGATION_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured derived handle statuses ordered ready, running, settling, approval pending, rejected, accepted, discarded.
+
+Signature:
+
+```ts
+export declare const DELEGATION_STATUSES: readonly [
+    "ready",
+    "running",
+    "settling",
+    "approval_pending",
+    "rejected",
+    "accepted",
+    "discarded"
+];
+```
+
+### `DELEGATION_TREE_ROOT_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured delegation tree projection root kinds ordered handle then supervisor.
+
+Signature:
+
+```ts
+export declare const DELEGATION_TREE_ROOT_KINDS: readonly [
+    "handle",
+    "supervisor"
+];
+```
+
+### `DelegationApprovalRequiredError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a child run whose task value carries revised or synthesized provenance is run before
+the current supervisor approved it.
+
+No child record is written.
+
+Signature:
+
+```ts
+export declare class DelegationApprovalRequiredError extends TraceStoreError {
+    readonly code: string;
+    readonly handle_id: string;
+    constructor(handleId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned approval-required code.
+
+```ts
+readonly code: string;
+```
+
+#### `handle_id`
+
+Handle awaiting approval.
+
+```ts
+readonly handle_id: string;
+```
+
+#### `constructor`
+
+Creates an approval-required failure.
+
+```ts
+constructor(handleId: string);
+```
+
+Parameter:
+
+- handleId - Handle awaiting approval.
+
+### `DelegationAuthorityError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a requested grant or budget would amplify the parent's authority.
+
+Signature:
+
+```ts
+export declare class DelegationAuthorityError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned authority code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an authority failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `DelegationCommandConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a delegation command identity already names a retained command with different
+content.
+
+Signature:
+
+```ts
+export declare class DelegationCommandConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly command_id: string;
+    readonly handle_id: string;
+    constructor(handleId: string, commandId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned command-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `command_id`
+
+Conflicting command identity.
+
+```ts
+readonly command_id: string;
+```
+
+#### `handle_id`
+
+Handle the retained command opened or mutated.
+
+```ts
+readonly handle_id: string;
+```
+
+#### `constructor`
+
+Creates a command-conflict failure.
+
+```ts
+constructor(handleId: string, commandId: string);
+```
+
+Parameter:
+
+- handleId - Handle the retained command belongs to.
+
+Parameter:
+
+- commandId - Conflicting command identity.
+
+### `DelegationEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or supplied delegation evidence is absent, malformed, or inconsistent.
+
+Signature:
+
+```ts
+export declare class DelegationEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `DelegationHeadConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a handle command is admitted against a head that has since moved.
+
+No record is written; the caller re-inspects the handle and decides again.
+
+Signature:
+
+```ts
+export declare class DelegationHeadConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly expected_head_record_id: string;
+    readonly handle_id: string;
+    constructor(handleId: string, expectedHeadRecordId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned head-conflict code.
+
+```ts
+readonly code: string;
+```
+
+#### `expected_head_record_id`
+
+Head the command expected.
+
+```ts
+readonly expected_head_record_id: string;
+```
+
+#### `handle_id`
+
+Handle whose head moved.
+
+```ts
+readonly handle_id: string;
+```
+
+#### `constructor`
+
+Creates a head-conflict failure.
+
+```ts
+constructor(handleId: string, expectedHeadRecordId: string);
+```
+
+Parameter:
+
+- handleId - Handle whose head moved.
+
+Parameter:
+
+- expectedHeadRecordId - Head the command expected.
+
+### `DelegationStatusError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a handle's derived status does not admit the requested command.
+
+Signature:
+
+```ts
+export declare class DelegationStatusError extends TraceStoreError {
+    readonly code: string;
+    readonly handle_id: string;
+    readonly status: string;
+    constructor(handleId: string, status: string, detail: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned status code.
+
+```ts
+readonly code: string;
+```
+
+#### `handle_id`
+
+Handle whose status refused the command.
+
+```ts
+readonly handle_id: string;
+```
+
+#### `status`
+
+Derived status at refusal.
+
+```ts
+readonly status: string;
+```
+
+#### `constructor`
+
+Creates a status failure.
+
+```ts
+constructor(handleId: string, status: string, detail: string);
+```
+
+Parameter:
+
+- handleId - Handle whose status refused the command.
+
+Parameter:
+
+- status - Derived status at refusal.
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+### `DelegationSupervisorError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a handle command names a supervisor that does not currently own the handle.
+
+Ownership is derived from the opened record and every retained handoff; a former supervisor
+or an unknown supervisor is refused without writing.
+
+Signature:
+
+```ts
+export declare class DelegationSupervisorError extends TraceStoreError {
+    readonly code: string;
+    readonly current_supervisor_id: string;
+    readonly handle_id: string;
+    readonly supervisor_id: string;
+    constructor(handleId: string, supervisorId: string, currentSupervisorId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned supervisor-mismatch code.
+
+```ts
+readonly code: string;
+```
+
+#### `current_supervisor_id`
+
+Supervisor that currently owns the handle.
+
+```ts
+readonly current_supervisor_id: string;
+```
+
+#### `handle_id`
+
+Handle the command addressed.
+
+```ts
+readonly handle_id: string;
+```
+
+#### `supervisor_id`
+
+Supervisor the command named.
+
+```ts
+readonly supervisor_id: string;
+```
+
+#### `constructor`
+
+Creates a supervisor-mismatch failure.
+
+```ts
+constructor(handleId: string, supervisorId: string, currentSupervisorId: string);
+```
+
+Parameter:
+
+- handleId - Handle the command addressed.
+
+Parameter:
+
+- supervisorId - Supervisor the command named.
+
+Parameter:
+
+- currentSupervisorId - Supervisor that currently owns the handle.
+
+### `DelegationTreeEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One direct handle of a delegation tree projection.
+
+Signature:
+
+```ts
+export type DelegationTreeEntry = {
+    readonly authority: ScopeAuthority;
+    readonly budget: ChildRunBudgetAuthority;
+    readonly child_run_id: string;
+    readonly depth: number;
+    readonly handle_id: string;
+    readonly result: ChildRunResultProjection;
+    readonly status: ChildRunStatus;
+    readonly supervisor_id: string;
+    readonly task: TaskValue;
+};
+```
+
+### `DelegationTreeProjection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Direct handles under one root in canonical handle-identity order.
+
+Grandchildren are never listed: a parent's accepted value is the only thing a grandchild
+contributes upward.
+
+Signature:
+
+```ts
+export type DelegationTreeProjection = {
+    readonly entries: readonly DelegationTreeEntry[];
+    readonly root: DelegationTreeRoot;
+};
+```
+
+### `DelegationTreeRoot`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Root of a delegation tree projection.
+
+Signature:
+
+```ts
+export type DelegationTreeRoot = {
+    readonly handleId: string;
+    readonly kind: (typeof DELEGATION_TREE_ROOT_KINDS)[0];
+} | {
+    readonly kind: (typeof DELEGATION_TREE_ROOT_KINDS)[1];
+    readonly supervisorId: string;
+};
+```
+
+### `DelegationTreeRootKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured root kind of a delegation tree projection: a parent handle or a supervisor.
+
+Signature:
+
+```ts
+export type DelegationTreeRootKind = (typeof DELEGATION_TREE_ROOT_KINDS)[number];
+```
+
+### `DiscardChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for discardChildRun.
+
+Signature:
+
+```ts
+export type DiscardChildRunOptions = {
+    readonly commandId: string;
+    readonly expectedHeadRecordId?: RecordId;
+    readonly handle: ChildRunHandle;
+    readonly reason: string;
+    readonly supervisorId: string;
+};
+```
+
+### `HandoffChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for handoffChildRun.
+
+Signature:
+
+```ts
+export type HandoffChildRunOptions = {
+    readonly commandId: string;
+    readonly expectedHeadRecordId?: RecordId;
+    readonly handle: ChildRunHandle;
+    readonly reason?: string;
+    readonly successorSupervisorId: string;
+    readonly supervisorId: string;
+};
+```
+
+### `InjectChildRunContextOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for injectChildRunContext.
+
+Signature:
+
+```ts
+export type InjectChildRunContextOptions = {
+    readonly citedRecordIds: readonly RecordId[];
+    readonly commandId: string;
+    readonly data: RecordBody;
+    readonly expectedHeadRecordId?: RecordId;
+    readonly handle: ChildRunHandle;
+    readonly supervisorId: string;
+};
+```
+
+### `InspectChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for inspectChildRun.
+
+Signature:
+
+```ts
+export type InspectChildRunOptions = {
+    readonly clock?: () => number;
+};
+```
+
+### `ObserveChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for observeChildRun.
+
+Signature:
+
+```ts
+export type ObserveChildRunOptions = Omit<OpenTraceSubscriptionOptions, "owners"> & ({
+    readonly handle: ChildRunHandle;
+} | {
+    readonly handleId: string;
+});
+```
+
+### `OpenChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for openChildRun.
+
+Signature:
+
+```ts
+export type OpenChildRunOptions = {
+    readonly budget: RunBudgetDefinition;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly input: unknown;
+    readonly parent: ChildRunHandle | ChildRunRootParent;
+    readonly provenance?: ChildRunProvenanceDeclaration;
+    readonly supervisorId: string;
+    readonly task: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>> | TaskValue;
+};
+```
+
+### `OpenTraceSubscriptionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by openTraceSubscription.
+
+Signature:
+
+```ts
+export type OpenTraceSubscriptionOptions = {
+    readonly bufferCapacity?: number;
+    readonly overflow?: TraceSubscriptionOverflow;
+    readonly owners: readonly string[];
+    readonly pollIntervalMilliseconds?: number;
+    readonly signal?: AbortSignal;
+    readonly start?: TraceSubscriptionCursor | TraceSubscriptionStartPosition;
+    readonly subscriptionId?: string;
+};
+```
+
+### `ProjectChildRunResultOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for projectChildRunResult.
+
+Signature:
+
+```ts
+export type ProjectChildRunResultOptions<T> = {
+    readonly schema?: TaskSchema<T>;
+};
+```
+
+### `RetryChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for retryChildRun.
+
+Signature:
+
+```ts
+export type RetryChildRunOptions = {
+    readonly budget?: RunBudgetDefinition;
+    readonly commandId: string;
+    readonly grant?: ScopeResourceGrantRequest;
+    readonly handle: ChildRunHandle;
+    readonly input?: unknown;
+    readonly provenance?: ChildRunProvenanceDeclaration;
+    readonly supervisorId: string;
+    readonly task?: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>> | TaskValue;
+};
+```
+
+### `RunChildRunOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for runChildRun.
+
+Signature:
+
+```ts
+export type RunChildRunOptions = {
+    readonly clock?: () => number;
+    readonly handle: ChildRunHandle;
+    readonly program: ChildRunProgram;
+} | {
+    readonly clock?: () => number;
+    readonly handle: ChildRunHandle;
+    readonly provider: ModelProvider;
+};
+```
+
+### `TaskValue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical serializable task: the bodyless descriptor artifact and its exact artifact lock.
+
+A task value carries no code. It is the form a task takes as data: a supervisor task input, a
+model-serviced task output, or the task retained by a child run handle.
+
+Signature:
+
+```ts
+export type TaskValue = {
+    readonly artifact: TaskArtifact;
+    readonly artifact_lock: TaskArtifactLock;
+};
+```
+
+### `TraceStoreError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Base error for trace-store contract violations.
+
+Signature:
+
+```ts
+export declare class TraceStoreError extends Error {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable trace-store error code.
+
+```ts
+readonly code: string;
+```
+
+### `TraceSubscription`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Live cursor subscription over committed owner-path records.
+
+Signature:
+
+```ts
+export type TraceSubscription = AsyncIterable<TraceSubscriptionDelivery> & {
+    readonly acknowledgedCursor: TraceSubscriptionCursor;
+    readonly deliveredCursor: TraceSubscriptionCursor;
+    readonly subscriptionId: string | null;
+    readonly acknowledge: (cursor: TraceSubscriptionCursor) => TraceSubscriptionCursor;
+    readonly close: () => void;
+    readonly metrics: () => TraceSubscriptionMetrics;
+    readonly next: () => Promise<TraceSubscriptionDelivery | undefined>;
+};
+```
+
+### `TraceSubscriptionCursor`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical subscription cursor.
+
+Identity covers only the ordered owner positions, never delivery order or time.
+
+Signature:
+
+```ts
+export type TraceSubscriptionCursor = {
+    readonly compatibility_version: string;
+    readonly cursor_id: string;
+    readonly cursor_version: number;
+    readonly positions: readonly TraceSubscriptionPosition[];
+};
+```
+
+### `TraceSubscriptionDelivery`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One record delivered by a subscription.
+
+Signature:
+
+```ts
+export type TraceSubscriptionDelivery = {
+    readonly cursor: TraceSubscriptionCursor;
+    readonly record: OwnerRecord;
+};
+```
+
+### `acceptChildRunResult`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains a terminal accept decision for a finished child.
+
+The child must have finished and its completion must be retained; the retained outcome value
+is validated against the task value's output schema and the decision retains the digest of
+the canonical output value and the outcome record identity. Only accepted results thread into
+the parent. The decision is terminal. Repeating the command returns the retained receipt.
+
+Signature:
+
+```ts
+export declare function acceptChildRunResult(store: SQLiteTraceStore, options: AcceptChildRunResultOptions): ChildRunCommandReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Command, handle, current supervisor, and optional head.
+
+Returns:
+
+- The handle, its inspection, and the decision record identity.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the handle.
+
+Throws:
+
+- {DelegationStatusError} If the child has not finished with a retained completion or the
+handle is already decided.
+
+Throws:
+
+- {DelegationHeadConflictError} If the expected or current head moved.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed or the retained outcome fails the output schema.
+
+### `approveChildRunTask`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains the current supervisor's approval verdict for a revised or synthesized task value.
+
+The approval retains the approver identity, the verdict, and the digest of the approved task
+artifact. `approved` moves the handle to `ready`; `rejected` is terminal for execution (the
+handle can still be discarded for bookkeeping and handed off). One approval is retained per
+handle; declared provenance needs none. Repeating the command returns the retained receipt.
+
+Signature:
+
+```ts
+export declare function approveChildRunTask(store: SQLiteTraceStore, options: ApproveChildRunTaskOptions): ChildRunCommandReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Command, handle, current supervisor, verdict, optional approver, reason, head.
+
+Returns:
+
+- The handle, its inspection, and the approval record identity.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the handle.
+
+Throws:
+
+- {DelegationStatusError} If the handle needs no approval or is already approved,
+rejected, or decided.
+
+Throws:
+
+- {DelegationHeadConflictError} If the expected or current head moved.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+approveChildRunTask(store, {
+    approverId: "reviewer@example.com",
+    commandId: "approve:review:1",
+    handle,
+    supervisorId: "supervisor:lead",
+    verdict: "approved",
+});
+```
+
+### `discardChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains a terminal discard decision with a reason.
+
+A started, non-terminal child must first be cancelled through durable run control on the child
+run owner path; discarding a live child is refused. Ready, settling, approval-pending, and
+rejected handles may be discarded. The decision is terminal: no later accept, discard,
+injection, or handoff is admitted, and a successor may be opened with retryChildRun.
+Repeating the command returns the retained receipt.
+
+Signature:
+
+```ts
+export declare function discardChildRun(store: SQLiteTraceStore, options: DiscardChildRunOptions): ChildRunCommandReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Command, handle, current supervisor, reason, and optional head.
+
+Returns:
+
+- The handle, its inspection, and the decision record identity.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the handle.
+
+Throws:
+
+- {DelegationStatusError} If the child is running or the handle is already decided.
+
+Throws:
+
+- {DelegationHeadConflictError} If the expected or current head moved.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+### `handoffChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Transfers supervisor ownership of a handle to a named successor.
+
+After the handoff every later command must name the successor; commands naming a former
+supervisor are refused without writing. Handoff transfers ownership of the handle only, never
+a live process, provider session, or world state. Repeating the command returns the retained
+receipt.
+
+Signature:
+
+```ts
+export declare function handoffChildRun(store: SQLiteTraceStore, options: HandoffChildRunOptions): ChildRunCommandReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Command, handle, current supervisor, successor, optional reason and head.
+
+Returns:
+
+- The handle, its inspection, and the handoff record identity.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the handle.
+
+Throws:
+
+- {DelegationStatusError} If the handle is decided.
+
+Throws:
+
+- {DelegationHeadConflictError} If the expected or current head moved.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed or the successor equals the supervisor.
+
+### `injectChildRunContext`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains one ordered supervisor context injection on a handle.
+
+The injection cites at least one retained record; every cited record is a causal parent of the
+injection. Injections retained before the child starts are folded into the composed provider
+request by runChildRun; injections retained after the child started stay pending
+(`consumed: false`) and are consumed only by a successor opened through retryChildRun
+with its own injections. The count of injections on one handle is bounded by
+`limits.maxInjections`. Repeating the command returns the retained receipt.
+
+Signature:
+
+```ts
+export declare function injectChildRunContext(store: SQLiteTraceStore, options: InjectChildRunContextOptions): ChildRunCommandReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Command, handle, current supervisor, cited records, data, and optional head.
+
+Returns:
+
+- The handle, its inspection, and the injection record identity.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the handle.
+
+Throws:
+
+- {DelegationStatusError} If the handle is decided, rejected, or at the injection bound.
+
+Throws:
+
+- {DelegationHeadConflictError} If the expected or current head moved.
+
+Throws:
+
+- {DelegationEvidenceError} If a cited record is not retained or evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed or exceed configured bounds.
+
+Example:
+
+- ```ts
+injectChildRunContext(store, {
+    citedRecordIds: [reviewRecordId],
+    commandId: "inject:review:1",
+    data: { hint: "prefer the shorter draft" },
+    handle,
+    supervisorId: "supervisor:lead",
+});
+```
+
+### `inspectChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one child run handle as an immutable, fully validated, record-derived view.
+
+Every record on the handle owner path is checked: versions, schemas, modes, witnesses, causal
+parents, the derived handle and child run identities, the task value and its lock, the input
+against the task input schema, the provenance against the task and the store, effective
+authority re-derived from the retained ceiling and grant, budget attenuation against the
+retained ceiling, the parent handle chain with its origin cut, the discarded predecessor of a
+retry with its retry cut, the supervisor chain through every handoff, injections and their
+consumption, the approval, the completion against the child's durable inspection, and the
+terminal decision. Status is derived from the handle records and the child's durable execution.
+Inspection appends nothing and works on read-only, reopened, and imported stores.
+
+Signature:
+
+```ts
+export declare function inspectChildRun(store: SQLiteTraceStore, handleId: string, options?: InspectChildRunOptions): ChildRunInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- handleId - Handle identity.
+
+Parameter:
+
+- options - Reserved; currently accepts no fields.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {DelegationEvidenceError} If the handle is absent or its evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the handle identity or options are malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectChildRun(store, handle.handle_id);
+console.log(inspection.status, inspection.supervisor_id, inspection.decision);
+```
+
+### `observeChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Opens a trace subscription over one handle owner path and its child run owner path.
+
+Observation is the Phase 7 subscription contract applied to the two owners a handle spans: the
+handle path (opened, context, handoff, approval, completion, and decision records) and the
+derived child run path (durable creation, start, artifacts, usage, outcome, terminal, and
+control records). The cursor is the canonical vector of the two owners' next ordinals in
+canonical owner order; because the child run prefix sorts before the handle prefix, the child
+run position is first. A durable subscription (`subscriptionId`) resumes strictly after its
+acknowledged cursor; an ephemeral one retains nothing and works on read-only stores. The handle
+need not be retained yet when given by identity, so an observer can subscribe before opening.
+
+Signature:
+
+```ts
+export declare function observeChildRun(store: SQLiteTraceStore, options: ObserveChildRunOptions): TraceSubscription;
+```
+
+Parameter:
+
+- store - Open trace store; durable subscriptions require a writable handle.
+
+Parameter:
+
+- options - Exactly one of the authenticated handle or its identity, plus subscription
+options.
+
+Returns:
+
+- A frozen async-iterable subscription.
+
+Throws:
+
+- {SupervisionCursorConflictError} If a durable subscription names different owners or
+its start disagrees with the acknowledged cursor.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const subscription = observeChildRun(store, { handle, subscriptionId: "observer:lead" });
+for await (const delivery of subscription) {
+    console.log(delivery.record.envelope.schema_ref);
+    subscription.acknowledge(delivery.cursor);
+}
+```
+
+### `openChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Opens one child run handle: a delegated execution of one task value under one supervisor.
+
+The opened record is retained on the handle's reserved owner path derived from the command
+identity. It retains the supervisor, the parent (a root declaration or the parent handle with an
+origin cut through the parent head), the task value with its provenance, the input validated
+against the task input schema, the requested grant and budget, the derived authority, the
+budget ceiling, and the nesting depth. A package-created descriptor defaults to `declared`
+provenance; a task value must state its provenance. Revised provenance must keep the source
+task identity, differ in at least one configured revision field, and list exactly the differing
+fields; synthesized provenance must cite a record retained by the producing run. Handles with
+revised or synthesized provenance open in `approval_pending`. Repeating the command returns the
+retained receipt.
+
+Signature:
+
+```ts
+export declare function openChildRun(store: SQLiteTraceStore, options: OpenChildRunOptions): ChildRunReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, supervisor, parent, task, provenance, input, grant, and budget.
+
+Returns:
+
+- The authenticated handle and its validated inspection.
+
+Throws:
+
+- {DelegationAuthorityError} If the grant or budget exceeds the parent authority or the
+nesting bound.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content or is
+already retained by a handle command.
+
+Throws:
+
+- {DelegationStatusError} If the parent handle is rejected or discarded.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent or a synthesized
+producer record is absent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options, the task, its provenance, the input, or the parent handle are
+malformed.
+
+Example:
+
+- ```ts
+const { handle } = openChildRun(store, {
+    budget: { maxTurns: 1 },
+    commandId: "delegate:review:1",
+    grant: [],
+    input: { topic: "release notes" },
+    parent: { budget: { maxTurns: 4 }, ceiling: [], kind: "root" },
+    supervisorId: "supervisor:lead",
+    task: reviewTask,
+});
+```
+
+### `projectChildRunResult`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Projects the retained result of one child run handle as a typed value.
+
+The handle is folded with inspectChildRun. For an `accepted` handle the retained child
+outcome value is re-validated against the retained task value's output schema, rehydrated
+through the schema factory, normalized, and its digest must equal the accept decision's
+`output_id`; the projection then carries the canonical value and digest. For every other status
+`value` and `output_id` are null, so a discarded handle contributes nothing upward. A caller
+schema proves the projected type: its document must canonically equal the retained output
+schema, and no value is returned for a mismatched schema. The projection appends nothing and
+works on read-only, reopened, and imported stores.
+
+Signature:
+
+```ts
+export declare function projectChildRunResult<T = SemanticValue>(store: SQLiteTraceStore, handleId: string, options?: ProjectChildRunResultOptions<T>): ChildRunResultProjection<T>;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- handleId - Handle identity.
+
+Parameter:
+
+- options - Optional caller schema typing the value.
+
+Returns:
+
+- The frozen result projection.
+
+Throws:
+
+- {DelegationEvidenceError} If the handle is absent, its evidence is inconsistent, or the
+accepted output fails the retained output schema or disagrees with the retained digest.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the handle identity or options are malformed, the schema was not created
+by the schema factory, or its document differs from the retained output schema.
+
+Example:
+
+- ```ts
+const result = projectChildRunResult(store, handle.handle_id, {
+    schema: schema.object({ text: schema.string() }),
+});
+if (result.value !== null) {
+    console.log(result.value.text);
+}
+```
+
+### `projectDelegationTree`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Projects the direct handles under one root as a typed delegation tree.
+
+A handle root lists the handles whose retained parent is that handle; a supervisor root lists
+the root-parent handles whose current supervisor, after every retained handoff, is that
+supervisor. Handles are enumerated through the store's schema-based owner listing over the
+opened record schema and folded with inspectChildRun; each entry carries the handle, its
+status, current supervisor, authority, budget, depth, task value, and result projection, in
+canonical handle-identity order. Grandchildren are never listed and none of their records,
+authority, or values appear: a parent's accepted value is the only thing a grandchild
+contributes upward, and discarding a handle removes its value and everything threaded through
+it. The projection is bounded by `limits.maxTreeEntries` and appends nothing.
+
+Signature:
+
+```ts
+export declare function projectDelegationTree(store: SQLiteTraceStore, root: DelegationTreeRoot): DelegationTreeProjection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- root - Handle root `{ kind: "handle", handleId }` or supervisor root
+`{ kind: "supervisor", supervisorId }`.
+
+Returns:
+
+- The frozen tree projection.
+
+Throws:
+
+- {DelegationEvidenceError} If a handle root is not retained or any direct handle's
+evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the root is malformed or the direct handles exceed the configured
+tree-entry bound.
+
+Example:
+
+- ```ts
+const tree = projectDelegationTree(store, { kind: "supervisor", supervisorId: "supervisor:lead" });
+for (const entry of tree.entries) {
+    console.log(entry.handle_id, entry.status, entry.result.value);
+}
+```
+
+### `readTaskValue`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates one untrusted task value: a plain data object with exactly `artifact` and
+`artifact_lock`, whose lock re-derives from the artifact.
+
+Extra keys, accessors, foreign schema documents, unsupported schema grammar, unsupported
+protocol versions, and a lock that disagrees with the artifact are refused. Nothing in a task
+value is evaluated.
+
+Signature:
+
+```ts
+export declare function readTaskValue(value: unknown): TaskValue;
+```
+
+Parameter:
+
+- value - Untrusted task value.
+
+Returns:
+
+- The frozen canonical task value.
+
+Throws:
+
+- {TypeError} If the value is malformed or its lock does not match its artifact.
+
+Example:
+
+- ```ts
+const value = readTaskValue(JSON.parse(text));
+```
+
+### `retryChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Opens a successor handle for a discarded predecessor, citing its causal replay point.
+
+The successor is a new handle under the predecessor's parent whose opened record cites the
+predecessor handle, its discard decision record, and a retry cut published through the
+predecessor head inside the opening transaction. Task, input, grant, and budget default to the
+predecessor's; a supplied descriptor is `declared`, a supplied task value must state its
+provenance, and an omitted task inherits the predecessor's task value and provenance, so a
+revised or synthesized successor requires its own approval. Pending injections of the
+predecessor are not copied. Only the current supervisor of the predecessor may retry.
+
+Signature:
+
+```ts
+export declare function retryChildRun(store: SQLiteTraceStore, options: RetryChildRunOptions): ChildRunReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the predecessor.
+
+Parameter:
+
+- options - Successor command, supervisor, and optional task, provenance, input, grant,
+and budget.
+
+Returns:
+
+- The authenticated successor handle and its validated inspection.
+
+Throws:
+
+- {DelegationStatusError} If the predecessor is not discarded or the parent handle no
+longer admits children.
+
+Throws:
+
+- {DelegationSupervisorError} If the supervisor does not own the predecessor.
+
+Throws:
+
+- {DelegationAuthorityError} If the grant or budget exceeds the parent authority.
+
+Throws:
+
+- {DelegationCommandConflictError} If the command identity names different content or is
+already retained by a handle command.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options, the task, its provenance, the input, or the handle are malformed.
+
+Example:
+
+- ```ts
+const successor = retryChildRun(store, {
+    commandId: "delegate:review:2",
+    handle: discarded.handle,
+    supervisorId: "supervisor:lead",
+});
+```
+
+### `runChildRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Executes one child run once and retains its completion on the handle.
+
+Provider-serviced children run the rehydrated task through the caller's provider as an
+ordinary durable execution under the derived child run identity. Program-serviced children run
+the caller's program under the same durable claim through a program provider: the program
+receives the authenticated handle, the delegated authority, the child budget, the validated
+input, the consumed supervisor context, the cooperative signal, and the task, and its returned
+output is validated against the task output schema; an invalid output or a thrown error fails
+the child. Injections retained before the child starts are consumed: a consumption record
+listing them and the digest of the composed request is retained at the handle head immediately
+before the child starts, and the provider request input becomes
+`{ input, supervisor_context }`; with no injection the request is the plain input. After the
+child terminal, the completion record cites the child's terminal record and published cut and
+names the current supervisor. A child already terminal without a completion, as after a crash
+between the two, retains the completion without re-executing; a completed handle returns the
+retained receipt.
+
+Signature:
+
+```ts
+export declare function runChildRun(store: SQLiteTraceStore, options: RunChildRunOptions): Promise<ChildRunReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store that opened the handle.
+
+Parameter:
+
+- options - Authenticated handle and exactly one of a provider or a program.
+
+Returns:
+
+- The handle and its inspection after completion.
+
+Throws:
+
+- {DelegationApprovalRequiredError} If the task value awaits approval.
+
+Throws:
+
+- {DelegationStatusError} If the child is running, rejected, decided without a
+completion, or terminal without a published cut.
+
+Throws:
+
+- {DelegationHeadConflictError} If the handle head moved while the child ran.
+
+Throws:
+
+- {DelegationEvidenceError} If retained evidence is inconsistent.
+
+Throws:
+
+- {DurableExecutionRecoveryError} If the child's durable evidence is unsafe to advance.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options or the handle are malformed.
+
+Example:
+
+- ```ts
+const { inspection } = await runChildRun(store, {
+    handle,
+    program: async ({ input }) => ({ summary: String(input) }),
+});
+```
+
+### `taskDescriptorOf`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Rehydrates an authenticated task descriptor from a task value.
+
+The value is validated with readTaskValue, its schemas are rebuilt through the schema
+factory, and the descriptor is rebuilt through the task builder. The recomputed lock must equal
+the value's lock, so a value whose artifact differs from its builder-normalized form is refused
+rather than silently renormalized.
+
+Signature:
+
+```ts
+export declare function taskDescriptorOf(value: unknown): TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>;
+```
+
+Parameter:
+
+- value - Untrusted task value.
+
+Returns:
+
+- A package-created descriptor whose artifact lock equals the value's lock.
+
+Throws:
+
+- {TypeError} If the value is malformed or the rebuilt lock differs.
+
+Example:
+
+- ```ts
+const descriptor = taskDescriptorOf(inspection.task);
+await executeTask({ task: descriptor, input, provider, runId, budget });
+```
+
+### `taskValueOf`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Returns the canonical task value of a package-created descriptor.
+
+Signature:
+
+```ts
+export declare function taskValueOf(descriptor: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>): TaskValue;
+```
+
+Parameter:
+
+- descriptor - Descriptor created by {@link task}.
+
+Returns:
+
+- The frozen `{ artifact, artifact_lock }` value.
+
+Throws:
+
+- {TypeError} If the descriptor was not created by the configured task builder.
+
+Example:
+
+- ```ts
+const value = taskValueOf(greet);
+```
 
 ## Effects
 
@@ -30346,7 +35049,7 @@ import * as api from "@avnionur/shepherd-typescript/tasks";
 void api;
 ```
 
-Exported symbols: 25.
+Exported symbols: 29.
 
 ### `ExactTaskReference`
 
@@ -30807,6 +35510,7 @@ export type TaskSchemaFactory = {
     readonly fromJSONSchema: (document: unknown) => TaskSchema<unknown>;
     readonly object: <S extends TaskSchemaShape>(shape: S) => TaskSchema<InferTaskSchemaShape<S>>;
     readonly string: () => TaskSchema<string>;
+    readonly task: () => TaskSchema<TaskValue>;
     readonly void: () => TaskSchema<void>;
 };
 ```
@@ -30821,6 +35525,24 @@ Signature:
 
 ```ts
 export type TaskSchemaShape = Readonly<Record<string, TaskSchema<unknown>>>;
+```
+
+### `TaskValue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical serializable task: the bodyless descriptor artifact and its exact artifact lock.
+
+A task value carries no code. It is the form a task takes as data: a supervisor task input, a
+model-serviced task output, or the task retained by a child run handle.
+
+Signature:
+
+```ts
+export type TaskValue = {
+    readonly artifact: TaskArtifact;
+    readonly artifact_lock: TaskArtifactLock;
+};
 ```
 
 ### `TaskVersionConflictError`
@@ -30907,6 +35629,41 @@ Example:
 
 - ```ts
 const page = listTaskLedger(registry, { limit: 25, offset: 0 });
+```
+
+### `readTaskValue`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates one untrusted task value: a plain data object with exactly `artifact` and
+`artifact_lock`, whose lock re-derives from the artifact.
+
+Extra keys, accessors, foreign schema documents, unsupported schema grammar, unsupported
+protocol versions, and a lock that disagrees with the artifact are refused. Nothing in a task
+value is evaluated.
+
+Signature:
+
+```ts
+export declare function readTaskValue(value: unknown): TaskValue;
+```
+
+Parameter:
+
+- value - Untrusted task value.
+
+Returns:
+
+- The frozen canonical task value.
+
+Throws:
+
+- {TypeError} If the value is malformed or its lock does not match its artifact.
+
+Example:
+
+- ```ts
+const value = readTaskValue(JSON.parse(text));
 ```
 
 ### `resolveTaskLedgerSelector`
@@ -31005,6 +35762,72 @@ const greet = task({
     input: schema.object({ name: schema.string() }),
     output: schema.void(),
 });
+```
+
+### `taskDescriptorOf`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Rehydrates an authenticated task descriptor from a task value.
+
+The value is validated with readTaskValue, its schemas are rebuilt through the schema
+factory, and the descriptor is rebuilt through the task builder. The recomputed lock must equal
+the value's lock, so a value whose artifact differs from its builder-normalized form is refused
+rather than silently renormalized.
+
+Signature:
+
+```ts
+export declare function taskDescriptorOf(value: unknown): TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>;
+```
+
+Parameter:
+
+- value - Untrusted task value.
+
+Returns:
+
+- A package-created descriptor whose artifact lock equals the value's lock.
+
+Throws:
+
+- {TypeError} If the value is malformed or the rebuilt lock differs.
+
+Example:
+
+- ```ts
+const descriptor = taskDescriptorOf(inspection.task);
+await executeTask({ task: descriptor, input, provider, runId, budget });
+```
+
+### `taskValueOf`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Returns the canonical task value of a package-created descriptor.
+
+Signature:
+
+```ts
+export declare function taskValueOf(descriptor: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>): TaskValue;
+```
+
+Parameter:
+
+- descriptor - Descriptor created by {@link task}.
+
+Returns:
+
+- The frozen `{ artifact, artifact_lock }` value.
+
+Throws:
+
+- {TypeError} If the descriptor was not created by the configured task builder.
+
+Example:
+
+- ```ts
+const value = taskValueOf(greet);
 ```
 
 ## Trace
@@ -31771,7 +36594,8 @@ Throws:
 Throws:
 
 - {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
-owner path reserved for supervised dispatches, context channels, or replay sessions.
+owner path reserved for supervised dispatches, context channels, replay sessions, or child
+run handles.
 
 Throws:
 
@@ -32389,7 +37213,7 @@ Returns:
 Throws:
 
 - {TraceStoreError} If the target occurrence is absent, the publishing owner path is
-reserved for replay sessions, or the store is closed.
+reserved for replay sessions or child run handles, or the store is closed.
 
 Throws:
 

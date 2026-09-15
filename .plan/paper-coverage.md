@@ -30,12 +30,12 @@ not described as a new formal proof unless a separately verified theorem artifac
 | --- | --- | --- | --- |
 | §1 Introduction | First-class, inspectable, transformable execution | L0–L3 architecture | End-to-end supervisor scenario |
 | §2 Related work | Explicit compatibility and non-claim boundary | Phase 0 documentation | Pinned sources and parity report |
-| §3.1 Tasks | Typed tasks, task identity, task-as-value, substitution, synthesis, nested meta-agents | Phases 2 and 9 | Descriptor, delegation, rewrite, and nesting suites |
+| §3.1 Tasks | Typed tasks, task identity, task-as-value, substitution, synthesis, nested meta-agents | Phases 2 and 9 (complete; [Phase 9 exit audit](./phase-9-exit-audit.md)) | Descriptor suites, task value and child run handle tests, the delegation law suite, revision and execution-boundary tests, nested isolation tests, the conformance scenario, and process crash tests |
 | §3.2 Effects | Typed intent/outcome events, custom effects, observation, interception, handler replay, reversibility tiers | Phases 2, 7, and 8 | Effect laws plus live deny/replace/replay tests |
 | §3.3 Scopes | `emit`, `fork`, `merge`, `discard`, isolated nested/parallel scopes, coupled agent/environment state, pause/resume | Phases 6–8 | Algebraic laws, isolation tests, and coupled-checkpoint fixtures |
 | §3.4 Traces | Immutable content-addressed graph, arbitrary historical access, rewind/replay, divergence, shared-prefix storage | Phases 1, 6, and 8 | Identity fixtures, byte-equivalent restore, replay, and storage-scaling benchmark |
 | §4 Performance | Fork/revert latency, observer overhead, prefix-cache reuse, backend/scaling behavior | Phases 8, 10, and 11 | Reproducible TypeScript benchmark artifacts by platform/backend |
-| §5.1 Runtime supervisor | Observe, inject, handoff, discard/retry across conflicting workers | Phases 7, 9, and 10 | Reproducible two-worker protocol and baseline comparison |
+| §5.1 Runtime supervisor | Observe, inject, handoff, discard/retry across conflicting workers | Phases 7 and 9 (complete: observation, injection, handoff, discard, retry, and accept over child run handles) and 10 (two-worker application) | Supervisor operation tests and the conformance scenario; reproducible two-worker protocol and baseline comparison remain Phase 10 |
 | §5.2 Counterfactual replay optimization | Dependency-aware workflow edits, targeted evaluation, suffix replay, cache evidence, promotion/handoff records | Phases 8–10 | Reproducible small CRO benchmark and artifact manifest |
 | §5.3 Meta-agent-guided Tree-RL | Trace-selected fork points, branched rollouts, inter/intra-branch advantages, training adapter | Phase 10 | Synthetic deterministic rollout plus gated measured experiment |
 | §6 Conclusion | Honest summary of implemented programming-model and application coverage | Release documentation | Generated compatibility report linked from releases |

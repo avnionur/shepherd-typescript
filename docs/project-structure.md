@@ -12,6 +12,7 @@ implementation documentation, and forward-looking plans.
 │   ├── canonical/          Deterministic semantic encoding, hashing, and snapshots
 │   ├── cli/                Configured command dispatch and I/O adaptation
 │   ├── effect/             Intent/outcome records and ordered exact-kind handlers
+│   ├── delegation/         Task values as data, durable child run handles, and delegated authority
 │   ├── errors/             Shared structured public-error classification
 │   ├── facades/            Supported package subpath entries
 │   ├── formal/             Typed-effect reference validation and proof-envelope classification
@@ -73,6 +74,8 @@ public exports → scope area → store, record, canonical snapshots, and protoc
 store area → scope record codecs and errors, and run control codecs, for transactional admission
 public exports → supervision area → effect records, store, scope validation helpers, and protocol configuration
 store area → supervision record codecs and errors for subscription and dispatch bookkeeping
+public exports → delegation area → task values, durable execution, scope authority, store, scope validation helpers, and protocol configuration
+store area → delegation errors for handle command transactions
 public exports → replay area → effect records, provider validation, task descriptors, store, scope validation helpers, reference copy carrier world-image helpers, and protocol configuration
 store area → replay errors for session lease bookkeeping
 public exports → workspace area → filesystem, Git, hashing, and protocol configuration
@@ -127,6 +130,11 @@ The runtime areas are organized around cohesive protocol responsibilities:
   scope record codecs, package-authenticated writer handles, globally idempotent root/child
   registration and emission commands, atomic multi-scope claims, fork journal and checkpoint codecs,
   and record-derived inspection and replay without world, provider, or settlement authority;
+- `delegation/` owns command-derived child run handles on reserved owner paths, task values with
+  declared provenance, non-amplifying resource and budget authority derived from a root declaration
+  or the parent handle, provider- and program-serviced child execution under the child's durable
+  claim, completion records, record-derived inspection, and typed result and tree projections,
+  without provider, filesystem, or workspace authority;
 - `replay/` owns deterministic session programs and their fenced step journals, runtime-derived
   prompt, prefix, and context prefix identities, coupled checkpoints with trace-store world and
   process images, verified rewind and recorded-prefix replay, irreversible-effect replay policy,

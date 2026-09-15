@@ -1,5 +1,6 @@
 import { readCliConfig } from "./config-cli.ts";
 import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
+import { readDelegationConfig } from "./config-delegation.ts";
 import { readEffectConfig } from "./config-effects.ts";
 import { readFormalAssuranceConfig } from "./config-formal-assurance.ts";
 import { readOrphanRepairConfig } from "./config-orphan-repair.ts";
@@ -56,6 +57,7 @@ export function parseProtocolConfig(
         [
             "effects",
             "cli",
+            "delegation",
             "formalAssurance",
             "kernel",
             "orphanRepair",
@@ -84,6 +86,7 @@ export function parseProtocolConfig(
     const effects = readEffectConfig(root.effects);
     const config = {
         cli: readCliConfig(root.cli),
+        delegation: readDelegationConfig(root.delegation),
         effects,
         formalAssurance: readFormalAssuranceConfig(root.formalAssurance),
         kernel,

@@ -556,7 +556,15 @@ export const TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT = deepFreeze({
 
 /** Immutable provider-neutral contract implemented by provider protocol v1. */
 export const PROVIDER_PROTOCOL_V1_CONTRACT = deepFreeze({
-    kinds: ["static"],
+    kinds: ["static", "program"],
+    program: {
+        capabilities: {
+            streaming: false,
+            structuredOutput: true,
+            tools: false,
+        },
+        kind: "program",
+    },
     static: {
         capabilities: {
             streaming: false,
@@ -579,6 +587,7 @@ export const TASK_PROTOCOL_V1_CONTRACT = deepFreeze({
     artifacts: {
         artifactLockSchema: "spec/schemas/task-artifact-lock-v1.schema.json",
         descriptorSchema: "spec/schemas/task-descriptor-v1.schema.json",
+        valueSchema: "spec/schemas/task-value-v1.schema.json",
     },
     compatibilityVersion: "shepherd.tasks.v1",
     descriptorVersion: 1,
@@ -601,8 +610,95 @@ export const TASK_PROTOCOL_V1_CONTRACT = deepFreeze({
             "https://avnionur.github.io/shepherd-typescript/schemas/task-artifact-lock-v1.schema.json",
         descriptorId:
             "https://avnionur.github.io/shepherd-typescript/schemas/task-descriptor-v1.schema.json",
+        valueId: "https://avnionur.github.io/shepherd-typescript/schemas/task-value-v1.schema.json",
     },
     taskIdPrefix: "task:sha256:",
+} as const);
+
+/** Immutable task delegation, child run handle, and delegated authority contract implemented by delegation v1. */
+export const DELEGATION_PROTOCOL_V1_CONTRACT = deepFreeze({
+    approvalVerdicts: ["approved", "rejected"],
+    artifacts: {
+        approvalSchema: "spec/schemas/delegation-approval-v1.schema.json",
+        completionSchema: "spec/schemas/delegation-completion-v1.schema.json",
+        contextSchema: "spec/schemas/delegation-context-v1.schema.json",
+        decisionSchema: "spec/schemas/delegation-decision-v1.schema.json",
+        handoffSchema: "spec/schemas/delegation-handoff-v1.schema.json",
+        openedSchema: "spec/schemas/delegation-opened-v1.schema.json",
+    },
+    compatibilityVersion: "shepherd.delegation.v1",
+    contextPhases: ["injected", "consumed"],
+    decisionKinds: ["accepted", "discarded"],
+    errors: {
+        approvalRequiredCode: "DELEGATION_APPROVAL_REQUIRED",
+        approvalRequiredMessage: "child run task value requires approval before execution",
+        authorityCode: "DELEGATION_AUTHORITY_EXCEEDED",
+        authorityMessage: "delegated grant or budget exceeds the parent authority",
+        commandConflictCode: "DELEGATION_COMMAND_CONFLICT",
+        commandConflictMessage: "delegation command identity already names different content",
+        evidenceCode: "DELEGATION_EVIDENCE_INVALID",
+        evidenceMessage: "delegation evidence is absent, malformed, or inconsistent",
+        headConflictCode: "DELEGATION_HEAD_CONFLICT",
+        headConflictMessage: "child run handle head moved since the command was admitted",
+        statusCode: "DELEGATION_STATUS_CONFLICT",
+        statusMessage: "child run handle status does not admit the command",
+        supervisorCode: "DELEGATION_SUPERVISOR_MISMATCH",
+        supervisorMessage: "command names a supervisor that does not own the child run handle",
+    },
+    executionKinds: ["provider", "program"],
+    identity: {
+        childRunIdPrefix: "delegation-run:sha256:",
+        commandAppendIntentKind: "delegation_command",
+        handleIdPrefix: "delegation:sha256:",
+        originCutIdPrefix: "delegation-origin:sha256:",
+        outputDigestKind: "delegation_output",
+        requestDigestKind: "delegation_request",
+        retryCutIdPrefix: "delegation-retry:sha256:",
+    },
+    limits: {
+        maxCitedRecords: 32,
+        maxInjections: 64,
+        maxNestingDepth: 16,
+        maxReasonLength: 1024,
+        maxSupervisorIdLength: 256,
+        maxTreeEntries: 256,
+    },
+    parentKinds: ["root", "handle"],
+    provenanceKinds: ["declared", "revised", "synthesized"],
+    recordVersion: 1,
+    revisionFields: ["instruction", "input_schema", "output_schema", "task_version"],
+    schemas: {
+        approvalId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/delegation-approval-v1.schema.json",
+        completionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/delegation-completion-v1.schema.json",
+        contextId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/delegation-context-v1.schema.json",
+        decisionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/delegation-decision-v1.schema.json",
+        handoffId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/delegation-handoff-v1.schema.json",
+        openedId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/delegation-opened-v1.schema.json",
+    },
+    statuses: [
+        "ready",
+        "running",
+        "settling",
+        "approval_pending",
+        "rejected",
+        "accepted",
+        "discarded",
+    ],
+    traceSchemas: {
+        approval: "shepherd.delegation.approval.v1",
+        completion: "shepherd.delegation.completion.v1",
+        context: "shepherd.delegation.context.v1",
+        decision: "shepherd.delegation.decision.v1",
+        handoff: "shepherd.delegation.handoff.v1",
+        opened: "shepherd.delegation.opened.v1",
+    },
+    treeRootKinds: ["handle", "supervisor"],
 } as const);
 
 /** Immutable effect intent/outcome contract implemented by effect protocol v1. */

@@ -1,0 +1,6 @@
+{
+    "childrenPerHandle": 3,
+    "maxDepth": 3,
+    "resources": ["repo:alpha", "repo:beta", "workspace:gamma"],
+    "seeds": [3, 17, 29, 47]
+}

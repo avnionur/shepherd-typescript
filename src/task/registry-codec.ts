@@ -1,7 +1,7 @@
 import { canonicalizeRecord } from "../canonical/canonical-record.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import { taskProtocolConfig } from "../protocol/config.ts";
-import { createTaskArtifactLock } from "./descriptor.ts";
+import { createTaskArtifactLock } from "./lock.ts";
 import { TaskRegistryError } from "./registry-errors.ts";
 import type { TaskSchema } from "./schema.ts";
 import { assertSupportedTaskSchemaDocument } from "./schema-document.ts";
@@ -70,7 +70,8 @@ export function readExactTaskReference(value: ExactTaskReference): ExactTaskRefe
     return Object.freeze({ taskId: fields.taskId, version: fields.version });
 }
 
-function readTaskArtifact(value: unknown): TaskArtifact {
+/** Validates and snapshots one canonical task artifact in the supported grammar. @internal */
+export function readTaskArtifact(value: unknown): TaskArtifact {
     const fields = readTaskDataObject(
         value,
         [

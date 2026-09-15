@@ -6,6 +6,14 @@ import type { ProtocolConfig } from "../../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
 import { renderCliCommandReference, renderCliOutputSchema } from "./schemas/cli-artifacts.ts";
 import {
+    renderDelegationApprovalSchema,
+    renderDelegationCompletionSchema,
+    renderDelegationContextSchema,
+    renderDelegationDecisionSchema,
+    renderDelegationHandoffSchema,
+    renderDelegationOpenedSchema,
+} from "./schemas/delegation-schemas.ts";
+import {
     renderEffectIntentSchema,
     renderEffectOutcomeSchema,
 } from "./schemas/effect-protocol-schemas.ts";
@@ -57,6 +65,7 @@ import {
 import {
     renderTaskArtifactLockSchema,
     renderTaskDescriptorSchema,
+    renderTaskValueSchema,
 } from "./schemas/task-protocol-schemas.ts";
 import {
     renderRunLedgerEntrySchema,
@@ -128,6 +137,10 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderTaskArtifactLockSchema(config)),
             relativePath: config.tasks.artifacts.artifactLockSchema,
+        },
+        {
+            content: renderJson(renderTaskValueSchema(config)),
+            relativePath: config.tasks.artifacts.valueSchema,
         },
         {
             content: renderJson(renderTaskLedgerEntrySchema(config)),
@@ -312,6 +325,30 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderSupervisionContextSchema(config)),
             relativePath: config.supervision.artifacts.contextSchema,
+        },
+        {
+            content: renderJson(renderDelegationOpenedSchema(config)),
+            relativePath: config.delegation.artifacts.openedSchema,
+        },
+        {
+            content: renderJson(renderDelegationContextSchema(config)),
+            relativePath: config.delegation.artifacts.contextSchema,
+        },
+        {
+            content: renderJson(renderDelegationCompletionSchema(config)),
+            relativePath: config.delegation.artifacts.completionSchema,
+        },
+        {
+            content: renderJson(renderDelegationApprovalSchema(config)),
+            relativePath: config.delegation.artifacts.approvalSchema,
+        },
+        {
+            content: renderJson(renderDelegationHandoffSchema(config)),
+            relativePath: config.delegation.artifacts.handoffSchema,
+        },
+        {
+            content: renderJson(renderDelegationDecisionSchema(config)),
+            relativePath: config.delegation.artifacts.decisionSchema,
         },
         {
             content: renderJson(renderWorldCaptureSchema(config)),
@@ -2440,6 +2477,49 @@ export const REPLAY_LIMITS = Object.freeze({
     maxSteps: ${config.replay.limits.maxSteps},
     maxWorldEntries: ${config.replay.limits.maxWorldEntries},
     maxWorlds: ${config.replay.limits.maxWorlds},
+} as const);
+
+/** Configured delegation evidence compatibility namespace. @public */
+export const DELEGATION_COMPATIBILITY_VERSION = ${JSON.stringify(config.delegation.compatibilityVersion)} as const;
+
+/** Configured canonical delegation record version. @public */
+export const DELEGATION_RECORD_VERSION = ${config.delegation.recordVersion} as const;
+
+/** Configured child run handle parent kinds ordered root then handle. @public */
+${renderConstStrings("DELEGATION_PARENT_KINDS", config.delegation.parentKinds)}
+
+/** Configured child execution kinds ordered provider then program. @public */
+${renderConstStrings("DELEGATION_EXECUTION_KINDS", config.delegation.executionKinds)}
+
+/** Configured task provenance kinds ordered declared, revised, synthesized. @public */
+${renderConstStrings("DELEGATION_PROVENANCE_KINDS", config.delegation.provenanceKinds)}
+
+/** Configured task approval verdicts ordered approved then rejected. @public */
+${renderConstStrings("DELEGATION_APPROVAL_VERDICTS", config.delegation.approvalVerdicts)}
+
+/** Configured terminal decision kinds ordered accepted then discarded. @public */
+${renderConstStrings("DELEGATION_DECISION_KINDS", config.delegation.decisionKinds)}
+
+/** Configured context record phases ordered injected then consumed. @public */
+${renderConstStrings("DELEGATION_CONTEXT_PHASES", config.delegation.contextPhases)}
+
+/** Configured task fields a revision may change. @public */
+${renderConstStrings("DELEGATION_REVISION_FIELDS", config.delegation.revisionFields)}
+
+/** Configured derived handle statuses ordered ready, running, settling, approval pending, rejected, accepted, discarded. @public */
+${renderConstStrings("DELEGATION_STATUSES", config.delegation.statuses)}
+
+/** Configured delegation tree projection root kinds ordered handle then supervisor. @public */
+${renderConstStrings("DELEGATION_TREE_ROOT_KINDS", config.delegation.treeRootKinds)}
+
+/** Configured delegation evidence and projection bounds. @public */
+export const DELEGATION_LIMITS = Object.freeze({
+    maxCitedRecords: ${config.delegation.limits.maxCitedRecords},
+    maxInjections: ${config.delegation.limits.maxInjections},
+    maxNestingDepth: ${config.delegation.limits.maxNestingDepth},
+    maxReasonLength: ${config.delegation.limits.maxReasonLength},
+    maxSupervisorIdLength: ${config.delegation.limits.maxSupervisorIdLength},
+    maxTreeEntries: ${config.delegation.limits.maxTreeEntries},
 } as const);
 `;
 }

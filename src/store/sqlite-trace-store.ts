@@ -43,6 +43,15 @@ import { putStoredBlob, readStoredBlob, verifyStoredBlobs } from "./blobs.ts";
 import { DEFAULT_STORE_DATABASE_PATH, STORE_PRAGMA_SQL, STORE_TABLES } from "./constants.ts";
 import { listStoredCuts, publishStoredCut, readOptionalStoredCut, readStoredCut } from "./cuts.ts";
 import {
+    appendDelegationHandleRecordInStore,
+    assertUnreservedDelegationOwner,
+    assertUnreservedDelegationOwners,
+    type DelegationHandleAppend,
+    type DelegationHandleOpen,
+    type DelegationHandleOpenRequest,
+    openDelegationHandleInStore,
+} from "./delegation-handles.ts";
+import {
     appendDurableExecutionStart,
     appendDurableExecutionTerminal,
     claimDurableExecutionInvocation,
@@ -278,7 +287,8 @@ export class SQLiteTraceStore implements Disposable {
      * @returns The original durable receipt for this intent and content.
      * @throws {AppendIntentConflictError} If the intent already names different content.
      * @throws {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
-     * owner path reserved for supervised dispatches, context channels, or replay sessions.
+     * owner path reserved for supervised dispatches, context channels, replay sessions, or child
+     * run handles.
      * @throws {TypeError} If the request is malformed.
      * @throws {RangeError} If a causal parent is unknown or owner ordinals are exhausted.
      *
@@ -289,6 +299,7 @@ export class SQLiteTraceStore implements Disposable {
         const batch = normalizeAppendBatchDraft(normalizeStoreAppendRequest(request).batch);
         assertUnreservedSupervisionOwners(batch);
         assertUnreservedReplayOwners(batch);
+        assertUnreservedDelegationOwners(batch);
         return appendToTraceStore(this.#database, request);
     }
 
@@ -1204,6 +1215,49 @@ export class SQLiteTraceStore implements Disposable {
     }
 
     /**
+     * Atomically retains a new child run handle's opened record and origin cut.
+     *
+     * @param handleId - Handle identity and reserved owner path.
+     * @param open - Command intent, parent handle, and record builder.
+     * @returns Whether the handle was created, with its receipt and origin cut.
+     * @throws {DelegationEvidenceError} If the owner path is not fresh or the parent is absent.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    openDelegationHandle(
+        handleId: string,
+        open: DelegationHandleOpenRequest,
+    ): DelegationHandleOpen {
+        this.#assertOpen();
+        return openDelegationHandleInStore(this.#database, handleId, open);
+    }
+
+    /**
+     * Appends one child run handle command record at the exact handle head.
+     *
+     * @param handleId - Handle identity.
+     * @param expectedHeadRecordId - Exact current handle head.
+     * @param request - Command record append.
+     * @returns The receipt, a replayed receipt, or a moved-head signal.
+     * @throws {AppendIntentConflictError} If the command names different content.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    appendDelegationHandleRecord(
+        handleId: string,
+        expectedHeadRecordId: RecordId,
+        request: StoreAppendRequest,
+    ): DelegationHandleAppend {
+        this.#assertOpen();
+        return appendDelegationHandleRecordInStore(
+            this.#database,
+            handleId,
+            expectedHeadRecordId,
+            request,
+        );
+    }
+
+    /**
      * Reads one live supervised dispatch row.
      *
      * @param dispatchId - Dispatch identity.
@@ -1481,7 +1535,7 @@ export class SQLiteTraceStore implements Disposable {
      * @param spec - Closed cut publication request.
      * @returns The durable cut address.
      * @throws {TraceStoreError} If the target occurrence is absent, the publishing owner path is
-     * reserved for replay sessions, or the store is closed.
+     * reserved for replay sessions or child run handles, or the store is closed.
      * @throws {TypeError} If the request is malformed.
      *
      * @public
@@ -1492,6 +1546,7 @@ export class SQLiteTraceStore implements Disposable {
         const publisher = owners?.publisher_owner_id ?? owners?.target_owner_id;
         if (typeof publisher === "string") {
             assertUnreservedReplayOwner(publisher);
+            assertUnreservedDelegationOwner(publisher);
         }
         return publishStoredCut(this.#database, spec);
     }

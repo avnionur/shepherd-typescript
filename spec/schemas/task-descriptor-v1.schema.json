@@ -99,6 +99,18 @@
                         }
                     },
                     "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "$ref"
+                    ],
+                    "properties": {
+                        "$ref": {
+                            "const": "https://avnionur.github.io/shepherd-typescript/schemas/task-value-v1.schema.json"
+                        }
+                    },
+                    "additionalProperties": false
                 }
             ]
         }

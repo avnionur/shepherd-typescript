@@ -43,6 +43,19 @@ export type TaskArtifactLock = {
     readonly task_version: string;
 };
 
+/**
+ * Canonical serializable task: the bodyless descriptor artifact and its exact artifact lock.
+ *
+ * A task value carries no code. It is the form a task takes as data: a supervisor task input, a
+ * model-serviced task output, or the task retained by a child run handle.
+ */
+export type TaskValue = {
+    /** Canonical task artifact. */
+    readonly artifact: TaskArtifact;
+    /** Exact lock derived from the artifact. */
+    readonly artifact_lock: TaskArtifactLock;
+};
+
 /** Exact selector for one registered task artifact version. */
 export type ExactTaskReference = {
     /** Stable content-addressed logical task identity. */

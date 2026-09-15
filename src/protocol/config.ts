@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { assertNodeRuntime } from "../runtime/policy.ts";
 import type {
     CliProtocolConfig,
+    DelegationProtocolConfig,
     EffectProtocolConfig,
     FormalAssuranceProtocolConfig,
     KernelProtocolConfig,
@@ -35,6 +36,9 @@ export const effectProtocolConfig: EffectProtocolConfig = protocolConfig.effects
 
 /** Runtime human-facing command topology and CLI resource policy. */
 export const cliProtocolConfig: CliProtocolConfig = protocolConfig.cli;
+
+/** Runtime task delegation, child run handle, and delegated authority configuration. */
+export const delegationProtocolConfig: DelegationProtocolConfig = protocolConfig.delegation;
 
 /** Executable reference-machine and proof-envelope configuration. */
 export const formalAssuranceProtocolConfig: FormalAssuranceProtocolConfig =

@@ -20,10 +20,10 @@ and any applicable pinned upstream-oracle comparison.
 | Doc/instruction is behavioral identity | shipped | core | P0 | task digest changes when instruction changes |
 | Runtime input/output validation | partial surface | core | P0 | schema failure fixtures |
 | Task registration/version resolution | shipped | supporting | P1 | exact and short-ref resolution tests |
-| Task as argument/value | deferred | core | P2 | supervisor composition suite |
-| Runtime task synthesis/rewrite | deferred | core | P2 | signed descriptor and replay tests |
-| Returned resource handles | deferred | implied | P2 | authority-preserving handle fixtures |
-| Typed value projection | deferred | implied | P2 | provenance-tagged projection tests |
+| Task as argument/value | deferred | core | P2 | canonical `{ artifact, artifact_lock }` task values with lock re-derivation, `schema.task()` typing task values as inputs and outputs, and durable child run handles that run a task value as data implemented (Phase 9 exit audit) |
+| Runtime task synthesis/rewrite | deferred | core | P2 | revised and synthesized provenance with canonical-form refusal of model-emitted definitions, supervisor approval before execution, and revision retries citing the discarded predecessor and retry cut implemented |
+| Returned resource handles | deferred | implied | P2 | package-minted child run handles with retained ceiling/effective authority, budget ceilings, and forged/foreign-store refusal implemented |
+| Typed value projection | deferred | implied | P2 | accepted outputs re-validated against the retained output schema with digest proof, caller-schema equality, and bounded delegation trees implemented |
 
 ## Effects
 
@@ -107,7 +107,7 @@ Windows jail claim is made.
 | macOS Seatbelt | shipped | platform | P1 | real local syscall-denial, read-only, alias, process, and recovery suite implemented |
 | Linux Landlock/container jail | shipped | platform | P1 | package helper and Linux-gated real denial suite implemented; capable Linux host required |
 | Windows/WSL policy | WSL advised | platform | P1 | native Windows unsupported; WSL uses Landlock only when its Linux probe and denial suite pass |
-| Capability attenuation/delegation | not complete | meta-agent need | P2 | no-amplification property |
+| Capability attenuation/delegation | not complete | meta-agent need | P2 | delegated authority through the scope attenuation rule against a root ceiling or the parent handle's effective authority, metric-wise budget attenuation, bounded depth, record-proven inspection, and the seeded no-amplification law suite implemented (Phase 9 exit audit) |
 | Irreversible-effect approval gate | research direction | safety need | P2 | configured irreversible approval frontier, exact-intent verdicts, fail-closed expiry, and verdict/expiry one-winner race implemented |
 
 ## Providers and higher-order behavior
@@ -122,9 +122,9 @@ Windows jail claim is made.
 | Provider prompt/cache identity | research | replay need | P2 | runtime-derived prompt, response, prefix, and context prefix identities, adapter-declared cache identity, and observed cache-hit evidence implemented; live provider adapters remain |
 | Cancellation and budgets | run model | required | P1 | configured counter/duration controls and executor terminal integration implemented; effect accounting follows |
 | Runtime supervisor | not public productized | case study | P2 | two-worker conflict scenario |
-| Inject/steer | experimental/case study | case study | P2 | cited context injection channels implemented; ordered provider-context mutation remains |
-| Handoff/redirect | experimental/case study | case study | P2 | ownership transition test |
-| Discard/revert worker | experimental/case study | case study | P2 | restart-from-clean-fork test |
+| Inject/steer | experimental/case study | case study | P2 | cited context injection channels and ordered handle injections folded into the composed provider request `{ input, supervisor_context }` under a consumption record implemented; provider-side conversation mutation is not claimed |
+| Handoff/redirect | experimental/case study | case study | P2 | fenced supervisor handoff with successor-only commands, former-supervisor refusal, and handoff chains implemented; ownership only, no process or provider state moves |
+| Discard/revert worker | experimental/case study | case study | P2 | terminal discard decisions, live-child cancellation before discard, and retry successors citing the causal replay point implemented; restart from a clean world fork remains a Phase 10 application |
 | Counterfactual replay optimizer | experiment | case study | P3 | reproducible small benchmark |
 | Trajectory compression | experiment | case study | P3 | fork-point/hint schema, verifier gate, and best-of-N control |
 | Tree-RL fork integration | experiment | case study | P3 | adapter and synthetic rollout test |
