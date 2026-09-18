@@ -136,6 +136,14 @@ record and public API must declare a protocol/compatibility version.
 - [Phase 9 exit audit](./phase-9-exit-audit.md) — evidence map for every Phase 9 work item and exit
   criterion, the recovery classification, the review outcome, and L3 paper programming-model parity
   for the documented scope.
+- [Research applications contract](./research-applications-contract.md) — Phase 10 application
+  manifests and protocol identity, the two-worker coding supervisor, counterfactual replay
+  optimization, trajectory compression, the Tree-RL adapter, evaluation and baselines, failure
+  table, and non-claims; implemented through #172–#176, with conformance and the exit audit in
+  #177.
+- [Phase 10 exit audit](./phase-10-exit-audit.md) — evidence map for every Phase 10 work item and
+  exit criterion, the recovery classification, the review outcome, and the carried limits of the
+  offline research applications.
 
 - [Upstream compatibility baseline](./upstream-baseline.md) — exact Git revisions, evidence scope,
   compatibility boundaries, and drift procedure.
@@ -265,7 +273,8 @@ is complete for its documented scope; see the [coupled replay contract](./couple
 and the [exit audit](./phase-8-exit-audit.md). Phase 9 (task-as-value meta-agents, epic #22) is
 complete for its documented scope; see the [task-as-value contract](./task-as-value-contract.md)
 and the [exit audit](./phase-9-exit-audit.md), which records L3 paper programming-model parity for
-the documented scope. Phase 10 (research applications, epic #23) is the next roadmap phase; its
-first slice should build the two-worker coding supervisor over child run handles with inject,
-handoff, and discard/restart policies and a versioned protocol manifest before the optimizer,
-trajectory-compression, and Tree-RL applications.
+the documented scope. Phase 10 (research applications, epic #23) is complete for its documented
+offline scope; see the [research applications contract](./research-applications-contract.md) and
+the [exit audit](./phase-10-exit-audit.md). Phase 11 (production hardening and 1.0, epic #24) is
+the next roadmap phase; its first slice should be cut from the epic's threat model, fuzzing, and
+recovery-drill work before any 1.0 release-readiness audit (#29).

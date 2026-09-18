@@ -1,0 +1,628 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/application-supervision-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Application Supervision v1",
+    "description": "Coding supervisor records on the application owner path: the opened record naming the workers, and one decision record per observation round citing the observed worker evidence, the conflict classification, the policy decision, and the exact evidence it produced.",
+    "oneOf": [
+        {
+            "type": "object",
+            "required": [
+                "application_id",
+                "application_version",
+                "command_id",
+                "compatibility_version",
+                "kind",
+                "phase",
+                "protocol_id",
+                "supervisor_id",
+                "workers",
+                "world"
+            ],
+            "properties": {
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "application_id": {
+                    "$ref": "#/$defs/applicationId"
+                },
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "kind": {
+                    "const": "coding_supervisor"
+                },
+                "phase": {
+                    "const": "opened"
+                },
+                "protocol_id": {
+                    "type": "string",
+                    "pattern": "^application-protocol:sha256:[0-9a-f]{64}$"
+                },
+                "supervisor_id": {
+                    "$ref": "#/$defs/supervisorId"
+                },
+                "workers": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 8,
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "handle_id",
+                            "worker_id"
+                        ],
+                        "properties": {
+                            "handle_id": {
+                                "$ref": "#/$defs/handleId"
+                            },
+                            "worker_id": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "world": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "application_id",
+                "application_version",
+                "compatibility_version",
+                "conflict",
+                "decision",
+                "evidence",
+                "observations",
+                "phase",
+                "round",
+                "supervisor_id"
+            ],
+            "properties": {
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "application_id": {
+                    "$ref": "#/$defs/applicationId"
+                },
+                "conflict": {
+                    "type": "object",
+                    "required": [
+                        "kind",
+                        "paths",
+                        "worker_ids"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "enum": [
+                                "none",
+                                "path_overlap"
+                            ]
+                        },
+                        "paths": {
+                            "$ref": "#/$defs/paths"
+                        },
+                        "worker_ids": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "maxItems": 8,
+                            "uniqueItems": true
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "decision": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "observe"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "cited_record_ids",
+                                "data",
+                                "kind",
+                                "worker_id"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "inject"
+                                },
+                                "cited_record_ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/recordId"
+                                    },
+                                    "minItems": 1,
+                                    "maxItems": 32,
+                                    "uniqueItems": true
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "$ref": "#/$defs/semanticValue"
+                                    }
+                                },
+                                "worker_id": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "reason",
+                                "successor_supervisor_id",
+                                "worker_id"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "handoff"
+                                },
+                                "reason": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1024
+                                        }
+                                    ]
+                                },
+                                "successor_supervisor_id": {
+                                    "$ref": "#/$defs/supervisorId"
+                                },
+                                "worker_id": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "reason",
+                                "worker_id"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "discard_restart"
+                                },
+                                "reason": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024
+                                },
+                                "worker_id": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "worker_id"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "accept"
+                                },
+                                "worker_id": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "evidence": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "observe"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "injection_record_id",
+                                "kind"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "inject"
+                                },
+                                "injection_record_id": {
+                                    "$ref": "#/$defs/recordId"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "handoff_record_id",
+                                "kind"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "handoff"
+                                },
+                                "handoff_record_id": {
+                                    "$ref": "#/$defs/recordId"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "decision_record_id",
+                                "discard_receipt_id",
+                                "fork_receipt_id",
+                                "kind",
+                                "retry_cut_id",
+                                "successor_handle_id"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "discard_restart"
+                                },
+                                "decision_record_id": {
+                                    "$ref": "#/$defs/recordId"
+                                },
+                                "discard_receipt_id": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "minLength": 1
+                                        }
+                                    ]
+                                },
+                                "fork_receipt_id": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "minLength": 1
+                                        }
+                                    ]
+                                },
+                                "retry_cut_id": {
+                                    "type": "string",
+                                    "pattern": "^delegation-retry:sha256:[0-9a-f]{64}$"
+                                },
+                                "successor_handle_id": {
+                                    "$ref": "#/$defs/handleId"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "decision_record_id",
+                                "discarded",
+                                "kind",
+                                "merge_receipt_id"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "const": "accept"
+                                },
+                                "decision_record_id": {
+                                    "$ref": "#/$defs/recordId"
+                                },
+                                "discarded": {
+                                    "type": "array",
+                                    "maxItems": 8,
+                                    "items": {
+                                        "type": "object",
+                                        "required": [
+                                            "decision_record_id",
+                                            "discard_receipt_id",
+                                            "worker_id"
+                                        ],
+                                        "properties": {
+                                            "decision_record_id": {
+                                                "$ref": "#/$defs/recordId"
+                                            },
+                                            "discard_receipt_id": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "null"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                    }
+                                                ]
+                                            },
+                                            "worker_id": {
+                                                "type": "string",
+                                                "minLength": 1
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "merge_receipt_id": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "minLength": 1
+                                        }
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "observations": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 8,
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "attempt",
+                            "changed_paths",
+                            "child_run_id",
+                            "completion_status",
+                            "custody_id",
+                            "delivered_cursor",
+                            "handle_id",
+                            "head_record_id",
+                            "status",
+                            "supervisor_id",
+                            "worker_id",
+                            "worker_status"
+                        ],
+                        "properties": {
+                            "attempt": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "changed_paths": {
+                                "$ref": "#/$defs/paths"
+                            },
+                            "child_run_id": {
+                                "type": "string",
+                                "pattern": "^delegation-run:sha256:[0-9a-f]{64}$"
+                            },
+                            "completion_status": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "enum": [
+                                            "finished",
+                                            "failed",
+                                            "exhausted",
+                                            "cancelled"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "custody_id": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                ]
+                            },
+                            "delivered_cursor": {
+                                "type": "object",
+                                "required": [
+                                    "compatibility_version",
+                                    "cursor_id",
+                                    "cursor_version",
+                                    "positions"
+                                ],
+                                "properties": {
+                                    "compatibility_version": {
+                                        "const": "shepherd.supervision.v1"
+                                    },
+                                    "cursor_id": {
+                                        "type": "string",
+                                        "pattern": "^supervision-cursor:sha256:[0-9a-f]{64}$"
+                                    },
+                                    "cursor_version": {
+                                        "const": 1
+                                    },
+                                    "positions": {
+                                        "type": "array",
+                                        "minItems": 1,
+                                        "maxItems": 64,
+                                        "items": {
+                                            "type": "object",
+                                            "required": [
+                                                "next_ordinal",
+                                                "owner_id"
+                                            ],
+                                            "properties": {
+                                                "next_ordinal": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                },
+                                                "owner_id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "handle_id": {
+                                "$ref": "#/$defs/handleId"
+                            },
+                            "head_record_id": {
+                                "$ref": "#/$defs/recordId"
+                            },
+                            "status": {
+                                "enum": [
+                                    "ready",
+                                    "running",
+                                    "settling",
+                                    "approval_pending",
+                                    "rejected",
+                                    "accepted",
+                                    "discarded"
+                                ]
+                            },
+                            "supervisor_id": {
+                                "$ref": "#/$defs/supervisorId"
+                            },
+                            "worker_id": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "worker_status": {
+                                "enum": [
+                                    "running",
+                                    "accepted",
+                                    "discarded",
+                                    "restarted",
+                                    "handed_off"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "phase": {
+                    "const": "decision"
+                },
+                "round": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 64
+                },
+                "supervisor_id": {
+                    "$ref": "#/$defs/supervisorId"
+                }
+            },
+            "additionalProperties": false
+        }
+    ],
+    "$defs": {
+        "applicationId": {
+            "type": "string",
+            "pattern": "^application:sha256:[0-9a-f]{64}$"
+        },
+        "digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "handleId": {
+            "type": "string",
+            "pattern": "^delegation:sha256:[0-9a-f]{64}$"
+        },
+        "paths": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            },
+            "maxItems": 100000,
+            "uniqueItems": true
+        },
+        "recordId": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        },
+        "supervisorId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+        }
+    }
+}

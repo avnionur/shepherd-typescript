@@ -21,6 +21,7 @@ do not grant retry, recovery, settlement, filesystem, provider, or execution aut
 
 | Domain | Exported classes | Code ownership |
 | --- | --- | --- |
+| Applications | `ApplicationBudgetError`, `ApplicationEvidenceError`, `ApplicationProtocolError`, `ApplicationVerificationError` | applications protocol configuration |
 | Effects | `EffectHandlerNotFoundError` | `public-errors.config.json` |
 | Formal assurance | `TypedEffectTraceValidationError` | `public-errors.config.json` |
 | Providers | `StaticProviderExhaustedError`, `StaticProviderRequestMismatchError` | provider protocol configuration |

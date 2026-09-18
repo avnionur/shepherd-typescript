@@ -2482,3 +2482,273 @@ export const WORKSPACE_PROTOCOL_V26_CONTRACT = deepFreeze({
         version: 26,
     },
 } as const);
+
+/** Immutable research application manifest, protocol identity, and coding supervisor contract implemented by applications protocol v1. */
+export const APPLICATIONS_PROTOCOL_V1_CONTRACT = deepFreeze({
+    artifacts: {
+        manifestSchema: "spec/schemas/application-manifest-v1.schema.json",
+        supervisionSchema: "spec/schemas/application-supervision-v1.schema.json",
+    },
+    compatibilityVersion: "shepherd.applications.v1",
+    errors: {
+        budgetCode: "APPLICATION_BUDGET_EXCEEDED",
+        budgetMessage: "application run exceeded a configured protocol budget",
+        evidenceCode: "APPLICATION_EVIDENCE_INVALID",
+        evidenceMessage: "application evidence is absent, malformed, or inconsistent",
+        protocolCode: "APPLICATION_PROTOCOL_INVALID",
+        protocolMessage:
+            "application protocol definition is malformed or does not match its digest",
+        verificationCode: "APPLICATION_VERIFICATION_FAILED",
+        verificationMessage: "application verifier rejected the produced candidate",
+    },
+    identity: {
+        applicationIdPrefix: "application:sha256:",
+        artifactIdPrefix: "application-artifact:sha256:",
+        candidateIdPrefix: "cro-candidate:sha256:",
+        commandAppendIntentKind: "application_command",
+        cutIdPrefix: "application-cut:sha256:",
+        digestAlgorithm: "sha256",
+        forkPointIdPrefix: "compression-fork:sha256:",
+        manifestIdPrefix: "application-manifest:sha256:",
+        protocolIdPrefix: "application-protocol:sha256:",
+        reportIdPrefix: "evaluation-report:sha256:",
+        rolloutIdPrefix: "tree-rl-rollout:sha256:",
+    },
+    kinds: [
+        "coding_supervisor",
+        "counterfactual_optimization",
+        "trajectory_compression",
+        "tree_rl",
+    ],
+    limits: {
+        maxArtifacts: 128,
+        maxBestOfN: 8,
+        maxBranches: 16,
+        maxCandidates: 32,
+        maxDatasetItems: 64,
+        maxForkPoints: 32,
+        maxPromptBytes: 16384,
+        maxReasonLength: 1024,
+        maxRollouts: 64,
+        maxRounds: 64,
+        maxSchemaBytes: 16384,
+        maxSeeds: 16,
+        maxSurfaces: 32,
+        maxToolBytes: 16384,
+        maxWorkers: 8,
+        minWorkers: 2,
+    },
+    manifestVersion: 1,
+    protocolSurfaces: ["prompt", "schema", "tool"],
+    recordVersion: 1,
+    schemas: {
+        manifestId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/application-manifest-v1.schema.json",
+        supervisionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/application-supervision-v1.schema.json",
+    },
+    supervision: {
+        artifactRoles: {
+            decision: "decision",
+            worker: "worker",
+            worldDiscard: "world_discard",
+            worldFork: "world_fork",
+            worldMerge: "world_merge",
+        },
+        budgetKeys: {
+            providerCalls: "maxProviderCalls",
+            rounds: "maxRounds",
+            worker: {
+                maxTurns: "maxTurnsPerWorker",
+            },
+        },
+        conflictKinds: ["none", "path_overlap"],
+        phases: ["opened", "decision"],
+        policyKinds: ["observe", "inject", "handoff", "discard_restart", "accept"],
+        reasons: {
+            notAccepted: "worker was not accepted by the coding supervisor",
+        },
+        surfaceRoles: {
+            action: "action",
+            observation: "observation",
+        },
+        workerStatuses: ["running", "accepted", "discarded", "restarted", "handed_off"],
+    },
+    traceSchemas: {
+        manifest: "shepherd.application.manifest.v1",
+        supervision: "shepherd.application.supervision.v1",
+    },
+} as const);
+
+/** Immutable counterfactual replay optimizer extension implemented by applications protocol v2. */
+export const APPLICATIONS_PROTOCOL_V2_CONTRACT = deepFreeze({
+    ...APPLICATIONS_PROTOCOL_V1_CONTRACT,
+    artifacts: {
+        ...APPLICATIONS_PROTOCOL_V1_CONTRACT.artifacts,
+        croCandidateSchema: "spec/schemas/application-cro-candidate-v1.schema.json",
+    },
+    cro: {
+        artifactRoles: {
+            baseline: "baseline_session",
+            branch: "candidate_branch",
+            candidate: "candidate",
+            fullReplay: "full_replay_session",
+            promotion: "promotion",
+        },
+        baselineKinds: ["full_replay"],
+        budgetKeys: {
+            candidates: "maxCandidates",
+            minPromotionScore: "minPromotionScore",
+            providerCalls: "maxProviderCalls",
+        },
+        candidateStatuses: ["proposed", "evaluated", "promoted", "rejected"],
+        phases: ["opened", "candidate"],
+        surfaceRoles: {
+            handoff: "handoff",
+            proposer: "proposer",
+            reflection: "reflection",
+        },
+    },
+    schemas: {
+        ...APPLICATIONS_PROTOCOL_V1_CONTRACT.schemas,
+        croCandidateId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/application-cro-candidate-v1.schema.json",
+    },
+    traceSchemas: {
+        ...APPLICATIONS_PROTOCOL_V1_CONTRACT.traceSchemas,
+        croCandidate: "shepherd.application.cro_candidate.v1",
+    },
+} as const);
+
+/** Immutable trajectory compression extension implemented by applications protocol v3. */
+export const APPLICATIONS_PROTOCOL_V3_CONTRACT = deepFreeze({
+    ...APPLICATIONS_PROTOCOL_V2_CONTRACT,
+    artifacts: {
+        ...APPLICATIONS_PROTOCOL_V2_CONTRACT.artifacts,
+        compressionSchema: "spec/schemas/application-compression-v1.schema.json",
+    },
+    compression: {
+        artifactRoles: {
+            candidate: "compression_candidate",
+            compressed: "compressed_session",
+            compressor: "compressor_child",
+            control: "control_session",
+            outcome: "compression_outcome",
+            restoration: "restoration_session",
+            rewind: "rewind_session",
+            source: "source_session",
+            verifier: "verifier_child",
+        },
+        baselineKinds: ["no_compression"],
+        budgetKeys: {
+            bestOfN: "bestOfN",
+            providerCalls: "maxProviderCalls",
+        },
+        candidateKinds: ["compression", "control"],
+        candidateStatuses: ["proposed", "rewound", "settled", "rejected"],
+        childFields: {
+            input: "evidence",
+            output: "result",
+        },
+        outcomes: ["pruned", "no_prune", "restored"],
+        phases: ["opened", "candidate", "outcome"],
+        reasons: {
+            noForkPoint: "the compressor proposed no fork point",
+            notAdmissible:
+                "the compressed session did not finish with strictly fewer steps than the original",
+            restoreUnavailable: "the fork point has an unavailable restore constituent",
+        },
+        surfaceRoles: {
+            compression: "compression",
+            compressor: "compressor",
+            verifier: "verifier",
+        },
+        verdicts: ["accepted", "rejected"],
+    },
+    schemas: {
+        ...APPLICATIONS_PROTOCOL_V2_CONTRACT.schemas,
+        compressionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/application-compression-v1.schema.json",
+    },
+    traceSchemas: {
+        ...APPLICATIONS_PROTOCOL_V2_CONTRACT.traceSchemas,
+        compression: "shepherd.application.compression.v1",
+    },
+} as const);
+
+/** Immutable Tree-RL adapter extension implemented by applications protocol v4. */
+export const APPLICATIONS_PROTOCOL_V4_CONTRACT = deepFreeze({
+    ...APPLICATIONS_PROTOCOL_V3_CONTRACT,
+    artifacts: {
+        ...APPLICATIONS_PROTOCOL_V3_CONTRACT.artifacts,
+        treeRlRolloutSchema: "spec/schemas/application-tree-rl-rollout-v1.schema.json",
+    },
+    schemas: {
+        ...APPLICATIONS_PROTOCOL_V3_CONTRACT.schemas,
+        treeRlRolloutId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/application-tree-rl-rollout-v1.schema.json",
+    },
+    traceSchemas: {
+        ...APPLICATIONS_PROTOCOL_V3_CONTRACT.traceSchemas,
+        treeRlRollout: "shepherd.application.tree_rl_rollout.v1",
+    },
+    treeRl: {
+        artifactRoles: {
+            baselineBatch: "single_rollout_batch",
+            batch: "training_batch",
+            rollout: "rollout",
+            source: "source_session",
+        },
+        baselineKinds: ["single_rollout"],
+        batchFormats: ["jsonl_v1"],
+        budgetKeys: {
+            branches: "branches",
+            forkPoints: "maxForkPoints",
+            minDependents: "minDependents",
+            providerCalls: "maxProviderCalls",
+        },
+        phases: ["opened", "rollout", "batch"],
+        reasons: {
+            diverged: "the rollout diverged before its fork point or without explanation",
+            interrupted: "the rollout session was interrupted before its terminal record",
+            notFinished: "the rollout session did not finish",
+            rewardFailed: "the reward function threw or returned a non-finite reward",
+        },
+        rolloutStatuses: ["completed", "failed"],
+        surfaceRoles: {
+            batch: "training_batch",
+            rollout: "rollout",
+        },
+    },
+} as const);
+
+/** Immutable evaluation report extension implemented by applications protocol v5. */
+export const APPLICATIONS_PROTOCOL_V5_CONTRACT = deepFreeze({
+    ...APPLICATIONS_PROTOCOL_V4_CONTRACT,
+    artifacts: {
+        ...APPLICATIONS_PROTOCOL_V4_CONTRACT.artifacts,
+        evaluationSchema: "spec/schemas/application-evaluation-v1.schema.json",
+    },
+    evaluation: {
+        limits: {
+            maxExperiments: 16,
+            maxLimitationLength: 1024,
+            maxLimitations: 32,
+        },
+        metrics: [
+            "cost_usd",
+            "provider_calls",
+            "input_tokens",
+            "output_tokens",
+            "steps",
+            "success",
+        ],
+        reportVersion: 1,
+        supervisionBaselineKinds: ["no_supervision"],
+    },
+    schemas: {
+        ...APPLICATIONS_PROTOCOL_V4_CONTRACT.schemas,
+        evaluationId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/application-evaluation-v1.schema.json",
+    },
+} as const);

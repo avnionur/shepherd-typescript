@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { assertNodeRuntime } from "../runtime/policy.ts";
 import type {
+    ApplicationsProtocolConfig,
     CliProtocolConfig,
     DelegationProtocolConfig,
     EffectProtocolConfig,
@@ -30,6 +31,9 @@ const protocolConfig: ProtocolConfig = parseProtocolConfig(
     JSON.parse(readFileSync(protocolConfigUrl, "utf8")),
     { expectedRecordModes: RECORD_MODES },
 );
+
+/** Runtime research application manifest, protocol identity, and supervisor configuration. */
+export const applicationsProtocolConfig: ApplicationsProtocolConfig = protocolConfig.applications;
 
 /** Runtime effect intent, outcome, identity, and schema configuration. */
 export const effectProtocolConfig: EffectProtocolConfig = protocolConfig.effects;

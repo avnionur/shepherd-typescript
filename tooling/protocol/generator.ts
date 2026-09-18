@@ -4,7 +4,13 @@ import path from "node:path";
 import { assertSupportedProtocolCompatibility } from "../../src/protocol/config-compatibility.ts";
 import type { ProtocolConfig } from "../../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
+import {
+    renderApplicationManifestSchema,
+    renderApplicationSupervisionSchema,
+} from "./schemas/application-schemas.ts";
 import { renderCliCommandReference, renderCliOutputSchema } from "./schemas/cli-artifacts.ts";
+import { renderApplicationCompressionSchema } from "./schemas/compression-schemas.ts";
+import { renderApplicationCroCandidateSchema } from "./schemas/cro-schemas.ts";
 import {
     renderDelegationApprovalSchema,
     renderDelegationCompletionSchema,
@@ -17,6 +23,7 @@ import {
     renderEffectIntentSchema,
     renderEffectOutcomeSchema,
 } from "./schemas/effect-protocol-schemas.ts";
+import { renderApplicationEvaluationSchema } from "./schemas/evaluation-schemas.ts";
 import {
     renderOutputCitationEntrySchema,
     renderRecoveryRecordEntrySchema,
@@ -72,6 +79,7 @@ import {
     renderTaskLedgerEntrySchema,
 } from "./schemas/task-run-ledger-schemas.ts";
 import { renderTraceArchiveSchema } from "./schemas/trace-archive-schema.ts";
+import { renderApplicationTreeRlRolloutSchema } from "./schemas/tree-rl-schemas.ts";
 
 /** Repository and execution mode for deterministic protocol artifact synchronization. */
 export type ProtocolArtifactOptions = {
@@ -349,6 +357,30 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderDelegationDecisionSchema(config)),
             relativePath: config.delegation.artifacts.decisionSchema,
+        },
+        {
+            content: renderJson(renderApplicationManifestSchema(config)),
+            relativePath: config.applications.artifacts.manifestSchema,
+        },
+        {
+            content: renderJson(renderApplicationSupervisionSchema(config)),
+            relativePath: config.applications.artifacts.supervisionSchema,
+        },
+        {
+            content: renderJson(renderApplicationCroCandidateSchema(config)),
+            relativePath: config.applications.artifacts.croCandidateSchema,
+        },
+        {
+            content: renderJson(renderApplicationCompressionSchema(config)),
+            relativePath: config.applications.artifacts.compressionSchema,
+        },
+        {
+            content: renderJson(renderApplicationTreeRlRolloutSchema(config)),
+            relativePath: config.applications.artifacts.treeRlRolloutSchema,
+        },
+        {
+            content: renderJson(renderApplicationEvaluationSchema(config)),
+            relativePath: config.applications.artifacts.evaluationSchema,
         },
         {
             content: renderJson(renderWorldCaptureSchema(config)),
@@ -2520,6 +2552,95 @@ export const DELEGATION_LIMITS = Object.freeze({
     maxReasonLength: ${config.delegation.limits.maxReasonLength},
     maxSupervisorIdLength: ${config.delegation.limits.maxSupervisorIdLength},
     maxTreeEntries: ${config.delegation.limits.maxTreeEntries},
+} as const);
+
+/** Configured application evidence compatibility namespace. @public */
+export const APPLICATION_COMPATIBILITY_VERSION = ${JSON.stringify(config.applications.compatibilityVersion)} as const;
+
+/** Configured canonical application record version. @public */
+export const APPLICATION_RECORD_VERSION = ${config.applications.recordVersion} as const;
+
+/** Configured application manifest version. @public */
+export const APPLICATION_MANIFEST_VERSION = ${config.applications.manifestVersion} as const;
+
+/** Configured application kinds ordered coding supervisor, counterfactual optimization, trajectory compression, Tree-RL. @public */
+${renderConstStrings("APPLICATION_KINDS", config.applications.kinds)}
+
+/** Configured protocol surface kinds ordered prompt, schema, tool. @public */
+${renderConstStrings("APPLICATION_PROTOCOL_SURFACES", config.applications.protocolSurfaces)}
+
+/** Configured supervision record phases ordered opened then decision. @public */
+${renderConstStrings("APPLICATION_SUPERVISION_PHASES", config.applications.supervision.phases)}
+
+/** Configured coding supervisor policy kinds ordered observe, inject, handoff, discard/restart, accept. @public */
+${renderConstStrings("APPLICATION_SUPERVISION_POLICY_KINDS", config.applications.supervision.policyKinds)}
+
+/** Configured worker conflict classifications ordered none then path overlap. @public */
+${renderConstStrings("APPLICATION_SUPERVISION_CONFLICT_KINDS", config.applications.supervision.conflictKinds)}
+
+/** Configured worker lineage statuses ordered running, accepted, discarded, restarted, handed off. @public */
+${renderConstStrings("APPLICATION_SUPERVISION_WORKER_STATUSES", config.applications.supervision.workerStatuses)}
+
+/** Configured counterfactual optimizer record phases ordered opened then candidate. @public */
+${renderConstStrings("APPLICATION_CRO_PHASES", config.applications.cro.phases)}
+
+/** Configured counterfactual candidate statuses ordered proposed, evaluated, promoted, rejected. @public */
+${renderConstStrings("APPLICATION_CRO_CANDIDATE_STATUSES", config.applications.cro.candidateStatuses)}
+
+/** Configured counterfactual comparison baseline kinds. @public */
+${renderConstStrings("APPLICATION_CRO_BASELINE_KINDS", config.applications.cro.baselineKinds)}
+
+/** Configured trajectory compression record phases ordered opened, candidate, outcome. @public */
+${renderConstStrings("APPLICATION_COMPRESSION_PHASES", config.applications.compression.phases)}
+
+/** Configured trajectory compression candidate kinds ordered compression then best-of-N control. @public */
+${renderConstStrings("APPLICATION_COMPRESSION_CANDIDATE_KINDS", config.applications.compression.candidateKinds)}
+
+/** Configured trajectory compression candidate statuses ordered proposed, rewound, settled, rejected. @public */
+${renderConstStrings("APPLICATION_COMPRESSION_CANDIDATE_STATUSES", config.applications.compression.candidateStatuses)}
+
+/** Configured trajectory compression outcomes ordered pruned, no prune, restored. @public */
+${renderConstStrings("APPLICATION_COMPRESSION_OUTCOMES", config.applications.compression.outcomes)}
+
+/** Configured trajectory compression verifier verdicts ordered accepted then rejected. @public */
+${renderConstStrings("APPLICATION_COMPRESSION_VERDICTS", config.applications.compression.verdicts)}
+
+/** Configured trajectory compression comparison baseline kinds. @public */
+${renderConstStrings("APPLICATION_COMPRESSION_BASELINE_KINDS", config.applications.compression.baselineKinds)}
+
+/** Configured Tree-RL record phases ordered opened, rollout, batch. @public */
+${renderConstStrings("APPLICATION_TREE_RL_PHASES", config.applications.treeRl.phases)}
+
+/** Configured Tree-RL rollout statuses ordered completed then failed. @public */
+${renderConstStrings("APPLICATION_TREE_RL_ROLLOUT_STATUSES", config.applications.treeRl.rolloutStatuses)}
+
+/** Configured Tree-RL comparison baseline kinds. @public */
+${renderConstStrings("APPLICATION_TREE_RL_BASELINE_KINDS", config.applications.treeRl.baselineKinds)}
+
+/** Configured Tree-RL training batch formats. @public */
+${renderConstStrings("APPLICATION_TREE_RL_BATCH_FORMATS", config.applications.treeRl.batchFormats)}
+
+/** Configured coding supervisor comparison baseline kinds. @public */
+${renderConstStrings("APPLICATION_SUPERVISION_BASELINE_KINDS", config.applications.evaluation.supervisionBaselineKinds)}
+
+/** Configured measured evaluation metrics ordered cost, provider calls, input tokens, output tokens, steps, success. @public */
+${renderConstStrings("APPLICATION_EVALUATION_METRICS", config.applications.evaluation.metrics)}
+
+/** Configured application evaluation report version. @public */
+export const APPLICATION_EVALUATION_REPORT_VERSION = ${config.applications.evaluation.reportVersion} as const;
+
+/** Configured application evaluation definition bounds. @public */
+export const APPLICATION_EVALUATION_LIMITS = Object.freeze({
+${Object.entries(config.applications.evaluation.limits)
+    .map(([name, bound]) => `    ${name}: ${bound},`)
+    .join("\n")}
+} as const);
+
+/** Configured application evidence bounds. @public */
+export const APPLICATION_LIMITS = Object.freeze({
+${Object.entries(config.applications.limits)
+    .map(([name, bound]) => `    ${name}: ${bound},`)
+    .join("\n")}
 } as const);
 `;
 }

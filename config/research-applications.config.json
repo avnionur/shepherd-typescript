@@ -1,0 +1,806 @@
+{
+    "compression": {
+        "budgets": {
+            "bestOfN": 2,
+            "maxProviderCalls": 60
+        },
+        "dataset": {
+            "id": "explore-answer-workflow-fixture",
+            "items": ["plan-explore-answer"],
+            "revision": "1"
+        },
+        "kind": "trajectory_compression",
+        "protocolVersion": "appendix-d.v1",
+        "seeds": [7, 19, 23],
+        "surfaces": [
+            {
+                "content": "You compress a recorded agent trajectory in hindsight. Inspect the source steps, their requests and outputs, and the retained checkpoints. Propose at most one fork point: the step boundary after which the remaining steps could be replaced by a shorter rerun that reaches the same verified result, and a hint telling the rerun how to get there, citing the source steps it relies on. Return the proposal as JSON matching the compression schema; return a null fork point when no shorter rerun is plausible. Never propose a fork point inside a prefix you cannot restore.",
+                "id": "compressor.propose",
+                "kind": "prompt",
+                "role": "compressor"
+            },
+            {
+                "content": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "additionalProperties": false,
+                    "properties": {
+                        "fork_point": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "prefix_id": {
+                                            "type": "string"
+                                        },
+                                        "session_id": {
+                                            "type": "string"
+                                        },
+                                        "step_index": {
+                                            "minimum": 1,
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": ["prefix_id", "session_id", "step_index"],
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "hint": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "cited_step_indices": {
+                                            "items": {
+                                                "minimum": 0,
+                                                "type": "integer"
+                                            },
+                                            "type": "array",
+                                            "uniqueItems": true
+                                        },
+                                        "text": {
+                                            "minLength": 1,
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["cited_step_indices", "text"],
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "required": ["fork_point", "hint"],
+                    "type": "object"
+                },
+                "id": "compression.fork-hint.v1",
+                "kind": "schema",
+                "role": "compression"
+            },
+            {
+                "content": "You verify a compressed trajectory against the original. Compare the terminal results and the evidence each trajectory retained. Accept only when the compressed trajectory reaches the same result the original verified; otherwise reject and say why. Return JSON with verdict (accepted or rejected), a numeric score, and a reason.",
+                "id": "verifier.judge",
+                "kind": "prompt",
+                "role": "verifier"
+            }
+        ]
+    },
+    "counterfactual": {
+        "budgets": {
+            "maxCandidates": 4,
+            "maxProviderCalls": 40,
+            "minPromotionScore": 1
+        },
+        "dataset": {
+            "id": "draft-review-workflow-fixture",
+            "items": ["plan-draft-review"],
+            "revision": "1"
+        },
+        "kind": "counterfactual_optimization",
+        "protocolVersion": "appendix-f.v1",
+        "seeds": [7, 19],
+        "surfaces": [
+            {
+                "content": "You optimize a recorded workflow. Inspect the pool of retained candidates and their branch traces, pick a parent candidate (or the baseline), and propose candidate edits. Each edit names the edited step and changes only declarable dimensions: task, provider, or handlers. For every edit, state the fix set (failures it should repair) and the guard set (behaviors it must preserve). Only the affected suffix of the parent's trace is replayed; do not propose rewrites of the recorded prefix.",
+                "id": "proposer.propose",
+                "kind": "prompt",
+                "role": "proposer"
+            },
+            {
+                "content": {
+                    "description": "Read the retained candidate pool: every candidate record with its status, parent, edited step, affected steps, divergence summary, verdict, and measured cost.",
+                    "inputSchema": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "application_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["application_id"],
+                        "type": "object"
+                    },
+                    "name": "inspect_candidates"
+                },
+                "id": "tool.inspect_candidates",
+                "kind": "tool",
+                "role": "proposer"
+            },
+            {
+                "content": {
+                    "description": "Propose one candidate edit of the parent's workflow at a step boundary.",
+                    "inputSchema": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "changes": {
+                                "items": {
+                                    "enum": ["task", "provider", "handlers"]
+                                },
+                                "minItems": 1,
+                                "type": "array",
+                                "uniqueItems": true
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "parent": {
+                                "type": ["string", "null"]
+                            },
+                            "step_index": {
+                                "minimum": 0,
+                                "type": "integer"
+                            }
+                        },
+                        "required": ["changes", "name", "parent", "step_index"],
+                        "type": "object"
+                    },
+                    "name": "propose_candidate"
+                },
+                "id": "tool.propose_candidate",
+                "kind": "tool",
+                "role": "proposer"
+            },
+            {
+                "content": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "additionalProperties": false,
+                    "properties": {
+                        "fix_set": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "guard_set": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "observations": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "parent": {
+                            "type": ["string", "null"]
+                        }
+                    },
+                    "required": ["fix_set", "guard_set", "observations", "parent"],
+                    "type": "object"
+                },
+                "id": "scratchpad.reflection.v1",
+                "kind": "schema",
+                "role": "reflection"
+            },
+            {
+                "content": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "additionalProperties": false,
+                    "properties": {
+                        "candidates": {
+                            "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "candidate_id": {
+                                        "type": "string"
+                                    },
+                                    "parent_candidate_id": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "status": {
+                                        "enum": ["proposed", "evaluated", "promoted", "rejected"]
+                                    }
+                                },
+                                "required": ["candidate_id", "parent_candidate_id", "status"],
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "promoted_candidate_id": {
+                            "type": ["string", "null"]
+                        }
+                    },
+                    "required": ["candidates", "promoted_candidate_id"],
+                    "type": "object"
+                },
+                "id": "handoff.manifest.v1",
+                "kind": "schema",
+                "role": "handoff"
+            }
+        ]
+    },
+    "evaluation": {
+        "artifacts": {
+            "documentation": "docs/application-evaluation.md",
+            "page": "docs/generated/application-evaluation.md",
+            "report": "docs/generated/application-evaluation.json"
+        },
+        "definition": {
+            "evaluationId": "phase-10-offline-applications",
+            "experiments": [
+                {
+                    "baseline": {
+                        "commandId": "evaluation:coding-supervisor:no-supervision",
+                        "kind": "no_supervision",
+                        "workerId": "a"
+                    },
+                    "commandId": "evaluation:coding-supervisor",
+                    "id": "coding-supervisor",
+                    "protocol": "supervision"
+                },
+                {
+                    "baseline": {
+                        "kind": "full_replay"
+                    },
+                    "commandId": "evaluation:counterfactual-optimization",
+                    "id": "counterfactual-optimization",
+                    "protocol": "counterfactual"
+                },
+                {
+                    "baseline": {
+                        "kind": "no_compression"
+                    },
+                    "commandId": "evaluation:trajectory-compression",
+                    "id": "trajectory-compression",
+                    "protocol": "compression"
+                },
+                {
+                    "baseline": {
+                        "kind": "single_rollout"
+                    },
+                    "commandId": "evaluation:tree-rl",
+                    "id": "tree-rl",
+                    "protocol": "treeRl",
+                    "sourceCommandId": "evaluation:tree-rl:source"
+                }
+            ],
+            "limitations": [
+                {
+                    "id": "offline-static-providers",
+                    "text": "Every provider is an offline static fixture: exact order-bound cassettes for the Tree-RL source and rollouts, and request-keyed providers with a static descriptor where an application serves repeated sessions or workers from one provider. Token counts and costs are the fixtures' configured per-call usage, not provider billing."
+                },
+                {
+                    "id": "no-live-provider",
+                    "text": "No live model provider is called. Nothing here measures model quality, latency, or behavior under real provider variance."
+                },
+                {
+                    "id": "synthetic-fixtures",
+                    "text": "Fixtures are synthetic and small: one dataset item per application, four or five workflow stages, two supervised workers, two optimizer candidates, and the configured seeds. The figures describe these fixtures, not a benchmark or task distribution."
+                },
+                {
+                    "id": "no-wall-clock",
+                    "text": "No wall-clock time, throughput, or duration is measured or reported. Steps and provider calls are counts, not time."
+                },
+                {
+                    "id": "repository-baselines",
+                    "text": "Baselines are this repository's constructions: no_supervision runs one worker once as a plain child run without a policy, full_replay re-runs the whole workflow per candidate, no_compression keeps the recorded source trajectory, and single_rollout reuses branch 0 of each fork point. None is an upstream baseline."
+                },
+                {
+                    "id": "single-rollout-shared-cost",
+                    "text": "The Tree-RL single_rollout baseline reuses the tree's branch-0 rollouts instead of running separate sessions, so its cost is a subset of the tree batch's cost, not an equal budget; a failed branch-0 rollout still counts in the baseline's cost and steps and makes baseline success false (the v4 single_rollout training batch drops that fork point)."
+                },
+                {
+                    "id": "measurement-scope",
+                    "text": "Application-side metrics count only the work compared against the baseline: supervised worker starts and retained completions, counterfactual candidate branch sessions, the compression result session, and every Tree-RL rollout. Supervisor rounds, recorded baseline and source sessions, compressor and verifier children, and best-of-N controls appear only in each run's manifest costs."
+                },
+                {
+                    "id": "single-host",
+                    "text": "Each generation runs on one host. The report bytes are host-independent by construction, but no multi-host, concurrent-writer, or crash-injected evaluation is performed."
+                },
+                {
+                    "id": "no-upstream-reproduction",
+                    "text": "Upstream headline results (paired coding success, optimizer dev-set gains, compression ratios, and Tree-RL training gains) are not reproduced. No figure in this report is comparable to a published number."
+                },
+                {
+                    "id": "no-training",
+                    "text": "The Tree-RL adapter emits a training batch and trains nothing; no learning result is claimed."
+                }
+            ],
+            "revision": "1"
+        },
+        "fixtures": {
+            "coding-supervisor": {
+                "acceptWorker": "a",
+                "observeRounds": 1,
+                "parentBudget": {
+                    "maxTurns": 4
+                },
+                "supervisorId": "supervisor:evaluation",
+                "task": {
+                    "instruction": "Write the text into the file at the path and report both.",
+                    "name": "edit-file",
+                    "version": "1"
+                },
+                "workers": [
+                    {
+                        "budget": {
+                            "maxTurns": 2
+                        },
+                        "text": "a edit",
+                        "workerId": "a"
+                    },
+                    {
+                        "budget": {
+                            "maxTurns": 2
+                        },
+                        "text": "b edit",
+                        "workerId": "b"
+                    }
+                ]
+            },
+            "counterfactual-optimization": {
+                "baselineLabel": "base",
+                "candidates": [
+                    {
+                        "label": "replanned",
+                        "name": "replan",
+                        "stepIndex": 0,
+                        "verdict": {
+                            "passed": true,
+                            "reason": "the replanned draft and review pass the targeted check",
+                            "score": 2
+                        }
+                    },
+                    {
+                        "label": "reresearched",
+                        "name": "reresearch",
+                        "stepIndex": 1,
+                        "verdict": {
+                            "passed": true,
+                            "reason": "the research edit affects no later step",
+                            "score": 1
+                        }
+                    }
+                ],
+                "claimId": "evaluation:optimizer",
+                "programId": "workflow:plan-draft-review.v1",
+                "stages": [
+                    {
+                        "dependsOn": null,
+                        "stage": "plan"
+                    },
+                    {
+                        "dependsOn": null,
+                        "stage": "research"
+                    },
+                    {
+                        "dependsOn": 0,
+                        "stage": "draft"
+                    },
+                    {
+                        "dependsOn": 2,
+                        "stage": "review"
+                    }
+                ]
+            },
+            "tree-rl": {
+                "claimId": "evaluation:tree-rl",
+                "programId": "workflow:plan-explore-draft-note-answer.v1",
+                "rewards": {
+                    "0:3": 1,
+                    "0:5": 3,
+                    "1:3": 4,
+                    "1:5": 8,
+                    "2:3": 0,
+                    "2:5": 2
+                },
+                "seedLabelPrefix": "s",
+                "sourceClaimId": "evaluation:tree-rl-source",
+                "sourceLabel": "base",
+                "stages": [
+                    {
+                        "dependsOn": null,
+                        "stage": "plan"
+                    },
+                    {
+                        "dependsOn": 0,
+                        "stage": "explore"
+                    },
+                    {
+                        "dependsOn": 1,
+                        "stage": "draft"
+                    },
+                    {
+                        "dependsOn": null,
+                        "stage": "note"
+                    },
+                    {
+                        "dependsOn": 2,
+                        "stage": "answer"
+                    }
+                ]
+            },
+            "trajectory-compression": {
+                "childBudget": {
+                    "maxTurns": 1
+                },
+                "claimId": "evaluation:compression",
+                "compressorTask": {
+                    "instruction": "Propose one fork point and hint that shorten the recorded trajectory.",
+                    "name": "trajectory-compressor",
+                    "version": "1"
+                },
+                "forkStepIndex": 1,
+                "hint": {
+                    "citedStepIndices": [1, 2],
+                    "text": "answer directly from the plan"
+                },
+                "label": "base",
+                "parentBudget": {
+                    "maxTurns": 16
+                },
+                "programId": "workflow:explore-answer.v1",
+                "stages": [
+                    {
+                        "dependsOn": null,
+                        "stage": "plan"
+                    },
+                    {
+                        "dependsOn": 0,
+                        "skippable": true,
+                        "stage": "explore-a"
+                    },
+                    {
+                        "dependsOn": 1,
+                        "skippable": true,
+                        "stage": "explore-b"
+                    },
+                    {
+                        "dependsOn": 0,
+                        "stage": "answer"
+                    }
+                ],
+                "supervisorId": "supervisor:evaluation-compression",
+                "verdicts": {
+                    "accepted": {
+                        "reason": "the candidate reaches the original result",
+                        "score": 1,
+                        "verdict": "accepted"
+                    },
+                    "rejected": {
+                        "reason": "the candidate result differs",
+                        "score": 0,
+                        "verdict": "rejected"
+                    }
+                },
+                "verifierTask": {
+                    "instruction": "Verify that the compressed trajectory reaches the original result.",
+                    "name": "trajectory-verifier",
+                    "version": "1"
+                }
+            }
+        },
+        "provider": {
+            "instruction": "perform",
+            "model": "evaluation-fixture-v1",
+            "usage": {
+                "cacheCreationInputTokens": 1,
+                "cacheReadInputTokens": 2,
+                "costUsd": 0.25,
+                "inputTokens": 10,
+                "outputTokens": 2
+            }
+        }
+    },
+    "supervision": {
+        "budgets": {
+            "maxProviderCalls": 6,
+            "maxRounds": 8,
+            "maxTurnsPerWorker": 2
+        },
+        "dataset": {
+            "id": "conflicting-edit-fixture",
+            "items": ["greet.ts"],
+            "revision": "1"
+        },
+        "kind": "coding_supervisor",
+        "protocolVersion": "appendix-e.v1",
+        "seeds": [11, 23],
+        "surfaces": [
+            {
+                "content": "You supervise coding workers that edit one shared bound resource in isolated custody. Observe every worker's retained handle and child run records, its changed paths, and the conflict classification. Do not perturb a worker while observing.",
+                "id": "supervisor.observe",
+                "kind": "prompt",
+                "role": "observation"
+            },
+            {
+                "content": "Choose exactly one action for this round: observe (no intervention), inject (cite retained records and push guidance into a worker that has not started), handoff (transfer a worker to a named successor supervisor), discard_restart (discard a worker and restart it from a clean fork), or accept (accept one finished worker; every other worker is discarded). Prefer inject; use handoff and discard_restart only when necessary.",
+                "id": "supervisor.act",
+                "kind": "prompt",
+                "role": "action"
+            },
+            {
+                "content": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "additionalProperties": false,
+                    "properties": {
+                        "conflict": {
+                            "enum": ["none", "path_overlap"]
+                        },
+                        "round": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "workers": {
+                            "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "changed_paths": {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    },
+                                    "completion_status": {
+                                        "enum": [
+                                            "finished",
+                                            "failed",
+                                            "exhausted",
+                                            "cancelled",
+                                            null
+                                        ]
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "worker_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "changed_paths",
+                                    "completion_status",
+                                    "status",
+                                    "worker_id"
+                                ],
+                                "type": "object"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": ["conflict", "round", "workers"],
+                    "type": "object"
+                },
+                "id": "supervision.observation.v1",
+                "kind": "schema",
+                "role": "observation"
+            },
+            {
+                "content": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "additionalProperties": false,
+                    "properties": {
+                        "kind": {
+                            "enum": ["observe", "inject", "handoff", "discard_restart", "accept"]
+                        },
+                        "reason": {
+                            "type": ["string", "null"]
+                        },
+                        "worker_id": {
+                            "type": ["string", "null"]
+                        }
+                    },
+                    "required": ["kind", "reason", "worker_id"],
+                    "type": "object"
+                },
+                "id": "supervision.action.v1",
+                "kind": "schema",
+                "role": "action"
+            },
+            {
+                "content": {
+                    "description": "Push cited guidance into a worker that has not started; consumed in its composed provider request.",
+                    "inputSchema": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "cited_record_ids": {
+                                "items": {
+                                    "type": "string"
+                                },
+                                "type": "array"
+                            },
+                            "data": {
+                                "type": "object"
+                            },
+                            "worker_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["cited_record_ids", "data", "worker_id"],
+                        "type": "object"
+                    },
+                    "name": "inject_context"
+                },
+                "id": "tool.inject_context",
+                "kind": "tool",
+                "role": "action"
+            },
+            {
+                "content": {
+                    "description": "Transfer ownership of a worker's handle to a named successor supervisor.",
+                    "inputSchema": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "reason": {
+                                "type": ["string", "null"]
+                            },
+                            "successor_supervisor_id": {
+                                "type": "string"
+                            },
+                            "worker_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["reason", "successor_supervisor_id", "worker_id"],
+                        "type": "object"
+                    },
+                    "name": "handoff_worker"
+                },
+                "id": "tool.handoff_worker",
+                "kind": "tool",
+                "role": "action"
+            },
+            {
+                "content": {
+                    "description": "Discard a worker's attempt and restart it from a clean fork of the parent world.",
+                    "inputSchema": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "reason": {
+                                "type": "string"
+                            },
+                            "worker_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["reason", "worker_id"],
+                        "type": "object"
+                    },
+                    "name": "discard_restart_worker"
+                },
+                "id": "tool.discard_restart_worker",
+                "kind": "tool",
+                "role": "action"
+            },
+            {
+                "content": {
+                    "description": "Accept one finished worker; its custody is merged and every other worker is discarded.",
+                    "inputSchema": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "worker_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["worker_id"],
+                        "type": "object"
+                    },
+                    "name": "accept_worker"
+                },
+                "id": "tool.accept_worker",
+                "kind": "tool",
+                "role": "action"
+            }
+        ]
+    },
+    "treeRl": {
+        "budgets": {
+            "branches": 2,
+            "maxForkPoints": 4,
+            "maxProviderCalls": 40,
+            "minDependents": 1
+        },
+        "dataset": {
+            "id": "plan-explore-draft-answer-fixture",
+            "items": ["plan-explore-draft-note-answer"],
+            "revision": "1"
+        },
+        "kind": "tree_rl",
+        "protocolVersion": "section-5.3.v1",
+        "seeds": [3, 5, 8],
+        "surfaces": [
+            {
+                "content": "You continue a recorded agent trajectory from a fork turn. The steps before the fork turn are fixed; produce the fork turn and every later turn under your seed so that sibling branches explore different continuations of the same prefix. Answer each turn with JSON matching the requested output schema.",
+                "id": "rollout.continue",
+                "kind": "prompt",
+                "role": "rollout"
+            },
+            {
+                "content": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "additionalProperties": false,
+                    "properties": {
+                        "fork_point": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "prefix_id": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "string"
+                                        }
+                                    ]
+                                },
+                                "step_index": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                }
+                            },
+                            "required": ["prefix_id", "step_index"],
+                            "type": "object"
+                        },
+                        "inter_branch_advantage": {
+                            "type": "number"
+                        },
+                        "intra_branch_advantage": {
+                            "type": "number"
+                        },
+                        "replay_session_id": {
+                            "type": "string"
+                        },
+                        "reward": {
+                            "type": "number"
+                        },
+                        "rollout_id": {
+                            "type": "string"
+                        },
+                        "seed": {
+                            "type": "integer"
+                        },
+                        "session_id": {
+                            "type": "string"
+                        },
+                        "step_count": {
+                            "minimum": 0,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "fork_point",
+                        "inter_branch_advantage",
+                        "intra_branch_advantage",
+                        "replay_session_id",
+                        "reward",
+                        "rollout_id",
+                        "seed",
+                        "session_id",
+                        "step_count"
+                    ],
+                    "title": "jsonl_v1 training batch line",
+                    "type": "object"
+                },
+                "id": "tree-rl.batch-line.jsonl_v1",
+                "kind": "schema",
+                "role": "training_batch"
+            }
+        ]
+    }
+}

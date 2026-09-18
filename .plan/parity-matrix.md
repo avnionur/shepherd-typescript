@@ -121,13 +121,13 @@ Windows jail claim is made.
 | Provider-neutral event model | architectural | core | P0 | request/response, ordered artifact definition, descriptor, and executor normalization contracts implemented; streaming event normalization remains |
 | Provider prompt/cache identity | research | replay need | P2 | runtime-derived prompt, response, prefix, and context prefix identities, adapter-declared cache identity, and observed cache-hit evidence implemented; live provider adapters remain |
 | Cancellation and budgets | run model | required | P1 | configured counter/duration controls and executor terminal integration implemented; effect accounting follows |
-| Runtime supervisor | not public productized | case study | P2 | two-worker conflict scenario |
+| Runtime supervisor | not public productized | case study | P2 | two-worker coding supervisor over child run handles with path-overlap conflict classification, real scope custody through `createScopeWorldAdapter`, retained supervision records, and a digest-bearing manifest implemented (Phase 10 exit audit) |
 | Inject/steer | experimental/case study | case study | P2 | cited context injection channels and ordered handle injections folded into the composed provider request `{ input, supervisor_context }` under a consumption record implemented; provider-side conversation mutation is not claimed |
 | Handoff/redirect | experimental/case study | case study | P2 | fenced supervisor handoff with successor-only commands, former-supervisor refusal, and handoff chains implemented; ownership only, no process or provider state moves |
-| Discard/revert worker | experimental/case study | case study | P2 | terminal discard decisions, live-child cancellation before discard, and retry successors citing the causal replay point implemented; restart from a clean world fork remains a Phase 10 application |
-| Counterfactual replay optimizer | experiment | case study | P3 | reproducible small benchmark |
-| Trajectory compression | experiment | case study | P3 | fork-point/hint schema, verifier gate, and best-of-N control |
-| Tree-RL fork integration | experiment | case study | P3 | adapter and synthetic rollout test |
+| Discard/revert worker | experimental/case study | case study | P2 | terminal discard decisions, live-child cancellation before discard, and retry successors citing the causal replay point implemented; restart from a clean world fork implemented by the coding supervisor's `discard_restart` policy |
+| Counterfactual replay optimizer | experiment | case study | P3 | affected-suffix replay over declared dependencies, divergence proof, targeted-eval gate, single promotion, and the measured `full_replay` comparison in the checked evaluation report implemented |
+| Trajectory compression | experiment | case study | P3 | fork-point/hint schema, rewind restoration, `no_prune`, verifier gate, and bounded best-of-N control implemented |
+| Tree-RL fork integration | experiment | case study | P3 | deterministic fork-point selection, seeded branched rollouts, intra- and inter-branch advantages, and the `jsonl_v1` batch implemented over synthetic rollouts; no trainer |
 
 ## Formal assurance and claim boundaries
 
@@ -145,8 +145,8 @@ Windows jail claim is made.
 
 | Capability | Paper surface | Priority | Planned proof |
 | --- | --- | --- | --- |
-| Runtime-supervision protocol fidelity | Appendix E | P3 | versioned observation/action schemas, prompts, tools, budgets, and seeds |
-| CRO protocol fidelity | Appendix F | P3 | proposer tools, lineage, targeted-eval, handoff, cost, and result artifacts |
+| Runtime-supervision protocol fidelity | Appendix E | P3 | versioned observation/action schemas, prompts, tools, budgets, seeds, and dataset selection cited by digest in each manifest implemented; schemas are digest-pinned, not runtime-evaluated |
+| CRO protocol fidelity | Appendix F | P3 | proposer tools, reflection and handoff schemas, candidate lineage, targeted-eval verdicts, measured costs, and result artifacts implemented |
 | TypeScript-owned performance report | §4 and Appendix C | P3 | raw, reproducible platform/backend benchmarks without inherited claims |
 | Paper limitation reporting | Appendix A.1 | P3 | supervisor cost, proof-of-existence, and replay-coupling disclosures |
 | Paper future-work register | Appendix A.2 | P3 | interpretability, continual learning, post-training, and safety rows remain classified |

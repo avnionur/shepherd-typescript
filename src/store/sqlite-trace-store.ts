@@ -37,6 +37,12 @@ import type {
 } from "../supervision/types.ts";
 import { appendToTraceStore } from "./append.ts";
 import { diagnoseStoredAppend } from "./append-recovery.ts";
+import {
+    type ApplicationRecordAppend,
+    appendApplicationRecordInStore,
+    assertUnreservedApplicationOwner,
+    assertUnreservedApplicationOwners,
+} from "./application-records.ts";
 import { resolveBlobDirectory } from "./blob-options.ts";
 import { collectStoredBlobOrphans } from "./blob-orphans.ts";
 import { putStoredBlob, readStoredBlob, verifyStoredBlobs } from "./blobs.ts";
@@ -300,6 +306,7 @@ export class SQLiteTraceStore implements Disposable {
         assertUnreservedSupervisionOwners(batch);
         assertUnreservedReplayOwners(batch);
         assertUnreservedDelegationOwners(batch);
+        assertUnreservedApplicationOwners(batch);
         return appendToTraceStore(this.#database, request);
     }
 
@@ -1258,6 +1265,35 @@ export class SQLiteTraceStore implements Disposable {
     }
 
     /**
+     * Appends one application record at the exact application owner head, publishing the
+     * optional terminal cut through it in the same transaction.
+     *
+     * @param applicationId - Application identity and reserved owner path.
+     * @param expectedHeadRecordId - Exact current head, or null for an empty owner path.
+     * @param request - Application record append.
+     * @param cutId - Terminal cut to publish through the appended record, or null.
+     * @returns The receipt with its cut, a replayed receipt, or a moved-head signal.
+     * @throws {AppendIntentConflictError} If the command names different content.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    appendApplicationRecord(
+        applicationId: string,
+        expectedHeadRecordId: RecordId | null,
+        request: StoreAppendRequest,
+        cutId: CutId | null,
+    ): ApplicationRecordAppend {
+        this.#assertOpen();
+        return appendApplicationRecordInStore(
+            this.#database,
+            applicationId,
+            expectedHeadRecordId,
+            request,
+            cutId,
+        );
+    }
+
+    /**
      * Reads one live supervised dispatch row.
      *
      * @param dispatchId - Dispatch identity.
@@ -1547,6 +1583,7 @@ export class SQLiteTraceStore implements Disposable {
         if (typeof publisher === "string") {
             assertUnreservedReplayOwner(publisher);
             assertUnreservedDelegationOwner(publisher);
+            assertUnreservedApplicationOwner(publisher);
         }
         return publishStoredCut(this.#database, spec);
     }

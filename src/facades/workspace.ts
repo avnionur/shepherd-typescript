@@ -1,4 +1,4 @@
-/** Stable Node-only ESM subpath for workspace authority and retained-world operations. */
+/** Stable Node-only ESM subpath for workspace authority, retained-world operations, and the scope world adapter. */
 export {
     RetainedWorldSettlementConflictError,
     RetainedWorldSettlementInvalidError,
@@ -166,6 +166,10 @@ export type {
     ScopeTreeOutcomeStatus,
     ScopeTreeReport,
 } from "../workspace/scope-tree-types.ts";
+export {
+    createScopeWorldAdapter,
+    type ScopeWorldAdapterOptions,
+} from "../workspace/scope-world-adapter.ts";
 export {
     captureGrantedTaskWorldDurably,
     captureJailedGrantedTaskWorldDurably,

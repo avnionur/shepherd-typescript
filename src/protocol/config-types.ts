@@ -2574,8 +2574,367 @@ export type DelegationProtocolConfig = {
     readonly treeRootKinds: readonly string[];
 };
 
+/** Validated research application manifest, protocol identity, and supervisor configuration. */
+export type ApplicationsProtocolConfig = {
+    /** Generated language-neutral application record artifacts. */
+    readonly artifacts: {
+        /** Repository-relative trajectory compression record schema destination. */
+        readonly compressionSchema: string;
+        /** Repository-relative counterfactual candidate record schema destination. */
+        readonly croCandidateSchema: string;
+        /** Repository-relative evaluation report schema destination. */
+        readonly evaluationSchema: string;
+        /** Repository-relative manifest record schema destination. */
+        readonly manifestSchema: string;
+        /** Repository-relative supervision record schema destination. */
+        readonly supervisionSchema: string;
+        /** Repository-relative Tree-RL rollout record schema destination. */
+        readonly treeRlRolloutSchema: string;
+    };
+    /** Compatibility namespace governing application evidence. */
+    readonly compatibilityVersion: string;
+    /** Trajectory compression vocabulary appended by applications protocol v3. */
+    readonly compression: {
+        /** Manifest artifact roles cited by trajectory compression. */
+        readonly artifactRoles: {
+            /** Role of one candidate's terminal record. */
+            readonly candidate: string;
+            /** Role of the suffix replayed under the hint. */
+            readonly compressed: string;
+            /** Role of the delegated compressor child. */
+            readonly compressor: string;
+            /** Role of one seeded best-of-N control rerun. */
+            readonly control: string;
+            /** Role of the aggregate outcome record. */
+            readonly outcome: string;
+            /** Role of the original suffix re-run after a rejected compression. */
+            readonly restoration: string;
+            /** Role of the rewind that restored the fork point. */
+            readonly rewind: string;
+            /** Role of the recorded source trajectory. */
+            readonly source: string;
+            /** Role of one delegated verifier child. */
+            readonly verifier: string;
+        };
+        /** Comparison baseline kinds; the first keeps the whole trajectory. */
+        readonly baselineKinds: readonly string[];
+        /** Protocol budget keys trajectory compression consults. */
+        readonly budgetKeys: {
+            /** Budget key naming the number of seeded best-of-N control reruns. */
+            readonly bestOfN: string;
+            /** Budget key bounding live provider calls and child starts across the run. */
+            readonly providerCalls: string;
+        };
+        /** Candidate kinds ordered compression, then best-of-N control. */
+        readonly candidateKinds: readonly string[];
+        /** Candidate statuses ordered proposed, rewound, settled, rejected. */
+        readonly candidateStatuses: readonly string[];
+        /** Canonical JSON text fields of the delegated compressor and verifier tasks. */
+        readonly childFields: {
+            /** Task input field carrying the canonical evidence text. */
+            readonly input: string;
+            /** Task output field carrying the canonical proposal or verdict text. */
+            readonly output: string;
+        };
+        /** Compression outcomes ordered pruned, no prune, restored. */
+        readonly outcomes: readonly string[];
+        /** Compression record phases ordered opened, candidate, outcome. */
+        readonly phases: readonly string[];
+        /** Retained reasons trajectory compression writes. */
+        readonly reasons: {
+            /** Reason retained when the compressor proposes no fork point. */
+            readonly noForkPoint: string;
+            /** Reason retained when the compressed session is not strictly shorter and finished. */
+            readonly notAdmissible: string;
+            /** Reason retained when a fork point has an unavailable restore constituent. */
+            readonly restoreUnavailable: string;
+        };
+        /** Surface roles the compression protocol must declare. */
+        readonly surfaceRoles: {
+            /** Role of the fork-point and hint schema. */
+            readonly compression: string;
+            /** Role of the compressor prompt. */
+            readonly compressor: string;
+            /** Role of the verifier prompt. */
+            readonly verifier: string;
+        };
+        /** Verifier verdicts ordered accepted, then rejected. */
+        readonly verdicts: readonly string[];
+    };
+    /** Counterfactual replay optimizer vocabulary appended by applications protocol v2. */
+    readonly cro: {
+        /** Manifest artifact roles cited by the optimizer. */
+        readonly artifactRoles: {
+            /** Role of the recorded baseline workflow session. */
+            readonly baseline: string;
+            /** Role of one candidate's affected-suffix branch session. */
+            readonly branch: string;
+            /** Role of one candidate's terminal evaluation record. */
+            readonly candidate: string;
+            /** Role of one candidate's whole-workflow comparison session. */
+            readonly fullReplay: string;
+            /** Role of the terminal promotion record. */
+            readonly promotion: string;
+        };
+        /** Comparison baseline kinds; the first re-runs the whole workflow per candidate. */
+        readonly baselineKinds: readonly string[];
+        /** Protocol budget keys the optimizer consults. */
+        readonly budgetKeys: {
+            /** Budget key bounding the declared candidate count. */
+            readonly candidates: string;
+            /** Budget key naming the minimum evaluation score a promoted candidate reaches. */
+            readonly minPromotionScore: string;
+            /** Budget key bounding live provider calls across every session the run opens. */
+            readonly providerCalls: string;
+        };
+        /** Candidate statuses ordered proposed, evaluated, promoted, rejected. */
+        readonly candidateStatuses: readonly string[];
+        /** Candidate record phases ordered opened, then candidate. */
+        readonly phases: readonly string[];
+        /** Surface roles the optimizer protocol must declare. */
+        readonly surfaceRoles: {
+            /** Role of the handoff manifest schema. */
+            readonly handoff: string;
+            /** Role of the proposer prompt and tools. */
+            readonly proposer: string;
+            /** Role of the reflection scratchpad schema. */
+            readonly reflection: string;
+        };
+    };
+    /** Stable error codes and messages. */
+    readonly errors: {
+        /** Exceeded protocol budget code. */
+        readonly budgetCode: string;
+        /** Exceeded protocol budget message. */
+        readonly budgetMessage: string;
+        /** Invalid application evidence code. */
+        readonly evidenceCode: string;
+        /** Invalid application evidence message. */
+        readonly evidenceMessage: string;
+        /** Malformed or mismatched protocol definition code. */
+        readonly protocolCode: string;
+        /** Malformed or mismatched protocol definition message. */
+        readonly protocolMessage: string;
+        /** Verifier rejection code. */
+        readonly verificationCode: string;
+        /** Verifier rejection message. */
+        readonly verificationMessage: string;
+    };
+    /** Evaluation report vocabulary appended by applications protocol v5. */
+    readonly evaluation: {
+        /** Evaluation definition bounds. */
+        readonly limits: {
+            /** Maximum experiments one evaluation definition declares. */
+            readonly maxExperiments: number;
+            /** Maximum characters of one published limitation. */
+            readonly maxLimitationLength: number;
+            /** Maximum limitations one evaluation definition declares. */
+            readonly maxLimitations: number;
+        };
+        /** Measured metrics ordered cost, provider calls, input tokens, output tokens, steps, success. */
+        readonly metrics: readonly string[];
+        /** Evaluation report version. */
+        readonly reportVersion: number;
+        /** Coding supervisor comparison baseline kinds; the first runs one worker without a policy. */
+        readonly supervisionBaselineKinds: readonly string[];
+    };
+    /** Deterministic identity derivation. */
+    readonly identity: {
+        /** Prefix of application identities and reserved owner paths. */
+        readonly applicationIdPrefix: string;
+        /** Prefix of artifact citation identities. */
+        readonly artifactIdPrefix: string;
+        /** Prefix of counterfactual candidate identities. */
+        readonly candidateIdPrefix: string;
+        /** Canonical key naming application command append intents. */
+        readonly commandAppendIntentKind: string;
+        /** Prefix of terminal application cut identities. */
+        readonly cutIdPrefix: string;
+        /** Secure hash algorithm behind every application digest. */
+        readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
+        /** Prefix of compression fork-point identities. */
+        readonly forkPointIdPrefix: string;
+        /** Prefix of manifest identities. */
+        readonly manifestIdPrefix: string;
+        /** Prefix of protocol definition identities. */
+        readonly protocolIdPrefix: string;
+        /** Prefix of evaluation report identities. */
+        readonly reportIdPrefix: string;
+        /** Prefix of Tree-RL rollout identities. */
+        readonly rolloutIdPrefix: string;
+    };
+    /** Application kinds ordered coding supervisor, counterfactual optimization, trajectory compression, Tree-RL. */
+    readonly kinds: readonly string[];
+    /** Resource bounds for application evidence. */
+    readonly limits: {
+        /** Maximum artifact citations one manifest carries. */
+        readonly maxArtifacts: number;
+        /** Maximum best-of-N control candidates. */
+        readonly maxBestOfN: number;
+        /** Maximum rollout branches per fork point. */
+        readonly maxBranches: number;
+        /** Maximum counterfactual candidates per run. */
+        readonly maxCandidates: number;
+        /** Maximum dataset items one protocol selects. */
+        readonly maxDatasetItems: number;
+        /** Maximum fork points per run. */
+        readonly maxForkPoints: number;
+        /** Maximum UTF-8 bytes of one prompt surface. */
+        readonly maxPromptBytes: number;
+        /** Maximum characters of a retained reason. */
+        readonly maxReasonLength: number;
+        /** Maximum rollouts per run. */
+        readonly maxRollouts: number;
+        /** Maximum supervisor observation rounds per run. */
+        readonly maxRounds: number;
+        /** Maximum canonical bytes of one schema surface. */
+        readonly maxSchemaBytes: number;
+        /** Maximum seeds one protocol declares. */
+        readonly maxSeeds: number;
+        /** Maximum surfaces one protocol declares. */
+        readonly maxSurfaces: number;
+        /** Maximum canonical bytes of one tool surface. */
+        readonly maxToolBytes: number;
+        /** Maximum supervised workers per run. */
+        readonly maxWorkers: number;
+        /** Minimum supervised workers per run. */
+        readonly minWorkers: number;
+    };
+    /** Manifest record version. */
+    readonly manifestVersion: number;
+    /** Protocol surface kinds ordered prompt, schema, tool. */
+    readonly protocolSurfaces: readonly string[];
+    /** Application record version. */
+    readonly recordVersion: number;
+    /** Stable JSON Schema identifiers. */
+    readonly schemas: {
+        /** Trajectory compression record schema identifier. */
+        readonly compressionId: string;
+        /** Counterfactual candidate record schema identifier. */
+        readonly croCandidateId: string;
+        /** Evaluation report schema identifier. */
+        readonly evaluationId: string;
+        /** Manifest record schema identifier. */
+        readonly manifestId: string;
+        /** Supervision record schema identifier. */
+        readonly supervisionId: string;
+        /** Tree-RL rollout record schema identifier. */
+        readonly treeRlRolloutId: string;
+    };
+    /** Coding supervisor vocabulary. */
+    readonly supervision: {
+        /** Manifest artifact roles cited by the supervisor. */
+        readonly artifactRoles: {
+            /** Role of a retained supervision decision record. */
+            readonly decision: string;
+            /** Role of one worker attempt and its cut. */
+            readonly worker: string;
+            /** Role of a world discard receipt. */
+            readonly worldDiscard: string;
+            /** Role of a world fork receipt. */
+            readonly worldFork: string;
+            /** Role of a world merge receipt. */
+            readonly worldMerge: string;
+        };
+        /** Protocol budget keys the supervisor consults. */
+        readonly budgetKeys: {
+            /** Budget key bounding total worker starts. */
+            readonly providerCalls: string;
+            /** Budget key bounding observation rounds. */
+            readonly rounds: string;
+            /** Run budget metric mapped to the protocol budget key bounding each worker. */
+            readonly worker: Readonly<Record<string, string>>;
+        };
+        /** Conflict classifications ordered none, then path overlap. */
+        readonly conflictKinds: readonly string[];
+        /** Supervision record phases ordered opened, then decision. */
+        readonly phases: readonly string[];
+        /** Policy decision kinds ordered observe, inject, handoff, discard/restart, accept. */
+        readonly policyKinds: readonly string[];
+        /** Retained reasons the supervisor writes. */
+        readonly reasons: {
+            /** Discard reason retained on every worker the accept decision did not select. */
+            readonly notAccepted: string;
+        };
+        /** Surface roles the coding supervisor protocol must declare. */
+        readonly surfaceRoles: {
+            /** Role of the action prompt and schema. */
+            readonly action: string;
+            /** Role of the observation prompt and schema. */
+            readonly observation: string;
+        };
+        /** Worker lineage statuses ordered running, accepted, discarded, restarted, handed off. */
+        readonly workerStatuses: readonly string[];
+    };
+    /** Retained record schema references. */
+    readonly traceSchemas: {
+        /** Trajectory compression record schema reference. */
+        readonly compression: string;
+        /** Counterfactual optimizer record schema reference. */
+        readonly croCandidate: string;
+        /** Manifest record schema reference. */
+        readonly manifest: string;
+        /** Supervision record schema reference. */
+        readonly supervision: string;
+        /** Tree-RL rollout record schema reference. */
+        readonly treeRlRollout: string;
+    };
+    /** Tree-RL adapter vocabulary appended by applications protocol v4. */
+    readonly treeRl: {
+        /** Manifest artifact roles cited by the Tree-RL adapter. */
+        readonly artifactRoles: {
+            /** Role of the single-rollout baseline batch. */
+            readonly baselineBatch: string;
+            /** Role of the training batch. */
+            readonly batch: string;
+            /** Role of one rollout record. */
+            readonly rollout: string;
+            /** Role of the recorded source session. */
+            readonly source: string;
+        };
+        /** Comparison baseline kinds; the first uses one branch per fork point. */
+        readonly baselineKinds: readonly string[];
+        /** Training batch formats; the first is canonical JSON lines. */
+        readonly batchFormats: readonly string[];
+        /** Protocol budget keys the Tree-RL adapter consults. */
+        readonly budgetKeys: {
+            /** Budget key naming the branch count per fork point. */
+            readonly branches: string;
+            /** Budget key bounding the selected fork points. */
+            readonly forkPoints: string;
+            /** Budget key naming the minimum transitive dependent count of a fork point. */
+            readonly minDependents: string;
+            /** Budget key bounding live provider calls across every rollout session. */
+            readonly providerCalls: string;
+        };
+        /** Tree-RL record phases ordered opened, rollout, batch. */
+        readonly phases: readonly string[];
+        /** Retained failure reasons the Tree-RL adapter writes. */
+        readonly reasons: {
+            /** Reason retained when a rollout diverged before its fork point or without explanation. */
+            readonly diverged: string;
+            /** Reason retained when a rollout session was left non-terminal by a dead writer. */
+            readonly interrupted: string;
+            /** Reason retained when a rollout session did not finish. */
+            readonly notFinished: string;
+            /** Reason retained when the reward function threw or returned a non-finite reward. */
+            readonly rewardFailed: string;
+        };
+        /** Rollout statuses ordered completed, then failed. */
+        readonly rolloutStatuses: readonly string[];
+        /** Surface roles the Tree-RL protocol must declare. */
+        readonly surfaceRoles: {
+            /** Role of the training batch line schema. */
+            readonly batch: string;
+            /** Role of the rollout policy prompt. */
+            readonly rollout: string;
+        };
+    };
+};
+
 /** Complete validated language-neutral protocol configuration. */
 export type ProtocolConfig = {
+    readonly applications: ApplicationsProtocolConfig;
     readonly cli: CliProtocolConfig;
     readonly delegation: DelegationProtocolConfig;
     readonly effects: EffectProtocolConfig;

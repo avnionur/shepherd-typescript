@@ -71,6 +71,38 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   constraints, supervisor operations, failure table, and non-claims behind the delegation APIs.
 - [Phase 9 exit audit](../.plan/phase-9-exit-audit.md) maps task-as-value, delegation, supervisor
   operation, revision, and result threading evidence to every roadmap work item and exit criterion.
+- [Application manifests and protocol identity](./application-manifests.md) defines application
+  protocol definitions and their content-addressed identity, command-derived reserved application
+  owner paths, digest-bearing manifests citing surfaces and artifacts by digest, measured costs,
+  terminal-cut retention, and inspection across reopened, read-only, and imported stores.
+- [Two-worker coding supervisor](./coding-supervisor.md) defines the Appendix E supervisor over
+  child run handles: world adapters and the scope world adapter, path-overlap conflict
+  classification, inject, handoff, discard-and-restart from a clean fork, terminal accept and merge,
+  retained supervision records, crash recovery, and inspection.
+- [Counterfactual workflow optimization](./counterfactual-optimization.md) defines the Appendix F
+  optimizer over replay sessions: the affected-suffix rule over declared dependencies, the
+  divergence proof, the evaluation gate, candidate lineage and statuses, the single terminal
+  promotion, the measured `full_replay` comparison, budgets, crash recovery, and inspection.
+- [Trajectory compression](./trajectory-compression.md) defines Appendix D compression over replay
+  sessions: the fork-point and hint grammar, restoration by rewind and suffix replay under the hint,
+  `no_prune` and unavailable-restore refusal, the verifier gate between `pruned` and `restored`, the
+  bounded best-of-N control, measured step-count ratios, budgets, crash recovery, and inspection.
+- [Tree-RL adapter](./tree-rl-rollouts.md) defines the §5.3 adapter over replay sessions:
+  deterministic trace-selected fork points, seeded branched rollouts under per-rollout static
+  cassettes, a caller reward, intra- and inter-branch advantages over completed rollouts, the
+  canonical `jsonl_v1` training batch and its digest, the `single_rollout` baseline, budgets, crash
+  recovery, and inspection.
+- [Application evaluation](./application-evaluation.md) defines the offline evaluation runner: the
+  caller's evaluation definition and bindings, the `no_supervision`, `full_replay`,
+  `no_compression`, and `single_rollout` baselines, measured-only metrics and comparisons, the
+  digest-bearing `application-evaluation-v1` report and its determinism rule, the repository
+  artifacts and their drift check, and the published limitations. The generated
+  [evaluation report](./generated/application-evaluation.md) is its repository output.
+- [Research applications contract](../.plan/research-applications-contract.md) defines the Phase 10
+  design constraints, failure table, and non-claims behind the application APIs.
+- [Phase 10 exit audit](../.plan/phase-10-exit-audit.md) maps application manifest, supervisor,
+  optimizer, compression, Tree-RL, and evaluation evidence and the conformance scenario to every
+  roadmap work item and exit criterion.
 - [Phase 7 exit audit](../.plan/phase-7-exit-audit.md) maps live observation and interception
   evidence to every roadmap work item and exit criterion.
 - [Phase 6 exit audit](../.plan/phase-6-exit-audit.md) maps scope-algebra evidence and records L2

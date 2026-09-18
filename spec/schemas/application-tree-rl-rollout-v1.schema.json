@@ -1,0 +1,506 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/application-tree-rl-rollout-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Application Tree-RL Rollout v1",
+    "description": "Tree-RL records on the application owner path: the opened record naming the source session, the trace-selected fork points, the branch seeds, and the baselines; one record per rollout retaining its fork point, branch, seed, replay session, status, reward, step count, measured cost, and any failure; and the batch record retaining the jsonl_v1 training batch digest and line count with the optional single-rollout baseline batch.",
+    "oneOf": [
+        {
+            "type": "object",
+            "required": [
+                "application_id",
+                "application_version",
+                "baselines",
+                "command_id",
+                "compatibility_version",
+                "fork_points",
+                "kind",
+                "phase",
+                "protocol_id",
+                "seeds",
+                "source_session_id"
+            ],
+            "properties": {
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "application_id": {
+                    "type": "string",
+                    "pattern": "^application:sha256:[0-9a-f]{64}$"
+                },
+                "baselines": {
+                    "type": "array",
+                    "items": {
+                        "enum": [
+                            "single_rollout"
+                        ]
+                    },
+                    "uniqueItems": true
+                },
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "fork_points": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "dependents",
+                            "prefix_id",
+                            "step_index"
+                        ],
+                        "properties": {
+                            "dependents": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "prefix_id": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "pattern": "^replay-prefix:sha256:[0-9a-f]{64}$"
+                                    }
+                                ]
+                            },
+                            "step_index": {
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "kind": {
+                    "const": "tree_rl"
+                },
+                "phase": {
+                    "const": "opened"
+                },
+                "protocol_id": {
+                    "type": "string",
+                    "pattern": "^application-protocol:sha256:[0-9a-f]{64}$"
+                },
+                "seeds": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 16,
+                    "items": {
+                        "type": "integer"
+                    },
+                    "uniqueItems": true
+                },
+                "source_session_id": {
+                    "$ref": "#/$defs/sessionId"
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "application_id",
+                "application_version",
+                "branch",
+                "compatibility_version",
+                "cost",
+                "failure",
+                "fork_point",
+                "phase",
+                "replay_session_id",
+                "reward",
+                "rollout_id",
+                "seed",
+                "status",
+                "step_count"
+            ],
+            "properties": {
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "application_id": {
+                    "type": "string",
+                    "pattern": "^application:sha256:[0-9a-f]{64}$"
+                },
+                "branch": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 15
+                },
+                "cost": {
+                    "type": "object",
+                    "required": [
+                        "cache_creation_input_tokens",
+                        "cache_read_input_tokens",
+                        "cost_usd",
+                        "input_tokens",
+                        "output_tokens",
+                        "provider_calls"
+                    ],
+                    "properties": {
+                        "cache_creation_input_tokens": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "cache_read_input_tokens": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "cost_usd": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "number",
+                                    "minimum": 0
+                                }
+                            ]
+                        },
+                        "input_tokens": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "output_tokens": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "provider_calls": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "fork_point": {
+                    "$ref": "#/$defs/forkPoint"
+                },
+                "phase": {
+                    "const": "rollout"
+                },
+                "replay_session_id": {
+                    "$ref": "#/$defs/sessionId"
+                },
+                "rollout_id": {
+                    "type": "string",
+                    "pattern": "^tree-rl-rollout:sha256:[0-9a-f]{64}$"
+                },
+                "seed": {
+                    "type": "integer"
+                },
+                "step_count": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "failure": {
+                    "type": "null"
+                },
+                "reward": {
+                    "type": "number"
+                },
+                "status": {
+                    "const": "completed"
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "application_id",
+                "application_version",
+                "branch",
+                "compatibility_version",
+                "cost",
+                "failure",
+                "fork_point",
+                "phase",
+                "replay_session_id",
+                "reward",
+                "rollout_id",
+                "seed",
+                "status",
+                "step_count"
+            ],
+            "properties": {
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "application_id": {
+                    "type": "string",
+                    "pattern": "^application:sha256:[0-9a-f]{64}$"
+                },
+                "branch": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 15
+                },
+                "cost": {
+                    "type": "object",
+                    "required": [
+                        "cache_creation_input_tokens",
+                        "cache_read_input_tokens",
+                        "cost_usd",
+                        "input_tokens",
+                        "output_tokens",
+                        "provider_calls"
+                    ],
+                    "properties": {
+                        "cache_creation_input_tokens": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "cache_read_input_tokens": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "cost_usd": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "number",
+                                    "minimum": 0
+                                }
+                            ]
+                        },
+                        "input_tokens": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "output_tokens": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "provider_calls": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "fork_point": {
+                    "$ref": "#/$defs/forkPoint"
+                },
+                "phase": {
+                    "const": "rollout"
+                },
+                "replay_session_id": {
+                    "$ref": "#/$defs/sessionId"
+                },
+                "rollout_id": {
+                    "type": "string",
+                    "pattern": "^tree-rl-rollout:sha256:[0-9a-f]{64}$"
+                },
+                "seed": {
+                    "type": "integer"
+                },
+                "step_count": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "failure": {
+                    "type": "object",
+                    "required": [
+                        "code",
+                        "reason"
+                    ],
+                    "properties": {
+                        "code": {
+                            "enum": [
+                                "APPLICATION_EVIDENCE_INVALID",
+                                "APPLICATION_VERIFICATION_FAILED"
+                            ]
+                        },
+                        "reason": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "reward": {
+                    "type": "null"
+                },
+                "status": {
+                    "const": "failed"
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "application_id",
+                "application_version",
+                "baseline",
+                "batch_digest",
+                "compatibility_version",
+                "format",
+                "line_count",
+                "phase"
+            ],
+            "properties": {
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "batch_digest": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "format": {
+                    "enum": [
+                        "jsonl_v1"
+                    ]
+                },
+                "line_count": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 64
+                },
+                "application_id": {
+                    "type": "string",
+                    "pattern": "^application:sha256:[0-9a-f]{64}$"
+                },
+                "baseline": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "batch_digest",
+                                "format",
+                                "kind",
+                                "line_count"
+                            ],
+                            "properties": {
+                                "batch_digest": {
+                                    "type": "string",
+                                    "pattern": "^sha256:[0-9a-f]{64}$"
+                                },
+                                "format": {
+                                    "enum": [
+                                        "jsonl_v1"
+                                    ]
+                                },
+                                "line_count": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 64
+                                },
+                                "kind": {
+                                    "enum": [
+                                        "single_rollout"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "phase": {
+                    "const": "batch"
+                }
+            },
+            "additionalProperties": false
+        }
+    ],
+    "$defs": {
+        "batchLine": {
+            "type": "object",
+            "required": [
+                "fork_point",
+                "inter_branch_advantage",
+                "intra_branch_advantage",
+                "replay_session_id",
+                "reward",
+                "rollout_id",
+                "seed",
+                "session_id",
+                "step_count"
+            ],
+            "properties": {
+                "fork_point": {
+                    "$ref": "#/$defs/forkPoint"
+                },
+                "inter_branch_advantage": {
+                    "type": "number"
+                },
+                "intra_branch_advantage": {
+                    "type": "number"
+                },
+                "replay_session_id": {
+                    "$ref": "#/$defs/sessionId"
+                },
+                "reward": {
+                    "type": "number"
+                },
+                "rollout_id": {
+                    "type": "string",
+                    "pattern": "^tree-rl-rollout:sha256:[0-9a-f]{64}$"
+                },
+                "seed": {
+                    "type": "integer"
+                },
+                "session_id": {
+                    "$ref": "#/$defs/sessionId"
+                },
+                "step_count": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "additionalProperties": false
+        },
+        "forkPoint": {
+            "type": "object",
+            "required": [
+                "prefix_id",
+                "step_index"
+            ],
+            "properties": {
+                "prefix_id": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^replay-prefix:sha256:[0-9a-f]{64}$"
+                        }
+                    ]
+                },
+                "step_index": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "additionalProperties": false
+        },
+        "sessionId": {
+            "type": "string",
+            "pattern": "^replay-session:sha256:[0-9a-f]{64}$"
+        }
+    }
+}

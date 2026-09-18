@@ -8,6 +8,11 @@
             "summary": "Complete supported package surface preserved for existing consumers.",
             "title": "Root"
         },
+        "./applications": {
+            "authority": "Running and inspecting the coding supervisor, the counterfactual optimizer, trajectory compression, and the Tree-RL adapter, running an evaluation, and retaining manifests require an explicit trace-store handle; workers, policies, workflow programs, evaluators, compressors, verifiers, reward functions, evaluation bindings, and providers are caller-supplied; an evaluation writes no record of its own beyond the application commands it issues; world custody is reached only through a caller-supplied adapter. Every supervisor command and every compressor and verifier child runs through the delegation seam under the caller's root declaration and never amplifies authority; every optimizer, compression, and Tree-RL rollout session runs through the replay seam without bound worlds or processes. No provider, filesystem, workspace, custody, or settlement authority is created.",
+            "summary": "Application manifests, protocol identity, the two-worker coding supervisor over child run handles, the counterfactual workflow optimizer over replay sessions, Appendix D trajectory compression, the §5.3 Tree-RL adapter, and offline evaluation reports against simple baselines.",
+            "title": "Applications"
+        },
         "./canonical": {
             "authority": "Pure canonical encoding and identity operations; no filesystem, process, network, persistence, or mutation authority.",
             "summary": "Canonical semantic-record encoding and identity.",

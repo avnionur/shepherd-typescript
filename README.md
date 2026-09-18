@@ -49,7 +49,7 @@ Coverage is earned in explicit levels so planned behavior is never presented as 
 | L0 | Canonical schemas, identities, trace storage, and projections | Complete |
 | L1 | Shepherd `0.3.0` settlement compatibility | Complete in 1.51.0 |
 | L2 | Scope and versioned-world substrate parity | Complete in 2.7.1 for the recorded hosts |
-| L3 | Paper programming-model parity | Complete in 2.20.1 for the documented scope: live observation and interception (Phase 7) in 2.10.1, coupled checkpoints, rewind, and replay (Phase 8) in 2.15.1, and task-as-value meta-agents (Phase 9) in 2.20.1 |
+| L3 | Paper programming-model parity | Complete in 2.20.1 for the documented scope: live observation and interception (Phase 7) in 2.10.1, coupled checkpoints, rewind, and replay (Phase 8) in 2.15.1, and task-as-value meta-agents (Phase 9) in 2.20.1; research applications (Phase 10) complete in 2.25.1 for the documented offline scope |
 | L4 | Production security, recovery, performance, packaging, and releases | Planned |
 
 Naming, MIT licensing, ESM package exports, and installed consumer compatibility are defined.
@@ -164,6 +164,38 @@ trace-record contracts with durable SQLite task and trace stores:
 - typed result threading: accepted outputs re-validated against the retained output schema with
   digest proof and caller-schema equality, bounded delegation trees under a handle or supervisor
   root, and nested meta-agents whose records, authority, and values never leak into the root;
+- research application manifests: content-addressed application protocol definitions, command-
+  derived reserved application owner paths, and digest-bearing manifests citing protocol surfaces
+  and produced artifacts by digest with measured costs, retained with a terminal cut and
+  inspectable on reopened, read-only, and imported stores
+  ([application manifests](./docs/application-manifests.md));
+- the two-worker coding supervisor (Appendix E) over child run handles: isolated world custody
+  through a caller-supplied adapter or the scope world adapter, path-overlap conflict
+  classification, inject, handoff, and discard-and-restart from a clean fork with retained evidence
+  citing exact records and receipts, exactly one accepted and merged worker, and crash recovery
+  through the documented cancellation path ([coding supervisor](./docs/coding-supervisor.md));
+- the counterfactual workflow optimizer (Appendix F) over replay sessions: a recorded baseline,
+  candidate edits of the declarable change dimensions replayed only over the affected suffix of
+  their parent's trace, a divergence proof, a caller-supplied evaluation gate, candidate lineage,
+  a single terminal promotion, and a measured `full_replay` comparison by provider calls and cache
+  reads ([counterfactual optimization](./docs/counterfactual-optimization.md));
+- Appendix D trajectory compression over replay sessions: a delegated compressor proposing a
+  fork point and hint validated against the closed compression grammar and the retained prefix,
+  restoration with `rewindReplaySession` and suffix replay under the hint, `no_prune` for a null
+  fork point or an `unavailable` restore classification, a delegated verifier gating `pruned`
+  against `restored`, a bounded seeded best-of-N control, and measured step-count ratios only
+  ([trajectory compression](./docs/trajectory-compression.md));
+- the §5.3 Tree-RL adapter over replay sessions: deterministic fork points selected from declared
+  dependencies, seeded branched rollouts from each fork point under per-rollout static cassettes,
+  a caller-supplied reward, intra- and inter-branch advantages over completed rollouts only, failed
+  rollouts retained and excluded, and a canonical `jsonl_v1` training batch whose digest is
+  identical across runs and after archive import ([Tree-RL adapter](./docs/tree-rl-rollouts.md));
+- offline evaluation of every configured application against its baseline (`no_supervision`,
+  `full_replay`, `no_compression`, `single_rollout`) into one measured-only, digest-bearing report
+  with per-metric comparisons and published limitations, identical across runs, stores, and hosts,
+  with a checked repository report ([application evaluation](./docs/application-evaluation.md),
+  [generated report](./docs/generated/application-evaluation.md)); upstream headline results are
+  not reproduced;
 - workspace protocol v22 content-addressed macOS/Linux/native-Windows/WSL platform evidence,
   advisory/auto placement resolution with visible fallback, exact placed capture/recovery, and
   fail-closed explicit jail refusal without a native-sandbox claim;
@@ -310,7 +342,7 @@ examples to these programs and identifies adapted and unsupported behavior.
 
 ## API
 
-The package is ESM-only. Supported entries are `.`, `./canonical`, `./cli`, `./effects`,
+The package is ESM-only. Supported entries are `.`, `./applications`, `./canonical`, `./cli`, `./effects`,
 `./delegation`, `./providers`, `./read`, `./replay`, `./runs`, `./scopes`, `./supervision`,
 `./tasks`, `./trace`, and `./workspace`; see
 [Package exports and module policy](./docs/package-exports.md). The checked-in and packaged
@@ -717,7 +749,16 @@ maps [task values and child run handles](./docs/task-values.md),
 [task revision and synthesis](./docs/task-revision.md), and
 [result threading and nested meta-agents](./docs/result-threading.md) to the task-as-value
 meta-agent exit criteria and records L3 paper programming-model parity for the documented scope.
-Phase 10 (research applications) is next.
+Phase 10 is complete for its documented offline scope: the
+[Phase 10 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-10-exit-audit.md)
+maps [application manifests](./docs/application-manifests.md), the
+[two-worker coding supervisor](./docs/coding-supervisor.md), the
+[counterfactual workflow optimizer](./docs/counterfactual-optimization.md),
+[trajectory compression](./docs/trajectory-compression.md), the
+[Tree-RL adapter](./docs/tree-rl-rollouts.md), and
+[application evaluation](./docs/application-evaluation.md) to the research application exit
+criteria. Every figure is an offline measurement on synthetic fixtures; no upstream headline result
+is reproduced. Phase 11 (production hardening and 1.0) is next.
 
 The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
 execution, durable lifecycle/control evidence, and conservative formal-claim boundary. Phase 3 now

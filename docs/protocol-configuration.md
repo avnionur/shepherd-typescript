@@ -47,6 +47,51 @@ append-intent key, and the request and output digest kinds;
 citation, injection, nesting-depth, reason, supervisor-identity, and tree-entry bounds; tree
 projection root kinds; trace schema references; generated schema identifiers and destinations; and
 stable error codes and messages.
+Applications protocol v1 introduces the `applications` section whole: the application record and
+manifest versions and compatibility namespace; application kinds (`coding_supervisor`,
+`counterfactual_optimization`, `trajectory_compression`, `tree_rl`) and protocol surface kinds
+(`prompt`, `schema`, `tool`); application, manifest, protocol, artifact, terminal-cut, candidate,
+fork-point, rollout, and report identity prefixes, the command append-intent key, and the digest
+algorithm; artifact, best-of-N, branch, candidate, dataset, fork-point, prompt, reason, rollout,
+round, schema, seed, surface, tool, and worker bounds; the coding supervisor vocabulary (record
+phases, policy kinds, conflict kinds, worker lineage statuses, manifest artifact roles, protocol
+budget keys, required surface roles, and the retained not-accepted reason); the manifest and
+supervision trace schema references; generated schema identifiers and destinations; and stable
+error codes and messages. Later applications protocol versions append their own sub-objects and
+never mutate a v1 value. See [application manifests](./application-manifests.md) and the
+[coding supervisor](./coding-supervisor.md).
+Applications protocol v2 spreads v1 and appends the `cro` sub-object for the counterfactual
+workflow optimizer: its record phases (`opened`, `candidate`), candidate statuses (`proposed`,
+`evaluated`, `promoted`, `rejected`), comparison baseline kinds (`full_replay`), manifest artifact
+roles, protocol budget keys (`maxCandidates`, `maxProviderCalls`, `minPromotionScore`), and required
+surface roles (`proposer`, `reflection`, `handoff`); plus the `croCandidate` trace schema reference,
+schema identifier, and generated schema destination. No v1 value changes. See
+[counterfactual optimization](./counterfactual-optimization.md).
+Applications protocol v3 spreads v2 and appends the `compression` sub-object for trajectory
+compression: its record phases (`opened`, `candidate`, `outcome`), candidate kinds (`compression`,
+`control`), candidate statuses (`proposed`, `rewound`, `settled`, `rejected`), outcomes (`pruned`,
+`no_prune`, `restored`), verifier verdicts (`accepted`, `rejected`), comparison baseline kinds
+(`no_compression`), manifest artifact roles, protocol budget keys (`bestOfN`, `maxProviderCalls`),
+the canonical child text fields (`evidence`, `result`), the retained no-fork-point,
+not-admissible, and unavailable-restore reasons, and required surface roles (`compressor`,
+`compression`, `verifier`); plus the `compression` trace schema reference, schema identifier, and
+generated schema destination. No v1 or v2 value changes. See
+[trajectory compression](./trajectory-compression.md).
+Applications protocol v4 spreads v3 and appends the `treeRl` sub-object for the Tree-RL adapter: its
+record phases (`opened`, `rollout`, `batch`), rollout statuses (`completed`, `failed`), comparison
+baseline kinds (`single_rollout`), training batch formats (`jsonl_v1`), manifest artifact roles
+(including `training_batch`), protocol budget keys (`branches`, `maxForkPoints`, `minDependents`,
+`maxProviderCalls`), the retained diverged, interrupted, not-finished, and reward-failed reasons,
+and required surface roles (`rollout`, `training_batch`); plus the `treeRlRollout` trace schema
+reference, schema identifier, and generated schema destination. No v1, v2, or v3 value changes. See
+the [Tree-RL adapter](./tree-rl-rollouts.md).
+Applications protocol v5 spreads v4 and appends the `evaluation` sub-object for offline evaluation:
+the measured metrics in report order (`cost_usd`, `provider_calls`, `input_tokens`,
+`output_tokens`, `steps`, `success`), the coding supervisor comparison baseline kinds
+(`no_supervision`), the report version, and the experiment, limitation, and limitation-length
+bounds; plus the `evaluation` schema identifier and generated schema destination. The report is a
+returned and generated artifact, not a retained record, so v5 adds no trace schema reference. No
+v1–v4 value changes. See [application evaluation](./application-evaluation.md).
 The scope section fixes the scope record version and compatibility namespace, root/child kinds,
 open/merged/discarded states, history evidence kinds, the trace-only world capability, authority
 atoms (equal to repository grant atoms) and resource kinds, scope and origin-cut identity prefixes,
@@ -201,6 +246,13 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
 - delegation vocabularies have their exact sizes, trace schema references and identity prefixes are
   distinct, bounds and the record version are positive, schema identifiers are absolute URLs, and
   every value matches the immutable delegation protocol v1 contract.
+- application kinds, surface kinds, and supervision vocabularies have their exact sizes, identity
+  prefixes and trace schema references are distinct, bounds and versions are positive, the worker
+  minimum does not exceed the maximum, the cro vocabularies have their exact sizes and distinct
+  artifact roles, budget keys, and surface roles, schema identifiers are absolute URLs, and every
+  value matches the immutable latest `APPLICATIONS_PROTOCOL_V5_CONTRACT`, which spreads
+  `APPLICATIONS_PROTOCOL_V4_CONTRACT`; each contract spreads its predecessor back to
+  `APPLICATIONS_PROTOCOL_V1_CONTRACT`.
 - scope kinds are exactly two, states exactly three, evidence kinds exactly four, authority atoms
   equal the configured repository grant atoms, trace schema references are distinct, identity
   prefixes, bounds, lease, versions, schema identifiers, and error codes are closed, and every

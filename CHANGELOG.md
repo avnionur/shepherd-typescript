@@ -5,6 +5,301 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.25.1] - 2026-09-18
+
+### Improvement
+
+- Add the research applications conformance scenario: the repository evaluation runs all four
+  applications through `./applications` in one store, with the coding supervisor on real scope
+  custody (inject, discard and restart from a clean fork, handoff, and accept). Every manifest
+  validates with `validateApplicationManifest` and the generated `application-manifest-v1` schema
+  and cites the configured protocol; the report cites exactly the retained manifests, and its
+  unchanged experiments reproduce the checked evaluation report. From the exported and imported
+  archive alone it shows the discard decision and retry cut, the world fork, merge, and discard
+  receipts, and every optimizer, compression, and Tree-RL branch restored from its declared source
+  boundary and prefix. Inspections and the training batch digest are identical on the live,
+  read-only, and imported stores.
+- Add process crash evidence for the counterfactual optimizer and the Tree-RL adapter: a process
+  killed inside a candidate branch or rollout session is refused under the live lease without a
+  record, then retained as a rejected candidate or a failed rollout once the lease expires.
+- Add the [Phase 10 exit audit](.plan/phase-10-exit-audit.md) and update the roadmap, parity
+  matrix, paper coverage map, tracker, and README level table: Phase 10 is complete for its
+  documented offline scope.
+
+### Defect Fixes
+
+- The counterfactual optimizer no longer evaluates or promotes a candidate whose branch or
+  full-replay session ended `failed` or `cancelled`: the candidate is retained as `rejected` with
+  `APPLICATION_EVIDENCE_INVALID` before the evaluator is consulted and the run stops. Trajectory
+  compression restores a compressed session that did not finish without consulting the verifier,
+  and rejects a restoration or control session that did not finish.
+- `cost_usd` is null, as the manifest contract requires, when any observed usage reported no cost,
+  including a live provider call that failed without a response; previously such a call counted as
+  cost 0. The four application cost folds share one internal helper.
+- The evaluation report's counterfactual comparison restricts both sides to candidates that retain a
+  full-replay comparison; the generated page states that comparisons measure only the scoped
+  sessions and are not whole-run savings; the `single-rollout-shared-cost` limitation now matches
+  what is measured (a failed branch-0 rollout still counts in baseline cost and steps and makes
+  baseline success false); `docs/protocol-configuration.md` names
+  `APPLICATIONS_PROTOCOL_V5_CONTRACT` as the latest applications contract.
+
+### Impact
+
+Phase 10 is complete for its documented scope with repeatable conformance and crash evidence. This
+slice changes tests and documentation only; protocol values, schemas, public APIs, and the store
+schema are unchanged from 2.25.0.
+
+## [2.25.0] - 2026-09-18
+
+### New Feature
+
+- Add offline application evaluation to `./applications` and the root: `runApplicationEvaluation`
+  validates a caller evaluation definition (experiments with protocol, fixed command identities,
+  and a baseline; limitations) and every experiment's binding before anything runs, then executes
+  each configured application with its baseline and folds one measured-only
+  `application-evaluation-v1` report. `readApplicationEvaluationDefinition` validates a definition
+  on its own.
+- Baselines resolve from the definition and unknown ones are refused before any record:
+  `no_supervision` runs the named worker once as a plain child run (no policy, trace-only),
+  `full_replay` uses the optimizer's whole-workflow comparison, `no_compression` keeps the source
+  trajectory, and `single_rollout` reuses the Tree-RL branch-0 rollouts.
+- Metrics (`cost_usd`, `provider_calls`, `input_tokens`, `output_tokens`, `steps`, `success`) are
+  measured from retained evidence only. `compareApplicationBaseline` returns the application value,
+  baseline value, and delta per metric (null unless both are numbers). The report carries runs
+  (kind, manifest, protocol, seeds, dataset, manifest costs, metrics), baselines with their evidence
+  identities, comparisons, and limitations; `report_id` (`evaluation-report:sha256:`) is the digest
+  of the canonical body, and no wall-clock, host, node version, or duration appears in it.
+  `validateApplicationEvaluationReport` re-derives every comparison and the identity.
+- The evaluation writes no record of its own and every command it issues is idempotent, so a
+  repeated evaluation re-executes nothing and an interrupted one converges on rerun to the report a
+  fresh store produces.
+- Add applications protocol v5 (`APPLICATIONS_PROTOCOL_V5_CONTRACT`, spreading v4) with the
+  `evaluation` vocabulary, the generated `application-evaluation-v1` schema, and the constants
+  `APPLICATION_EVALUATION_METRICS`, `APPLICATION_SUPERVISION_BASELINE_KINDS`,
+  `APPLICATION_EVALUATION_REPORT_VERSION`, and `APPLICATION_EVALUATION_LIMITS`.
+- Add the repository evaluation definition, offline fixtures, and published limitations to
+  `config/research-applications.config.json`, the `pnpm evaluate:applications` and
+  `pnpm check:evaluation` scripts (the check runs in `pnpm verify`), the generated
+  `docs/generated/application-evaluation.json` and `.md` artifacts (host metadata only in the
+  page's excluded trailing section), and the [application evaluation](./docs/application-evaluation.md)
+  documentation.
+
+### Impact
+
+Callers can compare every research application against a simple, explicitly constructed baseline
+and obtain a reproducible, digest-bearing report whose bytes are identical across runs, stores, and
+hosts. The repository publishes such a report with its limitations; upstream headline results are
+not reproduced. No existing API, record, or protocol value changes.
+
+## [2.24.0] - 2026-09-18
+
+### New Feature
+
+- Add the §5.3 Tree-RL adapter to `./applications` and the root: `selectTreeRlForkPoints` selects
+  deterministic fork points from a recorded replay session (provider steps whose transitive
+  dependent count from `analyzeReplayDependencies` reaches the caller minimum, in index order, up to
+  the fork-point bound), and `runTreeRlRollouts` replays the protocol's branch count of rollouts per
+  fork point from its step boundary through `replayReplaySession`, each under its own seed and
+  static provider cassette from a caller factory, proves each with `analyzeReplayDivergence`, and
+  scores it with a caller reward function.
+- Rollouts whose session did not finish, diverged, was interrupted by a dead writer whose lease
+  expired, or whose reward threw or was not finite are retained as `failed` with a configured reason
+  and excluded from every mean; the run still completes.
+- Add `computeTreeRlAdvantages` (intra-branch and inter-branch advantages over completed rollouts,
+  exactly `0` for a single-rollout fork point or a single fork point) and
+  `exportTreeRlTrainingBatch`, which re-derives the canonical `jsonl_v1` batch (one line per
+  completed rollout) and its digest from retained records. The digest is identical across runs of
+  the same command with the same seeds and after archive import. The manifest cites the batch as
+  `training_batch`. The `single_rollout` baseline is the batch of each fork point's first branch.
+- Retain the opened, rollout, and batch records as `shepherd.application.tree_rl_rollout.v1`;
+  `inspectTreeRlRun` validates them on writable, read-only, and imported stores.
+- Every option, the protocol, the source, the selection, the `maxForkPoints`, `maxBranches`, and
+  `maxRollouts` bounds, every provider, and the projected provider calls are checked before any
+  record, so a refusal writes nothing. A crash at any append converges on rerun without re-running a
+  session, and the reward is re-called only for a rollout whose record was never retained.
+- Add applications protocol v4 (`APPLICATIONS_PROTOCOL_V4_CONTRACT`, spreading v3) with the
+  `treeRl` vocabulary, the generated `application-tree-rl-rollout-v1` schema, and the constants
+  `APPLICATION_TREE_RL_PHASES`, `APPLICATION_TREE_RL_ROLLOUT_STATUSES`,
+  `APPLICATION_TREE_RL_BASELINE_KINDS`, and `APPLICATION_TREE_RL_BATCH_FORMATS`.
+- Add the versioned §5.3 experiment definition (rollout prompt, `jsonl_v1` line schema, branch,
+  fork-point, dependent-minimum, and provider-call budgets, seeds, and dataset) to
+  `config/research-applications.config.json`, the
+  [Tree-RL adapter](./docs/tree-rl-rollouts.md) documentation, and a packaged `./applications`
+  probe.
+
+### Impact
+
+Callers can turn a recorded, offline replay session into a reproducible training batch with
+per-rollout advantages whose digest is stable across stores and imports. The adapter trains
+nothing and uses only caller-supplied static providers. No existing API, record, or protocol value
+changes.
+
+## [2.23.0] - 2026-09-18
+
+### New Feature
+
+- Add Appendix D trajectory compression: `runTrajectoryCompression` and
+  `inspectTrajectoryCompression` in `./applications` record a source trajectory through
+  `runReplaySession`, run a compressor as a delegated child (`openChildRun`, `runChildRun`,
+  `acceptChildRunResult`) whose `{ fork_point, hint }` proposal is validated against the closed
+  compression grammar and the source (named session, strict prefix boundary, exact retained prefix
+  identity), and restore the fork point with `rewindReplaySession` before re-executing the suffix
+  under the hint with `replayReplaySession`.
+- A null fork point settles `no_prune`; a checkpoint fork point classified `unavailable` by
+  `classifyReplayCheckpoint` refuses the prune and retains the classification, constituents, and
+  reason. A compressed session that finished with strictly fewer steps is gated by a delegated
+  verifier: `accepted` settles `pruned`, while `rejected` or an inadmissible compressed session
+  re-runs the original suffix and settles `restored` with the retained reason. A verifier that
+  fails or returns a malformed verdict retains the candidate as `rejected` with
+  `APPLICATION_VERIFICATION_FAILED` and prunes nothing.
+- Add the bounded best-of-N control: up to the protocol's `bestOfN` seeds (refused above
+  `limits.maxBestOfN` before any record) run seeded plain reruns that are verified and retained as
+  control candidates, and the `no_compression` baseline keeps the whole trajectory. The aggregate
+  outcome reports measured step counts and step-count ratios only.
+- Retain every candidate status and the outcome as `shepherd.application.compression.v1` records;
+  a rerun after a crash converges through retained session, rewind, and child receipts without a
+  second restore, and inspection is identical on read-only and imported stores.
+- Add applications protocol v3 (`APPLICATIONS_PROTOCOL_V3_CONTRACT`, spreading v2) with the
+  `compression` vocabulary, the generated `application-compression-v1` schema, and the constants
+  `APPLICATION_COMPRESSION_PHASES`, `APPLICATION_COMPRESSION_CANDIDATE_KINDS`,
+  `APPLICATION_COMPRESSION_CANDIDATE_STATUSES`, `APPLICATION_COMPRESSION_OUTCOMES`,
+  `APPLICATION_COMPRESSION_VERDICTS`, and `APPLICATION_COMPRESSION_BASELINE_KINDS`.
+- Add the versioned Appendix D experiment definition (compressor and verifier prompts, fork-point
+  and hint schema, best-of-N and provider-call budgets, seeds, and dataset) to
+  `config/research-applications.config.json`, the
+  [trajectory compression](docs/trajectory-compression.md) documentation, a packaged-CLI probe, and
+  the generated API reference section.
+
+- Trajectory compression recovery: a rewind left non-terminal after its replay restore record is
+  admitted from that record once its lease expires, without a second restore; an interrupted
+  compressed suffix is restored as not admissible, and an interrupted restoration or control
+  session is retained as rejected; delegation-seam refusals (another supervisor, a child left
+  running by a dead process) raise without a record, and only a terminally failed child (including
+  a cancelled one) or a refused output is retained as rejected; the measured source is refused
+  before the `opened` record, and suffix, restoration, and control sessions are checked for measured
+  budget overruns; hint citations must name retained source steps.
+
+### Impact
+
+Consumers can replace a recorded trajectory with a shorter verified rerun from a restorable fork
+point, or keep the original with retained evidence of why, and compare against seeded plain reruns
+by measured step counts. Applications protocol v1 and v2 values are unchanged.
+
+## [2.22.0] - 2026-09-18
+
+### New Feature
+
+- Add the counterfactual workflow optimizer (Appendix F): `runCounterfactualOptimization` and
+  `inspectCounterfactualOptimization` in `./applications` record a baseline workflow through
+  `runReplaySession` and evaluate declared candidate edits (`task`, `provider`, or `handlers` at a
+  step boundary) on branches opened with `replayReplaySession` from the boundary before the
+  earliest transitive dependent of the edited step, so only the affected suffix runs live and an
+  edit without dependents replays zero live steps. Candidates may fork a parent candidate's branch.
+- Every branch is proven with `analyzeReplayDivergence` (no divergence before the target, none
+  unexplained) and gated by a caller-supplied evaluator; a disproven branch or an evaluator that
+  throws or returns a malformed verdict retains the candidate as `rejected` and stops the run with
+  `ApplicationEvidenceError` or `ApplicationVerificationError`. The best passing candidate reaching
+  the protocol's `minPromotionScore` is promoted once, terminally.
+- Retain every candidate as `shepherd.application.cro_candidate.v1` records (`proposed`, then
+  `evaluated` or `rejected`, and one `promoted`) with lineage, target, affected steps, branch
+  session, divergence summary, verdict or failure, and measured cost, plus an optional measured
+  `full_replay` comparison by live provider calls and cache-read tokens. Unsupported edit kinds and
+  over-limit candidate sets are refused before any record; a `maxProviderCalls` budget refuses a
+  session before it opens.
+- Add applications protocol v2 (`APPLICATIONS_PROTOCOL_V2_CONTRACT`, spreading v1) with the `cro`
+  vocabulary, the generated `application-cro-candidate-v1` schema, and the constants
+  `APPLICATION_CRO_PHASES`, `APPLICATION_CRO_CANDIDATE_STATUSES`, and
+  `APPLICATION_CRO_BASELINE_KINDS`.
+- Add the versioned Appendix F experiment definition (proposer prompt and tools, reflection
+  scratchpad and handoff manifest schemas, gate threshold, budgets, seeds, and dataset) to
+  `config/research-applications.config.json`, the
+  [counterfactual optimization](docs/counterfactual-optimization.md) documentation, a packaged-CLI
+  probe, and the generated API reference section.
+
+- Counterfactual optimizer lineage and recovery: a child candidate runs with the program, provider,
+  and handler stack of its nearest ancestor that declared them instead of the baseline's, including
+  in its `full_replay` comparison; every edited step index is validated against the baseline before
+  the `opened` record (`APPLICATION_PROTOCOL_INVALID`, no application record); the measured baseline
+  and every session's measured provider calls are checked against `maxProviderCalls`; a branch or
+  full-replay session left interrupted by a dead writer is retained as a `rejected` candidate with
+  `APPLICATION_EVIDENCE_INVALID` instead of blocking every rerun.
+
+### Impact
+
+Consumers can compare candidate workflow edits by replaying only the dependency-scoped suffix of a
+recorded trace, with retained, record-derived lineage and promotion evidence that inspects
+identically from an imported archive. The `./applications` entry now loads the same
+process-support module as `./replay` because it composes replay sessions; no process is started by
+importing it. Applications protocol v1 values are unchanged.
+
+## [2.21.0] - 2026-09-18
+
+### New Feature
+
+- Add the `./applications` package entry and the `applications` protocol section v1
+  (`APPLICATIONS_PROTOCOL_V1_CONTRACT`) with generated `application-manifest-v1` and
+  `application-supervision-v1` schemas and constants (`APPLICATION_KINDS`,
+  `APPLICATION_PROTOCOL_SURFACES`, `APPLICATION_LIMITS`, supervision phases, policy kinds, conflict
+  kinds, and worker statuses).
+- Add application protocol definitions and manifests: `readApplicationProtocol`,
+  `applicationProtocolId`, `deriveApplicationOwnerId`, `createApplicationManifest`,
+  `validateApplicationManifest`, `retainApplicationManifest`, and `inspectApplicationManifest`.
+  Manifests cite protocol surfaces and artifacts by digest, fold measured costs, and are retained
+  as `shepherd.application.manifest.v1` on a command-derived reserved owner path under a terminal
+  cut; raw appends and cut publication onto application owner paths are refused.
+- Add the two-worker coding supervisor (Appendix E): `runCodingSupervisor` and
+  `inspectCodingSupervisorRun` compose child run handles with observation, path-overlap conflict
+  classification, `inject`, `handoff`, `discard_restart` from a clean fork, and a terminal `accept`
+  that merges one worker and discards the rest, retaining one
+  `shepherd.application.supervision.v1` record per round citing the exact evidence.
+- Add the caller-supplied `ApplicationWorldAdapter` interface and `createScopeWorldAdapter` in
+  `./workspace` over scope fork, merge, discard, and world changesets, with idempotent receipts per
+  command identity.
+- Add the public errors `ApplicationProtocolError`, `ApplicationBudgetError`,
+  `ApplicationEvidenceError`, and `ApplicationVerificationError`.
+- Add the repository Appendix E experiment definition in
+  `config/research-applications.config.json`, the
+  [application manifests](docs/application-manifests.md) and
+  [coding supervisor](docs/coding-supervisor.md) documentation, entry-loading and packaged-CLI
+  probes, and the generated API reference section.
+- Coding supervisor recovery: a rerun resumes after retained `handoff` rounds by replaying each
+  attempt under the supervisor that opened it; a rerun with different workers, supervisor, world
+  binding, or protocol is refused against the retained opened record before any fork or handle is
+  opened, writing nothing; a crash after a round's decision was applied but before its record was
+  retained is completed with the decision rebuilt from the retained delegation commands instead of
+  consulting the policy again. Observation and action schema surfaces are digest-pinned model
+  documents; runtime validation is against the closed `application-supervision-v1` grammar.
+
+### Impact
+
+Consumers can run and inspect a supervised multi-worker coding application with a versioned,
+content-addressed protocol and a reproducible manifest. Existing entries, records, and protocol
+sections are unchanged; the store refuses general writes only to the new application owner prefix.
+
+## [2.20.2] - 2026-09-15
+
+### Improvement
+
+- Add the [research applications contract](.plan/research-applications-contract.md) for Phase 10:
+  canonical digest-bearing application manifests (protocol identity over prompts, schemas, tools,
+  budgets, seeds, and dataset selection; artifact citations by identity; measured cost folding) and
+  the `applications` protocol vocabulary with its versioned-append rule; the two-worker coding
+  supervisor with inject, handoff, and discard/restart policies over child run handles and a
+  caller-supplied world adapter (Appendix E); the counterfactual replay optimizer with candidate
+  edits limited to declared change dimensions at a step boundary, the dependency-scoped suffix rule,
+  divergence proof, targeted-eval gate, candidate lineage, and the `full_replay` baseline
+  (Appendix F); Appendix D trajectory compression with the fork-point/hint schema, suffix
+  restoration, `no_prune` and `restored` outcomes, checkpoint honesty, verifier gate, and bounded
+  best-of-N control; the Tree-RL adapter with deterministic trace-selected fork points, seeded
+  branched rollouts, intra- and inter-branch advantage formulas, and the `jsonl_v1` training batch;
+  the measured-only evaluation report with its baseline kinds and digest determinism rule; the
+  failure and recovery table; and non-claims.
+- Index the contract in `.plan/README.md` and point the tracker's next slice at #172.
+
+### Impact
+
+Documentation-only planning slice; no runtime, protocol, schema, or storage change from 2.20.1.
+
 ## [2.20.1] - 2026-09-15
 
 ### Improvement

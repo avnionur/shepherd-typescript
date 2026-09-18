@@ -7,6 +7,12 @@ CLI errors, required SQLite checks, and boundary verification. Supported imports
 
 ```ts
 import { task } from "@avnionur/shepherd-typescript";
+import {
+    runCodingSupervisor,
+    runCounterfactualOptimization,
+    runTrajectoryCompression,
+    runTreeRlRollouts,
+} from "@avnionur/shepherd-typescript/applications";
 import { canonicalizeRecord } from "@avnionur/shepherd-typescript/canonical";
 import { runCli, type CliIo } from "@avnionur/shepherd-typescript/cli";
 import { createEffectHandlerStack, createEffectIntent } from "@avnionur/shepherd-typescript/effects";
@@ -111,9 +117,38 @@ store constructor, private codecs, migrations, and protocol configuration. See
 [task revision and synthesis](./task-revision.md), and
 [result threading and nested meta-agents](./result-threading.md).
 
+`./applications` is Node-only and owns application protocol definitions and identity
+(`readApplicationProtocol`, `applicationProtocolId`, `deriveApplicationOwnerId`), manifests
+(`createApplicationManifest`, `validateApplicationManifest`, `retainApplicationManifest`,
+`inspectApplicationManifest`), the two-worker coding supervisor (`runCodingSupervisor`,
+`inspectCodingSupervisorRun`), the counterfactual workflow optimizer
+(`runCounterfactualOptimization`, `inspectCounterfactualOptimization`), trajectory compression
+(`runTrajectoryCompression`, `inspectTrajectoryCompression`), the Tree-RL adapter
+(`selectTreeRlForkPoints`, `runTreeRlRollouts`, `computeTreeRlAdvantages`,
+`exportTreeRlTrainingBatch`, `inspectTreeRlRun`), offline evaluation
+(`runApplicationEvaluation`, `readApplicationEvaluationDefinition`, `compareApplicationBaseline`,
+`validateApplicationEvaluationReport`), the world adapter types,
+generated application constants, and the application error classes. Consumers supply an open trace
+store from `./trace`, task descriptors from `./tasks` or task values from `./delegation`, providers
+from `./providers`, and optionally a world adapter such as `createScopeWorldAdapter` from
+`./workspace`; policies, worker programs, workflow programs, evaluators, compressors,
+verifiers, Tree-RL provider factories, reward functions, and evaluation bindings stay
+caller-supplied. Every supervisor command and every compressor and verifier child
+runs through the delegation seam under the caller's root declaration, and every optimizer,
+compression, and Tree-RL rollout session runs through the replay seam without bound worlds or
+processes. The facade
+imports no workspace entry code of its own and creates no provider, filesystem, workspace, custody,
+or settlement authority; because the optimizer composes the replay session implementation, loading
+the entry loads the same process-support module the replay entry loads, without starting a process.
+See [application manifests](./application-manifests.md), the
+[coding supervisor](./coding-supervisor.md),
+[counterfactual optimization](./counterfactual-optimization.md),
+[trajectory compression](./trajectory-compression.md), the
+[Tree-RL adapter](./tree-rl-rollouts.md), and [application evaluation](./application-evaluation.md).
+
 `./workspace` is Node-only and owns workspace initialization/bindings, copy and Git custody,
 changeset inspection, repository grants, placement/native-jail evidence, retained-world runners
-and execution journals, reference-copy scope forks, and exact prepare/select/apply/release/discard
+and execution journals, reference-copy scope forks, the scope world adapter (`createScopeWorldAdapter`), and exact prepare/select/apply/release/discard
 settlement operations. These
 APIs can read or mutate caller-selected filesystem/Git state, and native runners can launch a
 capability-probed process. Consumers must explicitly supply the required task, provider, run,
@@ -152,13 +187,13 @@ agreement with the export map and records the following dependencies:
 | --- | --- | --- | --- |
 | Root, CLI, tasks, trace | Yes | Yes | Yes |
 | Canonical, delegation, effects, providers, runs, scopes, supervision | Yes | No | No |
-| Replay, workspace | Yes | No | Yes |
+| Applications, replay, workspace | Yes | No | Yes |
 | Read (type-only) | No | No | No |
 
 The tasks entry exports its SQLite registry as well as task builders; task-ledger/grant support
-also reaches process-related modules. The delegation, runs, scopes, and supervision entries accept store
-authority from callers and do not load SQLite merely by being imported. The workspace entry loads filesystem and
-process support but does not construct the caller's trace store.
+also reaches process-related modules. The applications, delegation, replay, runs, scopes, and supervision entries accept store
+authority from callers and do not load SQLite merely by being imported. The applications, replay, and workspace entries load filesystem and
+process support but do not construct the caller's trace store.
 
 “Loaded” is an import observation, not a claim that a subprocess ran or a database opened.
 Every runtime-capable entry reads and validates filesystem-backed protocol configuration, so
