@@ -1,6 +1,10 @@
 {
     "entries": {
         ".": { "required": ["node:fs", "node:sqlite", "node:child_process"], "forbidden": [] },
+        "./applications": {
+            "required": ["node:fs", "node:child_process"],
+            "forbidden": ["node:sqlite"]
+        },
         "./canonical": {
             "required": ["node:fs"],
             "forbidden": ["node:sqlite", "node:child_process"]

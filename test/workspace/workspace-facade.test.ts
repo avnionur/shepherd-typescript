@@ -35,6 +35,7 @@ test("workspace facade exposes only workspace-owned runtime symbols", () => {
         "createPlacementPlatformEvidence",
         "createReferenceCopyCarrier",
         "createRetainedWorldRunner",
+        "createScopeWorldAdapter",
         "createWorkspaceBindings",
         "createWorldChangeset",
         "createWorldChangesetInspection",

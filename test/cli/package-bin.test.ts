@@ -37,6 +37,10 @@ test("package bin metadata matches the public distinct CLI executable", async ()
     assert.equal(packageManifest.types, "dist/src/index.d.ts");
     assert.deepEqual(packageManifest.exports, {
         ".": { import: "./dist/src/index.js", types: "./dist/src/index.d.ts" },
+        "./applications": {
+            import: "./dist/src/facades/applications.js",
+            types: "./dist/src/facades/applications.d.ts",
+        },
         "./canonical": {
             import: "./dist/src/facades/canonical.js",
             types: "./dist/src/facades/canonical.d.ts",

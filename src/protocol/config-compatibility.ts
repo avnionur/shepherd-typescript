@@ -1,4 +1,5 @@
 import {
+    APPLICATIONS_PROTOCOL_V5_CONTRACT,
     CLI_PROTOCOL_V1_CONTRACT,
     DELEGATION_PROTOCOL_V1_CONTRACT,
     EFFECT_PROTOCOL_V1_CONTRACT,
@@ -57,6 +58,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         throw new TypeError("kernel schema constants do not match the implemented ABI");
     }
     const artifactDestinations = [
+        ...Object.values(config.applications.artifacts),
         ...Object.values(config.cli.artifacts),
         ...Object.values(config.delegation.artifacts),
         ...Object.values(config.effects.artifacts),
@@ -135,6 +137,9 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     if (!sameJson(config.workspaces, WORKSPACE_PROTOCOL_V26_CONTRACT)) {
         throw new TypeError("workspace constants require a new workspace protocol");
+    }
+    if (!sameJson(config.applications, APPLICATIONS_PROTOCOL_V5_CONTRACT)) {
+        throw new TypeError("application constants require a new applications protocol");
     }
 }
 

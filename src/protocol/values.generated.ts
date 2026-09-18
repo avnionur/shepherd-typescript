@@ -813,3 +813,139 @@ export const DELEGATION_LIMITS = Object.freeze({
     maxSupervisorIdLength: 256,
     maxTreeEntries: 256,
 } as const);
+
+/** Configured application evidence compatibility namespace. @public */
+export const APPLICATION_COMPATIBILITY_VERSION = "shepherd.applications.v1" as const;
+
+/** Configured canonical application record version. @public */
+export const APPLICATION_RECORD_VERSION = 1 as const;
+
+/** Configured application manifest version. @public */
+export const APPLICATION_MANIFEST_VERSION = 1 as const;
+
+/** Configured application kinds ordered coding supervisor, counterfactual optimization, trajectory compression, Tree-RL. @public */
+export const APPLICATION_KINDS = [
+    "coding_supervisor",
+    "counterfactual_optimization",
+    "trajectory_compression",
+    "tree_rl",
+] as const;
+
+/** Configured protocol surface kinds ordered prompt, schema, tool. @public */
+export const APPLICATION_PROTOCOL_SURFACES = ["prompt", "schema", "tool"] as const;
+
+/** Configured supervision record phases ordered opened then decision. @public */
+export const APPLICATION_SUPERVISION_PHASES = ["opened", "decision"] as const;
+
+/** Configured coding supervisor policy kinds ordered observe, inject, handoff, discard/restart, accept. @public */
+export const APPLICATION_SUPERVISION_POLICY_KINDS = [
+    "observe",
+    "inject",
+    "handoff",
+    "discard_restart",
+    "accept",
+] as const;
+
+/** Configured worker conflict classifications ordered none then path overlap. @public */
+export const APPLICATION_SUPERVISION_CONFLICT_KINDS = ["none", "path_overlap"] as const;
+
+/** Configured worker lineage statuses ordered running, accepted, discarded, restarted, handed off. @public */
+export const APPLICATION_SUPERVISION_WORKER_STATUSES = [
+    "running",
+    "accepted",
+    "discarded",
+    "restarted",
+    "handed_off",
+] as const;
+
+/** Configured counterfactual optimizer record phases ordered opened then candidate. @public */
+export const APPLICATION_CRO_PHASES = ["opened", "candidate"] as const;
+
+/** Configured counterfactual candidate statuses ordered proposed, evaluated, promoted, rejected. @public */
+export const APPLICATION_CRO_CANDIDATE_STATUSES = [
+    "proposed",
+    "evaluated",
+    "promoted",
+    "rejected",
+] as const;
+
+/** Configured counterfactual comparison baseline kinds. @public */
+export const APPLICATION_CRO_BASELINE_KINDS = ["full_replay"] as const;
+
+/** Configured trajectory compression record phases ordered opened, candidate, outcome. @public */
+export const APPLICATION_COMPRESSION_PHASES = ["opened", "candidate", "outcome"] as const;
+
+/** Configured trajectory compression candidate kinds ordered compression then best-of-N control. @public */
+export const APPLICATION_COMPRESSION_CANDIDATE_KINDS = ["compression", "control"] as const;
+
+/** Configured trajectory compression candidate statuses ordered proposed, rewound, settled, rejected. @public */
+export const APPLICATION_COMPRESSION_CANDIDATE_STATUSES = [
+    "proposed",
+    "rewound",
+    "settled",
+    "rejected",
+] as const;
+
+/** Configured trajectory compression outcomes ordered pruned, no prune, restored. @public */
+export const APPLICATION_COMPRESSION_OUTCOMES = ["pruned", "no_prune", "restored"] as const;
+
+/** Configured trajectory compression verifier verdicts ordered accepted then rejected. @public */
+export const APPLICATION_COMPRESSION_VERDICTS = ["accepted", "rejected"] as const;
+
+/** Configured trajectory compression comparison baseline kinds. @public */
+export const APPLICATION_COMPRESSION_BASELINE_KINDS = ["no_compression"] as const;
+
+/** Configured Tree-RL record phases ordered opened, rollout, batch. @public */
+export const APPLICATION_TREE_RL_PHASES = ["opened", "rollout", "batch"] as const;
+
+/** Configured Tree-RL rollout statuses ordered completed then failed. @public */
+export const APPLICATION_TREE_RL_ROLLOUT_STATUSES = ["completed", "failed"] as const;
+
+/** Configured Tree-RL comparison baseline kinds. @public */
+export const APPLICATION_TREE_RL_BASELINE_KINDS = ["single_rollout"] as const;
+
+/** Configured Tree-RL training batch formats. @public */
+export const APPLICATION_TREE_RL_BATCH_FORMATS = ["jsonl_v1"] as const;
+
+/** Configured coding supervisor comparison baseline kinds. @public */
+export const APPLICATION_SUPERVISION_BASELINE_KINDS = ["no_supervision"] as const;
+
+/** Configured measured evaluation metrics ordered cost, provider calls, input tokens, output tokens, steps, success. @public */
+export const APPLICATION_EVALUATION_METRICS = [
+    "cost_usd",
+    "provider_calls",
+    "input_tokens",
+    "output_tokens",
+    "steps",
+    "success",
+] as const;
+
+/** Configured application evaluation report version. @public */
+export const APPLICATION_EVALUATION_REPORT_VERSION = 1 as const;
+
+/** Configured application evaluation definition bounds. @public */
+export const APPLICATION_EVALUATION_LIMITS = Object.freeze({
+    maxExperiments: 16,
+    maxLimitationLength: 1024,
+    maxLimitations: 32,
+} as const);
+
+/** Configured application evidence bounds. @public */
+export const APPLICATION_LIMITS = Object.freeze({
+    maxArtifacts: 128,
+    maxBestOfN: 8,
+    maxBranches: 16,
+    maxCandidates: 32,
+    maxDatasetItems: 64,
+    maxForkPoints: 32,
+    maxPromptBytes: 16384,
+    maxReasonLength: 1024,
+    maxRollouts: 64,
+    maxRounds: 64,
+    maxSchemaBytes: 16384,
+    maxSeeds: 16,
+    maxSurfaces: 32,
+    maxToolBytes: 16384,
+    maxWorkers: 8,
+    minWorkers: 2,
+} as const);

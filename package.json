@@ -1,6 +1,6 @@
 {
     "name": "@avnionur/shepherd-typescript",
-    "version": "2.20.1",
+    "version": "2.25.1",
     "packageManager": "pnpm@10.32.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
     "license": "MIT",
@@ -19,6 +19,10 @@
         ".": {
             "types": "./dist/src/index.d.ts",
             "import": "./dist/src/index.js"
+        },
+        "./applications": {
+            "types": "./dist/src/facades/applications.d.ts",
+            "import": "./dist/src/facades/applications.js"
         },
         "./canonical": {
             "types": "./dist/src/facades/canonical.d.ts",
@@ -103,7 +107,9 @@
         "bench:carriers": "node scripts/bench-carriers.ts",
         "build:desktop": "pnpm build",
         "check:api-reference": "node scripts/generate-api-reference-cli.ts --check",
+        "check:evaluation": "node scripts/evaluate-applications-cli.ts --check",
         "check:protocol": "node scripts/generate-protocol-artifacts-cli.ts --check",
+        "evaluate:applications": "node scripts/evaluate-applications-cli.ts",
         "format": "biome format --write .",
         "generate:api-reference": "pnpm build && node scripts/generate-api-reference-cli.ts",
         "generate:protocol": "node scripts/generate-protocol-artifacts-cli.ts",
@@ -115,8 +121,8 @@
         "test": "node scripts/run-tests.ts --parallel",
         "test:serial": "node scripts/run-tests.ts --serial",
         "typecheck": "tsc --noEmit",
-        "verify": "pnpm check:protocol && pnpm build && pnpm check:api-reference && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:package-cli",
-        "verify:serial": "pnpm check:protocol && pnpm build && pnpm check:api-reference && pnpm lint && pnpm typecheck && pnpm test:serial && pnpm build && pnpm test:package-cli"
+        "verify": "pnpm check:protocol && pnpm check:evaluation && pnpm build && pnpm check:api-reference && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:package-cli",
+        "verify:serial": "pnpm check:protocol && pnpm check:evaluation && pnpm build && pnpm check:api-reference && pnpm lint && pnpm typecheck && pnpm test:serial && pnpm build && pnpm test:package-cli"
     },
     "devDependencies": {
         "@biomejs/biome": "2.5.7",

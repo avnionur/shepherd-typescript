@@ -1,3 +1,4 @@
+import { readApplicationsConfig } from "./config-applications.ts";
 import { readCliConfig } from "./config-cli.ts";
 import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
 import { readDelegationConfig } from "./config-delegation.ts";
@@ -55,6 +56,7 @@ export function parseProtocolConfig(
     const root = readObject(
         value,
         [
+            "applications",
             "effects",
             "cli",
             "delegation",
@@ -85,6 +87,7 @@ export function parseProtocolConfig(
     const workspaces = readWorkspaceConfig(root.workspaces);
     const effects = readEffectConfig(root.effects);
     const config = {
+        applications: readApplicationsConfig(root.applications),
         cli: readCliConfig(root.cli),
         delegation: readDelegationConfig(root.delegation),
         effects,

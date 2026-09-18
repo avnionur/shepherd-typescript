@@ -6,6 +6,8 @@
             "src/**/*.ts",
             "tooling/api-reference/generator.ts",
             "tooling/build/output.ts",
+            "tooling/evaluation/harness.ts",
+            "tooling/evaluation/writer.ts",
             "tooling/release/version.ts",
             "tooling/protocol/generator.ts"
         ],

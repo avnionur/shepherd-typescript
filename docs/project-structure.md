@@ -8,6 +8,7 @@ implementation documentation, and forward-looking plans.
 ├── src/                    Public TypeScript runtime and private implementations
 │   ├── index.ts            Root package entry
 │   ├── append/             Append drafts, validation, and pure planning
+│   ├── applications/       Application manifests, protocol identity, coding supervisor, and optimizer
 │   ├── blob/               Binary identity and crash-safe filesystem objects
 │   ├── canonical/          Deterministic semantic encoding, hashing, and snapshots
 │   ├── cli/                Configured command dispatch and I/O adaptation
@@ -36,13 +37,14 @@ implementation documentation, and forward-looking plans.
 ├── tooling/                Tested repository-tooling implementations
 │   ├── api-reference/      Emitted-declaration reference generation
 │   ├── build/              Safe cleanup and runtime-configuration copying
+│   ├── evaluation/         Repository evaluation fixtures and the evaluation report writer
 │   ├── protocol/           Protocol artifact generation and schema renderers
 │   ├── release/            Validated semantic-version synchronization
 │   └── testing/            Test-runner and installed-package conformance modules
 ├── .github/                CI, security automation, and contribution templates
 ├── docs/                   Implemented contracts and contributor guidance
 ├── .plan/                  Research, roadmap, decisions, and progress tracker
-├── config/                 Repository test-runner, entry-loading, bundle, and runtime-boundary policy
+├── config/                 Repository test-runner, entry-loading, bundle, runtime-boundary, and experiment policy
 ├── project.config.json     CLI ecosystem identity
 ├── api-reference.config.json Generated API-reference ownership and leakage policy
 ├── examples/               Installed examples, scenario configuration, and conformance manifest
@@ -76,6 +78,9 @@ public exports → supervision area → effect records, store, scope validation 
 store area → supervision record codecs and errors for subscription and dispatch bookkeeping
 public exports → delegation area → task values, durable execution, scope authority, store, scope validation helpers, and protocol configuration
 store area → delegation errors for handle command transactions
+public exports → applications area → delegation handles and commands, replay sessions and analyses, store, scope validation helpers, and protocol configuration
+workspace area → applications world adapter types for the scope world adapter
+store area → applications protocol configuration for reserved application owner paths
 public exports → replay area → effect records, provider validation, task descriptors, store, scope validation helpers, reference copy carrier world-image helpers, and protocol configuration
 store area → replay errors for session lease bookkeeping
 public exports → workspace area → filesystem, Git, hashing, and protocol configuration
@@ -135,6 +140,15 @@ The runtime areas are organized around cohesive protocol responsibilities:
   or the parent handle, provider- and program-serviced child execution under the child's durable
   claim, completion records, record-derived inspection, and typed result and tree projections,
   without provider, filesystem, or workspace authority;
+- `applications/` owns content-addressed application protocol definitions, digest-bearing
+  manifests on command-derived reserved owner paths, the coding supervisor composed over
+  child run handles and a caller-supplied world adapter, the counterfactual workflow optimizer
+  composed over replay sessions, branches, and their analyses, and trajectory compression composed
+  over replay sessions, rewinds, suffix replays, checkpoint classification, and delegated
+  compressor and verifier children, and the Tree-RL adapter composed over replay inspection,
+  dependency analysis, branch replay, and divergence analysis, and the offline evaluation runner
+  that folds every configured application and its baseline into one measured-only report, without
+  workspace, provider, or filesystem authority of its own;
 - `replay/` owns deterministic session programs and their fenced step journals, runtime-derived
   prompt, prefix, and context prefix identities, coupled checkpoints with trace-store world and
   process images, verified rewind and recorded-prefix replay, irreversible-effect replay policy,
@@ -175,6 +189,9 @@ The ordinary typecheck covers `src/`, `scripts/`, `tooling/`, and `test/`. The p
 an explicit runtime-only include and preserves package targets under `dist/src/`; it must not emit
 `dist/scripts/` or `dist/tooling/`. Generated protocol artifacts remain checked in under
 `src/protocol/`, `spec/schemas/`, `docs/generated/`, and `examples/` according to configuration.
+The [application evaluation](./application-evaluation.md) report and page under `docs/generated/`
+are produced by `tooling/evaluation/` from `config/research-applications.config.json` and checked by
+`pnpm check:evaluation`.
 
 Standalone TypeScript examples are checked against a freshly installed package by
 `tooling/testing/packaged-examples.ts`, using the manifest named in `package.json.exampleManifest`.

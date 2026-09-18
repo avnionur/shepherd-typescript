@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.20.1
+Package: `@avnionur/shepherd-typescript` 2.25.1
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,430 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 898.
+Exported symbols: 1086.
+
+### `APPLICATION_COMPATIBILITY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application evidence compatibility namespace.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPATIBILITY_VERSION: "shepherd.applications.v1";
+```
+
+### `APPLICATION_COMPRESSION_BASELINE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression comparison baseline kinds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_BASELINE_KINDS: readonly [
+    "no_compression"
+];
+```
+
+### `APPLICATION_COMPRESSION_CANDIDATE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression candidate kinds ordered compression then best-of-N control.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_CANDIDATE_KINDS: readonly [
+    "compression",
+    "control"
+];
+```
+
+### `APPLICATION_COMPRESSION_CANDIDATE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression candidate statuses ordered proposed, rewound, settled, rejected.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_CANDIDATE_STATUSES: readonly [
+    "proposed",
+    "rewound",
+    "settled",
+    "rejected"
+];
+```
+
+### `APPLICATION_COMPRESSION_OUTCOMES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression outcomes ordered pruned, no prune, restored.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_OUTCOMES: readonly [
+    "pruned",
+    "no_prune",
+    "restored"
+];
+```
+
+### `APPLICATION_COMPRESSION_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression record phases ordered opened, candidate, outcome.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_PHASES: readonly [
+    "opened",
+    "candidate",
+    "outcome"
+];
+```
+
+### `APPLICATION_COMPRESSION_VERDICTS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression verifier verdicts ordered accepted then rejected.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_VERDICTS: readonly [
+    "accepted",
+    "rejected"
+];
+```
+
+### `APPLICATION_CRO_BASELINE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual comparison baseline kinds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_BASELINE_KINDS: readonly [
+    "full_replay"
+];
+```
+
+### `APPLICATION_CRO_CANDIDATE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual candidate statuses ordered proposed, evaluated, promoted, rejected.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_CANDIDATE_STATUSES: readonly [
+    "proposed",
+    "evaluated",
+    "promoted",
+    "rejected"
+];
+```
+
+### `APPLICATION_CRO_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual optimizer record phases ordered opened then candidate.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_PHASES: readonly [
+    "opened",
+    "candidate"
+];
+```
+
+### `APPLICATION_EVALUATION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application evaluation definition bounds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_EVALUATION_LIMITS: Readonly<{
+    readonly maxExperiments: 16;
+    readonly maxLimitationLength: 1024;
+    readonly maxLimitations: 32;
+}>;
+```
+
+### `APPLICATION_EVALUATION_METRICS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured measured evaluation metrics ordered cost, provider calls, input tokens, output tokens, steps, success.
+
+Signature:
+
+```ts
+export declare const APPLICATION_EVALUATION_METRICS: readonly [
+    "cost_usd",
+    "provider_calls",
+    "input_tokens",
+    "output_tokens",
+    "steps",
+    "success"
+];
+```
+
+### `APPLICATION_EVALUATION_REPORT_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application evaluation report version.
+
+Signature:
+
+```ts
+export declare const APPLICATION_EVALUATION_REPORT_VERSION: 1;
+```
+
+### `APPLICATION_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application kinds ordered coding supervisor, counterfactual optimization, trajectory compression, Tree-RL.
+
+Signature:
+
+```ts
+export declare const APPLICATION_KINDS: readonly [
+    "coding_supervisor",
+    "counterfactual_optimization",
+    "trajectory_compression",
+    "tree_rl"
+];
+```
+
+### `APPLICATION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application evidence bounds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_LIMITS: Readonly<{
+    readonly maxArtifacts: 128;
+    readonly maxBestOfN: 8;
+    readonly maxBranches: 16;
+    readonly maxCandidates: 32;
+    readonly maxDatasetItems: 64;
+    readonly maxForkPoints: 32;
+    readonly maxPromptBytes: 16384;
+    readonly maxReasonLength: 1024;
+    readonly maxRollouts: 64;
+    readonly maxRounds: 64;
+    readonly maxSchemaBytes: 16384;
+    readonly maxSeeds: 16;
+    readonly maxSurfaces: 32;
+    readonly maxToolBytes: 16384;
+    readonly maxWorkers: 8;
+    readonly minWorkers: 2;
+}>;
+```
+
+### `APPLICATION_MANIFEST_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application manifest version.
+
+Signature:
+
+```ts
+export declare const APPLICATION_MANIFEST_VERSION: 1;
+```
+
+### `APPLICATION_PROTOCOL_SURFACES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured protocol surface kinds ordered prompt, schema, tool.
+
+Signature:
+
+```ts
+export declare const APPLICATION_PROTOCOL_SURFACES: readonly [
+    "prompt",
+    "schema",
+    "tool"
+];
+```
+
+### `APPLICATION_RECORD_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured canonical application record version.
+
+Signature:
+
+```ts
+export declare const APPLICATION_RECORD_VERSION: 1;
+```
+
+### `APPLICATION_SUPERVISION_BASELINE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured coding supervisor comparison baseline kinds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_SUPERVISION_BASELINE_KINDS: readonly [
+    "no_supervision"
+];
+```
+
+### `APPLICATION_SUPERVISION_CONFLICT_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured worker conflict classifications ordered none then path overlap.
+
+Signature:
+
+```ts
+export declare const APPLICATION_SUPERVISION_CONFLICT_KINDS: readonly [
+    "none",
+    "path_overlap"
+];
+```
+
+### `APPLICATION_SUPERVISION_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured supervision record phases ordered opened then decision.
+
+Signature:
+
+```ts
+export declare const APPLICATION_SUPERVISION_PHASES: readonly [
+    "opened",
+    "decision"
+];
+```
+
+### `APPLICATION_SUPERVISION_POLICY_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured coding supervisor policy kinds ordered observe, inject, handoff, discard/restart, accept.
+
+Signature:
+
+```ts
+export declare const APPLICATION_SUPERVISION_POLICY_KINDS: readonly [
+    "observe",
+    "inject",
+    "handoff",
+    "discard_restart",
+    "accept"
+];
+```
+
+### `APPLICATION_SUPERVISION_WORKER_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured worker lineage statuses ordered running, accepted, discarded, restarted, handed off.
+
+Signature:
+
+```ts
+export declare const APPLICATION_SUPERVISION_WORKER_STATUSES: readonly [
+    "running",
+    "accepted",
+    "discarded",
+    "restarted",
+    "handed_off"
+];
+```
+
+### `APPLICATION_TREE_RL_BASELINE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL comparison baseline kinds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_BASELINE_KINDS: readonly [
+    "single_rollout"
+];
+```
+
+### `APPLICATION_TREE_RL_BATCH_FORMATS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL training batch formats.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_BATCH_FORMATS: readonly [
+    "jsonl_v1"
+];
+```
+
+### `APPLICATION_TREE_RL_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL record phases ordered opened, rollout, batch.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_PHASES: readonly [
+    "opened",
+    "rollout",
+    "batch"
+];
+```
+
+### `APPLICATION_TREE_RL_ROLLOUT_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL rollout statuses ordered completed then failed.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_ROLLOUT_STATUSES: readonly [
+    "completed",
+    "failed"
+];
+```
 
 ### `AcceptChildRunResultOptions`
 
@@ -248,6 +671,712 @@ Signature:
 
 ```ts
 export type AppendRecoveryStatus = "committed" | "manual_recovery_required" | "retry_safe";
+```
+
+### `ApplicationArtifactCitation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One produced artifact cited by identity, never by content.
+
+Signature:
+
+```ts
+export type ApplicationArtifactCitation = {
+    readonly artifact_id: string;
+    readonly cut_id: string | null;
+    readonly digest: string;
+    readonly record_id: RecordId | null;
+    readonly role: string;
+};
+```
+
+### `ApplicationArtifactSource`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Source of one artifact citation: the canonical content and the evidence it lives in.
+
+Signature:
+
+```ts
+export type ApplicationArtifactSource = {
+    readonly content: SemanticValue;
+    readonly cut_id: string | null;
+    readonly record_id: RecordId | null;
+    readonly role: string;
+};
+```
+
+### `ApplicationBudgetError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised before an application call that would exceed a configured protocol budget or bound.
+
+Retained evidence up to the refusal stays; nothing is written by the refusal.
+
+Signature:
+
+```ts
+export declare class ApplicationBudgetError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned budget code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a budget failure.
+
+```ts
+constructor(detail: string);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+### `ApplicationCostSummary`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Measured provider cost of one application run; never estimated.
+
+Signature:
+
+```ts
+export type ApplicationCostSummary = {
+    readonly cache_creation_input_tokens: number;
+    readonly cache_read_input_tokens: number;
+    readonly cost_usd: number | null;
+    readonly input_tokens: number;
+    readonly output_tokens: number;
+    readonly provider_calls: number;
+};
+```
+
+### `ApplicationDatasetSelection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Dataset selection an application run names: the dataset, its revision, and the items used.
+
+Signature:
+
+```ts
+export type ApplicationDatasetSelection = {
+    readonly id: string;
+    readonly items: readonly string[];
+    readonly revision: string;
+};
+```
+
+### `ApplicationEvaluationBaseline`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One measured baseline of the report.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationBaseline = {
+    readonly evidence: readonly string[];
+    readonly experiment_id: string;
+    readonly kind: ApplicationEvaluationBaselineKind;
+    readonly metrics: ApplicationEvaluationMetrics;
+};
+```
+
+### `ApplicationEvaluationBaselineDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Baseline an experiment compares its application against. The kind must be a configured baseline
+kind of the experiment's application kind; `commandId` and `workerId` are required exactly for
+the coding supervisor baseline, which runs the named worker once as a plain child run.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationBaselineDefinition = {
+    readonly commandId?: string;
+    readonly kind: ApplicationEvaluationBaselineKind;
+    readonly workerId?: string;
+};
+```
+
+### `ApplicationEvaluationBaselineKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Any configured comparison baseline kind of any application.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationBaselineKind = CodingSupervisorBaselineKind | (typeof APPLICATION_CRO_BASELINE_KINDS)[number] | (typeof APPLICATION_COMPRESSION_BASELINE_KINDS)[number] | (typeof APPLICATION_TREE_RL_BASELINE_KINDS)[number];
+```
+
+### `ApplicationEvaluationBinder`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller factory returning the executable binding of one validated experiment: its programs,
+static providers, policy, evaluator, verifier, or reward. It is called once per experiment, in
+order, before any application runs.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationBinder = (experiment: ApplicationEvaluationExperiment) => ApplicationEvaluationBinding;
+```
+
+Parameter:
+
+- experiment - Validated experiment.
+
+Returns:
+
+- The binding whose kind equals the experiment's application kind.
+
+### `ApplicationEvaluationBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Executable binding of one experiment, discriminated by application kind.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationBinding = CodingSupervisorEvaluationBinding | CounterfactualEvaluationBinding | TrajectoryCompressionEvaluationBinding | TreeRlEvaluationBinding;
+```
+
+### `ApplicationEvaluationComparison`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Per-metric comparison of one experiment's application against its baseline.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationComparison = {
+    readonly baseline_kind: ApplicationEvaluationBaselineKind;
+    readonly experiment_id: string;
+    readonly values: readonly ApplicationEvaluationComparisonValue[];
+};
+```
+
+### `ApplicationEvaluationComparisonValue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Application value, baseline value, and delta of one metric.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationComparisonValue = {
+    readonly application: number | boolean | null;
+    readonly baseline: number | boolean | null;
+    readonly delta: number | null;
+    readonly metric: ApplicationEvaluationMetric;
+};
+```
+
+### `ApplicationEvaluationDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller evaluation definition: experiments, baselines, seeds (in each protocol), and limitations.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationDefinition = {
+    readonly evaluationId: string;
+    readonly experiments: readonly ApplicationEvaluationExperiment[];
+    readonly limitations: readonly ApplicationEvaluationLimitation[];
+    readonly revision: string;
+};
+```
+
+### `ApplicationEvaluationExperiment`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One configured experiment: an application protocol run under a fixed command identity and
+compared against one baseline. The application kind is the protocol's kind.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationExperiment = {
+    readonly baseline: ApplicationEvaluationBaselineDefinition;
+    readonly commandId: string;
+    readonly id: string;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly sourceCommandId?: string;
+};
+```
+
+### `ApplicationEvaluationLimitation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One limitation published with the report.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationLimitation = {
+    readonly id: string;
+    readonly text: string;
+};
+```
+
+### `ApplicationEvaluationMetric`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured measured evaluation metric name.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationMetric = (typeof APPLICATION_EVALUATION_METRICS)[number];
+```
+
+### `ApplicationEvaluationMetrics`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Measured metrics of one application or baseline; never derived or extrapolated.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationMetrics = {
+    readonly cost_usd: number | null;
+    readonly input_tokens: number;
+    readonly output_tokens: number;
+    readonly provider_calls: number;
+    readonly steps: number;
+    readonly success: boolean;
+};
+```
+
+### `ApplicationEvaluationReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical, digest-bearing `application-evaluation-v1` report.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationReport = {
+    readonly baselines: readonly ApplicationEvaluationBaseline[];
+    readonly comparisons: readonly ApplicationEvaluationComparison[];
+    readonly compatibility_version: string;
+    readonly evaluation_id: string;
+    readonly limitations: readonly ApplicationEvaluationLimitation[];
+    readonly metrics: readonly ApplicationEvaluationMetric[];
+    readonly report_id: string;
+    readonly report_version: number;
+    readonly revision: string;
+    readonly runs: readonly ApplicationEvaluationRun[];
+};
+```
+
+### `ApplicationEvaluationRun`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One measured application run of the report.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationRun = {
+    readonly application_id: string;
+    readonly costs: ApplicationCostSummary;
+    readonly dataset: ApplicationDatasetSelection;
+    readonly experiment_id: string;
+    readonly kind: ApplicationKind;
+    readonly manifest_id: string;
+    readonly metrics: ApplicationEvaluationMetrics;
+    readonly protocol_id: string;
+    readonly protocol_version: string;
+    readonly seeds: readonly number[];
+};
+```
+
+### `ApplicationEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or supplied application evidence is absent, malformed, or inconsistent.
+
+Signature:
+
+```ts
+export declare class ApplicationEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ApplicationKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured application kind.
+
+Signature:
+
+```ts
+export type ApplicationKind = (typeof APPLICATION_KINDS)[number];
+```
+
+### `ApplicationManifest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical, digest-bearing manifest of one application run.
+
+Signature:
+
+```ts
+export type ApplicationManifest = {
+    readonly application_id: string;
+    readonly artifacts: readonly ApplicationArtifactCitation[];
+    readonly budgets: Readonly<Record<string, number>>;
+    readonly compatibility_version: string;
+    readonly costs: ApplicationCostSummary;
+    readonly dataset: ApplicationDatasetSelection;
+    readonly kind: ApplicationKind;
+    readonly manifest_id: string;
+    readonly manifest_version: number;
+    readonly protocol_id: string;
+    readonly protocol_version: string;
+    readonly seeds: readonly number[];
+    readonly surfaces: readonly ApplicationManifestSurface[];
+};
+```
+
+### `ApplicationManifestInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived view of one retained manifest.
+
+Signature:
+
+```ts
+export type ApplicationManifestInspection = {
+    readonly application_id: string;
+    readonly cut_id: CutId;
+    readonly manifest: ApplicationManifest;
+    readonly record_id: RecordId;
+};
+```
+
+### `ApplicationManifestReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of retainApplicationManifest.
+
+Signature:
+
+```ts
+export type ApplicationManifestReceipt = {
+    readonly cut_id: CutId;
+    readonly manifest: ApplicationManifest;
+    readonly record_id: RecordId;
+};
+```
+
+### `ApplicationManifestSurface`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One protocol surface cited by digest inside a manifest; content is never embedded.
+
+Signature:
+
+```ts
+export type ApplicationManifestSurface = {
+    readonly digest: string;
+    readonly id: string;
+    readonly kind: ApplicationProtocolSurfaceKind;
+    readonly role: string;
+};
+```
+
+### `ApplicationProtocolDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Complete pinned protocol of one application run: surfaces, budgets, seeds, and dataset.
+
+Signature:
+
+```ts
+export type ApplicationProtocolDefinition = {
+    readonly budgets: Readonly<Record<string, number>>;
+    readonly dataset: ApplicationDatasetSelection;
+    readonly kind: ApplicationKind;
+    readonly protocolVersion: string;
+    readonly seeds: readonly number[];
+    readonly surfaces: readonly ApplicationProtocolSurface[];
+};
+```
+
+### `ApplicationProtocolError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an application protocol definition is malformed, names an unsupported kind or
+surface, lacks a surface the application requires, or differs from the retained manifest's
+protocol identity.
+
+Signature:
+
+```ts
+export declare class ApplicationProtocolError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned protocol code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a protocol failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ApplicationProtocolSurface`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One versioned prompt, schema, or tool the application protocol pins.
+
+Signature:
+
+```ts
+export type ApplicationProtocolSurface = {
+    readonly content: SemanticValue;
+    readonly id: string;
+    readonly kind: ApplicationProtocolSurfaceKind;
+    readonly role: string;
+};
+```
+
+### `ApplicationProtocolSurfaceKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured protocol surface kind: prompt, schema, or tool.
+
+Signature:
+
+```ts
+export type ApplicationProtocolSurfaceKind = (typeof APPLICATION_PROTOCOL_SURFACES)[number];
+```
+
+### `ApplicationVerificationError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an application verifier or evaluator rejects a produced candidate or cannot run.
+
+Signature:
+
+```ts
+export declare class ApplicationVerificationError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned verification code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a verification failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ApplicationWorldAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied isolated world custody for supervised workers.
+
+Every request carries a globally idempotent command identity, so repeating a request after an
+interruption converges on the retained receipt. The applications area never touches a
+filesystem itself; the workspace area provides the concrete adapter over scope forks, merges,
+discards, and changesets.
+
+Signature:
+
+```ts
+export type ApplicationWorldAdapter = {
+    readonly changedPaths: (custodyId: string) => Promise<readonly string[]>;
+    readonly discard: (request: ApplicationWorldDiscardRequest) => Promise<ApplicationWorldReceipt>;
+    readonly fork: (request: ApplicationWorldForkRequest) => Promise<ApplicationWorldCustody>;
+    readonly merge: (request: ApplicationWorldMergeRequest) => Promise<ApplicationWorldReceipt>;
+};
+```
+
+### `ApplicationWorldCustody`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Isolated custody one worker attempt edits.
+
+Signature:
+
+```ts
+export type ApplicationWorldCustody = {
+    readonly custody_id: string;
+    readonly receipt_id: string;
+    readonly root: string;
+};
+```
+
+### `ApplicationWorldDiscardRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request to abandon one custody without changing the parent world.
+
+Signature:
+
+```ts
+export type ApplicationWorldDiscardRequest = {
+    readonly commandId: string;
+    readonly custodyId: string;
+    readonly nowMilliseconds: number;
+    readonly workerId: string;
+};
+```
+
+### `ApplicationWorldForkRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request to fork clean isolated custody for one worker attempt.
+
+Signature:
+
+```ts
+export type ApplicationWorldForkRequest = {
+    readonly commandId: string;
+    readonly nowMilliseconds: number;
+    readonly workerId: string;
+};
+```
+
+### `ApplicationWorldMergeRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request to publish one accepted custody into the parent world.
+
+Signature:
+
+```ts
+export type ApplicationWorldMergeRequest = {
+    readonly commandId: string;
+    readonly custodyId: string;
+    readonly nowMilliseconds: number;
+    readonly workerId: string;
+};
+```
+
+### `ApplicationWorldReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained receipt of one merge or discard.
+
+Signature:
+
+```ts
+export type ApplicationWorldReceipt = {
+    readonly receipt_id: string;
+};
 ```
 
 ### `AppliedRetainedWorldSettlement`
@@ -1158,6 +2287,428 @@ Signature:
 export type ClosurePolicy = "include_external_anchors" | "visible_only";
 ```
 
+### `CodingSupervisorAttemptInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One attempt of a worker lineage.
+
+Signature:
+
+```ts
+export type CodingSupervisorAttemptInspection = {
+    readonly attempt: number;
+    readonly handle_id: string;
+    readonly inspection: ChildRunInspection;
+    readonly status: CodingSupervisorWorkerStatus;
+};
+```
+
+### `CodingSupervisorBaselineKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured coding supervisor comparison baseline kind: one worker without a policy.
+
+Signature:
+
+```ts
+export type CodingSupervisorBaselineKind = (typeof APPLICATION_SUPERVISION_BASELINE_KINDS)[number];
+```
+
+### `CodingSupervisorChangedPathsContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a trace-only changed-path reader receives.
+
+Signature:
+
+```ts
+export type CodingSupervisorChangedPathsContext = {
+    readonly output: SemanticValue;
+    readonly workerId: string;
+};
+```
+
+### `CodingSupervisorChangedPathsReader`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller reader returning the declared changed paths of one finished worker output on the
+trace-only path.
+
+Signature:
+
+```ts
+export type CodingSupervisorChangedPathsReader = (context: CodingSupervisorChangedPathsContext) => readonly string[];
+```
+
+Parameter:
+
+- context - Worker identity and validated output.
+
+Returns:
+
+- Changed paths declared by the output.
+
+### `CodingSupervisorConflict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Conflict classification over the live workers' changed paths.
+
+Signature:
+
+```ts
+export type CodingSupervisorConflict = {
+    readonly kind: CodingSupervisorConflictKind;
+    readonly paths: readonly string[];
+    readonly worker_ids: readonly string[];
+};
+```
+
+### `CodingSupervisorConflictKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured conflict classification of the workers' changed paths.
+
+Signature:
+
+```ts
+export type CodingSupervisorConflictKind = (typeof APPLICATION_SUPERVISION_CONFLICT_KINDS)[number];
+```
+
+### `CodingSupervisorDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Decision a policy returns for one round, retained verbatim in the round's supervision record.
+
+Signature:
+
+```ts
+export type CodingSupervisorDecision = {
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[0];
+} | {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly data: RecordBody;
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[1];
+    readonly worker_id: string;
+} | {
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[2];
+    readonly reason: string | null;
+    readonly successor_supervisor_id: string;
+    readonly worker_id: string;
+} | {
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[3];
+    readonly reason: string;
+    readonly worker_id: string;
+} | {
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[4];
+    readonly worker_id: string;
+};
+```
+
+### `CodingSupervisorDecisionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained decision round.
+
+Signature:
+
+```ts
+export type CodingSupervisorDecisionInspection = {
+    readonly conflict: CodingSupervisorConflict;
+    readonly decision: CodingSupervisorDecision;
+    readonly evidence: CodingSupervisorEvidence;
+    readonly observations: readonly CodingSupervisorObservation[];
+    readonly record_id: RecordId;
+    readonly round: number;
+    readonly supervisor_id: string;
+};
+```
+
+### `CodingSupervisorDiscardedWorker`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One worker discarded by the terminal accept decision.
+
+Signature:
+
+```ts
+export type CodingSupervisorDiscardedWorker = {
+    readonly decision_record_id: RecordId;
+    readonly discard_receipt_id: string | null;
+    readonly worker_id: string;
+};
+```
+
+### `CodingSupervisorEvaluationBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Executable coding supervisor binding; the command and protocol come from the experiment.
+
+Signature:
+
+```ts
+export type CodingSupervisorEvaluationBinding = {
+    readonly kind: (typeof APPLICATION_KINDS)[0];
+    readonly options: Omit<RunCodingSupervisorOptions, "commandId" | "protocol">;
+};
+```
+
+### `CodingSupervisorEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact evidence produced by applying one decision.
+
+Signature:
+
+```ts
+export type CodingSupervisorEvidence = {
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[0];
+} | {
+    readonly injection_record_id: RecordId;
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[1];
+} | {
+    readonly handoff_record_id: RecordId;
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[2];
+} | {
+    readonly decision_record_id: RecordId;
+    readonly discard_receipt_id: string | null;
+    readonly fork_receipt_id: string | null;
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[3];
+    readonly retry_cut_id: string;
+    readonly successor_handle_id: string;
+} | {
+    readonly decision_record_id: RecordId;
+    readonly discarded: readonly CodingSupervisorDiscardedWorker[];
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[4];
+    readonly merge_receipt_id: string | null;
+};
+```
+
+### `CodingSupervisorInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one coding supervisor run.
+
+Signature:
+
+```ts
+export type CodingSupervisorInspection = {
+    readonly application_id: string;
+    readonly command_id: string;
+    readonly cut_id: CutId | null;
+    readonly decisions: readonly CodingSupervisorDecisionInspection[];
+    readonly kind: ApplicationKind;
+    readonly manifest: ApplicationManifest | null;
+    readonly manifest_record_id: RecordId | null;
+    readonly opened_record_id: RecordId;
+    readonly protocol_id: string;
+    readonly supervisor_id: string;
+    readonly workers: readonly CodingSupervisorWorkerInspection[];
+    readonly world: boolean;
+};
+```
+
+### `CodingSupervisorObservation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived observation of one worker attempt at the start of a round.
+
+Signature:
+
+```ts
+export type CodingSupervisorObservation = {
+    readonly attempt: number;
+    readonly changed_paths: readonly string[];
+    readonly child_run_id: string;
+    readonly completion_status: RunTerminalStatus | null;
+    readonly custody_id: string | null;
+    readonly delivered_cursor: TraceSubscriptionCursor;
+    readonly handle_id: string;
+    readonly head_record_id: RecordId;
+    readonly status: ChildRunStatus;
+    readonly supervisor_id: string;
+    readonly worker_id: string;
+    readonly worker_status: CodingSupervisorWorkerStatus;
+};
+```
+
+### `CodingSupervisorPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured supervision record phase: the opened record or a per-round decision record.
+
+Signature:
+
+```ts
+export type CodingSupervisorPhase = (typeof APPLICATION_SUPERVISION_PHASES)[number];
+```
+
+### `CodingSupervisorPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller decision function returning the configured policy to apply to the observed workers.
+
+Signature:
+
+```ts
+export type CodingSupervisorPolicy = (context: CodingSupervisorPolicyContext) => CodingSupervisorDecision | Promise<CodingSupervisorDecision>;
+```
+
+Parameter:
+
+- context - Round, observations, conflict, protocol, and supervisor.
+
+Returns:
+
+- Exactly one decision.
+
+### `CodingSupervisorPolicyContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a policy receives for one round.
+
+Signature:
+
+```ts
+export type CodingSupervisorPolicyContext = {
+    readonly conflict: CodingSupervisorConflict;
+    readonly observations: readonly CodingSupervisorObservation[];
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly round: number;
+    readonly supervisorId: string;
+};
+```
+
+### `CodingSupervisorPolicyKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured policy decision kind.
+
+Signature:
+
+```ts
+export type CodingSupervisorPolicyKind = (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[number];
+```
+
+### `CodingSupervisorReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of runCodingSupervisor.
+
+Signature:
+
+```ts
+export type CodingSupervisorReceipt = {
+    readonly inspection: CodingSupervisorInspection;
+    readonly manifest: ApplicationManifest;
+};
+```
+
+### `CodingSupervisorWorkerContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a program-serviced worker receives in addition to the child run program context.
+
+Signature:
+
+```ts
+export type CodingSupervisorWorkerContext = ChildRunProgramContext & {
+    readonly attempt: number;
+    readonly custody: ApplicationWorldCustody | null;
+    readonly seeds: readonly number[];
+    readonly workerId: string;
+};
+```
+
+### `CodingSupervisorWorkerDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One supervised worker: a child run definition serviced by a program or a provider.
+
+Signature:
+
+```ts
+export type CodingSupervisorWorkerDefinition = {
+    readonly budget: RunBudgetDefinition;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly input: unknown;
+    readonly program?: CodingSupervisorWorkerProgram;
+    readonly provenance?: ChildRunProvenanceDeclaration;
+    readonly provider?: ModelProvider;
+    readonly task: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>> | TaskValue;
+    readonly workerId: string;
+};
+```
+
+### `CodingSupervisorWorkerInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One supervised worker lineage.
+
+Signature:
+
+```ts
+export type CodingSupervisorWorkerInspection = {
+    readonly attempts: readonly CodingSupervisorAttemptInspection[];
+    readonly worker_id: string;
+};
+```
+
+### `CodingSupervisorWorkerProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller program that services one worker attempt under its child run's durable claim.
+
+The returned value is validated against the task output schema; an invalid output or a thrown
+error fails the attempt.
+
+Signature:
+
+```ts
+export type CodingSupervisorWorkerProgram = (context: CodingSupervisorWorkerContext) => Promise<unknown> | unknown;
+```
+
+Parameter:
+
+- context - Child run program context plus attempt, custody, seeds, and worker identity.
+
+Returns:
+
+- The worker output.
+
+### `CodingSupervisorWorkerStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured lineage status of one worker attempt.
+
+Signature:
+
+```ts
+export type CodingSupervisorWorkerStatus = (typeof APPLICATION_SUPERVISION_WORKER_STATUSES)[number];
+```
+
 ### `CooperativeProcessAdapter`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -1224,6 +2775,344 @@ export type Core0hSidecarEvidence = {
     readonly sidecar_ref: string;
     readonly trace_ref: string;
     readonly validator: string;
+};
+```
+
+### `CounterfactualBaselineComparison`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Measured whole-workflow comparison of one candidate.
+
+Signature:
+
+```ts
+export type CounterfactualBaselineComparison = {
+    readonly cache_read_input_tokens: number;
+    readonly kind: CounterfactualBaselineKind;
+    readonly provider_calls: number;
+    readonly session_id: string;
+};
+```
+
+### `CounterfactualBaselineKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured comparison baseline kind.
+
+Signature:
+
+```ts
+export type CounterfactualBaselineKind = (typeof APPLICATION_CRO_BASELINE_KINDS)[number];
+```
+
+### `CounterfactualCandidateDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One declared candidate edit of the workflow at a step boundary.
+
+Exactly the replacements for the declared change dimensions are supplied: `task` requires
+`task`, `provider` requires `provider`, and `handlers` requires `handlers`. The edit takes
+effect in the affected suffix: the transitive dependents of the edited step in the source
+session, which is the parent candidate's branch or, without a parent, the baseline.
+
+Signature:
+
+```ts
+export type CounterfactualCandidateDefinition = {
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly handlers?: EffectHandlerStack;
+    readonly name: string;
+    readonly parent?: string;
+    readonly program?: ReplaySessionProgram;
+    readonly provider?: ModelProvider;
+    readonly stepIndex: number;
+    readonly task?: ReplaySessionTaskDefinition;
+};
+```
+
+### `CounterfactualCandidateInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived state of one declared candidate.
+
+Signature:
+
+```ts
+export type CounterfactualCandidateInspection = CounterfactualCandidatePlan & {
+    readonly outcome: CounterfactualCandidateRecord | null;
+    readonly proposed: CounterfactualCandidateRecord | null;
+};
+```
+
+### `CounterfactualCandidatePlan`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Identity and declared edit of one candidate, fixed when the run is opened.
+
+Signature:
+
+```ts
+export type CounterfactualCandidatePlan = {
+    readonly candidate_id: string;
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly edited_step_index: number;
+    readonly name: string;
+    readonly parent_candidate_id: string | null;
+};
+```
+
+### `CounterfactualCandidateRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained candidate record.
+
+Signature:
+
+```ts
+export type CounterfactualCandidateRecord = CounterfactualCandidatePlan & {
+    readonly affected_steps: readonly number[];
+    readonly baseline: CounterfactualBaselineComparison | null;
+    readonly branch_session_id: string;
+    readonly cost: ApplicationCostSummary | null;
+    readonly divergence: CounterfactualDivergenceSummary | null;
+    readonly evaluation: CounterfactualEvaluation | null;
+    readonly failure: CounterfactualFailure | null;
+    readonly record_id: RecordId;
+    readonly status: CounterfactualCandidateStatus;
+    readonly target: CounterfactualTarget;
+};
+```
+
+### `CounterfactualCandidateStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured candidate status: proposed, evaluated, promoted, or rejected.
+
+Signature:
+
+```ts
+export type CounterfactualCandidateStatus = (typeof APPLICATION_CRO_CANDIDATE_STATUSES)[number];
+```
+
+### `CounterfactualDivergenceSummary`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained summary of the divergence proof of one candidate branch.
+
+Signature:
+
+```ts
+export type CounterfactualDivergenceSummary = {
+    readonly common_prefix_id: string | null;
+    readonly first_divergence_index: number | null;
+    readonly live_steps: number;
+    readonly recorded_steps: number;
+    readonly unexplained: readonly number[];
+};
+```
+
+### `CounterfactualEvaluation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Verdict of the caller-supplied targeted evaluator, retained verbatim.
+
+Signature:
+
+```ts
+export type CounterfactualEvaluation = {
+    readonly passed: boolean;
+    readonly reason: string;
+    readonly score: number;
+};
+```
+
+### `CounterfactualEvaluationBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Executable counterfactual optimization binding.
+
+Signature:
+
+```ts
+export type CounterfactualEvaluationBinding = {
+    readonly kind: (typeof APPLICATION_KINDS)[1];
+    readonly options: Omit<RunCounterfactualOptimizationOptions, "baselines" | "commandId" | "protocol">;
+};
+```
+
+### `CounterfactualEvaluationContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context the targeted evaluator receives for one proven candidate branch.
+
+Signature:
+
+```ts
+export type CounterfactualEvaluationContext = {
+    readonly affectedSteps: readonly number[];
+    readonly branch: ReplaySessionInspection;
+    readonly candidate: CounterfactualCandidatePlan;
+    readonly cost: ApplicationCostSummary;
+    readonly divergence: ReplayDivergenceAnalysis;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly target: CounterfactualTarget;
+};
+```
+
+### `CounterfactualEvaluator`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied targeted evaluator gating promotion.
+
+A thrown error or a malformed verdict is a verification failure: the candidate is retained as
+rejected and nothing is promoted.
+
+Signature:
+
+```ts
+export type CounterfactualEvaluator = (context: CounterfactualEvaluationContext) => Promise<CounterfactualEvaluation> | CounterfactualEvaluation;
+```
+
+Parameter:
+
+- context - Candidate, branch inspection, divergence analysis, cost, and protocol.
+
+Returns:
+
+- The verdict retained verbatim.
+
+### `CounterfactualFailure`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained failure that rejected a candidate and stopped the run.
+
+Signature:
+
+```ts
+export type CounterfactualFailure = {
+    readonly code: string;
+    readonly reason: string;
+};
+```
+
+### `CounterfactualOptimizationInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one counterfactual optimization run.
+
+Signature:
+
+```ts
+export type CounterfactualOptimizationInspection = {
+    readonly application_id: string;
+    readonly baseline_session_id: string;
+    readonly baselines: readonly CounterfactualBaselineKind[];
+    readonly candidates: readonly CounterfactualCandidateInspection[];
+    readonly command_id: string;
+    readonly cut_id: CutId | null;
+    readonly kind: ApplicationKind;
+    readonly manifest: ApplicationManifest | null;
+    readonly manifest_record_id: RecordId | null;
+    readonly opened_record_id: RecordId;
+    readonly promotion: CounterfactualCandidateRecord | null;
+    readonly protocol_id: string;
+};
+```
+
+### `CounterfactualOptimizationReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of runCounterfactualOptimization.
+
+Signature:
+
+```ts
+export type CounterfactualOptimizationReceipt = {
+    readonly inspection: CounterfactualOptimizationInspection;
+    readonly manifest: ApplicationManifest;
+};
+```
+
+### `CounterfactualRecordPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured counterfactual optimizer record phase: the opened record or a candidate record.
+
+Signature:
+
+```ts
+export type CounterfactualRecordPhase = (typeof APPLICATION_CRO_PHASES)[number];
+```
+
+### `CounterfactualTarget`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Step boundary a candidate branch starts from.
+
+Signature:
+
+```ts
+export type CounterfactualTarget = {
+    readonly prefix_id: string;
+    readonly source_session_id: string;
+    readonly step_index: number;
+};
+```
+
+### `CounterfactualWorkflowDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Baseline workflow recorded once through a root replay session.
+
+The program must bind no worlds or processes so every step boundary is an admissible branch
+target. The provider, handler stack, and task service the baseline session and every branch
+suffix that does not declare the corresponding change, so a provider must be able to answer
+repeated sessions.
+
+Signature:
+
+```ts
+export type CounterfactualWorkflowDefinition = {
+    readonly handlers?: EffectHandlerStack;
+    readonly program: ReplaySessionProgram;
+    readonly programId: string;
+    readonly provider?: ModelProvider;
+    readonly task?: ReplaySessionTaskDefinition;
+};
+```
+
+### `CreateApplicationManifestOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for createApplicationManifest.
+
+Signature:
+
+```ts
+export type CreateApplicationManifestOptions = {
+    readonly applicationId: string;
+    readonly artifacts: readonly ApplicationArtifactSource[];
+    readonly costs: ApplicationCostSummary;
+    readonly protocol: ApplicationProtocolDefinition;
 };
 ```
 
@@ -8460,6 +10349,20 @@ Signature:
 export type ResolvedPlacement = (typeof RESOLVED_PLACEMENTS)[number];
 ```
 
+### `RetainApplicationManifestOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for retainApplicationManifest.
+
+Signature:
+
+```ts
+export type RetainApplicationManifestOptions = {
+    readonly manifest: ApplicationManifest;
+};
+```
+
 ### `RetainedRecord`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -8831,6 +10734,21 @@ Signature:
 export type RewindReplaySessionOptions = ReplayBranchOptions;
 ```
 
+### `RunApplicationEvaluationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for runApplicationEvaluation.
+
+Signature:
+
+```ts
+export type RunApplicationEvaluationOptions = {
+    readonly bind: ApplicationEvaluationBinder;
+    readonly definition: ApplicationEvaluationDefinition;
+};
+```
+
 ### `RunArtifact`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -9109,6 +11027,28 @@ export type RunChildRunOptions = {
 };
 ```
 
+### `RunCodingSupervisorOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for runCodingSupervisor.
+
+Signature:
+
+```ts
+export type RunCodingSupervisorOptions = {
+    readonly changedPaths?: CodingSupervisorChangedPathsReader;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly parent: ChildRunRootParent;
+    readonly policy: CodingSupervisorPolicy;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly supervisorId: string;
+    readonly workers: readonly CodingSupervisorWorkerDefinition[];
+    readonly world?: ApplicationWorldAdapter;
+};
+```
+
 ### `RunConsumption`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -9279,6 +11219,27 @@ Signature:
 
 ```ts
 export type RunControlStatus = (typeof RUN_CONTROL_STATUSES)[number];
+```
+
+### `RunCounterfactualOptimizationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for runCounterfactualOptimization.
+
+Signature:
+
+```ts
+export type RunCounterfactualOptimizationOptions = {
+    readonly baseline: CounterfactualWorkflowDefinition;
+    readonly baselines?: readonly CounterfactualBaselineKind[];
+    readonly candidates: readonly CounterfactualCandidateDefinition[];
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly evaluate: CounterfactualEvaluator;
+    readonly protocol: ApplicationProtocolDefinition;
+};
 ```
 
 ### `RunLedgerEntry`
@@ -9525,6 +11486,53 @@ Signature:
 export type RunTextArtifactContentDefinition = {
     readonly text: string;
     readonly type: (typeof RUN_ARTIFACT_CONTENT_TYPES)[0];
+};
+```
+
+### `RunTrajectoryCompressionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for runTrajectoryCompression.
+
+Signature:
+
+```ts
+export type RunTrajectoryCompressionOptions = {
+    readonly baselines?: readonly TrajectoryCompressionBaselineKind[];
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly compressor: TrajectoryCompressorDefinition;
+    readonly controlProvider?: (seed: number) => ModelProvider;
+    readonly parent: ChildRunRootParent;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly supervisorId: string;
+    readonly verifier: TrajectoryVerifierDefinition;
+    readonly workflow: TrajectoryCompressionWorkflow;
+};
+```
+
+### `RunTreeRlRolloutsOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for runTreeRlRollouts.
+
+Signature:
+
+```ts
+export type RunTreeRlRolloutsOptions = {
+    readonly baselines?: readonly TreeRlBaselineKind[];
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly handlers?: EffectHandlerStack;
+    readonly program: ReplaySessionProgram;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly provider: TreeRlProviderFactory;
+    readonly reward: TreeRlRewardFunction;
+    readonly sourceSessionId: string;
 };
 ```
 
@@ -12701,6 +14709,24 @@ Signature:
 export type ScopeVocabularyTerm = (typeof SCOPE_VOCABULARY_TERMS)[number];
 ```
 
+### `ScopeWorldAdapterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for createScopeWorldAdapter.
+
+Signature:
+
+```ts
+export type ScopeWorldAdapterOptions = {
+    readonly binding: WorkspaceBinding;
+    readonly carrier: ReferenceCopyCarrier;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly parent: ScopeWriter;
+    readonly store: SQLiteTraceStore;
+};
+```
+
 ### `ScopeWorldCapability`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -12913,6 +14939,23 @@ export type SelectRetainedWorldSettlementOptions = {
     readonly carrier: ReferenceCopyCarrier;
     readonly outputId: string;
     readonly store: SQLiteTraceStore;
+};
+```
+
+### `SelectTreeRlForkPointsOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for selectTreeRlForkPoints.
+
+Signature:
+
+```ts
+export type SelectTreeRlForkPointsOptions = {
+    readonly clock?: () => number;
+    readonly maxForkPoints: number;
+    readonly minDependents: number;
+    readonly sessionId: string;
 };
 ```
 
@@ -14552,6 +16595,489 @@ Signature:
 export type TraceSubscriptionStartPosition = (typeof SUPERVISION_SUBSCRIPTION_START_POSITIONS)[number];
 ```
 
+### `TrajectoryCompressionBaselineKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured comparison baseline kind.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionBaselineKind = (typeof APPLICATION_COMPRESSION_BASELINE_KINDS)[number];
+```
+
+### `TrajectoryCompressionCandidateInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived state of one candidate.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionCandidateInspection = {
+    readonly candidate: TrajectoryCompressionCandidateKind;
+    readonly outcome: TrajectoryCompressionCandidateRecord | null;
+    readonly proposed: TrajectoryCompressionCandidateRecord | null;
+    readonly rewound: TrajectoryCompressionCandidateRecord | null;
+    readonly seed: number | null;
+};
+```
+
+### `TrajectoryCompressionCandidateKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured candidate kind: the fork-point compression or one seeded best-of-N control.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionCandidateKind = (typeof APPLICATION_COMPRESSION_CANDIDATE_KINDS)[number];
+```
+
+### `TrajectoryCompressionCandidateRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained candidate record.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionCandidateRecord = {
+    readonly candidate: TrajectoryCompressionCandidateKind;
+    readonly compressor_handle_id: string | null;
+    readonly cost: ApplicationCostSummary | null;
+    readonly failure: TrajectoryCompressionFailure | null;
+    readonly fork_id: string | null;
+    readonly fork_point: TrajectoryForkPoint | null;
+    readonly hint_digest: string | null;
+    readonly outcome: TrajectoryCompressionOutcome | null;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly restoration_session_id: string | null;
+    readonly restore: TrajectoryRestoreEvidence | null;
+    readonly score: number | null;
+    readonly seed: number | null;
+    readonly session_id: string | null;
+    readonly status: TrajectoryCompressionCandidateStatus;
+    readonly step_count: number | null;
+    readonly verdict: TrajectoryCompressionVerdict | null;
+    readonly verifier_handle_id: string | null;
+};
+```
+
+### `TrajectoryCompressionCandidateStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured candidate status: proposed, rewound, settled, or rejected.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionCandidateStatus = (typeof APPLICATION_COMPRESSION_CANDIDATE_STATUSES)[number];
+```
+
+### `TrajectoryCompressionComparison`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Measured step counts of one comparison session.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionComparison = {
+    readonly session_id: string;
+    readonly step_count: number;
+    readonly step_count_ratio: number;
+};
+```
+
+### `TrajectoryCompressionEvaluationBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Executable trajectory compression binding.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionEvaluationBinding = {
+    readonly kind: (typeof APPLICATION_KINDS)[2];
+    readonly options: Omit<RunTrajectoryCompressionOptions, "baselines" | "commandId" | "protocol">;
+};
+```
+
+### `TrajectoryCompressionFailure`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained failure that rejected a candidate and stopped the run.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionFailure = {
+    readonly code: string;
+    readonly reason: string;
+};
+```
+
+### `TrajectoryCompressionGuidance`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Guidance a workflow program receives when it re-executes the suffix under a proposal.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionGuidance = {
+    readonly fork_point: TrajectoryForkPoint;
+    readonly hint: TrajectoryHint | null;
+};
+```
+
+### `TrajectoryCompressionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one trajectory compression run.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionInspection = {
+    readonly application_id: string;
+    readonly baselines: readonly TrajectoryCompressionBaselineKind[];
+    readonly command_id: string;
+    readonly compression: TrajectoryCompressionCandidateInspection;
+    readonly controls: readonly TrajectoryCompressionCandidateInspection[];
+    readonly cut_id: CutId | null;
+    readonly kind: ApplicationKind;
+    readonly manifest: ApplicationManifest | null;
+    readonly manifest_record_id: RecordId | null;
+    readonly opened_record_id: RecordId;
+    readonly outcome: TrajectoryCompressionOutcomeRecord | null;
+    readonly protocol_id: string;
+    readonly source_session_id: string;
+};
+```
+
+### `TrajectoryCompressionOutcome`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured compression outcome: pruned, no prune, or restored.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionOutcome = (typeof APPLICATION_COMPRESSION_OUTCOMES)[number];
+```
+
+### `TrajectoryCompressionOutcomeRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Aggregate outcome reporting measured step-count ratios only.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionOutcomeRecord = {
+    readonly baseline: (TrajectoryCompressionComparison & {
+        readonly kind: TrajectoryCompressionBaselineKind;
+    }) | null;
+    readonly control: (TrajectoryCompressionComparison & {
+        readonly seed: number;
+    }) | null;
+    readonly original_step_count: number;
+    readonly outcome: TrajectoryCompressionOutcome;
+    readonly record_id: RecordId;
+    readonly result_session_id: string;
+    readonly result_step_count: number;
+    readonly step_count_ratio: number;
+};
+```
+
+### `TrajectoryCompressionPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured trajectory compression record phase: opened, candidate, or outcome.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionPhase = (typeof APPLICATION_COMPRESSION_PHASES)[number];
+```
+
+### `TrajectoryCompressionProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Workflow program factory. `program(null)` is the recorded workflow and every plain rerun;
+`program(guidance)` re-executes the same workflow under a fork point and hint. The guided program
+must issue the recorded prefix unchanged; only steps at or after the fork point may use the hint.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionProgram = (guidance: TrajectoryCompressionGuidance | null) => ReplaySessionProgram;
+```
+
+Parameter:
+
+- guidance - Fork point and hint, or null for the unguided workflow.
+
+Returns:
+
+- The deterministic replay session program.
+
+### `TrajectoryCompressionProposal`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated compressor proposal: a fork point and hint, or null for no compression.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionProposal = {
+    readonly fork_point: TrajectoryForkPoint | null;
+    readonly hint: TrajectoryHint | null;
+};
+```
+
+### `TrajectoryCompressionReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of runTrajectoryCompression.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionReceipt = {
+    readonly inspection: TrajectoryCompressionInspection;
+    readonly manifest: ApplicationManifest;
+};
+```
+
+### `TrajectoryCompressionVerdict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured verifier verdict: accepted or rejected.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionVerdict = (typeof APPLICATION_COMPRESSION_VERDICTS)[number];
+```
+
+### `TrajectoryCompressionWorkflow`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Source workflow recorded once through a root replay session.
+
+The workflow binds no worlds or processes, so every step boundary is an admissible fork point.
+The provider, handler stack, task, and provider-session adapter service the source session,
+every suffix replay, and every control rerun, so the provider must answer repeated sessions.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionWorkflow = {
+    readonly handlers?: EffectHandlerStack;
+    readonly program: TrajectoryCompressionProgram;
+    readonly programId: string;
+    readonly provider?: ModelProvider;
+    readonly providerSession?: ReplayProviderSessionAdapter;
+    readonly task?: ReplaySessionTaskDefinition;
+};
+```
+
+### `TrajectoryCompressorContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a program-serviced compressor receives in addition to the child run context.
+
+Signature:
+
+```ts
+export type TrajectoryCompressorContext = ChildRunProgramContext & {
+    readonly source: ReplaySessionInspection;
+};
+```
+
+### `TrajectoryCompressorDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Delegated compressor child: a child run definition serviced by a program or a provider.
+
+Signature:
+
+```ts
+export type TrajectoryCompressorDefinition = {
+    readonly budget: RunBudgetDefinition;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly program?: TrajectoryCompressorProgram;
+    readonly provenance?: ChildRunProvenanceDeclaration;
+    readonly provider?: ModelProvider;
+    readonly task: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>> | TaskValue;
+};
+```
+
+### `TrajectoryCompressorProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller program servicing the compressor child. The returned output is validated against the task
+output schema; its configured output field must carry the canonical JSON text of a proposal.
+
+Signature:
+
+```ts
+export type TrajectoryCompressorProgram = (context: TrajectoryCompressorContext) => Promise<unknown> | unknown;
+```
+
+Parameter:
+
+- context - Child run program context plus the source inspection.
+
+Returns:
+
+- The compressor output.
+
+### `TrajectoryForkPoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Step boundary of the source session a compressor proposes to fork from.
+
+Signature:
+
+```ts
+export type TrajectoryForkPoint = {
+    readonly prefix_id: string;
+    readonly session_id: string;
+    readonly step_index: number;
+};
+```
+
+### `TrajectoryHint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Hint a compressor attaches to its fork point.
+
+Signature:
+
+```ts
+export type TrajectoryHint = {
+    readonly cited_step_indices: readonly number[];
+    readonly text: string;
+};
+```
+
+### `TrajectoryRestoreConstituent`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained restore constituent: its kind, name, evidence status, and unavailable reason.
+
+Signature:
+
+```ts
+export type TrajectoryRestoreConstituent = {
+    readonly kind: ReplayCheckpointConstituentKind;
+    readonly name: string | null;
+    readonly reason: string | null;
+    readonly status: ReplayCheckpointEvidenceStatus;
+};
+```
+
+### `TrajectoryRestoreEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained restore classification of a fork point.
+
+Signature:
+
+```ts
+export type TrajectoryRestoreEvidence = {
+    readonly classification: ReplayCheckpointClassification;
+    readonly constituents: readonly TrajectoryRestoreConstituent[];
+    readonly restore_record_id: RecordId | null;
+    readonly rewind_session_id: string | null;
+};
+```
+
+### `TrajectoryVerifierContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a program-serviced verifier receives in addition to the child run context.
+
+Signature:
+
+```ts
+export type TrajectoryVerifierContext = ChildRunProgramContext & {
+    readonly candidate: TrajectoryCompressionCandidateKind;
+    readonly compressed: ReplaySessionInspection;
+    readonly fork_point: TrajectoryForkPoint | null;
+    readonly hint: TrajectoryHint | null;
+    readonly original: ReplaySessionInspection;
+    readonly seed: number | null;
+};
+```
+
+### `TrajectoryVerifierDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Delegated verifier child: a child run definition serviced by a program or a provider.
+
+Signature:
+
+```ts
+export type TrajectoryVerifierDefinition = Omit<TrajectoryCompressorDefinition, "program"> & {
+    readonly program?: TrajectoryVerifierProgram;
+};
+```
+
+### `TrajectoryVerifierProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller program servicing one verifier child. The returned output is validated against the task
+output schema; its configured output field must carry the canonical JSON text of a verdict
+`{ verdict, score, reason }`.
+
+Signature:
+
+```ts
+export type TrajectoryVerifierProgram = (context: TrajectoryVerifierContext) => Promise<unknown> | unknown;
+```
+
+Parameter:
+
+- context - Child run program context plus the original and candidate inspections.
+
+Returns:
+
+- The verifier output.
+
 ### `TransparentProcessAdapterOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -14563,6 +17089,411 @@ Signature:
 ```ts
 export type TransparentProcessAdapterOptions = {
     readonly processId: string;
+};
+```
+
+### `TreeRlAdvantage`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Advantages of one completed rollout.
+
+Signature:
+
+```ts
+export type TreeRlAdvantage = {
+    readonly inter_branch_advantage: number;
+    readonly intra_branch_advantage: number;
+    readonly rollout_id: string;
+};
+```
+
+### `TreeRlAdvantageInput`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Rollout fields computeTreeRlAdvantages reads.
+
+Signature:
+
+```ts
+export type TreeRlAdvantageInput = {
+    readonly fork_point: {
+        readonly step_index: number;
+    };
+    readonly reward: number | null;
+    readonly rollout_id: string;
+    readonly status: TreeRlRolloutStatus;
+};
+```
+
+### `TreeRlBaselineKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured comparison baseline kind.
+
+Signature:
+
+```ts
+export type TreeRlBaselineKind = (typeof APPLICATION_TREE_RL_BASELINE_KINDS)[number];
+```
+
+### `TreeRlBatchExport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One exported training batch: canonical lines, their text, and its digest.
+
+Signature:
+
+```ts
+export type TreeRlBatchExport = TreeRlBatchSummary & {
+    readonly lines: readonly TreeRlTrainingLine[];
+    readonly text: string;
+};
+```
+
+### `TreeRlBatchFormat`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured training batch format.
+
+Signature:
+
+```ts
+export type TreeRlBatchFormat = (typeof APPLICATION_TREE_RL_BATCH_FORMATS)[number];
+```
+
+### `TreeRlBatchRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained batch record.
+
+Signature:
+
+```ts
+export type TreeRlBatchRecord = TreeRlBatchSummary & {
+    readonly baseline: (TreeRlBatchSummary & {
+        readonly kind: TreeRlBaselineKind;
+    }) | null;
+    readonly record_id: RecordId;
+};
+```
+
+### `TreeRlBatchSummary`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Format, digest, and size of one training batch.
+
+Signature:
+
+```ts
+export type TreeRlBatchSummary = {
+    readonly batch_digest: string;
+    readonly format: TreeRlBatchFormat;
+    readonly line_count: number;
+};
+```
+
+### `TreeRlEvaluationBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Executable Tree-RL binding: the source workflow and the rollout options.
+
+Signature:
+
+```ts
+export type TreeRlEvaluationBinding = {
+    readonly kind: (typeof APPLICATION_KINDS)[3];
+    readonly options: Omit<RunTreeRlRolloutsOptions, "baselines" | "commandId" | "protocol" | "sourceSessionId">;
+    readonly source: Omit<RunReplaySessionOptions, "commandId">;
+};
+```
+
+### `TreeRlFailure`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained failure of one rollout.
+
+Signature:
+
+```ts
+export type TreeRlFailure = {
+    readonly code: string;
+    readonly reason: string;
+};
+```
+
+### `TreeRlForkPoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Step boundary a rollout branch starts from: the fork step is the first step the branch executes
+live, and every earlier step is served from the source journal.
+
+Signature:
+
+```ts
+export type TreeRlForkPoint = {
+    readonly prefix_id: string | null;
+    readonly step_index: number;
+};
+```
+
+### `TreeRlProviderContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Identity of one planned rollout the provider factory receives.
+
+Signature:
+
+```ts
+export type TreeRlProviderContext = {
+    readonly branch: number;
+    readonly fork_point: TreeRlForkPoint;
+    readonly seed: number;
+    readonly source_session_id: string;
+};
+```
+
+### `TreeRlProviderFactory`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied factory returning the rollout's own static provider cassette.
+
+It is called once for every planned rollout before any record is written; each call must return
+a distinct provider whose descriptor kind is the configured static provider kind.
+
+Signature:
+
+```ts
+export type TreeRlProviderFactory = (context: TreeRlProviderContext) => ModelProvider;
+```
+
+Parameter:
+
+- context - Fork point, branch, seed, and source session of the rollout.
+
+Returns:
+
+- The rollout's provider.
+
+### `TreeRlRecordPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured Tree-RL record phase: opened, rollout, or batch.
+
+Signature:
+
+```ts
+export type TreeRlRecordPhase = (typeof APPLICATION_TREE_RL_PHASES)[number];
+```
+
+### `TreeRlRewardContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context the reward function receives for one finished, proven rollout.
+
+Signature:
+
+```ts
+export type TreeRlRewardContext = {
+    readonly branch: number;
+    readonly cost: ApplicationCostSummary;
+    readonly fork_point: TreeRlForkPoint;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly rollout: ReplaySessionInspection;
+    readonly seed: number;
+    readonly source: ReplaySessionInspection;
+};
+```
+
+### `TreeRlRewardFunction`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied reward function returning one finite scalar per completed rollout.
+
+A thrown error or a non-finite result retains the rollout as failed with the verification code;
+the run continues and the rollout is excluded from every mean.
+
+Signature:
+
+```ts
+export type TreeRlRewardFunction = (context: TreeRlRewardContext) => Promise<number> | number;
+```
+
+Parameter:
+
+- context - Rollout session, fork point, seed, cost, and protocol.
+
+Returns:
+
+- The finite reward.
+
+### `TreeRlRolloutInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived state of one planned rollout.
+
+Signature:
+
+```ts
+export type TreeRlRolloutInspection = TreeRlRolloutPlan & {
+    readonly record: TreeRlRolloutRecord | null;
+};
+```
+
+### `TreeRlRolloutPlan`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Identity of one planned rollout, fixed when the run is opened.
+
+Signature:
+
+```ts
+export type TreeRlRolloutPlan = {
+    readonly branch: number;
+    readonly fork_point: TreeRlForkPoint;
+    readonly replay_session_id: string;
+    readonly rollout_id: string;
+    readonly seed: number;
+};
+```
+
+### `TreeRlRolloutRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained rollout record.
+
+Signature:
+
+```ts
+export type TreeRlRolloutRecord = TreeRlRolloutPlan & {
+    readonly cost: ApplicationCostSummary;
+    readonly failure: TreeRlFailure | null;
+    readonly record_id: RecordId;
+    readonly reward: number | null;
+    readonly status: TreeRlRolloutStatus;
+    readonly step_count: number;
+};
+```
+
+### `TreeRlRolloutStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured rollout status: completed or failed.
+
+Signature:
+
+```ts
+export type TreeRlRolloutStatus = (typeof APPLICATION_TREE_RL_ROLLOUT_STATUSES)[number];
+```
+
+### `TreeRlRunInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one Tree-RL run.
+
+Signature:
+
+```ts
+export type TreeRlRunInspection = {
+    readonly application_id: string;
+    readonly baselines: readonly TreeRlBaselineKind[];
+    readonly batch: TreeRlBatchRecord | null;
+    readonly command_id: string;
+    readonly cut_id: CutId | null;
+    readonly fork_points: readonly TreeRlSelectedForkPoint[];
+    readonly kind: ApplicationKind;
+    readonly manifest: ApplicationManifest | null;
+    readonly manifest_record_id: RecordId | null;
+    readonly opened_record_id: RecordId;
+    readonly protocol_id: string;
+    readonly rollouts: readonly TreeRlRolloutInspection[];
+    readonly seeds: readonly number[];
+    readonly source_session_id: string;
+};
+```
+
+### `TreeRlRunReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of runTreeRlRollouts.
+
+Signature:
+
+```ts
+export type TreeRlRunReceipt = {
+    readonly batch: TreeRlTrainingBatch;
+    readonly inspection: TreeRlRunInspection;
+    readonly manifest: ApplicationManifest;
+};
+```
+
+### `TreeRlSelectedForkPoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One trace-selected fork point with the transitive dependent count that qualified it.
+
+Signature:
+
+```ts
+export type TreeRlSelectedForkPoint = TreeRlForkPoint & {
+    readonly dependents: number;
+};
+```
+
+### `TreeRlTrainingBatch`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of exportTreeRlTrainingBatch.
+
+Signature:
+
+```ts
+export type TreeRlTrainingBatch = TreeRlBatchExport & {
+    readonly application_id: string;
+    readonly baseline: (TreeRlBatchExport & {
+        readonly kind: TreeRlBaselineKind;
+    }) | null;
+};
+```
+
+### `TreeRlTrainingLine`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One canonical `jsonl_v1` training batch line.
+
+Signature:
+
+```ts
+export type TreeRlTrainingLine = TreeRlAdvantage & {
+    readonly fork_point: TreeRlForkPoint;
+    readonly replay_session_id: string;
+    readonly reward: number;
+    readonly seed: number;
+    readonly session_id: string;
+    readonly step_count: number;
 };
 ```
 
@@ -16000,6 +18931,30 @@ const analysis = analyzeReplayDivergence(store, { replaySessionId, sourceSession
 assert.deepEqual(analysis.unexplained, []);
 ```
 
+### `applicationProtocolId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the content-addressed identity of one protocol definition.
+
+Signature:
+
+```ts
+export declare function applicationProtocolId(definition: ApplicationProtocolDefinition): string;
+```
+
+Parameter:
+
+- definition - Protocol definition; validated again before hashing.
+
+Returns:
+
+- The configured `protocolIdPrefix` identity over the canonical definition.
+
+Throws:
+
+- {ApplicationProtocolError} If the definition is malformed.
+
 ### `applyRetainedWorldSettlement`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -16645,6 +19600,117 @@ Example:
 const fork = await forkScope(store, options);
 const { start, restorable } = classifyScopeCheckpoint(fork.world.checkpoint);
 ```
+
+### `compareApplicationBaseline`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Compares one application's measured metrics against its baseline's, metric by metric.
+
+Values are copied verbatim; the delta is the application value minus the baseline value when
+both are numbers and null otherwise (a null cost or the boolean success metric).
+
+Signature:
+
+```ts
+export declare function compareApplicationBaseline(application: ApplicationEvaluationMetrics, baseline: ApplicationEvaluationMetrics): readonly ApplicationEvaluationComparisonValue[];
+```
+
+Parameter:
+
+- application - Measured application metrics.
+
+Parameter:
+
+- baseline - Measured baseline metrics.
+
+Returns:
+
+- One comparison value per configured metric, in configured order.
+
+Throws:
+
+- {TypeError} If either metrics object is malformed.
+
+Example:
+
+- ```ts
+const values = compareApplicationBaseline(run.metrics, baseline.metrics);
+console.log(values.find((value) => value.metric === "provider_calls")?.delta);
+```
+
+### `computeTreeRlAdvantages`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Computes intra- and inter-branch advantages over completed rollouts only.
+
+Rollouts sharing a fork point step index form one group. For every completed rollout,
+`intra_branch_advantage = reward - mean(completed rewards in its group)` and
+`inter_branch_advantage = mean(completed rewards in its group) - mean(every completed reward)`.
+Failed rollouts are excluded from every mean and receive no advantage. A group with one completed
+rollout yields an intra-branch advantage of exactly `0`, and a run whose completed rollouts share
+one fork point yields inter-branch advantages of exactly `0`. Means sum in input order, so the
+result is a pure function of the input sequence.
+
+Signature:
+
+```ts
+export declare function computeTreeRlAdvantages(rollouts: readonly TreeRlAdvantageInput[]): readonly TreeRlAdvantage[];
+```
+
+Parameter:
+
+- rollouts - Rollouts in batch order, such as retained rollout records; other fields are
+ignored.
+
+Returns:
+
+- One advantage per completed rollout, in input order.
+
+Throws:
+
+- {TypeError} If a rollout is malformed, its status and reward disagree, a reward is not
+finite, or rollout identities repeat.
+
+Example:
+
+- ```ts
+const advantages = computeTreeRlAdvantages(inspection.rollouts.map((entry) => entry.record!));
+```
+
+### `createApplicationManifest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Builds the canonical manifest of one application run.
+
+Surfaces are cited by the digest of their canonical content; artifacts by the digest of the
+supplied content with the record and cut they live in; the manifest identity is the digest of
+the manifest body without the identity field, so the same protocol, artifacts, and costs yield
+the same manifest identity.
+
+Signature:
+
+```ts
+export declare function createApplicationManifest(options: CreateApplicationManifestOptions): ApplicationManifest;
+```
+
+Parameter:
+
+- options - Application identity, artifact sources, measured costs, and protocol.
+
+Returns:
+
+- The frozen manifest.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol definition is malformed.
+
+Throws:
+
+- {TypeError} If the options, an artifact, or the costs are malformed or exceed bounds.
 
 ### `createCooperativeProcessAdapter`
 
@@ -17445,6 +20511,59 @@ const usage = createRunUsage({
 });
 ```
 
+### `createScopeWorldAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the concrete world adapter the coding supervisor composes over scope forks, merges,
+discards, and changesets.
+
+`fork` captures the parent's current custody as the origin and forks one child scope with
+reference-copy custody under the parent writer; a fork command already completed returns its
+retained receipt without carrier work. `merge` claims the child writer under the merge command
+identity and merges the child into the parent at both current heads; `discard` discards the
+child subtree and cleans its custody; both return the retained receipt when the command already
+completed. `changedPaths` compares the custody's origin revision with a capture of its current
+custody and returns the canonical changed paths. Custody identities are resolved through the
+receipts the adapter returned or replayed, so a fresh process rebuilds them by re-issuing the
+same fork commands.
+
+Signature:
+
+```ts
+export declare function createScopeWorldAdapter(options: ScopeWorldAdapterOptions): ApplicationWorldAdapter;
+```
+
+Parameter:
+
+- options - Store, parent writer, binding, carrier, and worker grant.
+
+Returns:
+
+- A frozen adapter.
+
+Throws:
+
+- {ScopeEvidenceError} If the parent scope is not registered in the store.
+
+Throws:
+
+- {TypeError} If a handle is forged, the parent holds no world custody, or options are
+malformed.
+
+Example:
+
+- ```ts
+const world = createScopeWorldAdapter({
+    binding,
+    carrier,
+    grant: [{ atoms: ["read", "write"], resource_id: binding.binding_id, resource_kind: "workspace_binding" }],
+    parent: parentWriter,
+    store,
+});
+await runCodingSupervisor(store, { ...options, world });
+```
+
 ### `createStaticProvider`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -17663,6 +20782,30 @@ const inspection = await createWorldChangesetInspection({
 });
 console.log(inspection.change("src/index.ts"));
 ```
+
+### `deriveApplicationOwnerId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the application identity and reserved owner path of one application command.
+
+Signature:
+
+```ts
+export declare function deriveApplicationOwnerId(commandId: string): string;
+```
+
+Parameter:
+
+- commandId - Globally idempotent application command identity.
+
+Returns:
+
+- The configured `applicationIdPrefix` identity.
+
+Throws:
+
+- {TypeError} If the command identity is malformed.
 
 ### `deriveReplaySessionId`
 
@@ -18189,6 +21332,56 @@ const durable = await executeTaskDurably(store, {
 const projected = store.projectExecution(durable.ledger.cut.cut_id);
 ```
 
+### `exportTreeRlTrainingBatch`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Exports the retained training batch of one Tree-RL run without mutation.
+
+The canonical `jsonl_v1` lines are re-derived from the retained rollout records: one line per
+completed rollout in fork-point, then branch order, carrying its identity, source and rollout
+sessions, fork point, seed, reward, advantages, and step count. The text is the canonical JSON of
+each line followed by a line feed, and its digest must equal the retained batch digest. Export
+works on reopened, read-only, and imported stores and yields an identical digest.
+
+Signature:
+
+```ts
+export declare function exportTreeRlTrainingBatch(store: SQLiteTraceStore, applicationId: string): TreeRlTrainingBatch;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The batch lines, text, digest, and the optional single-rollout baseline batch.
+
+Throws:
+
+- {ApplicationEvidenceError} If the application or its batch is not retained, or a
+re-derived digest disagrees with the retained one.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
+Example:
+
+- ```ts
+const batch = exportTreeRlTrainingBatch(store, deriveApplicationOwnerId(commandId));
+await writeFile("batch.jsonl", batch.text);
+```
+
 ### `forkScope`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -18526,6 +21719,45 @@ Throws:
 
 - {TypeError} If options are malformed, uncited, or exceed configured bounds.
 
+### `inspectApplicationManifest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads the retained manifest of one application without mutation.
+
+Inspection works on reopened, read-only, and imported stores.
+
+Signature:
+
+```ts
+export declare function inspectApplicationManifest(store: SQLiteTraceStore, applicationId: string): ApplicationManifestInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated manifest with its record and terminal cut.
+
+Throws:
+
+- {ApplicationEvidenceError} If no manifest is retained or the retained evidence is
+inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
 ### `inspectChildRun`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -18581,6 +21813,111 @@ Example:
 - ```ts
 const inspection = inspectChildRun(store, handle.handle_id);
 console.log(inspection.status, inspection.supervisor_id, inspection.decision);
+```
+
+### `inspectCodingSupervisorRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one coding supervisor run as an immutable record-derived view without mutation.
+
+Every record on the application owner path is validated: the opened record, each decision
+record in contiguous round order, the manifest, and the terminal cut publication. Worker
+lineages follow the opened handles through every retained `discard_restart` successor, and
+each attempt carries its validated child run handle inspection. Inspection works on reopened,
+read-only, and imported stores.
+
+Signature:
+
+```ts
+export declare function inspectCodingSupervisorRun(store: SQLiteTraceStore, applicationId: string): CodingSupervisorInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ApplicationEvidenceError} If the application is not retained or its evidence is
+inconsistent.
+
+Throws:
+
+- {DelegationEvidenceError} If a worker handle's evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectCodingSupervisorRun(store, deriveApplicationOwnerId(commandId));
+console.log(inspection.decisions.map((decision) => decision.decision.kind));
+```
+
+### `inspectCounterfactualOptimization`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one counterfactual optimization run as an immutable record-derived view without mutation.
+
+Every record on the application owner path is validated: the opened record and its candidate
+plan, each candidate's proposed and outcome records in declared order with identical plan,
+target, affected steps, and derived branch identity, the lineage of every target to its parent's
+branch or the baseline, the single terminal promotion, the manifest, and the terminal cut.
+Inspection works on reopened, read-only, and imported stores and never embeds live-session
+state, so it is identical across them.
+
+Signature:
+
+```ts
+export declare function inspectCounterfactualOptimization(store: SQLiteTraceStore, applicationId: string): CounterfactualOptimizationInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ApplicationEvidenceError} If the application is not retained or its evidence is
+inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectCounterfactualOptimization(store, deriveApplicationOwnerId(commandId));
+console.log(inspection.promotion?.name ?? "nothing promoted");
 ```
 
 ### `inspectDurableTaskExecution`
@@ -19044,6 +22381,106 @@ Example:
 - ```ts
 const journal = inspectTaskWorldCaptureJournal(store, "run:review:1");
 journal.transitions.map((transition) => transition.phase);
+```
+
+### `inspectTrajectoryCompression`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one trajectory compression run as an immutable record-derived view without mutation.
+
+Every record on the application owner path is validated: the opened record, the compression
+candidate's proposed, rewound, and settled or rejected records in order with an identical
+proposal and derived fork, session, and handle identities, each control seed's record in seed
+order, the aggregate outcome consistent with the candidates, the manifest, and the terminal cut.
+Inspection works on reopened, read-only, and imported stores and is identical across them.
+
+Signature:
+
+```ts
+export declare function inspectTrajectoryCompression(store: SQLiteTraceStore, applicationId: string): TrajectoryCompressionInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ApplicationEvidenceError} If the application is not retained or its evidence is
+inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectTrajectoryCompression(store, deriveApplicationOwnerId(commandId));
+console.log(inspection.compression.outcome?.outcome ?? "not settled");
+```
+
+### `inspectTreeRlRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one Tree-RL run as an immutable record-derived view without mutation.
+
+Every record on the application owner path is validated: the opened record and its selection,
+each rollout record in fork-point, then branch order with its derived rollout and session
+identities, the batch record whose digests re-derive from the rollouts, the manifest, and the
+terminal cut. Inspection works on reopened, read-only, and imported stores and is identical
+across them.
+
+Signature:
+
+```ts
+export declare function inspectTreeRlRun(store: SQLiteTraceStore, applicationId: string): TreeRlRunInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ApplicationEvidenceError} If the application is not retained or its evidence is
+inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectTreeRlRun(store, deriveApplicationOwnerId(commandId));
+console.log(inspection.rollouts.filter((entry) => entry.record?.status === "failed").length);
 ```
 
 ### `inspectWorkspacePathProtection`
@@ -20060,6 +23497,84 @@ Example:
 - ```ts
 const vocabulary = projectScopeVocabulary(store, parent.scope_id);
 const adopted = vocabulary?.entries.filter((entry) => entry.term === "adopt");
+```
+
+### `readApplicationEvaluationDefinition`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates an untrusted evaluation definition into its canonical frozen form.
+
+The definition must be a plain data object of exactly `evaluationId`, `experiments`,
+`limitations`, and `revision`. Every experiment carries a distinct `id`, a `commandId`, a
+protocol definition accepted by `readApplicationProtocol` whose kind selects the application, and
+a baseline whose kind is a configured baseline kind of that application; the coding supervisor
+baseline also names its `commandId` and `workerId`, and a Tree-RL experiment names the
+`sourceCommandId` recording its source session. Command identities are distinct across the
+definition. Limitations are distinct by identity and within the configured length bound.
+Experiment and limitation counts are bounded by `APPLICATION_EVALUATION_LIMITS`.
+
+Signature:
+
+```ts
+export declare function readApplicationEvaluationDefinition(value: unknown): ApplicationEvaluationDefinition;
+```
+
+Parameter:
+
+- value - Untrusted evaluation definition.
+
+Returns:
+
+- The canonical frozen definition.
+
+Throws:
+
+- {ApplicationProtocolError} If the definition is malformed, names an unknown baseline, or
+exceeds a configured bound.
+
+Example:
+
+- ```ts
+const definition = readApplicationEvaluationDefinition(JSON.parse(text));
+console.log(definition.experiments.map((experiment) => experiment.baseline.kind));
+```
+
+### `readApplicationProtocol`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates an untrusted application protocol definition into its canonical frozen form.
+
+The definition must be a plain data object of exactly `budgets`, `dataset`, `kind`,
+`protocolVersion`, `seeds`, and `surfaces`. Kinds and surface kinds must be configured, surface
+identities distinct, every surface content canonical and within the configured byte bound for
+its kind, budgets non-negative integers by non-empty metric name, seeds distinct integers, and
+the dataset selection a distinct item list, all within `APPLICATION_LIMITS`.
+
+Signature:
+
+```ts
+export declare function readApplicationProtocol(value: unknown): ApplicationProtocolDefinition;
+```
+
+Parameter:
+
+- value - Untrusted protocol definition.
+
+Returns:
+
+- The canonical frozen definition.
+
+Throws:
+
+- {ApplicationProtocolError} If the definition is malformed or exceeds a configured bound.
+
+Example:
+
+- ```ts
+const protocol = readApplicationProtocol(JSON.parse(text).supervision);
+console.log(applicationProtocolId(protocol));
 ```
 
 ### `readDurableTaskExecution`
@@ -21171,6 +24686,48 @@ const authority = resumeDurableTask(store, {
 authority.fencing_token;
 ```
 
+### `retainApplicationManifest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains one manifest as a `shepherd.application.manifest.v1` record on its application owner
+path and publishes the terminal application cut through it in the same transaction.
+
+Every artifact record the manifest cites must be retained and becomes a causal parent, with the
+current application head first. Repeating the command with the same manifest returns the
+retained receipt; an owner path that already retains a different manifest is refused.
+
+Signature:
+
+```ts
+export declare function retainApplicationManifest(store: SQLiteTraceStore, options: RetainApplicationManifestOptions): ApplicationManifestReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Manifest to retain.
+
+Returns:
+
+- The retained manifest, its record identity, and the terminal cut.
+
+Throws:
+
+- {ApplicationEvidenceError} If the manifest is malformed, cites an unretained record, the
+owner path retains a different manifest, or the application head moved.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
 ### `retryChildRun`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -21311,6 +24868,72 @@ const { inspection } = await rewindReplaySession(store, {
 });
 ```
 
+### `runApplicationEvaluation`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs every configured experiment offline with its baseline and folds one measured-only report.
+
+The definition is validated and every experiment's binding is obtained and checked before any
+application runs, so a malformed definition or binding writes nothing. Experiments then run in
+order under their fixed command identities: the coding supervisor through
+`runCodingSupervisor` with its `no_supervision` baseline constructed as one plain child run of the
+named worker (no policy, trace-only, never accepted or discarded); the counterfactual optimizer
+with its `full_replay` baseline; trajectory compression with its `no_compression` baseline; and
+Tree-RL over a source session recorded under `sourceCommandId` with its `single_rollout`
+baseline. Every metric is measured from retained evidence; nothing is estimated. The evaluation
+writes no record of its own, and every application command is idempotent, so a repeated or
+resumed evaluation converges on the same report without re-running settled work. An application
+refusal leaves the evidence of earlier experiments for a corrected rerun to reuse.
+
+Signature:
+
+```ts
+export declare function runApplicationEvaluation(store: SQLiteTraceStore, options: RunApplicationEvaluationOptions): Promise<ApplicationEvaluationReport>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Evaluation definition and binding factory.
+
+Returns:
+
+- The validated report whose identity is the digest of its canonical body.
+
+Throws:
+
+- {ApplicationProtocolError} If the definition or a binding is malformed.
+
+Throws:
+
+- {ApplicationBudgetError} If an application exceeds a protocol budget.
+
+Throws:
+
+- {ApplicationEvidenceError} If retained application evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If an application, delegation, or replay seam refuses a command.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const report = await runApplicationEvaluation(store, {
+    bind: (experiment) => bindings[experiment.id],
+    definition,
+});
+console.log(report.report_id, report.comparisons);
+```
+
 ### `runChildRun`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -21415,6 +25038,205 @@ Returns:
 Throws:
 
 - {TypeError} If the injectable I/O boundary is malformed.
+
+### `runCodingSupervisor`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the two-worker coding supervisor application over durable child run handles.
+
+Each worker is opened as a child run under the caller's root declaration, optionally bound to
+isolated custody forked through `world`. The run proceeds in rounds bounded by the protocol's
+round budget: every round observes each live worker through `observeChildRun` and its
+record-derived inspection, classifies the workers' changed paths as `none` or `path_overlap`,
+consults the policy exactly once, applies its decision through the delegation seam (`inject`,
+`handoff`, `discard_restart` from a clean fork, or the terminal `accept`), retains one
+`shepherd.application.supervision.v1` decision record citing the exact evidence, and then runs
+every ready worker. `accept` merges the accepted custody, discards every other worker and
+custody, retains the manifest on the application owner path, and publishes the terminal cut.
+Repeating the command replays retained decisions without consulting the policy and returns the
+retained manifest without re-executing any worker. A repeat is checked against the retained
+opened record before any fork or handle is opened, so a refused repeat writes nothing. A round
+whose delegation commands were applied before its decision record was retained is completed
+with the decision rebuilt from those commands, never with a new policy decision.
+
+Signature:
+
+```ts
+export declare function runCodingSupervisor(store: SQLiteTraceStore, options: RunCodingSupervisorOptions): Promise<CodingSupervisorReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, supervisor, protocol, workers, parent declaration, policy, and exactly
+one of a world adapter or a trace-only changed-path reader.
+
+Returns:
+
+- The retained manifest and the record-derived inspection.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol definition is malformed, is not a coding
+supervisor protocol, lacks a required surface or budget, or differs from the retained one.
+
+Throws:
+
+- {ApplicationBudgetError} If a worker budget exceeds the protocol's, the round budget is
+exhausted, or a worker start would exceed the provider-call budget.
+
+Throws:
+
+- {ApplicationEvidenceError} If retained application evidence is inconsistent.
+
+Throws:
+
+- {DelegationStatusError} If a worker is running after a crash, is accepted before it
+finished, or a decision is not admissible for the handle's status.
+
+Throws:
+
+- {DelegationAuthorityError} If a worker grant or budget exceeds the declared ceiling.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options, the world adapter or its results, a worker definition, or a
+policy decision are malformed.
+
+Example:
+
+- ```ts
+const { manifest, inspection } = await runCodingSupervisor(store, {
+    changedPaths: ({ output }) => [(output as { path: string }).path],
+    commandId: "application:supervisor:1",
+    parent: { budget: { maxTurns: 4 }, ceiling: [], kind: "root" },
+    policy: ({ observations, round }) =>
+        round === 1
+            ? { kind: "observe" }
+            : { kind: "accept", worker_id: observations[0].worker_id },
+    protocol,
+    supervisorId: "supervisor:lead",
+    workers,
+});
+```
+
+### `runCounterfactualOptimization`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the counterfactual workflow optimizer (Appendix F) over replay sessions.
+
+The baseline workflow is recorded once through `runReplaySession`. Each declared candidate, in
+order, forks its source session (its parent candidate's branch, or the baseline): the affected
+steps are the transitive dependents of the edited step from `analyzeReplayDependencies`, and the
+branch replays from the step boundary immediately before the earliest affected step through
+`replayReplaySession`, declaring exactly the candidate's change dimensions; every earlier step is
+served from the source journal. The live suffix runs with the candidate's program, provider, and
+handler stack where it supplies them, else those of the nearest ancestor in its parent chain that
+did, else the baseline's; an undeclared task resolves through the source's branch ancestry. A
+candidate whose edited step has no dependent branches at the
+source's final boundary and replays zero live steps. The baseline session must finish. A branch
+(or, with the `full_replay` baseline, its full replay) that ended with any terminal status other
+than `finished` is retained as rejected with the evidence failure before the evaluator is
+consulted, and the run stops, as for a disproven candidate. `analyzeReplayDivergence` must prove
+that no step before the target diverged and that no divergence is unexplained. The caller's
+evaluator gates each proven candidate, and the best passing candidate whose score reaches the protocol's
+minimum promotion score is promoted once. Every candidate is retained as proposed and then as
+evaluated or rejected in `shepherd.application.cro_candidate.v1` records with lineage, target,
+affected steps, branch identity, divergence summary, verdict, and measured cost; the manifest is
+retained last with the terminal cut. With the `full_replay` baseline, each proven candidate is
+also replayed live from step boundary zero of its source with the same resolved workflow and its
+measured provider calls and cache reads are retained. The baseline's measured provider calls,
+and every candidate session's projected and then measured calls, are checked against the
+provider-call budget.
+Repeating the command resumes from retained evidence: terminal sessions are never re-executed,
+and a completed run returns its retained manifest.
+
+Signature:
+
+```ts
+export declare function runCounterfactualOptimization(store: SQLiteTraceStore, options: RunCounterfactualOptimizationOptions): Promise<CounterfactualOptimizationReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, claim, protocol, baseline workflow, candidates, evaluator, and
+optional baselines and clock.
+
+Returns:
+
+- The retained manifest and the record-derived inspection.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol is malformed, is not a counterfactual
+optimization protocol, lacks a required surface or budget, a candidate declares an edit kind
+outside the replay change dimensions, an edited step index lies outside the baseline session (after
+the baseline and before any application record), or the run was opened under another protocol.
+Declared candidates are otherwise validated before any record is written.
+
+Throws:
+
+- {ApplicationBudgetError} If the candidate set exceeds the protocol's candidate budget, the
+measured baseline exceeds the provider-call budget (before any application record), a new
+session's projected calls would exceed it, or a session's measured calls exceeded it.
+
+Throws:
+
+- {ApplicationEvidenceError} If the baseline session did not finish (before any application
+record), a branch diverged before its target or without explanation, a branch or full-replay
+session ended failed or cancelled, or a branch or full-replay session was left interrupted by a dead writer whose lease expired (the
+candidate is retained as rejected first), a child's edited step is not retained in its parent's
+branch, or retained evidence is inconsistent.
+
+Throws:
+
+- {ApplicationVerificationError} If the evaluator throws or returns a malformed verdict (the
+candidate is retained as rejected first).
+
+Throws:
+
+- {ReplayLeaseConflictError} If a session is held by another writer.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If the baseline session was left non-terminal by a dead
+writer (every rerun of the command raises it; recover under a new command identity), or a
+candidate session is still `running` under a live lease.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options or a candidate definition are malformed.
+
+Example:
+
+- ```ts
+const { inspection, manifest } = await runCounterfactualOptimization(store, {
+    baseline: { program, programId: "workflow.v1", provider },
+    baselines: ["full_replay"],
+    candidates: [{ changes: ["provider"], name: "stronger-draft", provider: alternate, stepIndex: 0 }],
+    claimId: "optimizer",
+    commandId: "application:cro:1",
+    evaluate: ({ branch }) => ({ passed: true, reason: "tests pass", score: 1 }),
+    protocol,
+});
+```
 
 ### `runReplaySession`
 
@@ -21576,6 +25398,234 @@ const report = await runScopeTree(store, {
 });
 ```
 
+### `runTrajectoryCompression`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs hindsight trajectory compression (Appendix D) over a recorded replay session.
+
+The source workflow is recorded once through `runReplaySession` with `program(null)`. A
+compressor runs as a delegated child through `openChildRun`, `runChildRun`, and
+`acceptChildRunResult`; it receives the canonical source evidence and returns a proposal
+`{ fork_point, hint }` as canonical JSON text in the configured output field. The proposal is
+validated against the closed fork-point and hint grammar and the source: the fork point must name
+the source session, retain at least one and fewer than all source steps, and carry the retained
+prefix identity. A null fork point settles `no_prune` and the source is the result. A fork point
+at a retained checkpoint is classified with `classifyReplayCheckpoint`; an `unavailable`
+classification refuses the prune, retains the classification, constituents, and reason, and
+settles `no_prune`. Otherwise `rewindReplaySession` restores the fork point, its restore
+classification and constituents are retained as `rewound`, and `replayReplaySession` re-executes
+the suffix with `program(guidance)`. A compressed session that finished with strictly fewer steps
+is gated by a delegated verifier returning `{ verdict, score, reason }`: `accepted` settles
+`pruned` with the compressed session as the result, and `rejected` settles `restored` after
+re-running the original suffix with `program(null)` from the same fork point and retains the
+reason. A compressed session that is not admissible is restored without consulting the verifier.
+Up to the protocol's best-of-N budget, seeded plain reruns of `program(null)` run as root sessions
+and are verified as controls. A restoration or control session that ended failed or cancelled is
+retained as a rejected candidate with the evidence failure and the run stops; a control is never
+verified unless its session finished. The aggregate outcome record reports measured step-count ratios
+only, and the manifest is retained last with the terminal cut. Repeating the command resumes from
+retained evidence: sessions, children, and the rewind are never executed twice, and a completed
+run returns its retained manifest. A replay session left non-terminal by a dead writer whose
+lease expired is admitted from its retained records: a rewind with a retained restore record is
+retained as `rewound` without a second restore, an interrupted compressed session is not
+admissible and is restored, and an interrupted restoration or control session rejects its
+candidate. Delegation, lease, and store refusals at a child seam raise without a record; only a
+child that terminally failed, including one settled by the cancellation path, or an output the
+grammar refuses is retained as `rejected`.
+
+Signature:
+
+```ts
+export declare function runTrajectoryCompression(store: SQLiteTraceStore, options: RunTrajectoryCompressionOptions): Promise<TrajectoryCompressionReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, claim, supervisor, root declaration, protocol, workflow, compressor,
+verifier, and optional baselines, control provider, and clock.
+
+Returns:
+
+- The retained manifest and the record-derived inspection.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol is malformed, is not a trajectory compression
+protocol, lacks a required surface or budget, declares fewer seeds than its best-of-N budget, or
+the run was opened under another protocol. Nothing is written.
+
+Throws:
+
+- {ApplicationBudgetError} If the best-of-N budget exceeds `limits.maxBestOfN` (nothing is
+written), the measured source exceeds the provider-call budget (before any application record),
+a new session or child would exceed it by projection, or a suffix, restoration, or control
+session's measured calls exceeded it (the session is retained, the candidate is not settled).
+
+Throws:
+
+- {ApplicationEvidenceError} If the source did not finish, the compressor terminally fails
+or returns a proposal the grammar or the source refuses, the rewind fails or retains no restore
+record, a restoration or control session ended failed or cancelled or was interrupted by a dead
+writer whose lease expired (the candidate is retained as rejected first), or retained evidence is inconsistent.
+
+Throws:
+
+- {ApplicationVerificationError} If a verifier terminally fails or returns a malformed
+verdict; the candidate is retained as rejected and nothing is pruned.
+
+Throws:
+
+- {DelegationCommandConflictError} If a child command is rerun under another supervisor
+or content; nothing is written.
+
+Throws:
+
+- {DelegationStatusError} If a child was left running by a dead process; nothing is
+written until the cancellation path settles it.
+
+Throws:
+
+- {ReplayLeaseConflictError} If a session is held by another writer.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If the source session was left non-terminal by a crash
+(every rerun raises it), or a session is still `running` under a live lease; nothing is written.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options or a child definition are malformed.
+
+Example:
+
+- ```ts
+const { inspection } = await runTrajectoryCompression(store, {
+    claimId: "compression",
+    commandId: "application:compression:1",
+    compressor: { budget: { maxTurns: 1 }, grant: [], program: propose, task: compressorTask },
+    parent: { budget: { maxTurns: 8 }, ceiling: [], kind: "root" },
+    protocol,
+    supervisorId: "supervisor:compression",
+    verifier: { budget: { maxTurns: 1 }, grant: [], program: verify, task: verifierTask },
+    workflow: { program: (guidance) => workflow(guidance), programId: "workflow.v1", provider },
+});
+console.log(inspection.outcome?.outcome, inspection.outcome?.step_count_ratio);
+```
+
+### `runTreeRlRollouts`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the Tree-RL adapter (§5.3) over a recorded replay session and exports a training batch.
+
+Fork points are selected from the finished source session by selectTreeRlForkPoints with
+the protocol's dependent-count minimum and fork-point budget. Per fork point, the protocol's
+branch count of rollouts is replayed from the fork point's step boundary through
+`replayReplaySession` declaring the `provider` change, branch `k` under the protocol's seed `k`
+and the static provider cassette the caller's factory returns for it; every earlier step is
+served from the source journal. `analyzeReplayDivergence` must show no divergence before the fork
+point and none unexplained. The caller's reward function scores each finished, proven rollout.
+Every rollout is retained in fork-point, then branch order as one
+`shepherd.application.tree_rl_rollout.v1` record with status `completed` or `failed`; a session
+that did not finish, diverged, was interrupted by a dead writer whose lease expired, or whose
+reward threw or was not finite is retained as `failed` with its configured reason and the run
+continues. Advantages are computed over completed rollouts only by computeTreeRlAdvantages,
+the canonical `jsonl_v1` batch and its digest (and, with the `single_rollout` baseline, the batch
+of each fork point's first branch) are retained in a batch record, and the manifest citing the
+source session, every rollout record, and the batch as `training_batch` is retained last with
+the terminal cut.
+
+Every option, the protocol, the source session, the selection, the rollout bounds, every
+provider, and the projected provider calls are validated before any record is written, so a
+refusal writes nothing. Repeating the command resumes from retained evidence: a terminal rollout
+session is never re-executed, the reward function is not called for a retained rollout, and a
+completed run returns its retained manifest and batch.
+
+Signature:
+
+```ts
+export declare function runTreeRlRollouts(store: SQLiteTraceStore, options: RunTreeRlRolloutsOptions): Promise<TreeRlRunReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, claim, protocol, source session, program, provider factory, reward
+function, and optional baselines, handlers, and clock.
+
+Returns:
+
+- The retained manifest, the record-derived inspection, and the exported batch.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol is malformed, is not a Tree-RL protocol, lacks
+a required surface or budget, declares a zero branch or fork-point budget or fewer seeds than
+branches, or the run was opened under another protocol. Nothing is written.
+
+Throws:
+
+- {ApplicationBudgetError} If the fork-point budget exceeds `limits.maxForkPoints`, the
+branch budget exceeds `limits.maxBranches`, the planned rollouts exceed `limits.maxRollouts`, or
+the projected provider calls exceed the provider-call budget; the first three and the whole-run
+projection are checked before any record, and each new rollout session is checked before it
+opens.
+
+Throws:
+
+- {ApplicationEvidenceError} If the source session is not finished, binds worlds or
+processes, has no qualifying fork point, the run was opened with a different source, selection,
+or baselines, or retained evidence is inconsistent. Nothing is written by a refusal.
+
+Throws:
+
+- {ReplayEvidenceError} If the source session is not retained or its evidence is invalid.
+
+Throws:
+
+- {ReplayLeaseConflictError} If a rollout session is held by another writer.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If a rollout session is still `running` under a live
+lease; nothing is written.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed or the provider factory returns a provider that is
+not a distinct static provider.
+
+Example:
+
+- ```ts
+const { batch } = await runTreeRlRollouts(store, {
+    claimId: "tree-rl",
+    commandId: "application:tree-rl:1",
+    program,
+    protocol,
+    provider: ({ fork_point, seed }) => cassetteFor(fork_point, seed),
+    reward: ({ rollout }) => score(rollout.terminal?.result),
+    sourceSessionId,
+});
+console.log(batch.batch_digest, batch.line_count);
+```
+
 ### `schema`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -21634,6 +25684,58 @@ const selected = await selectRetainedWorldSettlement({
     store,
 });
 selected.publication_id;
+```
+
+### `selectTreeRlForkPoints`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Selects deterministic trace-selected fork points of one recorded replay session.
+
+For each provider step of the session, in index order, `analyzeReplayDependencies` gives its
+transitive dependents; a step qualifies when its dependent count reaches `minDependents`, and
+qualifying steps are taken in index order up to `maxForkPoints`. Each fork point names the step
+and the source prefix identity at its boundary (null at step 0). The selection is a pure function
+of the retained session and writes nothing.
+
+Signature:
+
+```ts
+export declare function selectTreeRlForkPoints(store: SQLiteTraceStore, options: SelectTreeRlForkPointsOptions): readonly TreeRlSelectedForkPoint[];
+```
+
+Parameter:
+
+- store - Open trace store holding the session, writable or read-only.
+
+Parameter:
+
+- options - Session identity, dependent-count minimum, fork-point bound, and optional clock.
+
+Returns:
+
+- The selected fork points in step order; empty when no provider step qualifies.
+
+Throws:
+
+- {ApplicationBudgetError} If `maxForkPoints` exceeds `APPLICATION_LIMITS.maxForkPoints`.
+
+Throws:
+
+- {ReplayEvidenceError} If the session evidence is invalid.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed or the session is not retained.
+
+Example:
+
+- ```ts
+const forkPoints = selectTreeRlForkPoints(store, { maxForkPoints: 4, minDependents: 2, sessionId });
 ```
 
 ### `task`
@@ -21737,6 +25839,69 @@ Example:
 - ```ts
 const value = taskValueOf(greet);
 ```
+
+### `validateApplicationEvaluationReport`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates an untrusted evaluation report, re-deriving every comparison and the report identity.
+
+The document must be a plain data object of exactly the report fields with the configured report
+and compatibility versions and metric order; runs, baselines, and comparisons align by experiment
+in order; every baseline kind is configured for its run's application kind; every comparison
+equals `compareApplicationBaseline` over its run and baseline; and `report_id` is the digest of
+the canonical body without it.
+
+Signature:
+
+```ts
+export declare function validateApplicationEvaluationReport(value: unknown): ApplicationEvaluationReport;
+```
+
+Parameter:
+
+- value - Untrusted report, for example parsed from a generated artifact.
+
+Returns:
+
+- The canonical frozen report.
+
+Throws:
+
+- {ApplicationEvidenceError} If the report is malformed, a comparison or the identity does
+not re-derive, or a bound is exceeded.
+
+Example:
+
+- ```ts
+const report = validateApplicationEvaluationReport(JSON.parse(text));
+console.log(report.report_id);
+```
+
+### `validateApplicationManifest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates an untrusted manifest document, re-deriving its identity and every artifact identity.
+
+Signature:
+
+```ts
+export declare function validateApplicationManifest(value: unknown): ApplicationManifest;
+```
+
+Parameter:
+
+- value - Untrusted manifest.
+
+Returns:
+
+- The canonical frozen manifest.
+
+Throws:
+
+- {ApplicationEvidenceError} If the document is malformed, exceeds a bound, or its
+identities do not re-derive from its body.
 
 ### `validateEffectCorrelation`
 
@@ -21855,6 +26020,4163 @@ const result = validateTypedEffectTrace({
 });
 result.open_path_count;
 ```
+
+## Applications
+
+Package entry: `./applications`
+
+Application manifests, protocol identity, the two-worker coding supervisor over child run handles, the counterfactual workflow optimizer over replay sessions, Appendix D trajectory compression, the §5.3 Tree-RL adapter, and offline evaluation reports against simple baselines.
+
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+
+Authority and mutation: Running and inspecting the coding supervisor, the counterfactual optimizer, trajectory compression, and the Tree-RL adapter, running an evaluation, and retaining manifests require an explicit trace-store handle; workers, policies, workflow programs, evaluators, compressors, verifiers, reward functions, evaluation bindings, and providers are caller-supplied; an evaluation writes no record of its own beyond the application commands it issues; world custody is reached only through a caller-supplied adapter. Every supervisor command and every compressor and verifier child runs through the delegation seam under the caller's root declaration and never amplifies authority; every optimizer, compression, and Tree-RL rollout session runs through the replay seam without bound worlds or processes. No provider, filesystem, workspace, custody, or settlement authority is created.
+
+Import example:
+
+```ts
+import * as api from "@avnionur/shepherd-typescript/applications";
+void api;
+```
+
+Exported symbols: 188.
+
+### `APPLICATION_COMPATIBILITY_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application evidence compatibility namespace.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPATIBILITY_VERSION: "shepherd.applications.v1";
+```
+
+### `APPLICATION_COMPRESSION_BASELINE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression comparison baseline kinds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_BASELINE_KINDS: readonly [
+    "no_compression"
+];
+```
+
+### `APPLICATION_COMPRESSION_CANDIDATE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression candidate kinds ordered compression then best-of-N control.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_CANDIDATE_KINDS: readonly [
+    "compression",
+    "control"
+];
+```
+
+### `APPLICATION_COMPRESSION_CANDIDATE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression candidate statuses ordered proposed, rewound, settled, rejected.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_CANDIDATE_STATUSES: readonly [
+    "proposed",
+    "rewound",
+    "settled",
+    "rejected"
+];
+```
+
+### `APPLICATION_COMPRESSION_OUTCOMES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression outcomes ordered pruned, no prune, restored.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_OUTCOMES: readonly [
+    "pruned",
+    "no_prune",
+    "restored"
+];
+```
+
+### `APPLICATION_COMPRESSION_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression record phases ordered opened, candidate, outcome.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_PHASES: readonly [
+    "opened",
+    "candidate",
+    "outcome"
+];
+```
+
+### `APPLICATION_COMPRESSION_VERDICTS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression verifier verdicts ordered accepted then rejected.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_VERDICTS: readonly [
+    "accepted",
+    "rejected"
+];
+```
+
+### `APPLICATION_CRO_BASELINE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual comparison baseline kinds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_BASELINE_KINDS: readonly [
+    "full_replay"
+];
+```
+
+### `APPLICATION_CRO_CANDIDATE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual candidate statuses ordered proposed, evaluated, promoted, rejected.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_CANDIDATE_STATUSES: readonly [
+    "proposed",
+    "evaluated",
+    "promoted",
+    "rejected"
+];
+```
+
+### `APPLICATION_CRO_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual optimizer record phases ordered opened then candidate.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_PHASES: readonly [
+    "opened",
+    "candidate"
+];
+```
+
+### `APPLICATION_EVALUATION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application evaluation definition bounds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_EVALUATION_LIMITS: Readonly<{
+    readonly maxExperiments: 16;
+    readonly maxLimitationLength: 1024;
+    readonly maxLimitations: 32;
+}>;
+```
+
+### `APPLICATION_EVALUATION_METRICS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured measured evaluation metrics ordered cost, provider calls, input tokens, output tokens, steps, success.
+
+Signature:
+
+```ts
+export declare const APPLICATION_EVALUATION_METRICS: readonly [
+    "cost_usd",
+    "provider_calls",
+    "input_tokens",
+    "output_tokens",
+    "steps",
+    "success"
+];
+```
+
+### `APPLICATION_EVALUATION_REPORT_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application evaluation report version.
+
+Signature:
+
+```ts
+export declare const APPLICATION_EVALUATION_REPORT_VERSION: 1;
+```
+
+### `APPLICATION_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application kinds ordered coding supervisor, counterfactual optimization, trajectory compression, Tree-RL.
+
+Signature:
+
+```ts
+export declare const APPLICATION_KINDS: readonly [
+    "coding_supervisor",
+    "counterfactual_optimization",
+    "trajectory_compression",
+    "tree_rl"
+];
+```
+
+### `APPLICATION_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application evidence bounds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_LIMITS: Readonly<{
+    readonly maxArtifacts: 128;
+    readonly maxBestOfN: 8;
+    readonly maxBranches: 16;
+    readonly maxCandidates: 32;
+    readonly maxDatasetItems: 64;
+    readonly maxForkPoints: 32;
+    readonly maxPromptBytes: 16384;
+    readonly maxReasonLength: 1024;
+    readonly maxRollouts: 64;
+    readonly maxRounds: 64;
+    readonly maxSchemaBytes: 16384;
+    readonly maxSeeds: 16;
+    readonly maxSurfaces: 32;
+    readonly maxToolBytes: 16384;
+    readonly maxWorkers: 8;
+    readonly minWorkers: 2;
+}>;
+```
+
+### `APPLICATION_MANIFEST_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured application manifest version.
+
+Signature:
+
+```ts
+export declare const APPLICATION_MANIFEST_VERSION: 1;
+```
+
+### `APPLICATION_PROTOCOL_SURFACES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured protocol surface kinds ordered prompt, schema, tool.
+
+Signature:
+
+```ts
+export declare const APPLICATION_PROTOCOL_SURFACES: readonly [
+    "prompt",
+    "schema",
+    "tool"
+];
+```
+
+### `APPLICATION_RECORD_VERSION`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured canonical application record version.
+
+Signature:
+
+```ts
+export declare const APPLICATION_RECORD_VERSION: 1;
+```
+
+### `APPLICATION_SUPERVISION_BASELINE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured coding supervisor comparison baseline kinds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_SUPERVISION_BASELINE_KINDS: readonly [
+    "no_supervision"
+];
+```
+
+### `APPLICATION_SUPERVISION_CONFLICT_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured worker conflict classifications ordered none then path overlap.
+
+Signature:
+
+```ts
+export declare const APPLICATION_SUPERVISION_CONFLICT_KINDS: readonly [
+    "none",
+    "path_overlap"
+];
+```
+
+### `APPLICATION_SUPERVISION_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured supervision record phases ordered opened then decision.
+
+Signature:
+
+```ts
+export declare const APPLICATION_SUPERVISION_PHASES: readonly [
+    "opened",
+    "decision"
+];
+```
+
+### `APPLICATION_SUPERVISION_POLICY_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured coding supervisor policy kinds ordered observe, inject, handoff, discard/restart, accept.
+
+Signature:
+
+```ts
+export declare const APPLICATION_SUPERVISION_POLICY_KINDS: readonly [
+    "observe",
+    "inject",
+    "handoff",
+    "discard_restart",
+    "accept"
+];
+```
+
+### `APPLICATION_SUPERVISION_WORKER_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured worker lineage statuses ordered running, accepted, discarded, restarted, handed off.
+
+Signature:
+
+```ts
+export declare const APPLICATION_SUPERVISION_WORKER_STATUSES: readonly [
+    "running",
+    "accepted",
+    "discarded",
+    "restarted",
+    "handed_off"
+];
+```
+
+### `APPLICATION_TREE_RL_BASELINE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL comparison baseline kinds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_BASELINE_KINDS: readonly [
+    "single_rollout"
+];
+```
+
+### `APPLICATION_TREE_RL_BATCH_FORMATS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL training batch formats.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_BATCH_FORMATS: readonly [
+    "jsonl_v1"
+];
+```
+
+### `APPLICATION_TREE_RL_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL record phases ordered opened, rollout, batch.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_PHASES: readonly [
+    "opened",
+    "rollout",
+    "batch"
+];
+```
+
+### `APPLICATION_TREE_RL_ROLLOUT_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL rollout statuses ordered completed then failed.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_ROLLOUT_STATUSES: readonly [
+    "completed",
+    "failed"
+];
+```
+
+### `AppendIntentConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an append intent is replayed with different semantic content.
+
+Signature:
+
+```ts
+export declare class AppendIntentConflictError extends TraceStoreError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable append-conflict code.
+
+```ts
+readonly code: string;
+```
+
+### `ApplicationArtifactCitation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One produced artifact cited by identity, never by content.
+
+Signature:
+
+```ts
+export type ApplicationArtifactCitation = {
+    readonly artifact_id: string;
+    readonly cut_id: string | null;
+    readonly digest: string;
+    readonly record_id: RecordId | null;
+    readonly role: string;
+};
+```
+
+### `ApplicationArtifactSource`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Source of one artifact citation: the canonical content and the evidence it lives in.
+
+Signature:
+
+```ts
+export type ApplicationArtifactSource = {
+    readonly content: SemanticValue;
+    readonly cut_id: string | null;
+    readonly record_id: RecordId | null;
+    readonly role: string;
+};
+```
+
+### `ApplicationBudgetError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised before an application call that would exceed a configured protocol budget or bound.
+
+Retained evidence up to the refusal stays; nothing is written by the refusal.
+
+Signature:
+
+```ts
+export declare class ApplicationBudgetError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned budget code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a budget failure.
+
+```ts
+constructor(detail: string);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+### `ApplicationCostSummary`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Measured provider cost of one application run; never estimated.
+
+Signature:
+
+```ts
+export type ApplicationCostSummary = {
+    readonly cache_creation_input_tokens: number;
+    readonly cache_read_input_tokens: number;
+    readonly cost_usd: number | null;
+    readonly input_tokens: number;
+    readonly output_tokens: number;
+    readonly provider_calls: number;
+};
+```
+
+### `ApplicationDatasetSelection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Dataset selection an application run names: the dataset, its revision, and the items used.
+
+Signature:
+
+```ts
+export type ApplicationDatasetSelection = {
+    readonly id: string;
+    readonly items: readonly string[];
+    readonly revision: string;
+};
+```
+
+### `ApplicationEvaluationBaseline`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One measured baseline of the report.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationBaseline = {
+    readonly evidence: readonly string[];
+    readonly experiment_id: string;
+    readonly kind: ApplicationEvaluationBaselineKind;
+    readonly metrics: ApplicationEvaluationMetrics;
+};
+```
+
+### `ApplicationEvaluationBaselineDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Baseline an experiment compares its application against. The kind must be a configured baseline
+kind of the experiment's application kind; `commandId` and `workerId` are required exactly for
+the coding supervisor baseline, which runs the named worker once as a plain child run.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationBaselineDefinition = {
+    readonly commandId?: string;
+    readonly kind: ApplicationEvaluationBaselineKind;
+    readonly workerId?: string;
+};
+```
+
+### `ApplicationEvaluationBaselineKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Any configured comparison baseline kind of any application.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationBaselineKind = CodingSupervisorBaselineKind | (typeof APPLICATION_CRO_BASELINE_KINDS)[number] | (typeof APPLICATION_COMPRESSION_BASELINE_KINDS)[number] | (typeof APPLICATION_TREE_RL_BASELINE_KINDS)[number];
+```
+
+### `ApplicationEvaluationBinder`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller factory returning the executable binding of one validated experiment: its programs,
+static providers, policy, evaluator, verifier, or reward. It is called once per experiment, in
+order, before any application runs.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationBinder = (experiment: ApplicationEvaluationExperiment) => ApplicationEvaluationBinding;
+```
+
+Parameter:
+
+- experiment - Validated experiment.
+
+Returns:
+
+- The binding whose kind equals the experiment's application kind.
+
+### `ApplicationEvaluationBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Executable binding of one experiment, discriminated by application kind.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationBinding = CodingSupervisorEvaluationBinding | CounterfactualEvaluationBinding | TrajectoryCompressionEvaluationBinding | TreeRlEvaluationBinding;
+```
+
+### `ApplicationEvaluationComparison`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Per-metric comparison of one experiment's application against its baseline.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationComparison = {
+    readonly baseline_kind: ApplicationEvaluationBaselineKind;
+    readonly experiment_id: string;
+    readonly values: readonly ApplicationEvaluationComparisonValue[];
+};
+```
+
+### `ApplicationEvaluationComparisonValue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Application value, baseline value, and delta of one metric.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationComparisonValue = {
+    readonly application: number | boolean | null;
+    readonly baseline: number | boolean | null;
+    readonly delta: number | null;
+    readonly metric: ApplicationEvaluationMetric;
+};
+```
+
+### `ApplicationEvaluationDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller evaluation definition: experiments, baselines, seeds (in each protocol), and limitations.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationDefinition = {
+    readonly evaluationId: string;
+    readonly experiments: readonly ApplicationEvaluationExperiment[];
+    readonly limitations: readonly ApplicationEvaluationLimitation[];
+    readonly revision: string;
+};
+```
+
+### `ApplicationEvaluationExperiment`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One configured experiment: an application protocol run under a fixed command identity and
+compared against one baseline. The application kind is the protocol's kind.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationExperiment = {
+    readonly baseline: ApplicationEvaluationBaselineDefinition;
+    readonly commandId: string;
+    readonly id: string;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly sourceCommandId?: string;
+};
+```
+
+### `ApplicationEvaluationLimitation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One limitation published with the report.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationLimitation = {
+    readonly id: string;
+    readonly text: string;
+};
+```
+
+### `ApplicationEvaluationMetric`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured measured evaluation metric name.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationMetric = (typeof APPLICATION_EVALUATION_METRICS)[number];
+```
+
+### `ApplicationEvaluationMetrics`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Measured metrics of one application or baseline; never derived or extrapolated.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationMetrics = {
+    readonly cost_usd: number | null;
+    readonly input_tokens: number;
+    readonly output_tokens: number;
+    readonly provider_calls: number;
+    readonly steps: number;
+    readonly success: boolean;
+};
+```
+
+### `ApplicationEvaluationReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical, digest-bearing `application-evaluation-v1` report.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationReport = {
+    readonly baselines: readonly ApplicationEvaluationBaseline[];
+    readonly comparisons: readonly ApplicationEvaluationComparison[];
+    readonly compatibility_version: string;
+    readonly evaluation_id: string;
+    readonly limitations: readonly ApplicationEvaluationLimitation[];
+    readonly metrics: readonly ApplicationEvaluationMetric[];
+    readonly report_id: string;
+    readonly report_version: number;
+    readonly revision: string;
+    readonly runs: readonly ApplicationEvaluationRun[];
+};
+```
+
+### `ApplicationEvaluationRun`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One measured application run of the report.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationRun = {
+    readonly application_id: string;
+    readonly costs: ApplicationCostSummary;
+    readonly dataset: ApplicationDatasetSelection;
+    readonly experiment_id: string;
+    readonly kind: ApplicationKind;
+    readonly manifest_id: string;
+    readonly metrics: ApplicationEvaluationMetrics;
+    readonly protocol_id: string;
+    readonly protocol_version: string;
+    readonly seeds: readonly number[];
+};
+```
+
+### `ApplicationEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or supplied application evidence is absent, malformed, or inconsistent.
+
+Signature:
+
+```ts
+export declare class ApplicationEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ApplicationKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured application kind.
+
+Signature:
+
+```ts
+export type ApplicationKind = (typeof APPLICATION_KINDS)[number];
+```
+
+### `ApplicationManifest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Canonical, digest-bearing manifest of one application run.
+
+Signature:
+
+```ts
+export type ApplicationManifest = {
+    readonly application_id: string;
+    readonly artifacts: readonly ApplicationArtifactCitation[];
+    readonly budgets: Readonly<Record<string, number>>;
+    readonly compatibility_version: string;
+    readonly costs: ApplicationCostSummary;
+    readonly dataset: ApplicationDatasetSelection;
+    readonly kind: ApplicationKind;
+    readonly manifest_id: string;
+    readonly manifest_version: number;
+    readonly protocol_id: string;
+    readonly protocol_version: string;
+    readonly seeds: readonly number[];
+    readonly surfaces: readonly ApplicationManifestSurface[];
+};
+```
+
+### `ApplicationManifestInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived view of one retained manifest.
+
+Signature:
+
+```ts
+export type ApplicationManifestInspection = {
+    readonly application_id: string;
+    readonly cut_id: CutId;
+    readonly manifest: ApplicationManifest;
+    readonly record_id: RecordId;
+};
+```
+
+### `ApplicationManifestReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of retainApplicationManifest.
+
+Signature:
+
+```ts
+export type ApplicationManifestReceipt = {
+    readonly cut_id: CutId;
+    readonly manifest: ApplicationManifest;
+    readonly record_id: RecordId;
+};
+```
+
+### `ApplicationManifestSurface`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One protocol surface cited by digest inside a manifest; content is never embedded.
+
+Signature:
+
+```ts
+export type ApplicationManifestSurface = {
+    readonly digest: string;
+    readonly id: string;
+    readonly kind: ApplicationProtocolSurfaceKind;
+    readonly role: string;
+};
+```
+
+### `ApplicationProtocolDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Complete pinned protocol of one application run: surfaces, budgets, seeds, and dataset.
+
+Signature:
+
+```ts
+export type ApplicationProtocolDefinition = {
+    readonly budgets: Readonly<Record<string, number>>;
+    readonly dataset: ApplicationDatasetSelection;
+    readonly kind: ApplicationKind;
+    readonly protocolVersion: string;
+    readonly seeds: readonly number[];
+    readonly surfaces: readonly ApplicationProtocolSurface[];
+};
+```
+
+### `ApplicationProtocolError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an application protocol definition is malformed, names an unsupported kind or
+surface, lacks a surface the application requires, or differs from the retained manifest's
+protocol identity.
+
+Signature:
+
+```ts
+export declare class ApplicationProtocolError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned protocol code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a protocol failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ApplicationProtocolSurface`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One versioned prompt, schema, or tool the application protocol pins.
+
+Signature:
+
+```ts
+export type ApplicationProtocolSurface = {
+    readonly content: SemanticValue;
+    readonly id: string;
+    readonly kind: ApplicationProtocolSurfaceKind;
+    readonly role: string;
+};
+```
+
+### `ApplicationProtocolSurfaceKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured protocol surface kind: prompt, schema, or tool.
+
+Signature:
+
+```ts
+export type ApplicationProtocolSurfaceKind = (typeof APPLICATION_PROTOCOL_SURFACES)[number];
+```
+
+### `ApplicationVerificationError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an application verifier or evaluator rejects a produced candidate or cannot run.
+
+Signature:
+
+```ts
+export declare class ApplicationVerificationError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned verification code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a verification failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `ApplicationWorldAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied isolated world custody for supervised workers.
+
+Every request carries a globally idempotent command identity, so repeating a request after an
+interruption converges on the retained receipt. The applications area never touches a
+filesystem itself; the workspace area provides the concrete adapter over scope forks, merges,
+discards, and changesets.
+
+Signature:
+
+```ts
+export type ApplicationWorldAdapter = {
+    readonly changedPaths: (custodyId: string) => Promise<readonly string[]>;
+    readonly discard: (request: ApplicationWorldDiscardRequest) => Promise<ApplicationWorldReceipt>;
+    readonly fork: (request: ApplicationWorldForkRequest) => Promise<ApplicationWorldCustody>;
+    readonly merge: (request: ApplicationWorldMergeRequest) => Promise<ApplicationWorldReceipt>;
+};
+```
+
+### `ApplicationWorldCustody`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Isolated custody one worker attempt edits.
+
+Signature:
+
+```ts
+export type ApplicationWorldCustody = {
+    readonly custody_id: string;
+    readonly receipt_id: string;
+    readonly root: string;
+};
+```
+
+### `ApplicationWorldDiscardRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request to abandon one custody without changing the parent world.
+
+Signature:
+
+```ts
+export type ApplicationWorldDiscardRequest = {
+    readonly commandId: string;
+    readonly custodyId: string;
+    readonly nowMilliseconds: number;
+    readonly workerId: string;
+};
+```
+
+### `ApplicationWorldForkRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request to fork clean isolated custody for one worker attempt.
+
+Signature:
+
+```ts
+export type ApplicationWorldForkRequest = {
+    readonly commandId: string;
+    readonly nowMilliseconds: number;
+    readonly workerId: string;
+};
+```
+
+### `ApplicationWorldMergeRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request to publish one accepted custody into the parent world.
+
+Signature:
+
+```ts
+export type ApplicationWorldMergeRequest = {
+    readonly commandId: string;
+    readonly custodyId: string;
+    readonly nowMilliseconds: number;
+    readonly workerId: string;
+};
+```
+
+### `ApplicationWorldReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained receipt of one merge or discard.
+
+Signature:
+
+```ts
+export type ApplicationWorldReceipt = {
+    readonly receipt_id: string;
+};
+```
+
+### `CodingSupervisorAttemptInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One attempt of a worker lineage.
+
+Signature:
+
+```ts
+export type CodingSupervisorAttemptInspection = {
+    readonly attempt: number;
+    readonly handle_id: string;
+    readonly inspection: ChildRunInspection;
+    readonly status: CodingSupervisorWorkerStatus;
+};
+```
+
+### `CodingSupervisorBaselineKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured coding supervisor comparison baseline kind: one worker without a policy.
+
+Signature:
+
+```ts
+export type CodingSupervisorBaselineKind = (typeof APPLICATION_SUPERVISION_BASELINE_KINDS)[number];
+```
+
+### `CodingSupervisorChangedPathsContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a trace-only changed-path reader receives.
+
+Signature:
+
+```ts
+export type CodingSupervisorChangedPathsContext = {
+    readonly output: SemanticValue;
+    readonly workerId: string;
+};
+```
+
+### `CodingSupervisorChangedPathsReader`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller reader returning the declared changed paths of one finished worker output on the
+trace-only path.
+
+Signature:
+
+```ts
+export type CodingSupervisorChangedPathsReader = (context: CodingSupervisorChangedPathsContext) => readonly string[];
+```
+
+Parameter:
+
+- context - Worker identity and validated output.
+
+Returns:
+
+- Changed paths declared by the output.
+
+### `CodingSupervisorConflict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Conflict classification over the live workers' changed paths.
+
+Signature:
+
+```ts
+export type CodingSupervisorConflict = {
+    readonly kind: CodingSupervisorConflictKind;
+    readonly paths: readonly string[];
+    readonly worker_ids: readonly string[];
+};
+```
+
+### `CodingSupervisorConflictKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured conflict classification of the workers' changed paths.
+
+Signature:
+
+```ts
+export type CodingSupervisorConflictKind = (typeof APPLICATION_SUPERVISION_CONFLICT_KINDS)[number];
+```
+
+### `CodingSupervisorDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Decision a policy returns for one round, retained verbatim in the round's supervision record.
+
+Signature:
+
+```ts
+export type CodingSupervisorDecision = {
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[0];
+} | {
+    readonly cited_record_ids: readonly RecordId[];
+    readonly data: RecordBody;
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[1];
+    readonly worker_id: string;
+} | {
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[2];
+    readonly reason: string | null;
+    readonly successor_supervisor_id: string;
+    readonly worker_id: string;
+} | {
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[3];
+    readonly reason: string;
+    readonly worker_id: string;
+} | {
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[4];
+    readonly worker_id: string;
+};
+```
+
+### `CodingSupervisorDecisionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained decision round.
+
+Signature:
+
+```ts
+export type CodingSupervisorDecisionInspection = {
+    readonly conflict: CodingSupervisorConflict;
+    readonly decision: CodingSupervisorDecision;
+    readonly evidence: CodingSupervisorEvidence;
+    readonly observations: readonly CodingSupervisorObservation[];
+    readonly record_id: RecordId;
+    readonly round: number;
+    readonly supervisor_id: string;
+};
+```
+
+### `CodingSupervisorDiscardedWorker`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One worker discarded by the terminal accept decision.
+
+Signature:
+
+```ts
+export type CodingSupervisorDiscardedWorker = {
+    readonly decision_record_id: RecordId;
+    readonly discard_receipt_id: string | null;
+    readonly worker_id: string;
+};
+```
+
+### `CodingSupervisorEvaluationBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Executable coding supervisor binding; the command and protocol come from the experiment.
+
+Signature:
+
+```ts
+export type CodingSupervisorEvaluationBinding = {
+    readonly kind: (typeof APPLICATION_KINDS)[0];
+    readonly options: Omit<RunCodingSupervisorOptions, "commandId" | "protocol">;
+};
+```
+
+### `CodingSupervisorEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact evidence produced by applying one decision.
+
+Signature:
+
+```ts
+export type CodingSupervisorEvidence = {
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[0];
+} | {
+    readonly injection_record_id: RecordId;
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[1];
+} | {
+    readonly handoff_record_id: RecordId;
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[2];
+} | {
+    readonly decision_record_id: RecordId;
+    readonly discard_receipt_id: string | null;
+    readonly fork_receipt_id: string | null;
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[3];
+    readonly retry_cut_id: string;
+    readonly successor_handle_id: string;
+} | {
+    readonly decision_record_id: RecordId;
+    readonly discarded: readonly CodingSupervisorDiscardedWorker[];
+    readonly kind: (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[4];
+    readonly merge_receipt_id: string | null;
+};
+```
+
+### `CodingSupervisorInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one coding supervisor run.
+
+Signature:
+
+```ts
+export type CodingSupervisorInspection = {
+    readonly application_id: string;
+    readonly command_id: string;
+    readonly cut_id: CutId | null;
+    readonly decisions: readonly CodingSupervisorDecisionInspection[];
+    readonly kind: ApplicationKind;
+    readonly manifest: ApplicationManifest | null;
+    readonly manifest_record_id: RecordId | null;
+    readonly opened_record_id: RecordId;
+    readonly protocol_id: string;
+    readonly supervisor_id: string;
+    readonly workers: readonly CodingSupervisorWorkerInspection[];
+    readonly world: boolean;
+};
+```
+
+### `CodingSupervisorObservation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived observation of one worker attempt at the start of a round.
+
+Signature:
+
+```ts
+export type CodingSupervisorObservation = {
+    readonly attempt: number;
+    readonly changed_paths: readonly string[];
+    readonly child_run_id: string;
+    readonly completion_status: RunTerminalStatus | null;
+    readonly custody_id: string | null;
+    readonly delivered_cursor: TraceSubscriptionCursor;
+    readonly handle_id: string;
+    readonly head_record_id: RecordId;
+    readonly status: ChildRunStatus;
+    readonly supervisor_id: string;
+    readonly worker_id: string;
+    readonly worker_status: CodingSupervisorWorkerStatus;
+};
+```
+
+### `CodingSupervisorPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured supervision record phase: the opened record or a per-round decision record.
+
+Signature:
+
+```ts
+export type CodingSupervisorPhase = (typeof APPLICATION_SUPERVISION_PHASES)[number];
+```
+
+### `CodingSupervisorPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller decision function returning the configured policy to apply to the observed workers.
+
+Signature:
+
+```ts
+export type CodingSupervisorPolicy = (context: CodingSupervisorPolicyContext) => CodingSupervisorDecision | Promise<CodingSupervisorDecision>;
+```
+
+Parameter:
+
+- context - Round, observations, conflict, protocol, and supervisor.
+
+Returns:
+
+- Exactly one decision.
+
+### `CodingSupervisorPolicyContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a policy receives for one round.
+
+Signature:
+
+```ts
+export type CodingSupervisorPolicyContext = {
+    readonly conflict: CodingSupervisorConflict;
+    readonly observations: readonly CodingSupervisorObservation[];
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly round: number;
+    readonly supervisorId: string;
+};
+```
+
+### `CodingSupervisorPolicyKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured policy decision kind.
+
+Signature:
+
+```ts
+export type CodingSupervisorPolicyKind = (typeof APPLICATION_SUPERVISION_POLICY_KINDS)[number];
+```
+
+### `CodingSupervisorReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of runCodingSupervisor.
+
+Signature:
+
+```ts
+export type CodingSupervisorReceipt = {
+    readonly inspection: CodingSupervisorInspection;
+    readonly manifest: ApplicationManifest;
+};
+```
+
+### `CodingSupervisorWorkerContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a program-serviced worker receives in addition to the child run program context.
+
+Signature:
+
+```ts
+export type CodingSupervisorWorkerContext = ChildRunProgramContext & {
+    readonly attempt: number;
+    readonly custody: ApplicationWorldCustody | null;
+    readonly seeds: readonly number[];
+    readonly workerId: string;
+};
+```
+
+### `CodingSupervisorWorkerDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One supervised worker: a child run definition serviced by a program or a provider.
+
+Signature:
+
+```ts
+export type CodingSupervisorWorkerDefinition = {
+    readonly budget: RunBudgetDefinition;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly input: unknown;
+    readonly program?: CodingSupervisorWorkerProgram;
+    readonly provenance?: ChildRunProvenanceDeclaration;
+    readonly provider?: ModelProvider;
+    readonly task: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>> | TaskValue;
+    readonly workerId: string;
+};
+```
+
+### `CodingSupervisorWorkerInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One supervised worker lineage.
+
+Signature:
+
+```ts
+export type CodingSupervisorWorkerInspection = {
+    readonly attempts: readonly CodingSupervisorAttemptInspection[];
+    readonly worker_id: string;
+};
+```
+
+### `CodingSupervisorWorkerProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller program that services one worker attempt under its child run's durable claim.
+
+The returned value is validated against the task output schema; an invalid output or a thrown
+error fails the attempt.
+
+Signature:
+
+```ts
+export type CodingSupervisorWorkerProgram = (context: CodingSupervisorWorkerContext) => Promise<unknown> | unknown;
+```
+
+Parameter:
+
+- context - Child run program context plus attempt, custody, seeds, and worker identity.
+
+Returns:
+
+- The worker output.
+
+### `CodingSupervisorWorkerStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured lineage status of one worker attempt.
+
+Signature:
+
+```ts
+export type CodingSupervisorWorkerStatus = (typeof APPLICATION_SUPERVISION_WORKER_STATUSES)[number];
+```
+
+### `CounterfactualBaselineComparison`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Measured whole-workflow comparison of one candidate.
+
+Signature:
+
+```ts
+export type CounterfactualBaselineComparison = {
+    readonly cache_read_input_tokens: number;
+    readonly kind: CounterfactualBaselineKind;
+    readonly provider_calls: number;
+    readonly session_id: string;
+};
+```
+
+### `CounterfactualBaselineKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured comparison baseline kind.
+
+Signature:
+
+```ts
+export type CounterfactualBaselineKind = (typeof APPLICATION_CRO_BASELINE_KINDS)[number];
+```
+
+### `CounterfactualCandidateDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One declared candidate edit of the workflow at a step boundary.
+
+Exactly the replacements for the declared change dimensions are supplied: `task` requires
+`task`, `provider` requires `provider`, and `handlers` requires `handlers`. The edit takes
+effect in the affected suffix: the transitive dependents of the edited step in the source
+session, which is the parent candidate's branch or, without a parent, the baseline.
+
+Signature:
+
+```ts
+export type CounterfactualCandidateDefinition = {
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly handlers?: EffectHandlerStack;
+    readonly name: string;
+    readonly parent?: string;
+    readonly program?: ReplaySessionProgram;
+    readonly provider?: ModelProvider;
+    readonly stepIndex: number;
+    readonly task?: ReplaySessionTaskDefinition;
+};
+```
+
+### `CounterfactualCandidateInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived state of one declared candidate.
+
+Signature:
+
+```ts
+export type CounterfactualCandidateInspection = CounterfactualCandidatePlan & {
+    readonly outcome: CounterfactualCandidateRecord | null;
+    readonly proposed: CounterfactualCandidateRecord | null;
+};
+```
+
+### `CounterfactualCandidatePlan`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Identity and declared edit of one candidate, fixed when the run is opened.
+
+Signature:
+
+```ts
+export type CounterfactualCandidatePlan = {
+    readonly candidate_id: string;
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly edited_step_index: number;
+    readonly name: string;
+    readonly parent_candidate_id: string | null;
+};
+```
+
+### `CounterfactualCandidateRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained candidate record.
+
+Signature:
+
+```ts
+export type CounterfactualCandidateRecord = CounterfactualCandidatePlan & {
+    readonly affected_steps: readonly number[];
+    readonly baseline: CounterfactualBaselineComparison | null;
+    readonly branch_session_id: string;
+    readonly cost: ApplicationCostSummary | null;
+    readonly divergence: CounterfactualDivergenceSummary | null;
+    readonly evaluation: CounterfactualEvaluation | null;
+    readonly failure: CounterfactualFailure | null;
+    readonly record_id: RecordId;
+    readonly status: CounterfactualCandidateStatus;
+    readonly target: CounterfactualTarget;
+};
+```
+
+### `CounterfactualCandidateStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured candidate status: proposed, evaluated, promoted, or rejected.
+
+Signature:
+
+```ts
+export type CounterfactualCandidateStatus = (typeof APPLICATION_CRO_CANDIDATE_STATUSES)[number];
+```
+
+### `CounterfactualDivergenceSummary`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained summary of the divergence proof of one candidate branch.
+
+Signature:
+
+```ts
+export type CounterfactualDivergenceSummary = {
+    readonly common_prefix_id: string | null;
+    readonly first_divergence_index: number | null;
+    readonly live_steps: number;
+    readonly recorded_steps: number;
+    readonly unexplained: readonly number[];
+};
+```
+
+### `CounterfactualEvaluation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Verdict of the caller-supplied targeted evaluator, retained verbatim.
+
+Signature:
+
+```ts
+export type CounterfactualEvaluation = {
+    readonly passed: boolean;
+    readonly reason: string;
+    readonly score: number;
+};
+```
+
+### `CounterfactualEvaluationBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Executable counterfactual optimization binding.
+
+Signature:
+
+```ts
+export type CounterfactualEvaluationBinding = {
+    readonly kind: (typeof APPLICATION_KINDS)[1];
+    readonly options: Omit<RunCounterfactualOptimizationOptions, "baselines" | "commandId" | "protocol">;
+};
+```
+
+### `CounterfactualEvaluationContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context the targeted evaluator receives for one proven candidate branch.
+
+Signature:
+
+```ts
+export type CounterfactualEvaluationContext = {
+    readonly affectedSteps: readonly number[];
+    readonly branch: ReplaySessionInspection;
+    readonly candidate: CounterfactualCandidatePlan;
+    readonly cost: ApplicationCostSummary;
+    readonly divergence: ReplayDivergenceAnalysis;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly target: CounterfactualTarget;
+};
+```
+
+### `CounterfactualEvaluator`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied targeted evaluator gating promotion.
+
+A thrown error or a malformed verdict is a verification failure: the candidate is retained as
+rejected and nothing is promoted.
+
+Signature:
+
+```ts
+export type CounterfactualEvaluator = (context: CounterfactualEvaluationContext) => Promise<CounterfactualEvaluation> | CounterfactualEvaluation;
+```
+
+Parameter:
+
+- context - Candidate, branch inspection, divergence analysis, cost, and protocol.
+
+Returns:
+
+- The verdict retained verbatim.
+
+### `CounterfactualFailure`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained failure that rejected a candidate and stopped the run.
+
+Signature:
+
+```ts
+export type CounterfactualFailure = {
+    readonly code: string;
+    readonly reason: string;
+};
+```
+
+### `CounterfactualOptimizationInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one counterfactual optimization run.
+
+Signature:
+
+```ts
+export type CounterfactualOptimizationInspection = {
+    readonly application_id: string;
+    readonly baseline_session_id: string;
+    readonly baselines: readonly CounterfactualBaselineKind[];
+    readonly candidates: readonly CounterfactualCandidateInspection[];
+    readonly command_id: string;
+    readonly cut_id: CutId | null;
+    readonly kind: ApplicationKind;
+    readonly manifest: ApplicationManifest | null;
+    readonly manifest_record_id: RecordId | null;
+    readonly opened_record_id: RecordId;
+    readonly promotion: CounterfactualCandidateRecord | null;
+    readonly protocol_id: string;
+};
+```
+
+### `CounterfactualOptimizationReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of runCounterfactualOptimization.
+
+Signature:
+
+```ts
+export type CounterfactualOptimizationReceipt = {
+    readonly inspection: CounterfactualOptimizationInspection;
+    readonly manifest: ApplicationManifest;
+};
+```
+
+### `CounterfactualRecordPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured counterfactual optimizer record phase: the opened record or a candidate record.
+
+Signature:
+
+```ts
+export type CounterfactualRecordPhase = (typeof APPLICATION_CRO_PHASES)[number];
+```
+
+### `CounterfactualTarget`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Step boundary a candidate branch starts from.
+
+Signature:
+
+```ts
+export type CounterfactualTarget = {
+    readonly prefix_id: string;
+    readonly source_session_id: string;
+    readonly step_index: number;
+};
+```
+
+### `CounterfactualWorkflowDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Baseline workflow recorded once through a root replay session.
+
+The program must bind no worlds or processes so every step boundary is an admissible branch
+target. The provider, handler stack, and task service the baseline session and every branch
+suffix that does not declare the corresponding change, so a provider must be able to answer
+repeated sessions.
+
+Signature:
+
+```ts
+export type CounterfactualWorkflowDefinition = {
+    readonly handlers?: EffectHandlerStack;
+    readonly program: ReplaySessionProgram;
+    readonly programId: string;
+    readonly provider?: ModelProvider;
+    readonly task?: ReplaySessionTaskDefinition;
+};
+```
+
+### `CreateApplicationManifestOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for createApplicationManifest.
+
+Signature:
+
+```ts
+export type CreateApplicationManifestOptions = {
+    readonly applicationId: string;
+    readonly artifacts: readonly ApplicationArtifactSource[];
+    readonly costs: ApplicationCostSummary;
+    readonly protocol: ApplicationProtocolDefinition;
+};
+```
+
+### `RetainApplicationManifestOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for retainApplicationManifest.
+
+Signature:
+
+```ts
+export type RetainApplicationManifestOptions = {
+    readonly manifest: ApplicationManifest;
+};
+```
+
+### `RunApplicationEvaluationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for runApplicationEvaluation.
+
+Signature:
+
+```ts
+export type RunApplicationEvaluationOptions = {
+    readonly bind: ApplicationEvaluationBinder;
+    readonly definition: ApplicationEvaluationDefinition;
+};
+```
+
+### `RunCodingSupervisorOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for runCodingSupervisor.
+
+Signature:
+
+```ts
+export type RunCodingSupervisorOptions = {
+    readonly changedPaths?: CodingSupervisorChangedPathsReader;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly parent: ChildRunRootParent;
+    readonly policy: CodingSupervisorPolicy;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly supervisorId: string;
+    readonly workers: readonly CodingSupervisorWorkerDefinition[];
+    readonly world?: ApplicationWorldAdapter;
+};
+```
+
+### `RunCounterfactualOptimizationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for runCounterfactualOptimization.
+
+Signature:
+
+```ts
+export type RunCounterfactualOptimizationOptions = {
+    readonly baseline: CounterfactualWorkflowDefinition;
+    readonly baselines?: readonly CounterfactualBaselineKind[];
+    readonly candidates: readonly CounterfactualCandidateDefinition[];
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly evaluate: CounterfactualEvaluator;
+    readonly protocol: ApplicationProtocolDefinition;
+};
+```
+
+### `RunTrajectoryCompressionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for runTrajectoryCompression.
+
+Signature:
+
+```ts
+export type RunTrajectoryCompressionOptions = {
+    readonly baselines?: readonly TrajectoryCompressionBaselineKind[];
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly compressor: TrajectoryCompressorDefinition;
+    readonly controlProvider?: (seed: number) => ModelProvider;
+    readonly parent: ChildRunRootParent;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly supervisorId: string;
+    readonly verifier: TrajectoryVerifierDefinition;
+    readonly workflow: TrajectoryCompressionWorkflow;
+};
+```
+
+### `RunTreeRlRolloutsOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for runTreeRlRollouts.
+
+Signature:
+
+```ts
+export type RunTreeRlRolloutsOptions = {
+    readonly baselines?: readonly TreeRlBaselineKind[];
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly handlers?: EffectHandlerStack;
+    readonly program: ReplaySessionProgram;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly provider: TreeRlProviderFactory;
+    readonly reward: TreeRlRewardFunction;
+    readonly sourceSessionId: string;
+};
+```
+
+### `SelectTreeRlForkPointsOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for selectTreeRlForkPoints.
+
+Signature:
+
+```ts
+export type SelectTreeRlForkPointsOptions = {
+    readonly clock?: () => number;
+    readonly maxForkPoints: number;
+    readonly minDependents: number;
+    readonly sessionId: string;
+};
+```
+
+### `TraceStoreError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Base error for trace-store contract violations.
+
+Signature:
+
+```ts
+export declare class TraceStoreError extends Error {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable trace-store error code.
+
+```ts
+readonly code: string;
+```
+
+### `TrajectoryCompressionBaselineKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured comparison baseline kind.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionBaselineKind = (typeof APPLICATION_COMPRESSION_BASELINE_KINDS)[number];
+```
+
+### `TrajectoryCompressionCandidateInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived state of one candidate.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionCandidateInspection = {
+    readonly candidate: TrajectoryCompressionCandidateKind;
+    readonly outcome: TrajectoryCompressionCandidateRecord | null;
+    readonly proposed: TrajectoryCompressionCandidateRecord | null;
+    readonly rewound: TrajectoryCompressionCandidateRecord | null;
+    readonly seed: number | null;
+};
+```
+
+### `TrajectoryCompressionCandidateKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured candidate kind: the fork-point compression or one seeded best-of-N control.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionCandidateKind = (typeof APPLICATION_COMPRESSION_CANDIDATE_KINDS)[number];
+```
+
+### `TrajectoryCompressionCandidateRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained candidate record.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionCandidateRecord = {
+    readonly candidate: TrajectoryCompressionCandidateKind;
+    readonly compressor_handle_id: string | null;
+    readonly cost: ApplicationCostSummary | null;
+    readonly failure: TrajectoryCompressionFailure | null;
+    readonly fork_id: string | null;
+    readonly fork_point: TrajectoryForkPoint | null;
+    readonly hint_digest: string | null;
+    readonly outcome: TrajectoryCompressionOutcome | null;
+    readonly reason: string | null;
+    readonly record_id: RecordId;
+    readonly restoration_session_id: string | null;
+    readonly restore: TrajectoryRestoreEvidence | null;
+    readonly score: number | null;
+    readonly seed: number | null;
+    readonly session_id: string | null;
+    readonly status: TrajectoryCompressionCandidateStatus;
+    readonly step_count: number | null;
+    readonly verdict: TrajectoryCompressionVerdict | null;
+    readonly verifier_handle_id: string | null;
+};
+```
+
+### `TrajectoryCompressionCandidateStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured candidate status: proposed, rewound, settled, or rejected.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionCandidateStatus = (typeof APPLICATION_COMPRESSION_CANDIDATE_STATUSES)[number];
+```
+
+### `TrajectoryCompressionComparison`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Measured step counts of one comparison session.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionComparison = {
+    readonly session_id: string;
+    readonly step_count: number;
+    readonly step_count_ratio: number;
+};
+```
+
+### `TrajectoryCompressionEvaluationBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Executable trajectory compression binding.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionEvaluationBinding = {
+    readonly kind: (typeof APPLICATION_KINDS)[2];
+    readonly options: Omit<RunTrajectoryCompressionOptions, "baselines" | "commandId" | "protocol">;
+};
+```
+
+### `TrajectoryCompressionFailure`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained failure that rejected a candidate and stopped the run.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionFailure = {
+    readonly code: string;
+    readonly reason: string;
+};
+```
+
+### `TrajectoryCompressionGuidance`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Guidance a workflow program receives when it re-executes the suffix under a proposal.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionGuidance = {
+    readonly fork_point: TrajectoryForkPoint;
+    readonly hint: TrajectoryHint | null;
+};
+```
+
+### `TrajectoryCompressionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one trajectory compression run.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionInspection = {
+    readonly application_id: string;
+    readonly baselines: readonly TrajectoryCompressionBaselineKind[];
+    readonly command_id: string;
+    readonly compression: TrajectoryCompressionCandidateInspection;
+    readonly controls: readonly TrajectoryCompressionCandidateInspection[];
+    readonly cut_id: CutId | null;
+    readonly kind: ApplicationKind;
+    readonly manifest: ApplicationManifest | null;
+    readonly manifest_record_id: RecordId | null;
+    readonly opened_record_id: RecordId;
+    readonly outcome: TrajectoryCompressionOutcomeRecord | null;
+    readonly protocol_id: string;
+    readonly source_session_id: string;
+};
+```
+
+### `TrajectoryCompressionOutcome`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured compression outcome: pruned, no prune, or restored.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionOutcome = (typeof APPLICATION_COMPRESSION_OUTCOMES)[number];
+```
+
+### `TrajectoryCompressionOutcomeRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Aggregate outcome reporting measured step-count ratios only.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionOutcomeRecord = {
+    readonly baseline: (TrajectoryCompressionComparison & {
+        readonly kind: TrajectoryCompressionBaselineKind;
+    }) | null;
+    readonly control: (TrajectoryCompressionComparison & {
+        readonly seed: number;
+    }) | null;
+    readonly original_step_count: number;
+    readonly outcome: TrajectoryCompressionOutcome;
+    readonly record_id: RecordId;
+    readonly result_session_id: string;
+    readonly result_step_count: number;
+    readonly step_count_ratio: number;
+};
+```
+
+### `TrajectoryCompressionPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured trajectory compression record phase: opened, candidate, or outcome.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionPhase = (typeof APPLICATION_COMPRESSION_PHASES)[number];
+```
+
+### `TrajectoryCompressionProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Workflow program factory. `program(null)` is the recorded workflow and every plain rerun;
+`program(guidance)` re-executes the same workflow under a fork point and hint. The guided program
+must issue the recorded prefix unchanged; only steps at or after the fork point may use the hint.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionProgram = (guidance: TrajectoryCompressionGuidance | null) => ReplaySessionProgram;
+```
+
+Parameter:
+
+- guidance - Fork point and hint, or null for the unguided workflow.
+
+Returns:
+
+- The deterministic replay session program.
+
+### `TrajectoryCompressionProposal`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated compressor proposal: a fork point and hint, or null for no compression.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionProposal = {
+    readonly fork_point: TrajectoryForkPoint | null;
+    readonly hint: TrajectoryHint | null;
+};
+```
+
+### `TrajectoryCompressionReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of runTrajectoryCompression.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionReceipt = {
+    readonly inspection: TrajectoryCompressionInspection;
+    readonly manifest: ApplicationManifest;
+};
+```
+
+### `TrajectoryCompressionVerdict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured verifier verdict: accepted or rejected.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionVerdict = (typeof APPLICATION_COMPRESSION_VERDICTS)[number];
+```
+
+### `TrajectoryCompressionWorkflow`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Source workflow recorded once through a root replay session.
+
+The workflow binds no worlds or processes, so every step boundary is an admissible fork point.
+The provider, handler stack, task, and provider-session adapter service the source session,
+every suffix replay, and every control rerun, so the provider must answer repeated sessions.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionWorkflow = {
+    readonly handlers?: EffectHandlerStack;
+    readonly program: TrajectoryCompressionProgram;
+    readonly programId: string;
+    readonly provider?: ModelProvider;
+    readonly providerSession?: ReplayProviderSessionAdapter;
+    readonly task?: ReplaySessionTaskDefinition;
+};
+```
+
+### `TrajectoryCompressorContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a program-serviced compressor receives in addition to the child run context.
+
+Signature:
+
+```ts
+export type TrajectoryCompressorContext = ChildRunProgramContext & {
+    readonly source: ReplaySessionInspection;
+};
+```
+
+### `TrajectoryCompressorDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Delegated compressor child: a child run definition serviced by a program or a provider.
+
+Signature:
+
+```ts
+export type TrajectoryCompressorDefinition = {
+    readonly budget: RunBudgetDefinition;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly program?: TrajectoryCompressorProgram;
+    readonly provenance?: ChildRunProvenanceDeclaration;
+    readonly provider?: ModelProvider;
+    readonly task: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>> | TaskValue;
+};
+```
+
+### `TrajectoryCompressorProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller program servicing the compressor child. The returned output is validated against the task
+output schema; its configured output field must carry the canonical JSON text of a proposal.
+
+Signature:
+
+```ts
+export type TrajectoryCompressorProgram = (context: TrajectoryCompressorContext) => Promise<unknown> | unknown;
+```
+
+Parameter:
+
+- context - Child run program context plus the source inspection.
+
+Returns:
+
+- The compressor output.
+
+### `TrajectoryForkPoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Step boundary of the source session a compressor proposes to fork from.
+
+Signature:
+
+```ts
+export type TrajectoryForkPoint = {
+    readonly prefix_id: string;
+    readonly session_id: string;
+    readonly step_index: number;
+};
+```
+
+### `TrajectoryHint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Hint a compressor attaches to its fork point.
+
+Signature:
+
+```ts
+export type TrajectoryHint = {
+    readonly cited_step_indices: readonly number[];
+    readonly text: string;
+};
+```
+
+### `TrajectoryRestoreConstituent`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained restore constituent: its kind, name, evidence status, and unavailable reason.
+
+Signature:
+
+```ts
+export type TrajectoryRestoreConstituent = {
+    readonly kind: ReplayCheckpointConstituentKind;
+    readonly name: string | null;
+    readonly reason: string | null;
+    readonly status: ReplayCheckpointEvidenceStatus;
+};
+```
+
+### `TrajectoryRestoreEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained restore classification of a fork point.
+
+Signature:
+
+```ts
+export type TrajectoryRestoreEvidence = {
+    readonly classification: ReplayCheckpointClassification;
+    readonly constituents: readonly TrajectoryRestoreConstituent[];
+    readonly restore_record_id: RecordId | null;
+    readonly rewind_session_id: string | null;
+};
+```
+
+### `TrajectoryVerifierContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a program-serviced verifier receives in addition to the child run context.
+
+Signature:
+
+```ts
+export type TrajectoryVerifierContext = ChildRunProgramContext & {
+    readonly candidate: TrajectoryCompressionCandidateKind;
+    readonly compressed: ReplaySessionInspection;
+    readonly fork_point: TrajectoryForkPoint | null;
+    readonly hint: TrajectoryHint | null;
+    readonly original: ReplaySessionInspection;
+    readonly seed: number | null;
+};
+```
+
+### `TrajectoryVerifierDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Delegated verifier child: a child run definition serviced by a program or a provider.
+
+Signature:
+
+```ts
+export type TrajectoryVerifierDefinition = Omit<TrajectoryCompressorDefinition, "program"> & {
+    readonly program?: TrajectoryVerifierProgram;
+};
+```
+
+### `TrajectoryVerifierProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller program servicing one verifier child. The returned output is validated against the task
+output schema; its configured output field must carry the canonical JSON text of a verdict
+`{ verdict, score, reason }`.
+
+Signature:
+
+```ts
+export type TrajectoryVerifierProgram = (context: TrajectoryVerifierContext) => Promise<unknown> | unknown;
+```
+
+Parameter:
+
+- context - Child run program context plus the original and candidate inspections.
+
+Returns:
+
+- The verifier output.
+
+### `TreeRlAdvantage`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Advantages of one completed rollout.
+
+Signature:
+
+```ts
+export type TreeRlAdvantage = {
+    readonly inter_branch_advantage: number;
+    readonly intra_branch_advantage: number;
+    readonly rollout_id: string;
+};
+```
+
+### `TreeRlAdvantageInput`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Rollout fields computeTreeRlAdvantages reads.
+
+Signature:
+
+```ts
+export type TreeRlAdvantageInput = {
+    readonly fork_point: {
+        readonly step_index: number;
+    };
+    readonly reward: number | null;
+    readonly rollout_id: string;
+    readonly status: TreeRlRolloutStatus;
+};
+```
+
+### `TreeRlBaselineKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured comparison baseline kind.
+
+Signature:
+
+```ts
+export type TreeRlBaselineKind = (typeof APPLICATION_TREE_RL_BASELINE_KINDS)[number];
+```
+
+### `TreeRlBatchExport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One exported training batch: canonical lines, their text, and its digest.
+
+Signature:
+
+```ts
+export type TreeRlBatchExport = TreeRlBatchSummary & {
+    readonly lines: readonly TreeRlTrainingLine[];
+    readonly text: string;
+};
+```
+
+### `TreeRlBatchFormat`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured training batch format.
+
+Signature:
+
+```ts
+export type TreeRlBatchFormat = (typeof APPLICATION_TREE_RL_BATCH_FORMATS)[number];
+```
+
+### `TreeRlBatchRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained batch record.
+
+Signature:
+
+```ts
+export type TreeRlBatchRecord = TreeRlBatchSummary & {
+    readonly baseline: (TreeRlBatchSummary & {
+        readonly kind: TreeRlBaselineKind;
+    }) | null;
+    readonly record_id: RecordId;
+};
+```
+
+### `TreeRlBatchSummary`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Format, digest, and size of one training batch.
+
+Signature:
+
+```ts
+export type TreeRlBatchSummary = {
+    readonly batch_digest: string;
+    readonly format: TreeRlBatchFormat;
+    readonly line_count: number;
+};
+```
+
+### `TreeRlEvaluationBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Executable Tree-RL binding: the source workflow and the rollout options.
+
+Signature:
+
+```ts
+export type TreeRlEvaluationBinding = {
+    readonly kind: (typeof APPLICATION_KINDS)[3];
+    readonly options: Omit<RunTreeRlRolloutsOptions, "baselines" | "commandId" | "protocol" | "sourceSessionId">;
+    readonly source: Omit<RunReplaySessionOptions, "commandId">;
+};
+```
+
+### `TreeRlFailure`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained failure of one rollout.
+
+Signature:
+
+```ts
+export type TreeRlFailure = {
+    readonly code: string;
+    readonly reason: string;
+};
+```
+
+### `TreeRlForkPoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Step boundary a rollout branch starts from: the fork step is the first step the branch executes
+live, and every earlier step is served from the source journal.
+
+Signature:
+
+```ts
+export type TreeRlForkPoint = {
+    readonly prefix_id: string | null;
+    readonly step_index: number;
+};
+```
+
+### `TreeRlProviderContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Identity of one planned rollout the provider factory receives.
+
+Signature:
+
+```ts
+export type TreeRlProviderContext = {
+    readonly branch: number;
+    readonly fork_point: TreeRlForkPoint;
+    readonly seed: number;
+    readonly source_session_id: string;
+};
+```
+
+### `TreeRlProviderFactory`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied factory returning the rollout's own static provider cassette.
+
+It is called once for every planned rollout before any record is written; each call must return
+a distinct provider whose descriptor kind is the configured static provider kind.
+
+Signature:
+
+```ts
+export type TreeRlProviderFactory = (context: TreeRlProviderContext) => ModelProvider;
+```
+
+Parameter:
+
+- context - Fork point, branch, seed, and source session of the rollout.
+
+Returns:
+
+- The rollout's provider.
+
+### `TreeRlRecordPhase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured Tree-RL record phase: opened, rollout, or batch.
+
+Signature:
+
+```ts
+export type TreeRlRecordPhase = (typeof APPLICATION_TREE_RL_PHASES)[number];
+```
+
+### `TreeRlRewardContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context the reward function receives for one finished, proven rollout.
+
+Signature:
+
+```ts
+export type TreeRlRewardContext = {
+    readonly branch: number;
+    readonly cost: ApplicationCostSummary;
+    readonly fork_point: TreeRlForkPoint;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly rollout: ReplaySessionInspection;
+    readonly seed: number;
+    readonly source: ReplaySessionInspection;
+};
+```
+
+### `TreeRlRewardFunction`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied reward function returning one finite scalar per completed rollout.
+
+A thrown error or a non-finite result retains the rollout as failed with the verification code;
+the run continues and the rollout is excluded from every mean.
+
+Signature:
+
+```ts
+export type TreeRlRewardFunction = (context: TreeRlRewardContext) => Promise<number> | number;
+```
+
+Parameter:
+
+- context - Rollout session, fork point, seed, cost, and protocol.
+
+Returns:
+
+- The finite reward.
+
+### `TreeRlRolloutInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived state of one planned rollout.
+
+Signature:
+
+```ts
+export type TreeRlRolloutInspection = TreeRlRolloutPlan & {
+    readonly record: TreeRlRolloutRecord | null;
+};
+```
+
+### `TreeRlRolloutPlan`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Identity of one planned rollout, fixed when the run is opened.
+
+Signature:
+
+```ts
+export type TreeRlRolloutPlan = {
+    readonly branch: number;
+    readonly fork_point: TreeRlForkPoint;
+    readonly replay_session_id: string;
+    readonly rollout_id: string;
+    readonly seed: number;
+};
+```
+
+### `TreeRlRolloutRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained rollout record.
+
+Signature:
+
+```ts
+export type TreeRlRolloutRecord = TreeRlRolloutPlan & {
+    readonly cost: ApplicationCostSummary;
+    readonly failure: TreeRlFailure | null;
+    readonly record_id: RecordId;
+    readonly reward: number | null;
+    readonly status: TreeRlRolloutStatus;
+    readonly step_count: number;
+};
+```
+
+### `TreeRlRolloutStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured rollout status: completed or failed.
+
+Signature:
+
+```ts
+export type TreeRlRolloutStatus = (typeof APPLICATION_TREE_RL_ROLLOUT_STATUSES)[number];
+```
+
+### `TreeRlRunInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one Tree-RL run.
+
+Signature:
+
+```ts
+export type TreeRlRunInspection = {
+    readonly application_id: string;
+    readonly baselines: readonly TreeRlBaselineKind[];
+    readonly batch: TreeRlBatchRecord | null;
+    readonly command_id: string;
+    readonly cut_id: CutId | null;
+    readonly fork_points: readonly TreeRlSelectedForkPoint[];
+    readonly kind: ApplicationKind;
+    readonly manifest: ApplicationManifest | null;
+    readonly manifest_record_id: RecordId | null;
+    readonly opened_record_id: RecordId;
+    readonly protocol_id: string;
+    readonly rollouts: readonly TreeRlRolloutInspection[];
+    readonly seeds: readonly number[];
+    readonly source_session_id: string;
+};
+```
+
+### `TreeRlRunReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of runTreeRlRollouts.
+
+Signature:
+
+```ts
+export type TreeRlRunReceipt = {
+    readonly batch: TreeRlTrainingBatch;
+    readonly inspection: TreeRlRunInspection;
+    readonly manifest: ApplicationManifest;
+};
+```
+
+### `TreeRlSelectedForkPoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One trace-selected fork point with the transitive dependent count that qualified it.
+
+Signature:
+
+```ts
+export type TreeRlSelectedForkPoint = TreeRlForkPoint & {
+    readonly dependents: number;
+};
+```
+
+### `TreeRlTrainingBatch`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of exportTreeRlTrainingBatch.
+
+Signature:
+
+```ts
+export type TreeRlTrainingBatch = TreeRlBatchExport & {
+    readonly application_id: string;
+    readonly baseline: (TreeRlBatchExport & {
+        readonly kind: TreeRlBaselineKind;
+    }) | null;
+};
+```
+
+### `TreeRlTrainingLine`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One canonical `jsonl_v1` training batch line.
+
+Signature:
+
+```ts
+export type TreeRlTrainingLine = TreeRlAdvantage & {
+    readonly fork_point: TreeRlForkPoint;
+    readonly replay_session_id: string;
+    readonly reward: number;
+    readonly seed: number;
+    readonly session_id: string;
+    readonly step_count: number;
+};
+```
+
+### `applicationProtocolId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the content-addressed identity of one protocol definition.
+
+Signature:
+
+```ts
+export declare function applicationProtocolId(definition: ApplicationProtocolDefinition): string;
+```
+
+Parameter:
+
+- definition - Protocol definition; validated again before hashing.
+
+Returns:
+
+- The configured `protocolIdPrefix` identity over the canonical definition.
+
+Throws:
+
+- {ApplicationProtocolError} If the definition is malformed.
+
+### `compareApplicationBaseline`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Compares one application's measured metrics against its baseline's, metric by metric.
+
+Values are copied verbatim; the delta is the application value minus the baseline value when
+both are numbers and null otherwise (a null cost or the boolean success metric).
+
+Signature:
+
+```ts
+export declare function compareApplicationBaseline(application: ApplicationEvaluationMetrics, baseline: ApplicationEvaluationMetrics): readonly ApplicationEvaluationComparisonValue[];
+```
+
+Parameter:
+
+- application - Measured application metrics.
+
+Parameter:
+
+- baseline - Measured baseline metrics.
+
+Returns:
+
+- One comparison value per configured metric, in configured order.
+
+Throws:
+
+- {TypeError} If either metrics object is malformed.
+
+Example:
+
+- ```ts
+const values = compareApplicationBaseline(run.metrics, baseline.metrics);
+console.log(values.find((value) => value.metric === "provider_calls")?.delta);
+```
+
+### `computeTreeRlAdvantages`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Computes intra- and inter-branch advantages over completed rollouts only.
+
+Rollouts sharing a fork point step index form one group. For every completed rollout,
+`intra_branch_advantage = reward - mean(completed rewards in its group)` and
+`inter_branch_advantage = mean(completed rewards in its group) - mean(every completed reward)`.
+Failed rollouts are excluded from every mean and receive no advantage. A group with one completed
+rollout yields an intra-branch advantage of exactly `0`, and a run whose completed rollouts share
+one fork point yields inter-branch advantages of exactly `0`. Means sum in input order, so the
+result is a pure function of the input sequence.
+
+Signature:
+
+```ts
+export declare function computeTreeRlAdvantages(rollouts: readonly TreeRlAdvantageInput[]): readonly TreeRlAdvantage[];
+```
+
+Parameter:
+
+- rollouts - Rollouts in batch order, such as retained rollout records; other fields are
+ignored.
+
+Returns:
+
+- One advantage per completed rollout, in input order.
+
+Throws:
+
+- {TypeError} If a rollout is malformed, its status and reward disagree, a reward is not
+finite, or rollout identities repeat.
+
+Example:
+
+- ```ts
+const advantages = computeTreeRlAdvantages(inspection.rollouts.map((entry) => entry.record!));
+```
+
+### `createApplicationManifest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Builds the canonical manifest of one application run.
+
+Surfaces are cited by the digest of their canonical content; artifacts by the digest of the
+supplied content with the record and cut they live in; the manifest identity is the digest of
+the manifest body without the identity field, so the same protocol, artifacts, and costs yield
+the same manifest identity.
+
+Signature:
+
+```ts
+export declare function createApplicationManifest(options: CreateApplicationManifestOptions): ApplicationManifest;
+```
+
+Parameter:
+
+- options - Application identity, artifact sources, measured costs, and protocol.
+
+Returns:
+
+- The frozen manifest.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol definition is malformed.
+
+Throws:
+
+- {TypeError} If the options, an artifact, or the costs are malformed or exceed bounds.
+
+### `deriveApplicationOwnerId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the application identity and reserved owner path of one application command.
+
+Signature:
+
+```ts
+export declare function deriveApplicationOwnerId(commandId: string): string;
+```
+
+Parameter:
+
+- commandId - Globally idempotent application command identity.
+
+Returns:
+
+- The configured `applicationIdPrefix` identity.
+
+Throws:
+
+- {TypeError} If the command identity is malformed.
+
+### `exportTreeRlTrainingBatch`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Exports the retained training batch of one Tree-RL run without mutation.
+
+The canonical `jsonl_v1` lines are re-derived from the retained rollout records: one line per
+completed rollout in fork-point, then branch order, carrying its identity, source and rollout
+sessions, fork point, seed, reward, advantages, and step count. The text is the canonical JSON of
+each line followed by a line feed, and its digest must equal the retained batch digest. Export
+works on reopened, read-only, and imported stores and yields an identical digest.
+
+Signature:
+
+```ts
+export declare function exportTreeRlTrainingBatch(store: SQLiteTraceStore, applicationId: string): TreeRlTrainingBatch;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The batch lines, text, digest, and the optional single-rollout baseline batch.
+
+Throws:
+
+- {ApplicationEvidenceError} If the application or its batch is not retained, or a
+re-derived digest disagrees with the retained one.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
+Example:
+
+- ```ts
+const batch = exportTreeRlTrainingBatch(store, deriveApplicationOwnerId(commandId));
+await writeFile("batch.jsonl", batch.text);
+```
+
+### `inspectApplicationManifest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads the retained manifest of one application without mutation.
+
+Inspection works on reopened, read-only, and imported stores.
+
+Signature:
+
+```ts
+export declare function inspectApplicationManifest(store: SQLiteTraceStore, applicationId: string): ApplicationManifestInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated manifest with its record and terminal cut.
+
+Throws:
+
+- {ApplicationEvidenceError} If no manifest is retained or the retained evidence is
+inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
+### `inspectCodingSupervisorRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one coding supervisor run as an immutable record-derived view without mutation.
+
+Every record on the application owner path is validated: the opened record, each decision
+record in contiguous round order, the manifest, and the terminal cut publication. Worker
+lineages follow the opened handles through every retained `discard_restart` successor, and
+each attempt carries its validated child run handle inspection. Inspection works on reopened,
+read-only, and imported stores.
+
+Signature:
+
+```ts
+export declare function inspectCodingSupervisorRun(store: SQLiteTraceStore, applicationId: string): CodingSupervisorInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ApplicationEvidenceError} If the application is not retained or its evidence is
+inconsistent.
+
+Throws:
+
+- {DelegationEvidenceError} If a worker handle's evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectCodingSupervisorRun(store, deriveApplicationOwnerId(commandId));
+console.log(inspection.decisions.map((decision) => decision.decision.kind));
+```
+
+### `inspectCounterfactualOptimization`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one counterfactual optimization run as an immutable record-derived view without mutation.
+
+Every record on the application owner path is validated: the opened record and its candidate
+plan, each candidate's proposed and outcome records in declared order with identical plan,
+target, affected steps, and derived branch identity, the lineage of every target to its parent's
+branch or the baseline, the single terminal promotion, the manifest, and the terminal cut.
+Inspection works on reopened, read-only, and imported stores and never embeds live-session
+state, so it is identical across them.
+
+Signature:
+
+```ts
+export declare function inspectCounterfactualOptimization(store: SQLiteTraceStore, applicationId: string): CounterfactualOptimizationInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ApplicationEvidenceError} If the application is not retained or its evidence is
+inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectCounterfactualOptimization(store, deriveApplicationOwnerId(commandId));
+console.log(inspection.promotion?.name ?? "nothing promoted");
+```
+
+### `inspectTrajectoryCompression`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one trajectory compression run as an immutable record-derived view without mutation.
+
+Every record on the application owner path is validated: the opened record, the compression
+candidate's proposed, rewound, and settled or rejected records in order with an identical
+proposal and derived fork, session, and handle identities, each control seed's record in seed
+order, the aggregate outcome consistent with the candidates, the manifest, and the terminal cut.
+Inspection works on reopened, read-only, and imported stores and is identical across them.
+
+Signature:
+
+```ts
+export declare function inspectTrajectoryCompression(store: SQLiteTraceStore, applicationId: string): TrajectoryCompressionInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ApplicationEvidenceError} If the application is not retained or its evidence is
+inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectTrajectoryCompression(store, deriveApplicationOwnerId(commandId));
+console.log(inspection.compression.outcome?.outcome ?? "not settled");
+```
+
+### `inspectTreeRlRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one Tree-RL run as an immutable record-derived view without mutation.
+
+Every record on the application owner path is validated: the opened record and its selection,
+each rollout record in fork-point, then branch order with its derived rollout and session
+identities, the batch record whose digests re-derive from the rollouts, the manifest, and the
+terminal cut. Inspection works on reopened, read-only, and imported stores and is identical
+across them.
+
+Signature:
+
+```ts
+export declare function inspectTreeRlRun(store: SQLiteTraceStore, applicationId: string): TreeRlRunInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ApplicationEvidenceError} If the application is not retained or its evidence is
+inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the application identity is malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectTreeRlRun(store, deriveApplicationOwnerId(commandId));
+console.log(inspection.rollouts.filter((entry) => entry.record?.status === "failed").length);
+```
+
+### `readApplicationEvaluationDefinition`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates an untrusted evaluation definition into its canonical frozen form.
+
+The definition must be a plain data object of exactly `evaluationId`, `experiments`,
+`limitations`, and `revision`. Every experiment carries a distinct `id`, a `commandId`, a
+protocol definition accepted by `readApplicationProtocol` whose kind selects the application, and
+a baseline whose kind is a configured baseline kind of that application; the coding supervisor
+baseline also names its `commandId` and `workerId`, and a Tree-RL experiment names the
+`sourceCommandId` recording its source session. Command identities are distinct across the
+definition. Limitations are distinct by identity and within the configured length bound.
+Experiment and limitation counts are bounded by `APPLICATION_EVALUATION_LIMITS`.
+
+Signature:
+
+```ts
+export declare function readApplicationEvaluationDefinition(value: unknown): ApplicationEvaluationDefinition;
+```
+
+Parameter:
+
+- value - Untrusted evaluation definition.
+
+Returns:
+
+- The canonical frozen definition.
+
+Throws:
+
+- {ApplicationProtocolError} If the definition is malformed, names an unknown baseline, or
+exceeds a configured bound.
+
+Example:
+
+- ```ts
+const definition = readApplicationEvaluationDefinition(JSON.parse(text));
+console.log(definition.experiments.map((experiment) => experiment.baseline.kind));
+```
+
+### `readApplicationProtocol`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates an untrusted application protocol definition into its canonical frozen form.
+
+The definition must be a plain data object of exactly `budgets`, `dataset`, `kind`,
+`protocolVersion`, `seeds`, and `surfaces`. Kinds and surface kinds must be configured, surface
+identities distinct, every surface content canonical and within the configured byte bound for
+its kind, budgets non-negative integers by non-empty metric name, seeds distinct integers, and
+the dataset selection a distinct item list, all within `APPLICATION_LIMITS`.
+
+Signature:
+
+```ts
+export declare function readApplicationProtocol(value: unknown): ApplicationProtocolDefinition;
+```
+
+Parameter:
+
+- value - Untrusted protocol definition.
+
+Returns:
+
+- The canonical frozen definition.
+
+Throws:
+
+- {ApplicationProtocolError} If the definition is malformed or exceeds a configured bound.
+
+Example:
+
+- ```ts
+const protocol = readApplicationProtocol(JSON.parse(text).supervision);
+console.log(applicationProtocolId(protocol));
+```
+
+### `retainApplicationManifest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains one manifest as a `shepherd.application.manifest.v1` record on its application owner
+path and publishes the terminal application cut through it in the same transaction.
+
+Every artifact record the manifest cites must be retained and becomes a causal parent, with the
+current application head first. Repeating the command with the same manifest returns the
+retained receipt; an owner path that already retains a different manifest is refused.
+
+Signature:
+
+```ts
+export declare function retainApplicationManifest(store: SQLiteTraceStore, options: RetainApplicationManifestOptions): ApplicationManifestReceipt;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Manifest to retain.
+
+Returns:
+
+- The retained manifest, its record identity, and the terminal cut.
+
+Throws:
+
+- {ApplicationEvidenceError} If the manifest is malformed, cites an unretained record, the
+owner path retains a different manifest, or the application head moved.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+### `runApplicationEvaluation`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs every configured experiment offline with its baseline and folds one measured-only report.
+
+The definition is validated and every experiment's binding is obtained and checked before any
+application runs, so a malformed definition or binding writes nothing. Experiments then run in
+order under their fixed command identities: the coding supervisor through
+`runCodingSupervisor` with its `no_supervision` baseline constructed as one plain child run of the
+named worker (no policy, trace-only, never accepted or discarded); the counterfactual optimizer
+with its `full_replay` baseline; trajectory compression with its `no_compression` baseline; and
+Tree-RL over a source session recorded under `sourceCommandId` with its `single_rollout`
+baseline. Every metric is measured from retained evidence; nothing is estimated. The evaluation
+writes no record of its own, and every application command is idempotent, so a repeated or
+resumed evaluation converges on the same report without re-running settled work. An application
+refusal leaves the evidence of earlier experiments for a corrected rerun to reuse.
+
+Signature:
+
+```ts
+export declare function runApplicationEvaluation(store: SQLiteTraceStore, options: RunApplicationEvaluationOptions): Promise<ApplicationEvaluationReport>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Evaluation definition and binding factory.
+
+Returns:
+
+- The validated report whose identity is the digest of its canonical body.
+
+Throws:
+
+- {ApplicationProtocolError} If the definition or a binding is malformed.
+
+Throws:
+
+- {ApplicationBudgetError} If an application exceeds a protocol budget.
+
+Throws:
+
+- {ApplicationEvidenceError} If retained application evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If an application, delegation, or replay seam refuses a command.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const report = await runApplicationEvaluation(store, {
+    bind: (experiment) => bindings[experiment.id],
+    definition,
+});
+console.log(report.report_id, report.comparisons);
+```
+
+### `runCodingSupervisor`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the two-worker coding supervisor application over durable child run handles.
+
+Each worker is opened as a child run under the caller's root declaration, optionally bound to
+isolated custody forked through `world`. The run proceeds in rounds bounded by the protocol's
+round budget: every round observes each live worker through `observeChildRun` and its
+record-derived inspection, classifies the workers' changed paths as `none` or `path_overlap`,
+consults the policy exactly once, applies its decision through the delegation seam (`inject`,
+`handoff`, `discard_restart` from a clean fork, or the terminal `accept`), retains one
+`shepherd.application.supervision.v1` decision record citing the exact evidence, and then runs
+every ready worker. `accept` merges the accepted custody, discards every other worker and
+custody, retains the manifest on the application owner path, and publishes the terminal cut.
+Repeating the command replays retained decisions without consulting the policy and returns the
+retained manifest without re-executing any worker. A repeat is checked against the retained
+opened record before any fork or handle is opened, so a refused repeat writes nothing. A round
+whose delegation commands were applied before its decision record was retained is completed
+with the decision rebuilt from those commands, never with a new policy decision.
+
+Signature:
+
+```ts
+export declare function runCodingSupervisor(store: SQLiteTraceStore, options: RunCodingSupervisorOptions): Promise<CodingSupervisorReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, supervisor, protocol, workers, parent declaration, policy, and exactly
+one of a world adapter or a trace-only changed-path reader.
+
+Returns:
+
+- The retained manifest and the record-derived inspection.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol definition is malformed, is not a coding
+supervisor protocol, lacks a required surface or budget, or differs from the retained one.
+
+Throws:
+
+- {ApplicationBudgetError} If a worker budget exceeds the protocol's, the round budget is
+exhausted, or a worker start would exceed the provider-call budget.
+
+Throws:
+
+- {ApplicationEvidenceError} If retained application evidence is inconsistent.
+
+Throws:
+
+- {DelegationStatusError} If a worker is running after a crash, is accepted before it
+finished, or a decision is not admissible for the handle's status.
+
+Throws:
+
+- {DelegationAuthorityError} If a worker grant or budget exceeds the declared ceiling.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options, the world adapter or its results, a worker definition, or a
+policy decision are malformed.
+
+Example:
+
+- ```ts
+const { manifest, inspection } = await runCodingSupervisor(store, {
+    changedPaths: ({ output }) => [(output as { path: string }).path],
+    commandId: "application:supervisor:1",
+    parent: { budget: { maxTurns: 4 }, ceiling: [], kind: "root" },
+    policy: ({ observations, round }) =>
+        round === 1
+            ? { kind: "observe" }
+            : { kind: "accept", worker_id: observations[0].worker_id },
+    protocol,
+    supervisorId: "supervisor:lead",
+    workers,
+});
+```
+
+### `runCounterfactualOptimization`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the counterfactual workflow optimizer (Appendix F) over replay sessions.
+
+The baseline workflow is recorded once through `runReplaySession`. Each declared candidate, in
+order, forks its source session (its parent candidate's branch, or the baseline): the affected
+steps are the transitive dependents of the edited step from `analyzeReplayDependencies`, and the
+branch replays from the step boundary immediately before the earliest affected step through
+`replayReplaySession`, declaring exactly the candidate's change dimensions; every earlier step is
+served from the source journal. The live suffix runs with the candidate's program, provider, and
+handler stack where it supplies them, else those of the nearest ancestor in its parent chain that
+did, else the baseline's; an undeclared task resolves through the source's branch ancestry. A
+candidate whose edited step has no dependent branches at the
+source's final boundary and replays zero live steps. The baseline session must finish. A branch
+(or, with the `full_replay` baseline, its full replay) that ended with any terminal status other
+than `finished` is retained as rejected with the evidence failure before the evaluator is
+consulted, and the run stops, as for a disproven candidate. `analyzeReplayDivergence` must prove
+that no step before the target diverged and that no divergence is unexplained. The caller's
+evaluator gates each proven candidate, and the best passing candidate whose score reaches the protocol's
+minimum promotion score is promoted once. Every candidate is retained as proposed and then as
+evaluated or rejected in `shepherd.application.cro_candidate.v1` records with lineage, target,
+affected steps, branch identity, divergence summary, verdict, and measured cost; the manifest is
+retained last with the terminal cut. With the `full_replay` baseline, each proven candidate is
+also replayed live from step boundary zero of its source with the same resolved workflow and its
+measured provider calls and cache reads are retained. The baseline's measured provider calls,
+and every candidate session's projected and then measured calls, are checked against the
+provider-call budget.
+Repeating the command resumes from retained evidence: terminal sessions are never re-executed,
+and a completed run returns its retained manifest.
+
+Signature:
+
+```ts
+export declare function runCounterfactualOptimization(store: SQLiteTraceStore, options: RunCounterfactualOptimizationOptions): Promise<CounterfactualOptimizationReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, claim, protocol, baseline workflow, candidates, evaluator, and
+optional baselines and clock.
+
+Returns:
+
+- The retained manifest and the record-derived inspection.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol is malformed, is not a counterfactual
+optimization protocol, lacks a required surface or budget, a candidate declares an edit kind
+outside the replay change dimensions, an edited step index lies outside the baseline session (after
+the baseline and before any application record), or the run was opened under another protocol.
+Declared candidates are otherwise validated before any record is written.
+
+Throws:
+
+- {ApplicationBudgetError} If the candidate set exceeds the protocol's candidate budget, the
+measured baseline exceeds the provider-call budget (before any application record), a new
+session's projected calls would exceed it, or a session's measured calls exceeded it.
+
+Throws:
+
+- {ApplicationEvidenceError} If the baseline session did not finish (before any application
+record), a branch diverged before its target or without explanation, a branch or full-replay
+session ended failed or cancelled, or a branch or full-replay session was left interrupted by a dead writer whose lease expired (the
+candidate is retained as rejected first), a child's edited step is not retained in its parent's
+branch, or retained evidence is inconsistent.
+
+Throws:
+
+- {ApplicationVerificationError} If the evaluator throws or returns a malformed verdict (the
+candidate is retained as rejected first).
+
+Throws:
+
+- {ReplayLeaseConflictError} If a session is held by another writer.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If the baseline session was left non-terminal by a dead
+writer (every rerun of the command raises it; recover under a new command identity), or a
+candidate session is still `running` under a live lease.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options or a candidate definition are malformed.
+
+Example:
+
+- ```ts
+const { inspection, manifest } = await runCounterfactualOptimization(store, {
+    baseline: { program, programId: "workflow.v1", provider },
+    baselines: ["full_replay"],
+    candidates: [{ changes: ["provider"], name: "stronger-draft", provider: alternate, stepIndex: 0 }],
+    claimId: "optimizer",
+    commandId: "application:cro:1",
+    evaluate: ({ branch }) => ({ passed: true, reason: "tests pass", score: 1 }),
+    protocol,
+});
+```
+
+### `runTrajectoryCompression`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs hindsight trajectory compression (Appendix D) over a recorded replay session.
+
+The source workflow is recorded once through `runReplaySession` with `program(null)`. A
+compressor runs as a delegated child through `openChildRun`, `runChildRun`, and
+`acceptChildRunResult`; it receives the canonical source evidence and returns a proposal
+`{ fork_point, hint }` as canonical JSON text in the configured output field. The proposal is
+validated against the closed fork-point and hint grammar and the source: the fork point must name
+the source session, retain at least one and fewer than all source steps, and carry the retained
+prefix identity. A null fork point settles `no_prune` and the source is the result. A fork point
+at a retained checkpoint is classified with `classifyReplayCheckpoint`; an `unavailable`
+classification refuses the prune, retains the classification, constituents, and reason, and
+settles `no_prune`. Otherwise `rewindReplaySession` restores the fork point, its restore
+classification and constituents are retained as `rewound`, and `replayReplaySession` re-executes
+the suffix with `program(guidance)`. A compressed session that finished with strictly fewer steps
+is gated by a delegated verifier returning `{ verdict, score, reason }`: `accepted` settles
+`pruned` with the compressed session as the result, and `rejected` settles `restored` after
+re-running the original suffix with `program(null)` from the same fork point and retains the
+reason. A compressed session that is not admissible is restored without consulting the verifier.
+Up to the protocol's best-of-N budget, seeded plain reruns of `program(null)` run as root sessions
+and are verified as controls. A restoration or control session that ended failed or cancelled is
+retained as a rejected candidate with the evidence failure and the run stops; a control is never
+verified unless its session finished. The aggregate outcome record reports measured step-count ratios
+only, and the manifest is retained last with the terminal cut. Repeating the command resumes from
+retained evidence: sessions, children, and the rewind are never executed twice, and a completed
+run returns its retained manifest. A replay session left non-terminal by a dead writer whose
+lease expired is admitted from its retained records: a rewind with a retained restore record is
+retained as `rewound` without a second restore, an interrupted compressed session is not
+admissible and is restored, and an interrupted restoration or control session rejects its
+candidate. Delegation, lease, and store refusals at a child seam raise without a record; only a
+child that terminally failed, including one settled by the cancellation path, or an output the
+grammar refuses is retained as `rejected`.
+
+Signature:
+
+```ts
+export declare function runTrajectoryCompression(store: SQLiteTraceStore, options: RunTrajectoryCompressionOptions): Promise<TrajectoryCompressionReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, claim, supervisor, root declaration, protocol, workflow, compressor,
+verifier, and optional baselines, control provider, and clock.
+
+Returns:
+
+- The retained manifest and the record-derived inspection.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol is malformed, is not a trajectory compression
+protocol, lacks a required surface or budget, declares fewer seeds than its best-of-N budget, or
+the run was opened under another protocol. Nothing is written.
+
+Throws:
+
+- {ApplicationBudgetError} If the best-of-N budget exceeds `limits.maxBestOfN` (nothing is
+written), the measured source exceeds the provider-call budget (before any application record),
+a new session or child would exceed it by projection, or a suffix, restoration, or control
+session's measured calls exceeded it (the session is retained, the candidate is not settled).
+
+Throws:
+
+- {ApplicationEvidenceError} If the source did not finish, the compressor terminally fails
+or returns a proposal the grammar or the source refuses, the rewind fails or retains no restore
+record, a restoration or control session ended failed or cancelled or was interrupted by a dead
+writer whose lease expired (the candidate is retained as rejected first), or retained evidence is inconsistent.
+
+Throws:
+
+- {ApplicationVerificationError} If a verifier terminally fails or returns a malformed
+verdict; the candidate is retained as rejected and nothing is pruned.
+
+Throws:
+
+- {DelegationCommandConflictError} If a child command is rerun under another supervisor
+or content; nothing is written.
+
+Throws:
+
+- {DelegationStatusError} If a child was left running by a dead process; nothing is
+written until the cancellation path settles it.
+
+Throws:
+
+- {ReplayLeaseConflictError} If a session is held by another writer.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If the source session was left non-terminal by a crash
+(every rerun raises it), or a session is still `running` under a live lease; nothing is written.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options or a child definition are malformed.
+
+Example:
+
+- ```ts
+const { inspection } = await runTrajectoryCompression(store, {
+    claimId: "compression",
+    commandId: "application:compression:1",
+    compressor: { budget: { maxTurns: 1 }, grant: [], program: propose, task: compressorTask },
+    parent: { budget: { maxTurns: 8 }, ceiling: [], kind: "root" },
+    protocol,
+    supervisorId: "supervisor:compression",
+    verifier: { budget: { maxTurns: 1 }, grant: [], program: verify, task: verifierTask },
+    workflow: { program: (guidance) => workflow(guidance), programId: "workflow.v1", provider },
+});
+console.log(inspection.outcome?.outcome, inspection.outcome?.step_count_ratio);
+```
+
+### `runTreeRlRollouts`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the Tree-RL adapter (§5.3) over a recorded replay session and exports a training batch.
+
+Fork points are selected from the finished source session by selectTreeRlForkPoints with
+the protocol's dependent-count minimum and fork-point budget. Per fork point, the protocol's
+branch count of rollouts is replayed from the fork point's step boundary through
+`replayReplaySession` declaring the `provider` change, branch `k` under the protocol's seed `k`
+and the static provider cassette the caller's factory returns for it; every earlier step is
+served from the source journal. `analyzeReplayDivergence` must show no divergence before the fork
+point and none unexplained. The caller's reward function scores each finished, proven rollout.
+Every rollout is retained in fork-point, then branch order as one
+`shepherd.application.tree_rl_rollout.v1` record with status `completed` or `failed`; a session
+that did not finish, diverged, was interrupted by a dead writer whose lease expired, or whose
+reward threw or was not finite is retained as `failed` with its configured reason and the run
+continues. Advantages are computed over completed rollouts only by computeTreeRlAdvantages,
+the canonical `jsonl_v1` batch and its digest (and, with the `single_rollout` baseline, the batch
+of each fork point's first branch) are retained in a batch record, and the manifest citing the
+source session, every rollout record, and the batch as `training_batch` is retained last with
+the terminal cut.
+
+Every option, the protocol, the source session, the selection, the rollout bounds, every
+provider, and the projected provider calls are validated before any record is written, so a
+refusal writes nothing. Repeating the command resumes from retained evidence: a terminal rollout
+session is never re-executed, the reward function is not called for a retained rollout, and a
+completed run returns its retained manifest and batch.
+
+Signature:
+
+```ts
+export declare function runTreeRlRollouts(store: SQLiteTraceStore, options: RunTreeRlRolloutsOptions): Promise<TreeRlRunReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, claim, protocol, source session, program, provider factory, reward
+function, and optional baselines, handlers, and clock.
+
+Returns:
+
+- The retained manifest, the record-derived inspection, and the exported batch.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol is malformed, is not a Tree-RL protocol, lacks
+a required surface or budget, declares a zero branch or fork-point budget or fewer seeds than
+branches, or the run was opened under another protocol. Nothing is written.
+
+Throws:
+
+- {ApplicationBudgetError} If the fork-point budget exceeds `limits.maxForkPoints`, the
+branch budget exceeds `limits.maxBranches`, the planned rollouts exceed `limits.maxRollouts`, or
+the projected provider calls exceed the provider-call budget; the first three and the whole-run
+projection are checked before any record, and each new rollout session is checked before it
+opens.
+
+Throws:
+
+- {ApplicationEvidenceError} If the source session is not finished, binds worlds or
+processes, has no qualifying fork point, the run was opened with a different source, selection,
+or baselines, or retained evidence is inconsistent. Nothing is written by a refusal.
+
+Throws:
+
+- {ReplayEvidenceError} If the source session is not retained or its evidence is invalid.
+
+Throws:
+
+- {ReplayLeaseConflictError} If a rollout session is held by another writer.
+
+Throws:
+
+- {ReplaySessionInterruptedError} If a rollout session is still `running` under a live
+lease; nothing is written.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed or the provider factory returns a provider that is
+not a distinct static provider.
+
+Example:
+
+- ```ts
+const { batch } = await runTreeRlRollouts(store, {
+    claimId: "tree-rl",
+    commandId: "application:tree-rl:1",
+    program,
+    protocol,
+    provider: ({ fork_point, seed }) => cassetteFor(fork_point, seed),
+    reward: ({ rollout }) => score(rollout.terminal?.result),
+    sourceSessionId,
+});
+console.log(batch.batch_digest, batch.line_count);
+```
+
+### `selectTreeRlForkPoints`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Selects deterministic trace-selected fork points of one recorded replay session.
+
+For each provider step of the session, in index order, `analyzeReplayDependencies` gives its
+transitive dependents; a step qualifies when its dependent count reaches `minDependents`, and
+qualifying steps are taken in index order up to `maxForkPoints`. Each fork point names the step
+and the source prefix identity at its boundary (null at step 0). The selection is a pure function
+of the retained session and writes nothing.
+
+Signature:
+
+```ts
+export declare function selectTreeRlForkPoints(store: SQLiteTraceStore, options: SelectTreeRlForkPointsOptions): readonly TreeRlSelectedForkPoint[];
+```
+
+Parameter:
+
+- store - Open trace store holding the session, writable or read-only.
+
+Parameter:
+
+- options - Session identity, dependent-count minimum, fork-point bound, and optional clock.
+
+Returns:
+
+- The selected fork points in step order; empty when no provider step qualifies.
+
+Throws:
+
+- {ApplicationBudgetError} If `maxForkPoints` exceeds `APPLICATION_LIMITS.maxForkPoints`.
+
+Throws:
+
+- {ReplayEvidenceError} If the session evidence is invalid.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed or the session is not retained.
+
+Example:
+
+- ```ts
+const forkPoints = selectTreeRlForkPoints(store, { maxForkPoints: 4, minDependents: 2, sessionId });
+```
+
+### `validateApplicationEvaluationReport`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates an untrusted evaluation report, re-deriving every comparison and the report identity.
+
+The document must be a plain data object of exactly the report fields with the configured report
+and compatibility versions and metric order; runs, baselines, and comparisons align by experiment
+in order; every baseline kind is configured for its run's application kind; every comparison
+equals `compareApplicationBaseline` over its run and baseline; and `report_id` is the digest of
+the canonical body without it.
+
+Signature:
+
+```ts
+export declare function validateApplicationEvaluationReport(value: unknown): ApplicationEvaluationReport;
+```
+
+Parameter:
+
+- value - Untrusted report, for example parsed from a generated artifact.
+
+Returns:
+
+- The canonical frozen report.
+
+Throws:
+
+- {ApplicationEvidenceError} If the report is malformed, a comparison or the identity does
+not re-derive, or a bound is exceeded.
+
+Example:
+
+- ```ts
+const report = validateApplicationEvaluationReport(JSON.parse(text));
+console.log(report.report_id);
+```
+
+### `validateApplicationManifest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates an untrusted manifest document, re-deriving its identity and every artifact identity.
+
+Signature:
+
+```ts
+export declare function validateApplicationManifest(value: unknown): ApplicationManifest;
+```
+
+Parameter:
+
+- value - Untrusted manifest.
+
+Returns:
+
+- The canonical frozen manifest.
+
+Throws:
+
+- {ApplicationEvidenceError} If the document is malformed, exceeds a bound, or its
+identities do not re-derive from its body.
 
 ## Canonical
 
@@ -38037,7 +46359,7 @@ import * as api from "@avnionur/shepherd-typescript/workspace";
 void api;
 ```
 
-Exported symbols: 202.
+Exported symbols: 204.
 
 ### `AppliedRetainedWorldSettlement`
 
@@ -40031,6 +48353,24 @@ export type ScopeTreeReport = {
 };
 ```
 
+### `ScopeWorldAdapterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for createScopeWorldAdapter.
+
+Signature:
+
+```ts
+export type ScopeWorldAdapterOptions = {
+    readonly binding: WorkspaceBinding;
+    readonly carrier: ReferenceCopyCarrier;
+    readonly grant: ScopeResourceGrantRequest;
+    readonly parent: ScopeWriter;
+    readonly store: SQLiteTraceStore;
+};
+```
+
 ### `SelectRetainedWorldSettlementOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -41689,6 +50029,59 @@ const runner = createRetainedWorldRunner({
     enforcement: "advisory",
     run: async ({ execution }) => executeTask(execution),
 });
+```
+
+### `createScopeWorldAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the concrete world adapter the coding supervisor composes over scope forks, merges,
+discards, and changesets.
+
+`fork` captures the parent's current custody as the origin and forks one child scope with
+reference-copy custody under the parent writer; a fork command already completed returns its
+retained receipt without carrier work. `merge` claims the child writer under the merge command
+identity and merges the child into the parent at both current heads; `discard` discards the
+child subtree and cleans its custody; both return the retained receipt when the command already
+completed. `changedPaths` compares the custody's origin revision with a capture of its current
+custody and returns the canonical changed paths. Custody identities are resolved through the
+receipts the adapter returned or replayed, so a fresh process rebuilds them by re-issuing the
+same fork commands.
+
+Signature:
+
+```ts
+export declare function createScopeWorldAdapter(options: ScopeWorldAdapterOptions): ApplicationWorldAdapter;
+```
+
+Parameter:
+
+- options - Store, parent writer, binding, carrier, and worker grant.
+
+Returns:
+
+- A frozen adapter.
+
+Throws:
+
+- {ScopeEvidenceError} If the parent scope is not registered in the store.
+
+Throws:
+
+- {TypeError} If a handle is forged, the parent holds no world custody, or options are
+malformed.
+
+Example:
+
+- ```ts
+const world = createScopeWorldAdapter({
+    binding,
+    carrier,
+    grant: [{ atoms: ["read", "write"], resource_id: binding.binding_id, resource_kind: "workspace_binding" }],
+    parent: parentWriter,
+    store,
+});
+await runCodingSupervisor(store, { ...options, world });
 ```
 
 ### `createWorkspaceBindings`

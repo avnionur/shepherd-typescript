@@ -6,6 +6,7 @@
             "!!.claude",
             "!!dist",
             "!!.git",
+            "!!docs/generated/application-evaluation.json",
             "!!node_modules",
             "!!spec/schemas",
             "!!template"

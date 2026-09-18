@@ -522,6 +522,19 @@ Milestone: **L3 paper programming-model parity**.
 
 Goal: demonstrate that the substrate supports the paper's three use cases.
 
+Task 1 (#171) delivered the [research applications contract](./research-applications-contract.md):
+application manifests and protocol identity, the applications vocabulary, the four applications,
+evaluation and baselines, the failure table, and non-claims. Task 2 (#172) implements
+[application manifests](../docs/application-manifests.md) and the
+[two-worker coding supervisor](../docs/coding-supervisor.md) with `./applications`. Task 3 (#173)
+adds the [counterfactual workflow optimizer](../docs/counterfactual-optimization.md). Task 4 (#174)
+adds [trajectory compression](../docs/trajectory-compression.md). Task 5 (#175) adds the
+[Tree-RL adapter](../docs/tree-rl-rollouts.md). Task 6 (#176) adds
+[application evaluation](../docs/application-evaluation.md) with baselines and the checked
+[evaluation report](../docs/generated/application-evaluation.md). Task 7 (#177) adds the research
+applications conformance scenario, process crash evidence for the optimizer and Tree-RL, and records
+the [Phase 10 exit audit](./phase-10-exit-audit.md).
+
 Work:
 
 - build a small two-worker coding supervisor;
@@ -546,6 +559,9 @@ Exit criteria:
 - causal fork/replay behavior is visible in exported traces;
 - evaluations have stable scripts and artifact manifests;
 - performance and quality claims are scoped to measured results.
+
+Milestone: **L3 research applications** for the documented scope
+([Phase 10 exit audit](./phase-10-exit-audit.md)).
 
 ## Phase 11 — Production hardening and 1.0
 

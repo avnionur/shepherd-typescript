@@ -1,0 +1,682 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/application-compression-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Application Trajectory Compression v1",
+    "description": "Trajectory compression records on the application owner path: the opened record naming the source session, control seeds, and baselines; one record per candidate status retaining the candidate and seed, fork point, hint digest, restore classification and constituents, verifier verdict, outcome, compressed session, measured step count and cost, and any failure; and the aggregate outcome record reporting measured step-count ratios only.",
+    "oneOf": [
+        {
+            "type": "object",
+            "required": [
+                "application_id",
+                "application_version",
+                "baselines",
+                "command_id",
+                "compatibility_version",
+                "controls",
+                "kind",
+                "phase",
+                "protocol_id",
+                "source_session_id"
+            ],
+            "properties": {
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "application_id": {
+                    "type": "string",
+                    "pattern": "^application:sha256:[0-9a-f]{64}$"
+                },
+                "baselines": {
+                    "type": "array",
+                    "items": {
+                        "enum": [
+                            "no_compression"
+                        ]
+                    },
+                    "uniqueItems": true
+                },
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "controls": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "maxItems": 8,
+                    "uniqueItems": true
+                },
+                "kind": {
+                    "const": "trajectory_compression"
+                },
+                "phase": {
+                    "const": "opened"
+                },
+                "protocol_id": {
+                    "type": "string",
+                    "pattern": "^application-protocol:sha256:[0-9a-f]{64}$"
+                },
+                "source_session_id": {
+                    "$ref": "#/$defs/sessionId"
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "application_id",
+                "application_version",
+                "candidate",
+                "compatibility_version",
+                "compressor_handle_id",
+                "cost",
+                "failure",
+                "fork_id",
+                "fork_point",
+                "hint_digest",
+                "outcome",
+                "phase",
+                "reason",
+                "restoration_session_id",
+                "restore",
+                "score",
+                "seed",
+                "session_id",
+                "status",
+                "step_count",
+                "verdict",
+                "verifier_handle_id"
+            ],
+            "properties": {
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "application_id": {
+                    "type": "string",
+                    "pattern": "^application:sha256:[0-9a-f]{64}$"
+                },
+                "candidate": {
+                    "enum": [
+                        "compression",
+                        "control"
+                    ]
+                },
+                "compressor_handle_id": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/handleId"
+                        }
+                    ]
+                },
+                "cost": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "cache_creation_input_tokens",
+                                "cache_read_input_tokens",
+                                "cost_usd",
+                                "input_tokens",
+                                "output_tokens",
+                                "provider_calls"
+                            ],
+                            "properties": {
+                                "cache_creation_input_tokens": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "cache_read_input_tokens": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "cost_usd": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "number",
+                                            "minimum": 0
+                                        }
+                                    ]
+                                },
+                                "input_tokens": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "output_tokens": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "provider_calls": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "failure": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "code",
+                                "reason"
+                            ],
+                            "properties": {
+                                "code": {
+                                    "enum": [
+                                        "APPLICATION_EVIDENCE_INVALID",
+                                        "APPLICATION_VERIFICATION_FAILED"
+                                    ]
+                                },
+                                "reason": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "fork_id": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^compression-fork:sha256:[0-9a-f]{64}$"
+                        }
+                    ]
+                },
+                "fork_point": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/forkPoint"
+                        }
+                    ]
+                },
+                "hint_digest": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        }
+                    ]
+                },
+                "outcome": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "enum": [
+                                "pruned",
+                                "no_prune",
+                                "restored"
+                            ]
+                        }
+                    ]
+                },
+                "phase": {
+                    "const": "candidate"
+                },
+                "reason": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                        }
+                    ]
+                },
+                "restoration_session_id": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/sessionId"
+                        }
+                    ]
+                },
+                "restore": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "classification",
+                                "constituents",
+                                "restore_record_id",
+                                "rewind_session_id"
+                            ],
+                            "properties": {
+                                "classification": {
+                                    "enum": [
+                                        "atomic",
+                                        "reconstructive",
+                                        "unavailable"
+                                    ]
+                                },
+                                "constituents": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                        "type": "object",
+                                        "required": [
+                                            "kind",
+                                            "name",
+                                            "reason",
+                                            "status"
+                                        ],
+                                        "properties": {
+                                            "kind": {
+                                                "enum": [
+                                                    "trace_cut",
+                                                    "world",
+                                                    "provider_session",
+                                                    "process",
+                                                    "irreversible_effects"
+                                                ]
+                                            },
+                                            "name": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "null"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                    }
+                                                ]
+                                            },
+                                            "reason": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "null"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                    }
+                                                ]
+                                            },
+                                            "status": {
+                                                "enum": [
+                                                    "verified",
+                                                    "reconstructive",
+                                                    "not_applicable",
+                                                    "unavailable"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "restore_record_id": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "minLength": 1
+                                        }
+                                    ]
+                                },
+                                "rewind_session_id": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "$ref": "#/$defs/sessionId"
+                                        }
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "score": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                },
+                "seed": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ]
+                },
+                "session_id": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/sessionId"
+                        }
+                    ]
+                },
+                "status": {
+                    "enum": [
+                        "proposed",
+                        "rewound",
+                        "settled",
+                        "rejected"
+                    ]
+                },
+                "step_count": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    ]
+                },
+                "verdict": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "enum": [
+                                "accepted",
+                                "rejected"
+                            ]
+                        }
+                    ]
+                },
+                "verifier_handle_id": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/handleId"
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "application_id",
+                "application_version",
+                "baseline",
+                "compatibility_version",
+                "control",
+                "original_step_count",
+                "outcome",
+                "phase",
+                "result_session_id",
+                "result_step_count",
+                "step_count_ratio"
+            ],
+            "properties": {
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "application_id": {
+                    "type": "string",
+                    "pattern": "^application:sha256:[0-9a-f]{64}$"
+                },
+                "baseline": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "kind",
+                                "session_id",
+                                "step_count",
+                                "step_count_ratio"
+                            ],
+                            "properties": {
+                                "kind": {
+                                    "enum": [
+                                        "no_compression"
+                                    ]
+                                },
+                                "session_id": {
+                                    "$ref": "#/$defs/sessionId"
+                                },
+                                "step_count": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "step_count_ratio": {
+                                    "type": "number",
+                                    "minimum": 0
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "control": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "seed",
+                                "session_id",
+                                "step_count",
+                                "step_count_ratio"
+                            ],
+                            "properties": {
+                                "seed": {
+                                    "type": "integer"
+                                },
+                                "session_id": {
+                                    "$ref": "#/$defs/sessionId"
+                                },
+                                "step_count": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "step_count_ratio": {
+                                    "type": "number",
+                                    "minimum": 0
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "original_step_count": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "outcome": {
+                    "enum": [
+                        "pruned",
+                        "no_prune",
+                        "restored"
+                    ]
+                },
+                "phase": {
+                    "const": "outcome"
+                },
+                "result_session_id": {
+                    "$ref": "#/$defs/sessionId"
+                },
+                "result_step_count": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "step_count_ratio": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            },
+            "additionalProperties": false
+        }
+    ],
+    "$defs": {
+        "forkPoint": {
+            "type": "object",
+            "required": [
+                "prefix_id",
+                "session_id",
+                "step_index"
+            ],
+            "properties": {
+                "prefix_id": {
+                    "type": "string",
+                    "pattern": "^replay-prefix:sha256:[0-9a-f]{64}$"
+                },
+                "session_id": {
+                    "$ref": "#/$defs/sessionId"
+                },
+                "step_index": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "handleId": {
+            "type": "string",
+            "pattern": "^delegation:sha256:[0-9a-f]{64}$"
+        },
+        "proposal": {
+            "type": "object",
+            "required": [
+                "fork_point",
+                "hint"
+            ],
+            "properties": {
+                "fork_point": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/forkPoint"
+                        }
+                    ]
+                },
+                "hint": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "cited_step_indices",
+                                "text"
+                            ],
+                            "properties": {
+                                "cited_step_indices": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "integer",
+                                        "minimum": 0
+                                    },
+                                    "maxItems": 4096,
+                                    "uniqueItems": true
+                                },
+                                "text": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 16384
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "sessionId": {
+            "type": "string",
+            "pattern": "^replay-session:sha256:[0-9a-f]{64}$"
+        },
+        "verdict": {
+            "type": "object",
+            "required": [
+                "reason",
+                "score",
+                "verdict"
+            ],
+            "properties": {
+                "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1024
+                },
+                "score": {
+                    "type": "number"
+                },
+                "verdict": {
+                    "enum": [
+                        "accepted",
+                        "rejected"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

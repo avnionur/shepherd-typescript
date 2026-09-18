@@ -1,10 +1,10 @@
 # Implementation Tracker
 
-Last updated: 2026-09-15
+Last updated: 2026-09-18
 
-Current version: `2.20.1`
+Current version: `2.25.1`
 
-Current level: L3 paper programming-model parity reached for the documented scope — Phases 4–9 complete for the documented scope (Phase 9 closed by the [exit audit](./phase-9-exit-audit.md))
+Current level: L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
 ## Current position
 
@@ -457,6 +457,65 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
 - [x] Complete Phase 9 Task 7 (#169) task-as-value conformance, process crash evidence for a child
   killed before its terminal and between its terminal and completion, the review fix for opening
   command identities reused by handle commands, and the Phase 9 exit audit.
+- [x] Complete Phase 10 Task 1 (#171) research applications contract with application manifests
+  and protocol identity, the `applications` vocabulary and versioned-append rule, the two-worker
+  coding supervisor, counterfactual replay optimization, trajectory compression, the Tree-RL
+  adapter, evaluation and baselines, the failure table, and non-claims.
+- [x] Complete Phase 10 Task 2 (#172) application manifests and protocol identity, the
+  `applications` protocol section v1 with manifest and supervision trace schemas, the two-worker
+  coding supervisor over child run handles with inject, handoff, discard/restart, and accept
+  policies, the caller-supplied world adapter and `createScopeWorldAdapter`, the repository
+  Appendix E experiment definition, and the `./applications` package entry.
+- [x] Complete Phase 10 Task 3 (#173) the counterfactual workflow optimizer with affected-suffix
+  replay over declared dependencies, the divergence proof, the evaluation gate, candidate lineage
+  and a single terminal promotion, the measured `full_replay` comparison, applications protocol v2
+  with the `application-cro-candidate-v1` schema, and the versioned Appendix F experiment
+  definition.
+- [x] Complete Phase 10 Task 4 (#174) Appendix D trajectory compression with a delegated
+  compressor, fork-point and hint validation against the retained prefix, rewind restoration and
+  suffix replay under the hint, `no_prune` and unavailable-restore refusal, the delegated verifier
+  gate between `pruned` and `restored`, the bounded seeded best-of-N control, measured step-count
+  ratios, applications protocol v3 with the `application-compression-v1` schema, and the versioned
+  Appendix D experiment definition.
+- [x] Complete Phase 10 Task 5 (#175) the §5.3 Tree-RL adapter with deterministic trace-selected
+  fork points, seeded branched rollouts under per-rollout static cassettes, a caller reward, failed
+  rollouts retained and excluded, intra- and inter-branch advantages over completed rollouts, the
+  canonical `jsonl_v1` training batch and digest, the `single_rollout` baseline, applications
+  protocol v4 with the `application-tree-rl-rollout-v1` schema, and the versioned §5.3 experiment
+  definition.
+- [x] Complete Phase 10 Task 6 (#176) offline evaluation with `runApplicationEvaluation`,
+  `compareApplicationBaseline`, and `validateApplicationEvaluationReport`: every configured
+  application and its `no_supervision`, `full_replay`, `no_compression`, or `single_rollout`
+  baseline folded into one measured-only `application-evaluation-v1` report with per-metric
+  comparisons and published limitations, applications protocol v5, the repository evaluation
+  definition and fixtures, and the checked `docs/generated/application-evaluation.json` and `.md`
+  artifacts (`pnpm evaluate:applications`, `pnpm check:evaluation`).
+- [x] Complete Phase 10 Task 7 (#177) research applications conformance over all four applications
+  in one store with the supervisor on real scope custody, manifest schema and protocol proofs, the
+  report citing exactly the retained manifests, causal fork and replay evidence and identical
+  inspections and batch digest from an imported archive, process crash evidence for the optimizer
+  and Tree-RL, and the Phase 10 exit audit.
+
+Phase 10 is complete for its documented offline scope; the [exit audit](./phase-10-exit-audit.md)
+maps every work item and exit criterion to entry points, docs, and tests.
+Phase 10 now has its contract. Every application is a composition of existing public delegation,
+replay, scope, and provider seams plus one canonical digest-bearing manifest per run: protocol
+identity over versioned prompt, schema, and tool surfaces, budgets, seeds, and dataset selection,
+artifacts cited by identity, and measured costs folded from observed usage, retained as a
+`shepherd.application.manifest.v1` record on a command-derived reserved owner path under a terminal
+cut with idempotent repeats. The coding supervisor observes workers through child run handles,
+classifies path-overlap conflicts on one bound resource through a caller-supplied world adapter,
+and retains inject, handoff, and discard/restart decisions with their cited evidence. The
+counterfactual optimizer limits candidates to declared change dimensions at a step boundary,
+replays only the dependency-scoped suffix, proves no unexplained divergence, gates promotion on a
+targeted evaluation, and measures against `full_replay`. Trajectory compression rewinds to a
+compressor-proposed fork point, restores the suffix under a hint, keeps the original on `no_prune`
+or verifier rejection, refuses a prune whose checkpoint is unavailable, and runs a bounded best-of-N
+control. The Tree-RL adapter selects fork points deterministically from dependency counts, runs
+seeded branched rollouts, computes intra- and inter-branch advantages over completed rollouts, and
+emits a `jsonl_v1` batch with a stable digest. The evaluation report carries measured values only
+and no wall-clock or host data in digest-bearing JSON. No runtime, protocol, schema, or storage
+change is made by this slice.
 
 Phase 9 now treats tasks as data. A task value is the canonical `{ artifact, artifact_lock }` pair
 with lock re-derivation and descriptor rehydration through the task builder, and `schema.task()`
@@ -531,6 +590,122 @@ parents, and supervisors reach fenced durable-run control through `./supervision
 observation leaves exported traces byte-identical.
 
 ## Verification required for this slice
+
+Phase 10 Task 7 (#177): the [Phase 10 exit audit](./phase-10-exit-audit.md) maps all nine work
+items and five exit criteria to entry points, docs, and tests, records the recovery classification,
+the review outcome (the #176 review fixes to failed-branch promotion, null cost folding, and
+limitation wording), and the carried limits. The
+[conformance scenario](../test/applications/applications-conformance.test.ts) runs the repository
+evaluation with the supervisor on real scope custody (inject, discard/restart, handoff, accept),
+validates every manifest against its generated schema and configured protocol, proves the report
+cites exactly the retained manifests and reproduces the checked report's unchanged experiments, and
+from the imported archive alone shows the discard decision and retry cut, world fork, merge, and
+discard receipts, and every branch's source boundary, trace cut, and prefix, with identical
+inspections and training batch digest on the live, read-only, and imported stores.
+[Process tests](../test/applications/replay-applications-crash.test.ts) kill a process inside an
+optimizer candidate branch and inside a Tree-RL rollout session. Tests and documentation only.
+PATCH 2.25.1.
+
+- [x] `pnpm sync:version`, `pnpm generate:api-reference`
+- [x] focused: conformance (1 test) and replay application crash (2 tests) pass
+- [x] `CI=true pnpm verify` after the #176 review fixes: 841 tests, 840 pass, 100% coverage; the one
+  failure is the host clone carrier test (C toolchain cannot link; fails on `main` too); remaining
+  stages `pnpm build && pnpm test:package-cli` pass; `pnpm build:desktop` passes
+
+Phase 10 Task 6 (#176): [application evaluation](../docs/application-evaluation.md) is delivered in
+`./applications` with `APPLICATIONS_PROTOCOL_V5_CONTRACT`, the generated
+`application-evaluation-v1` schema, the repository evaluation definition and fixtures in
+`config/research-applications.config.json`, and the generated
+[evaluation report](../docs/generated/application-evaluation.md). Tests cover a byte-identical
+report across repeated runs and fresh stores with no host, clock, or duration data, a repeated
+evaluation that re-executes no provider, program, policy, evaluator, or reward, every metric
+re-measured from retained evidence, each baseline kind, comparison arithmetic with null deltas for
+a null cost and `success`, failed live calls and null costs, program-serviced baseline workers,
+limitations published verbatim with the upstream disclaimer, schema conformance, refusal of
+malformed definitions and bindings before any record with a corrected rerun, an evaluation
+interrupted inside the supervisor converging to the fresh-store report, report validation
+refusals, and the artifact writer generating, re-checking on a different host, rejecting mutated
+report and page bodies, and refusing unsafe paths. MINOR 2.25.0.
+
+- [x] `pnpm generate:protocol`, `pnpm generate:api-reference`, `pnpm evaluate:applications`,
+  `pnpm sync:version`
+- [x] `pnpm verify` stages: `check:protocol`, `check:evaluation`, `build`, `check:api-reference`,
+  `lint`, `typecheck` pass; `pnpm test` ran 832 tests with 831 passing and 100% line/branch/function
+  coverage (including `tooling/evaluation/`). The one failure is the known macOS clone carrier test
+  (the host C toolchain cannot link the clone helper; also fails on `main`). `pnpm build` and
+  `pnpm test:package-cli` (including the new evaluation package probe) were then run separately and
+  pass.
+- [x] `pnpm build:desktop`
+
+Phase 10 Task 5 (#175): the [Tree-RL adapter](../docs/tree-rl-rollouts.md) is delivered in
+`./applications` with `APPLICATIONS_PROTOCOL_V4_CONTRACT` and the generated
+`application-tree-rl-rollout-v1` schema. Tests cover deterministic fork-point selection (dependent
+minimum, index order, bound, prefix identity null at step 0), exact intra- and inter-branch
+advantage arithmetic, the canonical `jsonl_v1` text and digest, identical selection, advantages,
+batch digest, and manifest across two stores with the same seeds and after archive import into
+writable and read-only stores, failed rollouts (session not finished, unexplained divergence,
+reward throw, non-finite reward) retained and excluded from every mean, zero single-rollout and
+single-fork-point advantages, the `single_rollout` baseline, `maxForkPoints`, `maxBranches`,
+`maxRollouts`, and projected provider-call refusals with no record, provider and option refusals
+with no record and a corrected rerun, a measured overrun refusing the next rollout before it opens,
+crashes at the opened, rollout, batch, and manifest appends converging without extra provider
+calls, a process death inside a rollout session refused under a live lease and retained as failed
+after expiry, codec, schema, and forged-record refusal, and the packaged `./applications` probe.
+MINOR 2.24.0.
+
+- [x] `pnpm generate:protocol`, `pnpm generate:api-reference`, `pnpm sync:version`
+- [x] `pnpm verify` stages: `check:protocol`, `build`, `check:api-reference`, `lint`, `typecheck`
+  pass; `pnpm test` ran 817 tests with 816 passing and 100% line/branch/function coverage. The one
+  failure is the known macOS clone carrier test (the host C toolchain cannot link the clone helper;
+  also fails on `main`). `pnpm build` and `pnpm test:package-cli` (including the new Tree-RL
+  package probe) were then run separately and pass.
+- [x] `pnpm build:desktop`
+
+Phase 10 Task 3 (#173): the [counterfactual workflow optimizer](../docs/counterfactual-optimization.md)
+is delivered in `./applications` with `APPLICATIONS_PROTOCOL_V2_CONTRACT` and the generated
+`application-cro-candidate-v1` schema. Tests cover the affected-suffix rule (recorded prefix, live
+dependents, zero live steps for an edit without dependents), lineage from a parent branch, task,
+provider, and handlers edits, unexplained and before-target divergence refusals, evaluator
+failures as `APPLICATION_VERIFICATION_FAILED`, the single terminal promotion and the threshold
+gate, the measured `full_replay` comparison by provider calls and cache reads, refusal of
+undeclared edit kinds and over-limit sets before any record, the provider-call budget, crash
+recovery after a branch and after the promotion without replay, codec and forged-record refusal,
+schema conformance of retained records, and identical inspection on reopened, read-only, and
+imported stores. MINOR 2.22.0.
+
+- [x] `pnpm sync:version`
+- [x] `pnpm verify` stages: `check:protocol`, `build`, `check:api-reference`, `lint`, `typecheck`
+  pass; `pnpm test` ran 755 tests with 754 passing and 100% line/branch/function coverage. The one
+  failure is the known macOS clone carrier test (`clone-helper-unavailable`, the host C toolchain
+  cannot link the clone helper; also fails on `main`). `pnpm build` and `pnpm test:package-cli`
+  (including the new counterfactual package probe) were then run separately and pass.
+- [x] `pnpm build:desktop`
+
+Phase 10 Task 2 (#172): [application manifests](../docs/application-manifests.md) and the
+[two-worker coding supervisor](../docs/coding-supervisor.md) are delivered as the `./applications`
+entry with `APPLICATIONS_PROTOCOL_V1_CONTRACT`, generated manifest and supervision schemas, and
+`createScopeWorldAdapter` in `./workspace`. Tests cover protocol and manifest identity, seeded
+manifest digest stability, every policy on the trace-only and fake-world paths, two workers
+editing one bound resource through real scope custody with inject, restart from a clean fork,
+handoff, and a single accepted merge, a process killed after a worker's durable start recovered
+through the documented cancellation path without duplicate records, forged and moved-head evidence
+refusal, and identical inspection on reopened, read-only, and imported stores. MINOR 2.21.0.
+
+- [x] `pnpm sync:version`
+- [x] `pnpm verify` stages: `check:protocol`, `build`, `check:api-reference`, `lint`, `typecheck`
+  pass; `pnpm test` ran 731 tests with 730 passing and 100% line/branch/function coverage. The one
+  failure, the macOS clone carrier HFS+ test, also fails on `main` (89ddc99) on this host because
+  the host C toolchain cannot link the clone helper (`clone-helper-unavailable`); it is
+  environmental and unrelated to this slice. `pnpm build` and `pnpm test:package-cli` were then run
+  separately and pass.
+- [x] `pnpm build:desktop`
+
+Phase 10 Task 1 (#171): the [research applications contract](./research-applications-contract.md)
+is delivered. Pinned release and paper sections reviewed as source-level observations; every public
+function the contract composes exists in the delegation, replay, scopes, workspace, providers, and
+trace facades; no Python or new application tests executed. Documentation-only PATCH:
+`pnpm sync:version` passes and `package.json` reads 2.20.2; no runtime, protocol, schema, or
+storage change.
 
 Phase 9 Task 7 (#169): the [exit audit](./phase-9-exit-audit.md) maps all eight work items and five
 exit criteria to delivered issues, entry points, docs, and tests, and records the recovery
@@ -793,14 +968,18 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Phases 6, 7, 8, and 9 are complete for their documented scope; the
+Phases 6, 7, 8, 9, and 10 are complete for their documented scope; the
 [Phase 9 exit audit](./phase-9-exit-audit.md) records L3 paper programming-model parity for the
-documented scope. Phase 10 (#23, research applications) is the next roadmap phase. Its first slice
-should build the small two-worker coding supervisor over child run handles: two workers on
-conflicting edits of one bound resource, inject, handoff, and discard/restart policies expressed
-through the delegation and supervision APIs, a versioned protocol and artifact manifest, and a
-reproducible offline run against the static provider before the counterfactual optimizer,
-Appendix D trajectory compression, and Tree-RL adapter applications.
+documented scope. Phase 10 (#23, research applications) is closed by its exit audit; its
+[contract](./research-applications-contract.md) is delivered (#171). Application manifests and the
+two-worker coding supervisor are delivered (#172), the counterfactual workflow optimizer is
+delivered as applications protocol v2 (#173), and Appendix D trajectory compression is delivered
+as applications protocol v3 (#174), the Tree-RL adapter is delivered as applications protocol v4
+(#175), and offline evaluation with baselines and a checked repository report is delivered as
+applications protocol v5 (#176). Conformance, process crash evidence for the optimizer and
+Tree-RL, and the [Phase 10 exit audit](./phase-10-exit-audit.md) are delivered (#177): Phase 10 is
+complete for its documented offline scope. The next phase is Phase 11 (#24, production hardening and
+1.0); its first child issue is to be cut from the epic before the 1.0 readiness audit (#29).
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration

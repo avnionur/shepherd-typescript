@@ -1,0 +1,442 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/application-cro-candidate-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Application Counterfactual Candidate v1",
+    "description": "Counterfactual optimizer records on the application owner path: the opened record naming the baseline session, comparison baselines, and declared candidate plan, and one record per candidate status retaining lineage, the affected-suffix target, the branch session, the divergence proof summary, the evaluator verdict or failure, measured cost, and the whole-workflow comparison.",
+    "oneOf": [
+        {
+            "type": "object",
+            "required": [
+                "application_id",
+                "application_version",
+                "baseline_session_id",
+                "baselines",
+                "candidates",
+                "command_id",
+                "compatibility_version",
+                "kind",
+                "phase",
+                "protocol_id"
+            ],
+            "properties": {
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "application_id": {
+                    "type": "string",
+                    "pattern": "^application:sha256:[0-9a-f]{64}$"
+                },
+                "baseline_session_id": {
+                    "$ref": "#/$defs/sessionId"
+                },
+                "baselines": {
+                    "type": "array",
+                    "items": {
+                        "enum": [
+                            "full_replay"
+                        ]
+                    },
+                    "uniqueItems": true
+                },
+                "candidates": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "candidate_id",
+                            "changes",
+                            "edited_step_index",
+                            "name",
+                            "parent_candidate_id"
+                        ],
+                        "properties": {
+                            "candidate_id": {
+                                "$ref": "#/$defs/candidateId"
+                            },
+                            "changes": {
+                                "type": "array",
+                                "items": {
+                                    "enum": [
+                                        "task",
+                                        "provider",
+                                        "handlers"
+                                    ]
+                                },
+                                "minItems": 1,
+                                "maxItems": 3,
+                                "uniqueItems": true
+                            },
+                            "edited_step_index": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            "name": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "parent_candidate_id": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "$ref": "#/$defs/candidateId"
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "kind": {
+                    "const": "counterfactual_optimization"
+                },
+                "phase": {
+                    "const": "opened"
+                },
+                "protocol_id": {
+                    "type": "string",
+                    "pattern": "^application-protocol:sha256:[0-9a-f]{64}$"
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "affected_steps",
+                "application_id",
+                "application_version",
+                "baseline",
+                "branch_session_id",
+                "candidate_id",
+                "changes",
+                "compatibility_version",
+                "cost",
+                "divergence",
+                "edited_step_index",
+                "evaluation",
+                "failure",
+                "name",
+                "parent_candidate_id",
+                "phase",
+                "status",
+                "target"
+            ],
+            "properties": {
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "candidate_id": {
+                    "$ref": "#/$defs/candidateId"
+                },
+                "changes": {
+                    "type": "array",
+                    "items": {
+                        "enum": [
+                            "task",
+                            "provider",
+                            "handlers"
+                        ]
+                    },
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "uniqueItems": true
+                },
+                "edited_step_index": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "parent_candidate_id": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/candidateId"
+                        }
+                    ]
+                },
+                "affected_steps": {
+                    "$ref": "#/$defs/indices"
+                },
+                "application_id": {
+                    "type": "string",
+                    "pattern": "^application:sha256:[0-9a-f]{64}$"
+                },
+                "baseline": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "cache_read_input_tokens",
+                                "kind",
+                                "provider_calls",
+                                "session_id"
+                            ],
+                            "properties": {
+                                "cache_read_input_tokens": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "kind": {
+                                    "enum": [
+                                        "full_replay"
+                                    ]
+                                },
+                                "provider_calls": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "session_id": {
+                                    "$ref": "#/$defs/sessionId"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "branch_session_id": {
+                    "$ref": "#/$defs/sessionId"
+                },
+                "cost": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "cache_creation_input_tokens",
+                                "cache_read_input_tokens",
+                                "cost_usd",
+                                "input_tokens",
+                                "output_tokens",
+                                "provider_calls"
+                            ],
+                            "properties": {
+                                "cache_creation_input_tokens": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "cache_read_input_tokens": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "cost_usd": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "number",
+                                            "minimum": 0
+                                        }
+                                    ]
+                                },
+                                "input_tokens": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "output_tokens": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "provider_calls": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "divergence": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "common_prefix_id",
+                                "first_divergence_index",
+                                "live_steps",
+                                "recorded_steps",
+                                "unexplained"
+                            ],
+                            "properties": {
+                                "common_prefix_id": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "$ref": "#/$defs/prefixId"
+                                        }
+                                    ]
+                                },
+                                "first_divergence_index": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        }
+                                    ]
+                                },
+                                "live_steps": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "recorded_steps": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "unexplained": {
+                                    "$ref": "#/$defs/indices"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "evaluation": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "passed",
+                                "reason",
+                                "score"
+                            ],
+                            "properties": {
+                                "passed": {
+                                    "type": "boolean"
+                                },
+                                "reason": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024
+                                },
+                                "score": {
+                                    "type": "number"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "failure": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "code",
+                                "reason"
+                            ],
+                            "properties": {
+                                "code": {
+                                    "enum": [
+                                        "APPLICATION_EVIDENCE_INVALID",
+                                        "APPLICATION_VERIFICATION_FAILED"
+                                    ]
+                                },
+                                "reason": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "phase": {
+                    "const": "candidate"
+                },
+                "status": {
+                    "enum": [
+                        "proposed",
+                        "evaluated",
+                        "promoted",
+                        "rejected"
+                    ]
+                },
+                "target": {
+                    "type": "object",
+                    "required": [
+                        "prefix_id",
+                        "source_session_id",
+                        "step_index"
+                    ],
+                    "properties": {
+                        "prefix_id": {
+                            "$ref": "#/$defs/prefixId"
+                        },
+                        "source_session_id": {
+                            "$ref": "#/$defs/sessionId"
+                        },
+                        "step_index": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        }
+    ],
+    "$defs": {
+        "candidateId": {
+            "type": "string",
+            "pattern": "^cro-candidate:sha256:[0-9a-f]{64}$"
+        },
+        "indices": {
+            "type": "array",
+            "items": {
+                "type": "integer",
+                "minimum": 0
+            },
+            "maxItems": 4096,
+            "uniqueItems": true
+        },
+        "prefixId": {
+            "type": "string",
+            "pattern": "^replay-prefix:sha256:[0-9a-f]{64}$"
+        },
+        "sessionId": {
+            "type": "string",
+            "pattern": "^replay-session:sha256:[0-9a-f]{64}$"
+        }
+    }
+}
