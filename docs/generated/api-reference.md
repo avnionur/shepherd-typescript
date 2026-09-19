@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.25.1
+Package: `@avnionur/shepherd-typescript` 2.32.5
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 1086.
+Exported symbols: 1198.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -1562,6 +1562,90 @@ Signature:
 export type BlobStorageReceipt = {
     readonly blob_id: BlobId;
     readonly byte_length: number;
+};
+```
+
+### `BlobStoreBackend`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Content-addressed object storage an adapter implements for local or remote bytes.
+
+Laws (checked by `checkBlobStoreBackendConformance`): `put` verifies that the bytes hash to the
+identifier, is idempotent for equal bytes, and never replaces an existing object; `get` returns
+an independent copy of exactly the stored bytes or `undefined`; `has` agrees with `get`; `list`
+is ordered, stable, exclusive after its cursor, and bounded; `delete` is idempotent. Every
+method may return a promise so a network adapter can implement the same contract.
+
+Signature:
+
+```ts
+export type BlobStoreBackend = {
+    readonly durability: StorageDurability;
+    put(blobId: BlobId, content: Uint8Array): Promise<BlobStorePutResult>;
+    get(blobId: BlobId): Promise<Uint8Array | undefined>;
+    has(blobId: BlobId): Promise<boolean>;
+    list(options?: BlobStoreListOptions): Promise<BlobStoreListPage>;
+    delete(blobId: BlobId): Promise<boolean>;
+    close?(): void | Promise<void>;
+};
+```
+
+### `BlobStoreBackendFactory`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Creates one fresh, empty blob-store backend per conformance law.
+
+Signature:
+
+```ts
+export type BlobStoreBackendFactory = () => BlobStoreBackend | Promise<BlobStoreBackend>;
+```
+
+### `BlobStoreListOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Bounded page request over stored blob identifiers.
+
+Signature:
+
+```ts
+export type BlobStoreListOptions = {
+    readonly after?: BlobId;
+    readonly limit?: number;
+};
+```
+
+### `BlobStoreListPage`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One page of stored blob identifiers in ascending code-unit order.
+
+Signature:
+
+```ts
+export type BlobStoreListPage = {
+    readonly blobIds: readonly BlobId[];
+    readonly next?: BlobId;
+};
+```
+
+### `BlobStorePutResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one content-addressed blob write.
+
+Signature:
+
+```ts
+export type BlobStorePutResult = {
+    readonly blobId: BlobId;
+    readonly byteLength: number;
+    readonly created: boolean;
 };
 ```
 
@@ -6000,6 +6084,22 @@ export type JailedTaskWorldCaptureResult = TaskWorldCaptureResult & {
 };
 ```
 
+### `JsonLinesTelemetrySinkOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Destination files of createJsonLinesTelemetrySink. The OTLP file format holds exactly
+one signal type per file, so traces and logs are written to separate files.
+
+Signature:
+
+```ts
+export type JsonLinesTelemetrySinkOptions = {
+    readonly logsPath: string;
+    readonly tracesPath: string;
+};
+```
+
 ### `KERNEL_ABI_VERSION`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -7134,6 +7234,244 @@ export type OrphanRepairReceipt = {
     readonly receipt_id: string;
     readonly receipt_record_id: RecordId;
     readonly receipt_version: number;
+};
+```
+
+### `OtlpAnyValue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `AnyValue`: exactly one variant, or an empty object for an absent (null) value.
+
+Signature:
+
+```ts
+export type OtlpAnyValue = {
+    readonly stringValue: string;
+} | {
+    readonly boolValue: boolean;
+} | {
+    readonly intValue: string;
+} | {
+    readonly doubleValue: number;
+} | {
+    readonly arrayValue: {
+        readonly values: readonly OtlpAnyValue[];
+    };
+} | {
+    readonly kvlistValue: {
+        readonly values: readonly OtlpKeyValue[];
+    };
+} | {
+    readonly [key: string]: never;
+};
+```
+
+### `OtlpExportLogsServiceRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ExportLogsServiceRequest` subset; one JSON line of an OTLP logs file.
+
+Signature:
+
+```ts
+export type OtlpExportLogsServiceRequest = {
+    readonly resourceLogs: readonly OtlpResourceLogs[];
+};
+```
+
+### `OtlpExportTraceServiceRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ExportTraceServiceRequest` subset; one JSON line of an OTLP traces file.
+
+Signature:
+
+```ts
+export type OtlpExportTraceServiceRequest = {
+    readonly resourceSpans: readonly OtlpResourceSpans[];
+};
+```
+
+### `OtlpInstrumentationScope`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `InstrumentationScope` subset.
+
+Signature:
+
+```ts
+export type OtlpInstrumentationScope = {
+    readonly name: string;
+    readonly version: string;
+};
+```
+
+### `OtlpKeyValue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `KeyValue` attribute.
+
+Signature:
+
+```ts
+export type OtlpKeyValue = {
+    readonly key: string;
+    readonly value: OtlpAnyValue;
+};
+```
+
+### `OtlpLogRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `LogRecord` subset. `timeUnixNano` is never set because records carry no event time.
+
+Signature:
+
+```ts
+export type OtlpLogRecord = {
+    readonly attributes: readonly OtlpKeyValue[];
+    readonly body?: OtlpAnyValue;
+    readonly eventName: string;
+    readonly observedTimeUnixNano: string;
+    readonly severityNumber: number;
+    readonly severityText: string;
+    readonly traceId: string;
+};
+```
+
+### `OtlpResource`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `Resource` subset.
+
+Signature:
+
+```ts
+export type OtlpResource = {
+    readonly attributes: readonly OtlpKeyValue[];
+};
+```
+
+### `OtlpResourceLogs`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ResourceLogs` subset.
+
+Signature:
+
+```ts
+export type OtlpResourceLogs = {
+    readonly resource: OtlpResource;
+    readonly schemaUrl: string;
+    readonly scopeLogs: readonly OtlpScopeLogs[];
+};
+```
+
+### `OtlpResourceSpans`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ResourceSpans` subset.
+
+Signature:
+
+```ts
+export type OtlpResourceSpans = {
+    readonly resource: OtlpResource;
+    readonly schemaUrl: string;
+    readonly scopeSpans: readonly OtlpScopeSpans[];
+};
+```
+
+### `OtlpScopeLogs`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ScopeLogs` subset.
+
+Signature:
+
+```ts
+export type OtlpScopeLogs = {
+    readonly logRecords: readonly OtlpLogRecord[];
+    readonly schemaUrl: string;
+    readonly scope: OtlpInstrumentationScope;
+};
+```
+
+### `OtlpScopeSpans`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ScopeSpans` subset.
+
+Signature:
+
+```ts
+export type OtlpScopeSpans = {
+    readonly schemaUrl: string;
+    readonly scope: OtlpInstrumentationScope;
+    readonly spans: readonly OtlpSpan[];
+};
+```
+
+### `OtlpSpan`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `Span` subset.
+
+Signature:
+
+```ts
+export type OtlpSpan = {
+    readonly attributes: readonly OtlpKeyValue[];
+    readonly endTimeUnixNano: string;
+    readonly events: readonly OtlpSpanEvent[];
+    readonly kind: number;
+    readonly name: string;
+    readonly spanId: string;
+    readonly startTimeUnixNano: string;
+    readonly status: OtlpStatus;
+    readonly traceId: string;
+};
+```
+
+### `OtlpSpanEvent`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `Span.Event` subset.
+
+Signature:
+
+```ts
+export type OtlpSpanEvent = {
+    readonly attributes: readonly OtlpKeyValue[];
+    readonly name: string;
+    readonly timeUnixNano: string;
+};
+```
+
+### `OtlpStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `Status` subset.
+
+Signature:
+
+```ts
+export type OtlpStatus = {
+    readonly code: number;
 };
 ```
 
@@ -8353,6 +8691,40 @@ Signature:
 export declare const RETAINED_WORLD_SETTLEMENT_VERSION: 12;
 ```
 
+### `RETENTION_DATA_CLASSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured retention data classes.
+
+Signature:
+
+```ts
+export declare const RETENTION_DATA_CLASSES: readonly [
+    "checkpoint",
+    "context",
+    "general",
+    "memory-adapter",
+    "provider-citation"
+];
+```
+
+### `RETENTION_EXPORT_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured redacted-export dispositions.
+
+Signature:
+
+```ts
+export declare const RETENTION_EXPORT_DISPOSITIONS: readonly [
+    "include",
+    "omit-body",
+    "redact"
+];
+```
+
 ### `ROOT_WITNESS_ID`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -8621,6 +8993,70 @@ export type RecoveryRecordEntry = {
     readonly recovery_status: DurableTaskExecutionInspection["status"];
     readonly recovery_record_version: number;
     readonly run_id: string;
+};
+```
+
+### `RedactedRecordBody`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Marker that replaces a record body in a redacted archive.
+
+Signature:
+
+```ts
+export type RedactedRecordBody = {
+    readonly body_digest: string | null;
+    readonly data_class: RetentionDataClass;
+    readonly redacted: true;
+    readonly secret_classes: readonly string[];
+};
+```
+
+### `RedactedTraceArchiveError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a redacted trace archive is malformed, inconsistent with the retention policy, or
+offered to a native archive import.
+
+Redacted archives are one-way exports: they never re-enter a trace store. The message names
+the failed structure or record index and never contains a record body or matched secret.
+
+Signature:
+
+```ts
+export declare class RedactedTraceArchiveError extends TypeError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable redacted-archive code.
+
+```ts
+readonly code: string;
+```
+
+### `RedactedTraceArchiveSummary`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Counts verified from one redacted trace archive.
+
+Signature:
+
+```ts
+export type RedactedTraceArchiveSummary = {
+    readonly blob_count: number;
+    readonly cut_count: number;
+    readonly included_record_count: number;
+    readonly omitted_body_count: number;
+    readonly record_count: number;
+    readonly record_view_count: number;
+    readonly redacted_record_count: number;
+    readonly secret_record_count: number;
 };
 ```
 
@@ -10701,6 +11137,117 @@ export type RetainedWorldSettlementRequest = {
 };
 ```
 
+### `RetentionClassificationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller classification of schema identifiers the protocol configuration does not name.
+
+Signature:
+
+```ts
+export type RetentionClassificationOptions = {
+    readonly schemaDataClasses?: Readonly<Record<string, RetentionDataClass>>;
+};
+```
+
+### `RetentionDataClass`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured retention class of a record, derived from its schema identifier.
+
+Signature:
+
+```ts
+export type RetentionDataClass = (typeof RETENTION_DATA_CLASSES)[number];
+```
+
+### `RetentionDataClassCount`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record counts of one data class.
+
+Signature:
+
+```ts
+export type RetentionDataClassCount = {
+    readonly data_class: RetentionDataClass;
+    readonly disposition: RetentionExportDisposition;
+    readonly record_count: number;
+    readonly secret_record_count: number;
+};
+```
+
+### `RetentionExportDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+How a redacted export treats the body of a record in one data class.
+
+`include` exports the body verbatim unless a configured detector matches it; `redact` replaces
+the body with a marker carrying the detected secret classes and a body digest; `omit-body`
+replaces the body with a marker that discloses neither.
+
+Signature:
+
+```ts
+export type RetentionExportDisposition = (typeof RETENTION_EXPORT_DISPOSITIONS)[number];
+```
+
+### `RetentionPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Frozen summary of the configured retention policy.
+
+Signature:
+
+```ts
+export type RetentionPolicy = {
+    readonly data_classes: readonly TraceSchemaClassification[];
+    readonly default_data_class: RetentionDataClass;
+    readonly default_scanning_mode: SecretScanningMode;
+    readonly secret_classes: readonly string[];
+    readonly scanning_modes: readonly SecretScanningMode[];
+};
+```
+
+### `RetentionSecretClassCount`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Finding counts of one configured secret class.
+
+Signature:
+
+```ts
+export type RetentionSecretClassCount = {
+    readonly finding_count: number;
+    readonly record_count: number;
+    readonly secret_class: string;
+};
+```
+
+### `RetentionSecretRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One record whose body matches a configured detector, identified without its content.
+
+Signature:
+
+```ts
+export type RetentionSecretRecord = {
+    readonly data_class: RetentionDataClass;
+    readonly finding_count: number;
+    readonly record_id: RecordId;
+    readonly secret_classes: readonly string[];
+    readonly truncated: boolean;
+};
+```
+
 ### `RetryChildRunOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -11979,6 +12526,35 @@ export declare const SCOPE_WORLD_CAPABILITIES: readonly [
 ];
 ```
 
+### `SECRET_SCANNING_MODES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trace-store secret-scanning modes.
+
+Signature:
+
+```ts
+export declare const SECRET_SCANNING_MODES: readonly [
+    "off",
+    "refuse"
+];
+```
+
+### `SQLiteStorageCoordinator`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable SQLite storage coordinator that can be closed explicitly or with `using`.
+
+Signature:
+
+```ts
+export type SQLiteStorageCoordinator = StorageCoordinator & Disposable & {
+    close(): void;
+};
+```
+
 ### `SQLiteTaskRegistry`
 
 Classification: `runtime-and-type`. Kind: `class`.
@@ -12001,6 +12577,10 @@ export declare class SQLiteTaskRegistry implements Disposable {
 #### `constructor`
 
 Opens or creates a durable task registry.
+
+A writable file registry is created with the configured owner-only mode; an existing file
+and its sidecars owned by the current user are tightened to that mode. Read-only opens never
+change file modes.
 
 ```ts
 constructor(databasePath?: string, options?: SQLiteTaskRegistryOptions);
@@ -12142,6 +12722,7 @@ Signature:
 export declare class SQLiteTraceStore implements Disposable {
     constructor(databasePath?: string, options?: SQLiteTraceStoreOptions);
     get schemaVersion(): number;
+    get secretScanning(): SecretScanningMode;
     append(request: StoreAppendRequest): AppendReceipt;
     recordOpenOperation(definition: OperationBookkeepingDefinition): OperationBookkeepingDefinition;
     recordOperationSessionDeath(evidence: OperationSessionDeathEvidence): number;
@@ -12160,6 +12741,7 @@ export declare class SQLiteTraceStore implements Disposable {
     readBlob(blobId: BlobId): Uint8Array | undefined;
     verifyBlobs(): BlobIntegrityReport;
     collectBlobOrphans(options?: BlobOrphanCollectionOptions): BlobOrphanCollectionReport;
+    maintain(options?: TraceStoreMaintenanceOptions): TraceStoreMaintenanceReport;
     readRecord(recordId: RecordId): RetainedRecord | undefined;
     readOwner(ownerId: string): readonly OwnerRecord[];
     publishCut(spec: CutSpec): Cut;
@@ -12179,6 +12761,10 @@ export declare class SQLiteTraceStore implements Disposable {
 
 Opens or creates a writable trace store, or opens exact current state read-only.
 
+A writable file database is created with the configured owner-only mode, and an existing
+database and its WAL, SHM, and journal sidecars owned by the current user are tightened to
+that mode before SQLite opens them. Read-only opens never change file modes.
+
 ```ts
 constructor(databasePath?: string, options?: SQLiteTraceStoreOptions);
 ```
@@ -12189,7 +12775,8 @@ Parameter:
 
 Parameter:
 
-- options - Optional external blob directory and read-only policy.
+- options - Optional external blob directory, read-only policy, and secret-scanning
+mode (default `"off"`).
 
 Throws:
 
@@ -12216,6 +12803,14 @@ Current migrated storage-schema version.
 get schemaVersion(): number;
 ```
 
+#### `secretScanning`
+
+Append and import secret-scanning mode chosen when this handle was opened.
+
+```ts
+get secretScanning(): SecretScanningMode;
+```
+
 #### `append`
 
 Atomically commits or idempotently replays one semantic append request.
@@ -12235,6 +12830,11 @@ Returns:
 Throws:
 
 - {AppendIntentConflictError} If the intent already names different content.
+
+Throws:
+
+- {TraceSecretDetectedError} If the store scans in `refuse` mode and a record body
+matches a configured detector; nothing is written and the intent remains reusable.
 
 Throws:
 
@@ -12657,6 +13257,21 @@ Throws:
 
 Throws:
 
+- {TraceSecretDetectedError} If the store scans in `refuse` mode and an archived record
+body matches a configured detector; nothing is written.
+
+Throws:
+
+- {RedactedTraceArchiveError} If the text is a one-way redacted archive.
+
+Throws:
+
+- {TraceArchiveLimitError} If the archive exceeds a configured interchange limit
+(`kernel.interchange.limits`): byte length or nesting depth before parsing, collection counts
+or the declared blob byte total before decoding; nothing is written.
+
+Throws:
+
 - {TypeError} If the archive is malformed, incompatible, or internally inconsistent.
 
 Throws:
@@ -12787,6 +13402,53 @@ const inspection = store.collectBlobOrphans();
 if (inspection.orphan_blob_ids.length > 0) {
     store.collectBlobOrphans({ mode: "delete" });
 }
+```
+
+#### `maintain`
+
+Runs one semantics-preserving maintenance pass: `inspect`, `checkpoint`, `optimize`, or
+`vacuum`.
+
+Every mode runs a bounded SQLite `quick_check` and reports page, freelist, and WAL sizes.
+`checkpoint` truncates the write-ahead log; `optimize` runs `PRAGMA optimize`; `vacuum`
+rebuilds the database file and then checkpoints. Mutating modes refuse a database whose
+`quick_check` fails. No mode changes retained records, views, cuts, append intents, or
+blobs: `exportTrace()` is byte-identical before and after.
+
+```ts
+maintain(options?: TraceStoreMaintenanceOptions): TraceStoreMaintenanceReport;
+```
+
+Parameter:
+
+- options - Optional configured maintenance mode (default `"inspect"`).
+
+Returns:
+
+- A frozen maintenance report.
+
+Throws:
+
+- {TraceStoreReadOnlyError} If the handle was opened with `readOnly: true`.
+
+Throws:
+
+- {TraceStoreError} If the store is closed, or a mutating mode finds a defect.
+
+Throws:
+
+- {TypeError} If options are malformed or select an unconfigured mode.
+
+Throws:
+
+- {Error} If SQLite cannot complete the operation, for example a vacuum while another
+connection holds a transaction.
+
+Example:
+
+- ```ts
+const report = store.maintain({ mode: "vacuum" });
+console.log(report.before.freelist_count, report.after.freelist_count);
 ```
 
 #### `readRecord`
@@ -13109,7 +13771,96 @@ Signature:
 export type SQLiteTraceStoreOptions = {
     readonly blobDirectory?: string;
     readonly readOnly?: boolean;
+    readonly secretScanning?: SecretScanningMode;
 };
+```
+
+### `STORAGE_DURABILITIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured storage durabilities a blob-store backend or storage coordinator declares.
+
+Signature:
+
+```ts
+export declare const STORAGE_DURABILITIES: readonly [
+    "durable",
+    "volatile"
+];
+```
+
+### `STORAGE_LEASE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured storage lease result statuses.
+
+Signature:
+
+```ts
+export declare const STORAGE_LEASE_STATUSES: readonly [
+    "acquired",
+    "held",
+    "renewed",
+    "released",
+    "fenced"
+];
+```
+
+### `STORAGE_REF_SWAP_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured storage reference compare-and-swap result statuses.
+
+Signature:
+
+```ts
+export declare const STORAGE_REF_SWAP_STATUSES: readonly [
+    "swapped",
+    "conflict",
+    "fenced"
+];
+```
+
+### `STORE_BACKUP_BLOB_LOCATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured locations of backed-up blob bytes.
+
+Signature:
+
+```ts
+export declare const STORE_BACKUP_BLOB_LOCATIONS: readonly [
+    "directory",
+    "backend"
+];
+```
+
+### `STORE_BACKUP_FAILURE_REASONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured classifications of refused or failed backup, verification, and restore operations.
+
+Signature:
+
+```ts
+export declare const STORE_BACKUP_FAILURE_REASONS: readonly [
+    "backup-unsupported",
+    "destination-exists",
+    "manifest-missing",
+    "manifest-invalid",
+    "manifest-mismatch",
+    "schema-unsupported",
+    "database-mismatch",
+    "blob-mismatch",
+    "integrity-failed",
+    "export-mismatch",
+    "target-exists"
+];
 ```
 
 ### `SUPERVISION_APPROVAL_GATES`
@@ -14925,6 +15676,52 @@ export type ScopeWriterRelease = {
 };
 ```
 
+### `SecretFinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One configured detector match, reported without the matched text.
+
+Signature:
+
+```ts
+export type SecretFinding = {
+    readonly digest: string;
+    readonly location: "key" | "value";
+    readonly path: string;
+    readonly secret_class: string;
+};
+```
+
+### `SecretScanReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of scanning one semantic value with the configured detectors.
+
+Signature:
+
+```ts
+export type SecretScanReport = {
+    readonly findings: readonly SecretFinding[];
+    readonly secret_classes: readonly string[];
+    readonly truncated: boolean;
+};
+```
+
+### `SecretScanningMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Trace-store append scanning mode. `off` (the default) scans nothing; `refuse` rejects an append
+whose record bodies match a configured detector before anything is written.
+
+Signature:
+
+```ts
+export type SecretScanningMode = (typeof SECRET_SCANNING_MODES)[number];
+```
+
 ### `SelectRetainedWorldSettlementOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -15239,6 +16036,292 @@ constructor(position: number);
 Parameter:
 
 - position - Zero-based expected exchange position.
+
+### `StorageAdapterError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a reference storage adapter cannot honor its contract: it is closed, its retained
+state is corrupt, or its schema is newer than this package supports.
+
+Ordinary input validation failures remain `TypeError` values, and compare-and-swap conflicts,
+held leases, and stale fences are result statuses, not errors.
+
+Signature:
+
+```ts
+export declare class StorageAdapterError extends Error {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable storage-adapter code.
+
+```ts
+readonly code: string;
+```
+
+### `StorageBlobContentMismatchError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a blob-store `put` offers bytes whose content-addressed identity differs from the
+requested blob identifier, or when stored bytes for an identifier disagree with it.
+
+The refused write changes nothing: an existing object is never replaced.
+
+Signature:
+
+```ts
+export declare class StorageBlobContentMismatchError extends StorageAdapterError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable blob-content mismatch code.
+
+```ts
+readonly code: string;
+```
+
+### `StorageConformanceLawResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Outcome of one named conformance law.
+
+Signature:
+
+```ts
+export type StorageConformanceLawResult = {
+    readonly law: string;
+    readonly passed: boolean;
+    readonly failure?: string;
+};
+```
+
+### `StorageConformanceReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Report of one conformance-kit run over a storage adapter.
+
+Signature:
+
+```ts
+export type StorageConformanceReport = {
+    readonly passed: boolean;
+    readonly durability?: StorageDurability;
+    readonly laws: readonly StorageConformanceLawResult[];
+};
+```
+
+### `StorageCoordinator`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Reference and lease coordination an adapter implements for local or remote state.
+
+Laws (checked by `checkStorageCoordinatorConformance`): reference generations start at `1`
+and increase by exactly one per successful swap; a swap whose expected generation is not
+current reports a conflict and changes nothing; among concurrent swaps from one generation
+exactly one commits. At most one unexpired lease exists per key; a different grant always
+receives a strictly higher fencing token; renewal and release require the exact current owner
+and token; and a fenced swap, renewal, or release from a superseded or expired grant changes
+nothing. Time is the caller's clock: adapters compare the supplied milliseconds and never read
+their own clock. Every method may return a promise so a network adapter can implement the
+same contract.
+
+Signature:
+
+```ts
+export type StorageCoordinator = {
+    readonly durability: StorageDurability;
+    readRef(name: string): Promise<StorageRef | undefined>;
+    compareAndSwapRef(name: string, expectedGeneration: number, value: string, fence?: StorageFence): Promise<StorageRefSwapResult>;
+    readLease(key: string): Promise<StorageLease | undefined>;
+    acquireLease(key: string, owner: string, ttlMilliseconds: number, nowMilliseconds: number): Promise<StorageLeaseAcquireResult>;
+    renewLease(key: string, owner: string, fencingToken: number, ttlMilliseconds: number, nowMilliseconds: number): Promise<StorageLeaseRenewResult>;
+    releaseLease(key: string, owner: string, fencingToken: number): Promise<StorageLeaseReleaseResult>;
+    close?(): void | Promise<void>;
+};
+```
+
+### `StorageCoordinatorFactory`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Creates one fresh, empty storage coordinator per conformance law.
+
+Signature:
+
+```ts
+export type StorageCoordinatorFactory = () => StorageCoordinator | Promise<StorageCoordinator>;
+```
+
+### `StorageDurability`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured durability a backend or coordinator declares.
+
+`durable` state survives process exit and host crash once an operation resolves; `volatile`
+state lives only as long as the adapter object.
+
+Signature:
+
+```ts
+export type StorageDurability = (typeof STORAGE_DURABILITIES)[number];
+```
+
+### `StorageFence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Lease authority a guarded reference swap requires.
+
+Signature:
+
+```ts
+export type StorageFence = {
+    readonly key: string;
+    readonly owner: string;
+    readonly fencingToken: number;
+    readonly now: number;
+};
+```
+
+### `StorageLease`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One lease record and its monotonic fencing token.
+
+Signature:
+
+```ts
+export type StorageLease = {
+    readonly key: string;
+    readonly owner: string;
+    readonly fencingToken: number;
+    readonly expiresAt: number;
+};
+```
+
+### `StorageLeaseAcquireResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one lease acquisition.
+
+Signature:
+
+```ts
+export type StorageLeaseAcquireResult = {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[0];
+    readonly lease: StorageLease;
+} | {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[1];
+    readonly lease: StorageLease;
+};
+```
+
+### `StorageLeaseReleaseResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one lease release.
+
+Signature:
+
+```ts
+export type StorageLeaseReleaseResult = {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[3];
+} | {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[4];
+};
+```
+
+### `StorageLeaseRenewResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one lease renewal.
+
+Signature:
+
+```ts
+export type StorageLeaseRenewResult = {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[2];
+    readonly lease: StorageLease;
+} | {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[4];
+};
+```
+
+### `StorageLeaseStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured lease result status.
+
+Signature:
+
+```ts
+export type StorageLeaseStatus = (typeof STORAGE_LEASE_STATUSES)[number];
+```
+
+### `StorageRef`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One named compare-and-swap reference.
+
+Signature:
+
+```ts
+export type StorageRef = {
+    readonly name: string;
+    readonly generation: number;
+    readonly value: string;
+};
+```
+
+### `StorageRefSwapResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one reference compare-and-swap.
+
+Signature:
+
+```ts
+export type StorageRefSwapResult = {
+    readonly status: (typeof STORAGE_REF_SWAP_STATUSES)[0];
+    readonly ref: StorageRef;
+} | {
+    readonly status: (typeof STORAGE_REF_SWAP_STATUSES)[1];
+    readonly current: StorageRef | undefined;
+} | {
+    readonly status: (typeof STORAGE_REF_SWAP_STATUSES)[2];
+};
+```
+
+### `StorageRefSwapStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured reference compare-and-swap result status.
+
+Signature:
+
+```ts
+export type StorageRefSwapStatus = (typeof STORAGE_REF_SWAP_STATUSES)[number];
+```
 
 ### `StoreAppendRequest`
 
@@ -15998,6 +17081,39 @@ export declare const TASK_RUN_LEDGER_LIMITS: {
 };
 ```
 
+### `TELEMETRY_BODY_HANDLINGS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured descriptions of how one record body was handled in exported telemetry.
+
+Signature:
+
+```ts
+export declare const TELEMETRY_BODY_HANDLINGS: readonly [
+    "included",
+    "withheld",
+    "redacted",
+    "omitted",
+    "oversized"
+];
+```
+
+### `TELEMETRY_BODY_MODES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured telemetry exporter body modes.
+
+Signature:
+
+```ts
+export declare const TELEMETRY_BODY_MODES: readonly [
+    "omit",
+    "retention-policy"
+];
+```
+
 ### `TaskArtifact`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -16353,6 +17469,162 @@ export type TaskWorldCaptureResult = DurableTaskExecutionResult & {
 };
 ```
 
+### `TelemetryBatch`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One non-canonical telemetry batch handed to a TelemetrySink.
+
+Validates against `spec/schemas/telemetry-batch-v1.schema.json`. It is derived from committed
+records and never read back into a trace.
+
+Signature:
+
+```ts
+export type TelemetryBatch = {
+    readonly format: string;
+    readonly format_version: number;
+    readonly logs: OtlpExportLogsServiceRequest;
+    readonly traces: OtlpExportTraceServiceRequest;
+};
+```
+
+### `TelemetryBodyHandling`
+
+Classification: `type-only`. Kind: `type alias`.
+
+How one record body was handled in exported telemetry.
+
+`included` exported the body; `withheld` did not because the exporter body mode is `omit`;
+`redacted` did not because the data class redacts bodies or a secret detector matched;
+`omitted` did not because the data class omits bodies; `oversized` did not because the
+canonical body exceeds the configured bound.
+
+Signature:
+
+```ts
+export type TelemetryBodyHandling = (typeof TELEMETRY_BODY_HANDLINGS)[number];
+```
+
+### `TelemetryBodyMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exporter body mode. `omit` (the default) never exports a body; `retention-policy` exports a
+body only when its retention data class disposition is `include`, no configured secret
+detector matches it, and its canonical form fits the configured body bound.
+
+Signature:
+
+```ts
+export type TelemetryBodyMode = (typeof TELEMETRY_BODY_MODES)[number];
+```
+
+### `TelemetryClock`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied observation clock.
+
+Returns the current Unix time in nanoseconds. Records carry no timestamps, so every exported
+time is exporter observation time and has no trace semantics.
+
+Signature:
+
+```ts
+export type TelemetryClock = () => bigint;
+```
+
+### `TelemetryExportReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one export step.
+
+Signature:
+
+```ts
+export type TelemetryExportReceipt = {
+    readonly acknowledged_cursor: TraceSubscriptionCursor;
+    readonly log_record_count: number;
+    readonly record_count: number;
+    readonly span_count: number;
+};
+```
+
+### `TelemetrySink`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied destination of telemetry batches.
+
+The exporter acknowledges a subscription cursor only after `write` returns or its promise
+resolves, so a sink must make a batch durable (or hand it to a durable collector) before
+completing. A sink that throws or rejects leaves the cursor where it was; the same records are
+exported again, which makes delivery at-least-once.
+
+Signature:
+
+```ts
+export type TelemetrySink = {
+    readonly write: (batch: TelemetryBatch) => Promise<void> | void;
+};
+```
+
+### `TraceArchiveLimitError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a native or redacted trace archive exceeds a configured interchange limit
+(`kernel.interchange.limits` in `protocol.config.json`).
+
+Byte length and nesting depth are checked before the text is parsed, and collection counts and
+the declared blob byte total before any blob is decoded, so an oversized archive is refused
+without building its object graph or its blob buffers. Nothing is written. The message names
+the limit and the configured bound, never archive content.
+
+Signature:
+
+```ts
+export declare class TraceArchiveLimitError extends TypeError {
+    readonly code: string;
+    readonly limit: string;
+    constructor(limit: string, bound: number);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable archive-limit code.
+
+```ts
+readonly code: string;
+```
+
+#### `limit`
+
+Name of the exceeded `kernel.interchange.limits` member, for example `maxArchiveBytes`.
+
+```ts
+readonly limit: string;
+```
+
+#### `constructor`
+
+Creates a refusal for one exceeded configured limit.
+
+```ts
+constructor(limit: string, bound: number);
+```
+
+Parameter:
+
+- limit - Name of the exceeded `kernel.interchange.limits` member.
+
+Parameter:
+
+- bound - Configured bound that was exceeded.
+
 ### `TraceImportReceipt`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -16431,6 +17703,29 @@ Signature:
 export type TraceOwnerId = string;
 ```
 
+### `TraceRetentionReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only retention inventory of a trace store.
+
+Signature:
+
+```ts
+export type TraceRetentionReport = {
+    readonly data_classes: readonly RetentionDataClassCount[];
+    readonly format: string;
+    readonly format_version: number;
+    readonly record_count: number;
+    readonly retention_compatibility_version: string;
+    readonly secret_classes: readonly RetentionSecretClassCount[];
+    readonly secret_record_count: number;
+    readonly secret_records: readonly RetentionSecretRecord[];
+    readonly secret_records_truncated: boolean;
+    readonly secret_scanning: SecretScanningMode;
+};
+```
+
 ### `TraceRevisionEntry`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -16445,6 +17740,344 @@ export type TraceRevisionEntry = {
     readonly cut: Cut;
     readonly slice: Slice;
     readonly trace_revision_version: number;
+};
+```
+
+### `TraceSchemaClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Data class and export disposition resolved for one schema identifier.
+
+Signature:
+
+```ts
+export type TraceSchemaClassification = {
+    readonly data_class: RetentionDataClass;
+    readonly disposition: RetentionExportDisposition;
+};
+```
+
+### `TraceSecretDetectedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a store opened with `secretScanning: "refuse"` rejects an append or import whose
+record bodies match a configured secret detector.
+
+The refusal happens before any write, so the append intent stays unused and a corrected retry
+with the same intent succeeds. The message and TraceSecretDetectedError.findings name
+secret classes, JSON Pointers, and digests only; matched text is never included.
+
+Signature:
+
+```ts
+export declare class TraceSecretDetectedError extends TraceStoreError {
+    readonly code: string;
+    readonly findings: readonly SecretFinding[];
+    readonly truncated: boolean;
+    constructor(report: SecretScanReport);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable secret-detection code.
+
+```ts
+readonly code: string;
+```
+
+#### `findings`
+
+Frozen findings: class, pointer, location, and digest of each match.
+
+```ts
+readonly findings: readonly SecretFinding[];
+```
+
+#### `truncated`
+
+Whether more findings existed than the configured limit allows.
+
+```ts
+readonly truncated: boolean;
+```
+
+#### `constructor`
+
+Creates a refusal from a completed scan report.
+
+```ts
+constructor(report: SecretScanReport);
+```
+
+Parameter:
+
+- report - Findings produced by the configured detectors.
+
+### `TraceStoreBackupBlobLocation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Where a backup's blob bytes were written: the backup directory's configured blob directory or a
+caller-supplied blob-store backend.
+
+Signature:
+
+```ts
+export type TraceStoreBackupBlobLocation = (typeof STORE_BACKUP_BLOB_LOCATIONS)[number];
+```
+
+### `TraceStoreBackupError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a trace-store backup, backup verification, replication, fetch, or restore is
+refused or fails.
+
+Every failure carries one configured `reason`. An operation that raises this error has not
+produced a verified backup or restored store, and no caller should treat any path it touched
+as one. The message names the failed step, never record bodies.
+
+Signature:
+
+```ts
+export declare class TraceStoreBackupError extends Error {
+    readonly code: string;
+    readonly reason: TraceStoreBackupFailureReason;
+    constructor(reason: TraceStoreBackupFailureReason, message: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable backup code.
+
+```ts
+readonly code: string;
+```
+
+#### `reason`
+
+Configured failure classification.
+
+```ts
+readonly reason: TraceStoreBackupFailureReason;
+```
+
+#### `constructor`
+
+Creates one classified backup failure.
+
+```ts
+constructor(reason: TraceStoreBackupFailureReason, message: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- reason - Configured failure classification.
+
+Parameter:
+
+- message - Step that failed, without record content.
+
+Parameter:
+
+- options - Optional underlying cause.
+
+### `TraceStoreBackupFailureReason`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured classification of a refused or failed backup, verification, or restore.
+
+`backup-unsupported`: the runtime has no `node:sqlite` online backup. `destination-exists` /
+`target-exists`: the operation refused to write over an existing path. `manifest-missing`: no
+complete manifest exists, so the backup is incomplete or interrupted. `manifest-invalid`,
+`manifest-mismatch`: the manifest is malformed or is not the expected identity.
+`schema-unsupported`: the copied store schema is newer than this package supports.
+`database-mismatch`, `blob-mismatch`, `integrity-failed`, `export-mismatch`: copied bytes or the
+reopened store disagree with the manifest.
+
+Signature:
+
+```ts
+export type TraceStoreBackupFailureReason = (typeof STORE_BACKUP_FAILURE_REASONS)[number];
+```
+
+### `TraceStoreBackupFetchOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Where `fetchReplicatedTraceStoreBackup` materializes a replicated backup.
+
+Signature:
+
+```ts
+export type TraceStoreBackupFetchOptions = {
+    readonly backend: BlobStoreBackend;
+    readonly coordinator: StorageCoordinator;
+    readonly destination: string;
+    readonly refName: string;
+};
+```
+
+### `TraceStoreBackupHead`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Latest owner-local occurrence of one owner in the backed-up snapshot.
+
+Signature:
+
+```ts
+export type TraceStoreBackupHead = {
+    readonly owner_id: string;
+    readonly owner_ordinal: number;
+    readonly record_id: string;
+};
+```
+
+### `TraceStoreBackupManifest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Store backup manifest `shepherd.store.backup` v1 (`store-backup-manifest-v1`).
+
+The manifest is written last, owner-only, through a temporary file and an atomic rename, so its
+presence marks a complete backup. `manifest_id` is the configured digest of the canonical JSON
+of every other member and is the identity a restore must name.
+
+Signature:
+
+```ts
+export type TraceStoreBackupManifest = {
+    readonly archive_format: string;
+    readonly archive_format_version: number;
+    readonly backup_compatibility_version: string;
+    readonly blobs: {
+        readonly byte_length: number;
+        readonly count: number;
+        readonly directory: string;
+        readonly list_digest: string;
+        readonly location: TraceStoreBackupBlobLocation;
+    };
+    readonly cut_count: number;
+    readonly cut_heads: readonly TraceStoreBackupHead[];
+    readonly database: {
+        readonly byte_length: number;
+        readonly digest: string;
+        readonly file: string;
+    };
+    readonly export_digest: string;
+    readonly format: string;
+    readonly format_version: number;
+    readonly manifest_id: string;
+    readonly package_version: string;
+    readonly record_count: number;
+    readonly store_schema_version: number;
+};
+```
+
+### `TraceStoreBackupOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Where and how `backupTraceStore` writes one backup.
+
+Signature:
+
+```ts
+export type TraceStoreBackupOptions = {
+    readonly destination: string;
+    readonly blobBackend?: BlobStoreBackend;
+};
+```
+
+### `TraceStoreBackupReplica`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one backup replication.
+
+Signature:
+
+```ts
+export type TraceStoreBackupReplica = {
+    readonly database_blob_id: BlobId;
+    readonly manifest_blob_id: BlobId;
+    readonly manifest_id: string;
+    readonly swap: StorageRefSwapResult;
+};
+```
+
+### `TraceStoreBackupReplicationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Where `replicateTraceStoreBackup` copies a verified backup.
+
+Signature:
+
+```ts
+export type TraceStoreBackupReplicationOptions = {
+    readonly backend: BlobStoreBackend;
+    readonly coordinator: StorageCoordinator;
+    readonly expectedGeneration: number;
+    readonly fence?: StorageFence;
+    readonly refName: string;
+    readonly sourceBlobBackend?: BlobStoreBackend;
+};
+```
+
+### `TraceStoreBackupVerification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of a successful backup verification.
+
+Signature:
+
+```ts
+export type TraceStoreBackupVerification = {
+    readonly manifest: TraceStoreBackupManifest;
+    readonly verified_store_schema_version: number;
+};
+```
+
+### `TraceStoreBackupVerificationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for verifying one backup directory.
+
+Signature:
+
+```ts
+export type TraceStoreBackupVerificationOptions = {
+    readonly blobBackend?: BlobStoreBackend;
+    readonly expectedManifestId?: string;
+    readonly stagingDirectory?: string;
+};
+```
+
+### `TraceStoreCheckpointReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one SQLite WAL checkpoint, as reported by `PRAGMA wal_checkpoint`.
+
+With the configured `TRUNCATE` checkpoint mode a complete checkpoint empties the log, so both
+frame counts are zero; compare `before.wal_bytes` and `after.wal_bytes` for the reclaimed size.
+
+Signature:
+
+```ts
+export type TraceStoreCheckpointReport = {
+    readonly busy: boolean;
+    readonly checkpointed_frames: number;
+    readonly wal_frames: number;
 };
 ```
 
@@ -16468,6 +18101,136 @@ Stable configured machine-readable trace-store error code.
 
 ```ts
 readonly code: string;
+```
+
+### `TraceStoreMaintenanceMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Semantics-preserving store maintenance operation.
+
+`inspect` runs SQLite `quick_check` and reports space; `checkpoint` also truncates the
+write-ahead log; `optimize` also runs `PRAGMA optimize`; `vacuum` also rebuilds the database
+file and then checkpoints. None changes a record, view, cut, intent, or blob.
+
+Signature:
+
+```ts
+export type TraceStoreMaintenanceMode = "checkpoint" | "inspect" | "optimize" | "vacuum";
+```
+
+### `TraceStoreMaintenanceOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for `SQLiteTraceStore.maintain`.
+
+Signature:
+
+```ts
+export type TraceStoreMaintenanceOptions = {
+    readonly mode?: TraceStoreMaintenanceMode;
+};
+```
+
+### `TraceStoreMaintenanceReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Frozen result of one `SQLiteTraceStore.maintain` pass.
+
+Signature:
+
+```ts
+export type TraceStoreMaintenanceReport = {
+    readonly after: TraceStoreSpaceReport;
+    readonly before: TraceStoreSpaceReport;
+    readonly checkpoint: TraceStoreCheckpointReport | null;
+    readonly mode: TraceStoreMaintenanceMode;
+    readonly optimized: boolean;
+    readonly quick_check: {
+        readonly issues: readonly string[];
+        readonly ok: boolean;
+        readonly truncated: boolean;
+    };
+    readonly schema_version: number;
+    readonly vacuumed: boolean;
+};
+```
+
+### `TraceStoreReadOnlyError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an operation that requires a writable handle, such as store maintenance, is
+requested on a store opened with `readOnly: true`. Nothing is read or changed.
+
+Signature:
+
+```ts
+export declare class TraceStoreReadOnlyError extends TraceStoreError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable read-only refusal code.
+
+```ts
+readonly code: string;
+```
+
+### `TraceStoreRestoreOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for restoring one backup into a new store.
+
+Signature:
+
+```ts
+export type TraceStoreRestoreOptions = {
+    readonly blobBackend?: BlobStoreBackend;
+    readonly expectedManifestId: string;
+};
+```
+
+### `TraceStoreRestoreReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of a successful, verified restore.
+
+Signature:
+
+```ts
+export type TraceStoreRestoreReceipt = {
+    readonly blob_count: number;
+    readonly export_digest: string;
+    readonly manifest_id: string;
+    readonly record_count: number;
+    readonly source_store_schema_version: number;
+    readonly store_schema_version: number;
+};
+```
+
+### `TraceStoreSpaceReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Physical space used by the store database and its write-ahead log.
+
+Signature:
+
+```ts
+export type TraceStoreSpaceReport = {
+    readonly database_bytes: number;
+    readonly freelist_count: number;
+    readonly page_count: number;
+    readonly page_size: number;
+    readonly wal_bytes: number;
+};
 ```
 
 ### `TraceSubscription`
@@ -16593,6 +18356,42 @@ Signature:
 
 ```ts
 export type TraceSubscriptionStartPosition = (typeof SUPERVISION_SUBSCRIPTION_START_POSITIONS)[number];
+```
+
+### `TraceTelemetryExporter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Passive exporter from committed trace records to OTLP-shaped telemetry.
+
+Signature:
+
+```ts
+export type TraceTelemetryExporter = {
+    readonly acknowledgedCursor: TraceSubscriptionCursor;
+    readonly close: () => void;
+    readonly exportPending: () => Promise<TelemetryExportReceipt>;
+};
+```
+
+### `TraceTelemetryExporterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options of createTraceTelemetryExporter.
+
+Signature:
+
+```ts
+export type TraceTelemetryExporterOptions = {
+    readonly bodies?: TelemetryBodyMode;
+    readonly clock: TelemetryClock;
+    readonly maxRecordsPerBatch?: number;
+    readonly retention?: RetentionClassificationOptions;
+    readonly sink: TelemetrySink;
+    readonly store: SQLiteTraceStore;
+    readonly subscription: OpenTraceSubscriptionOptions;
+};
 ```
 
 ### `TrajectoryCompressionBaselineKind`
@@ -19070,6 +20869,63 @@ approveChildRunTask(store, {
 });
 ```
 
+### `backupTraceStore`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Writes one verified, self-describing backup of an open trace store.
+
+The database is copied online with `node:sqlite` `backup()` into an owner-only file, so the
+copy is one consistent snapshot even while the store is in use; the copy is converted to a
+self-contained rollback-journal file. Every blob the snapshot registers is then copied into the
+backup's blob directory or `blobBackend`. The backup is proven before it is declared complete:
+the copy is staged, opened as a trace store, and must pass `verifyIntegrity`, `verifyBlobs`, and
+a native export whose digest the manifest records. The `shepherd.store.backup` v1 manifest is
+written last, owner-only, through a temporary name and an atomic rename; a backup directory
+without a manifest is incomplete and every verifier refuses it.
+
+Only this call's staging directory is removed on failure; a partial backup directory is left in
+place for the operator to inspect and delete.
+
+Signature:
+
+```ts
+export declare function backupTraceStore(store: SQLiteTraceStore, options: TraceStoreBackupOptions): Promise<TraceStoreBackupManifest>;
+```
+
+Parameter:
+
+- store - Open trace store to back up; it may be read-only.
+
+Parameter:
+
+- options - New destination directory and optional blob backend.
+
+Returns:
+
+- The frozen sealed manifest; its `manifest_id` is the identity a restore must name.
+
+Throws:
+
+- {TraceStoreBackupError} With `backup-unsupported` when the runtime lacks
+`node:sqlite` `backup()`, `destination-exists` when the destination exists, `blob-mismatch`
+when a registered blob cannot be read, or the reason of the failed verification step.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const manifest = await backupTraceStore(store, { destination: "/backups/2026-09-18" });
+console.log(manifest.manifest_id);
+```
+
 ### `cancelDurableTask`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -19380,6 +21236,63 @@ const result = await captureTaskWorldDurably({
 result.output.head_revision_id;
 ```
 
+### `checkBlobStoreBackendConformance`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the named `BlobStoreBackend` laws against fresh backends from a factory.
+
+Each law receives a new empty backend, which is closed afterwards when it exposes `close`. A
+violated expectation, an unexpected throw, or an expected refusal that does not happen marks
+that law failed; the kit itself never throws for adapter misbehavior. Third-party adapters use
+it as a self-test; the reference memory and filesystem backends pass every law.
+
+Signature:
+
+```ts
+export declare function checkBlobStoreBackendConformance(factory: BlobStoreBackendFactory): Promise<StorageConformanceReport>;
+```
+
+Parameter:
+
+- factory - Creates one fresh, empty backend per law.
+
+Returns:
+
+- A frozen report naming every law and whether it passed.
+
+Example:
+
+- ```ts
+const report = await checkBlobStoreBackendConformance(() => createMyBackend());
+if (!report.passed) console.error(report.laws.filter(({ passed }) => !passed));
+```
+
+### `checkStorageCoordinatorConformance`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the named `StorageCoordinator` laws against fresh coordinators from a factory.
+
+Each law receives a new empty coordinator, which is closed afterwards when it exposes `close`.
+Laws drive lease time with explicit caller-clock values inside the configured lease bounds, and
+concurrency laws issue overlapping calls without awaiting between them. A violated expectation,
+an unexpected throw, or an expected refusal that does not happen marks that law failed.
+
+Signature:
+
+```ts
+export declare function checkStorageCoordinatorConformance(factory: StorageCoordinatorFactory): Promise<StorageConformanceReport>;
+```
+
+Parameter:
+
+- factory - Creates one fresh, empty coordinator per law.
+
+Returns:
+
+- A frozen report naming every law and whether it passed.
+
 ### `claimScopeWriter`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -19599,6 +21512,46 @@ Example:
 - ```ts
 const fork = await forkScope(store, options);
 const { start, restorable } = classifyScopeCheckpoint(fork.world.checkpoint);
+```
+
+### `classifyTraceSchema`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Resolves the data class and export disposition of one record schema identifier.
+
+Configured protocol schema families take precedence; a caller-classified schema is used next;
+every other schema identifier receives the configured default data class.
+
+Signature:
+
+```ts
+export declare function classifyTraceSchema(schemaRef: string, options?: RetentionClassificationOptions): TraceSchemaClassification;
+```
+
+Parameter:
+
+- schemaRef - Exact record `schema_ref`.
+
+Parameter:
+
+- options - Optional caller classification of unconfigured schema identifiers.
+
+Returns:
+
+- The frozen data class and disposition.
+
+Throws:
+
+- {TypeError} If the schema identifier is empty or the options are malformed or try to
+reclassify a configured schema.
+
+Example:
+
+- ```ts
+classifyTraceSchema("example.memory.v1", {
+    schemaDataClasses: { "example.memory.v1": "memory-adapter" },
+});
 ```
 
 ### `compareApplicationBaseline`
@@ -19866,6 +21819,50 @@ const outcome = createEffectOutcome(intent, {
 });
 ```
 
+### `createFilesystemBlobStoreBackend`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a durable content-addressed blob-store backend over the trace store's filesystem blob
+layout.
+
+Writes go through the same `BlobFilesystem` the trace store uses: a private temporary file is
+written and flushed, hard-linked into its fan-out directory without replacing an existing
+object, re-read and verified, and the directory is flushed. Bytes whose digest differs from the
+identifier are refused before anything touches disk. Reads verify size and digest and raise
+`BlobIntegrityError` for a corrupt or non-regular object. `list` walks fan-out directories in
+ascending order and ignores temporary and foreign entries. `delete` unlinks one object and
+flushes its directory.
+
+Root the backend in its own directory. Pointing it at a live trace store's blob directory is
+supported for reads and writes only: deleting a blob a stored receipt still names breaks that
+store's integrity; trace-store blob deletion is owned by `collectBlobOrphans`.
+
+Signature:
+
+```ts
+export declare function createFilesystemBlobStoreBackend(rootPath: string): BlobStoreBackend;
+```
+
+Parameter:
+
+- rootPath - Directory to create or open; symlinked or non-directory ancestors are refused.
+
+Returns:
+
+- A backend declaring `durable` durability.
+
+Throws:
+
+- {TypeError} If `rootPath` has a symlink or non-directory ancestor.
+
+Example:
+
+- ```ts
+const backend = createFilesystemBlobStoreBackend("/var/lib/app/blobs");
+await backend.put(blobId, bytes);
+```
+
 ### `createGitAwareCustody`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -20054,6 +22051,103 @@ const placement = createGrantedPlacementResolution({
     runId: "run:review:1",
     runner,
 });
+```
+
+### `createJsonLinesTelemetrySink`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a sink that appends OTLP/JSON lines ingestible by an OpenTelemetry Collector file
+receiver (`otlpjsonfile`).
+
+Each write appends at most one `\n`-terminated line to each file: the batch's traces request
+when it holds a span, and its logs request when it holds a log record. Files are created with
+the configured owner-only store-file mode, and an existing file with group or other permission
+bits is tightened before anything is appended. Each file is flushed to stable storage before
+the write resolves, so an acknowledged cursor never passes telemetry that was not persisted. A
+batch retried after a failure may repeat lines already written; consumers must tolerate
+at-least-once delivery.
+
+Signature:
+
+```ts
+export declare function createJsonLinesTelemetrySink(options: JsonLinesTelemetrySinkOptions): TelemetrySink;
+```
+
+Parameter:
+
+- options - Distinct traces and logs file paths.
+
+Returns:
+
+- A frozen sink.
+
+Throws:
+
+- {TypeError} If a path is empty or both paths are equal.
+
+Example:
+
+- ```ts
+const sink = createJsonLinesTelemetrySink({
+    logsPath: "telemetry/logs.jsonl",
+    tracesPath: "telemetry/traces.jsonl",
+});
+```
+
+### `createMemoryBlobStoreBackend`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a volatile in-process content-addressed blob-store backend.
+
+It implements every `BlobStoreBackend` law: bytes are verified against their identifier,
+copied on write and read, never replaced, listed in ascending identifier order, and deleted
+idempotently. It is a reference and test double; objects are lost with the backend object.
+
+Signature:
+
+```ts
+export declare function createMemoryBlobStoreBackend(): BlobStoreBackend;
+```
+
+Returns:
+
+- A backend declaring `volatile` durability.
+
+Example:
+
+- ```ts
+const backend = createMemoryBlobStoreBackend();
+const { created } = await backend.put(blobId, bytes);
+```
+
+### `createMemoryStorageCoordinator`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a volatile in-process storage coordinator.
+
+It implements every `StorageCoordinator` law for callers sharing one JavaScript realm: each
+operation is decided and applied synchronously before its promise settles, so concurrent calls
+are serialized by the event loop. It is a reference and test double; state is lost with the
+object and is not shared across processes.
+
+Signature:
+
+```ts
+export declare function createMemoryStorageCoordinator(): StorageCoordinator;
+```
+
+Returns:
+
+- A coordinator declaring `volatile` durability.
+
+Example:
+
+- ```ts
+const coordinator = createMemoryStorageCoordinator();
+const { status } = await coordinator.compareAndSwapRef("heads/main", 0, "sha256:...");
 ```
 
 ### `createNativeJailCommand`
@@ -20511,6 +22605,52 @@ const usage = createRunUsage({
 });
 ```
 
+### `createSQLiteStorageCoordinator`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Opens or creates a durable storage coordinator in one SQLite file.
+
+Every swap and lease change runs in its own configured `IMMEDIATE` transaction over a WAL
+database with the configured busy timeout and full synchronization, so any number of handles
+in any number of processes on one host observe one serial order. A new database file is created
+with the configured owner-only mode and an existing one owned by the current user is tightened.
+Concurrent first opens of one new database from several processes succeed: the switch to
+write-ahead logging retries SQLite's deadlock-avoidance `SQLITE_BUSY` within the configured
+busy timeout, and schema migrations read the applied version and apply inside one configured
+`IMMEDIATE` transaction, so a later opener finds the schema current. An open that cannot get
+the lock within the busy timeout throws before returning a handle and changes nothing. Network
+filesystems that do not honor SQLite locking are unsupported.
+
+Signature:
+
+```ts
+export declare function createSQLiteStorageCoordinator(databasePath: string): SQLiteStorageCoordinator;
+```
+
+Parameter:
+
+- databasePath - SQLite file path, or `:memory:` for a private volatile database.
+
+Returns:
+
+- A coordinator declaring `durable` durability, or `volatile` for `:memory:`.
+
+Throws:
+
+- {StorageAdapterError} If the database schema is newer than this package supports.
+
+Throws:
+
+- {Error} If SQLite defensive support is unavailable or the database cannot be opened.
+
+Example:
+
+- ```ts
+using coordinator = createSQLiteStorageCoordinator("coordination.sqlite");
+const lease = await coordinator.acquireLease("jobs/nightly", "worker-a", 30_000, Date.now());
+```
+
 ### `createScopeWorldAdapter`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -20596,6 +22736,64 @@ const provider = createStaticProvider({
     exchanges: [{ request, response }],
 });
 await provider.invoke(request, new AbortController().signal);
+```
+
+### `createTraceTelemetryExporter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a passive, at-least-once telemetry exporter over one trace subscription.
+
+The exporter opens `subscription` with openTraceSubscription, maps each committed
+owner occurrence to one OTLP log record, and closes one run span when a configured terminal
+record follows a configured start record on the same owner. Trace identifiers derive from the
+owner path and span identifiers from the start record identity, so they are deterministic.
+Every attribute lives under the configured namespace. A body is exported only in the
+`retention-policy` body mode, only when its retention disposition is `include`, no configured
+secret detector matches, and it fits the configured bound.
+
+Telemetry is never canonical: the exporter appends nothing, and the trace, its export, and
+every run are unaffected by the exporter or its sink. Only durable subscription cursor
+bookkeeping, which lies outside the record graph, is written.
+
+Signature:
+
+```ts
+export declare function createTraceTelemetryExporter(options: TraceTelemetryExporterOptions): TraceTelemetryExporter;
+```
+
+Parameter:
+
+- options - Store, subscription, sink, clock, and optional body mode, bound, and retention
+classification.
+
+Returns:
+
+- A frozen exporter.
+
+Throws:
+
+- {TypeError} If an option is malformed.
+
+Throws:
+
+- {SupervisionCursorConflictError} If the subscription start conflicts with its cursor.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Example:
+
+- ```ts
+const exporter = createTraceTelemetryExporter({
+    clock: () => BigInt(Date.now()) * 1_000_000n,
+    sink: createJsonLinesTelemetrySink({ logsPath, tracesPath }),
+    store,
+    subscription: { owners: [runId], subscriptionId: "telemetry:runs" },
+});
+await exporter.exportPending();
+exporter.close();
 ```
 
 ### `createTransparentProcessAdapter`
@@ -20888,6 +23086,67 @@ Returns:
 Throws:
 
 - {TypeError} If the channel name is empty or malformed.
+
+### `deriveTelemetrySpanId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the deterministic OTLP span identifier of one record.
+
+A run span uses the identifier of its start record. The identifier is the first 8 bytes of the
+configured digest over the configured span domain and the record identity.
+
+Signature:
+
+```ts
+export declare function deriveTelemetrySpanId(recordId: string): string;
+```
+
+Parameter:
+
+- recordId - Record identity.
+
+Returns:
+
+- 16 lowercase hex characters.
+
+Throws:
+
+- {TypeError} If the record identity is empty.
+
+### `deriveTelemetryTraceId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the deterministic OTLP trace identifier of one owner path.
+
+The identifier is the first 16 bytes of the configured digest over the configured trace domain
+and the owner path, so every exporter maps the same owner (for a run, its run identifier) to
+the same trace.
+
+Signature:
+
+```ts
+export declare function deriveTelemetryTraceId(ownerId: string): string;
+```
+
+Parameter:
+
+- ownerId - Exact owner path.
+
+Returns:
+
+- 32 lowercase hex characters.
+
+Throws:
+
+- {TypeError} If the owner path is empty.
+
+Example:
+
+- ```ts
+const traceId = deriveTelemetryTraceId(runId);
+```
 
 ### `discardChildRun`
 
@@ -21332,6 +23591,54 @@ const durable = await executeTaskDurably(store, {
 const projected = store.projectExecution(durable.ledger.cut.cut_id);
 ```
 
+### `exportRedactedTraceArchive`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Exports a store as a one-way redacted archive under the configured retention policy.
+
+The export is built on `store.exportTrace()`, so it covers exactly one integrity-verified
+snapshot. Every record keeps its envelope and `record_id`; its body is exported verbatim only
+when its data class disposition is `include` and no configured detector matches it. Otherwise
+the body is replaced by a RedactedRecordBody marker. Views, intents, and cuts are kept;
+blobs are listed by identity and length without content. Envelopes, owner identifiers, intent
+identifiers, and blob bytes are not scanned. The result can be checked with
+verifyRedactedTraceArchive and is refused by every import.
+
+Signature:
+
+```ts
+export declare function exportRedactedTraceArchive(store: SQLiteTraceStore, options?: RetentionClassificationOptions): string;
+```
+
+Parameter:
+
+- store - Open trace store; it is only read.
+
+Parameter:
+
+- options - Optional caller classification of unconfigured schema identifiers.
+
+Returns:
+
+- Deterministic canonical JSON in the configured redacted-archive format.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or fails integrity verification.
+
+Throws:
+
+- {TypeError} If the options are malformed.
+
+Example:
+
+- ```ts
+const redacted = exportRedactedTraceArchive(store);
+const summary = verifyRedactedTraceArchive(redacted);
+console.log(summary.redacted_record_count);
+```
+
 ### `exportTreeRlTrainingBatch`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -21381,6 +23688,41 @@ Example:
 const batch = exportTreeRlTrainingBatch(store, deriveApplicationOwnerId(commandId));
 await writeFile("batch.jsonl", batch.text);
 ```
+
+### `fetchReplicatedTraceStoreBackup`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Materializes the backup a coordinator reference names into a new local backup directory and
+verifies it.
+
+The manifest object must hash to the reference value and parse; the database object is found
+by the manifest's database digest; blobs are copied into the backup's blob directory; the
+manifest is written last. The result is then verified exactly as by `verifyTraceStoreBackup`.
+
+Signature:
+
+```ts
+export declare function fetchReplicatedTraceStoreBackup(options: TraceStoreBackupFetchOptions): Promise<TraceStoreBackupVerification>;
+```
+
+Parameter:
+
+- options - Replica backend, coordinator reference, and new destination.
+
+Returns:
+
+- The verification of the materialized backup.
+
+Throws:
+
+- {TraceStoreBackupError} With `manifest-missing` when the reference or manifest object
+is absent, `manifest-invalid` when the manifest object does not match the reference,
+`destination-exists`, `database-mismatch`, or the reason of the failed verification step.
+
+Throws:
+
+- {TypeError} If options are malformed.
 
 ### `forkScope`
 
@@ -22381,6 +24723,51 @@ Example:
 - ```ts
 const journal = inspectTaskWorldCaptureJournal(store, "run:review:1");
 journal.transitions.map((transition) => transition.phase);
+```
+
+### `inspectTraceRetention`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Inventories a trace store by data class, export disposition, and detected secret class.
+
+The inspection only reads: it classifies every retained record by schema, scans every body with
+the configured detectors, and returns counts and record identities without any body content or
+matched text. It works on writable and read-only handles.
+
+Signature:
+
+```ts
+export declare function inspectTraceRetention(store: SQLiteTraceStore, options?: RetentionClassificationOptions): TraceRetentionReport;
+```
+
+Parameter:
+
+- store - Open trace store.
+
+Parameter:
+
+- options - Optional caller classification of unconfigured schema identifiers.
+
+Returns:
+
+- A frozen report matching the configured retention-report schema.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the options are malformed or a stored record fails validation.
+
+Example:
+
+- ```ts
+const report = inspectTraceRetention(store);
+if (report.secret_record_count > 0) {
+    console.log(report.secret_records.map(({ record_id }) => record_id));
+}
 ```
 
 ### `inspectTrajectoryCompression`
@@ -23609,6 +25996,30 @@ Throws:
 
 - {TraceStoreError} If retained execution evidence is malformed or inconsistent.
 
+### `readRetentionPolicy`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads the configured retention policy.
+
+Signature:
+
+```ts
+export declare function readRetentionPolicy(): RetentionPolicy;
+```
+
+Returns:
+
+- Frozen data classes with dispositions, default class, secret-class names, and scanning
+modes.
+
+Example:
+
+- ```ts
+const policy = readRetentionPolicy();
+console.log(policy.data_classes.map(({ data_class, disposition }) => `${data_class}:${disposition}`));
+```
+
 ### `readScopeCommandReceipt`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -24237,6 +26648,51 @@ const { inspection } = await replayReplaySession(store, {
 });
 ```
 
+### `replicateTraceStoreBackup`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Copies one verified backup into a content-addressed backend and publishes it by reference
+compare-and-swap.
+
+The backup is verified first. The database bytes, the exact manifest bytes, and every blob are
+stored as content-addressed objects (existing equal objects are kept), and only then is
+`refName` swapped from `expectedGeneration` to the manifest object's identifier. A conflict or
+fence refusal is returned, not thrown; objects already stored stay and are content-addressed,
+so a retry is safe.
+
+Signature:
+
+```ts
+export declare function replicateTraceStoreBackup(backupDirectory: string, options: TraceStoreBackupReplicationOptions): Promise<TraceStoreBackupReplica>;
+```
+
+Parameter:
+
+- backupDirectory - Directory written by `backupTraceStore`.
+
+Parameter:
+
+- options - Target backend, coordinator reference, expected generation, and source blobs.
+
+Returns:
+
+- The replica object identities and the swap result.
+
+Throws:
+
+- {TraceStoreBackupError} With the reason of the failed verification step, or with
+`database-mismatch` or `manifest-mismatch` when the database or manifest file read for
+replication is not the one that was verified.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Throws:
+
+- {StorageAdapterError} If an adapter cannot honor its contract.
+
 ### `requestDurableTaskCancellation`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -24630,6 +27086,63 @@ Example:
 
 - ```ts
 const revision = resolveTraceRevisionSelector(store, "cut:run:1");
+```
+
+### `restoreTraceStoreBackup`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Restores one verified backup into a new trace store and verifies the result before reporting
+success.
+
+Restore is non-destructive: it refuses when `targetPath`, its blob directory, or a SQLite
+sidecar exists, and it requires the operator to name the exact manifest identity. The backup
+is first staged in an owner-only directory beside the target and fully verified as by
+`verifyTraceStoreBackup` (older store schemas are migrated forward there). The blob directory
+is then moved into place and the database is hard-linked to `targetPath`, which fails rather
+than replace a concurrently created file. Finally the target is reopened read-only and must
+pass `verifyIntegrity`, `verifyBlobs`, and export the manifest's digest; only then does the
+call resolve. A failure after publication leaves the target in place and rejects: such a
+target must be discarded, never used.
+
+Signature:
+
+```ts
+export declare function restoreTraceStoreBackup(backupDirectory: string, targetPath: string, options: TraceStoreRestoreOptions): Promise<TraceStoreRestoreReceipt>;
+```
+
+Parameter:
+
+- backupDirectory - Directory written by `backupTraceStore`.
+
+Parameter:
+
+- targetPath - New trace-store database path; its parent must exist.
+
+Parameter:
+
+- options - Exact expected manifest identity and optional blob backend.
+
+Returns:
+
+- A frozen receipt of the verified restore.
+
+Throws:
+
+- {TraceStoreBackupError} With `target-exists` when any target path exists,
+`manifest-mismatch` when the identity differs, `integrity-failed` or `export-mismatch` when
+the published target fails its final verification, or the reason of a failed staging check.
+
+Throws:
+
+- {TypeError} If arguments are malformed.
+
+Example:
+
+- ```ts
+await restoreTraceStoreBackup("/backups/2026-09-18", "/var/lib/app/trace.sqlite", {
+    expectedManifestId: manifest.manifest_id,
+});
 ```
 
 ### `resumeDurableTask`
@@ -25626,6 +28139,45 @@ const { batch } = await runTreeRlRollouts(store, {
 console.log(batch.batch_digest, batch.line_count);
 ```
 
+### `scanSemanticValueForSecrets`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Scans a semantic value for configured secret classes without retaining matched text.
+
+The value is canonicalized first, so object keys are visited in canonical order. Every string
+value and object key is matched against every configured detector. Findings carry the class, a
+JSON Pointer, and a per-process keyed digest of the matched text; the matched text itself is
+never returned, logged, or included in an error, and the digest cannot be used outside this
+process to confirm a guessed secret. Detection is pattern-based and incomplete by design.
+
+Signature:
+
+```ts
+export declare function scanSemanticValueForSecrets(value: SemanticValue): SecretScanReport;
+```
+
+Parameter:
+
+- value - Plain semantic value, such as a record body.
+
+Returns:
+
+- A frozen report with unique findings, their sorted classes, and a truncation flag.
+
+Throws:
+
+- {TypeError} If the value is not a canonicalizable semantic value.
+
+Example:
+
+- ```ts
+const report = scanSemanticValueForSecrets({ headers: { authorization: token } });
+for (const finding of report.findings) {
+    console.log(finding.secret_class, finding.path);
+}
+```
+
 ### `schema`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -26019,6 +28571,94 @@ const result = validateTypedEffectTrace({
     trace: declarationPrefix,
 });
 result.open_path_count;
+```
+
+### `verifyRedactedTraceArchive`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Verifies the structure and policy conformance of a redacted trace archive.
+
+Verbatim records have their identity re-derived from envelope and body and are re-scanned;
+redacted records must carry a well-formed marker whose data class and disposition match the
+configured policy for their schema. Views and cuts must cite archived records. Verification
+does not recover redacted content and does not make the archive importable.
+
+Signature:
+
+```ts
+export declare function verifyRedactedTraceArchive(archiveJson: string, options?: RetentionClassificationOptions): RedactedTraceArchiveSummary;
+```
+
+Parameter:
+
+- archiveJson - Text produced by {@link exportRedactedTraceArchive}.
+
+Parameter:
+
+- options - The caller classification used at export time, if any.
+
+Returns:
+
+- Frozen counts of the verified archive.
+
+Throws:
+
+- {RedactedTraceArchiveError} If the archive is malformed, uses unsupported versions, or
+disagrees with the retention policy.
+
+Throws:
+
+- {TraceArchiveLimitError} If the text exceeds the configured interchange byte or nesting
+limit before parsing, or a collection exceeds its configured count.
+
+Throws:
+
+- {TypeError} If the options are malformed.
+
+### `verifyTraceStoreBackup`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Verifies a backup directory without modifying it.
+
+The manifest must exist, parse, and re-derive its identity (and equal `expectedManifestId` when
+given). A private copy of the database must match the manifest digest, schema, counts, heads,
+and blob set; every blob must be present and hash to its identifier; and the copy, opened as a
+trace store with forward migrations, must pass `verifyIntegrity` and `verifyBlobs` and export
+the digest the manifest records. The copy is removed afterwards.
+
+Signature:
+
+```ts
+export declare function verifyTraceStoreBackup(backupDirectory: string, options?: TraceStoreBackupVerificationOptions): Promise<TraceStoreBackupVerification>;
+```
+
+Parameter:
+
+- backupDirectory - Directory written by `backupTraceStore`.
+
+Parameter:
+
+- options - Optional blob backend, expected identity, and staging parent.
+
+Returns:
+
+- The verified manifest and the schema version the copy migrated to.
+
+Throws:
+
+- {TraceStoreBackupError} With `manifest-missing` for an incomplete or interrupted backup
+and the configured reason of any other failed check.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const { manifest } = await verifyTraceStoreBackup("/backups/2026-09-18");
 ```
 
 ## Applications
@@ -33210,6 +35850,2612 @@ Returns:
 Throws:
 
 - {TypeError} If either record is malformed or correlation does not match exactly.
+
+## Operations
+
+Package entry: `./operations`
+
+Configured secret scanning, retention data classes and export dispositions, one-way redacted trace archives and their verifier, read-only retention inspection, storage adapter interfaces with local reference adapters and conformance kits, verified trace-store backup, restore, and replication, and non-canonical OpenTelemetry-compatible telemetry export.
+
+Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+
+Authority and mutation: Pure secret scanning and schema classification. Redacted export and retention inspection only read an explicit caller-supplied trace-store handle and return text or a report; verification parses caller-supplied text. Nothing in the retention surface writes, deletes, or rewrites a record, blob, or file, and a redacted archive can never be imported. Storage reference adapters touch only the caller-named blob directory or SQLite coordinator file (or process memory); conformance kits use only caller-supplied adapter factories. Backup reads an explicit caller-supplied trace-store handle and writes only into a new caller-named directory or caller-supplied blob backend; verification only reads a backup; restore creates only a new caller-named store and its blob directory and never opens, overwrites, or appends to an existing store; replication writes only to caller-supplied backend and coordinator adapters. The telemetry exporter reads an explicit caller-supplied trace-store handle through a subscription, writes only that subscription's cursor bookkeeping outside the record graph, and hands batches to a caller-supplied sink; the JSON-lines sink appends only to the two caller-named files. No record is appended to any store, no remote or network storage or network exporter is created, and no provider, workspace, or execution authority is created.
+
+Import example:
+
+```ts
+import * as api from "@avnionur/shepherd-typescript/operations";
+void api;
+```
+
+Exported symbols: 114.
+
+### `BlobId`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Content-addressed identity of one retained binary value.
+
+Signature:
+
+```ts
+export type BlobId = string;
+```
+
+### `BlobStoreBackend`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Content-addressed object storage an adapter implements for local or remote bytes.
+
+Laws (checked by `checkBlobStoreBackendConformance`): `put` verifies that the bytes hash to the
+identifier, is idempotent for equal bytes, and never replaces an existing object; `get` returns
+an independent copy of exactly the stored bytes or `undefined`; `has` agrees with `get`; `list`
+is ordered, stable, exclusive after its cursor, and bounded; `delete` is idempotent. Every
+method may return a promise so a network adapter can implement the same contract.
+
+Signature:
+
+```ts
+export type BlobStoreBackend = {
+    readonly durability: StorageDurability;
+    put(blobId: BlobId, content: Uint8Array): Promise<BlobStorePutResult>;
+    get(blobId: BlobId): Promise<Uint8Array | undefined>;
+    has(blobId: BlobId): Promise<boolean>;
+    list(options?: BlobStoreListOptions): Promise<BlobStoreListPage>;
+    delete(blobId: BlobId): Promise<boolean>;
+    close?(): void | Promise<void>;
+};
+```
+
+### `BlobStoreBackendFactory`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Creates one fresh, empty blob-store backend per conformance law.
+
+Signature:
+
+```ts
+export type BlobStoreBackendFactory = () => BlobStoreBackend | Promise<BlobStoreBackend>;
+```
+
+### `BlobStoreListOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Bounded page request over stored blob identifiers.
+
+Signature:
+
+```ts
+export type BlobStoreListOptions = {
+    readonly after?: BlobId;
+    readonly limit?: number;
+};
+```
+
+### `BlobStoreListPage`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One page of stored blob identifiers in ascending code-unit order.
+
+Signature:
+
+```ts
+export type BlobStoreListPage = {
+    readonly blobIds: readonly BlobId[];
+    readonly next?: BlobId;
+};
+```
+
+### `BlobStorePutResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one content-addressed blob write.
+
+Signature:
+
+```ts
+export type BlobStorePutResult = {
+    readonly blobId: BlobId;
+    readonly byteLength: number;
+    readonly created: boolean;
+};
+```
+
+### `JsonLinesTelemetrySinkOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Destination files of createJsonLinesTelemetrySink. The OTLP file format holds exactly
+one signal type per file, so traces and logs are written to separate files.
+
+Signature:
+
+```ts
+export type JsonLinesTelemetrySinkOptions = {
+    readonly logsPath: string;
+    readonly tracesPath: string;
+};
+```
+
+### `OtlpAnyValue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `AnyValue`: exactly one variant, or an empty object for an absent (null) value.
+
+Signature:
+
+```ts
+export type OtlpAnyValue = {
+    readonly stringValue: string;
+} | {
+    readonly boolValue: boolean;
+} | {
+    readonly intValue: string;
+} | {
+    readonly doubleValue: number;
+} | {
+    readonly arrayValue: {
+        readonly values: readonly OtlpAnyValue[];
+    };
+} | {
+    readonly kvlistValue: {
+        readonly values: readonly OtlpKeyValue[];
+    };
+} | {
+    readonly [key: string]: never;
+};
+```
+
+### `OtlpExportLogsServiceRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ExportLogsServiceRequest` subset; one JSON line of an OTLP logs file.
+
+Signature:
+
+```ts
+export type OtlpExportLogsServiceRequest = {
+    readonly resourceLogs: readonly OtlpResourceLogs[];
+};
+```
+
+### `OtlpExportTraceServiceRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ExportTraceServiceRequest` subset; one JSON line of an OTLP traces file.
+
+Signature:
+
+```ts
+export type OtlpExportTraceServiceRequest = {
+    readonly resourceSpans: readonly OtlpResourceSpans[];
+};
+```
+
+### `OtlpInstrumentationScope`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `InstrumentationScope` subset.
+
+Signature:
+
+```ts
+export type OtlpInstrumentationScope = {
+    readonly name: string;
+    readonly version: string;
+};
+```
+
+### `OtlpKeyValue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `KeyValue` attribute.
+
+Signature:
+
+```ts
+export type OtlpKeyValue = {
+    readonly key: string;
+    readonly value: OtlpAnyValue;
+};
+```
+
+### `OtlpLogRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `LogRecord` subset. `timeUnixNano` is never set because records carry no event time.
+
+Signature:
+
+```ts
+export type OtlpLogRecord = {
+    readonly attributes: readonly OtlpKeyValue[];
+    readonly body?: OtlpAnyValue;
+    readonly eventName: string;
+    readonly observedTimeUnixNano: string;
+    readonly severityNumber: number;
+    readonly severityText: string;
+    readonly traceId: string;
+};
+```
+
+### `OtlpResource`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `Resource` subset.
+
+Signature:
+
+```ts
+export type OtlpResource = {
+    readonly attributes: readonly OtlpKeyValue[];
+};
+```
+
+### `OtlpResourceLogs`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ResourceLogs` subset.
+
+Signature:
+
+```ts
+export type OtlpResourceLogs = {
+    readonly resource: OtlpResource;
+    readonly schemaUrl: string;
+    readonly scopeLogs: readonly OtlpScopeLogs[];
+};
+```
+
+### `OtlpResourceSpans`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ResourceSpans` subset.
+
+Signature:
+
+```ts
+export type OtlpResourceSpans = {
+    readonly resource: OtlpResource;
+    readonly schemaUrl: string;
+    readonly scopeSpans: readonly OtlpScopeSpans[];
+};
+```
+
+### `OtlpScopeLogs`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ScopeLogs` subset.
+
+Signature:
+
+```ts
+export type OtlpScopeLogs = {
+    readonly logRecords: readonly OtlpLogRecord[];
+    readonly schemaUrl: string;
+    readonly scope: OtlpInstrumentationScope;
+};
+```
+
+### `OtlpScopeSpans`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `ScopeSpans` subset.
+
+Signature:
+
+```ts
+export type OtlpScopeSpans = {
+    readonly schemaUrl: string;
+    readonly scope: OtlpInstrumentationScope;
+    readonly spans: readonly OtlpSpan[];
+};
+```
+
+### `OtlpSpan`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `Span` subset.
+
+Signature:
+
+```ts
+export type OtlpSpan = {
+    readonly attributes: readonly OtlpKeyValue[];
+    readonly endTimeUnixNano: string;
+    readonly events: readonly OtlpSpanEvent[];
+    readonly kind: number;
+    readonly name: string;
+    readonly spanId: string;
+    readonly startTimeUnixNano: string;
+    readonly status: OtlpStatus;
+    readonly traceId: string;
+};
+```
+
+### `OtlpSpanEvent`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `Span.Event` subset.
+
+Signature:
+
+```ts
+export type OtlpSpanEvent = {
+    readonly attributes: readonly OtlpKeyValue[];
+    readonly name: string;
+    readonly timeUnixNano: string;
+};
+```
+
+### `OtlpStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+OTLP `Status` subset.
+
+Signature:
+
+```ts
+export type OtlpStatus = {
+    readonly code: number;
+};
+```
+
+### `RETENTION_DATA_CLASSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured retention data classes.
+
+Signature:
+
+```ts
+export declare const RETENTION_DATA_CLASSES: readonly [
+    "checkpoint",
+    "context",
+    "general",
+    "memory-adapter",
+    "provider-citation"
+];
+```
+
+### `RETENTION_EXPORT_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured redacted-export dispositions.
+
+Signature:
+
+```ts
+export declare const RETENTION_EXPORT_DISPOSITIONS: readonly [
+    "include",
+    "omit-body",
+    "redact"
+];
+```
+
+### `RedactedRecordBody`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Marker that replaces a record body in a redacted archive.
+
+Signature:
+
+```ts
+export type RedactedRecordBody = {
+    readonly body_digest: string | null;
+    readonly data_class: RetentionDataClass;
+    readonly redacted: true;
+    readonly secret_classes: readonly string[];
+};
+```
+
+### `RedactedTraceArchiveError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a redacted trace archive is malformed, inconsistent with the retention policy, or
+offered to a native archive import.
+
+Redacted archives are one-way exports: they never re-enter a trace store. The message names
+the failed structure or record index and never contains a record body or matched secret.
+
+Signature:
+
+```ts
+export declare class RedactedTraceArchiveError extends TypeError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable redacted-archive code.
+
+```ts
+readonly code: string;
+```
+
+### `RedactedTraceArchiveSummary`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Counts verified from one redacted trace archive.
+
+Signature:
+
+```ts
+export type RedactedTraceArchiveSummary = {
+    readonly blob_count: number;
+    readonly cut_count: number;
+    readonly included_record_count: number;
+    readonly omitted_body_count: number;
+    readonly record_count: number;
+    readonly record_view_count: number;
+    readonly redacted_record_count: number;
+    readonly secret_record_count: number;
+};
+```
+
+### `RetentionClassificationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller classification of schema identifiers the protocol configuration does not name.
+
+Signature:
+
+```ts
+export type RetentionClassificationOptions = {
+    readonly schemaDataClasses?: Readonly<Record<string, RetentionDataClass>>;
+};
+```
+
+### `RetentionDataClass`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured retention class of a record, derived from its schema identifier.
+
+Signature:
+
+```ts
+export type RetentionDataClass = (typeof RETENTION_DATA_CLASSES)[number];
+```
+
+### `RetentionDataClassCount`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record counts of one data class.
+
+Signature:
+
+```ts
+export type RetentionDataClassCount = {
+    readonly data_class: RetentionDataClass;
+    readonly disposition: RetentionExportDisposition;
+    readonly record_count: number;
+    readonly secret_record_count: number;
+};
+```
+
+### `RetentionExportDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+How a redacted export treats the body of a record in one data class.
+
+`include` exports the body verbatim unless a configured detector matches it; `redact` replaces
+the body with a marker carrying the detected secret classes and a body digest; `omit-body`
+replaces the body with a marker that discloses neither.
+
+Signature:
+
+```ts
+export type RetentionExportDisposition = (typeof RETENTION_EXPORT_DISPOSITIONS)[number];
+```
+
+### `RetentionPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Frozen summary of the configured retention policy.
+
+Signature:
+
+```ts
+export type RetentionPolicy = {
+    readonly data_classes: readonly TraceSchemaClassification[];
+    readonly default_data_class: RetentionDataClass;
+    readonly default_scanning_mode: SecretScanningMode;
+    readonly secret_classes: readonly string[];
+    readonly scanning_modes: readonly SecretScanningMode[];
+};
+```
+
+### `RetentionSecretClassCount`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Finding counts of one configured secret class.
+
+Signature:
+
+```ts
+export type RetentionSecretClassCount = {
+    readonly finding_count: number;
+    readonly record_count: number;
+    readonly secret_class: string;
+};
+```
+
+### `RetentionSecretRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One record whose body matches a configured detector, identified without its content.
+
+Signature:
+
+```ts
+export type RetentionSecretRecord = {
+    readonly data_class: RetentionDataClass;
+    readonly finding_count: number;
+    readonly record_id: RecordId;
+    readonly secret_classes: readonly string[];
+    readonly truncated: boolean;
+};
+```
+
+### `SECRET_SCANNING_MODES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trace-store secret-scanning modes.
+
+Signature:
+
+```ts
+export declare const SECRET_SCANNING_MODES: readonly [
+    "off",
+    "refuse"
+];
+```
+
+### `SQLiteStorageCoordinator`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable SQLite storage coordinator that can be closed explicitly or with `using`.
+
+Signature:
+
+```ts
+export type SQLiteStorageCoordinator = StorageCoordinator & Disposable & {
+    close(): void;
+};
+```
+
+### `STORAGE_DURABILITIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured storage durabilities a blob-store backend or storage coordinator declares.
+
+Signature:
+
+```ts
+export declare const STORAGE_DURABILITIES: readonly [
+    "durable",
+    "volatile"
+];
+```
+
+### `STORAGE_LEASE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured storage lease result statuses.
+
+Signature:
+
+```ts
+export declare const STORAGE_LEASE_STATUSES: readonly [
+    "acquired",
+    "held",
+    "renewed",
+    "released",
+    "fenced"
+];
+```
+
+### `STORAGE_REF_SWAP_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured storage reference compare-and-swap result statuses.
+
+Signature:
+
+```ts
+export declare const STORAGE_REF_SWAP_STATUSES: readonly [
+    "swapped",
+    "conflict",
+    "fenced"
+];
+```
+
+### `STORE_BACKUP_BLOB_LOCATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured locations of backed-up blob bytes.
+
+Signature:
+
+```ts
+export declare const STORE_BACKUP_BLOB_LOCATIONS: readonly [
+    "directory",
+    "backend"
+];
+```
+
+### `STORE_BACKUP_FAILURE_REASONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured classifications of refused or failed backup, verification, and restore operations.
+
+Signature:
+
+```ts
+export declare const STORE_BACKUP_FAILURE_REASONS: readonly [
+    "backup-unsupported",
+    "destination-exists",
+    "manifest-missing",
+    "manifest-invalid",
+    "manifest-mismatch",
+    "schema-unsupported",
+    "database-mismatch",
+    "blob-mismatch",
+    "integrity-failed",
+    "export-mismatch",
+    "target-exists"
+];
+```
+
+### `SecretFinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One configured detector match, reported without the matched text.
+
+Signature:
+
+```ts
+export type SecretFinding = {
+    readonly digest: string;
+    readonly location: "key" | "value";
+    readonly path: string;
+    readonly secret_class: string;
+};
+```
+
+### `SecretScanReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of scanning one semantic value with the configured detectors.
+
+Signature:
+
+```ts
+export type SecretScanReport = {
+    readonly findings: readonly SecretFinding[];
+    readonly secret_classes: readonly string[];
+    readonly truncated: boolean;
+};
+```
+
+### `SecretScanningMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Trace-store append scanning mode. `off` (the default) scans nothing; `refuse` rejects an append
+whose record bodies match a configured detector before anything is written.
+
+Signature:
+
+```ts
+export type SecretScanningMode = (typeof SECRET_SCANNING_MODES)[number];
+```
+
+### `StorageAdapterError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a reference storage adapter cannot honor its contract: it is closed, its retained
+state is corrupt, or its schema is newer than this package supports.
+
+Ordinary input validation failures remain `TypeError` values, and compare-and-swap conflicts,
+held leases, and stale fences are result statuses, not errors.
+
+Signature:
+
+```ts
+export declare class StorageAdapterError extends Error {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable storage-adapter code.
+
+```ts
+readonly code: string;
+```
+
+### `StorageBlobContentMismatchError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a blob-store `put` offers bytes whose content-addressed identity differs from the
+requested blob identifier, or when stored bytes for an identifier disagree with it.
+
+The refused write changes nothing: an existing object is never replaced.
+
+Signature:
+
+```ts
+export declare class StorageBlobContentMismatchError extends StorageAdapterError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable blob-content mismatch code.
+
+```ts
+readonly code: string;
+```
+
+### `StorageConformanceLawResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Outcome of one named conformance law.
+
+Signature:
+
+```ts
+export type StorageConformanceLawResult = {
+    readonly law: string;
+    readonly passed: boolean;
+    readonly failure?: string;
+};
+```
+
+### `StorageConformanceReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Report of one conformance-kit run over a storage adapter.
+
+Signature:
+
+```ts
+export type StorageConformanceReport = {
+    readonly passed: boolean;
+    readonly durability?: StorageDurability;
+    readonly laws: readonly StorageConformanceLawResult[];
+};
+```
+
+### `StorageCoordinator`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Reference and lease coordination an adapter implements for local or remote state.
+
+Laws (checked by `checkStorageCoordinatorConformance`): reference generations start at `1`
+and increase by exactly one per successful swap; a swap whose expected generation is not
+current reports a conflict and changes nothing; among concurrent swaps from one generation
+exactly one commits. At most one unexpired lease exists per key; a different grant always
+receives a strictly higher fencing token; renewal and release require the exact current owner
+and token; and a fenced swap, renewal, or release from a superseded or expired grant changes
+nothing. Time is the caller's clock: adapters compare the supplied milliseconds and never read
+their own clock. Every method may return a promise so a network adapter can implement the
+same contract.
+
+Signature:
+
+```ts
+export type StorageCoordinator = {
+    readonly durability: StorageDurability;
+    readRef(name: string): Promise<StorageRef | undefined>;
+    compareAndSwapRef(name: string, expectedGeneration: number, value: string, fence?: StorageFence): Promise<StorageRefSwapResult>;
+    readLease(key: string): Promise<StorageLease | undefined>;
+    acquireLease(key: string, owner: string, ttlMilliseconds: number, nowMilliseconds: number): Promise<StorageLeaseAcquireResult>;
+    renewLease(key: string, owner: string, fencingToken: number, ttlMilliseconds: number, nowMilliseconds: number): Promise<StorageLeaseRenewResult>;
+    releaseLease(key: string, owner: string, fencingToken: number): Promise<StorageLeaseReleaseResult>;
+    close?(): void | Promise<void>;
+};
+```
+
+### `StorageCoordinatorFactory`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Creates one fresh, empty storage coordinator per conformance law.
+
+Signature:
+
+```ts
+export type StorageCoordinatorFactory = () => StorageCoordinator | Promise<StorageCoordinator>;
+```
+
+### `StorageDurability`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured durability a backend or coordinator declares.
+
+`durable` state survives process exit and host crash once an operation resolves; `volatile`
+state lives only as long as the adapter object.
+
+Signature:
+
+```ts
+export type StorageDurability = (typeof STORAGE_DURABILITIES)[number];
+```
+
+### `StorageFence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Lease authority a guarded reference swap requires.
+
+Signature:
+
+```ts
+export type StorageFence = {
+    readonly key: string;
+    readonly owner: string;
+    readonly fencingToken: number;
+    readonly now: number;
+};
+```
+
+### `StorageLease`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One lease record and its monotonic fencing token.
+
+Signature:
+
+```ts
+export type StorageLease = {
+    readonly key: string;
+    readonly owner: string;
+    readonly fencingToken: number;
+    readonly expiresAt: number;
+};
+```
+
+### `StorageLeaseAcquireResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one lease acquisition.
+
+Signature:
+
+```ts
+export type StorageLeaseAcquireResult = {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[0];
+    readonly lease: StorageLease;
+} | {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[1];
+    readonly lease: StorageLease;
+};
+```
+
+### `StorageLeaseReleaseResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one lease release.
+
+Signature:
+
+```ts
+export type StorageLeaseReleaseResult = {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[3];
+} | {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[4];
+};
+```
+
+### `StorageLeaseRenewResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one lease renewal.
+
+Signature:
+
+```ts
+export type StorageLeaseRenewResult = {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[2];
+    readonly lease: StorageLease;
+} | {
+    readonly status: (typeof STORAGE_LEASE_STATUSES)[4];
+};
+```
+
+### `StorageLeaseStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured lease result status.
+
+Signature:
+
+```ts
+export type StorageLeaseStatus = (typeof STORAGE_LEASE_STATUSES)[number];
+```
+
+### `StorageRef`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One named compare-and-swap reference.
+
+Signature:
+
+```ts
+export type StorageRef = {
+    readonly name: string;
+    readonly generation: number;
+    readonly value: string;
+};
+```
+
+### `StorageRefSwapResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one reference compare-and-swap.
+
+Signature:
+
+```ts
+export type StorageRefSwapResult = {
+    readonly status: (typeof STORAGE_REF_SWAP_STATUSES)[0];
+    readonly ref: StorageRef;
+} | {
+    readonly status: (typeof STORAGE_REF_SWAP_STATUSES)[1];
+    readonly current: StorageRef | undefined;
+} | {
+    readonly status: (typeof STORAGE_REF_SWAP_STATUSES)[2];
+};
+```
+
+### `StorageRefSwapStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured reference compare-and-swap result status.
+
+Signature:
+
+```ts
+export type StorageRefSwapStatus = (typeof STORAGE_REF_SWAP_STATUSES)[number];
+```
+
+### `TELEMETRY_BODY_HANDLINGS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured descriptions of how one record body was handled in exported telemetry.
+
+Signature:
+
+```ts
+export declare const TELEMETRY_BODY_HANDLINGS: readonly [
+    "included",
+    "withheld",
+    "redacted",
+    "omitted",
+    "oversized"
+];
+```
+
+### `TELEMETRY_BODY_MODES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured telemetry exporter body modes.
+
+Signature:
+
+```ts
+export declare const TELEMETRY_BODY_MODES: readonly [
+    "omit",
+    "retention-policy"
+];
+```
+
+### `TelemetryBatch`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One non-canonical telemetry batch handed to a TelemetrySink.
+
+Validates against `spec/schemas/telemetry-batch-v1.schema.json`. It is derived from committed
+records and never read back into a trace.
+
+Signature:
+
+```ts
+export type TelemetryBatch = {
+    readonly format: string;
+    readonly format_version: number;
+    readonly logs: OtlpExportLogsServiceRequest;
+    readonly traces: OtlpExportTraceServiceRequest;
+};
+```
+
+### `TelemetryBodyHandling`
+
+Classification: `type-only`. Kind: `type alias`.
+
+How one record body was handled in exported telemetry.
+
+`included` exported the body; `withheld` did not because the exporter body mode is `omit`;
+`redacted` did not because the data class redacts bodies or a secret detector matched;
+`omitted` did not because the data class omits bodies; `oversized` did not because the
+canonical body exceeds the configured bound.
+
+Signature:
+
+```ts
+export type TelemetryBodyHandling = (typeof TELEMETRY_BODY_HANDLINGS)[number];
+```
+
+### `TelemetryBodyMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exporter body mode. `omit` (the default) never exports a body; `retention-policy` exports a
+body only when its retention data class disposition is `include`, no configured secret
+detector matches it, and its canonical form fits the configured body bound.
+
+Signature:
+
+```ts
+export type TelemetryBodyMode = (typeof TELEMETRY_BODY_MODES)[number];
+```
+
+### `TelemetryClock`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied observation clock.
+
+Returns the current Unix time in nanoseconds. Records carry no timestamps, so every exported
+time is exporter observation time and has no trace semantics.
+
+Signature:
+
+```ts
+export type TelemetryClock = () => bigint;
+```
+
+### `TelemetryExportReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one export step.
+
+Signature:
+
+```ts
+export type TelemetryExportReceipt = {
+    readonly acknowledged_cursor: TraceSubscriptionCursor;
+    readonly log_record_count: number;
+    readonly record_count: number;
+    readonly span_count: number;
+};
+```
+
+### `TelemetrySink`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied destination of telemetry batches.
+
+The exporter acknowledges a subscription cursor only after `write` returns or its promise
+resolves, so a sink must make a batch durable (or hand it to a durable collector) before
+completing. A sink that throws or rejects leaves the cursor where it was; the same records are
+exported again, which makes delivery at-least-once.
+
+Signature:
+
+```ts
+export type TelemetrySink = {
+    readonly write: (batch: TelemetryBatch) => Promise<void> | void;
+};
+```
+
+### `TraceArchiveLimitError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a native or redacted trace archive exceeds a configured interchange limit
+(`kernel.interchange.limits` in `protocol.config.json`).
+
+Byte length and nesting depth are checked before the text is parsed, and collection counts and
+the declared blob byte total before any blob is decoded, so an oversized archive is refused
+without building its object graph or its blob buffers. Nothing is written. The message names
+the limit and the configured bound, never archive content.
+
+Signature:
+
+```ts
+export declare class TraceArchiveLimitError extends TypeError {
+    readonly code: string;
+    readonly limit: string;
+    constructor(limit: string, bound: number);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable archive-limit code.
+
+```ts
+readonly code: string;
+```
+
+#### `limit`
+
+Name of the exceeded `kernel.interchange.limits` member, for example `maxArchiveBytes`.
+
+```ts
+readonly limit: string;
+```
+
+#### `constructor`
+
+Creates a refusal for one exceeded configured limit.
+
+```ts
+constructor(limit: string, bound: number);
+```
+
+Parameter:
+
+- limit - Name of the exceeded `kernel.interchange.limits` member.
+
+Parameter:
+
+- bound - Configured bound that was exceeded.
+
+### `TraceRetentionReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only retention inventory of a trace store.
+
+Signature:
+
+```ts
+export type TraceRetentionReport = {
+    readonly data_classes: readonly RetentionDataClassCount[];
+    readonly format: string;
+    readonly format_version: number;
+    readonly record_count: number;
+    readonly retention_compatibility_version: string;
+    readonly secret_classes: readonly RetentionSecretClassCount[];
+    readonly secret_record_count: number;
+    readonly secret_records: readonly RetentionSecretRecord[];
+    readonly secret_records_truncated: boolean;
+    readonly secret_scanning: SecretScanningMode;
+};
+```
+
+### `TraceSchemaClassification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Data class and export disposition resolved for one schema identifier.
+
+Signature:
+
+```ts
+export type TraceSchemaClassification = {
+    readonly data_class: RetentionDataClass;
+    readonly disposition: RetentionExportDisposition;
+};
+```
+
+### `TraceSecretDetectedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a store opened with `secretScanning: "refuse"` rejects an append or import whose
+record bodies match a configured secret detector.
+
+The refusal happens before any write, so the append intent stays unused and a corrected retry
+with the same intent succeeds. The message and TraceSecretDetectedError.findings name
+secret classes, JSON Pointers, and digests only; matched text is never included.
+
+Signature:
+
+```ts
+export declare class TraceSecretDetectedError extends TraceStoreError {
+    readonly code: string;
+    readonly findings: readonly SecretFinding[];
+    readonly truncated: boolean;
+    constructor(report: SecretScanReport);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable secret-detection code.
+
+```ts
+readonly code: string;
+```
+
+#### `findings`
+
+Frozen findings: class, pointer, location, and digest of each match.
+
+```ts
+readonly findings: readonly SecretFinding[];
+```
+
+#### `truncated`
+
+Whether more findings existed than the configured limit allows.
+
+```ts
+readonly truncated: boolean;
+```
+
+#### `constructor`
+
+Creates a refusal from a completed scan report.
+
+```ts
+constructor(report: SecretScanReport);
+```
+
+Parameter:
+
+- report - Findings produced by the configured detectors.
+
+### `TraceStoreBackupBlobLocation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Where a backup's blob bytes were written: the backup directory's configured blob directory or a
+caller-supplied blob-store backend.
+
+Signature:
+
+```ts
+export type TraceStoreBackupBlobLocation = (typeof STORE_BACKUP_BLOB_LOCATIONS)[number];
+```
+
+### `TraceStoreBackupError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a trace-store backup, backup verification, replication, fetch, or restore is
+refused or fails.
+
+Every failure carries one configured `reason`. An operation that raises this error has not
+produced a verified backup or restored store, and no caller should treat any path it touched
+as one. The message names the failed step, never record bodies.
+
+Signature:
+
+```ts
+export declare class TraceStoreBackupError extends Error {
+    readonly code: string;
+    readonly reason: TraceStoreBackupFailureReason;
+    constructor(reason: TraceStoreBackupFailureReason, message: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable backup code.
+
+```ts
+readonly code: string;
+```
+
+#### `reason`
+
+Configured failure classification.
+
+```ts
+readonly reason: TraceStoreBackupFailureReason;
+```
+
+#### `constructor`
+
+Creates one classified backup failure.
+
+```ts
+constructor(reason: TraceStoreBackupFailureReason, message: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- reason - Configured failure classification.
+
+Parameter:
+
+- message - Step that failed, without record content.
+
+Parameter:
+
+- options - Optional underlying cause.
+
+### `TraceStoreBackupFailureReason`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured classification of a refused or failed backup, verification, or restore.
+
+`backup-unsupported`: the runtime has no `node:sqlite` online backup. `destination-exists` /
+`target-exists`: the operation refused to write over an existing path. `manifest-missing`: no
+complete manifest exists, so the backup is incomplete or interrupted. `manifest-invalid`,
+`manifest-mismatch`: the manifest is malformed or is not the expected identity.
+`schema-unsupported`: the copied store schema is newer than this package supports.
+`database-mismatch`, `blob-mismatch`, `integrity-failed`, `export-mismatch`: copied bytes or the
+reopened store disagree with the manifest.
+
+Signature:
+
+```ts
+export type TraceStoreBackupFailureReason = (typeof STORE_BACKUP_FAILURE_REASONS)[number];
+```
+
+### `TraceStoreBackupFetchOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Where `fetchReplicatedTraceStoreBackup` materializes a replicated backup.
+
+Signature:
+
+```ts
+export type TraceStoreBackupFetchOptions = {
+    readonly backend: BlobStoreBackend;
+    readonly coordinator: StorageCoordinator;
+    readonly destination: string;
+    readonly refName: string;
+};
+```
+
+### `TraceStoreBackupHead`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Latest owner-local occurrence of one owner in the backed-up snapshot.
+
+Signature:
+
+```ts
+export type TraceStoreBackupHead = {
+    readonly owner_id: string;
+    readonly owner_ordinal: number;
+    readonly record_id: string;
+};
+```
+
+### `TraceStoreBackupManifest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Store backup manifest `shepherd.store.backup` v1 (`store-backup-manifest-v1`).
+
+The manifest is written last, owner-only, through a temporary file and an atomic rename, so its
+presence marks a complete backup. `manifest_id` is the configured digest of the canonical JSON
+of every other member and is the identity a restore must name.
+
+Signature:
+
+```ts
+export type TraceStoreBackupManifest = {
+    readonly archive_format: string;
+    readonly archive_format_version: number;
+    readonly backup_compatibility_version: string;
+    readonly blobs: {
+        readonly byte_length: number;
+        readonly count: number;
+        readonly directory: string;
+        readonly list_digest: string;
+        readonly location: TraceStoreBackupBlobLocation;
+    };
+    readonly cut_count: number;
+    readonly cut_heads: readonly TraceStoreBackupHead[];
+    readonly database: {
+        readonly byte_length: number;
+        readonly digest: string;
+        readonly file: string;
+    };
+    readonly export_digest: string;
+    readonly format: string;
+    readonly format_version: number;
+    readonly manifest_id: string;
+    readonly package_version: string;
+    readonly record_count: number;
+    readonly store_schema_version: number;
+};
+```
+
+### `TraceStoreBackupOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Where and how `backupTraceStore` writes one backup.
+
+Signature:
+
+```ts
+export type TraceStoreBackupOptions = {
+    readonly destination: string;
+    readonly blobBackend?: BlobStoreBackend;
+};
+```
+
+### `TraceStoreBackupReplica`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one backup replication.
+
+Signature:
+
+```ts
+export type TraceStoreBackupReplica = {
+    readonly database_blob_id: BlobId;
+    readonly manifest_blob_id: BlobId;
+    readonly manifest_id: string;
+    readonly swap: StorageRefSwapResult;
+};
+```
+
+### `TraceStoreBackupReplicationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Where `replicateTraceStoreBackup` copies a verified backup.
+
+Signature:
+
+```ts
+export type TraceStoreBackupReplicationOptions = {
+    readonly backend: BlobStoreBackend;
+    readonly coordinator: StorageCoordinator;
+    readonly expectedGeneration: number;
+    readonly fence?: StorageFence;
+    readonly refName: string;
+    readonly sourceBlobBackend?: BlobStoreBackend;
+};
+```
+
+### `TraceStoreBackupVerification`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of a successful backup verification.
+
+Signature:
+
+```ts
+export type TraceStoreBackupVerification = {
+    readonly manifest: TraceStoreBackupManifest;
+    readonly verified_store_schema_version: number;
+};
+```
+
+### `TraceStoreBackupVerificationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for verifying one backup directory.
+
+Signature:
+
+```ts
+export type TraceStoreBackupVerificationOptions = {
+    readonly blobBackend?: BlobStoreBackend;
+    readonly expectedManifestId?: string;
+    readonly stagingDirectory?: string;
+};
+```
+
+### `TraceStoreCheckpointReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one SQLite WAL checkpoint, as reported by `PRAGMA wal_checkpoint`.
+
+With the configured `TRUNCATE` checkpoint mode a complete checkpoint empties the log, so both
+frame counts are zero; compare `before.wal_bytes` and `after.wal_bytes` for the reclaimed size.
+
+Signature:
+
+```ts
+export type TraceStoreCheckpointReport = {
+    readonly busy: boolean;
+    readonly checkpointed_frames: number;
+    readonly wal_frames: number;
+};
+```
+
+### `TraceStoreError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Base error for trace-store contract violations.
+
+Signature:
+
+```ts
+export declare class TraceStoreError extends Error {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable trace-store error code.
+
+```ts
+readonly code: string;
+```
+
+### `TraceStoreMaintenanceMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Semantics-preserving store maintenance operation.
+
+`inspect` runs SQLite `quick_check` and reports space; `checkpoint` also truncates the
+write-ahead log; `optimize` also runs `PRAGMA optimize`; `vacuum` also rebuilds the database
+file and then checkpoints. None changes a record, view, cut, intent, or blob.
+
+Signature:
+
+```ts
+export type TraceStoreMaintenanceMode = "checkpoint" | "inspect" | "optimize" | "vacuum";
+```
+
+### `TraceStoreMaintenanceOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for `SQLiteTraceStore.maintain`.
+
+Signature:
+
+```ts
+export type TraceStoreMaintenanceOptions = {
+    readonly mode?: TraceStoreMaintenanceMode;
+};
+```
+
+### `TraceStoreMaintenanceReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Frozen result of one `SQLiteTraceStore.maintain` pass.
+
+Signature:
+
+```ts
+export type TraceStoreMaintenanceReport = {
+    readonly after: TraceStoreSpaceReport;
+    readonly before: TraceStoreSpaceReport;
+    readonly checkpoint: TraceStoreCheckpointReport | null;
+    readonly mode: TraceStoreMaintenanceMode;
+    readonly optimized: boolean;
+    readonly quick_check: {
+        readonly issues: readonly string[];
+        readonly ok: boolean;
+        readonly truncated: boolean;
+    };
+    readonly schema_version: number;
+    readonly vacuumed: boolean;
+};
+```
+
+### `TraceStoreReadOnlyError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an operation that requires a writable handle, such as store maintenance, is
+requested on a store opened with `readOnly: true`. Nothing is read or changed.
+
+Signature:
+
+```ts
+export declare class TraceStoreReadOnlyError extends TraceStoreError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable read-only refusal code.
+
+```ts
+readonly code: string;
+```
+
+### `TraceStoreRestoreOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for restoring one backup into a new store.
+
+Signature:
+
+```ts
+export type TraceStoreRestoreOptions = {
+    readonly blobBackend?: BlobStoreBackend;
+    readonly expectedManifestId: string;
+};
+```
+
+### `TraceStoreRestoreReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of a successful, verified restore.
+
+Signature:
+
+```ts
+export type TraceStoreRestoreReceipt = {
+    readonly blob_count: number;
+    readonly export_digest: string;
+    readonly manifest_id: string;
+    readonly record_count: number;
+    readonly source_store_schema_version: number;
+    readonly store_schema_version: number;
+};
+```
+
+### `TraceStoreSpaceReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Physical space used by the store database and its write-ahead log.
+
+Signature:
+
+```ts
+export type TraceStoreSpaceReport = {
+    readonly database_bytes: number;
+    readonly freelist_count: number;
+    readonly page_count: number;
+    readonly page_size: number;
+    readonly wal_bytes: number;
+};
+```
+
+### `TraceTelemetryExporter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Passive exporter from committed trace records to OTLP-shaped telemetry.
+
+Signature:
+
+```ts
+export type TraceTelemetryExporter = {
+    readonly acknowledgedCursor: TraceSubscriptionCursor;
+    readonly close: () => void;
+    readonly exportPending: () => Promise<TelemetryExportReceipt>;
+};
+```
+
+### `TraceTelemetryExporterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options of createTraceTelemetryExporter.
+
+Signature:
+
+```ts
+export type TraceTelemetryExporterOptions = {
+    readonly bodies?: TelemetryBodyMode;
+    readonly clock: TelemetryClock;
+    readonly maxRecordsPerBatch?: number;
+    readonly retention?: RetentionClassificationOptions;
+    readonly sink: TelemetrySink;
+    readonly store: SQLiteTraceStore;
+    readonly subscription: OpenTraceSubscriptionOptions;
+};
+```
+
+### `backupTraceStore`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Writes one verified, self-describing backup of an open trace store.
+
+The database is copied online with `node:sqlite` `backup()` into an owner-only file, so the
+copy is one consistent snapshot even while the store is in use; the copy is converted to a
+self-contained rollback-journal file. Every blob the snapshot registers is then copied into the
+backup's blob directory or `blobBackend`. The backup is proven before it is declared complete:
+the copy is staged, opened as a trace store, and must pass `verifyIntegrity`, `verifyBlobs`, and
+a native export whose digest the manifest records. The `shepherd.store.backup` v1 manifest is
+written last, owner-only, through a temporary name and an atomic rename; a backup directory
+without a manifest is incomplete and every verifier refuses it.
+
+Only this call's staging directory is removed on failure; a partial backup directory is left in
+place for the operator to inspect and delete.
+
+Signature:
+
+```ts
+export declare function backupTraceStore(store: SQLiteTraceStore, options: TraceStoreBackupOptions): Promise<TraceStoreBackupManifest>;
+```
+
+Parameter:
+
+- store - Open trace store to back up; it may be read-only.
+
+Parameter:
+
+- options - New destination directory and optional blob backend.
+
+Returns:
+
+- The frozen sealed manifest; its `manifest_id` is the identity a restore must name.
+
+Throws:
+
+- {TraceStoreBackupError} With `backup-unsupported` when the runtime lacks
+`node:sqlite` `backup()`, `destination-exists` when the destination exists, `blob-mismatch`
+when a registered blob cannot be read, or the reason of the failed verification step.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const manifest = await backupTraceStore(store, { destination: "/backups/2026-09-18" });
+console.log(manifest.manifest_id);
+```
+
+### `checkBlobStoreBackendConformance`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the named `BlobStoreBackend` laws against fresh backends from a factory.
+
+Each law receives a new empty backend, which is closed afterwards when it exposes `close`. A
+violated expectation, an unexpected throw, or an expected refusal that does not happen marks
+that law failed; the kit itself never throws for adapter misbehavior. Third-party adapters use
+it as a self-test; the reference memory and filesystem backends pass every law.
+
+Signature:
+
+```ts
+export declare function checkBlobStoreBackendConformance(factory: BlobStoreBackendFactory): Promise<StorageConformanceReport>;
+```
+
+Parameter:
+
+- factory - Creates one fresh, empty backend per law.
+
+Returns:
+
+- A frozen report naming every law and whether it passed.
+
+Example:
+
+- ```ts
+const report = await checkBlobStoreBackendConformance(() => createMyBackend());
+if (!report.passed) console.error(report.laws.filter(({ passed }) => !passed));
+```
+
+### `checkStorageCoordinatorConformance`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the named `StorageCoordinator` laws against fresh coordinators from a factory.
+
+Each law receives a new empty coordinator, which is closed afterwards when it exposes `close`.
+Laws drive lease time with explicit caller-clock values inside the configured lease bounds, and
+concurrency laws issue overlapping calls without awaiting between them. A violated expectation,
+an unexpected throw, or an expected refusal that does not happen marks that law failed.
+
+Signature:
+
+```ts
+export declare function checkStorageCoordinatorConformance(factory: StorageCoordinatorFactory): Promise<StorageConformanceReport>;
+```
+
+Parameter:
+
+- factory - Creates one fresh, empty coordinator per law.
+
+Returns:
+
+- A frozen report naming every law and whether it passed.
+
+### `classifyTraceSchema`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Resolves the data class and export disposition of one record schema identifier.
+
+Configured protocol schema families take precedence; a caller-classified schema is used next;
+every other schema identifier receives the configured default data class.
+
+Signature:
+
+```ts
+export declare function classifyTraceSchema(schemaRef: string, options?: RetentionClassificationOptions): TraceSchemaClassification;
+```
+
+Parameter:
+
+- schemaRef - Exact record `schema_ref`.
+
+Parameter:
+
+- options - Optional caller classification of unconfigured schema identifiers.
+
+Returns:
+
+- The frozen data class and disposition.
+
+Throws:
+
+- {TypeError} If the schema identifier is empty or the options are malformed or try to
+reclassify a configured schema.
+
+Example:
+
+- ```ts
+classifyTraceSchema("example.memory.v1", {
+    schemaDataClasses: { "example.memory.v1": "memory-adapter" },
+});
+```
+
+### `createFilesystemBlobStoreBackend`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a durable content-addressed blob-store backend over the trace store's filesystem blob
+layout.
+
+Writes go through the same `BlobFilesystem` the trace store uses: a private temporary file is
+written and flushed, hard-linked into its fan-out directory without replacing an existing
+object, re-read and verified, and the directory is flushed. Bytes whose digest differs from the
+identifier are refused before anything touches disk. Reads verify size and digest and raise
+`BlobIntegrityError` for a corrupt or non-regular object. `list` walks fan-out directories in
+ascending order and ignores temporary and foreign entries. `delete` unlinks one object and
+flushes its directory.
+
+Root the backend in its own directory. Pointing it at a live trace store's blob directory is
+supported for reads and writes only: deleting a blob a stored receipt still names breaks that
+store's integrity; trace-store blob deletion is owned by `collectBlobOrphans`.
+
+Signature:
+
+```ts
+export declare function createFilesystemBlobStoreBackend(rootPath: string): BlobStoreBackend;
+```
+
+Parameter:
+
+- rootPath - Directory to create or open; symlinked or non-directory ancestors are refused.
+
+Returns:
+
+- A backend declaring `durable` durability.
+
+Throws:
+
+- {TypeError} If `rootPath` has a symlink or non-directory ancestor.
+
+Example:
+
+- ```ts
+const backend = createFilesystemBlobStoreBackend("/var/lib/app/blobs");
+await backend.put(blobId, bytes);
+```
+
+### `createJsonLinesTelemetrySink`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a sink that appends OTLP/JSON lines ingestible by an OpenTelemetry Collector file
+receiver (`otlpjsonfile`).
+
+Each write appends at most one `\n`-terminated line to each file: the batch's traces request
+when it holds a span, and its logs request when it holds a log record. Files are created with
+the configured owner-only store-file mode, and an existing file with group or other permission
+bits is tightened before anything is appended. Each file is flushed to stable storage before
+the write resolves, so an acknowledged cursor never passes telemetry that was not persisted. A
+batch retried after a failure may repeat lines already written; consumers must tolerate
+at-least-once delivery.
+
+Signature:
+
+```ts
+export declare function createJsonLinesTelemetrySink(options: JsonLinesTelemetrySinkOptions): TelemetrySink;
+```
+
+Parameter:
+
+- options - Distinct traces and logs file paths.
+
+Returns:
+
+- A frozen sink.
+
+Throws:
+
+- {TypeError} If a path is empty or both paths are equal.
+
+Example:
+
+- ```ts
+const sink = createJsonLinesTelemetrySink({
+    logsPath: "telemetry/logs.jsonl",
+    tracesPath: "telemetry/traces.jsonl",
+});
+```
+
+### `createMemoryBlobStoreBackend`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a volatile in-process content-addressed blob-store backend.
+
+It implements every `BlobStoreBackend` law: bytes are verified against their identifier,
+copied on write and read, never replaced, listed in ascending identifier order, and deleted
+idempotently. It is a reference and test double; objects are lost with the backend object.
+
+Signature:
+
+```ts
+export declare function createMemoryBlobStoreBackend(): BlobStoreBackend;
+```
+
+Returns:
+
+- A backend declaring `volatile` durability.
+
+Example:
+
+- ```ts
+const backend = createMemoryBlobStoreBackend();
+const { created } = await backend.put(blobId, bytes);
+```
+
+### `createMemoryStorageCoordinator`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a volatile in-process storage coordinator.
+
+It implements every `StorageCoordinator` law for callers sharing one JavaScript realm: each
+operation is decided and applied synchronously before its promise settles, so concurrent calls
+are serialized by the event loop. It is a reference and test double; state is lost with the
+object and is not shared across processes.
+
+Signature:
+
+```ts
+export declare function createMemoryStorageCoordinator(): StorageCoordinator;
+```
+
+Returns:
+
+- A coordinator declaring `volatile` durability.
+
+Example:
+
+- ```ts
+const coordinator = createMemoryStorageCoordinator();
+const { status } = await coordinator.compareAndSwapRef("heads/main", 0, "sha256:...");
+```
+
+### `createSQLiteStorageCoordinator`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Opens or creates a durable storage coordinator in one SQLite file.
+
+Every swap and lease change runs in its own configured `IMMEDIATE` transaction over a WAL
+database with the configured busy timeout and full synchronization, so any number of handles
+in any number of processes on one host observe one serial order. A new database file is created
+with the configured owner-only mode and an existing one owned by the current user is tightened.
+Concurrent first opens of one new database from several processes succeed: the switch to
+write-ahead logging retries SQLite's deadlock-avoidance `SQLITE_BUSY` within the configured
+busy timeout, and schema migrations read the applied version and apply inside one configured
+`IMMEDIATE` transaction, so a later opener finds the schema current. An open that cannot get
+the lock within the busy timeout throws before returning a handle and changes nothing. Network
+filesystems that do not honor SQLite locking are unsupported.
+
+Signature:
+
+```ts
+export declare function createSQLiteStorageCoordinator(databasePath: string): SQLiteStorageCoordinator;
+```
+
+Parameter:
+
+- databasePath - SQLite file path, or `:memory:` for a private volatile database.
+
+Returns:
+
+- A coordinator declaring `durable` durability, or `volatile` for `:memory:`.
+
+Throws:
+
+- {StorageAdapterError} If the database schema is newer than this package supports.
+
+Throws:
+
+- {Error} If SQLite defensive support is unavailable or the database cannot be opened.
+
+Example:
+
+- ```ts
+using coordinator = createSQLiteStorageCoordinator("coordination.sqlite");
+const lease = await coordinator.acquireLease("jobs/nightly", "worker-a", 30_000, Date.now());
+```
+
+### `createTraceTelemetryExporter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a passive, at-least-once telemetry exporter over one trace subscription.
+
+The exporter opens `subscription` with openTraceSubscription, maps each committed
+owner occurrence to one OTLP log record, and closes one run span when a configured terminal
+record follows a configured start record on the same owner. Trace identifiers derive from the
+owner path and span identifiers from the start record identity, so they are deterministic.
+Every attribute lives under the configured namespace. A body is exported only in the
+`retention-policy` body mode, only when its retention disposition is `include`, no configured
+secret detector matches, and it fits the configured bound.
+
+Telemetry is never canonical: the exporter appends nothing, and the trace, its export, and
+every run are unaffected by the exporter or its sink. Only durable subscription cursor
+bookkeeping, which lies outside the record graph, is written.
+
+Signature:
+
+```ts
+export declare function createTraceTelemetryExporter(options: TraceTelemetryExporterOptions): TraceTelemetryExporter;
+```
+
+Parameter:
+
+- options - Store, subscription, sink, clock, and optional body mode, bound, and retention
+classification.
+
+Returns:
+
+- A frozen exporter.
+
+Throws:
+
+- {TypeError} If an option is malformed.
+
+Throws:
+
+- {SupervisionCursorConflictError} If the subscription start conflicts with its cursor.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Example:
+
+- ```ts
+const exporter = createTraceTelemetryExporter({
+    clock: () => BigInt(Date.now()) * 1_000_000n,
+    sink: createJsonLinesTelemetrySink({ logsPath, tracesPath }),
+    store,
+    subscription: { owners: [runId], subscriptionId: "telemetry:runs" },
+});
+await exporter.exportPending();
+exporter.close();
+```
+
+### `deriveTelemetrySpanId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the deterministic OTLP span identifier of one record.
+
+A run span uses the identifier of its start record. The identifier is the first 8 bytes of the
+configured digest over the configured span domain and the record identity.
+
+Signature:
+
+```ts
+export declare function deriveTelemetrySpanId(recordId: string): string;
+```
+
+Parameter:
+
+- recordId - Record identity.
+
+Returns:
+
+- 16 lowercase hex characters.
+
+Throws:
+
+- {TypeError} If the record identity is empty.
+
+### `deriveTelemetryTraceId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the deterministic OTLP trace identifier of one owner path.
+
+The identifier is the first 16 bytes of the configured digest over the configured trace domain
+and the owner path, so every exporter maps the same owner (for a run, its run identifier) to
+the same trace.
+
+Signature:
+
+```ts
+export declare function deriveTelemetryTraceId(ownerId: string): string;
+```
+
+Parameter:
+
+- ownerId - Exact owner path.
+
+Returns:
+
+- 32 lowercase hex characters.
+
+Throws:
+
+- {TypeError} If the owner path is empty.
+
+Example:
+
+- ```ts
+const traceId = deriveTelemetryTraceId(runId);
+```
+
+### `exportRedactedTraceArchive`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Exports a store as a one-way redacted archive under the configured retention policy.
+
+The export is built on `store.exportTrace()`, so it covers exactly one integrity-verified
+snapshot. Every record keeps its envelope and `record_id`; its body is exported verbatim only
+when its data class disposition is `include` and no configured detector matches it. Otherwise
+the body is replaced by a RedactedRecordBody marker. Views, intents, and cuts are kept;
+blobs are listed by identity and length without content. Envelopes, owner identifiers, intent
+identifiers, and blob bytes are not scanned. The result can be checked with
+verifyRedactedTraceArchive and is refused by every import.
+
+Signature:
+
+```ts
+export declare function exportRedactedTraceArchive(store: SQLiteTraceStore, options?: RetentionClassificationOptions): string;
+```
+
+Parameter:
+
+- store - Open trace store; it is only read.
+
+Parameter:
+
+- options - Optional caller classification of unconfigured schema identifiers.
+
+Returns:
+
+- Deterministic canonical JSON in the configured redacted-archive format.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or fails integrity verification.
+
+Throws:
+
+- {TypeError} If the options are malformed.
+
+Example:
+
+- ```ts
+const redacted = exportRedactedTraceArchive(store);
+const summary = verifyRedactedTraceArchive(redacted);
+console.log(summary.redacted_record_count);
+```
+
+### `fetchReplicatedTraceStoreBackup`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Materializes the backup a coordinator reference names into a new local backup directory and
+verifies it.
+
+The manifest object must hash to the reference value and parse; the database object is found
+by the manifest's database digest; blobs are copied into the backup's blob directory; the
+manifest is written last. The result is then verified exactly as by `verifyTraceStoreBackup`.
+
+Signature:
+
+```ts
+export declare function fetchReplicatedTraceStoreBackup(options: TraceStoreBackupFetchOptions): Promise<TraceStoreBackupVerification>;
+```
+
+Parameter:
+
+- options - Replica backend, coordinator reference, and new destination.
+
+Returns:
+
+- The verification of the materialized backup.
+
+Throws:
+
+- {TraceStoreBackupError} With `manifest-missing` when the reference or manifest object
+is absent, `manifest-invalid` when the manifest object does not match the reference,
+`destination-exists`, `database-mismatch`, or the reason of the failed verification step.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+### `inspectTraceRetention`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Inventories a trace store by data class, export disposition, and detected secret class.
+
+The inspection only reads: it classifies every retained record by schema, scans every body with
+the configured detectors, and returns counts and record identities without any body content or
+matched text. It works on writable and read-only handles.
+
+Signature:
+
+```ts
+export declare function inspectTraceRetention(store: SQLiteTraceStore, options?: RetentionClassificationOptions): TraceRetentionReport;
+```
+
+Parameter:
+
+- store - Open trace store.
+
+Parameter:
+
+- options - Optional caller classification of unconfigured schema identifiers.
+
+Returns:
+
+- A frozen report matching the configured retention-report schema.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Throws:
+
+- {TypeError} If the options are malformed or a stored record fails validation.
+
+Example:
+
+- ```ts
+const report = inspectTraceRetention(store);
+if (report.secret_record_count > 0) {
+    console.log(report.secret_records.map(({ record_id }) => record_id));
+}
+```
+
+### `readRetentionPolicy`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads the configured retention policy.
+
+Signature:
+
+```ts
+export declare function readRetentionPolicy(): RetentionPolicy;
+```
+
+Returns:
+
+- Frozen data classes with dispositions, default class, secret-class names, and scanning
+modes.
+
+Example:
+
+- ```ts
+const policy = readRetentionPolicy();
+console.log(policy.data_classes.map(({ data_class, disposition }) => `${data_class}:${disposition}`));
+```
+
+### `replicateTraceStoreBackup`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Copies one verified backup into a content-addressed backend and publishes it by reference
+compare-and-swap.
+
+The backup is verified first. The database bytes, the exact manifest bytes, and every blob are
+stored as content-addressed objects (existing equal objects are kept), and only then is
+`refName` swapped from `expectedGeneration` to the manifest object's identifier. A conflict or
+fence refusal is returned, not thrown; objects already stored stay and are content-addressed,
+so a retry is safe.
+
+Signature:
+
+```ts
+export declare function replicateTraceStoreBackup(backupDirectory: string, options: TraceStoreBackupReplicationOptions): Promise<TraceStoreBackupReplica>;
+```
+
+Parameter:
+
+- backupDirectory - Directory written by `backupTraceStore`.
+
+Parameter:
+
+- options - Target backend, coordinator reference, expected generation, and source blobs.
+
+Returns:
+
+- The replica object identities and the swap result.
+
+Throws:
+
+- {TraceStoreBackupError} With the reason of the failed verification step, or with
+`database-mismatch` or `manifest-mismatch` when the database or manifest file read for
+replication is not the one that was verified.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Throws:
+
+- {StorageAdapterError} If an adapter cannot honor its contract.
+
+### `restoreTraceStoreBackup`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Restores one verified backup into a new trace store and verifies the result before reporting
+success.
+
+Restore is non-destructive: it refuses when `targetPath`, its blob directory, or a SQLite
+sidecar exists, and it requires the operator to name the exact manifest identity. The backup
+is first staged in an owner-only directory beside the target and fully verified as by
+`verifyTraceStoreBackup` (older store schemas are migrated forward there). The blob directory
+is then moved into place and the database is hard-linked to `targetPath`, which fails rather
+than replace a concurrently created file. Finally the target is reopened read-only and must
+pass `verifyIntegrity`, `verifyBlobs`, and export the manifest's digest; only then does the
+call resolve. A failure after publication leaves the target in place and rejects: such a
+target must be discarded, never used.
+
+Signature:
+
+```ts
+export declare function restoreTraceStoreBackup(backupDirectory: string, targetPath: string, options: TraceStoreRestoreOptions): Promise<TraceStoreRestoreReceipt>;
+```
+
+Parameter:
+
+- backupDirectory - Directory written by `backupTraceStore`.
+
+Parameter:
+
+- targetPath - New trace-store database path; its parent must exist.
+
+Parameter:
+
+- options - Exact expected manifest identity and optional blob backend.
+
+Returns:
+
+- A frozen receipt of the verified restore.
+
+Throws:
+
+- {TraceStoreBackupError} With `target-exists` when any target path exists,
+`manifest-mismatch` when the identity differs, `integrity-failed` or `export-mismatch` when
+the published target fails its final verification, or the reason of a failed staging check.
+
+Throws:
+
+- {TypeError} If arguments are malformed.
+
+Example:
+
+- ```ts
+await restoreTraceStoreBackup("/backups/2026-09-18", "/var/lib/app/trace.sqlite", {
+    expectedManifestId: manifest.manifest_id,
+});
+```
+
+### `scanSemanticValueForSecrets`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Scans a semantic value for configured secret classes without retaining matched text.
+
+The value is canonicalized first, so object keys are visited in canonical order. Every string
+value and object key is matched against every configured detector. Findings carry the class, a
+JSON Pointer, and a per-process keyed digest of the matched text; the matched text itself is
+never returned, logged, or included in an error, and the digest cannot be used outside this
+process to confirm a guessed secret. Detection is pattern-based and incomplete by design.
+
+Signature:
+
+```ts
+export declare function scanSemanticValueForSecrets(value: SemanticValue): SecretScanReport;
+```
+
+Parameter:
+
+- value - Plain semantic value, such as a record body.
+
+Returns:
+
+- A frozen report with unique findings, their sorted classes, and a truncation flag.
+
+Throws:
+
+- {TypeError} If the value is not a canonicalizable semantic value.
+
+Example:
+
+- ```ts
+const report = scanSemanticValueForSecrets({ headers: { authorization: token } });
+for (const finding of report.findings) {
+    console.log(finding.secret_class, finding.path);
+}
+```
+
+### `verifyRedactedTraceArchive`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Verifies the structure and policy conformance of a redacted trace archive.
+
+Verbatim records have their identity re-derived from envelope and body and are re-scanned;
+redacted records must carry a well-formed marker whose data class and disposition match the
+configured policy for their schema. Views and cuts must cite archived records. Verification
+does not recover redacted content and does not make the archive importable.
+
+Signature:
+
+```ts
+export declare function verifyRedactedTraceArchive(archiveJson: string, options?: RetentionClassificationOptions): RedactedTraceArchiveSummary;
+```
+
+Parameter:
+
+- archiveJson - Text produced by {@link exportRedactedTraceArchive}.
+
+Parameter:
+
+- options - The caller classification used at export time, if any.
+
+Returns:
+
+- Frozen counts of the verified archive.
+
+Throws:
+
+- {RedactedTraceArchiveError} If the archive is malformed, uses unsupported versions, or
+disagrees with the retention policy.
+
+Throws:
+
+- {TraceArchiveLimitError} If the text exceeds the configured interchange byte or nesting
+limit before parsing, or a collection exceeds its configured count.
+
+Throws:
+
+- {TypeError} If the options are malformed.
+
+### `verifyTraceStoreBackup`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Verifies a backup directory without modifying it.
+
+The manifest must exist, parse, and re-derive its identity (and equal `expectedManifestId` when
+given). A private copy of the database must match the manifest digest, schema, counts, heads,
+and blob set; every blob must be present and hash to its identifier; and the copy, opened as a
+trace store with forward migrations, must pass `verifyIntegrity` and `verifyBlobs` and export
+the digest the manifest records. The copy is removed afterwards.
+
+Signature:
+
+```ts
+export declare function verifyTraceStoreBackup(backupDirectory: string, options?: TraceStoreBackupVerificationOptions): Promise<TraceStoreBackupVerification>;
+```
+
+Parameter:
+
+- backupDirectory - Directory written by `backupTraceStore`.
+
+Parameter:
+
+- options - Optional blob backend, expected identity, and staging parent.
+
+Returns:
+
+- The verified manifest and the schema version the copy migrated to.
+
+Throws:
+
+- {TraceStoreBackupError} With `manifest-missing` for an incomplete or interrupted backup
+and the configured reason of any other failed check.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const { manifest } = await verifyTraceStoreBackup("/backups/2026-09-18");
+```
 
 ## Providers
 
@@ -43530,6 +48776,10 @@ export declare class SQLiteTaskRegistry implements Disposable {
 
 Opens or creates a durable task registry.
 
+A writable file registry is created with the configured owner-only mode; an existing file
+and its sidecars owned by the current user are tightened to that mode. Read-only opens never
+change file modes.
+
 ```ts
 constructor(databasePath?: string, options?: SQLiteTaskRegistryOptions);
 ```
@@ -44169,7 +49419,7 @@ import * as api from "@avnionur/shepherd-typescript/trace";
 void api;
 ```
 
-Exported symbols: 59.
+Exported symbols: 68.
 
 ### `AppendIntentConflictError`
 
@@ -44819,6 +50069,7 @@ Signature:
 export declare class SQLiteTraceStore implements Disposable {
     constructor(databasePath?: string, options?: SQLiteTraceStoreOptions);
     get schemaVersion(): number;
+    get secretScanning(): SecretScanningMode;
     append(request: StoreAppendRequest): AppendReceipt;
     recordOpenOperation(definition: OperationBookkeepingDefinition): OperationBookkeepingDefinition;
     recordOperationSessionDeath(evidence: OperationSessionDeathEvidence): number;
@@ -44837,6 +50088,7 @@ export declare class SQLiteTraceStore implements Disposable {
     readBlob(blobId: BlobId): Uint8Array | undefined;
     verifyBlobs(): BlobIntegrityReport;
     collectBlobOrphans(options?: BlobOrphanCollectionOptions): BlobOrphanCollectionReport;
+    maintain(options?: TraceStoreMaintenanceOptions): TraceStoreMaintenanceReport;
     readRecord(recordId: RecordId): RetainedRecord | undefined;
     readOwner(ownerId: string): readonly OwnerRecord[];
     publishCut(spec: CutSpec): Cut;
@@ -44856,6 +50108,10 @@ export declare class SQLiteTraceStore implements Disposable {
 
 Opens or creates a writable trace store, or opens exact current state read-only.
 
+A writable file database is created with the configured owner-only mode, and an existing
+database and its WAL, SHM, and journal sidecars owned by the current user are tightened to
+that mode before SQLite opens them. Read-only opens never change file modes.
+
 ```ts
 constructor(databasePath?: string, options?: SQLiteTraceStoreOptions);
 ```
@@ -44866,7 +50122,8 @@ Parameter:
 
 Parameter:
 
-- options - Optional external blob directory and read-only policy.
+- options - Optional external blob directory, read-only policy, and secret-scanning
+mode (default `"off"`).
 
 Throws:
 
@@ -44893,6 +50150,14 @@ Current migrated storage-schema version.
 get schemaVersion(): number;
 ```
 
+#### `secretScanning`
+
+Append and import secret-scanning mode chosen when this handle was opened.
+
+```ts
+get secretScanning(): SecretScanningMode;
+```
+
 #### `append`
 
 Atomically commits or idempotently replays one semantic append request.
@@ -44912,6 +50177,11 @@ Returns:
 Throws:
 
 - {AppendIntentConflictError} If the intent already names different content.
+
+Throws:
+
+- {TraceSecretDetectedError} If the store scans in `refuse` mode and a record body
+matches a configured detector; nothing is written and the intent remains reusable.
 
 Throws:
 
@@ -45334,6 +50604,21 @@ Throws:
 
 Throws:
 
+- {TraceSecretDetectedError} If the store scans in `refuse` mode and an archived record
+body matches a configured detector; nothing is written.
+
+Throws:
+
+- {RedactedTraceArchiveError} If the text is a one-way redacted archive.
+
+Throws:
+
+- {TraceArchiveLimitError} If the archive exceeds a configured interchange limit
+(`kernel.interchange.limits`): byte length or nesting depth before parsing, collection counts
+or the declared blob byte total before decoding; nothing is written.
+
+Throws:
+
 - {TypeError} If the archive is malformed, incompatible, or internally inconsistent.
 
 Throws:
@@ -45464,6 +50749,53 @@ const inspection = store.collectBlobOrphans();
 if (inspection.orphan_blob_ids.length > 0) {
     store.collectBlobOrphans({ mode: "delete" });
 }
+```
+
+#### `maintain`
+
+Runs one semantics-preserving maintenance pass: `inspect`, `checkpoint`, `optimize`, or
+`vacuum`.
+
+Every mode runs a bounded SQLite `quick_check` and reports page, freelist, and WAL sizes.
+`checkpoint` truncates the write-ahead log; `optimize` runs `PRAGMA optimize`; `vacuum`
+rebuilds the database file and then checkpoints. Mutating modes refuse a database whose
+`quick_check` fails. No mode changes retained records, views, cuts, append intents, or
+blobs: `exportTrace()` is byte-identical before and after.
+
+```ts
+maintain(options?: TraceStoreMaintenanceOptions): TraceStoreMaintenanceReport;
+```
+
+Parameter:
+
+- options - Optional configured maintenance mode (default `"inspect"`).
+
+Returns:
+
+- A frozen maintenance report.
+
+Throws:
+
+- {TraceStoreReadOnlyError} If the handle was opened with `readOnly: true`.
+
+Throws:
+
+- {TraceStoreError} If the store is closed, or a mutating mode finds a defect.
+
+Throws:
+
+- {TypeError} If options are malformed or select an unconfigured mode.
+
+Throws:
+
+- {Error} If SQLite cannot complete the operation, for example a vacuum while another
+connection holds a transaction.
+
+Example:
+
+- ```ts
+const report = store.maintain({ mode: "vacuum" });
+console.log(report.before.freelist_count, report.after.freelist_count);
 ```
 
 #### `readRecord`
@@ -45786,7 +51118,21 @@ Signature:
 export type SQLiteTraceStoreOptions = {
     readonly blobDirectory?: string;
     readonly readOnly?: boolean;
+    readonly secretScanning?: SecretScanningMode;
 };
+```
+
+### `SecretScanningMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Trace-store append scanning mode. `off` (the default) scans nothing; `refuse` rejects an append
+whose record bodies match a configured detector before anything is written.
+
+Signature:
+
+```ts
+export type SecretScanningMode = (typeof SECRET_SCANNING_MODES)[number];
 ```
 
 ### `Slice`
@@ -45859,6 +51205,60 @@ export type StoreAppendRequest = {
     readonly batch: AppendBatchDraft;
 };
 ```
+
+### `TraceArchiveLimitError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a native or redacted trace archive exceeds a configured interchange limit
+(`kernel.interchange.limits` in `protocol.config.json`).
+
+Byte length and nesting depth are checked before the text is parsed, and collection counts and
+the declared blob byte total before any blob is decoded, so an oversized archive is refused
+without building its object graph or its blob buffers. Nothing is written. The message names
+the limit and the configured bound, never archive content.
+
+Signature:
+
+```ts
+export declare class TraceArchiveLimitError extends TypeError {
+    readonly code: string;
+    readonly limit: string;
+    constructor(limit: string, bound: number);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable archive-limit code.
+
+```ts
+readonly code: string;
+```
+
+#### `limit`
+
+Name of the exceeded `kernel.interchange.limits` member, for example `maxArchiveBytes`.
+
+```ts
+readonly limit: string;
+```
+
+#### `constructor`
+
+Creates a refusal for one exceeded configured limit.
+
+```ts
+constructor(limit: string, bound: number);
+```
+
+Parameter:
+
+- limit - Name of the exceeded `kernel.interchange.limits` member.
+
+Parameter:
+
+- bound - Configured bound that was exceeded.
 
 ### `TraceImportReceipt`
 
@@ -45943,6 +51343,83 @@ export type TraceRevisionEntry = {
 };
 ```
 
+### `TraceSecretDetectedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a store opened with `secretScanning: "refuse"` rejects an append or import whose
+record bodies match a configured secret detector.
+
+The refusal happens before any write, so the append intent stays unused and a corrected retry
+with the same intent succeeds. The message and TraceSecretDetectedError.findings name
+secret classes, JSON Pointers, and digests only; matched text is never included.
+
+Signature:
+
+```ts
+export declare class TraceSecretDetectedError extends TraceStoreError {
+    readonly code: string;
+    readonly findings: readonly SecretFinding[];
+    readonly truncated: boolean;
+    constructor(report: SecretScanReport);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable secret-detection code.
+
+```ts
+readonly code: string;
+```
+
+#### `findings`
+
+Frozen findings: class, pointer, location, and digest of each match.
+
+```ts
+readonly findings: readonly SecretFinding[];
+```
+
+#### `truncated`
+
+Whether more findings existed than the configured limit allows.
+
+```ts
+readonly truncated: boolean;
+```
+
+#### `constructor`
+
+Creates a refusal from a completed scan report.
+
+```ts
+constructor(report: SecretScanReport);
+```
+
+Parameter:
+
+- report - Findings produced by the configured detectors.
+
+### `TraceStoreCheckpointReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one SQLite WAL checkpoint, as reported by `PRAGMA wal_checkpoint`.
+
+With the configured `TRUNCATE` checkpoint mode a complete checkpoint empties the log, so both
+frame counts are zero; compare `before.wal_bytes` and `after.wal_bytes` for the reclaimed size.
+
+Signature:
+
+```ts
+export type TraceStoreCheckpointReport = {
+    readonly busy: boolean;
+    readonly checkpointed_frames: number;
+    readonly wal_frames: number;
+};
+```
+
 ### `TraceStoreError`
 
 Classification: `runtime-and-type`. Kind: `class`.
@@ -45963,6 +51440,102 @@ Stable configured machine-readable trace-store error code.
 
 ```ts
 readonly code: string;
+```
+
+### `TraceStoreMaintenanceMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Semantics-preserving store maintenance operation.
+
+`inspect` runs SQLite `quick_check` and reports space; `checkpoint` also truncates the
+write-ahead log; `optimize` also runs `PRAGMA optimize`; `vacuum` also rebuilds the database
+file and then checkpoints. None changes a record, view, cut, intent, or blob.
+
+Signature:
+
+```ts
+export type TraceStoreMaintenanceMode = "checkpoint" | "inspect" | "optimize" | "vacuum";
+```
+
+### `TraceStoreMaintenanceOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for `SQLiteTraceStore.maintain`.
+
+Signature:
+
+```ts
+export type TraceStoreMaintenanceOptions = {
+    readonly mode?: TraceStoreMaintenanceMode;
+};
+```
+
+### `TraceStoreMaintenanceReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Frozen result of one `SQLiteTraceStore.maintain` pass.
+
+Signature:
+
+```ts
+export type TraceStoreMaintenanceReport = {
+    readonly after: TraceStoreSpaceReport;
+    readonly before: TraceStoreSpaceReport;
+    readonly checkpoint: TraceStoreCheckpointReport | null;
+    readonly mode: TraceStoreMaintenanceMode;
+    readonly optimized: boolean;
+    readonly quick_check: {
+        readonly issues: readonly string[];
+        readonly ok: boolean;
+        readonly truncated: boolean;
+    };
+    readonly schema_version: number;
+    readonly vacuumed: boolean;
+};
+```
+
+### `TraceStoreReadOnlyError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when an operation that requires a writable handle, such as store maintenance, is
+requested on a store opened with `readOnly: true`. Nothing is read or changed.
+
+Signature:
+
+```ts
+export declare class TraceStoreReadOnlyError extends TraceStoreError {
+    readonly code: string;
+}
+```
+
+#### `code`
+
+Stable configured machine-readable read-only refusal code.
+
+```ts
+readonly code: string;
+```
+
+### `TraceStoreSpaceReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Physical space used by the store database and its write-ahead log.
+
+Signature:
+
+```ts
+export type TraceStoreSpaceReport = {
+    readonly database_bytes: number;
+    readonly freelist_count: number;
+    readonly page_count: number;
+    readonly page_size: number;
+    readonly wal_bytes: number;
+};
 ```
 
 ### `UnsupportedStoreSchemaError`

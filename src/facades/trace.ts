@@ -1,4 +1,5 @@
 /** Stable Node-only ESM subpath for trace persistence, interchange, and bounded reads. */
+export { TraceArchiveLimitError } from "../interchange/errors.ts";
 export type { TraceImportReceipt } from "../interchange/types.ts";
 export {
     listOutputCitations,
@@ -29,11 +30,14 @@ export type {
     TraceRevisionEntry,
 } from "../ledger/types.ts";
 export { ROOT_WITNESS_ID } from "../record/root-witness.ts";
+export type { SecretScanningMode } from "../retention/policy.ts";
 export {
     AppendIntentConflictError,
     BlobIntegrityError,
     ProjectionCompatibilityError,
+    TraceSecretDetectedError,
     TraceStoreError,
+    TraceStoreReadOnlyError,
     UnsupportedStoreSchemaError,
 } from "../store/errors.ts";
 export type {
@@ -70,6 +74,11 @@ export type {
     SliceRecord,
     SQLiteTraceStoreOptions,
     StoreAppendRequest,
+    TraceStoreCheckpointReport,
+    TraceStoreMaintenanceMode,
+    TraceStoreMaintenanceOptions,
+    TraceStoreMaintenanceReport,
+    TraceStoreSpaceReport,
     VisibilityProfile,
     WitnessAnchor,
 } from "../store/types.ts";

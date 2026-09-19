@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { mkdtemp, rm } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 
 import { ROOT_WITNESS_ID, SQLiteTraceStore, TraceStoreError } from "../../src/index.ts";
+import { kernelProtocolConfig } from "../../src/protocol/config.ts";
 
 test("trace import rejects incompatible and inconsistent archives without partial state", async (context) => {
     const directory = await mkdtemp(path.join(tmpdir(), "shepherd-import-validation-test-"));
@@ -157,6 +158,33 @@ test("trace import rolls back target SQLite failures", async (context) => {
     assert.equal(
         (JSON.parse(target.exportTrace()) as { append_intents: unknown[] }).append_intents.length,
         0,
+    );
+});
+
+test("trace import stages beside the target store, never in the OS temporary directory", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-import-staging-test-"));
+    context.after(() => rm(directory, { force: true, recursive: true }));
+    using source = new SQLiteTraceStore(path.join(directory, "source.sqlite"));
+    source.putBlob(new TextEncoder().encode("staged beside the target"));
+    const archive = source.exportTrace();
+    const targetDirectory = path.join(directory, "target");
+    await mkdir(targetDirectory);
+    using target = new SQLiteTraceStore(path.join(targetDirectory, "trace.sqlite"));
+    await chmod(targetDirectory, 0o500);
+    try {
+        // The staging directory is created in the target's directory, so a read-only target
+        // directory refuses the import before anything is written.
+        assert.throws(() => target.importTrace(archive), { code: "EACCES" });
+    } finally {
+        await chmod(targetDirectory, 0o700);
+    }
+    assert.equal(target.exportTrace() === archive, false);
+    target.importTrace(archive);
+    assert.equal(target.exportTrace(), archive);
+    const prefix = kernelProtocolConfig.interchange.staging.directoryPrefix;
+    assert.deepEqual(
+        (await readdir(targetDirectory)).filter((name) => name.startsWith(prefix)),
+        [],
     );
 });
 

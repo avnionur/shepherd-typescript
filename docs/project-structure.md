@@ -19,32 +19,43 @@ implementation documentation, and forward-looking plans.
 │   ├── formal/             Typed-effect reference validation and proof-envelope classification
 │   ├── interchange/        Native archive encoding, validation, and import storage
 │   ├── ledger/             Bounded task/run/output/trace/recovery read projections
+│   ├── observability/      Non-canonical OTLP/JSON telemetry exporter, mapping, and JSON-lines sink
+│   ├── operations/         Verified store backup, restore, replication, and backup manifests
 │   ├── projection/         Disposable execution, relation, and history folds
 │   ├── provider/           Provider-neutral contracts and deterministic offline invocation
 │   ├── protocol/           Runtime configuration and generated literals
 │   ├── record/             Record types, envelopes, guards, and snapshots
 │   ├── repair/             Orphan-operation diagnosis and repair contracts
 │   ├── replay/             Replay sessions, coupled checkpoints, rewind, replay, and analysis
+│   ├── retention/          Secret scanning, data classes, redacted export, and retention reports
 │   ├── run/                Outcomes, artifacts, usage, budgets, and cancellation
 │   ├── scope/              Trace-only scope registration, writer fencing, emission, and inspection
-│   ├── store/              SQLite migrations, transactions, codecs, and reads
+│   ├── storage/            Blob-store and coordinator interfaces, reference adapters, and conformance kits
+│   ├── store/              SQLite migrations, transactions, codecs, reads, hot-path SQL, and maintenance
 │   ├── supervision/        Trace subscriptions, supervised effect dispatch, approval, and context
 │   ├── task/               Descriptors, runtime schemas, locks, and durable registration
 │   └── workspace/          Initialization, bindings, and reference retained-world custody
 ├── test/                   Public-seam unit tests and fixture assets
+│   ├── faults/             Kill/restart, disk-full, corruption, and soak suites and their workload
+│   ├── fuzz/               Seeded fuzz harness, mutators, oracle, and targets
+│   ├── fixtures/fuzz-corpus/ Minimized fuzz regression corpus, one directory per target
+│   └── support/            Shared test helpers (seeded mulberry32 PRNG)
 ├── spec/                   Language-neutral JSON Schema contracts
+│   └── compatibility/      API/protocol baselines and the append-only classified change log
 ├── scripts/                Thin executable command adapters for package scripts
 ├── tooling/                Tested repository-tooling implementations
 │   ├── api-reference/      Emitted-declaration reference generation
+│   ├── benchmark/          Kernel benchmark dataset, measurement, and SLO evaluation
 │   ├── build/              Safe cleanup and runtime-configuration copying
+│   ├── compatibility/      API/protocol surface extraction and the compatibility policy gate
 │   ├── evaluation/         Repository evaluation fixtures and the evaluation report writer
 │   ├── protocol/           Protocol artifact generation and schema renderers
-│   ├── release/            Validated semantic-version synchronization
+│   ├── release/            Version sync, lockfile SBOM, provenance, and reproducible builds
 │   └── testing/            Test-runner and installed-package conformance modules
 ├── .github/                CI, security automation, and contribution templates
 ├── docs/                   Implemented contracts and contributor guidance
 ├── .plan/                  Research, roadmap, decisions, and progress tracker
-├── config/                 Repository test-runner, entry-loading, bundle, runtime-boundary, and experiment policy
+├── config/                 Repository test-runner, entry-loading, bundle, runtime-boundary, experiment, compatibility, release-integrity, scale, benchmark, SLO, and hardening-suite (fuzz, faults, soak) policy
 ├── project.config.json     CLI ecosystem identity
 ├── api-reference.config.json Generated API-reference ownership and leakage policy
 ├── examples/               Installed examples, scenario configuration, and conformance manifest
@@ -83,6 +94,11 @@ workspace area → applications world adapter types for the scope world adapter
 store area → applications protocol configuration for reserved application owner paths
 public exports → replay area → effect records, provider validation, task descriptors, store, scope validation helpers, reference copy carrier world-image helpers, and protocol configuration
 store area → replay errors for session lease bookkeeping
+public exports → retention area → trace-store handles (read only), native archive decoding, canonical encoding, and protocol configuration
+store and interchange areas → retention secret scanning and redacted-archive errors for append and import refusal
+public exports → storage area → blob filesystem and identity, the owner-only database file helper, SQLite defensive probe, public errors, and protocol configuration
+public exports and CLI store handlers → operations area → trace-store handles (online backup seam, verification, export), storage backends and coordinators, the owner-only database file helper, canonical encoding, public errors, and protocol configuration
+public exports → observability area → supervision subscriptions, trace-store handles (read only), retention classification and secret scanning, canonical encoding, and protocol configuration
 public exports → workspace area → filesystem, Git, hashing, and protocol configuration
 workspace area → scope commands, codecs, and inspection, and store transactions, for scope forks
 script command adapters → tooling module interfaces
@@ -149,6 +165,22 @@ The runtime areas are organized around cohesive protocol responsibilities:
   dependency analysis, branch replay, and divergence analysis, and the offline evaluation runner
   that folds every configured application and its baseline into one measured-only report, without
   workspace, provider, or filesystem authority of its own;
+- `retention/` owns configured secret detection that reports classes, JSON Pointers, and digests
+  but never matched text, schema-derived data classes and export dispositions, the one-way redacted
+  archive built on the native export and its verifier, and the read-only retention report, without
+  any write, delete, or rewrite authority over records, blobs, or files;
+- `storage/` owns the `BlobStoreBackend` and `StorageCoordinator` contracts, their shared
+  validation and lease and swap decisions, the memory and filesystem blob backends (the latter
+  wrapping the unchanged `BlobFilesystem`), the memory and SQLite coordinators, and the conformance
+  kits; it never writes canonical records and is not the trace store's blob layer;
+- `operations/` owns the backup manifest, online database copy, blob copy through a
+  `BlobStoreBackend`, staged verification, non-destructive restore, and reference replication; it
+  never writes into an existing store, copies records only as whole database pages, and publishes a
+  backup or restore only after verifying it;
+- `observability/` owns the hand-written OTLP/JSON subset types, the deterministic record-to-span
+  and record-to-log mapping with retention-governed bodies, the at-least-once telemetry exporter
+  over one trace subscription, and the owner-only JSON-lines sink; it never appends records, and
+  its output is never read back into a trace;
 - `replay/` owns deterministic session programs and their fenced step journals, runtime-derived
   prompt, prefix, and context prefix identities, coupled checkpoints with trace-store world and
   process images, verified rewind and recorded-prefix replay, irreversible-effect replay policy,
@@ -161,7 +193,8 @@ The runtime areas are organized around cohesive protocol responsibilities:
   workspace authority;
 - `store/` owns SQLite lifecycle, schema migration, append transactions, durable receipts,
   retained reads, immutable cuts, graph-shaped slices, blob metadata, integrity scans, and append
-  recovery, orphan-collection diagnostics, and exact bookkeeping-only orphan-operation repair.
+  recovery, orphan-collection diagnostics, exact bookkeeping-only orphan-operation repair, the
+  hot-path SQL checked by query-plan tests, and semantics-preserving maintenance.
 - `task/` owns bodyless descriptor construction, inferred runtime schemas, validation snapshots,
   canonical task artifacts, exact artifact locks, and the independently migrated SQLite task
   registry.
@@ -183,7 +216,12 @@ The runtime areas are organized around cohesive protocol responsibilities:
 
 Files under `scripts/` parse command-line input and invoke one tooling module interface. They do not
 own generation, build, release, or conformance behavior. Reusable repository-only implementations
-live under `tooling/`, and focused tests import those modules directly.
+live under `tooling/`, and focused tests import those modules directly. The two exceptions are
+`scripts/fuzz-cli.ts` (`pnpm fuzz`), a thin adapter over the test-owned fuzz harness in
+`test/fuzz/harness.ts`, and `scripts/soak-cli.ts` (`pnpm test:soak`), a thin adapter over the
+test-owned soak in `test/faults/soak.ts`: both are seeded from test fixtures and run in bounded
+form in `pnpm test`, so they stay with the tests
+([fault and fuzz conformance](./fault-and-fuzz-conformance.md)).
 
 The ordinary typecheck covers `src/`, `scripts/`, `tooling/`, and `test/`. The production build has
 an explicit runtime-only include and preserves package targets under `dist/src/`; it must not emit

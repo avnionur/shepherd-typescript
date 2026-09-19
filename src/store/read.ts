@@ -7,6 +7,7 @@ import type { RecordBody, RecordEnvelope, RecordId, RecordMode } from "../record
 import { validateRecordEnvelope } from "../record/validation.ts";
 import { STORE_TABLES } from "./constants.ts";
 import { TraceStoreError } from "./errors.ts";
+import { HOT_PATH_SQL, listOwnersBySchemaSql } from "./statements.ts";
 import type { OwnerRecord, RetainedRecord } from "./types.ts";
 
 /** Reads one semantic record and every owner-local view. */
@@ -14,39 +15,38 @@ export function readStoredRecord(
     database: DatabaseSync,
     recordId: RecordId,
 ): RetainedRecord | undefined {
-    const row = database
-        .prepare(
-            `SELECT record_id, digest, schema_ref, mode, witness_ref, caused_by_json, body_json
-             FROM ${STORE_TABLES.records} WHERE record_id = ?`,
-        )
-        .get(recordId);
+    const row = database.prepare(HOT_PATH_SQL.record).get(recordId);
     if (row === undefined) {
         return undefined;
     }
     const record = decodeRecordRow(row);
-    const views = database
-        .prepare(
-            `SELECT append_intent_id, owner_id, owner_ordinal FROM ${STORE_TABLES.recordViews}
-             WHERE record_id = ? ORDER BY owner_id, owner_ordinal`,
-        )
-        .all(recordId)
-        .map(decodeViewRow);
+    const views = database.prepare(HOT_PATH_SQL.recordViews).all(recordId).map(decodeViewRow);
     return Object.freeze({ ...record, views: Object.freeze(views) });
+}
+
+/** Visits every validated semantic record in record-identity order from one statement. @internal */
+export function visitStoredRecords(
+    database: DatabaseSync,
+    visitor: (record: { readonly body: RecordBody; readonly envelope: RecordEnvelope }) => void,
+): number {
+    let count = 0;
+    for (const row of database
+        .prepare(
+            `SELECT record_id, digest, schema_ref, mode, witness_ref, caused_by_json, body_json
+             FROM ${STORE_TABLES.records} ORDER BY record_id`,
+        )
+        .iterate()) {
+        visitor(decodeRecordRow(row));
+        count += 1;
+    }
+    return count;
 }
 
 /** Reads every retained record occurrence on one owner path. */
 export function readOwnerRecords(database: DatabaseSync, ownerId: string): readonly OwnerRecord[] {
     return Object.freeze(
         database
-            .prepare(
-                `SELECT r.record_id, r.digest, r.schema_ref, r.mode, r.witness_ref,
-                        r.caused_by_json, r.body_json, v.append_intent_id, v.owner_id,
-                        v.owner_ordinal
-                 FROM ${STORE_TABLES.recordViews} v
-                 JOIN ${STORE_TABLES.records} r ON r.record_id = v.record_id
-                 WHERE v.owner_id = ?
-                 ORDER BY v.owner_ordinal`,
-            )
+            .prepare(HOT_PATH_SQL.ownerRecords)
             .all(ownerId)
             .map((row) => {
                 const record = decodeRecordRow(row);
@@ -64,16 +64,7 @@ export function readOwnerRecordAtOrdinal(
     ownerId: string,
     ordinal: number,
 ): OwnerRecord {
-    const row = database
-        .prepare(
-            `SELECT r.record_id, r.digest, r.schema_ref, r.mode, r.witness_ref,
-                    r.caused_by_json, r.body_json, v.append_intent_id, v.owner_id,
-                    v.owner_ordinal
-             FROM ${STORE_TABLES.recordViews} v
-             JOIN ${STORE_TABLES.records} r ON r.record_id = v.record_id
-             WHERE v.owner_id = ? AND v.owner_ordinal = ?`,
-        )
-        .get(ownerId, ordinal);
+    const row = database.prepare(HOT_PATH_SQL.ownerRecordAtOrdinal).get(ownerId, ordinal);
     if (row === undefined) {
         throw new TraceStoreError("cut owner occurrence or its retained record is missing");
     }
@@ -89,20 +80,8 @@ export function listOwnerIdsBySchema(
     descending: boolean,
     ownerPrefix?: string,
 ): readonly string[] {
-    const direction = descending ? "DESC" : "ASC";
-    const prefixClause =
-        ownerPrefix === undefined ? "" : "AND substr(v.owner_id, 1, length(?)) = ?";
     const rows = database
-        .prepare(
-            `SELECT v.owner_id
-             FROM ${STORE_TABLES.recordViews} AS v
-             INNER JOIN ${STORE_TABLES.records} AS r ON r.record_id = v.record_id
-             WHERE r.schema_ref = ?
-             ${prefixClause}
-             GROUP BY v.owner_id
-             ORDER BY CAST(MIN(r.record_id) AS BLOB) ${direction}, CAST(v.owner_id AS BLOB) ${direction}
-             LIMIT ? OFFSET ?`,
-        )
+        .prepare(listOwnersBySchemaSql(descending, ownerPrefix !== undefined))
         .all(
             ...(ownerPrefix === undefined
                 ? [schemaRef, limit, offset]

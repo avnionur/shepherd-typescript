@@ -206,11 +206,100 @@
             }
         }
     },
+    "backup": {
+        "artifacts": {
+            "manifestSchema": "spec/schemas/store-backup-manifest-v1.schema.json"
+        },
+        "blobLocations": ["directory", "backend"],
+        "compatibilityVersion": "shepherd.backup.v1",
+        "databaseJournalMode": "DELETE",
+        "digestAlgorithm": "sha256",
+        "digestPrefix": "sha256:",
+        "directoryMode": "0700",
+        "failureReasons": [
+            "backup-unsupported",
+            "destination-exists",
+            "manifest-missing",
+            "manifest-invalid",
+            "manifest-mismatch",
+            "schema-unsupported",
+            "database-mismatch",
+            "blob-mismatch",
+            "integrity-failed",
+            "export-mismatch",
+            "target-exists"
+        ],
+        "layout": {
+            "blobDirectory": "blobs",
+            "database": "trace.sqlite",
+            "manifest": "manifest.json",
+            "stagingPrefix": ".shepherd-restore-",
+            "temporarySuffix": ".partial"
+        },
+        "limits": {
+            "maxManifestBytes": 67108864,
+            "pagesPerStep": 256
+        },
+        "manifest": {
+            "format": "shepherd.store.backup",
+            "formatVersion": 1
+        },
+        "schemas": {
+            "manifestId": "https://avnionur.github.io/shepherd-typescript/schemas/store-backup-manifest-v1.schema.json"
+        }
+    },
     "cli": {
         "artifacts": {
             "commandReference": "docs/generated/cli-reference.md",
             "jsonOutputSchema": "spec/schemas/cli-output-v1.schema.json",
             "quickstartDemo": "examples/quickstart.mjs"
+        },
+        "commandOptions": {
+            "demo-write": { "flags": [], "values": [] },
+            "doctor": { "flags": [], "values": ["registry", "store", "workspace"] },
+            "run-apply": {
+                "flags": [],
+                "values": ["bindingName", "bindingRoot", "command", "store", "workspace"]
+            },
+            "run-changeset": {
+                "flags": [],
+                "values": ["limit", "maxBytes", "offset", "read", "store", "workspace"]
+            },
+            "run-discard": {
+                "flags": [],
+                "values": ["bindingName", "bindingRoot", "command", "store", "workspace"]
+            },
+            "run-list": { "flags": [], "values": ["limit", "offset", "store"] },
+            "run-output-citations": { "flags": [], "values": ["limit", "offset", "store"] },
+            "run-outputs": { "flags": [], "values": ["limit", "offset", "store"] },
+            "run-publish-retained-workspace-output": { "flags": [], "values": ["store"] },
+            "run-recovery-records": { "flags": [], "values": ["limit", "offset", "store"] },
+            "run-release": {
+                "flags": [],
+                "values": ["bindingName", "bindingRoot", "command", "store", "workspace"]
+            },
+            "run-repair": { "flags": [], "values": ["command", "store"] },
+            "run-select": {
+                "flags": [],
+                "values": ["bindingName", "bindingRoot", "command", "store", "workspace"]
+            },
+            "run-show": { "flags": [], "values": ["store"] },
+            "run-trace": { "flags": [], "values": ["limit", "offset", "store"] },
+            "run-trace-revision": { "flags": [], "values": ["limit", "offset", "store"] },
+            "run-vcscore": { "flags": [], "values": ["store"] },
+            "store-backup": { "flags": [], "values": ["output", "store"] },
+            "store-export": { "flags": ["redacted"], "values": ["output", "store"] },
+            "store-import": { "flags": [], "values": ["input", "store"] },
+            "store-maintain": { "flags": [], "values": ["mode", "store"] },
+            "store-restore": { "flags": [], "values": ["backup", "manifest", "store"] },
+            "store-verify": { "flags": [], "values": ["backup", "manifest", "store"] },
+            "task-list": { "flags": [], "values": ["limit", "offset", "registry"] },
+            "task-resolve": { "flags": [], "values": ["registry"] },
+            "task-show": { "flags": [], "values": ["registry"] },
+            "unsupported-package-init": { "flags": [], "values": [] },
+            "unsupported-start": { "flags": [], "values": [] },
+            "unsupported-task-register": { "flags": [], "values": [] },
+            "workspace-init": { "flags": ["initializeGit", "noInitializeGit"], "values": ["adopt"] }
         },
         "compatibilityVersion": "shepherd.cli.v1",
         "defaults": {
@@ -246,6 +335,12 @@
             "runTrace": "run-trace",
             "runTraceRevision": "run-trace-revision",
             "runVcsCore": "run-vcscore",
+            "storeBackup": "store-backup",
+            "storeExport": "store-export",
+            "storeImport": "store-import",
+            "storeMaintain": "store-maintain",
+            "storeRestore": "store-restore",
+            "storeVerify": "store-verify",
             "taskList": "task-list",
             "taskResolve": "task-resolve",
             "taskShow": "task-show",
@@ -311,6 +406,18 @@
                 "commands": [{ "handler": "unsupported-package-init", "name": "init" }],
                 "handler": null,
                 "name": "package"
+            },
+            {
+                "commands": [
+                    { "handler": "store-verify", "name": "verify" },
+                    { "handler": "store-backup", "name": "backup" },
+                    { "handler": "store-restore", "name": "restore" },
+                    { "handler": "store-export", "name": "export" },
+                    { "handler": "store-import", "name": "import" },
+                    { "handler": "store-maintain", "name": "maintain" }
+                ],
+                "handler": null,
+                "name": "store"
             }
         ],
         "limits": {
@@ -356,6 +463,12 @@
                 "run-trace": [["trace_revision"], ["trace_revisions"]],
                 "run-trace-revision": [["trace_revision"], ["trace_revisions"]],
                 "run-vcscore": [["vcscore"]],
+                "store-backup": [["backup"]],
+                "store-export": [["export"]],
+                "store-import": [["import"]],
+                "store-maintain": [["maintenance"]],
+                "store-restore": [["restore"]],
+                "store-verify": [["backup_verification"], ["store_verification"]],
                 "task-list": [["tasks"]],
                 "task-resolve": [["task"]],
                 "task-show": [["task"]],
@@ -384,15 +497,21 @@
         },
         "options": {
             "adopt": "adopt",
+            "backup": "backup",
             "bindingName": "binding-name",
             "bindingRoot": "binding-root",
             "command": "command",
             "initializeGit": "initialize-git",
+            "input": "input",
             "json": "json",
             "limit": "limit",
+            "manifest": "manifest",
             "maxBytes": "max-bytes",
+            "mode": "mode",
             "noInitializeGit": "no-initialize-git",
             "offset": "offset",
+            "output": "output",
+            "redacted": "redacted",
             "registry": "registry",
             "read": "read",
             "store": "store",
@@ -671,6 +790,61 @@
             }
         }
     },
+    "observability": {
+        "artifacts": {
+            "batchSchema": "spec/schemas/telemetry-batch-v1.schema.json"
+        },
+        "attributeNamespace": "shepherd",
+        "batch": {
+            "format": "shepherd.telemetry.batch",
+            "formatVersion": 1
+        },
+        "bodies": {
+            "defaultMode": "omit",
+            "handlings": ["included", "withheld", "redacted", "omitted", "oversized"],
+            "modes": ["omit", "retention-policy"]
+        },
+        "compatibilityVersion": "shepherd.observability.v1",
+        "ids": {
+            "digestAlgorithm": "sha256",
+            "spanDomain": "shepherd.telemetry.span-id.v1",
+            "traceDomain": "shepherd.telemetry.trace-id.v1"
+        },
+        "instrumentationScopeName": "shepherd-typescript",
+        "limits": {
+            "defaultRecordsPerBatch": 64,
+            "maxBodyBytes": 65536,
+            "maxRecordsPerBatch": 1024
+        },
+        "otlp": {
+            "logSeverityNumber": 9,
+            "logSeverityText": "INFO",
+            "protoVersion": "1.11.0",
+            "spanKind": 1,
+            "statusCodes": {
+                "error": 2,
+                "ok": 1
+            }
+        },
+        "resourceAttributes": {
+            "service.name": "shepherd-typescript"
+        },
+        "runSpans": {
+            "name": "shepherd.run",
+            "startSchemaRefs": ["shepherd2.execution.created.v1"],
+            "terminalSchemaRefs": {
+                "shepherd2.execution.completed.v1": "ok",
+                "shepherd2.execution.failed.v1": "error"
+            }
+        },
+        "schemas": {
+            "batchId": "https://avnionur.github.io/shepherd-typescript/schemas/telemetry-batch-v1.schema.json"
+        },
+        "semanticConventions": {
+            "schemaUrlPrefix": "https://opentelemetry.io/schemas/",
+            "version": "1.37.0"
+        }
+    },
     "recordId": {
         "algorithm": "sha256",
         "prefix": "sha256:",
@@ -825,6 +999,122 @@
             "session": "shepherd.replay.session.v1",
             "step": "shepherd.replay.step.v1",
             "terminal": "shepherd.replay.terminal.v1"
+        }
+    },
+    "retention": {
+        "artifacts": {
+            "redactedArchiveSchema": "spec/schemas/redacted-trace-archive-v1.schema.json",
+            "reportSchema": "spec/schemas/retention-report-v1.schema.json"
+        },
+        "compatibilityVersion": "shepherd.retention.v1",
+        "dataClasses": ["checkpoint", "context", "general", "memory-adapter", "provider-citation"],
+        "defaultDataClass": "general",
+        "digestAlgorithm": "sha256",
+        "digestPrefix": "sha256:",
+        "dispositions": ["include", "omit-body", "redact"],
+        "exportDispositions": {
+            "checkpoint": "include",
+            "context": "redact",
+            "general": "include",
+            "memory-adapter": "omit-body",
+            "provider-citation": "redact"
+        },
+        "familyKeys": ["schemas", "traceSchemas"],
+        "limits": {
+            "maxFindings": 64,
+            "maxReportedRecords": 256
+        },
+        "redactedArchive": {
+            "format": "shepherd.trace.redacted-archive",
+            "formatVersion": 1
+        },
+        "report": {
+            "format": "shepherd.trace.retention-report",
+            "formatVersion": 1
+        },
+        "scanning": {
+            "defaultMode": "off",
+            "findingDigestPrefix": "hmac-sha256:",
+            "modes": ["off", "refuse"]
+        },
+        "schemaFamilies": [
+            { "dataClass": "general", "path": "applications.schemas" },
+            { "dataClass": "general", "path": "applications.traceSchemas" },
+            { "dataClass": "general", "path": "backup.schemas" },
+            { "dataClass": "general", "path": "delegation.schemas" },
+            { "dataClass": "context", "path": "delegation.schemas.contextId" },
+            { "dataClass": "general", "path": "delegation.traceSchemas" },
+            { "dataClass": "context", "path": "delegation.traceSchemas.context" },
+            { "dataClass": "general", "path": "effects.schemas" },
+            { "dataClass": "general", "path": "kernel.schemas" },
+            { "dataClass": "general", "path": "observability.schemas" },
+            { "dataClass": "general", "path": "orphanRepair.schemas" },
+            { "dataClass": "general", "path": "orphanRepair.traceSchemas" },
+            { "dataClass": "provider-citation", "path": "projections.evidenceRecords.schemas" },
+            { "dataClass": "general", "path": "projections.taskRunLedgers.schemas" },
+            { "dataClass": "general", "path": "replay.schemas" },
+            { "dataClass": "checkpoint", "path": "replay.schemas.checkpointId" },
+            { "dataClass": "checkpoint", "path": "replay.schemas.restoreId" },
+            { "dataClass": "provider-citation", "path": "replay.schemas.stepId" },
+            { "dataClass": "general", "path": "replay.traceSchemas" },
+            { "dataClass": "checkpoint", "path": "replay.traceSchemas.checkpoint" },
+            { "dataClass": "checkpoint", "path": "replay.traceSchemas.restore" },
+            { "dataClass": "provider-citation", "path": "replay.traceSchemas.step" },
+            { "dataClass": "general", "path": "retention.schemas" },
+            { "dataClass": "general", "path": "runs.schemas" },
+            { "dataClass": "provider-citation", "path": "runs.schemas.artifactId" },
+            { "dataClass": "checkpoint", "path": "runs.schemas.continuationDescriptorId" },
+            { "dataClass": "provider-citation", "path": "runs.schemas.outcomeId" },
+            { "dataClass": "provider-citation", "path": "runs.schemas.usageId" },
+            { "dataClass": "general", "path": "scopes.schemas" },
+            { "dataClass": "general", "path": "scopes.traceSchemas" },
+            { "dataClass": "general", "path": "supervision.schemas" },
+            { "dataClass": "context", "path": "supervision.schemas.contextId" },
+            { "dataClass": "general", "path": "supervision.traceSchemas" },
+            { "dataClass": "context", "path": "supervision.traceSchemas.context" },
+            { "dataClass": "general", "path": "tasks.schemas" },
+            { "dataClass": "general", "path": "workspaces.placements.nativeJails.schemas" },
+            { "dataClass": "general", "path": "workspaces.placements.schemas" },
+            { "dataClass": "general", "path": "workspaces.repositoryGrants.schemas" },
+            { "dataClass": "general", "path": "workspaces.settlement.application.schemas" },
+            { "dataClass": "checkpoint", "path": "workspaces.worldTaskCapture.captureSchemaId" }
+        ],
+        "schemas": {
+            "redactedArchiveId": "https://avnionur.github.io/shepherd-typescript/schemas/redacted-trace-archive-v1.schema.json",
+            "reportId": "https://avnionur.github.io/shepherd-typescript/schemas/retention-report-v1.schema.json"
+        },
+        "secretClasses": [
+            {
+                "flags": "u",
+                "name": "aws-access-key-id",
+                "pattern": "\\b(?:AKIA|ASIA)[0-9A-Z]{16}\\b"
+            },
+            {
+                "flags": "u",
+                "name": "bearer-token",
+                "pattern": "\\b[Bb]earer[ \\t]+[A-Za-z0-9._~+/-]{20,}=*"
+            },
+            {
+                "flags": "u",
+                "name": "github-token",
+                "pattern": "\\b(?:gh[oprsu]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{40,})"
+            },
+            { "flags": "u", "name": "google-api-key", "pattern": "\\bAIza[0-9A-Za-z_-]{35}" },
+            {
+                "flags": "u",
+                "name": "pem-private-key",
+                "pattern": "-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----"
+            },
+            {
+                "flags": "u",
+                "name": "provider-api-key",
+                "pattern": "\\bsk-(?:ant-|proj-)?[A-Za-z0-9_-]{20,}"
+            },
+            { "flags": "u", "name": "slack-token", "pattern": "\\bxox[aboprs]-[A-Za-z0-9-]{10,}" }
+        ],
+        "storeFiles": {
+            "mode": "0600",
+            "sidecarSuffixes": ["-journal", "-shm", "-wal"]
         }
     },
     "runs": {
@@ -1080,6 +1370,40 @@
         },
         "worldCapabilities": ["trace_only", "reference_copy"],
         "writerClaimLeaseMilliseconds": 30000
+    },
+    "storage": {
+        "blobs": {
+            "defaultListLimit": 256,
+            "maxListLimit": 4096
+        },
+        "compatibilityVersion": "shepherd.storage.v1",
+        "coordinator": {
+            "busyTimeoutMilliseconds": 5000,
+            "defensive": true,
+            "foreignKeys": true,
+            "journalMode": "WAL",
+            "migrations": [1],
+            "schemaVersion": 1,
+            "synchronous": "FULL",
+            "transactionMode": "IMMEDIATE"
+        },
+        "durabilities": ["durable", "volatile"],
+        "leases": {
+            "maxOwnerLength": 256,
+            "maxTtlMilliseconds": 86400000,
+            "minTtlMilliseconds": 1
+        },
+        "names": {
+            "maxLength": 256,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+        },
+        "refs": {
+            "maxValueLength": 4096
+        },
+        "statuses": {
+            "lease": ["acquired", "held", "renewed", "released", "fenced"],
+            "refSwap": ["swapped", "conflict", "fenced"]
+        }
     },
     "supervision": {
         "approval": {
@@ -1382,7 +1706,20 @@
         "interchange": {
             "blobEncoding": "base64",
             "format": "shepherd.trace.archive",
-            "formatVersion": 1
+            "formatVersion": 1,
+            "limits": {
+                "maxAppendIntents": 1000000,
+                "maxArchiveBytes": 268435456,
+                "maxBlobBytes": 201326592,
+                "maxBlobs": 1000000,
+                "maxCuts": 1000000,
+                "maxNestingDepth": 4096,
+                "maxRecordViews": 4000000,
+                "maxRecords": 1000000
+            },
+            "staging": {
+                "directoryPrefix": ".shepherd-import-stage-"
+            }
         },
         "queries": {
             "closurePolicies": ["include_external_anchors", "visible_only"],
@@ -1415,6 +1752,13 @@
             "defensive": true,
             "foreignKeys": true,
             "journalMode": "WAL",
+            "maintenance": {
+                "defaultMode": "inspect",
+                "modes": ["inspect", "checkpoint", "optimize", "vacuum"],
+                "quickCheckMaxIssues": 25,
+                "walCheckpointMode": "TRUNCATE",
+                "walFileSuffix": "-wal"
+            },
             "migrations": [
                 {
                     "firstOwnerOrdinal": 0,
@@ -1475,9 +1819,14 @@
                     "firstOwnerOrdinal": 0,
                     "lastOwnerOrdinal": 9007199254740990,
                     "version": 12
+                },
+                {
+                    "firstOwnerOrdinal": 0,
+                    "lastOwnerOrdinal": 9007199254740990,
+                    "version": 13
                 }
             ],
-            "schemaVersion": 12,
+            "schemaVersion": 13,
             "synchronous": "FULL",
             "transactionMode": "IMMEDIATE"
         },
@@ -1777,6 +2126,14 @@
         "format": "shepherd.workspace-control",
         "formatVersion": 1,
         "gitExecutable": "git",
+        "gitInvocation": {
+            "configOverrides": ["core.fsmonitor=false", "core.untrackedCache=false"],
+            "environment": {
+                "GIT_OPTIONAL_LOCKS": "0",
+                "GIT_TERMINAL_PROMPT": "0"
+            },
+            "removedEnvironmentPrefixes": ["GIT_"]
+        },
         "gitCustody": {
             "archiveExecutable": "tar",
             "basisIdPrefix": "git-basis:sha256:",

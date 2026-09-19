@@ -50,10 +50,11 @@ Coverage is earned in explicit levels so planned behavior is never presented as 
 | L1 | Shepherd `0.3.0` settlement compatibility | Complete in 1.51.0 |
 | L2 | Scope and versioned-world substrate parity | Complete in 2.7.1 for the recorded hosts |
 | L3 | Paper programming-model parity | Complete in 2.20.1 for the documented scope: live observation and interception (Phase 7) in 2.10.1, coupled checkpoints, rewind, and replay (Phase 8) in 2.15.1, and task-as-value meta-agents (Phase 9) in 2.20.1; research applications (Phase 10) complete in 2.25.1 for the documented offline scope |
-| L4 | Production security, recovery, performance, packaging, and releases | Planned |
+| L4 | Production security, recovery, performance, packaging, and releases | Release candidate for the in-repo scope in 2.32.4 ([Phase 11 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-11-exit-audit.md)); 1.0 general availability is no-go until the owner-owed items close: external security review, signed provenance and publication, hosted CI and cross-OS lanes, private vulnerability reporting, and the registry name |
 
 Naming, MIT licensing, ESM package exports, and installed consumer compatibility are defined.
-Publication remains disabled until registry ownership and release checks are complete.
+Publication remains disabled until registry ownership and release checks are complete. "1.0" is the
+L4 maturity milestone, not a package version; see the [1.0 release notes](./docs/release-notes-1.0.md).
 
 ## Current capability
 
@@ -343,8 +344,8 @@ examples to these programs and identifies adapted and unsupported behavior.
 ## API
 
 The package is ESM-only. Supported entries are `.`, `./applications`, `./canonical`, `./cli`, `./effects`,
-`./delegation`, `./providers`, `./read`, `./replay`, `./runs`, `./scopes`, `./supervision`,
-`./tasks`, `./trace`, and `./workspace`; see
+`./delegation`, `./operations`, `./providers`, `./read`, `./replay`, `./runs`, `./scopes`,
+`./supervision`, `./tasks`, `./trace`, and `./workspace`; see
 [Package exports and module policy](./docs/package-exports.md). The checked-in and packaged
 [generated API reference](./docs/generated/api-reference.md) lists every supported symbol,
 signature, JSDoc contract, runtime requirement, and authority note; its
@@ -636,10 +637,25 @@ pnpm test
 pnpm typecheck
 pnpm lint
 pnpm check:protocol
+pnpm check:compatibility
+pnpm check:sbom
 pnpm build
 pnpm verify
 pnpm verify:serial
+pnpm verify:release
+pnpm bench:kernel
+pnpm check:slo
+pnpm fuzz
+pnpm test:soak --duration 600
+pnpm test:faults:volume
 ```
+
+`pnpm test` includes the default seeded fuzz tier and replays the regression corpus; `pnpm fuzz`
+runs the extended tier (`--seed`, `--iterations`, `--target`, `--json`)
+([fault and fuzz conformance](./docs/fault-and-fuzz-conformance.md)). `pnpm test` also runs the
+kill/restart, disk-full, and corruption fault suites and a bounded soak; `pnpm test:soak` runs the
+mixed soak for a wall-clock budget, and `pnpm test:faults:volume` fills a macOS disk image to
+exercise real `ENOSPC` (both outside `pnpm verify`).
 
 Biome provides formatting and linting. Node's built-in test runner executes TypeScript directly.
 The test command enforces 100% line, branch, and function coverage for runtime source. The serial
@@ -651,7 +667,18 @@ release, and conformance implementations live under `tooling/`. The production c
 only `src/`, so repository tooling is typechecked but is not emitted into `dist/`.
 
 Release versions are configured in `release-config.yaml`. After changing the version, run
-`pnpm sync:version` to update every configured JSON manifest.
+`pnpm sync:version` to update every configured JSON manifest, then refresh the version-bearing
+evidence: `pnpm generate:api-reference`, `pnpm generate:sbom`, and
+`pnpm update:compatibility-baseline`.
+
+`pnpm verify` enforces the [compatibility policy](./docs/compatibility-policy.md): removed exports,
+error codes, CLI commands, or schema branches, narrowed schemas, and removed or reordered
+migrations fail with a precise message unless the configured deprecation window, classification,
+and version bump allow them. `pnpm verify:release` additionally runs `pnpm check:slo` (kernel
+benchmark budgets for the reference host class, [performance report](./docs/performance-report.md);
+`pnpm bench:kernel` records a new artifact), builds and packs twice and requires
+byte-identical tarballs, then writes a lockfile SBOM and an unsigned provenance statement into the
+ignored `release/` directory ([release integrity](./docs/release-integrity.md)).
 
 Protocol modes, identifier shape, append defaults, interchange versions, and generated schemas are
 configured in `protocol.config.json`. After changing them, run `pnpm generate:protocol`; the
@@ -668,6 +695,15 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 ## Documentation
 
 - [Documentation index](./docs/README.md)
+- [Threat model](./docs/threat-model.md)
+- [Support policy](./docs/support-policy.md)
+- [Incident response](./docs/incident-response.md)
+- [Secrets and retention](./docs/secrets-and-retention.md)
+- [Storage interfaces](./docs/storage-interfaces.md)
+- [Backup, restore, and migration](./docs/backup-restore-and-migration.md)
+- [Performance report](./docs/performance-report.md)
+- [Observability](./docs/observability.md)
+- [Fault and fuzz conformance](./docs/fault-and-fuzz-conformance.md)
 - [Command-line interface](./docs/cli.md)
 - [Project structure](./docs/project-structure.md)
 - [Reference copy carrier](./docs/reference-copy-carrier.md)
@@ -758,9 +794,43 @@ maps [application manifests](./docs/application-manifests.md), the
 [Tree-RL adapter](./docs/tree-rl-rollouts.md), and
 [application evaluation](./docs/application-evaluation.md) to the research application exit
 criteria. Every figure is an offline measurement on synthetic fixtures; no upstream headline result
-is reproduced. Phase 11 (production hardening and 1.0) is next.
+is reproduced. Phase 11 (production hardening and 1.0) is in progress: its
+[threat model](./docs/threat-model.md), [support policy](./docs/support-policy.md), and
+[incident response](./docs/incident-response.md) are published, and "1.0" names the L4 maturity
+milestone, not a package version. [Secrets and retention](./docs/secrets-and-retention.md)
+(2.27.0) adds opt-in secret refusal at append time, retention data classes, one-way redacted
+exports, and owner-only SQLite file modes through the `./operations` entry and the trace store.
+[Storage interfaces](./docs/storage-interfaces.md) (2.28.0) add blob-store and coordinator
+contracts with conformance kits and local memory, filesystem, and SQLite reference adapters; the
+SQLite trace store remains the only canonical append store.
+[Backup, restore, and migration](./docs/backup-restore-and-migration.md) (2.29.0) adds verified
+online backups with a digest-bearing manifest, non-destructive exact-manifest restore, replication
+by compare-and-swap, the forward-only schema and downgrade policy, migration drills for every
+historical store schema, and the `shepherd-ts store` command group. The
+[performance report](./docs/performance-report.md) (2.30.0) publishes kernel benchmarks and SLO
+budgets for the macOS arm64 APFS reference host only, alongside semantics-preserving store
+maintenance (`SQLiteTraceStore.maintain`, `shepherd-ts store maintain`), query-plan tests with no
+full table scans on hot paths, and a bounded scale tier.
+[Observability](./docs/observability.md) (2.31.0) adds a passive, at-least-once
+OpenTelemetry-compatible exporter: committed records become OTLP/JSON log records and run
+lifecycles become spans with deterministic identifiers, bodies are withheld unless the retention
+policy allows them, and a JSON-lines sink writes owner-only files for a collector. Telemetry is
+never canonical and its timestamps are exporter observation times.
+[Fault and fuzz conformance](./docs/fault-and-fuzz-conformance.md) (2.32.0) adds deterministic
+seeded fuzzing of decoders, CLI argv, changesets, and helper protocols with a replayed regression
+corpus, configured trace-archive input limits (`TraceArchiveLimitError`), and hardened Git
+subprocess options and environment. Its fault part (2.32.1) kills writers mid-operation, fills
+the database and the disk, and corrupts store and backup files, classifying every outcome as
+complete, retryable, refused, or detected, with a recorded long-duration soak.
+The [Phase 11 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-11-exit-audit.md)
+(2.32.4) records the 1.0 readiness verdict: a release candidate for the in-repo scope, with no
+unresolved critical or high internal finding, and 1.0 general availability no-go until the
+owner-owed items close. No external security review has been performed, nothing is signed or
+published, hosted CI is disabled, and performance budgets hold only for the macOS arm64 APFS
+reference host. The [1.0 release notes](./docs/release-notes-1.0.md) list what is delivered, the
+known limits, and upgrade pointers.
 
-The project is at **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
+Phase 3 reached **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline
 execution, durable lifecycle/control evidence, and conservative formal-claim boundary. Phase 3 now
 provides the complete P0 retained-world settlement loop through public TypeScript APIs: isolated
 task-world capture, authenticated changeset inspection, consume-once preparation, moved-basis

@@ -1,0 +1,154 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/store-backup-manifest-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Trace Store Backup Manifest v1",
+    "description": "Written last into a backup directory; its presence marks a complete backup. manifest_id is the configured digest of the canonical JSON of every other member.",
+    "type": "object",
+    "required": [
+        "archive_format",
+        "archive_format_version",
+        "backup_compatibility_version",
+        "blobs",
+        "cut_count",
+        "cut_heads",
+        "database",
+        "export_digest",
+        "format",
+        "format_version",
+        "manifest_id",
+        "package_version",
+        "record_count",
+        "store_schema_version"
+    ],
+    "properties": {
+        "archive_format": {
+            "const": "shepherd.trace.archive"
+        },
+        "archive_format_version": {
+            "const": 1
+        },
+        "backup_compatibility_version": {
+            "const": "shepherd.backup.v1"
+        },
+        "blobs": {
+            "type": "object",
+            "required": [
+                "byte_length",
+                "count",
+                "directory",
+                "list_digest",
+                "location"
+            ],
+            "properties": {
+                "byte_length": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                },
+                "count": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                },
+                "directory": {
+                    "const": "blobs"
+                },
+                "list_digest": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "location": {
+                    "enum": [
+                        "directory",
+                        "backend"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "cut_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+        },
+        "cut_heads": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "owner_id",
+                    "owner_ordinal",
+                    "record_id"
+                ],
+                "properties": {
+                    "owner_id": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "owner_ordinal": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                    },
+                    "record_id": {
+                        "type": "string",
+                        "pattern": "^sha256:[0-9a-f]{64}$"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "database": {
+            "type": "object",
+            "required": [
+                "byte_length",
+                "digest",
+                "file"
+            ],
+            "properties": {
+                "byte_length": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                },
+                "digest": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "file": {
+                    "const": "trace.sqlite"
+                }
+            },
+            "additionalProperties": false
+        },
+        "export_digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "format": {
+            "const": "shepherd.store.backup"
+        },
+        "format_version": {
+            "const": 1
+        },
+        "manifest_id": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "package_version": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        },
+        "record_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+        },
+        "store_schema_version": {
+            "type": "integer",
+            "minimum": 1
+        }
+    },
+    "additionalProperties": false
+}

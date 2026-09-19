@@ -1,0 +1,50 @@
+[
+    {
+        "artifact": "api:.#SQLiteTraceStore",
+        "classification": "additive",
+        "from": "sha256:f5691624769fc03ea70c8a438865031738041c604ad958be45e167d6ee84ab2b",
+        "to": "sha256:d15862d6302496cc9f99c74404535ac608158293a7ff6b0f8455840506c74968",
+        "version": "2.27.0",
+        "note": "Phase 11 slice 3 (#180): SQLiteTraceStore gains the optional secretScanning option (default off, behavior unchanged) and a secretScanning getter; existing members and signatures are unchanged."
+    },
+    {
+        "artifact": "api:.#SQLiteTraceStoreOptions",
+        "classification": "additive",
+        "from": "sha256:e69e03b892976daf3dd5a04938dd4758ea4a1fcbd7b94abd5815f8778d8b9ad4",
+        "to": "sha256:cef7b440105cce38df090ebaf124e8f58e1a31c622668b5c4ba823360c88cf2c",
+        "version": "2.27.0",
+        "note": "Phase 11 slice 3 (#180): SQLiteTraceStore gains the optional secretScanning option (default off, behavior unchanged) and a secretScanning getter; existing members and signatures are unchanged."
+    },
+    {
+        "artifact": "api:./trace#SQLiteTraceStore",
+        "classification": "additive",
+        "from": "sha256:f5691624769fc03ea70c8a438865031738041c604ad958be45e167d6ee84ab2b",
+        "to": "sha256:d15862d6302496cc9f99c74404535ac608158293a7ff6b0f8455840506c74968",
+        "version": "2.27.0",
+        "note": "Phase 11 slice 3 (#180): SQLiteTraceStore gains the optional secretScanning option (default off, behavior unchanged) and a secretScanning getter; existing members and signatures are unchanged."
+    },
+    {
+        "artifact": "api:./trace#SQLiteTraceStoreOptions",
+        "classification": "additive",
+        "from": "sha256:e69e03b892976daf3dd5a04938dd4758ea4a1fcbd7b94abd5815f8778d8b9ad4",
+        "to": "sha256:cef7b440105cce38df090ebaf124e8f58e1a31c622668b5c4ba823360c88cf2c",
+        "version": "2.27.0",
+        "note": "Phase 11 slice 3 (#180): SQLiteTraceStore gains the optional secretScanning option (default off, behavior unchanged) and a secretScanning getter; existing members and signatures are unchanged."
+    },
+    {
+        "artifact": "api:.#SQLiteTraceStore",
+        "from": "sha256:d15862d6302496cc9f99c74404535ac608158293a7ff6b0f8455840506c74968",
+        "to": "sha256:80af497e61be297717e1ca7e1aeae2a47134f7f05ce98156985eea99adf22126",
+        "classification": "additive",
+        "note": "Phase 11 slice 6 (#183): store maintenance, store maintain CLI, TRACE_STORE_READ_ONLY, index-only store schema 13, kernel.store.maintenance config",
+        "version": "2.30.0"
+    },
+    {
+        "artifact": "api:./trace#SQLiteTraceStore",
+        "from": "sha256:d15862d6302496cc9f99c74404535ac608158293a7ff6b0f8455840506c74968",
+        "to": "sha256:80af497e61be297717e1ca7e1aeae2a47134f7f05ce98156985eea99adf22126",
+        "classification": "additive",
+        "note": "Phase 11 slice 6 (#183): store maintenance, store maintain CLI, TRACE_STORE_READ_ONLY, index-only store schema 13, kernel.store.maintenance config",
+        "version": "2.30.0"
+    }
+]

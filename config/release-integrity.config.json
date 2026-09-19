@@ -1,0 +1,29 @@
+{
+    "provenance": {
+        "buildType": "https://github.com/avnionur/shepherd-typescript/blob/main/docs/release-integrity.md#build-type-v1",
+        "builderId": "https://github.com/avnionur/shepherd-typescript/blob/main/docs/release-integrity.md#local-unsigned-builder",
+        "artifact": "provenance.intoto.json",
+        "predicateType": "https://slsa.dev/provenance/v1",
+        "statementType": "https://in-toto.io/Statement/v1"
+    },
+    "release": {
+        "directory": "release",
+        "manifest": "release-manifest.json",
+        "reproducibleBuildReport": "reproducible-build.json"
+    },
+    "reproducibleBuild": {
+        "buildCommand": ["pnpm", "build"],
+        "packCommand": ["npm", "pack", "--ignore-scripts", "--json", "--pack-destination"]
+    },
+    "sbom": {
+        "artifact": "docs/generated/sbom.cdx.json",
+        "bomFormat": "CycloneDX",
+        "developmentProperty": "cdx:npm:package:development",
+        "lockfile": "pnpm-lock.yaml",
+        "packageManifest": "package.json",
+        "propertyPrefix": "shepherd:sbom",
+        "releaseArtifact": "sbom.cdx.json",
+        "specVersion": "1.5",
+        "toolName": "shepherd-typescript lockfile SBOM generator"
+    }
+}

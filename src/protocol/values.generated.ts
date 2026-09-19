@@ -949,3 +949,63 @@ export const APPLICATION_LIMITS = Object.freeze({
     maxWorkers: 8,
     minWorkers: 2,
 } as const);
+
+/** Configured retention data classes. @public */
+export const RETENTION_DATA_CLASSES = [
+    "checkpoint",
+    "context",
+    "general",
+    "memory-adapter",
+    "provider-citation",
+] as const;
+
+/** Configured redacted-export dispositions. @public */
+export const RETENTION_EXPORT_DISPOSITIONS = ["include", "omit-body", "redact"] as const;
+
+/** Configured trace-store secret-scanning modes. @public */
+export const SECRET_SCANNING_MODES = ["off", "refuse"] as const;
+
+/** Configured storage durabilities a blob-store backend or storage coordinator declares. @public */
+export const STORAGE_DURABILITIES = ["durable", "volatile"] as const;
+
+/** Configured storage lease result statuses. @public */
+export const STORAGE_LEASE_STATUSES = [
+    "acquired",
+    "held",
+    "renewed",
+    "released",
+    "fenced",
+] as const;
+
+/** Configured storage reference compare-and-swap result statuses. @public */
+export const STORAGE_REF_SWAP_STATUSES = ["swapped", "conflict", "fenced"] as const;
+
+/** Configured locations of backed-up blob bytes. @public */
+export const STORE_BACKUP_BLOB_LOCATIONS = ["directory", "backend"] as const;
+
+/** Configured classifications of refused or failed backup, verification, and restore operations. @public */
+export const STORE_BACKUP_FAILURE_REASONS = [
+    "backup-unsupported",
+    "destination-exists",
+    "manifest-missing",
+    "manifest-invalid",
+    "manifest-mismatch",
+    "schema-unsupported",
+    "database-mismatch",
+    "blob-mismatch",
+    "integrity-failed",
+    "export-mismatch",
+    "target-exists",
+] as const;
+
+/** Configured telemetry exporter body modes. @public */
+export const TELEMETRY_BODY_MODES = ["omit", "retention-policy"] as const;
+
+/** Configured descriptions of how one record body was handled in exported telemetry. @public */
+export const TELEMETRY_BODY_HANDLINGS = [
+    "included",
+    "withheld",
+    "redacted",
+    "omitted",
+    "oversized",
+] as const;

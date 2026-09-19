@@ -1,5 +1,4 @@
 import { mkdtempSync, realpathSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
@@ -7,22 +6,35 @@ import { BlobFilesystem } from "../blob/filesystem.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
 import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
 import { assertSQLiteDefensiveSupport } from "../runtime/sqlite.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { STORE_PRAGMA_SQL, STORE_TABLES, STORE_TRANSACTION_SQL } from "../store/constants.ts";
 import { TraceStoreError } from "../store/errors.ts";
 import { scanTraceStoreIntegrity, verifyTraceStoreIntegrity } from "../store/integrity.ts";
 import { migrateTraceStore } from "../store/migrations.ts";
+import { refuseSecretBearingBodies } from "../store/secret-scanning.ts";
 import { decodeTraceArchive } from "./decode.ts";
 import { writeTraceArchive } from "./storage.ts";
 import type { DecodedTraceArchive, TraceImportReceipt } from "./types.ts";
 
-/** Validates and atomically imports one native archive into a pristine trace store. */
+/**
+ * Validates and atomically imports one native archive into a pristine trace store.
+ *
+ * A target store scanning in `refuse` mode rejects secret-bearing record bodies before staging.
+ * The archive is first replayed into an owner-only staging directory created beside the target's
+ * blob directory with the configured `kernel.interchange.staging.directoryPrefix`, so a killed
+ * import leaves its blob copies in the target store's own directory instead of the shared OS
+ * temporary directory.
+ */
 export function importTraceArchive(
     database: DatabaseSync,
     filesystem: BlobFilesystem,
     serialized: string,
 ): TraceImportReceipt {
     const archive = decodeTraceArchive(serialized);
-    validateInStagingStore(archive);
+    refuseSecretBearingBodies(database, () =>
+        archive.records.map(({ body }, index) => ({ body, pointer: `/records/${index}/body` })),
+    );
+    validateInStagingStore(archive, path.dirname(filesystem.rootPath()));
     database.exec(STORE_TRANSACTION_SQL.begin);
     try {
         if (!scanTraceStoreIntegrity(database, filesystem).ok) {
@@ -32,7 +44,7 @@ export function importTraceArchive(
         writeTraceArchive(database, filesystem, archive, true);
         database.exec(STORE_TRANSACTION_SQL.commit);
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
     return Object.freeze({
@@ -44,9 +56,11 @@ export function importTraceArchive(
     });
 }
 
-function validateInStagingStore(archive: DecodedTraceArchive): void {
+function validateInStagingStore(archive: DecodedTraceArchive, stagingParent: string): void {
     assertSQLiteDefensiveSupport(kernelProtocolConfig.store.defensive);
-    const directory = mkdtempSync(path.join(tmpdir(), "shepherd-import-stage-"));
+    const directory = mkdtempSync(
+        path.join(stagingParent, kernelProtocolConfig.interchange.staging.directoryPrefix),
+    );
     const database = new DatabaseSync(":memory:", {
         defensive: kernelProtocolConfig.store.defensive,
         timeout: kernelProtocolConfig.store.busyTimeoutMilliseconds,
@@ -60,7 +74,7 @@ function validateInStagingStore(archive: DecodedTraceArchive): void {
             writeTraceArchive(database, filesystem, archive);
             database.exec(STORE_TRANSACTION_SQL.commit);
         } catch (error) {
-            database.exec(STORE_TRANSACTION_SQL.rollback);
+            rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
             throw error;
         }
         if (!verifyTraceStoreIntegrity(database, filesystem).ok) {

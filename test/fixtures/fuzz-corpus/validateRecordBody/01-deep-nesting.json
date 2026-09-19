@@ -1,0 +1,8 @@
+{
+    "description": "F-012: body validation of an over-deep value fails with TypeError.",
+    "finding": "F-012",
+    "input": {
+        "value": { "a": { "$fuzz": "nest", "depth": 20000, "kind": "array", "leaf": "x" } }
+    },
+    "expect": { "outcome": "rejected", "error": "TypeError" }
+}

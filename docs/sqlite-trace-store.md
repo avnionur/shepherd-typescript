@@ -26,7 +26,9 @@ through `schemaVersion`.
 planning to `planAppendBatch`. One `BEGIN IMMEDIATE` transaction then:
 
 1. checks whether the append intent was already committed;
-2. loads known record identities and owner ordinal state;
+2. looks up, by primary key, only the retained records the batch cites as parents or witnesses and
+   the next ordinal of each owner the batch extends (from 2.30.0; earlier versions loaded every
+   record identity and owner ordinal, so each append cost time linear in the store size);
 3. validates causal parents and witnesses;
 4. inserts deduplicated semantic records and ordered parent edges;
 5. inserts owner-local record views with their append-intent identity and advances changed owner
@@ -34,7 +36,12 @@ planning to `planAppendBatch`. One `BEGIN IMMEDIATE` transaction then:
 6. stores the deterministic append receipt and commits.
 
 Any validation or SQLite error rolls back the receipt, records, edges, views, and ordinal changes.
-The same intent may therefore be retried after a failed append.
+The same intent may therefore be retried after a failed append. When SQLite has already rolled the
+transaction back itself, as it does after `SQLITE_FULL` or an I/O error, the store issues no second
+`ROLLBACK` and the SQLite error reaches the caller unchanged (from 2.32.1; earlier versions
+reported "cannot rollback - no transaction is active" instead). The same rule applies to every
+store, import, export, storage-coordinator, and task-registry transaction; the
+[fault suites](./fault-and-fuzz-conformance.md#disk-full) exercise it.
 
 An equal retry validates and returns the original receipt without adding records or views. A
 durable append position preserves occurrence order so the store can reconstruct record IDs,
@@ -62,6 +69,13 @@ the configured supported version and current append contract, and are committed 
 Opening an existing database applies every pending migration; opening a database with a newer
 schema or a mismatched migration registry throws
 `UnsupportedStoreSchemaError`. A failed migration rolls back its schema-version marker.
+Each migration reads the applied schema version inside its own configured `IMMEDIATE`
+transaction, and the switch to write-ahead logging retries SQLite's deadlock-avoidance
+`SQLITE_BUSY` within `kernel.store.busyTimeoutMilliseconds`, so several processes may open one new
+database at once: they serialize, later openers find the schema current, and all succeed
+(F-029, fixed in 2.32.5; `test/storage/process-race.test.ts`). Migration drills build a store at every historical schema from these steps and require each to
+upgrade with integrity and an unchanged export; the forward-only downgrade policy and verified
+backup and restore are defined in [backup, restore, and migration](./backup-restore-and-migration.md).
 
 Schema v2 adds content-addressed blob metadata and storage receipts. Existing schema-v1 databases
 upgrade without rewriting semantic records. Blob filesystem behavior is documented in
@@ -95,6 +109,46 @@ Schema v12 adds `replay_sessions`, the registration, fenced writer lease, and te
 [replay session](./replay-sessions.md). It is bookkeeping outside the record graph and is never
 exported. `append` refuses groups on replay session owner paths and `publishCut` refuses a replay
 session as the publishing owner, so only fenced session transactions write session evidence.
+Schema v13 is index-only: `records_by_schema` on `records(schema_ref, record_id)` and
+`trace_cuts_by_publication` on the canonical byte order of `trace_cuts`. It adds no row or column
+and changes no export; an index that already exists is kept.
+
+## Query plans
+
+The SQL behind `readRecord`, `readOwner`, `readOwnerPrefix`, `readCut`/`resolveCut`, cut iteration
+and subscription pulls, append planning, the integrity parent lookup, `listOwnersBySchema`, and
+`listCuts` lives in the internal
+[`src/store/statements.ts`](../src/store/statements.ts).
+[`test/store/query-plans.test.ts`](../test/store/query-plans.test.ts) runs `EXPLAIN QUERY PLAN` on
+each statement, before and after planner statistics exist, and requires no full table scan: point
+lookups must `SEARCH` a primary key or index, and the two paged listings may walk an index but
+never scan a table. Before schema v13, `listOwnersBySchema` scanned `records` and `listCuts` scanned
+`trace_cuts`.
+
+## Maintenance
+
+`maintain({ mode })` runs one semantics-preserving pass on a writable handle, implemented in
+[`src/store/maintenance.ts`](../src/store/maintenance.ts). Modes and limits come from
+`kernel.store.maintenance` in [protocol configuration](./protocol-configuration.md):
+
+| Mode | Effect |
+| --- | --- |
+| `inspect` (default) | `PRAGMA quick_check` (bounded to `quickCheckMaxIssues` lines) and a space report; changes nothing |
+| `checkpoint` | also `PRAGMA wal_checkpoint(TRUNCATE)` (the configured `walCheckpointMode`) |
+| `optimize` | also `PRAGMA optimize`, which may refresh planner statistics |
+| `vacuum` | also `VACUUM`, then the configured checkpoint so the rebuilt file replaces the log |
+
+Every mode reports `page_size`, `page_count`, `freelist_count`, database bytes, and write-ahead-log
+bytes before and after. Mutating modes run `quick_check` first and refuse a database that fails it
+with `TraceStoreError`; `inspect` reports the issues instead. A read-only handle is refused with
+`TraceStoreReadOnlyError` (`TRACE_STORE_READ_ONLY`) before anything is read. No mode changes a
+record, view, cut, intent, or blob: [`test/store/maintenance.test.ts`](../test/store/maintenance.test.ts)
+and the [scale tier](./performance-report.md#scale-tier) require `exportTrace()` to be
+byte-identical before and after every mode. `VACUUM` needs an exclusive lock and fails with a SQLite
+busy error while another connection holds a transaction; a checkpoint that other readers block
+reports `busy: true`. SQLite commits `VACUUM` atomically, so an interrupted vacuum leaves the
+previous file. `shepherd-ts store maintain [--store PATH] [--mode MODE]` wraps the method
+([CLI](./cli.md)).
 
 Execution projections are disposable reads and therefore add no schema migration. The
 `projectExecution(cutId)` and `projectEffectiveHistory(cutId)` facades resolve payload-visible,
@@ -130,11 +184,31 @@ directory. It skips writable PRAGMAs, migrations, and root-witness insertion; ab
 schema state fails closed. This is the CLI diagnostic/read boundary, not a way to bypass ordinary
 write validation.
 
+Passing `{ secretScanning: "refuse" }` scans every record body of every append, including appends
+the store makes inside its own transactions, and every body of an archive being imported, against
+the configured detectors before anything is written; a match raises `TraceSecretDetectedError`
+without matched text and leaves the intent reusable. The default `"off"` scans nothing. A writable
+open of a file database creates it owner-only (`0600` by configuration) and tightens an existing
+owned database and its WAL, SHM, and journal sidecars; read-only opens change no file modes. Since
+2.32.2 (F-023) every such file is opened with `O_NOFOLLOW` and checked and tightened through the
+descriptor (`fstat`, `fchmod`), so a symbolic link at a database or sidecar path is never followed
+or changed, and a creation failure other than an existing file (for example `EACCES` or `ENOENT`)
+is thrown with its file-system code instead of being left to SQLite. See
+[secrets and retention](./secrets-and-retention.md).
+
+Every `witness_ref` must name a retained or earlier record in the batch whose schema is the root
+witness or `kernel.queries.witnessSchemaRef`; since 2.32.2 (F-014) `append` refuses any other
+record with `TraceStoreError` ("witness_ref does not name a witness record") before writing, so
+the documented API can no longer produce a store that fails `verifyIntegrity` with
+`witness_mismatch`.
+
 ## Current boundary
 
 This slice provides exact-ID, owner-path, immutable-cut, causal-closure, execution, and
 effective-history reads, content-addressed external blob storage, whole-store integrity scans,
-append recovery diagnosis, native trace interchange, and verified blob-orphan collection.
+append recovery diagnosis, native trace interchange, verified blob-orphan collection, and
+semantics-preserving maintenance. Measured performance and SLOs for the reference host are in the
+[performance report](./performance-report.md).
 It also provides bounded read-only orphaned-operation diagnosis and explicit exact
 bookkeeping-only repair with canonical audit evidence.
 Remote-store abstractions remain planned TypeScript trace-kernel work.

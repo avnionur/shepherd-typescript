@@ -3,7 +3,6 @@ import type { DatabaseSync } from "node:sqlite";
 import { kernelProtocolConfig } from "../protocol/config.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import type { RecordId } from "../record/types.ts";
-import { STORE_TABLES } from "./constants.ts";
 import { TraceStoreError } from "./errors.ts";
 import {
     normalizeCausalOptions,
@@ -11,6 +10,7 @@ import {
     normalizeSliceReadOptions,
 } from "./query-validation.ts";
 import { readStoredRecord } from "./read.ts";
+import { HOT_PATH_SQL } from "./statements.ts";
 import type {
     CausalClosureOptions,
     Cut,
@@ -41,14 +41,7 @@ export function readOwnerPrefixSlice(
         throw new TypeError("through must be a configured owner ordinal");
     }
     const { modeFilter, visibilityProfile } = normalizeSliceReadOptions(options);
-    const rows = database
-        .prepare(
-            `SELECT append_intent_id, owner_id, owner_ordinal, record_id
-             FROM ${STORE_TABLES.recordViews}
-             WHERE owner_id = ? AND owner_ordinal <= ?
-             ORDER BY owner_ordinal`,
-        )
-        .all(ownerId, through);
+    const rows = database.prepare(HOT_PATH_SQL.ownerPrefixViews).all(ownerId, through);
     const loaded = rows.flatMap((row) => {
         const record = readStoredRecord(database, String(row.record_id));
         if (record === undefined) {

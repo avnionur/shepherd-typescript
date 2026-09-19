@@ -3,6 +3,7 @@ import type { DatabaseSync } from "node:sqlite";
 import type { BlobFilesystem } from "../blob/filesystem.ts";
 import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { readStoredBlob } from "../store/blobs.ts";
 import { STORE_READ_TRANSACTION_SQL, STORE_TABLES } from "../store/constants.ts";
 import { TraceStoreError } from "../store/errors.ts";
@@ -17,7 +18,7 @@ export function exportTraceArchive(database: DatabaseSync, filesystem: BlobFiles
         database.exec(STORE_READ_TRANSACTION_SQL.commit);
         return archive;
     } catch (error) {
-        database.exec(STORE_READ_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_READ_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

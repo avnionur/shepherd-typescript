@@ -177,6 +177,27 @@ Workspace protocol v26 adds the closed `carrierBackends` section: selectable `co
 overlay mount/unmount executables, argument and option templates, layer directory names, reserved
 layer-path characters, command bounds, parity status/reason roles, and the backend-unavailable error
 contract, without changing revision, custody, or discard descriptor formats for the copy backend.
+`workspaces.gitInvocation` (2.32.0) is operational hardening outside the workspace protocol
+identity: `configOverrides` are passed as `-c key=value` before `-C <root>` on every Git subprocess
+(default `core.fsmonitor=false`, `core.untrackedCache=false`), inherited environment variables
+whose names start with a `removedEnvironmentPrefixes` entry (default `GIT_`) are removed, and the
+`environment` variables (default `GIT_OPTIONAL_LOCKS=0`, `GIT_TERMINAL_PROMPT=0`) are then set
+([`src/workspace/git-command.ts`](../src/workspace/git-command.ts)). `workspaces.gitExecutable`
+may be an absolute path to pin the executable instead of resolving `git` through `PATH`.
+`kernel.interchange.limits` (2.32.0) bounds untrusted archive input and is likewise excluded from
+the archive format identity: `maxArchiveBytes`, `maxNestingDepth`, `maxAppendIntents`, `maxBlobs`,
+`maxBlobBytes`, `maxCuts`, `maxRecords`, and `maxRecordViews`, each a positive integer
+([trace interchange](./trace-interchange.md#input-limits)).
+`kernel.interchange.staging.directoryPrefix` (2.32.2, `.shepherd-import-stage-`, one portable path
+segment) names the owner-only directory `importTrace` validates an archive in, created beside the
+target store's blob directory; it is operational and excluded from the archive format identity.
+2.32.2 also adds, without changing any protocol identity: `cli.commandOptions`, the option keys
+each handler role accepts as flags and value options, which the CLI handlers parse argv through
+and the [compatibility gate](./compatibility-policy.md) fingerprints (it is part of the CLI v1
+contract and must equal it); `backup.databaseJournalMode` (`DELETE`, `TRUNCATE`, or `PERSIST`),
+the rollback-journal mode a backup copy is switched to, and a check that the backup digest
+algorithm and prefix equal the store blob identity's; and `retention.scanning.findingDigestPrefix`
+(`hmac-<digestAlgorithm>:`), the prefix of the per-process keyed secret-finding digest.
 Store schema
 v6 owns the consume-once
 settlement decision table without changing kernel record identity.
@@ -187,7 +208,42 @@ registration and writer-claim tables that are verified against canonical records
 exported. Store schema v10 adds durable subscription cursor bookkeeping and schema v11 adds
 supervised-dispatch registration and decision-lease rows; neither is exported or part of record
 identity. Store schema v12 adds replay session registration and writer-lease rows, which are also
-never exported.
+never exported. Store schema v13 (2.30.0) adds only the `records_by_schema` and
+`trace_cuts_by_publication` indexes. `kernel.store.maintenance` (2.30.0) configures
+`SQLiteTraceStore.maintain`: the enabled `modes` (a subset of `inspect`, `checkpoint`, `optimize`,
+and `vacuum`), the non-mutating `defaultMode` that must be enabled, `quickCheckMaxIssues`, the
+`walCheckpointMode` (`TRUNCATE`), and the `walFileSuffix` used to measure the write-ahead log. See
+[SQLite trace store](./sqlite-trace-store.md#maintenance).
+Retention protocol v1 introduces the `retention` section (2.27.0): the data classes and the
+default class, export dispositions and the disposition of every class, the schema family keys and
+the `schemaFamilies` mapping of every configured `schemas`/`traceSchemas` family (or single
+schema) to a class, named secret detectors (pattern and flags), the finding digest, finding and
+report bounds, the redacted-archive and retention-report formats and versions, the store scanning
+modes and default (`off`), the owner-only SQLite file mode and sidecar suffixes, and generated
+schema identifiers and destinations. The reader resolves every mapped path to schema identifiers
+and exposes the result as `schemaDataClasses`. See [secrets and retention](./secrets-and-retention.md).
+Storage protocol v1 introduces the `storage` section (2.28.0): the durability vocabulary, lease and
+reference-swap status vocabularies, the anchored name grammar and length bound shared by reference
+names and lease keys, reference value, lease owner, and lease TTL bounds, default and maximum blob
+list page sizes, and the SQLite storage-coordinator contract (busy timeout, defensive mode, foreign
+keys, WAL, `FULL`, `IMMEDIATE`, migrations, and schema version). See
+[storage interfaces](./storage-interfaces.md).
+Backup protocol v1 introduces the `backup` section (2.29.0): the manifest schema destination and
+identifier, the `shepherd.store.backup` v1 manifest format, the digest algorithm and prefix, the
+blob-location (`directory`, `backend`) and failure-reason vocabularies, the owner-only backup
+directory mode, the backup layout names (database, blob directory, manifest, manifest temporary
+suffix, restore staging prefix), and the manifest byte and online-backup page-step bounds. The CLI
+section gains the `store` group, its five handler roles and result shapes, and the `backup`,
+`input`, `manifest`, `output`, and `redacted` options. See
+[backup, restore, and migration](./backup-restore-and-migration.md).
+Observability protocol v1 introduces the `observability` section (2.31.0): the telemetry-batch
+schema destination and identifier, the `shepherd.telemetry.batch` v1 format, the attribute
+namespace, the body modes (`omit`, `retention-policy`) with the default and the body-handling
+vocabulary, trace and span identifier digest and domains, the instrumentation-scope name, batch and
+body bounds, OTLP wire constants (proto release, span kind, status codes, log severity), resource
+attributes, the run-span name with its start and terminal execution schemas, and the
+semantic-conventions schema URL prefix and release. `retention.schemaFamilies` maps
+`observability.schemas`. See [observability](./observability.md).
 
 The parser creates a defensive copy and deeply freezes the validated result. Runtime modules
 therefore cannot mutate configuration, and callers retaining the parsed JSON object cannot mutate
@@ -285,6 +341,43 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   internally consistent. Platform probes contain valid path-token arguments and regular expressions, fault
   names/codes/phases are unique, classification mappings resolve, and supported hosts are closed.
 
+- retention data classes, dispositions, family keys, and scanning modes are unique; the default
+  class and mode belong to their sets and every class has a configured disposition; the digest
+  prefix names its algorithm; the redacted-archive, report, and native archive formats are pairwise
+  distinct; every detector has a unique name, compiles with Unicode-mode flags limited to `i`, `m`,
+  and `s`, and does not match the empty string; every object under a family key anywhere in the
+  configuration has a mapping, every mapped path resolves to non-empty schema identifiers, and no
+  identifier receives two classes except through a more specific path; the store-file mode is an
+  octal owner read-write mode without group or other bits; and the vocabularies, formats, schema
+  identifiers, and destinations match the immutable retention protocol v1 contract. Detector
+  patterns, mappings, per-class dispositions, bounds, and the file mode are tunable policy.
+
+- storage durabilities and status vocabularies are unique and, with the compatibility version,
+  match the immutable storage protocol v1 contract; the name pattern compiles in Unicode mode, is
+  anchored with `^` and `$`, and does not match the empty string; every bound is a positive
+  integer, the default list page does not exceed the maximum, and the minimum lease TTL does not
+  exceed the maximum; coordinator migrations are contiguous from 1 and end at the schema version,
+  and the coordinator keeps defensive mode, foreign keys, WAL, `FULL`, and `IMMEDIATE`. Bounds,
+  grammar, and the busy timeout are tunable policy.
+
+- the backup digest prefix names its algorithm; the directory mode is an octal owner
+  read-write-search mode without group or other bits; every layout name is one portable path
+  segment and the database, blob directory, manifest, and manifest temporary names are distinct;
+  the manifest format differs from the importable archive format; bounds are positive integers;
+  and the manifest identity, digest algorithm, schema identifier and destination, and the
+  blob-location and failure-reason vocabularies match the immutable backup protocol v1 contract.
+  Layout names, the directory mode, and bounds are tunable policy.
+
+- the observability attribute namespace is a dotted lowercase key; the batch format differs from
+  the importable archive format; the span and trace identifier domains differ; the default batch
+  bound does not exceed the maximum; the proto and semantic-conventions versions are
+  `MAJOR.MINOR.PATCH` releases and the schema URL prefix is an absolute URL ending in `/`; run-span
+  start and terminal schemas are distinct configured execution-history schemas and every terminal
+  status has a positive status code; and the batch identity, schema identifier and destination,
+  identifier derivation, and body-mode and body-handling vocabularies match the immutable
+  observability protocol v1 contract. Namespace, resource attributes, semantic-conventions release,
+  run-span schemas, and bounds are tunable policy.
+
 Changing canonicalization, record hashing, append-intent hashing, blob identity/layout,
 root-witness identity, or current ordinal bounds requires a new ABI or migration contract.
 Historical migration and receipt values are read from immutable compatibility constants when
@@ -299,7 +392,10 @@ instead of repeating identifiers or interpolating unchecked values.
 
 Task-registry table names and SQL commands are centralized separately in
 [`src/task/registry-constants.ts`](../src/task/registry-constants.ts), while migration versions
-and SQLite behavior are loaded from the validated task protocol configuration.
+and SQLite behavior are loaded from the validated task protocol configuration. The storage
+coordinator's table names and SQL commands live in
+[`src/storage/sqlite-coordinator.ts`](../src/storage/sqlite-coordinator.ts), with migration
+versions and SQLite behavior from `storage.coordinator`.
 
 The current durability contract permits WAL journaling, FULL synchronization, IMMEDIATE
 transactions, defensive mode, and foreign-key enforcement. Weakening one of these values is a

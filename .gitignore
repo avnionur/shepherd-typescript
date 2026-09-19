@@ -6,6 +6,9 @@ dist/
 coverage/
 *.tsbuildinfo
 
+# Release evidence (pnpm verify:release)
+/release/
+
 # Local configuration and secrets
 .env
 .env.*

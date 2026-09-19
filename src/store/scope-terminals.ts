@@ -4,6 +4,7 @@ import { scopeProtocolConfig } from "../protocol/config.ts";
 import { SCOPE_STATES } from "../protocol/values.generated.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import type { RecordId } from "../record/types.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { ScopeEvidenceError, ScopeQuiescenceError } from "../scope/errors.ts";
 import type { ScopeHeadAddress } from "../scope/types.ts";
 import { appendWithinTraceStoreTransaction } from "./append.ts";
@@ -195,7 +196,7 @@ export function prepareScopeMergeInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ cut, receipt });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -220,7 +221,7 @@ export function readScopeMergeBoundaryInStore(
         database.exec(STORE_READ_TRANSACTION_SQL.commit);
         return status;
     } catch (error) {
-        database.exec(STORE_READ_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_READ_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -243,7 +244,7 @@ export function completeScopeMergeInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -301,7 +302,7 @@ export function discardScopeInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return "decided";
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -330,7 +331,7 @@ export function completeScopeDiscardCleanupInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

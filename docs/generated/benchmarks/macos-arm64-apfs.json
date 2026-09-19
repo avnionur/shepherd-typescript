@@ -1,0 +1,237 @@
+{
+    "configuration": {
+        "appendThroughputAppends": 100,
+        "cliStartup": {
+            "arguments": ["--help"],
+            "entry": "dist/src/cli/main.js"
+        },
+        "dataset": {
+            "batchRecords": 200,
+            "blobBytes": 1024,
+            "blobs": 40,
+            "cutsPerOwner": 2,
+            "deepChainRecords": 2000,
+            "orphanBlobs": 20,
+            "owners": 40,
+            "recordsPerOwner": 200,
+            "temporaryFiles": 4
+        },
+        "naming": {
+            "prefix": "bench:",
+            "recordPaddingCharacters": 256,
+            "schemaRef": "example.kernel-benchmark.v1"
+        },
+        "resultDirectory": "docs/generated/benchmarks",
+        "resultFormat": "shepherd.kernel-benchmark",
+        "resultFormatVersion": 1,
+        "sampleCount": 12,
+        "temporaryDirectoryPrefix": "shepherd-kernel-bench-",
+        "warmupIterations": 2
+    },
+    "configuration_digest": "sha256:f618cf1c0eba158e75c8a189a8a37688beefd419f9fc1f01f211b64967e53bb6",
+    "environment": {
+        "arch": "arm64",
+        "cpu_count": 14,
+        "cpu_model": "Apple M4 Pro",
+        "filesystem_type": 26,
+        "node": "v24.17.0",
+        "os_release": "27.0.0",
+        "package_version": "2.30.0",
+        "platform": "darwin",
+        "sqlite_version": "3.53.0",
+        "total_memory_bytes": 51539607552
+    },
+    "format": "shepherd.kernel-benchmark",
+    "format_version": 1,
+    "host_class": "macos-arm64-apfs",
+    "metrics": {
+        "append_latency_ms": {
+            "better": "lower",
+            "description": "one single-record append committed with synchronous FULL durability",
+            "unit": "ms",
+            "samples": [
+                0.27, 0.222, 0.343, 0.26, 0.197, 0.231, 0.286, 0.236, 0.205, 0.212, 0.163, 0.186
+            ],
+            "summary": {
+                "count": 12,
+                "max": 0.343,
+                "mean": 0.234,
+                "median": 0.227,
+                "min": 0.163,
+                "p95": 0.343,
+                "stddev": 0.049,
+                "variance": 0.002
+            }
+        },
+        "append_throughput_records_per_second": {
+            "better": "higher",
+            "description": "sequential single-record appends per second over one sample batch",
+            "unit": "records/s",
+            "samples": [
+                3245.989, 4659.968, 4459.524, 4453.781, 3867.892, 4136.554, 3901.564, 3932.511,
+                4877.246, 4750.133, 4925.087, 3982.649
+            ],
+            "summary": {
+                "count": 12,
+                "max": 4925.087,
+                "mean": 4266.075,
+                "median": 4295.168,
+                "min": 3245.989,
+                "p95": 4925.087,
+                "stddev": 505.453,
+                "variance": 255482.823
+            }
+        },
+        "cut_resolve_ms": {
+            "better": "lower",
+            "description": "resolveCut of the deep-chain owner's last published cut",
+            "unit": "ms",
+            "samples": [
+                67.709, 65.019, 66.901, 64.665, 66.651, 65.81, 66.651, 64.898, 63.964, 65.965,
+                64.364, 65.793
+            ],
+            "summary": {
+                "count": 12,
+                "max": 67.709,
+                "mean": 65.699,
+                "median": 65.802,
+                "min": 63.964,
+                "p95": 67.709,
+                "stddev": 1.142,
+                "variance": 1.305
+            }
+        },
+        "slice_read_ms": {
+            "better": "lower",
+            "description": "readOwnerPrefix of one whole regular owner path",
+            "unit": "ms",
+            "samples": [
+                6.187, 6.117, 8.248, 6.139, 5.851, 6.166, 6.03, 6.032, 5.878, 8.147, 6.343, 6.241
+            ],
+            "summary": {
+                "count": 12,
+                "max": 8.248,
+                "mean": 6.448,
+                "median": 6.153,
+                "min": 5.851,
+                "p95": 8.248,
+                "stddev": 0.829,
+                "variance": 0.687
+            }
+        },
+        "subscription_pull_ms": {
+            "better": "lower",
+            "description": "ephemeral subscription pulling one whole regular owner path from origin",
+            "unit": "ms",
+            "samples": [
+                6.604, 8.092, 6.494, 6.374, 5.824, 6.212, 6.389, 7.547, 5.94, 6.01, 6.2, 6.437
+            ],
+            "summary": {
+                "count": 12,
+                "max": 8.092,
+                "mean": 6.51,
+                "median": 6.382,
+                "min": 5.824,
+                "p95": 8.092,
+                "stddev": 0.664,
+                "variance": 0.441
+            }
+        },
+        "export_ms": {
+            "better": "lower",
+            "description": "exportTrace of the whole dataset",
+            "unit": "ms",
+            "samples": [
+                999.677, 999.594, 1001.27, 1000.519, 988.321, 994.078, 990.535, 987.244, 1003.032,
+                998.084, 996.014, 1034.212
+            ],
+            "summary": {
+                "count": 12,
+                "max": 1034.212,
+                "mean": 999.382,
+                "median": 998.839,
+                "min": 987.244,
+                "p95": 1034.212,
+                "stddev": 12.138,
+                "variance": 147.322
+            }
+        },
+        "import_ms": {
+            "better": "lower",
+            "description": "importTrace of the dataset archive into a fresh file store",
+            "unit": "ms",
+            "samples": [
+                1710.804, 1727.778, 1708.56, 1710.645, 1716.437, 1748.355, 1761.455, 1734.639,
+                1746.594, 1729.493, 1699.03, 1686.757
+            ],
+            "summary": {
+                "count": 12,
+                "max": 1761.455,
+                "mean": 1723.379,
+                "median": 1722.108,
+                "min": 1686.757,
+                "p95": 1761.455,
+                "stddev": 21.988,
+                "variance": 483.469
+            }
+        },
+        "verify_ms": {
+            "better": "lower",
+            "description": "verifyIntegrity of the whole store",
+            "unit": "ms",
+            "samples": [
+                585.286, 591.025, 583.862, 586.601, 583.394, 582.291, 593.548, 589.388, 583.567,
+                585.651, 610.696, 588.482
+            ],
+            "summary": {
+                "count": 12,
+                "max": 610.696,
+                "mean": 588.649,
+                "median": 586.126,
+                "min": 582.291,
+                "p95": 610.696,
+                "stddev": 7.732,
+                "variance": 59.778
+            }
+        },
+        "gc_inspect_ms": {
+            "better": "lower",
+            "description": "collectBlobOrphans inspection, including registered-blob verification",
+            "unit": "ms",
+            "samples": [
+                2.986, 2.481, 2.375, 2.801, 2.44, 2.437, 3.116, 2.553, 2.421, 2.772, 2.402, 2.378
+            ],
+            "summary": {
+                "count": 12,
+                "max": 3.116,
+                "mean": 2.597,
+                "median": 2.46,
+                "min": 2.375,
+                "p95": 3.116,
+                "stddev": 0.257,
+                "variance": 0.066
+            }
+        },
+        "cli_startup_ms": {
+            "better": "lower",
+            "description": "wall time of one packaged CLI process printing its help",
+            "unit": "ms",
+            "samples": [
+                75.717, 74.645, 74.139, 77.553, 74.912, 78.111, 76.535, 77.859, 76.173, 75.914,
+                76.315, 76.542
+            ],
+            "summary": {
+                "count": 12,
+                "max": 78.111,
+                "mean": 76.201,
+                "median": 76.244,
+                "min": 74.139,
+                "p95": 78.111,
+                "stddev": 1.247,
+                "variance": 1.556
+            }
+        }
+    },
+    "recorded_on": "2026-09-18",
+    "warmup_iterations": 2
+}

@@ -1,5 +1,6 @@
 import {
     APPLICATIONS_PROTOCOL_V5_CONTRACT,
+    BACKUP_PROTOCOL_V1_CONTRACT,
     CLI_PROTOCOL_V1_CONTRACT,
     DELEGATION_PROTOCOL_V1_CONTRACT,
     EFFECT_PROTOCOL_V1_CONTRACT,
@@ -7,12 +8,15 @@ import {
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     FORMAL_ASSURANCE_V1_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
-    KERNEL_ABI_V0_STORE_V12_CONTRACT,
+    KERNEL_ABI_V0_STORE_V13_CONTRACT,
+    OBSERVABILITY_PROTOCOL_V1_CONTRACT,
     ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT,
     PROVIDER_PROTOCOL_V1_CONTRACT,
     REPLAY_PROTOCOL_V1_CONTRACT,
+    RETENTION_PROTOCOL_V1_CONTRACT,
     RUN_PROTOCOL_V1_CONTRACT,
     SCOPE_PROTOCOL_V6_CONTRACT,
+    STORAGE_PROTOCOL_V1_CONTRACT,
     SUPERVISION_PROTOCOL_V1_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
     TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
@@ -45,13 +49,20 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (config.kernel.store.appendIntentDigestAlgorithm !== expected.appendIntentDigestAlgorithm) {
         throw new TypeError("append intent digest requires a new store migration");
     }
-    if (!sameJson(config.kernel.store.blobs, KERNEL_ABI_V0_STORE_V12_CONTRACT.blobs)) {
+    if (!sameJson(config.kernel.store.blobs, KERNEL_ABI_V0_STORE_V13_CONTRACT.blobs)) {
         throw new TypeError("blob identity and filesystem constants require a new store migration");
     }
     if (!sameJson(config.kernel.queries, expected.queries)) {
         throw new TypeError("kernel query constants do not match the implemented ABI");
     }
-    if (!sameJson(config.kernel.interchange, expected.interchange)) {
+    // Archive input limits and import staging are operational, not part of the archive format
+    // identity.
+    const {
+        limits: _limits,
+        staging: _staging,
+        ...interchangeIdentity
+    } = config.kernel.interchange;
+    if (!sameJson(interchangeIdentity, expected.interchange)) {
         throw new TypeError("kernel interchange constants require a new archive format");
     }
     if (!sameJson(config.kernel.schemas, expected.schemas)) {
@@ -59,14 +70,17 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     const artifactDestinations = [
         ...Object.values(config.applications.artifacts),
+        ...Object.values(config.backup.artifacts),
         ...Object.values(config.cli.artifacts),
         ...Object.values(config.delegation.artifacts),
         ...Object.values(config.effects.artifacts),
         ...Object.values(config.kernel.artifacts),
+        ...Object.values(config.observability.artifacts),
         ...Object.values(config.orphanRepair.artifacts),
         ...Object.values(config.projections.evidenceRecords.artifacts),
         ...Object.values(config.projections.taskRunLedgers.artifacts),
         ...Object.values(config.replay.artifacts),
+        ...Object.values(config.retention.artifacts),
         ...Object.values(config.runs.artifacts),
         ...Object.values(config.scopes.artifacts),
         ...Object.values(config.supervision.artifacts),
@@ -88,8 +102,8 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         throw new TypeError("protocol artifact destinations do not match the repository contract");
     }
     if (
-        config.kernel.store.schemaVersion !== KERNEL_ABI_V0_STORE_V12_CONTRACT.schemaVersion ||
-        !sameMigrations(config.kernel.store.migrations, KERNEL_ABI_V0_STORE_V12_CONTRACT.migrations)
+        config.kernel.store.schemaVersion !== KERNEL_ABI_V0_STORE_V13_CONTRACT.schemaVersion ||
+        !sameMigrations(config.kernel.store.migrations, KERNEL_ABI_V0_STORE_V13_CONTRACT.migrations)
     ) {
         throw new TypeError("store migration constants do not match the implemented schema");
     }
@@ -135,17 +149,85 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (!sameJson(config.delegation, DELEGATION_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("delegation constants require a new delegation protocol");
     }
-    if (!sameJson(config.workspaces, WORKSPACE_PROTOCOL_V26_CONTRACT)) {
+    // Git subprocess hardening is operational and never reaches recorded workspace evidence.
+    const { gitInvocation: _gitInvocation, ...workspaceIdentity } = config.workspaces;
+    if (!sameJson(workspaceIdentity, WORKSPACE_PROTOCOL_V26_CONTRACT)) {
         throw new TypeError("workspace constants require a new workspace protocol");
     }
     if (!sameJson(config.applications, APPLICATIONS_PROTOCOL_V5_CONTRACT)) {
         throw new TypeError("application constants require a new applications protocol");
     }
+    const retention = config.retention;
+    if (
+        !sameJson(
+            {
+                artifacts: retention.artifacts,
+                compatibilityVersion: retention.compatibilityVersion,
+                dataClasses: retention.dataClasses,
+                dispositions: retention.dispositions,
+                redactedArchive: retention.redactedArchive,
+                report: retention.report,
+                scanningModes: retention.scanning.modes,
+                schemas: retention.schemas,
+            },
+            RETENTION_PROTOCOL_V1_CONTRACT,
+        )
+    ) {
+        throw new TypeError("retention wire constants require a new retention protocol");
+    }
+    if (
+        !sameJson(
+            {
+                compatibilityVersion: config.storage.compatibilityVersion,
+                durabilities: config.storage.durabilities,
+                statuses: config.storage.statuses,
+            },
+            STORAGE_PROTOCOL_V1_CONTRACT,
+        )
+    ) {
+        throw new TypeError("storage vocabularies require a new storage protocol");
+    }
+    const backup = config.backup;
+    if (
+        !sameJson(
+            {
+                artifacts: backup.artifacts,
+                blobLocations: backup.blobLocations,
+                compatibilityVersion: backup.compatibilityVersion,
+                digestAlgorithm: backup.digestAlgorithm,
+                failureReasons: backup.failureReasons,
+                manifest: backup.manifest,
+                schemas: backup.schemas,
+            },
+            BACKUP_PROTOCOL_V1_CONTRACT,
+        )
+    ) {
+        throw new TypeError("backup wire constants require a new backup protocol");
+    }
+    const observability = config.observability;
+    if (
+        !sameJson(
+            {
+                artifacts: observability.artifacts,
+                batch: observability.batch,
+                bodies: {
+                    handlings: observability.bodies.handlings,
+                    modes: observability.bodies.modes,
+                },
+                compatibilityVersion: observability.compatibilityVersion,
+                ids: observability.ids,
+                schemas: observability.schemas,
+            },
+            OBSERVABILITY_PROTOCOL_V1_CONTRACT,
+        )
+    ) {
+        throw new TypeError("observability wire constants require a new observability protocol");
+    }
 }
 
 function sameMigrations(
     actual: ProtocolConfig["kernel"]["store"]["migrations"],
-    expected: typeof KERNEL_ABI_V0_STORE_V12_CONTRACT.migrations,
+    expected: typeof KERNEL_ABI_V0_STORE_V13_CONTRACT.migrations,
 ): boolean {
     return (
         actual.length === expected.length &&

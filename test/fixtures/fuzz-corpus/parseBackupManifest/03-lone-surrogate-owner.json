@@ -1,0 +1,9 @@
+{
+    "description": "F-015: a lone-surrogate owner identity is refused as manifest-invalid instead of escaping as an unclassified TypeError from sealing.",
+    "finding": "F-015",
+    "input": {
+        "seed": 0,
+        "replace": [{ "from": "\"owner_id\":\"", "to": "\"owner_id\":\"\\ud800" }]
+    },
+    "expect": { "outcome": "rejected", "error": "TraceStoreBackupError" }
+}

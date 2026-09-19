@@ -98,7 +98,12 @@ and expected structured error code.
 - content-addressed sidecars and pinned theorem metadata fail on drift;
 - TypeScript conformance is not reported as a formal proof of excluded runtime behavior.
 
-Use `fast-check` in TypeScript, seeded from the fixture manifest where practical.
+Property and fuzz tests use a seeded, hand-rolled harness rather than `fast-check`: decision D-017
+adds no dependencies for hardening, and the seeded PRNG (`seededRandom`, mulberry32) drives the
+scope reference model. Delivered in 2.32.0 (#185): the PRNG moved to `test/support/prng.ts`, the
+fuzz harness lives in `test/fuzz/` with `config/hardening-suites.config.json`, failures print the
+target, case index, and input, and minimized counterexamples are kept in
+`test/fixtures/fuzz-corpus/` ([fault and fuzz conformance](../docs/fault-and-fuzz-conformance.md)).
 
 ## Differential testing
 
@@ -175,6 +180,25 @@ Inject process termination:
 
 After restart, the system must classify state as complete, safely retryable,
 abandoned, or manual-recovery-required. It must never guess success.
+
+Status (2.32.1, #186; [fault and fuzz conformance](../docs/fault-and-fuzz-conformance.md#faults-and-soak)):
+
+| Injection point | Evidence |
+| --- | --- |
+| Before and after blob write/rename | `test/blob/crash.test.ts`; seeded `SIGKILL` during `putBlob` in `test/faults/process-kill.test.ts` and the soak |
+| Before and after append transaction commit | `test/faults/process-kill.test.ts` (`append`, `cut`, `vacuum` loops), `test/store/recovery.test.ts` |
+| During world materialization | `test/workspace/retained-world-apply.test.ts` (carrier interruption after planned path writes), `test/workspace/platform-fault-conformance.test.ts` |
+| Before and after settlement compare-and-swap | `test/workspace/retained-world-apply.test.ts` (interrupted settlement citation repaired after reopen) |
+| During child fork/publish/handoff | `test/delegation/delegation-crash.test.ts` |
+| During compensation | `test/store/orphan-operation-repair.test.ts` (killed repair preparation) |
+| During trace export/import | Seeded `SIGKILL` during `importTrace` (`test/faults/process-kill.test.ts`); export is read-only |
+| While a live interceptor owns a decision lease | `test/supervision/supervision-crash.test.ts` |
+| During backup and vacuum (added) | `test/faults/process-kill.test.ts` (`backup`, `vacuum`) |
+| Disk full and file-size limit (added) | `test/faults/disk-full.test.ts`; opt-in `pnpm test:faults:volume` |
+| At-rest corruption (added) | `test/faults/corruption.test.ts` |
+| Long duration (added) | Bounded soak in `pnpm test`; recorded `pnpm test:soak` run |
+
+Operating-system crash and power loss are not simulated; only process termination is.
 
 ## Provider testing
 
@@ -301,3 +325,25 @@ Stable release additionally:
 - supported prior client can read compatible records;
 - recovery drill passes;
 - public performance report exists.
+
+### Enforced gates (from 2.26.0, #179)
+
+Hosted CI is disabled, so these gates are local commands:
+
+| Gate | Command | Where |
+| --- | --- | --- |
+| Protocol and API compatibility, deprecation window, no silent protocol changes | `pnpm check:compatibility` | `pnpm verify`, `pnpm verify:serial` |
+| Lockfile SBOM current | `pnpm check:sbom` | `pnpm verify`, `pnpm verify:serial` |
+| npm tarball tested after packing | `pnpm test:package-cli` | `pnpm verify` |
+| Downgrade behavior known; every historical store schema migrates forward; recovery (backup, restore, interruption) drills pass (from 2.29.0, #182) | `test/operations/migration-drills.test.ts`, `test/operations/backup-restore.test.ts` | `pnpm test` in `pnpm verify` |
+| No full table scan on hot-path SQL; bounded scale tier; maintenance preserves exports (from 2.30.0, #183) | `test/store/query-plans.test.ts`, `test/store/scale.test.ts`, `test/store/maintenance.test.ts` | `pnpm test` in `pnpm verify` |
+| Kill/restart, disk-full, and corruption outcomes classified complete, retryable, or refused; bounded soak (from 2.32.1, #186) | `test/faults/*.test.ts` | `pnpm test` in `pnpm verify` |
+| Long-duration soak and real-volume ENOSPC (from 2.32.1, #186) | `pnpm test:soak --duration <s>`, `pnpm test:faults:volume` | On demand (outside `verify`) |
+| Public performance report; kernel SLOs on the reference host class (from 2.30.0, #183) | `pnpm check:slo` ([performance report](../docs/performance-report.md)) | `pnpm verify:release` |
+| Two clean builds and packs byte-identical | `pnpm release:reproducible-build` | `pnpm verify:release` |
+| SBOM, unsigned provenance, release manifest | `pnpm release:manifest` | `pnpm verify:release` |
+
+Signed provenance, publication, license scanning, security scanning, and docs deployment remain
+owner-owed or open (O-2, O-3 in the [production hardening contract](./production-hardening-contract.md)).
+The compatibility report is the gate's output; the classified change log is
+`spec/compatibility/protocol-changes.json`.

@@ -103,6 +103,33 @@ second event model.
 Reason: this preserves portable semantic identity while preventing event-sourcing terminology from
 overstating replay, recovery, or world-state guarantees.
 
+### D-016: "1.0" is the L4 maturity milestone, not a package version
+
+"1.0" names the L4 operational-maturity milestone closed by the Phase 11 readiness audit (#29). The
+package keeps Semantic Versioning from its current version; reaching the milestone neither resets
+nor reserves a version number, and no Phase 11 slice is MAJOR unless it breaks a public contract.
+
+Reason: the package is already past 2.0.0, and a version number reserved for a milestone would
+either force a false downgrade or hide a breaking change behind a marketing number.
+
+### D-017: No new dependencies for hardening
+
+Phase 11 hardening (compatibility gates, SBOM, provenance, fuzzing, fault suites, telemetry,
+backup) uses Node built-ins and existing development dependencies only. No runtime dependency and
+no `allowBuilds` entry is added.
+
+Reason: every dependency enlarges the supply-chain surface this phase is meant to shrink, and the
+package has zero runtime dependencies today.
+
+### D-018: Remote storage is interfaces-only for 1.0
+
+For 1.0, remote storage and concurrency are delivered as stable interfaces, conformance kits, and
+local reference adapters (#181). `SQLiteTraceStore` remains the only canonical append store, and no
+cloud adapter ships.
+
+Reason: D-004 keeps remote stores as adapters; a cloud adapter needs credentials, hosted test
+infrastructure, and a failure model the local suites cannot verify.
+
 ### D-015: Run control is a fenced durable protocol
 
 Creation, invocation, pause, resume, cancellation, and recovery must be represented by one
@@ -168,7 +195,7 @@ over a protocol-compatible core, with a migration mapping document.
 | Live interception races materialization | Unsafe actions land before denial | Durable intent, explicit decision lease, fail policy |
 | Irreversible effects replay twice | External harm | Reversibility tier, frontier, approval, idempotency keys |
 | Provider nondeterminism invalidates “replay” | Misleading correctness claims | Verify exact prefix; label suffix re-execution; deterministic fixtures |
-| Secrets enter immutable traces | Persistent exposure | Secret references, redaction, encrypted stores, export policy |
+| Secrets enter immutable traces | Persistent exposure | Delivered in 2.27.0 (#180): opt-in `secretScanning: "refuse"` rejects configured secret classes before any write; data classes, one-way redacted export and verifier, retention inspection, rotation runbook, and owner-only SQLite files ([secrets and retention](../docs/secrets-and-retention.md)). Secret references and encrypted stores remain unimplemented; scanning is off by default and pattern-based (F-001 accepted residual) |
 | Dynamic task synthesis executes untrusted code | Code execution vulnerability | Schema/policy validation and isolated execution boundary |
 | Optimized filesystem backend corrupts state | Data loss | Copy backend oracle; verify before settlement; recovery receipts |
 | Concurrent settlement splits ownership | Duplicate application | Transactional CAS and exact output identity |

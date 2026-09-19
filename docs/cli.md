@@ -46,6 +46,12 @@ shepherd-ts run <command> ...
 shepherd-ts task <command> ...
 shepherd-ts demo write
 shepherd-ts package init
+shepherd-ts store verify [--store PATH] | --backup DIR [--manifest ID]
+shepherd-ts store backup [--store PATH] --output DIR
+shepherd-ts store restore --backup DIR --manifest ID --store TARGET
+shepherd-ts store export [--store PATH] --output FILE [--redacted]
+shepherd-ts store import [--store PATH] --input FILE
+shepherd-ts store maintain [--store PATH] [--mode inspect|checkpoint|optimize|vacuum]
 ```
 
 `init` delegates to protected workspace initialization and never creates a commit, stages files,
@@ -83,9 +89,37 @@ returns its configured name and byte length without embedding source. Missing, u
 demo selectors fail with the configured usage class. `package init` remains unavailable until its
 reproducible scaffold capability is delivered.
 
+`store` (from 2.29.0) wraps the operations APIs documented in
+[backup, restore, and migration](./backup-restore-and-migration.md#command-line).
+`store verify` opens an existing store read-only and fails with exit `1` and a bounded issue list
+when `verifyIntegrity` or `verifyBlobs` reports a defect; with `--backup` it verifies a backup
+directory, optionally against an exact `--manifest` identity. `store backup` reads the store
+read-only and writes a new owner-only backup directory. `store restore` requires the exact
+manifest identity and an explicit target that must not exist; it never overwrites. `store export`
+writes a native archive, or with `--redacted` a one-way
+[redacted archive](./secrets-and-retention.md), to a new owner-only file and refuses an existing
+output. `store import` loads a native archive into a pristine store, creating it when absent;
+redacted archives are refused, and from 2.32.0 a file larger than
+`kernel.interchange.limits.maxArchiveBytes` is refused before it is read
+([input limits](./trace-interchange.md#input-limits)). Backup failures print `<reason>: <message>` with the configured
+backup failure reason; JSON mode reports only the configured error code.
+
+`store maintain` (from 2.30.0) runs `SQLiteTraceStore.maintain` on an existing store: `inspect`
+(the configured default) runs `quick_check` and reports page, freelist, and write-ahead-log sizes;
+`checkpoint`, `optimize`, and `vacuum` also truncate the log, refresh planner statistics, or rebuild
+the file ([SQLite trace store](./sqlite-trace-store.md#maintenance)). It opens the store writable,
+so an older schema is migrated first, like any writable open; it never creates a store (exit `3`)
+and never changes semantic content. A `quick_check` defect fails with exit `1` and a bounded issue
+list; an unconfigured `--mode` is a usage error. JSON mode returns the complete `maintenance`
+report.
+
 ## Resource limits and security
 
+The options each command accepts are declared per handler role in `cli.commandOptions` (flags and
+value options, since 2.32.2); every handler parses argv only through that table, and the
+[compatibility gate](./compatibility-policy.md) fingerprints it per command.
 The CLI rejects excessive argument counts/bytes, duplicate/unknown options, invalid pagination,
 missing selectors, and missing paths. Human output shares one configured byte ceiling. Reads do
-not create stores or registries. Mutations retain all existing exact-ID, command-idempotency,
+not create stores or registries; `store import` is the only command that creates a trace store,
+and `store import` and `store maintain` are the only store commands that open a store writable. Mutations retain all existing exact-ID, command-idempotency,
 carrier, basis, custody, scope, and provider safety checks; the CLI itself grants no authority.

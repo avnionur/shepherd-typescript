@@ -27,7 +27,12 @@ import path from "node:path";
 import { syncDirectory } from "../blob/directory-durability.ts";
 import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
-import { GIT_HEAD_KINDS, WORKSPACE_ADOPTION_MODES } from "../protocol/values.generated.ts";
+import {
+    GIT_HEAD_KINDS,
+    GIT_SYMLINK_MODE,
+    GITLINK_MODE,
+    WORKSPACE_ADOPTION_MODES,
+} from "../protocol/values.generated.ts";
 import {
     assertWorkspaceBinding,
     createGitRepositoryBindings,
@@ -35,6 +40,7 @@ import {
     isGitRepositoryBinding,
 } from "./bindings.ts";
 import { GitCustodyError } from "./errors.ts";
+import { gitCommandArguments, gitCommandEnvironment } from "./git-command.ts";
 import { gitFilesystemIdentity, inspectGitRepository } from "./git-repository-evidence.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import {
@@ -338,26 +344,94 @@ function materializeManagedWorld(
     target: string,
 ): void {
     if (mode === "git-head") {
-        const archive = runGit(repositoryRoot, ["archive", "--format=tar", "HEAD"]);
-        const extracted = spawnSync(
-            workspaceProtocolConfig.gitCustody.archiveExecutable,
-            ["-xf", "-", "-C", target],
-            {
-                input: archive.bytes,
-                stdio: ["pipe", "pipe", "pipe"],
-            },
-        );
-        // Archive process fault injection is part of the documented carrier fault harness.
-        /* node:coverage disable */
-        /* node:coverage ignore next */
-        if (extracted.error !== undefined || extracted.status !== 0) throw gitError("control");
-        /* node:coverage enable */
+        materializeHeadTree(repositoryRoot, target);
         return;
     }
     assertCoreSymlinksWorktree(repositoryRoot);
     const paths = readManagedPaths(workspaceRoot, repositoryRoot);
     assertManagedPathMetadataSupported(repositoryRoot, paths);
     for (const relative of paths) copyNode(repositoryRoot, target, relative);
+}
+
+/**
+ * Writes HEAD's tree into `target` from raw Git objects.
+ *
+ * Only plumbing that never consults attributes is used (`ls-tree` and `cat-file --batch`), so no
+ * `filter.<driver>.smudge` or `process` program, `export-ignore`, `export-subst`, `ident`, or
+ * end-of-line conversion applies. Files are created exclusively with Git checkout's creation modes
+ * (`0666`, or `0777` for executable blobs) under the process umask, directories and submodule
+ * gitlinks as directories with the default mode, and symbolic links with their blob as target.
+ * Every entry must have a parent directory created from a tree entry, so no write follows a link.
+ */
+function materializeHeadTree(repositoryRoot: string, target: string): void {
+    const entries = parseNull(
+        runGit(repositoryRoot, ["ls-tree", "-r", "-t", "-z", "--full-tree", "HEAD"]).bytes,
+    ).map((item) => {
+        const separator = item.indexOf(0x09);
+        const [mode, type, objectId] = item.subarray(0, separator).toString("ascii").split(" ");
+        assert.ok(mode !== undefined && type !== undefined && objectId !== undefined);
+        return { mode, objectId, path: decodeGitPath(item.subarray(separator + 1)), type };
+    });
+    const blobs = readGitBlobs(
+        repositoryRoot,
+        entries.filter((entry) => entry.type === "blob").map((entry) => entry.objectId),
+    );
+    const directories = new Set([""]);
+    for (const entry of entries) {
+        const parts = entry.path.split("/");
+        if (
+            parts.some((part) => part === "" || part === "." || part === "..") ||
+            !directories.has(parts.slice(0, -1).join("/"))
+        ) {
+            throw gitError("unsupported", `unsupported HEAD tree path: ${entry.path}`);
+        }
+        const destination = path.join(target, ...parts);
+        const bytes = blobs.get(entry.objectId);
+        if (entry.type === "tree" || entry.type === "commit") {
+            mkdirSync(destination);
+            if (entry.type === "tree") directories.add(entry.path);
+        } else if (entry.mode === "120000") {
+            assert.ok(bytes !== undefined);
+            symlinkSync(bytes.toString("utf8"), destination);
+        } else {
+            assert.ok(bytes !== undefined && entry.type === "blob");
+            writeFileSync(destination, bytes, {
+                flag: "wx",
+                mode: (Number.parseInt(entry.mode, 8) & 0o100) === 0 ? 0o666 : 0o777,
+            });
+        }
+    }
+}
+
+/** Reads raw blob bytes with `cat-file --batch`, which applies no attribute or filter. */
+function readGitBlobs(repositoryRoot: string, objectIds: readonly string[]): Map<string, Buffer> {
+    const unique = [...new Set(objectIds)];
+    const blobs = new Map<string, Buffer>();
+    if (unique.length === 0) return blobs;
+    const output = runGit(
+        repositoryRoot,
+        ["cat-file", "--batch"],
+        Buffer.from(`${unique.join("\n")}\n`, "ascii"),
+    ).bytes;
+    let offset = 0;
+    for (const objectId of unique) {
+        const headerEnd = output.indexOf(0x0a, offset);
+        assert.ok(headerEnd > offset);
+        const [returnedId, type, size] = output
+            .subarray(offset, headerEnd)
+            .toString("ascii")
+            .split(" ");
+        assert.equal(returnedId, objectId);
+        assert.equal(type, "blob");
+        const length = Number(size);
+        const start = headerEnd + 1;
+        assert.ok(Number.isSafeInteger(length) && start + length < output.length);
+        assert.equal(output[start + length], 0x0a);
+        blobs.set(objectId, output.subarray(start, start + length));
+        offset = start + length + 1;
+    }
+    assert.equal(offset, output.length);
+    return blobs;
 }
 
 function assertManagedPathMetadataSupported(
@@ -463,15 +537,117 @@ function assertManagedRepositoryBoundary(repositoryRoot: string, relative: strin
         );
     }
     /* node:coverage enable */
-    const status = runGit(repositoryRoot, [
-        "status",
-        "--porcelain=v1",
-        "--untracked-files=all",
-        "--ignore-submodules=none",
-        "--",
-        relative,
-    ]).text;
-    if (status.length > 0) throw gitError("unsupported", `dirty submodule: ${relative}`);
+    const gitlink = staged.text.split(" ")[1];
+    if (
+        tryGit(repositoryRoot, ["rev-parse", "--verify", "-q", `HEAD:${relative}`])?.text !==
+            gitlink ||
+        !checkedOutRepositoryMatches(path.dirname(nested), gitlink)
+    ) {
+        throw gitError("unsupported", `dirty submodule: ${relative}`);
+    }
+}
+
+/**
+ * Reports whether the repository checked out at `root` is clean at commit `expectedHead`.
+ *
+ * This replaces `git status`, which refreshes stat-dirty index entries by re-hashing content
+ * through repository-configured `filter.<driver>.clean`/`process` programs. Only plumbing that runs
+ * no configured program is used (`rev-parse`, `ls-tree`, `ls-files`); worktree content is hashed
+ * here as raw Git blobs, so a file that differs from its blob only through a clean filter or
+ * end-of-line conversion is reported dirty (fail closed). The checked-out HEAD must equal the
+ * gitlink, the index must equal HEAD at stage 0, every entry that is neither skip-worktree nor
+ * assume-unchanged must match the worktree (type, executable bit unless `core.fileMode` is false,
+ * and blob id, with no symbolic link in its leading path), populated nested gitlinks recursively,
+ * and no untracked, non-ignored path may exist.
+ */
+function checkedOutRepositoryMatches(root: string, expectedHead: string | undefined): boolean {
+    if (realpathSync(runGit(root, ["rev-parse", "--show-toplevel"]).text) !== realpathSync(root)) {
+        return false;
+    }
+    if (tryGit(root, ["rev-parse", "--verify", "-q", "HEAD^{commit}"])?.text !== expectedHead) {
+        return false;
+    }
+    const objectFormat = runGit(root, ["rev-parse", "--show-object-format"]).text;
+    const committed = new Map(
+        parseNull(runGit(root, ["ls-tree", "-r", "-z", "--full-tree", "HEAD"]).bytes).map(
+            (item) => {
+                const separator = item.indexOf(0x09);
+                const [mode, , objectId] = item.subarray(0, separator).toString("ascii").split(" ");
+                return [decodeGitPath(item.subarray(separator + 1)), `${mode} ${objectId}`];
+            },
+        ),
+    );
+    const fileMode = tryGit(root, ["config", "--bool", "--get", "core.fileMode"])?.text !== "false";
+    const directories = new Set<string>();
+    const indexed = parseNull(runGit(root, ["ls-files", "-v", "--stage", "-z"]).bytes);
+    for (const item of indexed) {
+        const separator = item.indexOf(0x09);
+        const [tag, mode, objectId, stage] = item
+            .subarray(0, separator)
+            .toString("ascii")
+            .split(" ") as [string, string, string, string];
+        const relative = decodeGitPath(item.subarray(separator + 1));
+        if (stage !== "0" || committed.get(relative) !== `${mode} ${objectId}`) return false;
+        // Skip-worktree and assume-unchanged entries are not compared, as `git status` does.
+        if (tag !== "H") continue;
+        const entry = { mode, objectId, path: relative };
+        if (!worktreeEntryMatches(root, entry, objectFormat, fileMode, directories)) return false;
+    }
+    return (
+        indexed.length === committed.size &&
+        runGit(root, ["ls-files", "-z", "--others", "--exclude-standard"]).bytes.length === 0
+    );
+}
+
+function worktreeEntryMatches(
+    root: string,
+    entry: { readonly mode: string; readonly objectId: string; readonly path: string },
+    objectFormat: string,
+    fileMode: boolean,
+    directories: Set<string>,
+): boolean {
+    const parts = entry.path.split("/");
+    for (let index = 1; index < parts.length; index += 1) {
+        const parent = parts.slice(0, index).join("/");
+        if (directories.has(parent)) continue;
+        if (lstatSync(path.join(root, parent), { throwIfNoEntry: false })?.isDirectory() !== true) {
+            return false;
+        }
+        directories.add(parent);
+    }
+    const absolute = path.join(root, ...parts);
+    const status = lstatSync(absolute, { throwIfNoEntry: false });
+    const kind =
+        entry.mode === GITLINK_MODE
+            ? status?.isDirectory()
+            : entry.mode === GIT_SYMLINK_MODE
+              ? status?.isSymbolicLink()
+              : status?.isFile();
+    if (status === undefined || kind !== true) return false;
+    if (entry.mode === GITLINK_MODE) {
+        return (
+            !existsSync(path.join(absolute, workspaceProtocolConfig.gitMetadataName)) ||
+            checkedOutRepositoryMatches(absolute, entry.objectId)
+        );
+    }
+    const executable = (Number.parseInt(entry.mode, 8) & 0o100) !== 0;
+    if (
+        fileMode &&
+        entry.mode !== GIT_SYMLINK_MODE &&
+        executable !== ((status.mode & 0o100) !== 0)
+    ) {
+        return false;
+    }
+    const content =
+        entry.mode === GIT_SYMLINK_MODE
+            ? readlinkSync(absolute, { encoding: "buffer" })
+            : readFileNoFollow(absolute);
+    return (
+        createHash(objectFormat)
+            .update(`blob ${content.length}\0`)
+            .update(content)
+            .digest("hex") === entry.objectId
+    );
 }
 
 function readManagedPaths(workspaceRoot: string, root: string): string[] {
@@ -1156,10 +1332,10 @@ function assertStagingIdentity(staging: GitStaging): void {
 function runGit(root: string, args: readonly string[], input?: Buffer): GitCommand {
     const result = spawnSync(
         workspaceProtocolConfig.gitExecutable,
-        ["-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-C", root, ...args],
+        gitCommandArguments(root, args),
         {
             encoding: "buffer",
-            env: { ...process.env, GIT_OPTIONAL_LOCKS: "0" },
+            env: gitCommandEnvironment(),
             maxBuffer: workspaceProtocolConfig.gitCustody.maxCommandBytes,
             input,
             stdio: [input === undefined ? "ignore" : "pipe", "pipe", "pipe"],

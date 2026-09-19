@@ -4,11 +4,25 @@ export const SECURE_HASH_ALGORITHMS = ["sha256", "sha384", "sha512"] as const;
 /** SQLite journal modes permitted by the trace-store durability contract. */
 export const STORE_JOURNAL_MODES = ["WAL"] as const;
 
+/** SQLite rollback-journal modes that leave a closed backup database as one self-contained file. */
+export const BACKUP_JOURNAL_MODES = ["DELETE", "TRUNCATE", "PERSIST"] as const;
+
 /** SQLite synchronization levels permitted by the trace-store durability contract. */
 export const STORE_SYNCHRONOUS_LEVELS = ["FULL"] as const;
 
 /** SQLite transaction modes permitted for serialized append planning. */
 export const STORE_TRANSACTION_MODES = ["IMMEDIATE"] as const;
+
+/** Store maintenance operations implemented by `SQLiteTraceStore.maintain`. */
+export const STORE_MAINTENANCE_OPERATIONS = [
+    "inspect",
+    "checkpoint",
+    "optimize",
+    "vacuum",
+] as const;
+
+/** SQLite WAL checkpoint modes permitted for store maintenance. */
+export const STORE_WAL_CHECKPOINT_MODES = ["PASSIVE", "FULL", "RESTART", "TRUNCATE"] as const;
 
 /** Ordered effect-handler selection policies supported by this runtime. */
 export const EFFECT_HANDLER_SELECTIONS = ["last_matching"] as const;
@@ -39,6 +53,19 @@ export type CliProtocolConfig = {
         readonly jsonOutputSchema: string;
         readonly quickstartDemo: string;
     };
+    /**
+     * Option keys (from `options`) each handler role accepts, split into flags and value options;
+     * handlers parse argv only through this table, so it is the per-command option surface.
+     */
+    readonly commandOptions: Readonly<
+        Record<
+            string,
+            {
+                readonly flags: readonly (keyof CliProtocolConfig["options"])[];
+                readonly values: readonly (keyof CliProtocolConfig["options"])[];
+            }
+        >
+    >;
     readonly compatibilityVersion: string;
     readonly defaults: {
         readonly bindingName: string;
@@ -73,6 +100,12 @@ export type CliProtocolConfig = {
         readonly runTrace: string;
         readonly runTraceRevision: string;
         readonly runVcsCore: string;
+        readonly storeBackup: string;
+        readonly storeExport: string;
+        readonly storeImport: string;
+        readonly storeMaintain: string;
+        readonly storeRestore: string;
+        readonly storeVerify: string;
         readonly taskList: string;
         readonly taskResolve: string;
         readonly taskShow: string;
@@ -117,15 +150,21 @@ export type CliProtocolConfig = {
     };
     readonly options: {
         readonly adopt: string;
+        readonly backup: string;
         readonly bindingName: string;
         readonly bindingRoot: string;
         readonly command: string;
         readonly initializeGit: string;
+        readonly input: string;
         readonly json: string;
         readonly limit: string;
+        readonly manifest: string;
         readonly maxBytes: string;
+        readonly mode: string;
         readonly noInitializeGit: string;
         readonly offset: string;
+        readonly output: string;
+        readonly redacted: string;
         readonly registry: string;
         readonly read: string;
         readonly store: string;
@@ -174,10 +213,48 @@ export type StoreProtocolConfig = {
     readonly defensive: true;
     readonly foreignKeys: true;
     readonly journalMode: (typeof STORE_JOURNAL_MODES)[number];
+    readonly maintenance: StoreMaintenanceProtocolConfig;
     readonly migrations: NonEmptyReadonlyArray<StoreMigrationConfig>;
     readonly schemaVersion: number;
     readonly synchronous: (typeof STORE_SYNCHRONOUS_LEVELS)[number];
     readonly transactionMode: (typeof STORE_TRANSACTION_MODES)[number];
+};
+
+/** Validated semantics-preserving trace-store maintenance configuration. */
+export type StoreMaintenanceProtocolConfig = {
+    /** Non-mutating maintenance default. */
+    readonly defaultMode: (typeof STORE_MAINTENANCE_OPERATIONS)[number];
+    /** Enabled maintenance operations, a subset of the implemented operations. */
+    readonly modes: readonly (typeof STORE_MAINTENANCE_OPERATIONS)[number][];
+    /** Maximum `quick_check` issues retained in one report. */
+    readonly quickCheckMaxIssues: number;
+    /** WAL checkpoint mode applied by checkpoint and after vacuum. */
+    readonly walCheckpointMode: (typeof STORE_WAL_CHECKPOINT_MODES)[number];
+    /** Suffix SQLite appends to the database path for its write-ahead log. */
+    readonly walFileSuffix: string;
+};
+
+/**
+ * Validated operational bounds on native and redacted trace-archive input. They are not part of
+ * the archive format identity. @internal
+ */
+export type TraceArchiveLimitsConfig = {
+    /** Maximum archived append intents. */
+    readonly maxAppendIntents: number;
+    /** Maximum UTF-8 byte length of archive text, checked before parsing. */
+    readonly maxArchiveBytes: number;
+    /** Maximum declared total of decoded blob bytes, checked before decoding. */
+    readonly maxBlobBytes: number;
+    /** Maximum archived blobs. */
+    readonly maxBlobs: number;
+    /** Maximum archived cuts. */
+    readonly maxCuts: number;
+    /** Maximum JSON array and object nesting depth, checked before parsing. */
+    readonly maxNestingDepth: number;
+    /** Maximum archived owner views. */
+    readonly maxRecordViews: number;
+    /** Maximum archived records. */
+    readonly maxRecords: number;
 };
 
 /** Validated kernel protocol configuration. */
@@ -200,6 +277,15 @@ export type KernelProtocolConfig = {
         readonly blobEncoding: "base64";
         readonly format: string;
         readonly formatVersion: number;
+        readonly limits: TraceArchiveLimitsConfig;
+        /** Operational import staging, excluded from the archive format identity. */
+        readonly staging: {
+            /**
+             * Name prefix of the owner-only directory an import validates in, created beside the
+             * target store's blob directory.
+             */
+            readonly directoryPrefix: string;
+        };
     };
     readonly queries: {
         readonly closurePolicies: readonly string[];
@@ -1948,6 +2034,16 @@ export type WorkspaceProtocolConfig = {
     readonly formatVersion: number;
     /** Configured Git executable. */
     readonly gitExecutable: string;
+    /**
+     * Hardening applied to every Git subprocess: `-c` overrides placed before the subcommand,
+     * inherited environment variables removed by name prefix, then configured variables set.
+     * Operational only; not part of the workspace protocol identity.
+     */
+    readonly gitInvocation: {
+        readonly configOverrides: readonly string[];
+        readonly environment: Readonly<Record<string, string>>;
+        readonly removedEnvironmentPrefixes: readonly string[];
+    };
     /** Git-aware retained-output custody protocol configuration. */
     readonly gitCustody: {
         readonly archiveExecutable: string;
@@ -2932,9 +3028,292 @@ export type ApplicationsProtocolConfig = {
     };
 };
 
+/** One configured pattern-based secret detector. */
+export type SecretClassConfig = {
+    /** Regular-expression flags; always includes Unicode mode. */
+    readonly flags: string;
+    /** Stable secret-class name reported instead of matched text. */
+    readonly name: string;
+    /** Regular-expression source matched against strings and object keys. */
+    readonly pattern: string;
+};
+
+/** One configured mapping from a protocol schema family (or single schema) to a data class. */
+export type SchemaFamilyConfig = {
+    /** Configured data class applied to every schema identifier under the path. */
+    readonly dataClass: string;
+    /** Dot-separated protocol configuration path of a schema family or single schema. */
+    readonly path: string;
+};
+
+/** Versioned secret-scanning, data-class, redacted-export, and store-file configuration. */
+export type RetentionProtocolConfig = {
+    /** Generated redacted-archive and retention-report schema destinations. */
+    readonly artifacts: {
+        readonly redactedArchiveSchema: string;
+        readonly reportSchema: string;
+    };
+    /** Compatibility namespace for retention evidence. */
+    readonly compatibilityVersion: string;
+    /** Closed data-class vocabulary. */
+    readonly dataClasses: readonly string[];
+    /** Data class applied to schema identifiers no configured family names. */
+    readonly defaultDataClass: string;
+    /** Digest algorithm for finding and body digests. */
+    readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
+    /** Prefix identifying the digest algorithm. */
+    readonly digestPrefix: string;
+    /** Closed export-disposition vocabulary. */
+    readonly dispositions: readonly string[];
+    /** Export disposition of every configured data class. */
+    readonly exportDispositions: Readonly<Record<string, string>>;
+    /** Protocol configuration keys whose objects are schema families requiring a mapping. */
+    readonly familyKeys: readonly string[];
+    /** Resource bounds for findings and report entries. */
+    readonly limits: {
+        readonly maxFindings: number;
+        readonly maxReportedRecords: number;
+    };
+    /** Redacted archive wire identity. */
+    readonly redactedArchive: {
+        readonly format: string;
+        readonly formatVersion: number;
+    };
+    /** Retention report wire identity. */
+    readonly report: {
+        readonly format: string;
+        readonly formatVersion: number;
+    };
+    /** Store append scanning modes and the default. */
+    readonly scanning: {
+        readonly defaultMode: string;
+        /**
+         * Prefix of secret-finding digests, which are keyed with a random per-process key so a
+         * reported digest cannot confirm a guessed secret.
+         */
+        readonly findingDigestPrefix: string;
+        readonly modes: readonly string[];
+    };
+    /** Resolved data class of every configured schema identifier. */
+    readonly schemaDataClasses: Readonly<Record<string, string>>;
+    /** Configured schema-family mappings. */
+    readonly schemaFamilies: readonly SchemaFamilyConfig[];
+    /** Published schema identifiers. */
+    readonly schemas: {
+        readonly redactedArchiveId: string;
+        readonly reportId: string;
+    };
+    /** Configured secret detectors in configuration order. */
+    readonly secretClasses: readonly SecretClassConfig[];
+    /** Owner-only mode applied to SQLite database files and their sidecars. */
+    readonly storeFiles: {
+        /** Numeric permission bits parsed from the configured octal string. */
+        readonly mode: number;
+        /** Sidecar file suffixes tightened beside a database file. */
+        readonly sidecarSuffixes: readonly string[];
+    };
+};
+
+/** Versioned remote-storage interface, reference-adapter, and conformance configuration. */
+export type StorageProtocolConfig = {
+    /** Blob-store backend listing bounds. */
+    readonly blobs: {
+        /** Page size used when a list request names no limit. */
+        readonly defaultListLimit: number;
+        /** Largest page size a list request may name. */
+        readonly maxListLimit: number;
+    };
+    /** Compatibility namespace for storage interfaces. */
+    readonly compatibilityVersion: string;
+    /** SQLite durability and migration contract of the reference storage coordinator. */
+    readonly coordinator: {
+        /** Time SQLite waits for a competing coordinator writer. */
+        readonly busyTimeoutMilliseconds: number;
+        /** Whether SQLite defensive mode is enabled. */
+        readonly defensive: true;
+        /** Whether SQLite foreign-key enforcement is enabled. */
+        readonly foreignKeys: true;
+        /** Configured durable SQLite journal mode. */
+        readonly journalMode: (typeof STORE_JOURNAL_MODES)[number];
+        /** Contiguous implemented coordinator migration versions. */
+        readonly migrations: NonEmptyReadonlyArray<number>;
+        /** Latest supported coordinator schema version. */
+        readonly schemaVersion: number;
+        /** Configured durable SQLite synchronization level. */
+        readonly synchronous: (typeof STORE_SYNCHRONOUS_LEVELS)[number];
+        /** Transaction mode used to serialize reference swaps and lease changes. */
+        readonly transactionMode: (typeof STORE_TRANSACTION_MODES)[number];
+    };
+    /** Closed durability vocabulary a backend or coordinator declares. */
+    readonly durabilities: readonly string[];
+    /** Lease owner and time-to-live bounds. */
+    readonly leases: {
+        /** Longest accepted lease-owner identity. */
+        readonly maxOwnerLength: number;
+        /** Longest accepted lease time-to-live. */
+        readonly maxTtlMilliseconds: number;
+        /** Shortest accepted lease time-to-live. */
+        readonly minTtlMilliseconds: number;
+    };
+    /** Grammar shared by reference names and lease keys. */
+    readonly names: {
+        /** Longest accepted name. */
+        readonly maxLength: number;
+        /** Unicode-mode regular-expression source every name must match. */
+        readonly pattern: string;
+    };
+    /** Reference value bounds. */
+    readonly refs: {
+        /** Longest accepted reference value. */
+        readonly maxValueLength: number;
+    };
+    /** Closed result-status vocabularies. */
+    readonly statuses: {
+        /** Lease statuses: acquired, held, renewed, released, fenced. */
+        readonly lease: readonly string[];
+        /** Reference swap statuses: swapped, conflict, fenced. */
+        readonly refSwap: readonly string[];
+    };
+};
+
+/** Versioned trace-store backup, verification, and restore configuration. */
+export type BackupProtocolConfig = {
+    /** Generated backup-manifest schema destination. */
+    readonly artifacts: {
+        readonly manifestSchema: string;
+    };
+    /** Where backed-up blob bytes live: the backup directory or a caller-supplied backend. */
+    readonly blobLocations: readonly string[];
+    /** Compatibility namespace for backup evidence. */
+    readonly compatibilityVersion: string;
+    /**
+     * Rollback-journal mode a backup database copy is switched to after the online copy, so the
+     * copy is one self-contained file without write-ahead-log sidecars.
+     */
+    readonly databaseJournalMode: (typeof BACKUP_JOURNAL_MODES)[number];
+    /** Hash algorithm for database, export, blob-list, and manifest digests. */
+    readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
+    /** Digest prefix naming the configured algorithm. */
+    readonly digestPrefix: string;
+    /** Numeric owner-only permission bits of backup and staging directories. */
+    readonly directoryMode: number;
+    /** Closed classification vocabulary of refused or failed backup operations. */
+    readonly failureReasons: readonly string[];
+    /** File names inside a backup directory and restore staging names. */
+    readonly layout: {
+        /** Blob directory inside a backup whose blobs live in the backup directory. */
+        readonly blobDirectory: string;
+        /** Database copy inside a backup directory. */
+        readonly database: string;
+        /** Manifest written last; its presence marks a complete backup. */
+        readonly manifest: string;
+        /** Prefix of a restore staging directory created beside the target. */
+        readonly stagingPrefix: string;
+        /** Suffix of a manifest written before its atomic rename. */
+        readonly temporarySuffix: string;
+    };
+    /** Backup resource bounds. */
+    readonly limits: {
+        /** Largest manifest a verifier reads. */
+        readonly maxManifestBytes: number;
+        /** SQLite pages copied per online-backup step. */
+        readonly pagesPerStep: number;
+    };
+    /** Manifest wire identity. */
+    readonly manifest: {
+        readonly format: string;
+        readonly formatVersion: number;
+    };
+    /** Published schema identifiers. */
+    readonly schemas: {
+        readonly manifestId: string;
+    };
+};
+
+/** Versioned non-canonical OpenTelemetry-compatible telemetry configuration. */
+export type ObservabilityProtocolConfig = {
+    /** Generated telemetry-batch schema destination. */
+    readonly artifacts: {
+        readonly batchSchema: string;
+    };
+    /** Attribute-key prefix of every Shepherd-defined telemetry attribute. */
+    readonly attributeNamespace: string;
+    /** Telemetry batch wire identity. */
+    readonly batch: {
+        readonly format: string;
+        readonly formatVersion: number;
+    };
+    /** Record-body export vocabulary. */
+    readonly bodies: {
+        /** Exporter body mode used when the caller supplies none. */
+        readonly defaultMode: string;
+        /** Closed vocabulary describing how one record body was handled. */
+        readonly handlings: readonly string[];
+        /** Closed vocabulary of exporter body modes. */
+        readonly modes: readonly string[];
+    };
+    /** Compatibility namespace, also reported as the instrumentation-scope version. */
+    readonly compatibilityVersion: string;
+    /** Deterministic trace and span identifier derivation. */
+    readonly ids: {
+        /** Hash algorithm whose hex digest prefix becomes an identifier. */
+        readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
+        /** Domain separator hashed before a record identity to derive a span identifier. */
+        readonly spanDomain: string;
+        /** Domain separator hashed before an owner path to derive a trace identifier. */
+        readonly traceDomain: string;
+    };
+    /** Instrumentation-scope name of every exported scope. */
+    readonly instrumentationScopeName: string;
+    /** Export resource bounds. */
+    readonly limits: {
+        /** Records per batch when the caller supplies no bound. */
+        readonly defaultRecordsPerBatch: number;
+        /** Largest canonical body, in UTF-8 bytes, exported as a log-record body. */
+        readonly maxBodyBytes: number;
+        /** Largest accepted records-per-batch bound. */
+        readonly maxRecordsPerBatch: number;
+    };
+    /** OTLP wire constants of the targeted opentelemetry-proto release. */
+    readonly otlp: {
+        /** OTLP `SeverityNumber` of every exported log record. */
+        readonly logSeverityNumber: number;
+        /** Severity text of every exported log record. */
+        readonly logSeverityText: string;
+        /** Targeted opentelemetry-proto release. */
+        readonly protoVersion: string;
+        /** OTLP `SpanKind` of every exported run span. */
+        readonly spanKind: number;
+        /** OTLP `Status.StatusCode` values keyed by configured terminal status. */
+        readonly statusCodes: Readonly<Record<string, number>>;
+    };
+    /** String resource attributes of every exported resource. */
+    readonly resourceAttributes: Readonly<Record<string, string>>;
+    /** Run lifecycle records that open and close one run span. */
+    readonly runSpans: {
+        /** Span name. */
+        readonly name: string;
+        /** Schema identifiers that start a run span. */
+        readonly startSchemaRefs: readonly string[];
+        /** Schema identifiers that end a run span, mapped to their configured status. */
+        readonly terminalSchemaRefs: Readonly<Record<string, string>>;
+    };
+    /** Published schema identifiers. */
+    readonly schemas: {
+        readonly batchId: string;
+    };
+    /** Semantic-conventions release named by exported schema URLs. */
+    readonly semanticConventions: {
+        readonly schemaUrlPrefix: string;
+        readonly version: string;
+    };
+};
+
 /** Complete validated language-neutral protocol configuration. */
 export type ProtocolConfig = {
     readonly applications: ApplicationsProtocolConfig;
+    readonly backup: BackupProtocolConfig;
+    readonly observability: ObservabilityProtocolConfig;
     readonly cli: CliProtocolConfig;
     readonly delegation: DelegationProtocolConfig;
     readonly effects: EffectProtocolConfig;
@@ -2945,8 +3324,10 @@ export type ProtocolConfig = {
     readonly providers: ProviderProtocolConfig;
     readonly recordId: RecordIdConfig;
     readonly replay: ReplayProtocolConfig;
+    readonly retention: RetentionProtocolConfig;
     readonly runs: RunProtocolConfig;
     readonly scopes: ScopeProtocolConfig;
+    readonly storage: StorageProtocolConfig;
     readonly supervision: SupervisionProtocolConfig;
     readonly tasks: TaskProtocolConfig;
     readonly workspaces: WorkspaceProtocolConfig;

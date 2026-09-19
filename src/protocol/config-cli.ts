@@ -15,6 +15,7 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
         value,
         [
             "artifacts",
+            "commandOptions",
             "compatibilityVersion",
             "defaults",
             "executableName",
@@ -86,6 +87,12 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             "runTrace",
             "runTraceRevision",
             "runVcsCore",
+            "storeBackup",
+            "storeExport",
+            "storeImport",
+            "storeMaintain",
+            "storeRestore",
+            "storeVerify",
             "taskList",
             "taskResolve",
             "taskShow",
@@ -101,15 +108,21 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
         config.options,
         [
             "adopt",
+            "backup",
             "bindingName",
             "bindingRoot",
             "command",
             "initializeGit",
+            "input",
             "json",
             "limit",
+            "manifest",
             "maxBytes",
+            "mode",
             "noInitializeGit",
             "offset",
+            "output",
+            "redacted",
             "registry",
             "read",
             "store",
@@ -218,6 +231,7 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
     if (new Set(Object.values(configuredOptions)).size !== Object.keys(configuredOptions).length) {
         throw new TypeError("cli option names must be unique");
     }
+    const commandOptions = readCommandOptions(config.commandOptions, handlerIds, configuredOptions);
     const configuredMachineErrorCodes = readStringRecord(
         machineErrorCodes,
         "cli.machineOutput.errorCodes",
@@ -282,6 +296,7 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
                 "cli.artifacts.quickstartDemo",
             ),
         },
+        commandOptions,
         compatibilityVersion: readNonEmptyString(
             config.compatibilityVersion,
             "cli.compatibilityVersion",
@@ -376,6 +391,33 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
         },
         version: readPositiveInteger(config.version, "cli.version"),
     };
+}
+
+function readCommandOptions(
+    value: unknown,
+    handlerIds: readonly string[],
+    options: Readonly<Record<string, string>>,
+): ProtocolConfig["cli"]["commandOptions"] {
+    const context = "cli.commandOptions";
+    const record = readObject(value, handlerIds, context);
+    return Object.fromEntries(
+        Object.entries(record).map(([handler, item]) => {
+            const entry = readObject(item, ["flags", "values"], `${context}.${handler}`);
+            const [flags, values] = (["flags", "values"] as const).map((kind) =>
+                readArray(entry[kind], `${context}.${handler}.${kind}`).map((key, index) =>
+                    readNonEmptyString(key, `${context}.${handler}.${kind}[${index}]`),
+                ),
+            ) as [string[], string[]];
+            const keys = [...flags, ...values];
+            if (
+                new Set(keys).size !== keys.length ||
+                keys.some((key) => !Object.hasOwn(options, key))
+            ) {
+                throw new TypeError(`${context}.${handler} must name distinct configured options`);
+            }
+            return [handler, { flags, values }];
+        }),
+    ) as ProtocolConfig["cli"]["commandOptions"];
 }
 
 function readResultShapes(

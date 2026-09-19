@@ -428,6 +428,43 @@ test("protocol configuration rejects weakened or unsafe store settings", () => {
     ]);
 });
 
+test("protocol configuration rejects invalid store maintenance settings", () => {
+    const maintenanceOf = (config: Record<string, unknown>) =>
+        objectAt(objectAt(config, "kernel"), "store").maintenance as Record<string, unknown>;
+    assertInvalid([
+        (config) => {
+            maintenanceOf(config).modes = [];
+        },
+        (config) => {
+            maintenanceOf(config).modes = ["inspect", "compact"];
+        },
+        (config) => {
+            maintenanceOf(config).modes = ["inspect", "inspect"];
+        },
+        (config) => {
+            maintenanceOf(config).defaultMode = "compact";
+        },
+        (config) => {
+            maintenanceOf(config).modes = ["checkpoint", "vacuum"];
+        },
+        (config) => {
+            maintenanceOf(config).quickCheckMaxIssues = 0;
+        },
+        (config) => {
+            maintenanceOf(config).walCheckpointMode = "EVERYTHING";
+        },
+        (config) => {
+            maintenanceOf(config).walFileSuffix = "";
+        },
+        (config) => {
+            maintenanceOf(config).walFileSuffix = "/../wal";
+        },
+        (config) => {
+            maintenanceOf(config).extra = true;
+        },
+    ]);
+});
+
 test("protocol configuration rejects invalid or drifted CLI topology", () => {
     assertInvalid([
         (config) => {
@@ -477,6 +514,21 @@ test("protocol configuration rejects invalid or drifted CLI topology", () => {
         (config) => {
             const options = objectAt(objectAt(config, "cli"), "options");
             options.store = options.registry;
+        },
+        (config) => {
+            delete objectAt(objectAt(config, "cli"), "commandOptions").doctor;
+        },
+        (config) => {
+            objectAt(objectAt(config, "cli"), "commandOptions").doctor = {
+                flags: ["store"],
+                values: ["store"],
+            };
+        },
+        (config) => {
+            objectAt(objectAt(config, "cli"), "commandOptions").doctor = {
+                flags: [],
+                values: ["unknown"],
+            };
         },
         (config) => {
             objectAt(config, "cli").helpAliases = [];
@@ -676,6 +728,63 @@ test("protocol configuration rejects invalid or drifted interchange contracts", 
         },
         (config) => {
             interchangeConfigOf(config).formatVersion = 2;
+        },
+        (config) => {
+            interchangeConfigOf(config).limits = null;
+        },
+        (config) => {
+            objectAt(interchangeConfigOf(config), "limits").maxRecords = 0;
+        },
+        (config) => {
+            objectAt(interchangeConfigOf(config), "limits").extra = 1;
+        },
+    ]);
+});
+
+test("interchange limits and Git invocation hardening are operational, not protocol identity", () => {
+    const config = structuredClone(validConfig);
+    objectAt(interchangeConfigOf(config), "limits").maxArchiveBytes = 1024;
+    objectAt(interchangeConfigOf(config), "staging").directoryPrefix = "import-";
+    objectAt(workspaceConfigOf(config), "gitInvocation").configOverrides = ["core.fsmonitor=false"];
+    const parsed = parseProtocolConfig(config);
+    assert.equal(parsed.kernel.interchange.limits.maxArchiveBytes, 1024);
+    assert.equal(parsed.kernel.interchange.staging.directoryPrefix, "import-");
+    for (const directoryPrefix of ["a/b", "..", ".", ""]) {
+        const invalid = structuredClone(validConfig);
+        objectAt(interchangeConfigOf(invalid), "staging").directoryPrefix = directoryPrefix;
+        assert.throws(() => parseProtocolConfig(invalid), TypeError, directoryPrefix);
+    }
+    assert.deepEqual(parsed.workspaces.gitInvocation.configOverrides, ["core.fsmonitor=false"]);
+    assert.equal(Object.isFrozen(parsed.workspaces.gitInvocation.environment), true);
+});
+
+test("protocol configuration rejects malformed Git invocation hardening", () => {
+    const invocation = (config: Record<string, unknown>) =>
+        objectAt(workspaceConfigOf(config), "gitInvocation");
+    assertInvalid([
+        (config) => {
+            invocation(config).configOverrides = [];
+        },
+        (config) => {
+            invocation(config).configOverrides = ["no-equals-sign"];
+        },
+        (config) => {
+            invocation(config).configOverrides = ["-c=injected"];
+        },
+        (config) => {
+            invocation(config).environment = { "lower-case": "1" };
+        },
+        (config) => {
+            invocation(config).environment = { GIT_OPTIONAL_LOCKS: 0 };
+        },
+        (config) => {
+            invocation(config).environment = { GIT_OPTIONAL_LOCKS: "a\0b" };
+        },
+        (config) => {
+            invocation(config).removedEnvironmentPrefixes = [""];
+        },
+        (config) => {
+            invocation(config).extra = true;
         },
     ]);
 });

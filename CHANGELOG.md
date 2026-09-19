@@ -5,6 +5,583 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.32.5] - 2026-09-19
+
+### Defect Fixes
+
+- Several processes opening the same new SQLite database at once no longer fail (F-029). The
+  switch to write-ahead logging in `SQLiteTraceStore`, `SQLiteTaskRegistry`, and
+  `createSQLiteStorageCoordinator` retries SQLite's deadlock-avoidance `SQLITE_BUSY` within the
+  configured busy timeout instead of failing with `database is locked`.
+- Trace-store and task-registry migrations read the applied schema version inside the configured
+  `IMMEDIATE` transaction of each migration step instead of before it, so concurrent migrators
+  serialize and later ones commit nothing; a concurrent first open no longer fails with
+  `table ... already exists` or `duplicate column name`. Migration semantics, the drills'
+  historical `throughVersion`, and the migration goldens are unchanged.
+- Blob-directory creation treats a directory another process created between its existence check
+  and `mkdir` as existing, so concurrent first opens of one trace store no longer fail with
+  `EEXIST` on its `.blobs` directory (found while verifying F-029).
+- `test/storage/process-race.test.ts` always closes stdin and kills every child that is still
+  running when a scenario ends, captures each child's exit at spawn, and reports the child's
+  stderr, so a failing run no longer hangs on a child blocked on stdin.
+
+### Improvement
+
+- Add a multi-process concurrent-first-open test: four processes released together open one new
+  trace store, task registry, or storage coordinator, four rounds per kind, and every open must
+  succeed. Add unit tests for the busy retry and the directory-creation race.
+- Correct the `createSQLiteStorageCoordinator` JSDoc and update the storage-interfaces, SQLite
+  trace store, threat model, release notes, security review, exit audit, release-readiness
+  dashboard, and release-candidate manifest pages: F-029 is fixed, the F-029 residual row is
+  removed, and the manifest records the 2.32.5 tarball and artifact digests.
+
+### Impact
+
+No public API, schema, configuration, protocol, or CLI change. Behavior change: a writable
+task-registry open now reads its schema version under the configured `IMMEDIATE` lock, so it waits
+up to the busy timeout behind another process's long write transaction, as trace-store and
+coordinator opens already did.
+
+## [2.32.4] - 2026-09-19
+
+### Improvement
+
+- Add the Phase 11 exit audit and 1.0 readiness audit (`.plan/phase-11-exit-audit.md`, #29):
+  every Phase 11 roadmap work item and exit criterion mapped to its delivery, entry points, docs,
+  tests, and an outcome of met (in-repo), partially met, or owner-owed; the recovery
+  classification; the independent internal review and its fixes; fresh verification; and the
+  verdict: release candidate ready for the in-repo scope, 1.0 general availability no-go until the
+  owner-owed items close.
+- Add the cross-phase release-readiness dashboard (`.plan/release-readiness-dashboard.md`):
+  Phase 0 to 11 epic status, and every parity-matrix row and paper-coverage row classified as
+  implemented, implemented with a deferred remainder, platform- or version-fenced, or classified
+  unsupported or deferred.
+- Add the release-candidate verification manifest (`.plan/release-candidate-manifest.md`) with the
+  lockfile, SBOM, tarball, compatibility baseline, and benchmark digests, the recorded fuzz and soak
+  runs, and the fresh verification results.
+- Add the [1.0 release notes](docs/release-notes-1.0.md): what the L4 maturity milestone means for
+  package 2.32.x, what is delivered, known limits, owner-owed items, and upgrade pointers.
+- Record F-029 (Low, open) in the internal security review: several processes opening the same
+  new trace-store or SQLite coordinator database at once can fail closed with `database is locked`
+  or a migration error, which makes the process-race test intermittent; the storage-interfaces page
+  no longer claims concurrent first opens are safe, and the threat model gains residual rows for
+  F-004, F-011, F-019, F-029, F-008, and F-009.
+- Update the README level table, the parity matrix, the paper coverage map, the roadmap, the
+  security policy, the tracker, and the documentation indexes.
+
+### Impact
+
+Documentation and audit only. No public API, schema, configuration, protocol, store, or CLI
+change. The package stays private and unsigned; no npm release is made.
+
+## [2.32.3] - 2026-09-19
+
+### Defect Fixes
+
+- `worktree` Git custody no longer runs repository clean filters when it checks a declared
+  submodule (F-028): the dirty-submodule check no longer runs `git status`, whose nested submodule
+  status re-hashed stat-dirty files through `filter.<driver>.clean`/`process` programs selected by
+  `.gitattributes`, `info/attributes`, or `core.attributesFile`. It now compares the superproject
+  gitlink, the submodule's top level, HEAD, index, and HEAD tree with `rev-parse`, `ls-tree`, and
+  `ls-files`, hashes worktree content as raw Git blobs in the runtime, recurses into populated
+  nested submodules, and lists untracked paths with `ls-files --others`.
+
+### Improvement
+
+- Record F-028 as fixed with an audit of every Git invocation under `src/workspace` (no remaining
+  command applies attribute filters, hooks, textconv or diff drivers, credential helpers, or a
+  pager) and update the threat model and Git-aware custody pages.
+
+### Impact
+
+No public API, schema, configuration, or protocol change. Behavior change: a submodule file that
+equals its committed blob only after a clean filter or end-of-line conversion (for example Git LFS
+pointers or `core.autocrlf`) is now reported as a dirty submodule and fails `worktree` capture
+closed; stat-only changes, skip-worktree and assume-unchanged entries, and unpopulated nested
+submodules stay clean as before.
+
+## [2.32.2] - 2026-09-19
+
+### Defect Fixes
+
+- `git-head` Git custody no longer runs repository filter programs (F-021): HEAD is written from
+  `git ls-tree` and `git cat-file --batch` instead of `git archive | tar`, so no
+  `filter.<driver>.smudge`/`process`, `export-ignore`, `export-subst`, `ident`, or end-of-line
+  attribute applies. Worlds of repositories without attributes are unchanged; tree entries named
+  `.`, `..`, or empty are refused as unsupported state.
+- The compatibility gate (F-022): numeric format and protocol version increases need a classified
+  change-log entry (an `additive` one must carry a note naming the reader of the old value);
+  migration-backed schema versions are additive only with exactly one appended migration per step;
+  bulk `--classify additive` is refused for changed API declarations and version markers, which
+  are classified one at a time with the new `--artifact` option; per-command CLI options
+  (`cli-option:`) and identity settings (`identity:` prefixes, digest algorithms, record identity,
+  root witness) are fingerprinted; `check:compatibility` refuses declarations older than `src`; and
+  the deprecation window is measured to `deprecation.lastReleasedVersion` (`2.25.1`) instead of the
+  last baseline update.
+- Store file-mode tightening opens every database and sidecar with `O_NOFOLLOW` and changes it
+  through the descriptor, so a symbolic link is never followed or changed, and reports creation
+  errors other than `EEXIST` (for example `EACCES`) instead of swallowing them (F-023).
+- A failed restore publication move is reported as `TraceStoreBackupError` `target-exists` and no
+  longer leaves an empty target blob directory that blocks the next restore (F-024).
+- Secret-finding digests are keyed with a random per-process HMAC key (prefix `hmac-sha256:`), so
+  a finding in an error or log cannot confirm a guessed secret (F-025).
+- Backup replication refuses a database or manifest file that changed after verification, and
+  configuration requires the backup digest scheme to equal the blob identifier scheme (F-026).
+- Backup databases use the configured `backup.databaseJournalMode` and are opened with the store's
+  defensive setting (F-027).
+- `append` refuses a `witness_ref` naming a record that is not a witness, before any write, instead
+  of writing a store that fails `verifyIntegrity` and refuses export (F-014).
+- `importTrace` stages beside the target store instead of in the OS temporary directory, so a
+  killed import no longer leaves archive blob copies there (F-019).
+
+### Improvement
+
+- Add `cli.commandOptions`, the per-handler table of accepted flags and value options that every
+  CLI handler now parses argv through; `kernel.interchange.staging.directoryPrefix`;
+  `backup.databaseJournalMode`; and `retention.scanning.findingDigestPrefix` (all protocol
+  configuration, no protocol identity change).
+- Register F-021 to F-028 in the internal security review (F-028, `git status` clean filters in
+  worktree custody's dirty-submodule check, is Medium and open) and update the threat model, the
+  compatibility policy, Git-aware custody, backup and restore, secrets and retention, SQLite trace
+  store, CLI, protocol configuration, incident response, and fault conformance pages.
+
+### Impact
+
+No public API declaration changes (the compatibility gate reports only the newly fingerprinted
+surfaces). Behavior changes: `SecretFinding.digest` values are now per-process HMACs with an
+`hmac-sha256:` prefix and can no longer be compared with a digest computed from the secret;
+`git-head` worlds of repositories that relied on archive attributes now contain the committed
+bytes; an append with a non-witness `witness_ref`, a store path in an unwritable directory, and a
+failed restore move now fail with typed errors; a killed import's staging directory appears beside
+the target store. Maintainers classify API and version-marker changes with `--artifact`.
+
+## [2.32.1] - 2026-09-19
+
+### Defect Fixes
+
+- Store writes that fail with `SQLITE_FULL` or an I/O error now throw that SQLite error instead of
+  "cannot rollback - no transaction is active" (F-017): SQLite already rolls such transactions
+  back, so every store, import, export, storage-coordinator, task-registry, and migration
+  transaction now issues `ROLLBACK` only while a transaction is still open. Nothing else changes:
+  the failed call still writes nothing and its append intent still diagnoses `retry_safe`.
+- `diagnoseAppend` reports `manual_recovery_required` (`receipt_mismatch`) for an append intent
+  whose retained batch digest is not a well-formed configured digest, so `verifyIntegrity`
+  reports `append_receipt_mismatch` and `exportTrace` refuses instead of exporting an archive that
+  `importTrace` rejects (F-018). A digest replaced by another well-formed digest remains an
+  accepted residual: it fails closed with `AppendIntentConflictError` on retry.
+
+### Improvement
+
+- Add the fault and soak suites (#186) under `test/faults/`, configured by the new `faults` and
+  `soak` sections of `config/hardening-suites.config.json`: seeded `SIGKILL` of a looping child
+  writer during append, blob put, cut publication, import, backup, and vacuum, with every started
+  operation classified complete, retryable, or refused and retried; disk full through
+  `PRAGMA max_page_count` and a child under `ulimit -f`; seeded page flips, WAL/SHM deletion,
+  truncation, and damage, blob damage, stray temporaries, and backup tampering, each refused,
+  detected, recovered, or rolled back to an earlier commit and compared with a golden export; and
+  a mixed soak (appends, cuts, blobs, telemetry export over a durable subscription, verified
+  backups, maintenance, kill/restart cycles) with periodic invariants. All run in `pnpm test`
+  (the soak bounded to 240 operations).
+- Add `pnpm test:soak` (`scripts/soak-cli.ts`, `--duration`, `--operations`, `--seed`,
+  `--directory`, `--keep`, `--json`) and the opt-in `pnpm test:faults:volume` (macOS `hdiutil`
+  disk image filled to `ENOSPC`, outside `pnpm verify`); record one soak and one volume run.
+- Document the classification tables and recorded runs in the fault section of
+  [fault and fuzz conformance](docs/fault-and-fuzz-conformance.md#faults-and-soak); add writer
+  crash and disk-full runbooks and remove the pending marker in
+  [incident response](docs/incident-response.md); add threat-model recovery rows and register
+  F-017 to F-020 (F-019, import staging left in the OS temporary directory after a kill, is Low
+  and open for #29; F-020, write-ahead-log loss rolling the store back, is an accepted SQLite
+  residual).
+
+### Impact
+
+No public API, schema, archive format, configuration protocol, or CLI change. Callers that matched
+the "cannot rollback" message after a full disk now receive the SQLite error (`ERR_SQLITE_ERROR`
+with `errcode` 13 or an I/O error code). Stores containing a malformed batch digest, which only
+at-rest damage can produce, now fail `verifyIntegrity` and refuse export.
+
+## [2.32.0] - 2026-09-19
+
+### New Feature
+
+- Add configured trace-archive input limits (#185, closes F-004): `kernel.interchange.limits` in
+  `protocol.config.json` (`maxArchiveBytes` 256 MiB, `maxNestingDepth` 4096, `maxAppendIntents`,
+  `maxBlobs`, `maxCuts`, `maxRecords`, `maxRecordViews`, and a 192 MiB `maxBlobBytes` total).
+  `importTrace` and `verifyRedactedTraceArchive` check byte length and nesting depth before
+  `JSON.parse`, collection counts and the declared blob byte total before decoding any record or
+  blob, and an exact canonical base64 length before each blob decode; `shepherd-ts store import`
+  checks the file size before reading. The limits are operational and excluded from the archive
+  format identity.
+- Add the public error `TraceArchiveLimitError` (`TRACE_ARCHIVE_LIMIT_EXCEEDED`, a `TypeError`
+  whose `limit` names the exceeded member), exported from the root, `./trace`, and `./operations`.
+- Add `workspaces.gitInvocation` (closes F-005): every Git subprocess (custody, repository
+  bindings, workspace initialization) now passes the configured `-c` overrides
+  (`core.fsmonitor=false`, `core.untrackedCache=false`) before `-C <root>`, removes every inherited
+  `GIT_*` environment variable, and sets `GIT_OPTIONAL_LOCKS=0` and `GIT_TERMINAL_PROMPT=0`
+  (`src/workspace/git-command.ts`). Previously only custody pinned the options, and all three
+  inherited the caller's environment.
+- Add deterministic seeded fuzzing without new dependencies (closes F-002): `test/support/prng.ts`
+  (mulberry32, now shared with the scope and delegation law suites), mutators, a shared oracle
+  (canonical and stable re-encoding or a configured error class, a per-case budget, no non-Error
+  throw, no prototype pollution), 23 targets covering canonical encoding and validation, archive
+  decode and import, the redacted verifier, the append-receipt and backup-manifest decoders,
+  `runCli` argv, canonical world paths, changesets against a reference model, selection-publication
+  codecs, placement, repository-grant, overlay-mount, and native-jail evidence readers, and provider
+  and application protocol readers (telemetry recorded as a skip: no decoder exists), a replayed
+  regression corpus in `test/fixtures/fuzz-corpus/`, `config/hardening-suites.config.json`, and
+  `pnpm fuzz` (`scripts/fuzz-cli.ts`) for extended runs.
+
+### Defect Fixes
+
+- Canonical encoding reports nesting past the call stack as the documented `TypeError` (with the
+  `RangeError` as cause) instead of `RangeError` (F-012).
+- Archive and redacted-archive text with a repeated object key, archived `receipt_json` that is not
+  canonical, and backup manifests that are not exactly the writer's canonical encoding are refused,
+  so no other JSON parser can read a different archive or manifest (F-013).
+- A backup manifest head owner identity with a lone surrogate is refused as `manifest-invalid`
+  instead of an unclassified `TypeError` (F-015).
+
+### Improvement
+
+- Overlay `mountinfo` parsing moved into the host-independent `classifyOverlayMountInfo`, now fuzzed
+  and covered on every host.
+- Add [fault and fuzz conformance](docs/fault-and-fuzz-conformance.md) (fuzz part, with the recorded
+  extended run: seed 185185, 410,400 cases, 0 findings; the fault section is reserved for #186),
+  register findings F-012 to F-016 (F-014 and F-016 Low and open for #29), and updates to the threat
+  model, trace interchange, protocol configuration, public errors, backup, package exports, and
+  project structure pages.
+
+### Impact
+
+Additive, with fail-closed tightening of malformed input. Archives larger than the configured
+bounds, archives with repeated keys or non-canonical receipts, and hand-edited backup manifests are
+now refused; every archive `exportTrace` produces and every manifest the backup writer produces is
+unaffected. Git subprocesses no longer see inherited `GIT_*` variables. No record, store schema,
+archive format, or CLI output change.
+
+## [2.31.0] - 2026-09-18
+
+### New Feature
+
+- Add non-canonical, OpenTelemetry-compatible observability (#184) in `src/observability/`:
+  `createTraceTelemetryExporter({ store, subscription, sink, clock, bodies?, maxRecordsPerBatch?,
+  retention? })` opens and owns a trace subscription, maps every committed record occurrence to an
+  OTLP log record and each configured run lifecycle (execution `created` to `completed`/`failed`)
+  to one span, hands one `TelemetryBatch` to a caller-supplied `TelemetrySink`, and acknowledges
+  the cursor only after the sink succeeds (at-least-once; a durable subscription resumes from the
+  acknowledged cursor after a crash). Trace identifiers derive from the owner path and span
+  identifiers from the start record (`deriveTelemetryTraceId`, `deriveTelemetrySpanId`); attributes
+  use the configured `shepherd.*` namespace; times are exporter observation time from the caller's
+  clock and are non-semantic (records carry no timestamps, D-014).
+- Bodies are withheld by default (`TELEMETRY_BODY_MODES`: `omit`, `retention-policy`). In
+  `retention-policy` mode a body is exported only when its retention disposition is `include`, no
+  configured secret detector matches, and it fits `observability.limits.maxBodyBytes`; otherwise
+  `shepherd.body_handling` (`TELEMETRY_BODY_HANDLINGS`) says why, and redacted bodies carry only a
+  retention digest and secret classes.
+- Add `createJsonLinesTelemetrySink({ tracesPath, logsPath })`, which appends OTLP/JSON
+  `ExportTraceServiceRequest` and `ExportLogsServiceRequest` lines (one signal per file, fsynced,
+  owner-only `0600`) readable by the OpenTelemetry Collector `otlpjsonfile` receiver.
+- Add hand-written OTLP/JSON subset types (`OtlpSpan`, `OtlpLogRecord`, `OtlpAnyValue`, and the
+  resource, scope, and request wrappers) for opentelemetry-proto 1.11.0; no OpenTelemetry SDK, no
+  collector, and no network code.
+- Add the `observability` section to `protocol.config.json` with its reader, the pinned
+  `OBSERVABILITY_PROTOCOL_V1_CONTRACT`, the generated `spec/schemas/telemetry-batch-v1.schema.json`,
+  and generated `TELEMETRY_BODY_MODES` and `TELEMETRY_BODY_HANDLINGS`. Everything is exported from
+  the root and `./operations`.
+
+### Improvement
+
+- Add the [observability](docs/observability.md) page, threat-model telemetry rows, register
+  finding F-011 (telemetry leakage, accepted residual), an installed `./operations` telemetry probe,
+  and updates to package exports, project structure, API reference, protocol configuration, the
+  schema index, and the parity matrix.
+
+### Impact
+
+Additive. No record, store schema, archive format, or existing API changes; `exportTrace` output is
+byte-identical before and after telemetry export. Telemetry timestamps are observation times and
+must not be used to order trace history.
+
+## [2.30.0] - 2026-09-18
+
+### New Feature
+
+- Add `SQLiteTraceStore.maintain({ mode })` (#183), implemented in `src/store/maintenance.ts`:
+  `inspect` (default) runs a bounded `PRAGMA quick_check` and reports page size, page count,
+  freelist pages, database bytes, and write-ahead-log bytes; `checkpoint` also runs
+  `wal_checkpoint(TRUNCATE)`; `optimize` also runs `PRAGMA optimize`; `vacuum` also runs `VACUUM`
+  and then checkpoints. Mutating modes refuse a database that fails `quick_check`. The report types
+  `TraceStoreMaintenanceMode`, `TraceStoreMaintenanceOptions`, `TraceStoreMaintenanceReport`,
+  `TraceStoreSpaceReport`, and `TraceStoreCheckpointReport` are exported from the root, `./trace`,
+  and `./operations`.
+- Add the public error `TraceStoreReadOnlyError` (`TRACE_STORE_READ_ONLY`, a `TraceStoreError`),
+  raised when maintenance is requested on a read-only handle.
+- Add `shepherd-ts store maintain [--store PATH] [--mode MODE]` with the `--mode` option, an
+  additive `cli-output-v1` branch (`maintenance`), regenerated CLI reference, and an installed
+  probe that vacuums an imported store and requires an identical export digest.
+- Add `kernel.store.maintenance` to `protocol.config.json` (enabled modes, default, `quick_check`
+  bound, checkpoint mode, WAL suffix) with its reader.
+- Add `pnpm bench:kernel` (`scripts/bench-kernel.ts`, `tooling/benchmark/`) with
+  `config/kernel-benchmark.config.json`: append latency and throughput, cut resolve, slice read,
+  subscription pull, export, import, verify, blob GC inspection, and CLI startup, each with warmup,
+  raw samples, median, nearest-rank p95, variance, and the environment, written to
+  `docs/generated/benchmarks/<host-class>.json`. Add `pnpm check:slo` with
+  `config/performance-slo.config.json` (budgets for the `macos-arm64-apfs` reference class only);
+  it joins `pnpm verify:release`, not `pnpm verify`.
+
+### Improvement
+
+- Append planning reads only the records a batch cites and the owners it extends by primary key
+  instead of loading every record identity and owner ordinal on every append (a linear per-append
+  cost; 3.62 ms median extra per append measured at 10,083 records). Behavior is unchanged.
+- Add index-only store schema v13 (`records_by_schema`, `trace_cuts_by_publication`) after the new
+  `EXPLAIN QUERY PLAN` tests (`test/store/query-plans.test.ts`) found full table scans in
+  `listOwnersBySchema` and `listCuts`. Hot-path SQL now lives in the internal
+  `src/store/statements.ts`. Migration drills gain a schema-13 golden (export digest unchanged).
+- Add the bounded scale tier `test/store/scale.test.ts` with `config/scale-verification.config.json`
+  (default: 20,000 records, a 5,000-record causal chain, 150 blobs, 40 orphans, 12 temporary files;
+  extended tier on demand) covering integrity, deep closure, GC correctness, export/import round
+  trip, and maintenance export byte identity.
+- Add the [performance report](docs/performance-report.md) (reference host only, own numbers,
+  including carrier storage), a store-growth incident runbook, threat-model rows, and updates to
+  the SQLite store, CLI, protocol configuration, public errors, package exports, backup and
+  migration, project structure, parity matrix, hardening contract, and release-gate documents.
+
+### Impact
+
+Additive. Opening a store with a writable handle adds two indexes (schema 13); older packages refuse
+a schema-13 store as they refuse any newer schema, and archive format v1 is unchanged. SLO budgets
+describe only the macOS arm64 APFS reference host; `pnpm check:slo` reports other hosts as
+skipped.
+
+## [2.29.0] - 2026-09-18
+
+### New Feature
+
+- Add verified [backup, restore, and migration](docs/backup-restore-and-migration.md) (#182)
+  through `./operations` and the root. `backupTraceStore` copies an open store online with
+  `node:sqlite` `backup()` (resolved at call time; a runtime without it fails closed with
+  `backup-unsupported`), copies every registered blob into the backup directory or a caller
+  `BlobStoreBackend`, proves the copy (staged open, `verifyIntegrity`, `verifyBlobs`, export
+  digest), and writes the `shepherd.store.backup` v1 manifest last by atomic rename. The manifest
+  records the writer's package version, store schema, database digest and length, export digest,
+  blob-list digest and counts, and per-owner heads; `manifest_id` is the digest of the rest. The
+  backup directory, database copy, manifest, and staging copies are owner-only (`0700`/`0600`).
+- Add `verifyTraceStoreBackup`, which never modifies a backup and requires the manifest, database
+  bytes, blob set and bytes, a forward-migrated staged copy with clean integrity, and an equal
+  export digest, and `restoreTraceStoreBackup`, which requires the exact manifest identity, refuses
+  any existing target, database sidecar, or blob directory, verifies a staged copy beside the
+  target, publishes by rename and hard link, and re-verifies read-only before resolving.
+- Add `replicateTraceStoreBackup` (content-addressed objects in a `BlobStoreBackend` published by
+  `compareAndSwapRef`, optionally fenced) and `fetchReplicatedTraceStoreBackup`.
+- Add the public error `TraceStoreBackupError` (`TRACE_STORE_BACKUP_ERROR`) with a configured
+  `reason` from the generated `STORE_BACKUP_FAILURE_REASONS`, and `STORE_BACKUP_BLOB_LOCATIONS`.
+- Add the `backup` section to `protocol.config.json`, its reader and backup protocol v1
+  compatibility contract, and the generated `store-backup-manifest-v1` schema.
+- Add the `shepherd-ts store` group: `verify` (store or `--backup`), `backup`, `restore`,
+  `export` (with `--redacted`), and `import`, with additive `cli-output-v1` branches, regenerated
+  CLI reference, and installed-package probes.
+
+### Improvement
+
+- Add migration drills: `tooling/testing/store-schema-fixtures.ts` builds a store at every
+  historical schema 1 through 12 from the migration steps (the internal `migrateTraceStore` gains a
+  `throughVersion`), and `test/operations/migration-drills.test.ts` requires each to upgrade with
+  integrity, preserved rows, and checked-in golden export digests, restores historical-schema
+  backups forward-migrated, refuses a future-schema store while importing its archive-v1 export
+  into a fresh store, and restores a pre-upgrade backup exactly.
+- Document the forward-only schema and downgrade policy (restore a pre-upgrade backup or round-trip
+  a known archive format) and upgrade, rollback, restore, and interruption runbooks; link them from
+  incident response and the support policy. Update the threat model, findings register (F-003
+  backup part closed), hardening contract, parity matrix (`store` row), package exports, protocol
+  configuration, public errors, project structure, and CLI documentation.
+- Move the CLI option parsing helpers into `src/cli/arguments.ts` without behavior change.
+
+### Impact
+
+Additive: existing stores, archives, schemas, APIs, and CLI commands are unchanged; the CLI output
+schema and configuration only gain branches, members, and a section. No earlier package version
+was published, so the supported upgrade sources are store schemas 1 through 12, archive format v1,
+and backup manifest v1. Backups are full, unencrypted, and unsigned copies; drills run on the
+reference host (macOS arm64 APFS, Node.js 24.12.0 and 24.17.0) only.
+
+## [2.28.0] - 2026-09-18
+
+### New Feature
+
+- Add [storage interfaces](docs/storage-interfaces.md) (#181) through `./operations` and the root.
+  `BlobStoreBackend` is content-addressed object storage: `put` verifies that the bytes hash to the
+  identifier, is idempotent, and never replaces an object; `get` returns a copy; `list` is ordered,
+  stable, paged with an exclusive `after` cursor and configured limits; `delete` is idempotent; each
+  backend declares `durable` or `volatile`. `StorageCoordinator` provides `compareAndSwapRef` with
+  generations that increase by exactly one, and `acquireLease`, `renewLease`, and `releaseLease`
+  with monotonic fencing tokens; a swap may carry a lease fence, and a superseded, expired, or
+  absent fence is refused. Conflicts, held leases, and fences are result statuses.
+- Add four reference adapters: `createMemoryBlobStoreBackend`,
+  `createFilesystemBlobStoreBackend` (wraps the trace store's unchanged `BlobFilesystem`),
+  `createMemoryStorageCoordinator`, and `createSQLiteStorageCoordinator` (one `IMMEDIATE`
+  transaction per change over WAL with `synchronous = FULL`, the configured busy timeout, and an
+  owner-only database file; safe across processes on one host).
+- Add the conformance kits `checkBlobStoreBackendConformance` (11 named laws) and
+  `checkStorageCoordinatorConformance` (12 named laws), which run each law against a fresh adapter
+  and return a frozen per-law report so third-party adapters can self-test.
+- Add the public errors `StorageAdapterError` (`STORAGE_ADAPTER_ERROR`) and
+  `StorageBlobContentMismatchError` (`STORAGE_BLOB_CONTENT_MISMATCH`).
+- Add the `storage` section to `protocol.config.json` (name grammar, value, owner, TTL, and list
+  bounds, durability and status vocabularies, SQLite coordinator contract), its reader and
+  compatibility contract, and the generated `STORAGE_DURABILITIES`, `STORAGE_LEASE_STATUSES`, and
+  `STORAGE_REF_SWAP_STATUSES` constants.
+
+### Improvement
+
+- Test all four adapters against both kits, show that deliberately broken adapters fail the
+  expected laws, and race four processes on one SQLite coordinator file for compare-and-swap and
+  leases. Extend the installed `./operations` probe to run both kits from the packed tarball.
+- Update the threat model, security review (F-003 note), production hardening contract, package
+  exports, protocol configuration, public errors, and project structure documentation.
+
+### Impact
+
+Additive: `SQLiteTraceStore` remains the only canonical append store, its blob layer and schema are
+unchanged, and no remote or cloud adapter ships. Importing `./operations` now also loads
+`node:sqlite` because it exports the SQLite coordinator; it still loads no process-execution
+module.
+
+## [2.27.0] - 2026-09-18
+
+### New Feature
+
+- Add [secrets and retention](docs/secrets-and-retention.md) (#180) through the new stable
+  `./operations` package entry and the root. `scanSemanticValueForSecrets` matches every string
+  value and object key against the configured detectors and reports each finding as secret class,
+  JSON Pointer, location, and digest, never the matched text; key matches are reported at their
+  owner so no pointer carries matched text.
+- Add the opt-in `secretScanning: "refuse"` option to `SQLiteTraceStore` (default `"off"`, behavior
+  unchanged) and the `secretScanning` getter. A refusing store scans every record body of every
+  append, including appends made inside its own transactions, and every body of an imported
+  archive before anything is written, and raises the new public error `TraceSecretDetectedError`
+  (`TRACE_SECRET_DETECTED`). A refusal leaves the append intent unused, so a corrected retry with
+  the same intent succeeds.
+- Add retention data classes (`checkpoint`, `context`, `general`, `memory-adapter`,
+  `provider-citation`) and export dispositions (`include`, `redact`, `omit-body`) with
+  `classifyTraceSchema` and `readRetentionPolicy`; every configured `schemas`/`traceSchemas` family
+  must map to a class or configuration loading fails. Callers classify their own schemas with
+  `schemaDataClasses`.
+- Add `exportRedactedTraceArchive`, a one-way `redacted-trace-archive-v1` export built on
+  `exportTrace()` that keeps every envelope and `record_id` and replaces bodies with
+  `{ redacted, data_class, secret_classes, body_digest }` markers under the policy, listing blobs
+  without content; `verifyRedactedTraceArchive`, which re-derives identities of verbatim records and
+  checks structure and policy; and `inspectTraceRetention`, a read-only `retention-report-v1`
+  inventory by data class, disposition, and secret class. `importTrace` refuses redacted archives
+  with the new public error `RedactedTraceArchiveError` (`REDACTED_TRACE_ARCHIVE_ERROR`).
+- Add the `retention` section to `protocol.config.json` (detector patterns, data classes, family
+  mappings, dispositions, formats, limits, scanning modes, store-file mode), its reader and
+  compatibility contract, the generated `RETENTION_DATA_CLASSES`, `RETENTION_EXPORT_DISPOSITIONS`,
+  and `SECRET_SCANNING_MODES` constants, and the two generated schemas.
+
+### Defect Fixes
+
+- Create writable trace-store and task-registry SQLite databases with the configured owner-only
+  mode (`0600`) and tighten existing owned database, WAL, SHM, and journal files on writable opens;
+  previously they followed the process umask (`0644` under umask `022`) while blobs were `0600`
+  (F-003). Read-only opens change no file modes.
+
+### Improvement
+
+- Update the threat model, findings register (F-003 fixed; F-001 downgraded to Low and accepted),
+  incident-response secret runbook, public errors, package exports, protocol configuration, store,
+  and interchange documentation. The API reference credential guard now admits exactly the eight
+  secret-detection names and still rejects every other secret, credential, or access-token export.
+  Bundle verification prints non-string fixture results as JSON and covers `./operations`.
+
+### Impact
+
+Additive: existing stores, archives, APIs, and the default append behavior are unchanged. Operators
+who enable `secretScanning: "refuse"` get fail-closed refusal of configured secret classes;
+detection is pattern-based and incomplete, and records remain immutable, so retention is
+classification, redacted export, and store rotation, never in-place deletion. Existing database
+files become owner-only the next time they are opened writable by their owner.
+
+## [2.26.0] - 2026-09-18
+
+### New Feature
+
+- Add the API and protocol [compatibility policy](docs/compatibility-policy.md) as a local release
+  gate (#179). `pnpm check:compatibility` runs in `pnpm verify` and `pnpm verify:serial` after
+  `check:api-reference` and compares the exported declarations in `dist/src` and the protocol
+  surface (schema digests with `oneOf` branch and `$defs` digests, kernel, interchange, store,
+  section, and other version markers, migration lists, public error codes, CLI exit codes and
+  commands) with `spec/compatibility/api-baseline.json` and `protocol-baseline.json`. A removed
+  export, error code, CLI command, or schema, a narrowed schema, a decreased version marker, or a
+  removed or reordered migration fails with a message naming the artifact. Removals need a
+  deprecation that shipped for the configured window (two MINOR releases) and a MAJOR bump;
+  changed declarations and values need an entry in the append-only classified change log
+  `spec/compatibility/protocol-changes.json` whose bump matches; added `oneOf` branches, added
+  `$defs` members, appended migrations, and increased numeric markers are accepted as additive.
+  Tiers, window, locations, and frozen-artifact rules live in
+  `config/compatibility-policy.config.json`. `pnpm update:compatibility-baseline` records new
+  baselines only when every rule holds and can classify reviewed changes with `--classify`.
+- Render `@deprecated` exports in the [generated API reference](docs/generated/api-reference.md)
+  as `Status: deprecated` with a `Deprecated:` section; the generator's shared `readPublishedApi`
+  feeds both the reference and the compatibility gate.
+- Add [release integrity](docs/release-integrity.md) evidence: a deterministic CycloneDX
+  1.5-shaped SBOM derived from `pnpm-lock.yaml` (`docs/generated/sbom.cdx.json`,
+  `pnpm generate:sbom`, and `pnpm check:sbom` in `pnpm verify`), an unsigned in-toto Statement v1
+  with a SLSA provenance v1 predicate and type guard, a reproducible-build check that builds and
+  packs twice and reports every differing file, and `pnpm verify:release`, which writes the
+  tarball, SBOM, provenance, report, and manifest into the ignored `release/` directory.
+- Add `.github/workflows/release.yml` (manual dispatch, frozen script-free install,
+  `pnpm verify:release`, build-provenance attestation, and `npm publish --provenance` behind the
+  protected `npm-publish` environment), with actions pinned by SHA. It is present but not run.
+
+### Improvement
+
+- Replace the `fast-check` plan in the testing plan with the seeded hand-rolled harness decision,
+  record the enforced gates, add the supply-chain boundary B10 to the
+  [threat model](docs/threat-model.md), and record owner-owed finding F-010 (unsigned release
+  evidence). `CONTRIBUTING.md` requires refreshing the API reference, SBOM, and compatibility
+  baselines in every pull request.
+
+### Impact
+
+No runtime, protocol, schema, or store change. Contributors must refresh the compatibility
+baselines and SBOM with each version bump, and future removals follow the deprecation window. Two
+consecutive clean builds on the reference host produce byte-identical tarballs; signing and
+publication remain owner-owed.
+
+## [2.25.2] - 2026-09-18
+
+### Improvement
+
+- Add the Phase 11 [production hardening contract](.plan/production-hardening-contract.md) (#187):
+  slice map for #187, #179 to #186, and the #29 audit, a mapping of every Phase 11 work item and
+  exit criterion to exactly one slice or owner-owed row, per-slice non-claims, and an owner-owed
+  register (external security review, signing and publication, hosted CI and cross-OS lanes,
+  private vulnerability reporting, registry name).
+- Add the normative [threat model](docs/threat-model.md): assets, nine trust boundaries, STRIDE
+  threats per boundary citing mitigation code and tests, and residual risks linked to findings.
+- Add the [internal security review](.plan/security-review.md) with its method, a severity rubric
+  defining critical, high, medium, and low, the findings register F-001 to F-009, and an external
+  reviewer packet. No finding is critical. Confirmed: secrets can enter immutable records unscanned
+  (F-001, #180); no fuzz coverage (F-002, #185); the SQLite database, WAL, and SHM follow the process
+  umask (`0644` under umask `022`) while blobs are `0600` (F-003, #180); archive decode has no size
+  bounds (F-004, #185).
+- Add the [support policy](docs/support-policy.md) and [incident response](docs/incident-response.md)
+  with store-corruption and lost-backup runbooks that link forward to #180, #182, and #186.
+- Record decisions D-016 ("1.0" is the L4 maturity milestone, not a package version), D-017 (no new
+  dependencies for hardening), and D-018 (remote storage is interfaces-only for 1.0); list the
+  Phase 11 child issues in the roadmap.
+
+### Defect Fixes
+
+- `SECURITY.md` no longer states that pull requests run a dependency audit: the workflows exist but
+  hosted CI is disabled, and verification is local (F-007).
+
+### Impact
+
+Documentation only. Public APIs, protocol values, schemas, the CLI, and the store schema are
+unchanged from 2.25.1.
+
 ## [2.25.1] - 2026-09-18
 
 ### Improvement

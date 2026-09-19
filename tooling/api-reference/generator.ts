@@ -78,6 +78,67 @@ type Documentation = {
     readonly tags: readonly JSDocTagInfo[];
 };
 
+/** One JSDoc block tag on a published symbol. */
+export type PublishedTag = {
+    /** Tag name without the leading `@`. */
+    readonly name: string;
+    /** Tag text; empty when the tag has no text. */
+    readonly text: string;
+};
+
+/** One exported symbol of a supported package entry. */
+export type PublishedSymbol = {
+    /** Whether the symbol is `runtime-only`, `type-only`, or `runtime-and-type`. */
+    readonly classification: string;
+    /** Declaration kind such as `function`, `class`, or `type alias`. */
+    readonly kind: string;
+    /** Exported name. */
+    readonly name: string;
+    /** Printed declaration text without JSDoc, private, or internal members. */
+    readonly signature: string;
+    /** JSDoc block tags of the resolved symbol. */
+    readonly tags: readonly PublishedTag[];
+};
+
+/** Exported symbols of one supported package entry. */
+export type PublishedEntry = {
+    /** Package export-map key such as `.` or `./trace`. */
+    readonly entryName: string;
+    /** Exported symbols sorted by name. */
+    readonly symbols: readonly PublishedSymbol[];
+};
+
+/** The supported public API read from emitted declarations. */
+export type PublishedApi = {
+    /** Package entries sorted by export-map key. */
+    readonly entries: readonly PublishedEntry[];
+    /** Package name from the manifest. */
+    readonly packageName: string;
+    /** Package version from the manifest. */
+    readonly packageVersion: string;
+};
+
+type DescribedSymbol = {
+    readonly classification: string;
+    readonly documentation: Documentation;
+    readonly kind: string;
+    readonly name: string;
+    readonly renderedDeclarations: readonly {
+        readonly declaration: Node;
+        readonly signature: string;
+    }[];
+};
+
+type PublishedDeclarationContext = {
+    readonly configuration: ApiReferenceConfiguration;
+    readonly entries: readonly {
+        readonly entryName: string;
+        readonly project: Project;
+        readonly symbols: readonly DescribedSymbol[];
+    }[];
+    readonly packageManifest: PackageManifest;
+};
+
 type ResolvedApiReferenceOptions = {
     readonly configurationPath: string;
     readonly packagePath: string;
@@ -95,6 +156,72 @@ const defaultRepositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
  * @throws {Error} If declarations cannot be resolved or generated output leaks forbidden text.
  */
 export async function generateApiReference(options: ApiReferenceOptions = {}): Promise<string> {
+    return withPublishedDeclarations(options, (context) => {
+        const { configuration, packageManifest } = context;
+        const sections = context.entries.map(({ entryName, project, symbols }) =>
+            renderEntry(
+                project,
+                symbols,
+                entryName,
+                configuration.entries[entryName] as EntryConfiguration,
+                packageManifest.name,
+                configuration.runtime,
+            ),
+        );
+        const markdown = [
+            "# Generated API reference",
+            "",
+            `Package: \`${packageManifest.name}\` ${packageManifest.version}`,
+            "",
+            "This file is generated deterministically from the emitted declaration targets in the",
+            "package export map. Run `pnpm generate:api-reference` to update it or",
+            "`pnpm check:api-reference` to reject drift.",
+            "",
+            `Package runtime requirement: \`${packageManifest.engines.node}\`.`,
+            "",
+            ...sections,
+        ].join("\n");
+        assertNoForbiddenText(markdown, configuration.forbiddenPatterns);
+        return `${markdown.trimEnd()}\n`;
+    });
+}
+
+/**
+ * Reads every supported package entry's exported symbols from emitted declarations.
+ *
+ * The same validated declaration loading, containment, and internal-export checks as
+ * {@link generateApiReference} apply, so a compatibility gate sees exactly the documented surface.
+ *
+ * @param options - Optional repository, package-manifest, and generator-configuration paths.
+ * @returns The package identity and, per sorted entry, sorted exported symbols with their
+ * classification, kind, printed declaration signature, and JSDoc tags.
+ * @throws {TypeError} If configuration, package exports, or declaration paths are unsafe.
+ * @throws {Error} If declarations cannot be resolved or an export is internal or forbidden.
+ */
+export async function readPublishedApi(options: ApiReferenceOptions = {}): Promise<PublishedApi> {
+    return withPublishedDeclarations(options, (context) => ({
+        entries: context.entries.map(({ entryName, symbols }) => ({
+            entryName,
+            symbols: symbols.map((symbol) => ({
+                classification: symbol.classification,
+                kind: symbol.kind,
+                name: symbol.name,
+                signature: symbol.renderedDeclarations.map(({ signature }) => signature).join("\n"),
+                tags: symbol.documentation.tags.map(({ name, text }) => ({
+                    name,
+                    text: text ?? "",
+                })),
+            })),
+        })),
+        packageName: context.packageManifest.name,
+        packageVersion: context.packageManifest.version,
+    }));
+}
+
+async function withPublishedDeclarations<T>(
+    options: ApiReferenceOptions,
+    visit: (context: PublishedDeclarationContext) => T,
+): Promise<T> {
     const { configurationPath, packagePath, repositoryRoot } = resolveOptions(options);
     const configuration = parseConfiguration(
         JSON.parse(await readFile(configurationPath, "utf8")) as unknown,
@@ -131,35 +258,22 @@ export async function generateApiReference(options: ApiReferenceOptions = {}): P
     try {
         const snapshot = api.updateSnapshot({ openFiles: declarationPaths });
         try {
-            const sections = packageEntries.map(([entryName], index) => {
-                const entryConfiguration = configuration.entries[entryName] as EntryConfiguration;
+            const entries = packageEntries.map(([entryName], index) => {
                 const declarationPath = declarationPaths[index] as string;
-                return renderEntry(
-                    snapshot.getDefaultProjectForFile(declarationPath) as Project,
-                    declarationPath,
+                const project = snapshot.getDefaultProjectForFile(declarationPath) as Project;
+                return {
                     entryName,
-                    entryConfiguration,
-                    packageManifest.name,
-                    declarationRoot,
-                    configuration.forbiddenDeclarationPatterns,
-                    configuration.runtime,
-                );
+                    project,
+                    symbols: describeEntry(
+                        project,
+                        declarationPath,
+                        entryName,
+                        declarationRoot,
+                        configuration.forbiddenDeclarationPatterns,
+                    ),
+                };
             });
-            const markdown = [
-                "# Generated API reference",
-                "",
-                `Package: \`${packageManifest.name}\` ${packageManifest.version}`,
-                "",
-                "This file is generated deterministically from the emitted declaration targets in the",
-                "package export map. Run `pnpm generate:api-reference` to update it or",
-                "`pnpm check:api-reference` to reject drift.",
-                "",
-                `Package runtime requirement: \`${packageManifest.engines.node}\`.`,
-                "",
-                ...sections,
-            ].join("\n");
-            assertNoForbiddenText(markdown, configuration.forbiddenPatterns);
-            return `${markdown.trimEnd()}\n`;
+            return visit({ configuration, entries, packageManifest });
         } finally {
             snapshot.dispose();
         }
@@ -213,32 +327,44 @@ export async function checkApiReference(options: ApiReferenceOptions = {}): Prom
     return artifactPath;
 }
 
-function renderEntry(
+function describeEntry(
     project: Project,
     declarationPath: string,
     entryName: string,
-    configuration: EntryConfiguration,
-    packageName: string,
     declarationRoot: string,
     forbiddenDeclarationPatterns: readonly ForbiddenPattern[],
-    runtime: string,
-): string {
+): readonly DescribedSymbol[] {
     const sourceFile = project.program.getSourceFile(declarationPath) as SourceFile;
     const moduleSymbol = project.checker.getSymbolAtLocation(sourceFile);
     if (moduleSymbol === undefined) {
         throw new Error(`emitted declaration is not an external module: ${entryName}`);
     }
-    const moduleSpecifier =
-        entryName === "." ? packageName : `${packageName}/${entryName.slice(2)}`;
     const symbolMap = new Map(
         project.checker.getExportsOfModule(moduleSymbol).map((symbol) => [symbol.name, symbol]),
     );
-    const symbols = [...symbolMap.keys()]
+    return [...symbolMap.keys()]
         .sort()
-        .map((name) => symbolMap.get(name) as TypeScriptSymbol);
-    const symbolSections = symbols.map((symbol) =>
-        renderSymbol(project, symbol, declarationRoot, forbiddenDeclarationPatterns),
-    );
+        .map((name) =>
+            describeSymbol(
+                project,
+                symbolMap.get(name) as TypeScriptSymbol,
+                declarationRoot,
+                forbiddenDeclarationPatterns,
+            ),
+        );
+}
+
+function renderEntry(
+    project: Project,
+    symbols: readonly DescribedSymbol[],
+    entryName: string,
+    configuration: EntryConfiguration,
+    packageName: string,
+    runtime: string,
+): string {
+    const moduleSpecifier =
+        entryName === "." ? packageName : `${packageName}/${entryName.slice(2)}`;
+    const symbolSections = symbols.map((symbol) => renderSymbol(project, symbol));
     return [
         `## ${configuration.title}`,
         "",
@@ -263,12 +389,12 @@ function renderEntry(
     ].join("\n");
 }
 
-function renderSymbol(
+function describeSymbol(
     project: Project,
     exportedSymbol: TypeScriptSymbol,
     declarationRoot: string,
     forbiddenDeclarationPatterns: readonly ForbiddenPattern[],
-): string {
+): DescribedSymbol {
     const symbol = resolveAlias(project.checker, exportedSymbol);
     const documentation = documentationOf(project.checker, symbol);
     if (documentation.tags.some(({ name }) => name === "internal")) {
@@ -288,39 +414,46 @@ function renderSymbol(
         const origin = `${path.relative(declarationRoot, sourceFile.fileName).replaceAll(path.sep, "/")}#${exportedSymbol.name}`;
         assertNoForbiddenDeclaration(origin, forbiddenDeclarationPatterns);
     }
-    const renderedDeclarations = declarations.map((declaration) =>
-        renderDeclaration(project, declaration),
-    );
+    return {
+        classification: classificationOf(symbol),
+        documentation,
+        kind: kindOf(symbol),
+        name: exportedSymbol.name,
+        renderedDeclarations: declarations.map((declaration) => ({
+            declaration,
+            signature: renderDeclaration(project, declaration),
+        })),
+    };
+}
+
+function renderSymbol(project: Project, symbol: DescribedSymbol): string {
+    const deprecated = symbol.documentation.tags.some(({ name }) => name === "deprecated");
     return [
-        `### \`${exportedSymbol.name}\``,
+        `### \`${symbol.name}\``,
         "",
-        `Classification: \`${classificationOf(symbol)}\`. Kind: \`${kindOf(symbol)}\`.`,
+        `Classification: \`${symbol.classification}\`. Kind: \`${symbol.kind}\`.${deprecated ? " Status: `deprecated`." : ""}`,
         "",
-        documentation.summary,
+        symbol.documentation.summary,
         "",
         "Signature:",
         "",
         "```ts",
-        renderedDeclarations.map(({ signature }) => signature).join("\n"),
+        symbol.renderedDeclarations.map(({ signature }) => signature).join("\n"),
         "```",
         "",
-        ...renderTags(documentation.tags),
-        ...renderedDeclarations.flatMap(({ memberDocumentation }) => memberDocumentation),
+        ...renderTags(symbol.documentation.tags),
+        ...symbol.renderedDeclarations.flatMap(({ declaration }) =>
+            renderMemberDocumentationOf(project, declaration),
+        ),
     ].join("\n");
 }
 
-function renderDeclaration(
-    project: Project,
-    declaration: Node,
-): { readonly memberDocumentation: readonly string[]; readonly signature: string } {
+function renderDeclaration(project: Project, declaration: Node): string {
     if (isVariableDeclaration(declaration) && isVariableStatement(declaration.parent.parent)) {
-        return {
-            memberDocumentation: [],
-            signature: project.emitter.printNode(declaration.parent.parent),
-        };
+        return project.emitter.printNode(declaration.parent.parent);
     }
     if (!isClassDeclaration(declaration) && !isInterfaceDeclaration(declaration)) {
-        return { memberDocumentation: [], signature: project.emitter.printNode(declaration) };
+        return project.emitter.printNode(declaration);
     }
     const members = declaration.members.filter((member) => isPublishedMember(project, member));
     const printed = project.emitter.printNode(declaration);
@@ -329,7 +462,7 @@ function renderDeclaration(
         firstMember === undefined
             ? printed.slice(0, printed.lastIndexOf("}")).trimEnd()
             : printed.slice(0, printed.indexOf(project.emitter.printNode(firstMember))).trimEnd();
-    const signature = [
+    return [
         opening,
         ...members.flatMap((member) =>
             project.emitter
@@ -339,12 +472,15 @@ function renderDeclaration(
         ),
         "}",
     ].join("\n");
-    return {
-        memberDocumentation: members.flatMap((member) =>
-            renderMemberDocumentation(project, member),
-        ),
-        signature,
-    };
+}
+
+function renderMemberDocumentationOf(project: Project, declaration: Node): readonly string[] {
+    if (!isClassDeclaration(declaration) && !isInterfaceDeclaration(declaration)) {
+        return [];
+    }
+    return declaration.members
+        .filter((member) => isPublishedMember(project, member))
+        .flatMap((member) => renderMemberDocumentation(project, member));
 }
 
 function isPublishedMember(project: Project, member: ClassElement | TypeElement): boolean {
@@ -474,6 +610,7 @@ function tagHeading(name: string): string {
     if (name === "returns" || name === "return") return "Returns";
     if (name === "throws" || name === "exception") return "Throws";
     if (name === "example") return "Example";
+    if (name === "deprecated") return "Deprecated";
     return `@${name}`;
 }
 

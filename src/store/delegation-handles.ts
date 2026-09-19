@@ -3,6 +3,7 @@ import type { AppendBatchDraft } from "../append/types.ts";
 import { DelegationEvidenceError } from "../delegation/errors.ts";
 import { delegationProtocolConfig } from "../protocol/config.ts";
 import type { RecordId } from "../record/types.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { appendWithinTraceStoreTransaction } from "./append.ts";
 import { STORE_TRANSACTION_SQL } from "./constants.ts";
 import { publishStoredCutWithinTransaction } from "./cuts.ts";
@@ -126,7 +127,7 @@ export function openDelegationHandleInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ created: true, cut, receipt, retryCut });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -160,7 +161,7 @@ export function appendDelegationHandleRecordInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ receipt, status: "appended" });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

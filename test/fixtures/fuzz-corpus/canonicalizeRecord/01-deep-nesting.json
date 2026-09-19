@@ -1,0 +1,6 @@
+{
+    "description": "F-012: nesting past the runtime call stack raises the documented TypeError instead of RangeError.",
+    "finding": "F-012",
+    "input": { "value": { "a": { "$fuzz": "nest", "depth": 20000, "kind": "array", "leaf": 0 } } },
+    "expect": { "outcome": "rejected", "error": "TypeError" }
+}

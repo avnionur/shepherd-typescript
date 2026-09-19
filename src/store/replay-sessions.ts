@@ -7,6 +7,7 @@ import {
     ReplayLeaseConflictError,
     ReplayLeaseFencedError,
 } from "../replay/errors.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { appendWithinTraceStoreTransaction } from "./append.ts";
 import { STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import { publishStoredCutWithinTransaction } from "./cuts.ts";
@@ -105,7 +106,7 @@ export function openReplaySessionInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ created: !replay, row });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -131,7 +132,7 @@ export function renewReplaySessionLeaseInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return row;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -173,7 +174,7 @@ export function appendReplaySessionRecordInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ cut, receipt, status: "appended" });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

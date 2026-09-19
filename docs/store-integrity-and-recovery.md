@@ -45,7 +45,8 @@ The scan does not repair, infer, delete, or rewrite retained state. It adds no s
 - `committed` means the receipt decodes and exactly matches committed owner occurrences, causal
   edges, record order, and ordinal ranges;
 - `manual_recovery_required` with `receipt_mismatch` means retained receipt evidence is malformed
-  or disagrees with committed rows;
+  or disagrees with committed rows, or the intent's retained batch digest is not a well-formed
+  configured digest (from 2.32.1; such an intent can never match a retry);
 - `manual_recovery_required` with `orphaned_rows` means retained owner occurrences or a published
   cut still claim the intent after its receipt row disappeared.
 

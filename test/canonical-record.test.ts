@@ -146,6 +146,21 @@ test("canonicalizeRecord rejects cyclic records", () => {
     );
 });
 
+test("canonicalizeRecord reports nesting past the runtime call stack as TypeError", () => {
+    let deep: unknown = 0;
+    for (let level = 0; level < 20_000; level += 1) deep = [deep];
+    const record = { deep } as unknown as SemanticRecord;
+
+    assert.throws(
+        () => canonicalizeRecord(record),
+        (error) =>
+            error instanceof TypeError &&
+            /nesting or size limit/.test(error.message) &&
+            error.cause instanceof RangeError,
+    );
+    assert.throws(() => createRecordId(record), TypeError);
+});
+
 test("createRecordId returns a stable prefixed SHA-256 digest", () => {
     assert.equal(
         createRecordId({ a: 1 }),

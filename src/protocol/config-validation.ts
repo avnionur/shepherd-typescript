@@ -1,13 +1,16 @@
 import { readApplicationsConfig } from "./config-applications.ts";
+import { readBackupConfig } from "./config-backup.ts";
 import { readCliConfig } from "./config-cli.ts";
 import { assertSupportedProtocolCompatibility } from "./config-compatibility.ts";
 import { readDelegationConfig } from "./config-delegation.ts";
 import { readEffectConfig } from "./config-effects.ts";
 import { readFormalAssuranceConfig } from "./config-formal-assurance.ts";
+import { readObservabilityConfig } from "./config-observability.ts";
 import { readOrphanRepairConfig } from "./config-orphan-repair.ts";
 import { readProjectionConfig } from "./config-projections.ts";
 import { readProviderConfig } from "./config-providers.ts";
 import { readReplayConfig } from "./config-replay.ts";
+import { readRetentionConfig } from "./config-retention.ts";
 import { readRunConfig } from "./config-runs.ts";
 import { readScopeConfig } from "./config-scopes.ts";
 import {
@@ -16,7 +19,9 @@ import {
     readRecordIdConfig,
     readRootWitness,
     readSchemas,
+    readStoreMaintenanceConfig,
 } from "./config-sections.ts";
+import { readStorageConfig } from "./config-storage.ts";
 import { readSupervisionConfig } from "./config-supervision.ts";
 import { readTaskConfig } from "./config-tasks.ts";
 import {
@@ -57,18 +62,22 @@ export function parseProtocolConfig(
         value,
         [
             "applications",
+            "backup",
             "effects",
             "cli",
             "delegation",
             "formalAssurance",
             "kernel",
+            "observability",
             "orphanRepair",
             "projections",
             "providers",
             "recordId",
             "replay",
+            "retention",
             "runs",
             "scopes",
+            "storage",
             "supervision",
             "tasks",
             "workspaces",
@@ -88,18 +97,26 @@ export function parseProtocolConfig(
     const effects = readEffectConfig(root.effects);
     const config = {
         applications: readApplicationsConfig(root.applications),
+        backup: readBackupConfig(root.backup, kernel.interchange.format, kernel.store.blobs),
         cli: readCliConfig(root.cli),
         delegation: readDelegationConfig(root.delegation),
         effects,
         formalAssurance: readFormalAssuranceConfig(root.formalAssurance),
         kernel,
+        observability: readObservabilityConfig(
+            root.observability,
+            kernel.interchange.format,
+            Object.values(projections.executionHistory.executionSchemas),
+        ),
         orphanRepair: readOrphanRepairConfig(root.orphanRepair),
         projections,
         providers: readProviderConfig(root.providers),
         recordId,
         replay: readReplayConfig(root.replay, effects.reversibilityTiers),
+        retention: readRetentionConfig(root.retention, root, kernel.interchange.format),
         runs: readRunConfig(root.runs),
         scopes: readScopeConfig(root.scopes, workspaces.repositoryGrants.atoms),
+        storage: readStorageConfig(root.storage),
         supervision: readSupervisionConfig(root.supervision, effects.reversibilityTiers),
         tasks: readTaskConfig(root.tasks),
         workspaces,
@@ -148,12 +165,35 @@ function readKernelConfig(value: unknown): ProtocolConfig["kernel"] {
 function readInterchangeConfig(value: unknown): ProtocolConfig["kernel"]["interchange"] {
     const interchange = readObject(
         value,
-        ["blobEncoding", "format", "formatVersion"],
+        ["blobEncoding", "format", "formatVersion", "limits", "staging"],
         "kernel.interchange",
     );
     if (interchange.blobEncoding !== "base64") {
         throw new TypeError("kernel.interchange.blobEncoding must be base64");
     }
+    const staging = readObject(
+        interchange.staging,
+        ["directoryPrefix"],
+        "kernel.interchange.staging",
+    );
+    const directoryPrefix = readNonEmptyString(
+        staging.directoryPrefix,
+        "kernel.interchange.staging.directoryPrefix",
+    );
+    if (!/^[A-Za-z0-9._-]+$/u.test(directoryPrefix) || /^\.{1,2}$/u.test(directoryPrefix)) {
+        throw new TypeError("kernel.interchange.staging.directoryPrefix must be one path segment");
+    }
+    const limitKeys = [
+        "maxAppendIntents",
+        "maxArchiveBytes",
+        "maxBlobBytes",
+        "maxBlobs",
+        "maxCuts",
+        "maxNestingDepth",
+        "maxRecordViews",
+        "maxRecords",
+    ] as const;
+    const limits = readObject(interchange.limits, limitKeys, "kernel.interchange.limits");
     return {
         blobEncoding: "base64",
         format: readNonEmptyString(interchange.format, "kernel.interchange.format"),
@@ -161,6 +201,13 @@ function readInterchangeConfig(value: unknown): ProtocolConfig["kernel"]["interc
             interchange.formatVersion,
             "kernel.interchange.formatVersion",
         ),
+        limits: Object.fromEntries(
+            limitKeys.map((key) => [
+                key,
+                readPositiveInteger(limits[key], `kernel.interchange.limits.${key}`),
+            ]),
+        ) as ProtocolConfig["kernel"]["interchange"]["limits"],
+        staging: { directoryPrefix },
     };
 }
 
@@ -240,6 +287,7 @@ function readStoreConfig(
             "defensive",
             "foreignKeys",
             "journalMode",
+            "maintenance",
             "migrations",
             "schemaVersion",
             "synchronous",
@@ -276,6 +324,7 @@ function readStoreConfig(
         defensive: readRequiredTrue(store.defensive, "kernel.store.defensive"),
         foreignKeys: readRequiredTrue(store.foreignKeys, "kernel.store.foreignKeys"),
         journalMode: readEnum(store.journalMode, STORE_JOURNAL_MODES, "kernel.store.journalMode"),
+        maintenance: readStoreMaintenanceConfig(store.maintenance),
         migrations,
         schemaVersion,
         synchronous: readEnum(

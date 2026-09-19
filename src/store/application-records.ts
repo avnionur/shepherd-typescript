@@ -2,6 +2,7 @@ import type { DatabaseSync } from "node:sqlite";
 import type { AppendBatchDraft } from "../append/types.ts";
 import { applicationsProtocolConfig } from "../protocol/config.ts";
 import type { RecordId } from "../record/types.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { appendWithinTraceStoreTransaction } from "./append.ts";
 import { STORE_TRANSACTION_SQL } from "./constants.ts";
 import { publishStoredCutWithinTransaction } from "./cuts.ts";
@@ -60,7 +61,7 @@ export function appendApplicationRecordInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ cut, receipt, status: replayed ? "replayed" : "appended" });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

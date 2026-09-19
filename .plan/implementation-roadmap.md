@@ -565,7 +565,35 @@ Milestone: **L3 research applications** for the documented scope
 
 ## Phase 11 — Production hardening and 1.0
 
-Goal: reach L4 operational maturity.
+Goal: reach L4 operational maturity. "1.0" names this maturity milestone, not a package version
+(D-016).
+
+Slice 1 (#187) delivered the [production hardening contract](./production-hardening-contract.md),
+the [threat model](../docs/threat-model.md), the [internal security review](./security-review.md)
+with its severity rubric and findings register, the [support policy](../docs/support-policy.md), and
+[incident response](../docs/incident-response.md). The contract maps every work item and exit
+criterion below to exactly one slice or owner-owed row. Child issues:
+
+- #187 contract, threat model, internal security review, support and incident processes;
+- #179 compatibility and deprecation policy, SBOM, provenance statement, reproducible builds;
+- #180 secret scanning, retention classes, and redacted export;
+- #181 remote storage and concurrency interfaces with conformance kits;
+- #182 verified backup and restore, migration drills, downgrade policy, `store` CLI group;
+- #183 large traces, index plans, maintenance, benchmarks, and SLOs;
+- #184 OpenTelemetry-compatible, non-canonical observability;
+- #185 fuzzing of decoders, CLI inputs, changesets, and helper protocols;
+- #186 long-duration, kill/restart, disk-full, and corruption suites;
+- #29 project-wide 1.0 readiness audit.
+
+Status (2.32.4): every slice is delivered on the Phase 11 branch, and the
+[Phase 11 exit audit](./phase-11-exit-audit.md) (#29) records the verdict: release candidate
+ready for the in-repo scope; 1.0 general availability is no-go until the owner-owed items close
+(external security review, signing and publication, hosted CI and cross-OS lanes, private
+vulnerability reporting, registry name). Ten work items are met in-repo and two partially met;
+of the exit criteria, zero unresolved critical findings and the reference-host SLOs are met
+in-repo, drills and compatibility enforcement are met locally but not on other hosts or in hosted
+CI, and signed provenance is owner-owed. The cross-phase view is the
+[release-readiness dashboard](./release-readiness-dashboard.md).
 
 Work:
 
@@ -590,6 +618,11 @@ Exit criteria:
 - public protocol and API compatibility policies are enforced in CI;
 - performance SLOs are supported by reproducible benchmarks;
 - stable packages and CLI ship with complete docs and signed provenance.
+
+Milestone: **L4 release candidate** for the in-repo scope
+([Phase 11 exit audit](./phase-11-exit-audit.md)); L4 general availability ("1.0") waits on the
+owner-owed rows O-1 to O-5 of the
+[production hardening contract](./production-hardening-contract.md#owner-owed-register).
 
 ## Dependency summary
 

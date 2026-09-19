@@ -5,6 +5,7 @@ import path from "node:path";
 import { createRecordId } from "../canonical/canonical-record.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import { WorkspaceBindingError } from "./errors.ts";
+import { gitCommandArguments, gitCommandEnvironment } from "./git-command.ts";
 import { gitBindingFilesystemIdentity, inspectGitRepository } from "./git-repository-evidence.ts";
 import { openWorkspace, openWorkspaceForRetainedCustody } from "./initialization.ts";
 import type {
@@ -401,11 +402,16 @@ function readRepositoryEvidence(root: string): GitRepositoryBinding["repository"
 }
 
 function runGit(root: string, args: readonly string[]): string {
-    const result = spawnSync(workspaceProtocolConfig.gitExecutable, ["-C", root, ...args], {
-        encoding: "utf8",
-        maxBuffer: workspaceProtocolConfig.gitCustody.maxCommandBytes,
-        stdio: ["ignore", "pipe", "pipe"],
-    });
+    const result = spawnSync(
+        workspaceProtocolConfig.gitExecutable,
+        gitCommandArguments(root, args),
+        {
+            encoding: "utf8",
+            env: gitCommandEnvironment(),
+            maxBuffer: workspaceProtocolConfig.gitCustody.maxCommandBytes,
+            stdio: ["ignore", "pipe", "pipe"],
+        },
+    );
     // Config validation and platform conformance own executable availability.
     /* node:coverage disable */
     if (result.error !== undefined) throw repositoryBindingError("invalidRepository");

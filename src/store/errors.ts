@@ -1,5 +1,6 @@
 import { publicErrorCodes } from "../errors/public-errors.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
+import type { SecretFinding, SecretScanReport } from "../retention/secret-scan.ts";
 
 /**
  * Base error for trace-store contract violations.
@@ -22,6 +23,38 @@ export class AppendIntentConflictError extends TraceStoreError {
 }
 
 /**
+ * Raised when a store opened with `secretScanning: "refuse"` rejects an append or import whose
+ * record bodies match a configured secret detector.
+ *
+ * The refusal happens before any write, so the append intent stays unused and a corrected retry
+ * with the same intent succeeds. The message and {@link TraceSecretDetectedError.findings} name
+ * secret classes, JSON Pointers, and digests only; matched text is never included.
+ *
+ * @public
+ */
+export class TraceSecretDetectedError extends TraceStoreError {
+    /** Stable configured machine-readable secret-detection code. */
+    override readonly code = publicErrorCodes.trace.secretDetected;
+    /** Frozen findings: class, pointer, location, and digest of each match. */
+    readonly findings: readonly SecretFinding[];
+    /** Whether more findings existed than the configured limit allows. */
+    readonly truncated: boolean;
+
+    /**
+     * Creates a refusal from a completed scan report.
+     *
+     * @param report - Findings produced by the configured detectors.
+     */
+    constructor(report: SecretScanReport) {
+        super(
+            `trace store refused ${report.findings.length}${report.truncated ? "+" : ""} configured secret finding(s) of class ${report.secret_classes.join(", ")} at ${report.findings.map(({ path }) => path).join(", ")}`,
+        );
+        this.findings = report.findings;
+        this.truncated = report.truncated;
+    }
+}
+
+/**
  * Raised when a database schema is newer than this package supports.
  *
  * @public
@@ -29,6 +62,17 @@ export class AppendIntentConflictError extends TraceStoreError {
 export class UnsupportedStoreSchemaError extends TraceStoreError {
     /** Stable configured machine-readable unsupported-schema code. */
     override readonly code = publicErrorCodes.trace.schemaUnsupported;
+}
+
+/**
+ * Raised when an operation that requires a writable handle, such as store maintenance, is
+ * requested on a store opened with `readOnly: true`. Nothing is read or changed.
+ *
+ * @public
+ */
+export class TraceStoreReadOnlyError extends TraceStoreError {
+    /** Stable configured machine-readable read-only refusal code. */
+    override readonly code = publicErrorCodes.trace.readOnly;
 }
 
 /**

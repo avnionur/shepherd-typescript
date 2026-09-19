@@ -7,7 +7,10 @@
             "!!dist",
             "!!.git",
             "!!docs/generated/application-evaluation.json",
+            "!!docs/generated/sbom.cdx.json",
             "!!node_modules",
+            "!!release",
+            "!!spec/compatibility",
             "!!spec/schemas",
             "!!template"
         ]

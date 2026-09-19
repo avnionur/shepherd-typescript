@@ -1,0 +1,121 @@
+{
+    "baselines": {
+        "api": "spec/compatibility/api-baseline.json",
+        "changes": "spec/compatibility/protocol-changes.json",
+        "protocol": "spec/compatibility/protocol-baseline.json"
+    },
+    "api": {
+        "configuration": "api-reference.config.json",
+        "packageManifest": "package.json",
+        "tiers": {
+            ".": "stable",
+            "./applications": "stable",
+            "./canonical": "stable",
+            "./cli": "stable",
+            "./delegation": "stable",
+            "./effects": "stable",
+            "./operations": "stable",
+            "./providers": "stable",
+            "./read": "stable",
+            "./replay": "stable",
+            "./runs": "stable",
+            "./scopes": "stable",
+            "./supervision": "stable",
+            "./tasks": "stable",
+            "./trace": "stable",
+            "./workspace": "stable"
+        }
+    },
+    "build": {
+        "sources": ["src"]
+    },
+    "classification": {
+        "additiveNotePatterns": ["^version:"],
+        "perArtifactPatterns": ["^api:", "^version:"]
+    },
+    "deprecation": {
+        "lastReleasedVersion": "2.25.1",
+        "sincePattern": "(?:^|\\s)[Ss]ince\\s+v?(?<version>\\d+\\.\\d+\\.\\d+)",
+        "tag": "deprecated",
+        "windowMinorReleases": 2
+    },
+    "protocol": {
+        "cli": {
+            "commandOptionsPointer": "/cli/commandOptions",
+            "exitCodesPointer": "/cli/exitCodes",
+            "groupsPointer": "/cli/groups",
+            "optionsPointer": "/cli/options",
+            "source": "protocol.config.json"
+        },
+        "deprecations": [],
+        "identity": {
+            "keyPattern": "(?:IdPrefix|^idPrefix|^prefix|[Aa]lgorithm|^hexLength|^blobEncoding)$",
+            "pointers": [
+                {
+                    "pointer": "/cli/options",
+                    "source": "protocol.config.json"
+                },
+                {
+                    "pointer": "/kernel/recordModes",
+                    "source": "protocol.config.json"
+                },
+                {
+                    "pointer": "/kernel/rootWitness",
+                    "source": "protocol.config.json"
+                },
+                {
+                    "pointer": "/recordId",
+                    "source": "protocol.config.json"
+                }
+            ],
+            "sources": ["protocol.config.json"]
+        },
+        "migrationBackedVersions": [
+            {
+                "marker": "protocol.config.json#/kernel/store/schemaVersion",
+                "migrations": "protocol.config.json#/kernel/store/migrations"
+            },
+            {
+                "marker": "protocol.config.json#/tasks/registry/schemaVersion",
+                "migrations": "protocol.config.json#/tasks/registry/migrations"
+            }
+        ],
+        "migrations": [
+            {
+                "pointer": "/kernel/store/migrations",
+                "source": "protocol.config.json"
+            },
+            {
+                "pointer": "/tasks/registry/migrations",
+                "source": "protocol.config.json"
+            }
+        ],
+        "publicErrors": {
+            "pointer": "/codes",
+            "source": "public-errors.config.json"
+        },
+        "schemas": {
+            "directory": "spec/schemas",
+            "suffix": ".schema.json"
+        },
+        "tier": "stable",
+        "versions": {
+            "keyPattern": "(?:Version|^version|^format)$",
+            "sources": ["protocol.config.json", "public-errors.config.json"]
+        }
+    },
+    "frozen": {
+        "artifactPatterns": [],
+        "supersededSchemaPattern": "^(?<family>.+)-v(?<version>\\d+)\\.schema\\.json$"
+    },
+    "tiers": {
+        "experimental": {
+            "requiresClassification": false,
+            "requiresVersionBump": false
+        },
+        "stable": {
+            "requiresClassification": true,
+            "requiresVersionBump": true
+        }
+    }
+}

@@ -13,7 +13,7 @@ import {
     type ScopeResourceGrant,
     SQLiteTraceStore,
 } from "../../src/index.ts";
-import { seededRandom } from "../scope/scope-reference-model.ts";
+import { seededRandom } from "../support/prng.ts";
 import { echoTask, grantOf, temporaryDatabasePath } from "./fixtures.ts";
 
 const LAW_CONFIG = JSON.parse(

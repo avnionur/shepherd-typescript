@@ -11,6 +11,10 @@
             "budgetExhausted": "RUN_BUDGET_EXHAUSTED",
             "cancelled": "RUN_CANCELLED"
         },
+        "storage": {
+            "adapter": "STORAGE_ADAPTER_ERROR",
+            "blobContentMismatch": "STORAGE_BLOB_CONTENT_MISMATCH"
+        },
         "tasks": {
             "registry": "TASK_REGISTRY_ERROR",
             "schemaUnsupported": "TASK_REGISTRY_SCHEMA_UNSUPPORTED",
@@ -18,9 +22,14 @@
         },
         "trace": {
             "appendIntentConflict": "APPEND_INTENT_CONFLICT",
+            "archiveLimit": "TRACE_ARCHIVE_LIMIT_EXCEEDED",
+            "backup": "TRACE_STORE_BACKUP_ERROR",
             "blobIntegrity": "BLOB_INTEGRITY_ERROR",
             "projectionCompatibility": "PROJECTION_COMPATIBILITY_ERROR",
+            "readOnly": "TRACE_STORE_READ_ONLY",
+            "redactedArchive": "REDACTED_TRACE_ARCHIVE_ERROR",
             "schemaUnsupported": "TRACE_STORE_SCHEMA_UNSUPPORTED",
+            "secretDetected": "TRACE_SECRET_DETECTED",
             "store": "TRACE_STORE_ERROR"
         },
         "workspace": {

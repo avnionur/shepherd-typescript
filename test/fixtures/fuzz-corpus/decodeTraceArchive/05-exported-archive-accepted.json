@@ -1,0 +1,5 @@
+{
+    "description": "An unmodified store export is accepted and decodes deterministically.",
+    "input": { "seed": 1, "replace": [] },
+    "expect": { "outcome": "accepted" }
+}

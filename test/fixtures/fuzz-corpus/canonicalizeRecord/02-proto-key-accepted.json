@@ -1,0 +1,10 @@
+{
+    "description": "An own __proto__ data key is ordinary data: it is encoded, re-encodes stably, and pollutes no prototype.",
+    "input": {
+        "value": {
+            "__proto__": { "polluted": true },
+            "constructor": { "prototype": { "polluted": true } }
+        }
+    },
+    "expect": { "outcome": "accepted" }
+}

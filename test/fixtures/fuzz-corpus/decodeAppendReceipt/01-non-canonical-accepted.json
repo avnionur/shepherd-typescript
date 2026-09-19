@@ -1,0 +1,11 @@
+{
+    "description": "F-013 residual: the store-internal receipt decoder still accepts non-canonical text (here a repeated key); receipts are written by the store, re-checked against retained rows by diagnoseStoredAppend, and archive import now requires the canonical form.",
+    "finding": "F-013",
+    "input": {
+        "seed": 0,
+        "replace": [
+            { "from": "\"causal_edges\":[]", "to": "\"causal_edges\":[1],\"causal_edges\": []" }
+        ]
+    },
+    "expect": { "outcome": "accepted" }
+}

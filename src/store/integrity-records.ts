@@ -6,6 +6,7 @@ import { STORE_TABLES } from "./constants.ts";
 import { addIntegrityIssue } from "./integrity-issues.ts";
 import type { TraceIntegrityIssue } from "./integrity-types.ts";
 import { readStoredRecord } from "./read.ts";
+import { HOT_PATH_SQL } from "./statements.ts";
 
 /** Verifies canonical rows, causal-parent indexes, witnesses, and retained occurrences. */
 export function verifyRecordIntegrity(
@@ -60,13 +61,7 @@ function verifyParentIndex(
         addIntegrityIssue(issues, "parent_index_mismatch", recordId);
         return;
     }
-    const parentRows = database
-        .prepare(
-            `SELECT parent_record_id, parent_position
-             FROM ${STORE_TABLES.recordParents}
-             WHERE child_record_id = ? ORDER BY parent_position`,
-        )
-        .all(recordId);
+    const parentRows = database.prepare(HOT_PATH_SQL.parentsByChild).all(recordId);
     if (
         parentRows.length !== causedBy.length ||
         causedBy.some(

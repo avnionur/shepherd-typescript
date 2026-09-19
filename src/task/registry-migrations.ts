@@ -1,6 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 
 import { taskProtocolConfig } from "../protocol/config.ts";
+import { runInSQLiteTransaction } from "../runtime/sqlite-transaction.ts";
 import { TASK_REGISTRY_TABLES, TASK_REGISTRY_TRANSACTION_SQL } from "./registry-constants.ts";
 import { UnsupportedTaskRegistrySchemaError } from "./registry-errors.ts";
 
@@ -20,7 +21,15 @@ const migrations = [
     },
 ] as const;
 
-/** Applies every configured task-registry migration atomically. @internal */
+/**
+ * Applies every configured task-registry migration atomically.
+ *
+ * Every step reads the applied schema version inside the configured `IMMEDIATE` transaction that
+ * applies the next migration, so concurrent first opens serialize on SQLite's write lock and a
+ * later opener that finds the schema current commits nothing.
+ *
+ * @internal
+ */
 export function migrateTaskRegistry(database: DatabaseSync): number {
     const versions = migrations.map(({ version }) => version);
     validateTaskRegistryMigrationVersions(
@@ -28,11 +37,25 @@ export function migrateTaskRegistry(database: DatabaseSync): number {
         taskProtocolConfig.registry.schemaVersion,
         taskProtocolConfig.registry.migrations,
     );
-    database.exec(`
-        CREATE TABLE IF NOT EXISTS ${TASK_REGISTRY_TABLES.migrations} (
-            version INTEGER PRIMARY KEY
-        ) STRICT;
-    `);
+    runInSQLiteTransaction(database, TASK_REGISTRY_TRANSACTION_SQL, () =>
+        database.exec(`
+            CREATE TABLE IF NOT EXISTS ${TASK_REGISTRY_TABLES.migrations} (
+                version INTEGER PRIMARY KEY
+            ) STRICT;
+        `),
+    );
+    for (;;) {
+        const applied = runInSQLiteTransaction(database, TASK_REGISTRY_TRANSACTION_SQL, () =>
+            applyNextTaskRegistryMigration(database),
+        );
+        if (!applied) {
+            return taskProtocolConfig.registry.schemaVersion;
+        }
+    }
+}
+
+/** Applies the next pending migration under the caller's write lock; false when none is pending. */
+function applyNextTaskRegistryMigration(database: DatabaseSync): boolean {
     const current = database
         .prepare(
             `SELECT COALESCE(MAX(version), 0) AS version FROM ${TASK_REGISTRY_TABLES.migrations}`,
@@ -43,23 +66,15 @@ export function migrateTaskRegistry(database: DatabaseSync): number {
             `task registry schema ${current.version} is newer than supported schema ${taskProtocolConfig.registry.schemaVersion}`,
         );
     }
-    for (const migration of migrations) {
-        if (migration.version <= current.version) {
-            continue;
-        }
-        database.exec(TASK_REGISTRY_TRANSACTION_SQL.begin);
-        try {
-            database.exec(migration.sql);
-            database
-                .prepare(`INSERT INTO ${TASK_REGISTRY_TABLES.migrations}(version) VALUES (?)`)
-                .run(migration.version);
-            database.exec(TASK_REGISTRY_TRANSACTION_SQL.commit);
-        } catch (error) {
-            database.exec(TASK_REGISTRY_TRANSACTION_SQL.rollback);
-            throw error;
-        }
+    const migration = migrations.find(({ version }) => version > current.version);
+    if (migration === undefined) {
+        return false;
     }
-    return taskProtocolConfig.registry.schemaVersion;
+    database.exec(migration.sql);
+    database
+        .prepare(`INSERT INTO ${TASK_REGISTRY_TABLES.migrations}(version) VALUES (?)`)
+        .run(migration.version);
+    return true;
 }
 
 /** Reads and requires the exact current task-registry schema without mutation. @internal */

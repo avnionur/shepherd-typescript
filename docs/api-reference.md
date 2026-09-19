@@ -39,7 +39,14 @@ Each entry records:
 - whether the symbol is `type-only`, `runtime-only`, or `runtime-and-type`;
 - emitted signatures, including generics and public class/interface members;
 - declaration JSDoc summaries, parameters, return values, thrown-error contracts, examples, and
-  other public tags.
+  other public tags;
+- `Status: deprecated` on the classification line and a `Deprecated:` section for exports tagged
+  `@deprecated`, whose text must name the deprecating release (for example
+  `@deprecated Since 2.27.0. Use ... instead.`).
+
+`readPublishedApi` in the same module exposes the symbols, kinds, printed declarations, and tags
+that the reference renders. The [compatibility gate](./compatibility-policy.md) fingerprints that
+surface, so the documented API and the enforced API are the same set.
 
 The root and domain entries intentionally repeat shared exports. This makes each supported import
 surface complete in isolation and allows export drift to be reviewed at the same boundary a

@@ -2,6 +2,8 @@ import { DatabaseSync } from "node:sqlite";
 
 import { taskProtocolConfig } from "../protocol/config.ts";
 import { assertSQLiteDefensiveSupport } from "../runtime/sqlite.ts";
+import { execRetryingBusy, rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
+import { prepareOwnerOnlyDatabaseFile } from "../store/file-mode.ts";
 import {
     decodeTaskRegistration,
     readExactTaskReference,
@@ -42,6 +44,10 @@ export class SQLiteTaskRegistry implements Disposable {
     /**
      * Opens or creates a durable task registry.
      *
+     * A writable file registry is created with the configured owner-only mode; an existing file
+     * and its sidecars owned by the current user are tightened to that mode. Read-only opens never
+     * change file modes.
+     *
      * @param databasePath - SQLite file path, or the configured in-memory default.
      * @param options - Optional exact read-only open policy.
      * @throws {UnsupportedTaskRegistrySchemaError} If the schema is not current and supported.
@@ -54,6 +60,9 @@ export class SQLiteTaskRegistry implements Disposable {
     ) {
         assertSQLiteDefensiveSupport(taskProtocolConfig.registry.defensive);
         const readOnly = readRegistryOptions(options);
+        if (!readOnly) {
+            prepareOwnerOnlyDatabaseFile(databasePath);
+        }
         this.#database = new DatabaseSync(databasePath, {
             defensive: taskProtocolConfig.registry.defensive,
             readOnly,
@@ -64,7 +73,11 @@ export class SQLiteTaskRegistry implements Disposable {
             if (readOnly) {
                 this.#schemaVersion = readCurrentTaskRegistrySchemaVersion(this.#database);
             } else {
-                this.#database.exec(TASK_REGISTRY_PRAGMA_SQL.journalMode);
+                execRetryingBusy(
+                    this.#database,
+                    TASK_REGISTRY_PRAGMA_SQL.journalMode,
+                    taskProtocolConfig.registry.busyTimeoutMilliseconds,
+                );
                 this.#database.exec(TASK_REGISTRY_PRAGMA_SQL.synchronous);
                 this.#schemaVersion = migrateTaskRegistry(this.#database);
             }
@@ -125,7 +138,7 @@ export class SQLiteTaskRegistry implements Disposable {
             this.#database.exec(TASK_REGISTRY_TRANSACTION_SQL.commit);
             return registration;
         } catch (error) {
-            this.#database.exec(TASK_REGISTRY_TRANSACTION_SQL.rollback);
+            rollbackFailedTransaction(this.#database, TASK_REGISTRY_TRANSACTION_SQL.rollback);
             throw error;
         }
     }

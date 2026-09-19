@@ -3,6 +3,7 @@ import type { AppendBatchDraft } from "../append/types.ts";
 import { kernelProtocolConfig, supervisionProtocolConfig } from "../protocol/config.ts";
 import { SUPERVISION_APPROVAL_PHASES } from "../protocol/values.generated.ts";
 import type { RecordId } from "../record/types.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import {
     SupervisionApprovalConflictError,
     SupervisionEvidenceError,
@@ -112,7 +113,7 @@ export function openSupervisedDispatchInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return row;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -138,7 +139,7 @@ export function renewSupervisedDispatchLeaseInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return row;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -180,7 +181,7 @@ export function appendSupervisedDispatchRecordInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ receipt, status: "appended" });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -221,7 +222,7 @@ export function resolveSupervisedApprovalInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -239,7 +240,7 @@ export function injectSupervisionContextInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

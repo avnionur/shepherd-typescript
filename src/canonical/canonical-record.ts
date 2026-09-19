@@ -64,7 +64,18 @@ export function canonicalizeRecord(record: SemanticRecord): string {
  * @internal
  */
 export function canonicalizeSemanticValue(value: SemanticValue): string {
-    return JSON.stringify(normalizeValue(value, new WeakSet<object>(), "$"));
+    try {
+        return JSON.stringify(normalizeValue(value, new WeakSet<object>(), "$"));
+    } catch (error) {
+        // Nesting beyond the runtime call stack, or output beyond the maximum string length,
+        // raises RangeError; the documented contract for unsupported input is TypeError.
+        if (error instanceof RangeError) {
+            throw new TypeError("$ exceeds the runtime nesting or size limit for canonical JSON", {
+                cause: error,
+            });
+        }
+        throw error;
+    }
 }
 
 /**

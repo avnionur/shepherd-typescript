@@ -4,11 +4,13 @@ import { kernelProtocolConfig } from "../protocol/config.ts";
 import { assertNonEmptyString } from "../record/guards.ts";
 import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
 import type { RecordBody, RecordId } from "../record/types.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { appendWithinTraceStoreTransaction } from "./append.ts";
 import { STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import { TraceStoreError } from "./errors.ts";
 import { normalizeCutSpec } from "./query-validation.ts";
 import { readStoredRecord } from "./read.ts";
+import { HOT_PATH_SQL, listCutsSql } from "./statements.ts";
 import type { Cut, CutId, CutSpec } from "./types.ts";
 
 /** Publishes one immutable owner-prefix cut and its semantic record atomically. */
@@ -19,7 +21,7 @@ export function publishStoredCut(database: DatabaseSync, spec: CutSpec): Cut {
         database.exec(STORE_TRANSACTION_SQL.commit);
         return cut;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -125,13 +127,7 @@ export function publishStoredCutWithinTransaction(database: DatabaseSync, spec: 
 /** Reads and verifies one published cut. */
 export function readStoredCut(database: DatabaseSync, cutId: CutId): Cut {
     assertNonEmptyString(cutId, "cutId");
-    const row = database
-        .prepare(
-            `SELECT cut_id, target_owner_id, through_record_id, through_owner_ordinal,
-                    publisher_owner_id, created_by_record_id, append_intent_id
-             FROM ${STORE_TABLES.cuts} WHERE cut_id = ?`,
-        )
-        .get(cutId);
+    const row = database.prepare(HOT_PATH_SQL.cutRow).get(cutId);
     if (row === undefined) {
         throw new TraceStoreError(`unknown cut: ${cutId}`);
     }
@@ -157,20 +153,13 @@ export function readStoredCut(database: DatabaseSync, cutId: CutId): Cut {
         throw new TraceStoreError("cut index disagrees with its retained publication record");
     }
     const publicationView = database
-        .prepare(
-            `SELECT 1 FROM ${STORE_TABLES.recordViews}
-             WHERE owner_id = ? AND record_id = ? AND append_intent_id = ?
-               AND append_position = 0`,
-        )
+        .prepare(HOT_PATH_SQL.cutPublicationView)
         .get(cut.publisher_owner_id, cut.created_by_record_id, String(row.append_intent_id));
     if (publicationView === undefined) {
         throw new TraceStoreError("cut publication is not retained by its indexed append intent");
     }
     const retainedAddress = database
-        .prepare(
-            `SELECT 1 FROM ${STORE_TABLES.recordViews}
-             WHERE owner_id = ? AND owner_ordinal = ? AND record_id = ?`,
-        )
+        .prepare(HOT_PATH_SQL.cutTargetAddress)
         .get(cut.target_owner_id, cut.through_owner_ordinal, cut.through_record_id);
     if (retainedAddress === undefined) {
         throw new TraceStoreError("cut target is not retained at its published owner address");
@@ -195,15 +184,8 @@ export function listStoredCuts(
     descending: boolean,
     cutPrefix?: string,
 ): readonly Cut[] {
-    const direction = descending ? "DESC" : "ASC";
-    const prefixClause = cutPrefix === undefined ? "" : "WHERE substr(cut_id, 1, length(?)) = ?";
     const rows = database
-        .prepare(
-            `SELECT cut_id FROM ${STORE_TABLES.cuts}
-             ${prefixClause}
-             ORDER BY CAST(created_by_record_id AS BLOB) ${direction}, CAST(cut_id AS BLOB) ${direction}
-             LIMIT ? OFFSET ?`,
-        )
+        .prepare(listCutsSql(descending, cutPrefix !== undefined))
         .all(
             ...(cutPrefix === undefined ? [limit, offset] : [cutPrefix, cutPrefix, limit, offset]),
         ) as { cut_id: string }[];

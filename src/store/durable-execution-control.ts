@@ -14,6 +14,7 @@ import {
 } from "../run/durable-execution-control-codec.ts";
 import type { DurableExecutionPrerequisiteSatisfaction } from "../run/durable-execution-control-types.ts";
 import { assertDurableExecutionRecordContract } from "../run/durable-execution-recovery.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { appendWithinTraceStoreTransaction } from "./append.ts";
 import { STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import { readStoredCut } from "./cuts.ts";
@@ -118,7 +119,7 @@ export function appendDurableExecutionRunningControlCommand(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -213,7 +214,7 @@ export function appendDurableExecutionInactiveCancellation(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -312,7 +313,7 @@ export function appendDurableExecutionWaiting(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -426,7 +427,7 @@ export function appendDurableExecutionSuspension(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -693,7 +694,7 @@ export function appendDurableExecutionResume(
             leaseExpiresAt,
         );
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

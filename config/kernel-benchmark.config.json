@@ -1,0 +1,30 @@
+{
+    "description": "Kernel benchmark procedure for pnpm bench:kernel and pnpm check:slo. Every metric is measured on one synthetic dataset built by tooling/benchmark/kernel-dataset.ts after warmup iterations that are not recorded. Changing any value changes the configuration digest recorded in the result artifacts.",
+    "appendThroughputAppends": 100,
+    "cliStartup": {
+        "arguments": ["--help"],
+        "entry": "dist/src/cli/main.js"
+    },
+    "dataset": {
+        "batchRecords": 200,
+        "blobBytes": 1024,
+        "blobs": 40,
+        "cutsPerOwner": 2,
+        "deepChainRecords": 2000,
+        "orphanBlobs": 20,
+        "owners": 40,
+        "recordsPerOwner": 200,
+        "temporaryFiles": 4
+    },
+    "naming": {
+        "prefix": "bench:",
+        "recordPaddingCharacters": 256,
+        "schemaRef": "example.kernel-benchmark.v1"
+    },
+    "resultDirectory": "docs/generated/benchmarks",
+    "resultFormat": "shepherd.kernel-benchmark",
+    "resultFormatVersion": 1,
+    "sampleCount": 12,
+    "temporaryDirectoryPrefix": "shepherd-kernel-bench-",
+    "warmupIterations": 2
+}

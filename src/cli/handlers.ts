@@ -29,19 +29,21 @@ import {
     releaseRetainedWorldSettlement,
     selectRetainedWorldSettlement,
 } from "../workspace/retained-world-settlement.ts";
+import {
+    type ParsedOptions,
+    parseOptions,
+    requireNoPositionals,
+    requireOption,
+    resolveOptionPath,
+} from "./arguments.ts";
 import { CliUnavailableError, CliUsageError } from "./errors.ts";
+import { createStoreCliHandlers } from "./store-handlers.ts";
 import type { CliHandler, CliHandlerIo } from "./types.ts";
 
 const [SELECT_ACTION, DISCARD_ACTION, APPLY_ACTION, RELEASE_ACTION] =
     RETAINED_WORLD_SETTLEMENT_ACTIONS;
 const HANDLERS = cliProtocolConfig.handlerRoles;
 const OPTIONS = cliProtocolConfig.options;
-
-type ParsedOptions = {
-    readonly flags: ReadonlySet<string>;
-    readonly options: ReadonlyMap<string, string>;
-    readonly positionals: readonly string[];
-};
 
 type SettlementAction = (typeof RETAINED_WORLD_SETTLEMENT_ACTIONS)[number];
 
@@ -53,34 +55,31 @@ export function createCliHandlers(): ReadonlyMap<string, CliHandler> {
         [HANDLERS.runList, runList],
         [HANDLERS.runShow, runShow],
         [HANDLERS.runChangeset, runChangeset],
-        [HANDLERS.runTrace, runTrace],
-        [HANDLERS.runTraceRevision, runTrace],
+        [HANDLERS.runTrace, runTrace(HANDLERS.runTrace)],
+        [HANDLERS.runTraceRevision, runTrace(HANDLERS.runTraceRevision)],
         [HANDLERS.runVcsCore, runVcsCore],
         [HANDLERS.runOutputCitations, runOutputCitations],
         [HANDLERS.runOutputs, runOutputs],
         [HANDLERS.runPublishRetainedWorkspaceOutput, runPublishRetainedWorkspaceOutput],
         [HANDLERS.runRecoveryRecords, runRecoveryRecords],
-        [HANDLERS.runSelect, settle(SELECT_ACTION)],
-        [HANDLERS.runApply, settle(APPLY_ACTION)],
-        [HANDLERS.runRelease, settle(RELEASE_ACTION)],
-        [HANDLERS.runDiscard, settle(DISCARD_ACTION)],
+        [HANDLERS.runSelect, settle(SELECT_ACTION, HANDLERS.runSelect)],
+        [HANDLERS.runApply, settle(APPLY_ACTION, HANDLERS.runApply)],
+        [HANDLERS.runRelease, settle(RELEASE_ACTION, HANDLERS.runRelease)],
+        [HANDLERS.runDiscard, settle(DISCARD_ACTION, HANDLERS.runDiscard)],
         [HANDLERS.runRepair, runRepair],
         [HANDLERS.taskList, taskList],
-        [HANDLERS.taskShow, taskShow],
-        [HANDLERS.taskResolve, taskShow],
+        [HANDLERS.taskShow, taskShow(HANDLERS.taskShow)],
+        [HANDLERS.taskResolve, taskShow(HANDLERS.taskResolve)],
         [HANDLERS.unsupportedStart, unsupported(cliProtocolConfig.remedies.fencedStart)],
         [HANDLERS.unsupportedTaskRegister, unsupported(cliProtocolConfig.remedies.taskRegister)],
         [HANDLERS.demoWrite, demoWrite],
         [HANDLERS.unsupportedPackageInit, unsupported(cliProtocolConfig.remedies.packageInit)],
+        ...createStoreCliHandlers(),
     ]);
 }
 
 async function initialize(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(
-        args,
-        new Set([OPTIONS.adopt]),
-        new Set([OPTIONS.initializeGit, OPTIONS.noInitializeGit]),
-    );
+    const parsed = parseOptions(args, HANDLERS.workspaceInit);
     if (parsed.positionals.length > 1)
         throw new CliUsageError("command accepts at most one workspace path");
     if (parsed.flags.has(OPTIONS.initializeGit) && parsed.flags.has(OPTIONS.noInitializeGit)) {
@@ -112,10 +111,7 @@ async function initialize(args: readonly string[], io: CliHandlerIo): Promise<vo
 }
 
 async function doctor(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(
-        args,
-        new Set([OPTIONS.registry, OPTIONS.store, OPTIONS.workspace]),
-    );
+    const parsed = parseOptions(args, HANDLERS.doctor);
     requireNoPositionals(parsed);
     const storePath = resolveOptionPath(
         parsed,
@@ -155,7 +151,7 @@ async function doctor(args: readonly string[], io: CliHandlerIo): Promise<void> 
 }
 
 async function runList(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(args, new Set([OPTIONS.limit, OPTIONS.offset, OPTIONS.store]));
+    const parsed = parseOptions(args, HANDLERS.runList);
     requireNoPositionals(parsed);
     const page = pagination(parsed);
     using store = openStore(parsed, io);
@@ -169,7 +165,7 @@ async function runList(args: readonly string[], io: CliHandlerIo): Promise<void>
 }
 
 async function runShow(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(args, new Set([OPTIONS.store]));
+    const parsed = parseOptions(args, HANDLERS.runShow);
     const selector = requireOnePositional(parsed);
     using store = openStore(parsed, io);
     const entry = resolveRunLedgerSelector(store, selector);
@@ -179,30 +175,32 @@ async function runShow(args: readonly string[], io: CliHandlerIo): Promise<void>
     );
 }
 
-async function runTrace(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(args, new Set([OPTIONS.limit, OPTIONS.offset, OPTIONS.store]));
-    const page = pagination(parsed);
-    using store = openStore(parsed, io);
-    if (parsed.positionals.length === 0) {
-        const entries = listTraceRevisions(store, page);
+function runTrace(handler: string): CliHandler {
+    return async (args, io) => {
+        const parsed = parseOptions(args, handler);
+        const page = pagination(parsed);
+        using store = openStore(parsed, io);
+        if (parsed.positionals.length === 0) {
+            const entries = listTraceRevisions(store, page);
+            io.output(
+                entries.length === 0
+                    ? "No trace revisions.\n"
+                    : entries.map(({ cut }) => `${cut.cut_id}\t${cut.target_owner_id}\n`).join(""),
+                { trace_revisions: entries } as unknown as SemanticRecord,
+            );
+            return;
+        }
+        const selector = requireOnePositional(parsed);
+        const entry = resolveTraceRevisionSelector(store, selector);
         io.output(
-            entries.length === 0
-                ? "No trace revisions.\n"
-                : entries.map(({ cut }) => `${cut.cut_id}\t${cut.target_owner_id}\n`).join(""),
-            { trace_revisions: entries } as unknown as SemanticRecord,
+            `Trace: ${entry.cut.cut_id}\nOwner: ${entry.cut.target_owner_id}\nRecords: ${Object.keys(entry.slice.visible_records_by_id).length}\n`,
+            { trace_revision: entry } as unknown as SemanticRecord,
         );
-        return;
-    }
-    const selector = requireOnePositional(parsed);
-    const entry = resolveTraceRevisionSelector(store, selector);
-    io.output(
-        `Trace: ${entry.cut.cut_id}\nOwner: ${entry.cut.target_owner_id}\nRecords: ${Object.keys(entry.slice.visible_records_by_id).length}\n`,
-        { trace_revision: entry } as unknown as SemanticRecord,
-    );
+    };
 }
 
 async function runOutputCitations(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(args, new Set([OPTIONS.limit, OPTIONS.offset, OPTIONS.store]));
+    const parsed = parseOptions(args, HANDLERS.runOutputCitations);
     const page = pagination(parsed);
     using store = openStore(parsed, io);
     if (parsed.positionals.length === 0) {
@@ -224,7 +222,7 @@ async function runOutputCitations(args: readonly string[], io: CliHandlerIo): Pr
 }
 
 async function runOutputs(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(args, new Set([OPTIONS.limit, OPTIONS.offset, OPTIONS.store]));
+    const parsed = parseOptions(args, HANDLERS.runOutputs);
     const page = pagination(parsed);
     using store = openStore(parsed, io);
     if (parsed.positionals.length === 0) {
@@ -257,7 +255,7 @@ async function runPublishRetainedWorkspaceOutput(
     args: readonly string[],
     io: CliHandlerIo,
 ): Promise<void> {
-    const parsed = parseOptions(args, new Set([OPTIONS.store]));
+    const parsed = parseOptions(args, HANDLERS.runPublishRetainedWorkspaceOutput);
     const selector = requireOnePositional(parsed);
     using store = openStore(parsed, io);
     const run = resolveRunLedgerSelector(store, selector);
@@ -275,17 +273,7 @@ async function runPublishRetainedWorkspaceOutput(
 }
 
 async function runChangeset(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(
-        args,
-        new Set([
-            OPTIONS.limit,
-            OPTIONS.maxBytes,
-            OPTIONS.offset,
-            OPTIONS.read,
-            OPTIONS.store,
-            OPTIONS.workspace,
-        ]),
-    );
+    const parsed = parseOptions(args, HANDLERS.runChangeset);
     const selector = requireOnePositional(parsed);
     using store = openStore(parsed, io);
     const citation = resolveOutputCitationSelector(store, selector);
@@ -369,7 +357,7 @@ async function openChangesetInspection(
 }
 
 async function runVcsCore(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(args, new Set([OPTIONS.store]));
+    const parsed = parseOptions(args, HANDLERS.runVcsCore);
     using store = openStore(parsed, io);
     const citation = resolveOutputCitationSelector(store, requireOnePositional(parsed));
     io.output(
@@ -393,7 +381,7 @@ function retainedReadBytes(parsed: ParsedOptions): number {
 }
 
 async function runRecoveryRecords(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(args, new Set([OPTIONS.limit, OPTIONS.offset, OPTIONS.store]));
+    const parsed = parseOptions(args, HANDLERS.runRecoveryRecords);
     const page = pagination(parsed);
     using store = openStore(parsed, io);
     if (parsed.positionals.length === 0) {
@@ -413,18 +401,9 @@ async function runRecoveryRecords(args: readonly string[], io: CliHandlerIo): Pr
     );
 }
 
-function settle(action: SettlementAction): CliHandler {
+function settle(action: SettlementAction, handler: string): CliHandler {
     return async (args, io) => {
-        const parsed = parseOptions(
-            args,
-            new Set([
-                OPTIONS.bindingName,
-                OPTIONS.bindingRoot,
-                OPTIONS.command,
-                OPTIONS.store,
-                OPTIONS.workspace,
-            ]),
-        );
+        const parsed = parseOptions(args, handler);
         const outputSelector = requireOnePositional(parsed);
         const commandId = requireOption(parsed, OPTIONS.command);
         const workspaceRoot = resolveOptionPath(
@@ -493,7 +472,7 @@ function settle(action: SettlementAction): CliHandler {
 }
 
 async function runRepair(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(args, new Set([OPTIONS.command, OPTIONS.store]));
+    const parsed = parseOptions(args, HANDLERS.runRepair);
     requireNoPositionals(parsed);
     using store = openStore(parsed, io, false);
     const diagnosis = store.diagnoseOrphanedOperations({
@@ -515,7 +494,7 @@ async function runRepair(args: readonly string[], io: CliHandlerIo): Promise<voi
 }
 
 async function taskList(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(args, new Set([OPTIONS.limit, OPTIONS.offset, OPTIONS.registry]));
+    const parsed = parseOptions(args, HANDLERS.taskList);
     requireNoPositionals(parsed);
     const page = pagination(parsed);
     using registry = openRegistry(parsed, io);
@@ -533,15 +512,17 @@ async function taskList(args: readonly string[], io: CliHandlerIo): Promise<void
     );
 }
 
-async function taskShow(args: readonly string[], io: CliHandlerIo): Promise<void> {
-    const parsed = parseOptions(args, new Set([OPTIONS.registry]));
-    const selector = requireOnePositional(parsed);
-    using registry = openRegistry(parsed, io);
-    const entry = resolveTaskLedgerSelector(registry, selector);
-    io.output(
-        `Task: ${entry.artifact_lock.task_id}@${entry.artifact_lock.task_version}\nDigest: ${entry.artifact_lock.artifact_digest}\n`,
-        { task: entry } as unknown as SemanticRecord,
-    );
+function taskShow(handler: string): CliHandler {
+    return async (args, io) => {
+        const parsed = parseOptions(args, handler);
+        const selector = requireOnePositional(parsed);
+        using registry = openRegistry(parsed, io);
+        const entry = resolveTaskLedgerSelector(registry, selector);
+        io.output(
+            `Task: ${entry.artifact_lock.task_id}@${entry.artifact_lock.task_version}\nDigest: ${entry.artifact_lock.artifact_digest}\n`,
+            { task: entry } as unknown as SemanticRecord,
+        );
+    };
 }
 
 async function demoWrite(args: readonly string[], io: CliHandlerIo): Promise<void> {
@@ -592,38 +573,6 @@ function readPackageArtifact(relativePath: string): string {
         throw new CliUnavailableError(cliProtocolConfig.messages.quickstartUnavailable);
     }
     /* node:coverage enable */
-}
-
-function parseOptions(
-    args: readonly string[],
-    valueOptions: ReadonlySet<string>,
-    flagOptions: ReadonlySet<string> = new Set(),
-): ParsedOptions {
-    const options = new Map<string, string>();
-    const flags = new Set<string>();
-    const positionals: string[] = [];
-    for (let index = 0; index < args.length; index += 1) {
-        const argument = args[index] as string;
-        if (!argument.startsWith("--")) {
-            positionals.push(argument);
-            continue;
-        }
-        const name = argument.slice(2);
-        if (flagOptions.has(name)) {
-            if (flags.has(name)) throw new CliUsageError(`duplicate option: --${name}`);
-            flags.add(name);
-            continue;
-        }
-        if (!valueOptions.has(name)) throw new CliUsageError(`unknown option: --${name}`);
-        const value = args[index + 1];
-        if (value === undefined || value.startsWith("--")) {
-            throw new CliUsageError(`missing value for --${name}`);
-        }
-        if (options.has(name)) throw new CliUsageError(`duplicate option: --${name}`);
-        options.set(name, value);
-        index += 1;
-    }
-    return { flags, options, positionals };
 }
 
 function pagination(parsed: ParsedOptions): { readonly limit: number; readonly offset: number } {
@@ -700,26 +649,6 @@ function inspectWorkspace(workspacePath: string): string {
     } catch {
         return "missing or invalid";
     }
-}
-
-function resolveOptionPath(
-    parsed: ParsedOptions,
-    name: string,
-    io: CliHandlerIo,
-    fallback: string,
-): string {
-    return path.resolve(io.cwd, parsed.options.get(name) ?? fallback);
-}
-
-function requireOption(parsed: ParsedOptions, name: string): string {
-    const value = parsed.options.get(name);
-    if (value === undefined) throw new CliUsageError(`missing required option: --${name}`);
-    return value;
-}
-
-function requireNoPositionals(parsed: ParsedOptions): void {
-    if (parsed.positionals.length !== 0)
-        throw new CliUsageError("command accepts no positional arguments");
 }
 
 function requireOnePositional(parsed: ParsedOptions): string {
