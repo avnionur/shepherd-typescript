@@ -86,3 +86,17 @@ The 2026-08-02 audit found and closed these planning omissions:
 
 New paper revisions require a fresh section-by-section audit before the pinned baseline or parity
 claims change.
+
+## 1.0 readiness classification (2.32.4)
+
+The Phase 11 audit (#29) classified all 18 rows above in the
+[release-readiness dashboard](./release-readiness-dashboard.md#paper-coverage-rows). Ten rows are
+implemented for their documented scope (§1, §2, §3.1, §3.4, §5.1, §5.2, §6, D, E, F). B is
+implemented for Core-0 and Core-A, with Core-0H version-fenced (activation disabled until a trusted
+sidecar is published) and the Lean build external. §3.2 (compensation fixture, effect accounting),
+§5.3 (no trainer or learning experiment), and A.1 (measured-scope limitations are published, but
+the supervisor-cost, proof-of-existence, and replay-coupling disclosures are not mapped one to one)
+have deferred remainders. §3.3, §4, and C are platform-fenced: optimized carriers on recorded hosts
+and kernel SLOs on the macOS arm64 APFS reference host only; §4 now also covers the Phase 11
+[performance report](../docs/performance-report.md). A.2 stays a classified P3 backlog. No row
+claims reproduction of upstream results.

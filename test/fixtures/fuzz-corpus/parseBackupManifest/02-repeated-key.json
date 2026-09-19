@@ -1,0 +1,9 @@
+{
+    "description": "F-013: a repeated manifest key is refused even when the last value keeps the identity valid.",
+    "finding": "F-013",
+    "input": {
+        "seed": 0,
+        "replace": [{ "from": "\"cut_count\":1,", "to": "\"cut_count\":9,\"cut_count\":1," }]
+    },
+    "expect": { "outcome": "rejected", "error": "TraceStoreBackupError" }
+}

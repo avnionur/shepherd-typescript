@@ -1,0 +1,17 @@
+{
+    "description": "F-012: provider output nested past the runtime call stack is refused with TypeError.",
+    "finding": "F-012",
+    "input": {
+        "value": {
+            "output": { "$fuzz": "nest", "depth": 20000, "kind": "object", "leaf": 1 },
+            "usage": {
+                "cacheCreationInputTokens": 0,
+                "cacheReadInputTokens": 0,
+                "costUsd": null,
+                "inputTokens": 1,
+                "outputTokens": 1
+            }
+        }
+    },
+    "expect": { "outcome": "rejected", "error": "TypeError" }
+}

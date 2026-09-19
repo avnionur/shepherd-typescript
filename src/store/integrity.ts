@@ -1,6 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 
 import type { BlobFilesystem } from "../blob/filesystem.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { diagnoseStoredAppend } from "./append-recovery.ts";
 import { verifyStoredBlobs } from "./blobs.ts";
 import { STORE_READ_TRANSACTION_SQL, STORE_TABLES } from "./constants.ts";
@@ -26,7 +27,7 @@ export function verifyTraceStoreIntegrity(
         database.exec(STORE_READ_TRANSACTION_SQL.commit);
         return report;
     } catch (error) {
-        database.exec(STORE_READ_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_READ_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

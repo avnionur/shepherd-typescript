@@ -1,0 +1,5 @@
+{
+    "description": "Non-finite numbers are refused.",
+    "input": { "value": { "n": { "$fuzz": "number", "spelling": "-Infinity" } } },
+    "expect": { "outcome": "rejected", "error": "TypeError" }
+}

@@ -1,0 +1,138 @@
+{
+    "description": "Hardening suites. The fuzz section drives test/fuzz (default tier inside pnpm test) and pnpm fuzz (scripts/fuzz-cli.ts, extended runs). Each target runs `iterations` seeded cases per seed; a case passes when the input is accepted and re-encodes canonically and stably, or when it throws an Error whose class is in the target's allowedErrors, within caseBudgetMilliseconds, without changing built-in prototypes. The faults section drives test/faults (process kill, disk full, corruption; the real-volume ENOSPC suite runs only through pnpm test:faults:volume) and the soak section drives the bounded soak in pnpm test and pnpm test:soak (scripts/soak-cli.ts). Fault outcomes are asserted by invariants, never by timing.",
+    "fuzz": {
+        "caseBudgetMilliseconds": 5000,
+        "corpusDirectory": "test/fixtures/fuzz-corpus",
+        "defaultTier": "verify",
+        "iterationsEnvironmentVariable": "SHEPHERD_FUZZ_ITERATIONS",
+        "mutation": {
+            "textNestingLevels": [64, 4097, 20000],
+            "valueNestingLevels": [64, 400, 20000],
+            "maxMutationsPerCase": 3,
+            "numbers": [
+                "NaN",
+                "Infinity",
+                "-Infinity",
+                "-0",
+                "1e308",
+                "9007199254740993",
+                "-1",
+                "0.5"
+            ],
+            "oversizedStringCharacters": 1048577,
+            "pollutionKeys": ["__proto__", "constructor", "prototype"]
+        },
+        "seedEnvironmentVariable": "SHEPHERD_FUZZ_SEED",
+        "seeds": [20260918],
+        "targets": {
+            "canonicalizeRecord": { "allowedErrors": ["TypeError"] },
+            "classifyOverlayMountInfo": { "allowedErrors": [] },
+            "createRecordId": { "allowedErrors": ["TypeError"] },
+            "createVerifiedWorldChangeset": { "allowedErrors": ["WorldChangesetError"] },
+            "decodeAppendReceipt": { "allowedErrors": ["TraceStoreError"] },
+            "decodeSelectionPublication": { "allowedErrors": ["TypeError"] },
+            "decodeTraceArchive": {
+                "allowedErrors": [
+                    "RedactedTraceArchiveError",
+                    "TraceArchiveLimitError",
+                    "TypeError"
+                ]
+            },
+            "encodeSelectionPublicationPlan": { "allowedErrors": ["TypeError"] },
+            "importTrace": {
+                "allowedErrors": [
+                    "RedactedTraceArchiveError",
+                    "TraceArchiveLimitError",
+                    "TypeError"
+                ]
+            },
+            "isCanonicalWorldPath": { "allowedErrors": [] },
+            "parseBackupManifest": { "allowedErrors": ["TraceStoreBackupError"] },
+            "readApplicationProtocol": { "allowedErrors": ["ApplicationProtocolError"] },
+            "readGrantedPlacementResolutionEvidence": { "allowedErrors": ["TypeError"] },
+            "readModelResponse": { "allowedErrors": ["TypeError"] },
+            "readNativeJailCommandEvidence": { "allowedErrors": ["TypeError"] },
+            "readNativeJailPlanEvidence": { "allowedErrors": ["TypeError"] },
+            "readPlacementPlatformEvidence": { "allowedErrors": ["TypeError"] },
+            "readRepositoryGrantPlanEvidence": { "allowedErrors": ["TypeError"] },
+            "readStaticProviderDefinition": { "allowedErrors": ["TypeError"] },
+            "runCli": { "allowedErrors": [] },
+            "telemetryBatch": {
+                "allowedErrors": [],
+                "skip": "No telemetry decoder exists: #184 only maps committed records to OTLP/JSON and hands batches to a caller sink; nothing parses telemetry input."
+            },
+            "validateRecordBody": { "allowedErrors": ["TypeError"] },
+            "validateRecordEnvelope": { "allowedErrors": ["TypeError"] },
+            "verifyRedactedTraceArchive": {
+                "allowedErrors": ["RedactedTraceArchiveError", "TraceArchiveLimitError"]
+            }
+        },
+        "testTimeoutMilliseconds": 600000,
+        "tierEnvironmentVariable": "SHEPHERD_FUZZ_TIER",
+        "tiers": {
+            "extended": {
+                "defaultIterations": 20000,
+                "iterations": {
+                    "createVerifiedWorldChangeset": 400,
+                    "importTrace": 4000,
+                    "runCli": 6000
+                }
+            },
+            "verify": {
+                "defaultIterations": 1000,
+                "iterations": {
+                    "createVerifiedWorldChangeset": 30,
+                    "importTrace": 300,
+                    "runCli": 600
+                }
+            }
+        }
+    },
+    "faults": {
+        "corruption": {
+            "bytesPerFlip": { "max": 8, "min": 1 },
+            "pageFlipCases": 48,
+            "walCases": 12
+        },
+        "diskFull": {
+            "fileSizeLimitBlocks": 1024,
+            "headroomPages": 2,
+            "unlimitedPageCount": 1073741823,
+            "volume": {
+                "fillBlobBytes": 262144,
+                "sizeMegabytes": 16
+            }
+        },
+        "processKill": {
+            "cyclesPerOperation": 3,
+            "killDelayMilliseconds": { "max": 250, "min": 0 },
+            "operations": ["append", "blob", "cut", "import", "backup", "vacuum"],
+            "readyTimeoutMilliseconds": 30000
+        },
+        "seedEnvironmentVariable": "SHEPHERD_FAULT_SEED",
+        "seeds": [20260919],
+        "testTimeoutMilliseconds": 300000,
+        "workload": {
+            "blobBytes": { "max": 262144, "min": 1 },
+            "owners": 4,
+            "recordBodyBytes": { "max": 4096, "min": 8 },
+            "recordsPerAppend": { "max": 4, "min": 1 }
+        }
+    },
+    "soak": {
+        "boundedOperations": 240,
+        "defaultDurationSeconds": 600,
+        "every": {
+            "backup": 97,
+            "invariants": 50,
+            "kill": 61,
+            "maintenance": 43,
+            "telemetry": 17
+        },
+        "maintenanceModes": ["inspect", "checkpoint", "optimize", "vacuum"],
+        "retainedBackups": 2,
+        "seed": 186186,
+        "testTimeoutMilliseconds": 300000,
+        "weights": { "append": 6, "blob": 2, "cut": 1 }
+    }
+}

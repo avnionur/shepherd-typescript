@@ -1,0 +1,9 @@
+{
+    "description": "F-013: an archived receipt_json that is not the canonical encoding (here extra whitespace) is refused.",
+    "finding": "F-013",
+    "input": {
+        "seed": 1,
+        "replace": [{ "from": "\\\"causal_edges\\\":[]", "to": "\\\"causal_edges\\\": []" }]
+    },
+    "expect": { "outcome": "rejected", "error": "TypeError" }
+}

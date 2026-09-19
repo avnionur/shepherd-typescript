@@ -2,6 +2,7 @@ import type { DatabaseSync } from "node:sqlite";
 
 import type { BlobFilesystem } from "../blob/filesystem.ts";
 import { assertBlobId, createBlobId } from "../blob/identity.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { BLOB_STORAGE_RECEIPT_VERSION, STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import { BlobIntegrityError } from "./errors.ts";
 import type {
@@ -41,7 +42,7 @@ export function putStoredBlob(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ blob_id: blobId, byte_length: snapshot.byteLength });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

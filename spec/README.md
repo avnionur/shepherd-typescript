@@ -4,6 +4,9 @@ This directory contains language-neutral protocol artifacts implemented by the T
 package and suitable for independent compatibility implementations.
 
 - `schemas/` contains JSON Schema 2020-12 wire contracts.
+- `compatibility/` contains the generated API and protocol compatibility baselines and the
+  append-only classified change log enforced by `pnpm check:compatibility`
+  ([compatibility policy](../docs/compatibility-policy.md)).
 - `schemas/trace-archive-v1.schema.json` defines lossless native trace interchange.
 - `schemas/task-descriptor-v1.schema.json` defines canonical bodyless task artifacts.
 - `schemas/task-artifact-lock-v1.schema.json` defines exact task artifact citations.
@@ -24,6 +27,14 @@ package and suitable for independent compatibility implementations.
   `schemas/replay-admission-v1.schema.json`, `schemas/replay-checkpoint-v1.schema.json`,
   `schemas/replay-restore-v1.schema.json`, and `schemas/replay-terminal-v1.schema.json` define replay
   session journals, coupled checkpoints, branch restoration, and terminal evidence.
+- `schemas/store-backup-manifest-v1.schema.json` defines the `shepherd.store.backup` v1 manifest
+  written last into a verified trace-store backup; `manifest_id` must be recomputed from the other
+  members rather than trusted
+  ([backup, restore, and migration](../docs/backup-restore-and-migration.md)).
+- `schemas/telemetry-batch-v1.schema.json` defines the non-canonical `shepherd.telemetry.batch` v1
+  envelope around OTLP/JSON `ExportTraceServiceRequest` and `ExportLogsServiceRequest` subsets
+  (opentelemetry-proto 1.11.0); its times are exporter observation times and it is never imported
+  ([observability](../docs/observability.md)).
 
 Runtime implementations must validate the semantic rules that JSON Schema cannot express, such as
 `record_id == digest`, versioned digest input, root-witness constraints, parent existence,

@@ -12,6 +12,47 @@ import {
     readUniqueStrings,
 } from "./config-value-readers.ts";
 
+function readGitInvocationConfig(value: unknown): ProtocolConfig["workspaces"]["gitInvocation"] {
+    const path = "workspaces.gitInvocation";
+    const config = readObject(
+        value,
+        ["configOverrides", "environment", "removedEnvironmentPrefixes"],
+        path,
+    );
+    const configOverrides = readUniqueStrings(config.configOverrides, `${path}.configOverrides`);
+    if (configOverrides.some((entry) => !/^[A-Za-z][A-Za-z0-9.-]*=[^\0]*$/u.test(entry))) {
+        throw new TypeError(`${path}.configOverrides must contain key=value Git options`);
+    }
+    const environmentObject = readObject(
+        config.environment,
+        [],
+        `${path}.environment`,
+        true,
+    ) as Record<string, unknown>;
+    const environment = Object.fromEntries(
+        Object.keys(environmentObject)
+            .sort()
+            .map((name) => {
+                if (!/^[A-Z_][A-Z0-9_]*$/u.test(name)) {
+                    throw new TypeError(`${path}.environment names must be variable names`);
+                }
+                const entry = environmentObject[name];
+                if (typeof entry !== "string" || entry.includes("\0")) {
+                    throw new TypeError(`${path}.environment.${name} must be a string`);
+                }
+                return [name, entry];
+            }),
+    );
+    return {
+        configOverrides,
+        environment,
+        removedEnvironmentPrefixes: readUniqueStrings(
+            config.removedEnvironmentPrefixes,
+            `${path}.removedEnvironmentPrefixes`,
+        ),
+    };
+}
+
 /** Validates workspace initialization and adoption configuration. */
 export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"] {
     const config = readObject(
@@ -35,6 +76,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "gitExecutable",
             "gitCustody",
             "gitHeadRefPrefix",
+            "gitInvocation",
             "gitMetadataName",
             "hexLength",
             "manifestFile",
@@ -1893,6 +1935,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         format: readNonEmptyString(config.format, "workspaces.format"),
         formatVersion: readPositiveInteger(config.formatVersion, "workspaces.formatVersion"),
         gitExecutable: readNonEmptyString(config.gitExecutable, "workspaces.gitExecutable"),
+        gitInvocation: readGitInvocationConfig(config.gitInvocation),
         gitCustody: {
             archiveExecutable: readNonEmptyString(
                 gitCustody.archiveExecutable,

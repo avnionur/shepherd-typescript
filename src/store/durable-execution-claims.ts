@@ -9,6 +9,7 @@ import {
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { appendWithinTraceStoreTransaction } from "./append.ts";
 import { STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import type {
@@ -123,7 +124,7 @@ export function claimDurableExecutionInvocation(
             status: acquired ? ACQUIRED_CLAIM_STATUS : LOST_CLAIM_STATUS,
         });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -212,7 +213,7 @@ export function appendDurableExecutionStart(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ receipt, status: COMMITTED_APPEND_STATUS });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -272,7 +273,7 @@ export function appendDurableExecutionTerminal(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ receipt, status: COMMITTED_APPEND_STATUS });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

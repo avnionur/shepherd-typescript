@@ -3,6 +3,7 @@ import type { DatabaseSync } from "node:sqlite";
 import type { BlobFilesystem } from "../blob/filesystem.ts";
 import { deleteBlobOrphans, findBlobOrphans } from "../blob/orphans.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { verifyStoredBlobs } from "./blobs.ts";
 import { STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import { BlobIntegrityError } from "./errors.ts";
@@ -59,7 +60,7 @@ export function collectStoredBlobOrphans(
             orphan_temporary_file_count: candidates.temporaryStorageKeys.length,
         });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

@@ -1,5 +1,5 @@
 cognia:
-    version: 2.25.1
+    version: 2.32.5
 
 versionFiles:
     - package.json

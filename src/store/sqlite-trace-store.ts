@@ -13,12 +13,13 @@ import { activeExecutionRelations, projectExecutionRelations } from "../projecti
 import type { EffectiveHistory, Execution } from "../projection/types.ts";
 import {
     kernelProtocolConfig,
+    retentionProtocolConfig,
     runProtocolConfig,
     scopeProtocolConfig,
 } from "../protocol/config.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { createConfiguredRootWitness } from "../record/root-witness.ts";
-import type { RecordId } from "../record/types.ts";
+import type { RecordBody, RecordEnvelope, RecordId } from "../record/types.ts";
 import type {
     OperationBookkeepingDefinition,
     OperationSessionDeathEvidence,
@@ -29,8 +30,10 @@ import type {
     OrphanRepairPreparation,
     OrphanRepairReceipt,
 } from "../repair/types.ts";
+import type { SecretScanningMode } from "../retention/policy.ts";
 import type { DurableExecutionPrerequisiteSatisfaction } from "../run/durable-execution-control-types.ts";
 import { assertSQLiteDefensiveSupport } from "../runtime/sqlite.ts";
+import { execRetryingBusy } from "../runtime/sqlite-transaction.ts";
 import type {
     TraceSubscriptionCursor,
     TraceSubscriptionStartPosition,
@@ -70,9 +73,11 @@ import {
     appendDurableExecutionSuspension,
     appendDurableExecutionWaiting,
 } from "./durable-execution-control.ts";
-import { TraceStoreError } from "./errors.ts";
+import { TraceStoreError, TraceStoreReadOnlyError } from "./errors.ts";
+import { prepareOwnerOnlyDatabaseFile } from "./file-mode.ts";
 import { verifyTraceStoreIntegrity } from "./integrity.ts";
 import type { AppendRecoveryDiagnostic, TraceIntegrityReport } from "./integrity-types.ts";
+import { maintainTraceStore } from "./maintenance.ts";
 import { migrateTraceStore, readCurrentTraceStoreSchemaVersion } from "./migrations.ts";
 import {
     completeOpenOperation,
@@ -89,6 +94,7 @@ import {
     readOwnerRecordAtOrdinal,
     readOwnerRecords,
     readStoredRecord,
+    visitStoredRecords,
 } from "./read.ts";
 import {
     appendReplaySessionRecordInStore,
@@ -143,6 +149,7 @@ import {
     type ScopeMergeAdmission,
     type ScopeMergeBoundary,
 } from "./scope-terminals.ts";
+import { configureSecretScanning } from "./secret-scanning.ts";
 import { readCausalClosureSlice, readOwnerPrefixSlice } from "./slices.ts";
 import {
     appendSupervisedDispatchRecordInStore,
@@ -186,8 +193,21 @@ import type {
     SliceReadOptions,
     SQLiteTraceStoreOptions,
     StoreAppendRequest,
+    TraceStoreMaintenanceOptions,
+    TraceStoreMaintenanceReport,
 } from "./types.ts";
 import { normalizeStoreAppendRequest } from "./validation.ts";
+
+/**
+ * Online SQLite backup function shape of `node:sqlite` `backup`.
+ *
+ * @internal
+ */
+export type SQLiteDatabaseBackup = (
+    source: DatabaseSync,
+    targetPath: string,
+    options: { readonly rate: number },
+) => Promise<number>;
 
 /**
  * Synchronous SQLite-backed content-addressed trace store.
@@ -205,12 +225,18 @@ export class SQLiteTraceStore implements Disposable {
     #closed = false;
     readonly #readOnly: boolean;
     readonly #schemaVersion: number;
+    readonly #secretScanning: SecretScanningMode;
 
     /**
      * Opens or creates a writable trace store, or opens exact current state read-only.
      *
+     * A writable file database is created with the configured owner-only mode, and an existing
+     * database and its WAL, SHM, and journal sidecars owned by the current user are tightened to
+     * that mode before SQLite opens them. Read-only opens never change file modes.
+     *
      * @param databasePath - SQLite file path, or `:memory:` for an ephemeral store.
-     * @param options - Optional external blob directory and read-only policy.
+     * @param options - Optional external blob directory, read-only policy, and secret-scanning
+     * mode (default `"off"`).
      * @throws {UnsupportedStoreSchemaError} If read-only schema is absent/non-current or writable
      * schema is newer than supported.
      * @throws {TraceStoreError} If required read-only blob or root-witness state is unavailable.
@@ -232,6 +258,9 @@ export class SQLiteTraceStore implements Disposable {
         let database: DatabaseSync;
         try {
             blobFilesystem = new BlobFilesystem(blobDirectory.path);
+            if (!readOnly) {
+                prepareOwnerOnlyDatabaseFile(databasePath);
+            }
             database = new DatabaseSync(databasePath, {
                 defensive: kernelProtocolConfig.store.defensive,
                 readOnly,
@@ -243,6 +272,10 @@ export class SQLiteTraceStore implements Disposable {
         }
         this.#blobFilesystem = blobFilesystem;
         this.#database = database;
+        this.#secretScanning =
+            options.secretScanning ??
+            (retentionProtocolConfig.scanning.defaultMode as SecretScanningMode);
+        configureSecretScanning(database, this.#secretScanning);
         try {
             this.#database.exec(STORE_PRAGMA_SQL.foreignKeys);
             if (readOnly) {
@@ -256,7 +289,11 @@ export class SQLiteTraceStore implements Disposable {
                     throw new TraceStoreError("read-only trace store root witness is unavailable");
                 }
             } else {
-                this.#database.exec(STORE_PRAGMA_SQL.journalMode);
+                execRetryingBusy(
+                    this.#database,
+                    STORE_PRAGMA_SQL.journalMode,
+                    kernelProtocolConfig.store.busyTimeoutMilliseconds,
+                );
                 this.#database.exec(STORE_PRAGMA_SQL.synchronous);
                 this.#schemaVersion = migrateTraceStore(this.#database);
                 this.#ensureRootWitness();
@@ -287,11 +324,22 @@ export class SQLiteTraceStore implements Disposable {
     }
 
     /**
+     * Append and import secret-scanning mode chosen when this handle was opened.
+     *
+     * @public
+     */
+    get secretScanning(): SecretScanningMode {
+        return this.#secretScanning;
+    }
+
+    /**
      * Atomically commits or idempotently replays one semantic append request.
      *
      * @param request - Stable append intent and semantic batch.
      * @returns The original durable receipt for this intent and content.
      * @throws {AppendIntentConflictError} If the intent already names different content.
+     * @throws {TraceSecretDetectedError} If the store scans in `refuse` mode and a record body
+     * matches a configured detector; nothing is written and the intent remains reusable.
      * @throws {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
      * owner path reserved for supervised dispatches, context channels, replay sessions, or child
      * run handles.
@@ -1378,6 +1426,44 @@ export class SQLiteTraceStore implements Disposable {
     }
 
     /**
+     * Copies this handle's database online into `targetPath` through a SQLite backup function.
+     *
+     * The copy is one consistent snapshot: SQLite restarts the copy when another connection
+     * commits during it, and changes made through this handle are included. Blob bytes are not
+     * copied; `backupTraceStore` owns the complete backup protocol.
+     *
+     * @param targetPath - New database file that receives the copy.
+     * @param copy - The runtime's `node:sqlite` `backup` function, checked by the caller.
+     * @param pagesPerStep - Pages copied per backup step.
+     * @returns The number of copied pages.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    backupDatabase(
+        targetPath: string,
+        copy: SQLiteDatabaseBackup,
+        pagesPerStep: number,
+    ): Promise<number> {
+        this.#assertOpen();
+        return copy(this.#database, targetPath, { rate: pagesPerStep });
+    }
+
+    /**
+     * Visits every retained semantic record in record-identity order from one statement snapshot.
+     *
+     * @param visitor - Receives each validated record body and envelope.
+     * @returns Number of visited records.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    visitRetainedRecords(
+        visitor: (record: { readonly body: RecordBody; readonly envelope: RecordEnvelope }) => void,
+    ): number {
+        this.#assertOpen();
+        return visitStoredRecords(this.#database, visitor);
+    }
+
+    /**
      * Imports a complete native trace archive into a pristine store.
      *
      * The archive is fully staged and verified before one SQLite transaction publishes its
@@ -1386,6 +1472,12 @@ export class SQLiteTraceStore implements Disposable {
      * @param archiveJson - Versioned native archive JSON returned by `exportTrace()`.
      * @returns Frozen counts for every imported retained-state area.
      * @throws {TraceStoreError} If the store is closed or is not pristine.
+     * @throws {TraceSecretDetectedError} If the store scans in `refuse` mode and an archived record
+     * body matches a configured detector; nothing is written.
+     * @throws {RedactedTraceArchiveError} If the text is a one-way redacted archive.
+     * @throws {TraceArchiveLimitError} If the archive exceeds a configured interchange limit
+     * (`kernel.interchange.limits`): byte length or nesting depth before parsing, collection counts
+     * or the declared blob byte total before decoding; nothing is written.
      * @throws {TypeError} If the archive is malformed, incompatible, or internally inconsistent.
      * @throws {Error} If SQLite or blob storage cannot publish the validated archive.
      *
@@ -1476,6 +1568,42 @@ export class SQLiteTraceStore implements Disposable {
     collectBlobOrphans(options: BlobOrphanCollectionOptions = {}): BlobOrphanCollectionReport {
         this.#assertOpen();
         return collectStoredBlobOrphans(this.#database, this.#blobFilesystem, options);
+    }
+
+    /**
+     * Runs one semantics-preserving maintenance pass: `inspect`, `checkpoint`, `optimize`, or
+     * `vacuum`.
+     *
+     * Every mode runs a bounded SQLite `quick_check` and reports page, freelist, and WAL sizes.
+     * `checkpoint` truncates the write-ahead log; `optimize` runs `PRAGMA optimize`; `vacuum`
+     * rebuilds the database file and then checkpoints. Mutating modes refuse a database whose
+     * `quick_check` fails. No mode changes retained records, views, cuts, append intents, or
+     * blobs: `exportTrace()` is byte-identical before and after.
+     *
+     * @param options - Optional configured maintenance mode (default `"inspect"`).
+     * @returns A frozen maintenance report.
+     * @throws {TraceStoreReadOnlyError} If the handle was opened with `readOnly: true`.
+     * @throws {TraceStoreError} If the store is closed, or a mutating mode finds a defect.
+     * @throws {TypeError} If options are malformed or select an unconfigured mode.
+     * @throws {Error} If SQLite cannot complete the operation, for example a vacuum while another
+     * connection holds a transaction.
+     *
+     * @example
+     * ```ts
+     * const report = store.maintain({ mode: "vacuum" });
+     * console.log(report.before.freelist_count, report.after.freelist_count);
+     * ```
+     *
+     * @public
+     */
+    maintain(options: TraceStoreMaintenanceOptions = {}): TraceStoreMaintenanceReport {
+        this.#assertOpen();
+        if (this.#readOnly) {
+            throw new TraceStoreReadOnlyError(
+                "trace store maintenance requires a writable store handle",
+            );
+        }
+        return maintainTraceStore(this.#database, this.#schemaVersion, options);
     }
 
     /**

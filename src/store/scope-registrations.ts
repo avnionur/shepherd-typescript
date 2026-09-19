@@ -4,6 +4,7 @@ import { projectionProtocolConfig, scopeProtocolConfig } from "../protocol/confi
 import { SCOPE_STATES } from "../protocol/values.generated.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import type { RecordId } from "../record/types.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import {
     ScopeEvidenceError,
     ScopeHeadConflictError,
@@ -174,7 +175,7 @@ export function registerRootScopeInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -274,7 +275,7 @@ export function registerChildScopeInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ cut, preparedReceipt, receipt });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -325,7 +326,7 @@ export function readScopeForkBoundaryInStore(
         database.exec(STORE_READ_TRANSACTION_SQL.commit);
         return status;
     } catch (error) {
-        database.exec(STORE_READ_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_READ_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -348,7 +349,7 @@ export function completeScopeForkInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -413,7 +414,7 @@ export function claimScopeWritersInStore(
             claims.map(({ scopeId }) => admitted.get(scopeId) as ScopeWriterClaimRow),
         );
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -518,7 +519,7 @@ export function releaseScopeWriterInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return current;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -559,7 +560,7 @@ export function emitScopeRecordInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

@@ -7,6 +7,7 @@ import { test } from "node:test";
 import {
     checkApiReference,
     generateApiReference,
+    readPublishedApi,
     writeApiReference,
 } from "../tooling/api-reference/generator.ts";
 
@@ -36,7 +37,26 @@ test("API reference is deterministic, complete, and safe for every supported pac
     assert.match(first, new RegExp(escapeRegExp(configuration.runtime)));
     assert.doesNotMatch(
         first,
-        /(?:#private|@internal|node_modules|\/Users\/|[A-Za-z]:\\\\|migrations?\.ts|codec\.ts|validation\.ts|(?:class|interface|type|function|const)\s+\w*(?:Credential|Secret|AccessToken)|stack trace)/iu,
+        /(?:#private|@internal|node_modules|\/Users\/|[A-Za-z]:\\\\|migrations?\.ts|codec\.ts|validation\.ts|(?:class|interface|type|function|const)\s+\w*(?:Credential|AccessToken)|stack trace)/iu,
+    );
+    // Only the configured secret-detection vocabulary may name secrets; nothing may carry one.
+    const secretNames = [
+        ...first.matchAll(/(?:class|interface|type|function|const)\s+(\w*Secret\w*)/giu),
+    ]
+        .map((match) => match[1])
+        .sort();
+    assert.deepEqual(
+        [...new Set(secretNames)],
+        [
+            "RetentionSecretClassCount",
+            "RetentionSecretRecord",
+            "scanSemanticValueForSecrets",
+            "SECRET_SCANNING_MODES",
+            "SecretFinding",
+            "SecretScanningMode",
+            "SecretScanReport",
+            "TraceSecretDetectedError",
+        ].sort(),
     );
 });
 
@@ -77,7 +97,26 @@ test("API reference check mode rejects stale, internal, and unsafe declaration i
     assert.match(generated, /#### `call signature`/u);
     assert.match(generated, /#### `construct signature`/u);
     assert.match(generated, /#### `index signature`/u);
-    assert.match(generated, /@deprecated:/u);
+    assert.match(generated, /Kind: `function`\. Status: `deprecated`\./u);
+    assert.match(generated, /Deprecated:\n\n- Use another fixture\./u);
+    assert.doesNotMatch(generated, /@deprecated:/u);
+
+    const published = await readPublishedApi(options);
+    assert.equal(published.packageName, "@example/reference-fixture");
+    assert.equal(published.packageVersion, "1.0.0");
+    const [rootEntry] = published.entries;
+    assert.equal(rootEntry?.entryName, ".");
+    const runSymbol = rootEntry?.symbols.find(({ name }) => name === "run");
+    assert.equal(runSymbol?.kind, "function");
+    assert.match(runSymbol?.signature ?? "", /run<T>\(value: T\): T/u);
+    assert.deepEqual(
+        runSymbol?.tags.find(({ name }) => name === "deprecated"),
+        { name: "deprecated", text: "Use another fixture." },
+    );
+    assert.deepEqual(
+        runSymbol?.tags.find(({ name }) => name === "beta"),
+        { name: "beta", text: "" },
+    );
     assert.match(generated, /@beta:\n\n- Declared\./u);
     assert.doesNotMatch(generated, /#private|hidden\(\)|@internal/u);
 
@@ -253,6 +292,9 @@ test("API reference check mode rejects stale, internal, and unsafe declaration i
         ["./dist/protocol/config.d.ts", "protocolConfig"],
         ["./dist/private/validation.d.ts", "validatePrivate"],
         ["./dist/provider/credentials.d.ts", "ProviderCredentials"],
+        ["./dist/provider/secret-store.d.ts", "providerKeys"],
+        ["./dist/retention/secret-scan.d.ts", "ProviderSecretValue"],
+        ["./dist/provider/keys.d.ts", "ProviderAccessToken"],
     ] as const) {
         const privateDeclarationPath = path.join(repositoryRoot, target);
         await mkdir(path.dirname(privateDeclarationPath), { recursive: true });

@@ -1,0 +1,8 @@
+{
+    "description": "F-004: nesting beyond kernel.interchange.limits.maxNestingDepth is refused before JSON.parse.",
+    "finding": "F-004",
+    "input": {
+        "text": [{ "repeat": "[", "count": 4097 }, { "repeat": "]", "count": 4097 }]
+    },
+    "expect": { "outcome": "rejected", "error": "TraceArchiveLimitError" }
+}

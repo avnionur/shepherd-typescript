@@ -1,0 +1,307 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/redacted-trace-archive-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Redacted Trace Archive v1",
+    "description": "One-way retention export: every record keeps its envelope; bodies are verbatim or replaced by a redaction marker, and blobs are listed without content. Never importable.",
+    "type": "object",
+    "required": [
+        "append_intents",
+        "blobs",
+        "canonical_version",
+        "cuts",
+        "format",
+        "format_version",
+        "kernel_abi_version",
+        "record_views",
+        "records",
+        "retention_compatibility_version",
+        "source_format",
+        "source_format_version"
+    ],
+    "properties": {
+        "append_intents": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/appendIntent"
+            }
+        },
+        "blobs": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/blob"
+            }
+        },
+        "canonical_version": {
+            "const": "shepherd.kernel.canonical.v2"
+        },
+        "cuts": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/cut"
+            }
+        },
+        "format": {
+            "const": "shepherd.trace.redacted-archive"
+        },
+        "format_version": {
+            "const": 1
+        },
+        "kernel_abi_version": {
+            "const": "shepherd.kernel.abi.v0"
+        },
+        "record_views": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/recordView"
+            }
+        },
+        "records": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/record"
+            }
+        },
+        "retention_compatibility_version": {
+            "const": "shepherd.retention.v1"
+        },
+        "source_format": {
+            "const": "shepherd.trace.archive"
+        },
+        "source_format_version": {
+            "const": 1
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "appendIntent": {
+            "type": "object",
+            "required": [
+                "append_intent_id",
+                "batch_digest",
+                "receipt_json"
+            ],
+            "properties": {
+                "append_intent_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "batch_digest": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                },
+                "receipt_json": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "blob": {
+            "type": "object",
+            "required": [
+                "blob_id",
+                "byte_length"
+            ],
+            "properties": {
+                "blob_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "byte_length": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                }
+            },
+            "additionalProperties": false
+        },
+        "cut": {
+            "type": "object",
+            "required": [
+                "append_intent_id",
+                "created_by_record_id",
+                "cut_id",
+                "publisher_owner_id",
+                "target_owner_id",
+                "through_owner_ordinal",
+                "through_record_id"
+            ],
+            "properties": {
+                "append_intent_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "created_by_record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "cut_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "publisher_owner_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "target_owner_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "through_owner_ordinal": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740990
+                },
+                "through_record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                }
+            },
+            "additionalProperties": false
+        },
+        "record": {
+            "type": "object",
+            "required": [
+                "body",
+                "data_class",
+                "disposition",
+                "envelope"
+            ],
+            "properties": {
+                "body": {
+                    "type": "object"
+                },
+                "data_class": {
+                    "enum": [
+                        "checkpoint",
+                        "context",
+                        "general",
+                        "memory-adapter",
+                        "provider-citation"
+                    ]
+                },
+                "disposition": {
+                    "enum": [
+                        "include",
+                        "omit-body",
+                        "redact"
+                    ]
+                },
+                "envelope": {
+                    "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/record-envelope-v0.schema.json"
+                }
+            },
+            "additionalProperties": false,
+            "oneOf": [
+                {
+                    "properties": {
+                        "body": {
+                            "$ref": "https://avnionur.github.io/shepherd-typescript/schemas/record-body-v0.schema.json"
+                        },
+                        "disposition": {
+                            "const": "include"
+                        }
+                    }
+                },
+                {
+                    "properties": {
+                        "body": {
+                            "$ref": "#/$defs/redactionMarker"
+                        },
+                        "disposition": {
+                            "enum": [
+                                "omit-body",
+                                "redact"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "recordView": {
+            "type": "object",
+            "required": [
+                "append_intent_id",
+                "append_position",
+                "owner_id",
+                "owner_ordinal",
+                "record_id"
+            ],
+            "properties": {
+                "append_intent_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "append_position": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                },
+                "owner_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "owner_ordinal": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740990
+                },
+                "record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                }
+            },
+            "additionalProperties": false
+        },
+        "redactionMarker": {
+            "type": "object",
+            "required": [
+                "body_digest",
+                "data_class",
+                "redacted",
+                "secret_classes"
+            ],
+            "properties": {
+                "body_digest": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "data_class": {
+                    "enum": [
+                        "checkpoint",
+                        "context",
+                        "general",
+                        "memory-adapter",
+                        "provider-citation"
+                    ]
+                },
+                "redacted": {
+                    "const": true
+                },
+                "secret_classes": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "enum": [
+                            "aws-access-key-id",
+                            "bearer-token",
+                            "github-token",
+                            "google-api-key",
+                            "pem-private-key",
+                            "provider-api-key",
+                            "slack-token"
+                        ]
+                    }
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

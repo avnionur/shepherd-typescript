@@ -1,0 +1,468 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/telemetry-batch-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Telemetry Batch v1",
+    "description": "Non-canonical telemetry derived from committed trace records. traces and logs are OTLP/JSON ExportTraceServiceRequest and ExportLogsServiceRequest subsets (opentelemetry-proto 1.11.0); timestamps are exporter observation time and carry no trace semantics.",
+    "type": "object",
+    "required": [
+        "format",
+        "format_version",
+        "logs",
+        "traces"
+    ],
+    "properties": {
+        "format": {
+            "const": "shepherd.telemetry.batch"
+        },
+        "format_version": {
+            "const": 1
+        },
+        "logs": {
+            "type": "object",
+            "required": [
+                "resourceLogs"
+            ],
+            "properties": {
+                "resourceLogs": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "resource",
+                            "schemaUrl",
+                            "scopeLogs"
+                        ],
+                        "properties": {
+                            "resource": {
+                                "type": "object",
+                                "required": [
+                                    "attributes"
+                                ],
+                                "properties": {
+                                    "attributes": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/keyValue"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "schemaUrl": {
+                                "const": "https://opentelemetry.io/schemas/1.37.0"
+                            },
+                            "scopeLogs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "logRecords",
+                                        "schemaUrl",
+                                        "scope"
+                                    ],
+                                    "properties": {
+                                        "logRecords": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "required": [
+                                                    "attributes",
+                                                    "eventName",
+                                                    "observedTimeUnixNano",
+                                                    "severityNumber",
+                                                    "severityText",
+                                                    "traceId"
+                                                ],
+                                                "properties": {
+                                                    "attributes": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "allOf": [
+                                                                {
+                                                                    "$ref": "#/$defs/keyValue"
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "key": {
+                                                                            "type": "string",
+                                                                            "pattern": "^shepherd\\."
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "body": {
+                                                        "$ref": "#/$defs/anyValue"
+                                                    },
+                                                    "eventName": {
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                    },
+                                                    "observedTimeUnixNano": {
+                                                        "type": "string",
+                                                        "pattern": "^(0|[1-9][0-9]{0,19})$"
+                                                    },
+                                                    "severityNumber": {
+                                                        "const": 9
+                                                    },
+                                                    "severityText": {
+                                                        "const": "INFO"
+                                                    },
+                                                    "traceId": {
+                                                        "type": "string",
+                                                        "pattern": "^[0-9a-f]{32}$"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "schemaUrl": {
+                                            "const": "https://opentelemetry.io/schemas/1.37.0"
+                                        },
+                                        "scope": {
+                                            "type": "object",
+                                            "required": [
+                                                "name",
+                                                "version"
+                                            ],
+                                            "properties": {
+                                                "name": {
+                                                    "const": "shepherd-typescript"
+                                                },
+                                                "version": {
+                                                    "const": "shepherd.observability.v1"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "traces": {
+            "type": "object",
+            "required": [
+                "resourceSpans"
+            ],
+            "properties": {
+                "resourceSpans": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "resource",
+                            "schemaUrl",
+                            "scopeSpans"
+                        ],
+                        "properties": {
+                            "resource": {
+                                "type": "object",
+                                "required": [
+                                    "attributes"
+                                ],
+                                "properties": {
+                                    "attributes": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/$defs/keyValue"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "schemaUrl": {
+                                "const": "https://opentelemetry.io/schemas/1.37.0"
+                            },
+                            "scopeSpans": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "schemaUrl",
+                                        "scope",
+                                        "spans"
+                                    ],
+                                    "properties": {
+                                        "schemaUrl": {
+                                            "const": "https://opentelemetry.io/schemas/1.37.0"
+                                        },
+                                        "scope": {
+                                            "type": "object",
+                                            "required": [
+                                                "name",
+                                                "version"
+                                            ],
+                                            "properties": {
+                                                "name": {
+                                                    "const": "shepherd-typescript"
+                                                },
+                                                "version": {
+                                                    "const": "shepherd.observability.v1"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "spans": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "required": [
+                                                    "attributes",
+                                                    "endTimeUnixNano",
+                                                    "events",
+                                                    "kind",
+                                                    "name",
+                                                    "spanId",
+                                                    "startTimeUnixNano",
+                                                    "status",
+                                                    "traceId"
+                                                ],
+                                                "properties": {
+                                                    "attributes": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "allOf": [
+                                                                {
+                                                                    "$ref": "#/$defs/keyValue"
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "key": {
+                                                                            "type": "string",
+                                                                            "pattern": "^shepherd\\."
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "endTimeUnixNano": {
+                                                        "type": "string",
+                                                        "pattern": "^(0|[1-9][0-9]{0,19})$"
+                                                    },
+                                                    "events": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "required": [
+                                                                "attributes",
+                                                                "name",
+                                                                "timeUnixNano"
+                                                            ],
+                                                            "properties": {
+                                                                "attributes": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "allOf": [
+                                                                            {
+                                                                                "$ref": "#/$defs/keyValue"
+                                                                            },
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "key": {
+                                                                                        "type": "string",
+                                                                                        "pattern": "^shepherd\\."
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "minLength": 1
+                                                                },
+                                                                "timeUnixNano": {
+                                                                    "type": "string",
+                                                                    "pattern": "^(0|[1-9][0-9]{0,19})$"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    "kind": {
+                                                        "const": 1
+                                                    },
+                                                    "name": {
+                                                        "const": "shepherd.run"
+                                                    },
+                                                    "spanId": {
+                                                        "type": "string",
+                                                        "pattern": "^[0-9a-f]{16}$"
+                                                    },
+                                                    "startTimeUnixNano": {
+                                                        "type": "string",
+                                                        "pattern": "^(0|[1-9][0-9]{0,19})$"
+                                                    },
+                                                    "status": {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "code"
+                                                        ],
+                                                        "properties": {
+                                                            "code": {
+                                                                "enum": [
+                                                                    1,
+                                                                    2
+                                                                ]
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "traceId": {
+                                                        "type": "string",
+                                                        "pattern": "^[0-9a-f]{32}$"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "anyValue": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "stringValue"
+                    ],
+                    "properties": {
+                        "stringValue": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "boolValue"
+                    ],
+                    "properties": {
+                        "boolValue": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "intValue"
+                    ],
+                    "properties": {
+                        "intValue": {
+                            "type": "string",
+                            "pattern": "^-?(0|[1-9][0-9]{0,18})$"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "doubleValue"
+                    ],
+                    "properties": {
+                        "doubleValue": {
+                            "type": "number"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "arrayValue"
+                    ],
+                    "properties": {
+                        "arrayValue": {
+                            "type": "object",
+                            "required": [
+                                "values"
+                            ],
+                            "properties": {
+                                "values": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/anyValue"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "kvlistValue"
+                    ],
+                    "properties": {
+                        "kvlistValue": {
+                            "type": "object",
+                            "required": [
+                                "values"
+                            ],
+                            "properties": {
+                                "values": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/keyValue"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "maxProperties": 0
+                }
+            ]
+        },
+        "keyValue": {
+            "type": "object",
+            "required": [
+                "key",
+                "value"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "value": {
+                    "$ref": "#/$defs/anyValue"
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

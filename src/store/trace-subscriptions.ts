@@ -2,6 +2,7 @@ import type { DatabaseSync } from "node:sqlite";
 
 import { kernelProtocolConfig } from "../protocol/config.ts";
 import { SUPERVISION_SUBSCRIPTION_START_POSITIONS } from "../protocol/values.generated.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { SupervisionCursorConflictError } from "../supervision/errors.ts";
 import {
     createTraceSubscriptionCursor,
@@ -130,7 +131,7 @@ export function openTraceSubscriptionInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return cursor;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -172,7 +173,7 @@ export function acknowledgeTraceSubscriptionInStore(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return cursor;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

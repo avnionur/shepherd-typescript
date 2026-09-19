@@ -41,6 +41,32 @@
                     "destination": "public-errors.config.json"
                 }
             ]
+        },
+        {
+            "entry": "./operations",
+            "symbol": "scanSemanticValueForSecrets",
+            "argument": { "note": "no credential here" },
+            "stdout": "{\"findings\":[],\"secret_classes\":[],\"truncated\":false}\n",
+            "requiredModules": [
+                "dist/src/retention/secret-scan.js",
+                "dist/src/canonical/canonical-record.js",
+                "dist/src/protocol/config.js"
+            ],
+            "forbiddenModules": [
+                "dist/src/store/sqlite-trace-store.js",
+                "dist/src/workspace/native-jail.js"
+            ],
+            "removedExports": {
+                "dist/src/canonical/canonical-record.js": ["createRecordId"]
+            },
+            "assets": [
+                { "source": "dist/protocol.config.json", "destination": "protocol.config.json" },
+                { "source": "dist/runtime.config.json", "destination": "runtime.config.json" },
+                {
+                    "source": "dist/public-errors.config.json",
+                    "destination": "public-errors.config.json"
+                }
+            ]
         }
     ]
 }

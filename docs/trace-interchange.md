@@ -50,6 +50,40 @@ content-addressed bytes published immediately before a late SQLite failure may r
 unregistered deduplicated files; they are invisible through the store and safe for an identical
 retry. Import never repairs or rewrites source identities.
 
+## Input limits
+
+From 2.32.0, `importTrace` and `verifyRedactedTraceArchive` bound untrusted archive text with the
+operational `kernel.interchange.limits` section of `protocol.config.json`
+([`src/interchange/limits.ts`](../src/interchange/limits.ts)). The limits are not part of the
+archive format identity; lowering them never changes what a valid archive means.
+
+| Limit | Default | Checked |
+| --- | --- | --- |
+| `maxArchiveBytes` | 268,435,456 (256 MiB) UTF-8 bytes | Before `JSON.parse`; `shepherd-ts store import` compares the file size before reading the file |
+| `maxNestingDepth` | 4,096 array and object levels | Before `JSON.parse`, by a linear scan that skips string contents |
+| `maxAppendIntents`, `maxBlobs`, `maxCuts`, `maxRecords`, `maxRecordViews` | 1,000,000 each; 4,000,000 views | After parsing, before any record or blob is decoded |
+| `maxBlobBytes` | 201,326,592 (192 MiB) declared blob bytes in total | Before each blob is decoded; each blob's base64 text must also have exactly the canonical padded length for its declared byte length |
+
+An exceeded limit raises `TraceArchiveLimitError` (`TRACE_ARCHIVE_LIMIT_EXCEEDED`, a `TypeError`)
+whose `limit` names the configured member; nothing is written. The same pre-parse scan refuses an
+object with a repeated key (escaped spellings included) as malformed input, because `JSON.parse`
+keeps the last value while other parsers keep the first or refuse. Archived `receipt_json` must be
+the canonical receipt encoding. A store's own export is decoded without limits when
+`exportRedactedTraceArchive` redacts it.
+
+Within the bounds, decoding and the staged import still hold the parsed archive in memory; an
+operator importing from untrusted sources can lower the bounds. Fuzz and corpus evidence is in
+[fault and fuzz conformance](./fault-and-fuzz-conformance.md).
+
+## Redacted archives and secret scanning
+
+`importTrace` refuses the one-way redacted format (`shepherd.trace.redacted-archive`) with
+`RedactedTraceArchiveError` before any other check, whether or not the target scans. A target opened
+with `secretScanning: "refuse"` also scans every archived record body before staging and refuses a
+match with `TraceSecretDetectedError`, leaving the target pristine. Native exports are complete and
+unredacted; use `exportRedactedTraceArchive` from `./operations` for evidence that must not carry
+bodies ([secrets and retention](./secrets-and-retention.md)).
+
 ## Compatibility boundary
 
 Native archive v1 is the lossless trace-kernel interchange format. ATIF represents higher-level

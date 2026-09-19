@@ -7,6 +7,53 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
         jsonOutputSchema: "spec/schemas/cli-output-v1.schema.json",
         quickstartDemo: "examples/quickstart.mjs",
     },
+    commandOptions: {
+        "demo-write": { flags: [], values: [] },
+        doctor: { flags: [], values: ["registry", "store", "workspace"] },
+        "run-apply": {
+            flags: [],
+            values: ["bindingName", "bindingRoot", "command", "store", "workspace"],
+        },
+        "run-changeset": {
+            flags: [],
+            values: ["limit", "maxBytes", "offset", "read", "store", "workspace"],
+        },
+        "run-discard": {
+            flags: [],
+            values: ["bindingName", "bindingRoot", "command", "store", "workspace"],
+        },
+        "run-list": { flags: [], values: ["limit", "offset", "store"] },
+        "run-output-citations": { flags: [], values: ["limit", "offset", "store"] },
+        "run-outputs": { flags: [], values: ["limit", "offset", "store"] },
+        "run-publish-retained-workspace-output": { flags: [], values: ["store"] },
+        "run-recovery-records": { flags: [], values: ["limit", "offset", "store"] },
+        "run-release": {
+            flags: [],
+            values: ["bindingName", "bindingRoot", "command", "store", "workspace"],
+        },
+        "run-repair": { flags: [], values: ["command", "store"] },
+        "run-select": {
+            flags: [],
+            values: ["bindingName", "bindingRoot", "command", "store", "workspace"],
+        },
+        "run-show": { flags: [], values: ["store"] },
+        "run-trace": { flags: [], values: ["limit", "offset", "store"] },
+        "run-trace-revision": { flags: [], values: ["limit", "offset", "store"] },
+        "run-vcscore": { flags: [], values: ["store"] },
+        "store-backup": { flags: [], values: ["output", "store"] },
+        "store-export": { flags: ["redacted"], values: ["output", "store"] },
+        "store-import": { flags: [], values: ["input", "store"] },
+        "store-maintain": { flags: [], values: ["mode", "store"] },
+        "store-restore": { flags: [], values: ["backup", "manifest", "store"] },
+        "store-verify": { flags: [], values: ["backup", "manifest", "store"] },
+        "task-list": { flags: [], values: ["limit", "offset", "registry"] },
+        "task-resolve": { flags: [], values: ["registry"] },
+        "task-show": { flags: [], values: ["registry"] },
+        "unsupported-package-init": { flags: [], values: [] },
+        "unsupported-start": { flags: [], values: [] },
+        "unsupported-task-register": { flags: [], values: [] },
+        "workspace-init": { flags: ["initializeGit", "noInitializeGit"], values: ["adopt"] },
+    },
     compatibilityVersion: "shepherd.cli.v1",
     defaults: {
         bindingName: "workspace",
@@ -41,6 +88,12 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
         runTrace: "run-trace",
         runTraceRevision: "run-trace-revision",
         runVcsCore: "run-vcscore",
+        storeBackup: "store-backup",
+        storeExport: "store-export",
+        storeImport: "store-import",
+        storeMaintain: "store-maintain",
+        storeRestore: "store-restore",
+        storeVerify: "store-verify",
         taskList: "task-list",
         taskResolve: "task-resolve",
         taskShow: "task-show",
@@ -99,6 +152,18 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
             handler: null,
             name: "package",
         },
+        {
+            commands: [
+                { handler: "store-verify", name: "verify" },
+                { handler: "store-backup", name: "backup" },
+                { handler: "store-restore", name: "restore" },
+                { handler: "store-export", name: "export" },
+                { handler: "store-import", name: "import" },
+                { handler: "store-maintain", name: "maintain" },
+            ],
+            handler: null,
+            name: "store",
+        },
     ],
     limits: {
         defaultPageSize: 25,
@@ -143,6 +208,12 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
             "run-trace": [["trace_revision"], ["trace_revisions"]],
             "run-trace-revision": [["trace_revision"], ["trace_revisions"]],
             "run-vcscore": [["vcscore"]],
+            "store-backup": [["backup"]],
+            "store-export": [["export"]],
+            "store-import": [["import"]],
+            "store-maintain": [["maintenance"]],
+            "store-restore": [["restore"]],
+            "store-verify": [["backup_verification"], ["store_verification"]],
             "task-list": [["tasks"]],
             "task-resolve": [["task"]],
             "task-show": [["task"]],
@@ -173,15 +244,21 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
     },
     options: {
         adopt: "adopt",
+        backup: "backup",
         bindingName: "binding-name",
         bindingRoot: "binding-root",
         command: "command",
         initializeGit: "initialize-git",
+        input: "input",
         json: "json",
         limit: "limit",
+        manifest: "manifest",
         maxBytes: "max-bytes",
+        mode: "mode",
         noInitializeGit: "no-initialize-git",
         offset: "offset",
+        output: "output",
+        redacted: "redacted",
         registry: "registry",
         read: "read",
         store: "store",
@@ -405,6 +482,20 @@ export const KERNEL_ABI_V0_STORE_V12_CONTRACT = deepFreeze({
         },
     ],
     schemaVersion: 12,
+} as const);
+
+/** Immutable index-only store schema v13: owner-by-schema and canonical cut-listing indexes. */
+export const KERNEL_ABI_V0_STORE_V13_CONTRACT = deepFreeze({
+    ...KERNEL_ABI_V0_STORE_V12_CONTRACT,
+    migrations: [
+        ...KERNEL_ABI_V0_STORE_V12_CONTRACT.migrations,
+        {
+            firstOwnerOrdinal: 0,
+            lastOwnerOrdinal: 9_007_199_254_740_990,
+            version: 13,
+        },
+    ],
+    schemaVersion: 13,
 } as const);
 
 /** Immutable bounded orphaned-operation diagnosis and repair contract implemented by v1. */
@@ -2750,5 +2841,106 @@ export const APPLICATIONS_PROTOCOL_V5_CONTRACT = deepFreeze({
         ...APPLICATIONS_PROTOCOL_V4_CONTRACT.schemas,
         evaluationId:
             "https://avnionur.github.io/shepherd-typescript/schemas/application-evaluation-v1.schema.json",
+    },
+} as const);
+
+/**
+ * Immutable wire contract implemented by retention v1.
+ *
+ * Detector patterns, schema-family mappings, dispositions per class, limits, and store-file modes
+ * are tunable policy and stay in configuration; this contract pins only the vocabularies and wire
+ * identities that redacted archives and retention reports encode.
+ */
+export const RETENTION_PROTOCOL_V1_CONTRACT = deepFreeze({
+    artifacts: {
+        redactedArchiveSchema: "spec/schemas/redacted-trace-archive-v1.schema.json",
+        reportSchema: "spec/schemas/retention-report-v1.schema.json",
+    },
+    compatibilityVersion: "shepherd.retention.v1",
+    dataClasses: ["checkpoint", "context", "general", "memory-adapter", "provider-citation"],
+    dispositions: ["include", "omit-body", "redact"],
+    redactedArchive: { format: "shepherd.trace.redacted-archive", formatVersion: 1 },
+    report: { format: "shepherd.trace.retention-report", formatVersion: 1 },
+    scanningModes: ["off", "refuse"],
+    schemas: {
+        redactedArchiveId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/redacted-trace-archive-v1.schema.json",
+        reportId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/retention-report-v1.schema.json",
+    },
+} as const);
+
+/**
+ * Immutable interface contract implemented by storage v1.
+ *
+ * Listing, name, value, and lease bounds, the name grammar, and the SQLite coordinator durability
+ * settings are tunable policy and stay in configuration; this contract pins only the durability
+ * and result-status vocabularies that adapters and conformance reports expose.
+ */
+export const STORAGE_PROTOCOL_V1_CONTRACT = deepFreeze({
+    compatibilityVersion: "shepherd.storage.v1",
+    durabilities: ["durable", "volatile"],
+    statuses: {
+        lease: ["acquired", "held", "renewed", "released", "fenced"],
+        refSwap: ["swapped", "conflict", "fenced"],
+    },
+} as const);
+
+/**
+ * Immutable wire contract implemented by backup v1.
+ *
+ * Layout names, directory mode, and resource bounds are tunable policy and stay in
+ * configuration; this contract pins the manifest identity, digest algorithm, and the blob-location
+ * and failure-reason vocabularies that manifests and refusals encode.
+ */
+export const BACKUP_PROTOCOL_V1_CONTRACT = deepFreeze({
+    artifacts: { manifestSchema: "spec/schemas/store-backup-manifest-v1.schema.json" },
+    blobLocations: ["directory", "backend"],
+    compatibilityVersion: "shepherd.backup.v1",
+    digestAlgorithm: "sha256",
+    failureReasons: [
+        "backup-unsupported",
+        "destination-exists",
+        "manifest-missing",
+        "manifest-invalid",
+        "manifest-mismatch",
+        "schema-unsupported",
+        "database-mismatch",
+        "blob-mismatch",
+        "integrity-failed",
+        "export-mismatch",
+        "target-exists",
+    ],
+    manifest: { format: "shepherd.store.backup", formatVersion: 1 },
+    schemas: {
+        manifestId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/store-backup-manifest-v1.schema.json",
+    },
+} as const);
+
+/**
+ * Immutable telemetry wire contract implemented by observability v1.
+ *
+ * Attribute namespace, resource attributes, semantic-conventions release, run-span schemas, and
+ * batch bounds are tunable policy and stay in configuration; this contract pins the batch
+ * identity, identifier derivation, and the body-mode and body-handling vocabularies that
+ * exported telemetry encodes.
+ */
+export const OBSERVABILITY_PROTOCOL_V1_CONTRACT = deepFreeze({
+    artifacts: { batchSchema: "spec/schemas/telemetry-batch-v1.schema.json" },
+    batch: { format: "shepherd.telemetry.batch", formatVersion: 1 },
+    bodies: {
+        handlings: ["included", "withheld", "redacted", "omitted", "oversized"],
+        modes: ["omit", "retention-policy"],
+    },
+    compatibilityVersion: "shepherd.observability.v1",
+    ids: {
+        digestAlgorithm: "sha256",
+        spanDomain: "shepherd.telemetry.span-id.v1",
+        traceDomain: "shepherd.telemetry.trace-id.v1",
+    },
+    schemas: {
+        batchId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/telemetry-batch-v1.schema.json",
     },
 } as const);

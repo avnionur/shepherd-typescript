@@ -1,10 +1,14 @@
-import { createHash } from "node:crypto";
-
 import { assertBlobId } from "../blob/identity.ts";
-import { kernelProtocolConfig } from "../protocol/config.ts";
+import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
+import { kernelProtocolConfig, retentionProtocolConfig } from "../protocol/config.ts";
+import type { TraceArchiveLimitsConfig } from "../protocol/config-types.ts";
 import { assertNonEmptyString, assertRecordId, validateRecordBody } from "../record/guards.ts";
 import type { RecordEnvelope } from "../record/types.ts";
 import { validateRecordEnvelope } from "../record/validation.ts";
+import { RedactedTraceArchiveError } from "../retention/errors.ts";
+import { isBatchDigest } from "../store/codec.ts";
+import { TraceArchiveLimitError } from "./errors.ts";
+import { assertTraceArchiveCount, assertTraceArchiveText } from "./limits.ts";
 import type {
     DecodedTraceArchive,
     TraceArchiveBlob,
@@ -26,16 +30,42 @@ const ARCHIVE_KEYS = [
     "records",
 ];
 
-/** Decodes and validates the closed native trace-archive wire shape. */
-export function decodeTraceArchive(serialized: string): DecodedTraceArchive {
+/**
+ * Decodes and validates the closed native trace-archive wire shape.
+ *
+ * A redacted archive is refused before any structural check: redaction is one-way and a redacted
+ * archive never re-enters a trace store. Configured interchange limits are checked first: byte
+ * length, nesting depth, and repeated object keys before parsing, collection counts and the
+ * declared blob byte total before any record or blob is decoded. `limits` is `null` only for the
+ * store's own export.
+ *
+ * @throws {TraceArchiveLimitError} If a configured interchange limit is exceeded.
+ * @throws {RedactedTraceArchiveError} If the archive is a redacted archive.
+ * @throws {TypeError} If the archive is malformed or repeats an object key.
+ */
+export function decodeTraceArchive(
+    serialized: string,
+    limits: TraceArchiveLimitsConfig | null = kernelProtocolConfig.interchange.limits,
+): DecodedTraceArchive {
     if (typeof serialized !== "string") {
         throw new TypeError("trace archive must be JSON text");
     }
+    if (limits !== null) assertTraceArchiveText(serialized, limits);
     let parsed: unknown;
     try {
         parsed = JSON.parse(serialized);
     } catch (error) {
         throw new TypeError("trace archive must contain valid JSON", { cause: error });
+    }
+    if (
+        parsed !== null &&
+        typeof parsed === "object" &&
+        (parsed as Record<string, unknown>).format ===
+            retentionProtocolConfig.redactedArchive.format
+    ) {
+        throw new RedactedTraceArchiveError(
+            "redacted trace archives are one-way exports and cannot be imported",
+        );
     }
     const archive = readObject(parsed, ARCHIVE_KEYS, "trace archive");
     if (
@@ -46,12 +76,32 @@ export function decodeTraceArchive(serialized: string): DecodedTraceArchive {
     ) {
         throw new TypeError("trace archive protocol versions are unsupported");
     }
+    const appendIntents = readArray(archive.append_intents, "append_intents");
+    const blobs = readArray(archive.blobs, "blobs");
+    const cuts = readArray(archive.cuts, "cuts");
+    const records = readArray(archive.records, "records");
+    const recordViews = readArray(archive.record_views, "record_views");
+    if (limits !== null) {
+        assertTraceArchiveCount(appendIntents, "maxAppendIntents", limits);
+        assertTraceArchiveCount(blobs, "maxBlobs", limits);
+        assertTraceArchiveCount(cuts, "maxCuts", limits);
+        assertTraceArchiveCount(records, "maxRecords", limits);
+        assertTraceArchiveCount(recordViews, "maxRecordViews", limits);
+    }
+    let declaredBlobBytes = 0;
     return {
-        appendIntents: readArray(archive.append_intents, "append_intents").map(readIntent),
-        blobs: readArray(archive.blobs, "blobs").map(readBlob),
-        cuts: readArray(archive.cuts, "cuts").map(readCut),
-        records: readArray(archive.records, "records").map(readRecord),
-        recordViews: readArray(archive.record_views, "record_views").map(readView),
+        appendIntents: appendIntents.map(readIntent),
+        blobs: blobs.map((value, index) =>
+            readBlob(value, index, (byteLength) => {
+                declaredBlobBytes += byteLength;
+                if (limits !== null && declaredBlobBytes > limits.maxBlobBytes) {
+                    throw new TraceArchiveLimitError("maxBlobBytes", limits.maxBlobBytes);
+                }
+            }),
+        ),
+        cuts: cuts.map(readCut),
+        records: records.map(readRecord),
+        recordViews: recordViews.map(readView),
     };
 }
 
@@ -62,7 +112,8 @@ function readRecord(value: unknown, index: number): TraceArchiveRecord {
     return { body: record.body, envelope: record.envelope as RecordEnvelope };
 }
 
-function readView(value: unknown, index: number): TraceArchiveView {
+/** Validates one archived owner view. @internal */
+export function readView(value: unknown, index: number): TraceArchiveView {
     const view = readObject(
         value,
         ["append_intent_id", "append_position", "owner_id", "owner_ordinal", "record_id"],
@@ -83,25 +134,30 @@ function readView(value: unknown, index: number): TraceArchiveView {
     };
 }
 
-function readIntent(value: unknown, index: number): TraceArchiveIntent {
+/** Validates one archived append intent. @internal */
+export function readIntent(value: unknown, index: number): TraceArchiveIntent {
     const intent = readObject(
         value,
         ["append_intent_id", "batch_digest", "receipt_json"],
         `append_intents[${index}]`,
     );
     assertNonEmptyString(intent.append_intent_id, `append_intents[${index}].append_intent_id`);
-    const digestLength = createHash(kernelProtocolConfig.store.appendIntentDigestAlgorithm).digest(
-        "hex",
-    ).length;
-    if (
-        typeof intent.batch_digest !== "string" ||
-        intent.batch_digest.length !== digestLength ||
-        !/^[0-9a-f]+$/u.test(intent.batch_digest)
-    ) {
+    if (!isBatchDigest(intent.batch_digest)) {
         throw new TypeError(`append_intents[${index}].batch_digest is invalid`);
     }
     if (typeof intent.receipt_json !== "string") {
         throw new TypeError(`append_intents[${index}].receipt_json must be JSON text`);
+    }
+    // Stores retain receipts in canonical form; anything else (repeated keys included) could be
+    // read differently by another parser.
+    let canonicalReceipt: string | undefined;
+    try {
+        canonicalReceipt = canonicalizeRecord(JSON.parse(intent.receipt_json) as SemanticRecord);
+    } catch {
+        canonicalReceipt = undefined;
+    }
+    if (canonicalReceipt !== intent.receipt_json) {
+        throw new TypeError(`append_intents[${index}].receipt_json must be canonical JSON`);
     }
     return {
         append_intent_id: intent.append_intent_id,
@@ -110,7 +166,8 @@ function readIntent(value: unknown, index: number): TraceArchiveIntent {
     };
 }
 
-function readCut(value: unknown, index: number): TraceArchiveCut {
+/** Validates one archived cut. @internal */
+export function readCut(value: unknown, index: number): TraceArchiveCut {
     const cut = readObject(
         value,
         [
@@ -143,13 +200,22 @@ function readCut(value: unknown, index: number): TraceArchiveCut {
     };
 }
 
-function readBlob(value: unknown, index: number): TraceArchiveBlob {
+function readBlob(
+    value: unknown,
+    index: number,
+    admitDeclaredBytes: (byteLength: number) => void,
+): TraceArchiveBlob {
     const blob = readObject(value, ["blob_id", "byte_length", "content_base64"], `blobs[${index}]`);
     assertBlobId(blob.blob_id, `blobs[${index}].blob_id`);
     const byteLength = readInteger(blob.byte_length, `blobs[${index}].byte_length`);
     if (typeof blob.content_base64 !== "string") {
         throw new TypeError(`blobs[${index}].content_base64 must be a string`);
     }
+    // Canonical padded base64 has exactly this length, so decoding is bounded by the declaration.
+    if (blob.content_base64.length !== 4 * Math.ceil(byteLength / 3)) {
+        throw new TypeError(`blobs[${index}] content does not match its declared length`);
+    }
+    admitDeclaredBytes(byteLength);
     const content = Buffer.from(blob.content_base64, kernelProtocolConfig.interchange.blobEncoding);
     if (
         content.toString(kernelProtocolConfig.interchange.blobEncoding) !== blob.content_base64 ||

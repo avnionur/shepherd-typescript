@@ -1,0 +1,7 @@
+{
+    "description": "Short, separator-only, and escaped mountinfo lines classify without throwing; a tmpfs mounted over the target is foreign.",
+    "input": {
+        "text": "1 2 - overlay\n - \n36 35 98:0 / /w/world\\040dir rw - tmpfs tmpfs rw,lowerdir=/w/revisions,upperdir=/w/upper,workdir=/w/work\n\\\\\\\\ - -\n"
+    },
+    "expect": { "outcome": "accepted" }
+}

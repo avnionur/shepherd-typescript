@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    rmSync,
+    statSync,
+    writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,8 +35,11 @@ const protocol = JSON.parse(
             readonly compatibilityVersion: string;
             readonly version: number;
         };
+        readonly exitCodes: { readonly failure: number };
         readonly options: { readonly json: string };
     };
+    readonly kernel: { readonly store: { readonly schemaVersion: number } };
+    readonly retention: { readonly redactedArchive: { readonly format: string } };
 };
 const packageManifest = JSON.parse(
     readFileSync(path.join(repositoryRoot, "package.json"), "utf8"),
@@ -172,6 +183,127 @@ process.stdout.write(dispatch.handlerId + "\\n" + success.result.ok + "\\n" + fa
                 encoding: "utf8",
             }),
             "nearest\ntrue\nfalse\ntrue\n",
+        );
+        const operationsFacadeProbe = path.join(consumerRoot, "operations-facade-probe.mjs");
+        writeFileSync(
+            operationsFacadeProbe,
+            `import { statSync } from "node:fs";
+import { exportRedactedTraceArchive as rootExportRedactedTraceArchive, ROOT_WITNESS_ID } from ${JSON.stringify(packageManifest.name)};
+import { RedactedTraceArchiveError, RETENTION_DATA_CLASSES, SECRET_SCANNING_MODES, TraceSecretDetectedError, classifyTraceSchema, exportRedactedTraceArchive, inspectTraceRetention, readRetentionPolicy, scanSemanticValueForSecrets, verifyRedactedTraceArchive } from ${JSON.stringify(`${packageManifest.name}/operations`)};
+import { SQLiteTraceStore } from ${JSON.stringify(`${packageManifest.name}/trace`)};
+if (exportRedactedTraceArchive !== rootExportRedactedTraceArchive) throw new Error("operations facade mismatch");
+const secret = ["gh", "p_", "Q".repeat(36)].join("");
+const databasePath = "operations-probe.sqlite";
+const request = (body) => ({ append_intent_id: "operations:probe", batch: { groups: [{ owner_id: "operations", records: [{ body, mode: "capture", schema_ref: "operations.probe.v1", witness_ref: ROOT_WITNESS_ID }] }] } });
+using store = new SQLiteTraceStore(databasePath, { secretScanning: SECRET_SCANNING_MODES[1] });
+let refused = "";
+try { store.append(request({ credential: secret })); } catch (error) { if (!(error instanceof TraceSecretDetectedError) || error.message.includes(secret) || JSON.stringify(error.findings).includes(secret)) throw error; refused = error.code + " " + error.findings[0].path; }
+store.append(request({ credential: "redacted-by-caller" }));
+const options = { schemaDataClasses: { "operations.probe.v1": RETENTION_DATA_CLASSES[3] } };
+const redacted = exportRedactedTraceArchive(store, options);
+const summary = verifyRedactedTraceArchive(redacted, options);
+let importRefused = false;
+using target = new SQLiteTraceStore();
+try { target.importTrace(redacted); } catch (error) { importRefused = error instanceof RedactedTraceArchiveError && target.verifyIntegrity().ok; }
+const report = inspectTraceRetention(store);
+const policy = readRetentionPolicy();
+if (scanSemanticValueForSecrets({ key: secret }).findings.length !== 1 || classifyTraceSchema("operations.probe.v1").data_class !== policy.default_data_class) throw new Error("scan or classification mismatch");
+process.stdout.write(refused + "\\n" + summary.omitted_body_count + " " + importRefused + "\\n" + report.record_count + " " + report.secret_record_count + "\\n" + (statSync(databasePath).mode & 0o777).toString(8) + "\\n");
+`,
+        );
+        assert.equal(
+            execFileSync(process.execPath, [operationsFacadeProbe], {
+                cwd: consumerRoot,
+                encoding: "utf8",
+            }),
+            "TRACE_SECRET_DETECTED /batch/groups/0/records/0/body/credential\n1 true\n2 0\n600\n",
+        );
+        const telemetryFacadeProbe = path.join(consumerRoot, "telemetry-facade-probe.mjs");
+        writeFileSync(
+            telemetryFacadeProbe,
+            `import { existsSync, readFileSync, statSync } from "node:fs";
+import { createTraceTelemetryExporter as rootCreateTraceTelemetryExporter, ROOT_WITNESS_ID } from ${JSON.stringify(packageManifest.name)};
+import { TELEMETRY_BODY_MODES, createJsonLinesTelemetrySink, createTraceTelemetryExporter, deriveTelemetryTraceId } from ${JSON.stringify(`${packageManifest.name}/operations`)};
+import { SQLiteTraceStore } from ${JSON.stringify(`${packageManifest.name}/trace`)};
+if (createTraceTelemetryExporter !== rootCreateTraceTelemetryExporter) throw new Error("telemetry facade mismatch");
+using store = new SQLiteTraceStore();
+store.append({ append_intent_id: "telemetry:probe", batch: { groups: [{ owner_id: "telemetry", records: [{ body: { note: "probe" }, mode: "capture", schema_ref: "telemetry.probe.v1", witness_ref: ROOT_WITNESS_ID }] }] } });
+const before = store.exportTrace();
+const exporter = createTraceTelemetryExporter({ bodies: TELEMETRY_BODY_MODES[1], clock: () => 1n, sink: createJsonLinesTelemetrySink({ logsPath: "telemetry-logs.jsonl", tracesPath: "telemetry-traces.jsonl" }), store, subscription: { owners: ["telemetry"] } });
+const receipt = await exporter.exportPending();
+exporter.close();
+const [line] = readFileSync("telemetry-logs.jsonl", "utf8").trim().split("\\n").map((text) => JSON.parse(text));
+const log = line.resourceLogs[0].scopeLogs[0].logRecords[0];
+if (log.traceId !== deriveTelemetryTraceId("telemetry") || log.body.kvlistValue.values[0].value.stringValue !== "probe") throw new Error("telemetry mapping mismatch");
+process.stdout.write(receipt.record_count + " " + existsSync("telemetry-traces.jsonl") + " " + (statSync("telemetry-logs.jsonl").mode & 0o777).toString(8) + " " + (store.exportTrace() === before) + " " + existsSync(${JSON.stringify(path.join(installedPackageRoot, "spec", "schemas", "telemetry-batch-v1.schema.json"))}) + "\\n");
+`,
+        );
+        assert.equal(
+            execFileSync(process.execPath, [telemetryFacadeProbe], {
+                cwd: consumerRoot,
+                encoding: "utf8",
+            }),
+            "1 false 600 true true\n",
+        );
+        const storageFacadeProbe = path.join(consumerRoot, "storage-facade-probe.mjs");
+        writeFileSync(
+            storageFacadeProbe,
+            `import { mkdtempSync, realpathSync, statSync } from "node:fs";
+import path from "node:path";
+import { createSQLiteStorageCoordinator as rootCreateSQLiteStorageCoordinator } from ${JSON.stringify(packageManifest.name)};
+import { STORAGE_DURABILITIES, StorageBlobContentMismatchError, checkBlobStoreBackendConformance, checkStorageCoordinatorConformance, createFilesystemBlobStoreBackend, createMemoryBlobStoreBackend, createMemoryStorageCoordinator, createSQLiteStorageCoordinator } from ${JSON.stringify(`${packageManifest.name}/operations`)};
+if (createSQLiteStorageCoordinator !== rootCreateSQLiteStorageCoordinator) throw new Error("storage facade mismatch");
+const root = realpathSync(mkdtempSync("storage-probe-"));
+let instance = 0;
+const reports = [
+    await checkBlobStoreBackendConformance(createMemoryBlobStoreBackend),
+    await checkBlobStoreBackendConformance(() => createFilesystemBlobStoreBackend(path.join(root, "blobs-" + ++instance))),
+    await checkStorageCoordinatorConformance(createMemoryStorageCoordinator),
+    await checkStorageCoordinatorConformance(() => createSQLiteStorageCoordinator(path.join(root, "coordinator-" + ++instance + ".sqlite"))),
+];
+let mismatch = "";
+try { await createMemoryBlobStoreBackend().put("sha256:" + "0".repeat(64), new Uint8Array([1])); } catch (error) { if (error instanceof StorageBlobContentMismatchError) mismatch = error.code; }
+const coordinatorPath = path.join(root, "coordinator-" + instance + ".sqlite");
+process.stdout.write(reports.map(({ passed, durability }) => passed + " " + STORAGE_DURABILITIES.includes(durability)).join("\\n") + "\\n" + mismatch + "\\n" + (statSync(coordinatorPath).mode & 0o777).toString(8) + "\\n");
+`,
+        );
+        assert.equal(
+            execFileSync(process.execPath, [storageFacadeProbe], {
+                cwd: consumerRoot,
+                encoding: "utf8",
+            }),
+            "true true\ntrue true\ntrue true\ntrue true\nSTORAGE_BLOB_CONTENT_MISMATCH\n600\n",
+        );
+        const backupFacadeProbe = path.join(consumerRoot, "backup-facade-probe.mjs");
+        writeFileSync(
+            backupFacadeProbe,
+            `import { mkdtempSync, realpathSync } from "node:fs";
+import path from "node:path";
+import { backupTraceStore as rootBackupTraceStore } from ${JSON.stringify(packageManifest.name)};
+import { STORE_BACKUP_FAILURE_REASONS, TraceStoreBackupError, backupTraceStore, createMemoryBlobStoreBackend, createMemoryStorageCoordinator, fetchReplicatedTraceStoreBackup, replicateTraceStoreBackup, restoreTraceStoreBackup, verifyTraceStoreBackup } from ${JSON.stringify(`${packageManifest.name}/operations`)};
+import { SQLiteTraceStore } from ${JSON.stringify(`${packageManifest.name}/trace`)};
+if (backupTraceStore !== rootBackupTraceStore) throw new Error("backup facade mismatch");
+const root = realpathSync(mkdtempSync("backup-probe-"));
+using store = new SQLiteTraceStore(path.join(root, "trace.sqlite"));
+store.putBlob(new TextEncoder().encode("probe"));
+const manifest = await backupTraceStore(store, { destination: path.join(root, "backup") });
+const verified = await verifyTraceStoreBackup(path.join(root, "backup"), { expectedManifestId: manifest.manifest_id });
+let interrupted = "";
+try { await verifyTraceStoreBackup(root); } catch (error) { if (error instanceof TraceStoreBackupError) interrupted = error.reason; }
+const backend = createMemoryBlobStoreBackend();
+const coordinator = createMemoryStorageCoordinator();
+const replica = await replicateTraceStoreBackup(path.join(root, "backup"), { backend, coordinator, expectedGeneration: 0, refName: "backups/probe" });
+const fetched = await fetchReplicatedTraceStoreBackup({ backend, coordinator, destination: path.join(root, "fetched"), refName: "backups/probe" });
+const receipt = await restoreTraceStoreBackup(path.join(root, "fetched"), path.join(root, "restored.sqlite"), { expectedManifestId: fetched.manifest.manifest_id });
+process.stdout.write([verified.manifest.blobs.count, interrupted, STORE_BACKUP_FAILURE_REASONS.includes(interrupted), replica.swap.status, receipt.export_digest === manifest.export_digest].join(" ") + "\\n");
+`,
+        );
+        assert.equal(
+            execFileSync(process.execPath, [backupFacadeProbe], {
+                cwd: consumerRoot,
+                encoding: "utf8",
+            }),
+            "1 manifest-missing true swapped true\n",
         );
         const delegationFacadeProbe = path.join(consumerRoot, "delegation-facade-probe.mjs");
         writeFileSync(
@@ -658,6 +790,112 @@ process.stdout.write(values.join(",") + "\\n");
             traceStorePath,
         ]);
         assert.deepEqual(traceRevisions.result.trace_revisions, traces.result.trace_revisions);
+        const storeVerification = invokeJson(executable, [
+            "store",
+            "verify",
+            "--store",
+            traceStorePath,
+        ]);
+        assert.equal(
+            storeVerification.result.store_verification?.schema_version,
+            protocol.kernel.store.schemaVersion,
+        );
+        const backupPath = path.join(consumerRoot, "quickstart-backup");
+        const backup = invokeJson(executable, [
+            "store",
+            "backup",
+            "--store",
+            traceStorePath,
+            "--output",
+            backupPath,
+        ]);
+        const manifestId = backup.result.backup?.manifest_id as string;
+        assert.match(manifestId, /^sha256:[0-9a-f]{64}$/u);
+        assert.equal((statSync(backupPath).mode & 0o777).toString(8), "700");
+        assert.equal(
+            (statSync(path.join(backupPath, "manifest.json")).mode & 0o777).toString(8),
+            "600",
+        );
+        const backupVerification = invokeJson(executable, [
+            "store",
+            "verify",
+            "--backup",
+            backupPath,
+            "--manifest",
+            manifestId,
+        ]);
+        assert.equal(backupVerification.result.backup_verification?.manifest_id, manifestId);
+        const restoredPath = path.join(consumerRoot, "restored-trace.sqlite");
+        const restoreArgs = [
+            "store",
+            "restore",
+            "--backup",
+            backupPath,
+            "--manifest",
+            manifestId,
+            "--store",
+            restoredPath,
+        ];
+        const restored = invokeJson(executable, restoreArgs);
+        assert.equal(restored.result.restore?.export_digest, backup.result.backup?.export_digest);
+        assert.throws(
+            () => execFileSync(executable, restoreArgs, { stdio: "pipe" }),
+            (error: unknown) =>
+                (error as { readonly status?: number }).status === protocol.cli.exitCodes.failure,
+        );
+        const tracePath = path.join(consumerRoot, "quickstart-archive.json");
+        const sourceExport = invokeJson(executable, [
+            "store",
+            "export",
+            "--store",
+            traceStorePath,
+            "--output",
+            tracePath,
+        ]);
+        const redactedExport = invokeJson(executable, [
+            "store",
+            "export",
+            "--store",
+            traceStorePath,
+            "--output",
+            path.join(consumerRoot, "quickstart-redacted.json"),
+            "--redacted",
+        ]);
+        assert.equal(
+            redactedExport.result.export?.format,
+            protocol.retention.redactedArchive.format,
+        );
+        const imported = invokeJson(executable, [
+            "store",
+            "import",
+            "--store",
+            path.join(consumerRoot, "imported-trace.sqlite"),
+            "--input",
+            tracePath,
+        ]);
+        assert.equal(
+            imported.result.import?.imported_record_count,
+            backup.result.backup?.record_count,
+        );
+        const maintained = invokeJson(executable, [
+            "store",
+            "maintain",
+            "--store",
+            path.join(consumerRoot, "imported-trace.sqlite"),
+            "--mode",
+            "vacuum",
+        ]);
+        assert.equal(maintained.result.maintenance?.quick_check.ok, true);
+        assert.equal(maintained.result.maintenance?.after.wal_bytes, 0);
+        const maintainedExport = invokeJson(executable, [
+            "store",
+            "export",
+            "--store",
+            path.join(consumerRoot, "imported-trace.sqlite"),
+            "--output",
+            path.join(consumerRoot, "maintained-archive.json"),
+        ]);
+        assert.equal(maintainedExport.result.export?.digest, sourceExport.result.export?.digest);
     } finally {
         rmSync(temporaryRoot, { force: true, recursive: true });
     }
@@ -673,6 +911,20 @@ function invokeJson(executable: string, args: readonly string[]): InstalledJsonE
 
 type InstalledJsonEnvelope = {
     readonly result: {
+        readonly backup?: {
+            readonly export_digest: string;
+            readonly manifest_id: string;
+            readonly record_count: number;
+        };
+        readonly backup_verification?: { readonly manifest_id: string };
+        readonly export?: { readonly digest: string; readonly format: string };
+        readonly import?: { readonly imported_record_count: number };
+        readonly maintenance?: {
+            readonly after: { readonly wal_bytes: number };
+            readonly quick_check: { readonly ok: boolean };
+        };
+        readonly restore?: { readonly export_digest: string };
+        readonly store_verification?: { readonly schema_version: number };
         readonly changeset?: {
             readonly page: { readonly changes: readonly { readonly path: string }[] };
         };

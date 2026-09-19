@@ -5,7 +5,8 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 
-import { ROOT_WITNESS_ID, SQLiteTraceStore } from "../../src/index.ts";
+import { ROOT_WITNESS_ID, SQLiteTraceStore, TraceStoreError } from "../../src/index.ts";
+import { kernelProtocolConfig } from "../../src/protocol/config.ts";
 
 test("SQLiteTraceStore verifies every retained store area after reopen", async (context) => {
     const directory = await mkdtemp(path.join(tmpdir(), "shepherd-integrity-test-"));
@@ -82,13 +83,17 @@ test("SQLiteTraceStore classifies graph, witness, owner, and orphan corruption",
                 ],
             },
         }).record_ids[0] ?? "";
-    const badWitnessId = appendOne(store, "intent:bad-witness", "run:witness", parentId);
+    // Append refuses a non-witness witness_ref (F-014), so the corrupt row is written directly.
+    const badWitnessId = appendOne(store, "intent:bad-witness", "run:witness", ROOT_WITNESS_ID);
     const orphanId = appendOne(store, "intent:orphan", "run:orphan", ROOT_WITNESS_ID);
     store.close();
 
     const database = new DatabaseSync(databasePath);
     database.exec("PRAGMA foreign_keys = OFF");
     database.exec("PRAGMA ignore_check_constraints = ON");
+    database
+        .prepare("UPDATE records SET witness_ref = ? WHERE record_id = ?")
+        .run(parentId, badWitnessId);
     database.prepare("DELETE FROM record_parents WHERE child_record_id = ?").run(childId);
     database
         .prepare(
@@ -111,10 +116,53 @@ test("SQLiteTraceStore classifies graph, witness, owner, and orphan corruption",
     assert.equal(issues.get("store"), "sqlite_integrity_mismatch");
     assert.equal(issues.get("foreign_keys"), "sqlite_integrity_mismatch");
     assert.equal(issues.get(childId), "parent_index_mismatch");
-    assert.equal(issues.get(badWitnessId), "witness_mismatch");
+    assert.equal(
+        report.issues.some(
+            ({ kind, subject_id }) => kind === "witness_mismatch" && subject_id === badWitnessId,
+        ),
+        true,
+    );
     assert.equal(issues.get(orphanId), "orphan_record");
     assert.equal(issues.get("intent:orphan"), "append_receipt_mismatch");
     assert.equal(issues.get("run:parent"), "owner_ordinal_mismatch");
+});
+
+test("append refuses a witness_ref that names a record that is not a witness", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-witness-append-test-"));
+    context.after(() => rm(directory, { force: true, recursive: true }));
+    using store = new SQLiteTraceStore(path.join(directory, "trace.sqlite"));
+    const plainId = appendOne(store, "intent:plain", "run:plain", ROOT_WITNESS_ID);
+    const witnessId =
+        store.append({
+            append_intent_id: "intent:witness",
+            batch: {
+                groups: [
+                    {
+                        owner_id: "run:witness",
+                        records: [
+                            {
+                                body: { value: "witness" },
+                                mode: "capture",
+                                schema_ref: kernelProtocolConfig.queries.witnessSchemaRef,
+                                witness_ref: ROOT_WITNESS_ID,
+                            },
+                        ],
+                    },
+                ],
+            },
+        }).record_ids[0] ?? "";
+    appendOne(store, "intent:witnessed", "run:witnessed", witnessId);
+
+    assert.throws(
+        () => appendOne(store, "intent:unwitnessed", "run:unwitnessed", plainId),
+        (error: unknown) =>
+            error instanceof TraceStoreError &&
+            error.message === `witness_ref does not name a witness record: ${plainId}`,
+    );
+    assert.equal(store.verifyIntegrity().ok, true);
+    assert.equal(store.diagnoseAppend("intent:unwitnessed").status, "retry_safe");
+    appendOne(store, "intent:unwitnessed", "run:unwitnessed", ROOT_WITNESS_ID);
+    assert.equal(store.verifyIntegrity().ok, true);
 });
 
 test("SQLiteTraceStore composes record, cut, and blob integrity failures", async (context) => {

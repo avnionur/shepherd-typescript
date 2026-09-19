@@ -16,6 +16,18 @@ import {
 import { canonicalizeRecord } from "@avnionur/shepherd-typescript/canonical";
 import { runCli, type CliIo } from "@avnionur/shepherd-typescript/cli";
 import { createEffectHandlerStack, createEffectIntent } from "@avnionur/shepherd-typescript/effects";
+import {
+    backupTraceStore,
+    checkStorageCoordinatorConformance,
+    createJsonLinesTelemetrySink,
+    createSQLiteStorageCoordinator,
+    createTraceTelemetryExporter,
+    exportRedactedTraceArchive,
+    inspectTraceRetention,
+    restoreTraceStoreBackup,
+    scanSemanticValueForSecrets,
+    verifyTraceStoreBackup,
+} from "@avnionur/shepherd-typescript/operations";
 import { createStaticProvider } from "@avnionur/shepherd-typescript/providers";
 import type { Slice } from "@avnionur/shepherd-typescript/read";
 import { executeTask, executeTaskDurably } from "@avnionur/shepherd-typescript/runs";
@@ -50,6 +62,15 @@ workspace settlement, private validators, migrations, and protocol configuration
 append/cut/slice/blob contracts, integrity and native archive methods, store errors/types, and
 bounded run/output/trace/recovery evidence reads. It excludes task registry, providers, executors,
 workspace carriers/settlements, private SQL/migrations, and protocol configuration.
+From 2.27.0 it also exports `TraceSecretDetectedError` and the `SecretScanningMode` type for the
+opt-in `secretScanning` store option, which defaults to `"off"`.
+From 2.30.0 it also exports `TraceStoreReadOnlyError` and the `TraceStoreMaintenanceMode`,
+`TraceStoreMaintenanceOptions`, `TraceStoreMaintenanceReport`, `TraceStoreSpaceReport`, and
+`TraceStoreCheckpointReport` types for [`SQLiteTraceStore.maintain`](./sqlite-trace-store.md#maintenance);
+`./operations` re-exports the same error and types.
+From 2.32.0 it also exports `TraceArchiveLimitError` (`TRACE_ARCHIVE_LIMIT_EXCEEDED`), raised by
+`importTrace` and `verifyRedactedTraceArchive` when an archive exceeds a configured
+[interchange limit](./trace-interchange.md#input-limits); `./operations` re-exports it.
 Its `SQLiteTraceStore.iterateCutRecords` method provides
 [lazy owner-record iteration](./trace-queries.md#async-owner-record-iteration) over a fixed published
 cut, without a cursor across pulls; it does not provide graph closure or redaction.
@@ -146,6 +167,45 @@ See [application manifests](./application-manifests.md), the
 [trajectory compression](./trajectory-compression.md), the
 [Tree-RL adapter](./tree-rl-rollouts.md), and [application evaluation](./application-evaluation.md).
 
+`./operations` is Node-only and owns [secrets and retention](./secrets-and-retention.md):
+configured secret scanning (`scanSemanticValueForSecrets`), schema classification
+(`classifyTraceSchema`, `readRetentionPolicy`), the one-way redacted export and its verifier
+(`exportRedactedTraceArchive`, `verifyRedactedTraceArchive`), read-only retention inspection
+(`inspectTraceRetention`), the generated `RETENTION_DATA_CLASSES`,
+`RETENTION_EXPORT_DISPOSITIONS`, and `SECRET_SCANNING_MODES`, and the `RedactedTraceArchiveError`,
+`TraceSecretDetectedError`, and `TraceStoreError` classes. Export and inspection take an explicit
+trace-store handle from `./trace` and only read it; the entry exports no trace-store constructor.
+The store's `secretScanning` option lives on `SQLiteTraceStore` in `./trace`.
+
+From 2.28.0 `./operations` also owns the [storage interfaces](./storage-interfaces.md): the
+`BlobStoreBackend` and `StorageCoordinator` types and their result types, the reference adapters
+`createMemoryBlobStoreBackend`, `createFilesystemBlobStoreBackend`,
+`createMemoryStorageCoordinator`, and `createSQLiteStorageCoordinator`, the conformance kits
+`checkBlobStoreBackendConformance` and `checkStorageCoordinatorConformance`, the generated
+`STORAGE_DURABILITIES`, `STORAGE_LEASE_STATUSES`, and `STORAGE_REF_SWAP_STATUSES`, and the
+`StorageAdapterError` and `StorageBlobContentMismatchError` classes. Because the SQLite coordinator
+is exported here, importing `./operations` now loads `node:sqlite`; it still loads no
+process-execution module.
+
+From 2.29.0 `./operations` also owns verified [backup, restore, and
+migration](./backup-restore-and-migration.md): `backupTraceStore`, `verifyTraceStoreBackup`,
+`restoreTraceStoreBackup`, `replicateTraceStoreBackup`, and `fetchReplicatedTraceStoreBackup`,
+their option, manifest, verification, receipt, and replica types, the generated
+`STORE_BACKUP_BLOB_LOCATIONS` and `STORE_BACKUP_FAILURE_REASONS`, and the classified
+`TraceStoreBackupError`. `backupTraceStore` takes an explicit trace-store handle from `./trace`;
+restore creates new store files and never opens or overwrites an existing store.
+
+From 2.31.0 `./operations` also owns non-canonical [observability](./observability.md):
+`createTraceTelemetryExporter`, `createJsonLinesTelemetrySink`, `deriveTelemetryTraceId`,
+`deriveTelemetrySpanId`, the exporter, receipt, clock, sink, and batch types, the OTLP/JSON subset
+types (`OtlpSpan`, `OtlpLogRecord`, `OtlpAnyValue`, and their wrappers), and the generated
+`TELEMETRY_BODY_MODES` and `TELEMETRY_BODY_HANDLINGS`. The exporter takes an explicit trace-store
+handle from `./trace` and only reads through a subscription; the JSON-lines sink loads
+`node:fs/promises`. Observability stays in `./operations` rather than a new subpath because it has
+the same load profile (`node:fs` and `node:sqlite`, no `node:child_process`) and the same
+operator audience as retention and backup; its body redaction reuses the retention classifier
+this entry already exports.
+
 `./workspace` is Node-only and owns workspace initialization/bindings, copy and Git custody,
 changeset inspection, repository grants, placement/native-jail evidence, retained-world runners
 and execution journals, reference-copy scope forks, the scope world adapter (`createScopeWorldAdapter`), and exact prepare/select/apply/release/discard
@@ -186,6 +246,7 @@ agreement with the export map and records the following dependencies:
 | Entry | Filesystem configuration | SQLite loaded | Process-execution module loaded |
 | --- | --- | --- | --- |
 | Root, CLI, tasks, trace | Yes | Yes | Yes |
+| Operations | Yes | Yes | No |
 | Canonical, delegation, effects, providers, runs, scopes, supervision | Yes | No | No |
 | Applications, replay, workspace | Yes | No | Yes |
 | Read (type-only) | No | No | No |

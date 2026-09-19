@@ -2,6 +2,7 @@ import type { DatabaseSync } from "node:sqlite";
 
 import { KERNEL_ABI_V0_CONTRACT } from "../protocol/compatibility-constants.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
+import { runInSQLiteTransaction } from "../runtime/sqlite-transaction.ts";
 import {
     BLOB_STORAGE_RECEIPT_VERSION,
     STORE_INDEXES,
@@ -266,6 +267,22 @@ const migrations: readonly Migration[] = [
             ) STRICT;
         `,
     },
+    {
+        // Index-only: owner listing by schema and cut listing in canonical byte order no longer
+        // scan their whole tables. No row, column, or semantic content changes, so re-creating
+        // an index that already exists is a no-op.
+        version: 13,
+        createSql: () => `
+            CREATE INDEX IF NOT EXISTS ${STORE_INDEXES.recordsBySchema}
+                ON ${STORE_TABLES.records}(schema_ref, record_id);
+
+            CREATE INDEX IF NOT EXISTS ${STORE_INDEXES.cutsByPublication}
+                ON ${STORE_TABLES.cuts}(
+                    CAST(created_by_record_id AS BLOB),
+                    CAST(cut_id AS BLOB)
+                );
+        `,
+    },
 ];
 
 /**
@@ -310,17 +327,51 @@ export function validateMigrationRegistry(
     }
 }
 
-/** Applies every pending trace-store migration atomically. */
-export function migrateTraceStore(database: DatabaseSync): number {
+/**
+ * Applies every pending trace-store migration atomically, each in its own transaction.
+ *
+ * Every step reads the applied schema version inside the configured `IMMEDIATE` transaction that
+ * applies the next migration, so concurrent migrators of one database serialize on SQLite's write
+ * lock: each applies only a migration no other connection has committed, and a migrator that
+ * finds the schema current commits nothing.
+ *
+ * @param database - Open writable database.
+ * @param throughVersion - Last migration to apply; defaults to the configured schema. Migration
+ * drills pass a historical version to build a store exactly as that schema left it.
+ * @returns The schema version after migration.
+ * @throws {UnsupportedStoreSchemaError} If the database is newer than the configured schema.
+ * @internal
+ */
+export function migrateTraceStore(
+    database: DatabaseSync,
+    throughVersion: number = kernelProtocolConfig.store.schemaVersion,
+): number {
     validateMigrationRegistry(
         migrations.map(({ version }) => version),
         kernelProtocolConfig.store.schemaVersion,
     );
-    database.exec(`
-        CREATE TABLE IF NOT EXISTS ${STORE_TABLES.migrations} (
-            version INTEGER PRIMARY KEY
-        ) STRICT;
-    `);
+    runInSQLiteTransaction(database, STORE_TRANSACTION_SQL, () =>
+        database.exec(`
+            CREATE TABLE IF NOT EXISTS ${STORE_TABLES.migrations} (
+                version INTEGER PRIMARY KEY
+            ) STRICT;
+        `),
+    );
+    for (;;) {
+        const step = runInSQLiteTransaction(database, STORE_TRANSACTION_SQL, () =>
+            applyNextTraceStoreMigration(database, throughVersion),
+        );
+        if (!step.applied) {
+            return step.version;
+        }
+    }
+}
+
+/** Applies the next pending migration under the caller's write lock and reports the version. */
+function applyNextTraceStoreMigration(
+    database: DatabaseSync,
+    throughVersion: number,
+): { readonly applied: boolean; readonly version: number } {
     const row = database
         .prepare(`SELECT COALESCE(MAX(version), 0) AS version FROM ${STORE_TABLES.migrations}`)
         .get() as { readonly version: number };
@@ -330,27 +381,17 @@ export function migrateTraceStore(database: DatabaseSync): number {
             `store schema ${currentVersion} is newer than supported schema ${kernelProtocolConfig.store.schemaVersion}`,
         );
     }
-
-    for (const migration of migrations) {
-        if (migration.version <= currentVersion) {
-            continue;
-        }
-        database.exec(STORE_TRANSACTION_SQL.begin);
-        try {
-            database.exec(migration.createSql());
-            database
-                .prepare(`INSERT INTO ${STORE_TABLES.migrations}(version) VALUES (?)`)
-                .run(migration.version);
-            database.exec(STORE_TRANSACTION_SQL.commit);
-        } catch (error) {
-            database.exec(STORE_TRANSACTION_SQL.rollback);
-            throw error;
-        }
+    const migration = migrations.find(
+        ({ version }) => version > currentVersion && version <= throughVersion,
+    );
+    if (migration === undefined) {
+        return { applied: false, version: currentVersion };
     }
-    const migrated = database
-        .prepare(`SELECT COALESCE(MAX(version), 0) AS version FROM ${STORE_TABLES.migrations}`)
-        .get() as { readonly version: number };
-    return migrated.version;
+    database.exec(migration.createSql());
+    database
+        .prepare(`INSERT INTO ${STORE_TABLES.migrations}(version) VALUES (?)`)
+        .run(migration.version);
+    return { applied: true, version: migration.version };
 }
 
 /** Reads and requires the exact current trace-store schema without mutation. @internal */

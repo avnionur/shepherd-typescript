@@ -33,6 +33,11 @@
             "summary": "Immutable effect records, correlation, and ordered in-process dispatch.",
             "title": "Effects"
         },
+        "./operations": {
+            "authority": "Pure secret scanning and schema classification. Redacted export and retention inspection only read an explicit caller-supplied trace-store handle and return text or a report; verification parses caller-supplied text. Nothing in the retention surface writes, deletes, or rewrites a record, blob, or file, and a redacted archive can never be imported. Storage reference adapters touch only the caller-named blob directory or SQLite coordinator file (or process memory); conformance kits use only caller-supplied adapter factories. Backup reads an explicit caller-supplied trace-store handle and writes only into a new caller-named directory or caller-supplied blob backend; verification only reads a backup; restore creates only a new caller-named store and its blob directory and never opens, overwrites, or appends to an existing store; replication writes only to caller-supplied backend and coordinator adapters. The telemetry exporter reads an explicit caller-supplied trace-store handle through a subscription, writes only that subscription's cursor bookkeeping outside the record graph, and hands batches to a caller-supplied sink; the JSON-lines sink appends only to the two caller-named files. No record is appended to any store, no remote or network storage or network exporter is created, and no provider, workspace, or execution authority is created.",
+            "summary": "Configured secret scanning, retention data classes and export dispositions, one-way redacted trace archives and their verifier, read-only retention inspection, storage adapter interfaces with local reference adapters and conformance kits, verified trace-store backup, restore, and replication, and non-canonical OpenTelemetry-compatible telemetry export.",
+            "title": "Operations"
+        },
         "./providers": {
             "authority": "Provider authority is supplied explicitly by the consumer. The deterministic static adapter owns no credentials, network access, execution, or workspace authority.",
             "summary": "Provider-neutral contracts and deterministic static-provider fixtures.",
@@ -113,7 +118,7 @@
         {
             "flags": "iu",
             "label": "credential implementation",
-            "pattern": "(?:^|/)[^#]*(?:credential|secret|access[-_]?token)[^#]*#|#\\w*(?:Credential|Secret|AccessToken)"
+            "pattern": "(?:^|/)[^#]*(?:credential|access[-_]?token)[^#]*#|^(?!retention/secret-scan\\.d\\.ts#)[^#]*secret[^#]*#|#\\w*(?:Credential|AccessToken)|#(?!(?:scanSemanticValueForSecrets|SecretFinding|SecretScanReport|SecretScanningMode|SECRET_SCANNING_MODES|TraceSecretDetectedError|RetentionSecretClassCount|RetentionSecretRecord)$)\\w*Secret"
         }
     ],
     "forbiddenPatterns": [
@@ -145,7 +150,7 @@
         {
             "flags": "iu",
             "label": "credential declaration",
-            "pattern": "(?:class|interface|type|function|const)\\s+\\w*(?:Credential|Secret|AccessToken)"
+            "pattern": "(?:class|interface|type|function|const)\\s+(?!(?:scanSemanticValueForSecrets|SecretFinding|SecretScanReport|SecretScanningMode|SECRET_SCANNING_MODES|TraceSecretDetectedError|RetentionSecretClassCount|RetentionSecretRecord)\\b)\\w*(?:Credential|Secret|AccessToken)"
         }
     ]
 }

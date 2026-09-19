@@ -1,0 +1,7 @@
+{
+    "description": "cli.limits.maxArgumentBytes counts UTF-8 bytes, not characters: 2049 two-byte characters exceed 4096 bytes.",
+    "input": {
+        "value": { "argv": ["run", { "$fuzz": "repeat", "text": "é", "count": 2049 }, "--json"] }
+    },
+    "expect": { "outcome": "accepted" }
+}

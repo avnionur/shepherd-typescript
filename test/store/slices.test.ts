@@ -6,6 +6,8 @@ import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 
 import {
+    canonicalizeRecord,
+    createRecordEnvelope,
     ROOT_WITNESS_ID,
     type SliceReadOptions,
     SQLiteTraceStore,
@@ -263,8 +265,11 @@ test("owner-prefix slices fail closed when a retained view loses its record", as
     store.close();
 });
 
-test("slice reads reject retained records that cite non-witness evidence", () => {
-    const store = new SQLiteTraceStore();
+test("slice reads reject retained records that cite non-witness evidence", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-slice-witness-test-"));
+    context.after(() => rm(directory, { force: true, recursive: true }));
+    const databasePath = path.join(directory, "trace.sqlite");
+    const store = new SQLiteTraceStore(databasePath);
     const ordinary =
         store.append({
             append_intent_id: "intent:ordinary",
@@ -284,26 +289,33 @@ test("slice reads reject retained records that cite non-witness evidence", () =>
                 ],
             },
         }).record_ids[0] ?? "";
-    const invalid =
-        store.append({
-            append_intent_id: "intent:invalid-witness",
-            batch: {
-                groups: [
-                    {
-                        owner_id: "run:alpha",
-                        records: [
-                            {
-                                body: { value: "invalid witness" },
-                                mode: "capture",
-                                schema_ref: "example.value.v1",
-                                witness_ref: ordinary,
-                            },
-                        ],
-                    },
-                ],
-            },
-        }).record_ids[0] ?? "";
+    // Append refuses a non-witness witness_ref (F-014), so a record with a valid identity that
+    // cites one is written directly.
+    const body = { value: "invalid witness" };
+    const invalid = createRecordEnvelope({
+        body,
+        mode: "capture",
+        schema_ref: "example.value.v1",
+        witness_ref: ordinary,
+    });
+    const database = new DatabaseSync(databasePath);
+    database
+        .prepare(
+            `INSERT INTO records(
+                record_id, digest, schema_ref, mode, witness_ref, caused_by_json, body_json
+             ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+            invalid.record_id,
+            invalid.digest,
+            invalid.schema_ref,
+            invalid.mode,
+            invalid.witness_ref,
+            JSON.stringify(invalid.caused_by_record_ids),
+            canonicalizeRecord(body),
+        );
+    database.close();
 
-    assert.throws(() => store.readCausalClosure([invalid]), TraceStoreError);
+    assert.throws(() => store.readCausalClosure([invalid.record_id]), TraceStoreError);
     store.close();
 });

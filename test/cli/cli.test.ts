@@ -39,7 +39,7 @@ test("CLI root help exposes the configured documented command groups without sid
     assert.deepEqual(errors, []);
     assert.equal(
         output.join(""),
-        "Usage: shepherd-ts <command> [options]\n\nCommands:\n  init\n  doctor\n  run\n  task\n  demo\n  package\n",
+        "Usage: shepherd-ts <command> [options]\n\nCommands:\n  init\n  doctor\n  run\n  task\n  demo\n  package\n  store\n",
     );
     assert.equal((await invoke([])).output, output.join(""));
     assert.equal((await invoke(["-h"])).exitCode, 0);
@@ -50,7 +50,7 @@ test("CLI root help emits the stable canonical JSON success envelope", async () 
     assert.deepEqual(result, {
         errors: "",
         exitCode: 0,
-        output: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":[],"ok":true,"result":{"groups":["init","doctor","run","task","demo","package"]}}\n',
+        output: '{"cli_compatibility_version":"shepherd.cli.json.v1","cli_output_version":1,"command":[],"ok":true,"result":{"groups":["init","doctor","run","task","demo","package","store"]}}\n',
     });
     assert.deepEqual(await invoke(["run", "--json", "--help"]), {
         errors: "",
@@ -234,7 +234,7 @@ test("CLI task and run reads resolve real registry and trace evidence", async (c
         ["doctor", "--store", storePath, "--registry", registryPath],
         directory,
     );
-    assert.match(doctor.output, /Trace store: schema 12/u);
+    assert.match(doctor.output, /Trace store: schema 13/u);
     assert.match(doctor.output, /Task registry: schema 1/u);
 
     const taskList = await invoke(["task", "list", "--registry", registryPath], directory);
@@ -731,14 +731,14 @@ test("CLI validates options, paths, pagination, argument bounds, and I/O contain
     const oldStorePath = path.join(directory, "old-trace.sqlite");
     new SQLiteTraceStore(oldStorePath).close();
     const oldStore = new DatabaseSync(oldStorePath);
-    oldStore.prepare("DELETE FROM schema_migrations WHERE version = 12").run();
+    oldStore.prepare("DELETE FROM schema_migrations WHERE version = 13").run();
     oldStore.close();
     assert.equal((await invoke(["run", "list", "--store", oldStorePath], directory)).exitCode, 1);
     const unchangedOldStore = new DatabaseSync(oldStorePath);
     assert.equal(
         unchangedOldStore.prepare("SELECT MAX(version) AS version FROM schema_migrations").get()
             ?.version,
-        11,
+        12,
     );
     unchangedOldStore.close();
     assert.equal(

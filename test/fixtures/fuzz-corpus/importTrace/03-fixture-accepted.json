@@ -1,0 +1,5 @@
+{
+    "description": "The committed pretty-printed trace-archive-v1 fixture imports, verifies, and round-trips.",
+    "input": { "seed": 0, "replace": [] },
+    "expect": { "outcome": "accepted" }
+}

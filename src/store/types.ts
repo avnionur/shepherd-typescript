@@ -14,6 +14,7 @@ import type {
     RETAINED_WORLD_SETTLEMENT_STATES,
 } from "../protocol/values.generated.ts";
 import type { RecordBody, RecordEnvelope, RecordId } from "../record/types.ts";
+import type { SecretScanningMode } from "../retention/policy.ts";
 
 /**
  * Stable identifier for one idempotent append attempt.
@@ -288,6 +289,93 @@ export type BlobOrphanCollectionReport = {
 };
 
 /**
+ * Semantics-preserving store maintenance operation.
+ *
+ * `inspect` runs SQLite `quick_check` and reports space; `checkpoint` also truncates the
+ * write-ahead log; `optimize` also runs `PRAGMA optimize`; `vacuum` also rebuilds the database
+ * file and then checkpoints. None changes a record, view, cut, intent, or blob.
+ *
+ * @public
+ */
+export type TraceStoreMaintenanceMode = "checkpoint" | "inspect" | "optimize" | "vacuum";
+
+/**
+ * Options for `SQLiteTraceStore.maintain`.
+ *
+ * @public
+ */
+export type TraceStoreMaintenanceOptions = {
+    /** Maintenance operation. Defaults to the configured non-mutating `inspect` mode. */
+    readonly mode?: TraceStoreMaintenanceMode;
+};
+
+/**
+ * Physical space used by the store database and its write-ahead log.
+ *
+ * @public
+ */
+export type TraceStoreSpaceReport = {
+    /** Database size in bytes (`page_size * page_count`). */
+    readonly database_bytes: number;
+    /** Pages on the SQLite freelist, reclaimable by `vacuum`. */
+    readonly freelist_count: number;
+    /** Pages in the database file. */
+    readonly page_count: number;
+    /** SQLite page size in bytes. */
+    readonly page_size: number;
+    /** Write-ahead log file size in bytes; zero when absent or for an in-memory store. */
+    readonly wal_bytes: number;
+};
+
+/**
+ * Result of one SQLite WAL checkpoint, as reported by `PRAGMA wal_checkpoint`.
+ *
+ * With the configured `TRUNCATE` checkpoint mode a complete checkpoint empties the log, so both
+ * frame counts are zero; compare `before.wal_bytes` and `after.wal_bytes` for the reclaimed size.
+ *
+ * @public
+ */
+export type TraceStoreCheckpointReport = {
+    /** Whether a concurrent reader or writer prevented a complete checkpoint. */
+    readonly busy: boolean;
+    /** Log frames checkpointed into the database file, as reported after the checkpoint. */
+    readonly checkpointed_frames: number;
+    /** Frames in the log after the checkpoint; zero once a `TRUNCATE` checkpoint completes. */
+    readonly wal_frames: number;
+};
+
+/**
+ * Frozen result of one `SQLiteTraceStore.maintain` pass.
+ *
+ * @public
+ */
+export type TraceStoreMaintenanceReport = {
+    /** Space after the operation; equal to `before` for `inspect`. */
+    readonly after: TraceStoreSpaceReport;
+    /** Space before the operation. */
+    readonly before: TraceStoreSpaceReport;
+    /** WAL checkpoint result, or null when the mode does not checkpoint. */
+    readonly checkpoint: TraceStoreCheckpointReport | null;
+    /** Applied maintenance operation. */
+    readonly mode: TraceStoreMaintenanceMode;
+    /** Whether `PRAGMA optimize` ran. */
+    readonly optimized: boolean;
+    /** SQLite `quick_check` outcome, run before any mutating step. */
+    readonly quick_check: {
+        /** Bounded diagnostic lines; empty when the check passed. */
+        readonly issues: readonly string[];
+        /** Whether the check reported no defect. */
+        readonly ok: boolean;
+        /** Whether more issues existed than the configured limit. */
+        readonly truncated: boolean;
+    };
+    /** Store schema version of the maintained handle. */
+    readonly schema_version: number;
+    /** Whether `VACUUM` rebuilt the database file. */
+    readonly vacuumed: boolean;
+};
+
+/**
  * Filesystem configuration for a SQLite trace store.
  *
  * @public
@@ -297,6 +385,12 @@ export type SQLiteTraceStoreOptions = {
     readonly blobDirectory?: string;
     /** Opens current-schema state without migrations or retained-state writes. */
     readonly readOnly?: boolean;
+    /**
+     * Append and import secret scanning. `"off"` (the default) leaves behavior unchanged;
+     * `"refuse"` rejects record bodies matching a configured detector with
+     * `TraceSecretDetectedError` before anything is written.
+     */
+    readonly secretScanning?: SecretScanningMode;
 };
 
 /** Classified integrity failure for one durable blob receipt. */

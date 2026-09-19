@@ -2,7 +2,7 @@ import { mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { kernelProtocolConfig } from "../protocol/config.ts";
+import { kernelProtocolConfig, retentionProtocolConfig } from "../protocol/config.ts";
 import type { SQLiteTraceStoreOptions } from "./types.ts";
 
 /** Resolved blob-directory ownership for one store instance. */
@@ -92,13 +92,17 @@ function validateStoreOptions(options: SQLiteTraceStoreOptions): void {
     }
     const descriptors = Object.getOwnPropertyDescriptors(options);
     if (
-        Object.keys(descriptors).some((key) => key !== "blobDirectory" && key !== "readOnly") ||
+        Object.keys(descriptors).some(
+            (key) => key !== "blobDirectory" && key !== "readOnly" && key !== "secretScanning",
+        ) ||
         Object.values(descriptors).some((descriptor) => !("value" in descriptor)) ||
         (options.blobDirectory !== undefined && typeof options.blobDirectory !== "string") ||
-        (options.readOnly !== undefined && typeof options.readOnly !== "boolean")
+        (options.readOnly !== undefined && typeof options.readOnly !== "boolean") ||
+        (options.secretScanning !== undefined &&
+            !retentionProtocolConfig.scanning.modes.includes(options.secretScanning))
     ) {
         throw new TypeError(
-            "SQLiteTraceStore options must contain only blobDirectory and readOnly",
+            "SQLiteTraceStore options must contain only blobDirectory, readOnly, and a configured secretScanning mode",
         );
     }
 }

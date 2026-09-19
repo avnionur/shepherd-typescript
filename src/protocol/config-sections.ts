@@ -1,6 +1,11 @@
 import { createHash } from "node:crypto";
 
-import { type ProtocolConfig, SECURE_HASH_ALGORITHMS } from "./config-types.ts";
+import {
+    type ProtocolConfig,
+    SECURE_HASH_ALGORITHMS,
+    STORE_MAINTENANCE_OPERATIONS,
+    STORE_WAL_CHECKPOINT_MODES,
+} from "./config-types.ts";
 import {
     readAbsoluteUrl,
     readEnum,
@@ -115,6 +120,54 @@ export function readBlobConfig(value: unknown): ProtocolConfig["kernel"]["store"
             "kernel.store.blobs.receiptVersion",
         ),
         temporaryFilePrefix,
+    };
+}
+
+/** Validates the semantics-preserving store maintenance contract. */
+export function readStoreMaintenanceConfig(
+    value: unknown,
+): ProtocolConfig["kernel"]["store"]["maintenance"] {
+    const config = readObject(
+        value,
+        ["defaultMode", "modes", "quickCheckMaxIssues", "walCheckpointMode", "walFileSuffix"],
+        "kernel.store.maintenance",
+    );
+    const modes = readUniqueStrings(config.modes, "kernel.store.maintenance.modes").map(
+        (mode, index) =>
+            readEnum(
+                mode,
+                STORE_MAINTENANCE_OPERATIONS,
+                `kernel.store.maintenance.modes[${index}]`,
+            ),
+    );
+    const defaultMode = readEnum(
+        config.defaultMode,
+        STORE_MAINTENANCE_OPERATIONS,
+        "kernel.store.maintenance.defaultMode",
+    );
+    if (!modes.includes(defaultMode)) {
+        throw new TypeError("kernel.store.maintenance.defaultMode must belong to modes");
+    }
+    const walFileSuffix = readNonEmptyString(
+        config.walFileSuffix,
+        "kernel.store.maintenance.walFileSuffix",
+    );
+    if (!/^[A-Za-z0-9._-]+$/u.test(walFileSuffix)) {
+        throw new TypeError("kernel.store.maintenance.walFileSuffix must be a simple suffix");
+    }
+    return {
+        defaultMode,
+        modes,
+        quickCheckMaxIssues: readPositiveInteger(
+            config.quickCheckMaxIssues,
+            "kernel.store.maintenance.quickCheckMaxIssues",
+        ),
+        walCheckpointMode: readEnum(
+            config.walCheckpointMode,
+            STORE_WAL_CHECKPOINT_MODES,
+            "kernel.store.maintenance.walCheckpointMode",
+        ),
+        walFileSuffix,
     };
 }
 

@@ -5,9 +5,18 @@
         "include": [
             "src/**/*.ts",
             "tooling/api-reference/generator.ts",
+            "tooling/benchmark/kernel-benchmark.ts",
+            "tooling/benchmark/kernel-dataset.ts",
             "tooling/build/output.ts",
+            "tooling/compatibility/api-surface.ts",
+            "tooling/compatibility/policy.ts",
+            "tooling/compatibility/protocol-surface.ts",
             "tooling/evaluation/harness.ts",
             "tooling/evaluation/writer.ts",
+            "tooling/release/integrity-config.ts",
+            "tooling/release/provenance.ts",
+            "tooling/release/reproducible-build.ts",
+            "tooling/release/sbom.ts",
             "tooling/release/version.ts",
             "tooling/protocol/generator.ts"
         ],

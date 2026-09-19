@@ -8,6 +8,7 @@ import {
     RETAINED_WORLD_SETTLEMENT_STATES,
 } from "../protocol/values.generated.ts";
 import { assertNonEmptyString } from "../record/guards.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import {
     RetainedWorldSettlementConflictError,
@@ -111,7 +112,7 @@ export function admitRetainedWorldSettlement(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return admission;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -210,7 +211,7 @@ export function beginRetainedWorldSettlement(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return journal;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -296,7 +297,7 @@ export function retainRetainedWorldSettlementTerminal(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return journal;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -353,7 +354,7 @@ export function completeRetainedWorldSettlementCleanup(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return journal;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

@@ -144,6 +144,18 @@ record and public API must declare a protocol/compatibility version.
 - [Phase 10 exit audit](./phase-10-exit-audit.md) — evidence map for every Phase 10 work item and
   exit criterion, the recovery classification, the review outcome, and the carried limits of the
   offline research applications.
+- [Production hardening contract](./production-hardening-contract.md) — Phase 11 slice map,
+  roadmap mapping, per-slice non-claims, and the owner-owed register O-1 to O-5.
+- [Internal security review](./security-review.md) — severity rubric, findings register F-001 to
+  F-029, the 1.0 audit gate result, and the external reviewer packet.
+- [Phase 11 exit audit](./phase-11-exit-audit.md) — 1.0 readiness verdict, evidence map for every
+  Phase 11 work item and exit criterion, recovery classification, independent review, verification,
+  limits, and the recommendation on #24 and #29.
+- [Release-readiness dashboard](./release-readiness-dashboard.md) — Phase 0 to 11 epic status and
+  the classification of every parity-matrix and paper-coverage row.
+- [Release-candidate manifest](./release-candidate-manifest.md) — version, base commit, lockfile,
+  SBOM, tarball, baseline, and benchmark digests, recorded fuzz and soak runs, and fresh
+  verification results for 2.32.4.
 
 - [Upstream compatibility baseline](./upstream-baseline.md) — exact Git revisions, evidence scope,
   compatibility boundaries, and drift procedure.
@@ -275,6 +287,10 @@ complete for its documented scope; see the [task-as-value contract](./task-as-va
 and the [exit audit](./phase-9-exit-audit.md), which records L3 paper programming-model parity for
 the documented scope. Phase 10 (research applications, epic #23) is complete for its documented
 offline scope; see the [research applications contract](./research-applications-contract.md) and
-the [exit audit](./phase-10-exit-audit.md). Phase 11 (production hardening and 1.0, epic #24) is
-the next roadmap phase; its first slice should be cut from the epic's threat model, fuzzing, and
-recovery-drill work before any 1.0 release-readiness audit (#29).
+the [exit audit](./phase-10-exit-audit.md). Phase 11 (production hardening and 1.0, epic #24) has
+delivered every slice; its [production hardening contract](./production-hardening-contract.md)
+(#187) maps slices #179 to #186 and the 1.0 readiness audit (#29), and the
+[internal security review](./security-review.md) holds the findings register. The
+[Phase 11 exit audit](./phase-11-exit-audit.md) records the verdict: release candidate ready for
+the in-repo scope; 1.0 general availability is no-go until the owner-owed rows O-1 to O-5 close.
+The next step is owner action on those rows, not further agent implementation.

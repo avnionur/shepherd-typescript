@@ -1,0 +1,14 @@
+{
+    "description": "F-013: a repeated object key (JSON.parse keeps the last) is refused, so no other parser can read a different archive.",
+    "finding": "F-013",
+    "input": {
+        "seed": 1,
+        "replace": [
+            {
+                "from": "\"format\":\"shepherd.trace.archive\"",
+                "to": "\"format\":\"other.trace.archive\",\"format\":\"shepherd.trace.archive\""
+            }
+        ]
+    },
+    "expect": { "outcome": "rejected", "error": "TypeError" }
+}

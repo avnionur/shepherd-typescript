@@ -1,0 +1,19 @@
+{
+    "description": "F-012: import refuses a record body nested past the runtime call stack with TypeError and writes nothing.",
+    "finding": "F-012",
+    "input": {
+        "seed": 1,
+        "replace": [
+            {
+                "from": "\"body\":{",
+                "to": [
+                    { "literal": "\"body\":{\"deep\":" },
+                    { "repeat": "[", "count": 4000 },
+                    { "repeat": "]", "count": 4000 },
+                    { "literal": "," }
+                ]
+            }
+        ]
+    },
+    "expect": { "outcome": "rejected", "error": "TypeError" }
+}

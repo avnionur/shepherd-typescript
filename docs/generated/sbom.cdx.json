@@ -1,0 +1,1630 @@
+{
+    "bomFormat": "CycloneDX",
+    "components": [
+        {
+            "bom-ref": "pkg:npm/%40biomejs/biome@2.5.7",
+            "group": "@biomejs",
+            "name": "biome",
+            "purl": "pkg:npm/%40biomejs/biome@2.5.7",
+            "type": "library",
+            "version": "2.5.7",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "cebf0afc3718e6d62c40e430a8c274016125a3a4209a0348ee27578172e17af56cce5b7c4465697ac1093eac774e16b32da3b08c9e58f1fcf706d1f97c664db3"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.7",
+            "group": "@biomejs",
+            "name": "cli-darwin-arm64",
+            "purl": "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.7",
+            "type": "library",
+            "version": "2.5.7",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "bf1a3f2ecdff3d87505b22e161872030e0b3432a408dc63e8a2852f0cd305b4de5d7a4c22d6e33a99cc6a3be609b555d08c8f7f214d5677d4a056ad9e06f5d27"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40biomejs/cli-darwin-x64@2.5.7",
+            "group": "@biomejs",
+            "name": "cli-darwin-x64",
+            "purl": "pkg:npm/%40biomejs/cli-darwin-x64@2.5.7",
+            "type": "library",
+            "version": "2.5.7",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "09ddc66bad5a993fd897fd31f1e94fe6184661a172e1bc3a5aecac4e07fba28f13039b49e40d64f83915a09d811db4d58a5e758135fd54fcc0ae7ae52c9dcaca"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.7",
+            "group": "@biomejs",
+            "name": "cli-linux-arm64-musl",
+            "purl": "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.7",
+            "type": "library",
+            "version": "2.5.7",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "c4f239c81e979690db3644be6e6d6de36a25c3973897752b94e98b83b2ad2c9be3be4345ff5578b675207e4ca518879bdeefd3f81ccc198aa0421ce3028273b9"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40biomejs/cli-linux-arm64@2.5.7",
+            "group": "@biomejs",
+            "name": "cli-linux-arm64",
+            "purl": "pkg:npm/%40biomejs/cli-linux-arm64@2.5.7",
+            "type": "library",
+            "version": "2.5.7",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "ad1d90134c85d86612b98b8a21aee92af383189aa7387fb678344400cf3057e99629290c40a740a78cd71197d36b163c3cca0d38d9e981259c042c8b0cf0ce2a"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.7",
+            "group": "@biomejs",
+            "name": "cli-linux-x64-musl",
+            "purl": "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.7",
+            "type": "library",
+            "version": "2.5.7",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "ac4e55662faab663e0407fa5ee3571628675f1bfd3887121ba584ca63982647d4f96d49b8d1731356cb00b71d9f6d628b6d1bb39191e4eda2c7018a5292066d2"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40biomejs/cli-linux-x64@2.5.7",
+            "group": "@biomejs",
+            "name": "cli-linux-x64",
+            "purl": "pkg:npm/%40biomejs/cli-linux-x64@2.5.7",
+            "type": "library",
+            "version": "2.5.7",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "15082a261b1caea254169b46691494256957004c7059c0f02ee2b8f5dbca7e44356c1e52104c85b2c9ecc5063cdd79ba8d1d046db5f7fbcf83e5b7ef62a506d9"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40biomejs/cli-win32-arm64@2.5.7",
+            "group": "@biomejs",
+            "name": "cli-win32-arm64",
+            "purl": "pkg:npm/%40biomejs/cli-win32-arm64@2.5.7",
+            "type": "library",
+            "version": "2.5.7",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "3aae31d020b03f88e2aeb713cb05ece64386678bf9bee10ffa05ab6ed8c0a4e03608bf45dc5f4694875021c8bc00a4826bfcd445a9cc4695ffe3043b026ea11e"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40biomejs/cli-win32-x64@2.5.7",
+            "group": "@biomejs",
+            "name": "cli-win32-x64",
+            "purl": "pkg:npm/%40biomejs/cli-win32-x64@2.5.7",
+            "type": "library",
+            "version": "2.5.7",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "57ed30bbf9eb8f64be3213f8110d2e1cda253f42002c4b33e39a60d16a0a9077c37a1d3e22d1f03ffa7b6d7e513e830e97d364a476167583e121ccb6980087bd"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40napi-rs/lzma-linux-x64-gnu@1.5.1",
+            "group": "@napi-rs",
+            "name": "lzma-linux-x64-gnu",
+            "purl": "pkg:npm/%40napi-rs/lzma-linux-x64-gnu@1.5.1",
+            "type": "library",
+            "version": "1.5.1",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "a135c42216b84acb97753038232b248f4929771db255776177be5cdafdf11ab1c57d532c6e14cf654fe730f2f8b162a8e290479b76ae70b6aa1a517af7a753c9"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40rollup/plugin-node-resolve@16.0.3",
+            "group": "@rollup",
+            "name": "plugin-node-resolve",
+            "purl": "pkg:npm/%40rollup/plugin-node-resolve@16.0.3",
+            "type": "library",
+            "version": "16.0.3",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "95460cdd4046b8cf770a730f1b5628716bbb5fcd3606b345de35b6ce7cb9810c8b4204452615754aad198bbe3e761ffa341c750f1142e1be065e0f705021b942"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40rollup/pluginutils@5.4.0",
+            "group": "@rollup",
+            "name": "pluginutils",
+            "purl": "pkg:npm/%40rollup/pluginutils@5.4.0",
+            "type": "library",
+            "version": "5.4.0",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "31f3e9d3a0a344b7d7437c18d11f2f243601cbf32f55c73d3ae9447d1d01f08bfd928f8608d69167e129258165dbb2e12ac64ad28e36d2c6024470a37c281e52"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40rollup/wasm-node@4.63.1",
+            "group": "@rollup",
+            "name": "wasm-node",
+            "purl": "pkg:npm/%40rollup/wasm-node@4.63.1",
+            "type": "library",
+            "version": "4.63.1",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "cee64cb811cc321b6e5da81cfb7a793c67867cbd159ceff8e1c5f593d47843f2296fceb7b45f190467a84f3df2a6000daaba51100a78f66353c2feaa4b273a5d"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40types/estree@1.0.9",
+            "group": "@types",
+            "name": "estree",
+            "purl": "pkg:npm/%40types/estree@1.0.9",
+            "type": "library",
+            "version": "1.0.9",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "1a174f832d5e978fc898fd395f4e54c38730dbf33ddc10949a712f599352b650b310a304e05924f98a680393a21cd426a12ec269f6fc5dadcfc9af26d50af37a"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40types/node@26.1.2",
+            "group": "@types",
+            "name": "node",
+            "purl": "pkg:npm/%40types/node@26.1.2",
+            "type": "library",
+            "version": "26.1.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "56ee1ae54140f6b208149eeb07f55a69f87d96b090b33a294c2c7a2a315ba174c641b3cd6ac7a1551e531228ad8520c6c9dd43122501ca081366c83c8ee91e22"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40types/resolve@1.20.2",
+            "group": "@types",
+            "name": "resolve",
+            "purl": "pkg:npm/%40types/resolve@1.20.2",
+            "type": "library",
+            "version": "1.20.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "eb4042c1114e6424210e773041dc7178e10491b73974831c7182f06f1b12e1350d79510243fa412748f4f66ac73a5fc926fa513c6c0ef52bc4e2747635bfdae1"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-aix-ppc64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-aix-ppc64",
+            "purl": "pkg:npm/%40typescript/typescript-aix-ppc64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "31328a91607ba7fd04f718b5775b47b59e4f88b90610c22af3ca4ad82b9b6633ac2ed6132ea8602208bacdea456bef461d9ea1d3934c0a443118a88f5ccc57b5"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-darwin-arm64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-darwin-arm64",
+            "purl": "pkg:npm/%40typescript/typescript-darwin-arm64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "828c336abf4cc12fda456a7a7f76b8294ab34630198ceb2618d08ce8b713817ba6f9d05f82c05530df8082f38209b82e5f289c93a2c986906ccf131e6c9f2cc8"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-darwin-x64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-darwin-x64",
+            "purl": "pkg:npm/%40typescript/typescript-darwin-x64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "499f716489ea02936534673db345b5552b24b5848e7bd705a8d388aa63751acf129a48ca65816dd35ec6e15c0fc404889ce0ee01d6d35bbb1788551ff3ddd180"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-freebsd-arm64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-freebsd-arm64",
+            "purl": "pkg:npm/%40typescript/typescript-freebsd-arm64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "5b9347e32fc9d29948212e5bdb1bd312453b245c72a9d3003a07fe225865d2f1d05ca3b9759a3177e0bf8c4b6ae7a738177c24ef5441e013114365dd23e6f061"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-freebsd-x64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-freebsd-x64",
+            "purl": "pkg:npm/%40typescript/typescript-freebsd-x64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "50c183c79b13a73370dd688f79b1fb97dd0859f26080477e7a01edfeaea9eff0a6df3aa857b5719065edfb70f13c8c3c09c9af001d23dec5557db857f8ce13a7"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-linux-arm64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-linux-arm64",
+            "purl": "pkg:npm/%40typescript/typescript-linux-arm64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "421e1e538ff2df20e39df8e3c8f62284c8f9fce0c8966b7e073bb5ece23e7e24910d6e7b4265394a237addec4f44d24f294cdc73520d6b535776b27e32a1e351"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-linux-arm@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-linux-arm",
+            "purl": "pkg:npm/%40typescript/typescript-linux-arm@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "81f7d3df13f3f6c47b8ff6091319323e7b6b2343f610ff576cec96ced876fc6b3446cb4afbdd1105c3b49dc5e85f2fdb798965d525f0f38e8d7f6cdd9c4cf441"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-linux-loong64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-linux-loong64",
+            "purl": "pkg:npm/%40typescript/typescript-linux-loong64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "b841dc93d8bc8680335cf8984626f53bb9a23a7cf6dd2c4879597a1782d7a31faaa2fd4adf98c77045ba5472af648fa9caf97b7d910fe0c094e4b62f22ad46b9"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-linux-mips64el@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-linux-mips64el",
+            "purl": "pkg:npm/%40typescript/typescript-linux-mips64el@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "4782af00c9c4e375b941ea9bd0bcb9e8ede658c588020b0ccb3dfa0c26b271de676e0ffd9339b4962c3726871f46ac8963428f9b31636ecc28cd7c96d039c860"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-linux-ppc64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-linux-ppc64",
+            "purl": "pkg:npm/%40typescript/typescript-linux-ppc64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "0ce471e5bdec77fe12ede6b2c66e0542ff80ec2ae45081916878b023ca221d3008d5f00f5a1178274bc09640bc6e20251d2555c31310ded8d9dbf0d56e742288"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-linux-riscv64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-linux-riscv64",
+            "purl": "pkg:npm/%40typescript/typescript-linux-riscv64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "c1fd23a840ce8eb3d19cac18472c890d1a35d4a31bbcc16b53eab8cea2b20a1383073be591b84d41f2af2f14027304e974369748765356e8742680ab28250c1d"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-linux-s390x@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-linux-s390x",
+            "purl": "pkg:npm/%40typescript/typescript-linux-s390x@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "224c097372fbca1cad59dfdec23cb13437ce9acc029bd1963094ffb9efdd53869935bc1979801eb6ae365722e6b264a3be85fbcfbe17e996980adcc0af412e1b"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-linux-x64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-linux-x64",
+            "purl": "pkg:npm/%40typescript/typescript-linux-x64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "11875fd9c360eeb8025899f109d27e177577f4ef2285bdfb78702ed4b2bca00162ce04d06cf38aef31c75db3edf2b5f6e023aa3835de237b087f47c25c6ec7fc"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-netbsd-arm64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-netbsd-arm64",
+            "purl": "pkg:npm/%40typescript/typescript-netbsd-arm64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "fa9a25605e0c174e1a3e93b9153907ada9fdc94403497ab2e468920caa6c965e63cb7977fa0f502e1a5fdfd4fe78fb5e7e15cb386acb9744088e440fe959de94"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-netbsd-x64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-netbsd-x64",
+            "purl": "pkg:npm/%40typescript/typescript-netbsd-x64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "f18213d041ccff776ad7464e545fc0ee973f61232d6dc79c72de2b5ad7b1ae74821ce3dca42d8a4cb5df4c247abc3a674a2635da178d6f51a237fc2ef93fc5c8"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-openbsd-arm64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-openbsd-arm64",
+            "purl": "pkg:npm/%40typescript/typescript-openbsd-arm64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "00f4fcf829589ee626d6ef7e920197a0c8f65735b37329b087680d4905724877e444318e4d592858b8c298e41268ef8fa2a439ec1d1f951a7d480fbb1a79e4cd"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-openbsd-x64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-openbsd-x64",
+            "purl": "pkg:npm/%40typescript/typescript-openbsd-x64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "c97eecf90d03967d03b7db44cd9b008d75d1ffecad04cec096095aab278c3f142ccc9d4986525d67a8cb03e23395d1ed7e55fcd5e9bb9436a8d715eef9a45192"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-sunos-x64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-sunos-x64",
+            "purl": "pkg:npm/%40typescript/typescript-sunos-x64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "74b24319a2d9d43e073d09fadaed67f26043909444c0cb00902764c1de087aac3ec774d4c93b2a634622042b44e87e8ecf38069378ae677bc55914be13cfddd6"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-win32-arm64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-win32-arm64",
+            "purl": "pkg:npm/%40typescript/typescript-win32-arm64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "1b2975572e8eb167ac2f39aaf843f415bedbe0d89de76df602f700d9215c758ade95da4db58145a1f3e39edeb6cbd850cbb553699a7ae480898ee01045a55c21"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/%40typescript/typescript-win32-x64@7.0.2",
+            "group": "@typescript",
+            "name": "typescript-win32-x64",
+            "purl": "pkg:npm/%40typescript/typescript-win32-x64@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "d014371e40071e528b4a9d6a46f7f7494846a46b03ba107f8e0170ef982ecaa6f126a11a4b40b0fd514ef22da71e094953340246d30c47f20100a137113302e2"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/ajv@8.20.0",
+            "name": "ajv",
+            "purl": "pkg:npm/ajv@8.20.0",
+            "type": "library",
+            "version": "8.20.0",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "4e16e58be3a53a3fa230f60505505f2773a60809da4b2367e0cd6fcfd4fa1a46b926df5b6bf1c8479ea3a32eb9b58ea4c7f142179557341f35f58eff194ac118"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/deepmerge@4.3.1",
+            "name": "deepmerge",
+            "purl": "pkg:npm/deepmerge@4.3.1",
+            "type": "library",
+            "version": "4.3.1",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "dec52a6cc11cefb5eaa5d34eec547246883e796de987e19809b8feacafae63244cbb0b15cb4acc895b4f9fe40994a16f58fff53d8a5aa6a627d0c7b6927167f8"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/es-errors@1.3.0",
+            "name": "es-errors",
+            "purl": "pkg:npm/es-errors@1.3.0",
+            "type": "library",
+            "version": "1.3.0",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "65fe47d8ac6ddb18d3bdb26f3f66562c4202c40ea3fa1026333225ca9cb8c5c060d6f2959f1f3d5b2d066d2fa47f9730095145cdd0858765d20853542d2e9cb3"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/estree-walker@2.0.2",
+            "name": "estree-walker",
+            "purl": "pkg:npm/estree-walker@2.0.2",
+            "type": "library",
+            "version": "2.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "45f924fcca7f0cbec95637b7bb5f05c45ba34254cd476aba41f312301ec0bc2071f753468ff6dade409fcdad1fe9d5436f0ed89517ff9c3ae7ee942b082c90ff"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/fast-deep-equal@3.1.3",
+            "name": "fast-deep-equal",
+            "purl": "pkg:npm/fast-deep-equal@3.1.3",
+            "type": "library",
+            "version": "3.1.3",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "7f7a90f68432f63d808417bf1fd542f75c0b98a042094fe00ce9ca340606e61b303bb04b2a3d3d1dce4760dcfd70623efb19690c22200da8ad56cd3701347ce1"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/fast-uri@3.1.6",
+            "name": "fast-uri",
+            "purl": "pkg:npm/fast-uri@3.1.6",
+            "type": "library",
+            "version": "3.1.6",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "ec871a975bc510caf4a276d5cc40c8ade336d88e24856f9fcf240fc2f005581a758b076c852651b0be238d1bcf1bd24fd6e8aa30746da3e614e91dbf0b30f3e5"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/fsevents@2.3.3",
+            "name": "fsevents",
+            "purl": "pkg:npm/fsevents@2.3.3",
+            "type": "library",
+            "version": "2.3.3",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "e71a037d7f9f2fb7da0139da82658fa5b16dc21fd1efb5a630caaa1c64bae42defbc1d181eb805f81d58999df8e35b4c8f99fade4d36d765cda09c339617df43"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                },
+                {
+                    "name": "shepherd:sbom:optional",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/function-bind@1.1.2",
+            "name": "function-bind",
+            "purl": "pkg:npm/function-bind@1.1.2",
+            "type": "library",
+            "version": "1.1.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "ed71cdc47eea5fdc46e66230c6486e993a31fcc21135c3a00ebc56b0cb76a40af6dd61e9e8cad194dec50521690a9afea153b417be38894811f369c931f1b648"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/hasown@2.0.4",
+            "name": "hasown",
+            "purl": "pkg:npm/hasown@2.0.4",
+            "type": "library",
+            "version": "2.0.4",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "4f651b7db044177db089ea5722c3254d6f7e743602eb0321fedfef600e2db8e30aa96cff9f7bebd4d152c508b23fece4da65eca0c03f8bfeea57a2cabadd6dd4"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/is-core-module@2.16.2",
+            "name": "is-core-module",
+            "purl": "pkg:npm/is-core-module@2.16.2",
+            "type": "library",
+            "version": "2.16.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "7af3abf317d72b113aa924748525cbdabdec77b00b8fcfbb8d0114bcf61c9b9b20645749f806334fac8d9897a7bc8610060206c1fc33d3cb0bf33a0bef2ab604"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/is-module@1.0.0",
+            "name": "is-module",
+            "purl": "pkg:npm/is-module@1.0.0",
+            "type": "library",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "e75ca93d23c2a1310837d772e4ecbe878a528602663c2ca029fc9108848123e268593ff6a09bcaf103f19b0bfb6ffa76dfd8d7ae6f4cd669506f2289e40d79da"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/json-schema-traverse@1.0.0",
+            "name": "json-schema-traverse",
+            "purl": "pkg:npm/json-schema-traverse@1.0.0",
+            "type": "library",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "34cf3f3fd9f75e35e12199f594b86415a0024ce5114178d6855e0103f4673aff31be0aadaa9017f483b89914314b1d51968e2dab37aa6f4b0e96bb9a3b2dddba"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/path-parse@1.0.7",
+            "name": "path-parse",
+            "purl": "pkg:npm/path-parse@1.0.7",
+            "type": "library",
+            "version": "1.0.7",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "2c32733d510410f47ecb8f33f7703411dd325dbf29001c865a8fe4e5861d620a58dbfd84b0eb24b09aeaee5387c6bcab54e9f57a31baa00a7c6a1bce2100fcb3"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/picomatch@4.0.7",
+            "name": "picomatch",
+            "purl": "pkg:npm/picomatch@4.0.7",
+            "type": "library",
+            "version": "4.0.7",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "a9c26ef3c436216a89b030f9dbd24a31dc069bf76f2275b81ef427470887f49b62849bf318eb1c0ed1c4df1d6904a794393cac43c91598b9c9da426eef285c18"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/require-from-string@2.0.2",
+            "name": "require-from-string",
+            "purl": "pkg:npm/require-from-string@2.0.2",
+            "type": "library",
+            "version": "2.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "5dfd2759ee91b1ece214cbbe029f5b8a251b9a996ae92f7fa7eef0ed85cffc904786b5030d48706bebc0372b9bbaa7d9593bde53ffc36151ac0c6ed128bfef13"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/resolve@1.22.12",
+            "name": "resolve",
+            "purl": "pkg:npm/resolve@1.22.12",
+            "type": "library",
+            "version": "1.22.12",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "4f2789d7389fe7704f7c7a28b411b03d1613d5152dea8196b1a42bf14c995bf7809bd6caa228edbebb920c49991e6f760b04bd9e3eff7d6b6da8f0a0cdea7c08"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/supports-preserve-symlinks-flag@1.0.0",
+            "name": "supports-preserve-symlinks-flag",
+            "purl": "pkg:npm/supports-preserve-symlinks-flag@1.0.0",
+            "type": "library",
+            "version": "1.0.0",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "a2dd169d74bd7e076480871e3dee911cd935580f3e9ae3dae9c4a3791dd5f0adbbabd041d6b4c4dd1d69ec7bf4cf567201cf2ce95beff0323259febcd4c02dd3"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/typescript@7.0.2",
+            "name": "typescript",
+            "purl": "pkg:npm/typescript@7.0.2",
+            "type": "library",
+            "version": "7.0.2",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "f0561abbdea8dcd28e85b8ca8bfa8dbc6fd6e63873c646dd9b9b23f406d9ff94f9b16aa7de12602df1b1dbbb11299593bf2cc23fc74b4414dfe6d05349155434"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/undici-types@8.3.0",
+            "name": "undici-types",
+            "purl": "pkg:npm/undici-types@8.3.0",
+            "type": "library",
+            "version": "8.3.0",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "8f7ef949c57ad1da26f9890f1487d32dc3a23f190dfdbb87cf91a86e32e18b116e00d68db370bd9781a6ad6a9e8e05d627b05b25c158a53114912d467bc6e965"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        },
+        {
+            "bom-ref": "pkg:npm/yaml@2.9.0",
+            "name": "yaml",
+            "purl": "pkg:npm/yaml@2.9.0",
+            "type": "library",
+            "version": "2.9.0",
+            "hashes": [
+                {
+                    "alg": "SHA-512",
+                    "content": "d80be1357de66fccdde99cbb20d4ed4a9975175e475ba5a7aa3d2cad696428b729625fe03083098b2b86ab629e236605c543e376507edcb735d2c78c2ed2f870"
+                }
+            ],
+            "properties": [
+                {
+                    "name": "cdx:npm:package:development",
+                    "value": "true"
+                }
+            ],
+            "scope": "excluded"
+        }
+    ],
+    "dependencies": [
+        {
+            "dependsOn": [
+                "pkg:npm/%40biomejs/biome@2.5.7",
+                "pkg:npm/%40rollup/plugin-node-resolve@16.0.3",
+                "pkg:npm/%40rollup/wasm-node@4.63.1",
+                "pkg:npm/%40types/node@26.1.2",
+                "pkg:npm/ajv@8.20.0",
+                "pkg:npm/typescript@7.0.2",
+                "pkg:npm/yaml@2.9.0"
+            ],
+            "ref": "pkg:npm/%40avnionur/shepherd-typescript@2.32.5"
+        },
+        {
+            "dependsOn": [
+                "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.7",
+                "pkg:npm/%40biomejs/cli-darwin-x64@2.5.7",
+                "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.7",
+                "pkg:npm/%40biomejs/cli-linux-arm64@2.5.7",
+                "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.7",
+                "pkg:npm/%40biomejs/cli-linux-x64@2.5.7",
+                "pkg:npm/%40biomejs/cli-win32-arm64@2.5.7",
+                "pkg:npm/%40biomejs/cli-win32-x64@2.5.7"
+            ],
+            "ref": "pkg:npm/%40biomejs/biome@2.5.7"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.7"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40biomejs/cli-darwin-x64@2.5.7"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.7"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40biomejs/cli-linux-arm64@2.5.7"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.7"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40biomejs/cli-linux-x64@2.5.7"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40biomejs/cli-win32-arm64@2.5.7"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40biomejs/cli-win32-x64@2.5.7"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40napi-rs/lzma-linux-x64-gnu@1.5.1"
+        },
+        {
+            "dependsOn": [
+                "pkg:npm/%40rollup/pluginutils@5.4.0",
+                "pkg:npm/%40rollup/wasm-node@4.63.1",
+                "pkg:npm/%40types/resolve@1.20.2",
+                "pkg:npm/deepmerge@4.3.1",
+                "pkg:npm/is-module@1.0.0",
+                "pkg:npm/resolve@1.22.12"
+            ],
+            "ref": "pkg:npm/%40rollup/plugin-node-resolve@16.0.3"
+        },
+        {
+            "dependsOn": [
+                "pkg:npm/%40rollup/wasm-node@4.63.1",
+                "pkg:npm/%40types/estree@1.0.9",
+                "pkg:npm/estree-walker@2.0.2",
+                "pkg:npm/picomatch@4.0.7"
+            ],
+            "ref": "pkg:npm/%40rollup/pluginutils@5.4.0"
+        },
+        {
+            "dependsOn": [
+                "pkg:npm/%40napi-rs/lzma-linux-x64-gnu@1.5.1",
+                "pkg:npm/%40types/estree@1.0.9",
+                "pkg:npm/fsevents@2.3.3"
+            ],
+            "ref": "pkg:npm/%40rollup/wasm-node@4.63.1"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40types/estree@1.0.9"
+        },
+        {
+            "dependsOn": [
+                "pkg:npm/undici-types@8.3.0"
+            ],
+            "ref": "pkg:npm/%40types/node@26.1.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40types/resolve@1.20.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-aix-ppc64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-darwin-arm64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-darwin-x64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-freebsd-arm64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-freebsd-x64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-linux-arm64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-linux-arm@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-linux-loong64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-linux-mips64el@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-linux-ppc64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-linux-riscv64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-linux-s390x@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-linux-x64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-netbsd-arm64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-netbsd-x64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-openbsd-arm64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-openbsd-x64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-sunos-x64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-win32-arm64@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/%40typescript/typescript-win32-x64@7.0.2"
+        },
+        {
+            "dependsOn": [
+                "pkg:npm/fast-deep-equal@3.1.3",
+                "pkg:npm/fast-uri@3.1.6",
+                "pkg:npm/json-schema-traverse@1.0.0",
+                "pkg:npm/require-from-string@2.0.2"
+            ],
+            "ref": "pkg:npm/ajv@8.20.0"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/deepmerge@4.3.1"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/es-errors@1.3.0"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/estree-walker@2.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/fast-deep-equal@3.1.3"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/fast-uri@3.1.6"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/fsevents@2.3.3"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/function-bind@1.1.2"
+        },
+        {
+            "dependsOn": [
+                "pkg:npm/function-bind@1.1.2"
+            ],
+            "ref": "pkg:npm/hasown@2.0.4"
+        },
+        {
+            "dependsOn": [
+                "pkg:npm/hasown@2.0.4"
+            ],
+            "ref": "pkg:npm/is-core-module@2.16.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/is-module@1.0.0"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/json-schema-traverse@1.0.0"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/path-parse@1.0.7"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/picomatch@4.0.7"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/require-from-string@2.0.2"
+        },
+        {
+            "dependsOn": [
+                "pkg:npm/es-errors@1.3.0",
+                "pkg:npm/is-core-module@2.16.2",
+                "pkg:npm/path-parse@1.0.7",
+                "pkg:npm/supports-preserve-symlinks-flag@1.0.0"
+            ],
+            "ref": "pkg:npm/resolve@1.22.12"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/supports-preserve-symlinks-flag@1.0.0"
+        },
+        {
+            "dependsOn": [
+                "pkg:npm/%40typescript/typescript-aix-ppc64@7.0.2",
+                "pkg:npm/%40typescript/typescript-darwin-arm64@7.0.2",
+                "pkg:npm/%40typescript/typescript-darwin-x64@7.0.2",
+                "pkg:npm/%40typescript/typescript-freebsd-arm64@7.0.2",
+                "pkg:npm/%40typescript/typescript-freebsd-x64@7.0.2",
+                "pkg:npm/%40typescript/typescript-linux-arm64@7.0.2",
+                "pkg:npm/%40typescript/typescript-linux-arm@7.0.2",
+                "pkg:npm/%40typescript/typescript-linux-loong64@7.0.2",
+                "pkg:npm/%40typescript/typescript-linux-mips64el@7.0.2",
+                "pkg:npm/%40typescript/typescript-linux-ppc64@7.0.2",
+                "pkg:npm/%40typescript/typescript-linux-riscv64@7.0.2",
+                "pkg:npm/%40typescript/typescript-linux-s390x@7.0.2",
+                "pkg:npm/%40typescript/typescript-linux-x64@7.0.2",
+                "pkg:npm/%40typescript/typescript-netbsd-arm64@7.0.2",
+                "pkg:npm/%40typescript/typescript-netbsd-x64@7.0.2",
+                "pkg:npm/%40typescript/typescript-openbsd-arm64@7.0.2",
+                "pkg:npm/%40typescript/typescript-openbsd-x64@7.0.2",
+                "pkg:npm/%40typescript/typescript-sunos-x64@7.0.2",
+                "pkg:npm/%40typescript/typescript-win32-arm64@7.0.2",
+                "pkg:npm/%40typescript/typescript-win32-x64@7.0.2"
+            ],
+            "ref": "pkg:npm/typescript@7.0.2"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/undici-types@8.3.0"
+        },
+        {
+            "dependsOn": [],
+            "ref": "pkg:npm/yaml@2.9.0"
+        }
+    ],
+    "metadata": {
+        "component": {
+            "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@2.32.5",
+            "group": "@avnionur",
+            "name": "shepherd-typescript",
+            "purl": "pkg:npm/%40avnionur/shepherd-typescript@2.32.5",
+            "type": "application",
+            "version": "2.32.5",
+            "licenses": [
+                {
+                    "license": {
+                        "id": "MIT"
+                    }
+                }
+            ]
+        },
+        "properties": [
+            {
+                "name": "shepherd:sbom:lockfile",
+                "value": "pnpm-lock.yaml"
+            },
+            {
+                "name": "shepherd:sbom:lockfile-sha256",
+                "value": "217867987fd5d55befc3e78d4fa221f1de7aebf239c03426c233ce8170e24718"
+            },
+            {
+                "name": "shepherd:sbom:lockfile-version",
+                "value": "9.0"
+            },
+            {
+                "name": "shepherd:sbom:runtime-components",
+                "value": "0"
+            }
+        ],
+        "tools": {
+            "components": [
+                {
+                    "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@2.32.5#sbom-generator",
+                    "name": "shepherd-typescript lockfile SBOM generator",
+                    "purl": "pkg:npm/%40avnionur/shepherd-typescript@2.32.5",
+                    "type": "application",
+                    "version": "2.32.5"
+                }
+            ]
+        }
+    },
+    "serialNumber": "urn:uuid:35e29b44-2df1-851c-9c0f-7fee6d2fdbbe",
+    "specVersion": "1.5",
+    "version": 1
+}

@@ -33,19 +33,31 @@ JSON schema: `https://avnionur.github.io/shepherd-typescript/schemas/cli-output-
 - `shepherd-ts task register`
 - `shepherd-ts demo write`
 - `shepherd-ts package init`
+- `shepherd-ts store verify`
+- `shepherd-ts store backup`
+- `shepherd-ts store restore`
+- `shepherd-ts store export`
+- `shepherd-ts store import`
+- `shepherd-ts store maintain`
 
 ## Options
 
 - `--adopt`
+- `--backup`
 - `--binding-name`
 - `--binding-root`
 - `--command`
 - `--initialize-git`
+- `--input`
 - `--json`
 - `--limit`
+- `--manifest`
 - `--max-bytes`
+- `--mode`
 - `--no-initialize-git`
 - `--offset`
+- `--output`
+- `--redacted`
 - `--registry`
 - `--read`
 - `--store`

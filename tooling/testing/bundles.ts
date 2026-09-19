@@ -67,7 +67,8 @@ export async function testInstalledBundles(options: BundleVerificationOptions): 
         writeFileSync(
             entryPath,
             `import { ${fixture.symbol} as operation } from ${JSON.stringify(specifier)};
-process.stdout.write(operation(${JSON.stringify(fixture.argument)}) + "\\n");
+const result = operation(${JSON.stringify(fixture.argument)});
+process.stdout.write((typeof result === "string" ? result : JSON.stringify(result)) + "\\n");
 `,
         );
         const chunks: OutputChunk[] = [];

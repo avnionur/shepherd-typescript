@@ -1,8 +1,20 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { lstatSync } from "node:fs";
-import { mkdir, mkdtemp, readFile, rename, rm, symlink, writeFile } from "node:fs/promises";
+import {
+    chmod,
+    mkdir,
+    mkdtemp,
+    readdir,
+    readFile,
+    readlink,
+    rename,
+    rm,
+    symlink,
+    utimes,
+    writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -47,6 +59,116 @@ test("git-head custody retains committed content and detects only HEAD basis mov
     assert.deepEqual(await reopened.open(retained.custody.custody_id), retained);
     await reopened.discard(retained.custody.custody_id);
     await assert.rejects(reopened.open(retained.custody.custody_id), GitCustodyError);
+});
+
+test("git-head custody never runs repository filters or export attributes", async (context) => {
+    const root = await repository(context, "hostile-filter");
+    const marker = path.join(await temporary(context, "hostile-marker"), "smudge-ran");
+    await writeFile(
+        path.join(root, ".gitattributes"),
+        "* filter=evil ident\nignored.txt export-ignore\nsubst.txt export-subst\n",
+    );
+    await writeFile(path.join(root, "ignored.txt"), "export ignored\n");
+    await writeFile(path.join(root, "subst.txt"), "$Format:%H$ $Id$\n");
+    git(root, "add", ".gitattributes", "ignored.txt", "subst.txt");
+    git(root, "commit", "-m", "attributes");
+    const infoAttributes = path.join(root, ".git", "info", "attributes");
+    await mkdir(path.dirname(infoAttributes), { recursive: true });
+    await writeFile(infoAttributes, "* filter=evil\n");
+    const attributesFile = path.join(root, ".git", "global-attributes");
+    await writeFile(attributesFile, "* filter=evil\n");
+    git(root, "config", "core.attributesFile", attributesFile);
+    const smudge = `touch ${JSON.stringify(marker)}; cat`;
+    git(root, "config", "filter.evil.smudge", smudge);
+    git(root, "config", "filter.evil.required", "true");
+    execFileSync("git", ["-C", root, "archive", "--format=tar", "HEAD"], { stdio: "ignore" });
+    assert.equal(lstatSync(marker, { throwIfNoEntry: false })?.isFile(), true);
+    await rm(marker);
+
+    initializeWorkspace({ adopt: "git-head", rootPath: root });
+    const retained = await createGitAwareCustody({ workspaceRoot: root }).capture(bindingFor(root));
+    assert.ok(retained);
+    assert.equal(lstatSync(marker, { throwIfNoEntry: false }), undefined);
+    assert.equal(
+        await readFile(path.join(retained.custody.path, "ignored.txt"), "utf8"),
+        "export ignored\n",
+    );
+    assert.equal(
+        await readFile(path.join(retained.custody.path, "subst.txt"), "utf8"),
+        "$Format:%H$ $Id$\n",
+    );
+});
+
+test("git-head materialization matches git archive for a repository without attributes", async (context) => {
+    const root = await repository(context, "archive-oracle");
+    await mkdir(path.join(root, "nested", "deeper"), { recursive: true });
+    await writeFile(path.join(root, "nested", "deeper", "leaf.txt"), "leaf\n");
+    await writeFile(path.join(root, "nested", "run.sh"), "#!/bin/sh\n", { mode: 0o755 });
+    await writeFile(path.join(root, "empty.txt"), "");
+    await symlink("nested/run.sh", path.join(root, "link"));
+    git(root, "add", ".");
+    git(
+        root,
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        `160000,${git(root, "rev-parse", "HEAD")},sub`,
+    );
+    git(root, "commit", "-m", "shapes");
+    const expected = await temporary(context, "archive-oracle-extract");
+    execFileSync("tar", ["-xf", "-", "-C", expected], {
+        input: execFileSync("git", ["-C", root, "archive", "--format=tar", "HEAD"]),
+    });
+
+    initializeWorkspace({ adopt: "git-head", rootPath: root });
+    const retained = await createGitAwareCustody({ workspaceRoot: root }).capture(bindingFor(root));
+    assert.ok(retained);
+    const expectedManifest = await treeManifest(expected);
+    assert.deepEqual(
+        retained.revision.manifest.map((entry) => ({
+            kind: entry.kind,
+            mode: entry.mode,
+            path: entry.path,
+            size: entry.size,
+            symlink_target: entry.symlink_target,
+        })),
+        expectedManifest.map(({ bytes: _bytes, ...entry }) => entry),
+    );
+    for (const entry of expectedManifest.filter(({ bytes }) => bytes !== null)) {
+        assert.deepEqual(
+            await readFile(path.join(retained.custody.path, ...entry.path.split("/"))),
+            entry.bytes,
+        );
+    }
+});
+
+test("git-head materialization accepts an empty tree and refuses entries that escape the world", async (context) => {
+    const empty = await repository(context, "empty-tree");
+    const emptyTree = execFileSync("git", ["-C", empty, "mktree"], {
+        encoding: "utf8",
+        input: "",
+    }).trim();
+    git(empty, "reset", "--soft", git(empty, "commit-tree", emptyTree, "-m", "empty"));
+    initializeWorkspace({ adopt: "git-head", rootPath: empty });
+    const emptyWorld = await createGitAwareCustody({ workspaceRoot: empty }).capture(
+        bindingFor(empty),
+    );
+    assert.deepEqual(emptyWorld?.revision.manifest, []);
+
+    const root = await repository(context, "unsafe-tree");
+    const blob = git(root, "rev-parse", "HEAD:tracked.txt");
+    const tree = execFileSync("git", ["-C", root, "mktree"], {
+        encoding: "utf8",
+        input: `100644 blob ${blob}\t..\n`,
+    }).trim();
+    git(root, "reset", "--soft", git(root, "commit-tree", tree, "-m", "unsafe"));
+    initializeWorkspace({ adopt: "git-head", rootPath: root });
+    await assert.rejects(
+        createGitAwareCustody({ workspaceRoot: root }).capture(bindingFor(root)),
+        (error: unknown) =>
+            error instanceof GitCustodyError &&
+            error.code === workspaceProtocolConfig.gitCustody.errors.unsupportedCode,
+    );
 });
 
 test("worktree custody binds index flags, dirty files, untracked files, and ignored exclusions", async (context) => {
@@ -269,6 +391,158 @@ test("worktree custody accepts a clean gitlink and rejects dirty submodule conte
     await assert.rejects(service.capture(bindingFor(root)), GitCustodyError);
 });
 
+test("worktree submodule check never runs repository clean filters", async (context) => {
+    const sources = [
+        { attribute: "gitattributes", driver: "clean" },
+        { attribute: "info", driver: "clean" },
+        { attribute: "attributesFile", driver: "clean" },
+        { attribute: "gitattributes", driver: "process" },
+    ] as const;
+    for (const { attribute, driver } of sources) {
+        const name = `hostile-${attribute}-${driver}`;
+        const { module, root } = await submoduleParent(context, name);
+        const marker = path.join(await temporary(context, `${name}-marker`), "filter-ran");
+        const attributesFile = path.join(
+            git(module, "rev-parse", "--absolute-git-dir"),
+            "hostile-attributes",
+        );
+        for (const target of [root, module]) {
+            if (attribute === "gitattributes") {
+                await writeFile(path.join(target, ".gitattributes"), "* filter=evil\n");
+                git(target, "add", ".gitattributes");
+                git(target, "commit", "-qm", "hostile attributes");
+            } else if (attribute === "info") {
+                const gitDir = git(target, "rev-parse", "--absolute-git-dir");
+                await mkdir(path.join(gitDir, "info"), { recursive: true });
+                await writeFile(path.join(gitDir, "info", "attributes"), "* filter=evil\n");
+            } else {
+                await writeFile(attributesFile, "* filter=evil\n");
+                git(target, "config", "core.attributesFile", attributesFile);
+            }
+        }
+        if (attribute === "gitattributes") {
+            git(root, "add", "module");
+            git(root, "commit", "-qm", "move submodule");
+        }
+        const program = `touch ${JSON.stringify(marker)}; ${driver === "clean" ? "cat" : "exit 1"}`;
+        for (const target of [root, module])
+            git(target, "config", `filter.evil.${driver}`, program);
+        const touch = () => utimes(path.join(module, "tracked.txt"), new Date(), new Date(0));
+        await touch();
+        spawnSync("git", ["-C", root, "--no-optional-locks", "status", "--", "module"], {
+            stdio: "ignore",
+        });
+        assert.equal(lstatSync(marker, { throwIfNoEntry: false })?.isFile(), true, name);
+        await rm(marker);
+        await touch();
+
+        initializeWorkspace({ adopt: "worktree", rootPath: root });
+        const service = createGitAwareCustody({ workspaceRoot: root });
+        assert.ok(await service.capture(bindingFor(root)), name);
+        assert.equal(lstatSync(marker, { throwIfNoEntry: false }), undefined, name);
+        await writeFile(path.join(module, "tracked.txt"), "dirty\n");
+        await assert.rejects(service.capture(bindingFor(root)), dirtySubmodule);
+        assert.equal(lstatSync(marker, { throwIfNoEntry: false }), undefined, name);
+    }
+});
+
+test("worktree submodule check preserves git status dirty semantics without git status", async (context) => {
+    const { module, root } = await submoduleParent(context, "dirty-semantics", true);
+    initializeWorkspace({ adopt: "worktree", rootPath: root });
+    const service = createGitAwareCustody({ workspaceRoot: root });
+    const accepts = async (label: string) =>
+        assert.ok(await service.capture(bindingFor(root)), label);
+    const rejects = (label: string) =>
+        assert.rejects(service.capture(bindingFor(root)), dirtySubmodule, label);
+    const file = (...parts: string[]) => path.join(module, ...parts);
+    const restore = async () => {
+        git(module, "reset", "-q", "--hard");
+        await rm(file("untracked.txt"), { force: true });
+    };
+    await accepts("clean with an unpopulated nested gitlink");
+    await utimes(file("tracked.txt"), new Date(0), new Date(0));
+    await accepts("stat-only change");
+
+    await writeFile(file("tracked.txt"), "modified\n");
+    await rejects("modified content");
+    await restore();
+    await writeFile(file("untracked.txt"), "untracked\n");
+    await rejects("untracked file");
+    await restore();
+    await rm(file("tracked.txt"));
+    await rejects("deleted file");
+    await restore();
+    await chmod(file("run.sh"), 0o644);
+    await rejects("executable bit");
+    git(module, "config", "core.fileMode", "false");
+    await accepts("executable bit with core.fileMode false");
+    git(module, "config", "core.fileMode", "true");
+    await chmod(file("run.sh"), 0o755);
+    await rm(file("link"));
+    await writeFile(file("link"), "tracked.txt");
+    await rejects("symbolic link replaced by a file");
+    await restore();
+    await rename(file("dir"), file("dir-moved"));
+    await symlink("dir-moved", file("dir"));
+    await rejects("symbolic link in a leading path");
+    await rm(file("dir"));
+    await rename(file("dir-moved"), file("dir"));
+    git(module, "update-index", "--skip-worktree", "skip.txt");
+    await rm(file("skip.txt"));
+    git(module, "update-index", "--assume-unchanged", "tracked.txt");
+    await writeFile(file("tracked.txt"), "assumed\n");
+    await accepts("skip-worktree and assume-unchanged entries");
+    git(module, "update-index", "--no-skip-worktree", "skip.txt");
+    git(module, "update-index", "--no-assume-unchanged", "tracked.txt");
+    await restore();
+    await writeFile(file("tracked.txt"), "staged\n");
+    git(module, "add", "tracked.txt");
+    await rejects("staged change");
+    await restore();
+    execFileSync("git", ["-C", module, "update-index", "--index-info"], {
+        input: `100644 ${git(module, "rev-parse", "HEAD:tracked.txt")} 1\ttracked.txt\n`,
+    });
+    await rejects("unmerged index entry");
+    await restore();
+    git(module, "rm", "-q", "--cached", "tracked.txt");
+    await rejects("removed index entry");
+    await restore();
+
+    git(module, "commit", "-qm", "moved", "--allow-empty");
+    await rejects("submodule HEAD differs from the gitlink");
+    git(root, "add", "module");
+    await rejects("staged gitlink differs from HEAD");
+    git(root, "reset", "-q", "--", "module");
+    git(module, "reset", "-q", "--hard", "HEAD~1");
+    await accepts("restored gitlink");
+
+    const gitFile = file(".git");
+    const gitFileBytes = await readFile(gitFile);
+    await rm(gitFile);
+    await mkdir(gitFile);
+    await rejects("submodule without its own repository");
+    await rm(gitFile, { recursive: true });
+    await writeFile(gitFile, gitFileBytes);
+
+    execFileSync(
+        "git",
+        ["-c", "protocol.file.allow=always", "-C", module, "submodule", "update", "--init"],
+        { stdio: ["ignore", "pipe", "pipe"] },
+    );
+    await accepts("populated nested submodule");
+    await writeFile(file("nested", "tracked.txt"), "nested dirty\n");
+    await rejects("dirty nested submodule");
+    await rm(file("nested"), { recursive: true });
+    await writeFile(file("nested"), "not a directory\n");
+    await rejects("gitlink replaced by a file");
+    await rm(file("nested"));
+    await restore();
+    await accepts("unpopulated nested gitlink restored");
+
+    git(root, "checkout", "-q", "--orphan", "unborn");
+    await rejects("unborn superproject HEAD");
+});
+
 test("Git-aware receipts fail closed on corruption and support linked worktree identity", async (context) => {
     const root = await repository(context, "receipt-corruption");
     initializeWorkspace({ adopt: "worktree", rootPath: root });
@@ -475,6 +749,58 @@ test("Git-aware custody validates its public boundary and exact repository root"
     await rm(lock, { recursive: true });
 });
 
+function dirtySubmodule(error: unknown): boolean {
+    return (
+        error instanceof GitCustodyError &&
+        error.code === workspaceProtocolConfig.gitCustody.errors.unsupportedCode &&
+        error.message.includes("dirty submodule")
+    );
+}
+
+async function submoduleParent(
+    context: { after: (callback: () => Promise<void>) => void },
+    name: string,
+    shapes = false,
+): Promise<{ readonly module: string; readonly root: string }> {
+    const source = await repository(context, `${name}-source`);
+    if (shapes) {
+        const nested = await repository(context, `${name}-nested`);
+        await mkdir(path.join(source, "dir"));
+        await writeFile(path.join(source, "dir", "a.txt"), "a\n");
+        await writeFile(path.join(source, "dir", "b.txt"), "b\n");
+        await writeFile(path.join(source, "run.sh"), "#!/bin/sh\n", { mode: 0o755 });
+        await writeFile(path.join(source, "skip.txt"), "skip\n");
+        await symlink("tracked.txt", path.join(source, "link"));
+        git(source, "add", ".");
+        execFileSync(
+            "git",
+            [
+                "-c",
+                "protocol.file.allow=always",
+                "-C",
+                source,
+                "submodule",
+                "add",
+                nested,
+                "nested",
+            ],
+            { stdio: ["ignore", "pipe", "pipe"] },
+        );
+        git(source, "commit", "-qm", "shapes");
+    }
+    const root = await repository(context, `${name}-parent`);
+    execFileSync(
+        "git",
+        ["-c", "protocol.file.allow=always", "-C", root, "submodule", "add", source, "module"],
+        { stdio: ["ignore", "pipe", "pipe"] },
+    );
+    git(root, "commit", "-qm", "add submodule");
+    const module = path.join(root, "module");
+    git(module, "config", "user.email", "test@example.com");
+    git(module, "config", "user.name", "Test User");
+    return { module, root };
+}
+
 function bindingFor(root: string) {
     const binding = createWorkspaceBindings({
         bindings: [{ name: "repository", root: "." }],
@@ -482,6 +808,58 @@ function bindingFor(root: string) {
     }).bindings[0];
     assert.ok(binding);
     return binding;
+}
+
+async function treeManifest(root: string): Promise<
+    {
+        readonly bytes: Buffer | null;
+        readonly kind: string;
+        readonly mode: number | null;
+        readonly path: string;
+        readonly size: number | null;
+        readonly symlink_target: string | null;
+    }[]
+> {
+    const entries: Awaited<ReturnType<typeof treeManifest>> = [];
+    const walk = async (relative: string): Promise<void> => {
+        for (const name of await readdir(path.join(root, ...relative.split("/")))) {
+            const child = relative === "" ? name : `${relative}/${name}`;
+            const absolute = path.join(root, ...child.split("/"));
+            const status = lstatSync(absolute);
+            if (status.isSymbolicLink()) {
+                entries.push({
+                    bytes: null,
+                    kind: "symlink",
+                    mode: null,
+                    path: child,
+                    size: null,
+                    symlink_target: await readlink(absolute),
+                });
+            } else if (status.isDirectory()) {
+                entries.push({
+                    bytes: null,
+                    kind: "directory",
+                    mode: status.mode & 0o777,
+                    path: child,
+                    size: null,
+                    symlink_target: null,
+                });
+                await walk(child);
+            } else {
+                const bytes = await readFile(absolute);
+                entries.push({
+                    bytes,
+                    kind: "file",
+                    mode: status.mode & 0o777,
+                    path: child,
+                    size: bytes.length,
+                    symlink_target: null,
+                });
+            }
+        }
+    };
+    await walk("");
+    return entries.sort((left, right) => Buffer.from(left.path).compare(Buffer.from(right.path)));
 }
 
 async function gitState(root: string): Promise<{

@@ -20,6 +20,7 @@ import { syncDirectory } from "../blob/directory-durability.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import { WORKSPACE_ADOPTION_MODES } from "../protocol/values.generated.ts";
 import { WorkspaceControlError, WorkspaceInitializationConflictError } from "./errors.ts";
+import { gitCommandArguments, gitCommandEnvironment } from "./git-command.ts";
 import type {
     WorkspaceAdoptionMode,
     WorkspaceInitializationOptions,
@@ -349,10 +350,15 @@ function gitCommitExists(rootPath: string, commit: string): boolean {
 }
 
 function tryGit(rootPath: string, args: readonly string[]): string | null {
-    const result = spawnSync(workspaceProtocolConfig.gitExecutable, ["-C", rootPath, ...args], {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "pipe"],
-    });
+    const result = spawnSync(
+        workspaceProtocolConfig.gitExecutable,
+        gitCommandArguments(rootPath, args),
+        {
+            encoding: "utf8",
+            env: gitCommandEnvironment(),
+            stdio: ["ignore", "pipe", "pipe"],
+        },
+    );
     if (result.error !== undefined) {
         throw new WorkspaceControlError("configured Git executable is unavailable");
     }
@@ -360,10 +366,15 @@ function tryGit(rootPath: string, args: readonly string[]): string | null {
 }
 
 function runGit(rootPath: string, args: readonly string[], message: string): void {
-    const result = spawnSync(workspaceProtocolConfig.gitExecutable, ["-C", rootPath, ...args], {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "pipe"],
-    });
+    const result = spawnSync(
+        workspaceProtocolConfig.gitExecutable,
+        gitCommandArguments(rootPath, args),
+        {
+            encoding: "utf8",
+            env: gitCommandEnvironment(),
+            stdio: ["ignore", "pipe", "pipe"],
+        },
+    );
     if (result.error !== undefined || result.status !== 0) {
         throw new WorkspaceControlError(message);
     }

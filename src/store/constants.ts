@@ -31,7 +31,9 @@ export const BLOB_STORAGE_RECEIPT_VERSION = KERNEL_ABI_V0_CONTRACT.store.blobs.r
 
 /** Stable index identifiers in the versioned trace-store schema. */
 export const STORE_INDEXES = Object.freeze({
+    cutsByPublication: "trace_cuts_by_publication",
     parentsByParent: "record_parents_by_parent",
+    recordsBySchema: "records_by_schema",
     viewsByRecord: "record_views_by_record",
 });
 

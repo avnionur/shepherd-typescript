@@ -1,0 +1,181 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/retention-report-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Trace Retention Report v1",
+    "description": "Read-only inventory of a trace store by data class, export disposition, and detected secret class; never contains body content or matched text.",
+    "type": "object",
+    "required": [
+        "data_classes",
+        "format",
+        "format_version",
+        "record_count",
+        "retention_compatibility_version",
+        "secret_classes",
+        "secret_record_count",
+        "secret_records",
+        "secret_records_truncated",
+        "secret_scanning"
+    ],
+    "properties": {
+        "data_classes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "data_class",
+                    "disposition",
+                    "record_count",
+                    "secret_record_count"
+                ],
+                "properties": {
+                    "data_class": {
+                        "enum": [
+                            "checkpoint",
+                            "context",
+                            "general",
+                            "memory-adapter",
+                            "provider-citation"
+                        ]
+                    },
+                    "disposition": {
+                        "enum": [
+                            "include",
+                            "omit-body",
+                            "redact"
+                        ]
+                    },
+                    "record_count": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                    },
+                    "secret_record_count": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "format": {
+            "const": "shepherd.trace.retention-report"
+        },
+        "format_version": {
+            "const": 1
+        },
+        "record_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+        },
+        "retention_compatibility_version": {
+            "const": "shepherd.retention.v1"
+        },
+        "secret_classes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "finding_count",
+                    "record_count",
+                    "secret_class"
+                ],
+                "properties": {
+                    "finding_count": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                    },
+                    "record_count": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                    },
+                    "secret_class": {
+                        "enum": [
+                            "aws-access-key-id",
+                            "bearer-token",
+                            "github-token",
+                            "google-api-key",
+                            "pem-private-key",
+                            "provider-api-key",
+                            "slack-token"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "secret_record_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+        },
+        "secret_records": {
+            "type": "array",
+            "maxItems": 256,
+            "items": {
+                "type": "object",
+                "required": [
+                    "data_class",
+                    "finding_count",
+                    "record_id",
+                    "secret_classes",
+                    "truncated"
+                ],
+                "properties": {
+                    "data_class": {
+                        "enum": [
+                            "checkpoint",
+                            "context",
+                            "general",
+                            "memory-adapter",
+                            "provider-citation"
+                        ]
+                    },
+                    "finding_count": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 64
+                    },
+                    "record_id": {
+                        "type": "string",
+                        "pattern": "^sha256:[0-9a-f]{64}$"
+                    },
+                    "secret_classes": {
+                        "type": "array",
+                        "minItems": 1,
+                        "uniqueItems": true,
+                        "items": {
+                            "enum": [
+                                "aws-access-key-id",
+                                "bearer-token",
+                                "github-token",
+                                "google-api-key",
+                                "pem-private-key",
+                                "provider-api-key",
+                                "slack-token"
+                            ]
+                        }
+                    },
+                    "truncated": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "secret_records_truncated": {
+            "type": "boolean"
+        },
+        "secret_scanning": {
+            "enum": [
+                "off",
+                "refuse"
+            ]
+        }
+    },
+    "additionalProperties": false
+}

@@ -1,7 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 
 import { assertNonEmptyString } from "../record/guards.ts";
-import { decodeAppendReceipt } from "./codec.ts";
+import { decodeAppendReceipt, isBatchDigest } from "./codec.ts";
 import { STORE_TABLES } from "./constants.ts";
 import { TraceStoreError } from "./errors.ts";
 import type { AppendRecoveryDiagnostic } from "./integrity-types.ts";
@@ -15,7 +15,7 @@ export function diagnoseStoredAppend(
     assertNonEmptyString(appendIntentId, "appendIntentId");
     const row = database
         .prepare(
-            `SELECT receipt_json FROM ${STORE_TABLES.appendIntents}
+            `SELECT batch_digest, receipt_json FROM ${STORE_TABLES.appendIntents}
              WHERE append_intent_id = ?`,
         )
         .get(appendIntentId);
@@ -32,6 +32,10 @@ export function diagnoseStoredAppend(
             return freezeDiagnostic(appendIntentId, "manual_recovery_required", "orphaned_rows");
         }
         return freezeDiagnostic(appendIntentId, "retry_safe", null);
+    }
+    // A malformed batch digest cannot match any retried batch; the intent is no longer replayable.
+    if (!isBatchDigest(row.batch_digest)) {
+        return freezeDiagnostic(appendIntentId, "manual_recovery_required", "receipt_mismatch");
     }
     try {
         const receipt = decodeAppendReceipt(String(row.receipt_json), appendIntentId);

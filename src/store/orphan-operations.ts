@@ -24,6 +24,7 @@ import type {
     OrphanRepairPreparation,
     OrphanRepairReceipt,
 } from "../repair/types.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { appendToTraceStore, appendWithinTraceStoreTransaction } from "./append.ts";
 import { STORE_READ_TRANSACTION_SQL, STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import { AppendIntentConflictError } from "./errors.ts";
@@ -99,7 +100,7 @@ export function retainOpenOperation(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return operation;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -135,7 +136,7 @@ export function retainOperationSessionDeath(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return rows.length;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -169,7 +170,7 @@ export function diagnoseOpenOperations(
         database.exec(STORE_READ_TRANSACTION_SQL.commit);
         return report;
     } catch (error) {
-        database.exec(STORE_READ_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_READ_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
@@ -316,7 +317,7 @@ export function repairOpenOperations(
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ ...evidence, receipt_record_id: receiptRecordId });
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }

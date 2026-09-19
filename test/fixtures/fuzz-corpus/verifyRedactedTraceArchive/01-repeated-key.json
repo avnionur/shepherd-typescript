@@ -1,0 +1,9 @@
+{
+    "description": "F-013: the redacted verifier refuses a repeated key instead of verifying only the last value.",
+    "finding": "F-013",
+    "input": {
+        "seed": 0,
+        "replace": [{ "from": "\"records\":[", "to": "\"records\":[],\"records\":[" }]
+    },
+    "expect": { "outcome": "rejected", "error": "RedactedTraceArchiveError" }
+}

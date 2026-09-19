@@ -29,7 +29,11 @@ do not grant retry, recovery, settlement, filesystem, provider, or execution aut
 | Orphan repair | `OrphanRepairError` | typed orphan-repair protocol codes supplied by the exact failure |
 | Run control | `RunBudgetExhaustedError`, `RunCancelledError` | `public-errors.config.json` |
 | Durable runs | `DurableExecutionRecoveryAbsentError`, `DurableExecutionRecoveryError`, `DurableExecutionRecoveryCommandRequiredError`, `DurableExecutionClaimLostError`, `DurableExecutionClaimFencedError` | run protocol configuration |
-| Trace | `TraceStoreError`, `AppendIntentConflictError`, `UnsupportedStoreSchemaError`, `BlobIntegrityError`, `ProjectionCompatibilityError` | `public-errors.config.json` |
+| Trace | `TraceStoreError`, `AppendIntentConflictError`, `UnsupportedStoreSchemaError`, `BlobIntegrityError`, `ProjectionCompatibilityError`, `TraceSecretDetectedError` (`TRACE_SECRET_DETECTED`), `TraceStoreReadOnlyError` (`TRACE_STORE_READ_ONLY`, from 2.30.0: maintenance requested on a read-only handle) | `public-errors.config.json` |
+| Retention | `RedactedTraceArchiveError` (`REDACTED_TRACE_ARCHIVE_ERROR`, a `TypeError`) | `public-errors.config.json` |
+| Trace interchange | `TraceArchiveLimitError` (`TRACE_ARCHIVE_LIMIT_EXCEEDED`, a `TypeError`, from 2.32.0: an archive exceeds a configured `kernel.interchange.limits` member, named by its `limit` property; see [trace interchange](./trace-interchange.md#input-limits)) | `public-errors.config.json` |
+| Backup and restore | `TraceStoreBackupError` (`TRACE_STORE_BACKUP_ERROR`) with a configured `reason` from `STORE_BACKUP_FAILURE_REASONS` ([backup, restore, and migration](./backup-restore-and-migration.md#verification)) | `public-errors.config.json`; reasons from the backup protocol configuration |
+| Storage adapters | `StorageAdapterError` (`STORAGE_ADAPTER_ERROR`), `StorageBlobContentMismatchError` (`STORAGE_BLOB_CONTENT_MISMATCH`, a `StorageAdapterError`) | `public-errors.config.json` |
 | Supervision | `SupervisionApprovalConflictError`, `SupervisionCursorConflictError`, `SupervisionEvidenceError`, `SupervisionLeaseConflictError`, `SupervisionLeaseFencedError`, `SupervisionMaterializationUncertainError`, `SupervisionSubscriptionOverflowError` | supervision protocol configuration |
 | Replay | `ReplayCheckpointUnavailableError`, `ReplayCompatibilityError`, `ReplayEffectRefusedError`, `ReplayEvidenceError`, `ReplayLeaseConflictError`, `ReplayLeaseFencedError`, `ReplayMaterializationUncertainError`, `ReplayPrefixMismatchError`, `ReplayRestoreError`, `ReplaySessionInterruptedError`, `ReplayStepFailureError` | replay protocol configuration |
 | Scopes | `ScopeAuthorityError`, `ScopeEvidenceError`, `ScopeHeadConflictError`, `ScopeMergeConflictError`, `ScopeQuiescenceError`, `ScopeTerminalConflictError`, `ScopeWriterConflictError`, `ScopeWriterFencedError` | scope protocol configuration |
@@ -55,6 +59,13 @@ receipts, generated schemas, or the stable CLI JSON envelope. The CLI continues 
 closed configured error codes and remedies without messages, stacks, resolved paths, credentials,
 or nested causes. Packaged stack and cause behavior is specified in
 [`source-maps-and-causes.md`](./source-maps-and-causes.md).
+
+`TraceSecretDetectedError` is built only from a scan report: its message and `findings` carry the
+finding count, configured secret-class names, JSON Pointers, and digests, never matched text, and
+it has no cause. Human CLI output prints that message and `--json` prints only the configured code,
+so a refusal cannot echo the secret through either path. `RedactedTraceArchiveError` names the
+failed archive member or record index; a wrapped validation cause describes structure, not body
+content ([secrets and retention](./secrets-and-retention.md)).
 
 ## Intentionally unclassified failures
 

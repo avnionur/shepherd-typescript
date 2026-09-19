@@ -1,0 +1,13 @@
+{
+    "description": "F-004: the redacted verifier applies the interchange nesting limit before parsing.",
+    "finding": "F-004",
+    "input": {
+        "text": [
+            { "literal": "{\"records\":" },
+            { "repeat": "[", "count": 5000 },
+            { "repeat": "]", "count": 5000 },
+            { "literal": "}" }
+        ]
+    },
+    "expect": { "outcome": "rejected", "error": "TraceArchiveLimitError" }
+}

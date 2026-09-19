@@ -1,10 +1,10 @@
 # Implementation Tracker
 
-Last updated: 2026-09-18
+Last updated: 2026-09-19
 
-Current version: `2.25.1`
+Current version: `2.32.5`
 
-Current level: L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
+Current level: L4 release candidate for the in-repo scope ([Phase 11 exit audit](./phase-11-exit-audit.md)); 1.0 general availability is no-go until the owner-owed rows O-1 to O-5 close. L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
 ## Current position
 
@@ -495,6 +495,186 @@ leakage; and fails ordinary verification or fresh-package conformance on drift.
   report citing exactly the retained manifests, causal fork and replay evidence and identical
   inspections and batch digest from an imported archive, process crash evidence for the optimizer
   and Tree-RL, and the Phase 10 exit audit.
+- [x] Complete Phase 11 Slice 1 (#187) the production hardening contract with the slice map,
+  roadmap mapping, per-slice non-claims, and owner-owed register; the normative threat model; the
+  internal security review with severity rubric, findings register F-001 to F-009, and external
+  reviewer packet; the support policy; incident response with store-corruption and lost-backup
+  runbooks; and decisions D-016 to D-018.
+
+Phase 11 has its contract. "1.0" is the L4 maturity milestone, not a package version. The internal
+review records no critical finding; the confirmed seed findings are owned by #180 (secrets in
+immutable records, SQLite file mode) and #185 (fuzz coverage, archive decode bounds). No runtime,
+protocol, schema, or storage change is made by this slice.
+
+- [x] Complete Phase 11 Slice 2 (#179) API and protocol compatibility as a local release gate:
+  `config/compatibility-policy.config.json` (baselines, per-entry stability tiers, two-MINOR
+  deprecation window, frozen superseded schemas); API and protocol surface extractors under
+  `tooling/compatibility/`; baselines and the append-only classified change log under
+  `spec/compatibility/`; `pnpm check:compatibility` in `verify` and `verify:serial`;
+  `@deprecated` rendering in the API reference. Supply chain: lockfile CycloneDX-shaped SBOM
+  (`docs/generated/sbom.cdx.json`, `pnpm check:sbom` in `verify`), unsigned in-toto/SLSA v1
+  provenance, a two-build reproducible-build check, `pnpm verify:release`, and an unrun
+  `.github/workflows/release.yml`. Docs: compatibility policy and release integrity.
+
+The compatibility policy is enforced locally; builds were already reproducible on the reference
+host, so no build change was needed. Signing and publication stay owner-owed (O-2, finding F-010).
+
+- [x] Complete Phase 11 Slice 3 (#180) secrets and retention: the `retention` section of
+  `protocol.config.json` (named detectors, data classes, a mapping for every configured
+  `schemas`/`traceSchemas` family, export dispositions, redacted-archive and report formats,
+  limits, scanning modes, owner-only store-file mode) with its reader, compatibility contract, and
+  generated constants and schemas; `src/retention/` (`scanSemanticValueForSecrets`,
+  `classifyTraceSchema`, `readRetentionPolicy`, `exportRedactedTraceArchive`,
+  `verifyRedactedTraceArchive`, `inspectTraceRetention`); the opt-in `secretScanning: "refuse"`
+  store option with `TRACE_SECRET_DETECTED` refusal before any write on every append path and on
+  import; redacted-archive import refusal with `REDACTED_TRACE_ARCHIVE_ERROR`; the `./operations`
+  entry; owner-only SQLite database, WAL, and SHM files (F-003 fixed); and
+  [secrets and retention](../docs/secrets-and-retention.md).
+
+Records stay immutable: retention is classification, one-way redacted export, and store rotation.
+Scanning is off by default and pattern-based; F-001 is downgraded to Low and accepted with a
+threat-model residual row.
+
+- [x] Complete Phase 11 Slice 4 (#181) storage interfaces: the `storage` section of
+  `protocol.config.json` (name grammar, value, owner, TTL, and list bounds, durability and status
+  vocabularies, SQLite coordinator contract) with its reader, compatibility contract, and generated
+  constants; `src/storage/` with the `BlobStoreBackend` and `StorageCoordinator` contracts, the
+  memory and filesystem blob backends (the latter wrapping the unchanged `BlobFilesystem`), the
+  memory and SQLite coordinators (`IMMEDIATE` transactions over WAL, owner-only file), the
+  conformance kits `checkBlobStoreBackendConformance` and `checkStorageCoordinatorConformance`,
+  and `STORAGE_ADAPTER_ERROR` / `STORAGE_BLOB_CONTENT_MISMATCH`; exports through `./operations`
+  and the root; [storage interfaces](../docs/storage-interfaces.md).
+
+`SQLiteTraceStore` remains the only canonical append store and no cloud adapter ships (D-018).
+Importing `./operations` now loads `node:sqlite`. No finding is owned by this slice.
+
+- [x] Complete Phase 11 Slice 5 (#182) backup, restore, and migration: the `backup` section of
+  `protocol.config.json` (manifest identity, digest, blob-location and failure-reason vocabularies,
+  owner-only directory mode, layout names, bounds) with its reader, compatibility contract,
+  generated constants, and `store-backup-manifest-v1` schema; `src/operations/`
+  (`backupTraceStore`, `verifyTraceStoreBackup`, `restoreTraceStoreBackup`,
+  `replicateTraceStoreBackup`, `fetchReplicatedTraceStoreBackup`, `TRACE_STORE_BACKUP_ERROR`); the
+  `shepherd-ts store` group (`verify`, `backup`, `restore`, `export --redacted`, `import`) with
+  additive `cli-output-v1` branches and installed probes; migration drills for every store schema
+  1 through 12 with golden export digests, downgrade and backup-upgrade-restore drills; and
+  [backup, restore, and migration](../docs/backup-restore-and-migration.md) with runbooks linked
+  from incident response.
+
+The schema stays forward-only; downgrade is restoring a pre-upgrade backup or a known-format archive
+round trip. Restore never overwrites and reports success only after a read-only re-verification.
+F-003's backup part is closed. Drills run on the reference host only.
+
+- [x] Complete Phase 11 Slice 6 (#183) scale and performance: `SQLiteTraceStore.maintain`
+  (`inspect`, `checkpoint`, `optimize`, `vacuum`; `TRACE_STORE_READ_ONLY` on read-only handles;
+  `kernel.store.maintenance` configuration) and `shepherd-ts store maintain`; hot-path SQL in
+  `src/store/statements.ts` with `EXPLAIN QUERY PLAN` tests; index-only store schema v13 removing
+  the `listOwnersBySchema` and `listCuts` full scans; append planning by primary key instead of a
+  per-append load of every record identity and owner ordinal; the bounded scale tier; the kernel
+  benchmark, SLO configuration, committed reference-host artifact, `pnpm bench:kernel`, and
+  `pnpm check:slo` in `verify:release`; and the [performance report](../docs/performance-report.md).
+
+SLO budgets hold only for the macOS arm64 APFS reference class, with threefold headroom over two
+measured runs; other hosts and optimized carriers are unmeasured (O-3). No finding is owned by
+this slice.
+
+- [x] Complete Phase 11 Slice 7 (#184) observability: the `observability` section of
+  `protocol.config.json` (batch identity, attribute namespace, body modes and handlings, identifier
+  derivation, OTLP wire constants, resource attributes, run-span lifecycle schemas, semantic
+  conventions, bounds) with its reader, compatibility contract, generated constants, and
+  `telemetry-batch-v1` schema; `src/observability/` (hand-written OTLP/JSON subset types,
+  deterministic mapping, `createTraceTelemetryExporter` over `openTraceSubscription` with
+  acknowledgement only after sink success, `createJsonLinesTelemetrySink`); exports through
+  `./operations` and the root; an installed `./operations` telemetry probe; and
+  [observability](../docs/observability.md).
+
+Telemetry is never canonical: exporting leaves `exportTrace` byte-identical, times are exporter
+observation times (D-014), and bodies are withheld unless the retention policy allows them. The
+slice records F-011 (telemetry leakage) as an accepted Low residual with threat-model rows.
+
+- [x] Complete Phase 11 Slice 8 (#185) fuzzing: `test/support/prng.ts` (mulberry32, shared with
+  the scope and delegation law suites), `test/fuzz/` (mutators, harness and shared oracle, 23
+  targets across canonical encoding and validation, archive decode and import, the redacted
+  verifier, receipt and backup-manifest decoders, `runCli` argv, world paths, changesets against a
+  reference model, selection-publication codecs, placement, repository-grant, overlay-mount, and
+  native-jail evidence, and provider and application readers; telemetry skipped with reason),
+  `config/hardening-suites.config.json` (`fuzz` section), the replayed corpus in
+  `test/fixtures/fuzz-corpus/`, `pnpm fuzz` (`scripts/fuzz-cli.ts`), configured
+  `kernel.interchange.limits` with `TraceArchiveLimitError`, `workspaces.gitInvocation` with
+  `src/workspace/git-command.ts`, the host-independent `classifyOverlayMountInfo`, and
+  [fault and fuzz conformance](../docs/fault-and-fuzz-conformance.md) (fuzz part; faults reserved
+  for #186).
+
+F-002, F-004, and F-005 are fixed (F-005 with an accepted `PATH` residual). The suite found F-012
+(RangeError on deep nesting), F-013 (repeated-key parser differential), F-015 (manifest error
+class), and F-016 (stack- and JIT-dependent canonical acceptance of deep nesting); seed
+construction found F-014 (append admits a non-witness `witness_ref`). F-012, F-013, and F-015 are
+fixed with corpus cases; F-014 and F-016 are Low and open for #29. Extended run: seed 185185,
+410,400 cases, 0 findings, 188.7 s on the reference host.
+
+- [x] Complete Phase 11 Slice 9 (#186) fault and soak suites: `test/faults/` (deterministic
+  workload and child launcher, the looping `test/fixtures/fault-process.ts` writer, the recovery
+  classifier), seeded `SIGKILL` during append, blob put, cut publication, import, backup, and
+  vacuum; disk full through `max_page_count` and a `ulimit -f` child; the opt-in macOS
+  `pnpm test:faults:volume` suite; seeded page, WAL/SHM, blob, stray-file, and backup corruption
+  against a golden export and read surface; the mixed soak (`test/faults/soak.ts`, bounded in
+  `pnpm test`, `pnpm test:soak` through `scripts/soak-cli.ts`); the `faults` and `soak` sections of
+  `config/hardening-suites.config.json`; and the fault section of
+  [fault and fuzz conformance](../docs/fault-and-fuzz-conformance.md#faults-and-soak) with crash
+  and disk-full runbooks in [incident response](../docs/incident-response.md).
+
+Every started operation after a kill or injected write failure was classified complete,
+retryable, or refused; no intent needed manual recovery. The suites found F-017 (SQLite's own
+rollback after `SQLITE_FULL` or an I/O error made the store report "cannot rollback"; fixed by
+rolling back only open transactions), F-018 (malformed append-intent batch digests passed every
+check and were exported; fixed, with an accepted well-formed-digest residual), F-019 (a killed
+import leaves its staging directory in the OS temporary directory; Low, open for #29), and F-020
+(write-ahead-log loss rolls the store back to an earlier commit; accepted SQLite residual).
+Recorded soak (`pnpm test:soak --duration 720`, seed 186186, macOS arm64, Node 24.17.0): 722.1 s,
+2,537 operations (1,731 append intents, 537 blobs, 269 cuts), 41 kill cycles (3,230 complete, 24
+retryable, 11 refused), 26 verified backups, 59 maintenance passes, 369 telemetry batches covering
+all 13,544 record occurrences, 51 invariant checks, all passed. Page-flip sweep over seeds 1 to 64:
+3,072 cases, 1,701 recovered, 1,296 detected, 75 refused, no silent difference.
+
+- [x] Fix the independent internal review findings on the Phase 11 work and decide the #29-owned
+  findings (2.32.2): `git-head` custody writes HEAD from `git ls-tree`/`git cat-file --batch`
+  (F-021); the compatibility gate classifies version markers and API changes per artifact,
+  fingerprints `cli.commandOptions` and identity settings, refuses stale declarations, and uses
+  `deprecation.lastReleasedVersion` (F-022); store file-mode tightening is `O_NOFOLLOW`/`fchmod`
+  (F-023); restore publication, replication re-reads, and backup database opens are hardened
+  (F-024, F-026, F-027); secret-finding digests are per-process HMACs (F-025); append refuses a
+  non-witness `witness_ref` (F-014); import stages beside the target store (F-019). F-016 stays
+  open as a protocol decision; F-028 (`git status` clean filters in worktree custody, Medium) is
+  recorded open. See the [security review](./security-review.md) and
+  [threat model](../docs/threat-model.md).
+- [x] Fix F-028 (2.32.3): `worktree` custody's dirty-submodule check compares gitlink, submodule
+  HEAD, index, and HEAD tree with `rev-parse`/`ls-tree`/`ls-files` and hashes worktree blobs in the
+  runtime instead of running `git status`, so no repository clean or process filter runs during
+  capture; every other Git invocation under `src/workspace` audited (no filter, hook, textconv,
+  diff driver, credential helper, or pager path).
+- [x] Complete Phase 11 audit (#29) the project-wide 1.0 readiness audit (2.32.4): the
+  [Phase 11 exit audit](./phase-11-exit-audit.md) (twelve work items and five exit criteria with
+  delivery, entry points, docs, tests, and outcome; recovery classification; independent review;
+  verification; limits; recommendation on #24 and #29), the
+  [release-readiness dashboard](./release-readiness-dashboard.md) (Phase 0 to 11 epics, 99 parity
+  rows, 18 paper-coverage rows), the [release-candidate manifest](./release-candidate-manifest.md),
+  the [1.0 release notes](../docs/release-notes-1.0.md), the register's 1.0 gate result, and the
+  threat model's completed residual table.
+
+Phase 11 verdict: release candidate ready for the in-repo scope; 1.0 general availability is
+no-go until the owner-owed rows close: external security review (O-1), signing, attestation, and
+publication (O-2), hosted CI and cross-OS lanes (O-3), private vulnerability reporting (O-4), and
+the registry name (O-5). The internal register has no unresolved critical or high finding; F-016
+(Low) stays open as an owner protocol decision, and F-029 (Low, found by the audit: concurrent
+first opens of a new SQLite database fail closed and make the process-race test intermittent) is
+open for a follow-up PATCH before the candidate is tagged.
+
+- [x] Fix F-029 (#29 follow-up, 2.32.5): the journal-mode switch of the trace store, task
+  registry, and SQLite storage coordinator retries SQLite's deadlock-avoidance `SQLITE_BUSY`
+  within the configured busy timeout; trace-store and task-registry migrations read the schema
+  version inside each configured `IMMEDIATE` migration transaction; blob-directory creation
+  tolerates a concurrent `mkdir`; the process-race test reaps every child on failure and adds a
+  multi-process concurrent-first-open test for all three handle kinds. Probes: 0 failures in
+  4,000 process starts.
 
 Phase 10 is complete for its documented offline scope; the [exit audit](./phase-10-exit-audit.md)
 maps every work item and exit criterion to entry points, docs, and tests.
@@ -590,6 +770,255 @@ parents, and supervisors reach fenced durable-run control through `./supervision
 observation leaves exported traces byte-identical.
 
 ## Verification required for this slice
+
+Phase 11 F-029 fix (#29 follow-up): PATCH 2.32.5; concurrent first opens of one new SQLite
+database; no public API, schema, configuration, protocol, or CLI change. Values are in the
+[release-candidate manifest](./release-candidate-manifest.md).
+
+- [x] `pnpm sync:version`, `pnpm generate:sbom`, `pnpm generate:api-reference`,
+  `pnpm update:compatibility-baseline` (no classified change)
+- [x] `CI=true pnpm verify` twice: each run 1,073 tests, 1,071 pass, 1 skipped, 1 fail (the known
+  macOS clone carrier test), 100% line/branch/function coverage; `check:compatibility` 0 changes
+- [x] `pnpm build && pnpm test:package-cli`; `pnpm build:desktop`
+- [x] `node --test test/storage/process-race.test.ts` 10 consecutive runs: 10 pass
+- [x] F-029 probes: 0 failures in 4,000 process starts
+- [x] `pnpm release:reproducible-build`: both clean builds produced
+  `avnionur-shepherd-typescript-2.32.5.tgz` with SHA-256
+  `b4fed60fcde401d02076a5cb7c302fa86f460f5e81c6ea82b517565f174f4d17` and output-tree digest
+  `sha256:a903a048e4dd9de8183801f52e1d9591dc1a1662c5626eeb0c7772e19d3fd30c`
+- [x] `pnpm release:manifest`: unsigned provenance and manifest written (`"signed": false`)
+
+Phase 11 audit (#29): PATCH 2.32.4; documentation and audit only; no public API, schema,
+configuration, protocol, store, or CLI change. Values are in the
+[release-candidate manifest](./release-candidate-manifest.md).
+
+- [x] `pnpm sync:version`, `pnpm generate:sbom`, `pnpm generate:api-reference`,
+  `pnpm update:compatibility-baseline` (no classified change)
+- [x] `pnpm release:reproducible-build`: both clean builds produced
+  `avnionur-shepherd-typescript-2.32.4.tgz` with SHA-256
+  `b98ea693112436aeba08e8328758d9e15e48021f215196e69776d8c6aeef33dc` and output-tree digest
+  `sha256:1b9a315688798bea3ea96c70061691c7fa8d97a6b4b2a0edadac0d960b1b505c`
+- [x] `pnpm release:manifest`: unsigned provenance and manifest written (`"signed": false`)
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes (`check:compatibility` 0
+  changes); `pnpm test` ran 1,066 tests with 1,064 passing, 1 skipped (telemetry fuzz target), and
+  100% line/branch/function coverage. The one failure is the known macOS clone carrier test.
+  `pnpm build` and `pnpm test:package-cli` were then run separately and pass.
+- [x] `pnpm check:slo`: 10 of 10 budgets pass on `macos-arm64-apfs`
+- [x] `pnpm build:desktop`
+- [ ] Second `CI=true pnpm verify` (documentation edits only): 1,063 pass, 1 skipped, 2 fail: the
+  known clone carrier test and `test/storage/process-race.test.ts`, which found F-029 (Low, open:
+  concurrent first opens of a new trace-store or coordinator database fail closed; probes: 22 of
+  240 coordinator starts, 71 of 160 trace-store starts). Fix pending in a follow-up PATCH.
+  `pnpm build && pnpm test:package-cli` and `pnpm build:desktop` pass again.
+
+Phase 11 F-028 fix (#29 follow-up): PATCH 2.32.3; `worktree` submodule check without `git status`;
+no public API, schema, configuration, or protocol change.
+
+- [x] `pnpm sync:version`, `pnpm generate:sbom`, `pnpm generate:api-reference`,
+  `pnpm update:compatibility-baseline` (no classified change)
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` ran 1,066 tests
+  with 1,064 passing, 1 skipped, and 100% line/branch/function coverage. The one failure is the
+  known macOS clone carrier test. `pnpm build` and `pnpm test:package-cli` were then run
+  separately and pass.
+- [x] `pnpm build:desktop`
+
+Phase 11 review fixes (#29 follow-up): F-014, F-019, and F-021 to F-027 fixed, F-028 recorded
+open, F-016 left open. PATCH 2.32.2: no public API declaration change (the compatibility gate
+reported only the newly fingerprinted CLI-option and identity surfaces); protocol configuration
+gains `cli.commandOptions`, `kernel.interchange.staging`, `backup.databaseJournalMode`, and
+`retention.scanning.findingDigestPrefix` without a protocol identity change.
+
+- [x] `pnpm sync:version`, `pnpm generate:sbom`, `pnpm generate:api-reference`,
+  `pnpm update:compatibility-baseline` (no classified change)
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` ran 1,064 tests
+  with 1,062 passing, 1 skipped (the telemetry fuzz target), and 100% line/branch/function
+  coverage. The one failure is the known macOS clone carrier test. `pnpm build` and
+  `pnpm test:package-cli` were then run separately and pass.
+- [x] `pnpm build:desktop`
+
+Phase 11 Slice 9 (#186): long-duration, kill/restart, disk-full, and corruption recovery suites.
+PATCH 2.32.1; fixes and test suites only (F-017 rollback error masking, F-018 malformed batch
+digest); no public API, schema, archive, configuration protocol, or CLI change. The fault suites
+and a 240-operation bounded soak run inside `pnpm test` (about 25 s of added wall time across
+parallel files on the reference host).
+
+- [x] `pnpm sync:version`, `pnpm generate:sbom`, `pnpm generate:api-reference`,
+  `pnpm update:compatibility-baseline` (no classified change: nothing public added, removed, or
+  changed)
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` ran 1,051 tests
+  with 1,049 passing, 1 skipped (the telemetry fuzz target), and 100% line/branch/function
+  coverage. The one failure is the known macOS clone carrier test. `pnpm build` and
+  `pnpm test:package-cli` were then run separately and pass.
+- [x] `pnpm test:soak --duration 720`: passed (numbers above).
+- [x] `pnpm test:faults:volume`: passed without privileges (16 MiB HFS+ image; outcomes in
+  [fault and fuzz conformance](../docs/fault-and-fuzz-conformance.md#disk-full)); image detached
+  and removed.
+- [x] Page-flip sweep `SHEPHERD_FAULT_SEED=1..64`: 3,072 cases, no silent difference.
+- [x] `pnpm build:desktop`
+
+Phase 11 Slice 8 (#185): fuzz decoders, CLI inputs, changesets, and helper protocols. MINOR
+2.32.0; additive API (`TraceArchiveLimitError` through the root, `./trace`, and `./operations`),
+one public error code (`TRACE_ARCHIVE_LIMIT_EXCEEDED`), and two operational configuration
+sections (`kernel.interchange.limits`, `workspaces.gitInvocation`) excluded from protocol
+identity; fail-closed tightening of malformed input (oversized archives, repeated keys,
+non-canonical archived receipts and backup manifests); no record, store schema, archive format, or
+CLI output change. The default fuzz tier (23 targets, 1,000 cases per target except changesets 30,
+import 300, CLI 600) and the corpus replay run inside `pnpm test`.
+
+- [x] `pnpm generate:protocol`, `pnpm sync:version`, `pnpm generate:sbom`,
+  `pnpm generate:api-reference`, `pnpm update:compatibility-baseline --classify additive` (three
+  added `TraceArchiveLimitError` exports and one added error code; nothing removed or changed)
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` ran 1,037 tests
+  with 1,035 passing, 1 skipped (the telemetry fuzz target, no decoder), and 100%
+  line/branch/function coverage. The one failure is the known macOS clone carrier test.
+  `pnpm build` and `pnpm test:package-cli` were then run separately and pass.
+- [x] `pnpm fuzz --seed 185185` (extended tier): 410,400 cases, 0 findings, 188.7 s, macOS arm64,
+  Node 24.17.0. The first run with the same seed before the F-015 fix and the mutator change found
+  F-015 (26 cases) and F-016 (1 case).
+- [x] `pnpm build:desktop`
+
+Phase 11 Slice 7 (#184): observability. MINOR 2.31.0; additive API (exporter, JSON-lines sink,
+two identifier helpers, two generated constants, OTLP subset and exporter types through the root
+and `./operations`), one schema (`telemetry-batch-v1`), and the `observability` configuration
+section; no store schema, record, archive, or CLI change. `test/observability/` covers
+`exportTrace` byte identity, a throwing sink (no run affected, cursor not advanced), restart from
+the acknowledged durable cursor with a recovered span start, deterministic identifiers, every body
+handling with a secret never serialized, schema validation of every batch shape, and the
+owner-only JSON-lines sink.
+
+- [x] `pnpm generate:protocol`, `pnpm sync:version`, `pnpm generate:sbom`,
+  `pnpm generate:api-reference`, `pnpm update:compatibility-baseline --classify additive`
+  (added `./operations` and root exports, one added schema, five added version markers; nothing
+  removed or changed)
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` ran 998 tests with
+  997 passing and 100% line/branch/function coverage. The one failure is the known macOS clone
+  carrier test. `pnpm build` and `pnpm test:package-cli` (including the installed `./operations`
+  telemetry probe) were then run separately and pass.
+- [x] `pnpm build:desktop`
+
+Phase 11 Slice 6 (#183): scale and performance. MINOR 2.30.0; additive API (`maintain`, five
+report types, `TraceStoreReadOnlyError`), one public error code, one CLI command and option, one
+`cli-output-v1` branch, the `kernel.store.maintenance` configuration, and index-only store schema
+v13 (export digest of every drill fixture unchanged). `test/store/maintenance.test.ts`,
+`test/store/query-plans.test.ts`, `test/store/scale.test.ts`, `test/cli/store-cli.test.ts`, and
+`test/benchmark/kernel-benchmark.test.ts` cover the slice; the tooling under `tooling/benchmark/`
+is in the 100% coverage set.
+
+- [x] `pnpm generate:protocol`, `pnpm sync:version`, `pnpm generate:sbom`,
+  `pnpm generate:api-reference`, `pnpm update:compatibility-baseline --classify additive`
+  (added exports, one changed `SQLiteTraceStore` declaration classified additive, one schema
+  branch, schema version 12 to 13, one appended migration, one error code, one CLI command)
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` ran 982 tests with
+  981 passing and 100% line/branch/function coverage. The one failure is the known macOS clone
+  carrier test. `pnpm build` and `pnpm test:package-cli` (including the installed `store maintain`
+  probe) were then run separately and pass.
+- [x] `pnpm bench:kernel` wrote `docs/generated/benchmarks/macos-arm64-apfs.json`; `pnpm check:slo`
+  passes on the reference host; `pnpm bench:carriers` passes (copy backend only)
+- [x] `pnpm build:desktop`
+
+Phase 11 Slice 5 (#182): backup, restore, and migration. MINOR 2.29.0; additive API (five
+operations functions, their types, two generated constants), one public error code, one schema,
+the `backup` configuration section, and the `store` CLI group (six additive `cli-output-v1`
+branches); no trace-store schema, blob layout, or archive change. `test/operations/` covers
+owner-only modes under umask `022`, schema-valid manifests, verify and restore round trips,
+interrupted backups (no manifest, refused), every tampering class with its reason, restore
+publication races and final re-verification, backend-located blobs, replication and fetch, and the
+migration drills (schemas 1 through 12 with golden export digests, historical-schema backups,
+future-schema refusal with archive import, backup-upgrade-restore). `test/cli/store-cli.test.ts`
+validates every store command against `cli-output-v1`.
+
+- [x] `pnpm generate:protocol`, `pnpm sync:version`, `pnpm generate:api-reference`,
+  `pnpm generate:sbom`, `pnpm update:compatibility-baseline --classify additive` (added exports,
+  schema, branches, three version markers, one error code, five CLI commands; no changed
+  declarations); `pnpm check:compatibility` reports 0 changes
+- [x] backup, restore, drill, and store CLI suites pass on Node.js 24.12.0 and 24.17.0
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` ran 956 tests
+  with 955 passing and 100% line/branch/function coverage. The one failure is the known macOS clone
+  carrier test. `pnpm build` and `pnpm test:package-cli` (including the installed `store` CLI and
+  backup facade probes) were then run separately and pass.
+- [x] `pnpm build:desktop`
+
+Phase 11 Slice 4 (#181): storage interfaces. MINOR 2.28.0; additive API (storage types, four
+reference adapters, two conformance kits, three generated constants), two public error codes, and
+the `storage` configuration section; no trace-store schema, blob layout, or archive change.
+`test/storage/` runs both kits over all four adapters (plus the SQLite coordinator on `:memory:`),
+shows broken adapters failing the expected laws, covers filesystem layout sharing with
+`SQLiteTraceStore`, foreign-entry-tolerant listing, corrupt-object refusal, coordinator
+persistence, owner-only file mode, closed/newer/conflicting-schema refusal, every storage
+configuration rejection, and a four-process CAS and lease race (tens of real CAS conflicts per run,
+every generation committed once, one lease holder, stale fence refused after takeover).
+
+- [x] `pnpm generate:protocol`, `pnpm sync:version`, `pnpm generate:sbom`,
+  `pnpm generate:api-reference`, `pnpm update:compatibility-baseline --classify additive`
+  (added exports, two version markers, two error codes; no changed declarations);
+  `pnpm check:compatibility` reports 0 changes
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` ran 910 tests with
+  909 passing and 100% line/branch/function coverage. The one failure is the known macOS clone
+  carrier test. `pnpm build` and `pnpm test:package-cli` (including the new installed storage
+  probe and the updated `./operations` entry-loading policy) were then run separately and pass.
+- [x] `pnpm build:desktop`
+
+Phase 11 Slice 3 (#180): secrets and retention. MINOR 2.27.0; additive API (`./operations`, the
+optional `secretScanning` store option and getter), two public error codes, two schemas, and the
+`retention` configuration section; no store schema or native archive change. Retention tests
+(`test/retention/`) cover every configured secret class by pointer and digest, no matched text in
+reports, errors, stacks, or inspection, key-match non-descent, the finding bound, refusal with no
+partial append and a corrected same-intent retry, refusal inside store-owned transactions (cut
+publication), import refusal, default-off behavior, the family-mapping gate, every retention
+reader rejection, redacted export dispositions, schema validation, verifier tamper cases, import
+refusal of redacted archives, and the bounded read-only report. `test/store/file-mode.test.ts`
+covers F-003. A probe on macOS arm64 APFS, Node 24.17.0, umask `022` confirmed that SQLite gives
+the WAL and SHM the database file's `0600` mode.
+
+- [x] `pnpm generate:protocol`, `pnpm sync:version`, `pnpm generate:sbom`,
+  `pnpm generate:api-reference`, `pnpm update:compatibility-baseline --classify additive` (four
+  classified `SQLiteTraceStore`/`SQLiteTraceStoreOptions` declaration changes; added schemas,
+  version markers, and error codes recorded as additive); `pnpm check:compatibility` reports 0
+  changes
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` ran 890 tests with
+  889 passing and 100% line/branch/function coverage. The one failure is the known macOS clone
+  carrier test. `pnpm build` and `pnpm test:package-cli` (including the installed `./operations`
+  probe and bundle fixture) were then run separately and pass.
+- [x] `pnpm build:desktop`
+
+Phase 11 Slice 2 (#179): compatibility gate, SBOM, provenance, and reproducible build. MINOR
+2.26.0; no runtime, protocol, schema, or store change. Gate mutation tests on temporary copies
+(`test/compatibility-policy.test.ts`) show precise failures for a removed export, narrowed
+`cli-output-v1` schema, removed error code, removed CLI command, and reordered migration, and
+acceptance of added `oneOf` branches and appended migrations after a MINOR bump and baseline update.
+
+- [x] `pnpm sync:version`, `pnpm generate:api-reference`, `pnpm generate:sbom`,
+  `pnpm update:compatibility-baseline`; `pnpm check:compatibility` and `pnpm check:sbom` pass
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` ran 856 tests with
+  855 passing and 100% line/branch/function coverage including the new tooling files. The one
+  failure is the known macOS clone carrier test. `pnpm build` and `pnpm test:package-cli` were then
+  run separately and pass.
+- [x] `CI=true pnpm verify:release` stops at the same known test; `pnpm release:reproducible-build`
+  and `pnpm release:manifest` were then run separately and pass. Both clean builds produced
+  `avnionur-shepherd-typescript-2.26.0.tgz` with SHA-256
+  `0b0570121ab0a9f20cdb92a03fa1e73eca3d8c9b7b587c061c3d2012d66fe9e6` and output-tree digest
+  `sha256:fb1556cf7fcd1c5fc3d9f3dfff16b16183b7060dd1c438562d47b75f8c48181e` (macOS arm64 APFS,
+  Node 24.17.0, pnpm 10.32.1); no build change was needed.
+- [x] `pnpm build:desktop`
+- [x] `release.yml` action SHAs resolved read-only with `gh api repos/<action>/git/ref/tags/<tag>`;
+  the workflow was not run.
+
+Phase 11 Slice 1 (#187): the [production hardening contract](./production-hardening-contract.md),
+[threat model](../docs/threat-model.md), [internal security review](./security-review.md),
+[support policy](../docs/support-policy.md), and [incident response](../docs/incident-response.md)
+are delivered. Every cited source and test path was checked to exist. Seed findings were
+investigated by reading the code paths; the SQLite file mode finding (F-003) was confirmed by a
+probe against `src/index.ts` on macOS arm64 APFS, Node 24.17.0, umask `022`: database, WAL, and
+SHM `0644`, blob root and fanout directories `0700`, blob file `0600`. Documentation-only PATCH
+2.25.2; no runtime, protocol, schema, or storage change.
+
+- [x] `pnpm sync:version`, `pnpm generate:api-reference` (version line only)
+- [x] `CI=true pnpm verify`: `check:protocol`, `check:evaluation`, `build`, `check:api-reference`,
+  `lint`, `typecheck` pass; `pnpm test` ran 841 tests with 840 passing and 100%
+  line/branch/function coverage. The one failure is the known macOS clone carrier test (the host C
+  toolchain cannot link the clone helper; also fails on `main`). `pnpm build` and
+  `pnpm test:package-cli` were then run separately and pass.
+- [x] `pnpm build:desktop`
 
 Phase 10 Task 7 (#177): the [Phase 10 exit audit](./phase-10-exit-audit.md) maps all nine work
 items and five exit criteria to entry points, docs, and tests, records the recovery classification,
@@ -978,8 +1407,13 @@ as applications protocol v3 (#174), the Tree-RL adapter is delivered as applicat
 (#175), and offline evaluation with baselines and a checked repository report is delivered as
 applications protocol v5 (#176). Conformance, process crash evidence for the optimizer and
 Tree-RL, and the [Phase 10 exit audit](./phase-10-exit-audit.md) are delivered (#177): Phase 10 is
-complete for its documented offline scope. The next phase is Phase 11 (#24, production hardening and
-1.0); its first child issue is to be cut from the epic before the 1.0 readiness audit (#29).
+complete for its documented offline scope. Phase 11 (#24, production hardening and 1.0) has
+delivered #187, #179 to #186, and the readiness audit (#29, 2.32.4): release candidate ready for
+the in-repo scope, 1.0 general availability no-go. No agent-implementable slice remains in the
+roadmap; the next step is owner action on O-1 to O-5 in the
+[production hardening contract](./production-hardening-contract.md#owner-owed-register) and the
+F-016 protocol decision, after which an addendum to the
+[Phase 11 exit audit](./phase-11-exit-audit.md) can record general availability.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration

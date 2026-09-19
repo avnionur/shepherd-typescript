@@ -320,6 +320,7 @@ export type {
     TypedEffectTraceValidation,
     TypedEffectTraceValidationOptions,
 } from "./formal/types.ts";
+export { TraceArchiveLimitError } from "./interchange/errors.ts";
 export type { TraceImportReceipt } from "./interchange/types.ts";
 export {
     listOutputCitations,
@@ -352,6 +353,66 @@ export type {
     TaskLedgerRepositoryGrantEvidence,
     TraceRevisionEntry,
 } from "./ledger/types.ts";
+export {
+    createTraceTelemetryExporter,
+    type TelemetryClock,
+    type TelemetryExportReceipt,
+    type TraceTelemetryExporter,
+    type TraceTelemetryExporterOptions,
+} from "./observability/exporter.ts";
+export {
+    createJsonLinesTelemetrySink,
+    type JsonLinesTelemetrySinkOptions,
+} from "./observability/jsonl-sink.ts";
+export {
+    deriveTelemetrySpanId,
+    deriveTelemetryTraceId,
+    type TelemetryBodyHandling,
+    type TelemetryBodyMode,
+} from "./observability/mapping.ts";
+export type {
+    OtlpAnyValue,
+    OtlpExportLogsServiceRequest,
+    OtlpExportTraceServiceRequest,
+    OtlpInstrumentationScope,
+    OtlpKeyValue,
+    OtlpLogRecord,
+    OtlpResource,
+    OtlpResourceLogs,
+    OtlpResourceSpans,
+    OtlpScopeLogs,
+    OtlpScopeSpans,
+    OtlpSpan,
+    OtlpSpanEvent,
+    OtlpStatus,
+    TelemetryBatch,
+    TelemetrySink,
+} from "./observability/otlp-types.ts";
+export { backupTraceStore, type TraceStoreBackupOptions } from "./operations/backup.ts";
+export type {
+    TraceStoreBackupBlobLocation,
+    TraceStoreBackupHead,
+    TraceStoreBackupManifest,
+} from "./operations/backup-manifest.ts";
+export {
+    TraceStoreBackupError,
+    type TraceStoreBackupFailureReason,
+} from "./operations/errors.ts";
+export {
+    fetchReplicatedTraceStoreBackup,
+    replicateTraceStoreBackup,
+    type TraceStoreBackupFetchOptions,
+    type TraceStoreBackupReplica,
+    type TraceStoreBackupReplicationOptions,
+} from "./operations/replication.ts";
+export {
+    restoreTraceStoreBackup,
+    type TraceStoreBackupVerification,
+    type TraceStoreBackupVerificationOptions,
+    type TraceStoreRestoreOptions,
+    type TraceStoreRestoreReceipt,
+    verifyTraceStoreBackup,
+} from "./operations/restore.ts";
 export { projectExecution } from "./projection/execution.ts";
 export { projectEffectiveHistory } from "./projection/history.ts";
 export {
@@ -469,6 +530,8 @@ export {
     RETAINED_WORLD_SETTLEMENT_OPERATION_VERSION,
     RETAINED_WORLD_SETTLEMENT_RECEIPT_VERSION,
     RETAINED_WORLD_SETTLEMENT_VERSION,
+    RETENTION_DATA_CLASSES,
+    RETENTION_EXPORT_DISPOSITIONS,
     SCOPE_AUTHORITY_ATOMS,
     SCOPE_CHECKPOINT_CONSTITUENT_KINDS,
     SCOPE_CHECKPOINT_EVIDENCE_STATUSES,
@@ -494,6 +557,12 @@ export {
     SCOPE_VOCABULARY_TERMS,
     SCOPE_VOCABULARY_VERSION,
     SCOPE_WORLD_CAPABILITIES,
+    SECRET_SCANNING_MODES,
+    STORAGE_DURABILITIES,
+    STORAGE_LEASE_STATUSES,
+    STORAGE_REF_SWAP_STATUSES,
+    STORE_BACKUP_BLOB_LOCATIONS,
+    STORE_BACKUP_FAILURE_REASONS,
     SUPERVISION_APPROVAL_GATES,
     SUPERVISION_APPROVAL_LIMITS,
     SUPERVISION_APPROVAL_PHASES,
@@ -514,6 +583,8 @@ export {
     SUPERVISION_TIMEOUT_POLICIES,
     TASK_RUN_LEDGER_LATEST_SELECTOR,
     TASK_RUN_LEDGER_LIMITS,
+    TELEMETRY_BODY_HANDLINGS,
+    TELEMETRY_BODY_MODES,
     WORLD_CHANGESET_ERROR_CODES,
     WORLD_CHANGESET_INSPECTION_LIMITS,
 } from "./protocol/values.generated.ts";
@@ -649,6 +720,35 @@ export type {
     RewindReplaySessionOptions,
     RunReplaySessionOptions,
 } from "./replay/types.ts";
+export { RedactedTraceArchiveError } from "./retention/errors.ts";
+export {
+    classifyTraceSchema,
+    type RetentionClassificationOptions,
+    type RetentionDataClass,
+    type RetentionExportDisposition,
+    type RetentionPolicy,
+    readRetentionPolicy,
+    type SecretScanningMode,
+    type TraceSchemaClassification,
+} from "./retention/policy.ts";
+export {
+    exportRedactedTraceArchive,
+    type RedactedRecordBody,
+    type RedactedTraceArchiveSummary,
+    verifyRedactedTraceArchive,
+} from "./retention/redacted-archive.ts";
+export {
+    inspectTraceRetention,
+    type RetentionDataClassCount,
+    type RetentionSecretClassCount,
+    type RetentionSecretRecord,
+    type TraceRetentionReport,
+} from "./retention/retention-report.ts";
+export {
+    type SecretFinding,
+    type SecretScanReport,
+    scanSemanticValueForSecrets,
+} from "./retention/secret-scan.ts";
 export type {
     RunArtifact,
     RunArtifactContentDefinition,
@@ -856,12 +956,47 @@ export type {
 export { projectScopeVocabulary } from "./scope/vocabulary.ts";
 export { claimScopeWriter, claimScopeWriters, releaseScopeWriter } from "./scope/writer.ts";
 export {
+    type BlobStoreBackendFactory,
+    checkBlobStoreBackendConformance,
+    checkStorageCoordinatorConformance,
+    type StorageConformanceLawResult,
+    type StorageConformanceReport,
+    type StorageCoordinatorFactory,
+} from "./storage/conformance.ts";
+export { StorageAdapterError, StorageBlobContentMismatchError } from "./storage/errors.ts";
+export { createFilesystemBlobStoreBackend } from "./storage/filesystem-blob-backend.ts";
+export { createMemoryBlobStoreBackend } from "./storage/memory-blob-backend.ts";
+export { createMemoryStorageCoordinator } from "./storage/memory-coordinator.ts";
+export {
+    createSQLiteStorageCoordinator,
+    type SQLiteStorageCoordinator,
+} from "./storage/sqlite-coordinator.ts";
+export type {
+    BlobStoreBackend,
+    BlobStoreListOptions,
+    BlobStoreListPage,
+    BlobStorePutResult,
+    StorageCoordinator,
+    StorageDurability,
+    StorageFence,
+    StorageLease,
+    StorageLeaseAcquireResult,
+    StorageLeaseReleaseResult,
+    StorageLeaseRenewResult,
+    StorageLeaseStatus,
+    StorageRef,
+    StorageRefSwapResult,
+    StorageRefSwapStatus,
+} from "./storage/types.ts";
+export {
     AppendIntentConflictError,
     BlobIntegrityError,
     ProjectionCompatibilityError,
     RetainedWorldSettlementConflictError,
     RetainedWorldSettlementInvalidError,
+    TraceSecretDetectedError,
     TraceStoreError,
+    TraceStoreReadOnlyError,
     UnsupportedStoreSchemaError,
 } from "./store/errors.ts";
 export type {
@@ -903,6 +1038,11 @@ export type {
     SliceRecord,
     SQLiteTraceStoreOptions,
     StoreAppendRequest,
+    TraceStoreCheckpointReport,
+    TraceStoreMaintenanceMode,
+    TraceStoreMaintenanceOptions,
+    TraceStoreMaintenanceReport,
+    TraceStoreSpaceReport,
     VisibilityProfile,
     WitnessAnchor,
 } from "./store/types.ts";

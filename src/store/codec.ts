@@ -15,6 +15,19 @@ export function createBatchDigest(batch: AppendBatchDraft): string {
         .digest("hex");
 }
 
+const BATCH_DIGEST_LENGTH = createHash(
+    kernelProtocolConfig.store.appendIntentDigestAlgorithm,
+).digest("hex").length;
+
+/** Whether a value has the shape of a configured batch digest: lowercase hex of the digest length. */
+export function isBatchDigest(value: unknown): value is string {
+    return (
+        typeof value === "string" &&
+        value.length === BATCH_DIGEST_LENGTH &&
+        /^[0-9a-f]+$/u.test(value)
+    );
+}
+
 /** Creates a durable receipt from a planned append. */
 export function createAppendReceipt(
     appendIntentId: string,

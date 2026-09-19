@@ -325,39 +325,7 @@ export function unmountOverlay(target: string): void {
  * @internal
  */
 export function readOverlayMountState(layers: OverlayLayers): OverlayMountState {
-    const overlay = BACKENDS.overlay;
-    let entry: { readonly filesystem: string; readonly options: readonly string[] } | null = null;
-    for (const line of readFileSync(overlay.mountInfoPath, "utf8").split("\n")) {
-        const separator = line.indexOf(" - ");
-        if (separator < 0) continue;
-        const fields = line.slice(0, separator).split(" ");
-        if (unescapeMountText(fields[4] ?? "") !== layers.target) continue;
-        const [filesystem = "", , superOptions = ""] = line.slice(separator + 3).split(" ");
-        entry = {
-            filesystem,
-            options: superOptions.split(overlay.mountOptionSeparator).map(unescapeMountText),
-        };
-    }
-    if (entry === null) return "absent";
-    const expected = renderOverlayOptions(layers).split(overlay.mountOptionSeparator);
-    return entry.filesystem === overlay.filesystemType &&
-        expected.every((option) => entry.options.includes(option))
-        ? "owned"
-        : "foreign";
-}
-
-function renderOverlayOptions(layers: OverlayLayers): string {
-    const tokens = BACKENDS.overlay.tokens;
-    return BACKENDS.overlay.mountOptions
-        .replaceAll(tokens.lower, layers.lower)
-        .replaceAll(tokens.upper, layers.upper)
-        .replaceAll(tokens.work, layers.work);
-}
-
-function unescapeMountText(value: string): string {
-    return value.replace(/\\([0-7]{3})/gu, (_match, octal: string) =>
-        String.fromCharCode(Number.parseInt(octal, 8)),
-    );
+    return classifyOverlayMountInfo(readFileSync(BACKENDS.overlay.mountInfoPath, "utf8"), layers);
 }
 
 function probeOverlay(stagingDirectory: string): void {
@@ -406,6 +374,55 @@ function runCommand(executable: string, args: readonly string[]): string | null 
     return String(result.error ?? (result.stderr.trim() || result.status));
 }
 /* node:coverage enable */
+
+/**
+ * Classifies Linux `mountinfo` text against exact retained overlay layers.
+ *
+ * The last entry whose unescaped mount point equals the target wins; it is `owned` only when its
+ * filesystem type is the configured overlay type and its super options contain every configured
+ * layer option. Host-independent so malformed and hostile mount tables can be tested anywhere.
+ *
+ * @returns `absent` without a matching entry, `owned` for the exact overlay, otherwise `foreign`.
+ * @internal
+ */
+export function classifyOverlayMountInfo(
+    mountInfo: string,
+    layers: OverlayLayers,
+): OverlayMountState {
+    const overlay = BACKENDS.overlay;
+    let entry: { readonly filesystem: string; readonly options: readonly string[] } | null = null;
+    for (const line of mountInfo.split("\n")) {
+        const separator = line.indexOf(" - ");
+        if (separator < 0) continue;
+        const fields = line.slice(0, separator).split(" ");
+        if (unescapeMountText(fields[4] ?? "") !== layers.target) continue;
+        const [filesystem = "", , superOptions = ""] = line.slice(separator + 3).split(" ");
+        entry = {
+            filesystem,
+            options: superOptions.split(overlay.mountOptionSeparator).map(unescapeMountText),
+        };
+    }
+    if (entry === null) return "absent";
+    const expected = renderOverlayOptions(layers).split(overlay.mountOptionSeparator);
+    return entry.filesystem === overlay.filesystemType &&
+        expected.every((option) => entry.options.includes(option))
+        ? "owned"
+        : "foreign";
+}
+
+function renderOverlayOptions(layers: OverlayLayers): string {
+    const tokens = BACKENDS.overlay.tokens;
+    return BACKENDS.overlay.mountOptions
+        .replaceAll(tokens.lower, layers.lower)
+        .replaceAll(tokens.upper, layers.upper)
+        .replaceAll(tokens.work, layers.work);
+}
+
+function unescapeMountText(value: string): string {
+    return value.replace(/\\([0-7]{3})/gu, (_match, octal: string) =>
+        String.fromCharCode(Number.parseInt(octal, 8)),
+    );
+}
 
 function probeInDirectory(stagingDirectory: string, probe: (root: string) => void): void {
     const root = path.join(stagingDirectory, randomUUID());

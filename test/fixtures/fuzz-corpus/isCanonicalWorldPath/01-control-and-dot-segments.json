@@ -1,0 +1,5 @@
+{
+    "description": "Dot segments and the workspace control directory are not canonical world paths; the oracle checks the returned boolean against path properties.",
+    "input": { "value": "a/./.vcscore/../b" },
+    "expect": { "outcome": "accepted" }
+}

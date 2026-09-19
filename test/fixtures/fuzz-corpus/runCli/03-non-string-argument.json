@@ -1,0 +1,5 @@
+{
+    "description": "A non-string argument exits with the usage code and a schema-valid failure envelope.",
+    "input": { "value": { "argv": ["store", null, "--json"] } },
+    "expect": { "outcome": "accepted" }
+}

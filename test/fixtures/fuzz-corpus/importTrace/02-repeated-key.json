@@ -1,0 +1,9 @@
+{
+    "description": "F-013: import refuses a repeated record key whose last value would otherwise win.",
+    "finding": "F-013",
+    "input": {
+        "seed": 1,
+        "replace": [{ "from": "\"records\":[", "to": "\"records\":[],\"records\":[" }]
+    },
+    "expect": { "outcome": "rejected", "error": "TypeError" }
+}

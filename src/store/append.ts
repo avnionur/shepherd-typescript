@@ -3,7 +3,9 @@ import type { DatabaseSync } from "node:sqlite";
 import { planAppendBatch } from "../append/plan.ts";
 import { normalizeAppendBatchDraft } from "../append/validation.ts";
 import { canonicalizeRecord } from "../canonical/canonical-record.ts";
+import { kernelProtocolConfig } from "../protocol/config.ts";
 import type { RecordId } from "../record/types.ts";
+import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import {
     createAppendReceipt,
     createBatchDigest,
@@ -14,27 +16,58 @@ import { STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import { AppendIntentConflictError, TraceStoreError } from "./errors.ts";
 import { readStoredRecord } from "./read.ts";
 import { assertStoredReceiptMatches } from "./receipt-integrity.ts";
+import { refuseSecretBearingBodies } from "./secret-scanning.ts";
+import { HOT_PATH_SQL } from "./statements.ts";
 import type { AppendReceipt, StoreAppendRequest } from "./types.ts";
 import { normalizeStoreAppendRequest } from "./validation.ts";
 
-/** Commits or idempotently replays one append request. */
+/**
+ * Commits or idempotently replays one append request.
+ *
+ * A store scanning in `refuse` mode rejects secret-bearing bodies before the transaction begins.
+ */
 export function appendToTraceStore(
     database: DatabaseSync,
     request: StoreAppendRequest,
 ): AppendReceipt {
+    refuseSecretBearingAppend(database, request);
     database.exec(STORE_TRANSACTION_SQL.begin);
     try {
-        const receipt = appendWithinTraceStoreTransaction(database, request);
+        const receipt = appendScannedWithinTransaction(database, request);
         database.exec(STORE_TRANSACTION_SQL.commit);
         return receipt;
     } catch (error) {
-        database.exec(STORE_TRANSACTION_SQL.rollback);
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;
     }
 }
 
-/** Commits or replays an append inside a transaction owned by the caller. */
+/**
+ * Commits or replays an append inside a transaction owned by the caller.
+ *
+ * A store scanning in `refuse` mode rejects secret-bearing bodies before this append writes.
+ */
 export function appendWithinTraceStoreTransaction(
+    database: DatabaseSync,
+    request: StoreAppendRequest,
+): AppendReceipt {
+    refuseSecretBearingAppend(database, request);
+    return appendScannedWithinTransaction(database, request);
+}
+
+function refuseSecretBearingAppend(database: DatabaseSync, request: StoreAppendRequest): void {
+    refuseSecretBearingBodies(database, () =>
+        normalizeAppendBatchDraft(normalizeStoreAppendRequest(request).batch).groups.flatMap(
+            (group, groupIndex) =>
+                group.records.map((record, recordIndex) => ({
+                    body: record.body,
+                    pointer: `/batch/groups/${groupIndex}/records/${recordIndex}/body`,
+                })),
+        ),
+    );
+}
+
+function appendScannedWithinTransaction(
     database: DatabaseSync,
     request: StoreAppendRequest,
 ): AppendReceipt {
@@ -64,23 +97,38 @@ export function appendWithinTraceStoreTransaction(
         return receipt;
     }
 
-    const knownRecordIds = new Set(
-        database
-            .prepare(`SELECT record_id FROM ${STORE_TABLES.records}`)
-            .all()
-            .map((row) => String(row.record_id)),
-    );
-    const nextOwnerOrdinals = new Map(
-        database
-            .prepare(`SELECT owner_id, next_ordinal FROM ${STORE_TABLES.ownerOrdinals}`)
-            .all()
-            .map((row) => [String(row.owner_id), Number(row.next_ordinal)] as const),
-    );
+    // Planning needs only the retained records this batch cites and the owners it extends, so
+    // both are read by primary key instead of loading every record identity and owner ordinal.
+    const referencedRecordIds = new Set<unknown>();
+    const batchOwnerIds = new Set<unknown>();
+    for (const group of batch.groups) {
+        batchOwnerIds.add(group.owner_id);
+        for (const parentId of group.caused_by_record_ids ?? []) referencedRecordIds.add(parentId);
+        for (const record of group.records) {
+            referencedRecordIds.add(record.witness_ref);
+            for (const parentId of record.caused_by_record_ids ?? []) {
+                referencedRecordIds.add(parentId);
+            }
+        }
+    }
+    const knownRecordStatement = database.prepare(HOT_PATH_SQL.appendKnownRecord);
+    const knownSchemas = new Map<RecordId, string>();
+    for (const recordId of referencedRecordIds) {
+        const row = typeof recordId === "string" ? knownRecordStatement.get(recordId) : undefined;
+        if (row !== undefined) knownSchemas.set(recordId as RecordId, String(row.schema_ref));
+    }
+    const knownRecordIds = new Set(knownSchemas.keys());
+    const ownerOrdinalStatement = database.prepare(HOT_PATH_SQL.appendOwnerNextOrdinal);
+    const nextOwnerOrdinals = new Map<string, number>();
+    for (const ownerId of batchOwnerIds) {
+        const row = typeof ownerId === "string" ? ownerOrdinalStatement.get(ownerId) : undefined;
+        if (row !== undefined) nextOwnerOrdinals.set(ownerId as string, Number(row.next_ordinal));
+    }
     const plan = planAppendBatch(batch, {
         known_record_ids: knownRecordIds,
         next_owner_ordinals: nextOwnerOrdinals,
     });
-    validateWitnesses(plan.records, knownRecordIds);
+    validateWitnesses(plan.records, knownSchemas);
     const receipt = createAppendReceipt(normalizedRequest.append_intent_id, plan);
     database
         .prepare(
@@ -139,17 +187,35 @@ export function appendWithinTraceStoreTransaction(
     return receipt;
 }
 
+/**
+ * Requires every `witness_ref` to name a retained or earlier planned record whose schema is the
+ * root witness or the configured witness schema, the invariant `verifyIntegrity` checks as
+ * `witness_mismatch`; a refused batch writes nothing.
+ */
 function validateWitnesses(
     records: readonly {
-        readonly envelope: { readonly record_id: RecordId; readonly witness_ref: RecordId | "" };
+        readonly envelope: {
+            readonly record_id: RecordId;
+            readonly schema_ref: string;
+            readonly witness_ref: RecordId | "";
+        };
     }[],
-    knownRecordIds: ReadonlySet<RecordId>,
+    knownSchemas: ReadonlyMap<RecordId, string>,
 ): void {
-    const available = new Set(knownRecordIds);
+    const available = new Map<string, string>(knownSchemas);
     for (const record of records) {
-        if (!available.has(record.envelope.witness_ref)) {
+        const witnessSchema = available.get(record.envelope.witness_ref);
+        if (witnessSchema === undefined) {
             throw new TraceStoreError(`unknown witness record: ${record.envelope.witness_ref}`);
         }
-        available.add(record.envelope.record_id);
+        if (
+            witnessSchema !== kernelProtocolConfig.rootWitness.schemaRef &&
+            witnessSchema !== kernelProtocolConfig.queries.witnessSchemaRef
+        ) {
+            throw new TraceStoreError(
+                `witness_ref does not name a witness record: ${record.envelope.witness_ref}`,
+            );
+        }
+        available.set(record.envelope.record_id, record.envelope.schema_ref);
     }
 }

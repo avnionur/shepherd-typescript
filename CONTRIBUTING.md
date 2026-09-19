@@ -33,6 +33,22 @@ pnpm build:desktop
 - Update README, documentation index, tracker, changelog, and version when required by `AGENTS.md`.
 - Review dependency and lockfile changes as source code.
 
+## Compatibility and release evidence per pull request
+
+After the version bump and `pnpm sync:version`, every pull request refreshes the generated
+evidence that records the version:
+
+1. `pnpm generate:api-reference`;
+2. `pnpm generate:sbom` (the SBOM records the package version and the lockfile);
+3. `pnpm update:compatibility-baseline`, adding `--classify additive` or `--classify breaking`
+   (with `--note`) only after judging every changed declaration or value it reports.
+
+`pnpm verify` fails while any of them is stale. Removals need a deprecation that shipped for the
+configured window and a MAJOR bump; see the [compatibility policy](./docs/compatibility-policy.md).
+Review `spec/compatibility/` diffs as compatibility decisions: never hand-edit baselines or
+recorded change-log entries. Before a release, `pnpm verify:release` reproduces the build and
+writes the SBOM and unsigned provenance ([release integrity](./docs/release-integrity.md)).
+
 ## Pull requests
 
 Describe:
@@ -56,7 +72,17 @@ Use:
 
 Do not bypass hooks or force-push shared branches without explicit coordination.
 
+## Security-sensitive changes
+
+A change that touches a trust boundary in the [threat model](./docs/threat-model.md) (caller API
+validation, CLI parsing, archive import, store files, provider responses, task revision, native
+helpers, supervision, or Git execution) must update the threat model row it affects, cite the test
+that proves the mitigation, and add or close a finding in the
+[findings register](./.plan/security-review.md#findings-register). Do not add dependencies for
+hardening work (decision D-017).
+
 ## Security reports
 
 Follow [SECURITY.md](./SECURITY.md). Never disclose an unpatched vulnerability in a public issue or
-pull request.
+pull request. Maintainers handle reports under [incident response](./docs/incident-response.md);
+the [support policy](./docs/support-policy.md) states what is supported.

@@ -122,6 +122,66 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   where new files belong.
 - [Protocol configuration](./protocol-configuration.md) defines validation, immutable snapshots,
   migration-bound constants, and safe SQLite settings.
+- [Threat model](./threat-model.md) defines assets, trust boundaries, STRIDE threats mapped to
+  mitigation code and tests, and residual risks linked to the
+  [internal security review](../.plan/security-review.md) findings register.
+- [Support policy](./support-policy.md) defines supported versions, runtimes, platforms, surfaces,
+  store compatibility, and what "1.0" means.
+- [Incident response](./incident-response.md) defines severity levels, triage, private advisories,
+  fix and release, deprecation and rollback, and store-corruption and lost-backup runbooks.
+- [Production hardening contract](../.plan/production-hardening-contract.md) maps the Phase 11
+  work items and exit criteria to slices and owner-owed rows, with per-slice non-claims.
+- [1.0 release notes](./release-notes-1.0.md) state what the L4 "1.0" milestone means for package
+  2.32.x, what is delivered, the known limits, the owner-owed items before general availability,
+  and upgrade and migration pointers.
+- [Phase 11 exit audit](../.plan/phase-11-exit-audit.md) records the 1.0 readiness verdict (release
+  candidate for the in-repo scope; general availability no-go until owner-owed items close) with
+  the evidence map, recovery classification, independent review, verification, and limits; the
+  [release-readiness dashboard](../.plan/release-readiness-dashboard.md) classifies every phase
+  epic, parity row, and paper-coverage row, and the
+  [release-candidate manifest](../.plan/release-candidate-manifest.md) records the candidate's
+  digests and fresh verification.
+- [Compatibility policy](./compatibility-policy.md) defines the semantic-versioning mapping,
+  stability tiers, the configured deprecation window, protocol evolution and N-1 read
+  compatibility, the classified change log, and how `pnpm check:compatibility` baselines are
+  updated.
+- [Release integrity](./release-integrity.md) defines the lockfile SBOM, the unsigned in-toto/SLSA
+  provenance statement, the reproducible-build check, `pnpm verify:release`, the unrun release
+  workflow, and the owner-owed signing and publication steps.
+- [Generated SBOM](./generated/sbom.cdx.json) is the checked-in CycloneDX-shaped bill of materials
+  derived from `pnpm-lock.yaml`.
+- [Secrets and retention](./secrets-and-retention.md) defines configured secret detectors, the
+  opt-in `secretScanning: "refuse"` store mode and `TRACE_SECRET_DETECTED`, retention data classes
+  and export dispositions, one-way redacted archives and their verifier, retention inspection, store
+  rotation (records are immutable; no in-place deletion), and owner-only SQLite file modes, all
+  through the `./operations` entry.
+- [Storage interfaces](./storage-interfaces.md) defines the `BlobStoreBackend` and
+  `StorageCoordinator` contracts and laws (no-replace content-addressed writes, compare-and-swap
+  generations, leases with fencing tokens), the memory, filesystem, and SQLite reference adapters,
+  the conformance kits, and the multi-process race evidence; `SQLiteTraceStore` remains the only
+  canonical append store and no cloud adapter ships.
+- [Backup, restore, and migration](./backup-restore-and-migration.md) defines the verified online
+  backup and its `shepherd.store.backup` v1 manifest, classified verification, non-destructive
+  exact-manifest restore, replication by compare-and-swap, the forward-only schema and downgrade
+  policy, migration drills for every historical store schema, the `store` CLI group, and upgrade,
+  rollback, and interruption runbooks, through the `./operations` entry.
+- [Observability](./observability.md) defines the non-canonical OpenTelemetry-compatible telemetry
+  exporter (deterministic trace and span identifiers, run spans, one log record per record
+  occurrence, retention-governed bodies withheld by default, at-least-once delivery from an
+  acknowledged subscription cursor), the `shepherd.telemetry.batch` v1 schema, the OTLP/JSON
+  encoding rules it relies on, and the owner-only JSON-lines sink, through the `./operations` entry.
+- [Fault and fuzz conformance](./fault-and-fuzz-conformance.md) defines the seeded dependency-free
+  fuzz suite (mutators, the shared oracle, every target and its allowed errors, the `verify` and
+  `extended` tiers, `pnpm fuzz`), the replayed regression corpus, the recorded extended run, and the
+  findings it produced, and the fault and soak suites: seeded `SIGKILL` of writers with every
+  started operation classified complete, retryable, or refused, disk full (`max_page_count`,
+  `ulimit -f`, and the opt-in `pnpm test:faults:volume`), classified page, WAL/SHM, blob, and
+  backup corruption, and the mixed soak (`pnpm test:soak`) with its recorded run.
+- [Performance report](./performance-report.md) publishes the reference-host (macOS arm64 APFS)
+  kernel benchmark with raw samples, the SLO budgets checked by `pnpm check:slo` in
+  `verify:release`, the bounded scale tier, query-plan evidence, and own carrier storage
+  measurements; [SQLite trace store maintenance](./sqlite-trace-store.md#maintenance) documents
+  `SQLiteTraceStore.maintain` and `shepherd-ts store maintain`.
 - [Command-line interface](./cli.md) defines configured command topology, preserved human output,
   stable canonical JSON, generated reference/schema artifacts, executable packaging, exact
   mutation delegation, and unavailable-capability remedies.

@@ -10,12 +10,22 @@ Legend:
 “Complete” means the row has conformance fixtures and passes through the TypeScript public seam
 and any applicable pinned upstream-oracle comparison.
 
+1.0 readiness (2.32.4, #29): every row below is classified as implemented, implemented with a
+deferred remainder, platform-fenced, version-fenced, or classified unsupported, deferred,
+adapted, or external in the [release-readiness dashboard](./release-readiness-dashboard.md)
+(99 rows: 73 implemented, 9 with a deferred remainder, 6 platform-fenced, 2 version-fenced, 9
+classified). Open rows are not presented as complete: live provider adapters (Claude CLI, Codex,
+OpenRouter), streaming event normalization, `package init` and fenced `run start`, dynamic
+`task register`, native Windows, Core-0H activation, the external Lean build, the compensable-tier
+fixture, effect accounting, ATIF export, upstream trace event verbs and CLI golden output, and
+pinned dirty-worktree oracle parity.
+
 ## Core semantic surface
 
 | Capability | Upstream 0.3 | Paper/vNext | Priority | Planned proof |
 | --- | --- | --- | --- | --- |
 | Typed task declaration | shipped | core | P0 | compile-time tests plus runtime descriptor fixtures |
-| Bodyless task contract | shipped via retained run | core | P0 | offline static-provider execution and terminal public-seam tests implemented; durable run retention follows |
+| Bodyless task contract | shipped via retained run | core | P0 | offline static-provider execution and terminal public-seam tests implemented; durable run retention implemented by `executeTaskDurably` (Phase 2) |
 | Bodied deterministic task | shipped | core | P0 | success/failure/cancel fixtures |
 | Doc/instruction is behavioral identity | shipped | core | P0 | task digest changes when instruction changes |
 | Runtime input/output validation | partial surface | core | P0 | schema failure fixtures |
@@ -56,7 +66,7 @@ and any applicable pinned upstream-oracle comparison.
 | Live trace subscription | not public complete | explicit | P2 | durable and ephemeral cursor subscriptions with backpressure, overflow, monotonic acknowledgement, and subscriber-crash reconnect implemented |
 | Arbitrary rewind | not public API | explicit | P2 | verified rewind to retained checkpoints and trace-only step boundaries with byte-equivalent multi-resource world restoration, recorded-prefix copies, imported-archive rewind, and fail-closed unavailable or corrupt targets implemented |
 | Suffix replay | deferred | explicit | P2 | recorded-prefix reconstruction without provider or handler invocation, verified prefix and context prefix identity, changed task/provider/handler suffixes, cache-hit evidence, policy-gated irreversible effects, and divergence analysis with no unexplained divergence implemented |
-| Export/import | upstream package exists | useful | P1 | native archive v1 round trips implemented; ATIF follows runtime records |
+| Export/import | upstream package exists | useful | P1 | native archive v1 round trips implemented, also through `shepherd-ts store export/import`; verified store backup and restore with migration drills for every historical schema (#182); ATIF follows runtime records |
 
 ## Worlds, scopes, and settlement
 
@@ -147,7 +157,8 @@ Windows jail claim is made.
 | --- | --- | --- | --- |
 | Runtime-supervision protocol fidelity | Appendix E | P3 | versioned observation/action schemas, prompts, tools, budgets, seeds, and dataset selection cited by digest in each manifest implemented; schemas are digest-pinned, not runtime-evaluated |
 | CRO protocol fidelity | Appendix F | P3 | proposer tools, reflection and handoff schemas, candidate lineage, targeted-eval verdicts, measured costs, and result artifacts implemented |
-| TypeScript-owned performance report | §4 and Appendix C | P3 | raw, reproducible platform/backend benchmarks without inherited claims |
+| TypeScript-owned performance report | §4 and Appendix C | P3 | reference host class only (macOS arm64 APFS): [performance report](../docs/performance-report.md) with raw kernel samples in `docs/generated/benchmarks/`, SLO budgets checked by `pnpm check:slo` in `verify:release`, and own copy-carrier storage measurements; no inherited claims; other hosts and optimized-carrier backends not measured (#183) |
+| OpenTelemetry-compatible observability | L4 production hardening (#24) | P3 | non-canonical OTLP/JSON-subset exporter implemented (#184): deterministic trace and span identifiers, run spans and per-record log records, retention-governed bodies withheld by default, at-least-once delivery from an acknowledged subscription cursor, and an owner-only JSON-lines sink ([observability](../docs/observability.md)); no SDK, collector, metrics signal, or network exporter; times are observation times |
 | Paper limitation reporting | Appendix A.1 | P3 | supervisor cost, proof-of-existence, and replay-coupling disclosures |
 | Paper future-work register | Appendix A.2 | P3 | interpretability, continual learning, post-training, and safety rows remain classified |
 
@@ -166,6 +177,7 @@ Windows jail claim is made.
 | `task list/register/resolve/show` | P1 | list/resolve/show implemented; dynamic source registration fails closed |
 | `demo write` | P1 | checked-in `quickstart` fixture and installed-package execution implemented |
 | `package init` | P2 | configured honest refusal; reproducible scaffold follows |
+| `store verify/backup/restore/export/import/maintain` | P1 | TypeScript operations group (no upstream equivalent): read-only integrity verification, verified online backup, exact-manifest non-destructive restore, native or `--redacted` export to an exclusive owner-only file, and pristine import implemented with stable closed JSON and installed-package probes (#182); semantics-preserving `maintain` (inspect, checkpoint, optimize, vacuum) (#183) |
 | fenced `run start` compatibility | P3 | configured and disabled by default |
 
 ## Parity reporting rules

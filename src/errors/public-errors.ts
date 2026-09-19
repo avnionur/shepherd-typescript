@@ -18,6 +18,10 @@ type FixedPublicErrorCodes = {
         readonly budgetExhausted: PublicErrorCode;
         readonly cancelled: PublicErrorCode;
     };
+    readonly storage: {
+        readonly adapter: PublicErrorCode;
+        readonly blobContentMismatch: PublicErrorCode;
+    };
     readonly tasks: {
         readonly registry: PublicErrorCode;
         readonly schemaUnsupported: PublicErrorCode;
@@ -25,9 +29,14 @@ type FixedPublicErrorCodes = {
     };
     readonly trace: {
         readonly appendIntentConflict: PublicErrorCode;
+        readonly archiveLimit: PublicErrorCode;
+        readonly backup: PublicErrorCode;
         readonly blobIntegrity: PublicErrorCode;
         readonly projectionCompatibility: PublicErrorCode;
+        readonly readOnly: PublicErrorCode;
+        readonly redactedArchive: PublicErrorCode;
         readonly schemaUnsupported: PublicErrorCode;
+        readonly secretDetected: PublicErrorCode;
         readonly store: PublicErrorCode;
     };
     readonly workspace: {
@@ -79,13 +88,14 @@ export function readPublicErrorConfig(value: unknown): FixedPublicErrorCodes {
     }
     const codes = readObject(
         root.codes,
-        ["effects", "formal", "runs", "tasks", "trace", "workspace"],
+        ["effects", "formal", "runs", "storage", "tasks", "trace", "workspace"],
         "public error codes",
     );
     const parsed = {
         effects: readCodeGroup(codes.effects, ["handlerNotFound"], "effects"),
         formal: readCodeGroup(codes.formal, ["typedTraceInvalid"], "formal"),
         runs: readCodeGroup(codes.runs, ["budgetExhausted", "cancelled"], "runs"),
+        storage: readCodeGroup(codes.storage, ["adapter", "blobContentMismatch"], "storage"),
         tasks: readCodeGroup(
             codes.tasks,
             ["registry", "schemaUnsupported", "versionConflict"],
@@ -95,9 +105,14 @@ export function readPublicErrorConfig(value: unknown): FixedPublicErrorCodes {
             codes.trace,
             [
                 "appendIntentConflict",
+                "archiveLimit",
+                "backup",
                 "blobIntegrity",
                 "projectionCompatibility",
+                "readOnly",
+                "redactedArchive",
                 "schemaUnsupported",
+                "secretDetected",
                 "store",
             ],
             "trace",

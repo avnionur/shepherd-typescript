@@ -1,0 +1,9 @@
+{
+    "description": "store import of a missing archive exits with a configured code and one schema-valid envelope; the file-size limit check (test/interchange/archive-limits.test.ts) runs before any read.",
+    "input": {
+        "value": {
+            "argv": ["store", "import", "--input", "missing", "--store", "fresh.sqlite", "--json"]
+        }
+    },
+    "expect": { "outcome": "accepted" }
+}

@@ -1,0 +1,36 @@
+{
+    "description": "Bounded scale tier for test/store/scale.test.ts. The default tier runs inside pnpm test; set the environment variable to the extended tier name to run the larger tier on demand.",
+    "defaultTier": "default",
+    "naming": {
+        "prefix": "scale:",
+        "recordPaddingCharacters": 256,
+        "schemaRef": "example.scale.v1"
+    },
+    "temporaryDirectoryPrefix": "shepherd-scale-",
+    "testTimeoutMilliseconds": 600000,
+    "tierEnvironmentVariable": "SHEPHERD_SCALE_TIER",
+    "tiers": {
+        "default": {
+            "batchRecords": 250,
+            "blobBytes": 1024,
+            "blobs": 150,
+            "cutsPerOwner": 2,
+            "deepChainRecords": 5000,
+            "orphanBlobs": 40,
+            "owners": 60,
+            "recordsPerOwner": 250,
+            "temporaryFiles": 12
+        },
+        "extended": {
+            "batchRecords": 500,
+            "blobBytes": 4096,
+            "blobs": 5000,
+            "cutsPerOwner": 4,
+            "deepChainRecords": 50000,
+            "orphanBlobs": 500,
+            "owners": 400,
+            "recordsPerOwner": 500,
+            "temporaryFiles": 100
+        }
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "description": "F-013: a manifest whose identity still matches but whose text is not the writer's canonical encoding is refused.",
+    "finding": "F-013",
+    "input": {
+        "seed": 0,
+        "replace": [{ "from": "{\"archive_format\":", "to": "{ \"archive_format\":" }]
+    },
+    "expect": { "outcome": "rejected", "error": "TraceStoreBackupError" }
+}

@@ -29,7 +29,18 @@ compatibility and keep their existing binding and custody identities.
 ## Basis semantics
 
 `git-head` requires an attached or detached commit and materializes only its committed tree.
-Staged, unstaged, untracked, and ignored files do not enter that world. The object pack retains
+Staged, unstaged, untracked, and ignored files do not enter that world. Since 2.32.2 the tree is
+written from raw objects (`git ls-tree -r -t -z --full-tree HEAD` and `git cat-file --batch`), so
+no attribute applies: no `filter.<driver>.smudge` or `process` program runs, and `export-ignore`,
+`export-subst`, `ident`, and end-of-line conversion do not change the world. Files are created
+exclusively with Git checkout's modes (`0666`, or `0777` for executable blobs) under the process
+umask, directories and submodule gitlinks as directories with the default mode, and symbolic links
+from their blob. A tree entry named `.`, `..`, or empty, or whose parent is not a tree entry, is
+refused as unsupported state. For a repository without attributes the world equals the previous
+`git archive | tar` extraction under any umask that removes the other-write bit (for example
+`022`, `002`, or `077`); repositories that relied on archive attributes now retain the committed
+bytes. The configured `gitCustody.archiveExecutable` stays in the frozen workspace protocol
+contract and is no longer invoked. The object pack retains
 the complete required superproject commit, tree, and blob history independently of borrowed object
 stores. In `worktree` mode it additionally retains every non-gitlink object cited only by the
 index, including staged-only blobs.
@@ -48,6 +59,19 @@ Missing skip-worktree paths remain intentionally absent. Ignored untracked conte
 ordinary ignored-file byte churn does not move the basis; changing effective ignore sources does.
 Unmerged indexes, dirty submodules, undeclared embedded repositories, inexact repository roots,
 unsupported object formats, and malformed or corrupt receipts fail closed.
+
+A declared submodule is clean when the superproject's committed gitlink equals the staged one, the
+submodule directory is its own repository top level, its HEAD equals the gitlink, its stage-0
+index equals its HEAD tree, every entry that is neither skip-worktree nor assume-unchanged matches
+the worktree by type, executable bit (unless the submodule sets `core.fileMode=false`), and raw Git
+blob ID with no symbolic link in its leading path, populated nested gitlinks are clean by the same
+rule (unpopulated ones are accepted), and it has no untracked, non-ignored path. Since 2.32.3 this
+is decided without `git status`, which re-hashes content through repository-configured
+`filter.<driver>.clean` or `process` programs: only `rev-parse`, `ls-tree`, and `ls-files` run, and
+worktree bytes are hashed in the runtime. A stat-only change stays clean; a file equal to its blob
+only after a clean filter or end-of-line conversion (for example Git LFS pointers or
+`core.autocrlf`) is reported as a dirty submodule. No Git command used by custody applies
+attributes, runs hooks, textconv or diff drivers, or credential helpers, or starts a pager.
 
 Workspace protocol v18 applies the shared configured protected-path policy to managed and ignored
 Git enumeration and to independently inspected archive materialization. Exact control storage is

@@ -8,6 +8,7 @@ import {
     renderApplicationManifestSchema,
     renderApplicationSupervisionSchema,
 } from "./schemas/application-schemas.ts";
+import { renderStoreBackupManifestSchema } from "./schemas/backup-schemas.ts";
 import { renderCliCommandReference, renderCliOutputSchema } from "./schemas/cli-artifacts.ts";
 import { renderApplicationCompressionSchema } from "./schemas/compression-schemas.ts";
 import { renderApplicationCroCandidateSchema } from "./schemas/cro-schemas.ts";
@@ -42,6 +43,10 @@ import {
     renderReplayStepSchema,
     renderReplayTerminalSchema,
 } from "./schemas/replay-schemas.ts";
+import {
+    renderRedactedTraceArchiveSchema,
+    renderRetentionReportSchema,
+} from "./schemas/retention-schemas.ts";
 import { renderRunArtifactSchema } from "./schemas/run-artifact-schema.ts";
 import {
     renderRunContinuationDescriptorSchema,
@@ -78,6 +83,7 @@ import {
     renderRunLedgerEntrySchema,
     renderTaskLedgerEntrySchema,
 } from "./schemas/task-run-ledger-schemas.ts";
+import { renderTelemetryBatchSchema } from "./schemas/telemetry-schemas.ts";
 import { renderTraceArchiveSchema } from "./schemas/trace-archive-schema.ts";
 import { renderApplicationTreeRlRolloutSchema } from "./schemas/tree-rl-schemas.ts";
 
@@ -137,6 +143,22 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderTraceArchiveSchema(config)),
             relativePath: config.kernel.artifacts.traceArchiveSchema,
+        },
+        {
+            content: renderJson(renderRedactedTraceArchiveSchema(config)),
+            relativePath: config.retention.artifacts.redactedArchiveSchema,
+        },
+        {
+            content: renderJson(renderStoreBackupManifestSchema(config)),
+            relativePath: config.backup.artifacts.manifestSchema,
+        },
+        {
+            content: renderJson(renderTelemetryBatchSchema(config)),
+            relativePath: config.observability.artifacts.batchSchema,
+        },
+        {
+            content: renderJson(renderRetentionReportSchema(config)),
+            relativePath: config.retention.artifacts.reportSchema,
         },
         {
             content: renderJson(renderTaskDescriptorSchema(config)),
@@ -2642,6 +2664,36 @@ ${Object.entries(config.applications.limits)
     .map(([name, bound]) => `    ${name}: ${bound},`)
     .join("\n")}
 } as const);
+
+/** Configured retention data classes. @public */
+${renderConstStrings("RETENTION_DATA_CLASSES", config.retention.dataClasses)}
+
+/** Configured redacted-export dispositions. @public */
+${renderConstStrings("RETENTION_EXPORT_DISPOSITIONS", config.retention.dispositions)}
+
+/** Configured trace-store secret-scanning modes. @public */
+${renderConstStrings("SECRET_SCANNING_MODES", config.retention.scanning.modes)}
+
+/** Configured storage durabilities a blob-store backend or storage coordinator declares. @public */
+${renderConstStrings("STORAGE_DURABILITIES", config.storage.durabilities)}
+
+/** Configured storage lease result statuses. @public */
+${renderConstStrings("STORAGE_LEASE_STATUSES", config.storage.statuses.lease)}
+
+/** Configured storage reference compare-and-swap result statuses. @public */
+${renderConstStrings("STORAGE_REF_SWAP_STATUSES", config.storage.statuses.refSwap)}
+
+/** Configured locations of backed-up blob bytes. @public */
+${renderConstStrings("STORE_BACKUP_BLOB_LOCATIONS", config.backup.blobLocations)}
+
+/** Configured classifications of refused or failed backup, verification, and restore operations. @public */
+${renderConstStrings("STORE_BACKUP_FAILURE_REASONS", config.backup.failureReasons)}
+
+/** Configured telemetry exporter body modes. @public */
+${renderConstStrings("TELEMETRY_BODY_MODES", config.observability.bodies.modes)}
+
+/** Configured descriptions of how one record body was handled in exported telemetry. @public */
+${renderConstStrings("TELEMETRY_BODY_HANDLINGS", config.observability.bodies.handlings)}
 `;
 }
 

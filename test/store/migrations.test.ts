@@ -12,20 +12,23 @@ import {
     TraceStoreError,
     UnsupportedStoreSchemaError,
 } from "../../src/index.ts";
+import { kernelProtocolConfig } from "../../src/protocol/config.ts";
+
+const CURRENT_SCHEMA = kernelProtocolConfig.store.schemaVersion;
 
 test("SQLiteTraceStore migrates file databases in WAL mode", async (context) => {
     const directory = await mkdtemp(path.join(tmpdir(), "shepherd-migration-test-"));
     context.after(() => rm(directory, { force: true, recursive: true }));
     const databasePath = path.join(directory, "trace.sqlite");
     const store = new SQLiteTraceStore(databasePath);
-    assert.equal(store.schemaVersion, 12);
+    assert.equal(store.schemaVersion, CURRENT_SCHEMA);
     store.close();
 
     const database = new DatabaseSync(databasePath);
     assert.equal(database.prepare("PRAGMA journal_mode").get()?.journal_mode, "wal");
     assert.equal(
         database.prepare("SELECT MAX(version) AS version FROM schema_migrations").get()?.version,
-        12,
+        CURRENT_SCHEMA,
     );
     database.close();
 });
@@ -36,11 +39,11 @@ test("read-only trace stores require current schema without migration", async (c
     const databasePath = path.join(directory, "trace.sqlite");
     new SQLiteTraceStore(databasePath).close();
     using current = new SQLiteTraceStore(databasePath, { readOnly: true });
-    assert.equal(current.schemaVersion, 12);
+    assert.equal(current.schemaVersion, CURRENT_SCHEMA);
     current.close();
 
     const database = new DatabaseSync(databasePath);
-    database.prepare("DELETE FROM schema_migrations WHERE version = 12").run();
+    database.prepare("DELETE FROM schema_migrations WHERE version = ?").run(CURRENT_SCHEMA);
     database.close();
     assert.throws(
         () => new SQLiteTraceStore(databasePath, { readOnly: true }),
@@ -49,7 +52,7 @@ test("read-only trace stores require current schema without migration", async (c
     const inspected = new DatabaseSync(databasePath);
     assert.equal(
         inspected.prepare("SELECT MAX(version) AS version FROM schema_migrations").get()?.version,
-        11,
+        CURRENT_SCHEMA - 1,
     );
     inspected.close();
     assert.throws(() => new SQLiteTraceStore(":memory:", { readOnly: true }), TypeError);
@@ -87,7 +90,7 @@ test("SQLiteTraceStore upgrades a version-one database for blob receipts", async
     database.close();
 
     const upgraded = new SQLiteTraceStore(databasePath);
-    assert.equal(upgraded.schemaVersion, 12);
+    assert.equal(upgraded.schemaVersion, CURRENT_SCHEMA);
     assert.equal(upgraded.putBlob(new Uint8Array([1])).byte_length, 1);
     upgraded.close();
 });
@@ -191,7 +194,7 @@ test("schema-seven migration preserves prepared settlement rows with empty journ
     database.close();
 
     using upgraded = new SQLiteTraceStore(databasePath);
-    assert.equal(upgraded.schemaVersion, 12);
+    assert.equal(upgraded.schemaVersion, CURRENT_SCHEMA);
     assert.deepEqual(upgraded.readRetainedWorldSettlement(settlementRequest.output_id), admission);
     upgraded.close();
     const inspected = new DatabaseSync(databasePath);
@@ -222,7 +225,7 @@ test("SQLiteTraceStore rejects unsupported future schemas", async (context) => {
     const databasePath = path.join(directory, "trace.sqlite");
     new SQLiteTraceStore(databasePath).close();
     const database = new DatabaseSync(databasePath);
-    database.prepare("INSERT INTO schema_migrations(version) VALUES (?)").run(13);
+    database.prepare("INSERT INTO schema_migrations(version) VALUES (?)").run(CURRENT_SCHEMA + 1);
     database.close();
 
     assert.throws(() => new SQLiteTraceStore(databasePath), UnsupportedStoreSchemaError);
