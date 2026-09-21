@@ -141,7 +141,7 @@
         "verify:serial": "pnpm check:protocol && pnpm check:evaluation && pnpm check:sbom && pnpm build && pnpm check:api-reference && pnpm check:compatibility && pnpm lint && pnpm typecheck && pnpm test:serial && pnpm build && pnpm test:package-cli"
     },
     "devDependencies": {
-        "@biomejs/biome": "2.5.7",
+        "@biomejs/biome": "2.5.14",
         "@rollup/plugin-node-resolve": "16.0.3",
         "@types/node": "26.1.2",
         "ajv": "8.20.0",
