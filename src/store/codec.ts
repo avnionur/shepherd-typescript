@@ -1,7 +1,11 @@
 import { createHash } from "node:crypto";
 
 import type { AppendBatchDraft, PlannedAppendBatch } from "../append/types.ts";
-import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
+import {
+    canonicalizeKernelFrame,
+    canonicalizeRecord,
+    type SemanticRecord,
+} from "../canonical/canonical-record.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import type { RecordId } from "../record/types.ts";
@@ -11,7 +15,7 @@ import type { AppendReceipt } from "./types.ts";
 /** Creates the configured idempotency digest for a normalized batch. */
 export function createBatchDigest(batch: AppendBatchDraft): string {
     return createHash(kernelProtocolConfig.store.appendIntentDigestAlgorithm)
-        .update(canonicalizeRecord(batch as unknown as SemanticRecord), "utf8")
+        .update(canonicalizeKernelFrame(batch as unknown as SemanticRecord), "utf8")
         .digest("hex");
 }
 

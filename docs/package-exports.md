@@ -41,7 +41,9 @@ import {
 ```
 
 The root preserves the complete existing public API. `./canonical` is the cohesive canonical
-encoding/identity surface. `./cli` contains the reusable runner and injectable I/O boundary.
+encoding/identity surface; from 2.33.0 it and the root also export `CanonicalNestingLimitError`
+(`CANONICAL_NESTING_LIMIT_EXCEEDED`), raised when a value nests deeper than the configured
+[canonical nesting bound](./canonical-records.md#nesting-bound). `./cli` contains the reusable runner and injectable I/O boundary.
 The root also exports `PublicError`, `PublicErrorCode`, and `isPublicError` for additive in-memory
 classification without adding error metadata to canonical records or CLI JSON.
 `./tasks` owns task/schema construction, task registry contracts/errors, and bounded task-ledger
@@ -284,7 +286,9 @@ native-jail implementation modules and removes the unused `createRecordId` expor
 
 Both optimized ESM chunks execute under Node and produce the independently expected canonical JSON.
 The root fixture retains public-error configuration initialization, even though only canonical
-encoding is requested. No blanket `sideEffects: false` or `moduleSideEffects: false` is applied.
+encoding is requested. From 2.33.0 the narrow `/canonical` fixture does too: the canonical encoder
+raises the classified `CanonicalNestingLimitError`, whose code comes from
+`public-errors.config.json`. No blanket `sideEffects: false` or `moduleSideEffects: false` is applied.
 Root imports remain more coupled than the narrow entry.
 
 Configuration URLs remain relative to `import.meta.url`. The tested output layout is:
@@ -293,7 +297,7 @@ Configuration URLs remain relative to `import.meta.url`. The tested output layou
 bundle-root/
   protocol.config.json
   runtime.config.json
-  public-errors.config.json   # additionally required by the root fixture
+  public-errors.config.json   # required by every fixture from 2.33.0
   chunks/nested/bundle.mjs
 ```
 

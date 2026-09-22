@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-
+import { serializeJsonText } from "../../src/canonical/json-text.ts";
 import {
+    classifyTraceSchema,
+    createJsonLinesTelemetrySink,
     createTraceTelemetryExporter,
     deriveTelemetrySpanId,
     deriveTelemetryTraceId,
@@ -13,6 +16,8 @@ import {
     TELEMETRY_BODY_MODES,
     type TelemetryBatch,
 } from "../../src/index.ts";
+import { buildTelemetryBatch, mapRecord } from "../../src/observability/mapping.ts";
+import { kernelProtocolConfig } from "../../src/protocol/config.ts";
 import {
     appendRecord,
     recordingSink,
@@ -58,6 +63,7 @@ test("a durable run exports one deterministic span and schema-valid log records 
     const [batch] = sink.batches;
     const validate = telemetryBatchValidator();
     assert.equal(validate(batch), true, JSON.stringify(validate.errors));
+    assert.equal(serializeJsonText(batch), JSON.stringify(batch));
     assert.equal(Object.isFrozen(batch), true);
     const [span] = spansOf(batch);
     const created = store.readOwner(runId)[0];
@@ -360,4 +366,66 @@ test("trace and span identifiers are deterministic and domain-separated", () => 
     assert.notEqual(deriveTelemetryTraceId("run:1").slice(0, 16), deriveTelemetrySpanId("run:1"));
     assert.throws(() => deriveTelemetryTraceId(""), /ownerId must be a non-empty string/u);
     assert.throws(() => deriveTelemetrySpanId(1 as never), /recordId must be a non-empty string/u);
+});
+
+/** Runs `action` below `frames` extra stack frames of an ordinary recursive caller. */
+function atStackDepth<T>(frames: number, action: () => T): T {
+    return frames === 0 ? action() : atStackDepth(frames - 1, action);
+}
+
+test("an included body at the canonical nesting bound exports independent of the caller's stack", async (context) => {
+    // Mapping a body to OTLP, freezing the batch, and writing a JSON line walk the whole body;
+    // like the canonical encoder, they must not depend on how much call stack the caller has
+    // left. The OTLP shape spends several levels per body level, so an at-bound body is nested
+    // deeper than native JSON.stringify accepts on Linux even from a shallow stack.
+    const { maxNestingDepth } = kernelProtocolConfig.canonicalization;
+    let deep: unknown = "leaf";
+    for (let level = 1; level < maxNestingDepth; level += 1) {
+        deep = level % 2 === 0 ? { a: deep } : [deep];
+    }
+    using store = new SQLiteTraceStore();
+    appendRecord(store, "worker", "example.deep.v1", { a: deep });
+    const [record] = store.readOwner("worker");
+    assert.ok(record !== undefined);
+    const classification = classifyTraceSchema(record.envelope.schema_ref);
+    assert.equal(classification.disposition, "include");
+    const shallow = buildTelemetryBatch(
+        [],
+        [mapRecord(record, classification, POLICY_MODE, "1").logRecord],
+    );
+    const deepCaller = atStackDepth(6_000, () =>
+        buildTelemetryBatch([], [mapRecord(record, classification, POLICY_MODE, "1").logRecord]),
+    );
+    const shallowLogs = serializeJsonText(shallow.logs);
+    assert.equal(serializeJsonText(deepCaller), serializeJsonText(shallow));
+    assert.equal(Object.isFrozen(logsOf(deepCaller)[0]?.body), true);
+
+    const directory = await temporaryDirectory(context, "deep-jsonl");
+    const logsPath = path.join(directory, "logs.jsonl");
+    const tracesPath = path.join(directory, "traces.jsonl");
+    const sink = createJsonLinesTelemetrySink({ logsPath, tracesPath });
+    // The logs line is serialized before the first await, so it runs on the deep caller's stack.
+    await atStackDepth(6_000, () => sink.write(shallow));
+    const exporter = createTraceTelemetryExporter({
+        bodies: POLICY_MODE,
+        clock: steppingClock(),
+        sink,
+        store,
+        subscription: { owners: ["worker"] },
+    });
+    await exporter.exportPending();
+    exporter.close();
+    const [written, exportedLine, ...rest] = readFileSync(logsPath, "utf8").split("\n");
+    assert.deepEqual(rest, [""]);
+    assert.equal(written, shallowLogs);
+    const exported = JSON.parse(exportedLine as string) as TelemetryBatch["logs"];
+    const exportedRecord = exported.resourceLogs[0]?.scopeLogs[0]?.logRecords[0];
+    assert.deepEqual(attributeOf(exportedRecord?.attributes ?? [], "body_handling"), {
+        stringValue: INCLUDED,
+    });
+    assert.equal(
+        serializeJsonText(exportedRecord?.body),
+        serializeJsonText(logsOf(shallow)[0]?.body),
+    );
+    assert.equal(serializeJsonText(exported), exportedLine);
 });

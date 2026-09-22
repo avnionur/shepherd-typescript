@@ -1,0 +1,39 @@
+{
+    "description": "F-016: import refuses a record body one level past the canonical bound with CanonicalNestingLimitError and writes nothing.",
+    "finding": "F-016",
+    "input": {
+        "seed": 1,
+        "replace": [
+            {
+                "from": "\"body\":{",
+                "to": [
+                    {
+                        "literal": "\"body\":{\"deep\":"
+                    },
+                    {
+                        "repeat": "[",
+                        "count": {
+                            "canonicalBound": 0
+                        }
+                    },
+                    {
+                        "literal": "0"
+                    },
+                    {
+                        "repeat": "]",
+                        "count": {
+                            "canonicalBound": 0
+                        }
+                    },
+                    {
+                        "literal": ","
+                    }
+                ]
+            }
+        ]
+    },
+    "expect": {
+        "outcome": "rejected",
+        "error": "CanonicalNestingLimitError"
+    }
+}

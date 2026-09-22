@@ -1,0 +1,39 @@
+{
+    "description": "F-016: a record body spliced to exactly the canonical bound passes the depth check and is refused only because its record identity no longer matches (TypeError).",
+    "finding": "F-016",
+    "input": {
+        "seed": 1,
+        "replace": [
+            {
+                "from": "\"body\":{",
+                "to": [
+                    {
+                        "literal": "\"body\":{\"deep\":"
+                    },
+                    {
+                        "repeat": "{\"a\":",
+                        "count": {
+                            "canonicalBound": -1
+                        }
+                    },
+                    {
+                        "literal": "0"
+                    },
+                    {
+                        "repeat": "}",
+                        "count": {
+                            "canonicalBound": -1
+                        }
+                    },
+                    {
+                        "literal": ","
+                    }
+                ]
+            }
+        ]
+    },
+    "expect": {
+        "outcome": "rejected",
+        "error": "TypeError"
+    }
+}

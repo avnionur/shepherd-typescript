@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { kernelProtocolConfig } from "../../src/protocol/config.ts";
 import { createPrng, deriveSeed, type Prng } from "../support/prng.ts";
 import {
     configuredNumber,
@@ -24,6 +25,8 @@ type TierSettings = {
 export type FuzzSettings = {
     readonly caseBudgetMilliseconds: number;
     readonly corpusDirectory: string;
+    /** Caller frames below which accepted canonical output is re-encoded again (F-016). */
+    readonly deepCallSiteFrames: number;
     readonly defaultTier: string;
     readonly iterationsEnvironmentVariable: string;
     readonly mutation: MutationSettings;
@@ -43,6 +46,11 @@ export const fuzzSettings = (
         readFileSync(path.join(repositoryRoot, "config/hardening-suites.config.json"), "utf8"),
     ) as { readonly fuzz: FuzzSettings }
 ).fuzz;
+
+/** Runs `action` below `frames` extra frames of an ordinary recursive caller. */
+export function atCallDepth<T>(frames: number, action: () => T): T {
+    return frames === 0 ? action() : atCallDepth(frames - 1, action);
+}
 
 /** One fuzz input: JSON text or a JSON-shaped value (including argv string arrays). */
 export type FuzzInput =
@@ -319,16 +327,31 @@ export type CorpusCase = {
           };
 };
 
+/**
+ * A count or depth: a number, or an offset from `kernel.canonicalization.maxNestingDepth` so
+ * boundary cases follow the configured bound instead of copying it.
+ */
+type CorpusCount = number | { readonly canonicalBound: number };
+
 type TextSegment =
     | { readonly literal: string }
-    | { readonly repeat: string; readonly count: number };
+    | { readonly repeat: string; readonly count: CorpusCount };
+
+/** Resolves a corpus count or bound-relative depth. */
+export function corpusCount(count: CorpusCount): number {
+    return typeof count === "number"
+        ? count
+        : kernelProtocolConfig.canonicalization.maxNestingDepth + count.canonicalBound;
+}
 
 function expandSegments(text: string | readonly TextSegment[]): string {
     return typeof text === "string"
         ? text
         : text
               .map((segment) =>
-                  "literal" in segment ? segment.literal : segment.repeat.repeat(segment.count),
+                  "literal" in segment
+                      ? segment.literal
+                      : segment.repeat.repeat(corpusCount(segment.count)),
               )
               .join("");
 }
@@ -385,7 +408,7 @@ function reviveMarkers(value: unknown): unknown {
                 return configuredNumber(record.spelling as string);
             case "nest":
                 return nestValue(
-                    record.depth as number,
+                    corpusCount(record.depth as CorpusCount),
                     record.kind as "array" | "object",
                     reviveMarkers(record.leaf),
                 );

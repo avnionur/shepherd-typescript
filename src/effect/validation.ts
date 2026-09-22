@@ -1,4 +1,5 @@
 import { canonicalizeRecord, type SemanticValue } from "../canonical/canonical-record.ts";
+import { CanonicalNestingLimitError } from "../canonical/errors.ts";
 import { effectProtocolConfig } from "../protocol/config.ts";
 import type {
     EffectFailure,
@@ -100,6 +101,7 @@ function assertSemanticValue(value: unknown, subject: string): asserts value is 
     try {
         canonicalizeRecord({ value: value as SemanticValue });
     } catch (error) {
+        if (error instanceof CanonicalNestingLimitError) throw error;
         throw new TypeError(`${subject} must be a canonical semantic value`, { cause: error });
     }
 }

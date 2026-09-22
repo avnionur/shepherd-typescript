@@ -1,11 +1,17 @@
+import { kernelProtocolConfig } from "../../src/protocol/config.ts";
 import type { Prng } from "../support/prng.ts";
 
 /** Configured mutation parameters from `config/hardening-suites.config.json`. */
 export type MutationSettings = {
     /** Nesting depths spliced into JSON text (exercise the pre-parse interchange limit). */
     readonly textNestingLevels: readonly number[];
-    /** Nesting depths built into values (avoid the stack-dependent band recorded as F-016). */
+    /** Absolute nesting depths built into values. */
     readonly valueNestingLevels: readonly number[];
+    /**
+     * Nesting depths built into values relative to `kernel.canonicalization.maxNestingDepth`, so
+     * mutated values land on both sides of the canonical bound (F-016) deterministically.
+     */
+    readonly valueNestingBoundOffsets: readonly number[];
     readonly maxMutationsPerCase: number;
     readonly numbers: readonly string[];
     readonly oversizedStringCharacters: number;
@@ -140,6 +146,15 @@ function mutateValueOnce(value: unknown, random: Prng, settings: MutationSetting
     return value;
 }
 
+/** Absolute value nesting levels plus the levels around the configured canonical bound. */
+export function valueNestingLevels(settings: MutationSettings): readonly number[] {
+    const bound = kernelProtocolConfig.canonicalization.maxNestingDepth;
+    return [
+        ...settings.valueNestingLevels,
+        ...settings.valueNestingBoundOffsets.map((offset) => bound + offset),
+    ];
+}
+
 function replaceLeaf(current: unknown, random: Prng, settings: MutationSettings): unknown {
     switch (random.int(10)) {
         case 0:
@@ -150,7 +165,7 @@ function replaceLeaf(current: unknown, random: Prng, settings: MutationSettings)
             return configuredNumber(random.pick(settings.numbers));
         case 2:
             return nestValue(
-                random.pick(settings.valueNestingLevels),
+                random.pick(valueNestingLevels(settings)),
                 random.chance(0.5) ? "array" : "object",
                 current ?? 0,
             );

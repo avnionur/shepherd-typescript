@@ -1,6 +1,6 @@
 # Phase 11 production hardening and 1.0 readiness audit
 
-Audit: 2.32.4, 2026-09-19, #29. Delivered in the worktree for `codex/phase-11-production-hardening`
+Audit: 2.32.4, 2026-09-19, #29; close-out addendum 2.33.1 (#190). Delivered in the worktree for `codex/phase-11-production-hardening`
 (base `main` 8f5dbd1, 2.25.1) together with #187 and #179 to #186. The final commit SHA is recorded
 in the pull request.
 
@@ -15,6 +15,14 @@ finding).
 Addendum (2.32.5, F-029 follow-up to #29): F-029 is fixed and the qualification above is
 discharged. See [F-029 follow-up (2.32.5)](#f-029-follow-up-2325); the candidate is now 2.32.5 and
 the [release-candidate manifest](./release-candidate-manifest.md) records its digests.
+
+Addendum (2.33.1, 2026-09-19, #190): the Phase 11 in-repo scope is complete. A local Docker Linux
+lane ran every `pnpm verify` gate on Node 24.21.0 and the 24.12.0 minimum and found and fixed two
+defects (F-030, F-031); F-016 was fixed by #189 in 2.33.0. By the owner's decision of 2026-09-19
+the owner-only items (O-1, O-2, O-4, O-5 and the hosted-CI, Windows, Linux-volume, and SLO parts of
+O-3) move to [#191](https://github.com/avnionur/shepherd-typescript/issues/191), and epic #24
+closes when this close-out merges. See
+[Linux verification lane and close-out (2.33.1)](#linux-verification-lane-and-close-out-2331).
 
 Every Phase 11 roadmap work item and exit criterion maps below to delivered entry points,
 normative documentation, and repeatable tests, or to an owner-owed row. The internal findings
@@ -310,3 +318,185 @@ Reasoning:
   attestation, green hosted runs on Linux and macOS, the advisory setting, and the registry
   decision), a short addendum to this audit can flip the verdict to 1.0 general availability and
   close #24.
+
+## Linux verification lane and close-out (2.33.1)
+
+Addendum, 2026-09-19, [#190](https://github.com/avnionur/shepherd-typescript/issues/190). It
+covers the in-repo part of O-3 and the epic close-out decided by the owner on 2026-09-19 (a local
+Docker Linux lane; re-scope #24 to the in-repo criteria and move owner-only items to
+[#191](https://github.com/avnionur/shepherd-typescript/issues/191)).
+
+### Lane environment
+
+The lane is a shell runner kept outside the repository (it is not committed because its image
+defaults and apt package list are literals, which the repository's no-hard-coded-configuration
+rule does not allow in committed tooling). For each run it copies the source into a fresh run
+directory (`git archive <ref>`, or for a working tree every tracked and untracked file Git does not
+ignore, `git ls-files -co --exclude-standard`), starts a throwaway container, installs
+`acl attr build-essential git sqlite3 util-linux procps file xfsprogs`, creates a synthetic Git
+commit of the copy (so `release:manifest` sees a clean tree), runs
+`pnpm install --frozen-lockfile` and the gates as the image's unprivileged `node` user
+(uid 1000) with `CI=true` and `TMPDIR` on the container filesystem, and records the image digest,
+environment, per-gate logs, and exit codes.
+
+| Field | Value |
+| --- | --- |
+| Host | macOS arm64 (the reference host), Docker 29.4.0 in OrbStack, Linux kernel `7.0.14-orbstack-00380-ga7e0a2dc9535` aarch64, 14 CPUs, 16 GiB |
+| Current Node image | `node:24.21.0-bookworm`, `node@sha256:64af3819f9275802414d7cdc38c27e9d82bd564dec4d4da87d008255d36c63b4` (linux/arm64/v8): Node 24.21.0, bundled SQLite 3.53.4, npm 11.19.0 |
+| Minimum Node image | `node:24.12.0-bookworm`, `node@sha256:929c026d5a4e4a59685b3c1dbc1a8c3eb090aa95373d3a4fd668daa2493c8331` (linux/arm64/v8): Node 24.12.0, bundled SQLite 3.50.4 |
+| Distribution and tools | Debian GNU/Linux 12 (bookworm); pnpm 10.32.1 through corepack (`packageManager`); Git 2.39.5; GCC 12.2.0; `/bin/sh` is dash |
+| Filesystem | Work tree, `TMPDIR`, and stores on the container's overlayfs; run directory mounted from the host (logs only) |
+| User and confinement | `node` (uid 1000), no effective capabilities, Docker default seccomp profile, Landlock ABI 8 available, umask `022`, `ulimit -n` 1024; the carrier suite below is the only privileged run |
+
+### Commands
+
+```sh
+run.sh --label closeout <worktree>                                          # CI=true pnpm verify; pnpm build:desktop; npm pack --dry-run
+run.sh --label closeout-min --image node:24.12.0-bookworm --mode split <worktree>   # every pnpm verify stage separately
+run.sh --label closeout-min-fuzz --image node:24.12.0-bookworm --mode custom --cmd 'pnpm fuzz' <worktree>
+run.sh --label closeout-optin --mode custom --cmd 'bash runtime-boundaries.sh' --cmd 'pnpm fuzz' \
+  --cmd 'pnpm test:faults:volume' --cmd 'pnpm check:slo' --cmd 'pnpm release:reproducible-build' <worktree>
+node scripts/test-carriers-linux.ts                                         # pnpm test:carriers:linux, from a copy of the tree
+```
+
+`runtime-boundaries.sh` downloads the Node versions named in
+`config/runtime-verification.config.json` from nodejs.org, checks them against `SHASUMS256.txt`,
+and runs `pnpm build && pnpm test:runtime-boundaries` with them. `pnpm test:carriers:linux` starts
+its own privileged `node:24-bookworm` container (Node 24.21.0) per
+`config/carrier-conformance.config.json`.
+
+### Results against `main` 04fa4f9 (before the fixes)
+
+| Gate | Node 24.21.0 | Node 24.12.0 |
+| --- | --- | --- |
+| `check:protocol`, `check:evaluation`, `check:sbom`, `build`, `check:api-reference`, `check:compatibility`, `lint`, `typecheck` | pass | pass |
+| `pnpm test` | every test passed, then the coverage report failed: `Unterminated string in JSON at position 524288` (F-030) | same coverage failure, plus `fuzz createVerifiedWorldChangeset` failed with `EEXIST` (F-031) |
+| `build`, `test:package-cli` | pass | pass |
+| `build:desktop`, `npm pack --dry-run` | pass | not run |
+
+So `pnpm verify` failed on Linux on both Node versions. Root causes were confirmed in the lane:
+with `faults.diskFull.fileSizeLimitBlocks` raised from 1024 to 4096 in the container copy, coverage
+reported and `pnpm test` passed; with `/bin/sh` linked to bash the failure was unchanged; and a
+probe showed `fs.rmSync` keeping a top-level dangling symbolic link on Node 24.12.0 and 24.13.0 but
+not on 24.14.0, 24.15.0, 24.17.0, or 24.21.0.
+
+### Defects found and fixed in 2.33.1
+
+- **F-030 (Low, fixed)**: `ulimit -f` counts 512-byte blocks in dash and 1024-byte blocks in the
+  macOS `/bin/sh` (bash 3.2), so the fault suite's 1024-block limit was 512 KiB on Linux, and the
+  size-limited child inherited `NODE_V8_COVERAGE` and wrote a coverage file the limit truncated at
+  524,288 bytes. The limit is now `faults.diskFull.fileSizeLimitBytes` (1 MiB) converted to the
+  shell's measured unit, the limited children run with `NODE_V8_COVERAGE` empty (the children never
+  contributed to the 100% coverage), and the test asserts `SQLITE_IOERR_WRITE` (778) for all four
+  operations.
+- **F-031 (Low, fixed)**: `fs.rmSync` on Node 24.12.x and 24.13.x silently keeps a dangling
+  symbolic link. Every product removal now goes through `removePathSync`
+  (`src/runtime/remove-path.ts`); the reachable product case was a failed symbolic-link replacement
+  in the reference copy carrier leaving a hidden dangling staged link in custody or in the canonical
+  workspace. The engines floor stays `>=24.12.0`. The two new tests fail on Node 24.12.0 with the
+  helper's link branch disabled and pass with it (lane run `20260919T192149Z-f031-red-capability-custom`).
+
+Details and evidence are in the [register](./security-review.md) rows F-030 and F-031.
+
+### Results on the 2.33.1 working tree
+
+Run directories are under the runner's `runs/` directory; the tree is the uncommitted 2.33.1 branch
+state (F-016 work of #189 plus this close-out).
+
+| Gate | Node 24.21.0 (`20260919T202537Z-closeout-verify`) | Node 24.12.0 (`20260919T202724Z-closeout-min-split`) |
+| --- | --- | --- |
+| `check:protocol`, `check:evaluation`, `check:sbom`, `build`, `check:api-reference`, `check:compatibility`, `lint`, `typecheck` | pass | pass |
+| `pnpm test` | 1,102 tests: 1,100 pass, 1 skipped (telemetry fuzz target, no decoder), 1 fail (see below); 100% line, branch, and function coverage reported | same counts and the same single failure; 100% coverage reported |
+| `build`, `test:package-cli` | not reached by `pnpm verify` (it stops at the test stage); run separately: pass, installed runtime 24.21.0 supported (`20260919T203253Z-closeout-pkgcli-custom`) | pass |
+| `build:desktop`, `npm pack --dry-run` | pass (1,404 files, 1.7 MB) | not run |
+| Extended `pnpm fuzz` (410,400 cases) | 0 findings (`20260919T201034Z-closeout-optin-custom`) | 0 findings, 115.8 s (`20260919T200821Z-closeout-min-fuzz-custom`) |
+
+The fixed cases pass in both lanes: the RLIMIT_FSIZE case reports "ulimit -f unit 512 bytes" and
+`ERR_SQLITE_ERROR/778` for append, blob, vacuum, and backup; `fuzz createVerifiedWorldChangeset`,
+`test/runtime/remove-path.test.ts`, and the failed symbolic-link replacement case pass; the native
+jail tests (live Landlock probe with a real denial, runner admission, jailed granted capture at the
+durable task-world seam) pass unprivileged instead of skipping.
+
+The single failure, "an included body at the canonical nesting bound exports independent of the
+caller's stack" (`test/observability/telemetry-exporter.test.ts`), belongs to the F-016 work
+(#189) that was still being edited in the same working tree during this run. It throws
+`RangeError: Maximum call stack size exceeded` from the test's own `JSON.stringify` of an OTLP
+batch whose body is at the canonical bound, and passes on the reference host. It is a Linux-only
+failure of that change, not of this close-out; `pnpm verify` is not green on Linux until #189's
+owner resolves it (see [open item](#open-item-at-the-time-of-this-addendum)).
+
+### Opt-in suites
+
+| Suite | Result |
+| --- | --- |
+| `pnpm test:runtime-boundaries` (checked downloads of 24.21.0, 24.12.0, 24.11.1) | pass: 24.21.0 and 24.12.0 supported, 24.11.1 refused before writes |
+| `pnpm test:carriers:linux` (privileged, loopback XFS `reflink=1`, Node 24.21.0) | pass: benchmark 12/12, carrier conformance with clone and overlay required 15/15, scope algebra laws with copy, clone, and overlay required 13/13 |
+| `pnpm test:faults:volume` | skipped by design (needs macOS `hdiutil`; Linux loop devices need privileges). A Linux variant is owner-owed (O-3, #191) |
+| `pnpm check:slo` | "skipped; no host class matches linux/arm64": budgets exist only for the macOS arm64 APFS class. A Linux host class is owner-owed (O-3, #191) |
+| `pnpm release:reproducible-build` | pass: two clean builds gave `avnionur-shepherd-typescript-2.33.1.tgz` with SHA-256 `3112ac67c162a14f3f5c09eb8dd026973e9ee82df0db5cb0395a0fdc2ee138a3` and output-tree digest `sha256:f96c8f7e2e3aad614898ef7db44bd90e34e8dc9154f76ebee258204608f9e3f0` |
+| `pnpm test:soak --duration 120` (on 04fa4f9) | pass |
+
+### Packing limit (F-032)
+
+The Linux tarball contains 1,404 files and the reference host's 1,402: npm 11.19.0 (bundled with
+Node 24.21.0) packs `docs/README.md` and `spec/README.md`, which `package.json` `files` does not
+list, and npm 12.0.2 on the reference host does not. Tarball digests therefore differ by npm
+version and so does the file set. [Release integrity](../docs/release-integrity.md) already
+disclaims cross-npm reproducibility; because the published file set is not determined by the
+repository alone, this is recorded as F-032 (Low, open) for the owner's release work in #191: pin
+the Node and npm versions `release.yml` uses and record the npm version in provenance, or list or
+exclude the README files explicitly.
+
+### macOS
+
+Reference host (macOS arm64, APFS, Node 24.17.0, pnpm 10.32.1) on the same 2.33.1 working tree:
+`CI=true pnpm verify` passes every stage through `typecheck` (`check:compatibility` 0 changes;
+`lint` 0 errors, 2 pre-existing warnings, 1 schema-version info); `pnpm test` ran 1,096 tests:
+1,094 pass, 1 skipped, 1 fail (the known environmental "clone carrier fails closed on a macOS
+filesystem without clonefile support", see [Limits](#limits)), with 100% line, branch, and
+function coverage. The RLIMIT_FSIZE case reports "ulimit -f unit 1024 bytes". `pnpm build &&
+pnpm test:package-cli` (installed runtime 24.17.0 supported) and `pnpm build:desktop` pass.
+
+### F-016 resolution
+
+F-016 (Low: canonical acceptance of values nested roughly 2,000 to 8,000 levels deep depended on
+call-site stack depth and JIT state) is fixed in 2.33.0 by #189 on the owner's decision of
+2026-09-19: `kernel.canonicalization.maxNestingDepth` (1,000) bounds the canonical value domain
+deterministically, kernel framing gets `framingDepth` (8) more levels, the encoder works with
+explicit stacks, and one level past the bound is refused with `CanonicalNestingLimitError`
+(`CANONICAL_NESTING_LIMIT_EXCEEDED`) from any call-site depth. The accepted residual is a store
+written before 2.33.0 holding a deeper body, which fails closed where that body is canonicalized
+again until the bound is raised. The extended fuzz run passes with the bound-relative mutators in
+both Linux lanes above. Details: register row F-016.
+
+### Register after the close-out
+
+No critical or high finding in any status. Open: F-032 (Low, #191). Accepted: F-001, F-006, F-011,
+F-020. Fixed with an accepted residual: F-004, F-005, F-013, F-016, F-018, F-019, F-023, F-025.
+Fixed: F-002, F-003, F-007, F-012, F-014, F-015, F-017, F-021, F-022, F-024, F-026 to F-031.
+Owner-owed: F-008 (O-3, narrowed by this lane), F-009 (O-4), F-010 (O-2).
+
+### Re-scoped verdict
+
+**Phase 11 in-repo scope complete; 1.0 general availability is no-go until #191 closes.**
+
+| Criterion | In-repo outcome | Moves to #191 |
+| --- | --- | --- |
+| Zero unresolved critical security findings | Met: no critical or high finding; internal review complete | External review (O-1) |
+| Migration and recovery drills pass on supported versions | Met on macOS arm64 APFS and in the Linux lane on Node 24.21.0 and 24.12.0 (the drills run in `pnpm test`) | Hosted runs (O-3) |
+| Compatibility policies enforced in CI | Met by the local `pnpm verify` gate on macOS and Linux | Hosted CI, CodeQL, dependency review (O-3) |
+| Performance SLOs supported by reproducible benchmarks | Met for the macOS arm64 APFS reference class | Linux and other host classes (O-3) |
+| Stable packages and CLI with complete docs and signed provenance | Docs, package probes, and host-local reproducible builds met on both hosts | Signing, attestation, publication (O-2, F-010, F-032), registry name (O-5) |
+
+Owner-only items now tracked in #191: O-1 external security review; O-2 signing identity,
+attestation, and publication (including F-032); O-3 hosted CI (`ci.yml`, `codeql.yml`,
+`dependency-review.yml`) with green Linux and macOS runs, the Windows decision, a Linux variant of
+the volume fault suite, and a Linux SLO host class; O-4 private vulnerability reporting; O-5 the
+registry name. Epic #24 closes when this close-out merges; the #191 evidence then goes into a
+further addendum that can flip the verdict to general availability.
+
+### Open item at the time of this addendum
+
+The telemetry-exporter test above must pass on Linux before the Phase 11 pull request merges; it
+is owned by the F-016 change (#189) and was not modified by this close-out. Everything else
+recorded here passes on both Linux Node versions.

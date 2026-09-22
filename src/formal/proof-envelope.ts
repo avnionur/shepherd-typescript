@@ -42,24 +42,28 @@ export function classifyProofEnvelope(options: ProofEnvelopeClassificationOption
     if (parsed.programRef === undefined) {
         return runtimeOnlyEnvelope("missing-program-ref");
     }
+    let traceRef: string;
     try {
         validateTypedEffectTrace({
             completed: parsed.completed,
             programRef: parsed.programRef,
             trace: parsed.trace,
         });
+        // The trace is content-addressed as one canonical value, so a record value near the
+        // nesting bound can fit its record yet not the whole trace; that refusal
+        // (CanonicalNestingLimitError, a TypeError) is conservative evidence, not a failure.
+        traceRef = formalContentRef(
+            parsed.completed
+                ? proofEnvelope.traceRefPrefixes.completed
+                : proofEnvelope.traceRefPrefixes.prefix,
+            parsed.trace as readonly SemanticValue[],
+        );
     } catch (error) {
         if (error instanceof TypedEffectTraceValidationError || error instanceof TypeError) {
             return runtimeOnlyEnvelope("trace-not-reference-core-a");
         }
         throw error;
     }
-    const traceRef = formalContentRef(
-        parsed.completed
-            ? proofEnvelope.traceRefPrefixes.completed
-            : proofEnvelope.traceRefPrefixes.prefix,
-        parsed.trace as readonly SemanticValue[],
-    );
     if (parsed.completed && parsed.proofEvidence !== undefined) {
         try {
             const strong = validateStrongProofEvidence(

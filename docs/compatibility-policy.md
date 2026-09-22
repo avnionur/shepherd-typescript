@@ -53,7 +53,8 @@ maintained by hand.
   - identity-bearing settings (`identity:<source>#<pointer>`): every string or number under a key
     matching `protocol.identity.keyPattern` (identifier prefixes such as `idPrefix` and
     `*IdPrefix`, digest algorithms, `hexLength`, `blobEncoding`) and the canonical digest of each
-    configured pointer (`/recordId`, the root witness, record modes, and the CLI option-name map).
+    configured pointer (`/recordId`, the canonical nesting bound `/kernel/canonicalization` from
+    2.33.0, the root witness, record modes, and the CLI option-name map).
 
 Locations, patterns, and tiers are configured in
 [`config/compatibility-policy.config.json`](../config/compatibility-policy.config.json). A baseline

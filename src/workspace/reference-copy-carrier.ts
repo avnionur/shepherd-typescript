@@ -19,7 +19,6 @@ import {
     realpathSync,
     renameSync,
     rmdirSync,
-    rmSync,
     symlinkSync,
     unlinkSync,
     writeFileSync,
@@ -33,6 +32,7 @@ import {
 } from "../canonical/canonical-record.ts";
 import { workspaceProtocolConfig } from "../protocol/config.ts";
 import { WORLD_ENTRY_KINDS } from "../protocol/values.generated.ts";
+import { removePathSync } from "../runtime/remove-path.ts";
 import type { RetainedWorldSettlementOperationEncoding } from "../store/retained-world-settlement-codec.ts";
 import { createWorkspaceBindings, createWorkspaceBindingsForRetainedCustody } from "./bindings.ts";
 import {
@@ -1203,7 +1203,7 @@ function publishCanonicalFile(
         if (!existsSync(finalPath)) throw error;
         assert.equal(canonicalizeRecord(readJson(finalPath) as SemanticRecord), canonical);
     } finally {
-        rmSync(temporary, { force: true });
+        removePathSync(temporary, { force: true });
     }
 }
 
@@ -1296,7 +1296,7 @@ function replaceLeaf(
         renameSync(temporary, target);
         syncDirectory(path.dirname(target));
     } finally {
-        rmSync(temporary, { force: true });
+        removePathSync(temporary, { force: true });
     }
 }
 
@@ -1736,7 +1736,7 @@ function discardCustody(paths: CarrierPaths, custodyId: string): void {
             // Overlay custody is unmounted before its owned root is removed.
             if (paths.backend.overlay) unmountOverlay(loadCustody(paths, custodyId, true).path);
             /* node:coverage enable */
-            rmSync(root, { recursive: true });
+            removePathSync(root, { recursive: true });
             syncDirectory(paths.custodies);
         }
     } catch (error) {
@@ -2245,7 +2245,7 @@ function publishDiscardDescriptor(
         renameSync(temporaryPath, markerPath);
         syncDirectory(paths.discarded);
     } finally {
-        rmSync(temporaryPath, { force: true });
+        removePathSync(temporaryPath, { force: true });
     }
 }
 
@@ -2374,7 +2374,7 @@ function createStaging(paths: CarrierPaths): string {
 
 function cleanupStaging(paths: CarrierPaths, stagingRoot: string): void {
     assertOwnedDirectory(paths, paths.staging);
-    if (existsSync(stagingRoot)) rmSync(stagingRoot, { force: true, recursive: true });
+    if (existsSync(stagingRoot)) removePathSync(stagingRoot, { force: true, recursive: true });
 }
 
 function revisionRoot(paths: CarrierPaths, revisionId: string): string {

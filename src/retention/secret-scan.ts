@@ -136,23 +136,49 @@ export function retentionDigest(text: string): string {
         .digest("hex")}`;
 }
 
+type VisitFrame = {
+    readonly entries: readonly [string, unknown][];
+    index: number;
+    readonly pointer: string;
+};
+
+/**
+ * Visits a canonical value depth-first in own-key order with an explicit stack, so scanning a
+ * value at the configured nesting bound does not depend on the caller's remaining stack.
+ */
 function visit(value: unknown, pointer: string, collector: FindingCollector): void {
-    if (typeof value === "string") {
-        matchText(value, pointer, "value", collector);
-        return;
-    }
-    if (value === null || typeof value !== "object") {
-        return;
-    }
-    for (const [key, child] of Object.entries(value)) {
+    const stack: VisitFrame[] = [];
+    enter(value, pointer, stack, collector);
+    while (stack.length > 0) {
+        const frame = stack.at(-1) as VisitFrame;
+        if (frame.index === frame.entries.length) {
+            stack.pop();
+            continue;
+        }
+        const [key, child] = frame.entries[frame.index] as [string, unknown];
+        frame.index += 1;
         // A matching key is reported at its owner and never becomes part of a pointer.
-        if (!matchText(key, pointer, "key", collector)) {
-            visit(
+        if (!matchText(key, frame.pointer, "key", collector)) {
+            enter(
                 child,
-                `${pointer}/${key.replaceAll("~", "~0").replaceAll("/", "~1")}`,
+                `${frame.pointer}/${key.replaceAll("~", "~0").replaceAll("/", "~1")}`,
+                stack,
                 collector,
             );
         }
+    }
+}
+
+function enter(
+    value: unknown,
+    pointer: string,
+    stack: VisitFrame[],
+    collector: FindingCollector,
+): void {
+    if (typeof value === "string") {
+        matchText(value, pointer, "value", collector);
+    } else if (value !== null && typeof value === "object") {
+        stack.push({ entries: Object.entries(value), index: 0, pointer });
     }
 }
 

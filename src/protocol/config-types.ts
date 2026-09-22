@@ -257,6 +257,23 @@ export type TraceArchiveLimitsConfig = {
     readonly maxRecords: number;
 };
 
+/**
+ * Validated nesting bounds of the canonical value domain (`kernel.canonicalization`). They make
+ * canonical acceptance independent of the call-site stack depth and JIT state. @internal
+ */
+export type CanonicalizationConfig = {
+    /**
+     * Additional nesting levels reserved for kernel framing (record identity input, append batch
+     * digest, native and redacted archives) around values already bounded by `maxNestingDepth`.
+     */
+    readonly framingDepth: number;
+    /**
+     * Maximum array and object nesting depth of one canonical value, counting the outermost
+     * container as level one; checked before descending into a deeper container.
+     */
+    readonly maxNestingDepth: number;
+};
+
 /** Validated kernel protocol configuration. */
 export type KernelProtocolConfig = {
     readonly abiVersion: string;
@@ -264,6 +281,7 @@ export type KernelProtocolConfig = {
         readonly firstOwnerOrdinal: number;
         readonly lastOwnerOrdinal: number;
     };
+    readonly canonicalization: CanonicalizationConfig;
     readonly artifacts: {
         readonly appendBatchDraftSchema: string;
         readonly recordBodySchema: string;

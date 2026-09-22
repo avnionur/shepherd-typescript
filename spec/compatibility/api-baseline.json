@@ -96,6 +96,7 @@
             "BlobStorePutResult": {"digest":"sha256:8867f353af9350d6323b5a6584a4d60bc54cdb092ed426d3c2d6e10ad9678ca0","kind":"type alias"},
             "CancelledRunDefinition": {"digest":"sha256:3762ef4663c5af62e7cf034ad5512e710d487d50a9ab693435e33edf58c44d6d","kind":"type alias"},
             "CancelledRunOutcome": {"digest":"sha256:b7c782ec95e827207bea7bd63cbac254782ca770c78dbe3d3f3669d020071118","kind":"type alias"},
+            "CanonicalNestingLimitError": {"digest":"sha256:c8b0019937f2eb7df5b989b2d5ffb5322e650f7006a83c97fce721a9482ddba1","kind":"class"},
             "CaptureGrantedTaskWorldOptions": {"digest":"sha256:e8c267fd31b73a4f5e361585dfa535681cd29549fb277ae0a25233b3e25689a6","kind":"type alias"},
             "CaptureJailedGrantedTaskWorldOptions": {"digest":"sha256:ae4a8a4e192eefa2a5b7f7dfdfa3ad67c605be997cef68f8ec9f2a10d332d883","kind":"type alias"},
             "CapturePlacedGrantedTaskWorldOptions": {"digest":"sha256:d98617a83e8bd54dc6dba27a2faf89a3fca3979465b50ae72b9b5efd09baad15","kind":"type alias"},
@@ -1391,6 +1392,7 @@
             "validateApplicationManifest": {"digest":"sha256:3fdc6868056da3bef43fad40bc8f7faee62d6c5628ebe8afe9daaf9108f75c4a","kind":"function"}
         },
         "./canonical": {
+            "CanonicalNestingLimitError": {"digest":"sha256:c8b0019937f2eb7df5b989b2d5ffb5322e650f7006a83c97fce721a9482ddba1","kind":"class"},
             "SemanticRecord": {"digest":"sha256:130fb5af84155134ce20c085f6d173a3e26c284e40114812dc84043cbb5aca9a","kind":"type alias"},
             "SemanticScalar": {"digest":"sha256:ee6c3a7bbffc49e217c67ca47c8a362163bb7daed161a76aa2e6653acda68e47","kind":"type alias"},
             "SemanticValue": {"digest":"sha256:f4e388cbf85724a2c663994707d00b35d48d9095e43d69a7c818009e49699c5a","kind":"type alias"},
@@ -2374,6 +2376,6 @@
             "selectRetainedWorldSettlement": {"digest":"sha256:2e4cadd824902afb6b200a6b858a1a52414a3ff94d5078de3a668baa696e541c","kind":"function"}
         }
     },
-    "packageVersion": "2.32.5",
-    "previousVersion": "2.32.4"
+    "packageVersion": "2.33.2",
+    "previousVersion": "2.33.1"
 }

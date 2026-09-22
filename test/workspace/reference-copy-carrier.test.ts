@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import fs, { lstatSync } from "node:fs";
 import {
     chmod,
     link,
@@ -14,6 +15,7 @@ import {
     symlink,
     writeFile,
 } from "node:fs/promises";
+import { syncBuiltinESMExports } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -753,6 +755,71 @@ test("reference copy carrier cleans failed discard publication", async (context)
         workspaceProtocolConfig.carrier.stagingDirectory,
     );
     assert.deepEqual(await readdir(stagingPath), []);
+});
+
+// F-031: replacing a symbolic link stages the new link as a hidden sibling and renames it over the
+// target. When the rename fails, the staged link (dangling here) must be removed; `fs.rmSync` on
+// Node.js 24.12.x and 24.13.x leaves it in custody without throwing.
+test("a failed symbolic-link replacement leaves no staged link behind and retries cleanly", async (context) => {
+    const workspaceRoot = await temporaryDirectory(context, "failed-link-replace");
+    initializeWorkspace({ adopt: "none", initializeGit: false, rootPath: workspaceRoot });
+    const sourceRoot = path.join(workspaceRoot, "source");
+    await mkdir(sourceRoot);
+    await symlink("missing-before", path.join(sourceRoot, "link"));
+    const binding = createWorkspaceBindings({
+        bindings: [{ name: "source", root: "source" }],
+        workspaceRoot,
+    }).bindings[0];
+    assert.ok(binding);
+    const carrier = createReferenceCopyCarrier({ workspaceRoot });
+    const base = await carrier.snapshot(binding);
+    const custody = await carrier.fork(base.revision_id);
+    await rm(path.join(custody.path, "link"));
+    await symlink("missing-after", path.join(custody.path, "link"));
+    const head = await carrier.captureCustody(custody.custody_id);
+    const changeset = await createWorldChangeset({
+        baseRevision: base,
+        carrier,
+        headRevision: head,
+    });
+    assert.deepEqual(changeset.changed_paths, ["link"]);
+
+    const staged: string[] = [];
+    const rename = fs.renameSync;
+    const injected = context.mock.method(fs, "renameSync", (from: fs.PathLike, to: fs.PathLike) => {
+        const source = String(from);
+        if (
+            path.basename(source).startsWith(".") &&
+            path.dirname(source) === path.dirname(String(to)) &&
+            lstatSync(source).isSymbolicLink()
+        ) {
+            staged.push(source);
+            throw Object.assign(new Error("injected rename failure"), { code: "EIO" });
+        }
+        rename(from, to);
+    });
+    syncBuiltinESMExports();
+    const definition = {
+        candidateChangeset: changeset,
+        currentRevisionId: base.revision_id,
+        operationKey: "application:failed-link-replace",
+    };
+    try {
+        assert.throws(
+            () => createReferenceCopyApplicationRevision(carrier, definition),
+            WorldCarrierError,
+        );
+    } finally {
+        injected.mock.restore();
+        syncBuiltinESMExports();
+    }
+    assert.equal(staged.length, 1);
+    const stagedLink = staged[0] as string;
+    assert.equal(lstatSync(stagedLink, { throwIfNoEntry: false }), undefined);
+    assert.deepEqual(await readdir(path.dirname(stagedLink)), ["link"]);
+
+    const application = createReferenceCopyApplicationRevision(carrier, definition);
+    assert.equal(application.revision.content_id, head.content_id);
 });
 
 async function temporaryDirectory(

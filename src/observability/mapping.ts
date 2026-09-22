@@ -92,8 +92,44 @@ function deriveId(domain: string, value: string, subject: string, length: number
         .slice(0, length);
 }
 
-/** Converts a canonical JSON value to an OTLP `AnyValue`. @internal */
+/**
+ * Converts a canonical JSON value to an OTLP `AnyValue`. @internal
+ *
+ * Containers are converted with an explicit work list instead of recursion, so exporting a body
+ * at the configured canonical nesting bound does not depend on the caller's remaining stack. Each
+ * container's `values` array is filled in source order, so the result is identical to a recursive
+ * conversion.
+ */
 export function toOtlpAnyValue(value: unknown): OtlpAnyValue {
+    const pending: PendingOtlpContainer[] = [];
+    const root = shallowOtlpAnyValue(value, pending);
+    for (let job = pending.pop(); job !== undefined; job = pending.pop()) {
+        if (job.kind === "array") {
+            for (const child of job.source) {
+                job.values.push(shallowOtlpAnyValue(child, pending));
+            }
+        } else {
+            for (const [key, child] of Object.entries(job.source)) {
+                job.values.push({
+                    key,
+                    value: shallowOtlpAnyValue(child, pending),
+                });
+            }
+        }
+    }
+    return root;
+}
+
+/** A converted container whose `values` still have to be filled from its source. */
+type PendingOtlpContainer =
+    | {
+          readonly kind: "array";
+          readonly source: readonly unknown[];
+          readonly values: OtlpAnyValue[];
+      }
+    | { readonly kind: "object"; readonly source: object; readonly values: OtlpKeyValue[] };
+
+function shallowOtlpAnyValue(value: unknown, pending: PendingOtlpContainer[]): OtlpAnyValue {
     if (typeof value === "string") {
         return { stringValue: value };
     }
@@ -107,16 +143,13 @@ export function toOtlpAnyValue(value: unknown): OtlpAnyValue {
         return {};
     }
     if (Array.isArray(value)) {
-        return { arrayValue: { values: value.map(toOtlpAnyValue) } };
+        const values: OtlpAnyValue[] = [];
+        pending.push({ kind: "array", source: value, values });
+        return { arrayValue: { values } };
     }
-    return {
-        kvlistValue: {
-            values: Object.entries(value as object).map(([key, child]) => ({
-                key,
-                value: toOtlpAnyValue(child),
-            })),
-        },
-    };
+    const values: OtlpKeyValue[] = [];
+    pending.push({ kind: "object", source: value as object, values });
+    return { kvlistValue: { values } };
 }
 
 function attribute(name: string, value: OtlpAnyValue): OtlpKeyValue {

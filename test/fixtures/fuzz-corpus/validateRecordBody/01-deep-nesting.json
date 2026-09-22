@@ -1,8 +1,8 @@
 {
-    "description": "F-012: body validation of an over-deep value fails with TypeError.",
+    "description": "F-012, F-016: body validation of a value nested far past the configured canonical bound fails with CanonicalNestingLimitError.",
     "finding": "F-012",
     "input": {
         "value": { "a": { "$fuzz": "nest", "depth": 20000, "kind": "array", "leaf": "x" } }
     },
-    "expect": { "outcome": "rejected", "error": "TypeError" }
+    "expect": { "outcome": "rejected", "error": "CanonicalNestingLimitError" }
 }

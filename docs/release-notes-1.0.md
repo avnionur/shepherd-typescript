@@ -1,6 +1,8 @@
 # 1.0 release notes (release candidate)
 
-Status: release candidate for the in-repo scope, package 2.32.5, 2026-09-19. The evidence and the
+Status: release candidate for the in-repo scope, package 2.32.5, 2026-09-19; the F-016 fix in
+2.33.0 (#189) and the Phase 11 close-out in 2.33.1 (#190: local Linux lane, F-030 and F-031 fixed,
+owner actions tracked in #191) are noted below. The evidence and the
 go/no-go verdict are in the [Phase 11 exit audit](../.plan/phase-11-exit-audit.md); digests are in
 the [release-candidate manifest](../.plan/release-candidate-manifest.md).
 
@@ -24,7 +26,7 @@ application surfaces:
 
 | Area | Delivered | Page |
 | --- | --- | --- |
-| Security process | Threat model with STRIDE per trust boundary, internal findings register F-001 to F-029, severity rubric, external reviewer packet | [Threat model](./threat-model.md), [security review](../.plan/security-review.md) |
+| Security process | Threat model with STRIDE per trust boundary, internal findings register F-001 to F-032, severity rubric, external reviewer packet | [Threat model](./threat-model.md), [security review](../.plan/security-review.md) |
 | Support and incidents | Support policy, incident response with store-corruption, lost-backup, crash, disk-full, and secret-rotation runbooks | [Support policy](./support-policy.md), [incident response](./incident-response.md) |
 | Compatibility | API and protocol surface baselines, classified change log, stability tiers, two-MINOR deprecation window, `pnpm check:compatibility` in `pnpm verify` | [Compatibility policy](./compatibility-policy.md) |
 | Supply chain | Lockfile SBOM, unsigned in-toto/SLSA provenance statement, host-local reproducible build, `pnpm verify:release` | [Release integrity](./release-integrity.md) |
@@ -37,17 +39,25 @@ application surfaces:
 
 ## Known limits
 
-- **No external security review.** The review is internal. Open: F-016 (Low; acceptance of values
-  nested roughly 2,000 to 8,000 levels deep depends on stack depth and JIT state; failure is
-  closed). F-029 (Low; several processes opening the same new SQLite database at once failed
+- **No external security review.** The review is internal; its only open finding is F-032 (Low:
+  the packed file set depends on the npm version, owner's release work in #191). F-016 (Low;
+  acceptance of values nested roughly 2,000 to 8,000 levels deep depended on stack depth and JIT
+  state) is fixed in 2.33.0 by a configured canonical nesting bound
+  (`kernel.canonicalization.maxNestingDepth`, default 1,000; deeper values are refused with
+  `CanonicalNestingLimitError`). F-029 (Low; several processes opening the same new SQLite database at once failed
   closed with `database is locked` or a migration error), found by the audit, is fixed in 2.32.5.
   Accepted residuals are listed in the [threat model](./threat-model.md#residual-risks).
 - **Unsigned and unpublished.** No signing identity, Sigstore attestation, or npm publication;
   `release.yml` has never run.
 - **No hosted CI.** Workflows are present and disabled; every gate is enforced by the local
   `pnpm verify` and `pnpm verify:release` commands.
-- **Platforms.** Verified on macOS arm64 APFS. Linux is supported by design but its lanes, and the
-  privileged jail and overlay lanes, were not run in this phase. Native Windows is unsupported.
+- **Platforms.** Verified on macOS arm64 APFS and, in 2.33.1, in a local Docker Linux lane (Debian
+  bookworm arm64, Node 24.21.0 and the 24.12.0 minimum): every `pnpm verify` gate, runtime
+  boundaries, the extended fuzz run, the unprivileged Landlock jail tests, and the privileged
+  carrier suite (copy, clone, overlay on loopback XFS). The lane found and fixed F-030 (fault-suite
+  file-size limit) and F-031 (`fs.rmSync` keeps dangling symbolic links on Node 24.12.x and
+  24.13.x). No hosted Linux run exists, the volume fault suite is macOS-only, and Linux has no SLO
+  host class. Native Windows is unsupported.
   The clone carrier needs a host toolchain that can link its helper.
 - **Performance.** SLO budgets hold only for the macOS arm64 APFS reference host class.
 - **Providers.** Only the deterministic static provider ships; no live provider adapter and no
@@ -73,11 +83,12 @@ The full row-by-row status is the
 | --- | --- | --- |
 | O-1 | External security review | Reviewer, scope, reviewed commit, report, and new findings entered in the register |
 | O-2 | Signing identity, attestation, npm publication (drop `"private": true`) | A `release.yml` run with a verified attestation against the tarball digest and the published version |
-| O-3 | Hosted CI and cross-OS lanes | Green hosted runs on Linux and macOS (minimum and current Node), the privileged jail and overlay lane, and the compatibility and drill gates |
+| O-3 | Hosted CI and cross-OS lanes | Green hosted runs on Linux and macOS (minimum and current Node) with CodeQL and dependency review; a Windows decision; a Linux volume-fault variant and SLO host class (a local Docker Linux lane is recorded in 2.33.1) |
 | O-4 | Private vulnerability reporting | The advisory form enabled in the repository settings |
 | O-5 | Registry name | The reserved `@avnionur/shepherd-typescript` / `shepherd-ts` page, or a recorded decision to defer |
 
-The register is in the [production hardening contract](../.plan/production-hardening-contract.md#owner-owed-register).
+The register is in the [production hardening contract](../.plan/production-hardening-contract.md#owner-owed-register);
+the owner actions are tracked in [#191](https://github.com/avnionur/shepherd-typescript/issues/191).
 
 ## Upgrade and migration
 
@@ -96,7 +107,9 @@ The register is in the [production hardening contract](../.plan/production-harde
   non-witness is refused (2.32.2); a killed import leaves its staging directory beside the target
   store (2.32.2); a writable task-registry open now reads its schema version under the configured
   `IMMEDIATE` lock, as trace-store and coordinator opens already took the write lock, so it waits up
-  to the busy timeout behind another process's long write transaction (2.32.5). See the [changelog](../CHANGELOG.md).
+  to the busy timeout behind another process's long write transaction (2.32.5); canonical values
+  nested more than `kernel.canonicalization.maxNestingDepth` (1,000) levels deep are refused with
+  `CanonicalNestingLimitError` (2.33.0). See the [changelog](../CHANGELOG.md).
 - **API compatibility.** No Phase 11 slice removed or changed a public export in a breaking way;
   the [compatibility policy](./compatibility-policy.md) defines how future removals are deprecated.
 - **From the Python package.** See [Python-to-TypeScript migration](./python-to-typescript.md).

@@ -5,6 +5,7 @@ import { publicErrorCodes, readPublicErrorConfig } from "../../src/errors/public
 import {
     AppendIntentConflictError,
     BlobIntegrityError,
+    CanonicalNestingLimitError,
     EffectHandlerNotFoundError,
     isPublicError,
     NativeJailExecutionError,
@@ -61,6 +62,7 @@ test("exported fixed-class errors expose configured stable codes", () => {
         new TraceStoreBackupError("manifest-missing", "backup"),
         new TraceStoreReadOnlyError("read-only"),
         new TraceArchiveLimitError("maxRecords", 1),
+        new CanonicalNestingLimitError(1),
     ];
 
     assert.deepEqual(
@@ -88,6 +90,7 @@ test("exported fixed-class errors expose configured stable codes", () => {
             "TRACE_STORE_BACKUP_ERROR",
             "TRACE_STORE_READ_ONLY",
             "TRACE_ARCHIVE_LIMIT_EXCEEDED",
+            "CANONICAL_NESTING_LIMIT_EXCEEDED",
         ],
     );
 });
@@ -119,6 +122,7 @@ test("public error configuration is closed, unique, and immutable", () => {
     const parsed = readPublicErrorConfig(structuredClone(validConfig));
 
     assert.equal(parsed.runs.cancelled, "RUN_CANCELLED");
+    assert.equal(parsed.canonical.nestingLimit, "CANONICAL_NESTING_LIMIT_EXCEEDED");
     assert.equal(Object.isFrozen(parsed), true);
     assert.equal(Object.isFrozen(parsed.trace), true);
     assert.equal(Object.isFrozen(publicErrorCodes), true);
@@ -134,6 +138,13 @@ test("public error configuration is closed, unique, and immutable", () => {
         {
             ...validConfig,
             codes: { ...(validConfig.codes as Record<string, unknown>), effects: {} },
+        },
+        {
+            ...validConfig,
+            codes: {
+                ...(validConfig.codes as Record<string, unknown>),
+                canonical: { nestingLimit: "RUN_CANCELLED" },
+            },
         },
         {
             ...validConfig,

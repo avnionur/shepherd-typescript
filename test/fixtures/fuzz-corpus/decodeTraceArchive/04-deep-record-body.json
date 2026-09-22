@@ -1,5 +1,5 @@
 {
-    "description": "F-012: a record body nested past the runtime call stack (but within maxNestingDepth) is refused with TypeError, not RangeError.",
+    "description": "F-012, F-016: a record body nested past the canonical bound (but within the archive maxNestingDepth) is refused with CanonicalNestingLimitError, not RangeError.",
     "finding": "F-012",
     "input": {
         "seed": 1,
@@ -16,5 +16,5 @@
             }
         ]
     },
-    "expect": { "outcome": "rejected", "error": "TypeError" }
+    "expect": { "outcome": "rejected", "error": "CanonicalNestingLimitError" }
 }

@@ -12,6 +12,7 @@ export type PublicError = Error & {
 };
 
 type FixedPublicErrorCodes = {
+    readonly canonical: { readonly nestingLimit: PublicErrorCode };
     readonly effects: { readonly handlerNotFound: PublicErrorCode };
     readonly formal: { readonly typedTraceInvalid: PublicErrorCode };
     readonly runs: {
@@ -88,10 +89,11 @@ export function readPublicErrorConfig(value: unknown): FixedPublicErrorCodes {
     }
     const codes = readObject(
         root.codes,
-        ["effects", "formal", "runs", "storage", "tasks", "trace", "workspace"],
+        ["canonical", "effects", "formal", "runs", "storage", "tasks", "trace", "workspace"],
         "public error codes",
     );
     const parsed = {
+        canonical: readCodeGroup(codes.canonical, ["nestingLimit"], "canonical"),
         effects: readCodeGroup(codes.effects, ["handlerNotFound"], "effects"),
         formal: readCodeGroup(codes.formal, ["typedTraceInvalid"], "formal"),
         runs: readCodeGroup(codes.runs, ["budgetExhausted", "cancelled"], "runs"),

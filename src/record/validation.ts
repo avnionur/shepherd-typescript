@@ -14,6 +14,8 @@ import type { RecordBody, RecordEnvelope, RecordMode } from "./types.ts";
  *
  * @param value - The untrusted envelope value to validate.
  * @param body - The body whose semantic identity the envelope must contain.
+ * @throws {CanonicalNestingLimitError} If `body` nests deeper than the configured
+ * `kernel.canonicalization.maxNestingDepth`.
  * @throws {TypeError} If the shape is invalid or its identity does not match `body`.
  *
  * @public

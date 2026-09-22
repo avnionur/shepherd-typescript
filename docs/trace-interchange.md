@@ -71,6 +71,14 @@ keeps the last value while other parsers keep the first or refuse. Archived `rec
 the canonical receipt encoding. A store's own export is decoded without limits when
 `exportRedactedTraceArchive` redacts it.
 
+From 2.33.0 every archived record body, envelope, and receipt is also held to the canonical value
+domain's configured nesting bound, `kernel.canonicalization.maxNestingDepth`
+([canonical records](./canonical-records.md#nesting-bound)): a body one level deeper is refused with
+`CanonicalNestingLimitError` (`CANONICAL_NESTING_LIMIT_EXCEEDED`) while the archive is decoded,
+before anything is written. Load refuses an archive `maxNestingDepth` below
+`kernel.canonicalization.maxNestingDepth + framingDepth`, so a body at the bound always fits in
+an archive.
+
 Within the bounds, decoding and the staged import still hold the parsed archive in memory; an
 operator importing from untrusted sources can lower the bounds. Fuzz and corpus evidence is in
 [fault and fuzz conformance](./fault-and-fuzz-conformance.md).

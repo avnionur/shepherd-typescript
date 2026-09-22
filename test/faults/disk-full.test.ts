@@ -14,11 +14,13 @@ import {
     cutIdFor,
     faultSeeds,
     faultSettings,
+    fileSizeLimitUnitBytes,
     inspectHealth,
     runFaultProcess,
 } from "./workload.ts";
 
 const SQLITE_FULL = 13;
+const SQLITE_IOERR_WRITE = 778;
 const [seed = 0] = faultSeeds();
 const settings = faultSettings.diskFull;
 
@@ -188,7 +190,8 @@ test("a full database (max_page_count) fails typed, writes nothing, and succeeds
 const posix = process.platform !== "win32";
 
 // Node.js ignores SIGXFSZ, so a write past RLIMIT_FSIZE fails with EFBIG instead of killing the
-// writer: SQLite reports an I/O error and the blob layer a system error.
+// writer, and SQLite reports SQLITE_IOERR_WRITE for every operation. The limit is configured in
+// bytes and converted to the unit `/bin/sh` uses for `ulimit -f` (512 or 1024 bytes by shell).
 test("a writer past RLIMIT_FSIZE fails typed and the store recovers", {
     skip: posix ? false : "ulimit -f needs a POSIX shell",
     timeout: faultSettings.testTimeoutMilliseconds,
@@ -211,15 +214,14 @@ test("a writer past RLIMIT_FSIZE fails typed and the store recovers", {
             stopAfterError: true,
         };
         const result = await runFaultProcess(args, {
-            fileSizeLimitBlocks: settings.fileSizeLimitBlocks,
+            fileSizeLimitBytes: settings.fileSizeLimitBytes,
         });
         const failure = result.events.find((event) => event.event === "error");
         assert.ok(failure !== undefined, `no failure reported: ${result.stderr}`);
         assert.equal(result.status, 0, result.stderr);
-        assert.ok(
-            (failure.code === "EFBIG" && failure.name === "Error") ||
-                (failure.code === "ERR_SQLITE_ERROR" && failure.errcode !== null) ||
-                failure.name === "TraceStoreBackupError",
+        assert.deepEqual(
+            { code: failure.code, errcode: failure.errcode },
+            { code: "ERR_SQLITE_ERROR", errcode: SQLITE_IOERR_WRITE },
             JSON.stringify(failure),
         );
         const counts = await recoverAfterKill(args, result.events);
@@ -227,5 +229,8 @@ test("a writer past RLIMIT_FSIZE fails typed and the store recovers", {
             `${operation}: ${failure.name} ${failure.code}/${failure.errcode} after ${failure.index} operation(s), ${JSON.stringify(counts)}`,
         );
     }
-    context.diagnostic(`RLIMIT_FSIZE outcomes: ${outcomes.join("; ")}`);
+    const unit = await fileSizeLimitUnitBytes(settings.fileSizeLimitBytes);
+    context.diagnostic(
+        `RLIMIT_FSIZE ${settings.fileSizeLimitBytes} bytes (ulimit -f unit ${unit} bytes) outcomes: ${outcomes.join("; ")}`,
+    );
 });

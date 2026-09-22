@@ -1,7 +1,10 @@
 # Release-readiness dashboard
 
-Status: 2.32.4, 2026-09-19, #29; updated in 2.32.5 for the F-029 fix (the internal register's only
-open finding is now F-016, Low). Companion to the
+Status: 2.32.4, 2026-09-19, #29; updated in 2.32.5 for the F-029 fix and in 2.33.0 for the F-016
+fix (#189, configured canonical nesting bound), and in 2.33.1 for the Phase 11 close-out (#190: local
+Docker Linux lane, F-030 and F-031 fixed, F-032 open for the owner's release work, owner actions
+moved to #191).
+Companion to the
 [Phase 11 exit audit](./phase-11-exit-audit.md). It shows every phase epic, every
 [parity matrix](./parity-matrix.md) row, and every [paper coverage](./paper-coverage.md) row with
 one classification. Nothing classified below as open, fenced, or unsupported is presented as
@@ -33,7 +36,7 @@ Classifications:
 | 8 Coupled checkpoints, rewind, and replay | #21 | Closed 2026-09-14 | [Phase 8 exit audit](./phase-8-exit-audit.md) (2.15.1) | L3 progress |
 | 9 Task-as-value meta-agents | #22 | Closed 2026-09-15 | [Phase 9 exit audit](./phase-9-exit-audit.md) (2.20.1) | L3 documented scope |
 | 10 Research applications | #23 | Closed 2026-09-18 | [Phase 10 exit audit](./phase-10-exit-audit.md) (2.25.1) | L3 research applications, offline scope |
-| 11 Production hardening and 1.0 | #24 | Open | [Phase 11 exit audit](./phase-11-exit-audit.md) (2.32.4; F-029 fixed in 2.32.5): ten work items met (in-repo), two partially met; exit criteria: two met (in-repo; SLOs for the reference host only), two partially met, one owner-owed | L4 release candidate for the in-repo scope; GA no-go |
+| 11 Production hardening and 1.0 | #24 | Open; closes when the close-out (#190) merges (owner re-scope 2026-09-19) | [Phase 11 exit audit](./phase-11-exit-audit.md) (2.32.4; F-029 fixed in 2.32.5; [close-out addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331) 2.33.1): in-repo scope complete, including a local Docker Linux lane on Node 24.21.0 and 24.12.0; owner-only items O-1 to O-5 move to #191 | L4 release candidate for the in-repo scope; GA no-go until #191 closes |
 
 Source: `gh issue list --state all --label type:epic` on 2026-09-19. Children of #24 (#187, #179
 to #186, #29) are open pending the Phase 11 pull request.
@@ -122,7 +125,7 @@ the [parity matrix](./parity-matrix.md) states the full requirement.
 | Auto placement | Implemented | Phase 4 |
 | Jail placement fails closed | Implemented | [Native jail execution](../docs/native-jail-execution.md) |
 | macOS Seatbelt | Platform-fenced | Real local denial suite on macOS |
-| Linux Landlock/container jail | Platform-fenced | Linux-gated suite; needs a capable Linux host; not run in Phase 11 (O-3) |
+| Linux Landlock/container jail | Platform-fenced | The native jail tests (live Landlock probe with a real denial, runner admission, jailed granted capture at the durable task-world seam) ran and passed unprivileged in the local Docker Linux lane (Landlock ABI 8, 2.33.1, [addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331)); no hosted or bare-metal Linux run (O-3, #191) |
 | Windows/WSL policy | Classified unsupported | Native Windows unsupported; WSL uses Landlock only when its probe and denial suite pass |
 | Capability attenuation/delegation | Implemented | Phase 9 ([delegated authority](../docs/delegated-authority.md)) |
 | Irreversible-effect approval gate | Implemented | Phase 7 ([supervision control](../docs/supervision-control.md)) |

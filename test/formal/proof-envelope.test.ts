@@ -3,10 +3,12 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
+    CanonicalNestingLimitError,
     classifyProofEnvelope,
     TypedEffectTraceValidationError,
     validateTypedEffectTrace,
 } from "../../src/index.ts";
+import { kernelProtocolConfig } from "../../src/protocol/config.ts";
 
 const PROGRAM_REF =
     "program:sha256:386f6477ff0406a20e1c2a6d8025387dd794ad4aaafbfe976b475f984c84e529";
@@ -507,6 +509,46 @@ test("proof-envelope classifier validates top-level data and propagates unexpect
                 trace: [unexpected],
             }),
         /unexpected proxy failure/u,
+    );
+});
+
+test("deep record values keep the classified nesting refusal and classify runtime-only", () => {
+    const { maxNestingDepth } = kernelProtocolConfig.canonicalization;
+    const nested = (levels: number): unknown => {
+        let value: unknown = null;
+        for (let level = 0; level < levels; level += 1) value = { a: value };
+        return value;
+    };
+    const withPayload = (levels: number) =>
+        replaceRecord(HANDLED_RETURN_TRACE.slice(0, 1), "EffectDeclaration", {
+            payload: nested(levels),
+        });
+    const classify = (levels: number) =>
+        classifyProofEnvelope({
+            completed: false,
+            programRef: PROGRAM_REF,
+            trace: withPayload(levels),
+        });
+
+    // The trace array and its record add two levels above the payload.
+    assert.equal(classify(maxNestingDepth - 2).strength, "reference_validated");
+    for (const levels of [maxNestingDepth, maxNestingDepth + 1]) {
+        assert.equal(classify(levels).strength, "runtime_only");
+    }
+    validateTypedEffectTrace({
+        completed: false,
+        programRef: PROGRAM_REF,
+        trace: withPayload(maxNestingDepth),
+    });
+    assert.throws(
+        () =>
+            validateTypedEffectTrace({
+                completed: false,
+                programRef: PROGRAM_REF,
+                trace: withPayload(maxNestingDepth + 1),
+            }),
+        (error: unknown) =>
+            error instanceof CanonicalNestingLimitError && error.bound === maxNestingDepth,
     );
 });
 

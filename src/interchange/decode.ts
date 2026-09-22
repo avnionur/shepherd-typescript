@@ -1,5 +1,6 @@
 import { assertBlobId } from "../blob/identity.ts";
 import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
+import { CanonicalNestingLimitError } from "../canonical/errors.ts";
 import { kernelProtocolConfig, retentionProtocolConfig } from "../protocol/config.ts";
 import type { TraceArchiveLimitsConfig } from "../protocol/config-types.ts";
 import { assertNonEmptyString, assertRecordId, validateRecordBody } from "../record/guards.ts";
@@ -40,6 +41,8 @@ const ARCHIVE_KEYS = [
  * store's own export.
  *
  * @throws {TraceArchiveLimitError} If a configured interchange limit is exceeded.
+ * @throws {CanonicalNestingLimitError} If a record body, envelope, or receipt nests deeper than
+ * `kernel.canonicalization.maxNestingDepth`.
  * @throws {RedactedTraceArchiveError} If the archive is a redacted archive.
  * @throws {TypeError} If the archive is malformed or repeats an object key.
  */
@@ -153,7 +156,8 @@ export function readIntent(value: unknown, index: number): TraceArchiveIntent {
     let canonicalReceipt: string | undefined;
     try {
         canonicalReceipt = canonicalizeRecord(JSON.parse(intent.receipt_json) as SemanticRecord);
-    } catch {
+    } catch (error) {
+        if (error instanceof CanonicalNestingLimitError) throw error;
         canonicalReceipt = undefined;
     }
     if (canonicalReceipt !== intent.receipt_json) {

@@ -1,0 +1,39 @@
+{
+    "description": "F-016: a record body one level past the canonical bound is refused with CanonicalNestingLimitError before its identity is checked.",
+    "finding": "F-016",
+    "input": {
+        "seed": 1,
+        "replace": [
+            {
+                "from": "\"body\":{",
+                "to": [
+                    {
+                        "literal": "\"body\":{\"deep\":"
+                    },
+                    {
+                        "repeat": "{\"a\":",
+                        "count": {
+                            "canonicalBound": 0
+                        }
+                    },
+                    {
+                        "literal": "0"
+                    },
+                    {
+                        "repeat": "}",
+                        "count": {
+                            "canonicalBound": 0
+                        }
+                    },
+                    {
+                        "literal": ","
+                    }
+                ]
+            }
+        ]
+    },
+    "expect": {
+        "outcome": "rejected",
+        "error": "CanonicalNestingLimitError"
+    }
+}

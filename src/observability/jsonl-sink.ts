@@ -1,5 +1,6 @@
 import { open } from "node:fs/promises";
 
+import { serializeJsonText } from "../canonical/json-text.ts";
 import { retentionProtocolConfig } from "../protocol/config.ts";
 import type { TelemetryBatch, TelemetrySink } from "./otlp-types.ts";
 
@@ -26,9 +27,11 @@ const PERMISSION_BITS = 0o777;
  * when it holds a span, and its logs request when it holds a log record. Files are created with
  * the configured owner-only store-file mode, and an existing file with group or other permission
  * bits is tightened before anything is appended. Each file is flushed to stable storage before
- * the write resolves, so an acknowledged cursor never passes telemetry that was not persisted. A
- * batch retried after a failure may repeat lines already written; consumers must tolerate
- * at-least-once delivery.
+ * the write resolves, so an acknowledged cursor never passes telemetry that was not persisted.
+ * Lines are the exact `JSON.stringify` text of each request, produced with an explicit stack, so
+ * an included body at the canonical nesting bound (several OTLP levels per body level) is written
+ * independent of the platform's native stack and the caller's stack depth. A batch retried after
+ * a failure may repeat lines already written; consumers must tolerate at-least-once delivery.
  *
  * @param options - Distinct traces and logs file paths.
  * @returns A frozen sink.
@@ -60,10 +63,10 @@ export function createJsonLinesTelemetrySink(
     return Object.freeze({
         write: async (batch: TelemetryBatch) => {
             if (batch.traces.resourceSpans.length > 0) {
-                await appendLine(tracesPath, JSON.stringify(batch.traces));
+                await appendLine(tracesPath, serializeJsonText(batch.traces));
             }
             if (batch.logs.resourceLogs.length > 0) {
-                await appendLine(logsPath, JSON.stringify(batch.logs));
+                await appendLine(logsPath, serializeJsonText(batch.logs));
             }
         },
     });

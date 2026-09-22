@@ -1,7 +1,9 @@
 # Fault and fuzz conformance
 
-Status: normative for 2.32.1. The fuzz part is delivered by Phase 11 slice 8 (#185, 2.32.0); the
-fault and soak part by slice 9 (#186, 2.32.1). Findings live in the
+Status: normative for 2.33.1. The fuzz part is delivered by Phase 11 slice 8 (#185, 2.32.0); the
+fault and soak part by slice 9 (#186, 2.32.1); canonical-bound mutators, corpus cases, and the
+deep-call-site oracle by #189 (2.33.0, F-016); the byte-based file-size limit, the fixture's
+symbolic-link removal, and the Linux lane results by #190 (2.33.1, F-030, F-031). Findings live in the
 [internal security review](../.plan/security-review.md); boundaries and residual risks in the
 [threat model](./threat-model.md); operator procedures in [incident response](./incident-response.md).
 
@@ -39,18 +41,21 @@ position, a single inserted structural or control character, and `__proto__`, `c
 Value inputs: key deletion, array element removal, duplication, or reversal, unknown and
 prototype-named own data keys (`pollutionKeys`), type swaps, the configured numbers (`NaN`,
 `Infinity`, `-Infinity`, `-0`, `1e308`, `9007199254740993`, `-1`, `0.5`), deep nesting
-(`valueNestingLevels`: 64, 400, and 20000), oversized strings, path-shaped and malformed strings,
+(`valueNestingLevels`: 64, 400, and 20000, plus `valueNestingBoundOffsets`: -8, -1, 0, and 1
+levels around the configured `kernel.canonicalization.maxNestingDepth`, so mutated values land on
+both sides of the canonical bound), oversized strings, path-shaped and malformed strings,
 single-character flips, and container truncation. One case applies between one and
-`maxMutationsPerCase` (3) mutations. Value nesting avoids the band between roughly 2,000 and
-8,000 levels on purpose: there, canonical acceptance depends on stack depth and JIT state
-(F-016), which would make the oracle nondeterministic.
+`maxMutationsPerCase` (3) mutations. Since 2.33.0 (F-016) canonical acceptance depends only on the
+configured bound, not on stack depth or JIT state, so these depths are deterministic: 20,000 levels
+and anything past the bound are refused with `CanonicalNestingLimitError`.
 
 ### Oracle
 
 Every case, in every target, must satisfy all of the following ([`runCase`](../test/fuzz/harness.ts)):
 
 1. The input is accepted and the target's acceptance check holds: the result re-encodes
-   canonically and stably (for canonical results `canonicalizeRecord(JSON.parse(x)) === x`, and a
+   canonically and stably (for canonical results `canonicalizeRecord(JSON.parse(x)) === x`, both
+   from the harness and again below `deepCallSiteFrames` (4,000) ordinary caller frames, and a
    second decode of the re-encoding yields the same canonical result); or
 2. the call throws an `Error` whose class name is in the target's configured `allowedErrors`.
 3. No non-`Error` value is thrown.
@@ -67,14 +72,14 @@ are stronger where a reference exists, listed below.
 
 | Target | Unit | Seeds | Allowed errors | Acceptance check |
 | --- | --- | --- | --- | --- |
-| `canonicalizeRecord` | `src/canonical/canonical-record.ts` | Archive record bodies, a Unicode body | `TypeError` | Output re-encodes to itself |
-| `createRecordId` | same | same | `TypeError` | Configured prefix and length; the identity of the parsed canonical output is equal |
-| `validateRecordBody` | `src/record/guards.ts` | same | `TypeError` | Canonical re-encoding is stable |
-| `validateRecordEnvelope` | `src/record/validation.ts` | Archive `{ body, envelope }` pairs | `TypeError` | `record_id` equals `digest`; the canonical envelope validates again |
+| `canonicalizeRecord` | `src/canonical/canonical-record.ts` | Archive record bodies, a Unicode body | `CanonicalNestingLimitError`, `TypeError` | Output re-encodes to itself |
+| `createRecordId` | same | same | `CanonicalNestingLimitError`, `TypeError` | Configured prefix and length; the identity of the parsed canonical output is equal |
+| `validateRecordBody` | `src/record/guards.ts` | same | `CanonicalNestingLimitError`, `TypeError` | Canonical re-encoding is stable |
+| `validateRecordEnvelope` | `src/record/validation.ts` | Archive `{ body, envelope }` pairs | `CanonicalNestingLimitError`, `TypeError` | `record_id` equals `digest`; the canonical envelope validates again |
 | `decodeAppendReceipt` | `src/store/codec.ts` | Archived receipts | `TraceStoreError` | `encode(decode(encode(x)))` is stable |
-| `decodeTraceArchive` | `src/interchange/decode.ts` | Committed fixture, a fresh store export | `RedactedTraceArchiveError`, `TraceArchiveLimitError`, `TypeError` | Decoding is deterministic and every record re-encodes canonically |
+| `decodeTraceArchive` | `src/interchange/decode.ts` | Committed fixture, a fresh store export | `CanonicalNestingLimitError`, `RedactedTraceArchiveError`, `TraceArchiveLimitError`, `TypeError` | Decoding is deterministic and every record re-encodes canonically |
 | `importTrace` | `SQLiteTraceStore.importTrace` into a fresh store | same | same | `verifyIntegrity` passes; the export re-imports to an identical export |
-| `verifyRedactedTraceArchive` | `src/retention/redacted-archive.ts` | A redacted export | `RedactedTraceArchiveError`, `TraceArchiveLimitError` | Verification is deterministic |
+| `verifyRedactedTraceArchive` | `src/retention/redacted-archive.ts` | A redacted export | `CanonicalNestingLimitError`, `RedactedTraceArchiveError`, `TraceArchiveLimitError` | Verification is deterministic |
 | `parseBackupManifest` | `src/operations/backup-manifest.ts` | A sealed canonical manifest | `TraceStoreBackupError` | Re-encoding reproduces the input exactly |
 | `runCli` | `src/cli/cli.ts` with an in-memory `CliIo` in a nested temporary directory | Grammar-derived argv from the configured groups, commands, options, and help aliases, then mutated (over-long, multi-byte, over-count, non-string, dropped, duplicated) | none (`runCli` must not throw) | Exit code is one of `cli.exitCodes`; argv over `maxArguments` or `maxArgumentBytes` exits with the usage code; with `--json`, exactly one envelope that validates against `spec/schemas/cli-output-v1.schema.json` (ajv) and whose `ok` matches the exit code |
 | `isCanonicalWorldPath` | `src/workspace/changesets.ts` | Plain and Unicode paths, segment edits with `.`, `..`, empty, and the control directory | none | An accepted path is POSIX-normalized, relative, free of `\` and NUL, well-formed, and has no `..` or control-directory segment |
@@ -85,7 +90,7 @@ are stronger where a reference exists, listed below.
 | `classifyOverlayMountInfo` | `src/workspace/carrier-backends.ts` | Owned, foreign, and empty `mountinfo` text | none | Returns `absent`, `foreign`, or `owned`; `owned` only with the configured type and every layer option |
 | `readNativeJailCommandEvidence` | `src/protocol/native-jail-evidence.ts` | `createNativeJailCommand` output | `TypeError` | Canonical output re-reads to itself |
 | `readNativeJailPlanEvidence` | same | Read-only and writable plans from the local backend | `TypeError` | same; skipped with the probe reason when no native jail backend is available |
-| `readModelResponse`, `readStaticProviderDefinition` | `src/provider/validation.ts` | Text and structured responses | `TypeError` | Snapshot re-reads to itself |
+| `readModelResponse`, `readStaticProviderDefinition` | `src/provider/validation.ts` | Text and structured responses | `CanonicalNestingLimitError`, `TypeError` | Snapshot re-reads to itself; a definition is checked per descriptor, request, and response, because it is a container of independently bounded canonical values that is never canonicalized as a whole |
 | `readApplicationProtocol` | `src/applications/manifest.ts` | Every definition in `config/research-applications.config.json` that validates | `ApplicationProtocolError` | Snapshot re-reads to itself |
 | `telemetryBatch` | none | none | none | Skipped: no telemetry decoder exists; #184 only maps committed records to OTLP/JSON for a caller sink |
 
@@ -147,16 +152,27 @@ cases (F-015) and one `canonicalizeRecord` case (F-016), and stopped when a muta
 overflowed the call stack while copying a deeply nested value; the mutator copy is now iterative.
 The recorded run above is the rerun after those changes.
 
+### Extended run after the F-016 fix (2.33.0)
+
+`node scripts/fuzz-cli.ts --tier extended --seed 185185` on the 2.33.0 working tree of #189, same
+host: 410,400 cases, 0 findings, 246.6 s wall. The first run on that tree reported six
+`readStaticProviderDefinition` oracle findings (see F-016 below); this is the rerun after the oracle
+change. `CanonicalNestingLimitError` refusals by target: `canonicalizeRecord` 1,267,
+`createRecordId` 1,281, `validateRecordBody` 1,272, `validateRecordEnvelope` 1,035,
+`decodeTraceArchive` 48, `importTrace` 15, `verifyRedactedTraceArchive` 26, `readModelResponse`
+598, `readStaticProviderDefinition` 538.
+
 ### Findings
 
 | Finding | Found by | Resolution | Corpus |
 | --- | --- | --- | --- |
-| F-012 canonical encoding threw `RangeError` past the call stack | Deep-nesting mutator (`canonicalizeRecord`) | Fixed: reported as `TypeError` with the `RangeError` as cause | `canonicalizeRecord/01`, `createRecordId/01`, `validateRecordBody/01`, `decodeTraceArchive/04`, `importTrace/01`, `readModelResponse/01` |
+| F-012 canonical encoding threw `RangeError` past the call stack | Deep-nesting mutator (`canonicalizeRecord`) | Fixed: reported as `TypeError` with the `RangeError` as cause; since 2.33.0 these depths are refused by the configured bound with `CanonicalNestingLimitError` (F-016) | `canonicalizeRecord/01`, `createRecordId/01`, `validateRecordBody/01`, `decodeTraceArchive/04`, `importTrace/01`, `readModelResponse/01` |
 | F-013 repeated keys and non-canonical nested text accepted (parser differential) | Duplicate-raw-key mutator (archives, redacted archives, manifests, receipts) | Fixed for archives, redacted archives, archived receipts, and manifests; accepted residual for the store-internal receipt decoder | `decodeTraceArchive/02`, `decodeTraceArchive/03`, `importTrace/02`, `verifyRedactedTraceArchive/01`, `parseBackupManifest/01`, `parseBackupManifest/02`, `decodeAppendReceipt/01` (residual pinned as accepted) |
 | F-014 append admits a non-witness `witness_ref` | Seed construction | Fixed in 2.32.2 (#29): append refuses it with `TraceStoreError` before any write | none (append-path behavior, not a decoder); `test/store/integrity.test.ts` |
 | F-015 backup manifest lone-surrogate owner escaped as `TypeError` | Extended run | Fixed: `manifest-invalid` | `parseBackupManifest/03` |
-| F-016 stack- and JIT-dependent canonical acceptance of deep nesting | Extended run | Open, Low, #29 (left open in 2.32.2 as a protocol decision; failure is closed) | none (not deterministic); mutators avoid the band |
+| F-016 stack- and JIT-dependent canonical acceptance of deep nesting | Extended run | Fixed in 2.33.0 (#189); the first extended run after the fix (seed 185185) reported six `readStaticProviderDefinition` cases where the oracle canonicalized the whole definition, four levels above a response output at the bound, so the oracle now checks the definition's parts. The fix is the configured `kernel.canonicalization.maxNestingDepth`, enforced by an explicit-stack encoder; `CanonicalNestingLimitError`. Residual: a pre-2.33.0 store body deeper than the bound fails closed when canonicalized again | `canonicalizeRecord/04`, `canonicalizeRecord/05`, `createRecordId/02`, `createRecordId/03`, `validateRecordBody/02`, `validateRecordBody/03`, `decodeTraceArchive/06`, `decodeTraceArchive/07`, `importTrace/04`, `readStaticProviderDefinition/01`, `readStaticProviderDefinition/02` (depths relative to the configured bound); `valueNestingBoundOffsets` mutators |
 | F-004 archive decode bounds (pre-existing) | Register | Fixed: configured limits and `TraceArchiveLimitError` | `decodeTraceArchive/01`, `verifyRedactedTraceArchive/02` |
+| F-031 the `createVerifiedWorldChangeset` fixture failed with `EEXIST` on Node 24.12.0 because `fs.rmSync` on Node 24.12.x and 24.13.x silently leaves a dangling symbolic link | Linux verification lane (#190), default tier on `node:24.12.0-bookworm` | Fixed in 2.33.1: the fixture and every product removal use `removePathSync` (`src/runtime/remove-path.ts`), which unlinks symbolic links itself | none (fixture defect; `test/runtime/remove-path.test.ts` and `test/workspace/reference-copy-carrier.test.ts`) |
 
 Other corpus cases pin accepted behavior at edges: the unmodified export and fixture archive,
 `__proto__` and `constructor` data keys, non-finite numbers, CLI argument count and multi-byte byte
@@ -170,7 +186,9 @@ optional `finding`, `input`, and `expect` (`{ "outcome": "accepted" }` or
 `{ "outcome": "rejected", "error": "<class name>" }`). `input` is one of `{ "text": ... }` (a string
 or segments `{ "literal" }` / `{ "repeat", "count" }`), `{ "value": ... }` (JSON with `$fuzz`
 markers for `number`, `nest`, and `repeat`), or `{ "seed": <index>, "replace": [{ "from", "to" }] }`
-(first-occurrence replacements in one of the target's seeds). Minimize a finding to the smallest
+(first-occurrence replacements in one of the target's seeds). A `nest` depth or a segment `count`
+may be `{ "canonicalBound": <offset> }`, resolved against `kernel.canonicalization.maxNestingDepth`,
+so boundary cases follow the configured bound instead of copying it. Minimize a finding to the smallest
 input that still reproduces it, add the fix and the case together, and record the finding in the
 register.
 
@@ -181,7 +199,8 @@ register.
 - Host-dependent targets run where the host allows: `readNativeJailPlanEvidence` needs an
   available native jail backend; the overlay parser is host-independent, but live overlay mounts
   remain Linux-only.
-- The extended run is recorded for the reference host only.
+- The extended run is recorded for the reference host and, from 2.33.1, the local Docker Linux
+  lane (Node 24.21.0 and 24.12.0).
 
 ## Faults and soak
 
@@ -277,7 +296,7 @@ at all is left there, and counts staging directories beside the import targets.
 | Case | Injection | Outcome |
 | --- | --- | --- |
 | Database full | `PRAGMA max_page_count` set on the store's connection to the current size plus `headroomPages`, then to the current size after filling | `append`, `publishCut`, `putBlob` (receipt row), and `importTrace` fail with the SQLite error (`ERR_SQLITE_ERROR`, `errcode` 13, `SQLITE_FULL`); the export is unchanged, checks pass, the append intent is `retry_safe`, an unregistered blob reads as absent; after the limit is raised every retry succeeds, `vacuum` runs, and orphans are gone |
-| File-size limit | Child launched by `/bin/sh -c "ulimit -f 1024 && exec node ..."` (1 MiB) running `append`, `blob`, `vacuum`, and `backup` until one fails | Node.js ignores `SIGXFSZ`, so the write fails with `EFBIG`; SQLite reports `SQLITE_IOERR_WRITE` (`errcode` 778) for every operation; the parent reopens without the limit and classifies every started operation complete or retryable |
+| File-size limit | Child launched by `/bin/sh -c "ulimit -f <n> && exec node ..."` running `append`, `blob`, `vacuum`, and `backup` until one fails; `faults.diskFull.fileSizeLimitBytes` (1 MiB) is converted to the shell's `ulimit -f` unit, measured once by a probe child (512 bytes in dash and bash 5 POSIX mode, 1024 in the bash 3.2 macOS ships), and the child runs with `NODE_V8_COVERAGE` empty so the limit cannot truncate a coverage file (F-030) | Node.js ignores `SIGXFSZ`, so the write fails with `EFBIG`; SQLite reports `SQLITE_IOERR_WRITE` (`errcode` 778) for every operation; the parent reopens without the limit and classifies every started operation complete or retryable |
 | Real volume (opt-in) | `pnpm test:faults:volume`: a 16 MiB HFS+ image created and attached by `hdiutil` at a private mount point without privileges, a ballast file, then appends and blob puts until one fails | Recorded below |
 
 `PRAGMA max_page_count` cannot be set below the current page count, so `vacuum` under a full
@@ -369,17 +388,20 @@ the same host.
 | F-018 Append intent batch digests were not verified | Seeded page flips (a flip inside `append_intents.batch_digest` passed every check and was exported, producing an archive `importTrace` refuses) | Fixed for malformed digests (`diagnoseAppend` reports `receipt_mismatch`, `verifyIntegrity` reports `append_receipt_mismatch`, export refuses); accepted residual: a well-formed substitute is not derivable from retained records and fails closed on retry |
 | F-019 A kill during `importTrace` leaves its staging directory in the OS temporary directory | Process-kill suite (`TMPDIR` pointed at a private directory) | Fixed in 2.32.2 (#29): staging is created beside the target store (`kernel.interchange.staging`); the suite asserts the temporary directory stays empty |
 | F-020 Deleting or truncating the write-ahead log silently rolls the store back to an earlier commit | WAL corruption cases | Accepted (SQLite property); runbook and threat-model residual |
+| F-030 The file-size limit was 512 KiB on Linux and 1 MiB on macOS (`ulimit -f` units are shell dependent), and the limited child wrote a V8 coverage file that the limit truncated, so `pnpm test` failed its coverage report on Linux | Linux verification lane (#190) | Fixed in 2.33.1: the limit is configured in bytes and converted to the measured unit, and the limited children run without coverage; the test asserts `SQLITE_IOERR_WRITE` (778) for all four operations |
 
 ### Non-claims
 
 - Kills are `SIGKILL` of a process; operating-system crash and power loss (lost page-cache writes,
   torn sectors) are not simulated. `synchronous = FULL` and the blob layer's `fsync` are the
   mitigation, not verified here.
-- The real-volume suite is macOS-only and opt-in; Linux volume and jail variants are owner-owed
-  (O-3). The file-size case needs a POSIX shell.
+- The real-volume suite is macOS-only and opt-in; a Linux volume variant is owner-owed (O-3,
+  #191). The file-size case needs a POSIX shell. Every other fault, corruption, and soak case runs
+  in `pnpm test` in the local Docker Linux lane on Node 24.21.0 and 24.12.0 (2.33.1, see the
+  [Phase 11 exit audit addendum](../.plan/phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331)).
 - Kill points are chosen by seeded delays, not by instrumented injection points, so a given run
   does not prove every instruction boundary was hit; the recorded soak and the per-cycle counts
   show how often kills landed inside an operation.
 - Corruption covers single-region flips and whole-file damage; it does not model an adversary who
   rewrites records and digests consistently (F-006).
-- Recorded runs are for the reference host only.
+- The recorded soak, page-flip sweep, and volume runs are for the reference host only.

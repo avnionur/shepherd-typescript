@@ -2,9 +2,9 @@
 
 Last updated: 2026-09-19
 
-Current version: `2.32.5`
+Current version: `2.33.2`
 
-Current level: L4 release candidate for the in-repo scope ([Phase 11 exit audit](./phase-11-exit-audit.md)); 1.0 general availability is no-go until the owner-owed rows O-1 to O-5 close. L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
+Current level: L4 release candidate for the in-repo scope ([Phase 11 exit audit](./phase-11-exit-audit.md)); 1.0 general availability is no-go until the owner-owed rows O-1 to O-5 close (tracked in #191); Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
 ## Current position
 
@@ -664,7 +664,7 @@ Phase 11 verdict: release candidate ready for the in-repo scope; 1.0 general ava
 no-go until the owner-owed rows close: external security review (O-1), signing, attestation, and
 publication (O-2), hosted CI and cross-OS lanes (O-3), private vulnerability reporting (O-4), and
 the registry name (O-5). The internal register has no unresolved critical or high finding; F-016
-(Low) stays open as an owner protocol decision, and F-029 (Low, found by the audit: concurrent
+(Low) stayed open as an owner protocol decision until #189 fixed it in 2.33.0, and F-029 (Low, found by the audit: concurrent
 first opens of a new SQLite database fail closed and make the process-race test intermittent) is
 open for a follow-up PATCH before the candidate is tagged.
 
@@ -675,6 +675,30 @@ open for a follow-up PATCH before the candidate is tagged.
   tolerates a concurrent `mkdir`; the process-race test reaps every child on failure and adds a
   multi-process concurrent-first-open test for all three handle kinds. Probes: 0 failures in
   4,000 process starts.
+- [x] Fix F-016 (#189, MINOR 2.33.0, owner decision 2026-09-19: a configured bound): the canonical
+  value domain has `kernel.canonicalization.maxNestingDepth` (1,000) and `framingDepth` (8) for
+  kernel framing around whole record bodies, validated at load and fingerprinted by the
+  compatibility gate; the encoder normalizes and serializes with explicit stacks and refuses one
+  level past the bound with `CanonicalNestingLimitError` (`CANONICAL_NESTING_LIMIT_EXCEEDED`) at
+  any call-site depth; validators pass the classified error through; append, import, and archive
+  decode refuse before any write; fuzz mutators and corpus cover the bound relative to
+  configuration, and the oracle re-encodes below 4,000 caller frames. The register has no open
+  finding; F-016 keeps an accepted residual for pre-2.33.0 stores holding deeper bodies.
+- [x] Phase 11 close-out (#190, PATCH 2.33.1): local Docker Linux lane (Debian bookworm arm64,
+  unprivileged user) runs every `pnpm verify` gate on Node 24.21.0 and 24.12.0, plus runtime
+  boundaries, the extended fuzz run, and the privileged `pnpm test:carriers:linux`; it found F-030
+  (fault-suite `ulimit -f` units and child coverage truncation made `pnpm verify` fail on Linux)
+  and F-031 (`fs.rmSync` keeps dangling symbolic links on Node 24.12.x and 24.13.x), both fixed
+  with tests (`removePathSync` for every product removal), and F-032 (packed file set depends on
+  the npm version, open for #191). The [exit audit addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331)
+  records the lane, the F-016 resolution, and the re-scoped verdict: Phase 11 in-repo scope
+  complete; O-1, O-2, O-4, O-5 and the hosted-CI, Windows, Linux-volume, and SLO parts of O-3 move
+  to #191; epic #24 closes on merge.
+- [x] Phase 11 close-out Linux follow-up (#190, PATCH 2.33.2): the JSON-lines telemetry sink
+  serializes with the internal explicit-stack `serializeJsonText` (`src/canonical/json-text.ts`,
+  byte-identical to `JSON.stringify` for plain data, shared with the canonical encoder), so an
+  included body at the canonical bound (about 4,000 OTLP levels) is written on Linux, where native
+  `JSON.stringify` refused it; `pnpm verify` is green on Linux on Node 24.21.0 and 24.12.0.
 
 Phase 10 is complete for its documented offline scope; the [exit audit](./phase-10-exit-audit.md)
 maps every work item and exit criterion to entry points, docs, and tests.
@@ -770,6 +794,39 @@ parents, and supervisors reach fenced durable-run control through `./supervision
 observation leaves exported traces byte-identical.
 
 ## Verification required for this slice
+
+Phase 11 close-out (#190): PATCH 2.33.1; Linux verification lane, F-030 and F-031 fixes, F-032
+recorded; no public API, protocol, schema, or CLI change.
+
+- [x] `pnpm sync:version`, `pnpm generate:sbom`, `pnpm generate:api-reference`,
+  `pnpm update:compatibility-baseline` (version only, 0 changes)
+- [x] macOS `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` 1,096 tests,
+  1,094 pass, 1 skipped, 1 fail (the known clone carrier test), 100% coverage; `pnpm build &&
+  pnpm test:package-cli` and `pnpm build:desktop` pass
+- [x] Linux lane, Node 24.21.0 and 24.12.0: every stage passes with 100% coverage except one test
+  of the concurrent F-016 work (`test/observability/telemetry-exporter.test.ts`, "an included body
+  at the canonical nesting bound exports independent of the caller's stack", `RangeError` on
+  Linux only); extended `pnpm fuzz` 410,400 cases, 0 findings on both; `test:runtime-boundaries`,
+  `test:package-cli`, `release:reproducible-build`, and the privileged `test:carriers:linux` pass;
+  `test:faults:volume` and `check:slo` skip by design. Details in the exit audit addendum.
+- [x] F-031 red check: with the helper's link branch disabled, `test/runtime/remove-path.test.ts`
+  and the reference-copy symbolic-link replacement case fail on Node 24.12.0
+
+Phase 11 F-016 fix (#189): MINOR 2.33.0; configured canonical nesting bound
+(`kernel.canonicalization`), `CanonicalNestingLimitError` (`CANONICAL_NESTING_LIMIT_EXCEEDED`),
+explicit-stack canonical encoder, snapshot freeze, and secret scan.
+
+- [x] `pnpm sync:version`, `pnpm generate:sbom`, `pnpm generate:protocol` (no change),
+  `pnpm generate:api-reference`, `pnpm update:compatibility-baseline` (four additions: the error
+  export on `.` and `./canonical`, the error code, and the identity setting
+  `identity:protocol.config.json#/kernel/canonicalization`; no changed artifact, so no classified
+  change-log entry)
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes (`check:compatibility` 0
+  changes); `pnpm test` ran 1,086 tests, 1,084 pass, 1 skipped, 1 fail (the known macOS clone
+  carrier test), 100% line/branch/function coverage; `pnpm build && pnpm test:package-cli` pass
+  after the `/canonical` bundle fixture declared `public-errors.config.json`
+- [x] `node scripts/fuzz-cli.ts --tier extended --seed 185185`: 410,400 cases, 0 findings (after
+  the `readStaticProviderDefinition` oracle change; the first run reported 6 oracle findings)
 
 Phase 11 F-029 fix (#29 follow-up): PATCH 2.32.5; concurrent first opens of one new SQLite
 database; no public API, schema, configuration, protocol, or CLI change. Values are in the
@@ -1410,9 +1467,10 @@ Tree-RL, and the [Phase 10 exit audit](./phase-10-exit-audit.md) are delivered (
 complete for its documented offline scope. Phase 11 (#24, production hardening and 1.0) has
 delivered #187, #179 to #186, and the readiness audit (#29, 2.32.4): release candidate ready for
 the in-repo scope, 1.0 general availability no-go. No agent-implementable slice remains in the
-roadmap; the next step is owner action on O-1 to O-5 in the
-[production hardening contract](./production-hardening-contract.md#owner-owed-register) and the
-F-016 protocol decision, after which an addendum to the
+roadmap; the close-out (#190, 2.33.1) records the local Linux lane and moves the owner-only items
+to #191; the next step is owner action on O-1 to O-5 (#191) in the
+[production hardening contract](./production-hardening-contract.md#owner-owed-register) (the
+F-016 protocol decision was made and delivered by #189 in 2.33.0), after which an addendum to the
 [Phase 11 exit audit](./phase-11-exit-audit.md) can record general availability.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks

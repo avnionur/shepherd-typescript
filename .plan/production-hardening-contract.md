@@ -1,6 +1,7 @@
 # Production hardening contract
 
-Status: TypeScript contract, Phase 11 slice 1 (#187), 2.25.2. Epic: #24. Normative behavior lives
+Status: TypeScript contract, Phase 11 slice 1 (#187), 2.25.2; owner-owed register linked to #191
+and narrowed by the Linux verification lane (#190) in 2.33.1. Epic: #24. Normative behavior lives
 in `docs/`; this page records the slice map, per-slice non-claims, and the work only the repository
 owner can do. The [threat model](../docs/threat-model.md) and the
 [internal security review](./security-review.md) are the security inputs every later slice consumes.
@@ -292,10 +293,17 @@ worktree blobs in the runtime, so no repository clean or process filter runs dur
 
 ## Owner-owed register
 
+The owner-only actions are tracked in
+[#191 Owner actions for 1.0 general availability](https://github.com/avnionur/shepherd-typescript/issues/191)
+(split out of epic #24 on 2026-09-19). Epic #24 is re-scoped to the in-repo criteria and closes
+with the Phase 11 close-out (#190); the
+[exit audit addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331) records
+the local Linux lane evidence that narrows O-3.
+
 | ID | Item | Why an agent cannot do it | In-repo preparation | Evidence the owner must add |
 | --- | --- | --- | --- | --- |
 | O-1 | External security review | Requires an independent reviewer and contract; an agent reviewing its own work is not independent | [Threat model](../docs/threat-model.md), [findings register and reviewer packet](./security-review.md#external-reviewer-packet) | Reviewer identity, scope, commit reviewed, report or summary, and each new finding entered in the register with an owning issue |
 | O-2 | Signing identity, attestation, npm publish | Requires registry credentials, an OIDC-capable hosted workflow, and a decision to drop `"private": true` | Unsigned provenance statement, SBOM, reproducible-build check, and `release.yml` from #179 | A run of `release.yml` with attestation, the published version, and a verified provenance check against the tarball digest |
-| O-3 | Enable hosted CI and cross-OS lanes | Workflows are disabled by the owner; agents cannot change repository settings or provide Linux, Windows, or privileged hosts | `ci.yml`, `codeql.yml`, `dependency-review.yml`; Linux carrier script `pnpm test:carriers:linux`; `pnpm test:runtime-boundaries` | Green runs on Linux and macOS (minimum and current Node), the privileged jail/overlay lane, and the compatibility and drill gates, linked from the audit |
+| O-3 | Enable hosted CI and cross-OS lanes | Workflows are disabled by the owner; agents cannot change repository settings or provide hosted, Windows, or dedicated Linux hosts | `ci.yml`, `codeql.yml`, `dependency-review.yml`; Linux carrier script `pnpm test:carriers:linux`; `pnpm test:runtime-boundaries`. Local Docker Linux lane (2.33.1, #190): full `pnpm verify` on Node 24.21.0 and 24.12.0, `pnpm test:runtime-boundaries`, extended `pnpm fuzz`, and the privileged `pnpm test:carriers:linux` pass ([addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331)) | Green hosted runs of `ci.yml` on Linux and macOS (minimum and current Node) with CodeQL and dependency review, linked from the audit; Windows decision; a Linux variant of the volume fault suite (`pnpm test:faults:volume` is macOS-only); a Linux SLO host class for `pnpm check:slo`. Tracked in #191 |
 | O-4 | Private vulnerability reporting | A repository setting only the owner can enable | [SECURITY.md](../SECURITY.md) fallback contact path; [incident response](../docs/incident-response.md) | Confirmation that the advisory form is enabled, recorded in the tracker |
 | O-5 | Registry name | Reservation succeeds only by publishing under an owner account | D-011 names `@avnionur/shepherd-typescript` and `shepherd-ts` | Registry page for the reserved name or a recorded decision to defer |

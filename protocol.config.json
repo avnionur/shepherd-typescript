@@ -1702,6 +1702,10 @@
             "firstOwnerOrdinal": 0,
             "lastOwnerOrdinal": 9007199254740990
         },
+        "canonicalization": {
+            "framingDepth": 8,
+            "maxNestingDepth": 1000
+        },
         "canonicalVersion": "shepherd.kernel.canonical.v2",
         "interchange": {
             "blobEncoding": "base64",

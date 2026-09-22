@@ -1,8 +1,9 @@
-import { mkdtempSync, realpathSync, rmSync } from "node:fs";
+import { mkdtempSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { kernelProtocolConfig, retentionProtocolConfig } from "../protocol/config.ts";
+import { removePathSync } from "../runtime/remove-path.ts";
 import type { SQLiteTraceStoreOptions } from "./types.ts";
 
 /** Resolved blob-directory ownership for one store instance. */
@@ -33,7 +34,7 @@ export function resolveBlobDirectory(
     if (databasePath === ":memory:") {
         const temporaryPath = mkdtempSync(path.join(tmpdir(), "shepherd-blobs-"));
         return {
-            cleanup: () => rmSync(temporaryPath, { force: true, recursive: true }),
+            cleanup: () => removePathSync(temporaryPath, { force: true, recursive: true }),
             path: realpathSync(temporaryPath),
         };
     }

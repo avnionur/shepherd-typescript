@@ -14,13 +14,13 @@ import {
     openSync,
     readdirSync,
     readFileSync,
-    rmSync,
     writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { workspaceProtocolConfig } from "../protocol/config.ts";
+import { removePathSync } from "../runtime/remove-path.ts";
 import { WorldCarrierError } from "./errors.ts";
 
 /** Writes one verified regular file into owned carrier or publication storage. @internal */
@@ -430,7 +430,7 @@ function probeInDirectory(stagingDirectory: string, probe: (root: string) => voi
     try {
         probe(root);
     } finally {
-        rmSync(root, { force: true, recursive: true });
+        removePathSync(root, { force: true, recursive: true });
     }
 }
 
@@ -453,7 +453,7 @@ function cloneFile(source: string, target: string): void {
     if (clone.helper.platforms.includes(process.platform)) {
         const result = runCommand(cloneHelperExecutable(), [source, target]);
         if (result !== null) {
-            rmSync(target, { force: true });
+            removePathSync(target, { force: true });
             throw new CarrierBackendUnavailableError(clone.backend, reflinkUnsupported, result);
         }
         return;
@@ -493,7 +493,7 @@ function cloneHelperExecutable(): string {
     });
     if (compiler === undefined) throw unavailable("no configured compiler");
     const directory = mkdtempSync(path.join(tmpdir(), helper.temporaryDirectoryPrefix));
-    process.once("exit", () => rmSync(directory, { force: true, recursive: true }));
+    process.once("exit", () => removePathSync(directory, { force: true, recursive: true }));
     chmodSync(directory, 0o700);
     const sourcePath = path.join(directory, helper.sourceName);
     const executablePath = path.join(directory, helper.executableName);
@@ -505,7 +505,7 @@ function cloneHelperExecutable(): string {
         sourcePath,
     ]);
     if (result !== null) {
-        rmSync(directory, { force: true, recursive: true });
+        removePathSync(directory, { force: true, recursive: true });
         throw unavailable(result);
     }
     chmodSync(executablePath, 0o500);

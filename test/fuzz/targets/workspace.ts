@@ -29,6 +29,7 @@ import {
     WORLD_CHANGE_OPERATIONS,
     WORLD_ENTRY_KINDS,
 } from "../../../src/protocol/values.generated.ts";
+import { removePathSync } from "../../../src/runtime/remove-path.ts";
 import { encodeRetainedWorldSettlementOperation } from "../../../src/store/retained-world-settlement-codec.ts";
 import {
     createVerifiedWorldChangeset,
@@ -188,7 +189,7 @@ function mutateTree(base: Tree, random: Prng): Tree {
 
 function materialize(root: string, tree: Tree): void {
     for (const entry of readdirSync(root))
-        rmSync(path.join(root, entry), { force: true, recursive: true });
+        removePathSync(path.join(root, entry), { force: true, recursive: true });
     for (const key of [...tree.keys()].sort()) {
         const node = tree.get(key) as ModelNode;
         const target = path.join(root, ...key.split("/"));

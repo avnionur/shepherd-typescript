@@ -1,0 +1,17 @@
+{
+    "description": "F-016: a value nested exactly kernel.canonicalization.maxNestingDepth levels deep is accepted and re-encodes stably, also from a deep call site.",
+    "finding": "F-016",
+    "input": {
+        "value": {
+            "$fuzz": "nest",
+            "depth": {
+                "canonicalBound": 0
+            },
+            "kind": "object",
+            "leaf": 0
+        }
+    },
+    "expect": {
+        "outcome": "accepted"
+    }
+}

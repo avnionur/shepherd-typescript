@@ -119,13 +119,27 @@ export function sameStrings(left: readonly string[], right: readonly string[]): 
     return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
-/** Recursively freezes a validated configuration snapshot. */
+/**
+ * Deeply freezes a validated configuration snapshot or exported value.
+ *
+ * Walks with an explicit work list rather than recursion, so freezing a value that embeds a
+ * record body at the canonical nesting bound (for example a telemetry batch) does not depend on
+ * the caller's remaining stack. Children are queued one at a time, never spread into a call, so
+ * arbitrarily wide containers are supported.
+ *
+ * @param value - Value to freeze in place.
+ * @returns The same value, frozen at every level.
+ */
 export function deepFreeze<T>(value: T): T {
-    if (value !== null && typeof value === "object") {
-        for (const child of Object.values(value)) {
-            deepFreeze(child);
+    const pending: unknown[] = [value];
+    while (pending.length > 0) {
+        const current = pending.pop();
+        if (current !== null && typeof current === "object") {
+            for (const child of Object.values(current)) {
+                pending.push(child);
+            }
+            Object.freeze(current);
         }
-        Object.freeze(value);
     }
     return value;
 }

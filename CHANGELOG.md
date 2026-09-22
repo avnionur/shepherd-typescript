@@ -5,6 +5,156 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.33.2] - 2026-09-19
+
+### Defect Fixes
+
+- `createJsonLinesTelemetrySink` failed with `RangeError: Maximum call stack size exceeded` on
+  Linux when a batch held an included body at the canonical nesting bound (F-016 follow-up, #190).
+  The OTLP `AnyValue` shape spends about four levels per body level, so an at-bound body nests
+  about 4,000 levels, past what native `JSON.stringify` accepts on Linux (Node 24.21.0 and 24.12.0)
+  even from a shallow stack. The sink now serializes each request with the internal explicit-stack
+  `serializeJsonText` (`src/canonical/json-text.ts`), which the canonical encoder also uses. Its
+  output is byte-identical to `JSON.stringify` for plain data, so the line format is unchanged.
+  Native `JSON.parse` is iterative, so reading lines back and archive decoding were not affected.
+
+### Improvement
+
+- Tests: `test/canonical-json-text.test.ts` (differential against `JSON.stringify` on 5,000
+  seeded random trees, omission, ordering, and scalar edge cases, cycle and `bigint` refusals,
+  200,000 levels); the at-bound telemetry case now writes the batch through the JSON-lines sink
+  from a 6,000-frame caller and compares the lines, and the passive export case checks the
+  serializer against `JSON.stringify` on a real batch.
+- Docs: observability (sink line serialization), canonical records, the security review (F-016
+  row), and the Phase 11 exit audit addendum (final Linux and macOS results).
+
+### Impact
+
+`pnpm verify` passes on Linux. No public API, protocol, schema, or file format change.
+
+## [2.33.1] - 2026-09-19
+
+### Defect Fixes
+
+- `fs.rmSync` on Node.js 24.12.x and 24.13.x (inside the supported `>=24.12.0` range) silently
+  leaves a dangling symbolic link in place (F-031, #190). Every product removal now goes through
+  the internal `removePathSync` (`src/runtime/remove-path.ts`), which unlinks a symbolic link
+  itself and delegates other paths to `rmSync`. The reachable case was a failed symbolic-link
+  replacement in the reference copy carrier, which could leave a hidden dangling staged link in
+  custody or, during selection publication, in the canonical workspace. The
+  `createVerifiedWorldChangeset` fuzz fixture uses the same helper and no longer fails with
+  `EEXIST` on Node 24.12.0.
+- The RLIMIT_FSIZE fault case no longer depends on the shell (F-030, #190): the limit is
+  `faults.diskFull.fileSizeLimitBytes` (1 MiB, replacing `fileSizeLimitBlocks`) converted to the
+  `ulimit -f` unit of `/bin/sh`, measured by a probe child (512 bytes in dash, 1024 in the macOS
+  bash 3.2), and size-limited children run with `NODE_V8_COVERAGE` empty, so the limit can no
+  longer truncate a coverage file. Before, `pnpm verify` failed its coverage report on Linux
+  although every test passed. The case now asserts `ERR_SQLITE_ERROR` with `errcode` 778 for all
+  four operations.
+
+### Improvement
+
+- Linux verification lane (#190): every `pnpm verify` gate runs in Docker on Node 24.21.0 and
+  24.12.0 (Debian bookworm, unprivileged user), plus runtime boundaries, the extended fuzz run,
+  and the privileged Linux carrier suite; results are in the Phase 11 exit audit addendum, which
+  records the F-016 resolution and the re-scoped verdict (Phase 11 in-repo scope complete; owner
+  actions O-1 to O-5 move to #191).
+- Security review: F-030 and F-031 fixed; F-032 (Low, open for the owner's release work in #191):
+  the packed file set depends on the npm version (npm 11 adds `docs/README.md` and
+  `spec/README.md`).
+- Tests: `test/runtime/remove-path.test.ts` (dangling and chained links with every option set, link
+  targets untouched, `rmSync` semantics kept, no direct `rmSync` in `src/`) and a reference copy
+  carrier case for an injected rename failure during symbolic-link replacement; both fail on
+  Node 24.12.0 without the fix.
+- Docs: threat model (carrier cleanup, packed file set, F-008 rows), fault and fuzz conformance,
+  production hardening contract owner-owed register (links #191), release-readiness dashboard,
+  support policy, release notes, and the tracker.
+
+### Impact
+
+`pnpm verify` passes on Linux and on the minimum supported Node. No public API, protocol,
+schema, or CLI change; `faults.diskFull.fileSizeLimitBlocks` in the test-only
+`config/hardening-suites.config.json` is replaced by `fileSizeLimitBytes`.
+
+## [2.33.0] - 2026-09-19
+
+### New Feature
+
+- Add a configured maximum nesting depth to the canonical value domain (F-016, #189):
+  `kernel.canonicalization.maxNestingDepth` (default 1,000) in `protocol.config.json`, counting
+  the outermost array or object as level one. A value at the bound is accepted and one level
+  deeper is refused with the new `CanonicalNestingLimitError` (`CANONICAL_NESTING_LIMIT_EXCEEDED`,
+  a `TypeError` with a `bound` property), exported from the root and `./canonical`. The message
+  names the bound, never value content or key paths.
+- Add `kernel.canonicalization.framingDepth` (default 8): kernel framing that embeds whole record
+  bodies (record identity input, append batch digest, native and redacted archives) is encoded
+  under `maxNestingDepth + framingDepth`, so a body at the bound can be appended, exported,
+  imported, and redacted. Load validates both as positive integers and refuses an interchange
+  `kernel.interchange.limits.maxNestingDepth` below their sum.
+- The compatibility gate fingerprints the section as the identity setting
+  `identity:protocol.config.json#/kernel/canonicalization`.
+
+### Defect Fixes
+
+- Canonical acceptance no longer depends on the call site's stack depth or JIT state (F-016).
+  `canonicalizeRecord`, `createRecordId`, and every internal canonical encoder normalize and
+  serialize values with explicit stacks and check the bound before entering the next container.
+  Before, a value nested roughly 2,000 to 8,000 levels deep could be accepted at append and refused
+  when re-validated from a deeper call site.
+  Canonical snapshots (the deep freeze behind record reads and append planning) and secret scanning
+  walk values with explicit stacks too, so appending and reading a body at the bound works from a
+  deep call site.
+- Validators that rewrapped canonicalization failures as plain `TypeError` (effect intents and
+  results, run outcomes and artifact metadata, scope data, task schema documents, provider
+  responses and definitions, archived receipts, and the redacted-archive verifier) now let
+  `CanonicalNestingLimitError` through. Append, `importTrace`, and archive decode refuse before any
+  write.
+- Record snapshots of arrays or objects with more than about 120k entries threw `RangeError`;
+  children are now queued without argument spreading.
+- A `kernel.canonicalization.framingDepth` below the deepest kernel frame body location (5) is
+  refused at load.
+- OTLP body mapping and telemetry batch freezing no longer recurse, so exporting an at-bound body
+  is independent of the caller's stack (the JSON-lines sink's native `JSON.stringify` is fixed in
+  2.33.2).
+- `validateTypedEffectTrace` reports an over-deep payload as `CanonicalNestingLimitError`;
+  `classifyProofEnvelope` returns `runtime_only` instead of throwing when a payload fits its record
+  but not the whole trace.
+
+### Improvement
+
+- The canonical serializer no longer calls `JSON.stringify` on the normalized tree; its output is
+  byte-identical for every accepted value, and a polluted `Array.prototype.toJSON` can no longer
+  change canonical output.
+- Tests: the bound at and one past from 0, 2,000, and 6,000 caller frames, cold, during and after
+  warm-up (`test/canonical-record.test.ts`); append in both secret-scanning modes, archive decode,
+  import, redacted verification, validator pass-through, and no partial state
+  (`test/canonical-nesting-bound.test.ts`); configuration validation
+  (`test/protocol-config.test.ts`); the public error code (`test/errors/public-error-codes.test.ts`).
+- Fuzzing: value mutators add `valueNestingBoundOffsets` (-8, -1, 0, 1 around the configured
+  bound); the 20,000-level mutator and the F-012 corpus cases now expect the classified refusal;
+  new corpus cases at and past the bound use depths relative to the configured bound
+  (`{ "canonicalBound": <offset> }`); the accepted-output oracle re-encodes again below
+  `deepCallSiteFrames` (4,000) caller frames.
+- Docs: canonical records (nesting bound), protocol configuration, trace interchange, public
+  errors, package exports, compatibility policy, fault and fuzz conformance, threat model, README,
+  the security review (F-016 fixed with an accepted residual; no finding open), and the tracker.
+
+### Impact
+
+MINOR: the canonical value domain narrows in a configured way. Values nested more than 1,000
+levels deep, which were accepted before up to roughly 2,000 levels and, beyond that, depending on
+the call site, are now refused with `CanonicalNestingLimitError`; callers that need deeper values raise
+`kernel.canonicalization.maxNestingDepth` (and the interchange nesting limit with it). A store
+written by an earlier version that holds a body deeper than the bound fails closed wherever that
+body is canonicalized again until the bound is raised. `CanonicalNestingLimitError` is a
+`TypeError`, so existing `instanceof TypeError` handling keeps working. Canonical output and record
+identities of accepted values are unchanged. Canonical encoding of a typical record costs about
+15-20% more CPU on the reference host because serialization no longer uses the native recursive
+`JSON.stringify`. A bundle that imports only `./canonical` now also needs
+`public-errors.config.json` beside `protocol.config.json` and `runtime.config.json`, because the
+canonical encoder raises a classified error (`config/bundle-verification.config.json` and the
+package-exports bundle layout are updated).
+
 ## [2.32.5] - 2026-09-19
 
 ### Defect Fixes

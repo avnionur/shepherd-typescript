@@ -1,5 +1,10 @@
 import { assertBlobId } from "../blob/identity.ts";
-import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
+import {
+    canonicalizeKernelFrame,
+    canonicalizeRecord,
+    type SemanticRecord,
+} from "../canonical/canonical-record.ts";
+import { CanonicalNestingLimitError } from "../canonical/errors.ts";
 import { decodeTraceArchive, readCut, readIntent, readView } from "../interchange/decode.ts";
 import { TraceArchiveLimitError } from "../interchange/errors.ts";
 import { assertTraceArchiveCount, assertTraceArchiveText } from "../interchange/limits.ts";
@@ -124,7 +129,7 @@ export function exportRedactedTraceArchive(
     const classify = createSchemaClassifier(options);
     // The store's own export is trusted input; interchange limits bound untrusted archives only.
     const archive = decodeTraceArchive(store.exportTrace(), null);
-    return canonicalizeRecord({
+    return canonicalizeKernelFrame({
         append_intents: archive.appendIntents.map((intent) => ({ ...intent })),
         blobs: archive.blobs.map(({ blob_id, byte_length }) => ({ blob_id, byte_length })),
         canonical_version: kernelProtocolConfig.canonicalVersion,
@@ -162,6 +167,8 @@ export function exportRedactedTraceArchive(
  * disagrees with the retention policy.
  * @throws {TraceArchiveLimitError} If the text exceeds the configured interchange byte or nesting
  * limit before parsing, or a collection exceeds its configured count.
+ * @throws {CanonicalNestingLimitError} If an included body, envelope, or receipt nests deeper than
+ * `kernel.canonicalization.maxNestingDepth`.
  * @throws {TypeError} If the options are malformed.
  *
  * @public
@@ -409,6 +416,7 @@ function guard<T>(read: () => T, path: string): T {
     try {
         return read();
     } catch (error) {
+        if (error instanceof CanonicalNestingLimitError) throw error;
         throw new RedactedTraceArchiveError(`${path} is invalid`, { cause: error });
     }
 }

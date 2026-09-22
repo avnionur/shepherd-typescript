@@ -5,7 +5,6 @@ import {
     realpathSync,
     renameSync,
     rmdirSync,
-    rmSync,
     unlinkSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -18,6 +17,7 @@ import {
     retentionProtocolConfig,
 } from "../protocol/config.ts";
 import { STORE_BACKUP_FAILURE_REASONS } from "../protocol/values.generated.ts";
+import { removePathSync } from "../runtime/remove-path.ts";
 import type { BlobStoreBackend } from "../storage/types.ts";
 import { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import { readOptionalBlobBackend } from "./backup.ts";
@@ -310,7 +310,7 @@ export function publishStagedStore(
     try {
         linkSync(staged.databasePath, target);
     } catch (error) {
-        rmSync(targetBlobDirectory, { force: true, recursive: true });
+        removePathSync(targetBlobDirectory, { force: true, recursive: true });
         throw new TraceStoreBackupError(TARGET_EXISTS, "restore target database exists", {
             cause: error,
         });
