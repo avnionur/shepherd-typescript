@@ -1,4 +1,5 @@
 import { canonicalizeRecord, createRecordId } from "../canonical/canonical-record.ts";
+import { CanonicalNestingLimitError } from "../canonical/errors.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import {
     recordIdConfig,
@@ -394,6 +395,7 @@ export function readScopeData(value: unknown, subject: string): RecordBody {
     try {
         snapshot = createCanonicalSnapshot(value as RecordBody);
     } catch (error) {
+        if (error instanceof CanonicalNestingLimitError) throw error;
         throw new TypeError(`${subject} must be a canonical semantic record`, { cause: error });
     }
     if (

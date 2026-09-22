@@ -3,8 +3,8 @@
         "digest": "sha256:ff21fca205063b4f79eaaa69e14587efda104a7d6c1a870963bcbf68dbdb83ef",
         "entries": 6
     },
-    "packageVersion": "2.32.5",
-    "previousVersion": "2.32.4",
+    "packageVersion": "2.33.2",
+    "previousVersion": "2.33.1",
     "surface": {
         "commandOptions": {
             "demo write": {},
@@ -73,6 +73,7 @@
         "errorCodes": [
             "APPEND_INTENT_CONFLICT",
             "BLOB_INTEGRITY_ERROR",
+            "CANONICAL_NESTING_LIMIT_EXCEEDED",
             "EFFECT_HANDLER_NOT_FOUND",
             "NATIVE_JAIL_EXECUTION_FAILED",
             "NATIVE_JAIL_UNAVAILABLE",
@@ -123,6 +124,7 @@
             "protocol.config.json#/formalAssurance/proofEnvelope/hexLength": "64",
             "protocol.config.json#/formalAssurance/proofEnvelope/traceRefPrefixes/prefix": "trace-prefix:sha256:",
             "protocol.config.json#/formalAssurance/proofEnvelope/validationOperations/prefix": "validate_core_a_trace_prefix",
+            "protocol.config.json#/kernel/canonicalization": "sha256:5569f0485babd10c00d4a63086a09848af62110021228fee4aebb47ee2fea326",
             "protocol.config.json#/kernel/interchange/blobEncoding": "base64",
             "protocol.config.json#/kernel/recordModes": "sha256:4ea1e22c7a6eb27dc3bd568343900dfd83b5ba6125c96fc9550cd90f83d8309a",
             "protocol.config.json#/kernel/rootWitness": "sha256:406c1a1f0827be7d5aed7111387fc3aed38326badd84a78bd0510ac01a4e9ad8",

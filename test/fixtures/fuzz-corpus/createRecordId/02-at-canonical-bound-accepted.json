@@ -1,0 +1,19 @@
+{
+    "description": "F-016: record identity of a value at the configured canonical bound is accepted.",
+    "finding": "F-016",
+    "input": {
+        "value": {
+            "a": {
+                "$fuzz": "nest",
+                "depth": {
+                    "canonicalBound": -1
+                },
+                "kind": "array",
+                "leaf": null
+            }
+        }
+    },
+    "expect": {
+        "outcome": "accepted"
+    }
+}

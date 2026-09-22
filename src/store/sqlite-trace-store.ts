@@ -343,6 +343,8 @@ export class SQLiteTraceStore implements Disposable {
      * @throws {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
      * owner path reserved for supervised dispatches, context channels, replay sessions, or child
      * run handles.
+     * @throws {CanonicalNestingLimitError} If a record body nests deeper than
+     * `kernel.canonicalization.maxNestingDepth`; nothing is written.
      * @throws {TypeError} If the request is malformed.
      * @throws {RangeError} If a causal parent is unknown or owner ordinals are exhausted.
      *
@@ -1478,6 +1480,8 @@ export class SQLiteTraceStore implements Disposable {
      * @throws {TraceArchiveLimitError} If the archive exceeds a configured interchange limit
      * (`kernel.interchange.limits`): byte length or nesting depth before parsing, collection counts
      * or the declared blob byte total before decoding; nothing is written.
+     * @throws {CanonicalNestingLimitError} If an archived body, envelope, or receipt nests deeper
+     * than `kernel.canonicalization.maxNestingDepth`; nothing is written.
      * @throws {TypeError} If the archive is malformed, incompatible, or internally inconsistent.
      * @throws {Error} If SQLite or blob storage cannot publish the validated archive.
      *

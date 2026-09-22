@@ -188,6 +188,17 @@ may be an absolute path to pin the executable instead of resolving `git` through
 the archive format identity: `maxArchiveBytes`, `maxNestingDepth`, `maxAppendIntents`, `maxBlobs`,
 `maxBlobBytes`, `maxCuts`, `maxRecords`, and `maxRecordViews`, each a positive integer
 ([trace interchange](./trace-interchange.md#input-limits)).
+`kernel.canonicalization` (2.33.0) bounds the canonical value domain:
+`maxNestingDepth` (default 1,000) is the deepest array and object nesting any canonical value may
+have, counting the outermost container as level one, and `framingDepth` (default 8) is the extra
+depth kernel framing (record identity input, append batch digest, native and redacted archives)
+may add around a record body at the bound. Both are positive integers; load refuses a
+`framingDepth` below the deepest body location among the kernel frames (five levels, the append
+batch digest's `groups[i].records[j].body`; `KERNEL_FRAME_BODY_PATHS` in
+`src/canonical/framing.ts`) and a `kernel.interchange.limits.maxNestingDepth` below their sum. The section is not pinned by the
+kernel ABI contract; the [compatibility gate](./compatibility-policy.md) fingerprints it as an
+identity setting, so a change needs a version bump and, when changed rather than added, a classified
+change-log entry ([canonical records](./canonical-records.md#nesting-bound)).
 `kernel.interchange.staging.directoryPrefix` (2.32.2, `.shepherd-import-stage-`, one portable path
 segment) names the owner-only directory `importTrace` validates an archive in, created beside the
 target store's blob directory; it is operational and excluded from the archive format identity.

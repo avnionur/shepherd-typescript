@@ -10,15 +10,24 @@ import {
 import { recordIdConfig } from "../../../src/protocol/config.ts";
 import type { RecordBody } from "../../../src/record/types.ts";
 import { decodeAppendReceipt, encodeAppendReceipt } from "../../../src/store/codec.ts";
-import type { FuzzInput, FuzzTarget } from "../harness.ts";
+import { atCallDepth, type FuzzInput, type FuzzTarget, fuzzSettings } from "../harness.ts";
 import { archiveSeeds } from "./seeds.ts";
 
 // U+2028 and an astral character, built from code points so formatting keeps them visible.
 const UNICODE_SEED = String.fromCodePoint(0x2028, 0x1f600);
 
-/** Asserts that canonical JSON re-encodes to itself. */
+/**
+ * Asserts that canonical JSON re-encodes to itself, from a shallow call site and again below the
+ * configured number of caller frames: acceptance must not depend on stack depth (F-016).
+ */
 export function assertCanonicalStable(json: string): void {
     assert.equal(canonicalizeRecord(JSON.parse(json) as SemanticRecord), json);
+    assert.equal(
+        atCallDepth(fuzzSettings.deepCallSiteFrames, () =>
+            canonicalizeRecord(JSON.parse(json) as SemanticRecord),
+        ),
+        json,
+    );
 }
 
 function inputValue(input: FuzzInput): unknown {

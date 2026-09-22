@@ -105,6 +105,9 @@ database from four processes at once. It is fixed in 2.32.5 (see the table above
 - CI run links: hosted CI is disabled; no workflow has run (O-3).
 - Signed provenance, Sigstore attestation, npm publication: none (O-2).
 - External security review report: none (O-1).
-- Cross-OS reproducibility, Linux or Windows verification, other SLO host classes: none (O-3).
+- Cross-OS reproducibility, hosted Linux runs, Windows verification, other SLO host classes: none
+  (O-3, #191). A local Docker Linux lane on 2.33.1 is recorded in the
+  [exit audit addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331); its
+  tarballs are not release artifacts and differ from the reference host's by npm version (F-032).
 - Published support policy: the [support policy](../docs/support-policy.md) is in the repository;
   no package release publishes it.

@@ -1,0 +1,19 @@
+{
+    "description": "F-016: a record body at the configured canonical bound validates.",
+    "finding": "F-016",
+    "input": {
+        "value": {
+            "a": {
+                "$fuzz": "nest",
+                "depth": {
+                    "canonicalBound": -1
+                },
+                "kind": "object",
+                "leaf": "x"
+            }
+        }
+    },
+    "expect": {
+        "outcome": "accepted"
+    }
+}

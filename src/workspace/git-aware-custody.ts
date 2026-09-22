@@ -17,7 +17,6 @@ import {
     readFileSync,
     readlinkSync,
     realpathSync,
-    rmSync,
     symlinkSync,
     unlinkSync,
     writeFileSync,
@@ -33,6 +32,7 @@ import {
     GITLINK_MODE,
     WORKSPACE_ADOPTION_MODES,
 } from "../protocol/values.generated.ts";
+import { removePathSync } from "../runtime/remove-path.ts";
 import {
     assertWorkspaceBinding,
     createGitRepositoryBindings,
@@ -261,7 +261,7 @@ async function capture(
         /* node:coverage enable */
     } finally {
         assertStagingIdentity(staging);
-        rmSync(stagingRoot, { recursive: true, force: true });
+        removePathSync(stagingRoot, { recursive: true, force: true });
         syncDirectory(staging.path);
     }
 }
@@ -332,7 +332,7 @@ function currentManagedWorldId(
         return inspectReferenceCopySource(workspaceRoot, root, repositoryRoot).content_id;
     } finally {
         assertStagingIdentity(stagingParent);
-        rmSync(root, { recursive: true, force: true });
+        removePathSync(root, { recursive: true, force: true });
         syncDirectory(stagingParent.path);
     }
 }
@@ -968,7 +968,7 @@ function readOrCreateRepositoryAuthority(identity: GitRepositoryIdentity | strin
             try {
                 return readOrCreateRepositoryAuthorityLocked(root);
             } finally {
-                rmSync(lock, { recursive: true });
+                removePathSync(lock, { recursive: true });
             }
         } catch (error) {
             if (!(error instanceof Error && "code" in error && error.code === "EEXIST")) {
@@ -1451,7 +1451,7 @@ function verifyRequiredPackObjects(bytes: Buffer, basis: GitBasisEvidence): void
             assert.equal(type, "blob");
         }
     } finally {
-        rmSync(root, { recursive: true, force: true });
+        removePathSync(root, { recursive: true, force: true });
     }
 }
 

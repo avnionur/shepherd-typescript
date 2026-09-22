@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.32.5
+Package: `@avnionur/shepherd-typescript` 2.33.2
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 1198.
+Exported symbols: 1199.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -1678,6 +1678,68 @@ export type CancelledRunOutcome = {
     readonly status: (typeof RUN_TERMINAL_STATUSES)[3];
 };
 ```
+
+### `CanonicalNestingLimitError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a canonical value nests arrays and objects deeper than the configured bound
+(`kernel.canonicalization.maxNestingDepth` in `protocol.config.json`).
+
+The depth is counted while descending, before the encoder enters the next container, so the
+refusal is the same at every call-site stack depth and JIT state: a value at the bound is
+accepted and one level deeper is refused. Record appends, archive imports, and archive decoding
+refuse before anything is written. The message names the limit and the configured bound, never
+value content or key paths. It is a `TypeError`, the documented class for unsupported canonical
+input.
+
+Signature:
+
+```ts
+export declare class CanonicalNestingLimitError extends TypeError {
+    readonly code: string;
+    readonly bound: number;
+    constructor(bound: number);
+}
+```
+
+Example:
+
+- ```ts
+try {
+    canonicalizeRecord(untrusted);
+} catch (error) {
+    if (error instanceof CanonicalNestingLimitError) console.error(error.code, error.bound);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable canonical nesting-limit code.
+
+```ts
+readonly code: string;
+```
+
+#### `bound`
+
+Configured maximum nesting depth that the value exceeded.
+
+```ts
+readonly bound: number;
+```
+
+#### `constructor`
+
+Creates a refusal for a value nested deeper than the configured bound.
+
+```ts
+constructor(bound: number);
+```
+
+Parameter:
+
+- bound - Configured maximum nesting depth that was exceeded.
 
 ### `CaptureGrantedTaskWorldOptions`
 
@@ -12844,6 +12906,11 @@ run handles.
 
 Throws:
 
+- {CanonicalNestingLimitError} If a record body nests deeper than
+`kernel.canonicalization.maxNestingDepth`; nothing is written.
+
+Throws:
+
 - {TypeError} If the request is malformed.
 
 Throws:
@@ -13269,6 +13336,11 @@ Throws:
 - {TraceArchiveLimitError} If the archive exceeds a configured interchange limit
 (`kernel.interchange.limits`): byte length or nesting depth before parsing, collection counts
 or the declared blob byte total before decoding; nothing is written.
+
+Throws:
+
+- {CanonicalNestingLimitError} If an archived body, envelope, or receipt nests deeper
+than `kernel.canonicalization.maxNestingDepth`; nothing is written.
 
 Throws:
 
@@ -20987,6 +21059,10 @@ Serializes a semantic record deterministically.
 
 Object keys are sorted recursively, array order is preserved, undefined
 object properties are omitted, and unsupported JSON values are rejected.
+Arrays and objects may nest at most `kernel.canonicalization.maxNestingDepth`
+levels, counting `record` itself as level one. The value is walked with an
+explicit stack and the bound is checked before descending, so acceptance does
+not depend on the caller's stack depth or JIT state.
 
 Signature:
 
@@ -21001,6 +21077,11 @@ Parameter:
 Returns:
 
 - The record encoded as deterministic, whitespace-free JSON.
+
+Throws:
+
+- {CanonicalNestingLimitError} If the record nests deeper than the
+configured maximum nesting depth.
 
 Throws:
 
@@ -22064,9 +22145,11 @@ Each write appends at most one `\n`-terminated line to each file: the batch's tr
 when it holds a span, and its logs request when it holds a log record. Files are created with
 the configured owner-only store-file mode, and an existing file with group or other permission
 bits is tightened before anything is appended. Each file is flushed to stable storage before
-the write resolves, so an acknowledged cursor never passes telemetry that was not persisted. A
-batch retried after a failure may repeat lines already written; consumers must tolerate
-at-least-once delivery.
+the write resolves, so an acknowledged cursor never passes telemetry that was not persisted.
+Lines are the exact `JSON.stringify` text of each request, produced with an explicit stack, so
+an included body at the canonical nesting bound (several OTLP levels per body level) is written
+independent of the platform's native stack and the caller's stack depth. A batch retried after
+a failure may repeat lines already written; consumers must tolerate at-least-once delivery.
 
 Signature:
 
@@ -22345,6 +22428,11 @@ Parameter:
 Returns:
 
 - The configured algorithm prefix followed by the hexadecimal digest.
+
+Throws:
+
+- {CanonicalNestingLimitError} If `record` nests deeper than the configured
+`kernel.canonicalization.maxNestingDepth`.
 
 Throws:
 
@@ -28504,6 +28592,11 @@ Parameter:
 
 Throws:
 
+- {CanonicalNestingLimitError} If the body nests deeper than the configured
+`kernel.canonicalization.maxNestingDepth`.
+
+Throws:
+
 - {TypeError} If the value is not a plain canonicalizable object.
 
 ### `validateRecordEnvelope`
@@ -28525,6 +28618,11 @@ Parameter:
 Parameter:
 
 - body - The body whose semantic identity the envelope must contain.
+
+Throws:
+
+- {CanonicalNestingLimitError} If `body` nests deeper than the configured
+`kernel.canonicalization.maxNestingDepth`.
 
 Throws:
 
@@ -28557,6 +28655,11 @@ Returns:
 Throws:
 
 - {TypeError} If the options container or program identity is malformed.
+
+Throws:
+
+- {CanonicalNestingLimitError} If a record payload or value nests deeper than
+`kernel.canonicalization.maxNestingDepth`.
 
 Throws:
 
@@ -28611,6 +28714,11 @@ Throws:
 
 - {TraceArchiveLimitError} If the text exceeds the configured interchange byte or nesting
 limit before parsing, or a collection exceeds its configured count.
+
+Throws:
+
+- {CanonicalNestingLimitError} If an included body, envelope, or receipt nests deeper than
+`kernel.canonicalization.maxNestingDepth`.
 
 Throws:
 
@@ -32835,7 +32943,69 @@ import * as api from "@avnionur/shepherd-typescript/canonical";
 void api;
 ```
 
-Exported symbols: 5.
+Exported symbols: 6.
+
+### `CanonicalNestingLimitError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a canonical value nests arrays and objects deeper than the configured bound
+(`kernel.canonicalization.maxNestingDepth` in `protocol.config.json`).
+
+The depth is counted while descending, before the encoder enters the next container, so the
+refusal is the same at every call-site stack depth and JIT state: a value at the bound is
+accepted and one level deeper is refused. Record appends, archive imports, and archive decoding
+refuse before anything is written. The message names the limit and the configured bound, never
+value content or key paths. It is a `TypeError`, the documented class for unsupported canonical
+input.
+
+Signature:
+
+```ts
+export declare class CanonicalNestingLimitError extends TypeError {
+    readonly code: string;
+    readonly bound: number;
+    constructor(bound: number);
+}
+```
+
+Example:
+
+- ```ts
+try {
+    canonicalizeRecord(untrusted);
+} catch (error) {
+    if (error instanceof CanonicalNestingLimitError) console.error(error.code, error.bound);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable canonical nesting-limit code.
+
+```ts
+readonly code: string;
+```
+
+#### `bound`
+
+Configured maximum nesting depth that the value exceeded.
+
+```ts
+readonly bound: number;
+```
+
+#### `constructor`
+
+Creates a refusal for a value nested deeper than the configured bound.
+
+```ts
+constructor(bound: number);
+```
+
+Parameter:
+
+- bound - Configured maximum nesting depth that was exceeded.
 
 ### `SemanticRecord`
 
@@ -32890,6 +33060,10 @@ Serializes a semantic record deterministically.
 
 Object keys are sorted recursively, array order is preserved, undefined
 object properties are omitted, and unsupported JSON values are rejected.
+Arrays and objects may nest at most `kernel.canonicalization.maxNestingDepth`
+levels, counting `record` itself as level one. The value is walked with an
+explicit stack and the bound is checked before descending, so acceptance does
+not depend on the caller's stack depth or JIT state.
 
 Signature:
 
@@ -32904,6 +33078,11 @@ Parameter:
 Returns:
 
 - The record encoded as deterministic, whitespace-free JSON.
+
+Throws:
+
+- {CanonicalNestingLimitError} If the record nests deeper than the
+configured maximum nesting depth.
 
 Throws:
 
@@ -32938,6 +33117,11 @@ Parameter:
 Returns:
 
 - The configured algorithm prefix followed by the hexadecimal digest.
+
+Throws:
+
+- {CanonicalNestingLimitError} If `record` nests deeper than the configured
+`kernel.canonicalization.maxNestingDepth`.
 
 Throws:
 
@@ -37825,9 +38009,11 @@ Each write appends at most one `\n`-terminated line to each file: the batch's tr
 when it holds a span, and its logs request when it holds a log record. Files are created with
 the configured owner-only store-file mode, and an existing file with group or other permission
 bits is tightened before anything is appended. Each file is flushed to stable storage before
-the write resolves, so an acknowledged cursor never passes telemetry that was not persisted. A
-batch retried after a failure may repeat lines already written; consumers must tolerate
-at-least-once delivery.
+the write resolves, so an acknowledged cursor never passes telemetry that was not persisted.
+Lines are the exact `JSON.stringify` text of each request, produced with an explicit stack, so
+an included body at the canonical nesting bound (several OTLP levels per body level) is written
+independent of the platform's native stack and the caller's stack depth. A batch retried after
+a failure may repeat lines already written; consumers must tolerate at-least-once delivery.
 
 Signature:
 
@@ -38407,6 +38593,11 @@ Throws:
 
 - {TraceArchiveLimitError} If the text exceeds the configured interchange byte or nesting
 limit before parsing, or a collection exceeds its configured count.
+
+Throws:
+
+- {CanonicalNestingLimitError} If an included body, envelope, or receipt nests deeper than
+`kernel.canonicalization.maxNestingDepth`.
 
 Throws:
 
@@ -50191,6 +50382,11 @@ run handles.
 
 Throws:
 
+- {CanonicalNestingLimitError} If a record body nests deeper than
+`kernel.canonicalization.maxNestingDepth`; nothing is written.
+
+Throws:
+
 - {TypeError} If the request is malformed.
 
 Throws:
@@ -50616,6 +50812,11 @@ Throws:
 - {TraceArchiveLimitError} If the archive exceeds a configured interchange limit
 (`kernel.interchange.limits`): byte length or nesting depth before parsing, collection counts
 or the declared blob byte total before decoding; nothing is written.
+
+Throws:
+
+- {CanonicalNestingLimitError} If an archived body, envelope, or receipt nests deeper
+than `kernel.canonicalization.maxNestingDepth`; nothing is written.
 
 Throws:
 

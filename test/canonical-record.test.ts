@@ -1,7 +1,18 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { canonicalizeRecord, createRecordId, type SemanticRecord } from "../src/index.ts";
+import {
+    canonicalizeKernelFrame,
+    canonicalizeSemanticValue,
+} from "../src/canonical/canonical-record.ts";
+import {
+    CanonicalNestingLimitError,
+    canonicalizeRecord,
+    createRecordId,
+    isPublicError,
+    type SemanticRecord,
+} from "../src/index.ts";
+import { kernelProtocolConfig } from "../src/protocol/config.ts";
 
 test("canonicalizeRecord sorts object keys recursively", () => {
     const record: SemanticRecord = {
@@ -146,19 +157,134 @@ test("canonicalizeRecord rejects cyclic records", () => {
     );
 });
 
-test("canonicalizeRecord reports nesting past the runtime call stack as TypeError", () => {
+const { framingDepth, maxNestingDepth } = kernelProtocolConfig.canonicalization;
+
+/** Builds `levels` nested arrays or objects without recursion; `levels` counts the outermost. */
+function nest(levels: number, kind: "array" | "object"): SemanticRecord {
+    let value: unknown = 0;
+    for (let level = 1; level < levels; level += 1)
+        value = kind === "array" ? [value] : { a: value };
+    return { a: value } as SemanticRecord;
+}
+
+/** Runs `action` below `frames` extra stack frames of an ordinary recursive caller. */
+function atStackDepth<T>(frames: number, action: () => T): T {
+    return frames === 0 ? action() : atStackDepth(frames - 1, action);
+}
+
+function isNestingRefusal(error: unknown): boolean {
+    return (
+        error instanceof CanonicalNestingLimitError &&
+        error instanceof TypeError &&
+        error.code === "CANONICAL_NESTING_LIMIT_EXCEEDED" &&
+        error.bound === maxNestingDepth &&
+        isPublicError(error) &&
+        !error.message.includes("$")
+    );
+}
+
+test("canonical nesting depth is bounded by configuration, independent of the call site", () => {
+    // Shallow and deep call sites (thousands of caller frames), cold and after warm-up: a value
+    // at the configured bound is accepted and one level deeper is refused with the classified
+    // error, never with a stack-dependent RangeError or TypeError.
+    for (const round of ["cold", "warm-up", "warm"]) {
+        const repetitions = round === "warm-up" ? 200 : 1;
+        for (let repetition = 0; repetition < repetitions; repetition += 1) {
+            for (const frames of [0, 2_000, 6_000]) {
+                for (const kind of ["array", "object"] as const) {
+                    const atBound = atStackDepth(frames, () =>
+                        canonicalizeRecord(nest(maxNestingDepth, kind)),
+                    );
+                    assert.equal(atBound.length > 0, true);
+                    assert.throws(
+                        () =>
+                            atStackDepth(frames, () =>
+                                canonicalizeRecord(nest(maxNestingDepth + 1, kind)),
+                            ),
+                        isNestingRefusal,
+                    );
+                    assert.equal(
+                        atStackDepth(frames, () => createRecordId(nest(maxNestingDepth, kind))),
+                        createRecordId(nest(maxNestingDepth, kind)),
+                    );
+                    assert.throws(
+                        () =>
+                            atStackDepth(frames, () =>
+                                createRecordId(nest(maxNestingDepth + 1, kind)),
+                            ),
+                        isNestingRefusal,
+                    );
+                }
+            }
+        }
+    }
+});
+
+test("canonical nesting depth counts containers, not scalars or siblings", () => {
+    const wide = nest(maxNestingDepth, "object") as Record<string, unknown>;
+    const record = { ...wide, b: nest(maxNestingDepth - 1, "array"), c: "leaf" };
+    assert.doesNotThrow(() => canonicalizeRecord(record as SemanticRecord));
+    assert.throws(
+        () => canonicalizeRecord({ a: [1, nest(maxNestingDepth - 1, "array")] }),
+        isNestingRefusal,
+    );
+});
+
+test("values far past the bound are refused with the classified error", () => {
     let deep: unknown = 0;
     for (let level = 0; level < 20_000; level += 1) deep = [deep];
     const record = { deep } as unknown as SemanticRecord;
 
+    assert.throws(() => canonicalizeRecord(record), isNestingRefusal);
+    assert.throws(() => createRecordId(record), isNestingRefusal);
+});
+
+test("kernel framing admits a body at the bound but not past the framed bound", () => {
+    const body = nest(maxNestingDepth, "object");
+    assert.equal(
+        canonicalizeKernelFrame({ records: [{ body }] }),
+        `{"records":[{"body":${canonicalizeRecord(body)}}]}`,
+    );
+    assert.doesNotThrow(() =>
+        canonicalizeKernelFrame(nest(maxNestingDepth + framingDepth, "array")),
+    );
     assert.throws(
-        () => canonicalizeRecord(record),
+        () => canonicalizeKernelFrame(nest(maxNestingDepth + framingDepth + 1, "array")),
+        (error) =>
+            error instanceof CanonicalNestingLimitError &&
+            error.bound === maxNestingDepth + framingDepth,
+    );
+});
+
+test("canonical output equals JSON.stringify of the normalized value", () => {
+    const record = {
+        "10": 1,
+        "9": 2,
+        "4294967294": 3,
+        "4294967295": 4,
+        a: ['"quoted"', "back\\slash", "line\nbreak", "\u2028", "é😀", 1e21, -0, 0.1],
+        b: { nested: [[], {}], z: null },
+    } as SemanticRecord;
+    const expected = JSON.stringify(record, (_key, value: unknown) =>
+        Object.is(value, -0) ? 0 : value,
+    );
+    assert.equal(canonicalizeRecord(record), expected);
+    assert.equal(canonicalizeSemanticValue("scalar"), '"scalar"');
+    assert.equal(canonicalizeSemanticValue(["a", 1]), '["a",1]');
+});
+
+test("canonical output beyond the maximum string length is reported as TypeError", () => {
+    // A value can be shallow and still produce output longer than the runtime string limit;
+    // that RangeError keeps the documented TypeError contract.
+    const chunk = "x".repeat(2 ** 27);
+    assert.throws(
+        () => canonicalizeRecord({ a: [chunk, chunk, chunk, chunk] }),
         (error) =>
             error instanceof TypeError &&
+            !(error instanceof CanonicalNestingLimitError) &&
             /nesting or size limit/.test(error.message) &&
             error.cause instanceof RangeError,
     );
-    assert.throws(() => createRecordId(record), TypeError);
 });
 
 test("createRecordId returns a stable prefixed SHA-256 digest", () => {

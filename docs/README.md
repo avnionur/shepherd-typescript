@@ -135,7 +135,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   2.32.x, what is delivered, the known limits, the owner-owed items before general availability,
   and upgrade and migration pointers.
 - [Phase 11 exit audit](../.plan/phase-11-exit-audit.md) records the 1.0 readiness verdict (release
-  candidate for the in-repo scope; general availability no-go until owner-owed items close) with
+  candidate for the in-repo scope; general availability no-go until owner-owed items close, tracked
+  in #191; the 2.33.1 addendum records the local Docker Linux lane and closes the in-repo scope) with
   the evidence map, recovery classification, independent review, verification, and limits; the
   [release-readiness dashboard](../.plan/release-readiness-dashboard.md) classifies every phase
   epic, parity row, and paper-coverage row, and the
@@ -212,8 +213,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   machine codes, in-memory causes, intentionally unclassified failures, and CLI redaction.
 - [Source maps, stacks, and causes](./source-maps-and-causes.md) defines portable installed map
   policy, in-memory propagation boundaries, and durable/CLI redaction.
-- [Canonical record contract](./canonical-records.md) defines accepted values, deterministic
-  encoding, identifiers, and error behavior.
+- [Canonical record contract](./canonical-records.md) defines accepted values, the configured
+  nesting bound, deterministic encoding, identifiers, and error behavior.
 - [Record body and envelope contract](./record-envelope.md) defines kernel ABI v0 semantic
   identity, causality, validation, and implementation-neutral fixtures.
 - [Append planning contract](./append-planning.md) defines append drafts, causal-parent

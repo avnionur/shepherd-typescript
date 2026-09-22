@@ -1,0 +1,18 @@
+{
+    "description": "F-016: one level past kernel.canonicalization.maxNestingDepth is refused with CanonicalNestingLimitError at any call-site stack depth.",
+    "finding": "F-016",
+    "input": {
+        "value": {
+            "$fuzz": "nest",
+            "depth": {
+                "canonicalBound": 1
+            },
+            "kind": "object",
+            "leaf": 0
+        }
+    },
+    "expect": {
+        "outcome": "rejected",
+        "error": "CanonicalNestingLimitError"
+    }
+}

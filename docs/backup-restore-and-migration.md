@@ -235,7 +235,8 @@ must be reviewed as one.
 
 - Backups are neither encrypted nor signed. They contain every record body and blob; protect them
   like the store (see [secrets and retention](./secrets-and-retention.md)).
-- Drills run on the reference host class (macOS arm64 APFS). Other operating systems and
-  filesystems are owner-owed (O-3).
+- Drills run on the reference host class (macOS arm64 APFS) and, from 2.33.1, in the local Docker
+  Linux lane (overlayfs, Node 24.21.0 and 24.12.0). Other filesystems and hosted runs are
+  owner-owed (O-3, #191).
 - Replication reads the database copy into memory and ships only local reference adapters.
 - Backups are full copies; there is no incremental or point-in-time backup.

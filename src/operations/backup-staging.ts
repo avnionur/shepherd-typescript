@@ -10,7 +10,6 @@ import {
     openSync,
     realpathSync,
     renameSync,
-    rmSync,
     writeFileSync,
 } from "node:fs";
 import path from "node:path";
@@ -23,6 +22,7 @@ import {
     retentionProtocolConfig,
 } from "../protocol/config.ts";
 import { STORE_BACKUP_FAILURE_REASONS } from "../protocol/values.generated.ts";
+import { removePathSync } from "../runtime/remove-path.ts";
 import { createFilesystemBlobStoreBackend } from "../storage/filesystem-blob-backend.ts";
 import type { BlobStoreBackend } from "../storage/types.ts";
 import { type SQLiteDatabaseBackup, SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
@@ -306,5 +306,5 @@ export function createStagingDirectory(parent: string): string {
 
 /** Removes a staging directory this module created. @internal */
 export function removeStagingDirectory(staging: string): void {
-    rmSync(staging, { force: true, recursive: true });
+    removePathSync(staging, { force: true, recursive: true });
 }

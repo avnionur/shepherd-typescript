@@ -819,7 +819,10 @@ never canonical and its timestamps are exporter observation times.
 [Fault and fuzz conformance](./docs/fault-and-fuzz-conformance.md) (2.32.0) adds deterministic
 seeded fuzzing of decoders, CLI argv, changesets, and helper protocols with a replayed regression
 corpus, configured trace-archive input limits (`TraceArchiveLimitError`), and hardened Git
-subprocess options and environment. Its fault part (2.32.1) kills writers mid-operation, fills
+subprocess options and environment. From 2.33.0 the
+[canonical value domain](./docs/canonical-records.md#nesting-bound) has a configured nesting bound
+(`kernel.canonicalization.maxNestingDepth`, default 1,000) that refuses deeper values with
+`CanonicalNestingLimitError` independently of the caller's stack depth. Its fault part (2.32.1) kills writers mid-operation, fills
 the database and the disk, and corrupts store and backup files, classifying every outcome as
 complete, retryable, refused, or detected, with a recorded long-duration soak.
 The [Phase 11 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-11-exit-audit.md)
@@ -827,7 +830,10 @@ The [Phase 11 exit audit](https://github.com/avnionur/shepherd-typescript/blob/m
 unresolved critical or high internal finding, and 1.0 general availability no-go until the
 owner-owed items close. No external security review has been performed, nothing is signed or
 published, hosted CI is disabled, and performance budgets hold only for the macOS arm64 APFS
-reference host. The [1.0 release notes](./docs/release-notes-1.0.md) list what is delivered, the
+reference host. Its 2.33.1 close-out addendum records a local Docker Linux lane (every
+`pnpm verify` gate on Node 24.21.0 and the 24.12.0 minimum), closes the in-repo Phase 11 scope,
+and moves the owner-only items to
+[#191](https://github.com/avnionur/shepherd-typescript/issues/191). The [1.0 release notes](./docs/release-notes-1.0.md) list what is delivered, the
 known limits, and upgrade pointers.
 
 Phase 3 reached **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline

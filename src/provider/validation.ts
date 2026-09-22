@@ -1,4 +1,5 @@
 import type { SemanticRecord, SemanticValue } from "../canonical/canonical-record.ts";
+import { CanonicalNestingLimitError } from "../canonical/errors.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import { providerProtocolConfig } from "../protocol/config.ts";
 import { readRunArtifactPayloadDefinition } from "../run/artifact-validation.ts";
@@ -167,6 +168,7 @@ function snapshotSemanticValue(value: unknown, subject: string): SemanticValue {
     try {
         return createCanonicalSnapshot({ value: value as SemanticValue }).value as SemanticValue;
     } catch (error) {
+        if (error instanceof CanonicalNestingLimitError) throw error;
         throw new TypeError(`${subject} must be a canonical semantic value`, { cause: error });
     }
 }

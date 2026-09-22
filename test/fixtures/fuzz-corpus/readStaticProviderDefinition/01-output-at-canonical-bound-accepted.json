@@ -1,0 +1,34 @@
+{
+    "description": "F-016 (extended run, seed 185185): a cassette whose response output uses the whole canonical nesting bound is accepted; the definition is a container of independently bounded requests and responses and is never canonicalized as a whole.",
+    "finding": "F-016",
+    "input": {
+        "value": {
+            "descriptor": { "id": "fuzz-fixture", "model": "offline-v1" },
+            "exchanges": [
+                {
+                    "request": {
+                        "input": { "name": "Ada" },
+                        "instruction": "Return the greeting.",
+                        "outputSchema": { "type": "string" }
+                    },
+                    "response": {
+                        "output": {
+                            "$fuzz": "nest",
+                            "depth": { "canonicalBound": -1 },
+                            "kind": "array",
+                            "leaf": 0
+                        },
+                        "usage": {
+                            "cacheCreationInputTokens": 0,
+                            "cacheReadInputTokens": 0,
+                            "costUsd": null,
+                            "inputTokens": 1,
+                            "outputTokens": 1
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "expect": { "outcome": "accepted" }
+}

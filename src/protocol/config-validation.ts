@@ -1,3 +1,4 @@
+import { REQUIRED_KERNEL_FRAMING_DEPTH } from "../canonical/framing.ts";
 import { readApplicationsConfig } from "./config-applications.ts";
 import { readBackupConfig } from "./config-backup.ts";
 import { readCliConfig } from "./config-cli.ts";
@@ -135,6 +136,7 @@ function readKernelConfig(value: unknown): ProtocolConfig["kernel"] {
             "append",
             "artifacts",
             "canonicalVersion",
+            "canonicalization",
             "interchange",
             "queries",
             "recordKind",
@@ -147,18 +149,54 @@ function readKernelConfig(value: unknown): ProtocolConfig["kernel"] {
     );
     const append = readOrdinalBounds(kernel.append, "kernel.append");
     const recordModes = readUniqueStrings(kernel.recordModes, "kernel.recordModes");
+    const canonicalization = readCanonicalizationConfig(kernel.canonicalization);
+    const interchange = readInterchangeConfig(kernel.interchange);
+    if (
+        interchange.limits.maxNestingDepth <
+        canonicalization.maxNestingDepth + canonicalization.framingDepth
+    ) {
+        throw new TypeError(
+            "kernel.interchange.limits.maxNestingDepth must admit kernel.canonicalization.maxNestingDepth plus framingDepth",
+        );
+    }
     return {
         abiVersion: readNonEmptyString(kernel.abiVersion, "kernel.abiVersion"),
         append,
         artifacts: readArtifacts(kernel.artifacts),
+        canonicalization,
         canonicalVersion: readNonEmptyString(kernel.canonicalVersion, "kernel.canonicalVersion"),
-        interchange: readInterchangeConfig(kernel.interchange),
+        interchange,
         queries: readQueryConfig(kernel.queries),
         recordKind: readNonEmptyString(kernel.recordKind, "kernel.recordKind"),
         recordModes,
         rootWitness: readRootWitness(kernel.rootWitness, recordModes),
         schemas: readSchemas(kernel.schemas),
         store: readStoreConfig(kernel.store, append),
+    };
+}
+
+function readCanonicalizationConfig(value: unknown): ProtocolConfig["kernel"]["canonicalization"] {
+    const canonicalization = readObject(
+        value,
+        ["framingDepth", "maxNestingDepth"],
+        "kernel.canonicalization",
+    );
+    const framingDepth = readPositiveInteger(
+        canonicalization.framingDepth,
+        "kernel.canonicalization.framingDepth",
+    );
+    // Smaller framing would refuse a body at maxNestingDepth inside the deepest kernel frame.
+    if (framingDepth < REQUIRED_KERNEL_FRAMING_DEPTH) {
+        throw new TypeError(
+            `kernel.canonicalization.framingDepth must be at least ${REQUIRED_KERNEL_FRAMING_DEPTH}, the deepest kernel frame body location`,
+        );
+    }
+    return {
+        framingDepth,
+        maxNestingDepth: readPositiveInteger(
+            canonicalization.maxNestingDepth,
+            "kernel.canonicalization.maxNestingDepth",
+        ),
     };
 }
 

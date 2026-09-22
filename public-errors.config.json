@@ -1,6 +1,9 @@
 {
     "compatibilityVersion": "shepherd.public-errors.v1",
     "codes": {
+        "canonical": {
+            "nestingLimit": "CANONICAL_NESTING_LIMIT_EXCEEDED"
+        },
         "effects": {
             "handlerNotFound": "EFFECT_HANDLER_NOT_FOUND"
         },

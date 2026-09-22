@@ -1,9 +1,11 @@
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 
 import {
     ROOT_WITNESS_ID,
@@ -29,7 +31,7 @@ export type FaultSettings = {
         readonly walCases: number;
     };
     readonly diskFull: {
-        readonly fileSizeLimitBlocks: number;
+        readonly fileSizeLimitBytes: number;
         readonly headroomPages: number;
         readonly unlimitedPageCount: number;
         readonly volume: {
@@ -203,41 +205,95 @@ export type FaultProcessResult = {
 };
 
 const FAULT_PROCESS = fileURLToPath(new URL("../fixtures/fault-process.ts", import.meta.url));
+const FILE_SIZE_UNIT_PROBE = fileURLToPath(
+    new URL("../fixtures/file-size-unit-probe.ts", import.meta.url),
+);
+const POSIX_SHELL = "/bin/sh";
+
+// Node.js writes a child's V8 coverage to the directory named here when the child exits. A child
+// under RLIMIT_FSIZE would truncate that file at the limit and break the parent's coverage report.
+// `child_process` copies the parent's value into any spawn environment that lacks the key, so it
+// is disabled by setting it to the empty string rather than by removing it.
+const V8_COVERAGE_ENVIRONMENT_VARIABLE = "NODE_V8_COVERAGE";
+
+let fileSizeUnit: Promise<number> | undefined;
+
+/**
+ * Byte size of one `ulimit -f` unit of `/bin/sh`, measured once per process.
+ *
+ * The unit is shell dependent: dash and bash 5 in POSIX mode count 512-byte blocks, while the
+ * bash 3.2 that macOS ships as `/bin/sh` counts 1024-byte blocks. The probe runs a child under
+ * `ulimit -f 1` and counts the bytes it can write before `EFBIG`.
+ *
+ * @param capBytes - Largest unit accepted; a probe that writes more fails the measurement.
+ * @returns The unit in bytes.
+ * @throws {Error} If the probe fails or reports a non-positive or oversized unit.
+ */
+export function fileSizeLimitUnitBytes(capBytes: number): Promise<number> {
+    fileSizeUnit ??= promisify(execFile)(
+        POSIX_SHELL,
+        [
+            "-c",
+            'ulimit -f 1 && exec "$0" "$@"',
+            process.execPath,
+            FILE_SIZE_UNIT_PROBE,
+            tmpdir(),
+            String(capBytes),
+        ],
+        { env: withoutCoverage(process.env) },
+    ).then(({ stdout }) => {
+        const unit = Number(stdout.trim());
+        if (!Number.isSafeInteger(unit) || unit <= 0 || unit > capBytes) {
+            throw new Error(`ulimit -f unit probe reported ${JSON.stringify(stdout)}`);
+        }
+        return unit;
+    });
+    return fileSizeUnit;
+}
+
+async function fileSizeLimitScript(limitBytes: number): Promise<string> {
+    const unit = await fileSizeLimitUnitBytes(limitBytes);
+    if (limitBytes % unit !== 0) {
+        throw new Error(`file-size limit ${limitBytes} is not a multiple of the ${unit}-byte unit`);
+    }
+    return `ulimit -f ${limitBytes / unit} && exec "$0" "$@"`;
+}
+
+function withoutCoverage(environment: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+    return { ...environment, [V8_COVERAGE_ENVIRONMENT_VARIABLE]: "" };
+}
 
 /**
  * Starts the looping fault child and resolves when it exits. `killAfterReady` sends SIGKILL the
- * given number of milliseconds after the child reports `ready`; `fileSizeLimitBlocks` launches it
- * through `/bin/sh` under `ulimit -f`.
+ * given number of milliseconds after the child reports `ready`; `fileSizeLimitBytes` launches it
+ * through `/bin/sh` under `ulimit -f`, converted to the shell's measured unit (the limit must be a
+ * whole number of units), and without V8 coverage output, which the limit would truncate.
  */
 export async function runFaultProcess(
     args: FaultProcessArguments,
     options: {
-        readonly fileSizeLimitBlocks?: number;
+        readonly fileSizeLimitBytes?: number;
         readonly killAfterReady?: number;
         readonly temporaryDirectory?: string;
     } = {},
 ): Promise<FaultProcessResult> {
     const nodeArguments = [FAULT_PROCESS, JSON.stringify(args)];
-    const spawnOptions = {
-        env:
-            options.temporaryDirectory === undefined
-                ? process.env
-                : { ...process.env, TMPDIR: options.temporaryDirectory },
-        stdio: ["ignore", "pipe", "pipe"] as ["ignore", "pipe", "pipe"],
-    };
+    const environment =
+        options.temporaryDirectory === undefined
+            ? process.env
+            : { ...process.env, TMPDIR: options.temporaryDirectory };
+    const stdio = ["ignore", "pipe", "pipe"] as ["ignore", "pipe", "pipe"];
+    const limitScript =
+        options.fileSizeLimitBytes === undefined
+            ? undefined
+            : await fileSizeLimitScript(options.fileSizeLimitBytes);
     const child =
-        options.fileSizeLimitBlocks === undefined
-            ? spawn(process.execPath, nodeArguments, spawnOptions)
-            : spawn(
-                  "/bin/sh",
-                  [
-                      "-c",
-                      `ulimit -f ${options.fileSizeLimitBlocks} && exec "$0" "$@"`,
-                      process.execPath,
-                      ...nodeArguments,
-                  ],
-                  spawnOptions,
-              );
+        limitScript === undefined
+            ? spawn(process.execPath, nodeArguments, { env: environment, stdio })
+            : spawn(POSIX_SHELL, ["-c", limitScript, process.execPath, ...nodeArguments], {
+                  env: withoutCoverage(environment),
+                  stdio,
+              });
     const events: FaultEvent[] = [];
     let stderr = "";
     child.stderr.setEncoding("utf8");

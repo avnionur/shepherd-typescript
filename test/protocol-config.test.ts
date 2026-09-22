@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-
+import { REQUIRED_KERNEL_FRAMING_DEPTH } from "../src/canonical/framing.ts";
 import {
     DELEGATION_PROTOCOL_V1_CONTRACT,
     EVIDENCE_RECORD_PROJECTION_V1_CONTRACT,
@@ -739,6 +739,72 @@ test("protocol configuration rejects invalid or drifted interchange contracts", 
             objectAt(interchangeConfigOf(config), "limits").extra = 1;
         },
     ]);
+});
+
+test("protocol configuration validates the canonical nesting bound at load", () => {
+    const canonicalization = (config: Record<string, unknown>) =>
+        objectAt(objectAt(config, "kernel"), "canonicalization");
+    assertInvalid([
+        (config) => {
+            delete objectAt(config, "kernel").canonicalization;
+        },
+        (config) => {
+            objectAt(config, "kernel").canonicalization = [];
+        },
+        (config) => {
+            canonicalization(config).extra = 1;
+        },
+        (config) => {
+            delete canonicalization(config).framingDepth;
+        },
+        (config) => {
+            canonicalization(config).maxNestingDepth = 0;
+        },
+        (config) => {
+            canonicalization(config).maxNestingDepth = 1.5;
+        },
+        (config) => {
+            canonicalization(config).maxNestingDepth = "1000";
+        },
+        (config) => {
+            canonicalization(config).framingDepth = 0;
+        },
+        (config) => {
+            canonicalization(config).framingDepth = -1;
+        },
+    ]);
+
+    // Framing shallower than the deepest kernel frame body location would refuse a body at the
+    // bound, so it is rejected at load; the minimum itself is accepted.
+    const tooShallowFraming = structuredClone(validConfig);
+    canonicalization(tooShallowFraming).framingDepth = REQUIRED_KERNEL_FRAMING_DEPTH - 1;
+    assert.throws(
+        () => parseProtocolConfig(tooShallowFraming),
+        new RegExp(
+            `kernel\\.canonicalization\\.framingDepth must be at least ${REQUIRED_KERNEL_FRAMING_DEPTH}`,
+        ),
+    );
+
+    const configured = structuredClone(validConfig);
+    canonicalization(configured).maxNestingDepth = 64;
+    canonicalization(configured).framingDepth = REQUIRED_KERNEL_FRAMING_DEPTH;
+    objectAt(interchangeConfigOf(configured), "limits").maxNestingDepth =
+        64 + REQUIRED_KERNEL_FRAMING_DEPTH;
+    const parsed = parseProtocolConfig(configured);
+    assert.deepEqual(parsed.kernel.canonicalization, {
+        framingDepth: REQUIRED_KERNEL_FRAMING_DEPTH,
+        maxNestingDepth: 64,
+    });
+    assert.equal(Object.isFrozen(parsed.kernel.canonicalization), true);
+
+    // An archive must be able to carry a body at the bound inside its framing.
+    const tooShallowArchive = structuredClone(configured);
+    objectAt(interchangeConfigOf(tooShallowArchive), "limits").maxNestingDepth =
+        64 + REQUIRED_KERNEL_FRAMING_DEPTH - 1;
+    assert.throws(
+        () => parseProtocolConfig(tooShallowArchive),
+        /kernel\.interchange\.limits\.maxNestingDepth must admit kernel\.canonicalization\.maxNestingDepth plus framingDepth/,
+    );
 });
 
 test("interchange limits and Git invocation hardening are operational, not protocol identity", () => {

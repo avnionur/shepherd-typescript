@@ -203,6 +203,7 @@ export {
     type SemanticScalar,
     type SemanticValue,
 } from "./canonical/canonical-record.ts";
+export { CanonicalNestingLimitError } from "./canonical/errors.ts";
 export { runCli } from "./cli/cli.ts";
 export type { CliIo } from "./cli/types.ts";
 export {

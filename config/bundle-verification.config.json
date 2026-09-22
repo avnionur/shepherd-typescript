@@ -9,6 +9,8 @@
             "stdout": "{\"a\":1,\"z\":2}\n",
             "requiredModules": [
                 "dist/src/canonical/canonical-record.js",
+                "dist/src/canonical/errors.js",
+                "dist/src/errors/public-errors.js",
                 "dist/src/protocol/config.js"
             ],
             "forbiddenModules": [
@@ -18,7 +20,11 @@
             "removedExports": { "dist/src/canonical/canonical-record.js": ["createRecordId"] },
             "assets": [
                 { "source": "dist/protocol.config.json", "destination": "protocol.config.json" },
-                { "source": "dist/runtime.config.json", "destination": "runtime.config.json" }
+                { "source": "dist/runtime.config.json", "destination": "runtime.config.json" },
+                {
+                    "source": "dist/public-errors.config.json",
+                    "destination": "public-errors.config.json"
+                }
             ]
         },
         {

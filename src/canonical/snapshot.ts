@@ -13,12 +13,20 @@ export function createCanonicalSnapshot(value: SemanticRecord): SemanticRecord {
     return deepFreeze(JSON.parse(canonicalizeRecord(value)) as SemanticRecord);
 }
 
+// Iterative, like the canonical encoder, so freezing a value at the configured nesting bound does
+// not depend on the caller's remaining stack.
 function deepFreeze<T>(value: T): T {
-    if (value !== null && typeof value === "object") {
-        for (const child of Object.values(value)) {
-            deepFreeze(child);
+    const pending: unknown[] = [value];
+    while (pending.length > 0) {
+        const current = pending.pop();
+        if (current !== null && typeof current === "object") {
+            // Push children one at a time: spreading them as call arguments throws RangeError for
+            // containers wider than the engine's argument limit.
+            for (const child of Object.values(current)) {
+                pending.push(child);
+            }
+            Object.freeze(current);
         }
-        Object.freeze(value);
     }
     return value;
 }

@@ -1,4 +1,5 @@
 import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
+import { CanonicalNestingLimitError } from "../canonical/errors.ts";
 
 /** Validates one non-empty well-formed run-domain string. @internal */
 export function assertRunText(value: unknown, subject: string): asserts value is string {
@@ -29,6 +30,7 @@ export function assertRunSemanticRecord(
     try {
         canonicalizeRecord(value as SemanticRecord);
     } catch (error) {
+        if (error instanceof CanonicalNestingLimitError) throw error;
         throw new TypeError(`${subject} must be a canonical semantic record`, { cause: error });
     }
 }

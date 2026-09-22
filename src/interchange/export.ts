@@ -1,7 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 
 import type { BlobFilesystem } from "../blob/filesystem.ts";
-import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
+import { canonicalizeKernelFrame, type SemanticRecord } from "../canonical/canonical-record.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
 import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { readStoredBlob } from "../store/blobs.ts";
@@ -75,7 +75,7 @@ function readTraceArchive(database: DatabaseSync, filesystem: BlobFilesystem): s
                 ),
             };
         });
-    return canonicalizeRecord({
+    return canonicalizeKernelFrame({
         append_intents: appendIntents,
         blobs,
         canonical_version: kernelProtocolConfig.canonicalVersion,

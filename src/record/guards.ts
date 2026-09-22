@@ -12,6 +12,8 @@ import {
  * Validates a value as a canonical record body.
  *
  * @param value - The untrusted value to validate.
+ * @throws {CanonicalNestingLimitError} If the body nests deeper than the configured
+ * `kernel.canonicalization.maxNestingDepth`.
  * @throws {TypeError} If the value is not a plain canonicalizable object.
  *
  * @public

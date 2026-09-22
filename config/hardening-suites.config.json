@@ -3,11 +3,13 @@
     "fuzz": {
         "caseBudgetMilliseconds": 5000,
         "corpusDirectory": "test/fixtures/fuzz-corpus",
+        "deepCallSiteFrames": 4000,
         "defaultTier": "verify",
         "iterationsEnvironmentVariable": "SHEPHERD_FUZZ_ITERATIONS",
         "mutation": {
             "textNestingLevels": [64, 4097, 20000],
             "valueNestingLevels": [64, 400, 20000],
+            "valueNestingBoundOffsets": [-8, -1, 0, 1],
             "maxMutationsPerCase": 3,
             "numbers": [
                 "NaN",
@@ -25,14 +27,15 @@
         "seedEnvironmentVariable": "SHEPHERD_FUZZ_SEED",
         "seeds": [20260918],
         "targets": {
-            "canonicalizeRecord": { "allowedErrors": ["TypeError"] },
+            "canonicalizeRecord": { "allowedErrors": ["CanonicalNestingLimitError", "TypeError"] },
             "classifyOverlayMountInfo": { "allowedErrors": [] },
-            "createRecordId": { "allowedErrors": ["TypeError"] },
+            "createRecordId": { "allowedErrors": ["CanonicalNestingLimitError", "TypeError"] },
             "createVerifiedWorldChangeset": { "allowedErrors": ["WorldChangesetError"] },
             "decodeAppendReceipt": { "allowedErrors": ["TraceStoreError"] },
             "decodeSelectionPublication": { "allowedErrors": ["TypeError"] },
             "decodeTraceArchive": {
                 "allowedErrors": [
+                    "CanonicalNestingLimitError",
                     "RedactedTraceArchiveError",
                     "TraceArchiveLimitError",
                     "TypeError"
@@ -41,6 +44,7 @@
             "encodeSelectionPublicationPlan": { "allowedErrors": ["TypeError"] },
             "importTrace": {
                 "allowedErrors": [
+                    "CanonicalNestingLimitError",
                     "RedactedTraceArchiveError",
                     "TraceArchiveLimitError",
                     "TypeError"
@@ -50,21 +54,29 @@
             "parseBackupManifest": { "allowedErrors": ["TraceStoreBackupError"] },
             "readApplicationProtocol": { "allowedErrors": ["ApplicationProtocolError"] },
             "readGrantedPlacementResolutionEvidence": { "allowedErrors": ["TypeError"] },
-            "readModelResponse": { "allowedErrors": ["TypeError"] },
+            "readModelResponse": { "allowedErrors": ["CanonicalNestingLimitError", "TypeError"] },
             "readNativeJailCommandEvidence": { "allowedErrors": ["TypeError"] },
             "readNativeJailPlanEvidence": { "allowedErrors": ["TypeError"] },
             "readPlacementPlatformEvidence": { "allowedErrors": ["TypeError"] },
             "readRepositoryGrantPlanEvidence": { "allowedErrors": ["TypeError"] },
-            "readStaticProviderDefinition": { "allowedErrors": ["TypeError"] },
+            "readStaticProviderDefinition": {
+                "allowedErrors": ["CanonicalNestingLimitError", "TypeError"]
+            },
             "runCli": { "allowedErrors": [] },
             "telemetryBatch": {
                 "allowedErrors": [],
                 "skip": "No telemetry decoder exists: #184 only maps committed records to OTLP/JSON and hands batches to a caller sink; nothing parses telemetry input."
             },
-            "validateRecordBody": { "allowedErrors": ["TypeError"] },
-            "validateRecordEnvelope": { "allowedErrors": ["TypeError"] },
+            "validateRecordBody": { "allowedErrors": ["CanonicalNestingLimitError", "TypeError"] },
+            "validateRecordEnvelope": {
+                "allowedErrors": ["CanonicalNestingLimitError", "TypeError"]
+            },
             "verifyRedactedTraceArchive": {
-                "allowedErrors": ["RedactedTraceArchiveError", "TraceArchiveLimitError"]
+                "allowedErrors": [
+                    "CanonicalNestingLimitError",
+                    "RedactedTraceArchiveError",
+                    "TraceArchiveLimitError"
+                ]
             }
         },
         "testTimeoutMilliseconds": 600000,
@@ -95,7 +107,7 @@
             "walCases": 12
         },
         "diskFull": {
-            "fileSizeLimitBlocks": 1024,
+            "fileSizeLimitBytes": 1048576,
             "headroomPages": 2,
             "unlimitedPageCount": 1073741823,
             "volume": {

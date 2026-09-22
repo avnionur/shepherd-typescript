@@ -1,10 +1,11 @@
-import { mkdtempSync, realpathSync, rmSync } from "node:fs";
+import { mkdtempSync, realpathSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 import { BlobFilesystem } from "../blob/filesystem.ts";
 import { kernelProtocolConfig } from "../protocol/config.ts";
 import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
+import { removePathSync } from "../runtime/remove-path.ts";
 import { assertSQLiteDefensiveSupport } from "../runtime/sqlite.ts";
 import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { STORE_PRAGMA_SQL, STORE_TABLES, STORE_TRANSACTION_SQL } from "../store/constants.ts";
@@ -87,7 +88,7 @@ function validateInStagingStore(archive: DecodedTraceArchive, stagingParent: str
         throw new TypeError("trace archive contains inconsistent retained state", { cause: error });
     } finally {
         database.close();
-        rmSync(directory, { force: true, recursive: true });
+        removePathSync(directory, { force: true, recursive: true });
     }
 }
 

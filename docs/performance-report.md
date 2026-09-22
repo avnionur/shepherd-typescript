@@ -16,7 +16,9 @@ paper, or any other project, and no number is a claim about another host.
 | Package | 2.30.0 |
 
 Linux, Windows, other filesystems, and other macOS machines are not measured; running the benchmark
-there is owner-owed (O-3 in the [hardening contract](../.plan/production-hardening-contract.md)).
+there is owner-owed (O-3 in the [hardening contract](../.plan/production-hardening-contract.md),
+#191). In the local Docker Linux lane (2.33.1) `pnpm check:slo` reports "skipped; no host class
+matches linux/arm64", as designed.
 
 ## Kernel benchmark
 

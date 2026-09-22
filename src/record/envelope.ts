@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 
-import { canonicalizeRecord, type SemanticRecord } from "../canonical/canonical-record.ts";
+import {
+    canonicalizeKernelFrame,
+    canonicalizeRecord,
+    type SemanticRecord,
+} from "../canonical/canonical-record.ts";
 import { kernelProtocolConfig, recordIdConfig } from "../protocol/config.ts";
 import {
     assertNonEmptyString,
@@ -50,7 +54,7 @@ export function createRecordEnvelope<TBody extends RecordBody>(
     };
     const digest = createHash(recordIdConfig.algorithm)
         .update(`${kernelProtocolConfig.canonicalVersion}\n`, "ascii")
-        .update(canonicalizeRecord(canonicalInput), "utf8")
+        .update(canonicalizeKernelFrame(canonicalInput), "utf8")
         .digest("hex");
     const recordId = `${recordIdConfig.prefix}${digest}`;
 

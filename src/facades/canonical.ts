@@ -6,3 +6,4 @@ export {
     type SemanticScalar,
     type SemanticValue,
 } from "../canonical/canonical-record.ts";
+export { CanonicalNestingLimitError } from "../canonical/errors.ts";

@@ -1,6 +1,6 @@
 {
-    "description": "F-012: nesting past the runtime call stack raises the documented TypeError instead of RangeError.",
+    "description": "F-012, F-016: nesting far past the configured canonical bound is refused with CanonicalNestingLimitError (a TypeError), never RangeError.",
     "finding": "F-012",
     "input": { "value": { "a": { "$fuzz": "nest", "depth": 20000, "kind": "array", "leaf": 0 } } },
-    "expect": { "outcome": "rejected", "error": "TypeError" }
+    "expect": { "outcome": "rejected", "error": "CanonicalNestingLimitError" }
 }

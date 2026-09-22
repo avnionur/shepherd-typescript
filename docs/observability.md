@@ -144,7 +144,12 @@ write appends the batch's `ExportTraceServiceRequest` to `tracesPath` when it ha
 `ExportLogsServiceRequest` to `logsPath` when it has a log record, then fsyncs each file. Files
 are created with the owner-only `retention.storeFiles.mode` (`0600`), and an existing file with
 group or other bits is tightened first. The files can be read by the OpenTelemetry Collector
-`otlpjsonfile` receiver. A retried batch may repeat lines.
+`otlpjsonfile` receiver. A retried batch may repeat lines. Each line is the exact
+`JSON.stringify` text of its request, produced by an explicit-stack serializer
+([`src/canonical/json-text.ts`](../src/canonical/json-text.ts)): the OTLP `AnyValue` shape spends
+several nesting levels per body level, so an included body at the canonical nesting bound nests
+deeper than native `JSON.stringify` accepts on Linux, and the sink writes it regardless of the
+platform's native stack or the caller's stack depth.
 
 ## Configuration
 

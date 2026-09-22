@@ -1,4 +1,5 @@
 import { canonicalizeSemanticValue, type SemanticValue } from "../canonical/canonical-record.ts";
+import { CanonicalNestingLimitError } from "../canonical/errors.ts";
 import { formalAssuranceProtocolConfig } from "../protocol/config.ts";
 import { TypedEffectTraceValidationError } from "./errors.ts";
 import type {
@@ -78,6 +79,8 @@ const recordTypes = referenceMachine.recordTypes;
  * @param options - Static program identity, completion mode, and ordered untrusted records.
  * @returns A frozen lifecycle summary for the accepted trace or trace prefix.
  * @throws {TypeError} If the options container or program identity is malformed.
+ * @throws {CanonicalNestingLimitError} If a record payload or value nests deeper than
+ * `kernel.canonicalization.maxNestingDepth`.
  * @throws {TypedEffectTraceValidationError} If a record or lifecycle transition is invalid.
  *
  * @example
@@ -726,7 +729,9 @@ function readSemantic(value: unknown, context: string): SemanticValue {
     try {
         canonicalizeSemanticValue(value as SemanticValue);
         return value as SemanticValue;
-    } catch {
+    } catch (error) {
+        // Keep the classified refusal, as the other canonical value validators do.
+        if (error instanceof CanonicalNestingLimitError) throw error;
         throw invalid(`${context} must be a canonical semantic value`);
     }
 }
