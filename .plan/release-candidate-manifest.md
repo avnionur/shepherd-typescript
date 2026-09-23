@@ -4,7 +4,26 @@ Status: 2.32.5 release candidate for the in-repo scope, 2026-09-19, #29 (2.32.4 
 plus the F-029 fix; the 2.32.4 results are kept below for history). Verdict and reasoning:
 [Phase 11 exit audit](./phase-11-exit-audit.md). Nothing listed here is signed or published.
 The [owner actions (2.33.3)](#owner-actions-2333) section records the owner decisions of #191 and
-the npm-version-independent packed file set; the digests below remain those of 2.32.5.
+the npm-version-independent packed file set; the [owner decisions (#199)](#owner-decisions-199)
+section records the waivers that make 1.0 a private, unpublished source release. The digests below
+remain those of 2.32.5.
+
+## Owner decisions (#199)
+
+Owner decisions of 2026-09-23 closing
+[#199](https://github.com/avnionur/shepherd-typescript/issues/199), recorded in 2.34.0 (decision
+D-019 in [decisions and risks](./decisions-and-risks.md)). No new digest is recorded here; the
+evidence is the [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340).
+
+| Item | State |
+| --- | --- |
+| Recheck (2026-09-23) | Repository private; npm not authenticated; hosted `CI` run [35868089999](https://github.com/avnionur/shepherd-typescript/actions/runs/35868089999) started no job because of the Actions billing or spending limit; `CI` disabled again |
+| Release form | 1.0 is a private, unpublished source release: `"private": true` stays, nothing is signed or published, `@avnionur/shepherd-typescript` is not reserved on npm (O-2, O-5 waived; F-010 accepted) |
+| Verification substitute | Local macOS gates (`pnpm verify`, `pnpm verify:release`, `pnpm build:desktop`) plus the local Docker Linux lane; hosted CI stays disabled (O-3 closed by decision; F-008 accepted) |
+| CodeQL and advisory form | Waived while the repository is private; email intake in [SECURITY.md](../SECURITY.md) stands. Enabling both if the repository becomes public is the owner's follow-up |
+| Windows | No Windows lane; `windows-latest` removed from the `ci.yml` matrix; native Windows unsupported |
+| Linux volume fault suite and Linux SLO host class | Delivered in 2.34.0 through the local Docker lane: `pnpm test:faults:volume` passed on an ext4 loop image as root in a privileged `node:24.21.0-bookworm` container; `linux-arm64-overlayfs-container` budgets and artifact `docs/generated/benchmarks/linux-arm64-overlayfs-container.json`, `pnpm check:slo` passes in the container ([addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)) |
+| External security review | None performed; waived for 1.0 (O-1); the internal review is accepted in its place |
 
 ## Owner actions (2.33.3)
 
@@ -122,11 +141,14 @@ database from four processes at once. It is fixed in 2.32.5 (see the table above
 
 ## Not in this manifest
 
-- Hosted CI runs: none has run a job; see [owner actions (2.33.3)](#owner-actions-2333) (O-3,
-  #199). CodeQL results: none (disabled).
-- Signed provenance, Sigstore attestation, npm publication: none (O-2, #199).
-- External security review report: none (O-1, #199).
-- Cross-OS reproducibility, Windows verification, other SLO host classes: none (O-3, #199). A local Docker Linux lane on 2.33.1 is recorded in the
+- Hosted CI runs: none has run a job; see [owner actions (2.33.3)](#owner-actions-2333) and
+  [owner decisions (#199)](#owner-decisions-199); hosted CI stays disabled by owner decision (O-3).
+  CodeQL results: none (disabled; waived while private).
+- Signed provenance, Sigstore attestation, npm publication: none; waived for 1.0 (O-2, #199).
+- External security review report: none; waived for 1.0 (O-1, #199).
+- Cross-OS reproducibility and Windows verification: none (no Windows lane for 1.0, #199). The Linux
+  SLO host class of 2.34.0 is a container-in-VM measurement, not a release artifact (see the
+  [addendum](./phase-11-exit-audit.md#linux-slo-host-class)). A local Docker Linux lane on 2.33.1 is recorded in the
   [exit audit addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331); its
   tarballs are not release artifacts and differed from the reference host's by npm version
   (F-032, fixed in 2.33.3).

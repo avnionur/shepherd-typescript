@@ -11,8 +11,11 @@ fixed as a follow-up to #29 in 2.32.5; F-016 fixed by #189 in 2.33.0 (owner deci
 configured canonical depth bound); F-030 and F-031 recorded and fixed and F-032 recorded open by the
 Linux verification lane (#190) in 2.33.1; the F-016 JSON-lines sink follow-up fixed in 2.33.2
 (#190); F-032 fixed, F-009 resolved by documented email intake, and F-008 and F-010 moved to #199 by the
-owner actions of #191 in 2.33.3. This is an internal review by implementing agents, not an independent external assessment. The external review is
-owner-owed (O-1 in the [production hardening contract](./production-hardening-contract.md)). The
+owner actions of #191 in 2.33.3; F-008 and F-010 accepted by owner decision of 2026-09-23 (#199) in
+2.34.0. This is an internal review by implementing agents plus one independent internal reviewer,
+not an independent external assessment. No external security review has been performed; the owner
+waived it for 1.0 on 2026-09-23 (O-1 in the
+[production hardening contract](./production-hardening-contract.md), #199). The
 [threat model](../docs/threat-model.md) is the scope; this page is the findings register every
 Phase 11 slice updates and the 1.0 audit (#29) closes against.
 
@@ -38,7 +41,8 @@ Reference host for probes: macOS arm64, APFS, Node 24.17.0, process umask `022`.
 | Low | Defense-in-depth gaps, hardening of trusted inputs, documentation overclaims, or process gaps without a direct exploit path. |
 
 Statuses: `open` (owning slice will fix), `fixed` (fix and evidence landed), `accepted` (residual
-risk documented in the threat model, re-examined by #29), `owner-owed` (only the owner can close).
+risk documented in the threat model, re-examined by #29, or accepted by a recorded owner decision),
+`owner-owed` (only the owner can close).
 
 ## Findings register
 
@@ -51,9 +55,9 @@ risk documented in the threat model, re-examined by #29), `owner-owed` (only the
 | F-005 | Git subprocess environment | Low | fixed | #185 | Recorded by #187. Fixed in 2.32.0: every Git subprocess (custody, bindings, workspace initialization) is built by `src/workspace/git-command.ts` from the new `workspaces.gitInvocation` configuration: `-c core.fsmonitor=false -c core.untrackedCache=false` before `-C <root>` and the subcommand, an environment with every inherited `GIT_*` variable removed (`GIT_DIR`, `GIT_WORK_TREE`, `GIT_CONFIG_PARAMETERS`, and the rest), then `GIT_OPTIONAL_LOCKS=0` and `GIT_TERMINAL_PROMPT=0` set; no shell anywhere. `test/workspace/git-command.test.ts` shows a hostile repository `core.fsmonitor` helper running under a plain `git status` and not under the pinned invocation even when also injected through `GIT_CONFIG_PARAMETERS`, and bindings reporting the requested repository's Git directory with a decoy `GIT_DIR` set (without the fix Git reports the decoy's directory, confirmed by probe). Accepted residual (threat model B9): the default executable name `git` is resolved through the caller's `PATH`, which belongs to the trusted calling process; `workspaces.gitExecutable` accepts an absolute path for operators who pin it. |
 | F-006 | Trace authenticity | Medium | accepted | #187 | Record identity is a SHA-256 content address, not a signature. A principal with write access to the database can replace records and their digests consistently; `verifyIntegrity` detects inconsistency (`test/store/integrity.test.ts`) but not a consistent rewrite. Documented as residual in the threat model; store files must be protected by OS permissions (see F-003). |
 | F-007 | Security policy overclaim | Low | fixed | #187 | `SECURITY.md` stated that pull requests run a dependency audit, but hosted CI is disabled. Corrected in 2.25.2 to state that the workflows are present and disabled and that verification is local. |
-| F-008 | Hosted CI, CodeQL, cross-OS lanes | Low | owner-owed | O-3, #199 | `.github/workflows/ci.yml`, `codeql.yml`, and `dependency-review.yml` exist and have never completed a hosted run, so static analysis and dependency audit results are absent from the evidence set. Narrowed in 2.33.1 by the local Docker Linux lane (#190), which remains the Linux evidence. On 2026-09-23 (#191) the owner enabled `CI` and `Dependency Audit`; the dispatched `CI` run on `main` ([35829571781](https://github.com/avnionur/shepherd-typescript/actions/runs/35829571781)) started no job on the Linux, macOS, or Windows runner because of an account billing or spending-limit restriction (an owner-only setting), and the owner disabled both workflows again. `CodeQL` was not enabled because code scanning on a private repository requires GitHub Advanced Security, which is unavailable. No hosted run has passed. Deferred to #199: green hosted runs, CodeQL, the Windows lane decision, a Linux volume-fault variant, and a Linux SLO host class. |
-| F-009 | Vulnerability intake | Low | fixed | O-4, #191 | Recorded by #187: private vulnerability reporting was not confirmed enabled and `SECURITY.md` offered a contact-request issue as fallback. Resolved in 2.33.3 by documented alternative intake (owner decision of 2026-09-23): while the repository is private the advisory form is unavailable, so `SECURITY.md` names private email to the owner as the primary path and the advisory form as the path once the repository is public; the contact-request issue path is removed, and the issue templates and [incident response](../docs/incident-response.md) point to `SECURITY.md`. Enabling the advisory form after the repository becomes public is deferred to #199. |
-| F-010 | Unsigned release evidence | Low | owner-owed | O-2, #199 | Recorded by #179 (2.26.0). `pnpm verify:release` produces a lockfile SBOM, a host-local reproducible-build report, and an unsigned in-toto/SLSA provenance statement (`test/release-integrity.test.ts`), but no signature binds them to an identity, and `.github/workflows/release.yml` (Sigstore attestation, `npm publish --provenance`) has never run. Consumers can check digests only against a trusted copy of the statement. Deferred to #199 by the owner on 2026-09-23 (the package stays `"private": true`); the steps are in the [owner release runbook](../docs/release-integrity.md#owner-release-runbook). |
+| F-008 | Hosted CI, CodeQL, cross-OS lanes | Low | accepted | O-3, #199 | `.github/workflows/ci.yml`, `codeql.yml`, and `dependency-review.yml` exist and have never completed a hosted run, so static analysis and dependency audit results are absent from the evidence set. Narrowed in 2.33.1 by the local Docker Linux lane (#190), which remains the Linux evidence. On 2026-09-23 (#191) the owner enabled `CI` and `Dependency Audit`; the dispatched `CI` run on `main` ([35829571781](https://github.com/avnionur/shepherd-typescript/actions/runs/35829571781)) started no job on the Linux, macOS, or Windows runner because of an account billing or spending-limit restriction (an owner-only setting), and the owner disabled both workflows again. `CodeQL` was not enabled because code scanning on a private repository requires GitHub Advanced Security, which is unavailable. No hosted run has passed. The recheck on 2026-09-23 (#199) dispatched run [35868089999](https://github.com/avnionur/shepherd-typescript/actions/runs/35868089999), which again started no job because of the Actions billing or spending limit, and `CI` was disabled again. Accepted by owner decision of 2026-09-23 (#199, D-019): the local macOS gates (`pnpm verify`, `pnpm verify:release`, `pnpm build:desktop`) plus the local Docker Linux lane are the 1.0 verification substitute and hosted CI stays disabled; CodeQL is waived while the repository is private; there is no Windows lane (`windows-latest` removed from the `ci.yml` matrix; native Windows unsupported). The Linux volume-fault variant (ext4 loop image, passed as root in a privileged container) and the `linux-arm64-overlayfs-container` SLO host class were delivered in-repo in 2.34.0 through the local Docker lane ([addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)). Residual row in the [threat model](../docs/threat-model.md#residual-risks). |
+| F-009 | Vulnerability intake | Low | fixed | O-4, #191 | Recorded by #187: private vulnerability reporting was not confirmed enabled and `SECURITY.md` offered a contact-request issue as fallback. Resolved in 2.33.3 by documented alternative intake (owner decision of 2026-09-23): while the repository is private the advisory form is unavailable, so `SECURITY.md` names private email to the owner as the primary path and the advisory form as the path once the repository is public; the contact-request issue path is removed, and the issue templates and [incident response](../docs/incident-response.md) point to `SECURITY.md`. The advisory form is waived while the repository stays private (owner decision of 2026-09-23, #199); if the repository becomes public, enabling it is the owner's follow-up. |
+| F-010 | Unsigned release evidence | Low | accepted | O-2, #199 | Recorded by #179 (2.26.0). `pnpm verify:release` produces a lockfile SBOM, a host-local reproducible-build report, and an unsigned in-toto/SLSA provenance statement (`test/release-integrity.test.ts`), but no signature binds them to an identity, and `.github/workflows/release.yml` (Sigstore attestation, `npm publish --provenance`) has never run. Consumers can check digests only against a trusted copy of the statement. Deferred to #199 by the owner on 2026-09-23 (the package stays `"private": true`). Accepted by owner decision of 2026-09-23 (#199, D-019): 1.0 is a private, unpublished source release, so nothing is signed or published; if publication happens later, the [owner release runbook](../docs/release-integrity.md#owner-release-runbook) is the procedure. Residual row in the [threat model](../docs/threat-model.md#residual-risks). |
 | F-011 | Telemetry leakage | Low | accepted | #184 | Recorded by #184 (2.31.0). Telemetry leaves the store through a caller-supplied sink. Mitigated: bodies are withheld by default; `retention-policy` mode exports a body only for disposition `include` with no configured detector match and within the configured byte bound, and otherwise exports only the retention digest and secret classes (`test/observability/telemetry-exporter.test.ts`, "secret-bearing bodies are never emitted", asserts the secret text is absent from the serialized batch); the JSON-lines sink creates files `0600` and tightens loosened files (`test/observability/jsonl-sink.test.ts`). Accepted residual (threat model B8): record attributes (owner paths, schema, record, and witness identifiers) are exported unscanned, as in redacted export; detection is pattern-based; the confidentiality of a caller sink and of a downstream collector is the caller's. |
 | F-012 | Canonical encoding error class on deep nesting | Low | fixed | #185 | Found by the `canonicalizeRecord` fuzz target (deep-nesting mutator) and confirmed by probe: values nested past the call stack (about 3,000 levels cold on the reference host) made `canonicalizeRecord`, `createRecordId`, `validateRecordBody`, archive decode, and readers built on canonical snapshots throw `RangeError: Maximum call stack size exceeded` instead of the documented `TypeError`. Fixed in 2.32.0: `canonicalizeSemanticValue` reports stack or maximum-string-length exhaustion as `TypeError` with the `RangeError` as cause (`src/canonical/canonical-record.ts`). Evidence: `test/canonical-record.test.ts` ("nesting past the runtime call stack"), corpus `canonicalizeRecord/01-deep-nesting.json`, `createRecordId/01-deep-nesting.json`, `validateRecordBody/01-deep-nesting.json`, `decodeTraceArchive/04-deep-record-body.json`, `importTrace/01-deep-record-body.json`, and `readModelResponse/01-deep-output.json`. Failure was already closed (no partial state); the defect was the error contract. |
 | F-013 | JSON parser differential (repeated keys, non-canonical nested text) | Low | fixed | #185 | Found by the duplicate-raw-key mutator: `JSON.parse` keeps the last of repeated keys, so archive, redacted-archive, backup-manifest, and archived receipt text with a repeated key (or a non-canonical `receipt_json`) was accepted and could be read differently by a parser that keeps the first key or refuses. Fixed in 2.32.0: archive and redacted-archive text is scanned for repeated object keys (escaped spellings included) before parsing (`src/interchange/limits.ts`); archived `receipt_json` must be canonical (`src/interchange/decode.ts`); backup manifests must be exactly the writer's canonical encoding (`src/operations/backup-manifest.ts`). Evidence: `test/interchange/archive-limits.test.ts`, `test/operations/backup-restore.test.ts` (whitespace, repeated key, missing newline), corpus `decodeTraceArchive/02-repeated-key.json`, `decodeTraceArchive/03-receipt-not-canonical.json`, `importTrace/02-repeated-key.json`, `verifyRedactedTraceArchive/01-repeated-key.json`, `parseBackupManifest/01-whitespace.json`, `parseBackupManifest/02-repeated-key.json`. Accepted residual (threat model B3): the store-internal `decodeAppendReceipt` still accepts non-canonical receipt text written directly into a database (corpus `decodeAppendReceipt/01-non-canonical-accepted.json`); every stored receipt's meaning is re-checked against retained rows by `diagnoseStoredAppend`, and receipts only enter a store through append or the canonical-checked import. |
@@ -97,7 +101,8 @@ configured canonical nesting bound, with an accepted residual for older stores. 
 Linux verification lane (#190) found F-030 (Low: the fault suite's `ulimit -f` limit and child
 coverage were host dependent, so `pnpm verify` failed on Linux), F-031 (Low: `rmSync` leaves
 dangling symbolic links on Node 24.12.x and 24.13.x), both fixed with tests, and F-032 (Low: the
-packed file set depends on the npm version), open for the owner's release work (#191) and fixed in 2.33.3. No critical
+packed file set depends on the npm version), open for the owner's release work (#191) and fixed in 2.33.3. In 2.34.0
+the owner's decisions of 2026-09-23 (#199) accept F-008 and F-010 with residual rows. No critical
 or high finding is open.
 
 ## 1.0 audit gate result (2.32.4)
@@ -184,6 +189,23 @@ intake; F-008 and F-010 stay owner-owed and move to #199. The register's statuse
 The threat model's F-032 residual row is removed (its B10 row cites the new check), and its F-008,
 F-009, and F-010 rows are updated.
 
+Update in 2.34.0 (#199, owner decisions of 2026-09-23): F-008 (hosted CI, CodeQL, cross-OS lanes)
+and F-010 (unsigned release evidence) are accepted by owner decision (D-019 in
+[decisions and risks](./decisions-and-risks.md)); their threat-model residual rows are updated. No
+finding is owner-owed. The register's statuses are
+
+| Status | Findings |
+| --- | --- |
+| Critical or high, any status | none |
+| Open | none |
+| Accepted | F-001, F-006, F-008, F-010, F-011, F-020 |
+| Fixed with an accepted residual | F-004, F-005, F-013, F-016, F-018, F-019, F-023, F-025 |
+| Fixed | F-002, F-003, F-007, F-009, F-012, F-014, F-015, F-017, F-021, F-022, F-024, F-026, F-027, F-028, F-029, F-030, F-031, F-032 |
+| Owner-owed | none |
+
+The external review (O-1) is waived for 1.0 by the same decision; no external security review has
+been performed, and this register is the result of the internal review only.
+
 ## Update rule
 
 - Every slice that fixes a finding sets its status to `fixed` and cites the test that proves the
@@ -194,7 +216,8 @@ F-009, and F-010 rows are updated.
 
 ## External reviewer packet
 
-A reviewer engaged under O-1 should receive:
+O-1 is waived for 1.0 by owner decision of 2026-09-23 (#199); the packet is kept for a later
+review. A reviewer engaged under O-1 should receive:
 
 1. The commit under review and `CI=true pnpm verify` output from that commit.
 2. The [threat model](../docs/threat-model.md), this register, and the

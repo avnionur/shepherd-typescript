@@ -1,7 +1,10 @@
 # Release integrity
 
 Status: normative from 2.26.0 (Phase 11 slice 2, #179); packed file-set check and owner release
-runbook from 2.33.3 (#191). This page defines the supply-chain evidence the repository produces,
+runbook from 2.33.3 (#191); publication waived for 1.0 by owner decision of 2026-09-23 (#199),
+recorded in 2.34.0. 1.0 is a private, unpublished source release: the package stays
+`"private": true`, nothing is signed or published, and the runbook below is kept as the procedure
+if publication happens later. This page defines the supply-chain evidence the repository produces,
 how to verify it locally, and the signing and publication steps only the owner can perform. Configuration:
 [`config/release-integrity.config.json`](../config/release-integrity.config.json). Implementation:
 `tooling/release/` (`sbom.ts`, `provenance.ts`, `reproducible-build.ts`, `packed-files.ts`,
@@ -113,10 +116,10 @@ compare `release/sbom.cdx.json` with `docs/generated/sbom.cdx.json` at the recor
 
 [`.github/workflows/release.yml`](../.github/workflows/release.yml) is present but has never run.
 Hosted workflows are disabled: an attempt on 2026-09-23 (#191) to enable `CI` was blocked by an
-account billing limit, and the owner disabled the workflows again. Running `release.yml` is
-deferred to [#199](https://github.com/avnionur/shepherd-typescript/issues/199) together with
-signing, publication, and hosted CI; it also needs hosted runners, so the billing limit must be
-resolved first. On manual dispatch it checks out the commit,
+account billing limit, and the owner disabled the workflows again. By owner decision of 2026-09-23
+([#199](https://github.com/avnionur/shepherd-typescript/issues/199)) signing, publication, and
+hosted CI are waived for 1.0, so `release.yml` is not run for 1.0; it also needs hosted runners, so
+the billing limit must be resolved before any later run. On manual dispatch it checks out the commit,
 installs with `pnpm install --frozen-lockfile --ignore-scripts`, runs `pnpm verify:release`,
 attests the tarball with `actions/attest-build-provenance`, uploads `release/`, and, only when the
 `publish` input is set, publishes the attested tarball with `npm publish --provenance` from the
@@ -127,9 +130,11 @@ its release tag.
 
 These steps are O-2 and O-5 in the
 [production hardening contract](../.plan/production-hardening-contract.md#owner-owed-register).
-By the owner's decision of 2026-09-23 they are deferred to
-[#199](https://github.com/avnionur/shepherd-typescript/issues/199): the package stays
-`"private": true`, nothing is signed, and nothing is published. Registry and GitHub requirements
+By the owner's decision of 2026-09-23
+([#199](https://github.com/avnionur/shepherd-typescript/issues/199), D-019) they are waived for 1.0:
+1.0 is a private, unpublished source release, the package stays `"private": true`, nothing is
+signed or published, and `@avnionur/shepherd-typescript` is not reserved on npm. The runbook stays
+as the procedure if publication happens later. Registry and GitHub requirements
 change over time; confirm each one against the current npm and GitHub documentation when running
 the runbook, and record what was used.
 

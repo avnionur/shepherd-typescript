@@ -36,6 +36,38 @@ export type FaultSettings = {
         readonly unlimitedPageCount: number;
         readonly volume: {
             readonly fillBlobBytes: number;
+            /** macOS variant: an HFS+ disk image of `sizeMegabytes`, attached without privileges. */
+            readonly macos: {
+                /** Command and arguments that attach the image; mount point and image are appended. */
+                readonly attach: readonly string[];
+                /** Command and arguments that create the image; size (`<n>m`) and path are appended. */
+                readonly create: readonly string[];
+                /** Command and arguments that detach the image; the mount point is appended. */
+                readonly detach: readonly string[];
+                /** Command and arguments that detach a busy image; the mount point is appended. */
+                readonly forceDetach: readonly string[];
+                /** File name of the disk image inside the suite's temporary directory. */
+                readonly imageFileName: string;
+                /** Commands that must exit 0 for the variant to run. */
+                readonly probes: readonly (readonly string[])[];
+            };
+            /** Linux variant: a loop-mounted image of `sizeMegabytes`, run as root. */
+            readonly linux: {
+                /** Command and arguments that detach a busy mount; the mount point is appended. */
+                readonly forceUnmount: readonly string[];
+                /** File name of the sparse image inside the suite's temporary directory. */
+                readonly imageFileName: string;
+                /** Device whose absence means loop devices are unavailable (unprivileged container). */
+                readonly loopControlDevice: string;
+                /** Command and arguments that format the image; the image path is appended. */
+                readonly makeFileSystem: readonly string[];
+                /** Command and arguments that mount the image; image and mount point are appended. */
+                readonly mount: readonly string[];
+                /** Commands that must exit 0 for the variant to run. */
+                readonly probes: readonly (readonly string[])[];
+                /** Command and arguments that detach the mount; the mount point is appended. */
+                readonly unmount: readonly string[];
+            };
             readonly sizeMegabytes: number;
         };
     };

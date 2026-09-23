@@ -1,10 +1,14 @@
 // Opt-in real-volume ENOSPC suite: `pnpm test:faults:volume`. It is not part of `pnpm test`
 // (the file does not end in `.test.ts`) because it mounts a disk image. On macOS it creates an
-// HFS+ disk image of the configured size with `hdiutil`, attaches it at a private mount point
-// without privileges, fills it through the store, and always detaches it and removes the image.
+// HFS+ disk image of the configured size with the commands in `faults.diskFull.volume.macos`,
+// attaches it at a private mount point without privileges, fills it through the store, and always
+// detaches it and removes the image.
+// On Linux, as root with loop devices (a privileged container), it formats a sparse image of the
+// same size and loop-mounts it with the commands in `faults.diskFull.volume.linux`, runs the same
+// workload, and always unmounts it (which releases the loop device) and removes the image.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, truncateSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -22,15 +26,112 @@ import {
 const settings = faultSettings.diskFull.volume;
 const [seed = 0] = faultSeeds();
 
-function hdiutilAvailable(): boolean {
-    if (process.platform !== "darwin") return false;
+const macos = settings.macos;
+const linux = settings.linux;
+const volumeBytes = settings.sizeMegabytes * 1_048_576;
+
+function commandSucceeds(command: readonly string[]): boolean {
+    const [executable, ...args] = command;
     try {
-        execFileSync("hdiutil", ["help"], { stdio: "ignore" });
+        execFileSync(executable as string, args, { stdio: "ignore" });
         return true;
     } catch {
         return false;
     }
 }
+
+/** A mounted, size-limited volume and how to release it. */
+type Volume = { readonly mountPoint: string; readonly release: () => void };
+
+/** Platform variant: why it cannot run here (or false), and how to mount a volume under `root`. */
+type VolumeVariant = {
+    readonly mount: (root: string) => Volume;
+    readonly skip: false | string;
+};
+
+function run(command: readonly string[], ...operands: readonly string[]): void {
+    const [executable, ...args] = command;
+    execFileSync(executable as string, [...args, ...operands], {
+        stdio: ["ignore", "ignore", "pipe"],
+    });
+}
+
+const macosVariant: VolumeVariant = {
+    mount(root) {
+        const image = path.join(root, macos.imageFileName);
+        const mountPoint = path.join(root, "mount");
+        mkdirSync(mountPoint);
+        run(macos.create, `${settings.sizeMegabytes}m`, image);
+        run(macos.attach, mountPoint, image);
+        return {
+            mountPoint,
+            release() {
+                try {
+                    run(macos.detach, mountPoint);
+                } catch {
+                    run(macos.forceDetach, mountPoint);
+                }
+            },
+        };
+    },
+    get skip() {
+        const missing = macos.probes.filter((probe) => !commandSucceeds(probe));
+        return missing.length === 0
+            ? false
+            : `needs ${missing.map(([command]) => command).join(", ")} on macOS`;
+    },
+};
+
+function linuxSkipReason(): false | string {
+    if (process.getuid?.() !== 0) {
+        return "needs root to loop-mount an image on Linux (run in a privileged container)";
+    }
+    if (!existsSync(linux.loopControlDevice)) {
+        return `needs loop devices (${linux.loopControlDevice} is missing; run privileged)`;
+    }
+    const missing = linux.probes.filter((probe) => !commandSucceeds(probe));
+    return missing.length === 0
+        ? false
+        : `needs ${missing.map(([command]) => command).join(", ")} on Linux`;
+}
+
+const linuxVariant: VolumeVariant = {
+    mount(root) {
+        const image = path.join(root, linux.imageFileName);
+        const mountPoint = path.join(root, "mount");
+        mkdirSync(mountPoint);
+        writeFileSync(image, new Uint8Array(0));
+        truncateSync(image, volumeBytes);
+        run(linux.makeFileSystem, image);
+        run(linux.mount, image, mountPoint);
+        return {
+            mountPoint,
+            release() {
+                try {
+                    run(linux.unmount, mountPoint);
+                } catch {
+                    run(linux.forceUnmount, mountPoint);
+                }
+            },
+        };
+    },
+    get skip() {
+        return linuxSkipReason();
+    },
+};
+
+function selectVariant(): VolumeVariant {
+    if (process.platform === "darwin") return macosVariant;
+    if (process.platform === "linux") return linuxVariant;
+    return {
+        mount() {
+            throw new Error("unreachable: the suite is skipped on this platform");
+        },
+        skip: `needs macOS hdiutil or Linux loop devices (platform ${process.platform})`,
+    };
+}
+
+const variant = selectVariant();
 
 function describeError(error: unknown): string {
     const failure = error as Error & { code?: unknown; errcode?: unknown; reason?: unknown };
@@ -73,59 +174,34 @@ function bulkyAppend(index: number): StoreAppendRequest {
 }
 
 test("a store on a full volume fails typed, keeps its state, and recovers when space returns", {
-    skip: hdiutilAvailable() ? false : "needs macOS hdiutil (Linux loop devices need privileges)",
+    skip: variant.skip,
     timeout: faultSettings.testTimeoutMilliseconds,
 }, async (context) => {
     const root = mkdtempSync(path.join(tmpdir(), "shepherd-enospc-"));
-    const image = path.join(root, "volume.dmg");
-    const mountPoint = path.join(root, "mount");
-    mkdirSync(mountPoint);
-    let attached = false;
+    let volume: Volume | undefined;
     context.after(() => {
-        if (attached) {
-            try {
-                execFileSync("hdiutil", ["detach", mountPoint], { stdio: "ignore" });
-            } catch {
-                execFileSync("hdiutil", ["detach", "-force", mountPoint], { stdio: "ignore" });
-            }
-        }
+        volume?.release();
         rmSync(root, { force: true, recursive: true });
     });
-    execFileSync(
-        "hdiutil",
-        [
-            "create",
-            "-size",
-            `${settings.sizeMegabytes}m`,
-            "-fs",
-            "HFS+",
-            "-volname",
-            "shepherdfault",
-            image,
-        ],
-        { stdio: "ignore" },
-    );
-    execFileSync(
-        "hdiutil",
-        ["attach", image, "-mountpoint", mountPoint, "-nobrowse", "-noverify"],
-        {
-            stdio: "ignore",
-        },
-    );
-    attached = true;
+    volume = variant.mount(root);
+    const { mountPoint } = volume;
 
     // Ballast released later to return space to the volume.
     const ballast = path.join(mountPoint, "ballast.bin");
-    writeFileSync(ballast, new Uint8Array(Math.floor((settings.sizeMegabytes * 1_048_576) / 4)));
+    writeFileSync(ballast, new Uint8Array(Math.floor(volumeBytes / 4)));
     const databasePath = path.join(mountPoint, "trace.sqlite");
     const store = new SQLiteTraceStore(databasePath);
     context.after(() => store.close());
     const outcomes: string[] = [];
 
-    // Fill the volume through the store until one operation fails.
+    // Fill the volume through the store until an append fails. Blob writes can fail first while
+    // appends still commit into write-ahead-log space SQLite already allocated (observed on ext4),
+    // so filling stops only once the append path itself hits the full volume. Every failure on
+    // the way must be typed and leave no partial state; the first failure of each kind is
+    // retried once space returns.
     let index = 0;
-    let firstFailure: { readonly kind: "append" | "blob"; readonly index: number } | undefined;
-    while (firstFailure === undefined) {
+    const failures: { readonly kind: "append" | "blob"; readonly index: number }[] = [];
+    while (!failures.some(({ kind }) => kind === "append")) {
         const kind = index % 2 === 0 ? "append" : "blob";
         const before = store.exportTrace().length;
         try {
@@ -134,8 +210,14 @@ test("a store on a full volume fails typed, keeps its state, and recovers when s
         } catch (error) {
             assert.ok(isSpaceFailure(error), `${kind} failed untyped: ${describeError(error)}`);
             assert.equal(store.exportTrace().length, before);
+            if (kind === "blob") {
+                assert.equal(
+                    store.readBlob(blobIdOf(blobContentFor(seed, "volume", index))),
+                    undefined,
+                );
+            }
             outcomes.push(`fill ${kind} #${index}: ${describeError(error)}`);
-            firstFailure = { index, kind };
+            failures.push({ index, kind });
         }
         index += 1;
     }
@@ -181,8 +263,13 @@ test("a store on a full volume fails typed, keeps its state, and recovers when s
     store.append(pending);
     assert.equal(store.diagnoseAppend(pending.append_intent_id).status, "committed");
     assert.equal(store.putBlob(pendingBlob).blob_id, blobIdOf(pendingBlob));
-    if (firstFailure.kind === "append") store.append(bulkyAppend(firstFailure.index));
-    else store.putBlob(blobContentFor(seed, "volume", firstFailure.index));
+    const firstOfEachKind = failures.filter(
+        (failure, position) => failures.findIndex(({ kind }) => kind === failure.kind) === position,
+    );
+    for (const failure of firstOfEachKind) {
+        if (failure.kind === "append") store.append(bulkyAppend(failure.index));
+        else store.putBlob(blobContentFor(seed, "volume", failure.index));
+    }
     store.collectBlobOrphans({ mode: "delete" });
     assert.deepEqual(inspectHealth(store).issues, []);
     store.exportTrace();

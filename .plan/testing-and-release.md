@@ -328,8 +328,10 @@ Stable release additionally:
 
 ### Enforced gates (from 2.26.0, #179)
 
-Hosted CI is disabled (a 2026-09-23 enablement attempt was blocked by an account billing limit;
-#199), so these gates are local commands:
+Hosted CI is disabled (2026-09-23 enablement attempts were blocked by an account billing limit),
+and by owner decision of 2026-09-23 (#199, D-019) it stays disabled for 1.0: these local commands,
+run on the macOS reference host and in the local Docker Linux lane, are the 1.0 verification
+substitute:
 
 | Gate | Command | Where |
 | --- | --- | --- |
@@ -339,12 +341,14 @@ Hosted CI is disabled (a 2026-09-23 enablement attempt was blocked by an account
 | Downgrade behavior known; every historical store schema migrates forward; recovery (backup, restore, interruption) drills pass (from 2.29.0, #182) | `test/operations/migration-drills.test.ts`, `test/operations/backup-restore.test.ts` | `pnpm test` in `pnpm verify` |
 | No full table scan on hot-path SQL; bounded scale tier; maintenance preserves exports (from 2.30.0, #183) | `test/store/query-plans.test.ts`, `test/store/scale.test.ts`, `test/store/maintenance.test.ts` | `pnpm test` in `pnpm verify` |
 | Kill/restart, disk-full, and corruption outcomes classified complete, retryable, or refused; bounded soak (from 2.32.1, #186) | `test/faults/*.test.ts` | `pnpm test` in `pnpm verify` |
-| Long-duration soak and real-volume ENOSPC (from 2.32.1, #186) | `pnpm test:soak --duration <s>`, `pnpm test:faults:volume` | On demand (outside `verify`) |
-| Public performance report; kernel SLOs on the reference host class (from 2.30.0, #183) | `pnpm check:slo` ([performance report](../docs/performance-report.md)) | `pnpm verify:release` |
+| Long-duration soak and real-volume ENOSPC (from 2.32.1, #186; Linux ext4 loop-image variant from 2.34.0, #199, root and loop devices required) | `pnpm test:soak --duration <s>`, `pnpm test:faults:volume` | On demand (outside `verify`) |
+| Public performance report; kernel SLOs on the reference host class (from 2.30.0, #183) and the `linux-arm64-overlayfs-container` class (from 2.34.0, #199) | `pnpm check:slo` ([performance report](../docs/performance-report.md)) | `pnpm verify:release` |
 | Two clean builds and packs byte-identical | `pnpm release:reproducible-build` | `pnpm verify:release` |
 | SBOM, unsigned provenance, release manifest | `pnpm release:manifest` | `pnpm verify:release` |
 
-Signed provenance, publication, license scanning, security scanning, and docs deployment remain
-owner-owed or open (O-2, O-3 in the [production hardening contract](./production-hardening-contract.md)).
+Signed provenance and publication are waived for 1.0 (1.0 is a private, unpublished source release)
+and hosted security scanning (CodeQL) is waived while the repository is private, by owner decision
+of 2026-09-23 (O-2, O-3 in the [production hardening contract](./production-hardening-contract.md),
+#199); license scanning and docs deployment remain open.
 The compatibility report is the gate's output; the classified change log is
 `spec/compatibility/protocol-changes.json`.

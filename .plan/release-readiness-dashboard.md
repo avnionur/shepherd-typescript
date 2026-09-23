@@ -6,7 +6,10 @@ Docker Linux lane, F-030 and F-031 fixed, F-032 open for the owner's release wor
 moved to #191), and in 2.33.3 for the owner decisions of #191 (a hosted-CI enablement attempt
 blocked by an account billing limit and the workflows disabled again, CodeQL unavailable without
 GitHub Advanced Security, email vulnerability intake, registry name decided, F-032 fixed; remaining
-owner actions moved to #199).
+owner actions moved to #199), and in 2.34.0 for the owner decisions of 2026-09-23 closing #199
+(external review, signing, publication, and name reservation waived for 1.0; local macOS gates and
+the local Docker Linux lane accepted in place of hosted CI; no Windows lane; Linux volume fault
+suite and Linux SLO host class delivered through the local lane).
 Companion to the
 [Phase 11 exit audit](./phase-11-exit-audit.md). It shows every phase epic, every
 [parity matrix](./parity-matrix.md) row, and every [paper coverage](./paper-coverage.md) row with
@@ -39,7 +42,7 @@ Classifications:
 | 8 Coupled checkpoints, rewind, and replay | #21 | Closed 2026-09-14 | [Phase 8 exit audit](./phase-8-exit-audit.md) (2.15.1) | L3 progress |
 | 9 Task-as-value meta-agents | #22 | Closed 2026-09-15 | [Phase 9 exit audit](./phase-9-exit-audit.md) (2.20.1) | L3 documented scope |
 | 10 Research applications | #23 | Closed 2026-09-18 | [Phase 10 exit audit](./phase-10-exit-audit.md) (2.25.1) | L3 research applications, offline scope |
-| 11 Production hardening and 1.0 | #24 | Closed with the close-out (#190, PR #198) after the owner re-scope of 2026-09-19 | [Phase 11 exit audit](./phase-11-exit-audit.md) (2.32.4; F-029 fixed in 2.32.5; [close-out addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331) 2.33.1): in-repo scope complete, including a local Docker Linux lane on Node 24.21.0 and 24.12.0; owner-only items O-1 to O-5 move to #191; [#191 addendum](./phase-11-exit-audit.md#owner-actions-2333) 2.33.3: owner decisions delivered, remainder moved to #199 | L4 release candidate for the in-repo scope; GA no-go until #199 closes |
+| 11 Production hardening and 1.0 | #24 | Closed with the close-out (#190, PR #198) after the owner re-scope of 2026-09-19 | [Phase 11 exit audit](./phase-11-exit-audit.md) (2.32.4; F-029 fixed in 2.32.5; [close-out addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331) 2.33.1): in-repo scope complete, including a local Docker Linux lane on Node 24.21.0 and 24.12.0; owner-only items O-1 to O-5 move to #191; [#191 addendum](./phase-11-exit-audit.md#owner-actions-2333) 2.33.3: owner decisions delivered, remainder moved to #199; #199 closed by owner decision on 2026-09-23 (2.34.0, D-019): O-1, O-2, and O-5 waived for 1.0, O-3 closed by decision with local lanes as the substitute, and the Linux ext4 volume fault suite and `linux-arm64-overlayfs-container` SLO class delivered through the local lane ([2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)) | L4 "1.0" as a private, unpublished source release with the listed waivers |
 
 Source: `gh issue list --state all --label type:epic` on 2026-09-19. Children of #24 (#187, #179
 to #186, #29) are open pending the Phase 11 pull request.
@@ -128,8 +131,8 @@ the [parity matrix](./parity-matrix.md) states the full requirement.
 | Auto placement | Implemented | Phase 4 |
 | Jail placement fails closed | Implemented | [Native jail execution](../docs/native-jail-execution.md) |
 | macOS Seatbelt | Platform-fenced | Real local denial suite on macOS |
-| Linux Landlock/container jail | Platform-fenced | The native jail tests (live Landlock probe with a real denial, runner admission, jailed granted capture at the durable task-world seam) ran and passed unprivileged in the local Docker Linux lane (Landlock ABI 8, 2.33.1, [addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331)); no hosted or bare-metal Linux run (O-3, #191) |
-| Windows/WSL policy | Classified unsupported | Native Windows unsupported; WSL uses Landlock only when its probe and denial suite pass |
+| Linux Landlock/container jail | Platform-fenced | The native jail tests (live Landlock probe with a real denial, runner admission, jailed granted capture at the durable task-world seam) ran and passed unprivileged in the local Docker Linux lane (Landlock ABI 8, 2.33.1, [addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331)); no hosted or bare-metal Linux run (O-3 closed by owner decision, #199) |
+| Windows/WSL policy | Classified unsupported | Native Windows unsupported; WSL uses Landlock only when its probe and denial suite pass; no Windows verification lane for 1.0 (owner decision of 2026-09-23, #199) |
 | Capability attenuation/delegation | Implemented | Phase 9 ([delegated authority](../docs/delegated-authority.md)) |
 | Irreversible-effect approval gate | Implemented | Phase 7 ([supervision control](../docs/supervision-control.md)) |
 

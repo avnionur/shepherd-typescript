@@ -1,24 +1,31 @@
-# 1.0 release notes (release candidate)
+# 1.0 release notes
 
-Status: release candidate for the in-repo scope, package 2.32.5, 2026-09-19; the F-016 fix in
+Status: 1.0, a private, unpublished source release with the waivers listed below, by owner
+decision of 2026-09-23 ([#199](https://github.com/avnionur/shepherd-typescript/issues/199)),
+recorded in package 2.34.0. Before that: release candidate for the in-repo scope, package 2.32.5,
+2026-09-19; the F-016 fix in
 2.33.0 (#189) and the Phase 11 close-out in 2.33.1 (#190: local Linux lane, F-030 and F-031 fixed,
 owner actions tracked in #191), and the owner decisions of #191 in 2.33.3 (a hosted-CI
 enablement attempt blocked by an account billing limit and the workflows disabled again, email
-vulnerability intake, registry name decided, F-032 fixed; remaining owner actions in #199) are noted below. The evidence and the
-go/no-go verdict are in the [Phase 11 exit audit](../.plan/phase-11-exit-audit.md); digests are in
+vulnerability intake, registry name decided, F-032 fixed; remaining owner actions in #199), and the
+owner decisions of #199 in 2.34.0 (waivers, local lanes as the verification substitute, Linux
+volume fault suite and Linux SLO host class) are noted below. The evidence and the verdict are in the [Phase 11 exit audit](../.plan/phase-11-exit-audit.md); digests are in
 the [release-candidate manifest](../.plan/release-candidate-manifest.md).
 
 ## What "1.0" means
 
 "1.0" names the L4 operational-maturity milestone (decision D-016 in
 [decisions and risks](../.plan/decisions-and-risks.md)), not a package version. The package keeps
-Semantic Versioning from its current version: this candidate is `@avnionur/shepherd-typescript`
-2.32.5, and reaching 1.0 does not reset or reserve a version number. The package is
-`"private": true` and has not been published to any registry.
+Semantic Versioning from its current version: the release candidate was
+`@avnionur/shepherd-typescript` 2.32.5, 1.0 is recorded at 2.34.0, and reaching 1.0 does not
+reset or reserve a version number. The package is `"private": true` and has not been published to
+any registry.
 
-Verdict: **release candidate ready for the in-repo scope; 1.0 general availability is no-go until
-the owner-owed items below close (#199).** The internal findings register has no unresolved critical or
-high finding.
+Verdict: **1.0 as a private, unpublished source release, with the owner waivers listed under
+[Waivers](#waivers-owner-decisions-of-2026-09-23).** The owner decided on 2026-09-23 (#199) to
+accept the in-repo scope with those waivers instead of waiting for an external review, signing,
+publication, and hosted CI. The internal findings register has no unresolved critical or high
+finding and no open or owner-owed finding.
 
 ## What is delivered
 
@@ -41,7 +48,9 @@ application surfaces:
 
 ## Known limits
 
-- **No external security review.** The review is internal and has no open finding. F-032 (Low:
+- **No external security review.** None has been performed; the owner waived it for 1.0 (O-1,
+  #199). The review is internal (implementing agents plus one independent internal reviewer) and
+  has no open finding. F-032 (Low:
   the packed file set depended on the npm version) is fixed in 2.33.3 by anchored, literal
   `files` entries checked in `pnpm verify`. F-016 (Low;
   acceptance of values nested roughly 2,000 to 8,000 levels deep depended on stack depth and JIT
@@ -51,20 +60,29 @@ application surfaces:
   closed with `database is locked` or a migration error), found by the audit, is fixed in 2.32.5.
   Accepted residuals are listed in the [threat model](./threat-model.md#residual-risks).
 - **Unsigned and unpublished.** No signing identity, Sigstore attestation, or npm publication;
-  `release.yml` has never run.
-- **No hosted CI.** Workflows are present and disabled. An attempt on 2026-09-23 to enable `CI`
-  and `Dependency Audit` was blocked by an account billing limit (no job started), so both were
-  disabled again; CodeQL needs GitHub Advanced Security, which the private repository does not
-  have. Every gate is enforced by the local `pnpm verify` and `pnpm verify:release` commands.
+  `release.yml` has never run. Waived for 1.0 (O-2, O-5, #199; F-010 accepted).
+- **No hosted CI.** Workflows are present and disabled. Attempts on 2026-09-23 to run `CI`
+  (#191, and the #199 recheck) were blocked by an account billing limit (no job started), so the
+  workflows were disabled again; CodeQL needs GitHub Advanced Security, which the private
+  repository does not have. By owner decision (O-3, #199; F-008 accepted) every gate is enforced by
+  the local `pnpm verify`, `pnpm verify:release`, and `pnpm build:desktop` commands plus the local
+  Docker Linux lane.
 - **Platforms.** Verified on macOS arm64 APFS and, in 2.33.1, in a local Docker Linux lane (Debian
   bookworm arm64, Node 24.21.0 and the 24.12.0 minimum): every `pnpm verify` gate, runtime
   boundaries, the extended fuzz run, the unprivileged Landlock jail tests, and the privileged
   carrier suite (copy, clone, overlay on loopback XFS). The lane found and fixed F-030 (fault-suite
   file-size limit) and F-031 (`fs.rmSync` keeps dangling symbolic links on Node 24.12.x and
-  24.13.x). No hosted Linux run exists, the volume fault suite is macOS-only, and Linux has no SLO
-  host class. Native Windows is unsupported.
+  24.13.x). No hosted Linux run exists. In 2.34.0 the real-volume fault suite gained a Linux
+  variant (16 MiB ext4 loop image; passed as root in a privileged `node:24.21.0-bookworm`
+  container, skips with an explicit reason without root or loop devices)
+  ([addendum](../.plan/phase-11-exit-audit.md#linux-volume-fault-suite)).
+  Native Windows is unsupported and has no verification lane for 1.0.
   The clone carrier needs a host toolchain that can link its helper.
-- **Performance.** SLO budgets hold only for the macOS arm64 APFS reference host class.
+- **Performance.** SLO budgets apply only to host classes with a recorded benchmark: the macOS
+  arm64 APFS reference host class and, from 2.34.0, `linux-arm64-overlayfs-container`, measured in
+  a Docker container in OrbStack's Linux VM on the same machine
+  ([performance report](./performance-report.md#linux-container-host-class)). Bare-metal Linux,
+  x86-64, and other hosts are unmeasured.
 - **Providers.** Only the deterministic static provider ships; no live provider adapter and no
   streaming event normalization.
 - **CLI.** `package init` refuses honestly; fenced `run start` is disabled by default; dynamic
@@ -82,20 +100,25 @@ application surfaces:
 The full row-by-row status is the
 [release-readiness dashboard](../.plan/release-readiness-dashboard.md).
 
-## Owner-owed before general availability
+## Waivers (owner decisions of 2026-09-23)
 
-| ID | Item | State (2.33.3) and evidence still owed |
+Issue [#199](https://github.com/avnionur/shepherd-typescript/issues/199) was closed by these owner
+decisions (decision D-019 in [decisions and risks](../.plan/decisions-and-risks.md)). A recheck
+the same day found the repository still private, npm not authenticated, and hosted `CI` run
+[35868089999](https://github.com/avnionur/shepherd-typescript/actions/runs/35868089999) again
+started no job because of the Actions billing or spending limit; `CI` was disabled again.
+
+| ID | Item | Decision |
 | --- | --- | --- |
-| O-1 | External security review | Deferred to #199: reviewer, scope, reviewed commit, report, and new findings entered in the register |
-| O-2 | Signing identity, attestation, npm publication (drop `"private": true`) | Deferred to #199: a `release.yml` run with a verified attestation against the tarball digest and the published version ([owner release runbook](./release-integrity.md#owner-release-runbook)) |
-| O-3 | Hosted CI and cross-OS lanes | Enablement attempted and blocked by an account billing limit; workflows disabled again. Deferred to #199: green hosted runs, CodeQL, a Windows decision, a Linux volume-fault variant and SLO host class |
-| O-4 | Vulnerability intake | Done: private email while the repository is private ([SECURITY.md](../SECURITY.md)); the advisory form after it is public is deferred to #199 |
-| O-5 | Registry name | Decided: `@avnionur/shepherd-typescript`; reserved by the first publish (#199) |
+| O-1 | External security review | Waived for 1.0. No external review has been performed; the internal review is accepted in its place |
+| O-2 | Signing identity, attestation, npm publication | Waived for 1.0: `"private": true` stays, nothing is signed or published; the [owner release runbook](./release-integrity.md#owner-release-runbook) is the procedure if publication happens later (F-010 accepted) |
+| O-3 | Hosted CI and cross-OS lanes | Closed by decision: the local macOS gates plus the local Docker Linux lane are the 1.0 verification substitute; hosted CI stays disabled; CodeQL is waived while the repository is private; no Windows lane (native Windows unsupported) (F-008 accepted) |
+| O-4 | Vulnerability intake | Email intake in [SECURITY.md](../SECURITY.md) stands; the advisory form is waived while the repository is private |
+| O-5 | Registry name | `@avnionur/shepherd-typescript` decided; not reserved on npm |
 
-The register is in the [production hardening contract](../.plan/production-hardening-contract.md#owner-owed-register);
-the owner decisions of 2026-09-23 were delivered by
-[#191](https://github.com/avnionur/shepherd-typescript/issues/191) and the remaining actions are
-tracked in [#199](https://github.com/avnionur/shepherd-typescript/issues/199).
+If the repository ever becomes public, enabling CodeQL and private vulnerability reporting is the
+owner's follow-up. The register is in the
+[production hardening contract](../.plan/production-hardening-contract.md#owner-owed-register).
 
 ## Upgrade and migration
 

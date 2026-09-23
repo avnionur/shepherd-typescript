@@ -1,7 +1,7 @@
 # Performance report
 
-Status: normative for 2.30.0 (Phase 11 slice 6, #183). Every number here was measured by this
-repository on the reference host below. No number is inherited from the Python implementation, the
+Status: normative for 2.30.0 (Phase 11 slice 6, #183); the Linux container host class is added by
+#199 (2.34.0). Every number here was measured by this repository on the hosts below. No number is inherited from the Python implementation, the
 paper, or any other project, and no number is a claim about another host.
 
 ## Reference host
@@ -15,10 +15,9 @@ paper, or any other project, and no number is a claim about another host.
 | Runtime | Node.js 24.17.0, SQLite 3.53.0 (bundled `node:sqlite`) |
 | Package | 2.30.0 |
 
-Linux, Windows, other filesystems, and other macOS machines are not measured; running the benchmark
-there is owner-owed (O-3 in the [hardening contract](../.plan/production-hardening-contract.md),
-#191). In the local Docker Linux lane (2.33.1) `pnpm check:slo` reports "skipped; no host class
-matches linux/arm64", as designed.
+A second host class, `linux-arm64-overlayfs-container`, is measured in a Linux container on this
+same machine (see [Linux container host class](#linux-container-host-class)). Bare-metal Linux,
+x86-64, Windows, other filesystems, and other macOS machines are not measured.
 
 ## Kernel benchmark
 
@@ -65,11 +64,12 @@ Observations from these measurements:
 
 ## SLO check
 
-[`config/performance-slo.config.json`](../config/performance-slo.config.json) defines budgets only
-for the `macos-arm64-apfs` class (selected by platform, architecture, and the `statfs` type of the
-temporary directory). Each latency budget bounds p95 at three times the worse p95 of two runs on
-2026-09-18, rounded up; append throughput bounds the median at one third of the lower median,
-rounded down:
+[`config/performance-slo.config.json`](../config/performance-slo.config.json) defines budgets per
+host class, selected by platform, architecture, and the `statfs` type of the temporary directory.
+Each latency budget bounds p95 at three times the worse p95 of two runs on the class's measurement
+host, rounded up; append throughput bounds the median at one third of the lower median, rounded
+down. The `macos-arm64-apfs` budgets (runs of 2026-09-18) are below; the
+`linux-arm64-overlayfs-container` budgets are in [their section](#linux-container-host-class).
 
 | Metric | Budget |
 | --- | --- |
@@ -90,6 +90,56 @@ committed artifact to record the current benchmark configuration digest, measure
 on any budget miss. It runs in `pnpm verify:release`, not in `pnpm verify`, because timing is
 host-dependent. On a host that matches no class it prints `SLO: skipped` and passes; budgets for
 such hosts do not exist yet.
+
+## Linux container host class
+
+`linux-arm64-overlayfs-container` matches `platform` `linux`, `arch` `arm64`, and a temporary
+directory on overlayfs (`statfs` type `0x794c7630`, 2035054128), which is what a container's own
+filesystem reports. It was measured on 2026-09-23 (#199) in a `node:24.21.0-bookworm` container
+(Debian 12, Node.js 24.21.0, bundled SQLite 3.53.4) run by Docker 29.4.0 in OrbStack's Linux
+virtual machine (kernel `7.0.14-orbstack-00380-ga7e0a2dc9535`, aarch64, 14 CPUs, 16 GiB) on the
+macOS arm64 reference host above, as the image's unprivileged `node` user with `TMPDIR` on the
+container filesystem. It is not a bare-metal Linux measurement: virtualization and overlayfs are
+part of every number. Any linux/arm64 host whose temporary directory is on overlayfs matches the
+class, but the budgets are evidence only for this measurement host.
+
+Budgets follow the same rule as above from two `pnpm bench:kernel` runs on 2026-09-23 (worse p95
+times three, rounded up to two significant figures; lower median throughput divided by three,
+rounded down to two significant figures):
+
+| Metric | Worse p95 (or lower median) of two runs | Budget |
+| --- | --- | --- |
+| `append_latency_ms` | 1.876 | p95 at most 5.7 |
+| `append_throughput_records_per_second` | 838.21 | median at least 270 |
+| `cut_resolve_ms` | 99.369 | p95 at most 300 |
+| `slice_read_ms` | 11.5 | p95 at most 35 |
+| `subscription_pull_ms` | 10.855 | p95 at most 33 |
+| `export_ms` | 1380.71 | p95 at most 4200 |
+| `import_ms` | 1250.367 | p95 at most 3800 |
+| `verify_ms` | 805.498 | p95 at most 2500 |
+| `gc_inspect_ms` | 0.961 | p95 at most 2.9 |
+| `cli_startup_ms` | 79.096 | p95 at most 240 |
+
+A third run wrote
+[`docs/generated/benchmarks/linux-arm64-overlayfs-container.json`](./generated/benchmarks/linux-arm64-overlayfs-container.json)
+(recorded 2026-09-23, same configuration digest as the macOS artifact, package 2.33.3):
+
+| Metric | Unit | Median | p95 | Std dev | Min | Max |
+| --- | --- | --- | --- | --- | --- | --- |
+| `append_latency_ms` | ms | 1.539 | 1.801 | 0.21 | 1.02 | 1.801 |
+| `append_throughput_records_per_second` | records/s | 936.108 | 977.768 | 100.3 | 628.534 | 977.768 |
+| `cut_resolve_ms` | ms | 89.635 | 98.067 | 3.376 | 88.331 | 98.067 |
+| `slice_read_ms` | ms | 8.155 | 10.759 | 1.11 | 7.927 | 10.759 |
+| `subscription_pull_ms` | ms | 8.736 | 10.654 | 0.797 | 8.389 | 10.654 |
+| `export_ms` | ms | 1365.679 | 1515.523 | 45.647 | 1343.644 | 1515.523 |
+| `import_ms` | ms | 1184.661 | 1320.139 | 53.942 | 1144.665 | 1320.139 |
+| `verify_ms` | ms | 788.536 | 882.645 | 44.735 | 764.803 | 882.645 |
+| `gc_inspect_ms` | ms | 0.895 | 1.47 | 0.18 | 0.833 | 1.47 |
+| `cli_startup_ms` | ms | 71.28 | 75.746 | 2.637 | 68.433 | 75.746 |
+
+Durable appends are several times slower than on APFS in this virtual machine (synchronous `FULL`
+reaches the VM's virtual disk), import is faster, and `gc_inspect_ms` is lower. `pnpm check:slo` in
+the same container then passed every budget instead of reporting `SLO: skipped`.
 
 ## Scale tier
 
@@ -142,6 +192,10 @@ pnpm bench:kernel     # rewrites docs/generated/benchmarks/<host-class>.json and
 pnpm check:slo        # fresh measurement against the budgets; part of pnpm verify:release
 pnpm bench:carriers   # carrier storage measurement, printed as JSON
 ```
+
+For the Linux container class, run the same two commands as a non-root user inside a Linux arm64
+container whose `TMPDIR` is on the container filesystem (overlayfs), after `pnpm install
+--frozen-lockfile`.
 
 Changing `config/kernel-benchmark.config.json` changes the configuration digest, so `check:slo`
 fails until `pnpm bench:kernel` records a new artifact.

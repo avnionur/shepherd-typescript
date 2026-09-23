@@ -3,8 +3,8 @@
         "digest": "sha256:ff21fca205063b4f79eaaa69e14587efda104a7d6c1a870963bcbf68dbdb83ef",
         "entries": 6
     },
-    "packageVersion": "2.33.3",
-    "previousVersion": "2.33.2",
+    "packageVersion": "2.34.0",
+    "previousVersion": "2.33.3",
     "surface": {
         "commandOptions": {
             "demo write": {},

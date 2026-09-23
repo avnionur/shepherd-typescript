@@ -1,0 +1,237 @@
+{
+    "configuration": {
+        "appendThroughputAppends": 100,
+        "cliStartup": {
+            "arguments": ["--help"],
+            "entry": "dist/src/cli/main.js"
+        },
+        "dataset": {
+            "batchRecords": 200,
+            "blobBytes": 1024,
+            "blobs": 40,
+            "cutsPerOwner": 2,
+            "deepChainRecords": 2000,
+            "orphanBlobs": 20,
+            "owners": 40,
+            "recordsPerOwner": 200,
+            "temporaryFiles": 4
+        },
+        "naming": {
+            "prefix": "bench:",
+            "recordPaddingCharacters": 256,
+            "schemaRef": "example.kernel-benchmark.v1"
+        },
+        "resultDirectory": "docs/generated/benchmarks",
+        "resultFormat": "shepherd.kernel-benchmark",
+        "resultFormatVersion": 1,
+        "sampleCount": 12,
+        "temporaryDirectoryPrefix": "shepherd-kernel-bench-",
+        "warmupIterations": 2
+    },
+    "configuration_digest": "sha256:f618cf1c0eba158e75c8a189a8a37688beefd419f9fc1f01f211b64967e53bb6",
+    "environment": {
+        "arch": "arm64",
+        "cpu_count": 14,
+        "cpu_model": "unknown",
+        "filesystem_type": 2035054128,
+        "node": "v24.21.0",
+        "os_release": "7.0.14-orbstack-00380-ga7e0a2dc9535",
+        "package_version": "2.33.3",
+        "platform": "linux",
+        "sqlite_version": "3.53.4",
+        "total_memory_bytes": 16818978816
+    },
+    "format": "shepherd.kernel-benchmark",
+    "format_version": 1,
+    "host_class": "linux-arm64-overlayfs-container",
+    "metrics": {
+        "append_latency_ms": {
+            "better": "lower",
+            "description": "one single-record append committed with synchronous FULL durability",
+            "unit": "ms",
+            "samples": [
+                1.801, 1.559, 1.02, 1.519, 1.373, 1.273, 1.616, 1.667, 1.479, 1.569, 1.417, 1.703
+            ],
+            "summary": {
+                "count": 12,
+                "max": 1.801,
+                "mean": 1.5,
+                "median": 1.539,
+                "min": 1.02,
+                "p95": 1.801,
+                "stddev": 0.21,
+                "variance": 0.044
+            }
+        },
+        "append_throughput_records_per_second": {
+            "better": "higher",
+            "description": "sequential single-record appends per second over one sample batch",
+            "unit": "records/s",
+            "samples": [
+                628.534, 973.214, 968.338, 939.107, 826.952, 976.364, 933.109, 889.46, 977.768,
+                929.854, 960.138, 848.111
+            ],
+            "summary": {
+                "count": 12,
+                "max": 977.768,
+                "mean": 904.246,
+                "median": 936.108,
+                "min": 628.534,
+                "p95": 977.768,
+                "stddev": 100.3,
+                "variance": 10060.013
+            }
+        },
+        "cut_resolve_ms": {
+            "better": "lower",
+            "description": "resolveCut of the deep-chain owner's last published cut",
+            "unit": "ms",
+            "samples": [
+                89.322, 98.067, 97.627, 92.159, 89.889, 89.524, 88.374, 88.331, 89.539, 88.668,
+                91.9, 89.731
+            ],
+            "summary": {
+                "count": 12,
+                "max": 98.067,
+                "mean": 91.094,
+                "median": 89.635,
+                "min": 88.331,
+                "p95": 98.067,
+                "stddev": 3.376,
+                "variance": 11.394
+            }
+        },
+        "slice_read_ms": {
+            "better": "lower",
+            "description": "readOwnerPrefix of one whole regular owner path",
+            "unit": "ms",
+            "samples": [
+                8.038, 8.045, 10.759, 8.461, 8.147, 8.11, 10.617, 8.4, 8.162, 8.103, 7.927, 10.368
+            ],
+            "summary": {
+                "count": 12,
+                "max": 10.759,
+                "mean": 8.761,
+                "median": 8.155,
+                "min": 7.927,
+                "p95": 10.759,
+                "stddev": 1.11,
+                "variance": 1.233
+            }
+        },
+        "subscription_pull_ms": {
+            "better": "lower",
+            "description": "ephemeral subscription pulling one whole regular owner path from origin",
+            "unit": "ms",
+            "samples": [
+                8.841, 10.654, 8.726, 8.389, 8.746, 10.357, 8.794, 8.71, 8.642, 10.113, 8.601, 8.453
+            ],
+            "summary": {
+                "count": 12,
+                "max": 10.654,
+                "mean": 9.085,
+                "median": 8.736,
+                "min": 8.389,
+                "p95": 10.654,
+                "stddev": 0.797,
+                "variance": 0.635
+            }
+        },
+        "export_ms": {
+            "better": "lower",
+            "description": "exportTrace of the whole dataset",
+            "unit": "ms",
+            "samples": [
+                1515.523, 1398.617, 1386.095, 1360.818, 1353.324, 1361.389, 1369.968, 1384.054,
+                1353.3, 1356.1, 1375.384, 1343.644
+            ],
+            "summary": {
+                "count": 12,
+                "max": 1515.523,
+                "mean": 1379.851,
+                "median": 1365.679,
+                "min": 1343.644,
+                "p95": 1515.523,
+                "stddev": 45.647,
+                "variance": 2083.648
+            }
+        },
+        "import_ms": {
+            "better": "lower",
+            "description": "importTrace of the dataset archive into a fresh file store",
+            "unit": "ms",
+            "samples": [
+                1161.296, 1169.718, 1160.47, 1168.247, 1151.345, 1274.027, 1199.603, 1222.197,
+                1201.473, 1144.665, 1234.476, 1320.139
+            ],
+            "summary": {
+                "count": 12,
+                "max": 1320.139,
+                "mean": 1200.638,
+                "median": 1184.661,
+                "min": 1144.665,
+                "p95": 1320.139,
+                "stddev": 53.942,
+                "variance": 2909.751
+            }
+        },
+        "verify_ms": {
+            "better": "lower",
+            "description": "verifyIntegrity of the whole store",
+            "unit": "ms",
+            "samples": [
+                881.246, 882.645, 858.998, 835.071, 796.136, 780.936, 769.05, 767.696, 764.803,
+                800.892, 778.499, 777.308
+            ],
+            "summary": {
+                "count": 12,
+                "max": 882.645,
+                "mean": 807.773,
+                "median": 788.536,
+                "min": 764.803,
+                "p95": 882.645,
+                "stddev": 44.735,
+                "variance": 2001.219
+            }
+        },
+        "gc_inspect_ms": {
+            "better": "lower",
+            "description": "collectBlobOrphans inspection, including registered-blob verification",
+            "unit": "ms",
+            "samples": [
+                0.917, 0.953, 0.884, 0.883, 0.905, 1.036, 1.132, 1.47, 0.874, 0.837, 0.875, 0.833
+            ],
+            "summary": {
+                "count": 12,
+                "max": 1.47,
+                "mean": 0.967,
+                "median": 0.895,
+                "min": 0.833,
+                "p95": 1.47,
+                "stddev": 0.18,
+                "variance": 0.032
+            }
+        },
+        "cli_startup_ms": {
+            "better": "lower",
+            "description": "wall time of one packaged CLI process printing its help",
+            "unit": "ms",
+            "samples": [
+                75.362, 75.746, 73.266, 73.18, 74.833, 69.904, 69.203, 70.56, 68.543, 68.433,
+                71.826, 70.734
+            ],
+            "summary": {
+                "count": 12,
+                "max": 75.746,
+                "mean": 71.799,
+                "median": 71.28,
+                "min": 68.433,
+                "p95": 75.746,
+                "stddev": 2.637,
+                "variance": 6.952
+            }
+        }
+    },
+    "recorded_on": "2026-09-23",
+    "warmup_iterations": 2
+}

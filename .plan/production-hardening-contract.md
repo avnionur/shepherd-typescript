@@ -2,7 +2,8 @@
 
 Status: TypeScript contract, Phase 11 slice 1 (#187), 2.25.2; owner-owed register linked to #191
 and narrowed by the Linux verification lane (#190) in 2.33.1; owner decisions of 2026-09-23
-recorded and the remainder moved to #199 in 2.33.3. Epic: #24. Normative behavior lives
+recorded and the remainder moved to #199 in 2.33.3; O-1 to O-5 closed by owner decision or waived
+for 1.0 on 2026-09-23 (#199) in 2.34.0. Epic: #24. Normative behavior lives
 in `docs/`; this page records the slice map, per-slice non-claims, and the work only the repository
 owner can do. The [threat model](../docs/threat-model.md) and the
 [internal security review](./security-review.md) are the security inputs every later slice consumes.
@@ -203,7 +204,7 @@ Delivered in 2.29.0. Facts:
 
 Goal: semantics-preserving maintenance, no full scans on hot paths, reproducible benchmarks and an
 SLO check in `verify:release`. Non-claims: SLOs hold only for the reference host class (macOS arm64
-APFS); other hosts are owner-owed (O-3).
+APFS); other hosts are owner-owed (O-3; closed by owner decision in 2.34.0, #199).
 
 Delivered in 2.30.0. Facts:
 
@@ -246,7 +247,8 @@ are Low and open for #29.
 
 Goal: kill/restart, disk-full, and corruption outcomes classified as complete, retryable, or
 refused; one recorded soak. Non-claims: real-volume ENOSPC is opt-in; Linux volume and jail
-variants are owner-owed (O-3).
+variants are owner-owed (O-3; Linux volume variant delivered and O-3 closed by owner decision in
+2.34.0, #199).
 
 Delivered in 2.32.1 (PATCH: fixes and test suites, no public surface). `test/faults/` adds seeded
 `SIGKILL` of a looping child writer during append, blob put, cut publication, import, backup, and
@@ -283,13 +285,19 @@ worktree blobs in the runtime, so no repository clean or process filter runs dur
 
 ## Phase non-claims
 
-- No external security review has been performed; the review in this phase is internal (O-1).
-- No signing identity, Sigstore attestation, or npm publication; the package is private and
-  `release.yml` is never run by an agent (O-2).
-- Hosted CI is disabled (a 2026-09-23 enablement attempt was blocked by an account billing limit);
-  Linux is verified by a local Docker lane only, and Windows and privileged-jail hosted lanes are
-  unverified (O-3, #199).
-- SLOs apply only to the reference host class.
+- No external security review has been performed; the review in this phase is internal
+  (implementing agents plus one independent internal reviewer). The owner waived the external
+  review for 1.0 on 2026-09-23 (O-1, #199).
+- No signing identity, Sigstore attestation, or npm publication; the package is `"private": true`
+  and `release.yml` has never run. 1.0 is a private, unpublished source release by owner decision
+  of 2026-09-23 (O-2, O-5, #199).
+- Hosted CI is disabled and no hosted run has passed (enablement attempts on 2026-09-23 were
+  blocked by the account's Actions billing or spending limit). By owner decision of 2026-09-23
+  (O-3, #199) the local macOS gates and the local Docker Linux lane are the 1.0 verification
+  substitute; there is no Windows lane and no hosted privileged-jail lane.
+- SLOs apply only to the host classes with a recorded benchmark: the macOS arm64 APFS reference
+  host and, from 2.34.0, `linux-arm64-overlayfs-container` (a container in OrbStack's Linux VM on
+  the same machine; not bare-metal, not x86-64).
 - Open parity rows remain open: live provider adapters, streaming provider normalization, run start
   and package init refusals, native Windows (unsupported), Core-0H activation, and the external Lean
   build.
@@ -306,12 +314,18 @@ with the Phase 11 close-out (#190); the
 the local Linux lane evidence that narrows O-3. The owner's decisions of 2026-09-23 and the in-repo
 work for #191 are in the [#191 addendum](./phase-11-exit-audit.md#owner-actions-2333); every
 remaining owner action moved to
-[#199](https://github.com/avnionur/shepherd-typescript/issues/199).
+[#199](https://github.com/avnionur/shepherd-typescript/issues/199). On 2026-09-23 the owner closed
+#199 by decision: every row below is closed by decision or waived for 1.0, and 1.0 is a private,
+unpublished source release. The waivers are decision D-019 in
+[decisions and risks](./decisions-and-risks.md); the in-repo Linux work of #199 (a Linux variant of
+the volume fault suite and a Linux SLO host class, both from the local Docker lane) was delivered
+in 2.34.0 and is recorded in the
+[2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340).
 
-| ID | Item | Why an agent cannot do it | In-repo preparation | Status (2.33.3, 2026-09-23) | Evidence still owed (#199) |
+| ID | Item | Why an agent cannot do it | In-repo preparation | Status (2026-09-23, #199) | Owner follow-up |
 | --- | --- | --- | --- | --- | --- |
-| O-1 | External security review | Requires an independent reviewer and contract; an agent reviewing its own work is not independent | [Threat model](../docs/threat-model.md), [findings register and reviewer packet](./security-review.md#external-reviewer-packet) | Deferred to #199 | Reviewer identity, scope, commit reviewed, report or summary, and each new finding entered in the register with an owning issue |
-| O-2 | Signing identity, attestation, npm publish | Requires registry credentials, an OIDC-capable hosted workflow, and a decision to drop `"private": true` | Unsigned provenance statement, SBOM, reproducible-build check, and `release.yml` from #179; packed file set made npm-version independent and checked in `pnpm verify` (F-032 fixed, 2.33.3); [owner release runbook](../docs/release-integrity.md#owner-release-runbook) | Deferred to #199; the package stays `"private": true` | A run of `release.yml` with attestation, the published version, and a verified provenance check against the tarball digest |
-| O-3 | Enable hosted CI and cross-OS lanes | Agents cannot change repository settings, billing, or spending limits, or provide hosted, Windows, or dedicated Linux hosts | `ci.yml`, `codeql.yml`, `dependency-review.yml`; Linux carrier script `pnpm test:carriers:linux`; `pnpm test:runtime-boundaries`. Local Docker Linux lane (2.33.1, #190): full `pnpm verify` on Node 24.21.0 and 24.12.0, `pnpm test:runtime-boundaries`, extended `pnpm fuzz`, and the privileged `pnpm test:carriers:linux` pass ([addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331)) | Attempted and deferred: on 2026-09-23 the owner enabled `CI` and `Dependency Audit`; the dispatched `CI` run on `main` ([35829571781](https://github.com/avnionur/shepherd-typescript/actions/runs/35829571781)) started no job on any runner because of an account billing or spending-limit restriction, and the owner disabled both workflows again. `CodeQL` was not enabled: code scanning on a private repository needs GitHub Advanced Security, which is unavailable. The local Docker Linux lane remains the Linux evidence | Green hosted `CI` runs on Linux and macOS linked from the audit (after the billing limit is resolved); CodeQL (after the repository is public or GitHub Advanced Security is available); the Windows lane decision (native Windows is unsupported but `ci.yml` has a Windows runner); a Linux variant of the volume fault suite; a Linux SLO host class for `pnpm check:slo` |
-| O-4 | Vulnerability intake | The advisory form is a repository setting that is unavailable while the repository is private | [SECURITY.md](../SECURITY.md) private email intake; [incident response](../docs/incident-response.md) | Done by documented alternative: email to the owner's address in `SECURITY.md` while private (F-009 resolved) | Enable private vulnerability reporting when the repository becomes public |
-| O-5 | Registry name | Reservation succeeds only by publishing under an owner account | D-011 names `@avnionur/shepherd-typescript` | Decided: `@avnionur/shepherd-typescript` (the `package.json` name); an unscoped `shepherd-ts` package is not pursued (`shepherd-ts` stays the CLI name) | The first publish (O-2) reserves the name |
+| O-1 | External security review | Requires an independent reviewer and contract; an agent reviewing its own work is not independent | [Threat model](../docs/threat-model.md), [findings register and reviewer packet](./security-review.md#external-reviewer-packet) | Waived for 1.0 by owner decision (2026-09-23, #199). No external security review has been performed. The internal review (implementing agents plus one independent internal reviewer, [security review](./security-review.md)) is accepted in its place | None for 1.0; the reviewer packet stays available |
+| O-2 | Signing identity, attestation, npm publish | Requires registry credentials, an OIDC-capable hosted workflow, and a decision to drop `"private": true` | Unsigned provenance statement, SBOM, reproducible-build check, and `release.yml` from #179; packed file set made npm-version independent and checked in `pnpm verify` (F-032 fixed, 2.33.3); [owner release runbook](../docs/release-integrity.md#owner-release-runbook) | Waived for 1.0 by owner decision (2026-09-23, #199): 1.0 is a private, unpublished source release; `"private": true` stays, nothing is signed or published, and `release.yml` has not run. F-010 accepted by owner decision | If publication happens later, the [owner release runbook](../docs/release-integrity.md#owner-release-runbook) is the procedure |
+| O-3 | Enable hosted CI and cross-OS lanes | Agents cannot change repository settings, billing, or spending limits, or provide hosted, Windows, or dedicated Linux hosts | `ci.yml`, `codeql.yml`, `dependency-review.yml`; Linux carrier script `pnpm test:carriers:linux`; `pnpm test:runtime-boundaries`. Local Docker Linux lane (2.33.1, #190): full `pnpm verify` on Node 24.21.0 and 24.12.0, `pnpm test:runtime-boundaries`, extended `pnpm fuzz`, and the privileged `pnpm test:carriers:linux` pass ([addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331)); a Linux variant of the volume fault suite and a Linux SLO host class from the same lane delivered in 2.34.0: `pnpm test:faults:volume` on an ext4 loop image as root in a privileged container and the `linux-arm64-overlayfs-container` class for `pnpm check:slo` ([addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)) | Closed by owner decision (2026-09-23, #199). History: the 2026-09-23 `CI` run [35829571781](https://github.com/avnionur/shepherd-typescript/actions/runs/35829571781) (#191) and the recheck run [35868089999](https://github.com/avnionur/shepherd-typescript/actions/runs/35868089999) (#199) started no job because of the Actions billing or spending limit, and `CI` was disabled again each time. Decision: the local macOS gates (`pnpm verify`, `pnpm verify:release`, `pnpm build:desktop`) plus the local Docker Linux lane are the 1.0 verification substitute, and hosted CI stays disabled; CodeQL (which needs GitHub Advanced Security while the repository is private) is waived while private; no Windows lane for 1.0 (`windows-latest` removed from the `ci.yml` matrix; native Windows stays unsupported). F-008 accepted by owner decision | If the repository becomes public, enabling CodeQL is the owner's follow-up |
+| O-4 | Vulnerability intake | The advisory form is a repository setting that is unavailable while the repository is private | [SECURITY.md](../SECURITY.md) private email intake; [incident response](../docs/incident-response.md) | Done by documented alternative (2.33.3, F-009 resolved); the advisory form is waived while the repository stays private (owner decision 2026-09-23, #199). The email intake in `SECURITY.md` stands | If the repository becomes public, enabling private vulnerability reporting is the owner's follow-up |
+| O-5 | Registry name | Reservation succeeds only by publishing under an owner account | D-011 names `@avnionur/shepherd-typescript` | Name decided (`@avnionur/shepherd-typescript`, 2.33.3; `shepherd-ts` stays the CLI name); reservation waived for 1.0 by owner decision (2026-09-23, #199): the name is not reserved on npm | A first publish, if it happens, reserves the name |

@@ -1,7 +1,7 @@
 # Phase 11 production hardening and 1.0 readiness audit
 
 Audit: 2.32.4, 2026-09-19, #29; close-out addendum 2.33.1 (#190); owner-actions addendum 2.33.3
-(#191). Delivered in the worktree for `codex/phase-11-production-hardening`
+(#191); owner-decisions and 1.0 close-out addendum 2.34.0 (#199). Delivered in the worktree for `codex/phase-11-production-hardening`
 (base `main` 8f5dbd1, 2.25.1) together with #187 and #179 to #186. The final commit SHA is recorded
 in the pull request.
 
@@ -33,6 +33,15 @@ limit and the workflows were disabled again; signing, publication, the external 
 hosted lane move to [#199](https://github.com/avnionur/shepherd-typescript/issues/199). The verdict
 stays conditional: 1.0 general availability is no-go until #199 closes. See
 [Owner actions (2.33.3)](#owner-actions-2333).
+
+Addendum (2.34.0, 2026-09-23, #199): the owner closed #199 by decision. The external review (O-1),
+signing and publication (O-2), and name reservation (O-5) are waived for 1.0; hosted CI stays
+disabled and the local macOS gates plus the local Docker Linux lane are the verification
+substitute (O-3); CodeQL and the advisory form are waived while the repository is private; there is
+no Windows lane. A Linux variant of the volume fault suite and a Linux SLO host class were delivered
+through the local lane. F-008 and F-010 are accepted by owner decision. **Verdict: 1.0 as a
+private, unpublished source release with the listed waivers.** See
+[Owner decisions and 1.0 close-out (2.34.0)](#owner-decisions-and-10-close-out-2340).
 
 Every Phase 11 roadmap work item and exit criterion maps below to delivered entry points,
 normative documentation, and repeatable tests, or to an owner-owed row. The internal findings
@@ -441,8 +450,8 @@ owner resolves it (see [open item](#open-item-at-the-time-of-this-addendum)).
 | --- | --- |
 | `pnpm test:runtime-boundaries` (checked downloads of 24.21.0, 24.12.0, 24.11.1) | pass: 24.21.0 and 24.12.0 supported, 24.11.1 refused before writes |
 | `pnpm test:carriers:linux` (privileged, loopback XFS `reflink=1`, Node 24.21.0) | pass: benchmark 12/12, carrier conformance with clone and overlay required 15/15, scope algebra laws with copy, clone, and overlay required 13/13 |
-| `pnpm test:faults:volume` | skipped by design (needs macOS `hdiutil`; Linux loop devices need privileges). A Linux variant is owner-owed (O-3, #191) |
-| `pnpm check:slo` | "skipped; no host class matches linux/arm64": budgets exist only for the macOS arm64 APFS class. A Linux host class is owner-owed (O-3, #191) |
+| `pnpm test:faults:volume` | skipped by design (needs macOS `hdiutil`; Linux loop devices need privileges). A Linux variant was owner-owed (O-3, #191); delivered in 2.34.0 ([addendum](#linux-volume-fault-suite)) |
+| `pnpm check:slo` | "skipped; no host class matches linux/arm64": budgets existed only for the macOS arm64 APFS class. A Linux host class was owner-owed (O-3, #191); delivered in 2.34.0 ([addendum](#linux-slo-host-class)) |
 | `pnpm release:reproducible-build` | pass: two clean builds gave `avnionur-shepherd-typescript-2.33.1.tgz` with SHA-256 `3112ac67c162a14f3f5c09eb8dd026973e9ee82df0db5cb0395a0fdc2ee138a3` and output-tree digest `sha256:f96c8f7e2e3aad614898ef7db44bd90e34e8dc9154f76ebee258204608f9e3f0` |
 | `pnpm test:soak --duration 120` (on 04fa4f9) | pass |
 
@@ -495,7 +504,7 @@ Owner-owed: F-008 (O-3, narrowed by this lane), F-009 (O-4), F-010 (O-2).
 | Zero unresolved critical security findings | Met: no critical or high finding; internal review complete | External review (O-1) |
 | Migration and recovery drills pass on supported versions | Met on macOS arm64 APFS and in the Linux lane on Node 24.21.0 and 24.12.0 (the drills run in `pnpm test`) | Hosted runs (O-3) |
 | Compatibility policies enforced in CI | Met by the local `pnpm verify` gate on macOS and Linux | Hosted CI, CodeQL, dependency review (O-3) |
-| Performance SLOs supported by reproducible benchmarks | Met for the macOS arm64 APFS reference class | Linux and other host classes (O-3) |
+| Performance SLOs supported by reproducible benchmarks | Met for the macOS arm64 APFS reference class | Linux and other host classes (O-3); a Linux container host class was added in 2.34.0 ([addendum](#linux-slo-host-class)) |
 | Stable packages and CLI with complete docs and signed provenance | Docs, package probes, and host-local reproducible builds met on both hosts | Signing, attestation, publication (O-2, F-010, F-032), registry name (O-5) |
 
 Owner-only items now tracked in #191: O-1 external security review; O-2 signing identity,
@@ -619,3 +628,123 @@ a check in `pnpm verify`, and vulnerability intake has a documented private path
 criteria that were owner-owed in the [re-scoped verdict](#re-scoped-verdict) remain unmet: no
 external review, no signed provenance or publication, and no hosted CI run. When #199 supplies
 that evidence, a further addendum can flip the verdict to general availability.
+
+## Owner decisions and 1.0 close-out (2.34.0)
+
+Addendum, 2026-09-23, [#199](https://github.com/avnionur/shepherd-typescript/issues/199), branch
+`codex/phase-11-199-owner-waivers` from `main` 3175b98 (2.33.3); MINOR 2.34.0 (a Linux variant of
+the volume fault suite and a Linux SLO host class). It records the owner's decisions that close
+#199, the in-repo Linux work, and the verdict. The decisions are D-019 in
+[decisions and risks](./decisions-and-risks.md); the register is the
+[owner-owed register](./production-hardening-contract.md#owner-owed-register).
+
+### Recheck (2026-09-23)
+
+The repository is still private and npm is not authenticated. The hosted `CI` run
+[35868089999](https://github.com/avnionur/shepherd-typescript/actions/runs/35868089999) again
+started no job because of the Actions billing or spending limit, and `CI` was disabled again. No
+hosted workflow has run a job.
+
+### Owner decisions
+
+| ID | Decision (2026-09-23, #199) | Consequence |
+| --- | --- | --- |
+| O-1 External security review | Waived for 1.0 | No external review has been performed. The internal review (implementing agents plus one [independent internal reviewer](#independent-review)) is accepted in its place |
+| O-2 Signing, attestation, publication | Waived for 1.0 | 1.0 is a private, unpublished source release: `"private": true` stays, nothing is signed or published, `release.yml` is not run. The [owner release runbook](../docs/release-integrity.md#owner-release-runbook) stays as the procedure if publication happens later. F-010 accepted |
+| O-3 Hosted CI and cross-OS lanes | Closed by decision | Hosted CI stays disabled; the local macOS gates (`pnpm verify`, `pnpm verify:release`, `pnpm build:desktop`) plus the local Docker Linux lane are the 1.0 verification substitute. CodeQL (needs GitHub Advanced Security while private) is waived while the repository is private. No Windows lane: `windows-latest` and the Windows-only `verify:serial` step are removed from `ci.yml` (matrix `ubuntu-latest`, `macos-latest`; `pnpm verify:serial` stays a local script); native Windows stays unsupported. F-008 accepted |
+| O-4 Vulnerability intake | The repository stays private | The email intake in [SECURITY.md](../SECURITY.md) stands; the advisory form is waived while private. F-009 stays fixed |
+| O-5 Registry name | Waived for 1.0 | `@avnionur/shepherd-typescript` stays the decided name; it is not reserved on npm |
+
+If the repository ever becomes public, enabling CodeQL and private vulnerability reporting is the
+owner's follow-up.
+
+### Linux volume fault suite
+
+`pnpm test:faults:volume` gains a Linux variant: a 16 MiB sparse image formatted ext4 with no
+root-reserved blocks (`-m 0`) and loop-mounted `loop,nodev,nosuid,noexec` by the commands in
+`faults.diskFull.volume.linux` of
+[`config/hardening-suites.config.json`](../config/hardening-suites.config.json). It needs root and
+loop devices (a privileged container) and otherwise skips with an explicit reason. Details:
+[fault and fuzz conformance](../docs/fault-and-fuzz-conformance.md#disk-full).
+
+| Run (2026-09-23, #199 working tree) | Result |
+| --- | --- |
+| Privileged `node:24.21.0-bookworm` container (Docker 29.4.0, OrbStack Linux VM, kernel 7.0.14-orbstack) on the macOS arm64 reference host, as root | pass in about 3.0 s: fill blobs #33 to #49 `ENOSPC`, fill append #50 `SQLITE_FULL`; while full, `append` and `vacuum` `SQLITE_FULL` (errcode 13), `putBlob` and backup `ENOSPC`; every retry succeeds after space returns; no loop device left attached |
+| Same container as uid 1000 | skipped: "needs root to loop-mount an image on Linux (run in a privileged container)" |
+| Unprivileged container as root | skipped: "needs loop devices (/dev/loop-control is missing; run privileged)" |
+| macOS reference host, HFS+ image | pass: fill blob #47 `ENOSPC`, fill append #48 `SQLITE_FULL`; all retries succeed |
+
+Finding from the first Linux run (a test-oracle correction, not a store defect): on ext4 an append
+can still commit after blob puts have started failing, because SQLite reuses write-ahead-log space
+it has already allocated. The suite now fills until an append fails, requires every earlier
+failure to be a typed space error with an unchanged export length and an unreadable failed blob,
+and retries the first failure of each kind.
+
+### Linux SLO host class
+
+`config/performance-slo.config.json` gains `linux-arm64-overlayfs-container` (platform `linux`,
+arch `arm64`, temporary directory on overlayfs, `statfs` type `0x794c7630`). Budgets come from two
+`pnpm bench:kernel` runs on 2026-09-23 in a `node:24.21.0-bookworm` container (OrbStack Linux VM on
+the macOS arm64 reference host, unprivileged `node` user) with the existing rule: three times the
+worse p95, one third of the lower throughput median, rounded to two significant figures. A third
+run is recorded in
+[`docs/generated/benchmarks/linux-arm64-overlayfs-container.json`](../docs/generated/benchmarks/linux-arm64-overlayfs-container.json);
+`pnpm check:slo` in that container passes every budget instead of reporting `SLO: skipped`. This is
+a container-in-VM measurement, not bare-metal Linux and not x86-64. Budgets and measurements:
+[performance report](../docs/performance-report.md#linux-container-host-class).
+
+### Verification (2.34.0)
+
+Reference host: macOS arm64 (Apple M4 Pro), APFS, Node 24.17.0, pnpm 10.32.1.
+
+Reported by the implementing agent on the #199 working tree before the version bump: `pnpm lint`
+0 errors; `pnpm typecheck` pass; `CI=true pnpm verify` passes except the known environmental
+clone carrier test ("clone carrier fails closed on a macOS filesystem without clonefile support",
+see [Limits](#limits)): 1,102 tests, 1,100 pass, 1 skipped (telemetry fuzz target), 1 fail, 100%
+line, branch, and function coverage; `pnpm build && pnpm test:package-cli` pass; `pnpm check:slo`
+passes on macOS; the Linux runs above.
+
+After the version bump (`pnpm sync:version`, `pnpm generate:sbom`, `pnpm generate:api-reference`,
+`pnpm update:compatibility-baseline`; version-only changes):
+
+| Command | Result |
+| --- | --- |
+| `pnpm lint` | Pass: 0 errors, the 2 pre-existing warnings and 1 info |
+| `pnpm typecheck` | Pass |
+| `pnpm check:sbom` | Pass |
+| `pnpm check:api-reference` | Pass |
+| `pnpm check:compatibility` | Pass: baselines current (0 changes) |
+| `pnpm build && pnpm test:package-cli` | Pass, including the packed file-set check; installed runtime 24.17.0 supported |
+| `pnpm build:desktop` | Pass |
+| Relative-link check over the edited Markdown | Every relative link and anchor resolves |
+
+Not run for 2.34.0: `pnpm release:reproducible-build`, `pnpm release:manifest`, the extended fuzz
+run, and the soak. No hosted workflow ran.
+
+### Register after #199
+
+No critical or high finding in any status, no open finding, and no owner-owed finding. Accepted:
+F-001, F-006, F-008 (owner decision, #199), F-010 (owner decision, #199), F-011, F-020. Fixed with
+an accepted residual: F-004, F-005, F-013, F-016, F-018, F-019, F-023, F-025. Fixed: F-002, F-003,
+F-007, F-009 (the advisory form is waived while the repository is private), F-012, F-014, F-015,
+F-017, F-021, F-022, F-024, F-026 to F-032.
+
+### Verdict after #199
+
+**1.0 (the L4 milestone, D-016) is reached as a private, unpublished source release with the
+waivers listed above**, by owner decision of 2026-09-23. The in-repo scope is complete and the
+internal register has no open finding.
+
+1.0 does not include:
+
+- an external security review (none has been performed);
+- signing, a Sigstore attestation, or signed provenance (the provenance statement is unsigned);
+- publication to npm or any registry, or a reservation of `@avnionur/shepherd-typescript`;
+- hosted CI, a hosted dependency audit, or CodeQL (no hosted workflow has run a job);
+- Windows support or a Windows verification lane;
+- bare-metal Linux or x86-64 Linux verification: the Linux evidence is a Docker container on the
+  macOS arm64 reference host (Debian bookworm arm64; the SLO class is a container-in-VM
+  measurement).
+
+The roadmap exit criteria "enforced in CI" and "signed provenance" are not met; they are waived.
+Enforcement is the local `pnpm verify` and `pnpm verify:release` gates.

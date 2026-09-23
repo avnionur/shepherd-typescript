@@ -1,10 +1,10 @@
 # Implementation Tracker
 
-Last updated: 2026-09-19
+Last updated: 2026-09-23
 
-Current version: `2.33.2`
+Current version: `2.34.0`
 
-Current level: L4 release candidate for the in-repo scope ([Phase 11 exit audit](./phase-11-exit-audit.md)); 1.0 general availability is no-go until the owner-owed rows O-1 to O-5 close (tracked in #191); Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
+Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
 ## Current position
 
@@ -710,6 +710,18 @@ open for a follow-up PATCH before the candidate is tagged.
   [#191 addendum](./phase-11-exit-audit.md#owner-actions-2333) keeps the verdict conditional.
   O-1, O-2, the hosted parts of O-3, the advisory form (O-4), and the name reservation (O-5) move
   to #199.
+- [x] Owner decisions and 1.0 close-out (#199, MINOR 2.34.0): the owner closed #199 by decision
+  (D-019): external review (O-1), signing and publication (O-2), and name reservation (O-5) waived
+  for 1.0; hosted CI stays disabled and the local macOS gates plus the local Docker Linux lane are
+  the substitute (O-3, F-008 accepted); CodeQL and the advisory form waived while private; F-010
+  accepted; `windows-latest` and the Windows `verify:serial` step removed from `ci.yml`. In-repo:
+  Linux variant of `pnpm test:faults:volume` (ext4 loop image from
+  `faults.diskFull.volume.linux`, root and loop devices required, explicit skip otherwise; passed
+  in a privileged `node:24.21.0-bookworm` container) and SLO host class
+  `linux-arm64-overlayfs-container` (budgets from two container runs, artifact
+  `docs/generated/benchmarks/linux-arm64-overlayfs-container.json`). Verdict: 1.0 as a private,
+  unpublished source release with those waivers
+  ([addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)).
 
 Phase 10 is complete for its documented offline scope; the [exit audit](./phase-10-exit-audit.md)
 maps every work item and exit criterion to entry points, docs, and tests.
@@ -805,6 +817,21 @@ parents, and supervisors reach fenced durable-run control through `./supervision
 observation leaves exported traces byte-identical.
 
 ## Verification required for this slice
+
+Owner decisions and 1.0 close-out (#199): MINOR 2.34.0; Linux volume fault-suite variant, Linux SLO
+host class, Windows CI lane removed, owner waivers documented; no public API, protocol, schema, or
+CLI change.
+
+- [x] `pnpm sync:version`, `pnpm generate:sbom`, `pnpm generate:api-reference`,
+  `pnpm update:compatibility-baseline` (version only)
+- [x] `pnpm lint` (0 errors, 2 pre-existing warnings, 1 info), `pnpm typecheck`,
+  `pnpm check:sbom`, `pnpm check:api-reference`, `pnpm check:compatibility` (0 changes),
+  `pnpm build && pnpm test:package-cli`, `pnpm build:desktop`: pass on 2.34.0
+- [x] Before the bump (implementing agent): `CI=true pnpm verify` passes except the known clone
+  carrier test (1,102 tests, 1,100 pass, 1 skipped, 100% coverage); `pnpm check:slo` passes on
+  macOS; `pnpm test:faults:volume` passes on macOS and as root in a privileged Linux container and
+  skips as uid 1000 and unprivileged; `pnpm check:slo` passes in the Linux container
+- [ ] Hosted runs: none; waived by owner decision (#199)
 
 Owner actions, in-repo slice (#191): PATCH 2.33.3; F-032 fix and packed file-set check, owner
 decisions documented; no public API, protocol, schema, or CLI change.
@@ -1494,11 +1521,12 @@ complete for its documented offline scope. Phase 11 (#24, production hardening a
 delivered #187, #179 to #186, and the readiness audit (#29, 2.32.4): release candidate ready for
 the in-repo scope, 1.0 general availability no-go. No agent-implementable slice remains in the
 roadmap; the close-out (#190, 2.33.1) records the local Linux lane and moves the owner-only items
-to #191; #191's in-repo slice (2.33.3) recorded the owner decisions and fixed F-032, and the next
-step is owner action on the remaining items in #199 (see the
-[production hardening contract](./production-hardening-contract.md#owner-owed-register); the
-F-016 protocol decision was made and delivered by #189 in 2.33.0), after which an addendum to the
-[Phase 11 exit audit](./phase-11-exit-audit.md) can record general availability.
+to #191; #191's in-repo slice (2.33.3) recorded the owner decisions and fixed F-032; and #199
+(2.34.0) closed the remaining items by owner decision, making 1.0 a private, unpublished source
+release with listed waivers
+([addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340); the F-016 protocol
+decision was made and delivered by #189 in 2.33.0). No roadmap slice remains open; later work
+(publication, an external review, hosted CI) needs a new owner decision.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration
@@ -1509,8 +1537,10 @@ Completed prerequisites: retained coding (#98/PR #103), read-only review (#99/PR
 bindings (#100/PR #105), and custom effects (#101/PR #106). Preserve their installed verification,
 the original quickstart, and exact authority throughout later work.
 
-Hosted workflows remain disabled: an enablement attempt on 2026-09-23 (#191) was blocked by an
-account billing limit, and CodeQL needs GitHub Advanced Security on a private repository. The delivered CI fixes preserve LF
+Hosted workflows remain disabled: enablement attempts on 2026-09-23 (#191, #199) were blocked by an
+account billing limit, CodeQL needs GitHub Advanced Security on a private repository, and by owner
+decision (#199) the local gates replace hosted CI for 1.0. `ci.yml` has no Windows runner from
+2.34.0. The delivered CI fixes preserve LF
 artifacts and normalize Windows compiler paths; CodeQL revisions and metadata permissions are
 aligned. Dependency auditing uses the locked graph. CodeQL upload requires code scanning support.
 

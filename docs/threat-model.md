@@ -1,6 +1,6 @@
 # Threat model
 
-Status: normative for 2.33.3 (Phase 11 slice 1, #187; B10 added by #179; secret and store-file rows
+Status: normative for 2.34.0 (Phase 11 slice 1, #187; B10 added by #179; secret and store-file rows
 updated by #180; storage-adapter rows added by #181; backup, restore, and store CLI rows added by
 #182; store maintenance and growth rows added by #183; telemetry rows added by #184; fuzz, archive
 limit, parser-differential, and Git invocation rows updated by #185; crash, disk-full, and
@@ -11,7 +11,9 @@ re-examined and completed by the [Phase 11 exit audit](../.plan/phase-11-exit-au
 concurrent first-open row added and the F-029 residual row removed in 2.32.5; canonical nesting
 row updated and the F-016 residual row replaced by #189 in 2.33.0; carrier cleanup, packed file
 set, and F-008 rows updated by the Linux verification lane, #190, in 2.33.1; packed file set
-row (F-032 fixed) and F-008, F-009, and F-010 residual rows updated by #191 in 2.33.3). Findings, severities, and owning issues live
+row (F-032 fixed) and F-008, F-009, and F-010 residual rows updated by #191 in 2.33.3; F-008,
+F-009, and F-010 residual rows updated and an external-review row added for the owner decisions of
+2026-09-23, #199, in 2.34.0). Findings, severities, and owning issues live
 in the [internal security review](../.plan/security-review.md); the
 [production hardening contract](../.plan/production-hardening-contract.md) owns the slice map.
 This page states what the runtime defends, where, and with which test. A threat without a cited
@@ -184,7 +186,7 @@ privilege. Paths are repository-relative.
 | T | Build output differs from the reviewed source or between builds | Two clean builds and packs compared by output-tree, tarball, and per-entry digest (`tooling/release/reproducible-build.ts`) | `test/release-integrity.test.ts` ("reproducible builds compare"); `pnpm verify:release` |
 | T | The packed file set depends on the npm version used to pack (unanchored `files` entries matched in every directory under npm 11) | Every top-level `files` entry is anchored with `/` and every entry is a literal path; `pnpm test:package-cli` (in `pnpm verify`) packs with the installed npm and fails when the tarball holds a file the allowlist does not declare or misses a declared entry (`tooling/release/packed-files.ts`) | `test/release-integrity.test.ts` ("files allowlist is literal and anchored", "packed tarballs are checked"); npm 11.19.0 and 12.0.2 pack identical file sets (F-032 fixed, 2.33.3) |
 | T | Silent API or protocol break reaches consumers | `pnpm check:compatibility` over emitted declarations and protocol artifacts (schemas, version markers, migrations, error codes, CLI commands, exit codes, per-command CLI options, identity settings) with an append-only classified change log; version-marker increases need a noted classification or matching migrations, changed API declarations and markers are classified one at a time, the deprecation window counts released versions, and declarations older than `src` are refused (`tooling/compatibility/policy.ts`, `config/compatibility-policy.config.json`) | `test/compatibility-policy.test.ts`; F-022 fixed |
-| R | A release cannot be tied to its commit and inputs | Unsigned in-toto/SLSA provenance naming the tarball digest, commit, lockfile digest, and tool versions (`tooling/release/provenance.ts`) | `test/release-integrity.test.ts` ("release evidence binds"); signing is owner-owed (F-010) |
+| R | A release cannot be tied to its commit and inputs | Unsigned in-toto/SLSA provenance naming the tarball digest, commit, lockfile digest, and tool versions (`tooling/release/provenance.ts`) | `test/release-integrity.test.ts` ("release evidence binds"); signing waived for 1.0 by owner decision (F-010 accepted, #199) |
 
 ## Residual risks
 
@@ -202,9 +204,10 @@ privilege. Paths are repository-relative.
 | Within the configured interchange limits, archive decode and the staged import hold the parsed archive in memory; operators can lower the limits | F-004 | accepted |
 | Telemetry attributes (owner paths, schema, record, and witness identifiers) are exported unscanned, and the confidentiality of a caller sink or downstream collector is the caller's | F-011 | accepted |
 | A killed import leaves its owner-only `.shepherd-import-stage-*` directory beside the target store until the operator removes it | F-019 | accepted |
-| No hosted workflow runs: the 2026-09-23 attempt to enable `CI` and `Dependency Audit` was blocked by an account billing limit and both were disabled again, and CodeQL needs GitHub Advanced Security on a private repository; Linux is verified only by a local Docker lane (2.33.1), without a Linux volume-fault variant or SLO host class; no Windows decision or privileged-jail hosted lane | F-008 | #199 |
-| GitHub private vulnerability reporting is unavailable while the repository is private; intake is by email as documented in `SECURITY.md` | F-009 | #199 |
-| Release evidence is unsigned; the release workflow has never run | F-010 | O-2, #199 |
+| No hosted workflow runs: attempts on 2026-09-23 to run `CI` (#191 and the #199 recheck) were blocked by the account's Actions billing or spending limit and the workflows were disabled again, and CodeQL needs GitHub Advanced Security on a private repository. By owner decision of 2026-09-23 the local macOS gates (`pnpm verify`, `pnpm verify:release`, `pnpm build:desktop`) and the local Docker Linux lane are the 1.0 verification substitute; CodeQL is waived while the repository is private; there is no Windows lane or hosted privileged-jail lane | F-008 | accepted (owner decision, #199) |
+| GitHub private vulnerability reporting is unavailable while the repository is private and is waived while it stays private; intake is by email as documented in `SECURITY.md` | F-009 (fixed by documented email intake) | waived while private (owner decision, #199) |
+| Release evidence is unsigned and nothing is published; the release workflow has never run. 1.0 is a private, unpublished source release by owner decision of 2026-09-23 | F-010 | accepted (owner decision, #199) |
+| No external security review has been performed; the owner waived it for 1.0 and accepted the internal review (implementing agents plus one independent internal reviewer) in its place | none (O-1) | accepted (owner decision, #199) |
 
 ## Out of scope
 

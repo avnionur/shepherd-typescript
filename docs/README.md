@@ -133,13 +133,15 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   fix and release, deprecation and rollback, and store-corruption and lost-backup runbooks.
 - [Production hardening contract](../.plan/production-hardening-contract.md) maps the Phase 11
   work items and exit criteria to slices and owner-owed rows, with per-slice non-claims.
-- [1.0 release notes](./release-notes-1.0.md) state what the L4 "1.0" milestone means for package
-  2.32.x, what is delivered, the known limits, the owner-owed items before general availability,
-  and upgrade and migration pointers.
+- [1.0 release notes](./release-notes-1.0.md) state what the L4 "1.0" milestone means (a private,
+  unpublished source release recorded in 2.34.0), what is delivered, the known limits, the owner
+  waivers of 2026-09-23 (#199), and upgrade and migration pointers.
 - [Phase 11 exit audit](../.plan/phase-11-exit-audit.md) records the 1.0 readiness verdict (release
-  candidate for the in-repo scope; general availability no-go until owner-owed items close, tracked
-  in #191 and then #199; the 2.33.1 addendum records the local Docker Linux lane and closes the
-  in-repo scope, and the 2.33.3 addendum records the owner decisions of #191) with
+  candidate for the in-repo scope; owner-owed items tracked in #191 and then #199; the 2.33.1
+  addendum records the local Docker Linux lane and closes the in-repo scope, the 2.33.3 addendum
+  records the owner decisions of #191, and the 2.34.0 addendum records the owner decisions of
+  2026-09-23 closing #199, the Linux volume fault suite and Linux container SLO host class, and the
+  verdict: 1.0 as a private, unpublished source release with listed waivers) with
   the evidence map, recovery classification, independent review, verification, and limits; the
   [release-readiness dashboard](../.plan/release-readiness-dashboard.md) classifies every phase
   epic, parity row, and paper-coverage row, and the
@@ -181,10 +183,12 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   `extended` tiers, `pnpm fuzz`), the replayed regression corpus, the recorded extended run, and the
   findings it produced, and the fault and soak suites: seeded `SIGKILL` of writers with every
   started operation classified complete, retryable, or refused, disk full (`max_page_count`,
-  `ulimit -f`, and the opt-in `pnpm test:faults:volume`), classified page, WAL/SHM, blob, and
+  `ulimit -f`, and the opt-in `pnpm test:faults:volume` on a macOS HFS+ image or, from 2.34.0, a
+  Linux ext4 loop image), classified page, WAL/SHM, blob, and
   backup corruption, and the mixed soak (`pnpm test:soak`) with its recorded run.
 - [Performance report](./performance-report.md) publishes the reference-host (macOS arm64 APFS)
-  kernel benchmark with raw samples, the SLO budgets checked by `pnpm check:slo` in
+  kernel benchmark with raw samples, the `linux-arm64-overlayfs-container` host class (2.34.0, a
+  container-in-VM measurement), the SLO budgets checked by `pnpm check:slo` in
   `verify:release`, the bounded scale tier, query-plan evidence, and own carrier storage
   measurements; [SQLite trace store maintenance](./sqlite-trace-store.md#maintenance) documents
   `SQLiteTraceStore.maintain` and `shepherd-ts store maintain`.
