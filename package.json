@@ -1,6 +1,6 @@
 {
     "name": "@avnionur/shepherd-typescript",
-    "version": "2.33.2",
+    "version": "2.33.3",
     "packageManager": "pnpm@10.32.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
     "license": "MIT",
@@ -91,17 +91,17 @@
         "dist/protocol.config.json",
         "dist/public-errors.config.json",
         "dist/runtime.config.json",
-        "api-reference.config.json",
+        "/api-reference.config.json",
         "docs/generated/api-reference.md",
         "docs/generated/cli-reference.md",
         "docs/typescript-examples.md",
         "docs/python-to-typescript.md",
         "docs/runtime-support.md",
-        "examples",
+        "/examples",
         "spec/schemas",
-        "README.md",
-        "LICENSE",
-        "NOTICE"
+        "/README.md",
+        "/LICENSE",
+        "/NOTICE"
     ],
     "engines": {
         "node": ">=24.12.0 <25"

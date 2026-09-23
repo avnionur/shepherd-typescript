@@ -5,8 +5,8 @@ classification, identity and CLI-option fingerprint, build-freshness, and last-r
 added in 2.32.2 (#29, F-022). This page defines how the public TypeScript API and the protocol
 evolve, and the local gate that enforces it. The gate is `pnpm check:compatibility`, which runs
 inside `pnpm verify` and `pnpm verify:serial` right after `pnpm build` and
-`pnpm check:api-reference`. Hosted CI is disabled, so "enforced" means enforced by these local
-commands. Implementation: `tooling/compatibility/` with the thin adapter
+`pnpm check:api-reference`. Hosted CI is disabled (an enablement attempt on 2026-09-23 was blocked by an
+account billing limit), so "enforced" means enforced by these local commands. Implementation: `tooling/compatibility/` with the thin adapter
 `scripts/check-compatibility-cli.ts`; tests: `test/compatibility-policy.test.ts`.
 
 ## Semantic versioning

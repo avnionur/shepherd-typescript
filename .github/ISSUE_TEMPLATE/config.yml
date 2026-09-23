@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
     - name: Report a security vulnerability
-      url: https://github.com/avnionur/shepherd-typescript/security/advisories/new
-      about: Report vulnerabilities privately.
+      url: https://github.com/avnionur/shepherd-typescript/blob/main/SECURITY.md#reporting-a-vulnerability
+      about: Report vulnerabilities privately as described in SECURITY.md.
     - name: Report a conduct concern
       url: https://support.github.com/contact/report-abuse
       about: Report conduct incidents privately to GitHub.

@@ -1,10 +1,11 @@
 # Release workflow for signed provenance and npm publication.
 #
-# Status: present but never run. Hosted workflows are disabled for this repository at the owner's
-# request, the package is `"private": true`, and no registry credentials or signing identity exist.
-# Running this workflow, enabling the protected `npm-publish` environment, and dropping `"private"`
-# are owner-owed steps (O-2 in .plan/production-hardening-contract.md). The same gates run locally
-# with `pnpm verify:release`; see docs/release-integrity.md.
+# Status: present but never run. Hosted workflows are disabled: an attempt on 2026-09-23 (#191) to
+# enable CI was blocked by an account billing limit and the workflows were disabled again. The
+# package is `"private": true` and no registry credentials or signing identity exist.
+# Running it, enabling the protected `npm-publish` environment, and dropping `"private"` are
+# owner-owed steps (O-2 in .plan/production-hardening-contract.md), deferred to #199. The same gates
+# run locally with `pnpm verify:release`; the owner release runbook is in docs/release-integrity.md.
 #
 # Action references are pinned to commit SHAs resolved read-only from each action's release tag.
 

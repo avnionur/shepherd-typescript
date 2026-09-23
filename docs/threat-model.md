@@ -1,6 +1,6 @@
 # Threat model
 
-Status: normative for 2.33.1 (Phase 11 slice 1, #187; B10 added by #179; secret and store-file rows
+Status: normative for 2.33.3 (Phase 11 slice 1, #187; B10 added by #179; secret and store-file rows
 updated by #180; storage-adapter rows added by #181; backup, restore, and store CLI rows added by
 #182; store maintenance and growth rows added by #183; telemetry rows added by #184; fuzz, archive
 limit, parser-differential, and Git invocation rows updated by #185; crash, disk-full, and
@@ -10,7 +10,8 @@ F-021 to F-028; worktree submodule check row updated by #29 in 2.32.3 for F-028;
 re-examined and completed by the [Phase 11 exit audit](../.plan/phase-11-exit-audit.md) in 2.32.4;
 concurrent first-open row added and the F-029 residual row removed in 2.32.5; canonical nesting
 row updated and the F-016 residual row replaced by #189 in 2.33.0; carrier cleanup, packed file
-set, and F-008 rows updated by the Linux verification lane, #190, in 2.33.1). Findings, severities, and owning issues live
+set, and F-008 rows updated by the Linux verification lane, #190, in 2.33.1; packed file set
+row (F-032 fixed) and F-008, F-009, and F-010 residual rows updated by #191 in 2.33.3). Findings, severities, and owning issues live
 in the [internal security review](../.plan/security-review.md); the
 [production hardening contract](../.plan/production-hardening-contract.md) owns the slice map.
 This page states what the runtime defends, where, and with which test. A threat without a cited
@@ -181,7 +182,7 @@ privilege. Paths are repository-relative.
 | T | A locked dependency is substituted | Frozen lockfile installs with registry integrity; the lockfile SBOM records every integrity digest and `pnpm check:sbom` rejects drift (`tooling/release/sbom.ts`) | `test/release-integrity.test.ts` ("checked-in SBOM matches the lockfile") |
 | E | Dependency lifecycle scripts run during install or release | `allowBuilds` is empty in `pnpm-workspace.yaml`; `release.yml` installs with `--ignore-scripts`; the pack command uses `--ignore-scripts` | Configuration review; `release.yml` not run (F-010) |
 | T | Build output differs from the reviewed source or between builds | Two clean builds and packs compared by output-tree, tarball, and per-entry digest (`tooling/release/reproducible-build.ts`) | `test/release-integrity.test.ts` ("reproducible builds compare"); `pnpm verify:release` |
-| T | The packed file set depends on the npm version used to pack (npm 11 adds `docs/README.md` and `spec/README.md`, npm 12 does not) | None yet: the reproducible-build check compares two packs with one npm | Residual: F-032 (open, #191) |
+| T | The packed file set depends on the npm version used to pack (unanchored `files` entries matched in every directory under npm 11) | Every top-level `files` entry is anchored with `/` and every entry is a literal path; `pnpm test:package-cli` (in `pnpm verify`) packs with the installed npm and fails when the tarball holds a file the allowlist does not declare or misses a declared entry (`tooling/release/packed-files.ts`) | `test/release-integrity.test.ts` ("files allowlist is literal and anchored", "packed tarballs are checked"); npm 11.19.0 and 12.0.2 pack identical file sets (F-032 fixed, 2.33.3) |
 | T | Silent API or protocol break reaches consumers | `pnpm check:compatibility` over emitted declarations and protocol artifacts (schemas, version markers, migrations, error codes, CLI commands, exit codes, per-command CLI options, identity settings) with an append-only classified change log; version-marker increases need a noted classification or matching migrations, changed API declarations and markers are classified one at a time, the deprecation window counts released versions, and declarations older than `src` are refused (`tooling/compatibility/policy.ts`, `config/compatibility-policy.config.json`) | `test/compatibility-policy.test.ts`; F-022 fixed |
 | R | A release cannot be tied to its commit and inputs | Unsigned in-toto/SLSA provenance naming the tarball digest, commit, lockfile digest, and tool versions (`tooling/release/provenance.ts`) | `test/release-integrity.test.ts` ("release evidence binds"); signing is owner-owed (F-010) |
 
@@ -201,10 +202,9 @@ privilege. Paths are repository-relative.
 | Within the configured interchange limits, archive decode and the staged import hold the parsed archive in memory; operators can lower the limits | F-004 | accepted |
 | Telemetry attributes (owner paths, schema, record, and witness identifiers) are exported unscanned, and the confidentiality of a caller sink or downstream collector is the caller's | F-011 | accepted |
 | A killed import leaves its owner-only `.shepherd-import-stage-*` directory beside the target store until the operator removes it | F-019 | accepted |
-| Hosted CI, CodeQL, dependency review, and Windows and privileged-jail lanes do not run; Linux is verified only by a local Docker lane (2.33.1), without a hosted run, a Linux volume-fault variant, or a Linux SLO host class | F-008 | O-3 |
-| Two packs of the same commit made with different npm versions contain different file sets (two README files) | F-032 | #191 |
-| Private vulnerability reporting is not confirmed enabled; `SECURITY.md` keeps a contact-request fallback | F-009 | O-4 |
-| Release evidence is unsigned; the release workflow has never run | F-010 | O-2 |
+| No hosted workflow runs: the 2026-09-23 attempt to enable `CI` and `Dependency Audit` was blocked by an account billing limit and both were disabled again, and CodeQL needs GitHub Advanced Security on a private repository; Linux is verified only by a local Docker lane (2.33.1), without a Linux volume-fault variant or SLO host class; no Windows decision or privileged-jail hosted lane | F-008 | #199 |
+| GitHub private vulnerability reporting is unavailable while the repository is private; intake is by email as documented in `SECURITY.md` | F-009 | #199 |
+| Release evidence is unsigned; the release workflow has never run | F-010 | O-2, #199 |
 
 ## Out of scope
 

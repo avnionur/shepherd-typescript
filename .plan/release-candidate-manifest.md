@@ -3,6 +3,26 @@
 Status: 2.32.5 release candidate for the in-repo scope, 2026-09-19, #29 (2.32.4 audit candidate
 plus the F-029 fix; the 2.32.4 results are kept below for history). Verdict and reasoning:
 [Phase 11 exit audit](./phase-11-exit-audit.md). Nothing listed here is signed or published.
+The [owner actions (2.33.3)](#owner-actions-2333) section records the owner decisions of #191 and
+the npm-version-independent packed file set; the digests below remain those of 2.32.5.
+
+## Owner actions (2.33.3)
+
+Owner decisions of 2026-09-23 (#191); remaining owner actions are in
+[#199](https://github.com/avnionur/shepherd-typescript/issues/199). Details:
+[#191 addendum](./phase-11-exit-audit.md#owner-actions-2333).
+
+| Item | State |
+| --- | --- |
+| Hosted `CI` (`ci.yml`) and `Dependency Audit` (`dependency-review.yml`) | Disabled. Enabled on 2026-09-23; the dispatched `CI` run on `main` ([35829571781](https://github.com/avnionur/shepherd-typescript/actions/runs/35829571781)) started no job because of an account billing or spending-limit restriction, and the owner disabled both again. No hosted run has passed (#199) |
+| Hosted `CodeQL` (`codeql.yml`) | Disabled: code scanning on a private repository needs GitHub Advanced Security, which is unavailable (#199) |
+| Packed file set | npm-version independent from 2.33.3 (F-032 fixed): npm 11.19.0 and 12.0.2 pack the same 1,406 files; checked by `pnpm test:package-cli` in `pnpm verify` |
+| Vulnerability intake | Private email while the repository is private ([SECURITY.md](../SECURITY.md)); advisory form after it is public (#199) |
+| Registry name | `@avnionur/shepherd-typescript` (D-011); not reserved until the first publish (#199) |
+| Signing, attestation, publication | None; `"private": true` stays; [owner release runbook](../docs/release-integrity.md#owner-release-runbook) (#199) |
+| External security review | None (#199) |
+
+The local Docker Linux lane of 2.33.1 remains the only Linux evidence.
 
 ## Identity
 
@@ -102,12 +122,13 @@ database from four processes at once. It is fixed in 2.32.5 (see the table above
 
 ## Not in this manifest
 
-- CI run links: hosted CI is disabled; no workflow has run (O-3).
-- Signed provenance, Sigstore attestation, npm publication: none (O-2).
-- External security review report: none (O-1).
-- Cross-OS reproducibility, hosted Linux runs, Windows verification, other SLO host classes: none
-  (O-3, #191). A local Docker Linux lane on 2.33.1 is recorded in the
+- Hosted CI runs: none has run a job; see [owner actions (2.33.3)](#owner-actions-2333) (O-3,
+  #199). CodeQL results: none (disabled).
+- Signed provenance, Sigstore attestation, npm publication: none (O-2, #199).
+- External security review report: none (O-1, #199).
+- Cross-OS reproducibility, Windows verification, other SLO host classes: none (O-3, #199). A local Docker Linux lane on 2.33.1 is recorded in the
   [exit audit addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331); its
-  tarballs are not release artifacts and differ from the reference host's by npm version (F-032).
+  tarballs are not release artifacts and differed from the reference host's by npm version
+  (F-032, fixed in 2.33.3).
 - Published support policy: the [support policy](../docs/support-policy.md) is in the repository;
   no package release publishes it.

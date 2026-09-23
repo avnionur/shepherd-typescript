@@ -11,6 +11,12 @@ import {
     readReleaseIntegrityConfiguration,
 } from "../tooling/release/integrity-config.ts";
 import {
+    assertPackedFileSet,
+    checkPackageFilesDeclaration,
+    comparePackedFileSet,
+    packedFilePaths,
+} from "../tooling/release/packed-files.ts";
+import {
     createProvenanceStatement,
     isProvenanceStatement,
     type ProvenanceStatement,
@@ -280,6 +286,11 @@ test("release-integrity configuration is validated", async () => {
             ...productionConfiguration,
             reproducibleBuild: { buildCommand: ["pnpm", 1], packCommand: ["npm"] },
         },
+        { ...productionConfiguration, packedFiles: { alwaysIncluded: [], archiveRoot: "package" } },
+        {
+            ...productionConfiguration,
+            packedFiles: { alwaysIncluded: ["package.json"], archiveRoot: "" },
+        },
     ]) {
         assert.throws(() => parseReleaseIntegrityConfiguration(invalid), TypeError);
     }
@@ -316,6 +327,99 @@ test("tarball entries are read from ustar and PAX headers", () => {
     const corrupt = gunzipSync(tarball([{ body: "x", name: "bad", type: "0" }]));
     corrupt.write("9", 124);
     assert.throws(() => readTarEntries(gzipSync(corrupt)), /non-octal field/u);
+});
+
+test("the package files allowlist is literal and anchored for every npm version (F-032)", async () => {
+    const { files } = JSON.parse(
+        await readFile(path.join(repositoryRoot, "package.json"), "utf8"),
+    ) as { readonly files: readonly string[] };
+    assert.deepEqual(checkPackageFilesDeclaration(files), []);
+
+    // The 2.33.2 allowlist: npm 11 matched these unanchored entries in every walked directory.
+    const unanchored = files.map((entry) => entry.replace(/^\//u, ""));
+    assert.deepEqual(
+        checkPackageFilesDeclaration(unanchored).map((error) => error.split(":")[0]),
+        ["api-reference.config.json", "examples", "README.md", "LICENSE", "NOTICE"],
+    );
+    assert.deepEqual(
+        checkPackageFilesDeclaration([
+            "dist/*.js",
+            "!docs/README.md",
+            "./dist",
+            "dist/",
+            "a//b",
+        ]).map((error) => error.split(": ")[1]),
+        [
+            "must be a literal path, not a pattern or negation",
+            "must be a literal path, not a pattern or negation",
+            'must not start with "./", end with "/", or contain empty path segments',
+            'must not start with "./", end with "/", or contain empty path segments',
+            'must not start with "./", end with "/", or contain empty path segments',
+        ],
+    );
+
+    // File lists that npm 12.0.2 and npm 11.19.0 packed from the 2.33.2 allowlist.
+    const npm12 = ["LICENSE", "NOTICE", "README.md", "docs/runtime-support.md", "package.json"];
+    const npm11 = [...npm12, "docs/README.md", "spec/README.md"].sort();
+    const declared = ["/README.md", "/LICENSE", "/NOTICE", "docs/runtime-support.md"];
+    const alwaysIncluded = configuration.packedFiles;
+    assert.deepEqual(comparePackedFileSet(declared, npm12, alwaysIncluded), {
+        declarationErrors: [],
+        missing: [],
+        unexpected: [],
+    });
+    assert.deepEqual(comparePackedFileSet(declared, npm11, alwaysIncluded).unexpected, [
+        "docs/README.md",
+        "spec/README.md",
+    ]);
+    assert.deepEqual(
+        comparePackedFileSet([...declared, "/examples"], ["README.md"], alwaysIncluded).missing,
+        ["LICENSE", "NOTICE", "docs/runtime-support.md", "examples", "package.json"],
+    );
+});
+
+test("packed tarballs are checked against the files allowlist", () => {
+    const root = configuration.packedFiles.archiveRoot;
+    const archive = (names: readonly string[]) =>
+        readTarEntries(
+            tarball([
+                { body: "", name: `${root}/examples/`, type: "5" },
+                ...names.map((name) => ({ body: name, name: `${root}/${name}`, type: "0" })),
+            ]),
+        );
+    const packed = archive(["package.json", "README.md", "examples/a/README.md", "examples/b.ts"]);
+    assert.deepEqual(packedFilePaths(packed, root), [
+        "README.md",
+        "examples/a/README.md",
+        "examples/b.ts",
+        "package.json",
+    ]);
+    assertPackedFileSet(["/README.md", "/examples"], packed, configuration.packedFiles);
+    assert.throws(
+        () =>
+            assertPackedFileSet(
+                ["README.md", "/examples", "/LICENSE"],
+                archive(["package.json", "README.md", "docs/README.md", "examples/b.ts"]),
+                configuration.packedFiles,
+            ),
+        (error: unknown) =>
+            error instanceof Error &&
+            error.message ===
+                [
+                    "packed file set differs from package.json files:",
+                    'files entry README.md: a top-level entry must start with "/"; unanchored entries match in every directory under npm 11',
+                    "missing from the tarball: LICENSE",
+                    "not declared in files: docs/README.md",
+                ].join("\n"),
+    );
+    assert.throws(
+        () =>
+            packedFilePaths(
+                readTarEntries(tarball([{ body: "x", name: "x.js", type: "0" }])),
+                root,
+            ),
+        /packed file x\.js is outside package\//u,
+    );
 });
 
 test("reproducible builds compare output trees and tarballs and report differing files", async (context) => {

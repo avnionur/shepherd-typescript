@@ -1,6 +1,7 @@
 # Phase 11 production hardening and 1.0 readiness audit
 
-Audit: 2.32.4, 2026-09-19, #29; close-out addendum 2.33.1 (#190). Delivered in the worktree for `codex/phase-11-production-hardening`
+Audit: 2.32.4, 2026-09-19, #29; close-out addendum 2.33.1 (#190); owner-actions addendum 2.33.3
+(#191). Delivered in the worktree for `codex/phase-11-production-hardening`
 (base `main` 8f5dbd1, 2.25.1) together with #187 and #179 to #186. The final commit SHA is recorded
 in the pull request.
 
@@ -23,6 +24,15 @@ the owner-only items (O-1, O-2, O-4, O-5 and the hosted-CI, Windows, Linux-volum
 O-3) move to [#191](https://github.com/avnionur/shepherd-typescript/issues/191), and epic #24
 closes when this close-out merges. See
 [Linux verification lane and close-out (2.33.1)](#linux-verification-lane-and-close-out-2331).
+
+Addendum (2.33.3, 2026-09-23, #191): the owner decided O-1 to O-5. F-032 is fixed (the packed file
+set no longer depends on the npm version and is checked in `pnpm verify`); vulnerability intake is
+private email while the repository is private (F-009 resolved); the registry name is
+`@avnionur/shepherd-typescript`; an attempt to enable hosted `CI` was blocked by an account billing
+limit and the workflows were disabled again; signing, publication, the external review, and every
+hosted lane move to [#199](https://github.com/avnionur/shepherd-typescript/issues/199). The verdict
+stays conditional: 1.0 general availability is no-go until #199 closes. See
+[Owner actions (2.33.3)](#owner-actions-2333).
 
 Every Phase 11 roadmap work item and exit criterion maps below to delivered entry points,
 normative documentation, and repeatable tests, or to an owner-owed row. The internal findings
@@ -500,3 +510,112 @@ further addendum that can flip the verdict to general availability.
 The telemetry-exporter test above must pass on Linux before the Phase 11 pull request merges; it
 is owned by the F-016 change (#189) and was not modified by this close-out. Everything else
 recorded here passes on both Linux Node versions.
+
+## Owner actions (2.33.3)
+
+Addendum, 2026-09-23, [#191](https://github.com/avnionur/shepherd-typescript/issues/191), branch
+`codex/phase-11-191-owner-actions` from `main` 2f379b8 (2.33.2); PATCH 2.33.3. It records the
+owner's decisions on O-1 to O-5, the in-repo work they required, and what moved to
+[#199](https://github.com/avnionur/shepherd-typescript/issues/199).
+
+### Owner decisions
+
+| ID | Decision (2026-09-23) | In-repo result |
+| --- | --- | --- |
+| O-1 External security review | Deferred | No change; the [reviewer packet](./security-review.md#external-reviewer-packet) is unchanged. Moves to #199 |
+| O-2 Signing, attestation, publication | Deferred; keep `"private": true` | [Owner release runbook](../docs/release-integrity.md#owner-release-runbook) (npm credentials and trusted publishing, the OIDC signing identity, dropping `"private"`, running `release.yml`, verifying the attestation against the tarball digest); F-032 fixed. Moves to #199 |
+| O-3 Hosted CI and cross-OS lanes | Enable `CI` and `Dependency Audit`; keep `CodeQL` disabled. Superseded the same day: after the first run was blocked by billing, defer hosted runs and disable the workflows again | See [hosted CI attempt](#hosted-ci-attempt). No hosted run has passed. Moves to #199 |
+| O-4 Vulnerability intake | The repository stays private, so the advisory form is unavailable; use private email until the repository is public | `SECURITY.md` names email as the primary path and the advisory form as the path once public; the contact-request issue path is removed; issue templates and incident response point to `SECURITY.md`. F-009 resolved; enabling the form after the repository becomes public moves to #199 |
+| O-5 Registry name | `@avnionur/shepherd-typescript` (the `package.json` name); an unscoped `shepherd-ts` package is not pursued | Recorded in D-011 ([decisions](./decisions-and-risks.md)); `shepherd-ts` stays the CLI name. The name is reserved by the first publish (#199) |
+
+### Hosted CI attempt
+
+The owner enabled the `CI` (`ci.yml`) and `Dependency Audit` (`dependency-review.yml`) workflows
+and dispatched `CI` on `main` 2f379b8:
+[run 35829571781](https://github.com/avnionur/shepherd-typescript/actions/runs/35829571781). It
+failed with zero steps on the ubuntu, macOS, and Windows runners; GitHub's annotation says "The
+job was not started because recent account payments have failed or your spending limit needs to
+be increased." This is an account billing or spending-limit setting only the owner can change. The
+owner then deferred hosted runs and disabled `CI` and `Dependency Audit` again. `CodeQL` was never
+enabled: code scanning on a private repository requires GitHub Advanced Security, which is not
+available. No hosted workflow has run a job, so #29's "link exact CI runs" is still unsatisfiable,
+and the local Docker Linux lane of 2.33.1 remains the Linux evidence.
+
+### F-032 fix
+
+Root cause, reproduced on the reference host with `npx -y npm@11.19.0` and `npx -y npm@12.0.2`
+against the 2.33.2 tree: npm resolves `package.json` `files` with gitignore semantics, and the
+top-level entries `README.md`, `LICENSE`, `NOTICE`, `api-reference.config.json`, and `examples`
+had no `/`, so they were unanchored include rules. npm-packlist 10.0.4 (npm 11.19.0) applies such a
+file rule in every directory it walks and packed `docs/README.md` and `spec/README.md` (1,408
+files); npm-packlist 11.3.0 (npm 12.0.2) matches it only at the package root (1,406 files). A
+minimal fixture showed the same split for any unanchored file entry and none for anchored ones.
+
+Fix: the five entries start with `/`. `tooling/release/packed-files.ts` requires every entry to be
+a literal path (no pattern, negation, `./`, or trailing `/`) and every top-level entry to be
+anchored, and compares a packed tarball with the allowlist plus `packedFiles.alwaysIncluded`
+(`config/release-integrity.config.json`). `pnpm test:package-cli`, the last stage of
+`pnpm verify`, runs it on the tarball it installs, so `pnpm verify:release` and `release.yml`
+enforce it with whatever npm they use.
+
+| Tree and npm | Packed files | Check |
+| --- | --- | --- |
+| 2.33.2 allowlist, npm 11.19.0 | 1,408 (adds `docs/README.md`, `spec/README.md`) | fails: five unanchored entries and two undeclared files |
+| 2.33.2 allowlist, npm 12.0.2 | 1,406 | fails: five unanchored entries |
+| 2.33.3 allowlist, npm 11.19.0 | 1,406 | passes |
+| 2.33.3 allowlist, npm 12.0.2 | 1,406 | passes |
+
+With the fix the two `npm pack --dry-run --json` file lists are identical, and `npm pack` from both
+npm versions produced byte-identical tarballs (`avnionur-shepherd-typescript-2.33.3.tgz`,
+SHA-256 recorded under [Verification](#verification-2333)). The file set matches the 2.33.2 npm 12
+set exactly, so nothing that shipped before is dropped.
+
+### Deferred to #199
+
+- O-1: external security review.
+- O-2: signing identity, `release.yml` run with a verified attestation, dropping `"private": true`,
+  npm publication (F-010).
+- O-3: resolving the account billing or spending limit, green hosted `CI` runs on Linux and macOS
+  (minimum and current Node), `Dependency Audit` runs, CodeQL (needs a public repository or GitHub
+  Advanced Security), the Windows lane decision, a Linux variant of the volume fault suite, and a
+  Linux SLO host class (F-008).
+- O-4: enabling private vulnerability reporting once the repository is public.
+- O-5: reserving `@avnionur/shepherd-typescript` by the first publish.
+
+### Verification (2.33.3)
+
+Reference host: macOS arm64 (Apple M4 Pro), APFS, Node 24.17.0, pnpm 10.32.1, npm 12.0.2; npm
+11.19.0 through `npx -y npm@11.19.0`.
+
+| Command | Result |
+| --- | --- |
+| `pnpm sync:version`, `pnpm generate:sbom`, `pnpm generate:api-reference`, `pnpm update:compatibility-baseline` | Version only; 1 version file synchronized |
+| `CI=true pnpm verify` | Every stage through `typecheck` passes (`check:compatibility` 0 changes; `lint` 0 errors, the 2 pre-existing warnings and 1 info). `pnpm test`: 1,102 tests, 1,100 pass, 1 skipped (telemetry fuzz target), 1 fail (the known environmental "clone carrier fails closed on a macOS filesystem without clonefile support", see [Limits](#limits)); 100% line, branch, and function coverage including `tooling/release/packed-files.ts` |
+| `pnpm build && pnpm test:package-cli` (npm 12.0.2) | Pass, including the packed file-set check; installed runtime 24.17.0 supported |
+| `node scripts/test-packaged-cli.ts` with npm 11.19.0 first on `PATH` | Pass |
+| Same two runs with the 2.33.2 allowlist restored temporarily | Both fail in the packed file-set check (five unanchored entries; under npm 11 also `not declared in files: docs/README.md` and `spec/README.md`) |
+| `npm pack --dry-run --json` with npm 11.19.0 and npm 12.0.2 | Identical lists, 1,406 files |
+| `npm pack` with npm 11.19.0 and npm 12.0.2 | Identical tarballs, SHA-256 `bf54615d131354330dceef867ed23f2579071c8ea7e631608db4da57a42117b2` |
+| `pnpm release:reproducible-build` | Pass: both builds `avnionur-shepherd-typescript-2.33.3.tgz`, SHA-256 `bf54615d131354330dceef867ed23f2579071c8ea7e631608db4da57a42117b2`, `dist/` tree `sha256:7524e7380a5cce7146ffe1e7ca23d6799249082dc0fe0fbc7718266200aedbd7` |
+| `pnpm build:desktop` | Pass |
+
+Not run for 2.33.3: `pnpm check:slo` and `pnpm release:manifest` (no kernel or release-evidence
+code changed), the Linux lane, the extended fuzz run, and the soak. No hosted workflow ran. The
+tarball digest above covers the working tree at the time of the run; the final commit SHA is
+recorded in the pull request.
+
+### Register after #191
+
+No critical or high finding in any status and no open finding. Accepted: F-001, F-006, F-011,
+F-020. Fixed with an accepted residual: F-004, F-005, F-013, F-016, F-018, F-019, F-023, F-025.
+Fixed: F-002, F-003, F-007, F-009, F-012, F-014, F-015, F-017, F-021, F-022, F-024, F-026 to
+F-032. Owner-owed: F-008 (O-3, #199), F-010 (O-2, #199).
+
+### Verdict after #191
+
+**Phase 11 in-repo scope complete; 1.0 general availability stays conditional (no-go) until #199
+closes.** #191's in-repo slice is delivered: the owner decisions are recorded, F-032 is fixed with
+a check in `pnpm verify`, and vulnerability intake has a documented private path. The exit
+criteria that were owner-owed in the [re-scoped verdict](#re-scoped-verdict) remain unmet: no
+external review, no signed provenance or publication, and no hosted CI run. When #199 supplies
+that evidence, a further addendum can flip the verdict to general availability.

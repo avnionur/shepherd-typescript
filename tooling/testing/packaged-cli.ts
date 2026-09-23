@@ -12,6 +12,9 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { readReleaseIntegrityConfiguration } from "../release/integrity-config.ts";
+import { assertPackedFileSet } from "../release/packed-files.ts";
+import { readTarEntries } from "../release/reproducible-build.ts";
 import { testInstalledBundles } from "./bundles.ts";
 import { testEntryLoading } from "./entry-loading.ts";
 import { testPackagedExamples } from "./packaged-examples.ts";
@@ -57,7 +60,8 @@ const apiReferenceConfiguration = JSON.parse(
  * @param runtimeBoundaries - Require the configured additional Node boundary executables.
  * @returns A promise resolving after every conformance assertion passes.
  * @throws {AssertionError} If build output or installed-package behavior differs from contract.
- * @throws {Error} If packaging, installation, filesystem access, or a consumer process fails.
+ * @throws {Error} If packaging, installation, filesystem access, or a consumer process fails, or
+ * if the packed file set differs from the `package.json` `files` allowlist.
  */
 export async function testPackagedCli(runtimeBoundaries = false): Promise<void> {
     assert.equal(existsSync(path.join(repositoryRoot, "dist", "scripts")), false);
@@ -85,6 +89,11 @@ export async function testPackagedCli(runtimeBoundaries = false): Promise<void> 
             { cwd: repositoryRoot, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
         ).trim();
         const archivePath = path.join(packPath, archiveName);
+        assertPackedFileSet(
+            packageManifest.files,
+            readTarEntries(readFileSync(archivePath)),
+            (await readReleaseIntegrityConfiguration(repositoryRoot)).packedFiles,
+        );
         execFileSync(
             npmExecutable,
             [

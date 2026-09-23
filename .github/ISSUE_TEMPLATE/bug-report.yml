@@ -5,7 +5,7 @@ labels: ["bug"]
 body:
     - type: markdown
       attributes:
-          value: Do not report security vulnerabilities here. Use the private security advisory link.
+          value: Do not report security vulnerabilities here. Follow the private reporting path in SECURITY.md.
     - type: textarea
       id: behavior
       attributes:

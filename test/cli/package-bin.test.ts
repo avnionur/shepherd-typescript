@@ -31,7 +31,7 @@ test("package bin metadata matches the public distinct CLI executable", async ()
     assert.deepEqual(packageManifest.bin, { [executable as string]: protocol.cli.executablePath });
     assert.equal(packageManifest.files.includes("dist/src"), true);
     assert.equal(packageManifest.files.includes("dist/public-errors.config.json"), true);
-    assert.equal(packageManifest.files.includes("api-reference.config.json"), true);
+    assert.equal(packageManifest.files.includes("/api-reference.config.json"), true);
     assert.equal(packageManifest.files.includes("docs/generated/api-reference.md"), true);
     assert.equal(packageManifest.main, "dist/src/index.js");
     assert.equal(packageManifest.types, "dist/src/index.d.ts");

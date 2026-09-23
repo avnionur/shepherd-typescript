@@ -1,6 +1,6 @@
 # Support policy
 
-Status: normative for 2.25.2 (Phase 11 slice 1, #187). Security reporting is in
+Status: normative for 2.25.2 (Phase 11 slice 1, #187); Linux row updated in 2.33.3 (#191). Security reporting is in
 [SECURITY.md](../SECURITY.md); response steps are in [incident response](./incident-response.md).
 
 ## Supported versions
@@ -17,7 +17,7 @@ Status: normative for 2.25.2 (Phase 11 slice 1, #187). Security reporting is in
 | --- | --- | --- |
 | Node `>=24.12.0 <25` | Supported | [Node runtime support](./runtime-support.md) |
 | macOS arm64 (APFS) | Supported and verified locally | `CI=true pnpm verify` on the reference host |
-| Linux | Supported; verified by a local Docker lane (Debian bookworm, Node 24.21.0 and 24.12.0, 2.33.1); hosted lanes are disabled | `pnpm verify` and opt-in suites in the [Phase 11 exit audit addendum](../.plan/phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331); hosted runs owner-owed (O-3, #191) |
+| Linux | Supported; verified by a local Docker lane (Debian bookworm, Node 24.21.0 and 24.12.0, 2.33.1); hosted lanes are disabled | `pnpm verify` and opt-in suites in the [Phase 11 exit audit addendum](../.plan/phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331); hosted runs owner-owed (O-3, #199; a 2026-09-23 enablement attempt was blocked by an account billing limit) |
 | Native Windows | Unsupported | Native permission enforcement has no design; see the parity matrix |
 | Package entries in `package.json` `exports` | Supported public API | [Package exports](./package-exports.md), [generated API reference](./generated/api-reference.md) |
 | Deep imports into `dist/src` | Unsupported | [Package exports](./package-exports.md) |

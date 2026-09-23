@@ -622,7 +622,9 @@ Exit criteria:
 Milestone: **L4 release candidate** for the in-repo scope
 ([Phase 11 exit audit](./phase-11-exit-audit.md)); L4 general availability ("1.0") waits on the
 owner-owed rows O-1 to O-5 of the
-[production hardening contract](./production-hardening-contract.md#owner-owed-register).
+[production hardening contract](./production-hardening-contract.md#owner-owed-register). The
+owner decisions of #191 (2.33.3) closed O-4 by documented email intake and decided O-5's name;
+the remainder of O-1, O-2, O-3, and O-5 is tracked in #199.
 
 ## Dependency summary
 

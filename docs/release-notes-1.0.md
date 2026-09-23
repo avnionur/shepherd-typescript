@@ -2,7 +2,9 @@
 
 Status: release candidate for the in-repo scope, package 2.32.5, 2026-09-19; the F-016 fix in
 2.33.0 (#189) and the Phase 11 close-out in 2.33.1 (#190: local Linux lane, F-030 and F-031 fixed,
-owner actions tracked in #191) are noted below. The evidence and the
+owner actions tracked in #191), and the owner decisions of #191 in 2.33.3 (a hosted-CI
+enablement attempt blocked by an account billing limit and the workflows disabled again, email
+vulnerability intake, registry name decided, F-032 fixed; remaining owner actions in #199) are noted below. The evidence and the
 go/no-go verdict are in the [Phase 11 exit audit](../.plan/phase-11-exit-audit.md); digests are in
 the [release-candidate manifest](../.plan/release-candidate-manifest.md).
 
@@ -15,7 +17,7 @@ Semantic Versioning from its current version: this candidate is `@avnionur/sheph
 `"private": true` and has not been published to any registry.
 
 Verdict: **release candidate ready for the in-repo scope; 1.0 general availability is no-go until
-the owner-owed items below close.** The internal findings register has no unresolved critical or
+the owner-owed items below close (#199).** The internal findings register has no unresolved critical or
 high finding.
 
 ## What is delivered
@@ -39,8 +41,9 @@ application surfaces:
 
 ## Known limits
 
-- **No external security review.** The review is internal; its only open finding is F-032 (Low:
-  the packed file set depends on the npm version, owner's release work in #191). F-016 (Low;
+- **No external security review.** The review is internal and has no open finding. F-032 (Low:
+  the packed file set depended on the npm version) is fixed in 2.33.3 by anchored, literal
+  `files` entries checked in `pnpm verify`. F-016 (Low;
   acceptance of values nested roughly 2,000 to 8,000 levels deep depended on stack depth and JIT
   state) is fixed in 2.33.0 by a configured canonical nesting bound
   (`kernel.canonicalization.maxNestingDepth`, default 1,000; deeper values are refused with
@@ -49,8 +52,10 @@ application surfaces:
   Accepted residuals are listed in the [threat model](./threat-model.md#residual-risks).
 - **Unsigned and unpublished.** No signing identity, Sigstore attestation, or npm publication;
   `release.yml` has never run.
-- **No hosted CI.** Workflows are present and disabled; every gate is enforced by the local
-  `pnpm verify` and `pnpm verify:release` commands.
+- **No hosted CI.** Workflows are present and disabled. An attempt on 2026-09-23 to enable `CI`
+  and `Dependency Audit` was blocked by an account billing limit (no job started), so both were
+  disabled again; CodeQL needs GitHub Advanced Security, which the private repository does not
+  have. Every gate is enforced by the local `pnpm verify` and `pnpm verify:release` commands.
 - **Platforms.** Verified on macOS arm64 APFS and, in 2.33.1, in a local Docker Linux lane (Debian
   bookworm arm64, Node 24.21.0 and the 24.12.0 minimum): every `pnpm verify` gate, runtime
   boundaries, the extended fuzz run, the unprivileged Landlock jail tests, and the privileged
@@ -79,16 +84,18 @@ The full row-by-row status is the
 
 ## Owner-owed before general availability
 
-| ID | Item | Evidence that closes it |
+| ID | Item | State (2.33.3) and evidence still owed |
 | --- | --- | --- |
-| O-1 | External security review | Reviewer, scope, reviewed commit, report, and new findings entered in the register |
-| O-2 | Signing identity, attestation, npm publication (drop `"private": true`) | A `release.yml` run with a verified attestation against the tarball digest and the published version |
-| O-3 | Hosted CI and cross-OS lanes | Green hosted runs on Linux and macOS (minimum and current Node) with CodeQL and dependency review; a Windows decision; a Linux volume-fault variant and SLO host class (a local Docker Linux lane is recorded in 2.33.1) |
-| O-4 | Private vulnerability reporting | The advisory form enabled in the repository settings |
-| O-5 | Registry name | The reserved `@avnionur/shepherd-typescript` / `shepherd-ts` page, or a recorded decision to defer |
+| O-1 | External security review | Deferred to #199: reviewer, scope, reviewed commit, report, and new findings entered in the register |
+| O-2 | Signing identity, attestation, npm publication (drop `"private": true`) | Deferred to #199: a `release.yml` run with a verified attestation against the tarball digest and the published version ([owner release runbook](./release-integrity.md#owner-release-runbook)) |
+| O-3 | Hosted CI and cross-OS lanes | Enablement attempted and blocked by an account billing limit; workflows disabled again. Deferred to #199: green hosted runs, CodeQL, a Windows decision, a Linux volume-fault variant and SLO host class |
+| O-4 | Vulnerability intake | Done: private email while the repository is private ([SECURITY.md](../SECURITY.md)); the advisory form after it is public is deferred to #199 |
+| O-5 | Registry name | Decided: `@avnionur/shepherd-typescript`; reserved by the first publish (#199) |
 
 The register is in the [production hardening contract](../.plan/production-hardening-contract.md#owner-owed-register);
-the owner actions are tracked in [#191](https://github.com/avnionur/shepherd-typescript/issues/191).
+the owner decisions of 2026-09-23 were delivered by
+[#191](https://github.com/avnionur/shepherd-typescript/issues/191) and the remaining actions are
+tracked in [#199](https://github.com/avnionur/shepherd-typescript/issues/199).
 
 ## Upgrade and migration
 
