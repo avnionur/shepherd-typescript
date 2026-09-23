@@ -1,7 +1,8 @@
 # Production hardening contract
 
 Status: TypeScript contract, Phase 11 slice 1 (#187), 2.25.2; owner-owed register linked to #191
-and narrowed by the Linux verification lane (#190) in 2.33.1. Epic: #24. Normative behavior lives
+and narrowed by the Linux verification lane (#190) in 2.33.1; owner decisions of 2026-09-23
+recorded and the remainder moved to #199 in 2.33.3. Epic: #24. Normative behavior lives
 in `docs/`; this page records the slice map, per-slice non-claims, and the work only the repository
 owner can do. The [threat model](../docs/threat-model.md) and the
 [internal security review](./security-review.md) are the security inputs every later slice consumes.
@@ -14,9 +15,11 @@ owner can do. The [threat model](../docs/threat-model.md) and the
   compatibility report, rollback procedure, recovery drill, performance report) that no current
   script enforces.
 - The package is `"private": true`, has zero runtime dependencies, and the workflows in
-  `.github/workflows/` (`ci.yml`, `codeql.yml`, `dependency-review.yml`) are present but hosted CI is
-  disabled by the owner. "Enforced in CI" in this phase therefore means enforced by the local
-  `pnpm verify` (and, from #179, `pnpm verify:release`) commands.
+  `.github/workflows/` (`ci.yml`, `codeql.yml`, `dependency-review.yml`) were present but hosted CI
+  was disabled by the owner during the phase. "Enforced in CI" in this phase therefore means
+  enforced by the local `pnpm verify` (and, from #179, `pnpm verify:release`) commands. On
+  2026-09-23 (#191) an attempt to enable `CI` and `Dependency Audit` was blocked by an account
+  billing limit and both were disabled again (see O-3 below).
 - The internal review found no critical finding; the register is in
   [security-review.md](./security-review.md).
 
@@ -283,7 +286,9 @@ worktree blobs in the runtime, so no repository clean or process filter runs dur
 - No external security review has been performed; the review in this phase is internal (O-1).
 - No signing identity, Sigstore attestation, or npm publication; the package is private and
   `release.yml` is never run by an agent (O-2).
-- Hosted CI is disabled; Linux, Windows, and privileged-jail lanes are unverified (O-3).
+- Hosted CI is disabled (a 2026-09-23 enablement attempt was blocked by an account billing limit);
+  Linux is verified by a local Docker lane only, and Windows and privileged-jail hosted lanes are
+  unverified (O-3, #199).
 - SLOs apply only to the reference host class.
 - Open parity rows remain open: live provider adapters, streaming provider normalization, run start
   and package init refusals, native Windows (unsupported), Core-0H activation, and the external Lean
@@ -293,17 +298,20 @@ worktree blobs in the runtime, so no repository clean or process filter runs dur
 
 ## Owner-owed register
 
-The owner-only actions are tracked in
+The owner-only actions were tracked in
 [#191 Owner actions for 1.0 general availability](https://github.com/avnionur/shepherd-typescript/issues/191)
-(split out of epic #24 on 2026-09-19). Epic #24 is re-scoped to the in-repo criteria and closes
+(split out of epic #24 on 2026-09-19). Epic #24 is re-scoped to the in-repo criteria and closed
 with the Phase 11 close-out (#190); the
 [exit audit addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331) records
-the local Linux lane evidence that narrows O-3.
+the local Linux lane evidence that narrows O-3. The owner's decisions of 2026-09-23 and the in-repo
+work for #191 are in the [#191 addendum](./phase-11-exit-audit.md#owner-actions-2333); every
+remaining owner action moved to
+[#199](https://github.com/avnionur/shepherd-typescript/issues/199).
 
-| ID | Item | Why an agent cannot do it | In-repo preparation | Evidence the owner must add |
-| --- | --- | --- | --- | --- |
-| O-1 | External security review | Requires an independent reviewer and contract; an agent reviewing its own work is not independent | [Threat model](../docs/threat-model.md), [findings register and reviewer packet](./security-review.md#external-reviewer-packet) | Reviewer identity, scope, commit reviewed, report or summary, and each new finding entered in the register with an owning issue |
-| O-2 | Signing identity, attestation, npm publish | Requires registry credentials, an OIDC-capable hosted workflow, and a decision to drop `"private": true` | Unsigned provenance statement, SBOM, reproducible-build check, and `release.yml` from #179 | A run of `release.yml` with attestation, the published version, and a verified provenance check against the tarball digest |
-| O-3 | Enable hosted CI and cross-OS lanes | Workflows are disabled by the owner; agents cannot change repository settings or provide hosted, Windows, or dedicated Linux hosts | `ci.yml`, `codeql.yml`, `dependency-review.yml`; Linux carrier script `pnpm test:carriers:linux`; `pnpm test:runtime-boundaries`. Local Docker Linux lane (2.33.1, #190): full `pnpm verify` on Node 24.21.0 and 24.12.0, `pnpm test:runtime-boundaries`, extended `pnpm fuzz`, and the privileged `pnpm test:carriers:linux` pass ([addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331)) | Green hosted runs of `ci.yml` on Linux and macOS (minimum and current Node) with CodeQL and dependency review, linked from the audit; Windows decision; a Linux variant of the volume fault suite (`pnpm test:faults:volume` is macOS-only); a Linux SLO host class for `pnpm check:slo`. Tracked in #191 |
-| O-4 | Private vulnerability reporting | A repository setting only the owner can enable | [SECURITY.md](../SECURITY.md) fallback contact path; [incident response](../docs/incident-response.md) | Confirmation that the advisory form is enabled, recorded in the tracker |
-| O-5 | Registry name | Reservation succeeds only by publishing under an owner account | D-011 names `@avnionur/shepherd-typescript` and `shepherd-ts` | Registry page for the reserved name or a recorded decision to defer |
+| ID | Item | Why an agent cannot do it | In-repo preparation | Status (2.33.3, 2026-09-23) | Evidence still owed (#199) |
+| --- | --- | --- | --- | --- | --- |
+| O-1 | External security review | Requires an independent reviewer and contract; an agent reviewing its own work is not independent | [Threat model](../docs/threat-model.md), [findings register and reviewer packet](./security-review.md#external-reviewer-packet) | Deferred to #199 | Reviewer identity, scope, commit reviewed, report or summary, and each new finding entered in the register with an owning issue |
+| O-2 | Signing identity, attestation, npm publish | Requires registry credentials, an OIDC-capable hosted workflow, and a decision to drop `"private": true` | Unsigned provenance statement, SBOM, reproducible-build check, and `release.yml` from #179; packed file set made npm-version independent and checked in `pnpm verify` (F-032 fixed, 2.33.3); [owner release runbook](../docs/release-integrity.md#owner-release-runbook) | Deferred to #199; the package stays `"private": true` | A run of `release.yml` with attestation, the published version, and a verified provenance check against the tarball digest |
+| O-3 | Enable hosted CI and cross-OS lanes | Agents cannot change repository settings, billing, or spending limits, or provide hosted, Windows, or dedicated Linux hosts | `ci.yml`, `codeql.yml`, `dependency-review.yml`; Linux carrier script `pnpm test:carriers:linux`; `pnpm test:runtime-boundaries`. Local Docker Linux lane (2.33.1, #190): full `pnpm verify` on Node 24.21.0 and 24.12.0, `pnpm test:runtime-boundaries`, extended `pnpm fuzz`, and the privileged `pnpm test:carriers:linux` pass ([addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331)) | Attempted and deferred: on 2026-09-23 the owner enabled `CI` and `Dependency Audit`; the dispatched `CI` run on `main` ([35829571781](https://github.com/avnionur/shepherd-typescript/actions/runs/35829571781)) started no job on any runner because of an account billing or spending-limit restriction, and the owner disabled both workflows again. `CodeQL` was not enabled: code scanning on a private repository needs GitHub Advanced Security, which is unavailable. The local Docker Linux lane remains the Linux evidence | Green hosted `CI` runs on Linux and macOS linked from the audit (after the billing limit is resolved); CodeQL (after the repository is public or GitHub Advanced Security is available); the Windows lane decision (native Windows is unsupported but `ci.yml` has a Windows runner); a Linux variant of the volume fault suite; a Linux SLO host class for `pnpm check:slo` |
+| O-4 | Vulnerability intake | The advisory form is a repository setting that is unavailable while the repository is private | [SECURITY.md](../SECURITY.md) private email intake; [incident response](../docs/incident-response.md) | Done by documented alternative: email to the owner's address in `SECURITY.md` while private (F-009 resolved) | Enable private vulnerability reporting when the repository becomes public |
+| O-5 | Registry name | Reservation succeeds only by publishing under an owner account | D-011 names `@avnionur/shepherd-typescript` | Decided: `@avnionur/shepherd-typescript` (the `package.json` name); an unscoped `shepherd-ts` package is not pursued (`shepherd-ts` stays the CLI name) | The first publish (O-2) reserves the name |

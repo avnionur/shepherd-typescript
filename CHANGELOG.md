@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.33.3] - 2026-09-23
+
+### Defect Fixes
+
+- The packed file set depended on the npm version (F-032, #191). The top-level `files` entries
+  `README.md`, `LICENSE`, `NOTICE`, `api-reference.config.json`, and `examples` were unanchored
+  gitignore-style rules: npm 11 (npm-packlist 10) matched them in every directory it walked and
+  packed `docs/README.md` and `spec/README.md`, while npm 12 (npm-packlist 11) matched them only
+  at the package root. They now start with `/`. With the fix, npm 11.19.0 and npm 12.0.2 pack the
+  same 1,406 files and byte-identical tarballs on the reference host.
+
+### Improvement
+
+- Packed file-set check: `tooling/release/packed-files.ts` requires every `files` entry to be a
+  literal path and every top-level entry to start with `/`, and compares a packed tarball with the
+  allowlist plus the configured always-included files (`packedFiles` in
+  `config/release-integrity.config.json`). `pnpm test:package-cli`, and so `pnpm verify`,
+  `pnpm verify:release`, and `release.yml`, fails on any undeclared or missing file. Tests in
+  `test/release-integrity.test.ts` cover the rules and the npm 11 file list that exposed F-032.
+- Owner decisions of 2026-09-23 (#191), documented: an attempt to enable the hosted `CI` and
+  `Dependency Audit` workflows was blocked (the dispatched `CI` run started no job because of an
+  account billing or spending-limit restriction), so both are disabled again and no hosted run has
+  passed; `CodeQL` was not enabled because code scanning on a private repository requires GitHub
+  Advanced Security; vulnerability reports go by private email while
+  the repository is private and through the advisory form once it is public (the contact-request
+  issue path is removed, and the issue templates point to `SECURITY.md`); the registry name is
+  `@avnionur/shepherd-typescript` (D-011), and an unscoped `shepherd-ts` package is not pursued.
+- Docs: owner release runbook and packed file-set section in release integrity; `SECURITY.md`,
+  incident response, threat model, support policy, compatibility policy, runtime support, and
+  1.0 release notes; production hardening contract register, security review (F-008 narrowed,
+  F-009 resolved, F-010 deferred, F-032 fixed), release-candidate manifest, readiness dashboard,
+  testing plan, decisions (D-011), roadmap, tracker, and a #191 addendum to the Phase 11 exit audit.
+  Signing, publication, the external review, hosted runs, CodeQL, the Windows lane decision, and
+  the Linux volume-fault and SLO lanes are deferred to #199.
+
+### Impact
+
+The published file set no longer depends on the npm version that packs it. No public API,
+protocol, schema, or CLI change; the package stays `"private": true`, and 1.0 general
+availability stays conditional until #199 closes.
+
 ## [2.33.2] - 2026-09-19
 
 ### Defect Fixes

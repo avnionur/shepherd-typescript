@@ -1,6 +1,6 @@
 # Incident response
 
-Status: normative for 2.32.1 (Phase 11 slice 1, #187; secret runbook completed by #180; backup,
+Status: normative for 2.33.3 (Phase 11 slice 1, #187; email intake while private by #191; secret runbook completed by #180; backup,
 restore, and downgrade runbooks completed by #182; store growth runbook added by #183; crash,
 disk-full, and corruption evidence and runbooks added by #186). No runbook is pending. Severity
 uses the rubric in the
@@ -18,8 +18,9 @@ uses the rubric in the
 
 ## Triage
 
-1. Acknowledge the report on the channel it arrived on. Security reports stay in the private
-   advisory ([SECURITY.md](../SECURITY.md)).
+1. Acknowledge the report on the channel it arrived on. Security reports stay private: in the
+   email thread while the repository is private, or in the private advisory once it is public
+   ([SECURITY.md](../SECURITY.md)).
 2. Reproduce on the current `main` with the reporter's version. Record the commit, Node version,
    operating system, and whether the store was writable, read-only, or imported.
 3. Assign a severity with the rubric and add a finding to the
@@ -29,11 +30,15 @@ uses the rubric in the
 
 ## Private advisory
 
-- Use a GitHub security advisory draft for critical and high findings. Private vulnerability
-  reporting must be enabled by the owner (O-4 in the
-  [hardening contract](../.plan/production-hardening-contract.md)); until then, use the
-  contact-request fallback in [SECURITY.md](../SECURITY.md).
-- Keep exploit detail, proofs of concept, and affected user data inside the advisory.
+- While the repository is private, reports arrive by email to the address in
+  [SECURITY.md](../SECURITY.md) (owner decision of 2026-09-23, O-4 in the
+  [hardening contract](../.plan/production-hardening-contract.md)); keep the report, exploit
+  detail, and proofs of concept in that thread and in the owner's private tracking, never in a
+  public issue. A maintainer may still open a GitHub security advisory draft for a critical or high
+  finding.
+- Once the repository is public and private vulnerability reporting is enabled (#199), use a GitHub
+  security advisory draft for critical and high findings.
+- Keep exploit detail, proofs of concept, and affected user data inside the private channel.
 - Request a CVE through the advisory when the package is published.
 
 ## Fix and release

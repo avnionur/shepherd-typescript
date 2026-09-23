@@ -50,7 +50,7 @@ Coverage is earned in explicit levels so planned behavior is never presented as 
 | L1 | Shepherd `0.3.0` settlement compatibility | Complete in 1.51.0 |
 | L2 | Scope and versioned-world substrate parity | Complete in 2.7.1 for the recorded hosts |
 | L3 | Paper programming-model parity | Complete in 2.20.1 for the documented scope: live observation and interception (Phase 7) in 2.10.1, coupled checkpoints, rewind, and replay (Phase 8) in 2.15.1, and task-as-value meta-agents (Phase 9) in 2.20.1; research applications (Phase 10) complete in 2.25.1 for the documented offline scope |
-| L4 | Production security, recovery, performance, packaging, and releases | Release candidate for the in-repo scope in 2.32.4 ([Phase 11 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-11-exit-audit.md)); 1.0 general availability is no-go until the owner-owed items close: external security review, signed provenance and publication, hosted CI and cross-OS lanes, private vulnerability reporting, and the registry name |
+| L4 | Production security, recovery, performance, packaging, and releases | Release candidate for the in-repo scope in 2.32.4 ([Phase 11 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-11-exit-audit.md)); 1.0 general availability is no-go until the owner-owed items close ([#199](https://github.com/avnionur/shepherd-typescript/issues/199)): external security review, signed provenance and publication, CodeQL and the remaining hosted and cross-OS lanes, and the advisory form once the repository is public |
 
 Naming, MIT licensing, ESM package exports, and installed consumer compatibility are defined.
 Publication remains disabled until registry ownership and release checks are complete. "1.0" is the
@@ -677,7 +677,8 @@ migrations fail with a precise message unless the configured deprecation window,
 and version bump allow them. `pnpm verify:release` additionally runs `pnpm check:slo` (kernel
 benchmark budgets for the reference host class, [performance report](./docs/performance-report.md);
 `pnpm bench:kernel` records a new artifact), builds and packs twice and requires
-byte-identical tarballs, then writes a lockfile SBOM and an unsigned provenance statement into the
+byte-identical tarballs (the packed file set must equal the literal, anchored `files` allowlist, a
+check that also runs in `pnpm verify` through `pnpm test:package-cli`), then writes a lockfile SBOM and an unsigned provenance statement into the
 ignored `release/` directory ([release integrity](./docs/release-integrity.md)).
 
 Protocol modes, identifier shape, append defaults, interchange versions, and generated schemas are
@@ -829,11 +830,18 @@ The [Phase 11 exit audit](https://github.com/avnionur/shepherd-typescript/blob/m
 (2.32.4) records the 1.0 readiness verdict: a release candidate for the in-repo scope, with no
 unresolved critical or high internal finding, and 1.0 general availability no-go until the
 owner-owed items close. No external security review has been performed, nothing is signed or
-published, hosted CI is disabled, and performance budgets hold only for the macOS arm64 APFS
-reference host. Its 2.33.1 close-out addendum records a local Docker Linux lane (every
+published, and performance budgets hold only for the macOS arm64 APFS reference host. Its 2.33.1 close-out addendum records a local Docker Linux lane (every
 `pnpm verify` gate on Node 24.21.0 and the 24.12.0 minimum), closes the in-repo Phase 11 scope,
 and moves the owner-only items to
-[#191](https://github.com/avnionur/shepherd-typescript/issues/191). The [1.0 release notes](./docs/release-notes-1.0.md) list what is delivered, the
+[#191](https://github.com/avnionur/shepherd-typescript/issues/191). Its 2.33.3 addendum records
+the owner's #191 decisions: an attempt to enable hosted `CI` was blocked by an account billing
+limit and the workflows stay disabled (CodeQL also needs GitHub Advanced Security, which the
+private repository does not have), vulnerability
+reports go by private email while the repository is private ([SECURITY.md](./SECURITY.md)), the
+registry name is `@avnionur/shepherd-typescript`, and the packed file set no longer depends on the
+npm version. Signing, publication, the external review, and the remaining hosted lanes are deferred
+to [#199](https://github.com/avnionur/shepherd-typescript/issues/199), so 1.0 general availability
+stays conditional. The [1.0 release notes](./docs/release-notes-1.0.md) list what is delivered, the
 known limits, and upgrade pointers.
 
 Phase 3 reached **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline

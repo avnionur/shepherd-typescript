@@ -293,4 +293,9 @@ delivered every slice; its [production hardening contract](./production-hardenin
 [internal security review](./security-review.md) holds the findings register. The
 [Phase 11 exit audit](./phase-11-exit-audit.md) records the verdict: release candidate ready for
 the in-repo scope; 1.0 general availability is no-go until the owner-owed rows O-1 to O-5 close.
-The next step is owner action on those rows, not further agent implementation.
+The owner decisions of 2026-09-23 (#191, 2.33.3) documented email vulnerability intake, decided
+the registry name, and fixed F-032; an attempt to enable hosted `CI` was blocked by an account
+billing limit and the workflows were disabled again. The remaining owner actions (external review,
+signing and publication, hosted runs, CodeQL, the Windows decision, Linux volume-fault and SLO
+lanes, the advisory form) are tracked in #199, and the verdict stays
+conditional until #199 closes.

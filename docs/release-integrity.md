@@ -1,11 +1,11 @@
 # Release integrity
 
-Status: normative from 2.26.0 (Phase 11 slice 2, #179). This page defines the supply-chain
-evidence the repository produces, how to verify it locally, and the signing and publication steps
-only the owner can perform. Configuration:
+Status: normative from 2.26.0 (Phase 11 slice 2, #179); packed file-set check and owner release
+runbook from 2.33.3 (#191). This page defines the supply-chain evidence the repository produces,
+how to verify it locally, and the signing and publication steps only the owner can perform. Configuration:
 [`config/release-integrity.config.json`](../config/release-integrity.config.json). Implementation:
-`tooling/release/` (`sbom.ts`, `provenance.ts`, `reproducible-build.ts`, `integrity-config.ts`) with
-thin adapters in `scripts/`. Tests: `test/release-integrity.test.ts`.
+`tooling/release/` (`sbom.ts`, `provenance.ts`, `reproducible-build.ts`, `packed-files.ts`,
+`integrity-config.ts`) with thin adapters in `scripts/`. Tests: `test/release-integrity.test.ts`.
 
 ## Artifacts
 
@@ -73,6 +73,30 @@ digests (see the tracker entry for the values). No nondeterminism fix was needed
 build and configuration copy are deterministic, and `npm pack` normalizes tarball timestamps.
 Reproducibility across operating systems, Node versions, or npm versions is not claimed.
 
+### Packed file set
+
+The `package.json` `files` array is the complete allowlist of what ships, plus what npm always
+adds (`packedFiles.alwaysIncluded` in the configuration, `package.json`). npm resolves `files` with
+gitignore semantics, and npm versions disagreed on entries without an interior `/`: npm 11
+(npm-packlist 10) matched `README.md` in every directory it walked and packed `docs/README.md` and
+`spec/README.md`, while npm 12 (npm-packlist 11) matched only the package root (finding F-032).
+From 2.33.3 the rules are:
+
+- every entry is a literal path: no glob pattern, negation, `./` prefix, or trailing `/`;
+- every top-level entry starts with `/` (`/README.md`, `/examples`), so it matches only at the
+  package root for every npm version.
+
+`pnpm test:package-cli` (the last stage of `pnpm verify`, so also `pnpm verify:release` and
+`release.yml`) packs the package with the installed npm and fails when a rule is broken, when the
+tarball contains a file that no entry declares, or when a declared entry or always-included file
+is missing (`assertPackedFileSet`). The rules and the comparison are tested in
+`test/release-integrity.test.ts` with the npm 11 file list that exposed F-032.
+
+Recorded on the reference host for 2.33.3: `npm pack --dry-run --json` from npm 11.19.0 and from
+npm 12.0.2 list the same 1,406 files, and `npm pack` from both produces byte-identical tarballs.
+This makes the file set independent of the npm version; tarball bytes across npm versions are
+still not claimed in general.
+
 ## Local verification
 
 ```sh
@@ -87,23 +111,97 @@ compare `release/sbom.cdx.json` with `docs/generated/sbom.cdx.json` at the recor
 
 ## Release workflow
 
-[`.github/workflows/release.yml`](../.github/workflows/release.yml) is present but has never run:
-hosted workflows are disabled at the owner's request. On manual dispatch it checks out the commit,
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) is present but has never run.
+Hosted workflows are disabled: an attempt on 2026-09-23 (#191) to enable `CI` was blocked by an
+account billing limit, and the owner disabled the workflows again. Running `release.yml` is
+deferred to [#199](https://github.com/avnionur/shepherd-typescript/issues/199) together with
+signing, publication, and hosted CI; it also needs hosted runners, so the billing limit must be
+resolved first. On manual dispatch it checks out the commit,
 installs with `pnpm install --frozen-lockfile --ignore-scripts`, runs `pnpm verify:release`,
 attests the tarball with `actions/attest-build-provenance`, uploads `release/`, and, only when the
 `publish` input is set, publishes the attested tarball with `npm publish --provenance` from the
 protected `npm-publish` environment. Every action is pinned to a commit SHA resolved read-only from
 its release tag.
 
-## Owner-owed steps
+## Owner release runbook
 
-These are O-2 in the [production hardening contract](../.plan/production-hardening-contract.md):
+These steps are O-2 and O-5 in the
+[production hardening contract](../.plan/production-hardening-contract.md#owner-owed-register).
+By the owner's decision of 2026-09-23 they are deferred to
+[#199](https://github.com/avnionur/shepherd-typescript/issues/199): the package stays
+`"private": true`, nothing is signed, and nothing is published. Registry and GitHub requirements
+change over time; confirm each one against the current npm and GitHub documentation when running
+the runbook, and record what was used.
 
-1. Decide to publish and remove `"private": true` from `package.json`.
-2. Create the protected `npm-publish` environment with required reviewers and an `NPM_TOKEN`
-   secret (or npm trusted publishing), and enable hosted workflows.
-3. Dispatch `release.yml`, then record the run, the published version, and a verification of the
-   Sigstore attestation against the tarball digest (for example `gh attestation verify`).
+### 1. Preconditions
 
-Until then the repository claims only: a lockfile SBOM, an unsigned provenance statement, and a
-host-local reproducible build.
+- Registry name: `@avnionur/shepherd-typescript`, the `name` already in `package.json` (decision
+  D-011, confirmed 2026-09-23). `shepherd-ts` is the CLI executable name only; publishing an
+  unscoped `shepherd-ts` package is not pursued.
+- Hosted Actions can run (the account billing or spending limit that blocked `CI` on 2026-09-23
+  is resolved), `main` is green in hosted `CI` for the commit to release, and
+  `pnpm verify:release` passes locally on the reference host.
+- Repository visibility: npm provenance (`npm publish --provenance`) and GitHub artifact
+  attestations are designed for public repositories; a private repository needs a plan that
+  supports attestations for private repositories and cannot produce public npm provenance. Make
+  the repository public, or record why not, before dispatching with `publish` set.
+
+### 2. npm account and credentials
+
+1. Use an npm account that owns the `@avnionur` scope, with two-factor authentication enabled.
+2. Prefer npm trusted publishing (OIDC): on the package's npm settings add a trusted publisher for
+   the GitHub repository `avnionur/shepherd-typescript`, workflow `release.yml`, and environment
+   `npm-publish`. Trusted publishing needs an npm CLI that supports it in the publish job and the
+   `id-token: write` permission, which `release.yml` already grants; the `NODE_AUTH_TOKEN` line
+   can then be removed in the same change.
+3. Otherwise create a granular access token limited to publishing this package, store it as the
+   `NPM_TOKEN` secret of the `npm-publish` environment, and set an expiry. Never commit a token or
+   put it in a repository-level secret.
+4. A first publish is what reserves the name; `npm login` on a workstation is needed only for
+   account and package settings, not for publishing.
+
+### 3. Signing identity
+
+There is no long-lived signing key. The signing identity is the GitHub Actions OIDC identity of
+the `release.yml` run: `actions/attest-build-provenance` signs a SLSA provenance attestation for
+`release/*.tgz` through Sigstore, and `npm publish --provenance` asks npm to record provenance for
+the same tarball. Create the protected `npm-publish` environment with required reviewers and
+restrict it to `main` so only a reviewed dispatch from `main` can publish.
+
+### 4. Drop `"private": true`
+
+In a reviewed pull request, remove `"private": true` from `package.json`, add the CHANGELOG entry
+and version bump required by `AGENTS.md`, run `pnpm sync:version`, `pnpm verify`, and
+`pnpm build:desktop`, and merge only after hosted `CI` passes.
+
+### 5. Run `release.yml`
+
+1. Dispatch without publishing first: `gh workflow run release.yml --ref main -f publish=false`.
+   The build job runs `pnpm verify:release` (which includes the packed file-set check), attests
+   the tarball, and uploads `release/`.
+2. Download the evidence: `gh run download <run-id> --name release --dir release-<version>`.
+3. When the evidence verifies (step 6), dispatch again with `-f publish=true` and approve the
+   `npm-publish` environment. The publish job publishes the attested tarball from the build job;
+   it does not rebuild.
+
+### 6. Verify the attestation against the tarball digest
+
+```sh
+shasum -a 256 release-<version>/*.tgz            # must equal the provenance subject and manifest entry
+gh attestation verify release-<version>/<tarball>.tgz --repo avnionur/shepherd-typescript
+npm pack @avnionur/shepherd-typescript@<version> # after publish: the registry tarball
+shasum -a 256 avnionur-shepherd-typescript-<version>.tgz  # must equal the attested digest
+npm audit signatures                             # in a consumer project that installed the package
+```
+
+The SHA-256 of the tarball must be identical in `release/provenance.intoto.json` (`subject`),
+`release/release-manifest.json`, the verified GitHub attestation, and the registry tarball.
+
+### 7. Record the evidence
+
+Add the run URL, the published version, the tarball SHA-256, and the output of the verification
+commands to a Phase 11 exit audit addendum and the
+[release-candidate manifest](../.plan/release-candidate-manifest.md), mark F-010 fixed in the
+[security review](../.plan/security-review.md), and update the tracker. Until then the repository
+claims only: a lockfile SBOM, an unsigned provenance statement, a host-local reproducible build,
+and a packed file set that does not depend on the npm version.

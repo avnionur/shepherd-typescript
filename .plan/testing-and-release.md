@@ -328,13 +328,14 @@ Stable release additionally:
 
 ### Enforced gates (from 2.26.0, #179)
 
-Hosted CI is disabled, so these gates are local commands:
+Hosted CI is disabled (a 2026-09-23 enablement attempt was blocked by an account billing limit;
+#199), so these gates are local commands:
 
 | Gate | Command | Where |
 | --- | --- | --- |
 | Protocol and API compatibility, deprecation window, no silent protocol changes | `pnpm check:compatibility` | `pnpm verify`, `pnpm verify:serial` |
 | Lockfile SBOM current | `pnpm check:sbom` | `pnpm verify`, `pnpm verify:serial` |
-| npm tarball tested after packing | `pnpm test:package-cli` | `pnpm verify` |
+| npm tarball tested after packing; packed file set equals the literal, anchored `files` allowlist for every npm version (from 2.33.3, #191, F-032) | `pnpm test:package-cli` | `pnpm verify` |
 | Downgrade behavior known; every historical store schema migrates forward; recovery (backup, restore, interruption) drills pass (from 2.29.0, #182) | `test/operations/migration-drills.test.ts`, `test/operations/backup-restore.test.ts` | `pnpm test` in `pnpm verify` |
 | No full table scan on hot-path SQL; bounded scale tier; maintenance preserves exports (from 2.30.0, #183) | `test/store/query-plans.test.ts`, `test/store/scale.test.ts`, `test/store/maintenance.test.ts` | `pnpm test` in `pnpm verify` |
 | Kill/restart, disk-full, and corruption outcomes classified complete, retryable, or refused; bounded soak (from 2.32.1, #186) | `test/faults/*.test.ts` | `pnpm test` in `pnpm verify` |

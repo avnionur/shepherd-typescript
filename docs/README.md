@@ -117,7 +117,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 
 - [Contributing](../CONTRIBUTING.md) defines implementation, verification, documentation, and pull
   request requirements.
-- [Security policy](../SECURITY.md) defines private reporting and the supported security boundary.
+- [Security policy](../SECURITY.md) defines private reporting (email while the repository is
+  private, the advisory form once it is public) and the supported security boundary, including
+  the status of the hosted workflows.
 - [Project structure](./project-structure.md) explains module ownership, dependency direction, and
   where new files belong.
 - [Protocol configuration](./protocol-configuration.md) defines validation, immutable snapshots,
@@ -127,7 +129,7 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   [internal security review](../.plan/security-review.md) findings register.
 - [Support policy](./support-policy.md) defines supported versions, runtimes, platforms, surfaces,
   store compatibility, and what "1.0" means.
-- [Incident response](./incident-response.md) defines severity levels, triage, private advisories,
+- [Incident response](./incident-response.md) defines severity levels, triage, private reports and advisories,
   fix and release, deprecation and rollback, and store-corruption and lost-backup runbooks.
 - [Production hardening contract](../.plan/production-hardening-contract.md) maps the Phase 11
   work items and exit criteria to slices and owner-owed rows, with per-slice non-claims.
@@ -136,7 +138,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   and upgrade and migration pointers.
 - [Phase 11 exit audit](../.plan/phase-11-exit-audit.md) records the 1.0 readiness verdict (release
   candidate for the in-repo scope; general availability no-go until owner-owed items close, tracked
-  in #191; the 2.33.1 addendum records the local Docker Linux lane and closes the in-repo scope) with
+  in #191 and then #199; the 2.33.1 addendum records the local Docker Linux lane and closes the
+  in-repo scope, and the 2.33.3 addendum records the owner decisions of #191) with
   the evidence map, recovery classification, independent review, verification, and limits; the
   [release-readiness dashboard](../.plan/release-readiness-dashboard.md) classifies every phase
   epic, parity row, and paper-coverage row, and the
@@ -147,8 +150,10 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   compatibility, the classified change log, and how `pnpm check:compatibility` baselines are
   updated.
 - [Release integrity](./release-integrity.md) defines the lockfile SBOM, the unsigned in-toto/SLSA
-  provenance statement, the reproducible-build check, `pnpm verify:release`, the unrun release
-  workflow, and the owner-owed signing and publication steps.
+  provenance statement, the reproducible-build check, the npm-version-independent packed file set
+  and its check, `pnpm verify:release`, the unrun release workflow, and the owner release runbook
+  (credentials, signing identity, dropping `"private"`, running `release.yml`, and verifying the
+  attestation against the tarball digest).
 - [Generated SBOM](./generated/sbom.cdx.json) is the checked-in CycloneDX-shaped bill of materials
   derived from `pnpm-lock.yaml`.
 - [Secrets and retention](./secrets-and-retention.md) defines configured secret detectors, the

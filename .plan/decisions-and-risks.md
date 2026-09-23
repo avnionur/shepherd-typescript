@@ -74,6 +74,10 @@ Do not expose an unscoped `shepherd` compatibility alias without a separate
 legal, ecosystem-conflict, and migration review. The README must continue to
 identify this as an independent implementation.
 
+Confirmed by the owner on 2026-09-23 (#191): the registry name is `@avnionur/shepherd-typescript`;
+an unscoped `shepherd-ts` package is not pursued, and `shepherd-ts` remains only the CLI
+executable name. The name is reserved by the first publish, which is deferred to #199.
+
 ### D-012: MIT license with upstream attribution
 
 License original repository work under MIT. Preserve applicable upstream

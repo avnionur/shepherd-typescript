@@ -1,4 +1,8 @@
 {
+    "packedFiles": {
+        "alwaysIncluded": ["package.json"],
+        "archiveRoot": "package"
+    },
     "provenance": {
         "buildType": "https://github.com/avnionur/shepherd-typescript/blob/main/docs/release-integrity.md#build-type-v1",
         "builderId": "https://github.com/avnionur/shepherd-typescript/blob/main/docs/release-integrity.md#local-unsigned-builder",

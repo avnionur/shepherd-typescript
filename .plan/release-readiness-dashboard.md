@@ -3,7 +3,10 @@
 Status: 2.32.4, 2026-09-19, #29; updated in 2.32.5 for the F-029 fix and in 2.33.0 for the F-016
 fix (#189, configured canonical nesting bound), and in 2.33.1 for the Phase 11 close-out (#190: local
 Docker Linux lane, F-030 and F-031 fixed, F-032 open for the owner's release work, owner actions
-moved to #191).
+moved to #191), and in 2.33.3 for the owner decisions of #191 (a hosted-CI enablement attempt
+blocked by an account billing limit and the workflows disabled again, CodeQL unavailable without
+GitHub Advanced Security, email vulnerability intake, registry name decided, F-032 fixed; remaining
+owner actions moved to #199).
 Companion to the
 [Phase 11 exit audit](./phase-11-exit-audit.md). It shows every phase epic, every
 [parity matrix](./parity-matrix.md) row, and every [paper coverage](./paper-coverage.md) row with
@@ -36,7 +39,7 @@ Classifications:
 | 8 Coupled checkpoints, rewind, and replay | #21 | Closed 2026-09-14 | [Phase 8 exit audit](./phase-8-exit-audit.md) (2.15.1) | L3 progress |
 | 9 Task-as-value meta-agents | #22 | Closed 2026-09-15 | [Phase 9 exit audit](./phase-9-exit-audit.md) (2.20.1) | L3 documented scope |
 | 10 Research applications | #23 | Closed 2026-09-18 | [Phase 10 exit audit](./phase-10-exit-audit.md) (2.25.1) | L3 research applications, offline scope |
-| 11 Production hardening and 1.0 | #24 | Open; closes when the close-out (#190) merges (owner re-scope 2026-09-19) | [Phase 11 exit audit](./phase-11-exit-audit.md) (2.32.4; F-029 fixed in 2.32.5; [close-out addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331) 2.33.1): in-repo scope complete, including a local Docker Linux lane on Node 24.21.0 and 24.12.0; owner-only items O-1 to O-5 move to #191 | L4 release candidate for the in-repo scope; GA no-go until #191 closes |
+| 11 Production hardening and 1.0 | #24 | Closed with the close-out (#190, PR #198) after the owner re-scope of 2026-09-19 | [Phase 11 exit audit](./phase-11-exit-audit.md) (2.32.4; F-029 fixed in 2.32.5; [close-out addendum](./phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331) 2.33.1): in-repo scope complete, including a local Docker Linux lane on Node 24.21.0 and 24.12.0; owner-only items O-1 to O-5 move to #191; [#191 addendum](./phase-11-exit-audit.md#owner-actions-2333) 2.33.3: owner decisions delivered, remainder moved to #199 | L4 release candidate for the in-repo scope; GA no-go until #199 closes |
 
 Source: `gh issue list --state all --label type:epic` on 2026-09-19. Children of #24 (#187, #179
 to #186, #29) are open pending the Phase 11 pull request.

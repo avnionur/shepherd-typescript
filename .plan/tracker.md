@@ -699,6 +699,17 @@ open for a follow-up PATCH before the candidate is tagged.
   byte-identical to `JSON.stringify` for plain data, shared with the canonical encoder), so an
   included body at the canonical bound (about 4,000 OTLP levels) is written on Linux, where native
   `JSON.stringify` refused it; `pnpm verify` is green on Linux on Node 24.21.0 and 24.12.0.
+- [x] Owner actions for 1.0 general availability, in-repo slice (#191, PATCH 2.33.3): F-032 fixed
+  (top-level `files` entries anchored with `/`; `tooling/release/packed-files.ts` checks literal,
+  anchored entries and the packed file set in `pnpm test:package-cli`; npm 11.19.0 and 12.0.2 pack
+  the same 1,406 files and identical tarballs); owner decisions of 2026-09-23 documented: email
+  vulnerability intake while the repository is private (F-009 resolved), registry name
+  `@avnionur/shepherd-typescript` (D-011), a hosted-CI enablement attempt blocked by an account
+  billing limit and the workflows disabled again, CodeQL unavailable without GitHub Advanced
+  Security; [owner release runbook](../docs/release-integrity.md#owner-release-runbook) added; the
+  [#191 addendum](./phase-11-exit-audit.md#owner-actions-2333) keeps the verdict conditional.
+  O-1, O-2, the hosted parts of O-3, the advisory form (O-4), and the name reservation (O-5) move
+  to #199.
 
 Phase 10 is complete for its documented offline scope; the [exit audit](./phase-10-exit-audit.md)
 maps every work item and exit criterion to entry points, docs, and tests.
@@ -794,6 +805,21 @@ parents, and supervisors reach fenced durable-run control through `./supervision
 observation leaves exported traces byte-identical.
 
 ## Verification required for this slice
+
+Owner actions, in-repo slice (#191): PATCH 2.33.3; F-032 fix and packed file-set check, owner
+decisions documented; no public API, protocol, schema, or CLI change.
+
+- [x] `pnpm sync:version`, `pnpm generate:sbom`, `pnpm generate:api-reference`,
+  `pnpm update:compatibility-baseline` (version only)
+- [x] `CI=true pnpm verify`: every stage through `typecheck` passes; `pnpm test` 1,102 tests,
+  1,100 pass, 1 skipped, 1 fail (the known clone carrier test), 100% coverage; `pnpm build &&
+  pnpm test:package-cli` and `pnpm build:desktop` pass
+- [x] `test:package-cli` passes with npm 11.19.0 and 12.0.2 and fails with the 2.33.2 allowlist
+  under both; `npm pack` from both npm versions gives 1,406 files and identical tarballs;
+  `pnpm release:reproducible-build` passes. Details in the
+  [#191 addendum](./phase-11-exit-audit.md#verification-2333)
+- [ ] Hosted runs: none; the 2026-09-23 enablement attempt was blocked by an account billing limit
+  (#199)
 
 Phase 11 close-out (#190): PATCH 2.33.1; Linux verification lane, F-030 and F-031 fixes, F-032
 recorded; no public API, protocol, schema, or CLI change.
@@ -1468,8 +1494,9 @@ complete for its documented offline scope. Phase 11 (#24, production hardening a
 delivered #187, #179 to #186, and the readiness audit (#29, 2.32.4): release candidate ready for
 the in-repo scope, 1.0 general availability no-go. No agent-implementable slice remains in the
 roadmap; the close-out (#190, 2.33.1) records the local Linux lane and moves the owner-only items
-to #191; the next step is owner action on O-1 to O-5 (#191) in the
-[production hardening contract](./production-hardening-contract.md#owner-owed-register) (the
+to #191; #191's in-repo slice (2.33.3) recorded the owner decisions and fixed F-032, and the next
+step is owner action on the remaining items in #199 (see the
+[production hardening contract](./production-hardening-contract.md#owner-owed-register); the
 F-016 protocol decision was made and delivered by #189 in 2.33.0), after which an addendum to the
 [Phase 11 exit audit](./phase-11-exit-audit.md) can record general availability.
 
@@ -1482,7 +1509,8 @@ Completed prerequisites: retained coding (#98/PR #103), read-only review (#99/PR
 bindings (#100/PR #105), and custom effects (#101/PR #106). Preserve their installed verification,
 the original quickstart, and exact authority throughout later work.
 
-Hosted workflows remain disabled at the owner's request. The delivered CI fixes preserve LF
+Hosted workflows remain disabled: an enablement attempt on 2026-09-23 (#191) was blocked by an
+account billing limit, and CodeQL needs GitHub Advanced Security on a private repository. The delivered CI fixes preserve LF
 artifacts and normalize Windows compiler paths; CodeQL revisions and metadata permissions are
 aligned. Dependency auditing uses the locked graph. CodeQL upload requires code scanning support.
 
@@ -1490,10 +1518,11 @@ aligned. Dependency auditing uses the locked graph. CodeQL upload requires code 
 
 - `CLAUDE.md` is not present. A repository-specific `template/changelog-template.md` now captures
   the Keep a Changelog and Semantic Versioning format used here.
-- Registry names are selected but are not reserved until publication succeeds.
+- Registry names are selected (`@avnionur/shepherd-typescript`, confirmed 2026-09-23 in D-011) but
+  are not reserved until publication succeeds (#199).
 - npm publication remains disabled until package exports and consumer compatibility checks pass.
-- Private vulnerability reporting must be enabled in the GitHub repository settings before the
-  first public release.
+- Private vulnerability reporting must be enabled in the GitHub repository settings once the
+  repository is public (#199); until then `SECURITY.md` names private email intake.
 - The upstream lock records provenance only; executable upstream conformance fixtures remain a
   later acceptance requirement.
 - Completion includes shipped, substrate, paper-level, and operational capabilities; incomplete

@@ -38,8 +38,18 @@ export type ProvenanceConfiguration = {
     readonly statementType: string;
 };
 
+/** Packed file-set check settings. */
+export type PackedFilesConfiguration = {
+    /** Archive-relative paths the packer adds whether or not `files` lists them. */
+    readonly alwaysIncluded: readonly string[];
+    /** Directory that holds every entry of a packed tarball. */
+    readonly archiveRoot: string;
+};
+
 /** Validated `config/release-integrity.config.json`. */
 export type ReleaseIntegrityConfiguration = {
+    /** Packed file-set check settings. */
+    readonly packedFiles: PackedFilesConfiguration;
     /** Provenance statement settings. */
     readonly provenance: ProvenanceConfiguration;
     /** Release output locations. */
@@ -95,6 +105,7 @@ export async function readReleaseIntegrityConfiguration(
  */
 export function parseReleaseIntegrityConfiguration(value: unknown): ReleaseIntegrityConfiguration {
     const root = objectValue(value, "release integrity configuration");
+    const packedFiles = objectValue(root.packedFiles, "packedFiles");
     const provenance = objectValue(root.provenance, "provenance");
     const release = objectValue(root.release, "release");
     const reproducibleBuild = objectValue(root.reproducibleBuild, "reproducibleBuild");
@@ -102,6 +113,13 @@ export function parseReleaseIntegrityConfiguration(value: unknown): ReleaseInteg
     const text = (section: Readonly<Record<string, unknown>>, key: string, label: string) =>
         stringValue(section[key], `${label}.${key}`);
     return {
+        packedFiles: {
+            alwaysIncluded: stringArrayValue(
+                packedFiles.alwaysIncluded,
+                "packedFiles.alwaysIncluded",
+            ),
+            archiveRoot: text(packedFiles, "archiveRoot", "packedFiles"),
+        },
         provenance: {
             artifact: text(provenance, "artifact", "provenance"),
             buildType: text(provenance, "buildType", "provenance"),
@@ -133,10 +151,14 @@ export function parseReleaseIntegrityConfiguration(value: unknown): ReleaseInteg
 }
 
 function commandValue(value: unknown, label: string): readonly string[] {
+    return stringArrayValue(value, `reproducibleBuild.${label}`);
+}
+
+function stringArrayValue(value: unknown, label: string): readonly string[] {
     if (!Array.isArray(value) || value.length === 0) {
-        throw new TypeError(`reproducibleBuild.${label} must be a non-empty array`);
+        throw new TypeError(`${label} must be a non-empty array`);
     }
-    return value.map((part, index) => stringValue(part, `reproducibleBuild.${label}[${index}]`));
+    return value.map((part, index) => stringValue(part, `${label}[${index}]`));
 }
 
 function objectValue(value: unknown, label: string): Readonly<Record<string, unknown>> {
