@@ -1,5 +1,5 @@
 {
-    "description": "Hardening suites. The fuzz section drives test/fuzz (default tier inside pnpm test) and pnpm fuzz (scripts/fuzz-cli.ts, extended runs). Each target runs `iterations` seeded cases per seed; a case passes when the input is accepted and re-encodes canonically and stably, or when it throws an Error whose class is in the target's allowedErrors, within caseBudgetMilliseconds, without changing built-in prototypes. The faults section drives test/faults (process kill, disk full, corruption; the real-volume ENOSPC suite runs only through pnpm test:faults:volume) and the soak section drives the bounded soak in pnpm test and pnpm test:soak (scripts/soak-cli.ts). Fault outcomes are asserted by invariants, never by timing.",
+    "description": "Hardening suites. The fuzz section drives test/fuzz (default tier inside pnpm test) and pnpm fuzz (scripts/fuzz-cli.ts, extended runs). Each target runs `iterations` seeded cases per seed; a case passes when the input is accepted and re-encodes canonically and stably, or when it throws an Error whose class is in the target's allowedErrors, within caseBudgetMilliseconds, without changing built-in prototypes. The faults section drives test/faults (process kill, disk full, corruption; the real-volume ENOSPC suite runs only through pnpm test:faults:volume: an hdiutil HFS+ image on macOS, or, as root with loop devices, a loop-mounted image built and mounted by the diskFull.volume.linux commands on Linux) and the soak section drives the bounded soak in pnpm test and pnpm test:soak (scripts/soak-cli.ts). Fault outcomes are asserted by invariants, never by timing.",
     "fuzz": {
         "caseBudgetMilliseconds": 5000,
         "corpusDirectory": "test/fixtures/fuzz-corpus",
@@ -112,6 +112,35 @@
             "unlimitedPageCount": 1073741823,
             "volume": {
                 "fillBlobBytes": 262144,
+                "macos": {
+                    "attach": ["hdiutil", "attach", "-nobrowse", "-noverify", "-mountpoint"],
+                    "create": [
+                        "hdiutil",
+                        "create",
+                        "-fs",
+                        "HFS+",
+                        "-volname",
+                        "shepherdfault",
+                        "-size"
+                    ],
+                    "detach": ["hdiutil", "detach"],
+                    "forceDetach": ["hdiutil", "detach", "-force"],
+                    "imageFileName": "volume.dmg",
+                    "probes": [["hdiutil", "help"]]
+                },
+                "linux": {
+                    "forceUnmount": ["umount", "--lazy"],
+                    "imageFileName": "volume.ext4",
+                    "loopControlDevice": "/dev/loop-control",
+                    "makeFileSystem": ["mkfs.ext4", "-q", "-F", "-m", "0", "-L", "shepherdfault"],
+                    "mount": ["mount", "-t", "ext4", "-o", "loop,nodev,nosuid,noexec"],
+                    "probes": [
+                        ["mkfs.ext4", "-V"],
+                        ["mount", "--version"],
+                        ["umount", "--version"]
+                    ],
+                    "unmount": ["umount"]
+                },
                 "sizeMegabytes": 16
             }
         },

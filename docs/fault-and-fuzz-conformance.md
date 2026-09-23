@@ -1,6 +1,6 @@
 # Fault and fuzz conformance
 
-Status: normative for 2.33.1. The fuzz part is delivered by Phase 11 slice 8 (#185, 2.32.0); the
+Status: normative for 2.34.0; the Linux real-volume variant is added by #199 (2.34.0). The fuzz part is delivered by Phase 11 slice 8 (#185, 2.32.0); the
 fault and soak part by slice 9 (#186, 2.32.1); canonical-bound mutators, corpus cases, and the
 deep-call-site oracle by #189 (2.33.0, F-016); the byte-based file-size limit, the fixture's
 symbolic-link removal, and the Linux lane results by #190 (2.33.1, F-030, F-031). Findings live in the
@@ -297,7 +297,7 @@ at all is left there, and counts staging directories beside the import targets.
 | --- | --- | --- |
 | Database full | `PRAGMA max_page_count` set on the store's connection to the current size plus `headroomPages`, then to the current size after filling | `append`, `publishCut`, `putBlob` (receipt row), and `importTrace` fail with the SQLite error (`ERR_SQLITE_ERROR`, `errcode` 13, `SQLITE_FULL`); the export is unchanged, checks pass, the append intent is `retry_safe`, an unregistered blob reads as absent; after the limit is raised every retry succeeds, `vacuum` runs, and orphans are gone |
 | File-size limit | Child launched by `/bin/sh -c "ulimit -f <n> && exec node ..."` running `append`, `blob`, `vacuum`, and `backup` until one fails; `faults.diskFull.fileSizeLimitBytes` (1 MiB) is converted to the shell's `ulimit -f` unit, measured once by a probe child (512 bytes in dash and bash 5 POSIX mode, 1024 in the bash 3.2 macOS ships), and the child runs with `NODE_V8_COVERAGE` empty so the limit cannot truncate a coverage file (F-030) | Node.js ignores `SIGXFSZ`, so the write fails with `EFBIG`; SQLite reports `SQLITE_IOERR_WRITE` (`errcode` 778) for every operation; the parent reopens without the limit and classifies every started operation complete or retryable |
-| Real volume (opt-in) | `pnpm test:faults:volume`: a 16 MiB HFS+ image created and attached by `hdiutil` at a private mount point without privileges, a ballast file, then appends and blob puts until one fails | Recorded below |
+| Real volume (opt-in) | `pnpm test:faults:volume`. macOS: a 16 MiB HFS+ image created and attached by `hdiutil` at a private mount point without privileges. Linux: a sparse image of the same size formatted and loop-mounted by the commands in `faults.diskFull.volume.linux` (ext4 with no root-reserved blocks, mounted `loop,nodev,nosuid,noexec`), which needs root and loop devices. Then a ballast file, then alternating appends and blob puts until an append fails; every earlier failure (blob puts can fail first) must be typed and leave no partial state | Recorded below |
 
 `PRAGMA max_page_count` cannot be set below the current page count, so `vacuum` under a full
 database is exercised by the file-size and volume suites instead. The file-size case is skipped on
@@ -308,8 +308,38 @@ tree): the first failure was a blob put (`ENOSPC` from the blob layer); while fu
 `vacuum` failed with `SQLITE_FULL` (`errcode` 13), `putBlob` and `backupTraceStore` with `ENOSPC`,
 and the backup directory had no manifest; the store passed every check, the failed intent was
 `retry_safe`, and after the ballast was removed every retry succeeded. The image was detached and
-removed. The suite takes about 3 seconds and never runs in `pnpm test` or `pnpm verify`. On other
-platforms it is skipped: Linux loop devices and `tmpfs` mounts need privileges (O-3).
+removed. The suite takes about 3 seconds and never runs in `pnpm test` or `pnpm verify`.
+
+Linux variant (#199). The filesystem is a loop-mounted ext4 image rather than a size-limited
+`tmpfs`: both need `CAP_SYS_ADMIN`, so neither runs unprivileged, and the image is the closer
+analogue of the macOS disk image (a block-backed, journaling filesystem with real block
+allocation, where `tmpfs` is page-cache memory). `-m 0` removes ext4's root-reserved blocks, so the
+volume fills at the same point whichever user runs the suite. The suite skips with an explicit
+reason when the process is not root ("needs root to loop-mount an image on Linux (run in a
+privileged container)"), when the configured loop-control device is missing ("needs loop devices
+(/dev/loop-control is missing; run privileged)"), or when a configured probe command fails. Setup
+and teardown commands, the image name, and the probes are configuration
+(`faults.diskFull.volume.linux` in
+[`config/hardening-suites.config.json`](../config/hardening-suites.config.json)); the size is the
+shared `sizeMegabytes`. Unmounting releases the loop device; a lazy unmount is the fallback.
+
+The first Linux run showed why the fill phase stops at an append failure rather than at the first
+failure: on ext4, after blob puts had started failing with `ENOSPC`, a 256 KiB append still
+committed because SQLite reused write-ahead-log space it had already allocated, so the earlier
+assertion that an append fails once any operation has failed did not hold. The suite now fills until
+an append fails, asserts that every earlier failure was typed and left no partial state (export
+length unchanged, a failed blob absent), and retries the first failure of each kind once space
+returns. On macOS the fill phase now ends one operation later (blob #47, then append #48).
+
+| Recorded run | Result |
+| --- | --- |
+| macOS 27.0 arm64, APFS host, HFS+ image, Node.js 24.17.0 (#199 working tree) | pass: fill blob #47 `ENOSPC`, fill append #48 `SQLITE_FULL`; while full `append` and `vacuum` `SQLITE_FULL`, `putBlob` and backup `ENOSPC`; all retries succeed |
+| Linux, `node:24.21.0-bookworm` (Node.js 24.21.0, e2fsprogs 1.47.0) in a privileged container in OrbStack's Linux VM (kernel 7.0.14) on the macOS arm64 reference host, as root, ext4 loop image (#199 working tree) | pass: fill blobs #33 to #49 `ENOSPC`, fill append #50 `SQLITE_FULL`; while full `append` and `vacuum` `SQLITE_FULL`, `putBlob` and backup `ENOSPC`; all retries succeed; no loop device left attached; about 3 seconds |
+| Same container, as the unprivileged `node` user | skipped: "needs root to loop-mount an image on Linux (run in a privileged container)" |
+| Same image, unprivileged container, as root | skipped: "needs loop devices (/dev/loop-control is missing; run privileged)" |
+
+On any other platform the suite is skipped ("needs macOS hdiutil or Linux loop devices (platform
+<name>)").
 
 ### Corruption
 
@@ -395,8 +425,10 @@ the same host.
 - Kills are `SIGKILL` of a process; operating-system crash and power loss (lost page-cache writes,
   torn sectors) are not simulated. `synchronous = FULL` and the blob layer's `fsync` are the
   mitigation, not verified here.
-- The real-volume suite is macOS-only and opt-in; a Linux volume variant is owner-owed (O-3,
-  #191). The file-size case needs a POSIX shell. Every other fault, corruption, and soak case runs
+- The real-volume suite is opt-in and runs on macOS without privileges and on Linux only as root
+  with loop devices (a privileged container); it has no Windows variant. It was run on Linux in a
+  local container, not on a hosted runner or bare-metal Linux. The file-size case needs a POSIX
+  shell. Every other fault, corruption, and soak case runs
   in `pnpm test` in the local Docker Linux lane on Node 24.21.0 and 24.12.0 (2.33.1, see the
   [Phase 11 exit audit addendum](../.plan/phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331)).
 - Kill points are chosen by seeded delays, not by instrumented injection points, so a given run
@@ -404,4 +436,5 @@ the same host.
   show how often kills landed inside an operation.
 - Corruption covers single-region flips and whole-file damage; it does not model an adversary who
   rewrites records and digests consistently (F-006).
-- The recorded soak, page-flip sweep, and volume runs are for the reference host only.
+- The recorded soak and page-flip sweep are for the reference host only; the volume runs are for
+  the reference host and the local Linux container above.

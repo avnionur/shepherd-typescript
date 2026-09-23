@@ -145,9 +145,10 @@ record and public API must declare a protocol/compatibility version.
   exit criterion, the recovery classification, the review outcome, and the carried limits of the
   offline research applications.
 - [Production hardening contract](./production-hardening-contract.md) — Phase 11 slice map,
-  roadmap mapping, per-slice non-claims, and the owner-owed register O-1 to O-5.
+  roadmap mapping, per-slice non-claims, and the owner-owed register O-1 to O-5 (closed by
+  decision or waived on 2026-09-23, #199).
 - [Internal security review](./security-review.md) — severity rubric, findings register F-001 to
-  F-029, the 1.0 audit gate result, and the external reviewer packet.
+  F-032, the 1.0 audit gate result, and the external reviewer packet.
 - [Phase 11 exit audit](./phase-11-exit-audit.md) — 1.0 readiness verdict, evidence map for every
   Phase 11 work item and exit criterion, recovery classification, independent review, verification,
   limits, and the recommendation on #24 and #29.
@@ -297,5 +298,10 @@ The owner decisions of 2026-09-23 (#191, 2.33.3) documented email vulnerability 
 the registry name, and fixed F-032; an attempt to enable hosted `CI` was blocked by an account
 billing limit and the workflows were disabled again. The remaining owner actions (external review,
 signing and publication, hosted runs, CodeQL, the Windows decision, Linux volume-fault and SLO
-lanes, the advisory form) are tracked in #199, and the verdict stays
-conditional until #199 closes.
+lanes, the advisory form) were tracked in #199. On 2026-09-23 the owner closed #199 by decision
+(2.34.0, D-019 in [decisions and risks](./decisions-and-risks.md)): the external review, signing,
+publication, and name reservation are waived for 1.0; the local macOS gates plus the local Docker
+Linux lane replace hosted CI; CodeQL and the advisory form are waived while the repository is
+private; there is no Windows lane; and a Linux volume fault suite and Linux SLO host class were
+delivered through the local lane. 1.0 is a private, unpublished source release with those waivers
+([2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)).

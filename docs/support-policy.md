@@ -1,13 +1,17 @@
 # Support policy
 
-Status: normative for 2.25.2 (Phase 11 slice 1, #187); Linux row updated in 2.33.3 (#191). Security reporting is in
+Status: normative for 2.25.2 (Phase 11 slice 1, #187); Linux row updated in 2.33.3 (#191); 1.0
+release form, Linux, and Windows rows updated in 2.34.0 for the owner decisions of 2026-09-23 (#199). Security reporting is in
 [SECURITY.md](../SECURITY.md); response steps are in [incident response](./incident-response.md).
 
 ## Supported versions
 
-- The project is pre-1.0 in maturity and the package is not published (`"private": true`). Fixes
-  land on `main` and ship in the next Semantic Versioning release from the current version. Older
-  versions are not patched unless a release announcement says otherwise.
+- 1.0 is a private, unpublished source release (owner decision of 2026-09-23,
+  [#199](https://github.com/avnionur/shepherd-typescript/issues/199)): the package stays
+  `"private": true`, nothing is signed or published to a registry, and the name
+  `@avnionur/shepherd-typescript` is not reserved on npm. Fixes land on `main` and ship in the next
+  Semantic Versioning release from the current version. Older versions are not patched unless a
+  release announcement says otherwise.
 - "1.0" is the L4 operational-maturity milestone (decision D-016), not a package version. Reaching
   it does not reset or reserve a version number.
 
@@ -17,8 +21,8 @@ Status: normative for 2.25.2 (Phase 11 slice 1, #187); Linux row updated in 2.33
 | --- | --- | --- |
 | Node `>=24.12.0 <25` | Supported | [Node runtime support](./runtime-support.md) |
 | macOS arm64 (APFS) | Supported and verified locally | `CI=true pnpm verify` on the reference host |
-| Linux | Supported; verified by a local Docker lane (Debian bookworm, Node 24.21.0 and 24.12.0, 2.33.1); hosted lanes are disabled | `pnpm verify` and opt-in suites in the [Phase 11 exit audit addendum](../.plan/phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331); hosted runs owner-owed (O-3, #199; a 2026-09-23 enablement attempt was blocked by an account billing limit) |
-| Native Windows | Unsupported | Native permission enforcement has no design; see the parity matrix |
+| Linux | Supported; verified by a local Docker lane (Debian bookworm, Node 24.21.0 and 24.12.0, 2.33.1; Linux volume fault suite and SLO host class in 2.34.0; not bare-metal, not x86-64); hosted CI is disabled by owner decision | `pnpm verify` and opt-in suites in the [Phase 11 exit audit addendum](../.plan/phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331) and the [2.34.0 addendum](../.plan/phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340) (ext4 loop-image volume suite as root in a privileged container; `linux-arm64-overlayfs-container` SLO class, a container-in-VM measurement); by owner decision of 2026-09-23 (O-3, #199) the local lanes replace hosted runs for 1.0 |
+| Native Windows | Unsupported | Native permission enforcement has no design; see the parity matrix. No Windows verification lane for 1.0 (owner decision of 2026-09-23, #199; `windows-latest` removed from `ci.yml`) |
 | Package entries in `package.json` `exports` | Supported public API | [Package exports](./package-exports.md), [generated API reference](./generated/api-reference.md) |
 | Deep imports into `dist/src` | Unsupported | [Package exports](./package-exports.md) |
 | `shepherd-ts` CLI JSON envelope `shepherd.cli.json.v1` | Supported, closed schema | [Command-line interface](./cli.md) |

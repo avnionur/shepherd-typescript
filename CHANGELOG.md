@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.34.0] - 2026-09-23
+
+### New Feature
+
+- Linux variant of the real-volume disk-full suite (#199): `pnpm test:faults:volume` formats a
+  16 MiB sparse image as ext4 with no root-reserved blocks and loop-mounts it
+  (`loop,nodev,nosuid,noexec`) with the commands in `faults.diskFull.volume.linux` of
+  `config/hardening-suites.config.json`. It needs root and loop devices (a privileged container)
+  and otherwise skips with an explicit reason. It passed as root in a privileged
+  `node:24.21.0-bookworm` container on the macOS arm64 reference host and still passes on macOS.
+- Linux SLO host class `linux-arm64-overlayfs-container` in `config/performance-slo.config.json`
+  (linux, arm64, temporary directory on overlayfs). Budgets come from two `pnpm bench:kernel` runs
+  in a Linux container in OrbStack's VM on the reference host, using the existing rule; the
+  artifact is `docs/generated/benchmarks/linux-arm64-overlayfs-container.json`, and
+  `pnpm check:slo` passes there instead of skipping. This is a container-in-VM measurement, not
+  bare-metal Linux and not x86-64.
+
+### Improvement
+
+- The volume suite now fills until an append fails. The first Linux run showed that on ext4 an
+  append can still commit after blob puts start failing, because SQLite reuses write-ahead-log
+  space it has already allocated. Every earlier failure must be a typed space error with an
+  unchanged export and no readable failed blob, and the first failure of each kind is retried.
+- The macOS `hdiutil` commands, image name, and probe of the volume suite moved from the suite into
+  `faults.diskFull.volume.macos` of `config/hardening-suites.config.json`, matching the Linux
+  variant.
+- `ci.yml` drops the `windows-latest` runner and the Windows-only `verify:serial` step (matrix:
+  `ubuntu-latest`, `macos-latest`); `pnpm verify:serial` remains a local script.
+- Owner decisions of 2026-09-23 closing #199, documented (decision D-019):
+  - A recheck found the repository still private, npm not authenticated, and hosted `CI` run
+    35868089999 again blocked by the Actions billing limit; `CI` was disabled again.
+  - The external security review (O-1), signing and publication (O-2), and npm name reservation
+    (O-5) are waived for 1.0. No external review has been performed.
+  - Hosted CI stays disabled. The local macOS gates plus the local Docker Linux lane replace it
+    (O-3). CodeQL and the private advisory form are waived while the repository is private.
+  - There is no Windows lane.
+  - F-008 and F-010 are accepted by owner decision.
+- Docs: a 2.34.0 addendum to the Phase 11 exit audit; the owner-owed register, security review,
+  threat model, `SECURITY.md`, support policy, release integrity, 1.0 release notes, incident
+  response, fault and fuzz conformance, performance report, release-candidate manifest, readiness
+  dashboard, testing plan, decisions, roadmap, tracker, and READMEs are updated.
+
+### Impact
+
+1.0 (the L4 milestone, D-016) is reached as a private, unpublished source release with the listed
+waivers. It does not include an external review, signing, publication, hosted CI, CodeQL, Windows,
+or bare-metal or x86-64 Linux verification. No public API, protocol, schema, or CLI change; the
+package stays `"private": true`.
+
 ## [2.33.3] - 2026-09-23
 
 ### Defect Fixes

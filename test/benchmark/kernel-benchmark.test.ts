@@ -118,22 +118,23 @@ async function writeJson(context: TestContext, value: unknown): Promise<string> 
 test("production benchmark and SLO configurations are valid and budget every metric", () => {
     const configuration = readKernelBenchmarkConfiguration(productionBenchmark);
     const slo = readPerformanceSloConfiguration(productionSlo);
-    assert.deepEqual(
-        Object.keys(slo.hostClasses[0]?.budgets ?? {}).sort(),
-        Object.keys(KERNEL_METRICS).sort(),
-    );
-    const committed = JSON.parse(
-        readFileSync(
-            path.join(repositoryRoot, benchmarkResultPath(configuration, "macos-arm64-apfs")),
-            "utf8",
-        ),
-    ) as KernelBenchmarkResult;
-    assert.equal(committed.configuration_digest, digestBenchmarkConfiguration(configuration));
-    assert.equal(committed.host_class, "macos-arm64-apfs");
-    assert.deepEqual(Object.keys(committed.metrics).sort(), Object.keys(KERNEL_METRICS).sort());
-    for (const metric of Object.values(committed.metrics)) {
-        assert.equal(metric.samples.length, configuration.sampleCount);
-        assert.deepEqual(metric.summary, summarizeSamples(metric.samples));
+    assert.equal(new Set(slo.hostClasses.map(({ id }) => id)).size, slo.hostClasses.length);
+    for (const hostClass of slo.hostClasses) {
+        assert.deepEqual(Object.keys(hostClass.budgets).sort(), Object.keys(KERNEL_METRICS).sort());
+        const committed = JSON.parse(
+            readFileSync(
+                path.join(repositoryRoot, benchmarkResultPath(configuration, hostClass.id)),
+                "utf8",
+            ),
+        ) as KernelBenchmarkResult;
+        assert.equal(committed.configuration_digest, digestBenchmarkConfiguration(configuration));
+        assert.equal(committed.host_class, hostClass.id);
+        assert.equal(detectHostClass(slo, committed.environment)?.id, hostClass.id);
+        assert.deepEqual(Object.keys(committed.metrics).sort(), Object.keys(KERNEL_METRICS).sort());
+        for (const metric of Object.values(committed.metrics)) {
+            assert.equal(metric.samples.length, configuration.sampleCount);
+            assert.deepEqual(metric.summary, summarizeSamples(metric.samples));
+        }
     }
 });
 

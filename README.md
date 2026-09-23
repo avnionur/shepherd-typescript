@@ -50,10 +50,11 @@ Coverage is earned in explicit levels so planned behavior is never presented as 
 | L1 | Shepherd `0.3.0` settlement compatibility | Complete in 1.51.0 |
 | L2 | Scope and versioned-world substrate parity | Complete in 2.7.1 for the recorded hosts |
 | L3 | Paper programming-model parity | Complete in 2.20.1 for the documented scope: live observation and interception (Phase 7) in 2.10.1, coupled checkpoints, rewind, and replay (Phase 8) in 2.15.1, and task-as-value meta-agents (Phase 9) in 2.20.1; research applications (Phase 10) complete in 2.25.1 for the documented offline scope |
-| L4 | Production security, recovery, performance, packaging, and releases | Release candidate for the in-repo scope in 2.32.4 ([Phase 11 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-11-exit-audit.md)); 1.0 general availability is no-go until the owner-owed items close ([#199](https://github.com/avnionur/shepherd-typescript/issues/199)): external security review, signed provenance and publication, CodeQL and the remaining hosted and cross-OS lanes, and the advisory form once the repository is public |
+| L4 | Production security, recovery, performance, packaging, and releases | Release candidate for the in-repo scope in 2.32.4 ([Phase 11 exit audit](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/phase-11-exit-audit.md)); "1.0" in 2.34.0 as a private, unpublished source release by owner decision of 2026-09-23 ([#199](https://github.com/avnionur/shepherd-typescript/issues/199)), with waivers: no external security review, no signing or publication, hosted CI disabled (local macOS gates and a local Docker Linux lane instead), CodeQL and the advisory form waived while the repository is private, no Windows lane |
 
 Naming, MIT licensing, ESM package exports, and installed consumer compatibility are defined.
-Publication remains disabled until registry ownership and release checks are complete. "1.0" is the
+Publication is waived for 1.0 by owner decision (#199): the package stays `"private": true` and is
+not published or signed. "1.0" is the
 L4 maturity milestone, not a package version; see the [1.0 release notes](./docs/release-notes-1.0.md).
 
 ## Current capability
@@ -654,13 +655,14 @@ pnpm test:faults:volume
 runs the extended tier (`--seed`, `--iterations`, `--target`, `--json`)
 ([fault and fuzz conformance](./docs/fault-and-fuzz-conformance.md)). `pnpm test` also runs the
 kill/restart, disk-full, and corruption fault suites and a bounded soak; `pnpm test:soak` runs the
-mixed soak for a wall-clock budget, and `pnpm test:faults:volume` fills a macOS disk image to
-exercise real `ENOSPC` (both outside `pnpm verify`).
+mixed soak for a wall-clock budget, and `pnpm test:faults:volume` fills a macOS disk image, or on
+Linux as root with loop devices an ext4 loop image, to exercise real `ENOSPC` (both outside
+`pnpm verify`).
 
 Biome provides formatting and linting. Node's built-in test runner executes TypeScript directly.
 The test command enforces 100% line, branch, and function coverage for runtime source. The serial
-verification variant retains the same gates while avoiding native-probe process contention on the
-Windows CI runner. TypeScript builds declarations and JavaScript into `dist/`.
+verification variant retains the same gates while avoiding native-probe process contention; it is
+a local script (`ci.yml` has no Windows runner from 2.34.0). TypeScript builds declarations and JavaScript into `dist/`.
 
 Package-script entry points under `scripts/` are thin command adapters. Tested build, generation,
 release, and conformance implementations live under `tooling/`. The production compiler includes
@@ -675,7 +677,8 @@ evidence: `pnpm generate:api-reference`, `pnpm generate:sbom`, and
 error codes, CLI commands, or schema branches, narrowed schemas, and removed or reordered
 migrations fail with a precise message unless the configured deprecation window, classification,
 and version bump allow them. `pnpm verify:release` additionally runs `pnpm check:slo` (kernel
-benchmark budgets for the reference host class, [performance report](./docs/performance-report.md);
+benchmark budgets per host class: the macOS reference host and, from 2.34.0, a Linux arm64
+overlayfs container class; [performance report](./docs/performance-report.md);
 `pnpm bench:kernel` records a new artifact), builds and packs twice and requires
 byte-identical tarballs (the packed file set must equal the literal, anchored `files` allowlist, a
 check that also runs in `pnpm verify` through `pnpm test:package-cli`), then writes a lockfile SBOM and an unsigned provenance statement into the
@@ -809,7 +812,8 @@ online backups with a digest-bearing manifest, non-destructive exact-manifest re
 by compare-and-swap, the forward-only schema and downgrade policy, migration drills for every
 historical store schema, and the `shepherd-ts store` command group. The
 [performance report](./docs/performance-report.md) (2.30.0) publishes kernel benchmarks and SLO
-budgets for the macOS arm64 APFS reference host only, alongside semantics-preserving store
+budgets for the macOS arm64 APFS reference host (and, from 2.34.0, a Linux arm64 container class
+measured in a VM on the same machine), alongside semantics-preserving store
 maintenance (`SQLiteTraceStore.maintain`, `shepherd-ts store maintain`), query-plan tests with no
 full table scans on hot paths, and a bounded scale tier.
 [Observability](./docs/observability.md) (2.31.0) adds a passive, at-least-once
@@ -840,8 +844,14 @@ private repository does not have), vulnerability
 reports go by private email while the repository is private ([SECURITY.md](./SECURITY.md)), the
 registry name is `@avnionur/shepherd-typescript`, and the packed file set no longer depends on the
 npm version. Signing, publication, the external review, and the remaining hosted lanes are deferred
-to [#199](https://github.com/avnionur/shepherd-typescript/issues/199), so 1.0 general availability
-stays conditional. The [1.0 release notes](./docs/release-notes-1.0.md) list what is delivered, the
+to [#199](https://github.com/avnionur/shepherd-typescript/issues/199). On 2026-09-23 the owner
+closed #199 by decision (2.34.0): the external review, signing, publication, and name reservation
+are waived for 1.0; the local macOS gates plus the local Docker Linux lane replace hosted CI;
+CodeQL and the advisory form are waived while the repository is private; there is no Windows lane;
+and a Linux volume fault suite and a Linux container SLO host class were added through the local
+lane. 1.0 is a private, unpublished source release with those waivers; it does not include an
+external review, signing, publication, hosted CI, CodeQL, Windows, or bare-metal or x86-64 Linux
+verification. The [1.0 release notes](./docs/release-notes-1.0.md) list what is delivered, the
 known limits, and upgrade pointers.
 
 Phase 3 reached **L1-alpha**. Phases 0–2 provide the canonical trace kernel, deterministic offline

@@ -619,12 +619,16 @@ Exit criteria:
 - performance SLOs are supported by reproducible benchmarks;
 - stable packages and CLI ship with complete docs and signed provenance.
 
-Milestone: **L4 release candidate** for the in-repo scope
-([Phase 11 exit audit](./phase-11-exit-audit.md)); L4 general availability ("1.0") waits on the
-owner-owed rows O-1 to O-5 of the
+Milestone: **L4 "1.0"** as a private, unpublished source release with owner waivers (2.34.0,
+#199); before that, the L4 release candidate for the in-repo scope
+([Phase 11 exit audit](./phase-11-exit-audit.md)) waited on the owner-owed rows O-1 to O-5 of the
 [production hardening contract](./production-hardening-contract.md#owner-owed-register). The
 owner decisions of #191 (2.33.3) closed O-4 by documented email intake and decided O-5's name;
-the remainder of O-1, O-2, O-3, and O-5 is tracked in #199.
+the remainder of O-1, O-2, O-3, and O-5 was tracked in #199. On 2026-09-23 the owner closed #199
+by decision (2.34.0, D-019): O-1, O-2, and O-5 are waived for 1.0, O-3 is closed with the local
+macOS gates and the local Docker Linux lane as the verification substitute, and 1.0 is reached as
+a private, unpublished source release with those waivers. The exit criteria "enforced in CI" and
+"signed provenance" are not met but waived: enforcement is local and nothing is signed.
 
 ## Dependency summary
 

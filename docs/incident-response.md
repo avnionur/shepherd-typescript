@@ -36,8 +36,9 @@ uses the rubric in the
   detail, and proofs of concept in that thread and in the owner's private tracking, never in a
   public issue. A maintainer may still open a GitHub security advisory draft for a critical or high
   finding.
-- Once the repository is public and private vulnerability reporting is enabled (#199), use a GitHub
-  security advisory draft for critical and high findings.
+- The advisory form is waived while the repository stays private (owner decision of 2026-09-23,
+  #199). If the repository becomes public, enabling private vulnerability reporting is the owner's
+  follow-up; then use a GitHub security advisory draft for critical and high findings.
 - Keep exploit detail, proofs of concept, and affected user data inside the private channel.
 - Request a CVE through the advisory when the package is published.
 
@@ -54,7 +55,7 @@ uses the rubric in the
 
 - The package is not published; rollback today means reverting the change on `main` and releasing
   the next version. Force-pushing shared branches is not a rollback method.
-- After publication (O-2), a vulnerable version is deprecated on the registry with a message naming
+- If publication happens later (O-2, waived for 1.0), a vulnerable version is deprecated on the registry with a message naming
   the fixed version; unpublishing is not used.
 - A store that a faulty version wrote to is not rolled back by downgrading the package: newer
   schemas are refused by older versions. Restore the pre-upgrade backup into a new store

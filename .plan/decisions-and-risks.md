@@ -77,6 +77,7 @@ identify this as an independent implementation.
 Confirmed by the owner on 2026-09-23 (#191): the registry name is `@avnionur/shepherd-typescript`;
 an unscoped `shepherd-ts` package is not pursued, and `shepherd-ts` remains only the CLI
 executable name. The name is reserved by the first publish, which is deferred to #199.
+Publication and name reservation are waived for 1.0 (D-019): the name is not reserved on npm.
 
 ### D-012: MIT license with upstream attribution
 
@@ -143,6 +144,38 @@ new worker proceeds.
 
 Reason: cooperative cancellation alone cannot prevent duplicate provider invocation or stale-worker
 side effects under concurrent callers and process failure.
+
+### D-019: 1.0 is a private, unpublished source release with owner waivers
+
+Decided by the owner on 2026-09-23, closing
+[#199](https://github.com/avnionur/shepherd-typescript/issues/199). A recheck that day found the
+repository still private, npm not authenticated, and hosted `CI` run
+[35868089999](https://github.com/avnionur/shepherd-typescript/actions/runs/35868089999) again
+started no job because of the Actions billing or spending limit; `CI` was disabled again.
+
+- The repository stays private. CodeQL (which needs GitHub Advanced Security while private) and
+  the private vulnerability advisory form are waived while private; the email intake in
+  `SECURITY.md` is the intake. If the repository becomes public, enabling both is the owner's
+  follow-up.
+- Hosted CI stays disabled. The local macOS gates (`pnpm verify`, `pnpm verify:release`,
+  `pnpm build:desktop`) plus the local Docker Linux lane are the 1.0 verification substitute (O-3;
+  F-008 accepted).
+- The external security review is waived for 1.0; the internal review (implementing agents plus
+  one independent internal reviewer) is accepted in its place. No external review has been
+  performed (O-1).
+- 1.0 is a private, unpublished source release: `"private": true` stays, nothing is signed or
+  published, and `@avnionur/shepherd-typescript` is not reserved on npm (O-2, O-5; F-010
+  accepted). The owner release runbook in `docs/release-integrity.md` is the procedure if
+  publication happens later.
+- There is no Windows lane for 1.0: `windows-latest` is removed from the `ci.yml` matrix and native
+  Windows stays unsupported.
+- The Linux variant of the volume fault suite and a Linux SLO host class are delivered in-repo
+  through the local Docker lane (2.34.0).
+
+Reason: hosted runners, registry publication, and an external reviewer depend on account billing,
+credentials, and contracts outside the repository; the owner accepts the local evidence and the
+documented residuals (threat model F-008, F-010, and the external-review row) instead of leaving
+1.0 conditional on them.
 
 ## Decisions required before coding
 
