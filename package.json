@@ -147,6 +147,6 @@
         "ajv": "8.20.0",
         "rollup": "npm:@rollup/wasm-node@4.63.1",
         "typescript": "7.0.2",
-        "yaml": "2.9.0"
+        "yaml": "2.9.1"
     }
 }
