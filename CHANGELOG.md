@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.35.0] - 2026-09-25
+
+### New Feature
+
+- `release.yml` now creates GitHub Releases. Pushing a `v<version>` tag (or dispatching with
+  `release=true`) runs a version gate (tag, `release-config.yaml`, `package.json`, and a
+  `CHANGELOG.md` section must agree), the existing `pnpm verify:release` build and tarball
+  attestation, and a `github-release` job that publishes `release/` (tarball, SBOM, provenance,
+  release manifest, reproducible-build report) as release assets with the version's changelog
+  section as notes. Versions with a pre-release suffix become pre-releases; an existing release is
+  never overwritten. The job uses the preinstalled `gh` CLI, adding no action dependency.
+- The npm publish job runs only on manual dispatch with `publish=true` and now refuses a
+  `"private": true` tarball before contacting the registry. The workflow has not run on hosted
+  runners (billing limit, #191/#199); it passes `actionlint` with shellcheck, and its shell steps
+  were exercised locally.
+
+### Improvement
+
+- Re-audited the Shepherd paper v3 (arXiv 2605.10913) section by section against the code. Filed
+  the gaps as #204-#219 under epic #202: live providers with prompt-cache reuse, wider task
+  schemas, a tool-use loop with substrate-native meta-agent tools, CRO edited-step replay and the
+  Algorithm 1 loop, compression `fork_step` clamping, compensation handlers, automatic per-step
+  world checkpoints, a concurrent supervisor, Tree-RL Algorithm 2, scope benchmarks, layered
+  checkpoints, run proof envelopes, N-way diff and trace CLI, and the A.2 research backlog.
+- `.plan/paper-coverage.md` gains a "Known deviations" section linking each gap to its issue.
+- Verified npm publication readiness locally (pack, publint, attw, strict ESM consumer across
+  every subpath, CLI, Node range). Filed the owner blockers and consumer-quality items as
+  #221-#228 under epic #220.
+- README: a paper-coverage-at-a-glance table, a consumer tarball install section, links to the
+  research application docs, and corrections to stale statements (the `2.0.1` capability header,
+  Phase 11 "in progress", live providers and later phases described as future work, and
+  compensation claimed without handlers).
+
+### Impact
+
+No runtime, API, or storage change. Maintainers can cut a GitHub Release with the verified
+package by pushing a version tag once hosted Actions are available; npm publication stays gated
+by the owner decision in #221. Readers see which paper behaviors differ from the implementation
+and where each gap is tracked.
+
 ## [2.34.0] - 2026-09-23
 
 ### New Feature

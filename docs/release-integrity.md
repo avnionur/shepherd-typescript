@@ -119,12 +119,18 @@ Hosted workflows are disabled: an attempt on 2026-09-23 (#191) to enable `CI` wa
 account billing limit, and the owner disabled the workflows again. By owner decision of 2026-09-23
 ([#199](https://github.com/avnionur/shepherd-typescript/issues/199)) signing, publication, and
 hosted CI are waived for 1.0, so `release.yml` is not run for 1.0; it also needs hosted runners, so
-the billing limit must be resolved before any later run. On manual dispatch it checks out the commit,
-installs with `pnpm install --frozen-lockfile --ignore-scripts`, runs `pnpm verify:release`,
-attests the tarball with `actions/attest-build-provenance`, uploads `release/`, and, only when the
-`publish` input is set, publishes the attested tarball with `npm publish --provenance` from the
-protected `npm-publish` environment. Every action is pinned to a commit SHA resolved read-only from
-its release tag.
+the billing limit must be resolved before any later run.
+
+From 2.35.0 the workflow runs on a pushed `v<version>` tag or on manual dispatch:
+
+| Job | Runs when | Does |
+| --- | --- | --- |
+| `build` | Always | Version gate: the tag (if any), `release-config.yaml`, and `package.json` name the same version and `CHANGELOG.md` has its section. Then `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm verify:release`, `actions/attest-build-provenance` over the tarball, and upload of `release/` |
+| `github-release` | Tag push, or dispatch with `release=true` (default) | Creates release `v<version>` at the built commit with every file in `release/` as an asset (tarball, `sbom.cdx.json`, `provenance.intoto.json`, `release-manifest.json`, `reproducible-build.json`) and the version's changelog section as notes. A version with a pre-release suffix becomes a pre-release. An existing release is refused, never overwritten. Uses the preinstalled `gh` CLI |
+| `publish` | Dispatch with `publish=true` only | From the protected `npm-publish` environment, refuses a `"private": true` tarball, then publishes the attested tarball with `npm publish --provenance`; it never rebuilds |
+
+Every action is pinned to a commit SHA resolved read-only from its release tag. The workflow
+passes `actionlint` 1.7.12 with shellcheck.
 
 ## Owner release runbook
 
@@ -181,9 +187,11 @@ and version bump required by `AGENTS.md`, run `pnpm sync:version`, `pnpm verify`
 
 ### 5. Run `release.yml`
 
-1. Dispatch without publishing first: `gh workflow run release.yml --ref main -f publish=false`.
-   The build job runs `pnpm verify:release` (which includes the packed file-set check), attests
-   the tarball, and uploads `release/`.
+1. Dispatch without publishing first: `gh workflow run release.yml --ref main -f publish=false`
+   (add `-f release=false` to skip the GitHub Release). The build job runs `pnpm verify:release`
+   (which includes the packed file-set check), attests the tarball, and uploads `release/`.
+   Alternatively push the version tag (`git tag v<version> && git push origin v<version>`), which
+   builds and creates the GitHub Release but never publishes to npm.
 2. Download the evidence: `gh run download <run-id> --name release --dir release-<version>`.
 3. When the evidence verifies (step 6), dispatch again with `-f publish=true` and approve the
    `npm-publish` environment. The publish job publishes the attested tarball from the build job;

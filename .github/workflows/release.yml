@@ -1,20 +1,34 @@
-# Release workflow for signed provenance and npm publication.
+# Release workflow: verified package build, attestation, GitHub Release, and optional npm publish.
 #
-# Status: present but never run. Hosted workflows are disabled: attempts on 2026-09-23 (#191, #199)
-# to run CI were blocked by an account billing limit and the workflows were disabled again. The
-# package is `"private": true` and no registry credentials or signing identity exist.
-# Signing and publication are waived for 1.0 by owner decision (#199, O-2 in
-# .plan/production-hardening-contract.md): 1.0 is a private, unpublished source release. The same
-# gates run locally with `pnpm verify:release`; if publication happens later, the owner release
-# runbook in docs/release-integrity.md is the procedure.
+# Triggers: pushing a `v<version>` tag, or manual dispatch. The version gate requires the tag (when
+# present), `release-config.yaml`, `package.json`, and a `CHANGELOG.md` section to name the same
+# version. The build job runs `pnpm verify:release`, attests the reproducible tarball, and uploads
+# `release/`. The GitHub Release job publishes that evidence as release assets with the version's
+# CHANGELOG section as notes; it never rebuilds. The npm job runs only when dispatched with
+# `publish=true`, from the protected `npm-publish` environment, and refuses a `"private": true`
+# tarball before contacting the registry.
+#
+# Status: never run. Hosted workflows are blocked by an account billing limit (#191, #199), and
+# npm publication is waived for 1.0 (O-2 in .plan/production-hardening-contract.md); the package
+# stays `"private": true` until the owner supersedes that waiver (#221). The same build gates run
+# locally with `pnpm verify:release`; docs/release-integrity.md holds the owner release runbook.
 #
 # Action references are pinned to commit SHAs resolved read-only from each action's release tag.
+# The GitHub Release job uses the preinstalled `gh` CLI and adds no action dependency.
 
 name: Release
 
 on:
+    push:
+        tags:
+            - "v*"
     workflow_dispatch:
         inputs:
+            release:
+                description: Create a GitHub Release with the verified package and evidence
+                required: true
+                type: boolean
+                default: true
             publish:
                 description: Publish the verified tarball to npm after attestation
                 required: true
@@ -37,12 +51,46 @@ jobs:
             attestations: write
             contents: read
             id-token: write
+        outputs:
+            version: ${{ steps.version.outputs.version }}
+            prerelease: ${{ steps.version.outputs.prerelease }}
 
         steps:
             - name: Check out repository
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
               with:
                   persist-credentials: false
+
+            - name: Check release version consistency
+              id: version
+              env:
+                  REF_TYPE: ${{ github.ref_type }}
+                  REF_NAME: ${{ github.ref_name }}
+              run: |
+                  config_version="$(sed -n 's/^[[:space:]]*version:[[:space:]]*\([^[:space:]]*\)[[:space:]]*$/\1/p' release-config.yaml | head -n 1)"
+                  package_version="$(node -p 'require("./package.json").version')"
+                  if [ -z "$config_version" ]; then
+                      echo "::error file=release-config.yaml::no version found"
+                      exit 1
+                  fi
+                  if [ "$config_version" != "$package_version" ]; then
+                      echo "::error file=package.json::version $package_version differs from release-config.yaml $config_version; run pnpm sync:version"
+                      exit 1
+                  fi
+                  if [ "$REF_TYPE" = "tag" ] && [ "$REF_NAME" != "v$config_version" ]; then
+                      echo "::error::tag $REF_NAME does not match release version v$config_version"
+                      exit 1
+                  fi
+                  if ! grep -Fq "## [$config_version]" CHANGELOG.md; then
+                      echo "::error file=CHANGELOG.md::no section for $config_version"
+                      exit 1
+                  fi
+                  case "$config_version" in
+                      *-*) prerelease=true ;;
+                      *) prerelease=false ;;
+                  esac
+                  echo "version=$config_version" >> "$GITHUB_OUTPUT"
+                  echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
 
             - name: Install pnpm
               uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
@@ -77,10 +125,63 @@ jobs:
                   path: release/
                   if-no-files-found: error
 
+    github-release:
+        name: Create GitHub Release
+        needs: build
+        if: ${{ github.event_name == 'push' || inputs.release }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        permissions:
+            contents: write
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  persist-credentials: false
+
+            - name: Download release evidence
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: release
+                  path: release
+
+            - name: Extract release notes from the changelog
+              env:
+                  VERSION: ${{ needs.build.outputs.version }}
+              run: |
+                  awk -v heading="## [$VERSION]" '
+                      index($0, heading) == 1 { found = 1; next }
+                      found && /^## \[/ { exit }
+                      found { print }
+                  ' CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
+                  if [ ! -s "$RUNNER_TEMP/release-notes.md" ]; then
+                      echo "::error file=CHANGELOG.md::section for $VERSION is empty"
+                      exit 1
+                  fi
+
+            - name: Create the release with the verified package and evidence
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  VERSION: ${{ needs.build.outputs.version }}
+                  PRERELEASE: ${{ needs.build.outputs.prerelease }}
+                  TARGET: ${{ github.sha }}
+              run: |
+                  tag="v$VERSION"
+                  if gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+                      echo "::error::release $tag already exists; bump the version instead of replacing assets"
+                      exit 1
+                  fi
+                  set -- --repo "$GITHUB_REPOSITORY" --title "$tag" --notes-file "$RUNNER_TEMP/release-notes.md" --target "$TARGET"
+                  if [ "$PRERELEASE" = "true" ]; then
+                      set -- "$@" --prerelease
+                  fi
+                  gh release create "$tag" release/* "$@"
+
     publish:
         name: Publish to npm
         needs: build
-        if: ${{ inputs.publish }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         environment: npm-publish
@@ -100,6 +201,16 @@ jobs:
               with:
                   node-version: "24"
                   registry-url: https://registry.npmjs.org
+
+            - name: Refuse a private package before contacting the registry
+              run: |
+                  tarball="$(ls release/*.tgz)"
+                  if tar -xOzf "$tarball" package/package.json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.exit(JSON.parse(s).private===true?1:0))'; then
+                      echo "Package is publishable."
+                  else
+                      echo "::error::the attested tarball is \"private\": true; publication is waived until the owner supersedes O-2 (#221)"
+                      exit 1
+                  fi
 
             - name: Publish the attested tarball with npm provenance
               run: npm publish release/*.tgz --provenance --access public

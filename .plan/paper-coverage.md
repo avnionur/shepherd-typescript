@@ -2,7 +2,7 @@
 
 Paper baseline: [Shepherd paper v3](https://arxiv.org/html/2605.10913v3)
 
-Audited: 2026-08-02
+Audited: 2026-08-02; re-audited 2026-09-25 (see Known deviations)
 
 ## Purpose
 
@@ -100,3 +100,30 @@ have deferred remainders. §3.3, §4, and C are platform-fenced: optimized carri
 and kernel SLOs on the macOS arm64 APFS reference host only; §4 now also covers the Phase 11
 [performance report](../docs/performance-report.md). A.2 stays a classified P3 backlog. No row
 claims reproduction of upstream results.
+
+## Known deviations (2026-09-25 audit, 2.34.0)
+
+A fresh section-by-section audit of paper v3 against the code found the deviations below. Rows
+marked complete above remain complete for their documented offline scope; these items record where
+that scope differs from the paper. Tracking epic:
+[#202](https://github.com/avnionur/shepherd-typescript/issues/202).
+
+| Paper section | Deviation | Issue |
+| --- | --- | --- |
+| §3.1, §4, C.6, §5 | Only `static` and `program` provider kinds; no live provider or prompt-cache measurement | [#204](https://github.com/avnionur/shepherd-typescript/issues/204) |
+| §3.1, D.6, E, F | Task schemas limited to string, object, and void; application protocol schemas pinned but not evaluated | [#205](https://github.com/avnionur/shepherd-typescript/issues/205) |
+| Fig. 1, §3.2, A.2, F.2.3 | No tool-use loop mapping tool calls to effects; no substrate-native meta-agent tools | [#206](https://github.com/avnionur/shepherd-typescript/issues/206) |
+| §5.2, F.1 | CRO replays from the first dependent, so the edited step itself is served from the journal | [#207](https://github.com/avnionur/shepherd-typescript/issues/207) |
+| D.5, D.6 | Compression refuses `fork_step` 0 and out-of-range steps instead of clamping; no rescue count | [#208](https://github.com/avnionur/shepherd-typescript/issues/208) |
+| §3.2 | Compensable tier has no compensation handlers | [#209](https://github.com/avnionur/shepherd-typescript/issues/209) |
+| §3.4, §5.3, D | No automatic per-step world checkpoints; Tree-RL and compression refuse world-bound sources | [#210](https://github.com/avnionur/shepherd-typescript/issues/210) |
+| §5.1, E | Sequential workers, one decision per round, inject only before start, ownership-only handoff | [#211](https://github.com/avnionur/shepherd-typescript/issues/211) |
+| §5.2, F.1–F.2 | No Algorithm 1 proposer loop, fix/guard gate, dev promotion, or computation-reuse metric | [#212](https://github.com/avnionur/shepherd-typescript/issues/212) |
+| §5.3, F.6–F.7 | Heuristic fork points; advantages differ from Algorithm 2; no G roots per prompt | [#213](https://github.com/avnionur/shepherd-typescript/issues/213) |
+| §4, C.1–C.5 | No fork/revert latency, mutation-size sweep, or observer-overhead benchmarks | [#214](https://github.com/avnionur/shepherd-typescript/issues/214) |
+| §3.3, C.4, C.7 | Single-layer overlay, no layer compaction, no pluggable sandbox device layer | [#215](https://github.com/avnionur/shepherd-typescript/issues/215) |
+| B | Runs and replay inspections do not carry proof envelopes; `extension` never emitted | [#216](https://github.com/avnionur/shepherd-typescript/issues/216) |
+| §3.4 | Divergence only between a branch and its source; no N-way diff, regression search, or trace CLI | [#217](https://github.com/avnionur/shepherd-typescript/issues/217) |
+| A.2, §6 | Future-work directions tracked in prose only | [#218](https://github.com/avnionur/shepherd-typescript/issues/218) |
+
+The paper-version baseline is unchanged: v3 (24 Jun 2026) predates the 2026-08-02 audit.

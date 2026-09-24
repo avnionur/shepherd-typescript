@@ -33,14 +33,35 @@ paper's programming model:
 | Primitive | TypeScript target |
 | --- | --- |
 | **Task** | A typed, substitutable agent value that can be passed, returned, revised, or synthesized |
-| **Effect** | A typed intent/outcome boundary that can be observed, intercepted, replayed, or compensated |
+| **Effect** | A typed intent/outcome boundary that can be observed, intercepted, replayed, or compensated (compensation handlers: [#209](https://github.com/avnionur/shepherd-typescript/issues/209)) |
 | **Scope** | An isolated agent-and-environment region with `emit`, `fork`, `merge`, and `discard` |
 | **Trace** | An immutable, content-addressed execution graph that supports historical access, rewind, and suffix replay |
 
-Complete coverage includes the paper's runtime supervisor, counterfactual replay optimization,
+The coverage target includes the paper's runtime supervisor, counterfactual replay optimization,
 meta-agent-guided Tree-RL, trajectory compression, performance protocol, and formal proof-envelope
 claim boundary. Every area has an owner and acceptance evidence in the
 [section-by-section coverage map](./.plan/paper-coverage.md).
+
+### Paper coverage at a glance
+
+The 2026-09-25 audit of [paper v3](https://arxiv.org/abs/2605.10913) against 2.34.0 is tracked in
+[#202](https://github.com/avnionur/shepherd-typescript/issues/202). "Implemented" means implemented
+for the documented offline scope; every figure is this repository's measurement, not an upstream
+result.
+
+| Paper section | Status | Known gaps |
+| --- | --- | --- |
+| §3.1 Tasks | Implemented: typed task values, substitution, revision, synthesis, nested meta-agents | Schemas limited to string, object, and void ([#205](https://github.com/avnionur/shepherd-typescript/issues/205)) |
+| §3.2 Effects | Implemented: intent/outcome records, handlers, live observation, deny/replace/pause interception, irreversible approval frontier | Compensable tier is vocabulary only ([#209](https://github.com/avnionur/shepherd-typescript/issues/209)); no tool-use loop ([#206](https://github.com/avnionur/shepherd-typescript/issues/206)) |
+| §3.3 Scopes | Implemented: `emit`, `fork`, `merge`, `discard`, nesting, parallel scheduling, copy/clone/overlay carriers | Single-layer overlay, no sandbox device layer ([#215](https://github.com/avnionur/shepherd-typescript/issues/215)) |
+| §3.4 Trace | Implemented: content-addressed graph, cuts, rewind, suffix replay, source-to-branch divergence | Automatic per-step world checkpoints ([#210](https://github.com/avnionur/shepherd-typescript/issues/210)); N-way diff and trace CLI ([#217](https://github.com/avnionur/shepherd-typescript/issues/217)) |
+| §4 / App. C Performance | Kernel benchmarks and SLOs on recorded hosts | Fork/revert and observer benchmarks ([#214](https://github.com/avnionur/shepherd-typescript/issues/214)); no live provider, so no prompt-cache measurement ([#204](https://github.com/avnionur/shepherd-typescript/issues/204)) |
+| §5.1 / App. E Runtime supervisor | Implemented over sequential workers with a caller-supplied policy | Concurrent workers, per-tick batched decisions, cross-agent handoff ([#211](https://github.com/avnionur/shepherd-typescript/issues/211)) |
+| §5.2 / App. F CRO | Implemented for caller-declared candidates | Edited step is not re-executed ([#207](https://github.com/avnionur/shepherd-typescript/issues/207)); Algorithm 1 loop and fix/guard gate ([#212](https://github.com/avnionur/shepherd-typescript/issues/212)) |
+| §5.3 Tree-RL | Implemented with deterministic heuristic fork points and no trainer | Algorithm 2 advantages and meta-agent fork selection ([#213](https://github.com/avnionur/shepherd-typescript/issues/213)) |
+| App. D Trajectory compression | Implemented with verifier gate and best-of-N control | `fork_step` 0 and clamping ([#208](https://github.com/avnionur/shepherd-typescript/issues/208)) |
+| App. B Proof envelopes | Core-0/Core-A classification; Core-0H fenced; Lean external | Runs do not carry envelopes ([#216](https://github.com/avnionur/shepherd-typescript/issues/216)) |
+| App. A.2 / §6 Future work | Classified research backlog | [#218](https://github.com/avnionur/shepherd-typescript/issues/218) |
 
 Coverage is earned in explicit levels so planned behavior is never presented as shipped:
 
@@ -59,8 +80,8 @@ L4 maturity milestone, not a package version; see the [1.0 release notes](./docs
 
 ## Current capability
 
-Version `2.0.1` provides versioned task, effect, provider, run-outcome, run-artifact, run-usage, and
-trace-record contracts with durable SQLite task and trace stores:
+The current release provides versioned task, effect, provider, run-outcome, run-artifact,
+run-usage, and trace-record contracts with durable SQLite task and trace stores:
 
 - deterministic recursive object-key ordering;
 - kernel ABI v0 `RecordBody` and `RecordEnvelope` types;
@@ -307,6 +328,27 @@ capability checks and verification policy. Public storage formats are unchanged.
 - pnpm 10
 
 ## Install
+
+The package is not published to npm yet (publication is waived for 1.0; readiness is tracked in
+[#220](https://github.com/avnionur/shepherd-typescript/issues/220)). Consumers install a locally
+packed tarball:
+
+```sh
+pnpm build && npm pack          # in this repository
+npm install /path/to/avnionur-shepherd-typescript-<version>.tgz   # in the consuming project
+```
+
+The installed package is ESM-only, has no runtime dependencies, and requires Node.js
+`>=24.12.0 <25`. A 2026-09-25 local check installed the tarball into a strict NodeNext TypeScript
+project, imported the root and every subpath, type-checked with TypeScript 5.9 and 7.0, ran an
+end-to-end scope and settlement flow, and ran the `shepherd-ts` CLI; `publint --strict` and
+`@arethetypeswrong/cli --profile esm-only` report no problems.
+
+From 2.35.0, pushing a `v<version>` tag runs the [release workflow](./docs/release-integrity.md#release-workflow),
+which verifies, attests, and attaches the tarball, SBOM, and provenance to a GitHub Release (hosted
+Actions are currently unavailable for this repository, so it has not run yet).
+
+For development in this repository:
 
 ```sh
 pnpm install
@@ -724,6 +766,12 @@ boundary. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.m
 - [Retained-world path-disjoint application](./docs/retained-world-application.md)
 - [Receipt-only retained-world release](./docs/retained-world-release.md)
 - [Naming and licensing](./docs/naming-and-licensing.md)
+- [Replay sessions](./docs/replay-sessions.md) and [rewind and replay](./docs/rewind-and-replay.md)
+- [Two-worker coding supervisor](./docs/coding-supervisor.md)
+- [Counterfactual workflow optimization](./docs/counterfactual-optimization.md)
+- [Trajectory compression](./docs/trajectory-compression.md)
+- [Tree-RL rollouts](./docs/tree-rl-rollouts.md)
+- [Application evaluation](./docs/application-evaluation.md)
 - [Implementation plan](./.plan/README.md)
 - [Paper coverage map](./.plan/paper-coverage.md)
 - [Compatibility and parity matrix](./.plan/parity-matrix.md)
@@ -798,7 +846,7 @@ maps [application manifests](./docs/application-manifests.md), the
 [Tree-RL adapter](./docs/tree-rl-rollouts.md), and
 [application evaluation](./docs/application-evaluation.md) to the research application exit
 criteria. Every figure is an offline measurement on synthetic fixtures; no upstream headline result
-is reproduced. Phase 11 (production hardening and 1.0) is in progress: its
+is reproduced. Phase 11 (production hardening and 1.0) is complete for the in-repo scope: its
 [threat model](./docs/threat-model.md), [support policy](./docs/support-policy.md), and
 [incident response](./docs/incident-response.md) are published, and "1.0" names the L4 maturity
 milestone, not a package version. [Secrets and retention](./docs/secrets-and-retention.md)
@@ -864,8 +912,9 @@ paths, and restart recovery.
 The [Phase 3 status](./docs/phase-3-l1-alpha.md) and
 [exit audit](./.plan/phase-3-exit-audit.md) map each criterion to repeatable production-seam
 evidence. Phase 4 now completes the L1 documented compatibility package, including the offline
-quickstart and safe publication compatibility. Live-provider adapters, scopes, supervision,
-replay, and paper applications remain later work.
+quickstart and safe publication compatibility. Scopes, supervision, replay, and the paper
+applications followed in Phases 6–10 (see above); live-provider adapters remain open
+([#204](https://github.com/avnionur/shepherd-typescript/issues/204)).
 Phase 4 now includes exact named multi-repository resources, explicit read-only/read-write task
 grants, a whole-run ceiling, honest advisory/auto placement reporting, authenticated native
 filesystem-write jails for capable macOS Seatbelt and Linux/WSL Landlock hosts, and path-disjoint
