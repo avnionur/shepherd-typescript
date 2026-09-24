@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed from the README: the 230-line capability inventory, the multi-page API example, the
   phase-by-phase status history, and the flat 70-link documentation list. That content remains in
   `CHANGELOG.md`, `.plan/tracker.md`, the phase exit audits, and `docs/README.md`.
+- Regenerated `docs/generated/sbom.cdx.json`, which picks up the development dependency bumps
+  merged by Dependabot without regeneration (#193 Biome 2.5.14, #194 `@types/node` 26.6.1, #195
+  `yaml` 2.9.1).
 
 ### Impact
 
