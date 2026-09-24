@@ -2,16 +2,16 @@
     "bomFormat": "CycloneDX",
     "components": [
         {
-            "bom-ref": "pkg:npm/%40biomejs/biome@2.5.7",
+            "bom-ref": "pkg:npm/%40biomejs/biome@2.5.14",
             "group": "@biomejs",
             "name": "biome",
-            "purl": "pkg:npm/%40biomejs/biome@2.5.7",
+            "purl": "pkg:npm/%40biomejs/biome@2.5.14",
             "type": "library",
-            "version": "2.5.7",
+            "version": "2.5.14",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "cebf0afc3718e6d62c40e430a8c274016125a3a4209a0348ee27578172e17af56cce5b7c4465697ac1093eac774e16b32da3b08c9e58f1fcf706d1f97c664db3"
+                    "content": "d0569b2c88dde0cfdd9bc54523ce9131a2cb7607a9cdb75f8802f647c72bed5f3539862b3f5c3b67bdca7c0c0f2b987d4ab1015d3ccd1b6cbe981c0fa3dc519f"
                 }
             ],
             "properties": [
@@ -23,16 +23,16 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.7",
+            "bom-ref": "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.14",
             "group": "@biomejs",
             "name": "cli-darwin-arm64",
-            "purl": "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.7",
+            "purl": "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.14",
             "type": "library",
-            "version": "2.5.7",
+            "version": "2.5.14",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "bf1a3f2ecdff3d87505b22e161872030e0b3432a408dc63e8a2852f0cd305b4de5d7a4c22d6e33a99cc6a3be609b555d08c8f7f214d5677d4a056ad9e06f5d27"
+                    "content": "527cda5ceeb92f8b6c66298521314fd8cd76d46ca10dc585ad3de92f9649e54e17712ff42f9547632b55a217427ff8270d4147825d88f719ede5b57f2759311d"
                 }
             ],
             "properties": [
@@ -48,16 +48,16 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/%40biomejs/cli-darwin-x64@2.5.7",
+            "bom-ref": "pkg:npm/%40biomejs/cli-darwin-x64@2.5.14",
             "group": "@biomejs",
             "name": "cli-darwin-x64",
-            "purl": "pkg:npm/%40biomejs/cli-darwin-x64@2.5.7",
+            "purl": "pkg:npm/%40biomejs/cli-darwin-x64@2.5.14",
             "type": "library",
-            "version": "2.5.7",
+            "version": "2.5.14",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "09ddc66bad5a993fd897fd31f1e94fe6184661a172e1bc3a5aecac4e07fba28f13039b49e40d64f83915a09d811db4d58a5e758135fd54fcc0ae7ae52c9dcaca"
+                    "content": "922cbca80d7a2bddc9eeebc57d68b82e08ea0e99d12b278f0276ba0346388f1c9481adf9498a4867670d5a5872d25b1f82a45e9c2a5fca69c958467a9a0a5180"
                 }
             ],
             "properties": [
@@ -73,16 +73,16 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.7",
+            "bom-ref": "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.14",
             "group": "@biomejs",
             "name": "cli-linux-arm64-musl",
-            "purl": "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.7",
+            "purl": "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.14",
             "type": "library",
-            "version": "2.5.7",
+            "version": "2.5.14",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "c4f239c81e979690db3644be6e6d6de36a25c3973897752b94e98b83b2ad2c9be3be4345ff5578b675207e4ca518879bdeefd3f81ccc198aa0421ce3028273b9"
+                    "content": "489f4fad99019e71fd7472439f1937e2f2acd0607675bb22a1a7edebf84f85627b007a70607f3722c9e18f41524691641a0a557c9d6576cdb70290767335032d"
                 }
             ],
             "properties": [
@@ -98,16 +98,16 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/%40biomejs/cli-linux-arm64@2.5.7",
+            "bom-ref": "pkg:npm/%40biomejs/cli-linux-arm64@2.5.14",
             "group": "@biomejs",
             "name": "cli-linux-arm64",
-            "purl": "pkg:npm/%40biomejs/cli-linux-arm64@2.5.7",
+            "purl": "pkg:npm/%40biomejs/cli-linux-arm64@2.5.14",
             "type": "library",
-            "version": "2.5.7",
+            "version": "2.5.14",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "ad1d90134c85d86612b98b8a21aee92af383189aa7387fb678344400cf3057e99629290c40a740a78cd71197d36b163c3cca0d38d9e981259c042c8b0cf0ce2a"
+                    "content": "bceffd05a5359f7d0288534bc78f6031332d6c2000aa5a3f12a1681b4054ddd7902274db26b9974a64d0f5edc5a036482909ef48b0d534be25c75722ef2d53d5"
                 }
             ],
             "properties": [
@@ -123,16 +123,16 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.7",
+            "bom-ref": "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.14",
             "group": "@biomejs",
             "name": "cli-linux-x64-musl",
-            "purl": "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.7",
+            "purl": "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.14",
             "type": "library",
-            "version": "2.5.7",
+            "version": "2.5.14",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "ac4e55662faab663e0407fa5ee3571628675f1bfd3887121ba584ca63982647d4f96d49b8d1731356cb00b71d9f6d628b6d1bb39191e4eda2c7018a5292066d2"
+                    "content": "da42393eb3205b975c11962bb2d2cf994982c24530658dfdacfe0137ddd5c5bc1cb363b9ecb0d03a4b5465960fbefb293798b49a11abdd326d179b14dba3545a"
                 }
             ],
             "properties": [
@@ -148,16 +148,16 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/%40biomejs/cli-linux-x64@2.5.7",
+            "bom-ref": "pkg:npm/%40biomejs/cli-linux-x64@2.5.14",
             "group": "@biomejs",
             "name": "cli-linux-x64",
-            "purl": "pkg:npm/%40biomejs/cli-linux-x64@2.5.7",
+            "purl": "pkg:npm/%40biomejs/cli-linux-x64@2.5.14",
             "type": "library",
-            "version": "2.5.7",
+            "version": "2.5.14",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "15082a261b1caea254169b46691494256957004c7059c0f02ee2b8f5dbca7e44356c1e52104c85b2c9ecc5063cdd79ba8d1d046db5f7fbcf83e5b7ef62a506d9"
+                    "content": "5476516bb0824015162b137052f1c97ae5b4dd615180de4d58efff48318e8ad73d40878dc9f038d95f7394a9bec7cdb11521bd0738b97e2fa16e19bd6a73bcc8"
                 }
             ],
             "properties": [
@@ -173,16 +173,16 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/%40biomejs/cli-win32-arm64@2.5.7",
+            "bom-ref": "pkg:npm/%40biomejs/cli-win32-arm64@2.5.14",
             "group": "@biomejs",
             "name": "cli-win32-arm64",
-            "purl": "pkg:npm/%40biomejs/cli-win32-arm64@2.5.7",
+            "purl": "pkg:npm/%40biomejs/cli-win32-arm64@2.5.14",
             "type": "library",
-            "version": "2.5.7",
+            "version": "2.5.14",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "3aae31d020b03f88e2aeb713cb05ece64386678bf9bee10ffa05ab6ed8c0a4e03608bf45dc5f4694875021c8bc00a4826bfcd445a9cc4695ffe3043b026ea11e"
+                    "content": "a4780015f7e666d698a316af12c58460dbdc03b3703888cbcaac361d7c8b6edd7ac58af25f42f87cc576bb41bd6a0e8b3583c8a2a59a5aacd472773aacb1865e"
                 }
             ],
             "properties": [
@@ -198,16 +198,16 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/%40biomejs/cli-win32-x64@2.5.7",
+            "bom-ref": "pkg:npm/%40biomejs/cli-win32-x64@2.5.14",
             "group": "@biomejs",
             "name": "cli-win32-x64",
-            "purl": "pkg:npm/%40biomejs/cli-win32-x64@2.5.7",
+            "purl": "pkg:npm/%40biomejs/cli-win32-x64@2.5.14",
             "type": "library",
-            "version": "2.5.7",
+            "version": "2.5.14",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "57ed30bbf9eb8f64be3213f8110d2e1cda253f42002c4b33e39a60d16a0a9077c37a1d3e22d1f03ffa7b6d7e513e830e97d364a476167583e121ccb6980087bd"
+                    "content": "a095a6061a07b2785428891efb48170d7d2696d26b5870355321ecad3957c17d132fae22955640a3e4d8666f7b6da79c5747ac05da73cb793deaafb4f4969951"
                 }
             ],
             "properties": [
@@ -332,16 +332,16 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/%40types/node@26.1.2",
+            "bom-ref": "pkg:npm/%40types/node@26.6.1",
             "group": "@types",
             "name": "node",
-            "purl": "pkg:npm/%40types/node@26.1.2",
+            "purl": "pkg:npm/%40types/node@26.6.1",
             "type": "library",
-            "version": "26.1.2",
+            "version": "26.6.1",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "56ee1ae54140f6b208149eeb07f55a69f87d96b090b33a294c2c7a2a315ba174c641b3cd6ac7a1551e531228ad8520c6c9dd43122501ca081366c83c8ee91e22"
+                    "content": "56a18904c0ad761aa405409c04bbf2c08d0d27e28bb95ce036794150d14e423a95c73a369712d4360d4349ecbcfaedaeea4b6cc1203183eb3af102f358734eb8"
                 }
             ],
             "properties": [
@@ -1238,15 +1238,15 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/undici-types@8.3.0",
+            "bom-ref": "pkg:npm/undici-types@8.9.0",
             "name": "undici-types",
-            "purl": "pkg:npm/undici-types@8.3.0",
+            "purl": "pkg:npm/undici-types@8.9.0",
             "type": "library",
-            "version": "8.3.0",
+            "version": "8.9.0",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "8f7ef949c57ad1da26f9890f1487d32dc3a23f190dfdbb87cf91a86e32e18b116e00d68db370bd9781a6ad6a9e8e05d627b05b25c158a53114912d467bc6e965"
+                    "content": "2930f2453617f2c5a629702290f1c74b273adc244f11331cb728ca16ea5c0ba3812d74f7c6c3747bd685ee6fa6217bad156a545ee79db68c06ee22cece9d2442"
                 }
             ],
             "properties": [
@@ -1258,15 +1258,15 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/yaml@2.9.0",
+            "bom-ref": "pkg:npm/yaml@2.9.1",
             "name": "yaml",
-            "purl": "pkg:npm/yaml@2.9.0",
+            "purl": "pkg:npm/yaml@2.9.1",
             "type": "library",
-            "version": "2.9.0",
+            "version": "2.9.1",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "d80be1357de66fccdde99cbb20d4ed4a9975175e475ba5a7aa3d2cad696428b729625fe03083098b2b86ab629e236605c543e376507edcb735d2c78c2ed2f870"
+                    "content": "dcdc4df3eefc39dcdb4fb0bf5a31acc9f3c0b4968ddc5343b16c6fed8ee6703b13fe83a6816f01a72410145067bd91378fd63649dcf550b14b7b32fb11bdb217"
                 }
             ],
             "properties": [
@@ -1281,60 +1281,60 @@
     "dependencies": [
         {
             "dependsOn": [
-                "pkg:npm/%40biomejs/biome@2.5.7",
+                "pkg:npm/%40biomejs/biome@2.5.14",
                 "pkg:npm/%40rollup/plugin-node-resolve@16.0.3",
                 "pkg:npm/%40rollup/wasm-node@4.63.1",
-                "pkg:npm/%40types/node@26.1.2",
+                "pkg:npm/%40types/node@26.6.1",
                 "pkg:npm/ajv@8.20.0",
                 "pkg:npm/typescript@7.0.2",
-                "pkg:npm/yaml@2.9.0"
+                "pkg:npm/yaml@2.9.1"
             ],
-            "ref": "pkg:npm/%40avnionur/shepherd-typescript@2.35.0"
+            "ref": "pkg:npm/%40avnionur/shepherd-typescript@2.35.1"
         },
         {
             "dependsOn": [
-                "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.7",
-                "pkg:npm/%40biomejs/cli-darwin-x64@2.5.7",
-                "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.7",
-                "pkg:npm/%40biomejs/cli-linux-arm64@2.5.7",
-                "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.7",
-                "pkg:npm/%40biomejs/cli-linux-x64@2.5.7",
-                "pkg:npm/%40biomejs/cli-win32-arm64@2.5.7",
-                "pkg:npm/%40biomejs/cli-win32-x64@2.5.7"
+                "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.14",
+                "pkg:npm/%40biomejs/cli-darwin-x64@2.5.14",
+                "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.14",
+                "pkg:npm/%40biomejs/cli-linux-arm64@2.5.14",
+                "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.14",
+                "pkg:npm/%40biomejs/cli-linux-x64@2.5.14",
+                "pkg:npm/%40biomejs/cli-win32-arm64@2.5.14",
+                "pkg:npm/%40biomejs/cli-win32-x64@2.5.14"
             ],
-            "ref": "pkg:npm/%40biomejs/biome@2.5.7"
+            "ref": "pkg:npm/%40biomejs/biome@2.5.14"
         },
         {
             "dependsOn": [],
-            "ref": "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.7"
+            "ref": "pkg:npm/%40biomejs/cli-darwin-arm64@2.5.14"
         },
         {
             "dependsOn": [],
-            "ref": "pkg:npm/%40biomejs/cli-darwin-x64@2.5.7"
+            "ref": "pkg:npm/%40biomejs/cli-darwin-x64@2.5.14"
         },
         {
             "dependsOn": [],
-            "ref": "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.7"
+            "ref": "pkg:npm/%40biomejs/cli-linux-arm64-musl@2.5.14"
         },
         {
             "dependsOn": [],
-            "ref": "pkg:npm/%40biomejs/cli-linux-arm64@2.5.7"
+            "ref": "pkg:npm/%40biomejs/cli-linux-arm64@2.5.14"
         },
         {
             "dependsOn": [],
-            "ref": "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.7"
+            "ref": "pkg:npm/%40biomejs/cli-linux-x64-musl@2.5.14"
         },
         {
             "dependsOn": [],
-            "ref": "pkg:npm/%40biomejs/cli-linux-x64@2.5.7"
+            "ref": "pkg:npm/%40biomejs/cli-linux-x64@2.5.14"
         },
         {
             "dependsOn": [],
-            "ref": "pkg:npm/%40biomejs/cli-win32-arm64@2.5.7"
+            "ref": "pkg:npm/%40biomejs/cli-win32-arm64@2.5.14"
         },
         {
             "dependsOn": [],
-            "ref": "pkg:npm/%40biomejs/cli-win32-x64@2.5.7"
+            "ref": "pkg:npm/%40biomejs/cli-win32-x64@2.5.14"
         },
         {
             "dependsOn": [],
@@ -1374,9 +1374,9 @@
         },
         {
             "dependsOn": [
-                "pkg:npm/undici-types@8.3.0"
+                "pkg:npm/undici-types@8.9.0"
             ],
-            "ref": "pkg:npm/%40types/node@26.1.2"
+            "ref": "pkg:npm/%40types/node@26.6.1"
         },
         {
             "dependsOn": [],
@@ -1571,21 +1571,21 @@
         },
         {
             "dependsOn": [],
-            "ref": "pkg:npm/undici-types@8.3.0"
+            "ref": "pkg:npm/undici-types@8.9.0"
         },
         {
             "dependsOn": [],
-            "ref": "pkg:npm/yaml@2.9.0"
+            "ref": "pkg:npm/yaml@2.9.1"
         }
     ],
     "metadata": {
         "component": {
-            "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@2.35.0",
+            "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@2.35.1",
             "group": "@avnionur",
             "name": "shepherd-typescript",
-            "purl": "pkg:npm/%40avnionur/shepherd-typescript@2.35.0",
+            "purl": "pkg:npm/%40avnionur/shepherd-typescript@2.35.1",
             "type": "application",
-            "version": "2.35.0",
+            "version": "2.35.1",
             "licenses": [
                 {
                     "license": {
@@ -1601,7 +1601,7 @@
             },
             {
                 "name": "shepherd:sbom:lockfile-sha256",
-                "value": "217867987fd5d55befc3e78d4fa221f1de7aebf239c03426c233ce8170e24718"
+                "value": "b925a78d74166640d63c520adaee1075df9494b9dbad8c7a548d3850d00a9e21"
             },
             {
                 "name": "shepherd:sbom:lockfile-version",
@@ -1615,16 +1615,16 @@
         "tools": {
             "components": [
                 {
-                    "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@2.35.0#sbom-generator",
+                    "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@2.35.1#sbom-generator",
                     "name": "shepherd-typescript lockfile SBOM generator",
-                    "purl": "pkg:npm/%40avnionur/shepherd-typescript@2.35.0",
+                    "purl": "pkg:npm/%40avnionur/shepherd-typescript@2.35.1",
                     "type": "application",
-                    "version": "2.35.0"
+                    "version": "2.35.1"
                 }
             ]
         }
     },
-    "serialNumber": "urn:uuid:cb60640a-33fa-88ea-88c2-b3a4d00e4726",
+    "serialNumber": "urn:uuid:87cabc58-495e-83be-a4df-161f8bcc86f9",
     "specVersion": "1.5",
     "version": 1
 }

@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.35.1] - 2026-09-25
+
+### Improvement
+
+- README restructured for readers and consumers: a contents list, a concepts table mapping each
+  primitive to its package entry, a condensed status table, the paper coverage table, consumer
+  installation, a quick start verified against the installed package, a package-entry table,
+  grouped documentation links, a development command table, and the tag-based release procedure.
+- Removed from the README: the 230-line capability inventory, the multi-page API example, the
+  phase-by-phase status history, and the flat 70-link documentation list. That content remains in
+  `CHANGELOG.md`, `.plan/tracker.md`, the phase exit audits, and `docs/README.md`.
+- Regenerated `docs/generated/sbom.cdx.json`, which picks up the development dependency bumps
+  merged by Dependabot without regeneration (#193 Biome 2.5.14, #194 `@types/node` 26.6.1, #195
+  `yaml` 2.9.1).
+
+### Impact
+
+Documentation only; no runtime, API, protocol, or storage change.
+
 ## [2.35.0] - 2026-09-25
 
 ### New Feature

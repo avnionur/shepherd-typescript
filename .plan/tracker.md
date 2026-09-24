@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-25
 
-Current version: `2.35.0`
+Current version: `2.35.1`
 
 Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
@@ -729,6 +729,9 @@ open for a follow-up PATCH before the candidate is tagged.
   consumer items #221-#228 under epic #220; README corrected and extended; `release.yml` gains a
   tag trigger, version gate, a `github-release` job attaching the verified package and evidence,
   and a private-package refusal before npm publish (actionlint clean; not run on hosted runners).
+- [x] README restructure (PATCH 2.35.1, docs only): consumer-first layout with concepts, status,
+  paper coverage, installation, a verified quick start, package entries, grouped docs, development,
+  and releases; historical inventories moved to existing changelog, tracker, and docs index.
 
 Phase 10 is complete for its documented offline scope; the [exit audit](./phase-10-exit-audit.md)
 maps every work item and exit criterion to entry points, docs, and tests.
