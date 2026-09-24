@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-09-23
+Last updated: 2026-09-25
 
-Current version: `2.34.0`
+Current version: `2.35.0`
 
 Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
@@ -722,6 +722,13 @@ open for a follow-up PATCH before the candidate is tagged.
   `docs/generated/benchmarks/linux-arm64-overlayfs-container.json`). Verdict: 1.0 as a private,
   unpublished source release with those waivers
   ([addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)).
+- [x] Paper v3 re-audit, npm readiness check, and GitHub Release workflow (MINOR 2.35.0): the
+  section-by-section audit filed paper gaps #204-#219 under epic #202 and added the
+  [known deviations](./paper-coverage.md#known-deviations-2026-09-25-audit-2340) table; a local
+  npm check (pack, publint, attw, strict ESM consumer, CLI, Node range) filed owner blockers and
+  consumer items #221-#228 under epic #220; README corrected and extended; `release.yml` gains a
+  tag trigger, version gate, a `github-release` job attaching the verified package and evidence,
+  and a private-package refusal before npm publish (actionlint clean; not run on hosted runners).
 
 Phase 10 is complete for its documented offline scope; the [exit audit](./phase-10-exit-audit.md)
 maps every work item and exit criterion to entry points, docs, and tests.
