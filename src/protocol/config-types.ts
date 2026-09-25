@@ -236,7 +236,7 @@ export type StoreMaintenanceProtocolConfig = {
 
 /**
  * Validated operational bounds on native and redacted trace-archive input. They are not part of
- * the archive format identity. @internal
+ * the archive format identity. Referenced by the shipped `KernelProtocolConfig` declaration.
  */
 export type TraceArchiveLimitsConfig = {
     /** Maximum archived append intents. */
@@ -259,7 +259,8 @@ export type TraceArchiveLimitsConfig = {
 
 /**
  * Validated nesting bounds of the canonical value domain (`kernel.canonicalization`). They make
- * canonical acceptance independent of the call-site stack depth and JIT state. @internal
+ * canonical acceptance independent of the call-site stack depth and JIT state. Referenced by the shipped
+ * `KernelProtocolConfig` declaration.
  */
 export type CanonicalizationConfig = {
     /**

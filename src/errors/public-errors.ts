@@ -1,6 +1,5 @@
-import { readFileSync } from "node:fs";
-
 import { deepFreeze } from "../protocol/config-value-readers.ts";
+import { readConfigurationAsset, resolveConfigurationAssetUrl } from "./configuration-asset.ts";
 
 /** Stable machine-readable code carried by one exported structured public error. */
 export type PublicErrorCode = string;
@@ -13,6 +12,7 @@ export type PublicError = Error & {
 
 type FixedPublicErrorCodes = {
     readonly canonical: { readonly nestingLimit: PublicErrorCode };
+    readonly configuration: { readonly assetMissing: PublicErrorCode };
     readonly effects: { readonly handlerNotFound: PublicErrorCode };
     readonly formal: { readonly typedTraceInvalid: PublicErrorCode };
     readonly runs: {
@@ -48,11 +48,14 @@ type FixedPublicErrorCodes = {
 };
 
 /** Location of the public-error configuration relative to this source or built module. @internal */
-export const publicErrorConfigUrl = new URL("../../public-errors.config.json", import.meta.url);
+export const publicErrorConfigUrl = resolveConfigurationAssetUrl(
+    "../../public-errors.config.json",
+    import.meta.url,
+);
 
 /** Validated fixed-class public error codes. @internal */
 export const publicErrorCodes: FixedPublicErrorCodes = readPublicErrorConfig(
-    JSON.parse(readFileSync(publicErrorConfigUrl, "utf8")),
+    readConfigurationAsset(publicErrorConfigUrl),
 );
 
 /**
@@ -89,11 +92,22 @@ export function readPublicErrorConfig(value: unknown): FixedPublicErrorCodes {
     }
     const codes = readObject(
         root.codes,
-        ["canonical", "effects", "formal", "runs", "storage", "tasks", "trace", "workspace"],
+        [
+            "canonical",
+            "configuration",
+            "effects",
+            "formal",
+            "runs",
+            "storage",
+            "tasks",
+            "trace",
+            "workspace",
+        ],
         "public error codes",
     );
     const parsed = {
         canonical: readCodeGroup(codes.canonical, ["nestingLimit"], "canonical"),
+        configuration: readCodeGroup(codes.configuration, ["assetMissing"], "configuration"),
         effects: readCodeGroup(codes.effects, ["handlerNotFound"], "effects"),
         formal: readCodeGroup(codes.formal, ["typedTraceInvalid"], "formal"),
         runs: readCodeGroup(codes.runs, ["budgetExhausted", "cancelled"], "runs"),

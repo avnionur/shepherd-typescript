@@ -1,6 +1,7 @@
 # Package exports and module policy
 
-Runtime APIs are ESM-only on Node >=24.12.0 <25; the type-only `/read` entry requires no Node
+Runtime APIs are ESM modules on Node >=24.12.0 <27, loadable with `import` and, through Node's
+require(esm), with CommonJS `require()`; the type-only `/read` entry requires no Node
 runtime or declarations. Version 2.0.0 narrows the previous range with owner approval and enforces
 it before runtime operations. See [runtime support](./runtime-support.md) for pre-initialization
 CLI errors, required SQLite checks, and boundary verification. Supported imports are:
@@ -218,18 +219,74 @@ trace-store, carrier, runner, and grant handles from their owning domains. The f
 registries, provider adapters, run builders/controls, the SQLite store constructor, low-level trace
 mutation, private codecs, migrations, and protocol configuration; it creates no ambient authority.
 
-CommonJS `require()` is intentionally unsupported; use ESM or dynamic `import()`. The package does
-not ship a partial CommonJS transform. Node TypeScript consumers use `moduleResolution: "NodeNext"`,
-the `ESNext` disposable library, and Node declarations.
+## CommonJS `require()`
 
-Fresh-tarball conformance imports every entry at runtime, typechecks every declaration entry,
-rejects CommonJS and deep imports, verifies declaration/source maps, validates effect records and
+Owner decision (#224, D-020): CommonJS is supported through Node's require(esm), not through a
+separate CommonJS build. Every export lists `types`, `import`, and `default` conditions; `import`
+and `default` name the same ESM file, so `require("@avnionur/shepherd-typescript")` and every
+`require("@avnionur/shepherd-typescript/<subpath>")` return the same module namespace (same
+function and class identities) as `import`. This works on the whole supported Node range
+(>=24.12.0 <27), where require(esm) is enabled without a flag. It requires that no module in an
+export's graph uses top-level await; `test/package-require.test.ts` requires every export's source
+graph and fails with `ERR_REQUIRE_ASYNC_MODULE` if one does (the `shepherd-ts` executable is not an
+export and may use top-level await). Undeclared deep paths stay rejected for `require()` as for
+`import`.
+
+TypeScript CommonJS consumers (`.cts` files or `"type": "commonjs"`) use `module: "NodeNext"`;
+`import x = require("@avnionur/shepherd-typescript/<subpath>")` resolves the shipped declarations.
+The legacy `node16`/`node10` module settings predate require(esm) and report the declarations as
+ESM-only. `@arethetypeswrong/cli` is not a repository dependency, so it is a manual
+pre-publication check run after `pnpm build`. Recorded result (2026-09-25, package 2.35.1,
+`@arethetypeswrong/cli` 0.18.5, which bundles TypeScript 5.6.1-rc):
+
+| Command | Exit | Result |
+| --- | --- | --- |
+| `npx --yes @arethetypeswrong/cli --pack .` | 1 | root and all 15 subpaths: `node16 (from ESM)` and `bundler` 🟢; `node16 (from CJS)` ⚠️ `CJSResolvesToESM` ("ESM, dynamic import only") on all 16 entries; `node10` 🟢 for the root, 💀 `NoResolution` for the 15 subpaths |
+| `npx --yes @arethetypeswrong/cli --pack . --profile node16` | 1 | same; `node10` ignored, the 16 `node16 (from CJS)` warnings remain |
+| `npx --yes @arethetypeswrong/cli --pack . --profile esm-only` | 0 | no problems; `node10` and `node16 (from CJS)` ignored |
+
+Both findings are expected for an ESM-only package that supports CommonJS through require(esm) and
+are not fixed by metadata: TypeScript 5.6 predates the compiler's require(esm) model (TypeScript
+5.8+ under `NodeNext`), so it reports every `require()` of an ESM file, and `node10` resolution
+does not read `exports`, so subpaths cannot resolve there. Removing the `node16 (from CJS)` warning
+would require a separate CommonJS build, which D-020 rejects. The supported CommonJS contract is
+verified in-repository instead: installed conformance requires every subpath at runtime and
+typechecks a `.cts` `import = require()` probe under `NodeNext`. Re-run the three commands before
+publication and update this table.
+
+## TypeScript requirements
+
+The minimum supported consumer TypeScript version is **5.9.3**
+([`config/runtime-verification.config.json`](../config/runtime-verification.config.json),
+`typescript.minimum`). Node TypeScript consumers use `moduleResolution: "NodeNext"` (or
+`"Bundler"`), the `ESNext` disposable library, and Node declarations. Installed-package
+conformance typechecks the consumer probes, a CommonJS `.cts` probe, and every shipped `.d.ts`
+file with `skipLibCheck: false` using the repository compiler, which must satisfy the minimum.
+`pnpm test:runtime-boundaries` additionally requires `SHEPHERD_MINIMUM_TYPESCRIPT` to name the
+absolute `bin/tsc` of TypeScript 5.9.3 and repeats the checks with it; `pnpm test:package-cli`
+does the same when the variable is set.
+
+## Shipped declarations and metadata
+
+Shipped declarations are emitted with `stripInternal`: nothing tagged `@internal` is published,
+and the generated API reference and compatibility baseline are read from the same emitted
+`dist/src` declarations that are packed. Installed conformance fails if a shipped `.d.ts` contains
+`@internal` or does not typecheck on its own. `package.json` declares `sideEffects` as the modules
+with import-time effects (runtime and protocol-configuration validation, public-error
+configuration, the CLI executable, and one module-level invariant); bundlers may drop every other
+unused module. `keywords`, `author`, and `publishConfig` are set for publication; see
+[release integrity](./release-integrity.md#publication-metadata-and-guard).
+
+## Installed conformance
+
+Fresh-tarball conformance imports and requires every entry at runtime, typechecks every
+declaration entry, rejects deep imports, verifies that no source map is shipped, validates effect records and
 handler precedence, and composes the task, provider, run, trace, and workspace facades through an
 installed offline retained-output consumer, read-only changeset inspection, and exact settlement.
-It separately reruns the unchanged root-facade quickstart.
+It separately runs the root-facade [quickstart](./quickstart.md) in a consumer with its own local
+`node_modules`, within the configured wall-time and retained-state budgets.
 
-Every supported entry includes JavaScript and declaration maps. Their portable source-path,
-embedded-content, installed-stack, and redaction policy is defined in
+Source maps are not shipped; the policy and installed-stack behavior are defined in
 [`source-maps-and-causes.md`](./source-maps-and-causes.md).
 
 The [generated API reference](./generated/api-reference.md) is built only from these emitted
@@ -278,17 +335,21 @@ Node resolver 16.0.3. These are development-only dependencies, installed without
 the build allowlist remains empty. Rollup's optional filesystem/compression packages remain
 development dependencies, not optional Shepherd runtime adapters.
 
-The [bundle policy](../config/bundle-verification.config.json) defines two installed consumer
-fixtures: importing `canonicalizeRecord` through `/canonical` and through the root. Each is built with
-tree-shaking off and on; the optimized chunk must be smaller. Module metadata must retain canonical
-encoding and configuration validation. The narrow fixture additionally excludes SQLite-store and
-native-jail implementation modules and removes the unused `createRecordId` export.
+The [bundle policy](../config/bundle-verification.config.json) defines three installed consumer
+fixtures: importing `canonicalizeRecord` through `/canonical` and through the root, and
+`scanSemanticValueForSecrets` through `/operations`. Each is built with tree-shaking off and on; the
+optimized chunk must be smaller. Module metadata must retain the fixture's required modules
+(canonical encoding and configuration validation; secret scanning for `/operations`). The narrow
+`/canonical` and `/operations` fixtures additionally exclude SQLite-store and native-jail
+implementation modules and remove the unused `createRecordId` export.
 
-Both optimized ESM chunks execute under Node and produce the independently expected canonical JSON.
+Every optimized ESM chunk executes under Node and produces its independently expected output
+(canonical JSON, or an empty secret-scan report for `/operations`).
 The root fixture retains public-error configuration initialization, even though only canonical
 encoding is requested. From 2.33.0 the narrow `/canonical` fixture does too: the canonical encoder
 raises the classified `CanonicalNestingLimitError`, whose code comes from
-`public-errors.config.json`. No blanket `sideEffects: false` or `moduleSideEffects: false` is applied.
+`public-errors.config.json`. No blanket `sideEffects: false` or `moduleSideEffects: false` is
+applied: `sideEffects` lists the modules with import-time effects, and every fixture passes with it.
 Root imports remain more coupled than the narrow entry.
 
 Configuration URLs remain relative to `import.meta.url`. The tested output layout is:
@@ -303,7 +364,9 @@ bundle-root/
 
 The two-level nesting preserves the emitted configuration modules' `../../` asset references.
 Assets are copied from the installed package's `dist/` directory. Removing each required asset
-must fail with a missing-file error; replacing it with invalid configuration must also fail.
+must fail with the classified missing-asset error described in
+[missing configuration assets](#missing-configuration-assets); replacing it with invalid
+configuration must also fail.
 Restoring assets restores successful execution. A bundle is therefore not a single self-contained
 file. Other output locations require a deliberate asset-location strategy.
 
@@ -312,7 +375,80 @@ and `CIRCULAR_DEPENDENCY` warnings for existing workspace modules. These categor
 accepted in the test policy; other warnings fail bundling. Runtime execution and asset-validation
 checks remain mandatory.
 
-This evidence covers the two stated Node fixtures, not arbitrary root-export combinations,
-browser targets, CommonJS bundles, all bundlers, bundled source-map portability, or optional
-provider/native adapters that do not yet exist. The unchanged unbundled package still has its
-separate installed source-map and all-export conformance checks.
+This evidence covers the stated Node fixtures, not arbitrary root-export combinations,
+browser targets, all bundlers, bundled source-map portability, or optional provider/native
+adapters that do not yet exist. The unchanged unbundled package still has its separate installed
+all-export conformance checks.
+
+## Missing configuration assets
+
+Implementation: [`src/errors/configuration-asset.ts`](../src/errors/configuration-asset.ts). Public
+entry point: `ConfigurationAssetError` from the root. Tests:
+[`test/errors/configuration-asset.test.ts`](../test/errors/configuration-asset.test.ts) and the
+installed bundle fixtures in [`tooling/testing/bundles.ts`](../tooling/testing/bundles.ts).
+
+From 2.36.0, when `runtime.config.json`, `protocol.config.json`, or `public-errors.config.json`
+cannot be read because it does not exist, module evaluation throws `ConfigurationAssetError` with
+code `CONFIGURATION_ASSET_MISSING` (configured in `public-errors.config.json` under
+`codes.configuration.assetMissing`), an `asset` property naming the file, and an `expectedPath`
+property holding the absolute path the module resolved; the message names the same path and the
+original `ENOENT` is kept as the in-memory `cause`. The code is generated into
+`src/protocol/values.generated.ts` by `pnpm generate:protocol`, so it is available even when
+`public-errors.config.json` is the missing asset. A bundle format without `import.meta.url` (an
+esbuild CommonJS bundle without the shim below) throws the same error before any read, with
+`expectedPath` set to the module-relative specifier, because the absolute location cannot be
+determined. Present but unreadable or invalid assets keep their original read, parse, or
+validation error.
+
+Because the error is thrown while the module graph evaluates, an `import()` or `require()` of the
+bundle rejects with it; check `isPublicError(error)` and `error.code` rather than `instanceof`.
+
+The Rollup fixtures above also emit each optimized fixture as a CommonJS bundle
+(`chunks/nested/bundle.cjs`; Rollup rewrites `import.meta.url` to the bundle file URL). The ESM and
+CommonJS bundles must both print the expected output with the assets present, and with each asset
+removed both must fail with `ConfigurationAssetError`, the configured code, the expected absolute
+path, and the `ENOENT` cause.
+
+### esbuild recipe
+
+esbuild keeps `import.meta.url` in ESM output, so the same layout as Rollup works: place the three
+assets two directories above the bundle file.
+
+```sh
+esbuild app.mjs --bundle --platform=node --format=esm --outfile=out/app/bundle/index.mjs
+cp node_modules/@avnionur/shepherd-typescript/dist/*.config.json out/
+node out/app/bundle/index.mjs
+```
+
+```text
+out/
+  protocol.config.json
+  public-errors.config.json
+  runtime.config.json
+  app/bundle/index.mjs
+```
+
+esbuild CommonJS output (`--format=cjs`) replaces `import.meta` with an empty object and warns
+`empty-import-meta`; the bundle then throws `ConfigurationAssetError` for `runtime.config.json`
+(previously `TypeError: Invalid URL`). To support CommonJS, define `import.meta.url` from the
+bundle's own file with an injected shim and keep the same layout:
+
+```js
+// import-meta-url.js
+export const importMetaUrl = require("node:url").pathToFileURL(__filename).href;
+```
+
+```sh
+esbuild app.mjs --bundle --platform=node --format=cjs \
+  --define:import.meta.url=importMetaUrl --inject:./import-meta-url.js \
+  --outfile=out/app/bundle/index.cjs
+```
+
+Verification status: esbuild is not a repository dependency, so this recipe is not part of
+`pnpm verify`; adding an esbuild development dependency for a fixture test awaits owner approval.
+It was verified manually on 2026-09-25 against the built 2.35.1 worktree package with
+`npx --yes esbuild` 0.28.2 and the `/canonical` fixture entry from the bundle policy: the ESM bundle
+printed `{"a":1,"z":2}` with the assets present and threw `ConfigurationAssetError`
+(`CONFIGURATION_ASSET_MISSING`, absolute `expectedPath`) without them; the plain CommonJS bundle
+threw `ConfigurationAssetError` for `runtime.config.json`; the shimmed CommonJS bundle printed
+`{"a":1,"z":2}`.

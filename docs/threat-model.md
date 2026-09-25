@@ -27,7 +27,7 @@ mitigation and test is a residual risk with a register finding.
   handlers, providers). The runtime defends the integrity of its records against malformed input
   and against its own crashes, and defends managed worlds against effects that exceed declared
   authority.
-- The host operating system, Node runtime (`>=24.12.0 <25`, [runtime support](./runtime-support.md)),
+- The host operating system, Node runtime (`>=24.12.0 <27`, [runtime support](./runtime-support.md)),
   and the files of the installed package are trusted. A hostile process running as the same OS user
   is out of scope: it can rewrite the store, the package, or Node builtins.
 - Other OS users on the same host are untrusted.

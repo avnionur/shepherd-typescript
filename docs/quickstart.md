@@ -4,12 +4,15 @@ Implementation fixture: [`examples/quickstart.mjs`](../examples/quickstart.mjs).
 [`src/cli/handlers.ts`](../src/cli/handlers.ts). Installed-package conformance:
 [`tooling/testing/packaged-cli.ts`](../tooling/testing/packaged-cli.ts).
 
-Install the package, create a fresh directory, emit the checked-in demo, and run it:
+Create a fresh directory, install the package into it, emit the checked-in demo, and run it. The
+package is not published to npm, so install a locally packed tarball (see the
+[README](../README.md#installation)):
 
 ```sh
 mkdir shepherd-typescript-demo
 cd shepherd-typescript-demo
-shepherd-ts demo write quickstart > quickstart.mjs
+npm install /path/to/avnionur-shepherd-typescript-<version>.tgz
+npx shepherd-ts demo write quickstart > quickstart.mjs
 node quickstart.mjs
 ```
 
@@ -20,10 +23,17 @@ Expected output:
 Hello from a Shepherd retained output.
 ```
 
-The script initializes the directory with `none` adoption and no Git creation. It declares a
+The script initializes the directory as a workspace with `none` adoption and no Git creation, then
+binds only the dedicated `quickstart-workspace/` subdirectory, which it creates. It never binds the
+whole working directory, so a local `node_modules` beside the script is not captured. It declares a
 bodyless task, uses the deterministic static provider, writes `NOTE.txt` inside isolated retained
 custody, and verifies the user file is absent. It then inspects and prints the retained proposal,
-prepares exact selection, selects once, and verifies the selected user bytes.
+prepares exact selection, selects once, and verifies the selected bytes at
+`quickstart-workspace/NOTE.txt`. The printed and inspected paths are relative to that binding.
+
+From 2.36.0 the flow takes about a second and retains a few hundred kilobytes under `.vcscore`.
+Earlier versions bound the whole directory; after a local install they captured `node_modules`
+and took over a minute with tens of megabytes of retained state.
 
 The durable trace store is `.vcscore/quickstart-trace.sqlite`. Inspect it without mutation:
 
@@ -37,7 +47,13 @@ shepherd-ts run trace --store .vcscore/quickstart-trace.sqlite --json
 ```
 
 This quickstart is offline and keyless. Its runner reports advisory in-process enforcement; it
-does not claim a native jail. The installed-package test packs and installs the tarball into an
-isolated consumer root, emits the script through the installed binary, executes it with the
-installed ESM root only, checks the transcript and selected file, and reads the resulting exact
-run/output/trace evidence through stable CLI JSON.
+does not claim a native jail.
+
+The installed-package test runs the documented flow in a fresh consumer directory that holds its
+own `node_modules` installed from the packed tarball. It emits the script through that installed
+binary, runs it, checks the transcript and the selected file inside the binding directory, and
+asserts the budgets in the `quickstart` section of
+[`config/runtime-verification.config.json`](../config/runtime-verification.config.json): the binding
+directory the emitted script must declare, the maximum wall time for `demo write` plus
+`node quickstart.mjs`, and the maximum total file bytes under `.vcscore`. It then reads the
+resulting exact run/output/trace evidence through stable CLI JSON.

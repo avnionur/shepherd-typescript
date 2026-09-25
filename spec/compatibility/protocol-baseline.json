@@ -3,8 +3,8 @@
         "digest": "sha256:ff21fca205063b4f79eaaa69e14587efda104a7d6c1a870963bcbf68dbdb83ef",
         "entries": 6
     },
-    "packageVersion": "2.35.1",
-    "previousVersion": "2.35.0",
+    "packageVersion": "2.36.0",
+    "previousVersion": "2.35.1",
     "surface": {
         "commandOptions": {
             "demo write": {},
@@ -74,6 +74,7 @@
             "APPEND_INTENT_CONFLICT",
             "BLOB_INTEGRITY_ERROR",
             "CANONICAL_NESTING_LIMIT_EXCEEDED",
+            "CONFIGURATION_ASSET_MISSING",
             "EFFECT_HANDLER_NOT_FOUND",
             "NATIVE_JAIL_EXECUTION_FAILED",
             "NATIVE_JAIL_UNAVAILABLE",

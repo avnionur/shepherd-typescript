@@ -68,5 +68,5 @@ remain documented only when they resolve from a supported entry.
 
 Fresh-package conformance verifies that the generated artifact is present and byte-identical after
 install, then typechecks a consumer namespace import for every declared export subpath. Existing
-CommonJS/deep-import refusal, source-map portability, root quickstart, CLI redaction, recovery,
+CommonJS `require()` loading, deep-import refusal, map-free and internal-free declarations, root quickstart, CLI redaction, recovery,
 settlement, and native-platform behavior remain owned by their existing verification seams.

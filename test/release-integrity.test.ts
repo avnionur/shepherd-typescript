@@ -291,6 +291,7 @@ test("release-integrity configuration is validated", async () => {
             ...productionConfiguration,
             packedFiles: { alwaysIncluded: ["package.json"], archiveRoot: "" },
         },
+        { ...productionConfiguration, packedReadme: { path: "README.md", repositoryRef: "" } },
     ]) {
         assert.throws(() => parseReleaseIntegrityConfiguration(invalid), TypeError);
     }

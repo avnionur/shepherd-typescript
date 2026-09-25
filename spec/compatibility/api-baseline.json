@@ -162,6 +162,7 @@
             "CodingSupervisorWorkerInspection": {"digest":"sha256:086b4f1ba1c6023db3de84aa2c78b3aa1c388222d8b9c673e33ffb9e5724ab64","kind":"type alias"},
             "CodingSupervisorWorkerProgram": {"digest":"sha256:c26932d3a1c12a8430dd72dcbb17347086853f6ac81fedc500f40b61681753e2","kind":"type alias"},
             "CodingSupervisorWorkerStatus": {"digest":"sha256:2c1d17946c63f0bbbaccf35471eadcf12c997861ab0b830576d116524a272049","kind":"type alias"},
+            "ConfigurationAssetError": {"digest":"sha256:0c5693315498d227f0b3cc52fcf2d77a786db0a847dcb46b29bdbfbc3684be33","kind":"class"},
             "CooperativeProcessAdapter": {"digest":"sha256:16039e52c83eb801707107cc6fda24698478353c117c2a9adb467ffe71ea453a","kind":"type alias"},
             "CooperativeProcessAdapterOptions": {"digest":"sha256:5cd25eeb85e346065a45fcb22e121a8c078f512cf3e6e4f9a200c64bba9c4690","kind":"type alias"},
             "Core0hHandlerPhases": {"digest":"sha256:e0e8c0459f2d487ddbdcc2f13a565fd41d71dac094398cd6e9239c7ff46282e3","kind":"type alias"},
@@ -2376,6 +2377,6 @@
             "selectRetainedWorldSettlement": {"digest":"sha256:2e4cadd824902afb6b200a6b858a1a52414a3ff94d5078de3a668baa696e541c","kind":"function"}
         }
     },
-    "packageVersion": "2.35.1",
-    "previousVersion": "2.35.0"
+    "packageVersion": "2.36.0",
+    "previousVersion": "2.35.1"
 }

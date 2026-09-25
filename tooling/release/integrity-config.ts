@@ -46,10 +46,23 @@ export type PackedFilesConfiguration = {
     readonly archiveRoot: string;
 };
 
+/** Link policy of the README that ships in the packed tarball. */
+export type PackedReadmeConfiguration = {
+    /** Archive-relative path of the packed README. */
+    readonly path: string;
+    /**
+     * Git ref that absolute repository links target (`<repository>/blob/<ref>/<path>`); the
+     * repository URL itself comes from the `package.json` `repository` field.
+     */
+    readonly repositoryRef: string;
+};
+
 /** Validated `config/release-integrity.config.json`. */
 export type ReleaseIntegrityConfiguration = {
     /** Packed file-set check settings. */
     readonly packedFiles: PackedFilesConfiguration;
+    /** Packed README link policy. */
+    readonly packedReadme: PackedReadmeConfiguration;
     /** Provenance statement settings. */
     readonly provenance: ProvenanceConfiguration;
     /** Release output locations. */
@@ -106,6 +119,7 @@ export async function readReleaseIntegrityConfiguration(
 export function parseReleaseIntegrityConfiguration(value: unknown): ReleaseIntegrityConfiguration {
     const root = objectValue(value, "release integrity configuration");
     const packedFiles = objectValue(root.packedFiles, "packedFiles");
+    const packedReadme = objectValue(root.packedReadme, "packedReadme");
     const provenance = objectValue(root.provenance, "provenance");
     const release = objectValue(root.release, "release");
     const reproducibleBuild = objectValue(root.reproducibleBuild, "reproducibleBuild");
@@ -119,6 +133,10 @@ export function parseReleaseIntegrityConfiguration(value: unknown): ReleaseInteg
                 "packedFiles.alwaysIncluded",
             ),
             archiveRoot: text(packedFiles, "archiveRoot", "packedFiles"),
+        },
+        packedReadme: {
+            path: text(packedReadme, "path", "packedReadme"),
+            repositoryRef: text(packedReadme, "repositoryRef", "packedReadme"),
         },
         provenance: {
             artifact: text(provenance, "artifact", "provenance"),
