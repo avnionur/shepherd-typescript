@@ -379,3 +379,48 @@ test("inspection refuses forged handle, origin cut, parent chain, and completion
     );
     assert.deepEqual(inspectChildRun(viewing({}), childId), inspectChildRun(store, childId));
 });
+
+test("handle opening refuses an unretained parent or a moved predecessor head before any record", async (context) => {
+    const databasePath = await temporaryDatabasePath(context, "open-refusals");
+    using store = new SQLiteTraceStore(databasePath);
+    const { handle } = openChildRun(store, openOptions("delegate:open-refusals"));
+    const handleRecords = store.readOwner(handle.handle_id);
+    const freshHandleId = `${handle.handle_id}:fresh`;
+    const unbuilt = () => {
+        throw new Error("a refused opening must not build its record");
+    };
+    const open = (
+        parentHandleId: string | null,
+        predecessor: { readonly handleId: string; readonly headRecordId: string } | null,
+    ) =>
+        store.openDelegationHandle(freshHandleId, {
+            appendIntentId: `intent:${freshHandleId}`,
+            build: unbuilt,
+            parentHandleId,
+            predecessor,
+        });
+
+    assert.throws(
+        () => open(`${handle.handle_id}:unretained`, null),
+        (error: unknown) =>
+            error instanceof DelegationEvidenceError &&
+            error.message.endsWith(`parent handle ${handle.handle_id}:unretained is not retained`),
+    );
+    const staleHead = `sha256:${"0".repeat(64)}`;
+    for (const predecessor of [
+        { handleId: handle.handle_id, headRecordId: staleHead },
+        { handleId: `${handle.handle_id}:unretained`, headRecordId: staleHead },
+    ]) {
+        assert.throws(
+            () => open(null, predecessor),
+            (error: unknown) =>
+                error instanceof DelegationEvidenceError &&
+                error.message.endsWith(
+                    `predecessor handle ${predecessor.handleId} head is not the cited decision`,
+                ),
+        );
+    }
+    assert.deepEqual(store.readOwner(freshHandleId), []);
+    assert.deepEqual(store.readOwner(handle.handle_id), handleRecords);
+    assert.deepEqual(store.readAppendIntentRecords(`intent:${freshHandleId}`), []);
+});

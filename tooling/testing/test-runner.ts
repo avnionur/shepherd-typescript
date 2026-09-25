@@ -1,9 +1,12 @@
 import { once } from "node:events";
-import { readdir, readFile } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { run } from "node:test";
 import { spec } from "node:test/reporters";
 import { fileURLToPath } from "node:url";
+
+import { collectRepositoryCoverage, evaluateCoverage } from "./coverage-merge.ts";
 
 type TestRunnerConfiguration = {
     readonly coverage: {
@@ -24,12 +27,15 @@ export type RepositoryTestMode = "parallel" | "serial";
 export type RepositoryTestOptions = {
     /** Whether test files run concurrently or in configured serial-priority order. */
     readonly mode: RepositoryTestMode;
-    /** Destination for the Node specification reporter. */
+    /** Destination for the Node specification reporter and the merged coverage report. */
     readonly output: NodeJS.WritableStream;
 };
 
 /**
  * Runs the configured repository tests in parallel or serial-priority order.
+ *
+ * Child test processes write raw V8 coverage to a temporary `NODE_V8_COVERAGE` directory, which
+ * is merged by {@link collectRepositoryCoverage} and removed afterwards.
  *
  * @param options - Typed execution mode and reporter output destination.
  * @returns Whether the complete run and configured coverage thresholds succeeded.
@@ -59,23 +65,36 @@ export async function runRepositoryTests(options: RepositoryTestOptions): Promis
         );
         return leftPriority - rightPriority || leftRelative.localeCompare(rightRelative, "en");
     });
-    const stream = run({
-        branchCoverage: configuration.coverage.branches,
-        concurrency: options.mode === "parallel",
-        coverage: true,
-        coverageIncludeGlobs: configuration.coverage.include,
-        cwd: repositoryRoot,
-        files,
-        functionCoverage: configuration.coverage.functions,
-        lineCoverage: configuration.coverage.lines,
-    });
-    let succeeded = false;
-    stream.on("test:summary", ({ success }) => {
-        succeeded = success;
-    });
-    stream.compose(spec).pipe(options.output);
-    await once(stream, "end");
-    return succeeded;
+    const coverageDirectory = await mkdtemp(path.join(tmpdir(), "repository-coverage-"));
+    try {
+        // Node's built-in merge drops zero-count ranges depending on process order, so child
+        // processes write raw V8 coverage and the repository merge sums it soundly.
+        const stream = run({
+            concurrency: options.mode === "parallel",
+            cwd: repositoryRoot,
+            env: { ...process.env, NODE_V8_COVERAGE: coverageDirectory },
+            files,
+        });
+        let succeeded = false;
+        stream.on("test:summary", ({ success }) => {
+            succeeded = success;
+        });
+        const reporter = stream.compose(spec);
+        reporter.pipe(options.output, { end: false });
+        await once(reporter, "end");
+        const coverage = evaluateCoverage(
+            await collectRepositoryCoverage({
+                coverageDirectory,
+                include: configuration.coverage.include,
+                repositoryRoot,
+            }),
+            configuration.coverage,
+        );
+        options.output.write(coverage.report);
+        return succeeded && coverage.passed;
+    } finally {
+        await rm(coverageDirectory, { force: true, recursive: true });
+    }
 }
 
 function portableRelative(repositoryRoot: string, file: string): string {

@@ -23,7 +23,8 @@
             "tooling/release/reproducible-build.ts",
             "tooling/release/sbom.ts",
             "tooling/release/version.ts",
-            "tooling/protocol/generator.ts"
+            "tooling/protocol/generator.ts",
+            "tooling/testing/coverage-merge.ts"
         ],
         "lines": 100
     },

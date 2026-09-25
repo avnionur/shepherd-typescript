@@ -20,6 +20,7 @@ import {
     ScopeWriterFencedError,
     SQLiteTraceStore,
 } from "../../src/index.ts";
+import { scopeProtocolConfig } from "../../src/protocol/config.ts";
 import { createScopeCommandAppendIntentId } from "../../src/scope/records.ts";
 import {
     createScopeChildMergedBody,
@@ -686,4 +687,109 @@ test("a completion whose parent fence is lost rolls back and a prepared fork ref
         schema: "shepherd.scope.emission.v1",
     });
     assert.throws(() => inspectScope(workspace.store, pendingScopeId), /fork is not complete/u);
+});
+
+test("merge receipt replay refuses foreign reservations and incomplete or inconsistent journals", async (context) => {
+    const databasePath = await temporaryDatabasePath(context, "terminal-replay-forged-merge");
+    using store = new SQLiteTraceStore(databasePath);
+    const { childMerged, merge: schema } = scopeProtocolConfig.traceSchemas;
+    const reserve = (commandId: string, body: unknown) =>
+        forge(store, {
+            body,
+            causes: [],
+            intent: createScopeCommandAppendIntentId(commandId),
+            owner: `run:${commandId}`,
+            schema,
+        });
+    const complete = (commandId: string, bodies: readonly [string, unknown][]) =>
+        store.append({
+            append_intent_id: createScopeMergeAppendIntentId(commandId, "completed"),
+            batch: {
+                groups: [
+                    {
+                        owner_id: `run:${commandId}`,
+                        records: bodies.map(([schemaRef, body]) => ({
+                            body: body as RecordBody,
+                            mode: "capture",
+                            schema_ref: schemaRef,
+                            witness_ref: ROOT_WITNESS_ID,
+                        })),
+                    },
+                ],
+            },
+        });
+    const integration = (commandId: string) =>
+        createScopeChildMergedBody({
+            childCheckpointRecordId: null,
+            childCutId: createScopeMergeCutId(commandId),
+            childScopeId: SCOPE,
+            commandId,
+            contributions: [],
+            mergedContentId: null,
+            parentScopeId: OTHER_SCOPE,
+            publicationRevisionId: null,
+        });
+    const seal = (commandId: string) =>
+        createScopeMergeCompletedBody({
+            commandId,
+            parentScopeId: OTHER_SCOPE,
+            publicationRevisionId: null,
+            scopeId: SCOPE,
+        });
+    const reservation = (commandId: string) =>
+        preparedBody({ command_id: commandId, merge_cut_id: createScopeMergeCutId(commandId) });
+
+    // A merge record under another command's intent is not that command's reservation.
+    reserve("scope-command:foreign-reservation", preparedBody());
+    assert.throws(
+        () => readScopeCommandReceipt(store, "scope-command:foreign-reservation"),
+        /not a merge reservation/u,
+    );
+    // A completed journal phase retained as the command record is not a reservation either.
+    reserve("scope-command:sealed-reservation", seal("scope-command:sealed-reservation"));
+    assert.throws(
+        () => readScopeCommandReceipt(store, "scope-command:sealed-reservation"),
+        /not a merge reservation/u,
+    );
+
+    // A reservation without completion has no receipt yet.
+    reserve("scope-command:pending", reservation("scope-command:pending"));
+    assert.equal(readScopeCommandReceipt(store, "scope-command:pending"), undefined);
+
+    // A completion journal must retain exactly the integration and the seal.
+    reserve("scope-command:half-sealed", reservation("scope-command:half-sealed"));
+    complete("scope-command:half-sealed", [[schema, seal("scope-command:half-sealed")]]);
+    assert.throws(
+        () => readScopeCommandReceipt(store, "scope-command:half-sealed"),
+        /merge journal evidence is inconsistent/u,
+    );
+
+    // Both completion records must name the reserved command and the seal must be completed.
+    for (const [commandId, integrated, sealed] of [
+        [
+            "scope-command:foreign-seal",
+            integration("scope-command:foreign-seal"),
+            seal("scope-command:other"),
+        ],
+        [
+            "scope-command:foreign-integration",
+            integration("scope-command:other"),
+            seal("scope-command:foreign-integration"),
+        ],
+        [
+            "scope-command:prepared-seal",
+            integration("scope-command:prepared-seal"),
+            reservation("scope-command:prepared-seal"),
+        ],
+    ] as const) {
+        reserve(commandId, reservation(commandId));
+        complete(commandId, [
+            [childMerged, integrated],
+            [schema, sealed],
+        ]);
+        assert.throws(
+            () => readScopeCommandReceipt(store, commandId),
+            /merge journal evidence is inconsistent/u,
+        );
+    }
 });

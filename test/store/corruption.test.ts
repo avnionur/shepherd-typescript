@@ -6,11 +6,14 @@ import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 
 import {
+    forkScope,
     ROOT_WITNESS_ID,
+    ScopeEvidenceError,
     SQLiteTraceStore,
     type StoreAppendRequest,
     TraceStoreError,
 } from "../../src/index.ts";
+import { createForkWorkspace, forkOptions } from "../scope/fork-fixtures.ts";
 
 const request: StoreAppendRequest = {
     append_intent_id: "intent:corruption",
@@ -138,4 +141,30 @@ test("SQLiteTraceStore rejects malformed and inconsistent stored append receipts
     const reopened = new SQLiteTraceStore(databasePath);
     assert.deepEqual(reopened.append(request), receipt);
     reopened.close();
+});
+
+test("fork replay refuses a registration whose prepared journal intent is not retained", async (context) => {
+    const workspace = await createForkWorkspace(context, "lost-prepared-intent");
+    const { carrier, databasePath, source, store } = workspace;
+    const origin = await carrier.snapshot(source);
+    const options = forkOptions(workspace, origin.revision_id);
+    const fork = await forkScope(store, options);
+    const preparedIntentId = store
+        .readRecord(fork.prepared_record_id)
+        ?.views.find(({ owner_id }) => owner_id === fork.scope_id)?.append_intent_id;
+    assert.equal(typeof preparedIntentId, "string");
+    const database = new DatabaseSync(databasePath);
+    database.exec("PRAGMA foreign_keys = OFF");
+    database
+        .prepare("DELETE FROM append_intents WHERE append_intent_id = ?")
+        .run(preparedIntentId ?? "");
+    database.close();
+
+    await assert.rejects(
+        forkScope(store, options),
+        (error: unknown) =>
+            error instanceof ScopeEvidenceError &&
+            error.message.endsWith("scope fork registration lacks its prepared record"),
+    );
+    store.close();
 });

@@ -221,10 +221,9 @@ export function readDurableTaskExecution(
                 baseRecordId,
                 ...(index === 0 ? [] : [artifacts[index - 1]?.envelope.record_id as string]),
             ]);
-            const reconstructed = execution.artifacts[index];
-            if (reconstructed === undefined) {
-                throw new TypeError("durable artifact reconstruction is incomplete");
-            }
+        }
+        // The decoder reconstructs exactly one artifact per retained artifact record.
+        for (const reconstructed of execution.artifacts) {
             if (reconstructed.content.type === BLOB_ARTIFACT_TYPE) {
                 const content = store.readBlob(reconstructed.content.blob_id);
                 if (

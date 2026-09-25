@@ -493,3 +493,27 @@ test("transparent checkpointing reports platform, executable, and host-check una
     );
     assert.throws(() => createTransparentProcessAdapter({ processId: "" }), TypeError);
 });
+
+test("classification orders same-kind constituents by name and treats an absent name as least", () => {
+    const world = (name: string | null) => ({
+        evidence: null,
+        kind: "world",
+        name,
+        reason: null,
+        receipt_id: null,
+        status: "not_applicable",
+    });
+    const classify = (...worlds: ReturnType<typeof world>[]) =>
+        classifyReplayCheckpoint({ constituents: worlds } as never);
+    assert.deepEqual(
+        classify(world(null), world("main")).not_applicable.map((entry) => entry.name),
+        [null, "main"],
+    );
+    for (const worlds of [
+        [world(null), world(null)],
+        [world("main"), world(null)],
+        [world("main"), world("main")],
+    ]) {
+        assert.throws(() => classify(...worlds), /configured canonical order/u);
+    }
+});

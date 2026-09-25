@@ -588,9 +588,6 @@ export function decodeEvidence<T>(subject: string, decode: () => T): T {
     try {
         return decode();
     } catch (error) {
-        if (error instanceof ScopeEvidenceError) {
-            throw error;
-        }
         throw new ScopeEvidenceError(`${subject} evidence is malformed`, { cause: error });
     }
 }

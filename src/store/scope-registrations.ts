@@ -241,8 +241,8 @@ export function registerChildScopeInStore(
             if (prepared !== null) {
                 const preparedRequest = prepared(cut);
                 // The command digest binds the reference-copy registration, which is only ever
-                // committed together with its prepared journal record in this transaction.
-                /* node:coverage ignore next 3 */
+                // committed together with its prepared journal record in this transaction, so a
+                // missing prepared intent is retained-evidence corruption.
                 if (!hasAppendIntent(database, preparedRequest.append_intent_id)) {
                     throw new ScopeEvidenceError(
                         "scope fork registration lacks its prepared record",
