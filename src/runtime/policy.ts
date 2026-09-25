@@ -1,4 +1,7 @@
-import { readFileSync } from "node:fs";
+import {
+    readConfigurationAsset,
+    resolveConfigurationAssetUrl,
+} from "../errors/configuration-asset.ts";
 
 /** Validated bounded Node version policy. @internal */
 export type NodeRuntimePolicy = {
@@ -11,7 +14,10 @@ export type NodeRuntimePolicy = {
 };
 
 /** Runtime policy asset shared by source, build and installed consumers. @internal */
-export const runtimePolicyConfigUrl = new URL("../../runtime.config.json", import.meta.url);
+export const runtimePolicyConfigUrl = resolveConfigurationAssetUrl(
+    "../../runtime.config.json",
+    import.meta.url,
+);
 
 /** Parses the closed bounded-major policy without evaluating accessors. @internal */
 export function parseNodeRuntimePolicy(value: unknown): NodeRuntimePolicy {
@@ -45,7 +51,7 @@ export function parseNodeRuntimePolicy(value: unknown): NodeRuntimePolicy {
 
 /** Validated configuration-owned engine policy. @internal */
 export const nodeRuntimePolicy = parseNodeRuntimePolicy(
-    JSON.parse(readFileSync(runtimePolicyConfigUrl, "utf8")),
+    readConfigurationAsset(runtimePolicyConfigUrl),
 );
 
 /** Rejects unsupported/prerelease Node versions before runtime side effects. @internal */

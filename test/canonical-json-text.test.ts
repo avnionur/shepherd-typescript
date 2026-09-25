@@ -120,7 +120,18 @@ test("serializeJsonText serializes nesting far beyond the native JSON.stringify 
     for (let level = 0; level < depth; level += 1) {
         value = level % 2 === 0 ? { a: value } : [value];
     }
-    assert.throws(() => JSON.stringify(value), RangeError);
     const pairs = depth / 2;
-    assert.equal(serializeJsonText(value), `${'[{"a":'.repeat(pairs)}"leaf"${"}]".repeat(pairs)}`);
+    const expected = `${'[{"a":'.repeat(pairs)}"leaf"${"}]".repeat(pairs)}`;
+    // Native nesting limits differ by engine: Node 24 overflows its stack here, Node 26 does not.
+    // Either way the native result, when there is one, must equal the serializer's output.
+    let native: string | undefined;
+    try {
+        native = JSON.stringify(value);
+    } catch (error) {
+        assert.ok(error instanceof RangeError);
+    }
+    assert.equal(serializeJsonText(value), expected);
+    if (native !== undefined) {
+        assert.equal(native, expected);
+    }
 });

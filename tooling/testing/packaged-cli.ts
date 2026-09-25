@@ -13,12 +13,24 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readReleaseIntegrityConfiguration } from "../release/integrity-config.ts";
-import { assertPackedFileSet } from "../release/packed-files.ts";
+import { packWithConfiguredPacker } from "../release/pack.ts";
+import { assertPackedFileSet, packedFilePaths } from "../release/packed-files.ts";
+import {
+    checkPackedMarkdownLinks,
+    type RepositoryManifest,
+    repositoryWebUrl,
+} from "../release/readme-links.ts";
 import { readTarEntries } from "../release/reproducible-build.ts";
 import { testInstalledBundles } from "./bundles.ts";
 import { testEntryLoading } from "./entry-loading.ts";
 import { testPackagedExamples } from "./packaged-examples.ts";
+import { testInstalledQuickstartFlow } from "./quickstart-flow.ts";
 import { testInstalledRuntimeBoundaries } from "./runtime-boundaries.ts";
+import {
+    type ConsumerCompiler,
+    consumerCompilers,
+    readTypeScriptPolicy,
+} from "./typescript-policy.ts";
 
 const repositoryRoot = path.resolve(fileURLToPath(new URL("../../", import.meta.url)));
 const protocol = JSON.parse(
@@ -30,6 +42,7 @@ const protocol = JSON.parse(
             readonly jsonOutputSchema: string;
             readonly quickstartDemo: string;
         };
+        readonly defaults: { readonly quickstartDemoName: string };
         readonly executableName: string;
         readonly executablePath: string;
         readonly groups: readonly { readonly name: string }[];
@@ -43,14 +56,21 @@ const protocol = JSON.parse(
     };
     readonly kernel: { readonly store: { readonly schemaVersion: number } };
     readonly retention: { readonly redactedArchive: { readonly format: string } };
+    readonly workspaces: { readonly controlDirectory: string };
 };
 const packageManifest = JSON.parse(
     readFileSync(path.join(repositoryRoot, "package.json"), "utf8"),
 ) as {
-    readonly exports: Readonly<Record<string, { readonly import: string; readonly types: string }>>;
+    readonly exports: Readonly<
+        Record<
+            string,
+            { readonly default: string; readonly import: string; readonly types: string }
+        >
+    >;
+    readonly engines: { readonly node: string };
     readonly files: readonly string[];
     readonly name: string;
-};
+} & RepositoryManifest;
 const apiReferenceConfiguration = JSON.parse(
     readFileSync(path.join(repositoryRoot, "api-reference.config.json"), "utf8"),
 ) as { readonly artifact: string };
@@ -75,6 +95,8 @@ export async function testPackagedCli(runtimeBoundaries = false): Promise<void> 
     mkdirSync(packPath);
 
     try {
+        const typeScriptPolicy = readTypeScriptPolicy(repositoryRoot);
+        const compilers = consumerCompilers(typeScriptPolicy, runtimeBoundaries);
         const helpAlias = protocol.cli.helpAliases[0];
         assert.ok(helpAlias);
         assertStableJsonHelp(process.execPath, [
@@ -83,16 +105,23 @@ export async function testPackagedCli(runtimeBoundaries = false): Promise<void> 
             `--${protocol.cli.options.json}`,
         ]);
         const npmExecutable = process.platform === "win32" ? "npm.cmd" : "npm";
-        const archiveName = execFileSync(
-            npmExecutable,
-            ["pack", "--pack-destination", packPath, "--cache", cachePath],
-            { cwd: repositoryRoot, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
-        ).trim();
-        const archivePath = path.join(packPath, archiveName);
-        assertPackedFileSet(
-            packageManifest.files,
-            readTarEntries(readFileSync(archivePath)),
-            (await readReleaseIntegrityConfiguration(repositoryRoot)).packedFiles,
+        const releaseIntegrity = await readReleaseIntegrityConfiguration(repositoryRoot);
+        const archivePath = await packWithConfiguredPacker({
+            destination: packPath,
+            environment: { npm_config_cache: cachePath },
+            packCommand: releaseIntegrity.reproducibleBuild.packCommand,
+            repositoryRoot,
+        });
+        const archiveEntries = readTarEntries(readFileSync(archivePath));
+        assertPackedFileSet(packageManifest.files, archiveEntries, releaseIntegrity.packedFiles);
+        const packedPaths = packedFilePaths(
+            archiveEntries,
+            releaseIntegrity.packedFiles.archiveRoot,
+        );
+        assert.deepEqual(
+            packedPaths.filter((file) => file.endsWith(".map")),
+            [],
+            "source maps must not be packed",
         );
         execFileSync(
             npmExecutable,
@@ -126,6 +155,15 @@ export async function testPackagedCli(runtimeBoundaries = false): Promise<void> 
             "node_modules",
             ...packageManifest.name.split("/"),
         );
+        assertPackedReadme(
+            readFileSync(
+                path.join(installedPackageRoot, releaseIntegrity.packedReadme.path),
+                "utf8",
+            ),
+            packedPaths,
+            releaseIntegrity.packedReadme,
+            typeScriptPolicy.minimum,
+        );
         testInstalledRuntimeBoundaries(
             repositoryRoot,
             installedPackageRoot,
@@ -140,11 +178,9 @@ export async function testPackagedCli(runtimeBoundaries = false): Promise<void> 
             consumerParent: installPath,
         });
         for (const entry of Object.values(packageManifest.exports)) {
-            for (const target of [entry.import, entry.types]) {
-                assertPortableSourceMap(repositoryRoot, target, temporaryRoot);
-                assertPortableSourceMap(installedPackageRoot, target, temporaryRoot);
-            }
+            assert.equal(entry.default, entry.import, "require() and import() share one target");
         }
+        assertShippedDeclarations(installedPackageRoot, packedPaths, installPath, compilers);
         for (const artifact of Object.values(protocol.cli.artifacts)) {
             assert.equal(
                 readFileSync(path.join(installedPackageRoot, artifact), "utf8"),
@@ -537,14 +573,12 @@ process.stdout.write(JSON.stringify({ causeIdentity: causeCarrier.cause === priv
         };
         assert.equal(sourceMapResult.causeIdentity, true);
         assert.equal(sourceMapResult.validationCausePreserved, true);
+        // Source maps are not shipped (#227): stacks name the installed emitted JavaScript.
         assert.match(
             sourceMapResult.mappedStack,
-            /node_modules[\\/]@avnionur[\\/]shepherd-typescript[\\/]src[\\/]effect[\\/]handlers\.ts:\d+:\d+/u,
+            /node_modules[\\/]@avnionur[\\/]shepherd-typescript[\\/]dist[\\/]src[\\/]effect[\\/]handlers\.js:\d+:\d+/u,
         );
-        assert.doesNotMatch(
-            sourceMapResult.mappedStack,
-            /dist[\\/]src[\\/]effect[\\/]handlers\.js/u,
-        );
+        assert.doesNotMatch(sourceMapResult.mappedStack, /src[\\/]effect[\\/]handlers\.ts/u);
         const workspaceFacadeRoot = path.join(installPath, "workspace-facade-consumer");
         mkdirSync(workspaceFacadeRoot);
         const workspaceFacadeProbe = path.join(workspaceFacadeRoot, "workspace-facade-probe.mjs");
@@ -589,6 +623,40 @@ process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"))
             }),
             "workspace facade output\n",
         );
+        const exportSpecifiers = Object.keys(packageManifest.exports)
+            .sort()
+            .map((entry) =>
+                entry === "." ? packageManifest.name : `${packageManifest.name}/${entry.slice(2)}`,
+            );
+        const requireProbe = path.join(consumerRoot, "require-probe.cjs");
+        writeFileSync(
+            requireProbe,
+            `const specifiers = ${JSON.stringify(exportSpecifiers)};
+(async () => {
+    const lines = [];
+    for (const specifier of specifiers) {
+        const required = require(specifier);
+        const imported = await import(specifier);
+        const names = Object.keys(imported).filter((name) => name !== "default" && name !== "module.exports").sort();
+        const requiredNames = Object.keys(required).filter((name) => name !== "default" && name !== "module.exports").sort();
+        if (JSON.stringify(names) !== JSON.stringify(requiredNames) || names.some((name) => required[name] !== imported[name])) throw new Error("require/import mismatch for " + specifier);
+        lines.push(specifier + " " + names.length);
+    }
+    process.stdout.write(lines.join("\\n") + "\\n");
+})().catch((error) => { process.stderr.write(String(error && error.stack || error)); process.exitCode = 1; });
+`,
+        );
+        const requireOutput = execFileSync(process.execPath, [requireProbe], {
+            cwd: consumerRoot,
+            encoding: "utf8",
+        });
+        assert.deepEqual(
+            requireOutput
+                .trim()
+                .split("\n")
+                .map((line) => line.split(" ")[0]),
+            exportSpecifiers,
+        );
         assert.throws(
             () =>
                 execFileSync(
@@ -596,7 +664,7 @@ process.stdout.write(readFileSync(path.join(workspaceRoot, outputPath), "utf8"))
                     [
                         "--input-type=commonjs",
                         "--eval",
-                        `require(${JSON.stringify(packageManifest.name)})`,
+                        `require(${JSON.stringify(`${packageManifest.name}/dist/src/index.js`)})`,
                     ],
                     { cwd: consumerRoot, stdio: "pipe" },
                 ),
@@ -667,6 +735,16 @@ assert.equal(store.exportTrace(), archive);
 process.stdout.write(values.join(",") + "\\n");
 `,
         );
+        const requireTypeProbe = path.join(consumerRoot, "require-probe.cts");
+        writeFileSync(
+            requireTypeProbe,
+            exportSpecifiers
+                .map(
+                    (specifier, index) =>
+                        `import Entry${index} = require(${JSON.stringify(specifier)}); void Entry${index};\n`,
+                )
+                .join(""),
+        );
         const typeConfig = path.join(consumerRoot, "tsconfig.json");
         writeFileSync(
             typeConfig,
@@ -688,19 +766,16 @@ process.stdout.write(values.join(",") + "\\n");
                     publicErrorTypeProbe,
                     apiReferenceTypeProbe,
                     cutIterationProbe,
+                    requireTypeProbe,
                 ],
             }),
         );
-        execFileSync(
-            path.join(
-                repositoryRoot,
-                "node_modules",
-                ".bin",
-                process.platform === "win32" ? "tsc.cmd" : "tsc",
-            ),
-            ["--project", typeConfig],
-            { cwd: consumerRoot, stdio: "pipe" },
-        );
+        for (const compiler of compilers) {
+            execFileSync(process.execPath, [compiler.script, "--project", typeConfig], {
+                cwd: consumerRoot,
+                stdio: "pipe",
+            });
+        }
         assert.equal(
             execFileSync(process.execPath, [cutIterationProbe], {
                 cwd: consumerRoot,
@@ -708,25 +783,25 @@ process.stdout.write(values.join(",") + "\\n");
             }),
             "first,second,first\n",
         );
-        const quickstartSource = execFileSync(executable, ["demo", "write", "quickstart"], {
-            encoding: "utf8",
+        const quickstart = testInstalledQuickstartFlow({
+            archivePath,
+            cachePath,
+            consumerRoot: path.join(temporaryRoot, "quickstart-local-install"),
+            controlDirectory: protocol.workspaces.controlDirectory,
+            demoArtifact: protocol.cli.artifacts.quickstartDemo,
+            demoName: protocol.cli.defaults.quickstartDemoName,
+            executableName: protocol.cli.executableName,
+            packageName: packageManifest.name,
+            repositoryRoot,
         });
-        assert.equal(
-            quickstartSource,
-            readFileSync(path.join(repositoryRoot, protocol.cli.artifacts.quickstartDemo), "utf8"),
+        process.stdout.write(
+            `quickstart flow: ${Math.round(quickstart.wallTimeMilliseconds)} ms, ${quickstart.retainedStateBytes} retained bytes\n`,
         );
-        const quickstartPath = path.join(consumerRoot, "quickstart.mjs");
-        writeFileSync(quickstartPath, quickstartSource);
-        const quickstartOutput = execFileSync(process.execPath, [quickstartPath], {
-            cwd: consumerRoot,
-            encoding: "utf8",
-        });
-        assert.equal(quickstartOutput, "['NOTE.txt']\nHello from a Shepherd retained output.\n");
-        assert.equal(
-            readFileSync(path.join(consumerRoot, "NOTE.txt"), "utf8"),
-            "Hello from a Shepherd retained output.\n",
+        const traceStorePath = path.join(
+            quickstart.consumerRoot,
+            protocol.workspaces.controlDirectory,
+            "quickstart-trace.sqlite",
         );
-        const traceStorePath = path.join(consumerRoot, ".vcscore", "quickstart-trace.sqlite");
         const run = invokeJson(executable, [
             "run",
             "show",
@@ -755,7 +830,7 @@ process.stdout.write(values.join(",") + "\\n");
             "--store",
             traceStorePath,
             "--workspace",
-            consumerRoot,
+            quickstart.consumerRoot,
         ]);
         assert.deepEqual(
             changeset.result.changeset?.page.changes.map(({ path: changedPath }) => changedPath),
@@ -772,7 +847,7 @@ process.stdout.write(values.join(",") + "\\n");
                 "--store",
                 traceStorePath,
                 "--workspace",
-                consumerRoot,
+                quickstart.consumerRoot,
             ],
             { encoding: "utf8" },
         );
@@ -976,34 +1051,79 @@ function assertStableJsonHelp(executable: string, args: readonly string[]): void
     });
 }
 
-function assertPortableSourceMap(packageRoot: string, target: string, temporaryRoot: string): void {
-    const targetPath = path.join(packageRoot, target);
-    const mapPath = `${targetPath}.map`;
-    assert.equal(readFileSync(targetPath).byteLength > 0, true);
-    const rawMap = readFileSync(mapPath, "utf8");
-    assert.equal(rawMap.length > 0, true);
-    assert.equal(rawMap.includes(repositoryRoot), false);
-    assert.equal(rawMap.includes(temporaryRoot), false);
-    const sourceMap = JSON.parse(rawMap) as {
-        readonly file: string;
-        readonly sourceRoot: string;
-        readonly sources: readonly string[];
-        readonly sourcesContent?: readonly string[];
-        readonly version: number;
-    };
-    assert.equal(sourceMap.version, 3);
-    assert.equal(sourceMap.file, path.basename(targetPath));
-    assert.equal(sourceMap.sourceRoot, "");
-    assert.equal(sourceMap.sources.length > 0, true);
-    assert.equal(sourceMap.sourcesContent, undefined);
-    for (const source of sourceMap.sources) {
-        assert.equal(path.isAbsolute(source), false);
-        assert.equal(source.includes("\\"), false);
-        const resolved = path.resolve(path.dirname(mapPath), source);
-        assert.equal(
-            resolved === packageRoot || resolved.startsWith(`${packageRoot}${path.sep}`),
-            true,
-            `source map escapes package root: ${JSON.stringify({ packageRoot, resolved, source, target })}`,
+function assertShippedDeclarations(
+    installedPackageRoot: string,
+    packedPaths: readonly string[],
+    consumerParent: string,
+    compilers: readonly ConsumerCompiler[],
+): void {
+    const declarations = packedPaths.filter((file) => file.endsWith(".d.ts"));
+    assert.equal(declarations.length > 0, true);
+    for (const file of packedPaths.filter((entry) => /\.(?:d\.ts|js)$/u.test(entry))) {
+        const text = readFileSync(path.join(installedPackageRoot, file), "utf8");
+        assert.doesNotMatch(text, /[#@] sourceMappingURL=/u, `${file} references a source map`);
+        if (file.endsWith(".d.ts")) {
+            assert.doesNotMatch(text, /@internal\b/u, `${file} ships an internal declaration`);
+        }
+    }
+    // Every shipped declaration, not only those reachable from the typed probes, must resolve
+    // after internal declarations are stripped.
+    const consumer = mkdtempSync(path.join(consumerParent, "declarations-"));
+    const typeConfig = path.join(consumer, "tsconfig.json");
+    writeFileSync(
+        typeConfig,
+        JSON.stringify({
+            compilerOptions: {
+                lib: ["ESNext"],
+                module: "NodeNext",
+                moduleResolution: "NodeNext",
+                noEmit: true,
+                skipLibCheck: false,
+                strict: true,
+                target: "ESNext",
+                typeRoots: [path.join(repositoryRoot, "node_modules", "@types")],
+                types: ["node"],
+            },
+            files: declarations.map((file) => path.join(installedPackageRoot, file)),
+        }),
+    );
+    for (const compiler of compilers) {
+        execFileSync(process.execPath, [compiler.script, "--project", typeConfig], {
+            cwd: consumer,
+            stdio: "pipe",
+        });
+    }
+}
+
+/**
+ * Checks the installed README that npm renders: every relative link names a packed file, every
+ * absolute link into the repository names a file that exists in the checkout, and the configured
+ * Node range and minimum TypeScript version appear before contributor setup.
+ */
+function assertPackedReadme(
+    markdown: string,
+    packedPaths: readonly string[],
+    policy: { readonly path: string; readonly repositoryRef: string },
+    typeScriptMinimum: string,
+): void {
+    const report = checkPackedMarkdownLinks({
+        markdown,
+        markdownPath: policy.path,
+        packedPaths,
+        repositoryBlobBase: `${repositoryWebUrl(packageManifest)}/blob/${policy.repositoryRef}`,
+    });
+    assert.deepEqual(report.unresolved, [], "packed README links must resolve inside the tarball");
+    assert.deepEqual(
+        report.repositoryPaths.filter((file) => !existsSync(path.join(repositoryRoot, file))),
+        [],
+        "absolute repository links in the packed README must name existing files",
+    );
+    const contributorSetup = markdown.indexOf("pnpm install");
+    for (const requirement of [packageManifest.engines.node, typeScriptMinimum]) {
+        const position = markdown.indexOf(requirement);
+        assert.ok(
+            position !== -1 && (contributorSetup === -1 || position < contributorSetup),
+            `packed README must state ${requirement} before contributor setup`,
         );
     }
 }

@@ -35,67 +35,82 @@ test("package bin metadata matches the public distinct CLI executable", async ()
     assert.equal(packageManifest.files.includes("docs/generated/api-reference.md"), true);
     assert.equal(packageManifest.main, "dist/src/index.js");
     assert.equal(packageManifest.types, "dist/src/index.d.ts");
-    assert.deepEqual(packageManifest.exports, {
-        ".": { import: "./dist/src/index.js", types: "./dist/src/index.d.ts" },
-        "./applications": {
-            import: "./dist/src/facades/applications.js",
-            types: "./dist/src/facades/applications.d.ts",
-        },
-        "./canonical": {
-            import: "./dist/src/facades/canonical.js",
-            types: "./dist/src/facades/canonical.d.ts",
-        },
-        "./cli": {
-            import: "./dist/src/facades/cli.js",
-            types: "./dist/src/facades/cli.d.ts",
-        },
-        "./delegation": {
-            import: "./dist/src/facades/delegation.js",
-            types: "./dist/src/facades/delegation.d.ts",
-        },
-        "./effects": {
-            import: "./dist/src/facades/effects.js",
-            types: "./dist/src/facades/effects.d.ts",
-        },
-        "./operations": {
-            import: "./dist/src/facades/operations.js",
-            types: "./dist/src/facades/operations.d.ts",
-        },
-        "./providers": {
-            import: "./dist/src/facades/providers.js",
-            types: "./dist/src/facades/providers.d.ts",
-        },
-        "./read": {
-            import: "./dist/src/facades/read.js",
-            types: "./dist/src/facades/read.d.ts",
-        },
-        "./replay": {
-            import: "./dist/src/facades/replay.js",
-            types: "./dist/src/facades/replay.d.ts",
-        },
-        "./runs": {
-            import: "./dist/src/facades/runs.js",
-            types: "./dist/src/facades/runs.d.ts",
-        },
-        "./scopes": {
-            import: "./dist/src/facades/scopes.js",
-            types: "./dist/src/facades/scopes.d.ts",
-        },
-        "./supervision": {
-            import: "./dist/src/facades/supervision.js",
-            types: "./dist/src/facades/supervision.d.ts",
-        },
-        "./tasks": {
-            import: "./dist/src/facades/tasks.js",
-            types: "./dist/src/facades/tasks.d.ts",
-        },
-        "./trace": {
-            import: "./dist/src/facades/trace.js",
-            types: "./dist/src/facades/trace.d.ts",
-        },
-        "./workspace": {
-            import: "./dist/src/facades/workspace.js",
-            types: "./dist/src/facades/workspace.d.ts",
-        },
-    });
+    assert.deepEqual(
+        packageManifest.exports,
+        withRequireCondition({
+            ".": { import: "./dist/src/index.js", types: "./dist/src/index.d.ts" },
+            "./applications": {
+                import: "./dist/src/facades/applications.js",
+                types: "./dist/src/facades/applications.d.ts",
+            },
+            "./canonical": {
+                import: "./dist/src/facades/canonical.js",
+                types: "./dist/src/facades/canonical.d.ts",
+            },
+            "./cli": {
+                import: "./dist/src/facades/cli.js",
+                types: "./dist/src/facades/cli.d.ts",
+            },
+            "./delegation": {
+                import: "./dist/src/facades/delegation.js",
+                types: "./dist/src/facades/delegation.d.ts",
+            },
+            "./effects": {
+                import: "./dist/src/facades/effects.js",
+                types: "./dist/src/facades/effects.d.ts",
+            },
+            "./operations": {
+                import: "./dist/src/facades/operations.js",
+                types: "./dist/src/facades/operations.d.ts",
+            },
+            "./providers": {
+                import: "./dist/src/facades/providers.js",
+                types: "./dist/src/facades/providers.d.ts",
+            },
+            "./read": {
+                import: "./dist/src/facades/read.js",
+                types: "./dist/src/facades/read.d.ts",
+            },
+            "./replay": {
+                import: "./dist/src/facades/replay.js",
+                types: "./dist/src/facades/replay.d.ts",
+            },
+            "./runs": {
+                import: "./dist/src/facades/runs.js",
+                types: "./dist/src/facades/runs.d.ts",
+            },
+            "./scopes": {
+                import: "./dist/src/facades/scopes.js",
+                types: "./dist/src/facades/scopes.d.ts",
+            },
+            "./supervision": {
+                import: "./dist/src/facades/supervision.js",
+                types: "./dist/src/facades/supervision.d.ts",
+            },
+            "./tasks": {
+                import: "./dist/src/facades/tasks.js",
+                types: "./dist/src/facades/tasks.d.ts",
+            },
+            "./trace": {
+                import: "./dist/src/facades/trace.js",
+                types: "./dist/src/facades/trace.d.ts",
+            },
+            "./workspace": {
+                import: "./dist/src/facades/workspace.js",
+                types: "./dist/src/facades/workspace.d.ts",
+            },
+        }),
+    );
 });
+
+/** Adds the `default` condition (require(esm), #224) that names the same target as `import`. */
+function withRequireCondition(
+    exports: Readonly<Record<string, { readonly import: string; readonly types: string }>>,
+): Readonly<Record<string, unknown>> {
+    return Object.fromEntries(
+        Object.entries(exports).map(([entry, conditions]) => [
+            entry,
+            { ...conditions, default: conditions.import },
+        ]),
+    );
+}

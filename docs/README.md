@@ -120,8 +120,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   substrate parity for the recorded hosts.
 - [Phase 5 exit audit](../.plan/phase-5-exit-audit.md) maps product-surface evidence and records
   runtime-support remediation and phase-exit verification.
-- [Node runtime support](./runtime-support.md) defines the approved version range, pre-write
-  refusal, SQLite behavioral checks, and installed boundary verification.
+- [Node runtime support](./runtime-support.md) defines the approved version range (Node 24 from
+  24.12.0 and Node 26 from 2.36.0, with the Node 26 lane evidence), pre-write refusal, SQLite
+  behavioral checks, and installed boundary verification.
 
 - [Python-to-TypeScript migration](./python-to-typescript.md) maps pinned release sources to all
   four executable examples, with verified code excerpts and explicit compatibility limits.
@@ -164,7 +165,7 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   updated.
 - [Release integrity](./release-integrity.md) defines the lockfile SBOM, the unsigned in-toto/SLSA
   provenance statement, the reproducible-build check, the npm-version-independent packed file set
-  and its check, `pnpm verify:release`, the unrun release workflow, and the owner release runbook
+  and its check, the packed README link check, `pnpm verify:release`, the unrun release workflow, and the owner release runbook
   (credentials, signing identity, dropping `"private"`, running `release.yml`, and verifying the
   attestation against the tarball digest).
 - [Generated SBOM](./generated/sbom.cdx.json) is the checked-in CycloneDX-shaped bill of materials
@@ -212,7 +213,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Generated CLI reference](./generated/cli-reference.md) lists the configured executable,
   commands, options, and fenced/unavailable remedies.
 - [Offline retained-output quickstart](./quickstart.md) runs the checked-in deterministic demo
-  through a freshly installed package, retained inspection, exact selection, and CLI JSON.
+  through a freshly installed package, retained inspection, exact selection, and CLI JSON, binding
+  a dedicated subdirectory within configured time and retained-state budgets.
 - [Packaged TypeScript examples](./typescript-examples.md) demonstrates offline retained coding
   through typed domain facades with fresh-install typechecking, exact selection, reopen evidence,
   repeatable read-only output review, sibling-preserving multiple-binding settlement, and custom
@@ -223,8 +225,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   publication boundaries.
 - [Package exports and module policy](./package-exports.md) defines supported ESM entries,
   including the Node-only effects, run execution/control, and workspace authority facades,
-  TypeScript requirements, CommonJS refusal, deep-import boundaries, installed import loading,
-  and tested Rollup Node bundle/asset behavior.
+  the minimum TypeScript version, CommonJS `require()` support, `sideEffects`, deep-import boundaries, installed import loading,
+  tested Rollup ESM/CommonJS Node bundle/asset behavior, the `ConfigurationAssetError` raised for
+  a missing configuration asset, an esbuild recipe, and the recorded `@arethetypeswrong/cli` result.
 - [Web-safe trace read types](./web-safe-read-types.md) defines the type-only `/read` entry,
   no-Node installed compilation, readonly contracts, and validation/authority limits.
 - [Generated API-reference policy](./api-reference.md) defines declaration-only generation,
@@ -234,8 +237,8 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   symbol with signatures and JSDoc contracts.
 - [Structured public errors](./public-errors.md) inventories exported error classes, stable
   machine codes, in-memory causes, intentionally unclassified failures, and CLI redaction.
-- [Source maps, stacks, and causes](./source-maps-and-causes.md) defines portable installed map
-  policy, in-memory propagation boundaries, and durable/CLI redaction.
+- [Source maps, stacks, and causes](./source-maps-and-causes.md) records that source maps are not
+  shipped, in-memory propagation boundaries, and durable/CLI redaction.
 - [Canonical record contract](./canonical-records.md) defines accepted values, the configured
   nesting bound, deterministic encoding, identifiers, and error behavior.
 - [Record body and envelope contract](./record-envelope.md) defines kernel ABI v0 semantic
@@ -391,6 +394,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 ## Documentation rules
 
 - Update the README and this index when adding a public module.
+- The root README ships in the package: link files that are not packed with absolute
+  `https://github.com/avnionur/shepherd-typescript/blob/main/...` URLs (see
+  [packed README links](./release-integrity.md#packed-readme-links)).
 - Document exported TypeScript APIs with JSDoc at their declaration.
 - Keep normative runtime behavior in `docs/`; keep unfinished proposals in `.plan/`.
 - Link implementation documentation to its public entry point and tests.

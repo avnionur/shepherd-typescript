@@ -44,7 +44,7 @@ storage, or wire identity. “Adapted” requires explicit TypeScript compositio
 | `runtime={"provider":"claude"}` in `agent_task.py` | No shipped equivalent adapter | Unsupported; offline cassette is not a live agent |
 
 The package namespace is `@avnionur/shepherd-typescript`; append the subpaths shown above.
-Use Node >=24.12.0 <25, ESM, and TypeScript NodeNext resolution. Copy shipped `.ts` examples out of
+Use Node >=24.12.0 <27, ESM, and TypeScript NodeNext resolution. Copy shipped `.ts` examples out of
 `node_modules` before running them with Node. See the example guide for source-checkout and
 tarball commands. No Python runtime is required.
 

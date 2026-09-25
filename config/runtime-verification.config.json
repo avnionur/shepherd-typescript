@@ -2,6 +2,11 @@
     "boundaries": [
         { "environmentVariable": "SHEPHERD_MINIMUM_NODE", "version": "24.12.0", "supported": true },
         {
+            "environmentVariable": "SHEPHERD_LATEST_MAJOR_NODE",
+            "version": "26.10.0",
+            "supported": true
+        },
+        {
             "environmentVariable": "SHEPHERD_UNSUPPORTED_NODE",
             "version": "24.11.1",
             "supported": false
@@ -21,5 +26,11 @@
     ],
     "cliArguments": ["init", "{destination}", "--adopt", "none", "--no-initialize-git"],
     "cliOutputPattern": "^Initialized ",
-    "refusalPattern": "Unsupported Node\\.js runtime"
+    "refusalPattern": "Unsupported Node\\.js runtime",
+    "typescript": { "environmentVariable": "SHEPHERD_MINIMUM_TYPESCRIPT", "minimum": "5.9.3" },
+    "quickstart": {
+        "bindingDirectory": "quickstart-workspace",
+        "maxWallTimeMilliseconds": 10000,
+        "maxRetainedStateBytes": 1048576
+    }
 }

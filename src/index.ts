@@ -444,6 +444,7 @@ export type {
     EffectReversibility,
     EffectSuccess,
 } from "./effect/types.ts";
+export { ConfigurationAssetError } from "./errors/configuration-asset.ts";
 export type { PublicError, PublicErrorCode } from "./errors/public-errors.ts";
 export { isPublicError } from "./errors/public-errors.ts";
 export { TypedEffectTraceValidationError } from "./formal/errors.ts";

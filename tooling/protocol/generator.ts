@@ -1,6 +1,7 @@
 import { lstat, mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { readPublicErrorConfig } from "../../src/errors/public-errors.ts";
 import { assertSupportedProtocolCompatibility } from "../../src/protocol/config-compatibility.ts";
 import type { ProtocolConfig } from "../../src/protocol/config-types.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
@@ -98,7 +99,8 @@ export type ProtocolArtifactOptions = {
 };
 
 /**
- * Generates or checks protocol artifacts derived from `protocol.config.json`.
+ * Generates or checks protocol artifacts derived from `protocol.config.json` and, for the
+ * bootstrap public-error codes needed before configuration can load, `public-errors.config.json`.
  *
  * @param options - Repository root and optional drift-check mode.
  * @returns A promise that resolves after all configured artifacts are validated or written.
@@ -113,6 +115,9 @@ export async function synchronizeProtocolArtifacts(
     const config = parseProtocolConfig(JSON.parse(await readFile(configPath, "utf8")), {
         enforceCompatibility: false,
     });
+    const publicErrorCodes = readPublicErrorConfig(
+        JSON.parse(await readFile(path.join(repositoryRoot, "public-errors.config.json"), "utf8")),
+    );
     const artifacts = [
         {
             content: renderCliCommandReference(config),
@@ -123,7 +128,7 @@ export async function synchronizeProtocolArtifacts(
             relativePath: config.cli.artifacts.jsonOutputSchema,
         },
         {
-            content: renderProtocolValues(config),
+            content: renderProtocolValues(config, publicErrorCodes),
             relativePath: config.kernel.artifacts.recordValues,
         },
         {
@@ -1720,7 +1725,10 @@ function renderSelectionPublicationSchema(
     };
 }
 
-function renderProtocolValues(config: ProtocolConfig): string {
+function renderProtocolValues(
+    config: ProtocolConfig,
+    publicErrorCodes: ReturnType<typeof readPublicErrorConfig>,
+): string {
     const renderedModes = config.kernel.recordModes.map((mode) => JSON.stringify(mode)).join(", ");
     const renderedTiers = config.effects.reversibilityTiers
         .map((tier) => JSON.stringify(tier))
@@ -1932,7 +1940,7 @@ function renderProtocolValues(config: ProtocolConfig): string {
     const renderedSelectionScheduleKinds = config.workspaces.selectionPublication.scheduleKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
-    return `// Generated from protocol.config.json. Do not edit directly.
+    return `// Generated from protocol.config.json and public-errors.config.json. Do not edit directly.
 
 /**
  * Record modes supported by the configured kernel ABI.
@@ -2800,6 +2808,12 @@ ${renderConstStrings("TELEMETRY_BODY_MODES", config.observability.bodies.modes)}
 
 /** Configured descriptions of how one record body was handled in exported telemetry. @public */
 ${renderConstStrings("TELEMETRY_BODY_HANDLINGS", config.observability.bodies.handlings)}
+
+/**
+ * Configured public error code for a missing configuration asset, embedded so it is available
+ * before \`public-errors.config.json\` loads. @internal
+ */
+export const CONFIGURATION_ASSET_MISSING_CODE = ${JSON.stringify(publicErrorCodes.configuration.assetMissing)};
 `;
 }
 

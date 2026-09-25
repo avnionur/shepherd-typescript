@@ -22,6 +22,7 @@ do not grant retry, recovery, settlement, filesystem, provider, or execution aut
 | Domain | Exported classes | Code ownership |
 | --- | --- | --- |
 | Canonical values | `CanonicalNestingLimitError` (`CANONICAL_NESTING_LIMIT_EXCEEDED`, a `TypeError`, from 2.33.0: a value nests deeper than `kernel.canonicalization.maxNestingDepth`, named by its `bound` property; see [canonical records](./canonical-records.md#nesting-bound)) | `public-errors.config.json` |
+| Configuration assets | `ConfigurationAssetError` (`CONFIGURATION_ASSET_MISSING`, from 2.36.0: a bundled or installed module cannot find `runtime.config.json`, `protocol.config.json`, or `public-errors.config.json`, named by its `asset` and `expectedPath` properties; the code is generated into the module source so it is available when the configuration itself is missing; see [missing configuration assets](./package-exports.md#missing-configuration-assets)) | `public-errors.config.json` |
 | Applications | `ApplicationBudgetError`, `ApplicationEvidenceError`, `ApplicationProtocolError`, `ApplicationVerificationError` | applications protocol configuration |
 | Effects | `EffectHandlerNotFoundError` | `public-errors.config.json` |
 | Formal assurance | `TypedEffectTraceValidationError` | `public-errors.config.json` |

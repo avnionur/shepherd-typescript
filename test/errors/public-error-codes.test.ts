@@ -6,6 +6,7 @@ import {
     AppendIntentConflictError,
     BlobIntegrityError,
     CanonicalNestingLimitError,
+    ConfigurationAssetError,
     EffectHandlerNotFoundError,
     isPublicError,
     NativeJailExecutionError,
@@ -63,6 +64,7 @@ test("exported fixed-class errors expose configured stable codes", () => {
         new TraceStoreReadOnlyError("read-only"),
         new TraceArchiveLimitError("maxRecords", 1),
         new CanonicalNestingLimitError(1),
+        new ConfigurationAssetError("protocol.config.json", "/expected/protocol.config.json"),
     ];
 
     assert.deepEqual(
@@ -91,6 +93,7 @@ test("exported fixed-class errors expose configured stable codes", () => {
             "TRACE_STORE_READ_ONLY",
             "TRACE_ARCHIVE_LIMIT_EXCEEDED",
             "CANONICAL_NESTING_LIMIT_EXCEEDED",
+            "CONFIGURATION_ASSET_MISSING",
         ],
     );
 });
@@ -123,6 +126,7 @@ test("public error configuration is closed, unique, and immutable", () => {
 
     assert.equal(parsed.runs.cancelled, "RUN_CANCELLED");
     assert.equal(parsed.canonical.nestingLimit, "CANONICAL_NESTING_LIMIT_EXCEEDED");
+    assert.equal(parsed.configuration.assetMissing, "CONFIGURATION_ASSET_MISSING");
     assert.equal(Object.isFrozen(parsed), true);
     assert.equal(Object.isFrozen(parsed.trace), true);
     assert.equal(Object.isFrozen(publicErrorCodes), true);

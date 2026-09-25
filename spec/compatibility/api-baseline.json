@@ -178,6 +178,7 @@
             "CodingSupervisorWorkerProgram": {"digest":"sha256:c26932d3a1c12a8430dd72dcbb17347086853f6ac81fedc500f40b61681753e2","kind":"type alias"},
             "CodingSupervisorWorkerStatus": {"digest":"sha256:2c1d17946c63f0bbbaccf35471eadcf12c997861ab0b830576d116524a272049","kind":"type alias"},
             "CompensateEffectsOptions": {"digest":"sha256:2736af882eaf4a5fa046f7591efb49aa3e9ee6966e289991ee2b15138fe7e407","kind":"type alias"},
+            "ConfigurationAssetError": {"digest":"sha256:0c5693315498d227f0b3cc52fcf2d77a786db0a847dcb46b29bdbfbc3684be33","kind":"class"},
             "ContainerDeviceLayerAdapterOptions": {"digest":"sha256:49203f601154881943ab614a862509a38ac5d4d2f4b76c44cc0f6c6c4ed0f556","kind":"type alias"},
             "ConversationalModelProvider": {"digest":"sha256:c8120506949f961b16ebaef5a86263ae07c941fafb933ac8cc55ef8df4cb4e51","kind":"type alias"},
             "CooperativeProcessAdapter": {"digest":"sha256:16039e52c83eb801707107cc6fda24698478353c117c2a9adb467ffe71ea453a","kind":"type alias"},

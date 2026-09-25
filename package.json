@@ -3,6 +3,18 @@
     "version": "12.0.0",
     "packageManager": "pnpm@10.32.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
+    "keywords": [
+        "agent",
+        "agent-runtime",
+        "execution-trace",
+        "replay",
+        "rewind",
+        "supervision",
+        "provenance",
+        "sqlite",
+        "typescript"
+    ],
+    "author": "avnionur",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -18,73 +30,99 @@
     "exports": {
         ".": {
             "types": "./dist/src/index.d.ts",
-            "import": "./dist/src/index.js"
+            "import": "./dist/src/index.js",
+            "default": "./dist/src/index.js"
         },
         "./applications": {
             "types": "./dist/src/facades/applications.d.ts",
-            "import": "./dist/src/facades/applications.js"
+            "import": "./dist/src/facades/applications.js",
+            "default": "./dist/src/facades/applications.js"
         },
         "./canonical": {
             "types": "./dist/src/facades/canonical.d.ts",
-            "import": "./dist/src/facades/canonical.js"
+            "import": "./dist/src/facades/canonical.js",
+            "default": "./dist/src/facades/canonical.js"
         },
         "./cli": {
             "types": "./dist/src/facades/cli.d.ts",
-            "import": "./dist/src/facades/cli.js"
+            "import": "./dist/src/facades/cli.js",
+            "default": "./dist/src/facades/cli.js"
         },
         "./delegation": {
             "types": "./dist/src/facades/delegation.d.ts",
-            "import": "./dist/src/facades/delegation.js"
+            "import": "./dist/src/facades/delegation.js",
+            "default": "./dist/src/facades/delegation.js"
         },
         "./effects": {
             "types": "./dist/src/facades/effects.d.ts",
-            "import": "./dist/src/facades/effects.js"
+            "import": "./dist/src/facades/effects.js",
+            "default": "./dist/src/facades/effects.js"
         },
         "./operations": {
             "types": "./dist/src/facades/operations.d.ts",
-            "import": "./dist/src/facades/operations.js"
+            "import": "./dist/src/facades/operations.js",
+            "default": "./dist/src/facades/operations.js"
         },
         "./providers": {
             "types": "./dist/src/facades/providers.d.ts",
-            "import": "./dist/src/facades/providers.js"
+            "import": "./dist/src/facades/providers.js",
+            "default": "./dist/src/facades/providers.js"
         },
         "./read": {
             "types": "./dist/src/facades/read.d.ts",
-            "import": "./dist/src/facades/read.js"
+            "import": "./dist/src/facades/read.js",
+            "default": "./dist/src/facades/read.js"
         },
         "./replay": {
             "types": "./dist/src/facades/replay.d.ts",
-            "import": "./dist/src/facades/replay.js"
+            "import": "./dist/src/facades/replay.js",
+            "default": "./dist/src/facades/replay.js"
         },
         "./runs": {
             "types": "./dist/src/facades/runs.d.ts",
-            "import": "./dist/src/facades/runs.js"
+            "import": "./dist/src/facades/runs.js",
+            "default": "./dist/src/facades/runs.js"
         },
         "./scopes": {
             "types": "./dist/src/facades/scopes.d.ts",
-            "import": "./dist/src/facades/scopes.js"
+            "import": "./dist/src/facades/scopes.js",
+            "default": "./dist/src/facades/scopes.js"
         },
         "./supervision": {
             "types": "./dist/src/facades/supervision.d.ts",
-            "import": "./dist/src/facades/supervision.js"
+            "import": "./dist/src/facades/supervision.js",
+            "default": "./dist/src/facades/supervision.js"
         },
         "./tasks": {
             "types": "./dist/src/facades/tasks.d.ts",
-            "import": "./dist/src/facades/tasks.js"
+            "import": "./dist/src/facades/tasks.js",
+            "default": "./dist/src/facades/tasks.js"
         },
         "./trace": {
             "types": "./dist/src/facades/trace.d.ts",
-            "import": "./dist/src/facades/trace.js"
+            "import": "./dist/src/facades/trace.js",
+            "default": "./dist/src/facades/trace.js"
         },
         "./workspace": {
             "types": "./dist/src/facades/workspace.d.ts",
-            "import": "./dist/src/facades/workspace.js"
+            "import": "./dist/src/facades/workspace.js",
+            "default": "./dist/src/facades/workspace.js"
         }
     },
     "main": "dist/src/index.js",
     "types": "dist/src/index.d.ts",
     "type": "module",
     "private": true,
+    "sideEffects": [
+        "./dist/src/cli/main.js",
+        "./dist/src/errors/public-errors.js",
+        "./dist/src/protocol/config.js",
+        "./dist/src/workspace/reference-copy-carrier.js"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "exampleManifest": "examples/manifest.json",
     "files": [
         "dist/src",
@@ -104,7 +142,7 @@
         "/NOTICE"
     ],
     "engines": {
-        "node": ">=24.12.0 <25"
+        "node": ">=24.12.0 <27"
     },
     "scripts": {
         "build": "node scripts/clean-build.ts && tsc -p tsconfig.build.json && node scripts/copy-runtime-config.ts",
@@ -130,6 +168,7 @@
         "generate:protocol": "node scripts/generate-protocol-artifacts-cli.ts",
         "generate:sbom": "node scripts/generate-sbom-cli.ts",
         "lint": "biome check .",
+        "prepublishOnly": "node scripts/prepublish-guard.ts",
         "release:manifest": "node scripts/release-manifest-cli.ts",
         "release:reproducible-build": "node scripts/reproducible-build-cli.ts",
         "sync:version": "node scripts/sync-version-cli.ts",

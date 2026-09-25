@@ -7,9 +7,8 @@ import {
     defaultRepositoryRoot,
     readReleaseIntegrityConfiguration,
 } from "../tooling/release/integrity-config.ts";
+import { packWithConfiguredPacker } from "../tooling/release/pack.ts";
 import { runReproducibleBuild } from "../tooling/release/reproducible-build.ts";
-
-type PackResult = { readonly filename: string };
 
 if (process.argv.length > 2) {
     throw new TypeError("Usage: reproducible-build-cli.ts");
@@ -21,28 +20,18 @@ const [buildExecutable, ...buildArguments] = configuration.reproducibleBuild.bui
     string,
     ...string[],
 ];
-const [packExecutable, ...packArguments] = configuration.reproducibleBuild.packCommand as [
-    string,
-    ...string[],
-];
 
 const run = await runReproducibleBuild({
     build: async () => {
-        await execute(buildExecutable, buildArguments, "inherit");
+        await execute(buildExecutable, buildArguments);
     },
     outputDirectory: resolveBuildOutputDirectory(),
-    pack: async (destination) => {
-        const output = await execute(packExecutable, [...packArguments, destination], "pipe");
-        // npm prints an array of pack results or an object keyed by package name.
-        const parsed = JSON.parse(output) as
-            | readonly PackResult[]
-            | Readonly<Record<string, PackResult>>;
-        const [packed] = Array.isArray(parsed) ? parsed : Object.values(parsed);
-        if (packed === undefined || typeof packed.filename !== "string") {
-            throw new Error("pack produced no tarball");
-        }
-        return path.join(destination, packed.filename);
-    },
+    pack: (destination) =>
+        packWithConfiguredPacker({
+            destination,
+            packCommand: configuration.reproducibleBuild.packCommand,
+            repositoryRoot: defaultRepositoryRoot,
+        }),
 });
 try {
     await mkdir(releaseDirectory, { recursive: true });
@@ -69,25 +58,17 @@ try {
     await run.dispose();
 }
 
-function execute(
-    executable: string,
-    commandArguments: readonly string[],
-    stdout: "inherit" | "pipe",
-): Promise<string> {
+function execute(executable: string, commandArguments: readonly string[]): Promise<void> {
     return new Promise((resolve, reject) => {
         const child = spawn(executable, commandArguments, {
             cwd: defaultRepositoryRoot,
             env: { ...process.env, npm_config_update_notifier: "false" },
-            stdio: ["ignore", stdout, "inherit"],
-        });
-        let output = "";
-        child.stdout?.setEncoding("utf8").on("data", (chunk: string) => {
-            output += chunk;
+            stdio: ["ignore", "inherit", "inherit"],
         });
         child.on("error", reject);
         child.on("close", (code) => {
             if (code === 0) {
-                resolve(output);
+                resolve();
             } else {
                 reject(
                     new Error(`${executable} ${commandArguments.join(" ")} exited with ${code}`),

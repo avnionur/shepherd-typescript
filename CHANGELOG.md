@@ -793,6 +793,89 @@ artifact locks. Callers with custom application protocols must keep their schema
 the supported subset and their policies consistent with their own action schemas. The repository
 protocols in `config/research-applications.config.json` are unchanged.
 
+## [2.36.0] - 2026-09-25
+
+### New Feature
+
+- CommonJS `require()` for the root and every subpath through Node's require(esm): every export
+  carries a `default` condition; the installed-package test requires every subpath and checks
+  identity with `import`, a `.cts` `import = require()` probe typechecks, and
+  `test/package-require.test.ts` refuses top-level await in any export graph (#224).
+- `ConfigurationAssetError` (root export, public code `CONFIGURATION_ASSET_MISSING`, `asset` and
+  `expectedPath` properties, ENOENT kept as `cause`): thrown during module evaluation when a
+  bundled or installed module cannot find `runtime.config.json`, `protocol.config.json`, or
+  `public-errors.config.json`, or when the bundle format has no `import.meta.url` (esbuild CJS;
+  previously `TypeError: Invalid URL`). The code is configured in `public-errors.config.json`
+  `codes.configuration.assetMissing` and generated into `src/protocol/values.generated.ts` so it
+  is available when the configuration itself is missing. Installed Rollup fixtures now also build
+  and run a CommonJS bundle (`cjsOutput`) and assert the error for each missing asset (#225).
+- Publication preparation (#221 prep, #222; `"private": true` kept per decision D-020):
+  `publishConfig` (`access: public`, `provenance: true`), `keywords`, `author`, an explicit
+  `sideEffects` list, and a `prepublishOnly` guard (`scripts/prepublish-guard.ts`) that refuses
+  publication when any `main`, `types`, `bin`, or `exports` target is missing. One attested packer
+  (`tooling/release/pack.ts`, `reproducibleBuild.packCommand`) serves the reproducible-build gate,
+  installed conformance, and `release.yml`, which publishes that tarball with trusted publishing
+  only and `--ignore-scripts`. D-020 and an owner publication checklist are recorded.
+- Node 26 support (#228): `engines.node` and `runtime.config.json` widen to `>=24.12.0 <27`.
+  `pnpm verify` exits 0 on Node 26.10.0 and on Node 24.17.0, and `pnpm test:runtime-boundaries`
+  now also runs the installed consumer on the latest supported major
+  (`SHEPHERD_LATEST_MAJOR_NODE`, a new `boundaries` entry in
+  `config/runtime-verification.config.json`); evidence is in `docs/runtime-support.md`. The
+  single-range policy also admits the end-of-life odd-major Node 25 line, which is unverified.
+- Minimum consumer TypeScript 5.9.3 (`config/runtime-verification.config.json` `typescript`):
+  the installed-consumer test checks the repository compiler against it and, with
+  `SHEPHERD_MINIMUM_TYPESCRIPT` (set by `pnpm test:runtime-boundaries`), repeats the typechecks
+  with TypeScript 5.9.3 (#222).
+- Packed README link gate (#223): `tooling/release/readme-links.ts` and the `packedReadme` section
+  of `config/release-integrity.config.json`; `pnpm test:package-cli` fails on a relative README
+  link whose target is not packed, on an absolute repository link whose file is missing from the
+  checkout, and when the Node or TypeScript requirement is missing or follows contributor setup.
+
+### Improvement
+
+- The package no longer ships source maps or `@internal` declarations (#227): the build sets
+  `sourceMap`/`declarationMap` to false and `stripInternal`; installed conformance asserts no
+  `.map` files, no `sourceMappingURL`, no `@internal`, and typechecks every shipped `.d.ts` with
+  `skipLibCheck: false`. Five declarations referenced by shipped declarations lost their
+  `@internal` tag (`TraceArchiveLimitsConfig`, `CanonicalizationConfig`, and three settlement
+  encoding types); the unused `createTaskArtifactLock` re-export is marked `@internal`.
+- README is consumer-first (#223): 52 links to unpacked files are absolute repository URLs (they
+  return 404 while the repository is private), 6 packed-file links stay relative, and the
+  requirements list the TypeScript minimum and ESM/`require()` support.
+- `docs/package-exports.md` records the `@arethetypeswrong/cli` 0.18.5 result and an esbuild
+  recipe (ESM layout; CJS `--define:import.meta.url` with an `--inject` shim), verified manually
+  with esbuild 0.28.2 through `npx`. An in-repo esbuild fixture is pending owner approval of an
+  esbuild development dependency (#225).
+- The packaged-CLI test runs the documented quickstart in a fresh consumer install with a
+  wall-time budget (10 s) and a retained-state budget (1 MiB), configured in the `quickstart`
+  section of `config/runtime-verification.config.json` (#226).
+- `test/release-pack.test.ts`, `test/prepublish-guard.test.ts`, and `test/readme-links.test.ts`
+  cover the new release tooling; the files are in `coverage.include`.
+
+### Defect Fixes
+
+- The installed quickstart no longer binds the whole working directory, which captured
+  `node_modules` (#226): `examples/quickstart.mjs` binds a dedicated `quickstart-workspace/`
+  directory. After a local tarball install the flow drops from about 48 s and 43 MB of `.vcscore`
+  to about 1.3 s and 300 KB. The transcript is unchanged; the selected file lands at
+  `quickstart-workspace/NOTE.txt`. `shepherd-ts demo write quickstart` therefore emits new bytes
+  and a new `byte_length`.
+- `docs/generated/sbom.cdx.json` regenerated for the 2.36.0 package identity.
+- The deep-nesting test in `test/canonical-json-text.test.ts` assumed native `JSON.stringify`
+  overflows at 200,000 levels, which is false on Node 26; it now accepts either a native
+  `RangeError` or native output equal to `serializeJsonText`. The runtime policy test checks every
+  configured boundary runtime against the configured range.
+
+### Impact
+
+Node 26 consumers can install and run the package. CommonJS consumers can `require()` the
+package on supported Node versions. Bundled consumers that lose the configuration assets get a typed `ConfigurationAssetError` instead of an ENOENT or
+`Invalid URL`. The tarball is smaller (no maps, no internal declarations); consumers that relied on
+shipped source maps or on `@internal` declarations lose them. Scripts that expected the
+quickstart file at `NOTE.txt` must read `quickstart-workspace/NOTE.txt`. npm publication remains
+blocked on the owner actions in #221; the compatibility baseline adds the new export and error
+code.
+
 ## [2.35.1] - 2026-09-25
 
 ### Improvement

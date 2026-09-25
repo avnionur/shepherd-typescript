@@ -4,6 +4,9 @@
         "canonical": {
             "nestingLimit": "CANONICAL_NESTING_LIMIT_EXCEEDED"
         },
+        "configuration": {
+            "assetMissing": "CONFIGURATION_ASSET_MISSING"
+        },
         "effects": {
             "handlerNotFound": "EFFECT_HANDLER_NOT_FOUND"
         },

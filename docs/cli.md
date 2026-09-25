@@ -90,7 +90,9 @@ cannot grant the complete recovery contract.
 source registration is unavailable because the package does not execute caller modules merely
 because a CLI string names them.
 
-`demo write quickstart` emits the checked-in offline package fixture byte-for-byte. JSON mode
+`demo write quickstart` emits the checked-in offline package fixture byte-for-byte. From 2.36.0 the
+emitted script binds a dedicated `quickstart-workspace/` subdirectory instead of the whole working
+directory (see the [quickstart](./quickstart.md)), so its bytes and JSON byte length changed. JSON mode
 returns its configured name and byte length without embedding source. Missing, unknown, or extra
 demo selectors fail with the configured usage class. `package init` remains unavailable until its
 reproducible scaffold capability is delivered.

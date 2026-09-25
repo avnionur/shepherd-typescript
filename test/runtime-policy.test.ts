@@ -32,6 +32,20 @@ test("runtime configuration is closed, immutable and agrees with package engines
     const manifest = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
     const policy = parseNodeRuntimePolicy(configuration);
     assert.equal(manifest.engines.node, policy.node);
+    const verification = JSON.parse(
+        readFileSync(
+            new URL("../config/runtime-verification.config.json", import.meta.url),
+            "utf8",
+        ),
+    ) as { readonly boundaries: readonly { version: string; supported: boolean }[] };
+    for (const boundary of verification.boundaries) {
+        if (boundary.supported) {
+            assert.doesNotThrow(() => assertNodeRuntime(boundary.version, policy));
+        } else {
+            assert.throws(() => assertNodeRuntime(boundary.version, policy));
+        }
+    }
+    assert.throws(() => assertNodeRuntime(`${policy.maximumMajor}.0.0`, policy));
     assert.ok(Object.isFrozen(policy));
     assert.ok(Object.isFrozen(policy.minimum));
     let invoked = false;

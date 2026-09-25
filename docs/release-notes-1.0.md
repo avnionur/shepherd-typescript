@@ -116,6 +116,10 @@ started no job because of the Actions billing or spending limit; `CI` was disabl
 | O-4 | Vulnerability intake | Email intake in [SECURITY.md](../SECURITY.md) stands; the advisory form is waived while the repository is private |
 | O-5 | Registry name | `@avnionur/shepherd-typescript` decided; not reserved on npm |
 
+Update 2026-09-25 (D-020, #221): the owner approves superseding O-2 and O-5 once the
+[owner publication checklist](./release-integrity.md#owner-publication-checklist) is complete. Until
+then the package stays `"private": true` and unpublished.
+
 If the repository ever becomes public, enabling CodeQL and private vulnerability reporting is the
 owner's follow-up. The register is in the
 [production hardening contract](../.plan/production-hardening-contract.md#owner-owed-register).

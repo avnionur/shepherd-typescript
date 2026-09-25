@@ -889,6 +889,26 @@ open for a follow-up PATCH before the candidate is tagged.
   (#215); recomputed scope SLO budgets (#214); threat model and trust-boundary docs; coverage gaps
   hidden by the parallel coverage merge closed in epic-touched files
   ([close-out](./paper-coverage.md#epic-202-close-out-1200)).
+- [ ] npm readiness, epic #220 (MINOR 2.36.0, branch `codex/phase-13-220-npm-readiness`):
+  - [ ] #221 owner publication: prepared only; `"private": true` kept by decision D-020
+    (`publishConfig`, prepublish guard, attested packer, trusted publishing, owner checklist in
+    `docs/release-integrity.md`); remains open for owner actions (public repository, npm scope,
+    trusted publisher, removing `private`).
+  - [x] #222 publication metadata, `prepublishOnly` guard, single attested packer, TypeScript
+    5.9.3 consumer minimum.
+  - [x] #223 packed README links and consumer-first requirements (`packedReadme` gate).
+  - [x] #224 CommonJS `require()` for root and every subpath (require(esm)), top-level-await guard.
+  - [x] #225 `ConfigurationAssetError` / `CONFIGURATION_ASSET_MISSING`; Rollup ESM and CJS
+    fixtures; esbuild recipe verified manually with `npx` esbuild 0.28.2. Pending: in-repo
+    esbuild fixture awaits owner approval of an esbuild development dependency.
+  - [x] #226 quickstart binds `quickstart-workspace/`; installed flow runs with wall-time and
+    retained-state budgets.
+  - [x] #227 no source maps and no `@internal` declarations in the tarball.
+  - [x] #228 Node 26: range widened to `>=24.12.0 <27`; `pnpm verify` exit 0 on 26.10.0 and
+    24.17.0 (2026-09-25, macOS arm64); `pnpm test:runtime-boundaries` exit 0 with 24.12.0,
+    26.10.0, and refused 24.11.1; one test assumption fixed (native `JSON.stringify` depth).
+    Odd-major Node 25 is admitted by the single-range grammar but unverified; no hosted Node 26
+    lane (hosted CI disabled).
 
 Phase 10 is complete for its documented offline scope; the [exit audit](./phase-10-exit-audit.md)
 maps every work item and exit criterion to entry points, docs, and tests.
