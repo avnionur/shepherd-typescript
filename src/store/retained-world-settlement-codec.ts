@@ -44,7 +44,7 @@ type RetainedWorldSettlementOperation =
           request_id: string;
       }>;
 
-/** @internal Canonical operation encoding retained by the settlement journal. */
+/** Canonical operation encoding retained by the settlement journal. */
 export type RetainedWorldSettlementOperationEncoding = Readonly<{
     digest: string;
     id: string;
@@ -99,14 +99,14 @@ type RetainedWorldSettlementTerminalReceipt =
           user_basis_before: string;
       }>;
 
-/** @internal Canonical terminal-receipt encoding retained by the settlement journal. */
+/** Canonical terminal-receipt encoding retained by the settlement journal. */
 export type RetainedWorldSettlementReceiptEncoding = Readonly<{
     digest: string;
     json: string;
     value: RetainedWorldSettlementTerminalReceipt;
 }>;
 
-/** @internal Action-specific evidence accepted by the terminal journal transition. */
+/** Action-specific evidence accepted by the terminal journal transition. */
 export type RetainedWorldSettlementTerminalEvidence =
     | Readonly<{
           action: typeof SELECT_ACTION;

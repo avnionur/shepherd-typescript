@@ -6,19 +6,20 @@ Build configuration: [`tsconfig.build.json`](../tsconfig.build.json). Installed 
 
 ## Package map policy
 
-Every supported package entry ships both a JavaScript source map and a declaration map. Each map:
+Owner decision (#227, D-020): the package ships no source maps. The build
+([`tsconfig.build.json`](../tsconfig.build.json)) sets `sourceMap` and `declarationMap` to `false`,
+so no `.map` file is emitted, packed, or referenced by a `sourceMappingURL` comment. Until 2.34.0
+the package shipped 648 maps that pointed at unshipped `src/*.ts`, so debuggers and
+go-to-definition resolved to missing files; dropping them keeps the privacy policy unchanged
+(no `sourcesContent`, no TypeScript source, no host path is published) and removes about 4.4 MB
+of the 9.8 MB unpacked size. Go-to-definition resolves to the shipped `.d.ts` declarations.
 
-- is source-map version 3 and names its adjacent emitted file;
-- uses an empty `sourceRoot` and portable forward-slash relative source paths;
-- resolves within the installed package root and contains no repository-host or temporary absolute
-  path;
-- omits `sourcesContent`, so the tarball does not duplicate or silently publish unlisted source;
-- remains usable by Node's `--enable-source-maps` support even though the mapped TypeScript source
-  is not shipped as an importable deep path.
-
-Fresh-tarball verification applies these checks independently to repository-built and installed
-root/domain entry artifacts. An installed unhandled effect verifies that its stack points to
-`src/effect/handlers.ts` rather than the emitted `dist/src/effect/handlers.js` frame.
+Fresh-tarball verification asserts that the tarball contains no `.map` file and that no shipped
+`.js` or `.d.ts` file carries a `sourceMappingURL` comment. An installed unhandled effect under
+`--enable-source-maps` verifies that its stack names the emitted
+`dist/src/effect/handlers.js` frame. Maps for local debugging can be produced with
+`tsc -p tsconfig.build.json --sourceMap --declarationMap --outDir <scratch>`; they are never
+packed.
 
 ## Cause and propagation matrix
 
@@ -41,5 +42,5 @@ filesystem, provider, or execution authority. Existing `instanceof`, error codes
 constructors, terminal outcomes, and redaction remain unchanged.
 
 Validation `TypeError`, caller callbacks, provider implementations, and external failures that are
-documented to propagate remain intentionally unclassified or unchanged. Source-map support changes
-stack presentation only when the consuming Node process opts into it.
+documented to propagate remain intentionally unclassified or unchanged. Stacks from the installed
+package name the emitted JavaScript files.

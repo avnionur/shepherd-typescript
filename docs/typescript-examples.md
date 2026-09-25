@@ -33,7 +33,7 @@ cp node_modules/@avnionur/shepherd-typescript/examples/retained-coding.json .
 node retained-coding.ts ./coding-demo retained-coding.json
 ```
 
-Use Node >=24.12.0 <25. The `cp` commands are POSIX shell examples; on Windows copy the same two files
+Use Node >=24.12.0 <27. The `cp` commands are POSIX shell examples; on Windows copy the same two files
 with your shell or file manager. No transpilation step is needed to execute the copied example.
 
 ## What it proves
@@ -80,7 +80,7 @@ of an existing destination. Example code is not emitted into the production runt
 
 New compatible examples extend the manifest rather than adding named branches to the verifier.
 The original [offline quickstart](https://github.com/avnionur/shepherd-typescript/blob/main/docs/quickstart.md)
-remains unchanged and is tested separately.
+is tested separately.
 The custom-effect example below completes the initial four-example collection.
 
 ## Review existing retained output

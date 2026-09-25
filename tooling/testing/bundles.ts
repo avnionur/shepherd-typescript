@@ -27,6 +27,10 @@ export type BundleVerificationOptions = {
 /**
  * Bundles installed entry fixtures, checks retained code, and executes asset failure/success cases.
  *
+ * Each fixture is emitted as an ES module and as a CommonJS bundle. Both must run with the
+ * configured assets beside them and, with any asset missing, must fail with the configured
+ * missing-configuration-asset public error naming the expected path.
+ *
  * @param options - Policy checkout and isolated installation locations.
  * @returns A promise resolving after all bundle assertions pass.
  * @throws {Error} If resolution, bundling, retained modules, assets, or execution violate policy.
@@ -40,6 +44,7 @@ export async function testInstalledBundles(options: BundleVerificationOptions): 
         ),
     ) as {
         readonly output: string;
+        readonly cjsOutput: string;
         readonly allowedWarnings: readonly string[];
         readonly fixtures: readonly {
             readonly entry: string;
@@ -52,6 +57,11 @@ export async function testInstalledBundles(options: BundleVerificationOptions): 
             readonly assets: readonly { readonly source: string; readonly destination: string }[];
         }[];
     };
+    const assetMissingCode = (
+        JSON.parse(
+            readFileSync(path.join(options.repositoryRoot, "public-errors.config.json"), "utf8"),
+        ) as { readonly codes: { readonly configuration: { readonly assetMissing: string } } }
+    ).codes.configuration.assetMissing;
     const manifest = JSON.parse(
         readFileSync(path.join(options.installedPackageRoot, "package.json"), "utf8"),
     ) as {
@@ -72,6 +82,7 @@ process.stdout.write((typeof result === "string" ? result : JSON.stringify(resul
 `,
         );
         const chunks: OutputChunk[] = [];
+        let commonJsCode = "";
         for (const treeshake of [false, true]) {
             const build = await rollup({
                 input: entryPath,
@@ -87,6 +98,11 @@ process.stdout.write((typeof result === "string" ? result : JSON.stringify(resul
                 const generated = await build.generate({ format: "es" });
                 assert.equal(generated.output.length, 1);
                 chunks.push(generated.output[0]);
+                if (treeshake) {
+                    const commonJs = await build.generate({ format: "cjs" });
+                    assert.equal(commonJs.output.length, 1);
+                    commonJsCode = commonJs.output[0].code;
+                }
             } finally {
                 await build.close();
             }
@@ -115,39 +131,64 @@ process.stdout.write((typeof result === "string" ? result : JSON.stringify(resul
         }
         const output = path.resolve(consumer, policy.output);
         assert.ok(output.startsWith(`${consumer}${path.sep}`));
+        const commonJsOutput = path.resolve(consumer, policy.cjsOutput);
+        assert.ok(commonJsOutput.startsWith(`${consumer}${path.sep}`));
+        assert.equal(path.dirname(commonJsOutput), path.dirname(output));
         mkdirSync(path.dirname(output), { recursive: true });
         writeFileSync(output, shaken.code);
+        writeFileSync(commonJsOutput, commonJsCode);
+        const bundles = [output, commonJsOutput];
         for (const asset of fixture.assets) {
             const destination = path.resolve(consumer, asset.destination);
             assert.ok(destination.startsWith(`${consumer}${path.sep}`));
             mkdirSync(path.dirname(destination), { recursive: true });
             copyFileSync(path.join(options.installedPackageRoot, asset.source), destination);
         }
-        assert.equal(
-            execFileSync(process.execPath, [output], { cwd: consumer, encoding: "utf8" }),
-            fixture.stdout,
-        );
+        for (const bundle of bundles)
+            assert.equal(
+                execFileSync(process.execPath, [bundle], { cwd: consumer, encoding: "utf8" }),
+                fixture.stdout,
+            );
         for (const asset of fixture.assets) {
             const destination = path.resolve(consumer, asset.destination);
             const saved = `${destination}.saved`;
+            const expectedPath = path.join(
+                realpathSync(path.dirname(destination)),
+                path.basename(destination),
+            );
             renameSync(destination, saved);
             try {
-                assert.throws(
-                    () =>
-                        execFileSync(process.execPath, [output], { cwd: consumer, stdio: "pipe" }),
-                    /ENOENT/u,
-                );
+                for (const bundle of bundles) {
+                    assert.throws(
+                        () =>
+                            execFileSync(process.execPath, [bundle], {
+                                cwd: consumer,
+                                stdio: "pipe",
+                            }),
+                        (error: unknown) => {
+                            const stderr = String((error as { readonly stderr?: unknown }).stderr);
+                            return (
+                                stderr.includes("ConfigurationAssetError") &&
+                                stderr.includes(assetMissingCode) &&
+                                stderr.includes(expectedPath) &&
+                                stderr.includes("ENOENT")
+                            );
+                        },
+                    );
+                }
                 writeFileSync(destination, "null");
-                assert.throws(() =>
-                    execFileSync(process.execPath, [output], { cwd: consumer, stdio: "pipe" }),
-                );
+                for (const bundle of bundles)
+                    assert.throws(() =>
+                        execFileSync(process.execPath, [bundle], { cwd: consumer, stdio: "pipe" }),
+                    );
             } finally {
                 renameSync(saved, destination);
             }
         }
-        assert.equal(
-            execFileSync(process.execPath, [output], { cwd: consumer, encoding: "utf8" }),
-            fixture.stdout,
-        );
+        for (const bundle of bundles)
+            assert.equal(
+                execFileSync(process.execPath, [bundle], { cwd: consumer, encoding: "utf8" }),
+                fixture.stdout,
+            );
     }
 }

@@ -1,7 +1,7 @@
 # Support policy
 
 Status: normative for 2.25.2 (Phase 11 slice 1, #187); Linux row updated in 2.33.3 (#191); 1.0
-release form, Linux, and Windows rows updated in 2.34.0 for the owner decisions of 2026-09-23 (#199). Security reporting is in
+release form, Linux, and Windows rows updated in 2.34.0 for the owner decisions of 2026-09-23 (#199); Node row widened to Node 26 in 2.36.0 (#228). Security reporting is in
 [SECURITY.md](../SECURITY.md); response steps are in [incident response](./incident-response.md).
 
 ## Supported versions
@@ -19,7 +19,7 @@ release form, Linux, and Windows rows updated in 2.34.0 for the owner decisions 
 
 | Surface | Status | Evidence |
 | --- | --- | --- |
-| Node `>=24.12.0 <25` | Supported | [Node runtime support](./runtime-support.md) |
+| Node `>=24.12.0 <27` (Node 24 from 24.12.0 and Node 26; odd-major 25 unverified) | Supported from 2.36.0 (#228) | [Node runtime support](./runtime-support.md) |
 | macOS arm64 (APFS) | Supported and verified locally | `CI=true pnpm verify` on the reference host |
 | Linux | Supported; verified by a local Docker lane (Debian bookworm, Node 24.21.0 and 24.12.0, 2.33.1; Linux volume fault suite and SLO host class in 2.34.0; not bare-metal, not x86-64); hosted CI is disabled by owner decision | `pnpm verify` and opt-in suites in the [Phase 11 exit audit addendum](../.plan/phase-11-exit-audit.md#linux-verification-lane-and-close-out-2331) and the [2.34.0 addendum](../.plan/phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340) (ext4 loop-image volume suite as root in a privileged container; `linux-arm64-overlayfs-container` SLO class, a container-in-VM measurement); by owner decision of 2026-09-23 (O-3, #199) the local lanes replace hosted runs for 1.0 |
 | Native Windows | Unsupported | Native permission enforcement has no design; see the parity matrix. No Windows verification lane for 1.0 (owner decision of 2026-09-23, #199; `windows-latest` removed from `ci.yml`) |

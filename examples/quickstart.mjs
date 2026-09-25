@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import {
@@ -19,14 +19,19 @@ import {
 
 const NOTE_PATH = "NOTE.txt";
 const NOTE_TEXT = "Hello from a Shepherd retained output.\n";
+// Bind only this dedicated subdirectory, never the whole working directory: a local install puts
+// node_modules beside this script, and capturing it makes the first run slow and large.
+const BINDING_DIRECTORY = "quickstart-workspace";
 const workspaceRoot = process.cwd();
+const bindingRoot = path.join(workspaceRoot, BINDING_DIRECTORY);
 const workspace = initializeWorkspace({
     adopt: "none",
     initializeGit: false,
     rootPath: workspaceRoot,
 });
+mkdirSync(bindingRoot, { recursive: true });
 const binding = createWorkspaceBindings({
-    bindings: [{ name: "workspace", root: "." }],
+    bindings: [{ name: "workspace", root: BINDING_DIRECTORY }],
     workspaceRoot,
 }).bindings[0];
 if (binding === undefined) throw new Error("quickstart binding is unavailable");
@@ -87,7 +92,7 @@ const captured = await captureTaskWorldDurably({
     runner,
     store,
 });
-if (existsSync(path.join(workspaceRoot, NOTE_PATH))) {
+if (existsSync(path.join(bindingRoot, NOTE_PATH))) {
     throw new Error("quickstart changed the user workspace before settlement");
 }
 
@@ -119,6 +124,6 @@ await selectRetainedWorldSettlement({
     outputId: captured.output.output_id,
     store,
 });
-if (readFileSync(path.join(workspaceRoot, NOTE_PATH), "utf8") !== NOTE_TEXT) {
+if (readFileSync(path.join(bindingRoot, NOTE_PATH), "utf8") !== NOTE_TEXT) {
     throw new Error("quickstart selected note does not match retained bytes");
 }

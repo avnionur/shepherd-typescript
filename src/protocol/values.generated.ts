@@ -1,4 +1,4 @@
-// Generated from protocol.config.json. Do not edit directly.
+// Generated from protocol.config.json and public-errors.config.json. Do not edit directly.
 
 /**
  * Record modes supported by the configured kernel ABI.
@@ -1009,3 +1009,9 @@ export const TELEMETRY_BODY_HANDLINGS = [
     "omitted",
     "oversized",
 ] as const;
+
+/**
+ * Configured public error code for a missing configuration asset, embedded so it is available
+ * before `public-errors.config.json` loads. @internal
+ */
+export const CONFIGURATION_ASSET_MISSING_CODE = "CONFIGURATION_ASSET_MISSING";

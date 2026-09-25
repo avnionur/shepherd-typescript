@@ -11,7 +11,9 @@
 # Status: never run. Hosted workflows are blocked by an account billing limit (#191, #199), and
 # npm publication is waived for 1.0 (O-2 in .plan/production-hardening-contract.md); the package
 # stays `"private": true` until the owner supersedes that waiver (#221). The same build gates run
-# locally with `pnpm verify:release`; docs/release-integrity.md holds the owner release runbook.
+# locally with `pnpm verify:release`; docs/release-integrity.md holds the owner release runbook,
+# including the owner publication checklist (D-020). The publish job uses npm trusted publishing
+# (OIDC); no npm token secret is used.
 #
 # Action references are pinned to commit SHAs resolved read-only from each action's release tag.
 # The GitHub Release job uses the preinstalled `gh` CLI and adds no action dependency.
@@ -212,7 +214,10 @@ jobs:
                       exit 1
                   fi
 
+            # Authentication is npm trusted publishing (OIDC through `id-token: write`); no token
+            # secret is read. `--ignore-scripts` keeps the prepublish guard and any other lifecycle
+            # script from running against the already verified tarball. The tarball is the one the
+            # configured packer (`reproducibleBuild.packCommand`) produced and the build job
+            # attested; it is never repacked. Access and provenance also come from `publishConfig`.
             - name: Publish the attested tarball with npm provenance
-              run: npm publish release/*.tgz --provenance --access public
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: npm publish release/*.tgz --provenance --access public --ignore-scripts

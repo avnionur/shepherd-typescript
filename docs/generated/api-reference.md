@@ -1,12 +1,12 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.35.1
+Package: `@avnionur/shepherd-typescript` 2.36.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
 `pnpm check:api-reference` to reject drift.
 
-Package runtime requirement: `>=24.12.0 <25`.
+Package runtime requirement: `>=24.12.0 <27`.
 
 ## Root
 
@@ -14,7 +14,7 @@ Package entry: `.`
 
 Complete supported package surface preserved for existing consumers.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: This aggregate entry includes pure helpers and explicit Node-backed persistence, execution, and workspace APIs. Mutation authority is never ambient and remains visible in each signature.
 
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 1199.
+Exported symbols: 1200.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -2854,6 +2854,89 @@ Signature:
 ```ts
 export type CodingSupervisorWorkerStatus = (typeof APPLICATION_SUPERVISION_WORKER_STATUSES)[number];
 ```
+
+### `ConfigurationAssetError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a runtime configuration asset that Shepherd loads next to its modules cannot be
+found or located.
+
+Shepherd reads `runtime.config.json`, `protocol.config.json`, and `public-errors.config.json`
+relative to the loading module's URL. A bundler that inlines Shepherd without copying those
+assets, or a bundle format without `import.meta.url` (for example a CommonJS bundle), triggers
+this error while the module graph is evaluated. The `code` is generated from
+`public-errors.config.json` into the module source, so it is available even when that asset is
+the one missing. The message and `expectedPath` name only the expected location, never file
+contents. See `docs/package-exports.md` for supported bundle layouts.
+
+Signature:
+
+```ts
+export declare class ConfigurationAssetError extends Error {
+    readonly code: PublicErrorCode;
+    readonly asset: string;
+    readonly expectedPath: string;
+    constructor(asset: string, expectedPath: string, options?: ErrorOptions);
+}
+```
+
+Example:
+
+- ```ts
+try {
+    await import("@avnionur/shepherd-typescript");
+} catch (error) {
+    if (isPublicError(error) && error.code === "CONFIGURATION_ASSET_MISSING") {
+        console.error((error as ConfigurationAssetError).expectedPath);
+    }
+}
+```
+
+#### `code`
+
+Stable configured machine-readable configuration-asset code.
+
+```ts
+readonly code: PublicErrorCode;
+```
+
+#### `asset`
+
+File name of the missing configuration asset, such as `protocol.config.json`.
+
+```ts
+readonly asset: string;
+```
+
+#### `expectedPath`
+
+Absolute filesystem path where the asset was expected, or the module-relative specifier
+when the module URL is unavailable in the running bundle format.
+
+```ts
+readonly expectedPath: string;
+```
+
+#### `constructor`
+
+Creates a refusal naming the missing asset and its expected location.
+
+```ts
+constructor(asset: string, expectedPath: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- asset - File name of the missing configuration asset.
+
+Parameter:
+
+- expectedPath - Absolute expected path, or module-relative specifier.
+
+Parameter:
+
+- options - Optional in-memory cause.
 
 ### `CooperativeProcessAdapter`
 
@@ -28775,7 +28858,7 @@ Package entry: `./applications`
 
 Application manifests, protocol identity, the two-worker coding supervisor over child run handles, the counterfactual workflow optimizer over replay sessions, Appendix D trajectory compression, the §5.3 Tree-RL adapter, and offline evaluation reports against simple baselines.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Running and inspecting the coding supervisor, the counterfactual optimizer, trajectory compression, and the Tree-RL adapter, running an evaluation, and retaining manifests require an explicit trace-store handle; workers, policies, workflow programs, evaluators, compressors, verifiers, reward functions, evaluation bindings, and providers are caller-supplied; an evaluation writes no record of its own beyond the application commands it issues; world custody is reached only through a caller-supplied adapter. Every supervisor command and every compressor and verifier child runs through the delegation seam under the caller's root declaration and never amplifies authority; every optimizer, compression, and Tree-RL rollout session runs through the replay seam without bound worlds or processes. No provider, filesystem, workspace, custody, or settlement authority is created.
 
@@ -32932,7 +33015,7 @@ Package entry: `./canonical`
 
 Canonical semantic-record encoding and identity.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Pure canonical encoding and identity operations; no filesystem, process, network, persistence, or mutation authority.
 
@@ -33133,7 +33216,7 @@ Package entry: `./cli`
 
 Reusable command-line runner and injectable I/O contract.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: The reusable runner uses caller-supplied I/O and command arguments. Command-specific filesystem or persistence authority remains explicit in those arguments.
 
@@ -33196,7 +33279,7 @@ Package entry: `./delegation`
 
 Task values, durable child run handles, delegated authority, handle inspection, and typed result and tree projections.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Opening, running, and inspecting child run handles require an explicit trace-store handle; providers and programs are caller-supplied. A handle's authority is derived from a caller-declared root ceiling or the parent handle's retained effective authority and never exceeds it. Task values carry no code and nothing in them is evaluated. No provider, workspace, custody, or settlement authority is created.
 
@@ -35615,7 +35698,7 @@ Package entry: `./effects`
 
 Immutable effect records, correlation, and ordered in-process dispatch.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Handlers are caller-supplied in-process callbacks. Dispatch is non-durable and grants no trace, workspace, interception, replay, or sandbox authority.
 
@@ -36041,7 +36124,7 @@ Package entry: `./operations`
 
 Configured secret scanning, retention data classes and export dispositions, one-way redacted trace archives and their verifier, read-only retention inspection, storage adapter interfaces with local reference adapters and conformance kits, verified trace-store backup, restore, and replication, and non-canonical OpenTelemetry-compatible telemetry export.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Pure secret scanning and schema classification. Redacted export and retention inspection only read an explicit caller-supplied trace-store handle and return text or a report; verification parses caller-supplied text. Nothing in the retention surface writes, deletes, or rewrites a record, blob, or file, and a redacted archive can never be imported. Storage reference adapters touch only the caller-named blob directory or SQLite coordinator file (or process memory); conformance kits use only caller-supplied adapter factories. Backup reads an explicit caller-supplied trace-store handle and writes only into a new caller-named directory or caller-supplied blob backend; verification only reads a backup; restore creates only a new caller-named store and its blob directory and never opens, overwrites, or appends to an existing store; replication writes only to caller-supplied backend and coordinator adapters. The telemetry exporter reads an explicit caller-supplied trace-store handle through a subscription, writes only that subscription's cursor bookkeeping outside the record graph, and hands batches to a caller-supplied sink; the JSON-lines sink appends only to the two caller-named files. No record is appended to any store, no remote or network storage or network exporter is created, and no provider, workspace, or execution authority is created.
 
@@ -38654,7 +38737,7 @@ Package entry: `./providers`
 
 Provider-neutral contracts and deterministic static-provider fixtures.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Provider authority is supplied explicitly by the consumer. The deterministic static adapter owns no credentials, network access, execution, or workspace authority.
 
@@ -38967,7 +39050,7 @@ Package entry: `./read`
 
 Web-safe semantic records, owner occurrences, cut addresses, slices, and anchors.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Type-only readonly trace data; no runtime exports, validation, transport, storage, mutation, or authorization. Installed declarations compile without Node types; the ESM module has no runtime dependencies.
 
@@ -39320,7 +39403,7 @@ Package entry: `./replay`
 
 Replay sessions, coupled checkpoints, rewind, suffix replay, process checkpoint backends, and divergence analysis.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Sessions, rewinds, replays, inspection, and analysis require an explicit trace-store handle; programs, providers, handler stacks, replay policies, and provider-session adapters are caller-supplied. Rewind and replay write only into caller-selected empty world roots. The cooperative process adapter starts only the caller-named executable without a shell; the transparent adapter only probes the configured CRIU executable. No workspace binding, carrier custody, or settlement authority is created.
 
@@ -41783,7 +41866,7 @@ Package entry: `./runs`
 
 Run construction, control, execution, recovery, and inspection.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Execution requires caller-supplied task and provider authority; durable operations additionally require an explicit trace-store handle. No ambient provider, persistence, or workspace authority is created.
 
@@ -44347,7 +44430,7 @@ Package entry: `./scopes`
 
 Durable trace-only scope registration, fenced scope-local emission, and inspection.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Registration, writer claims, and emission require an explicit open trace-store handle and package-minted writer handles; inspection is a bounded read. No world, provider, filesystem, or settlement authority is created.
 
@@ -46936,7 +47019,7 @@ Package entry: `./supervision`
 
 Live trace subscriptions, supervised effect interception, approval gates, cited context, and worker control.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Subscriptions, dispatch, approval, and context injection require an explicit trace-store handle; interceptors and handlers are caller-supplied callbacks. Subscriptions are read-only and retain only cursor bookkeeping. Worker control re-exports existing fenced durable-run commands. No provider, filesystem, or workspace authority is created.
 
@@ -48797,7 +48880,7 @@ Package entry: `./tasks`
 
 Task descriptors, schemas, registry operations, and bounded ledger reads.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: Descriptor and schema helpers are pure. SQLiteTaskRegistry reads or mutates only the caller-selected registry database and must be closed by the caller.
 
@@ -49599,7 +49682,7 @@ Package entry: `./trace`
 
 Trace persistence, interchange, integrity, cuts, slices, and bounded evidence queries.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: SQLiteTraceStore is explicitly read/write capable for caller-selected storage. Projection helpers remain bounded reads and no workspace authority is created.
 
@@ -52122,7 +52205,7 @@ Package entry: `./workspace`
 
 Workspace bindings, custody, grants, placement, retained execution, and exact settlement.
 
-Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
+Runtime: ESM on Node >=24.12.0 <27, except the type-only /read entry (no Node runtime required).
 
 Authority and mutation: These APIs may read or mutate caller-selected filesystem and Git state, and native runners may launch capability-probed processes. Required task, provider, run, trace, carrier, runner, grant, and scope writer handles stay explicit.
 

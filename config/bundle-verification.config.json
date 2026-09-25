@@ -1,5 +1,6 @@
 {
     "output": "chunks/nested/bundle.mjs",
+    "cjsOutput": "chunks/nested/bundle.cjs",
     "allowedWarnings": ["THIS_IS_UNDEFINED", "CIRCULAR_DEPENDENCY"],
     "fixtures": [
         {

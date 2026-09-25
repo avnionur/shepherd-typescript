@@ -11,9 +11,9 @@ Shepherd authors.
 [Paper](https://arxiv.org/abs/2605.10913) ·
 [Upstream project](https://shepherd-agents.ai/) ·
 [Upstream code](https://github.com/shepherd-agents/shepherd) ·
-[Paper coverage](./.plan/paper-coverage.md) ·
-[Documentation](./docs/README.md) ·
-[Changelog](./CHANGELOG.md)
+[Paper coverage](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/paper-coverage.md) ·
+[Documentation](https://github.com/avnionur/shepherd-typescript/blob/main/docs/README.md) ·
+[Changelog](https://github.com/avnionur/shepherd-typescript/blob/main/CHANGELOG.md)
 
 [![Original Shepherd paper teaser: a meta-agent creates, observes, intercepts, reverts, and forks a worker trace](https://shepherd-agents.ai/assets/teaser.png)](https://shepherd-agents.ai/assets/teaser.mp4)
 
@@ -60,18 +60,18 @@ serviced, and all results are this repository's measurements, never upstream num
 | L1 | Shepherd `0.3.0` settlement compatibility | Complete (1.51.0) |
 | L2 | Scope and versioned-world substrate parity | Complete on recorded hosts (2.7.1) |
 | L3 | Paper programming-model parity and research applications | Complete for the documented offline scope (2.20.1, applications 2.25.1) |
-| L4 | Security, recovery, performance, packaging, and releases | "1.0" in 2.34.0 as a private, unpublished source release with owner waivers ([release notes](./docs/release-notes-1.0.md)) |
+| L4 | Security, recovery, performance, packaging, and releases | "1.0" in 2.34.0 as a private, unpublished source release with owner waivers ([release notes](https://github.com/avnionur/shepherd-typescript/blob/main/docs/release-notes-1.0.md)) |
 
 "1.0" is a maturity milestone, not a package version. It excludes an external security review,
 signing, npm publication, hosted CI (local macOS gates and a local Docker Linux lane substitute),
-and Windows. Phase-by-phase evidence is in the [tracker](./.plan/tracker.md) and the phase exit
-audits under [`.plan`](./.plan/README.md).
+and Windows. Phase-by-phase evidence is in the [tracker](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/tracker.md) and the phase exit
+audits under [`.plan`](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/README.md).
 
 ## Paper coverage
 
 The 2026-09-25 audit of [paper v3](https://arxiv.org/abs/2605.10913) is tracked in
 [#202](https://github.com/avnionur/shepherd-typescript/issues/202); details are in the
-[coverage map](./.plan/paper-coverage.md#known-deviations-2026-09-25-audit-2340).
+[coverage map](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/paper-coverage.md#known-deviations-2026-09-25-audit-2340).
 
 | Paper section | Implemented | Known gaps |
 | --- | --- | --- |
@@ -89,10 +89,14 @@ The 2026-09-25 audit of [paper v3](https://arxiv.org/abs/2605.10913) is tracked 
 
 ## Requirements
 
-- Node.js `>=24.12.0 <25`; unsupported runtimes are refused before any storage setup
-  ([runtime support](./docs/runtime-support.md)). Node 24.12 prints Node's SQLite experimental
-  warning.
-- pnpm 10, for development only.
+- Node.js `>=24.12.0 <27` (Node 24 and Node 26); unsupported runtimes are refused before any
+  storage setup ([runtime support](./docs/runtime-support.md)). Node 24.12 prints Node's SQLite
+  experimental warning.
+- ESM and CommonJS `require()` consumers are supported; TypeScript consumers need TypeScript
+  `5.9.3` or later.
+- No runtime dependencies.
+
+Contributor tooling (pnpm 10) is listed under [Development](#development).
 
 ## Installation
 
@@ -108,11 +112,16 @@ pnpm install && pnpm build && npm pack
 npm install /path/to/avnionur-shepherd-typescript-<version>.tgz
 ```
 
-The package is ESM-only and has no runtime dependencies. CommonJS callers must use dynamic
-`import()`; undeclared deep imports are rejected. `pnpm verify` installs the packed tarball into an
+The package is authored as ESM and has no runtime dependencies. On the supported Node range every
+entry also loads with CommonJS `require()` (require(esm)); undeclared deep imports are rejected.
+TypeScript consumers need TypeScript 5.9.3 or later. `pnpm verify` installs the packed tarball into an
 isolated consumer; a 2026-09-25 local check also passed TypeScript 5.9 and 7.0 under `NodeNext`,
-`Node16`, and `Bundler` resolution, `publint --strict`, and
-`@arethetypeswrong/cli --profile esm-only`.
+`Node16`, and `Bundler` resolution and `publint --strict`. `@arethetypeswrong/cli` 0.18.5 passes
+with `--profile esm-only`; its default and `node16` profiles report the expected `node16 (from CJS)`
+ESM warning because its bundled TypeScript predates require(esm) (details in
+[package exports](https://github.com/avnionur/shepherd-typescript/blob/main/docs/package-exports.md#commonjs-require)). Bundlers must ship the package's three
+`*.config.json` assets beside the bundle; a missing asset raises `ConfigurationAssetError`
+(`CONFIGURATION_ASSET_MISSING`) naming the expected path.
 
 ## Quick start
 
@@ -189,7 +198,7 @@ shepherd-ts --help          # add --json for the stable shepherd.cli.json.v1 env
 
 More examples:
 
-- [Offline retained-output quickstart](./docs/quickstart.md)
+- [Offline retained-output quickstart](https://github.com/avnionur/shepherd-typescript/blob/main/docs/quickstart.md)
 - [TypeScript examples](./docs/typescript-examples.md): retained coding edit, read-only review,
   multiple bindings, and custom effects
 - [Python-to-TypeScript migration guide](./docs/python-to-typescript.md)
@@ -215,43 +224,45 @@ More examples:
 | `./cli` | Reusable CLI runner with injectable I/O |
 | `./read` | Type-only, browser-safe trace read types |
 
-See [package exports](./docs/package-exports.md) for boundaries and per-entry loading, and the
+See [package exports](https://github.com/avnionur/shepherd-typescript/blob/main/docs/package-exports.md) for boundaries and per-entry loading, and the
 [generated API reference](./docs/generated/api-reference.md) for every symbol. Semantic values must
 be JSON-compatible: undefined array elements, non-finite numbers, accessors, symbols, class
 instances, and cycles are rejected.
 
 ## Documentation
 
-The [documentation index](./docs/README.md) lists every guide. Starting points:
+The [documentation index](https://github.com/avnionur/shepherd-typescript/blob/main/docs/README.md) lists every guide. Starting points:
 
-- **Trace kernel:** [canonical records](./docs/canonical-records.md),
-  [SQLite trace store](./docs/sqlite-trace-store.md), [cuts and slices](./docs/trace-queries.md),
-  [interchange](./docs/trace-interchange.md), [vocabulary](./CONTEXT.md)
-- **Tasks and runs:** [task descriptors](./docs/task-descriptors.md),
-  [durable execution](./docs/durable-task-execution.md),
-  [execution control](./docs/durable-execution-control.md),
-  [effect handlers](./docs/effect-handlers.md)
-- **Scopes and worlds:** [scope fork](./docs/scope-fork.md),
-  [merge and discard](./docs/scope-merge-discard.md), [scope laws](./docs/scope-laws.md),
-  [optimized carriers](./docs/optimized-carriers.md),
-  [native jail execution](./docs/native-jail-execution.md)
-- **Supervision and replay:** [trace subscriptions](./docs/trace-subscriptions.md),
-  [supervised effects](./docs/supervised-effects.md),
-  [replay sessions](./docs/replay-sessions.md), [rewind and replay](./docs/rewind-and-replay.md),
-  [task values](./docs/task-values.md), [supervisor operations](./docs/supervisor-operations.md)
-- **Research applications:** [coding supervisor](./docs/coding-supervisor.md),
-  [counterfactual optimization](./docs/counterfactual-optimization.md),
-  [trajectory compression](./docs/trajectory-compression.md),
-  [Tree-RL rollouts](./docs/tree-rl-rollouts.md),
-  [evaluation report](./docs/generated/application-evaluation.md)
-- **Operations:** [CLI](./docs/cli.md), [secrets and retention](./docs/secrets-and-retention.md),
-  [backup and restore](./docs/backup-restore-and-migration.md),
-  [observability](./docs/observability.md), [performance report](./docs/performance-report.md),
-  [threat model](./docs/threat-model.md), [support policy](./docs/support-policy.md)
-- **Planning:** [roadmap](./.plan/implementation-roadmap.md),
-  [parity matrix](./.plan/parity-matrix.md), [tracker](./.plan/tracker.md)
+- **Trace kernel:** [canonical records](https://github.com/avnionur/shepherd-typescript/blob/main/docs/canonical-records.md),
+  [SQLite trace store](https://github.com/avnionur/shepherd-typescript/blob/main/docs/sqlite-trace-store.md), [cuts and slices](https://github.com/avnionur/shepherd-typescript/blob/main/docs/trace-queries.md),
+  [interchange](https://github.com/avnionur/shepherd-typescript/blob/main/docs/trace-interchange.md), [vocabulary](https://github.com/avnionur/shepherd-typescript/blob/main/CONTEXT.md)
+- **Tasks and runs:** [task descriptors](https://github.com/avnionur/shepherd-typescript/blob/main/docs/task-descriptors.md),
+  [durable execution](https://github.com/avnionur/shepherd-typescript/blob/main/docs/durable-task-execution.md),
+  [execution control](https://github.com/avnionur/shepherd-typescript/blob/main/docs/durable-execution-control.md),
+  [effect handlers](https://github.com/avnionur/shepherd-typescript/blob/main/docs/effect-handlers.md)
+- **Scopes and worlds:** [scope fork](https://github.com/avnionur/shepherd-typescript/blob/main/docs/scope-fork.md),
+  [merge and discard](https://github.com/avnionur/shepherd-typescript/blob/main/docs/scope-merge-discard.md), [scope laws](https://github.com/avnionur/shepherd-typescript/blob/main/docs/scope-laws.md),
+  [optimized carriers](https://github.com/avnionur/shepherd-typescript/blob/main/docs/optimized-carriers.md),
+  [native jail execution](https://github.com/avnionur/shepherd-typescript/blob/main/docs/native-jail-execution.md)
+- **Supervision and replay:** [trace subscriptions](https://github.com/avnionur/shepherd-typescript/blob/main/docs/trace-subscriptions.md),
+  [supervised effects](https://github.com/avnionur/shepherd-typescript/blob/main/docs/supervised-effects.md),
+  [replay sessions](https://github.com/avnionur/shepherd-typescript/blob/main/docs/replay-sessions.md), [rewind and replay](https://github.com/avnionur/shepherd-typescript/blob/main/docs/rewind-and-replay.md),
+  [task values](https://github.com/avnionur/shepherd-typescript/blob/main/docs/task-values.md), [supervisor operations](https://github.com/avnionur/shepherd-typescript/blob/main/docs/supervisor-operations.md)
+- **Research applications:** [coding supervisor](https://github.com/avnionur/shepherd-typescript/blob/main/docs/coding-supervisor.md),
+  [counterfactual optimization](https://github.com/avnionur/shepherd-typescript/blob/main/docs/counterfactual-optimization.md),
+  [trajectory compression](https://github.com/avnionur/shepherd-typescript/blob/main/docs/trajectory-compression.md),
+  [Tree-RL rollouts](https://github.com/avnionur/shepherd-typescript/blob/main/docs/tree-rl-rollouts.md),
+  [evaluation report](https://github.com/avnionur/shepherd-typescript/blob/main/docs/generated/application-evaluation.md)
+- **Operations:** [CLI](https://github.com/avnionur/shepherd-typescript/blob/main/docs/cli.md), [secrets and retention](https://github.com/avnionur/shepherd-typescript/blob/main/docs/secrets-and-retention.md),
+  [backup and restore](https://github.com/avnionur/shepherd-typescript/blob/main/docs/backup-restore-and-migration.md),
+  [observability](https://github.com/avnionur/shepherd-typescript/blob/main/docs/observability.md), [performance report](https://github.com/avnionur/shepherd-typescript/blob/main/docs/performance-report.md),
+  [threat model](https://github.com/avnionur/shepherd-typescript/blob/main/docs/threat-model.md), [support policy](https://github.com/avnionur/shepherd-typescript/blob/main/docs/support-policy.md)
+- **Planning:** [roadmap](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/implementation-roadmap.md),
+  [parity matrix](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/parity-matrix.md), [tracker](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/tracker.md)
 
 ## Development
+
+Development needs pnpm 10 (`packageManager` in `package.json`) on the same Node range.
 
 ```sh
 pnpm install
@@ -274,7 +285,7 @@ node src/cli/main.ts     # run the CLI from source
 
 Biome formats and lints; Node's built-in test runner executes TypeScript directly. `scripts/` holds
 thin command adapters and `tooling/` holds tested build, release, and conformance code; only `src/`
-is emitted. `pnpm verify` also enforces the [compatibility policy](./docs/compatibility-policy.md)
+is emitted. `pnpm verify` also enforces the [compatibility policy](https://github.com/avnionur/shepherd-typescript/blob/main/docs/compatibility-policy.md)
 for exports, error codes, CLI commands, schemas, and migrations.
 
 ## Releases
@@ -282,7 +293,7 @@ for exports, error codes, CLI commands, schemas, and migrations.
 1. Set the version in `release-config.yaml` and add its `CHANGELOG.md` section.
 2. Run `pnpm sync:version`, `pnpm generate:api-reference`, `pnpm generate:sbom`, and
    `pnpm update:compatibility-baseline`, then `pnpm verify` and `pnpm build:desktop`.
-3. After merge, push the `v<version>` tag. The [release workflow](./docs/release-integrity.md#release-workflow)
+3. After merge, push the `v<version>` tag. The [release workflow](https://github.com/avnionur/shepherd-typescript/blob/main/docs/release-integrity.md#release-workflow)
    checks that the tag, configuration, and changelog agree, runs `pnpm verify:release`, attests the
    tarball, and creates a GitHub Release with the tarball, SBOM, and provenance attached.
 
@@ -292,9 +303,9 @@ Hosted Actions are currently unavailable for this repository, so the workflow ha
 
 ## Contributing and security
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for development and review requirements and
-[SECURITY.md](./SECURITY.md) for private vulnerability reporting. Participation is governed by the
-[Code of Conduct](./CODE_OF_CONDUCT.md).
+See [CONTRIBUTING.md](https://github.com/avnionur/shepherd-typescript/blob/main/CONTRIBUTING.md) for development and review requirements and
+[SECURITY.md](https://github.com/avnionur/shepherd-typescript/blob/main/SECURITY.md) for private vulnerability reporting. Participation is governed by the
+[Code of Conduct](https://github.com/avnionur/shepherd-typescript/blob/main/CODE_OF_CONDUCT.md).
 
 ## Attribution and license
 
@@ -302,7 +313,7 @@ The design follows the MIT-licensed [Shepherd project](https://github.com/shephe
 and its paper, _Shepherd: Enabling Programmable Meta-Agents via Reversible Agentic Execution
 Traces_ ([arXiv 2605.10913](https://arxiv.org/abs/2605.10913)), by Simon Yu, Derek Chong, Ananjan
 Nandi, Dilara Soylu, Jiuding Sun, Christopher D. Manning, and Weiyan Shi. Compatibility claims are
-tracked explicitly in the [coverage map](./.plan/paper-coverage.md).
+tracked explicitly in the [coverage map](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/paper-coverage.md).
 
 Original work in this repository is available under the [MIT License](./LICENSE). See
 [NOTICE](./NOTICE) for upstream attribution and reuse boundaries.

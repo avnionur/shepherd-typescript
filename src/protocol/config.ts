@@ -1,4 +1,7 @@
-import { readFileSync } from "node:fs";
+import {
+    readConfigurationAsset,
+    resolveConfigurationAssetUrl,
+} from "../errors/configuration-asset.ts";
 import { assertNodeRuntime } from "../runtime/policy.ts";
 import type {
     ApplicationsProtocolConfig,
@@ -27,12 +30,15 @@ import { parseProtocolConfig } from "./config-validation.ts";
 import { RECORD_MODES } from "./values.generated.ts";
 
 /** Location of the protocol configuration relative to this source or built module. */
-export const protocolConfigUrl = new URL("../../protocol.config.json", import.meta.url);
+export const protocolConfigUrl = resolveConfigurationAssetUrl(
+    "../../protocol.config.json",
+    import.meta.url,
+);
 
 assertNodeRuntime();
 
 const protocolConfig: ProtocolConfig = parseProtocolConfig(
-    JSON.parse(readFileSync(protocolConfigUrl, "utf8")),
+    readConfigurationAsset(protocolConfigUrl),
     { expectedRecordModes: RECORD_MODES },
 );
 

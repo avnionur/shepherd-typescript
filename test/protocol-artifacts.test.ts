@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { synchronizeProtocolArtifacts } from "../tooling/protocol/generator.ts";
 
 const sourceConfigUrl = new URL("../protocol.config.json", import.meta.url);
+const publicErrorConfigUrl = new URL("../public-errors.config.json", import.meta.url);
 
 test("protocol artifacts generate deterministically and pass check mode", async (context) => {
     const repositoryRoot = await createTemporaryRepository(context);
@@ -22,6 +23,10 @@ test("protocol artifacts generate deterministically and pass check mode", async 
     );
     assert.match(generatedValues, /Generated from protocol\.config\.json/);
     assert.match(generatedValues, /\["capture", "declaration"\]/);
+    assert.match(
+        generatedValues,
+        /CONFIGURATION_ASSET_MISSING_CODE = "CONFIGURATION_ASSET_MISSING";/,
+    );
 
     await writeFile(
         path.join(repositoryRoot, "src/protocol/values.generated.ts"),
@@ -146,5 +151,9 @@ test("protocol artifact generation surfaces non-missing filesystem errors", asyn
 async function createTemporaryRepository(context: { after(callback: () => unknown): void }) {
     const repositoryRoot = await mkdtemp(path.join(tmpdir(), "shepherd-protocol-test-"));
     context.after(() => rm(repositoryRoot, { force: true, recursive: true }));
+    await writeFile(
+        path.join(repositoryRoot, "public-errors.config.json"),
+        await readFile(publicErrorConfigUrl, "utf8"),
+    );
     return repositoryRoot;
 }

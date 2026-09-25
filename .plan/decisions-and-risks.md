@@ -177,6 +177,31 @@ credentials, and contracts outside the repository; the owner accepts the local e
 documented residuals (threat model F-008, F-010, and the external-review row) instead of leaving
 1.0 conditional on them.
 
+### D-020: Publication is approved in principle, superseding O-2 and O-5 pending owner actions
+
+Decided by the owner on 2026-09-25 under epic
+[#220](https://github.com/avnionur/shepherd-typescript/issues/220) (issue
+[#221](https://github.com/avnionur/shepherd-typescript/issues/221)). The owner approves superseding
+the O-2 (signing, attestation, publication) and O-5 (registry name) waivers of D-019 once the
+owner-only actions in the
+[owner publication checklist](../docs/release-integrity.md#owner-publication-checklist) are done.
+Until then `"private": true` stays and nothing is published; D-019 remains in force for everything
+else (private repository, hosted CI, external review, Windows).
+
+- The repository prepares for publication now: `publishConfig` (public access, provenance), a
+  `prepublishOnly` guard, package metadata, a single named packer whose tarball is tested,
+  attested, and published, CommonJS `require()` support, and a tarball without source maps or
+  internal declarations (#222, #224, #227).
+- `release.yml` publishes only through npm trusted publishing (OIDC); no npm token secret is used.
+- Removing `"private": true` happens only in a separate reviewed pull request after every checklist
+  item has evidence, with the version bump, `pnpm sync:version`, `pnpm verify`, and
+  `pnpm build:desktop`.
+- If the repository stays private, publication requires a recorded decision to publish without
+  `--provenance` (and without `publishConfig.provenance`).
+
+Reason: the package is technically ready to consume, and the remaining blockers are account,
+billing, and registry actions only the owner can take.
+
 ## Decisions required before coding
 
 ### Q-004: Supported runtimes

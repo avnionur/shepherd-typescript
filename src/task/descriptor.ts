@@ -69,6 +69,7 @@ export function assertTaskDescriptor(
     }
 }
 
+/** @internal Re-exported for in-repository callers; stripped from shipped declarations. */
 export { createTaskArtifactLock } from "./lock.ts";
 
 function readDefinition<I extends TaskSchema<unknown>, O extends TaskSchema<unknown>>(
