@@ -3,7 +3,8 @@
 Implementation: [`src/cli`](../src/cli), configuration:
 [`protocol.config.json`](../protocol.config.json), public runner:
 [`runCli`](../src/cli/cli.ts), executable: `shepherd-ts`. Tests:
-[`test/cli`](../test/cli). Generated reference:
+[`test/cli`](../test/cli) (replay and scope views:
+[`trace-cli.test.ts`](../test/cli/trace-cli.test.ts)). Generated reference:
 [`docs/generated/cli-reference.md`](./generated/cli-reference.md). Machine schema:
 [`spec/schemas/cli-output-v1.schema.json`](../spec/schemas/cli-output-v1.schema.json).
 
@@ -52,6 +53,11 @@ shepherd-ts store restore --backup DIR --manifest ID --store TARGET
 shepherd-ts store export [--store PATH] --output FILE [--redacted]
 shepherd-ts store import [--store PATH] --input FILE
 shepherd-ts store maintain [--store PATH] [--mode inspect|checkpoint|optimize|vacuum]
+shepherd-ts replay log [SESSION] [--store PATH] [--limit N] [--offset N]
+shepherd-ts replay show SESSION [--store PATH]
+shepherd-ts replay diff SESSION SESSION [SESSION ...] [--store PATH]
+shepherd-ts scope list [--store PATH] [--limit N] [--offset N]
+shepherd-ts scope show SCOPE [--store PATH]
 ```
 
 `init` delegates to protected workspace initialization and never creates a commit, stages files,
@@ -112,6 +118,28 @@ so an older schema is migrated first, like any writable open; it never creates a
 and never changes semantic content. A `quick_check` defect fails with exit `1` and a bounded issue
 list; an unconfigured `--mode` is a usage error. JSON mode returns the complete `maintenance`
 report.
+
+`replay` and `scope` (from 9.1.0) are git-like read-only views over retained replay sessions and
+scopes. Selectors accept an exact identity, a unique identity prefix, or the configured latest token
+(`@latest`); an unknown or ambiguous selector fails with exit `1`. Every
+command opens an existing store read-only and never creates one (exit `3`).
+
+| Git verb | Command | Result (`--json`) |
+| --- | --- | --- |
+| `git log` (all refs) | `replay log` | `replay_sessions`: a page of sessions in creation order with mode, classification, source session, program, step count, and terminal inspection |
+| `git log REF` | `replay log SESSION` | `replay_log`: the session's lineage (root first), step count, and a page of steps with kind, source (`live`/`recorded`), step, prefix, and dependencies |
+| `git show` | `replay show SESSION` | `replay_session`: the complete validated `inspectReplaySession` view |
+| `git diff A B ...` | `replay diff SESSION SESSION ...` | `replay_diff`: the N-way `diffReplaySessions` result against the common lineage ancestor |
+| `git branch` | `scope list` | `scopes`: a page of scopes with kind, state, parent, and child count |
+| `git show` (branch) | `scope show SCOPE` | `lineage` (root scope first) and the complete `inspectScope` view as `scope` |
+
+`replay diff` takes between two and `replay.divergence.maxSessions` distinct sessions; fewer, more,
+or repeated selectors are a usage error with the configured `replayDiffUsage` message. Its human
+output prints the ancestor, the shared base length, one line per branch with its first divergence,
+and one line per distinct captured effect with the number of branches that captured it and whether
+the ancestor retains it. See [N-way diff](./rewind-and-replay.md#n-way-diff) for the semantics.
+First-regression search takes a caller verdict function, so it is an API
+([`findFirstReplayRegression`](./rewind-and-replay.md#first-regression-search)) and not a command.
 
 ## Resource limits and security
 

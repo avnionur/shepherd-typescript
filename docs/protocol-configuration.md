@@ -92,6 +92,37 @@ the measured metrics in report order (`cost_usd`, `provider_calls`, `input_token
 bounds; plus the `evaluation` schema identifier and generated schema destination. The report is a
 returned and generated artifact, not a retained record, so v5 adds no trace schema reference. No
 v1–v4 value changes. See [application evaluation](./application-evaluation.md).
+Applications protocol v8 replaces the `treeRl` sub-object to follow paper Algorithm 2: record
+phases (`opened`, `root`, `rollout`, `batch`), member kinds (`root`, `branch`), per-action segments
+(`prefix`, `suffix`, `flat`), the `advantage` normalization (`none`, `group_std`; default
+`group_std`, estimator `sample`, epsilon `1e-6`), the admissible fork-turn range
+(`forkTurn.first`, `forkTurn.trailing`), batch and concurrency bounds (`limits`), the `flat_grpo`
+baseline, the `jsonl_v2` batch format, budget keys (`branches`, `groupSize`, `maxProviderCalls`),
+the dependency-selection reason, and the optional `fork_selector` and `fork_proposal` surface
+roles. Configurations written for v7 are refused. See the [Tree-RL adapter](./tree-rl-rollouts.md).
+Applications protocol v9 replaces the `cro` sub-object to follow paper Algorithm 1: record phases
+(`opened`, `proposal`, `candidate`, `selection`), outcome statuses (`archived`, `evaluated`,
+`promoted`, `rejected`), example splits (`train`, `dev`) and result roles (`fix`, `guard`, `dev`,
+`train`), artifact roles (`baseline`, `proposal`, `candidate`, `selection`), budget keys
+(`iterations`, `proposalsPerIteration`, `maxCandidates`, `maxProposalAttempts`, `maxProviderCalls`,
+`reflectionMinMechanisms`; `minPromotionScore` is no longer a budget), threshold keys read from the
+optional protocol `thresholds` (`targetedMinScoreLift`, `targetedMaxScoreDrop`,
+`targetedImproveThreshold`, `promoteDevEpsilon`, `minPromotionScore`,
+`reflectionDuplicateSimilarity`, `reflectionAudaciousPrior`), the provider-backed proposer (effect
+kind prefix, program identity, operation tool names, and trace, grep, and turn bounds), and the
+reflection contract field names and near-duplicate phrase. Configurations written for v8 are
+refused. See [counterfactual optimization](./counterfactual-optimization.md).
+Applications protocol v10 spreads v9 and appends the `runtimeSupervision` sub-object for the
+concurrent runtime supervisor: Appendix E decision actions (`none`, `inject`, `handoff`,
+`discard`), record phases (`opened`, `tick`, `settled`, `attempt`, `turn`, `completed`), attempt
+causes (`start`, `handoff`, `discard`) and statuses (`running`, `completed`, `turn_limit`,
+`failed`, `aborted`), manifest artifact roles, protocol budget keys (`maxTicks`,
+`tickIntervalMilliseconds`, `maxProviderCalls`, `maxTurnsPerWorker`, `maxFeatureCharacters`,
+`trailingToolCalls`, `maxToolCallSummaryBytes`, `maxReasonWords`, `maxGuidanceWords`), surface
+roles, the tool input keys read as a call's target, the guidance separator, and the truncation
+marker; plus the `maxTicks` and `maxTickIntervalMilliseconds` limits and the `runtimeSupervision`
+trace schema reference, schema identifier, and generated schema destination. No v9 value changes.
+See the [runtime supervisor](./runtime-supervisor.md).
 The scope section fixes the scope record version and compatibility namespace, root/child kinds,
 open/merged/discarded states, history evidence kinds, the trace-only world capability, authority
 atoms (equal to repository grant atoms) and resource kinds, scope and origin-cut identity prefixes,
@@ -113,7 +144,9 @@ codes and messages.
 The replay section fixes the replay record version and compatibility namespace; session modes, step
 kinds and sources, declarable change dimensions, effect dispositions and approval-required tiers,
 cache statuses, checkpoint constituent kinds, evidence statuses, and classifications, terminal
-statuses, recovery classifications, and divergence statuses and causes; configured unavailability
+statuses, recovery classifications, divergence statuses and causes, the N-way diff session bound
+(`divergence.maxSessions`, at least two), and first-regression search strategies
+(`divergence.regressionStrategies`, ordered bisect then linear); configured unavailability
 and refusal reasons; the session lease and renewal intervals; step, dependency, world, world-entry,
 process, image, reason, and error-message bounds; cooperative protocol message types, version,
 line bound, and timeout and transparent CRIU probe platforms, executable, check arguments, timeout,
@@ -317,8 +350,8 @@ Configuration loading fails before hashing, schema generation, or SQLite access 
   prefixes and trace schema references are distinct, bounds and versions are positive, the worker
   minimum does not exceed the maximum, the cro vocabularies have their exact sizes and distinct
   artifact roles, budget keys, and surface roles, schema identifiers are absolute URLs, and every
-  value matches the immutable latest `APPLICATIONS_PROTOCOL_V5_CONTRACT`, which spreads
-  `APPLICATIONS_PROTOCOL_V4_CONTRACT`; each contract spreads its predecessor back to
+  value matches the immutable latest `APPLICATIONS_PROTOCOL_V10_CONTRACT`, which spreads
+  `APPLICATIONS_PROTOCOL_V9_CONTRACT`; each contract spreads its predecessor back to
   `APPLICATIONS_PROTOCOL_V1_CONTRACT`.
 - scope kinds are exactly two, states exactly three, evidence kinds exactly four, authority atoms
   equal the configured repository grant atoms, trace schema references are distinct, identity

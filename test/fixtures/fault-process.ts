@@ -1,10 +1,19 @@
 import { readFileSync, writeSync } from "node:fs";
 import path from "node:path";
 
-import { backupTraceStore, SQLiteTraceStore } from "../../src/index.ts";
+import {
+    backupTraceStore,
+    compensateEffects,
+    deriveReplaySessionId,
+    inspectReplaySession,
+    SQLiteTraceStore,
+} from "../../src/index.ts";
+import { rowCompensation } from "../effect/compensation-fixtures.ts";
 import {
     appendRequestFor,
     blobContentFor,
+    COMPENSATION_SESSION_COMMAND,
+    compensationCommandFor,
     cutIdFor,
     type FaultEvent,
     type FaultProcessArguments,
@@ -21,6 +30,12 @@ const emit = (event: FaultEvent): void => {
 
 const store = new SQLiteTraceStore(args.databasePath);
 const archive = args.archivePath === undefined ? "" : readFileSync(args.archivePath, "utf8");
+const effectRecordIds =
+    args.operation === "compensation"
+        ? inspectReplaySession(store, {
+              sessionId: deriveReplaySessionId(COMPENSATION_SESSION_COMMAND),
+          }).steps.map((step) => step.record_id)
+        : [];
 emit({ event: "ready" });
 
 async function step(index: number): Promise<void> {
@@ -62,6 +77,19 @@ async function step(index: number): Promise<void> {
             store.append(appendRequestFor(args.seed, `${args.label}:vacuum`, index));
             store.maintain({ mode: "vacuum" });
             return;
+        case "compensation": {
+            const recordId = effectRecordIds[index];
+            if (recordId === undefined) {
+                // Every prepared effect is compensated: idle until the kill.
+                return new Promise<never>(() => {});
+            }
+            await compensateEffects(store, {
+                commandId: compensationCommandFor(args.label, index),
+                effectRecordIds: [recordId],
+                registry: rowCompensation(args.worldPath as string),
+            });
+            return;
+        }
     }
 }
 

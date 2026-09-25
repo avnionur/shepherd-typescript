@@ -18,6 +18,7 @@ import { workspaceProtocolConfig } from "../../src/protocol/config.ts";
 import {
     inspectCarrierBackendAvailability,
     materializeClonedFile,
+    selectCarrierBackend,
 } from "../../src/workspace/carrier-backends.ts";
 import {
     assertCarrierBackendRefused,
@@ -112,6 +113,54 @@ test("carrier backend selection and retained backend evidence are closed", async
     }
     const carrier = createReferenceCopyCarrier({ workspaceRoot });
     assert.equal(carrier.backend, backends.defaultBackend);
+    const available = (backend: string) => ({
+        backend,
+        reason: backends.conformance.reasonRoles.available,
+        status: backends.conformance.statusRoles.conformant,
+    });
+    assert.deepEqual(carrier.backendSelection, {
+        attempts: [available(backends.defaultBackend)],
+        mode: backends.selection.defaultMode,
+        requested: backends.defaultBackend,
+        used: backends.defaultBackend,
+    });
+    assert.throws(
+        () => createReferenceCopyCarrier({ backendSelection: "other" as never, workspaceRoot }),
+        TypeError,
+    );
+    // Fallback degrades from the requested backend along the configured order, recording refusals.
+    const requested = backends.selection.fallbackOrder[0] as WorldCarrierBackend;
+    const candidates = backends.selection.fallbackOrder;
+    const usedIndex = candidates.findIndex(
+        (backend) =>
+            backend === backends.defaultBackend ||
+            hostEvidence.find((evidence) => evidence.backend === backend)?.status ===
+                backends.conformance.statusRoles.conformant,
+    );
+    const fallback = createReferenceCopyCarrier({
+        backend: requested,
+        backendSelection: "fallback",
+        workspaceRoot,
+    });
+    assert.equal(fallback.backend, candidates[usedIndex]);
+    assert.deepEqual(fallback.backendSelection, {
+        attempts: [
+            ...candidates.slice(0, usedIndex).map((backend) => {
+                const { reason, status } = hostEvidence.find(
+                    (evidence) => evidence.backend === backend,
+                ) as { reason: string; status: string };
+                return { backend, reason, status };
+            }),
+            available(candidates[usedIndex] as string),
+        ],
+        mode: "fallback",
+        requested,
+        used: candidates[usedIndex],
+    });
+    assert.throws(
+        () => selectCarrierBackend(requested, "fallback", path.join(workspaceRoot, "missing")),
+        (error: unknown) => !(error instanceof WorldCarrierError),
+    );
     const custody = await carrier.fork((await carrier.snapshot(binding)).revision_id);
     const descriptorPath = path.join(
         path.dirname(custody.path),

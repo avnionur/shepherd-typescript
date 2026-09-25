@@ -141,6 +141,7 @@ export function renderRunLedgerEntrySchema(
                         }),
                     ],
                 },
+                proof: { $ref: "#/$defs/proofEnvelope" },
                 run_id: text,
                 settlements: { items: { $ref: "#/$defs/settlement" }, type: "array" },
                 status: {
@@ -170,6 +171,32 @@ export function renderRunLedgerEntrySchema(
                     },
                 ],
             },
+            proofEnvelope: closed({
+                evidence_id: nullableText,
+                excluded_runtime_surfaces: {
+                    items: {
+                        enum: config.formalAssurance.proofEnvelope.excludedRuntimeSurfaces,
+                        type: "string",
+                    },
+                    type: "array",
+                },
+                metadata: { additionalProperties: { $ref: "#/$defs/jsonValue" }, type: "object" },
+                profile: { enum: config.formalAssurance.proofEnvelope.profiles, type: "string" },
+                program_ref: nullableText,
+                proof_backed: { type: "boolean" },
+                reference_validated: { type: "boolean" },
+                schema_version: {
+                    const: config.formalAssurance.proofEnvelope.schemaVersion,
+                    type: "string",
+                },
+                strength: { enum: config.formalAssurance.proofEnvelope.strengths, type: "string" },
+                theorem_ids: { items: text, type: "array" },
+                trace_ref: nullableText,
+                validator: {
+                    const: config.formalAssurance.proofEnvelope.validator,
+                    type: "string",
+                },
+            }),
             provider: closed({
                 capabilities: closed({
                     streaming: { type: "boolean" },

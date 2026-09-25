@@ -4,7 +4,7 @@ import { hostname } from "node:os";
 import { test } from "node:test";
 
 import { Ajv2020, type AnySchemaObject } from "ajv/dist/2020.js";
-
+import { prefixedApplicationId } from "../../src/applications/records.ts";
 import * as applications from "../../src/facades/applications.ts";
 import {
     APPLICATION_EVALUATION_LIMITS,
@@ -16,7 +16,9 @@ import {
     ApplicationEvidenceError,
     ApplicationProtocolError,
     type CodingSupervisorPolicyContext,
+    type CounterfactualEditContext,
     compareApplicationBaseline,
+    createEffectHandlerStack,
     deriveApplicationOwnerId,
     exportTreeRlTrainingBatch,
     inspectChildRun,
@@ -33,6 +35,7 @@ import {
 import {
     APPLICATIONS_PROTOCOL_V4_CONTRACT,
     APPLICATIONS_PROTOCOL_V5_CONTRACT,
+    APPLICATIONS_PROTOCOL_V7_CONTRACT,
 } from "../../src/protocol/compatibility-constants.ts";
 import { applicationsProtocolConfig } from "../../src/protocol/config.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
@@ -88,7 +91,15 @@ test("applications protocol v5 appends the evaluation vocabulary to v4 and refus
         { ...schemas, evaluationId: undefined },
         { ...previousSchemas, evaluationId: undefined },
     );
-    assert.deepEqual(applicationsProtocolConfig.evaluation, evaluation);
+    // Applications protocol v7 bumps the report version to 2 for the retained rescue counts.
+    assert.deepEqual(
+        applicationsProtocolConfig.evaluation,
+        APPLICATIONS_PROTOCOL_V7_CONTRACT.evaluation,
+    );
+    assert.deepEqual(
+        { ...APPLICATIONS_PROTOCOL_V7_CONTRACT.evaluation, reportVersion: 1 },
+        evaluation,
+    );
     assert.deepEqual(APPLICATION_EVALUATION_METRICS, [
         "cost_usd",
         "provider_calls",
@@ -98,7 +109,7 @@ test("applications protocol v5 appends the evaluation vocabulary to v4 and refus
         "success",
     ]);
     assert.deepEqual(APPLICATION_SUPERVISION_BASELINE_KINDS, ["no_supervision"]);
-    assert.equal(APPLICATION_EVALUATION_REPORT_VERSION, 1);
+    assert.equal(APPLICATION_EVALUATION_REPORT_VERSION, 2);
     assert.equal(APPLICATION_EVALUATION_LIMITS.maxExperiments, 16);
     const mutations: readonly ((section: Record<string, unknown>) => void)[] = [
         (section) => {
@@ -123,7 +134,7 @@ test("applications protocol v5 appends the evaluation vocabulary to v4 and refus
         assert.throws(() => parseProtocolConfig(config), TypeError, mutate.toString());
     }
     const drifted = structuredClone(validConfig);
-    (drifted.applications?.evaluation as Record<string, unknown>).reportVersion = 2;
+    (drifted.applications?.evaluation as Record<string, unknown>).reportVersion = 1;
     assert.throws(
         () => parseProtocolConfig(drifted),
         (error: unknown) =>
@@ -189,6 +200,7 @@ test("the report is byte-identical across repeated runs and fresh stores and car
         "metrics",
         "report_id",
         "report_version",
+        "rescues",
         "revision",
         "runs",
     ]);
@@ -199,10 +211,10 @@ test("every metric is measured from retained evidence and every configured basel
     const { report, store: evaluated } = await evaluateOnce();
     using store = evaluated;
     const [supervisor, optimizer, compression, treeRl] = report.runs;
-    const [noSupervision, fullReplay, noCompression, singleRollout] = report.baselines;
+    const [noSupervision, fullReplay, noCompression, flatGrpo] = report.baselines;
     assert.deepEqual(
         report.baselines.map((baseline) => baseline.kind),
-        ["no_supervision", "full_replay", "no_compression", "single_rollout"],
+        ["no_supervision", "full_replay", "no_compression", "flat_grpo"],
     );
     assert.deepEqual(
         report.runs.map((run) => run.kind),
@@ -240,10 +252,14 @@ test("every metric is measured from retained evidence and every configured basel
         store,
         optimizer?.application_id as string,
     );
-    const outcomes = optimization.candidates.map((candidate) => candidate.outcome);
+    const results = optimization.candidates.flatMap((candidate) => [
+        ...candidate.targeted,
+        ...(candidate.dev ?? []),
+        ...(candidate.train ?? []),
+    ]);
     assert.deepEqual(
         fullReplay?.evidence,
-        outcomes.map((outcome) => outcome?.baseline?.session_id),
+        results.map((result) => result.baseline?.session_id),
     );
     const live = (sessionIds: readonly string[]) =>
         sessionIds
@@ -252,17 +268,24 @@ test("every metric is measured from retained evidence and every configured basel
             .filter((step) => step.source === "live" && step.kind === "provider").length;
     assert.equal(
         optimizer?.metrics.provider_calls,
-        live(outcomes.map((outcome) => outcome?.branch_session_id as string)),
+        live(results.map((result) => result.session_id)),
     );
     assert.equal(
         optimizer?.metrics.provider_calls,
-        outcomes.reduce((total, outcome) => total + (outcome?.cost?.provider_calls ?? 0), 0),
+        optimization.candidates.reduce(
+            (total, candidate) => total + candidate.cost.provider_calls,
+            0,
+        ),
     );
     assert.equal(
         fullReplay?.metrics.provider_calls,
-        outcomes.reduce((total, outcome) => total + (outcome?.baseline?.provider_calls ?? 0), 0),
+        results.reduce((total, result) => total + (result.baseline?.provider_calls ?? 0), 0),
     );
-    assert.equal(optimizer?.metrics.success, optimization.promotion !== null);
+    assert.equal(
+        optimizer?.metrics.success,
+        (optimization.selection?.selected_candidate_id ?? null) !== null,
+    );
+    assert.equal(optimizer?.metrics.success, true);
     // Trajectory compression: the result session against the kept source trajectory.
     const compressed = inspectTrajectoryCompression(store, compression?.application_id as string);
     assert.equal(compressed.outcome?.outcome, "pruned");
@@ -270,26 +293,25 @@ test("every metric is measured from retained evidence and every configured basel
     assert.equal(noCompression?.metrics.steps, compressed.outcome?.original_step_count);
     assert.deepEqual(noCompression?.evidence, [compressed.source_session_id]);
     assert.equal(noCompression?.metrics.provider_calls, live([compressed.source_session_id]));
-    // Tree-RL: every rollout against the reused branch-0 rollouts.
+    // Tree-RL: every graded root and branch rollout against the roots alone (flat GRPO).
     const tree = inspectTreeRlRun(store, treeRl?.application_id as string);
     const records = tree.rollouts.map((rollout) => rollout.record);
     assert.equal(
         treeRl?.metrics.steps,
-        records.reduce((sum, r) => sum + (r?.step_count ?? 0), 0),
+        tree.roots.reduce((sum, root) => sum + root.step_count, 0) +
+            records.reduce((sum, r) => sum + (r?.step_count ?? 0), 0),
     );
     assert.deepEqual(
-        singleRollout?.evidence,
-        records.filter((r) => r?.branch === 0).map((r) => r?.replay_session_id),
+        flatGrpo?.evidence,
+        tree.roots.map((root) => root.root_session_id),
     );
     assert.equal(
-        singleRollout?.metrics.provider_calls,
-        records
-            .filter((r) => r?.branch === 0)
-            .reduce((sum, r) => sum + (r?.cost.provider_calls ?? 0), 0),
+        flatGrpo?.metrics.provider_calls,
+        tree.roots.reduce((sum, root) => sum + root.cost.provider_calls, 0),
     );
     assert.equal(
         exportTreeRlTrainingBatch(store, tree.application_id).baseline?.line_count,
-        singleRollout?.evidence.length,
+        flatGrpo?.evidence.length,
     );
     // Runs carry the manifest, protocol, seeds, dataset, and costs of each application.
     for (const run of report.runs) {
@@ -382,7 +404,9 @@ test("the report conforms to the generated evaluation schema", async () => {
     const json = JSON.parse(renderEvaluationReportJson(report)) as Record<string, unknown>;
     assert.equal(validate(json), true, JSON.stringify(validate.errors));
     assert.equal(validate({ ...json, duration_ms: 1 }), false);
-    assert.equal(validate({ ...json, report_version: 2 }), false);
+    assert.equal(validate({ ...json, report_version: 1 }), false);
+    assert.equal(validate({ ...json, rescues: { count: -1, experiment_ids: [] } }), false);
+    assert.equal(validate({ ...json, rescues: { count: 0 } }), false);
     const [run] = json.runs as Record<string, unknown>[];
     assert.equal(
         validate({
@@ -441,7 +465,7 @@ test("malformed definitions and bindings are refused before any record, and a co
         },
         (definition) => {
             (definition.experiments[1] as Record<string, unknown>).commandId =
-                "evaluation:tree-rl:source";
+                "evaluation:tree-rl:root";
         },
         (definition) => {
             definition.experiments = [];
@@ -506,7 +530,11 @@ test("malformed definitions and bindings are refused before any record, and a co
             ...binding,
             options: { ...(binding.options as object), workers: [] },
         }),
-        (binding) => ("source" in binding ? { ...binding, source: undefined } : null),
+        (binding) => ("prompts" in binding ? { ...binding, prompts: undefined } : null),
+        (binding) =>
+            "prompts" in binding
+                ? { ...binding, prompts: [{ ...(binding.prompts as object[])[0], roots: [1] }] }
+                : null,
     ];
     for (const mutate of bindingMutations) {
         const bind = recordingBinder(evaluation, (binding) => {
@@ -631,7 +659,7 @@ test("failed live calls, missing costs, and program-serviced baseline workers ar
         definition: evaluation.definition,
     });
     const [supervisor, optimizer, , treeRl] = report.runs;
-    const [noSupervision, fullReplay, , singleRollout] = report.baselines;
+    const [noSupervision, fullReplay, , flatGrpo] = report.baselines;
     // Program-serviced workers retain usage without tokens or a reported cost.
     assert.deepEqual(noSupervision?.metrics, {
         cost_usd: null,
@@ -652,7 +680,8 @@ test("failed live calls, missing costs, and program-serviced baseline workers ar
         metric: "cost_usd",
     });
     // A failed live call is counted with an unknown cost, never as free. Failed branch-0 rollouts
-    // stay in the single_rollout baseline's calls and steps and make it unsuccessful.
+    // stay in the tree run's calls and steps and make it unsuccessful; the flat GRPO baseline
+    // (the graded roots alone) is unaffected.
     const tree = inspectTreeRlRun(store, treeRl?.application_id as string);
     const branchZero = tree.rollouts
         .map((rollout) => rollout.record)
@@ -660,45 +689,51 @@ test("failed live calls, missing costs, and program-serviced baseline workers ar
     assert.ok(branchZero.length > 0);
     assert.ok(branchZero.every((record) => record?.status === "failed"));
     assert.ok(branchZero.every((record) => record?.cost.cost_usd === null));
-    assert.deepEqual(singleRollout?.metrics, {
-        cost_usd: null,
-        input_tokens: 0,
-        output_tokens: 0,
-        provider_calls: branchZero.length,
-        steps: branchZero.reduce((total, record) => total + (record?.step_count ?? 0), 0),
-        success: false,
-    });
+    assert.equal(flatGrpo?.metrics.cost_usd, null);
+    assert.equal(flatGrpo?.metrics.success, true);
+    assert.equal(
+        flatGrpo?.metrics.provider_calls,
+        tree.roots.reduce((total, root) => total + root.cost.provider_calls, 0),
+    );
     assert.equal(treeRl?.metrics.cost_usd, null);
     assert.equal(treeRl?.metrics.success, false);
+    assert.equal(
+        treeRl?.metrics.provider_calls,
+        (flatGrpo?.metrics.provider_calls as number) +
+            tree.rollouts.reduce(
+                (total, rollout) => total + (rollout.record?.cost.provider_calls ?? 0),
+                0,
+            ),
+    );
 });
 
-test("an optimizer candidate whose branch failed stops the evaluation without a promotion", async () => {
+test("an optimizer candidate whose branch failed stops the evaluation without a selection", async () => {
     using store = new SQLiteTraceStore();
     const evaluation = repositoryEvaluation();
     const [, optimizerExperiment] = evaluation.definition.experiments;
     await assert.rejects(
         runApplicationEvaluation(store, {
             bind: recordingBinder(evaluation, (binding) => {
-                if (!("candidates" in binding.options)) {
+                if (!("applyEdit" in binding.options)) {
                     return binding;
                 }
-                const [first, ...rest] = binding.options.candidates;
+                const applyEdit = binding.options.applyEdit;
                 return {
                     ...binding,
                     options: {
                         ...binding.options,
-                        candidates: [
-                            {
-                                ...first,
+                        applyEdit: async (context: CounterfactualEditContext) => {
+                            const applied = await applyEdit(context);
+                            return {
+                                ...applied,
                                 provider: {
-                                    descriptor: first?.provider?.descriptor,
+                                    descriptor: applied.provider?.descriptor as never,
                                     invoke: async () => {
                                         throw new Error("candidate provider unavailable");
                                     },
                                 },
-                            },
-                            ...rest,
-                        ],
+                            };
+                        },
                     },
                 };
             }),
@@ -710,9 +745,69 @@ test("an optimizer candidate whose branch failed stops the evaluation without a 
         store,
         deriveApplicationOwnerId(optimizerExperiment?.commandId as string),
     );
-    assert.equal(optimization.candidates[0]?.outcome?.status, "rejected");
-    assert.equal(optimization.candidates[0]?.outcome?.evaluation, null);
-    assert.equal(optimization.promotion, null);
+    assert.equal(optimization.candidates[0]?.status, "rejected");
+    assert.equal(optimization.candidates[0]?.gate, null);
+    assert.equal(optimization.selection, null);
+});
+
+test("rescues count the experiments whose baseline failed while the application passed", async () => {
+    const { report, store } = await evaluateOnce();
+    using _store = store;
+    // Every repository fixture baseline succeeds, so the measured rescue count is zero.
+    assert.deepEqual(report.rescues, { count: 0, experiment_ids: [] });
+    const json = JSON.parse(renderEvaluationReportJson(report)) as Record<string, unknown>;
+    const runs = json.runs as { experiment_id: string; metrics: ApplicationEvaluationMetrics }[];
+    const baselines = (json.baselines as { metrics: ApplicationEvaluationMetrics }[]).map(
+        (baseline, index) =>
+            index === 1 || index === 2
+                ? { ...baseline, metrics: { ...baseline.metrics, success: false } }
+                : baseline,
+    );
+    // Experiment 2 fails on both sides, so only experiment 1 is a rescue.
+    const failedRuns = runs.map((run, index) =>
+        index === 2 ? { ...run, metrics: { ...run.metrics, success: false } } : run,
+    );
+    const { report_id: _reportId, ...rest } = json;
+    const body = {
+        ...rest,
+        baselines,
+        comparisons: failedRuns.map((run, index) => ({
+            baseline_kind: (json.comparisons as { baseline_kind: string }[])[index]?.baseline_kind,
+            experiment_id: run.experiment_id,
+            values: compareApplicationBaseline(
+                run.metrics,
+                (baselines[index] as { metrics: ApplicationEvaluationMetrics }).metrics,
+            ),
+        })),
+        rescues: { count: 1, experiment_ids: [runs[1]?.experiment_id] },
+        runs: failedRuns,
+    };
+    const rescued = validateApplicationEvaluationReport({
+        ...body,
+        report_id: prefixedApplicationId(
+            applicationsProtocolConfig.identity.reportIdPrefix,
+            body as never,
+        ),
+    });
+    assert.deepEqual(rescued.rescues, { count: 1, experiment_ids: [runs[1]?.experiment_id] });
+    // A rescue count that does not re-derive from the runs and baselines is refused.
+    for (const rescues of [
+        { count: 0, experiment_ids: [] },
+        { count: 2, experiment_ids: [runs[1]?.experiment_id, runs[2]?.experiment_id] },
+    ]) {
+        const forged = { ...body, rescues };
+        assert.throws(
+            () =>
+                validateApplicationEvaluationReport({
+                    ...forged,
+                    report_id: prefixedApplicationId(
+                        applicationsProtocolConfig.identity.reportIdPrefix,
+                        forged as never,
+                    ),
+                }),
+            ApplicationEvidenceError,
+        );
+    }
 });
 
 test("validateApplicationEvaluationReport refuses every inconsistent report", async () => {
@@ -725,9 +820,12 @@ test("validateApplicationEvaluationReport refuses every inconsistent report", as
     const mutations: readonly Record<string, unknown>[] = [
         { ...json, report_id: `evaluation-report:sha256:${"0".repeat(64)}` },
         { ...json, report_id: "not-a-report" },
-        { ...json, revision: "2" },
+        { ...json, revision: "changed" },
         { ...json, extra: true },
-        { ...json, report_version: 2 },
+        { ...json, report_version: 1 },
+        { ...json, rescues: { count: 1, experiment_ids: [firstRun?.experiment_id] } },
+        { ...json, rescues: { count: 1, experiment_ids: [] } },
+        { ...json, rescues: undefined },
         { ...json, compatibility_version: "other" },
         { ...json, metrics: ["steps"] },
         { ...json, runs: [] },
@@ -789,4 +887,26 @@ test("validateApplicationEvaluationReport refuses every inconsistent report", as
         );
     }
     assert.deepEqual(validateApplicationEvaluationReport(json), report);
+});
+
+test("a Tree-RL prompt's handler stack reaches the rollouts and the report is unchanged", async () => {
+    const reference = await evaluateOnce();
+    using _reference = reference.store;
+    using store = new SQLiteTraceStore();
+    const evaluation = repositoryEvaluation();
+    const report = await runApplicationEvaluation(store, {
+        bind: recordingBinder(evaluation, (binding) =>
+            "prompts" in binding
+                ? {
+                      ...binding,
+                      prompts: binding.prompts.map((prompt) => ({
+                          ...prompt,
+                          handlers: createEffectHandlerStack([]),
+                      })),
+                  }
+                : binding,
+        ),
+        definition: evaluation.definition,
+    });
+    assert.equal(report.report_id, reference.report.report_id);
 });

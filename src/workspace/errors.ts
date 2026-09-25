@@ -69,6 +69,25 @@ export class WorldCarrierError extends Error {
     }
 }
 
+/** Raised when a device-layer world, checkpoint, path, or adapter refuses an operation. */
+export class DeviceLayerError extends Error {
+    /** Stable machine-readable device-layer failure code. */
+    readonly code: string;
+
+    /**
+     * Creates a device-layer failure.
+     *
+     * @param code - Configured machine-readable failure code.
+     * @param message - Diagnostic describing the rejected operation.
+     * @param options - Optional underlying cause.
+     */
+    constructor(code: string, message: string, options?: ErrorOptions) {
+        super(message, options);
+        this.code = code;
+        this.name = "DeviceLayerError";
+    }
+}
+
 /** Raised when Git-aware baseline or retained-output custody is unavailable or inconsistent. */
 export class GitCustodyError extends Error {
     /** Stable machine-readable Git-custody failure code. */

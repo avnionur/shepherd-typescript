@@ -97,7 +97,7 @@ const TRANSPARENT_REASON_KEYS = [
 ] as const;
 
 /**
- * Validates configured replay session, checkpoint, restore, process, and analysis values.
+ * Validates configured replay session, branch, checkpoint, restore, process, and analysis values.
  *
  * @param value - Untrusted `replay` configuration section.
  * @param reversibilityTiers - Validated effect reversibility tiers that approval tiers must cite.
@@ -112,6 +112,7 @@ export function readReplayConfig(
         value,
         [
             "artifacts",
+            "branch",
             "cache",
             "changes",
             "checkpoint",
@@ -133,13 +134,41 @@ export function readReplayConfig(
         ],
         "replay",
     );
+    const branch = readObject(
+        replay.branch,
+        ["defaultSourceDisposition", "sourceDispositions"],
+        "replay.branch",
+    );
+    const sourceDispositions = readVocabulary(
+        branch.sourceDispositions,
+        "replay.branch.sourceDispositions",
+        2,
+    );
+    const defaultSourceDisposition = readNonEmptyString(
+        branch.defaultSourceDisposition,
+        "replay.branch.defaultSourceDisposition",
+    );
+    if (!sourceDispositions.includes(defaultSourceDisposition)) {
+        throw new TypeError(
+            "replay.branch.defaultSourceDisposition must be a configured source disposition",
+        );
+    }
     const cache = readObject(replay.cache, ["statuses"], "replay.cache");
     const checkpoint = readObject(
         replay.checkpoint,
-        ["classifications", "constituentKinds", "evidenceStatuses", "reasons"],
+        ["automatic", "classifications", "constituentKinds", "evidenceStatuses", "reasons"],
         "replay.checkpoint",
     );
-    const divergence = readObject(replay.divergence, ["causes", "statuses"], "replay.divergence");
+    const automatic = readObject(
+        checkpoint.automatic,
+        ["defaultPolicy", "policies"],
+        "replay.checkpoint.automatic",
+    );
+    const divergence = readObject(
+        replay.divergence,
+        ["causes", "maxSessions", "regressionStrategies", "statuses"],
+        "replay.divergence",
+    );
     const effects = readObject(
         replay.effects,
         ["approvalRequiredTiers", "dispositions", "reasons"],
@@ -222,9 +251,11 @@ export function readReplayConfig(
             "replay.artifacts",
             readNonEmptyString,
         ),
+        branch: { defaultSourceDisposition, sourceDispositions },
         cache: { statuses: readVocabulary(cache.statuses, "replay.cache.statuses", 2) },
         changes: readVocabulary(replay.changes, "replay.changes", 3),
         checkpoint: {
+            automatic: readAutomaticCheckpointConfig(automatic, limits.maxSteps),
             classifications: readVocabulary(
                 checkpoint.classifications,
                 "replay.checkpoint.classifications",
@@ -259,6 +290,12 @@ export function readReplayConfig(
         ),
         divergence: {
             causes: readVocabulary(divergence.causes, "replay.divergence.causes", 3),
+            maxSessions: readMaxDiffSessions(divergence.maxSessions),
+            regressionStrategies: readVocabulary(
+                divergence.regressionStrategies,
+                "replay.divergence.regressionStrategies",
+                2,
+            ),
             statuses: readVocabulary(divergence.statuses, "replay.divergence.statuses", 4),
         },
         effects: {
@@ -334,6 +371,63 @@ export function readReplayConfig(
     };
 }
 
+/**
+ * Validates one automatic checkpoint policy against the configured policy vocabulary.
+ *
+ * The policy is `{ kind }`, plus a positive `interval` of at most `maxSteps` exactly when the kind
+ * is the configured interval policy (the fourth vocabulary entry).
+ *
+ * @param value - Untrusted policy value.
+ * @param policies - Configured policy kinds ordered none, provider step, effect step, every N steps.
+ * @param maxSteps - Configured session step bound.
+ * @param path - Diagnostic path of the value.
+ * @returns The validated policy with `interval` null for every other kind.
+ * @throws {TypeError} If the policy is malformed, names an unknown kind, or has an invalid interval.
+ *
+ * @example
+ * ```ts
+ * readReplayCheckpointPolicy({ interval: 2, kind: "every_n_steps" }, policies, 4096, "policy");
+ * ```
+ */
+export function readReplayCheckpointPolicy(
+    value: unknown,
+    policies: readonly string[],
+    maxSteps: number,
+    path: string,
+): { readonly interval: number | null; readonly kind: string } {
+    const intervalKind = policies[3];
+    const kind = readObject(value, ["kind"], path, true).kind;
+    if (typeof kind !== "string" || !policies.includes(kind)) {
+        throw new TypeError(`${path}.kind must be a configured checkpoint policy`);
+    }
+    if (kind !== intervalKind) {
+        readObject(value, ["kind"], path);
+        return Object.freeze({ interval: null, kind });
+    }
+    const fields = readObject(value, ["interval", "kind"], path);
+    const interval = readPositiveInteger(fields.interval, `${path}.interval`);
+    if (interval > maxSteps) {
+        throw new TypeError(`${path}.interval must not exceed the configured step bound`);
+    }
+    return Object.freeze({ interval, kind });
+}
+
+function readAutomaticCheckpointConfig(
+    automatic: Record<string, unknown>,
+    maxSteps: number,
+): ReplayConfig["checkpoint"]["automatic"] {
+    const policies = readVocabulary(automatic.policies, "replay.checkpoint.automatic.policies", 4);
+    return {
+        defaultPolicy: readReplayCheckpointPolicy(
+            automatic.defaultPolicy,
+            policies,
+            maxSteps,
+            "replay.checkpoint.automatic.defaultPolicy",
+        ),
+        policies,
+    };
+}
+
 function readRecord<const K extends string, V>(
     value: unknown,
     keys: readonly K[],
@@ -353,4 +447,12 @@ function readVocabulary(value: unknown, path: string, length: number): readonly 
         throw new TypeError(`${path} must contain exactly ${length} values`);
     }
     return values;
+}
+
+function readMaxDiffSessions(value: unknown): number {
+    const maxSessions = readPositiveInteger(value, "replay.divergence.maxSessions");
+    if (maxSessions < 2) {
+        throw new TypeError("replay.divergence.maxSessions must admit at least two sessions");
+    }
+    return maxSessions;
 }

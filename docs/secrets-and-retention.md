@@ -27,7 +27,10 @@ database files. Retention in this package therefore means three things only:
    not a retention mechanism.
 
 The only way to keep a secret out of a trace is to keep it out of the append. Provider credentials
-remain caller-held objects and are never passed to or persisted by the runtime.
+remain caller-held: a [live provider](./live-providers.md#errors-and-credentials) reads its
+credential from the caller definition or the configured environment variable, holds it only in its
+closure, and redacts it from every error message before a failure can be retained; a secret-scan
+test proves no store file contains it.
 
 ## Data classes and dispositions
 

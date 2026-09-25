@@ -1,0 +1,286 @@
+{
+    "description": "Scope fork/revert and effect-stream observation benchmark procedure for pnpm bench:scopes and pnpm check:scopes. The benchmark section is digested into every result artifact; the slo section is not, so budgets can change without re-measuring. Dimensions mirror Section 4 and Appendix C of arXiv 2605.10913 v3 (world sizes, a 5+3 mutation pattern at K=4, a per-write size sweep, per-event record and observe overhead through 200 steps) at sizes that fit a developer machine; no number from the paper is used.",
+    "benchmark": {
+        "branching": {
+            "baselineWrites": 5,
+            "branchCount": 4,
+            "branchWrites": 1,
+            "defaultWriteBytes": 10240,
+            "repetitions": 3
+        },
+        "fork": {
+            "repetitions": 10,
+            "warmupIterations": 2
+        },
+        "mutationSweep": {
+            "world": "medium",
+            "writeBytes": [1024, 10240, 1048576, 10485760]
+        },
+        "naming": {
+            "claimPrefix": "claim:bench:",
+            "commandPrefix": "bench:scope:",
+            "effectKind": "bench.scope.event",
+            "handlerId": "handler:bench.scope.event",
+            "logicalTimeMilliseconds": 1000,
+            "programId": "bench:scope-observation.v1",
+            "sourceBinding": "source"
+        },
+        "observation": {
+            "observerCounts": [0, 1, 4],
+            "sessionRepetitions": 3,
+            "steps": [1, 10, 50, 100, 200]
+        },
+        "resultDirectory": "docs/generated/benchmarks",
+        "resultFormat": "shepherd.scope-benchmark",
+        "resultFormatVersion": 1,
+        "resultPrefix": "scope-benchmark-",
+        "storage": {
+            "flushCommand": ["sync"],
+            "settleAttempts": 50,
+            "settleDelayMilliseconds": 100,
+            "settleToleranceBytes": 65536
+        },
+        "temporaryDirectoryPrefix": "shepherd-scope-bench-",
+        "worlds": [
+            {
+                "fileBytes": 3072,
+                "files": 10,
+                "id": "small"
+            },
+            {
+                "fileBytes": 102400,
+                "files": 100,
+                "id": "medium"
+            },
+            {
+                "fileBytes": 1048576,
+                "files": 100,
+                "id": "large"
+            }
+        ]
+    },
+    "slo": {
+        "budgetPolicy": "Each host class's budgets come from three pnpm bench:scopes runs on that class's measurement host, the last of which is the committed result artifact: every budget bounds p95 at three times the worst measured p95 of the three runs, rounded up to two significant figures. Budgeted metrics are fork_ms and revert_ms for every measured backend and world, and record_ms and observe_ms at the largest configured step count. The threefold headroom absorbs run-to-run noise and a loaded machine; it is not a claim about any other host. macos-arm64-apfs: set on 2026-09-25 on the reference host (Apple M4 Pro, 14 cores, 48 GiB, Darwin 27.0.0, APFS, Node 24.17.0, SQLite 3.53.0; copy and clone conformant). linux-arm64-xfs-privileged-container: set on 2026-09-25 from three pnpm bench:scopes:linux runs as root in a privileged node:24-bookworm container (Node 24.21.0, SQLite 3.53.4) in OrbStack's Linux VM (kernel 7.0.14-orbstack, 14 CPUs, 16 GiB) on the same reference host, temporary directory on a loopback XFS reflink=1 image on tmpfs; copy, clone, and overlay conformant.",
+        "hostClasses": [
+            {
+                "budgets": {
+                    "fork_ms/clone/large": {
+                        "max": 4400,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/clone/medium": {
+                        "max": 3000,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/clone/small": {
+                        "max": 470,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/copy/large": {
+                        "max": 3000,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/copy/medium": {
+                        "max": 2800,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/copy/small": {
+                        "max": 640,
+                        "statistic": "p95"
+                    },
+                    "observe_ms/observers-1/steps-200": {
+                        "max": 0.59,
+                        "statistic": "p95"
+                    },
+                    "observe_ms/observers-4/steps-200": {
+                        "max": 0.53,
+                        "statistic": "p95"
+                    },
+                    "record_ms/observers-0/steps-200": {
+                        "max": 4.5,
+                        "statistic": "p95"
+                    },
+                    "record_ms/observers-1/steps-200": {
+                        "max": 3.3,
+                        "statistic": "p95"
+                    },
+                    "record_ms/observers-4/steps-200": {
+                        "max": 4.0,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/clone/large": {
+                        "max": 530,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/clone/medium": {
+                        "max": 250,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/clone/small": {
+                        "max": 130,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/copy/large": {
+                        "max": 580,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/copy/medium": {
+                        "max": 580,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/copy/small": {
+                        "max": 180,
+                        "statistic": "p95"
+                    }
+                },
+                "description": "macOS on Apple silicon (arm64) with the benchmark temporary directory on APFS",
+                "id": "macos-arm64-apfs",
+                "match": {
+                    "arch": "arm64",
+                    "filesystemTypes": [26],
+                    "platform": "darwin"
+                }
+            },
+            {
+                "budgets": {
+                    "fork_ms/clone/large": {
+                        "max": 1600,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/clone/medium": {
+                        "max": 450,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/clone/small": {
+                        "max": 130,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/copy/large": {
+                        "max": 1600,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/copy/medium": {
+                        "max": 400,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/copy/small": {
+                        "max": 89,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/overlay/large": {
+                        "max": 1200,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/overlay/medium": {
+                        "max": 400,
+                        "statistic": "p95"
+                    },
+                    "fork_ms/overlay/small": {
+                        "max": 110,
+                        "statistic": "p95"
+                    },
+                    "observe_ms/observers-1/steps-200": {
+                        "max": 1.1,
+                        "statistic": "p95"
+                    },
+                    "observe_ms/observers-4/steps-200": {
+                        "max": 1.1,
+                        "statistic": "p95"
+                    },
+                    "record_ms/observers-0/steps-200": {
+                        "max": 5.8,
+                        "statistic": "p95"
+                    },
+                    "record_ms/observers-1/steps-200": {
+                        "max": 4.4,
+                        "statistic": "p95"
+                    },
+                    "record_ms/observers-4/steps-200": {
+                        "max": 6.4,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/clone/large": {
+                        "max": 480,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/clone/medium": {
+                        "max": 130,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/clone/small": {
+                        "max": 60,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/copy/large": {
+                        "max": 450,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/copy/medium": {
+                        "max": 140,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/copy/small": {
+                        "max": 38,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/overlay/large": {
+                        "max": 470,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/overlay/medium": {
+                        "max": 160,
+                        "statistic": "p95"
+                    },
+                    "revert_ms/overlay/small": {
+                        "max": 44,
+                        "statistic": "p95"
+                    }
+                },
+                "description": "Linux on arm64 with the benchmark temporary directory on XFS (filesystem type 0x58465342), as in the privileged container lane of pnpm bench:scopes:linux: loopback XFS with reflink=1 on tmpfs, run as root, where copy, clone, and overlay carriers are conformant. Measured in a Linux container in OrbStack's virtual machine on the macOS arm64 reference host; the budgets are only evidence for that measurement host",
+                "id": "linux-arm64-xfs-privileged-container",
+                "match": {
+                    "arch": "arm64",
+                    "filesystemTypes": [1481003842],
+                    "platform": "linux"
+                }
+            }
+        ]
+    },
+    "linux": {
+        "containerOutput": "/output",
+        "containerSource": "/source",
+        "containerWorkspace": "/workspace",
+        "dockerExecutable": "docker",
+        "dockerRunArguments": ["run", "--rm", "--privileged"],
+        "hostOutput": "docs/generated/benchmarks",
+        "image": "node:24-bookworm",
+        "shellArguments": ["-euo", "pipefail", "-c"],
+        "shellExecutable": "bash",
+        "steps": [
+            "node --version",
+            "apt-get update -qq",
+            "DEBIAN_FRONTEND=noninteractive apt-get install -y -qq acl attr xfsprogs > /dev/null",
+            "mkdir -p {workspace}/repo {workspace}/reflink",
+            "tar -C {source} --exclude=./node_modules --exclude=./dist --exclude=./.git -cf - . | tar -C {workspace}/repo -xf -",
+            "cd {workspace}/repo",
+            "corepack enable",
+            "COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm install --frozen-lockfile",
+            "truncate -s 3g {workspace}/reflink.img",
+            "mkfs.xfs -q -m reflink=1 {workspace}/reflink.img",
+            "mount -o loop {workspace}/reflink.img {workspace}/reflink",
+            "chmod 1777 {workspace}/reflink",
+            "echo 'scope benchmark on loopback XFS reflink=1 (copy, clone, and overlay conformant)'",
+            "TMPDIR={workspace}/reflink pnpm bench:scopes",
+            "cp {workspace}/repo/{resultDirectory}/{resultPrefix}*.json {output}/",
+            "umount {workspace}/reflink"
+        ],
+        "tmpfsOptions": "rw,exec,mode=1777,size=6g",
+        "tokens": {
+            "output": "{output}",
+            "resultDirectory": "{resultDirectory}",
+            "resultPrefix": "{resultPrefix}",
+            "source": "{source}",
+            "workspace": "{workspace}"
+        }
+    }
+}

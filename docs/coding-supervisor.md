@@ -1,5 +1,12 @@
 # Two-worker coding supervisor
 
+This page defines the round-based, handle-level supervisor: workers are durable child runs that
+run between rounds, one decision is applied per round, and `accept` is terminal. The paper's live
+Section 5.1 supervisor, where workers run concurrently in forked custody and per-tick batched
+`none`/`inject`/`handoff`/`discard` decisions take effect on running workers, is the
+[concurrent runtime supervisor](./runtime-supervisor.md) (11.1.0, #211). Both share the
+`coding_supervisor` kind and the world adapter.
+
 Implementation: [`src/applications/coding-supervisor.ts`](../src/applications/coding-supervisor.ts),
 [`src/applications/supervisor-types.ts`](../src/applications/supervisor-types.ts),
 [`src/applications/records.ts`](../src/applications/records.ts), and the world adapter
@@ -14,6 +21,7 @@ Configuration: `applications.supervision` and `applications.limits` in
 Generated schema:
 [`application-supervision-v1.schema.json`](../spec/schemas/application-supervision-v1.schema.json).
 Tests: [`coding-supervisor.test.ts`](../test/applications/coding-supervisor.test.ts),
+[`protocol-schemas.test.ts`](../test/applications/protocol-schemas.test.ts),
 [`coding-supervisor-policies.test.ts`](../test/applications/coding-supervisor-policies.test.ts),
 [`coding-supervisor-crash.test.ts`](../test/applications/coding-supervisor-crash.test.ts),
 [`coding-supervisor-recovery.test.ts`](../test/applications/coding-supervisor-recovery.test.ts), and
@@ -42,18 +50,34 @@ run converges on the retained receipts.
   starts, and each optional per-worker key (`maxTurnsPerWorker` for the run budget `maxTurns`)
   requires every worker to declare that metric no greater than the bound.
 
-A protocol that is not a coding supervisor protocol, or lacks a required surface or budget, is
+A protocol that is not a coding supervisor protocol, lacks a required surface or budget, or has a
+schema surface outside the [supported JSON Schema subset](./json-schema-validation.md) is
 `ApplicationProtocolError` before any record. Surfaces are pinned into the manifest by digest; the
 supervision records themselves use the closed `application-supervision-v1` schema.
 
-The `observation` and `action` schema surfaces are the caller's model-facing documents and are
-pinned by digest only; the runtime does not evaluate them. What the runtime validates is: every
-policy decision against the closed decision grammar of `application-supervision-v1` (kind,
-worker, citations, data, reason, successor) and the run's worker set, and every retained
-observation, conflict, decision, and evidence against the same closed schema when the record is
-written and whenever it is read. The repository has no runtime JSON Schema evaluator (the task
-schema adapter covers only strings, null, and strict objects), so a caller that needs its own
-observation or action documents enforced validates them inside its policy.
+The `observation` and `action` schema surfaces are evaluated at runtime with `compileJSONSchema`
+against every surface of the role:
+
+- Before the policy is consulted, the Appendix E observation message `{ conflict, round, workers }`,
+  with each worker's `changed_paths`, `completion_status`, `status`, and `worker_id`, must satisfy
+  the observation schema. A refusal is `ApplicationProtocolError` (the runtime produced an
+  observation the pinned protocol does not admit) and nothing is retained for the round.
+- The policy decision's action message `{ kind, reason, worker_id }`, with null for a field the
+  kind does not carry, must satisfy the action schema. A refusal is `JSONSchemaValidationError`
+  naming the round and surface, with every path-level issue; the decision is not applied or
+  retained.
+
+Beyond the pinned schemas, the runtime validates every policy decision against the closed decision
+grammar of `application-supervision-v1` (kind, worker, citations, data, reason, successor) and the
+run's worker set, and every retained observation, conflict, decision, and evidence against the same
+closed schema when the record is written and whenever it is read. The per-kind tool surfaces
+(`inject_context`, `handoff_worker`, `discard_restart_worker`, `accept_worker`) are pinned by
+digest. The [tool-use loop](./tool-use-loop.md) validates every call against the offered tool's
+input schema, but this round-based application does not run a model-serviced policy, so these
+surfaces are not offered to a model here; the paper's model-serviced policy is the
+[runtime supervisor](./runtime-supervisor.md)'s `createModelRuntimeSupervisorPolicy`. A
+decision rebuilt from applied delegation commands after a crash was validated when first returned
+and is not re-validated.
 
 ## Workers and world custody
 
@@ -70,7 +94,10 @@ The run binds exactly one of:
   `context.custody`. `createScopeWorldAdapter` in `./workspace` implements the adapter over
   `forkScope`, `mergeScope`, `discardScope`, `createWorldChangeset`, and the scope writer claim
   for one bound resource. Each adapter request carries an application-derived command identity,
-  and the scope adapter returns the retained receipt when that command already completed.
+  and the scope adapter returns the retained receipt when that command already completed. Its
+  `merge` always lands in the parent world; a custody forked from another custody (the runtime
+  supervisor's cross-agent handoff) is rebased against its lineage base, as described in
+  [runtime supervisor: world adapter](./runtime-supervisor.md#world-adapter-forking-another-custody).
 - `changedPaths`: the trace-only path. A caller reader returns the declared changed paths of each
   finished worker output; no custody exists.
 
@@ -151,11 +178,15 @@ writing store, a reopened or read-only store, and an imported archive.
 
 ## Limits
 
+- Workers run to completion in turn within a round, and `inject` reaches only a worker that has not
+  started; concurrent workers and injection between turns of a running worker are provided by the
+  [runtime supervisor](./runtime-supervisor.md).
 - Handoff transfers supervisor ownership of a handle only; no live process, provider session, or
-  world state moves.
-- The protocol's observation and action schema surfaces are pinned by digest for model-serviced
-  policies; the runtime validates retained observations and decisions against the closed
-  supervision record schema, not against the caller's schema documents.
+  world state moves. The paper's handoff (a fresh session, optionally re-rooted on the leader's
+  custody) is the runtime supervisor's `handoff`.
+- The protocol's observation and action schema surfaces are evaluated against the projected
+  messages described in [Protocol](#protocol); the richer retained observations and decisions are
+  validated against the closed supervision record schema.
 - Decisions are applied before their record is retained, because the record cites the evidence the
   application produced. A decision recovered after a crash in that window is the applied decision,
   but its observations are re-derived at recovery rather than the ones the policy saw. Retaining

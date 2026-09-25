@@ -1,5 +1,13 @@
+import {
+    planEffectCompensations,
+    readEffectCompensationRegistry,
+    runEffectCompensations,
+} from "../effect/compensation.ts";
+import { EffectCompensationFailedError } from "../effect/compensation-errors.ts";
+import { collectScopeSubtreeEffects } from "../effect/compensation-evidence.ts";
 import { scopeProtocolConfig } from "../protocol/config.ts";
 import {
+    EFFECT_COMPENSATION_TRIGGERS,
     RECORD_MODES,
     SCOPE_COMMAND_KINDS,
     SCOPE_DISCARD_PHASES,
@@ -41,6 +49,7 @@ const [CAPTURE_MODE] = RECORD_MODES;
 const [OPEN_STATE] = SCOPE_STATES;
 const [DECIDED_PHASE, CLEANED_PHASE] = SCOPE_DISCARD_PHASES;
 const [, , , , , DISCARD_COMMAND] = SCOPE_COMMAND_KINDS;
+const [DISCARD_TRIGGER] = EFFECT_COMPENSATION_TRIGGERS;
 
 /**
  * Durably discards one owned child subtree and cleans only its proven-owned custody.
@@ -51,8 +60,14 @@ const [, , , , , DISCARD_COMMAND] = SCOPE_COMMAND_KINDS;
  * own path; merged and already discarded descendants keep their terminal evidence, and a
  * descendant's in-flight merge or fork can never complete afterwards. The parent's head,
  * managed custody, and effective history are untouched: discard is not a rollback of the parent
- * to fork time. Scope evidence retains application data only, so no escaped external effect is
- * representable to reverse.
+ * to fork time.
+ *
+ * External effects are reversed only through compensation. Every successful compensable effect
+ * cited by the selected history of a sealed scope (a replay effect step or a supervised dispatch
+ * resolution) is compensated once through `compensation` after the decision, in reverse
+ * materialization order: the subtree root first and each child after its parent, each history in
+ * order. Compensation intent, attempts, and outcomes are retained on the compensation's own path,
+ * so a retry never compensates an effect twice. A missing handler is refused before the decision.
  *
  * Cleanup progress is separate from the logical decision. The decision names the exact custody
  * identities of every forked scope in the subtree, read from their retained fork journals, and
@@ -74,6 +89,10 @@ const [, , , , , DISCARD_COMMAND] = SCOPE_COMMAND_KINDS;
  * exceeds the configured bound.
  * @throws {AppendIntentConflictError} If the command identity already names different content.
  * @throws {WorldCarrierError} If owned custody is in an unknown physical state.
+ * @throws {EffectCompensationHandlerNotFoundError} If a cited compensable effect still needing
+ * compensation has no handler; before the decision when the discard is new.
+ * @throws {EffectCompensationFailedError} After cleanup, if a compensation handler failed; a retry
+ * attempts the failed compensations again.
  * @throws {TraceStoreError} If the store is closed.
  * @throws {TypeError} If a handle or carrier is forged or options are malformed.
  *
@@ -99,7 +118,7 @@ export async function discardScope(
         options,
         ["commandId", "expectedHeadRecordId", "parent", "scopeId"],
         "discardScope options",
-        ["carrier", "nowMilliseconds"],
+        ["carrier", "compensation", "nowMilliseconds"],
     );
     assertScopeText(fields.commandId, "commandId");
     assertRecordId(fields.expectedHeadRecordId, "expectedHeadRecordId");
@@ -109,6 +128,7 @@ export async function discardScope(
         assertReferenceCopyCarrier(fields.carrier);
     }
     const nowMilliseconds = readNowMilliseconds(fields.nowMilliseconds, "nowMilliseconds");
+    const compensation = readEffectCompensationRegistry(fields.compensation);
     const commandId = fields.commandId;
     const parent = fields.parent;
     const scopeId = fields.scopeId;
@@ -121,6 +141,14 @@ export async function discardScope(
         parentScopeId: parent.scope_id,
         scopeId,
     });
+    if (store.readAppendIntentRecords(commandIntentId).length === 0) {
+        // Refuse before sealing anything when an effect the discard must compensate lacks a handler.
+        planEffectCompensations(
+            store,
+            collectScopeSubtreeEffects(store, scopeId, null),
+            compensation,
+        );
+    }
     store.discardScope({
         commandAppendIntentId: commandIntentId,
         decide: (subtree) => decisionRequest(commandIntentId, commandId, parent.scope_id, subtree),
@@ -136,6 +164,12 @@ export async function discardScope(
         scopeId,
     });
     const decided = readDiscardReceipt(store, commandId);
+    const { failed } = await runEffectCompensations(
+        store,
+        collectScopeSubtreeEffects(store, scopeId, new Set(decided.sealed_scope_ids)),
+        compensation,
+        { command_id: commandId, kind: DISCARD_TRIGGER },
+    );
     // A sealed parent can no longer authorize cleanup; the ancestor discard owns those identities.
     if (
         decided.cleanup.phase === DECIDED_PHASE &&
@@ -175,6 +209,9 @@ export async function discardScope(
             },
             scopeId,
         });
+    }
+    if (failed.length > 0) {
+        throw new EffectCompensationFailedError(failed);
     }
     return readDiscardReceipt(store, commandId);
 }

@@ -14,6 +14,9 @@
             "budgetExhausted": "RUN_BUDGET_EXHAUSTED",
             "cancelled": "RUN_CANCELLED"
         },
+        "schemas": {
+            "validation": "SCHEMA_VALIDATION_FAILED"
+        },
         "storage": {
             "adapter": "STORAGE_ADAPTER_ERROR",
             "blobContentMismatch": "STORAGE_BLOB_CONTENT_MISMATCH"

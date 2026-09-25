@@ -41,11 +41,14 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   leases, record-derived recovery classification, and inspection.
 - [Coupled checkpoints](./coupled-checkpoints.md) defines coordinated multi-resource world images,
   provider-session and process adapter evidence, the irreversible-effect frontier, atomic,
-  reconstructive, and unavailable classification, and the cooperative and transparent process
-  backends.
+  reconstructive, and unavailable classification, the cooperative and transparent process
+  backends, configured automatic checkpoint policies (per provider step, per effect, every N
+  steps), and the measured storage growth per checkpoint.
 - [Rewind and replay](./rewind-and-replay.md) defines verification before writing, byte-equivalent
   restoration, recorded-prefix reconstruction, suffix replay with changed task, provider, or
-  handlers, irreversible-effect approval, imported archives, and divergence and dependency analysis.
+  handlers, irreversible-effect approval, the branch source disposition (`compensate` or
+  `retain`), imported archives, divergence and dependency analysis, N-way diff against the common
+  lineage ancestor, and first-regression search.
 - [Coupled replay contract](../.plan/coupled-replay-contract.md) defines the Phase 8 design
   constraints, failure table, and non-claims behind the replay APIs.
 - [Phase 8 exit audit](../.plan/phase-8-exit-audit.md) maps coupled checkpoint, rewind, and replay
@@ -75,26 +78,34 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   protocol definitions and their content-addressed identity, command-derived reserved application
   owner paths, digest-bearing manifests citing surfaces and artifacts by digest, measured costs,
   terminal-cut retention, and inspection across reopened, read-only, and imported stores.
-- [Two-worker coding supervisor](./coding-supervisor.md) defines the Appendix E supervisor over
+- [Two-worker coding supervisor](./coding-supervisor.md) defines the round-based supervisor over
   child run handles: world adapters and the scope world adapter, path-overlap conflict
   classification, inject, handoff, discard-and-restart from a clean fork, terminal accept and merge,
   retained supervision records, crash recovery, and inspection.
-- [Counterfactual workflow optimization](./counterfactual-optimization.md) defines the Appendix F
-  optimizer over replay sessions: the affected-suffix rule over declared dependencies, the
-  divergence proof, the evaluation gate, candidate lineage and statuses, the single terminal
-  promotion, the measured `full_replay` comparison, budgets, crash recovery, and inspection.
+- [Concurrent runtime supervisor](./runtime-supervisor.md) defines the §5.1 and Appendix E live
+  supervisor: concurrent tool-loop workers in forked custody, worker streams under a live trace
+  subscription, the configured tick cadence and per-agent snapshot, batched `none`/`inject`/
+  `handoff`/`discard` decisions with admission and refusal, cross-agent handoff by forking the
+  leader's custody, the provider-backed JSON-mode policy, settlement, and crash recovery.
+- [Counterfactual workflow optimization](./counterfactual-optimization.md) defines Appendix F.1
+  Algorithm 1 over replay sessions: per-example train and dev baselines, caller-supplied and
+  tool-loop proposers, reflection-contract admission, declared `request` and `downstream` edit
+  scopes and the replay target rule, the divergence proof, the fractional fix/guard gate, epsilon
+  dev promotion into a graduate-only pool, selection, per-session computation reuse, the measured
+  `full_replay` comparison, budgets, crash recovery, and inspection.
 - [Trajectory compression](./trajectory-compression.md) defines Appendix D compression over replay
   sessions: the fork-point and hint grammar, restoration by rewind and suffix replay under the hint,
   `no_prune` and unavailable-restore refusal, the verifier gate between `pruned` and `restored`, the
   bounded best-of-N control, measured step-count ratios, budgets, crash recovery, and inspection.
-- [Tree-RL adapter](./tree-rl-rollouts.md) defines the §5.3 adapter over replay sessions:
-  deterministic trace-selected fork points, seeded branched rollouts under per-rollout static
-  cassettes, a caller reward, intra- and inter-branch advantages over completed rollouts, the
-  canonical `jsonl_v1` training batch and its digest, the `single_rollout` baseline, budgets, crash
-  recovery, and inspection.
+- [Tree-RL adapter](./tree-rl-rollouts.md) defines the §5.3 adapter over replay sessions as paper
+  Algorithm 2: G graded roots per prompt over a batch, the fork-selection interface with the
+  meta-agent and dependency selectors, K seeded branches per root with the proposed tool call
+  seeding one, concurrent rollouts, inter-root and intra-tree advantages with per-group
+  standardization, the per-action `jsonl_v2` training batch and its digest, the `flat_grpo`
+  baseline, the trainer-export adapter seam, budgets, crash recovery, and inspection.
 - [Application evaluation](./application-evaluation.md) defines the offline evaluation runner: the
   caller's evaluation definition and bindings, the `no_supervision`, `full_replay`,
-  `no_compression`, and `single_rollout` baselines, measured-only metrics and comparisons, the
+  `no_compression`, and `flat_grpo` baselines, measured-only metrics and comparisons, the
   digest-bearing `application-evaluation-v1` report and its determinism rule, the repository
   artifacts and their drift check, and the published limitations. The generated
   [evaluation report](./generated/application-evaluation.md) is its repository output.
@@ -190,11 +201,14 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   kernel benchmark with raw samples, the `linux-arm64-overlayfs-container` host class (2.34.0, a
   container-in-VM measurement), the SLO budgets checked by `pnpm check:slo` in
   `verify:release`, the bounded scale tier, query-plan evidence, and own carrier storage
-  measurements; [SQLite trace store maintenance](./sqlite-trace-store.md#maintenance) documents
+  measurements, and, from 11.2.0 (#214), the scope fork/revert, K-branch storage, mutation-size
+  sweep, and effect-stream record/observe benchmark (`pnpm bench:scopes`, `pnpm check:scopes`)
+  with its macOS and Linux container host classes; [SQLite trace store maintenance](./sqlite-trace-store.md#maintenance) documents
   `SQLiteTraceStore.maintain` and `shepherd-ts store maintain`.
 - [Command-line interface](./cli.md) defines configured command topology, preserved human output,
   stable canonical JSON, generated reference/schema artifacts, executable packaging, exact
-  mutation delegation, and unavailable-capability remedies.
+  mutation delegation, unavailable-capability remedies, and the read-only git-like `replay` and
+  `scope` views.
 - [Generated CLI reference](./generated/cli-reference.md) lists the configured executable,
   commands, options, and fenced/unavailable remedies.
 - [Offline retained-output quickstart](./quickstart.md) runs the checked-in deterministic demo
@@ -244,7 +258,12 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Native trace interchange](./trace-interchange.md) defines deterministic full-store export,
   staged pristine-store import, version compatibility, and conformance fixtures.
 - [Task descriptors](./task-descriptors.md) defines bodyless task contracts, inferred runtime
-  schemas, supported JSON Schema adaptation, content identity, and exact artifact locks.
+  schemas (strings, numbers, integers, booleans, null, arrays, enums, literals, unions, strict
+  objects with optional fields, and task values), supported JSON Schema adaptation, content
+  identity, and exact artifact locks.
+- [JSON Schema validation](./json-schema-validation.md) defines the reusable `compileJSONSchema`
+  validator, its closed 2020-12 keyword subset, path-level issues, `JSONSchemaValidationError`, and
+  the runtime evaluation of pinned application protocol schemas.
 - [Task registry](./task-registry.md) defines durable exact version registration, idempotency,
   conflict detection, migration, and verified resolution.
 - [Task and run ledger projections](./task-run-ledgers.md) define bounded immutable list/show
@@ -261,9 +280,14 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - [Ordered effect handlers](./effect-handlers.md) defines immutable exact-kind stacks,
   last-matching precedence, typed schema-validated payload adapters, validation-before-invocation,
   and unhandled behavior.
+- [Effect compensation](./compensation.md) defines per-kind compensation handlers, materialization
+  evidence and identity, retained intent/attempt/outcome records, reverse-order exactly-once
+  compensation on scope discard and replay branches that abandon their source (`compensate`
+  disposition; `retain` branches compensate nothing), and crash recovery.
 - [Typed-effect reference validation and proof envelopes](./formal-assurance.md) defines the
-  executable Core-A machine, pinned static-lowering/theorem evidence boundary, and fail-closed
-  Core-0H sidecar gate.
+  executable Core-A machine, pinned static-lowering/theorem evidence boundary, fail-closed
+  Core-0H sidecar gate, and the proof envelopes attached to run, replay, and child-run
+  inspections (imported claims, `extension` publication controls, optional replay lowering).
 - [Workspace initialization and adoption](./workspace-initialization.md) defines protected
   `.vcscore` metadata, configured baseline citations, Git-history preservation, and fail-closed
   reopen behavior.
@@ -289,7 +313,13 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   idempotent discard.
 - [Optimized scope-world carriers](./optimized-carriers.md) defines workspace protocol v26 clone
   and Linux overlay backends, identity equality with copy, restart remount, fail-closed
-  unavailability, the shared conformance matrix, and measured storage scaling.
+  unavailability, opt-in recorded fallback selection (v27), the shared conformance matrix, and
+  measured storage scaling.
+- [Layered device-layer checkpoints](./device-layers.md) defines workspace protocol v27 device
+  layers: named frozen-layer checkpoints and restore, the configured depth bound with compaction and
+  retirement, the pluggable adapter contract and conformance kit, the copy, clone, stacked-overlay,
+  and reference Docker container adapters, recorded fallback selection, and measured capture cost
+  against world size.
 - [Workspace platform and fault conformance](./platform-fault-conformance.md) defines protocol
   v19 metadata refusal, portable name policy, Git platform cases, stable fault evidence, recovery,
   and the optimized-carrier parity gate.
@@ -327,6 +357,15 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   consumption, duration expiry, composed `AbortSignal` behavior, and terminal race semantics.
 - [Run lifecycle protocol](./run-lifecycle-protocol.md) defines the configured normative transition
   matrix and versioned continuation, waiting, suspension, and resumed-running evidence schemas.
+- [Live providers and prompt-cache prefix reuse](./live-providers.md) defines configured live
+  provider kinds, the Anthropic Messages and OpenAI-compatible adapters, the multi-turn message
+  model, cache-control placement and cache-token usage, cancellation, credential handling and
+  redaction, provider conversations that restore a byte-identical prefix after rewind, and the
+  tool definition, `tool_use`, and `tool_result` wire mapping of both dialects.
+- [Tool-use loop and meta-agent tools](./tool-use-loop.md) defines the bounded multi-turn loop that
+  turns every model tool call into a typed effect intent through a handler stack, supervised
+  dispatch, or replay session; deny-before-outcome; byte-identical replay of a recorded loop; and
+  the configured observe, fork, discard, rewind, replay, read-trace, and diff meta-agent tools.
 - [Provider contract and static provider](./static-provider.md) defines immutable provider
   descriptors, structured requests/responses, exact cassette replay, cancellation, and typed
   fail-closed errors.

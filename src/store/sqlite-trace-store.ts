@@ -73,6 +73,10 @@ import {
     appendDurableExecutionSuspension,
     appendDurableExecutionWaiting,
 } from "./durable-execution-control.ts";
+import {
+    assertUnreservedCompensationOwner,
+    assertUnreservedCompensationOwners,
+} from "./effect-compensations.ts";
 import { TraceStoreError, TraceStoreReadOnlyError } from "./errors.ts";
 import { prepareOwnerOnlyDatabaseFile } from "./file-mode.ts";
 import { verifyTraceStoreIntegrity } from "./integrity.ts";
@@ -341,8 +345,8 @@ export class SQLiteTraceStore implements Disposable {
      * @throws {TraceSecretDetectedError} If the store scans in `refuse` mode and a record body
      * matches a configured detector; nothing is written and the intent remains reusable.
      * @throws {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
-     * owner path reserved for supervised dispatches, context channels, replay sessions, or child
-     * run handles.
+     * owner path reserved for supervised dispatches, context channels, replay sessions, child run
+     * handles, applications, or effect compensations.
      * @throws {CanonicalNestingLimitError} If a record body nests deeper than
      * `kernel.canonicalization.maxNestingDepth`; nothing is written.
      * @throws {TypeError} If the request is malformed.
@@ -357,6 +361,7 @@ export class SQLiteTraceStore implements Disposable {
         assertUnreservedReplayOwners(batch);
         assertUnreservedDelegationOwners(batch);
         assertUnreservedApplicationOwners(batch);
+        assertUnreservedCompensationOwners(batch);
         return appendToTraceStore(this.#database, request);
     }
 
@@ -1344,6 +1349,35 @@ export class SQLiteTraceStore implements Disposable {
     }
 
     /**
+     * Appends one effect compensation record when the exact compensation path head is unchanged.
+     *
+     * A record already retained under the same append intent replays identically regardless of
+     * the current head; a different body under the same intent fails as an append-intent conflict.
+     *
+     * @param compensationId - Compensation identity and reserved owner path.
+     * @param expectedHeadRecordId - Exact current head, or null for an empty path.
+     * @param request - Compensation record append.
+     * @returns The appended or replayed receipt, or a moved-head signal.
+     * @throws {AppendIntentConflictError} If the intent names different content.
+     * @throws {TraceStoreError} If the store is closed.
+     * @internal
+     */
+    appendEffectCompensationRecord(
+        compensationId: string,
+        expectedHeadRecordId: RecordId | null,
+        request: StoreAppendRequest,
+    ): ApplicationRecordAppend {
+        this.#assertOpen();
+        return appendApplicationRecordInStore(
+            this.#database,
+            compensationId,
+            expectedHeadRecordId,
+            request,
+            null,
+        );
+    }
+
+    /**
      * Reads one live supervised dispatch row.
      *
      * @param dispatchId - Dispatch identity.
@@ -1703,7 +1737,8 @@ export class SQLiteTraceStore implements Disposable {
      * @param spec - Closed cut publication request.
      * @returns The durable cut address.
      * @throws {TraceStoreError} If the target occurrence is absent, the publishing owner path is
-     * reserved for replay sessions or child run handles, or the store is closed.
+     * reserved for replay sessions, child run handles, applications, or effect compensations, or the
+     * store is closed.
      * @throws {TypeError} If the request is malformed.
      *
      * @public
@@ -1716,6 +1751,7 @@ export class SQLiteTraceStore implements Disposable {
             assertUnreservedReplayOwner(publisher);
             assertUnreservedDelegationOwner(publisher);
             assertUnreservedApplicationOwner(publisher);
+            assertUnreservedCompensationOwner(publisher);
         }
         return publishStoredCut(this.#database, spec);
     }

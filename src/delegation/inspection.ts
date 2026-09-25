@@ -1,4 +1,9 @@
-import { delegationProtocolConfig, kernelProtocolConfig } from "../protocol/config.ts";
+import { withPublicationControls } from "../formal/inspection-envelope.ts";
+import {
+    delegationProtocolConfig,
+    formalAssuranceProtocolConfig,
+    kernelProtocolConfig,
+} from "../protocol/config.ts";
 import {
     DELEGATION_APPROVAL_VERDICTS,
     DELEGATION_CONTEXT_PHASES,
@@ -392,6 +397,12 @@ function fold(
         opened_supervisor_id: opened.supervisor_id,
         parent: opened.parent,
         predecessor: opened.predecessor,
+        proof: withPublicationControls(
+            child.proof,
+            handoffs.length === 0
+                ? []
+                : [formalAssuranceProtocolConfig.inspection.publicationControls.delegationHandoff],
+        ),
         provenance: opened.provenance,
         status: deriveStatus(opened, approval, decision, child),
         supervisor_id: supervisor,

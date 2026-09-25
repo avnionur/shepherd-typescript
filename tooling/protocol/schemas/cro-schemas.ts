@@ -5,22 +5,30 @@ import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 type Schema = Readonly<Record<string, unknown>>;
 
 /**
- * Renders the configured counterfactual optimizer record JSON Schema: the opened record naming the
- * baseline session and the declared candidate plan, and the candidate record retaining one
- * candidate's status, lineage, target, affected steps, branch identity, divergence summary,
- * verdict, failure, measured cost, and whole-workflow comparison.
+ * Renders the configured counterfactual optimizer record JSON Schema (applications protocol v9):
+ * the opened record naming every per-example baseline session and score with the retained budgets
+ * and thresholds, one proposal record per proposer iteration with its candidate plans, reflection,
+ * refusals, and proposer sessions, one outcome record per candidate with its fix, guard, dev, and
+ * train example results, gate verdict, and promotion reference, and the terminal selection record.
  *
  * @param config - Validated protocol configuration.
- * @returns The configured closed candidate record schema.
+ * @returns The configured closed record schema.
  */
 export function renderApplicationCroCandidateSchema(config: ProtocolConfig): Schema {
     const applications = config.applications;
     const cro = applications.cro;
     const [, croKind] = applications.kinds;
-    const [openedPhase, candidatePhase] = cro.phases;
+    const [openedPhase, proposalPhase, candidatePhase, selectionPhase] = cro.phases;
     const versions = {
         application_version: { const: applications.recordVersion },
         compatibility_version: { const: applications.compatibilityVersion },
+    };
+    const versionKeys = Object.keys(versions);
+    const exampleIds = {
+        type: "array",
+        items: text(),
+        maxItems: applications.limits.maxDatasetItems,
+        uniqueItems: true,
     };
     const planProperties = {
         candidate_id: { $ref: "#/$defs/candidateId" },
@@ -31,45 +39,115 @@ export function renderApplicationCroCandidateSchema(config: ProtocolConfig): Sch
             maxItems: config.replay.changes.length,
             uniqueItems: true,
         },
+        edit_scope: { enum: [...cro.editScopes] },
         edited_step_index: count(),
+        fix_set: { ...exampleIds, minItems: 1 },
+        guard_set: exampleIds,
+        iteration: count(),
+        mechanism: reason(config),
         name: text(),
         parent_candidate_id: nullable({ $ref: "#/$defs/candidateId" }),
+        patch: {},
+        prior: { type: "number", minimum: 0, maximum: 1 },
+        rationale: reason(config),
     };
     const planKeys = Object.keys(planProperties);
+    const failure = nullable({
+        type: "object",
+        required: ["code", "reason"],
+        properties: {
+            code: {
+                enum: [applications.errors.evidenceCode, applications.errors.verificationCode],
+            },
+            reason: reason(config),
+        },
+        additionalProperties: false,
+    });
+    const results = { type: "array", items: { $ref: "#/$defs/exampleResult" } };
+    const numbers = { type: "object", additionalProperties: { type: "number" } };
     return {
         $schema: config.kernel.schemas.dialect,
         $id: applications.schemas.croCandidateId,
         $comment: "Generated from protocol.config.json. Do not edit directly.",
         title: `Shepherd Application Counterfactual Candidate v${applications.recordVersion}`,
         description:
-            "Counterfactual optimizer records on the application owner path: the opened record naming the baseline session, comparison baselines, and declared candidate plan, and one record per candidate status retaining lineage, the affected-suffix target, the branch session, the divergence proof summary, the evaluator verdict or failure, measured cost, and the whole-workflow comparison.",
+            "Counterfactual Replay Optimization records on the application owner path: the opened record naming every per-example baseline session and score, one proposal record per proposer iteration, one outcome record per candidate retaining its fix, guard, dev, and train example branches with divergence proofs, scores, parent scores, gate verdict, promotion reference, failure, and measured cost, and the terminal selection.",
         oneOf: [
             {
                 type: "object",
                 required: [
+                    ...versionKeys,
                     "application_id",
-                    "application_version",
-                    "baseline_session_id",
                     "baselines",
-                    "candidates",
+                    "budgets",
                     "command_id",
-                    "compatibility_version",
+                    "examples",
                     "kind",
                     "phase",
                     "protocol_id",
-                ],
+                    "thresholds",
+                ].sort(),
                 properties: {
                     ...versions,
                     application_id: prefixed(applications.identity.applicationIdPrefix, config),
-                    baseline_session_id: { $ref: "#/$defs/sessionId" },
                     baselines: {
                         type: "array",
                         items: { enum: [...cro.baselineKinds] },
                         uniqueItems: true,
                     },
+                    budgets: { type: "object", additionalProperties: count() },
+                    command_id: text(),
+                    examples: {
+                        type: "array",
+                        minItems: cro.splits.length,
+                        maxItems: applications.limits.maxDatasetItems,
+                        items: {
+                            type: "object",
+                            required: [
+                                "example_id",
+                                "input_digest",
+                                "score",
+                                "session_id",
+                                "split",
+                            ],
+                            properties: {
+                                example_id: text(),
+                                input_digest: { $ref: "#/$defs/digest" },
+                                score: { type: "number" },
+                                session_id: { $ref: "#/$defs/sessionId" },
+                                split: { enum: [...cro.splits] },
+                            },
+                            additionalProperties: false,
+                        },
+                    },
+                    kind: { const: croKind },
+                    phase: { const: openedPhase },
+                    protocol_id: prefixed(applications.identity.protocolIdPrefix, config),
+                    thresholds: numbers,
+                },
+                additionalProperties: false,
+            },
+            {
+                type: "object",
+                required: [
+                    ...versionKeys,
+                    "application_id",
+                    "attempts",
+                    "candidates",
+                    "failure",
+                    "iteration",
+                    "parent_candidate_id",
+                    "phase",
+                    "proposer_session_ids",
+                    "reflection",
+                    "refusals",
+                ].sort(),
+                properties: {
+                    ...versions,
+                    application_id: prefixed(applications.identity.applicationIdPrefix, config),
+                    attempts: { type: "integer", minimum: 1 },
                     candidates: {
                         type: "array",
-                        minItems: 1,
                         maxItems: applications.limits.maxCandidates,
                         items: {
                             type: "object",
@@ -78,10 +156,17 @@ export function renderApplicationCroCandidateSchema(config: ProtocolConfig): Sch
                             additionalProperties: false,
                         },
                     },
-                    command_id: text(),
-                    kind: { const: croKind },
-                    phase: { const: openedPhase },
-                    protocol_id: prefixed(applications.identity.protocolIdPrefix, config),
+                    failure,
+                    iteration: count(),
+                    parent_candidate_id: nullable({ $ref: "#/$defs/candidateId" }),
+                    phase: { const: proposalPhase },
+                    proposer_session_ids: {
+                        type: "array",
+                        items: { $ref: "#/$defs/sessionId" },
+                        uniqueItems: true,
+                    },
+                    reflection: {},
+                    refusals: { type: "array", items: reason(config) },
                 },
                 additionalProperties: false,
             },
@@ -89,25 +174,121 @@ export function renderApplicationCroCandidateSchema(config: ProtocolConfig): Sch
                 type: "object",
                 required: [
                     ...planKeys,
-                    "affected_steps",
+                    ...versionKeys,
                     "application_id",
-                    "application_version",
-                    "baseline",
-                    "branch_session_id",
-                    "compatibility_version",
                     "cost",
-                    "divergence",
-                    "evaluation",
+                    "dev",
+                    "dev_score",
                     "failure",
+                    "gate",
                     "phase",
+                    "promotion_reference",
                     "status",
-                    "target",
+                    "targeted",
+                    "train",
                 ].sort(),
                 properties: {
                     ...versions,
                     ...planProperties,
-                    affected_steps: { $ref: "#/$defs/indices" },
                     application_id: prefixed(applications.identity.applicationIdPrefix, config),
+                    cost: { $ref: "#/$defs/cost" },
+                    dev: nullable(results),
+                    dev_score: nullable({ type: "number" }),
+                    failure,
+                    gate: nullable({
+                        type: "object",
+                        required: [
+                            "aggregate_lift",
+                            "improve_fraction",
+                            "max_guard_drop",
+                            "passed",
+                            "reason",
+                        ],
+                        properties: {
+                            aggregate_lift: { type: "number" },
+                            improve_fraction: { type: "number", minimum: 0, maximum: 1 },
+                            max_guard_drop: { type: "number", minimum: 0 },
+                            passed: { type: "boolean" },
+                            reason: reason(config),
+                        },
+                        additionalProperties: false,
+                    }),
+                    phase: { const: candidatePhase },
+                    promotion_reference: nullable({ type: "number" }),
+                    status: { enum: [...cro.candidateStatuses] },
+                    targeted: results,
+                    train: nullable(results),
+                },
+                additionalProperties: false,
+            },
+            {
+                type: "object",
+                required: [
+                    ...versionKeys,
+                    "application_id",
+                    "dev_score",
+                    "phase",
+                    "pool",
+                    "selected_candidate_id",
+                ].sort(),
+                properties: {
+                    ...versions,
+                    application_id: prefixed(applications.identity.applicationIdPrefix, config),
+                    dev_score: { type: "number" },
+                    phase: { const: selectionPhase },
+                    pool: {
+                        type: "array",
+                        items: { $ref: "#/$defs/candidateId" },
+                        maxItems: applications.limits.maxCandidates,
+                        uniqueItems: true,
+                    },
+                    selected_candidate_id: nullable({ $ref: "#/$defs/candidateId" }),
+                },
+                additionalProperties: false,
+            },
+        ],
+        $defs: {
+            candidateId: prefixed(applications.identity.candidateIdPrefix, config),
+            cost: {
+                type: "object",
+                required: [
+                    "cache_creation_input_tokens",
+                    "cache_read_input_tokens",
+                    "cost_usd",
+                    "input_tokens",
+                    "output_tokens",
+                    "provider_calls",
+                ],
+                properties: {
+                    cache_creation_input_tokens: count(),
+                    cache_read_input_tokens: count(),
+                    cost_usd: nullable({ type: "number", minimum: 0 }),
+                    input_tokens: count(),
+                    output_tokens: count(),
+                    provider_calls: count(),
+                },
+                additionalProperties: false,
+            },
+            digest: {
+                type: "string",
+                pattern: `^${escapePattern(applications.identity.digestAlgorithm)}:[0-9a-f]{${hexLengthOf(config)}}$`,
+            },
+            exampleResult: {
+                type: "object",
+                required: [
+                    "affected_steps",
+                    "baseline",
+                    "cost",
+                    "divergence",
+                    "example_id",
+                    "parent_score",
+                    "role",
+                    "score",
+                    "session_id",
+                    "target",
+                ],
+                properties: {
+                    affected_steps: { $ref: "#/$defs/indices" },
                     baseline: nullable({
                         type: "object",
                         required: [
@@ -124,28 +305,8 @@ export function renderApplicationCroCandidateSchema(config: ProtocolConfig): Sch
                         },
                         additionalProperties: false,
                     }),
-                    branch_session_id: { $ref: "#/$defs/sessionId" },
-                    cost: nullable({
-                        type: "object",
-                        required: [
-                            "cache_creation_input_tokens",
-                            "cache_read_input_tokens",
-                            "cost_usd",
-                            "input_tokens",
-                            "output_tokens",
-                            "provider_calls",
-                        ],
-                        properties: {
-                            cache_creation_input_tokens: count(),
-                            cache_read_input_tokens: count(),
-                            cost_usd: nullable({ type: "number", minimum: 0 }),
-                            input_tokens: count(),
-                            output_tokens: count(),
-                            provider_calls: count(),
-                        },
-                        additionalProperties: false,
-                    }),
-                    divergence: nullable({
+                    cost: { $ref: "#/$defs/cost" },
+                    divergence: {
                         type: "object",
                         required: [
                             "common_prefix_id",
@@ -162,49 +323,25 @@ export function renderApplicationCroCandidateSchema(config: ProtocolConfig): Sch
                             unexplained: { $ref: "#/$defs/indices" },
                         },
                         additionalProperties: false,
-                    }),
-                    evaluation: nullable({
-                        type: "object",
-                        required: ["passed", "reason", "score"],
-                        properties: {
-                            passed: { type: "boolean" },
-                            reason: reason(config),
-                            score: { type: "number" },
-                        },
-                        additionalProperties: false,
-                    }),
-                    failure: nullable({
-                        type: "object",
-                        required: ["code", "reason"],
-                        properties: {
-                            code: {
-                                enum: [
-                                    applications.errors.evidenceCode,
-                                    applications.errors.verificationCode,
-                                ],
-                            },
-                            reason: reason(config),
-                        },
-                        additionalProperties: false,
-                    }),
-                    phase: { const: candidatePhase },
-                    status: { enum: [...cro.candidateStatuses] },
+                    },
+                    example_id: text(),
+                    parent_score: { type: "number" },
+                    role: { enum: [...cro.exampleRoles] },
+                    score: { type: "number" },
+                    session_id: { $ref: "#/$defs/sessionId" },
                     target: {
                         type: "object",
                         required: ["prefix_id", "source_session_id", "step_index"],
                         properties: {
-                            prefix_id: { $ref: "#/$defs/prefixId" },
+                            prefix_id: nullable({ $ref: "#/$defs/prefixId" }),
                             source_session_id: { $ref: "#/$defs/sessionId" },
-                            step_index: { type: "integer", minimum: 1 },
+                            step_index: count(),
                         },
                         additionalProperties: false,
                     },
                 },
                 additionalProperties: false,
             },
-        ],
-        $defs: {
-            candidateId: prefixed(applications.identity.candidateIdPrefix, config),
             indices: {
                 type: "array",
                 items: count(),
@@ -215,6 +352,10 @@ export function renderApplicationCroCandidateSchema(config: ProtocolConfig): Sch
             sessionId: prefixed(config.replay.identity.sessionIdPrefix, config),
         },
     };
+}
+
+function hexLengthOf(config: ProtocolConfig): number {
+    return createHash(config.applications.identity.digestAlgorithm).digest("hex").length;
 }
 
 function count(): Schema {
@@ -234,10 +375,9 @@ function reason(config: ProtocolConfig): Schema {
 }
 
 function prefixed(prefix: string, config: ProtocolConfig): Schema {
-    const hexLength = createHash(config.applications.identity.digestAlgorithm).digest("hex").length;
     return {
         type: "string",
-        pattern: `^${escapePattern(prefix)}[0-9a-f]{${hexLength}}$`,
+        pattern: `^${escapePattern(prefix)}[0-9a-f]{${hexLengthOf(config)}}$`,
     };
 }
 

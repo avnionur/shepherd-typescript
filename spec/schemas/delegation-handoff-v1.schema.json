@@ -303,6 +303,110 @@
                         }
                     },
                     "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "type"
+                    ],
+                    "properties": {
+                        "type": {
+                            "enum": [
+                                "boolean",
+                                "integer",
+                                "number"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "items",
+                        "type"
+                    ],
+                    "properties": {
+                        "items": {
+                            "$ref": "#/$defs/taskSchema"
+                        },
+                        "type": {
+                            "const": "array"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "enum"
+                    ],
+                    "properties": {
+                        "enum": {
+                            "type": "array",
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "const"
+                    ],
+                    "properties": {
+                        "const": {
+                            "anyOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "oneOf"
+                    ],
+                    "properties": {
+                        "oneOf": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/taskSchema"
+                            },
+                            "minItems": 2,
+                            "uniqueItems": true
+                        }
+                    },
+                    "additionalProperties": false
                 }
             ]
         },

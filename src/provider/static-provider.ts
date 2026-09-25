@@ -6,6 +6,7 @@ import type {
     ModelRequest,
     ModelResponse,
     ProviderDescriptor,
+    ProviderKind,
     StaticProviderDefinition,
 } from "./types.ts";
 import {
@@ -58,7 +59,7 @@ function createDescriptor(definition: StaticProviderDefinition): ProviderDescrip
     return Object.freeze({
         capabilities: providerProtocolConfig.static.capabilities,
         id: definition.descriptor.id,
-        kind: providerProtocolConfig.static.kind,
+        kind: providerProtocolConfig.static.kind as ProviderKind,
         model: definition.descriptor.model,
     });
 }

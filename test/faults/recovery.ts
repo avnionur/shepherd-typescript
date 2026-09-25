@@ -4,14 +4,28 @@ import path from "node:path";
 
 import {
     backupTraceStore,
+    compensateEffects,
+    createEffectCompensationRegistry,
+    deriveEffectCompensationId,
+    deriveReplaySessionId,
+    inspectEffectCompensation,
+    inspectReplaySession,
     SQLiteTraceStore,
     TraceStoreBackupError,
     verifyTraceStoreBackup,
 } from "../../src/index.ts";
 import {
+    ROW_INSERT_KIND,
+    readCompensationLog,
+    readRowIds,
+    rowCompensation,
+} from "../effect/compensation-fixtures.ts";
+import {
     appendRequestFor,
     blobContentFor,
     blobIdOf,
+    COMPENSATION_SESSION_COMMAND,
+    compensationCommandFor,
     completedIndices,
     cutIdFor,
     type FaultEvent,
@@ -147,7 +161,70 @@ async function recoverOne(
             return recoverImport(args, index, completed);
         case "backup":
             return recoverBackup(store, args, index, completed);
+        case "compensation":
+            return recoverCompensation(store, args, index, completed);
     }
+}
+
+/**
+ * Recovers one compensation the child started. A compensation retained as compensated is never
+ * invoked again; any other state (absent, pending, or an uncertain attempt that may already have
+ * changed the world) is retried with the same idempotent handler. Either way the world changed
+ * exactly once: the row is gone and the log records one world-changing deletion under the key.
+ */
+async function recoverCompensation(
+    store: SQLiteTraceStore,
+    args: FaultProcessArguments,
+    index: number,
+    completed: boolean,
+): Promise<RecoveryOutcome> {
+    const world = args.worldPath as string;
+    const step = inspectReplaySession(store, {
+        sessionId: deriveReplaySessionId(COMPENSATION_SESSION_COMMAND),
+    }).steps[index];
+    if (step === undefined) {
+        return "complete";
+    }
+    const compensationId = deriveEffectCompensationId(step.record_id);
+    const before =
+        store.readOwner(compensationId).length === 0
+            ? "absent"
+            : inspectEffectCompensation(store, { compensationId }).status;
+    if (completed) assert.equal(before, "compensated", compensationId);
+    let invoked = 0;
+    const registry =
+        before === "compensated"
+            ? createEffectCompensationRegistry([
+                  {
+                      compensate: () => {
+                          invoked += 1;
+                          throw new Error("a compensated effect must not be compensated again");
+                      },
+                      handlerId: "compensation:forbidden",
+                      kind: ROW_INSERT_KIND,
+                  },
+              ])
+            : rowCompensation(world);
+    await compensateEffects(store, {
+        commandId: compensationCommandFor(args.label, index),
+        effectRecordIds: [step.record_id],
+        registry,
+    });
+    assert.equal(invoked, 0);
+    const after = inspectEffectCompensation(store, { compensationId });
+    assert.equal(after.status, "compensated");
+    assert.equal(
+        after.attempts.filter((attempt) => attempt.outcome?.status === "compensated").length,
+        1,
+    );
+    const payload = step.effect?.intent.payload as { readonly id: string };
+    assert.equal(readRowIds(world).includes(payload.id), false, payload.id);
+    const log = readCompensationLog(world).get(compensationId);
+    assert.equal(log?.deleted, 1, `${compensationId} changed the world ${log?.deleted} times`);
+    // An attempt killed before its handler committed leaves no log entry, so invocations that
+    // changed the log never exceed the retained attempts.
+    assert.ok((log?.invocations ?? 0) >= 1 && (log?.invocations ?? 0) <= after.attempts.length);
+    return before === "compensated" ? "complete" : "retryable";
 }
 
 function recoverImport(

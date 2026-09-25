@@ -33,18 +33,1066 @@
     },
     {
         "artifact": "api:.#SQLiteTraceStore",
+        "classification": "additive",
         "from": "sha256:d15862d6302496cc9f99c74404535ac608158293a7ff6b0f8455840506c74968",
         "to": "sha256:80af497e61be297717e1ca7e1aeae2a47134f7f05ce98156985eea99adf22126",
-        "classification": "additive",
-        "note": "Phase 11 slice 6 (#183): store maintenance, store maintain CLI, TRACE_STORE_READ_ONLY, index-only store schema 13, kernel.store.maintenance config",
-        "version": "2.30.0"
+        "version": "2.30.0",
+        "note": "Phase 11 slice 6 (#183): store maintenance, store maintain CLI, TRACE_STORE_READ_ONLY, index-only store schema 13, kernel.store.maintenance config"
     },
     {
         "artifact": "api:./trace#SQLiteTraceStore",
+        "classification": "additive",
         "from": "sha256:d15862d6302496cc9f99c74404535ac608158293a7ff6b0f8455840506c74968",
         "to": "sha256:80af497e61be297717e1ca7e1aeae2a47134f7f05ce98156985eea99adf22126",
+        "version": "2.30.0",
+        "note": "Phase 11 slice 6 (#183): store maintenance, store maintain CLI, TRACE_STORE_READ_ONLY, index-only store schema 13, kernel.store.maintenance config"
+    },
+    {
+        "artifact": "api:.#CounterfactualOptimizationReceipt",
         "classification": "additive",
-        "note": "Phase 11 slice 6 (#183): store maintenance, store maintain CLI, TRACE_STORE_READ_ONLY, index-only store schema 13, kernel.store.maintenance config",
-        "version": "2.30.0"
+        "from": "sha256:823d65345c80e4dccfc2538ee2611e78e49814ac4a6f950ef8e41b9bff77e88b",
+        "to": "sha256:e26486af8c2c38ef2e0167db1cdc69bdd286feaa9acb62a80cbe1d7a5a6fcfa5",
+        "version": "3.0.0",
+        "note": "Issue #205: CounterfactualOptimizationReceipt gains the handoff manifest validated against the pinned handoff schema; existing fields are unchanged."
+    },
+    {
+        "artifact": "api:.#InferTaskSchemaShape",
+        "classification": "breaking",
+        "from": "sha256:e535acbc9d31e22f2109b0057fd40888b6a382a276fd8688a32e8a713b7e5ebb",
+        "to": "sha256:c54be5f781275b82b16cbf049d8b160491bb21626ee7b2e1bf1f60d4e1337f22",
+        "version": "3.0.0",
+        "note": "Issue #205: TaskSchemaShape fields may be schema.optional() markers and InferTaskSchemaShape makes those keys optional properties, so generic code that indexes a shape field as a TaskSchema must adapt."
+    },
+    {
+        "artifact": "api:.#TaskSchemaFactory",
+        "classification": "additive",
+        "from": "sha256:1f0b48a1a617eb98063e8edbe76cafa58d36ef85d6b05949e5286b737ea95586",
+        "to": "sha256:e3c36f36abed6f788b19f15ec4f7dd2487f0ea8d3bafa8e1dffbb6741f73d853",
+        "version": "3.0.0",
+        "note": "Issue #205: TaskSchemaFactory gains array, boolean, enum, integer, literal, null, number, optional, and union builders; existing builders and signatures are unchanged."
+    },
+    {
+        "artifact": "api:.#TaskSchemaShape",
+        "classification": "breaking",
+        "from": "sha256:3a6acaa13b0d7c311f9f6c4aede1be5004d073f331ed370c57669bceb90f23b3",
+        "to": "sha256:c63d07b760f9ea24a45ea12c2f7331c56b1fd5bb9f4e1289abd30fee3e747f59",
+        "version": "3.0.0",
+        "note": "Issue #205: TaskSchemaShape fields may be schema.optional() markers and InferTaskSchemaShape makes those keys optional properties, so generic code that indexes a shape field as a TaskSchema must adapt."
+    },
+    {
+        "artifact": "api:./applications#CounterfactualOptimizationReceipt",
+        "classification": "additive",
+        "from": "sha256:823d65345c80e4dccfc2538ee2611e78e49814ac4a6f950ef8e41b9bff77e88b",
+        "to": "sha256:e26486af8c2c38ef2e0167db1cdc69bdd286feaa9acb62a80cbe1d7a5a6fcfa5",
+        "version": "3.0.0",
+        "note": "Issue #205: CounterfactualOptimizationReceipt gains the handoff manifest validated against the pinned handoff schema; existing fields are unchanged."
+    },
+    {
+        "artifact": "api:./tasks#InferTaskSchemaShape",
+        "classification": "breaking",
+        "from": "sha256:e535acbc9d31e22f2109b0057fd40888b6a382a276fd8688a32e8a713b7e5ebb",
+        "to": "sha256:c54be5f781275b82b16cbf049d8b160491bb21626ee7b2e1bf1f60d4e1337f22",
+        "version": "3.0.0",
+        "note": "Issue #205: TaskSchemaShape fields may be schema.optional() markers and InferTaskSchemaShape makes those keys optional properties, so generic code that indexes a shape field as a TaskSchema must adapt."
+    },
+    {
+        "artifact": "api:./tasks#TaskSchemaFactory",
+        "classification": "additive",
+        "from": "sha256:1f0b48a1a617eb98063e8edbe76cafa58d36ef85d6b05949e5286b737ea95586",
+        "to": "sha256:e3c36f36abed6f788b19f15ec4f7dd2487f0ea8d3bafa8e1dffbb6741f73d853",
+        "version": "3.0.0",
+        "note": "Issue #205: TaskSchemaFactory gains array, boolean, enum, integer, literal, null, number, optional, and union builders; existing builders and signatures are unchanged."
+    },
+    {
+        "artifact": "api:./tasks#TaskSchemaShape",
+        "classification": "breaking",
+        "from": "sha256:3a6acaa13b0d7c311f9f6c4aede1be5004d073f331ed370c57669bceb90f23b3",
+        "to": "sha256:c63d07b760f9ea24a45ea12c2f7331c56b1fd5bb9f4e1289abd30fee3e747f59",
+        "version": "3.0.0",
+        "note": "Issue #205: TaskSchemaShape fields may be schema.optional() markers and InferTaskSchemaShape makes those keys optional properties, so generic code that indexes a shape field as a TaskSchema must adapt."
+    },
+    {
+        "artifact": "schema:delegation-approval-v1.schema.json",
+        "classification": "additive",
+        "from": "sha256:636304d29ba5141675c3c0194862c19a67db8c87ca504c7ca8ad606d90b1059d",
+        "to": "sha256:03a53884cc820882371d825648f90dcc1200c19c4d5f70d438ac0d4ec41ec58c",
+        "version": "3.0.0",
+        "note": "Issue #205: task schema documents widened to number, integer, boolean, array, enum, const, oneOf, and required as a subset of properties; every document valid under the previous schema stays valid, while 2.x readers refuse documents using the new forms."
+    },
+    {
+        "artifact": "schema:delegation-completion-v1.schema.json",
+        "classification": "additive",
+        "from": "sha256:5958741bce6bca7d3f442726c25001a373478e2d7f96cd1c72c5dcd6e39c441a",
+        "to": "sha256:f0316b01c991ebf0a69194c5a702139502eef0cb261471dbaa894ced358da14c",
+        "version": "3.0.0",
+        "note": "Issue #205: task schema documents widened to number, integer, boolean, array, enum, const, oneOf, and required as a subset of properties; every document valid under the previous schema stays valid, while 2.x readers refuse documents using the new forms."
+    },
+    {
+        "artifact": "schema:delegation-context-v1.schema.json",
+        "classification": "additive",
+        "from": "sha256:6fab592d95775122e08cf2471ce7fa4ca99d6ebeb762bb7f0c4709c8441cdde7",
+        "to": "sha256:f8d6e027d3b78f8b4badca4fa41ed1ea60f35d00f1e71a0671f912b79d5c902d",
+        "version": "3.0.0",
+        "note": "Issue #205: task schema documents widened to number, integer, boolean, array, enum, const, oneOf, and required as a subset of properties; every document valid under the previous schema stays valid, while 2.x readers refuse documents using the new forms."
+    },
+    {
+        "artifact": "schema:delegation-decision-v1.schema.json",
+        "classification": "additive",
+        "from": "sha256:21b137fd05caaf4ac01e625fae1cf5037336eebaf429d7efbfe858f5cfba7534",
+        "to": "sha256:156e0e860af9b186d5e1a4c549bab36a21bf9dea3e176af47281b6a5db3b0fcc",
+        "version": "3.0.0",
+        "note": "Issue #205: task schema documents widened to number, integer, boolean, array, enum, const, oneOf, and required as a subset of properties; every document valid under the previous schema stays valid, while 2.x readers refuse documents using the new forms."
+    },
+    {
+        "artifact": "schema:delegation-handoff-v1.schema.json",
+        "classification": "additive",
+        "from": "sha256:57e1bd97ac3648ef8bcfd0598f2a5a73b06be154df0626c1d8e302c388dc2073",
+        "to": "sha256:2f8f241327be662cf7dba5f483d327792efc460ee147a4f691d05f338553ca5a",
+        "version": "3.0.0",
+        "note": "Issue #205: task schema documents widened to number, integer, boolean, array, enum, const, oneOf, and required as a subset of properties; every document valid under the previous schema stays valid, while 2.x readers refuse documents using the new forms."
+    },
+    {
+        "artifact": "schema:delegation-opened-v1.schema.json",
+        "classification": "additive",
+        "from": "sha256:50e9420f80df470db3f6afac3c7fa594a758aeb5e848b71eccae69c24fc262d3",
+        "to": "sha256:1d77ac81c3bddba6d3e475efe9b65a610236aede3aa48e127846a7ee721d468f",
+        "version": "3.0.0",
+        "note": "Issue #205: task schema documents widened to number, integer, boolean, array, enum, const, oneOf, and required as a subset of properties; every document valid under the previous schema stays valid, while 2.x readers refuse documents using the new forms."
+    },
+    {
+        "artifact": "schema:task-descriptor-v1.schema.json",
+        "classification": "additive",
+        "from": "sha256:4d1b5f50480f22e20cea8faba02f1e5486a1625ee75191e8cecca14aa595e2cf",
+        "to": "sha256:1a53a09ebd5f2b6c647c8e0b4c48681da9efbbdfe068cb9caaaf5ee9e9a3333e",
+        "version": "3.0.0",
+        "note": "Issue #205: task schema documents widened to number, integer, boolean, array, enum, const, oneOf, and required as a subset of properties; every document valid under the previous schema stays valid, while 2.x readers refuse documents using the new forms."
+    },
+    {
+        "artifact": "schema:task-value-v1.schema.json",
+        "classification": "additive",
+        "from": "sha256:18463c03ad9372fe800a206a131cefa0cbdf6c53ff50f5aca6fee779c668a0a7",
+        "to": "sha256:56c19a488fed37c02fc617e9fba6ca0cfa0462a89307f104d258113d8d3da6f6",
+        "version": "3.0.0",
+        "note": "Issue #205: task schema documents widened to number, integer, boolean, array, enum, const, oneOf, and required as a subset of properties; every document valid under the previous schema stays valid, while 2.x readers refuse documents using the new forms."
+    },
+    {
+        "artifact": "api:.#CounterfactualCandidateDefinition",
+        "classification": "breaking",
+        "from": "sha256:0b339b0926f15fb298d955bea46eec09d9082983fab88562d66899b76c27c997",
+        "to": "sha256:e1112d5277d125f417311e7af78c51d23c4367eb4d516f5e99622be4ec005578",
+        "version": "4.0.0",
+        "note": "Issue #207: counterfactual candidates declare a required edit scope (request or downstream) retained as the plan's edit_scope and part of the candidate identity; CounterfactualTarget.prefix_id is nullable and the candidate record schema admits target step 0 with a null prefix. Callers must add scope to every candidate; 3.0.0 optimizer records no longer decode."
+    },
+    {
+        "artifact": "api:.#CounterfactualCandidatePlan",
+        "classification": "breaking",
+        "from": "sha256:74b715c2cbba5b22de2fc9cd6abc5c4ab3f72a7756f9c1c3a9f6b7766bd09b03",
+        "to": "sha256:82e24c8f2110bcec3cc0400e1e255fb938aa578f30c4bb0a8bbd93ec89c43737",
+        "version": "4.0.0",
+        "note": "Issue #207: counterfactual candidates declare a required edit scope (request or downstream) retained as the plan's edit_scope and part of the candidate identity; CounterfactualTarget.prefix_id is nullable and the candidate record schema admits target step 0 with a null prefix. Callers must add scope to every candidate; 3.0.0 optimizer records no longer decode."
+    },
+    {
+        "artifact": "api:.#CounterfactualTarget",
+        "classification": "breaking",
+        "from": "sha256:9a08a144da6f3e731036ff3a8193292547ccbd9fa4a057e784d7f83cf4db29d8",
+        "to": "sha256:d3cae2cf68e9e6eb0d932eb2d3d4005735335301e6d26e1f175301ee2c5ce719",
+        "version": "4.0.0",
+        "note": "Issue #207: counterfactual candidates declare a required edit scope (request or downstream) retained as the plan's edit_scope and part of the candidate identity; CounterfactualTarget.prefix_id is nullable and the candidate record schema admits target step 0 with a null prefix. Callers must add scope to every candidate; 3.0.0 optimizer records no longer decode."
+    },
+    {
+        "artifact": "api:./applications#CounterfactualCandidateDefinition",
+        "classification": "breaking",
+        "from": "sha256:0b339b0926f15fb298d955bea46eec09d9082983fab88562d66899b76c27c997",
+        "to": "sha256:e1112d5277d125f417311e7af78c51d23c4367eb4d516f5e99622be4ec005578",
+        "version": "4.0.0",
+        "note": "Issue #207: counterfactual candidates declare a required edit scope (request or downstream) retained as the plan's edit_scope and part of the candidate identity; CounterfactualTarget.prefix_id is nullable and the candidate record schema admits target step 0 with a null prefix. Callers must add scope to every candidate; 3.0.0 optimizer records no longer decode."
+    },
+    {
+        "artifact": "api:./applications#CounterfactualCandidatePlan",
+        "classification": "breaking",
+        "from": "sha256:74b715c2cbba5b22de2fc9cd6abc5c4ab3f72a7756f9c1c3a9f6b7766bd09b03",
+        "to": "sha256:82e24c8f2110bcec3cc0400e1e255fb938aa578f30c4bb0a8bbd93ec89c43737",
+        "version": "4.0.0",
+        "note": "Issue #207: counterfactual candidates declare a required edit scope (request or downstream) retained as the plan's edit_scope and part of the candidate identity; CounterfactualTarget.prefix_id is nullable and the candidate record schema admits target step 0 with a null prefix. Callers must add scope to every candidate; 3.0.0 optimizer records no longer decode."
+    },
+    {
+        "artifact": "api:./applications#CounterfactualTarget",
+        "classification": "breaking",
+        "from": "sha256:9a08a144da6f3e731036ff3a8193292547ccbd9fa4a057e784d7f83cf4db29d8",
+        "to": "sha256:d3cae2cf68e9e6eb0d932eb2d3d4005735335301e6d26e1f175301ee2c5ce719",
+        "version": "4.0.0",
+        "note": "Issue #207: counterfactual candidates declare a required edit scope (request or downstream) retained as the plan's edit_scope and part of the candidate identity; CounterfactualTarget.prefix_id is nullable and the candidate record schema admits target step 0 with a null prefix. Callers must add scope to every candidate; 3.0.0 optimizer records no longer decode."
+    },
+    {
+        "artifact": "schema:application-cro-candidate-v1.schema.json",
+        "classification": "breaking",
+        "from": "sha256:916e370881f3ef1d5165982fcb48c9ee352bb870a75158212f051f5180ec9919",
+        "to": "sha256:083ca1ada4657f8464a9c8d2bec37835848d3b4aedd1f12d5b9ff2a75f3f7f3c",
+        "version": "4.0.0",
+        "note": "Issue #207: counterfactual candidates declare a required edit scope (request or downstream) retained as the plan's edit_scope and part of the candidate identity; CounterfactualTarget.prefix_id is nullable and the candidate record schema admits target step 0 with a null prefix. Callers must add scope to every candidate; 3.0.0 optimizer records no longer decode."
+    },
+    {
+        "artifact": "api:.#APPLICATION_EVALUATION_REPORT_VERSION",
+        "classification": "breaking",
+        "from": "sha256:74a0697689b67e3482bf8456d2cfe049111e39d8921e84b15810c66ac2d7f66c",
+        "to": "sha256:e4c54f550e1350d3214d79798d586e2e8067adaecbedae98e8ea7f7fe7760561",
+        "version": "5.0.0",
+        "note": "Issue #208: evaluation report version 2 (applications protocol v7) adds the required rescues field { count, experiment_ids } (experiments whose baseline failed while the application passed), re-derived by validateApplicationEvaluationReport; version 1 reports are refused."
+    },
+    {
+        "artifact": "api:./applications#APPLICATION_EVALUATION_REPORT_VERSION",
+        "classification": "breaking",
+        "from": "sha256:74a0697689b67e3482bf8456d2cfe049111e39d8921e84b15810c66ac2d7f66c",
+        "to": "sha256:e4c54f550e1350d3214d79798d586e2e8067adaecbedae98e8ea7f7fe7760561",
+        "version": "5.0.0",
+        "note": "Issue #208: evaluation report version 2 (applications protocol v7) adds the required rescues field { count, experiment_ids } (experiments whose baseline failed while the application passed), re-derived by validateApplicationEvaluationReport; version 1 reports are refused."
+    },
+    {
+        "artifact": "api:.#ApplicationEvaluationReport",
+        "classification": "breaking",
+        "from": "sha256:548025eaec2ba6021b8d5a4f6a60d890e536148c806a8d24dd76f2d7d799b3ae",
+        "to": "sha256:f6b9ba99d6bbaade5f34acd26392c19b6c04bb0663a999d2406f94cd1b1228ad",
+        "version": "5.0.0",
+        "note": "Issue #208: evaluation report version 2 (applications protocol v7) adds the required rescues field { count, experiment_ids } (experiments whose baseline failed while the application passed), re-derived by validateApplicationEvaluationReport; version 1 reports are refused."
+    },
+    {
+        "artifact": "api:./applications#ApplicationEvaluationReport",
+        "classification": "breaking",
+        "from": "sha256:548025eaec2ba6021b8d5a4f6a60d890e536148c806a8d24dd76f2d7d799b3ae",
+        "to": "sha256:f6b9ba99d6bbaade5f34acd26392c19b6c04bb0663a999d2406f94cd1b1228ad",
+        "version": "5.0.0",
+        "note": "Issue #208: evaluation report version 2 (applications protocol v7) adds the required rescues field { count, experiment_ids } (experiments whose baseline failed while the application passed), re-derived by validateApplicationEvaluationReport; version 1 reports are refused."
+    },
+    {
+        "artifact": "api:.#TrajectoryCompressionCandidateRecord",
+        "classification": "additive",
+        "from": "sha256:ca83e29e9f5819fe931157286fed8cbc994d90d008780f3d98d9c7e7eecb0ecc",
+        "to": "sha256:a6945518e160c87e4438a81a501534d3fd325304b6f846f7c116590c0db0d0d2",
+        "version": "5.0.0",
+        "note": "Issue #208: TrajectoryCompressionCandidateRecord gains fork_clamp, the retained clamp evidence of an out-of-range proposed fork step (null when in range or missing); existing fields are unchanged."
+    },
+    {
+        "artifact": "api:./applications#TrajectoryCompressionCandidateRecord",
+        "classification": "additive",
+        "from": "sha256:ca83e29e9f5819fe931157286fed8cbc994d90d008780f3d98d9c7e7eecb0ecc",
+        "to": "sha256:a6945518e160c87e4438a81a501534d3fd325304b6f846f7c116590c0db0d0d2",
+        "version": "5.0.0",
+        "note": "Issue #208: TrajectoryCompressionCandidateRecord gains fork_clamp, the retained clamp evidence of an out-of-range proposed fork step (null when in range or missing); existing fields are unchanged."
+    },
+    {
+        "artifact": "api:.#TrajectoryForkPoint",
+        "classification": "breaking",
+        "from": "sha256:5ed7b4cc04099c575b3c90ac43e817be8ed0cdf2e683e5bc63e537b10fecca6a",
+        "to": "sha256:955164214ba6bf05e37bed2d03ae8bcf1a466d11cc0af6d70378624bce93cfe0",
+        "version": "5.0.0",
+        "note": "Issue #208: TrajectoryForkPoint.prefix_id is string | null (null exactly at step 0, which restarts from the initial prefix); a proposal step_index is any safe integer resolved under the configured fork-step policy. Code that assumed a non-null prefix must adapt; 4.0.0 compression records no longer decode."
+    },
+    {
+        "artifact": "api:./applications#TrajectoryForkPoint",
+        "classification": "breaking",
+        "from": "sha256:5ed7b4cc04099c575b3c90ac43e817be8ed0cdf2e683e5bc63e537b10fecca6a",
+        "to": "sha256:955164214ba6bf05e37bed2d03ae8bcf1a466d11cc0af6d70378624bce93cfe0",
+        "version": "5.0.0",
+        "note": "Issue #208: TrajectoryForkPoint.prefix_id is string | null (null exactly at step 0, which restarts from the initial prefix); a proposal step_index is any safe integer resolved under the configured fork-step policy. Code that assumed a non-null prefix must adapt; 4.0.0 compression records no longer decode."
+    },
+    {
+        "artifact": "schema:application-compression-v1.schema.json",
+        "classification": "breaking",
+        "from": "sha256:c608d4767093429af958afeba1f15dc29b241bfe6ae1941b1d8a5dbf3c0f14ea",
+        "to": "sha256:59258b754d787b45d97458e3cd1b2f5476a04f427a58c65d5c78d3176a62199b",
+        "version": "5.0.0",
+        "note": "Issue #208: compression candidate records require fork_clamp and admit fork step 0 with a null prefix; the proposal grammar makes fork_point, hint, and step_index optional and admits any integer step. 4.0.0 compression records do not validate."
+    },
+    {
+        "artifact": "schema:application-evaluation-v1.schema.json",
+        "classification": "breaking",
+        "from": "sha256:e79103ff194cb31e5e1bd477b3f73ae2c50944f4f7a95d56544d17eb2450c7d6",
+        "to": "sha256:f676bc54c53a2eb48dfe12fb654af306f52424ddbf544362ad5dbe605935ea3d",
+        "version": "5.0.0",
+        "note": "Issue #208: evaluation report version 2 (applications protocol v7) adds the required rescues field { count, experiment_ids } (experiments whose baseline failed while the application passed), re-derived by validateApplicationEvaluationReport; version 1 reports are refused."
+    },
+    {
+        "artifact": "version:protocol.config.json#/applications/evaluation/reportVersion",
+        "classification": "breaking",
+        "from": "1",
+        "to": "2",
+        "version": "5.0.0",
+        "note": "Issue #208: evaluation report version 2 (applications protocol v7) adds the required rescues field { count, experiment_ids } (experiments whose baseline failed while the application passed), re-derived by validateApplicationEvaluationReport; version 1 reports are refused."
+    },
+    {
+        "artifact": "schema:replay-session-v1.schema.json",
+        "classification": "additive",
+        "from": "sha256:2e04abed63d4f1fb86c9f4ecf6b0c6d38daa0ffe799493a912906524e7d78733",
+        "to": "sha256:5148ef72280211ef71d7b0f14158ff93f4888865b7c54660b7cb234e804068d4",
+        "version": "5.1.0",
+        "note": "Issue #204: provider protocol v2 adds the configured live kinds anthropic, openai, and openrouter to the provider-kind enum; every document valid under the previous schema stays valid, while 5.0.0 readers refuse descriptors carrying a live kind."
+    },
+    {
+        "artifact": "schema:run-ledger-entry-v1.schema.json",
+        "classification": "additive",
+        "from": "sha256:bdb56a3b92ad1c6f96e0f92948f004d95004fd39df054c211ae33daad1ff1362",
+        "to": "sha256:4be5e5bea1d97e75e0b0f2b06e5c3f235ba5d94ad397dfcefc02a6816a1e4350",
+        "version": "5.1.0",
+        "note": "Issue #204: provider protocol v2 adds the configured live kinds anthropic, openai, and openrouter to the provider-kind enum; every document valid under the previous schema stays valid, while 5.0.0 readers refuse descriptors carrying a live kind."
+    },
+    {
+        "artifact": "api:.#MODEL_CONTENT_BLOCK_TYPES",
+        "classification": "breaking",
+        "from": "sha256:52d2ef321aaccc7b1941238efe19fccc9e3f98b650b1676acf191d3876f8c296",
+        "to": "sha256:a344bf754012d12c80a97887181ec2c7ecbdeae35e88f17a11b9a83de299b594",
+        "version": "6.0.0",
+        "note": "Issue #206: message content blocks become the union of text, tool_use, and tool_result blocks (ModelTextBlock.type is the text discriminant only) and conversation requests gain optional tools, so code that reads text from every content block of a message or request must narrow on the block type."
+    },
+    {
+        "artifact": "api:.#ModelContentBlock",
+        "classification": "breaking",
+        "from": "sha256:d1a7418ed69583c0f7b0bcc8c73e16c62ce58439a63a433d0a6762c840318deb",
+        "to": "sha256:14a275eb5c7ed9ae68c43e75ce0ea87f87b1f7361f549b832265d18f209d3805",
+        "version": "6.0.0",
+        "note": "Issue #206: message content blocks become the union of text, tool_use, and tool_result blocks (ModelTextBlock.type is the text discriminant only) and conversation requests gain optional tools, so code that reads text from every content block of a message or request must narrow on the block type."
+    },
+    {
+        "artifact": "api:.#ModelConversationRequest",
+        "classification": "breaking",
+        "from": "sha256:1831d0fe9ff294b61d54f813b6c9460a6bfb6cfcce9bea79e692521dc016554d",
+        "to": "sha256:7a177cc67f46ce05ad2227d7c33a141f184331e8fe77736754d5925be4297eb4",
+        "version": "6.0.0",
+        "note": "Issue #206: message content blocks become the union of text, tool_use, and tool_result blocks (ModelTextBlock.type is the text discriminant only) and conversation requests gain optional tools, so code that reads text from every content block of a message or request must narrow on the block type."
+    },
+    {
+        "artifact": "api:.#ModelTextBlock",
+        "classification": "breaking",
+        "from": "sha256:7eff2218f82213d1b40328584055bcb66f2e4e4e9b3b62305512db2a97ec3145",
+        "to": "sha256:9cd4bf3d2146188c055a9a1b9b1eaed66cf9eeee60bbb6a495c55851ebd5f7dd",
+        "version": "6.0.0",
+        "note": "Issue #206: message content blocks become the union of text, tool_use, and tool_result blocks (ModelTextBlock.type is the text discriminant only) and conversation requests gain optional tools, so code that reads text from every content block of a message or request must narrow on the block type."
+    },
+    {
+        "artifact": "api:./providers#MODEL_CONTENT_BLOCK_TYPES",
+        "classification": "breaking",
+        "from": "sha256:52d2ef321aaccc7b1941238efe19fccc9e3f98b650b1676acf191d3876f8c296",
+        "to": "sha256:a344bf754012d12c80a97887181ec2c7ecbdeae35e88f17a11b9a83de299b594",
+        "version": "6.0.0",
+        "note": "Issue #206: message content blocks become the union of text, tool_use, and tool_result blocks (ModelTextBlock.type is the text discriminant only) and conversation requests gain optional tools, so code that reads text from every content block of a message or request must narrow on the block type."
+    },
+    {
+        "artifact": "api:./providers#ModelContentBlock",
+        "classification": "breaking",
+        "from": "sha256:d1a7418ed69583c0f7b0bcc8c73e16c62ce58439a63a433d0a6762c840318deb",
+        "to": "sha256:14a275eb5c7ed9ae68c43e75ce0ea87f87b1f7361f549b832265d18f209d3805",
+        "version": "6.0.0",
+        "note": "Issue #206: message content blocks become the union of text, tool_use, and tool_result blocks (ModelTextBlock.type is the text discriminant only) and conversation requests gain optional tools, so code that reads text from every content block of a message or request must narrow on the block type."
+    },
+    {
+        "artifact": "api:./providers#ModelConversationRequest",
+        "classification": "breaking",
+        "from": "sha256:1831d0fe9ff294b61d54f813b6c9460a6bfb6cfcce9bea79e692521dc016554d",
+        "to": "sha256:7a177cc67f46ce05ad2227d7c33a141f184331e8fe77736754d5925be4297eb4",
+        "version": "6.0.0",
+        "note": "Issue #206: message content blocks become the union of text, tool_use, and tool_result blocks (ModelTextBlock.type is the text discriminant only) and conversation requests gain optional tools, so code that reads text from every content block of a message or request must narrow on the block type."
+    },
+    {
+        "artifact": "api:./providers#ModelTextBlock",
+        "classification": "breaking",
+        "from": "sha256:7eff2218f82213d1b40328584055bcb66f2e4e4e9b3b62305512db2a97ec3145",
+        "to": "sha256:9cd4bf3d2146188c055a9a1b9b1eaed66cf9eeee60bbb6a495c55851ebd5f7dd",
+        "version": "6.0.0",
+        "note": "Issue #206: message content blocks become the union of text, tool_use, and tool_result blocks (ModelTextBlock.type is the text discriminant only) and conversation requests gain optional tools, so code that reads text from every content block of a message or request must narrow on the block type."
+    },
+    {
+        "artifact": "api:.#DiscardScopeOptions",
+        "classification": "additive",
+        "from": "sha256:85da1a39a8db9ea675d018f4609817347e0ed21e9d16b2b306d38dba7db1dc35",
+        "to": "sha256:0e2d12f99d61966665c6b4974f39003b3e974a01eaa2f52cc22490fd1486391e",
+        "version": "7.0.0",
+        "note": "Issue #209: discard options gain an optional compensation registry; existing option objects stay valid, while discarding a scope that cites an uncompensated successful compensable effect now requires it."
+    },
+    {
+        "artifact": "api:.#MetaAgentWorkerDefinition",
+        "classification": "additive",
+        "from": "sha256:b6245287784015bcb985ee1b69804c057d024d7bf0474b2c77f905c363798d05",
+        "to": "sha256:be53fe57553a596a72f6f4221ab18c6aadab954cb4bcd3a464452f7e038d5a06",
+        "version": "7.0.0",
+        "note": "Issue #209: meta-agent worker definitions gain an optional compensation registry passed to the rewind and replay tools; existing definitions stay valid."
+    },
+    {
+        "artifact": "api:.#ReplayBranchOptions",
+        "classification": "additive",
+        "from": "sha256:9f5d40e14351ff9d0dd22b25be024583a4ed38ffaa7282490b6a177e0c4894eb",
+        "to": "sha256:8452761603cb83ae060b5067319f5b13489f09b5ece462bff4c0fa7e71c7d861",
+        "version": "7.0.0",
+        "note": "Issue #209: rewind and replay branch options gain an optional compensation registry; existing option objects stay valid, while branching past an uncompensated successful compensable effect now requires it."
+    },
+    {
+        "artifact": "api:./applications#MetaAgentWorkerDefinition",
+        "classification": "additive",
+        "from": "sha256:b6245287784015bcb985ee1b69804c057d024d7bf0474b2c77f905c363798d05",
+        "to": "sha256:be53fe57553a596a72f6f4221ab18c6aadab954cb4bcd3a464452f7e038d5a06",
+        "version": "7.0.0",
+        "note": "Issue #209: meta-agent worker definitions gain an optional compensation registry passed to the rewind and replay tools; existing definitions stay valid."
+    },
+    {
+        "artifact": "api:./replay#ReplayBranchOptions",
+        "classification": "additive",
+        "from": "sha256:9f5d40e14351ff9d0dd22b25be024583a4ed38ffaa7282490b6a177e0c4894eb",
+        "to": "sha256:8452761603cb83ae060b5067319f5b13489f09b5ece462bff4c0fa7e71c7d861",
+        "version": "7.0.0",
+        "note": "Issue #209: rewind and replay branch options gain an optional compensation registry; existing option objects stay valid, while branching past an uncompensated successful compensable effect now requires it."
+    },
+    {
+        "artifact": "api:./workspace#DiscardScopeOptions",
+        "classification": "additive",
+        "from": "sha256:85da1a39a8db9ea675d018f4609817347e0ed21e9d16b2b306d38dba7db1dc35",
+        "to": "sha256:0e2d12f99d61966665c6b4974f39003b3e974a01eaa2f52cc22490fd1486391e",
+        "version": "7.0.0",
+        "note": "Issue #209: discard options gain an optional compensation registry; existing option objects stay valid, while discarding a scope that cites an uncompensated successful compensable effect now requires it."
+    },
+    {
+        "artifact": "api:.#ReplayReplaySessionOptions",
+        "classification": "additive",
+        "from": "sha256:f4a5496e576da84af78cb2253a2db53b4671646c3940481f73e1f7d31df9a7b6",
+        "to": "sha256:1df74248bc997c696264be3536d2b205eb219d250d7fbe94437af43cebb39043",
+        "version": "8.0.0",
+        "note": "Issue #210: replay options gain an optional automatic checkpointPolicy; existing option objects stay valid and default to the configured policy (none)."
+    },
+    {
+        "artifact": "api:.#RunReplaySessionOptions",
+        "classification": "additive",
+        "from": "sha256:a0dcb91033d7d260958a01f3ca1b64ded60d082f1ac1121c147c7e1ea785d8ea",
+        "to": "sha256:e5926b9d86f2b87c453a2f69becb8e55e083977822d8227c71408bc19f7ad314",
+        "version": "8.0.0",
+        "note": "Issue #210: root session options gain an optional automatic checkpointPolicy; existing option objects stay valid and default to the configured policy (none)."
+    },
+    {
+        "artifact": "api:.#RunTreeRlRolloutsOptions",
+        "classification": "additive",
+        "from": "sha256:d500076ebc463a5ab5b354566e9613873ce0cb5d151ae0f81ae2b4655810b305",
+        "to": "sha256:e881e38bb83c133cd8b3e93705a386d66ed1c42937c03f3d7d2571556c4af1e8",
+        "version": "8.0.0",
+        "note": "Issue #210: Tree-RL options gain an optional per-rollout bindings factory, required only for world- or process-bound sources that were previously refused; existing option objects stay valid."
+    },
+    {
+        "artifact": "api:.#TrajectoryCompressionWorkflow",
+        "classification": "additive",
+        "from": "sha256:3820d7e58bc94dc8437e2c636f7a08ac992ca82696cad3afaeaa4897971fb22f",
+        "to": "sha256:4e865f45eb5823b160eee0a47be2deea96b00525744089848612c1580c68936e",
+        "version": "8.0.0",
+        "note": "Issue #210: compression workflows gain optional per-session bindings and an automatic checkpointPolicy; existing workflows stay valid."
+    },
+    {
+        "artifact": "api:./applications#RunTreeRlRolloutsOptions",
+        "classification": "additive",
+        "from": "sha256:d500076ebc463a5ab5b354566e9613873ce0cb5d151ae0f81ae2b4655810b305",
+        "to": "sha256:e881e38bb83c133cd8b3e93705a386d66ed1c42937c03f3d7d2571556c4af1e8",
+        "version": "8.0.0",
+        "note": "Issue #210: Tree-RL options gain an optional per-rollout bindings factory, required only for world- or process-bound sources that were previously refused; existing option objects stay valid."
+    },
+    {
+        "artifact": "api:./applications#TrajectoryCompressionWorkflow",
+        "classification": "additive",
+        "from": "sha256:3820d7e58bc94dc8437e2c636f7a08ac992ca82696cad3afaeaa4897971fb22f",
+        "to": "sha256:4e865f45eb5823b160eee0a47be2deea96b00525744089848612c1580c68936e",
+        "version": "8.0.0",
+        "note": "Issue #210: compression workflows gain optional per-session bindings and an automatic checkpointPolicy; existing workflows stay valid."
+    },
+    {
+        "artifact": "api:./replay#ReplayReplaySessionOptions",
+        "classification": "additive",
+        "from": "sha256:f4a5496e576da84af78cb2253a2db53b4671646c3940481f73e1f7d31df9a7b6",
+        "to": "sha256:1df74248bc997c696264be3536d2b205eb219d250d7fbe94437af43cebb39043",
+        "version": "8.0.0",
+        "note": "Issue #210: replay options gain an optional automatic checkpointPolicy; existing option objects stay valid and default to the configured policy (none)."
+    },
+    {
+        "artifact": "api:./replay#RunReplaySessionOptions",
+        "classification": "additive",
+        "from": "sha256:a0dcb91033d7d260958a01f3ca1b64ded60d082f1ac1121c147c7e1ea785d8ea",
+        "to": "sha256:e5926b9d86f2b87c453a2f69becb8e55e083977822d8227c71408bc19f7ad314",
+        "version": "8.0.0",
+        "note": "Issue #210: root session options gain an optional automatic checkpointPolicy; existing option objects stay valid and default to the configured policy (none)."
+    },
+    {
+        "artifact": "api:.#ChildRunInspection",
+        "classification": "additive",
+        "from": "sha256:1ac2ade85f005fc9c8af8f2700d43957d922a1b567ee586c3c63304781acb0e7",
+        "to": "sha256:64e3beefc6bbec00be7b48f63a0eeed210352301ae8dcabbb32b72641cd6e943",
+        "version": "9.0.0",
+        "note": "Issue #216: run, replay, and delegated child-run inspections gain a readonly proof envelope (runtime_only by default, claimed_proof_backed metadata for imported claims, extension for publication controls); existing fields and signatures are unchanged."
+    },
+    {
+        "artifact": "api:.#DurableTaskExecutionInspection",
+        "classification": "additive",
+        "from": "sha256:37644404f0846ae5ea4c9a293bfa4be094bd100c2a99ae708b9527f15b7ca4b4",
+        "to": "sha256:f1856fe6f15b120e4e3b2dabb5afe15e1b5c1f995508a857a4f2b7e842953dce",
+        "version": "9.0.0",
+        "note": "Issue #216: run, replay, and delegated child-run inspections gain a readonly proof envelope (runtime_only by default, claimed_proof_backed metadata for imported claims, extension for publication controls); existing fields and signatures are unchanged."
+    },
+    {
+        "artifact": "api:.#InspectReplaySessionOptions",
+        "classification": "additive",
+        "from": "sha256:20aaffdf9883cda9e14cac628529320aeb38413d9b13b357859ba19f0ce61c61",
+        "to": "sha256:2cf1a7502a179b86ed4d60e6d8086743e56e915d015b9367e55f9345780f001d",
+        "version": "9.0.0",
+        "note": "Issue #216: InspectReplaySessionOptions gains optional lowerProof, which lowers eligible static sessions into Core-A reference records; existing options are unchanged."
+    },
+    {
+        "artifact": "api:.#ReplaySessionInspection",
+        "classification": "additive",
+        "from": "sha256:2189fc150bae94a8c7cc085bafffe776be3e2e68ba25bab372f93699e40f6b9c",
+        "to": "sha256:c742c86f02760424218ab0983275595908af675fcd0c60d862d5fd02b648186f",
+        "version": "9.0.0",
+        "note": "Issue #216: run, replay, and delegated child-run inspections gain a readonly proof envelope (runtime_only by default, claimed_proof_backed metadata for imported claims, extension for publication controls); existing fields and signatures are unchanged."
+    },
+    {
+        "artifact": "api:./delegation#ChildRunInspection",
+        "classification": "additive",
+        "from": "sha256:1ac2ade85f005fc9c8af8f2700d43957d922a1b567ee586c3c63304781acb0e7",
+        "to": "sha256:64e3beefc6bbec00be7b48f63a0eeed210352301ae8dcabbb32b72641cd6e943",
+        "version": "9.0.0",
+        "note": "Issue #216: run, replay, and delegated child-run inspections gain a readonly proof envelope (runtime_only by default, claimed_proof_backed metadata for imported claims, extension for publication controls); existing fields and signatures are unchanged."
+    },
+    {
+        "artifact": "api:./replay#InspectReplaySessionOptions",
+        "classification": "additive",
+        "from": "sha256:20aaffdf9883cda9e14cac628529320aeb38413d9b13b357859ba19f0ce61c61",
+        "to": "sha256:2cf1a7502a179b86ed4d60e6d8086743e56e915d015b9367e55f9345780f001d",
+        "version": "9.0.0",
+        "note": "Issue #216: InspectReplaySessionOptions gains optional lowerProof, which lowers eligible static sessions into Core-A reference records; existing options are unchanged."
+    },
+    {
+        "artifact": "api:./replay#ReplaySessionInspection",
+        "classification": "additive",
+        "from": "sha256:2189fc150bae94a8c7cc085bafffe776be3e2e68ba25bab372f93699e40f6b9c",
+        "to": "sha256:c742c86f02760424218ab0983275595908af675fcd0c60d862d5fd02b648186f",
+        "version": "9.0.0",
+        "note": "Issue #216: run, replay, and delegated child-run inspections gain a readonly proof envelope (runtime_only by default, claimed_proof_backed metadata for imported claims, extension for publication controls); existing fields and signatures are unchanged."
+    },
+    {
+        "artifact": "api:./runs#DurableTaskExecutionInspection",
+        "classification": "additive",
+        "from": "sha256:37644404f0846ae5ea4c9a293bfa4be094bd100c2a99ae708b9527f15b7ca4b4",
+        "to": "sha256:f1856fe6f15b120e4e3b2dabb5afe15e1b5c1f995508a857a4f2b7e842953dce",
+        "version": "9.0.0",
+        "note": "Issue #216: run, replay, and delegated child-run inspections gain a readonly proof envelope (runtime_only by default, claimed_proof_backed metadata for imported claims, extension for publication controls); existing fields and signatures are unchanged."
+    },
+    {
+        "artifact": "schema:run-ledger-entry-v1.schema.json",
+        "classification": "breaking",
+        "from": "sha256:4be5e5bea1d97e75e0b0f2b06e5c3f235ba5d94ad397dfcefc02a6816a1e4350",
+        "to": "sha256:42234c461941b6d373fd592a1dad86cf8253d9a804f48596142cd1c6d5b40314",
+        "version": "9.0.0",
+        "note": "Issue #216: run-ledger entry inspections require the proof envelope, so entries produced before 9.0.0 no longer validate and pre-9.0.0 readers refuse entries carrying it."
+    },
+    {
+        "artifact": "api:.#APPLICATION_TREE_RL_BASELINE_KINDS",
+        "classification": "breaking",
+        "from": "sha256:8721637b33c5beffd9cd01d3dc00de402a3459a684ffe669c63fcd703f21334c",
+        "to": "sha256:97ecda370bb51c2cb36989d16d5b1a6fc27c0654342a4259452f0c91d0d764e8",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#APPLICATION_TREE_RL_BATCH_FORMATS",
+        "classification": "breaking",
+        "from": "sha256:92ae673791679509fb52e8ffd50ee8a29f73b13325a581cb33f5fcc831541264",
+        "to": "sha256:cadaf1dd089ff84120922867381037c0f9ceb483b2e6e58fa32a55786bc24f62",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#APPLICATION_TREE_RL_PHASES",
+        "classification": "breaking",
+        "from": "sha256:d18b238d13591765ce05caca7bc4b51b710837ff1b38f256f3e7d176c820550a",
+        "to": "sha256:74d7724e6aa5a38b15e76bcb2e26db29c33c69c60921b42c04cd49eeb0f5213d",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#RunTreeRlRolloutsOptions",
+        "classification": "breaking",
+        "from": "sha256:e881e38bb83c133cd8b3e93705a386d66ed1c42937c03f3d7d2571556c4af1e8",
+        "to": "sha256:c23ecde8c29eb9da6f4c978177ba919985ccf844546858ba59e5f51a0e8d3991",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#TreeRlAdvantage",
+        "classification": "breaking",
+        "from": "sha256:0f28d8421623365902167f3b903fd0ae06609fef57cf09780af261074a09a55f",
+        "to": "sha256:0daac9ef3cfcba7872a5572877fb5f45047855dce2ba85e0a871fd2c17da94ac",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#TreeRlEvaluationBinding",
+        "classification": "breaking",
+        "from": "sha256:524b46e537d24261f0440c66ad498b756816cf4bad3817c47bcbd76c3c01a3b6",
+        "to": "sha256:a076cf0232e8c4b7b154922a6cb98a452f705a969a09d23f4b26d3296e66b021",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#TreeRlProviderContext",
+        "classification": "breaking",
+        "from": "sha256:7817d0c8424889b21c8a12f1fa29eb37a57486b9fa2d14eb8492c743f0c8e313",
+        "to": "sha256:7698998ea9445ea970837bd38dea591340ec6a731928896bf04fdd21a0f9aba3",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#TreeRlRewardContext",
+        "classification": "breaking",
+        "from": "sha256:2c9b8e80a0c3df6284646e5407400a50d7adc79f26041e3f1b31df0fe669bd80",
+        "to": "sha256:aae7afa9d3f986987baa46ca2f914fd8019cb65237426613069bd1f36018fd10",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#TreeRlRolloutPlan",
+        "classification": "breaking",
+        "from": "sha256:8d9bf056aa1c311c117ac1634da89629acaf24976b131dd5556ad796d3a9d322",
+        "to": "sha256:8c14b7b8197b7b94054ec66337afca2643ae12036714860d43e7a4c0f8d65838",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#TreeRlRolloutRecord",
+        "classification": "breaking",
+        "from": "sha256:4456b1b8b315afef68f76ba509837d6873a596a22614013b98007b1e5038dde9",
+        "to": "sha256:9528478d414e527cef26ab4e409747c98acb6e3fba10944a1f3d2ab27d9240de",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#TreeRlRunInspection",
+        "classification": "breaking",
+        "from": "sha256:a0766b798af1a6f4dd13025344686a5c354d85c54ac3495defe05f2dae0d95a6",
+        "to": "sha256:694ca2906e1b70934cfc26dfdeedd462955082a139f1a960d263a8a8455721a9",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#TreeRlTrainingBatch",
+        "classification": "breaking",
+        "from": "sha256:c46aaa1b6726a28571ced15cfe5635bcc70e217f628c93384abe8c58e3c2b5e6",
+        "to": "sha256:61c667f19f789da40049baebb4cfe21fbd4238f1d386f0dfc517c296b7fc1cbb",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#TreeRlTrainingLine",
+        "classification": "breaking",
+        "from": "sha256:5d00651ef7434c2fdfc100e8ac7a5124b4ec101db0117e6e6c62259d186b918d",
+        "to": "sha256:ac5a685c16d0937b14c5c5912fca67ed9ff537abc8363b9044cdb05e364c8518",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:.#computeTreeRlAdvantages",
+        "classification": "breaking",
+        "from": "sha256:0910237cc5134248b631e0051da67f03bab60c7de036c0f30f494d6e3a935bb0",
+        "to": "sha256:103c3b33d81c3a05cad95f89e0550b462958fe62bd4e27c7a0408e5e897c1f36",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#APPLICATION_TREE_RL_BASELINE_KINDS",
+        "classification": "breaking",
+        "from": "sha256:8721637b33c5beffd9cd01d3dc00de402a3459a684ffe669c63fcd703f21334c",
+        "to": "sha256:97ecda370bb51c2cb36989d16d5b1a6fc27c0654342a4259452f0c91d0d764e8",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#APPLICATION_TREE_RL_BATCH_FORMATS",
+        "classification": "breaking",
+        "from": "sha256:92ae673791679509fb52e8ffd50ee8a29f73b13325a581cb33f5fcc831541264",
+        "to": "sha256:cadaf1dd089ff84120922867381037c0f9ceb483b2e6e58fa32a55786bc24f62",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#APPLICATION_TREE_RL_PHASES",
+        "classification": "breaking",
+        "from": "sha256:d18b238d13591765ce05caca7bc4b51b710837ff1b38f256f3e7d176c820550a",
+        "to": "sha256:74d7724e6aa5a38b15e76bcb2e26db29c33c69c60921b42c04cd49eeb0f5213d",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#RunTreeRlRolloutsOptions",
+        "classification": "breaking",
+        "from": "sha256:e881e38bb83c133cd8b3e93705a386d66ed1c42937c03f3d7d2571556c4af1e8",
+        "to": "sha256:c23ecde8c29eb9da6f4c978177ba919985ccf844546858ba59e5f51a0e8d3991",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#TreeRlAdvantage",
+        "classification": "breaking",
+        "from": "sha256:0f28d8421623365902167f3b903fd0ae06609fef57cf09780af261074a09a55f",
+        "to": "sha256:0daac9ef3cfcba7872a5572877fb5f45047855dce2ba85e0a871fd2c17da94ac",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#TreeRlEvaluationBinding",
+        "classification": "breaking",
+        "from": "sha256:524b46e537d24261f0440c66ad498b756816cf4bad3817c47bcbd76c3c01a3b6",
+        "to": "sha256:a076cf0232e8c4b7b154922a6cb98a452f705a969a09d23f4b26d3296e66b021",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#TreeRlProviderContext",
+        "classification": "breaking",
+        "from": "sha256:7817d0c8424889b21c8a12f1fa29eb37a57486b9fa2d14eb8492c743f0c8e313",
+        "to": "sha256:7698998ea9445ea970837bd38dea591340ec6a731928896bf04fdd21a0f9aba3",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#TreeRlRewardContext",
+        "classification": "breaking",
+        "from": "sha256:2c9b8e80a0c3df6284646e5407400a50d7adc79f26041e3f1b31df0fe669bd80",
+        "to": "sha256:aae7afa9d3f986987baa46ca2f914fd8019cb65237426613069bd1f36018fd10",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#TreeRlRolloutPlan",
+        "classification": "breaking",
+        "from": "sha256:8d9bf056aa1c311c117ac1634da89629acaf24976b131dd5556ad796d3a9d322",
+        "to": "sha256:8c14b7b8197b7b94054ec66337afca2643ae12036714860d43e7a4c0f8d65838",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#TreeRlRolloutRecord",
+        "classification": "breaking",
+        "from": "sha256:4456b1b8b315afef68f76ba509837d6873a596a22614013b98007b1e5038dde9",
+        "to": "sha256:9528478d414e527cef26ab4e409747c98acb6e3fba10944a1f3d2ab27d9240de",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#TreeRlRunInspection",
+        "classification": "breaking",
+        "from": "sha256:a0766b798af1a6f4dd13025344686a5c354d85c54ac3495defe05f2dae0d95a6",
+        "to": "sha256:694ca2906e1b70934cfc26dfdeedd462955082a139f1a960d263a8a8455721a9",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#TreeRlTrainingBatch",
+        "classification": "breaking",
+        "from": "sha256:c46aaa1b6726a28571ced15cfe5635bcc70e217f628c93384abe8c58e3c2b5e6",
+        "to": "sha256:61c667f19f789da40049baebb4cfe21fbd4238f1d386f0dfc517c296b7fc1cbb",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#TreeRlTrainingLine",
+        "classification": "breaking",
+        "from": "sha256:5d00651ef7434c2fdfc100e8ac7a5124b4ec101db0117e6e6c62259d186b918d",
+        "to": "sha256:ac5a685c16d0937b14c5c5912fca67ed9ff537abc8363b9044cdb05e364c8518",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "api:./applications#computeTreeRlAdvantages",
+        "classification": "breaking",
+        "from": "sha256:0910237cc5134248b631e0051da67f03bab60c7de036c0f30f494d6e3a935bb0",
+        "to": "sha256:103c3b33d81c3a05cad95f89e0550b462958fe62bd4e27c7a0408e5e897c1f36",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL aligns with paper Algorithm 2 (G graded roots per prompt over a batch, a fork-selection interface with meta-agent and dependency selectors, a tool call seeding one of K branches, inter-root and intra-tree advantages with per-group standardization, per-action jsonl_v2 attribution, flat_grpo baseline, concurrent rollouts); the previous single-source, per-fork-point shapes are replaced."
+    },
+    {
+        "artifact": "schema:application-evaluation-v1.schema.json",
+        "classification": "breaking",
+        "from": "sha256:f676bc54c53a2eb48dfe12fb654af306f52424ddbf544362ad5dbe605935ea3d",
+        "to": "sha256:955d25dbb536c8e8fc744e887a053a67d37d2cc5691a3ba2071be0b6dc8dc453",
+        "version": "10.0.0",
+        "note": "Issue #213: the Tree-RL evaluation baseline kind single_rollout is replaced by flat_grpo, so reports naming single_rollout no longer validate."
+    },
+    {
+        "artifact": "schema:application-tree-rl-rollout-v1.schema.json",
+        "classification": "breaking",
+        "from": "sha256:6e58318e12f70b8fa528d14cb4d316cdda0ffd1d17462217d854ff11d87cd907",
+        "to": "sha256:96e6bc4c920d368053afcfa5d257815a28cca81ef31212db5926afd6a2962264",
+        "version": "10.0.0",
+        "note": "Issue #213: Tree-RL records follow paper Algorithm 2: the opened record names the prompt batch with its root sessions and the advantage normalization, a new root record retains each root's grading and fork decision, rollout records name their root, fork turn, seeding, and turns, and $defs.batchLine is the jsonl_v2 per-action line; records written before 10.0.0 no longer validate."
+    },
+    {
+        "artifact": "api:.#APPLICATION_CRO_CANDIDATE_STATUSES",
+        "classification": "breaking",
+        "from": "sha256:380370d36a33049358f177de271b4acf6da2d7e8e956a7b0b998adf9ffad7af1",
+        "to": "sha256:2e1bafed0f4d328efa7b6f9a9f18553504d183ba423d029e06110727b0998c32",
+        "version": "11.0.0",
+        "note": "Issue #212: applications protocol v9 replaces the counterfactual candidate statuses with archived, evaluated, promoted, rejected (proposed removed); 10.0.0 optimizer records no longer decode."
+    },
+    {
+        "artifact": "api:.#APPLICATION_CRO_PHASES",
+        "classification": "breaking",
+        "from": "sha256:eb0481b4085a49a262d8658f5a1b4c12d0cc9914aa1d3df6026a060db3e2cb77",
+        "to": "sha256:170370a24970e7ffaebf4444bbd6f33031bd5375dc216180466d9dab15973c5f",
+        "version": "11.0.0",
+        "note": "Issue #212: applications protocol v9 replaces the counterfactual record phases with opened, proposal, candidate, selection for the Algorithm 1 loop."
+    },
+    {
+        "artifact": "api:.#ApplicationManifest",
+        "classification": "additive",
+        "from": "sha256:b4a6c618ad827ce6de514a9960c720d69a8fc207e25368423d9175efe4ebda88",
+        "to": "sha256:df561fa11ec6d32387c8a4562055ead32803e3ecd3ed293a7fd430589fe53c47",
+        "version": "11.0.0",
+        "note": "Issue #212: ApplicationManifest gains the optional thresholds and computation_reuse fields, present only when the protocol declares thresholds or the application measures reuse; existing manifests are unchanged."
+    },
+    {
+        "artifact": "api:.#ApplicationProtocolDefinition",
+        "classification": "additive",
+        "from": "sha256:307199a1526261c3d42418cbe727600a0955cf4c906211d0b797f9ed873095f4",
+        "to": "sha256:eb7d820524d032be439c25957817c4965daa1d6e79cef335c38bc442cced43ee",
+        "version": "11.0.0",
+        "note": "Issue #212: ApplicationProtocolDefinition gains the optional thresholds map of finite numbers; definitions without it keep their canonical form and protocol identity."
+    },
+    {
+        "artifact": "api:.#CounterfactualCandidatePlan",
+        "classification": "breaking",
+        "from": "sha256:82e24c8f2110bcec3cc0400e1e255fb938aa578f30c4bb0a8bbd93ec89c43737",
+        "to": "sha256:32e75958c910868c41c59d4b1148673b20cef3bd1419a7ec2300eb375b72f0e7",
+        "version": "11.0.0",
+        "note": "Issue #212: candidate plans carry the iteration, fix and guard sets, mechanism, rationale, prior, and patch of a proposed edit; the identity derives from them."
+    },
+    {
+        "artifact": "api:.#CounterfactualCandidateRecord",
+        "classification": "breaking",
+        "from": "sha256:33e03e98d8f211c430ee450b4cdc5edb902b67372fe0a9a2a1ad9017a9c397e5",
+        "to": "sha256:dafd546f35bc59e49e171e1f70c523375d318b21045786c8c13bd9e2bc442510",
+        "version": "11.0.0",
+        "note": "Issue #212: candidate records carry per-example targeted, dev, and train results, the gate verdict, dev score, and promotion reference instead of one branch, divergence, and evaluator verdict."
+    },
+    {
+        "artifact": "api:.#CounterfactualHandoff",
+        "classification": "breaking",
+        "from": "sha256:f4bcae57bcea40319439d6be06551543a3a651b880deb5de0232aa81b3b4f9e5",
+        "to": "sha256:89a201465d7ca913d7c2e1ce16bbaa6b238e7f9906005e57f26f0de53d59d118",
+        "version": "11.0.0",
+        "note": "Issue #212: the handoff manifest names selected_candidate_id instead of promoted_candidate_id, and statuses follow applications protocol v9."
+    },
+    {
+        "artifact": "api:.#CounterfactualOptimizationInspection",
+        "classification": "breaking",
+        "from": "sha256:57b6ce2fdea679abc43dbad4c522fc92d856fde2ac46529fb8ed116ef84d7691",
+        "to": "sha256:6ad78a9e529f65cf609c77b4e7e4513979218923bc8778ac3e9a27293fa8317f",
+        "version": "11.0.0",
+        "note": "Issue #212: inspection reports examples, proposals, candidate outcomes, the parent pool, the selection, budgets, thresholds, and computation reuse instead of one baseline session, declared candidates, and a promotion."
+    },
+    {
+        "artifact": "api:.#CounterfactualWorkflowDefinition",
+        "classification": "breaking",
+        "from": "sha256:55e6af6112d57614330c9079f38343633e22d4122be4965bc8a72906ca26b4be",
+        "to": "sha256:4a3f46899fb7b3c1b01a92f8055f2999a98332ad756b30a613054e319ced119f",
+        "version": "11.0.0",
+        "note": "Issue #212: the baseline program and task are factories of the example, so one workflow runs every train and dev example."
+    },
+    {
+        "artifact": "api:.#CreateApplicationManifestOptions",
+        "classification": "additive",
+        "from": "sha256:5bb2163728ca0f2f37a940fbad176db06f5363a3c553aff5ac6229b199d6ad2b",
+        "to": "sha256:d7e2f8a1c61b9cb12fd03c4ac27d1cbc7f7a95858c0d47bfce958f333262cf9f",
+        "version": "11.0.0",
+        "note": "Issue #212: CreateApplicationManifestOptions gains the optional computationReuse table; existing callers are unchanged."
+    },
+    {
+        "artifact": "api:.#RunCounterfactualOptimizationOptions",
+        "classification": "breaking",
+        "from": "sha256:e5a3325e9557415d03729f31128e56f727f7614e803049a9bf562d2b812ce858",
+        "to": "sha256:95397eef108d3cbe95b3bda89533ae6cf61622a58e929b353622901dd0f829f3",
+        "version": "11.0.0",
+        "note": "Issue #212: runCounterfactualOptimization takes dataset, proposer, applyEdit, and metric instead of candidates and evaluate."
+    },
+    {
+        "artifact": "api:./applications#APPLICATION_CRO_CANDIDATE_STATUSES",
+        "classification": "breaking",
+        "from": "sha256:380370d36a33049358f177de271b4acf6da2d7e8e956a7b0b998adf9ffad7af1",
+        "to": "sha256:2e1bafed0f4d328efa7b6f9a9f18553504d183ba423d029e06110727b0998c32",
+        "version": "11.0.0",
+        "note": "Issue #212: applications protocol v9 replaces the counterfactual candidate statuses with archived, evaluated, promoted, rejected (proposed removed); 10.0.0 optimizer records no longer decode."
+    },
+    {
+        "artifact": "api:./applications#APPLICATION_CRO_PHASES",
+        "classification": "breaking",
+        "from": "sha256:eb0481b4085a49a262d8658f5a1b4c12d0cc9914aa1d3df6026a060db3e2cb77",
+        "to": "sha256:170370a24970e7ffaebf4444bbd6f33031bd5375dc216180466d9dab15973c5f",
+        "version": "11.0.0",
+        "note": "Issue #212: applications protocol v9 replaces the counterfactual record phases with opened, proposal, candidate, selection for the Algorithm 1 loop."
+    },
+    {
+        "artifact": "api:./applications#ApplicationManifest",
+        "classification": "additive",
+        "from": "sha256:b4a6c618ad827ce6de514a9960c720d69a8fc207e25368423d9175efe4ebda88",
+        "to": "sha256:df561fa11ec6d32387c8a4562055ead32803e3ecd3ed293a7fd430589fe53c47",
+        "version": "11.0.0",
+        "note": "Issue #212: ApplicationManifest gains the optional thresholds and computation_reuse fields, present only when the protocol declares thresholds or the application measures reuse; existing manifests are unchanged."
+    },
+    {
+        "artifact": "api:./applications#ApplicationProtocolDefinition",
+        "classification": "additive",
+        "from": "sha256:307199a1526261c3d42418cbe727600a0955cf4c906211d0b797f9ed873095f4",
+        "to": "sha256:eb7d820524d032be439c25957817c4965daa1d6e79cef335c38bc442cced43ee",
+        "version": "11.0.0",
+        "note": "Issue #212: ApplicationProtocolDefinition gains the optional thresholds map of finite numbers; definitions without it keep their canonical form and protocol identity."
+    },
+    {
+        "artifact": "api:./applications#CounterfactualCandidatePlan",
+        "classification": "breaking",
+        "from": "sha256:82e24c8f2110bcec3cc0400e1e255fb938aa578f30c4bb0a8bbd93ec89c43737",
+        "to": "sha256:32e75958c910868c41c59d4b1148673b20cef3bd1419a7ec2300eb375b72f0e7",
+        "version": "11.0.0",
+        "note": "Issue #212: candidate plans carry the iteration, fix and guard sets, mechanism, rationale, prior, and patch of a proposed edit; the identity derives from them."
+    },
+    {
+        "artifact": "api:./applications#CounterfactualCandidateRecord",
+        "classification": "breaking",
+        "from": "sha256:33e03e98d8f211c430ee450b4cdc5edb902b67372fe0a9a2a1ad9017a9c397e5",
+        "to": "sha256:dafd546f35bc59e49e171e1f70c523375d318b21045786c8c13bd9e2bc442510",
+        "version": "11.0.0",
+        "note": "Issue #212: candidate records carry per-example targeted, dev, and train results, the gate verdict, dev score, and promotion reference instead of one branch, divergence, and evaluator verdict."
+    },
+    {
+        "artifact": "api:./applications#CounterfactualHandoff",
+        "classification": "breaking",
+        "from": "sha256:f4bcae57bcea40319439d6be06551543a3a651b880deb5de0232aa81b3b4f9e5",
+        "to": "sha256:89a201465d7ca913d7c2e1ce16bbaa6b238e7f9906005e57f26f0de53d59d118",
+        "version": "11.0.0",
+        "note": "Issue #212: the handoff manifest names selected_candidate_id instead of promoted_candidate_id, and statuses follow applications protocol v9."
+    },
+    {
+        "artifact": "api:./applications#CounterfactualOptimizationInspection",
+        "classification": "breaking",
+        "from": "sha256:57b6ce2fdea679abc43dbad4c522fc92d856fde2ac46529fb8ed116ef84d7691",
+        "to": "sha256:6ad78a9e529f65cf609c77b4e7e4513979218923bc8778ac3e9a27293fa8317f",
+        "version": "11.0.0",
+        "note": "Issue #212: inspection reports examples, proposals, candidate outcomes, the parent pool, the selection, budgets, thresholds, and computation reuse instead of one baseline session, declared candidates, and a promotion."
+    },
+    {
+        "artifact": "api:./applications#CounterfactualWorkflowDefinition",
+        "classification": "breaking",
+        "from": "sha256:55e6af6112d57614330c9079f38343633e22d4122be4965bc8a72906ca26b4be",
+        "to": "sha256:4a3f46899fb7b3c1b01a92f8055f2999a98332ad756b30a613054e319ced119f",
+        "version": "11.0.0",
+        "note": "Issue #212: the baseline program and task are factories of the example, so one workflow runs every train and dev example."
+    },
+    {
+        "artifact": "api:./applications#CreateApplicationManifestOptions",
+        "classification": "additive",
+        "from": "sha256:5bb2163728ca0f2f37a940fbad176db06f5363a3c553aff5ac6229b199d6ad2b",
+        "to": "sha256:d7e2f8a1c61b9cb12fd03c4ac27d1cbc7f7a95858c0d47bfce958f333262cf9f",
+        "version": "11.0.0",
+        "note": "Issue #212: CreateApplicationManifestOptions gains the optional computationReuse table; existing callers are unchanged."
+    },
+    {
+        "artifact": "api:./applications#RunCounterfactualOptimizationOptions",
+        "classification": "breaking",
+        "from": "sha256:e5a3325e9557415d03729f31128e56f727f7614e803049a9bf562d2b812ce858",
+        "to": "sha256:95397eef108d3cbe95b3bda89533ae6cf61622a58e929b353622901dd0f829f3",
+        "version": "11.0.0",
+        "note": "Issue #212: runCounterfactualOptimization takes dataset, proposer, applyEdit, and metric instead of candidates and evaluate."
+    },
+    {
+        "artifact": "schema:application-cro-candidate-v1.schema.json",
+        "classification": "breaking",
+        "from": "sha256:083ca1ada4657f8464a9c8d2bec37835848d3b4aedd1f12d5b9ff2a75f3f7f3c",
+        "to": "sha256:a89e8e606faa20d12b61421c8808b0e0c4c15bce4614e4ed882fe57d3ae36b7f",
+        "version": "11.0.0",
+        "note": "Issue #212: the counterfactual record schema retains the opened, proposal, candidate, and selection records of Algorithm 1; 10.0.0 records are refused."
+    },
+    {
+        "artifact": "schema:application-manifest-v1.schema.json",
+        "classification": "additive",
+        "from": "sha256:fbd1221e7f89982af94e8ad4e26aa42413842d8a5fd7e6df2be7ca9e04a9150d",
+        "to": "sha256:5c84c67c7fdd81ded89a30f1b39f8d59f1e347c46893366cdcc78275b31ff4c2",
+        "version": "11.0.0",
+        "note": "Issue #212: the manifest schema admits the optional thresholds and computation_reuse properties; every manifest valid under the previous schema stays valid."
+    },
+    {
+        "artifact": "api:.#APPLICATION_LIMITS",
+        "classification": "additive",
+        "from": "sha256:80eb61435ecdab9b2c270e2d17f6e8eaf4862a333243d7c578d27ed8c3192f17",
+        "to": "sha256:cc82e2cea132734aa77821632c75bd914f8bc058502eee4cecc07aeadc948a01",
+        "version": "11.1.0",
+        "note": "Issue #211: APPLICATION_LIMITS gains maxTicks and maxTickIntervalMilliseconds for the concurrent runtime supervisor; every existing limit is unchanged."
+    },
+    {
+        "artifact": "api:./applications#APPLICATION_LIMITS",
+        "classification": "additive",
+        "from": "sha256:80eb61435ecdab9b2c270e2d17f6e8eaf4862a333243d7c578d27ed8c3192f17",
+        "to": "sha256:cc82e2cea132734aa77821632c75bd914f8bc058502eee4cecc07aeadc948a01",
+        "version": "11.1.0",
+        "note": "Issue #211: APPLICATION_LIMITS gains maxTicks and maxTickIntervalMilliseconds for the concurrent runtime supervisor; every existing limit is unchanged."
+    },
+    {
+        "artifact": "api:.#ApplicationWorldForkRequest",
+        "classification": "additive",
+        "from": "sha256:487ff5935a3502d64a07407a1401dbbd41215cd0f43fca61500794145ecdde17",
+        "to": "sha256:dba6c90181ac34266bef61214e9a37585f1c4e191ed341d331badd5b592e200b",
+        "version": "11.1.0",
+        "note": "Issue #211: ApplicationWorldForkRequest gains the optional sourceCustodyId naming custody whose current tree the fork copies (cross-agent handoff); requests without it keep their meaning."
+    },
+    {
+        "artifact": "api:./applications#ApplicationWorldForkRequest",
+        "classification": "additive",
+        "from": "sha256:487ff5935a3502d64a07407a1401dbbd41215cd0f43fca61500794145ecdde17",
+        "to": "sha256:dba6c90181ac34266bef61214e9a37585f1c4e191ed341d331badd5b592e200b",
+        "version": "11.1.0",
+        "note": "Issue #211: ApplicationWorldForkRequest gains the optional sourceCustodyId naming custody whose current tree the fork copies (cross-agent handoff); requests without it keep their meaning."
+    },
+    {
+        "artifact": "api:.#ReferenceCopyCarrier",
+        "classification": "additive",
+        "from": "sha256:6bbacaea7483c50326d72797f5366beac05bfa83a8e36b347d889b6df73796b0",
+        "to": "sha256:e3b7372098964816b7461b6f2b1f9a12795a4614c279443ad49c1883848c97ca",
+        "version": "11.3.0",
+        "note": "Issue #215: ReferenceCopyCarrier gains the read-only backendSelection evidence (mode, requested, used, attempts); backend now documents the backend actually used, which equals the requested backend under the default strict selection. Carriers are created only by the package, so no implementation must adapt."
+    },
+    {
+        "artifact": "api:.#ReferenceCopyCarrierOptions",
+        "classification": "additive",
+        "from": "sha256:5e3b1ccab415c861176b527f590ddf997a5fb22377252bf976c11af29f78a01a",
+        "to": "sha256:e025add87f2ce16bde2d1680dbdcc627bb5c35600c7e29049a9f7d21038c3cf2",
+        "version": "11.3.0",
+        "note": "Issue #215: ReferenceCopyCarrierOptions gains the optional backendSelection mode; omitting it keeps the configured strict selection, so existing options keep their meaning."
+    },
+    {
+        "artifact": "api:./workspace#ReferenceCopyCarrier",
+        "classification": "additive",
+        "from": "sha256:6bbacaea7483c50326d72797f5366beac05bfa83a8e36b347d889b6df73796b0",
+        "to": "sha256:e3b7372098964816b7461b6f2b1f9a12795a4614c279443ad49c1883848c97ca",
+        "version": "11.3.0",
+        "note": "Issue #215: ReferenceCopyCarrier gains the read-only backendSelection evidence (mode, requested, used, attempts); backend now documents the backend actually used, which equals the requested backend under the default strict selection. Carriers are created only by the package, so no implementation must adapt."
+    },
+    {
+        "artifact": "api:./workspace#ReferenceCopyCarrierOptions",
+        "classification": "additive",
+        "from": "sha256:5e3b1ccab415c861176b527f590ddf997a5fb22377252bf976c11af29f78a01a",
+        "to": "sha256:e025add87f2ce16bde2d1680dbdcc627bb5c35600c7e29049a9f7d21038c3cf2",
+        "version": "11.3.0",
+        "note": "Issue #215: ReferenceCopyCarrierOptions gains the optional backendSelection mode; omitting it keeps the configured strict selection, so existing options keep their meaning."
+    },
+    {
+        "artifact": "api:.#ReplayBranchOptions",
+        "from": "sha256:8452761603cb83ae060b5067319f5b13489f09b5ece462bff4c0fa7e71c7d861",
+        "to": "sha256:228934d4dabfd0c19f5291d1dc352d5b3d8a3a1c73a9cd8a4ea5a8ebd1b0f725",
+        "classification": "additive",
+        "note": "Epic #202 review fix pass (#209): ReplayBranchOptions gains the optional sourceDisposition (replay.branch.sourceDispositions: compensate, retain); omitting it keeps the configured compensate default, so existing branch options keep their meaning (replay protocol v3).",
+        "version": "12.0.0"
+    },
+    {
+        "artifact": "api:./replay#ReplayBranchOptions",
+        "from": "sha256:8452761603cb83ae060b5067319f5b13489f09b5ece462bff4c0fa7e71c7d861",
+        "to": "sha256:228934d4dabfd0c19f5291d1dc352d5b3d8a3a1c73a9cd8a4ea5a8ebd1b0f725",
+        "classification": "additive",
+        "note": "Epic #202 review fix pass (#209): ReplayBranchOptions gains the optional sourceDisposition (replay.branch.sourceDispositions: compensate, retain); omitting it keeps the configured compensate default, so existing branch options keep their meaning (replay protocol v3).",
+        "version": "12.0.0"
     }
 ]

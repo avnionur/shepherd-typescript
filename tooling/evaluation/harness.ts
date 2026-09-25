@@ -5,13 +5,13 @@ import {
     type ApplicationEvaluationDefinition,
     type ApplicationEvaluationExperiment,
     type CodingSupervisorWorkerDefinition,
+    type CounterfactualEdit,
     createStaticProvider,
     DELEGATION_PARENT_KINDS,
     type ModelProvider,
     type ModelRequest,
     type ModelResponse,
     type ModelUsage,
-    REPLAY_CHANGE_DIMENSIONS,
     type ReplaySessionContext,
     type ReplaySessionProgram,
     type ReplayStepHandle,
@@ -62,14 +62,20 @@ type SupervisorFixture = {
 
 type OptimizerFixture = {
     readonly baselineLabel: string;
-    readonly candidates: readonly {
-        readonly label: string;
-        readonly name: string;
-        readonly stepIndex: number;
-        readonly verdict: Verdict;
-    }[];
     readonly claimId: string;
+    /** Train and dev example identities; each example's input is its identity. */
+    readonly dataset: { readonly dev: readonly string[]; readonly train: readonly string[] };
+    /** Considered mechanisms every scripted reflection enumerates. */
+    readonly hypotheses: readonly { readonly mechanism: string; readonly prior: number }[];
+    /** Scripted proposer iterations: parent name, edits whose patch names a provider label, findings. */
+    readonly iterations: readonly {
+        readonly edits: readonly CounterfactualEdit[];
+        readonly findings: readonly string[];
+        readonly parent: string | null;
+    }[];
     readonly programId: string;
+    /** Metric score table by the provider label that produced the final stage, then example. */
+    readonly scores: Readonly<Record<string, Readonly<Record<string, number>>>>;
     readonly stages: readonly Stage[];
 };
 
@@ -90,11 +96,15 @@ type CompressionFixture = {
 
 type TreeRlFixture = {
     readonly claimId: string;
+    /** Fork proposal every root receives: the configured turn and reason, no tool call. */
+    readonly fork: { readonly reason: string; readonly turn: number };
     readonly programId: string;
+    /** Prompts in batch order, each naming the cassette label of every root in group order. */
+    readonly prompts: readonly { readonly id: string; readonly roots: readonly string[] }[];
+    /** Rewards keyed by `<root label>` for a root and `<root label>:<seed>` for a branch. */
     readonly rewards: Readonly<Record<string, number>>;
     readonly seedLabelPrefix: string;
     readonly sourceClaimId: string;
-    readonly sourceLabel: string;
     readonly stages: readonly Stage[];
 };
 
@@ -139,7 +149,6 @@ const fields = applicationsProtocolConfig.compression.childFields;
 const [SUPERVISOR_KIND, OPTIMIZER_KIND, COMPRESSION_KIND, TREE_RL_KIND] = APPLICATION_KINDS;
 const [OBSERVE, , , , ACCEPT] = APPLICATION_SUPERVISION_POLICY_KINDS;
 const [ROOT_PARENT] = DELEGATION_PARENT_KINDS;
-const [, PROVIDER_CHANGE] = REPLAY_CHANGE_DIMENSIONS;
 
 /**
  * Resolves the repository evaluation from the parsed research applications configuration.
@@ -335,30 +344,50 @@ function optimizerBinding(
             label,
             (request) => kit.response(label, (request.input as { stage: string }).stage).output,
         );
-    const verdicts = new Map(
-        fixture.candidates.map((candidate) => [candidate.name, candidate.verdict]),
-    );
+    const program = stageWorkflow(fixture.stages, kit);
+    const reflectionFields = applicationsProtocolConfig.cro.reflection.fields;
     return {
         kind: OPTIMIZER_KIND,
         options: {
+            applyEdit: ({ edit }) => ({ provider: keyedStage(edit.patch as string) }),
             baseline: {
-                program: stageWorkflow(fixture.stages, kit),
+                program: () => program,
                 programId: fixture.programId,
                 provider: keyedStage(fixture.baselineLabel),
             },
-            candidates: fixture.candidates.map((candidate) => ({
-                changes: [PROVIDER_CHANGE],
-                name: candidate.name,
-                provider: keyedStage(candidate.label),
-                stepIndex: candidate.stepIndex,
-            })),
             claimId: fixture.claimId,
-            evaluate: ({ candidate }) => {
-                const verdict = verdicts.get(candidate.name) as Verdict;
+            dataset: {
+                dev: fixture.dataset.dev.map((id) => ({ id, input: id })),
+                train: fixture.dataset.train.map((id) => ({ id, input: id })),
+            },
+            // Every fixture session finishes with a stage output, and the score table covers every
+            // provider label and example the fixture runs.
+            metric: ({ example, session }) => {
+                const output = (
+                    session.terminal as unknown as {
+                        readonly result: { readonly value: { text: string } };
+                    }
+                ).result.value;
+                const [label] = output.text.split(":");
+                return (fixture.scores[label as string] as Readonly<Record<string, number>>)[
+                    example.id
+                ] as number;
+            },
+            proposer: ({ iteration }) => {
+                const scripted = fixture.iterations[
+                    iteration
+                ] as OptimizerFixture["iterations"][number];
                 return {
-                    passed: verdict.passed === true,
-                    reason: verdict.reason,
-                    score: verdict.score,
+                    edits: scripted.edits,
+                    parent: scripted.parent,
+                    reflection: {
+                        [reflectionFields.findings]: [...scripted.findings],
+                        [reflectionFields.hypotheses]: fixture.hypotheses.map((hypothesis) => ({
+                            [reflectionFields.mechanism]: hypothesis.mechanism,
+                            [reflectionFields.prior]: hypothesis.prior,
+                        })),
+                        [reflectionFields.parent]: scripted.parent,
+                    },
                 };
             },
         },
@@ -387,7 +416,7 @@ function compressionBinding(
             compressor: child(fixture.compressorTask, ({ source }: TrajectoryCompressorContext) =>
                 childText({
                     fork_point: {
-                        prefix_id: source.steps[fixture.forkStepIndex - 1]?.prefix_id,
+                        prefix_id: source.steps[fixture.forkStepIndex - 1]?.prefix_id ?? null,
                         session_id: source.session_id,
                         step_index: fixture.forkStepIndex,
                     },
@@ -427,33 +456,40 @@ function compressionBinding(
 
 function treeRlBinding(fixture: TreeRlFixture, kit: ProviderKit): ApplicationEvaluationBinding {
     const program = stageWorkflow(fixture.stages, kit);
+    const labelOf = (promptId: string, groupIndex: number) =>
+        fixture.prompts.find((prompt) => prompt.id === promptId)?.roots[groupIndex] as string;
     return {
         kind: TREE_RL_KIND,
         options: {
             claimId: fixture.claimId,
-            program,
-            provider: ({ fork_point, seed }) =>
-                kit.cassette(
+            provider: ({ fork_point, group_index, prompt_id, seed }) => {
+                const root = labelOf(prompt_id, group_index);
+                return kit.cassette(
                     fixture.stages,
-                    fixture.sourceLabel,
+                    root,
                     `${fixture.seedLabelPrefix}${seed}`,
                     fork_point.step_index,
-                    `${fixture.seedLabelPrefix}${seed}:${fork_point.step_index}`,
-                ),
-            reward: ({ fork_point, seed }) =>
-                fixture.rewards[`${fork_point.step_index}:${seed}`] as number,
+                    `${root}:${fixture.seedLabelPrefix}${seed}:${fork_point.step_index}`,
+                );
+            },
+            reward: ({ group_index, prompt_id, seed }) => {
+                const root = labelOf(prompt_id, group_index);
+                return fixture.rewards[seed === null ? root : `${root}:${seed}`] as number;
+            },
+            selector: () => ({
+                branch_turn: fixture.fork.turn,
+                reason: fixture.fork.reason,
+                tool_call: null,
+            }),
         },
-        source: {
-            claimId: fixture.sourceClaimId,
+        prompts: fixture.prompts.map((prompt) => ({
+            id: prompt.id,
             program,
-            programId: fixture.programId,
-            provider: kit.cassette(
-                fixture.stages,
-                fixture.sourceLabel,
-                fixture.sourceLabel,
-                0,
-                fixture.sourceLabel,
-            ),
-        },
+            roots: prompt.roots.map((label) => ({
+                claimId: fixture.sourceClaimId,
+                programId: fixture.programId,
+                provider: kit.cassette(fixture.stages, label, label, 0, label),
+            })),
+        })),
     };
 }

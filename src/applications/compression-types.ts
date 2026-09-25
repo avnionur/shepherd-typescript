@@ -8,6 +8,7 @@ import type {
     APPLICATION_COMPRESSION_BASELINE_KINDS,
     APPLICATION_COMPRESSION_CANDIDATE_KINDS,
     APPLICATION_COMPRESSION_CANDIDATE_STATUSES,
+    APPLICATION_COMPRESSION_FORK_STEP_POLICIES,
     APPLICATION_COMPRESSION_OUTCOMES,
     APPLICATION_COMPRESSION_PHASES,
     APPLICATION_COMPRESSION_VERDICTS,
@@ -18,10 +19,13 @@ import type {
     ReplayCheckpointClassification,
     ReplayCheckpointConstituentKind,
     ReplayCheckpointEvidenceStatus,
+    ReplayCheckpointPolicy,
+    ReplayProcessAdapter,
     ReplayProviderSessionAdapter,
     ReplaySessionInspection,
     ReplaySessionProgram,
     ReplaySessionTaskDefinition,
+    ReplayWorldBinding,
 } from "../replay/types.ts";
 import type { RunBudgetDefinition } from "../run/control-types.ts";
 import type { ScopeResourceGrantRequest } from "../scope/types.ts";
@@ -56,14 +60,39 @@ export type TrajectoryCompressionVerdict = (typeof APPLICATION_COMPRESSION_VERDI
 export type TrajectoryCompressionBaselineKind =
     (typeof APPLICATION_COMPRESSION_BASELINE_KINDS)[number];
 
-/** Step boundary of the source session a compressor proposes to fork from. */
+/** Configured fork-step policy: clamp an out-of-range proposed step, or reject the proposal. */
+export type TrajectoryForkStepPolicy = (typeof APPLICATION_COMPRESSION_FORK_STEP_POLICIES)[number];
+
+/**
+ * Step boundary of the source session a compressor proposes to fork from.
+ *
+ * In a proposal `step_index` is any safe integer; it is resolved against an `n`-step source under
+ * the configured fork-step policy. A retained (resolved) fork point always satisfies
+ * `0 <= step_index <= n - 1`; step `0` restarts from the initial prefix.
+ */
 export type TrajectoryForkPoint = {
-    /** Prefix identity of the source through the retained prefix; must equal the retained one. */
-    readonly prefix_id: string;
+    /**
+     * Prefix identity of the source through the retained prefix, or null for step `0`; within
+     * range it must equal the retained one.
+     */
+    readonly prefix_id: string | null;
     /** Source session identity. */
     readonly session_id: string;
-    /** Number of retained source steps; at least one and fewer than the source step count. */
+    /** Number of retained source steps; in `[0, n - 1]` once resolved. */
     readonly step_index: number;
+};
+
+/**
+ * Retained evidence that the configured policy clamped an out-of-range proposed fork step to the
+ * nearest bound of `[0, n - 1]` (Appendix D.6).
+ */
+export type TrajectoryForkClamp = {
+    /** Policy that clamped the step. */
+    readonly policy: TrajectoryForkStepPolicy;
+    /** Prefix identity the compressor proposed, or null. */
+    readonly proposed_prefix_id: string | null;
+    /** Out-of-range step index the compressor proposed. */
+    readonly proposed_step_index: number;
 };
 
 /** Hint a compressor attaches to its fork point. */
@@ -74,11 +103,14 @@ export type TrajectoryHint = {
     readonly text: string;
 };
 
-/** Validated compressor proposal: a fork point and hint, or null for no compression. */
+/**
+ * Validated compressor proposal: a fork point and hint. A proposal whose fork point or fork step is
+ * absent or null is a missing fork step and settles `no_prune`.
+ */
 export type TrajectoryCompressionProposal = {
-    /** Fork point, or null when the compressor proposes no compression. */
+    /** Fork point, or null when the compressor proposed no fork step. */
     readonly fork_point: TrajectoryForkPoint | null;
-    /** Hint, or null; a hint requires a fork point. */
+    /** Hint, or null; a hint without a fork step is retained by digest and prunes nothing. */
     readonly hint: TrajectoryHint | null;
 };
 
@@ -102,14 +134,56 @@ export type TrajectoryCompressionProgram = (
     guidance: TrajectoryCompressionGuidance | null,
 ) => ReplaySessionProgram;
 
+/** Session a workflow `bindings` factory is asked to bind. */
+export type TrajectoryCompressionBindingsContext = {
+    /** Application identity. */
+    readonly application_id: string;
+    /**
+     * Session role: `source` (the recorded workflow), `rewind` (empty restoration roots),
+     * `compressed` and `restoration` (suffix replays restored from the fork point), or `control`
+     * (a seeded plain rerun from the initial state).
+     */
+    readonly role: string;
+    /** Seed of a control rerun, otherwise null. */
+    readonly seed: number | null;
+};
+
+/** Worlds, processes, and handler stack bound to one workflow session. */
+export type TrajectoryCompressionBindings = {
+    /** Handler stack bound to this session's worlds; defaults to the workflow handler stack. */
+    readonly handlers?: EffectHandlerStack;
+    /** Process adapters, one per source process. */
+    readonly processes?: readonly ReplayProcessAdapter[];
+    /**
+     * World bindings: the live worlds of the source and each control, and fresh empty restoration
+     * roots for the rewind and every suffix replay.
+     */
+    readonly worlds?: readonly ReplayWorldBinding[];
+};
+
 /**
  * Source workflow recorded once through a root replay session.
  *
- * The workflow binds no worlds or processes, so every step boundary is an admissible fork point.
- * The provider, handler stack, task, and provider-session adapter service the source session,
- * every suffix replay, and every control rerun, so the provider must answer repeated sessions.
+ * A workflow without `bindings` binds no worlds or processes, so every step boundary is an
+ * admissible fork point. A world- or process-bound workflow is restorable only at the checkpoints
+ * its `checkpointPolicy` retains; a fork point elsewhere settles `no_prune` as unavailable. The
+ * provider, handler stack, task, and provider-session adapter service the source session, every
+ * suffix replay, and every control rerun, so the provider must answer repeated sessions.
  */
 export type TrajectoryCompressionWorkflow = {
+    /**
+     * Factory binding each session's worlds, processes, and handler stack. It is called once per
+     * session start, including when a retained session is resumed, so it must return the same
+     * bindings for the same role and seed.
+     *
+     * @param context - Application, session role, and control seed.
+     * @returns The session bindings.
+     */
+    readonly bindings?: (
+        context: TrajectoryCompressionBindingsContext,
+    ) => Promise<TrajectoryCompressionBindings> | TrajectoryCompressionBindings;
+    /** Automatic checkpoint policy of the source, every suffix replay, and every control. */
+    readonly checkpointPolicy?: ReplayCheckpointPolicy;
     /** Effect handler stack; required when the program dispatches effects. */
     readonly handlers?: EffectHandlerStack;
     /** Program factory for the unguided and guided workflow. */
@@ -259,9 +333,11 @@ export type TrajectoryCompressionCandidateRecord = {
     readonly cost: ApplicationCostSummary | null;
     /** Failure that rejected the candidate, or null. */
     readonly failure: TrajectoryCompressionFailure | null;
+    /** Clamp the configured policy applied to the proposed fork step, or null when in range. */
+    readonly fork_clamp: TrajectoryForkClamp | null;
     /** Fork-point identity over the application, fork point, and hint digest, or null. */
     readonly fork_id: string | null;
-    /** Validated fork point, or null. */
+    /** Resolved fork point in `[0, n - 1]`, or null. */
     readonly fork_point: TrajectoryForkPoint | null;
     /** Digest of the canonical hint, or null. */
     readonly hint_digest: string | null;

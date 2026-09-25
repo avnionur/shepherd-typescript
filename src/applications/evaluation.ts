@@ -20,6 +20,7 @@ import {
 import type { RecordBody } from "../record/types.ts";
 import { inspectReplaySession } from "../replay/inspection.ts";
 import { runReplaySession } from "../replay/session.ts";
+import type { RunReplaySessionOptions } from "../replay/types.ts";
 import type { DurableTaskExecutionInspection } from "../run/durable-execution-inspection-types.ts";
 import { assertScopeText, readScopeArray, readScopeDataObject } from "../scope/validation.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
@@ -28,7 +29,8 @@ import type { TrajectoryCompressionOutcomeRecord } from "./compression-types.ts"
 import { runCounterfactualOptimization } from "./counterfactual-optimizer.ts";
 import type {
     CounterfactualBaselineComparison,
-    CounterfactualCandidateRecord,
+    CounterfactualExampleResult,
+    CounterfactualSelection,
 } from "./counterfactual-types.ts";
 import { ApplicationEvidenceError, ApplicationProtocolError } from "./errors.ts";
 import type {
@@ -43,6 +45,7 @@ import type {
     ApplicationEvaluationLimitation,
     ApplicationEvaluationMetrics,
     ApplicationEvaluationReport,
+    ApplicationEvaluationRescues,
     ApplicationEvaluationRun,
     CodingSupervisorEvaluationBinding,
     RunApplicationEvaluationOptions,
@@ -62,7 +65,7 @@ import {
 import type { CodingSupervisorAttemptInspection } from "./supervisor-types.ts";
 import { runTrajectoryCompression } from "./trajectory-compression.ts";
 import { runTreeRlRollouts } from "./tree-rl.ts";
-import type { TreeRlRolloutRecord } from "./tree-rl-types.ts";
+import type { TreeRlRolloutRecord, TreeRlRootRecord } from "./tree-rl-types.ts";
 import type { ApplicationCostSummary, ApplicationKind } from "./types.ts";
 
 const config = applicationsProtocolConfig;
@@ -100,7 +103,7 @@ type MeasuredExperiment = {
  * protocol definition accepted by `readApplicationProtocol` whose kind selects the application, and
  * a baseline whose kind is a configured baseline kind of that application; the coding supervisor
  * baseline also names its `commandId` and `workerId`, and a Tree-RL experiment names the
- * `sourceCommandId` recording its source session. Command identities are distinct across the
+ * `sourceCommandId` prefix of its root sessions. Command identities are distinct across the
  * definition. Limitations are distinct by identity and within the configured length bound.
  * Experiment and limitation counts are bounded by `APPLICATION_EVALUATION_LIMITS`.
  *
@@ -173,8 +176,10 @@ export function readApplicationEvaluationDefinition(
  * `runCodingSupervisor` with its `no_supervision` baseline constructed as one plain child run of the
  * named worker (no policy, trace-only, never accepted or discarded); the counterfactual optimizer
  * with its `full_replay` baseline; trajectory compression with its `no_compression` baseline; and
- * Tree-RL over a source session recorded under `sourceCommandId` with its `single_rollout`
- * baseline. Every metric is measured from retained evidence; nothing is estimated. The evaluation
+ * Tree-RL over G root sessions per prompt recorded under the `sourceCommandId` prefix with its `flat_grpo`
+ * baseline. Every metric is measured from retained evidence; nothing is estimated. The report's
+ * `rescues` counts the experiments whose baseline failed its success condition while the
+ * application run passed (Appendix D, Table 12). The evaluation
  * writes no record of its own, and every application command is idempotent, so a repeated or
  * resumed evaluation converges on the same report without re-running settled work. An application
  * refusal leaves the evidence of earlier experiments for a corrected rerun to reuse.
@@ -245,6 +250,7 @@ export async function runApplicationEvaluation(
         limitations: definition.limitations,
         metrics: APPLICATION_EVALUATION_METRICS,
         report_version: APPLICATION_EVALUATION_REPORT_VERSION,
+        rescues: deriveRescues(runs, baselines),
         revision: definition.revision,
         runs,
     };
@@ -303,7 +309,8 @@ export function compareApplicationBaseline(
  * The document must be a plain data object of exactly the report fields with the configured report
  * and compatibility versions and metric order; runs, baselines, and comparisons align by experiment
  * in order; every baseline kind is configured for its run's application kind; every comparison
- * equals `compareApplicationBaseline` over its run and baseline; and `report_id` is the digest of
+ * equals `compareApplicationBaseline` over its run and baseline; `rescues` equals the experiments
+ * whose baseline failed while the run passed, in order; and `report_id` is the digest of
  * the canonical body without it.
  *
  * @param value - Untrusted report, for example parsed from a generated artifact.
@@ -330,6 +337,7 @@ export function validateApplicationEvaluationReport(value: unknown): Application
                 "metrics",
                 "report_id",
                 "report_version",
+                "rescues",
                 "revision",
                 "runs",
             ],
@@ -371,6 +379,10 @@ export function validateApplicationEvaluationReport(value: unknown): Application
         if (canonical(comparisons) !== canonical(expected)) {
             throw new TypeError("comparisons do not re-derive from the runs and baselines");
         }
+        const rescues = deriveRescues(runs, baselines);
+        if (canonical(fields.rescues) !== canonical(rescues)) {
+            throw new TypeError("rescues do not re-derive from the runs and baselines");
+        }
         const limitations = readBounded(
             fields.limitations,
             "limitations",
@@ -387,6 +399,7 @@ export function validateApplicationEvaluationReport(value: unknown): Application
             comparisons: expected,
             limitations,
             metrics: APPLICATION_EVALUATION_METRICS,
+            rescues,
             runs,
         };
         if (
@@ -405,6 +418,24 @@ export function validateApplicationEvaluationReport(value: unknown): Application
     } catch (error) {
         throw new ApplicationEvidenceError("evaluation report is malformed", { cause: error });
     }
+}
+
+/**
+ * Rescue counts (Appendix D, Table 12): experiments whose baseline failed while the application run
+ * passed, in experiment order. Runs and baselines are aligned by index.
+ */
+function deriveRescues(
+    runs: readonly ApplicationEvaluationRun[],
+    baselines: readonly ApplicationEvaluationBaseline[],
+): ApplicationEvaluationRescues {
+    const experimentIds = runs
+        .filter(
+            (run, index) =>
+                run.metrics[SUCCESS_METRIC] &&
+                !(baselines[index] as ApplicationEvaluationBaseline).metrics[SUCCESS_METRIC],
+        )
+        .map((run) => run.experiment_id);
+    return { count: experimentIds.length, experiment_ids: experimentIds };
 }
 
 function readExperiment(value: unknown, subject: string): ApplicationEvaluationExperiment {
@@ -475,7 +506,7 @@ function readBinding(
         const kind = experiment.protocol.kind;
         const fields = readScopeDataObject(
             value,
-            ["kind", "options", ...(kind === TREE_RL_KIND ? ["source"] : [])],
+            ["kind", "options", ...(kind === TREE_RL_KIND ? ["prompts"] : [])],
             subject,
         );
         if (fields.kind !== kind) {
@@ -487,11 +518,27 @@ function readBinding(
             `${subject}.options`,
         );
         if (kind === TREE_RL_KIND) {
-            readScopeDataObject(
-                fields.source,
-                Object.keys(fields.source as object),
-                `${subject}.source`,
-            );
+            for (const [index, prompt] of readScopeArray(
+                fields.prompts,
+                `${subject}.prompts`,
+            ).entries()) {
+                const entry = readScopeDataObject(
+                    prompt,
+                    ["id", "program", "roots"],
+                    `${subject}.prompts[${index}]`,
+                    ["handlers"],
+                );
+                for (const [position, root] of readScopeArray(
+                    entry.roots,
+                    `${subject}.prompts[${index}].roots`,
+                ).entries()) {
+                    readScopeDataObject(
+                        root,
+                        Object.keys(root as object),
+                        `${subject}.prompts[${index}].roots[${position}]`,
+                    );
+                }
+            }
         }
         if (kind === SUPERVISOR_KIND) {
             readBaselineWorker(
@@ -560,28 +607,40 @@ async function measureExperiment(
             commandId,
             protocol,
         });
-        // Both sides cover exactly the candidates that retain a full-replay comparison: each
-        // candidate's branch against its own full replay.
+        // Both sides cover exactly the example branches that retain a full-replay comparison: each
+        // candidate's branch on an example against its own full replay of that example.
         const compared = inspection.candidates
-            .map((candidate) => candidate.outcome)
+            .flatMap((candidate) => [
+                ...candidate.targeted,
+                ...(candidate.dev ?? []),
+                ...(candidate.train ?? []),
+            ])
             .filter(
                 (
-                    outcome,
-                ): outcome is CounterfactualCandidateRecord & {
+                    result,
+                ): result is CounterfactualExampleResult & {
                     readonly baseline: CounterfactualBaselineComparison;
-                } => outcome !== null && outcome.baseline !== null,
+                } => result.baseline !== null,
             );
         const branches = measureSessions(
             store,
-            compared.map((outcome) => outcome.branch_session_id),
+            compared.map((result) => result.session_id),
         );
         const replays = measureSessions(
             store,
-            compared.map((outcome) => outcome.baseline.session_id),
+            compared.map((result) => result.baseline.session_id),
         );
         return {
             baseline: sessionSide(replays, replays.finished),
-            run: runOf(manifest, sessionSide(branches, inspection.promotion !== null).metrics),
+            run: runOf(
+                manifest,
+                sessionSide(
+                    branches,
+                    // A completed run always retains its selection.
+                    (inspection.selection as CounterfactualSelection).selected_candidate_id !==
+                        null,
+                ).metrics,
+            ),
         };
     }
     if (binding.kind === COMPRESSION_KIND) {
@@ -604,23 +663,37 @@ async function measureExperiment(
             run: runOf(manifest, sessionSide(result, result.finished).metrics),
         };
     }
-    const source = await runReplaySession(store, {
-        ...binding.source,
-        commandId: experiment.sourceCommandId as string,
-    });
+    const prompts = [];
+    for (const prompt of binding.prompts) {
+        const roots: string[] = [];
+        for (const [groupIndex, root] of prompt.roots.entries()) {
+            const { inspection } = await runReplaySession(store, {
+                ...root,
+                commandId: `${experiment.sourceCommandId as string}:${prompt.id}:${groupIndex}`,
+                program: prompt.program,
+            } as RunReplaySessionOptions);
+            roots.push(inspection.session_id);
+        }
+        prompts.push({
+            ...(prompt.handlers === undefined ? {} : { handlers: prompt.handlers }),
+            id: prompt.id,
+            program: prompt.program,
+            roots,
+        });
+    }
     const { inspection, manifest } = await runTreeRlRollouts(store, {
         ...binding.options,
         baselines: [
             experiment.baseline.kind as (typeof APPLICATION_TREE_RL_BASELINE_KINDS)[number],
         ],
         commandId,
+        prompts,
         protocol,
-        sourceSessionId: source.inspection.session_id,
     });
     const rollouts = inspection.rollouts.map((rollout) => rollout.record as TreeRlRolloutRecord);
     return {
-        baseline: measureRollouts(rollouts.filter((rollout) => rollout.branch === 0)),
-        run: runOf(manifest, measureRollouts(rollouts).metrics),
+        baseline: measureMembers(inspection.roots),
+        run: runOf(manifest, measureMembers([...inspection.roots, ...rollouts]).metrics),
     };
 }
 
@@ -701,16 +774,16 @@ function sessionSide(sessions: MeasuredSessions, success: boolean): Measured {
     };
 }
 
-function measureRollouts(rollouts: readonly TreeRlRolloutRecord[]): Measured {
+/** Measures graded tree members: roots (their root session) and rollouts (their rollout session). */
+function measureMembers(members: readonly (TreeRlRootRecord | TreeRlRolloutRecord)[]): Measured {
     return {
-        evidence: rollouts.map((rollout) => rollout.replay_session_id),
+        evidence: members.map((member) =>
+            "replay_session_id" in member ? member.replay_session_id : member.root_session_id,
+        ),
         metrics: metricsOf(
-            rollouts
-                .map((rollout) => rollout.cost)
-                .reduce(addApplicationCosts, ZERO_APPLICATION_COST),
-            rollouts.reduce((total, rollout) => total + rollout.step_count, 0),
-            rollouts.length > 0 &&
-                rollouts.every((rollout) => rollout.status === COMPLETED_ROLLOUT),
+            members.map((member) => member.cost).reduce(addApplicationCosts, ZERO_APPLICATION_COST),
+            members.reduce((total, member) => total + member.step_count, 0),
+            members.length > 0 && members.every((member) => member.status === COMPLETED_ROLLOUT),
         ),
     };
 }

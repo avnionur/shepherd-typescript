@@ -48,6 +48,23 @@ export type ApplicationProtocolDefinition = {
     readonly seeds: readonly number[];
     /** Ordered surfaces with distinct identities. */
     readonly surfaces: readonly ApplicationProtocolSurface[];
+    /**
+     * Optional finite thresholds by metric name, such as fractional gate and promotion thresholds;
+     * the application interprets the configured keys. Omitted when the protocol declares none.
+     */
+    readonly thresholds?: Readonly<Record<string, number>>;
+};
+
+/** Step reuse of one application session, such as one counterfactual proposer session. */
+export type ApplicationComputationReuse = {
+    /** Steps executed live. */
+    readonly live_steps: number;
+    /** Steps served from a recorded journal. */
+    readonly recorded_steps: number;
+    /** `recorded_steps / (recorded_steps + live_steps)`, or null when both are zero. */
+    readonly reuse_ratio: number | null;
+    /** Zero-based session index. */
+    readonly session_index: number;
 };
 
 /** One protocol surface cited by digest inside a manifest; content is never embedded. */
@@ -132,6 +149,10 @@ export type ApplicationManifest = {
     readonly seeds: readonly number[];
     /** Protocol surfaces cited by digest. */
     readonly surfaces: readonly ApplicationManifestSurface[];
+    /** Protocol thresholds, retained verbatim; present only when the protocol declares them. */
+    readonly thresholds?: Readonly<Record<string, number>>;
+    /** Per-session computation reuse; present only when the application measures it. */
+    readonly computation_reuse?: readonly ApplicationComputationReuse[];
 };
 
 /** Closed options for {@link createApplicationManifest}. */
@@ -140,6 +161,8 @@ export type CreateApplicationManifestOptions = {
     readonly applicationId: string;
     /** Produced artifacts with their canonical content and evidence locations. */
     readonly artifacts: readonly ApplicationArtifactSource[];
+    /** Optional per-session computation reuse retained in the manifest. */
+    readonly computationReuse?: readonly ApplicationComputationReuse[];
     /** Measured costs. */
     readonly costs: ApplicationCostSummary;
     /** Validated protocol definition the run executed. */
@@ -174,12 +197,18 @@ export type ApplicationManifestInspection = {
     readonly record_id: RecordId;
 };
 
-/** Request to fork clean isolated custody for one worker attempt. */
+/** Request to fork isolated custody for one worker attempt. */
 export type ApplicationWorldForkRequest = {
     /** Globally idempotent fork command identity derived by the application. */
     readonly commandId: string;
     /** Unix time the application's clock reported when the request was issued. */
     readonly nowMilliseconds: number;
+    /**
+     * Custody, previously returned by this adapter, whose current content the fork copies instead
+     * of the parent world: the runtime supervisor's cross-agent handoff forks the leader's custody
+     * as the follower's new root. Omitted for a clean fork of the parent world.
+     */
+    readonly sourceCustodyId?: string;
     /** Worker the custody belongs to. */
     readonly workerId: string;
 };
@@ -237,25 +266,30 @@ export type ApplicationWorldAdapter = {
      * Returns the canonical changed-path set of one custody for conflict classification.
      *
      * @param custodyId - Custody returned by {@link ApplicationWorldAdapter.fork}.
-     * @returns Distinct changed paths relative to the custody's origin.
+     * @returns Distinct changed paths relative to the parent world the custody's lineage was first
+     * forked from.
      */
     readonly changedPaths: (custodyId: string) => Promise<readonly string[]>;
     /**
-     * Abandons custody without changing the parent world.
+     * Abandons custody and every custody forked from it without changing the parent world. A
+     * request whose command already completed returns the retained receipt even in a fresh
+     * process that has not re-issued the custody's fork.
      *
      * @param request - Command, custody, worker, and time.
      * @returns The discard receipt identity.
      */
     readonly discard: (request: ApplicationWorldDiscardRequest) => Promise<ApplicationWorldReceipt>;
     /**
-     * Forks clean isolated custody from the current parent world.
+     * Forks isolated custody from the current parent world, or from the current content of the
+     * request's source custody. Re-issuing a completed fork command returns the same custody.
      *
-     * @param request - Command, worker, and time.
+     * @param request - Command, worker, time, and optional source custody.
      * @returns The custody with its root and receipt identity.
      */
     readonly fork: (request: ApplicationWorldForkRequest) => Promise<ApplicationWorldCustody>;
     /**
-     * Publishes accepted custody into the parent world.
+     * Publishes accepted custody into the world it was forked from: the parent world, or its
+     * source custody.
      *
      * @param request - Command, custody, worker, and time.
      * @returns The merge receipt identity.

@@ -13,11 +13,11 @@ and any applicable pinned upstream-oracle comparison.
 1.0 readiness (2.32.4, #29): every row below is classified as implemented, implemented with a
 deferred remainder, platform-fenced, version-fenced, or classified unsupported, deferred,
 adapted, or external in the [release-readiness dashboard](./release-readiness-dashboard.md)
-(99 rows: 73 implemented, 9 with a deferred remainder, 6 platform-fenced, 2 version-fenced, 9
-classified). Open rows are not presented as complete: live provider adapters (Claude CLI, Codex,
-OpenRouter), streaming event normalization, `package init` and fenced `run start`, dynamic
-`task register`, native Windows, Core-0H activation, the external Lean build, the compensable-tier
-fixture, effect accounting, ATIF export, upstream trace event verbs and CLI golden output, and
+(99 rows: 73 implemented, 11 with a deferred remainder, 6 platform-fenced, 2 version-fenced, 7
+classified). Open rows are not presented as complete: Claude CLI and Codex provider adapters, live
+verification of the Anthropic and OpenAI-compatible adapters (5.1.0), streaming event normalization, `package init` and fenced `run start`, dynamic
+`task register`, native Windows, Core-0H activation, the external Lean build, a compensation lease
+and waiver (the compensable tier itself ships in 7.0.0), effect accounting, ATIF export, upstream trace event verbs and CLI golden output, and
 pinned dirty-worktree oracle parity.
 
 ## Core semantic surface
@@ -47,7 +47,7 @@ pinned dirty-worktree oracle parity.
 | Pre-materialization interception | not productized | explicit | P2 | ordered allow/deny/replace/pause, timeout and failure policy, admission-before-materialization, fenced decision leases, and dispatcher-crash classification implemented |
 | Custom effect families | architectural | explicit | P2 | registry and unknown-record round trip |
 | Reversible tier | partial world behavior | explicit | P1 | rollback fixture |
-| Compensable tier | not public product surface | explicit | P2 | idempotent compensation fixture |
+| Compensable tier | public in 7.0.0 ([effect compensation](../docs/compensation.md), #209) | explicit | P2 | idempotent node:sqlite compensation fixture and SIGKILL suite implemented |
 | Irreversible tier | auditable | explicit | P1 | no false rollback claims |
 
 ## Runs, traces, and kernel
@@ -127,15 +127,15 @@ Windows jail claim is made.
 | Deterministic/static provider | shipped | testing need | P0 | exact offline cassette provider plus transient and restart-safe durable executor public-seam fixtures implemented |
 | Claude CLI provider | shipped path | examples | P1 | opt-in integration test |
 | Codex provider | claimed by project materials | examples | P1 | opt-in integration test |
-| OpenRouter/provider adapter | claimed via Claude path | examples | P2 | contract test |
+| OpenRouter/provider adapter | claimed via Claude path | examples | P2 | configured OpenAI-compatible adapter covering OpenAI and OpenRouter plus the Anthropic Messages adapter implemented behind one contract with stub-transport contract tests (5.1.0, #204); live verification remains opt-in and unrun |
 | Provider-neutral event model | architectural | core | P0 | request/response, ordered artifact definition, descriptor, and executor normalization contracts implemented; streaming event normalization remains |
-| Provider prompt/cache identity | research | replay need | P2 | runtime-derived prompt, response, prefix, and context prefix identities, adapter-declared cache identity, and observed cache-hit evidence implemented; live provider adapters remain |
+| Provider prompt/cache identity | research | replay need | P2 | runtime-derived prompt, response, prefix, and context prefix identities, adapter-declared cache identity, and observed cache-hit evidence implemented; live adapters with prompt-cache markers and byte-identical prefix restore after rewind implemented (5.1.0, #204); a measured live cache-hit rate remains |
 | Cancellation and budgets | run model | required | P1 | configured counter/duration controls and executor terminal integration implemented; effect accounting follows |
 | Runtime supervisor | not public productized | case study | P2 | two-worker coding supervisor over child run handles with path-overlap conflict classification, real scope custody through `createScopeWorldAdapter`, retained supervision records, and a digest-bearing manifest implemented (Phase 10 exit audit) |
 | Inject/steer | experimental/case study | case study | P2 | cited context injection channels and ordered handle injections folded into the composed provider request `{ input, supervisor_context }` under a consumption record implemented; provider-side conversation mutation is not claimed |
 | Handoff/redirect | experimental/case study | case study | P2 | fenced supervisor handoff with successor-only commands, former-supervisor refusal, and handoff chains implemented; ownership only, no process or provider state moves |
 | Discard/revert worker | experimental/case study | case study | P2 | terminal discard decisions, live-child cancellation before discard, and retry successors citing the causal replay point implemented; restart from a clean world fork implemented by the coding supervisor's `discard_restart` policy |
-| Counterfactual replay optimizer | experiment | case study | P3 | affected-suffix replay over declared dependencies, divergence proof, targeted-eval gate, single promotion, and the measured `full_replay` comparison in the checked evaluation report implemented |
+| Counterfactual replay optimizer | experiment | case study | P3 | Algorithm 1 (11.0.0, #212): per-example baselines, N x k proposer iterations with fix/guard sets, reflection contract, affected-suffix replay over declared dependencies, divergence proof, fractional fix/guard gate, epsilon dev promotion into a graduate-only pool, dev selection, per-session computation reuse, and the measured `full_replay` comparison in the checked evaluation report implemented |
 | Trajectory compression | experiment | case study | P3 | fork-point/hint schema, rewind restoration, `no_prune`, verifier gate, and bounded best-of-N control implemented |
 | Tree-RL fork integration | experiment | case study | P3 | deterministic fork-point selection, seeded branched rollouts, intra- and inter-branch advantages, and the `jsonl_v1` batch implemented over synthetic rollouts; no trainer |
 

@@ -3,8 +3,7 @@ import { test } from "node:test";
 
 import {
     ApplicationBudgetError,
-    ApplicationEvidenceError,
-    ApplicationProtocolError,
+    ApplicationVerificationError,
     createEffectHandlerStack,
     deriveApplicationOwnerId,
     inspectCounterfactualOptimization,
@@ -14,12 +13,15 @@ import {
     SQLiteTraceStore,
 } from "../../src/index.ts";
 import {
-    counterfactualProtocolWithBudgets,
+    applyFixtureEdit,
+    counterfactualProtocolWith,
     draftTask,
-    keyedProvider,
+    labelMetric,
     optimizerOptions,
-    pass,
-    providerCandidate,
+    providerEdit,
+    providerRegistry,
+    reflection,
+    scriptedProposer,
     stageRequest,
     taskProgram,
     workflowProgram,
@@ -28,6 +30,8 @@ import {
 const notifyHandlers = createEffectHandlerStack([
     { handle: () => ({ ok: true, value: null }), handlerId: "handler:notify", kind: "notify" },
 ]);
+
+const PROMOTED_ALT = { alt: { "dev-1": 1, "dev-2": 1, "train-1": 1 } };
 
 function ownerCount(store: SQLiteTraceStore, commandId: string): number {
     return store.readOwner(deriveApplicationOwnerId(commandId)).length;
@@ -65,196 +69,226 @@ const variableProgram: ReplaySessionProgram = async (context) => {
     return text;
 };
 
-test("a task-only child replays its suffix under the parent's provider and full-replays the effective workflow", async () => {
+test("a task-only child of a promoted provider edit replays its suffix under the parent's provider and full-replays the effective workflow", async () => {
     using store = new SQLiteTraceStore();
-    const base = keyedProvider("base");
-    const alt = keyedProvider("alt");
-    const { inspection } = await runCounterfactualOptimization(store, {
-        ...optimizerOptions("application:cro:lineage-task"),
-        baseline: {
-            program: taskProgram,
-            programId: "workflow:task.v1",
-            provider: base,
-            task: draftTask("1", "Draft the plan."),
-        },
-        baselines: ["full_replay"],
-        candidates: [
-            providerCandidate("alt-plan", 0, alt),
+    const registry = providerRegistry();
+    const proposer = scriptedProposer([
+        [
             {
-                changes: ["task"],
-                name: "concise-draft",
-                parent: "alt-plan",
-                stepIndex: 1,
-                task: draftTask("2", "Draft a concise version."),
+                edits: [providerEdit("alt-plan", 0, "alt", { scope: "downstream" })],
+                parent: null,
+                reflection: reflection(null),
             },
         ],
-    });
-    const child = inspection.candidates[1]?.outcome;
-    assert.equal(child?.status, "evaluated");
-    assert.equal(child?.target.step_index, 2);
-    assert.deepEqual(child?.divergence?.unexplained, []);
+        [
+            {
+                edits: [
+                    {
+                        ...providerEdit("concise-draft", 1, "unused", {
+                            patch: { instruction: "Draft a concise version.", version: "2" },
+                            scope: "downstream",
+                        }),
+                        changes: ["task"],
+                    },
+                ],
+                parent: "alt-plan",
+                reflection: reflection("alt-plan", ["alt-plan was promoted"]),
+            },
+        ],
+    ]);
+    const { inspection } = await runCounterfactualOptimization(
+        store,
+        optimizerOptions(
+            "application:cro:lineage-task",
+            {
+                baseline: {
+                    program: () => taskProgram,
+                    programId: "workflow:task.v1",
+                    provider: registry.get("base"),
+                    task: () => draftTask("1", "Draft the plan."),
+                },
+                baselines: ["full_replay"],
+                metric: labelMetric(PROMOTED_ALT),
+                proposer,
+                protocol: counterfactualProtocolWith({ iterations: 2 }),
+            },
+            registry,
+        ),
+    );
+    const [parent, child] = inspection.candidates;
+    assert.equal(parent?.status, "promoted");
+    const result = child?.targeted[0];
+    assert.equal(result?.target.step_index, 2);
+    assert.deepEqual(result?.divergence.unexplained, []);
     // The child's live review runs under the parent's provider, not the baseline's.
-    assert.deepEqual(outputs(store, child?.branch_session_id as string), [
+    assert.deepEqual(outputs(store, result?.session_id as string), [
         "base:plan",
         "alt:draft",
         "alt:review",
     ]);
-    // The full replay runs every step live under the same resolved provider and the child's task.
-    const full = inspectReplaySession(store, { sessionId: child?.baseline?.session_id as string });
+    // The full replay runs every step live under the resolved provider and the child's task.
+    const full = inspectReplaySession(store, { sessionId: result?.baseline?.session_id as string });
     assert.deepEqual(outputs(store, full.session_id), ["alt:plan", "alt:draft", "alt:review"]);
     assert.equal(full.steps[1]?.provider?.request.instruction, "Draft a concise version.");
-    // The baseline provider served only the baseline session.
-    assert.deepEqual(base.calls, ["plan", "draft", "review"]);
+    // The baseline provider served only the six baseline sessions.
+    assert.equal(registry.get("base").calls.length, 6 * 3);
 });
 
-test("a handlers-only child under a provider-change parent inherits the parent's provider and program", async () => {
+test("a handlers-only child under a promoted provider-and-program edit inherits the parent's provider and program", async () => {
     using store = new SQLiteTraceStore();
-    const alt = keyedProvider("alt");
-    const { inspection } = await runCounterfactualOptimization(store, {
-        ...optimizerOptions("application:cro:lineage-handlers"),
-        candidates: [
-            providerCandidate("alt-plan", 0, alt, { program: workflowProgram("rewrite") }),
+    const registry = providerRegistry();
+    const proposer = scriptedProposer([
+        [
             {
-                changes: ["handlers"],
-                handlers: notifyHandlers,
-                name: "notify",
-                parent: "alt-plan",
-                stepIndex: 2,
+                edits: [
+                    providerEdit("alt-plan", 0, "alt", {
+                        patch: { program: "rewrite", provider: "alt" },
+                        scope: "downstream",
+                    }),
+                ],
+                parent: null,
+                reflection: reflection(null),
             },
         ],
-        evaluate: () => pass(1),
-    });
+        [
+            {
+                edits: [
+                    {
+                        ...providerEdit("notify", 2, "unused", { scope: "downstream" }),
+                        changes: ["handlers"],
+                    },
+                ],
+                parent: "alt-plan",
+                reflection: reflection("alt-plan", ["alt-plan was promoted"]),
+            },
+        ],
+    ]);
+    const { inspection } = await runCounterfactualOptimization(
+        store,
+        optimizerOptions(
+            "application:cro:lineage-handlers",
+            {
+                applyEdit: applyFixtureEdit(registry, {
+                    handlers: notifyHandlers,
+                    programs: { rewrite: workflowProgram("rewrite") },
+                }),
+                metric: labelMetric(PROMOTED_ALT),
+                proposer,
+                protocol: counterfactualProtocolWith({ iterations: 2 }),
+            },
+            registry,
+        ),
+    );
     const [parent, child] = inspection.candidates;
-    assert.equal(child?.outcome?.status, "evaluated");
-    assert.equal(child?.outcome?.target.step_index, 3);
+    assert.equal(parent?.status, "promoted");
+    const parentResult = parent?.targeted[0];
+    const result = child?.targeted[0];
+    assert.equal(result?.target.step_index, 3);
     // The re-executed review is identical to the parent's: same provider, same program.
-    assert.deepEqual(child?.outcome?.divergence, {
+    assert.deepEqual(result?.divergence, {
         common_prefix_id: inspectReplaySession(store, {
-            sessionId: parent?.outcome?.branch_session_id as string,
+            sessionId: parentResult?.session_id as string,
         }).steps[3]?.prefix_id,
         first_divergence_index: null,
         live_steps: 1,
         recorded_steps: 3,
         unexplained: [],
     });
-    assert.equal(outputs(store, child?.outcome?.branch_session_id as string)[3], "alt:review");
+    assert.equal(outputs(store, result?.session_id as string)[3], "alt:review");
     assert.equal(inspection.manifest?.kind, "counterfactual_optimization");
 });
 
-test("an edited step outside the baseline is refused before any application record and a corrected rerun succeeds", async () => {
+test("an edit whose step is outside a parent's example session is refused at proposal time", async () => {
     using store = new SQLiteTraceStore();
-    const alt = keyedProvider("alt");
-    for (const candidates of [
-        [providerCandidate("x", 9, alt)],
-        [providerCandidate("x", 0, alt), providerCandidate("y", 4, alt, { parent: "x" })],
-    ]) {
-        await assert.rejects(
-            runCounterfactualOptimization(
-                store,
-                optimizerOptions("application:cro:step-range", { candidates }),
-            ),
-            (error: unknown) =>
-                error instanceof ApplicationProtocolError &&
-                /outside the 4 baseline steps/u.test(error.message),
-        );
-        assert.equal(ownerCount(store, "application:cro:step-range"), 0);
-    }
-    assert.deepEqual(alt.calls, []);
-    const { inspection } = await runCounterfactualOptimization(
-        store,
-        optimizerOptions("application:cro:step-range", {
-            candidates: [providerCandidate("x", 0, alt), providerCandidate("y", 3, alt)],
-        }),
-    );
-    assert.equal(inspection.candidates[1]?.outcome?.status, "evaluated");
-    assert.notEqual(inspection.manifest, null);
-});
-
-test("a child whose edited step is not retained in its shorter parent branch is refused before its proposal", async () => {
-    using store = new SQLiteTraceStore();
-    const options = optimizerOptions("application:cro:short-parent", {
-        baseline: {
-            program: variableProgram,
-            programId: "workflow:variable.v1",
-            provider: keyedProvider("base"),
-        },
-        candidates: [
-            providerCandidate("short", 0, keyedProvider("short")),
-            providerCandidate("child", 2, keyedProvider("alt"), { parent: "short" }),
+    const commandId = "application:cro:short-parent";
+    const proposer = scriptedProposer([
+        [
+            {
+                edits: [providerEdit("short", 0, "short")],
+                parent: null,
+                reflection: reflection(null),
+            },
         ],
+        [
+            {
+                edits: [providerEdit("child", 2, "alt")],
+                parent: "short",
+                reflection: reflection("short", ["short was promoted"]),
+            },
+        ],
+    ]);
+    const options = optimizerOptions(commandId, {
+        baseline: {
+            program: () => variableProgram,
+            programId: "workflow:variable.v1",
+            provider: providerRegistry().get("base"),
+        },
+        metric: ({ candidate }) => (candidate === null ? 0 : 1),
+        proposer,
+        protocol: counterfactualProtocolWith({ iterations: 2, maxProposalAttempts: 1 }),
     });
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-        await assert.rejects(
-            runCounterfactualOptimization(store, options),
-            (error: unknown) =>
-                error instanceof ApplicationEvidenceError &&
-                /its source retains 2 steps/u.test(error.message),
-        );
-    }
+    await assert.rejects(
+        runCounterfactualOptimization(store, options),
+        ApplicationVerificationError,
+    );
     const inspection = inspectCounterfactualOptimization(
         store,
-        deriveApplicationOwnerId("application:cro:short-parent"),
+        deriveApplicationOwnerId(commandId),
     );
-    assert.equal(inspection.candidates[0]?.outcome?.status, "evaluated");
-    assert.equal(inspection.candidates[1]?.proposed, null);
-});
-
-test("the measured baseline is checked against the provider-call budget before the opened record", async () => {
-    using store = new SQLiteTraceStore();
-    const alt = keyedProvider("alt");
-    const options = optimizerOptions("application:cro:baseline-budget", {
-        candidates: [providerCandidate("x", 0, alt)],
-        protocol: counterfactualProtocolWithBudgets({ maxProviderCalls: 2 }),
-    });
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-        await assert.rejects(
-            runCounterfactualOptimization(store, options),
-            (error: unknown) =>
-                error instanceof ApplicationBudgetError &&
-                /4 measured live provider call\(s\)/u.test(error.message),
-        );
-        assert.equal(ownerCount(store, "application:cro:baseline-budget"), 0);
-    }
-    assert.deepEqual(alt.calls, []);
-    // No record binds the run to the refused protocol, so a larger budget proceeds.
-    const { inspection } = await runCounterfactualOptimization(store, {
-        ...options,
-        protocol: counterfactualProtocolWithBudgets({ maxProviderCalls: 8 }),
-    });
-    assert.equal(inspection.candidates[0]?.outcome?.status, "evaluated");
+    assert.equal(inspection.candidates[0]?.status, "promoted");
+    assert.match(
+        inspection.proposals[1]?.refusals[0] as string,
+        /edits step 2, which its request edit cannot alter on example train-1/u,
+    );
+    // The baseline itself retains three steps; only the promoted parent's sessions are shorter.
+    assert.equal(
+        inspectReplaySession(store, { sessionId: inspection.examples[0]?.session_id as string })
+            .steps.length,
+        3,
+    );
 });
 
 test("a session that issues more calls than projected is refused after it by its measured calls", async () => {
     using store = new SQLiteTraceStore();
-    const long = keyedProvider("long");
-    const options = optimizerOptions("application:cro:overrun", {
-        baseline: {
-            program: variableProgram,
-            programId: "workflow:variable.v1",
-            provider: keyedProvider("base"),
+    const registry = providerRegistry();
+    const commandId = "application:cro:overrun";
+    const options = optimizerOptions(
+        commandId,
+        {
+            baseline: {
+                program: () => variableProgram,
+                programId: "workflow:variable.v1",
+                provider: registry.get("base"),
+            },
+            proposer: scriptedProposer([
+                [
+                    {
+                        edits: [providerEdit("long", 0, "long")],
+                        parent: null,
+                        reflection: reflection(null),
+                    },
+                ],
+            ]),
+            // Six baselines use 18 calls; the projected 3 fit; the branch issues 4.
+            protocol: counterfactualProtocolWith({ iterations: 1, maxProviderCalls: 21 }),
         },
-        candidates: [providerCandidate("long", 0, long)],
-        // Baseline 3 calls plus a projected 2 fit; the branch issues 3.
-        protocol: counterfactualProtocolWithBudgets({ maxProviderCalls: 5 }),
-    });
+        registry,
+    );
     await assert.rejects(
         runCounterfactualOptimization(store, options),
         (error: unknown) =>
             error instanceof ApplicationBudgetError &&
-            /6 measured live provider call\(s\)/u.test(error.message),
+            /22 measured live provider call\(s\)/u.test(error.message),
     );
-    const applicationId = deriveApplicationOwnerId("application:cro:overrun");
-    const proposed = inspectCounterfactualOptimization(store, applicationId).candidates[0];
-    assert.equal(proposed?.proposed?.status, "proposed");
-    assert.equal(proposed?.outcome, null);
-    assert.equal(
-        inspectReplaySession(store, { sessionId: proposed?.proposed?.branch_session_id as string })
-            .terminal?.status,
-        "finished",
+    const inspection = inspectCounterfactualOptimization(
+        store,
+        deriveApplicationOwnerId(commandId),
     );
-    const calls = long.calls.length;
-    const records = ownerCount(store, "application:cro:overrun");
+    assert.equal(inspection.candidates.length, 0);
+    assert.equal(inspection.proposals[0]?.candidates[0]?.name, "long");
+    const calls = registry.get("long").calls.length;
+    const records = ownerCount(store, commandId);
     await assert.rejects(runCounterfactualOptimization(store, options), ApplicationBudgetError);
-    assert.equal(long.calls.length, calls);
-    assert.equal(ownerCount(store, "application:cro:overrun"), records);
+    assert.equal(registry.get("long").calls.length, calls);
+    assert.equal(ownerCount(store, commandId), records);
 });

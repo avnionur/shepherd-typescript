@@ -1,3 +1,4 @@
+import { readFallbackOrder } from "./config-device-layers.ts";
 import type { ProtocolConfig } from "./config-types.ts";
 import {
     readArray,
@@ -37,6 +38,7 @@ export function readCarrierBackendsConfig(
             "defaultBackend",
             "errors",
             "overlay",
+            "selection",
             "version",
         ],
         context,
@@ -167,6 +169,23 @@ export function readCarrierBackendsConfig(
     ) {
         throw new TypeError(`${context}.overlay layer directories must be distinct simple names`);
     }
+    const selection = readObject(
+        section.selection,
+        ["defaultMode", "fallbackOrder"],
+        `${context}.selection`,
+    );
+    const fallbackOrder = readFallbackOrder(
+        selection.fallbackOrder,
+        backends,
+        `${context}.selection.fallbackOrder`,
+    );
+    const defaultMode = readNonEmptyString(
+        selection.defaultMode,
+        `${context}.selection.defaultMode`,
+    );
+    if (fallbackOrder.at(-1) !== defaultBackend) {
+        throw new TypeError(`${context}.selection.fallbackOrder must end with the default backend`);
+    }
     return {
         backends,
         clone: {
@@ -250,6 +269,7 @@ export function readCarrierBackendsConfig(
             upperDirectory,
             workDirectory,
         },
+        selection: { defaultMode, fallbackOrder },
         version: readPositiveInteger(section.version, `${context}.version`),
     };
 }

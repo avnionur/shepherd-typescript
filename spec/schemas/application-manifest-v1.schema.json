@@ -3,7 +3,7 @@
     "$id": "https://avnionur.github.io/shepherd-typescript/schemas/application-manifest-v1.schema.json",
     "$comment": "Generated from protocol.config.json. Do not edit directly.",
     "title": "Shepherd Application Manifest v1",
-    "description": "Canonical digest-bearing manifest of one application run: protocol identity over prompt, schema, and tool surfaces, budgets, seeds, dataset selection, produced artifacts cited by identity, and measured costs.",
+    "description": "Canonical digest-bearing manifest of one application run: protocol identity over prompt, schema, and tool surfaces, budgets, optional thresholds, seeds, dataset selection, produced artifacts cited by identity, measured costs, and optional per-session computation reuse.",
     "type": "object",
     "required": [
         "application_id",
@@ -82,6 +82,45 @@
         },
         "compatibility_version": {
             "const": "shepherd.applications.v1"
+        },
+        "computation_reuse": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "live_steps",
+                    "recorded_steps",
+                    "reuse_ratio",
+                    "session_index"
+                ],
+                "properties": {
+                    "live_steps": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "recorded_steps": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "reuse_ratio": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            }
+                        ]
+                    },
+                    "session_index": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                },
+                "additionalProperties": false
+            }
         },
         "costs": {
             "type": "object",
@@ -221,6 +260,12 @@
                     }
                 },
                 "additionalProperties": false
+            }
+        },
+        "thresholds": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "number"
             }
         }
     },

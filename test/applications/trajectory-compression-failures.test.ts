@@ -8,6 +8,7 @@ import {
     ApplicationVerificationError,
     deriveApplicationOwnerId,
     inspectTrajectoryCompression,
+    JSONSchemaValidationError,
     runTrajectoryCompression,
     SQLiteTraceStore,
     type TrajectoryCompressorContext,
@@ -51,20 +52,15 @@ test("proposals the grammar or the source refuses reject the candidate and prune
         [
             "extra-field",
             (context) => ({ ...forkAt(1)(context), extra: true }),
-            /exactly its declared fields/u,
+            /violates schema surface compression\.fork-hint\.v2: \$\.extra is not a declared property/u,
         ],
         [
-            "hint-without-fork",
-            () => ({ fork_point: null, hint: { cited_step_indices: [], text: "hint" } }),
-            /requires a fork point/u,
-        ],
-        [
-            "zero-step",
+            "fractional-step",
             (context) => ({
                 ...forkAt(1)(context),
-                fork_point: { ...forkAt(1)(context).fork_point, step_index: 0 },
+                fork_point: { ...forkAt(1)(context).fork_point, step_index: 1.5 },
             }),
-            /at least one step/u,
+            /\$\.fork_point\.step_index/u,
         ],
         [
             "other-session",
@@ -75,18 +71,7 @@ test("proposals the grammar or the source refuses reject the candidate and prune
                     session_id: `replay-session:sha256:${"0".repeat(64)}`,
                 },
             }),
-            /strict prefix boundary/u,
-        ],
-        [
-            "whole-trajectory",
-            (context) => ({
-                ...forkAt(5)(context),
-                fork_point: {
-                    ...forkAt(4)(context).fork_point,
-                    step_index: 5,
-                },
-            }),
-            /strict prefix boundary/u,
+            /step boundary of the source session/u,
         ],
         [
             "prefix-mismatch",
@@ -606,6 +591,7 @@ test("child outputs that are not the configured canonical text field fail closed
         ),
         (error: unknown) =>
             error instanceof ApplicationEvidenceError &&
-            /proposal must be a plain data object/u.test(String((error.cause as Error).message)),
+            error.cause instanceof JSONSchemaValidationError &&
+            error.cause.issues.some((issue) => issue.path === "$" && issue.keyword === "type"),
     );
 });

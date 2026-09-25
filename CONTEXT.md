@@ -193,6 +193,12 @@ The copy-carrier manifest and file bytes of one managed world retained as conten
 trace-store blobs, verified by content identity before restoration.
 _Avoid_: Carrier custody, directory backup, Git commit
 
+**Device-Layer Checkpoint**:
+A named frozen layer of a process-scoped device-layer world, created by freezing the writable layer
+as a lower layer, bounded by the configured depth and subject to compaction; it carries no content
+identity or trace records.
+_Avoid_: Coupled checkpoint, carrier revision, world image
+
 **Branch Session**:
 A rewind or replay session that cites its source session, restores a verified target, and records
 whether its start was atomic or reconstructive.

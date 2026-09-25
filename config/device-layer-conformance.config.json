@@ -1,0 +1,7 @@
+{
+    "optInAdapters": ["container"],
+    "optInEnvironmentVariable": "SHEPHERD_DEVICE_LAYER_OPT_IN",
+    "requiredAdaptersEnvironmentVariable": "SHEPHERD_REQUIRED_DEVICE_LAYERS",
+    "separator": ",",
+    "testFile": "test/workspace/device-layer.test.ts"
+}

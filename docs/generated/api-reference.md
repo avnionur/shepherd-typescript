@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 2.35.1
+Package: `@avnionur/shepherd-typescript` 12.0.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 1199.
+Exported symbols: 1435.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -82,6 +82,21 @@ export declare const APPLICATION_COMPRESSION_CANDIDATE_STATUSES: readonly [
     "rewound",
     "settled",
     "rejected"
+];
+```
+
+### `APPLICATION_COMPRESSION_FORK_STEP_POLICIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression fork-step policies ordered clamp then reject.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_FORK_STEP_POLICIES: readonly [
+    "clamp",
+    "reject"
 ];
 ```
 
@@ -150,16 +165,48 @@ export declare const APPLICATION_CRO_BASELINE_KINDS: readonly [
 
 Classification: `runtime-only`. Kind: `variable`.
 
-Configured counterfactual candidate statuses ordered proposed, evaluated, promoted, rejected.
+Configured counterfactual candidate outcome statuses ordered archived, evaluated, promoted, rejected.
 
 Signature:
 
 ```ts
 export declare const APPLICATION_CRO_CANDIDATE_STATUSES: readonly [
-    "proposed",
+    "archived",
     "evaluated",
     "promoted",
     "rejected"
+];
+```
+
+### `APPLICATION_CRO_EDIT_SCOPES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual candidate edit scopes ordered request then downstream.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_EDIT_SCOPES: readonly [
+    "request",
+    "downstream"
+];
+```
+
+### `APPLICATION_CRO_EXAMPLE_ROLES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual example result roles ordered fix, guard, dev, train.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_EXAMPLE_ROLES: readonly [
+    "fix",
+    "guard",
+    "dev",
+    "train"
 ];
 ```
 
@@ -167,14 +214,31 @@ export declare const APPLICATION_CRO_CANDIDATE_STATUSES: readonly [
 
 Classification: `runtime-only`. Kind: `variable`.
 
-Configured counterfactual optimizer record phases ordered opened then candidate.
+Configured counterfactual optimizer record phases ordered opened, proposal, candidate, selection.
 
 Signature:
 
 ```ts
 export declare const APPLICATION_CRO_PHASES: readonly [
     "opened",
-    "candidate"
+    "proposal",
+    "candidate",
+    "selection"
+];
+```
+
+### `APPLICATION_CRO_SPLITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual example splits ordered train then dev.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_SPLITS: readonly [
+    "train",
+    "dev"
 ];
 ```
 
@@ -222,7 +286,7 @@ Configured application evaluation report version.
 Signature:
 
 ```ts
-export declare const APPLICATION_EVALUATION_REPORT_VERSION: 1;
+export declare const APPLICATION_EVALUATION_REPORT_VERSION: 2;
 ```
 
 ### `APPLICATION_KINDS`
@@ -265,6 +329,8 @@ export declare const APPLICATION_LIMITS: Readonly<{
     readonly maxSchemaBytes: 16384;
     readonly maxSeeds: 16;
     readonly maxSurfaces: 32;
+    readonly maxTickIntervalMilliseconds: 600000;
+    readonly maxTicks: 4096;
     readonly maxToolBytes: 16384;
     readonly maxWorkers: 8;
     readonly minWorkers: 2;
@@ -309,6 +375,76 @@ Signature:
 
 ```ts
 export declare const APPLICATION_RECORD_VERSION: 1;
+```
+
+### `APPLICATION_RUNTIME_SUPERVISION_ACTIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Appendix E runtime supervisor decision actions ordered none, inject, handoff, discard.
+
+Signature:
+
+```ts
+export declare const APPLICATION_RUNTIME_SUPERVISION_ACTIONS: readonly [
+    "none",
+    "inject",
+    "handoff",
+    "discard"
+];
+```
+
+### `APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_CAUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured runtime supervisor worker attempt causes ordered start, handoff, discard.
+
+Signature:
+
+```ts
+export declare const APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_CAUSES: readonly [
+    "start",
+    "handoff",
+    "discard"
+];
+```
+
+### `APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured runtime supervisor worker attempt statuses ordered running, completed, turn limit, failed, aborted.
+
+Signature:
+
+```ts
+export declare const APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_STATUSES: readonly [
+    "running",
+    "completed",
+    "turn_limit",
+    "failed",
+    "aborted"
+];
+```
+
+### `APPLICATION_RUNTIME_SUPERVISION_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured runtime supervision record phases ordered opened, tick, settled, attempt, turn, completed.
+
+Signature:
+
+```ts
+export declare const APPLICATION_RUNTIME_SUPERVISION_PHASES: readonly [
+    "opened",
+    "tick",
+    "settled",
+    "attempt",
+    "turn",
+    "completed"
+];
 ```
 
 ### `APPLICATION_SUPERVISION_BASELINE_KINDS`
@@ -391,6 +527,22 @@ export declare const APPLICATION_SUPERVISION_WORKER_STATUSES: readonly [
 ];
 ```
 
+### `APPLICATION_TREE_RL_ACTION_SEGMENTS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL per-action advantage segments ordered prefix, suffix, flat.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_ACTION_SEGMENTS: readonly [
+    "prefix",
+    "suffix",
+    "flat"
+];
+```
+
 ### `APPLICATION_TREE_RL_BASELINE_KINDS`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -401,7 +553,7 @@ Signature:
 
 ```ts
 export declare const APPLICATION_TREE_RL_BASELINE_KINDS: readonly [
-    "single_rollout"
+    "flat_grpo"
 ];
 ```
 
@@ -415,7 +567,54 @@ Signature:
 
 ```ts
 export declare const APPLICATION_TREE_RL_BATCH_FORMATS: readonly [
-    "jsonl_v1"
+    "jsonl_v2"
+];
+```
+
+### `APPLICATION_TREE_RL_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL batch and concurrency bounds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_LIMITS: Readonly<{
+    readonly defaultConcurrency: 4;
+    readonly maxConcurrency: 16;
+    readonly maxGroupSize: 16;
+    readonly maxPrompts: 16;
+}>;
+```
+
+### `APPLICATION_TREE_RL_MEMBER_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL tree member kinds ordered root then branch.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_MEMBER_KINDS: readonly [
+    "root",
+    "branch"
+];
+```
+
+### `APPLICATION_TREE_RL_NORMALIZATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL advantage normalizations ordered none then per-group standardization.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_NORMALIZATIONS: readonly [
+    "none",
+    "group_std"
 ];
 ```
 
@@ -423,13 +622,14 @@ export declare const APPLICATION_TREE_RL_BATCH_FORMATS: readonly [
 
 Classification: `runtime-only`. Kind: `variable`.
 
-Configured Tree-RL record phases ordered opened, rollout, batch.
+Configured Tree-RL record phases ordered opened, root, rollout, batch.
 
 Signature:
 
 ```ts
 export declare const APPLICATION_TREE_RL_PHASES: readonly [
     "opened",
+    "root",
     "rollout",
     "batch"
 ];
@@ -745,6 +945,23 @@ Parameter:
 
 - detail - Specific description appended to the configured message.
 
+### `ApplicationComputationReuse`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Step reuse of one application session, such as one counterfactual proposer session.
+
+Signature:
+
+```ts
+export type ApplicationComputationReuse = {
+    readonly live_steps: number;
+    readonly recorded_steps: number;
+    readonly reuse_ratio: number | null;
+    readonly session_index: number;
+};
+```
+
 ### `ApplicationCostSummary`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -994,8 +1211,25 @@ export type ApplicationEvaluationReport = {
     readonly metrics: readonly ApplicationEvaluationMetric[];
     readonly report_id: string;
     readonly report_version: number;
+    readonly rescues: ApplicationEvaluationRescues;
     readonly revision: string;
     readonly runs: readonly ApplicationEvaluationRun[];
+};
+```
+
+### `ApplicationEvaluationRescues`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Rescue counts of one report (Appendix D, Table 12): the experiments whose baseline failed its
+success condition while the application run passed its own. Derived from the runs and baselines.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationRescues = {
+    readonly count: number;
+    readonly experiment_ids: readonly string[];
 };
 ```
 
@@ -1096,6 +1330,8 @@ export type ApplicationManifest = {
     readonly protocol_version: string;
     readonly seeds: readonly number[];
     readonly surfaces: readonly ApplicationManifestSurface[];
+    readonly thresholds?: Readonly<Record<string, number>>;
+    readonly computation_reuse?: readonly ApplicationComputationReuse[];
 };
 ```
 
@@ -1165,6 +1401,7 @@ export type ApplicationProtocolDefinition = {
     readonly protocolVersion: string;
     readonly seeds: readonly number[];
     readonly surfaces: readonly ApplicationProtocolSurface[];
+    readonly thresholds?: Readonly<Record<string, number>>;
 };
 ```
 
@@ -1336,7 +1573,7 @@ export type ApplicationWorldDiscardRequest = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Request to fork clean isolated custody for one worker attempt.
+Request to fork isolated custody for one worker attempt.
 
 Signature:
 
@@ -1344,6 +1581,7 @@ Signature:
 export type ApplicationWorldForkRequest = {
     readonly commandId: string;
     readonly nowMilliseconds: number;
+    readonly sourceCustodyId?: string;
     readonly workerId: string;
 };
 ```
@@ -1439,6 +1677,19 @@ export type ApproveChildRunTaskOptions = {
     readonly supervisorId: string;
     readonly verdict: ChildRunApprovalVerdict;
 };
+```
+
+### `BackendSelectionMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured backend selection mode: `strict` refuses when the requested backend is unavailable;
+`fallback` degrades along the configured fallback order and records the backend actually used.
+
+Signature:
+
+```ts
+export type BackendSelectionMode = (typeof BACKEND_SELECTION_MODES)[number];
 ```
 
 ### `BlobId`
@@ -2096,6 +2347,7 @@ export type ChildRunInspection = {
     readonly opened_supervisor_id: string;
     readonly parent: ChildRunParentInspection;
     readonly predecessor: ChildRunPredecessorInspection | null;
+    readonly proof: ProofEnvelope;
     readonly provenance: ChildRunProvenance;
     readonly status: ChildRunStatus;
     readonly supervisor_id: string;
@@ -2855,6 +3107,50 @@ Signature:
 export type CodingSupervisorWorkerStatus = (typeof APPLICATION_SUPERVISION_WORKER_STATUSES)[number];
 ```
 
+### `CompensateEffectsOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by compensateEffects.
+
+Signature:
+
+```ts
+export type CompensateEffectsOptions = {
+    readonly commandId: string;
+    readonly effectRecordIds: readonly RecordId[];
+    readonly registry: EffectCompensationRegistry;
+};
+```
+
+### `ContainerDeviceLayerAdapterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Optional overrides of the configured reference container adapter.
+
+Signature:
+
+```ts
+export type ContainerDeviceLayerAdapterOptions = {
+    readonly image?: string;
+};
+```
+
+### `ConversationalModelProvider`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Model provider that also accepts multi-turn message-list requests.
+
+Signature:
+
+```ts
+export type ConversationalModelProvider = ModelProvider & {
+    readonly converse: (request: ModelConversationRequest, signal: AbortSignal) => Promise<ModelConversationResponse>;
+};
+```
+
 ### `CooperativeProcessAdapter`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -2928,7 +3224,7 @@ export type Core0hSidecarEvidence = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Measured whole-workflow comparison of one candidate.
+Measured whole-workflow comparison of one example branch.
 
 Signature:
 
@@ -2938,6 +3234,24 @@ export type CounterfactualBaselineComparison = {
     readonly kind: CounterfactualBaselineKind;
     readonly provider_calls: number;
     readonly session_id: string;
+};
+```
+
+### `CounterfactualBaselineExample`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One recorded baseline example session.
+
+Signature:
+
+```ts
+export type CounterfactualBaselineExample = {
+    readonly example_id: string;
+    readonly input_digest: string;
+    readonly score: number;
+    readonly session_id: string;
+    readonly split: CounterfactualSplit;
 };
 ```
 
@@ -2955,14 +3269,9 @@ export type CounterfactualBaselineKind = (typeof APPLICATION_CRO_BASELINE_KINDS)
 
 ### `CounterfactualCandidateDefinition`
 
-Classification: `type-only`. Kind: `type alias`.
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
 
-One declared candidate edit of the workflow at a step boundary.
-
-Exactly the replacements for the declared change dimensions are supplied: `task` requires
-`task`, `provider` requires `provider`, and `handlers` requires `handlers`. The edit takes
-effect in the affected suffix: the transitive dependents of the edited step in the source
-session, which is the parent candidate's branch or, without a parent, the baseline.
+One caller-declared candidate edit accepted by the optimizer before 11.0.0.
 
 Signature:
 
@@ -2974,16 +3283,23 @@ export type CounterfactualCandidateDefinition = {
     readonly parent?: string;
     readonly program?: ReplaySessionProgram;
     readonly provider?: ModelProvider;
+    readonly scope: CounterfactualEditScope;
     readonly stepIndex: number;
     readonly task?: ReplaySessionTaskDefinition;
 };
 ```
 
+Deprecated:
+
+- Since 11.0.0: candidates come from a {@link CounterfactualProposer} as
+{@link CounterfactualEdit} data applied by a {@link CounterfactualEditApplier}; no API consumes
+this type, and it is removed once the deprecation window elapses.
+
 ### `CounterfactualCandidateInspection`
 
-Classification: `type-only`. Kind: `type alias`.
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
 
-Record-derived state of one declared candidate.
+Record-derived state of one declared candidate before 11.0.0.
 
 Signature:
 
@@ -2994,11 +3310,16 @@ export type CounterfactualCandidateInspection = CounterfactualCandidatePlan & {
 };
 ```
 
+Deprecated:
+
+- Since 11.0.0: inspection lists {@link CounterfactualCandidateRecord} outcomes
+directly; no API returns this type, and it is removed once the deprecation window elapses.
+
 ### `CounterfactualCandidatePlan`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Identity and declared edit of one candidate, fixed when the run is opened.
+Identity, lineage, and edit of one candidate, fixed by its proposal.
 
 Signature:
 
@@ -3006,9 +3327,17 @@ Signature:
 export type CounterfactualCandidatePlan = {
     readonly candidate_id: string;
     readonly changes: readonly ReplayChangeDimension[];
+    readonly edit_scope: CounterfactualEditScope;
     readonly edited_step_index: number;
+    readonly fix_set: readonly string[];
+    readonly guard_set: readonly string[];
+    readonly iteration: number;
+    readonly mechanism: string;
     readonly name: string;
     readonly parent_candidate_id: string | null;
+    readonly patch: SemanticValue;
+    readonly prior: number;
+    readonly rationale: string;
 };
 ```
 
@@ -3016,22 +3345,22 @@ export type CounterfactualCandidatePlan = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-One retained candidate record.
+One retained candidate outcome record.
 
 Signature:
 
 ```ts
 export type CounterfactualCandidateRecord = CounterfactualCandidatePlan & {
-    readonly affected_steps: readonly number[];
-    readonly baseline: CounterfactualBaselineComparison | null;
-    readonly branch_session_id: string;
-    readonly cost: ApplicationCostSummary | null;
-    readonly divergence: CounterfactualDivergenceSummary | null;
-    readonly evaluation: CounterfactualEvaluation | null;
+    readonly cost: ApplicationCostSummary;
+    readonly dev: readonly CounterfactualExampleResult[] | null;
+    readonly dev_score: number | null;
     readonly failure: CounterfactualFailure | null;
+    readonly gate: CounterfactualGateVerdict | null;
+    readonly promotion_reference: number | null;
     readonly record_id: RecordId;
     readonly status: CounterfactualCandidateStatus;
-    readonly target: CounterfactualTarget;
+    readonly targeted: readonly CounterfactualExampleResult[];
+    readonly train: readonly CounterfactualExampleResult[] | null;
 };
 ```
 
@@ -3039,7 +3368,7 @@ export type CounterfactualCandidateRecord = CounterfactualCandidatePlan & {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured candidate status: proposed, evaluated, promoted, or rejected.
+Configured candidate outcome status: archived, evaluated, promoted, or rejected.
 
 Signature:
 
@@ -3047,11 +3376,38 @@ Signature:
 export type CounterfactualCandidateStatus = (typeof APPLICATION_CRO_CANDIDATE_STATUSES)[number];
 ```
 
+### `CounterfactualComputationReuse`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Step reuse of every candidate branch session one proposer session produced.
+
+Signature:
+
+```ts
+export type CounterfactualComputationReuse = ApplicationComputationReuse;
+```
+
+### `CounterfactualDataset`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Train and dev splits of one optimization run; identities are distinct across both.
+
+Signature:
+
+```ts
+export type CounterfactualDataset = {
+    readonly dev: readonly CounterfactualExample[];
+    readonly train: readonly CounterfactualExample[];
+};
+```
+
 ### `CounterfactualDivergenceSummary`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Retained summary of the divergence proof of one candidate branch.
+Retained summary of the divergence proof of one example branch.
 
 Signature:
 
@@ -3065,11 +3421,111 @@ export type CounterfactualDivergenceSummary = {
 };
 ```
 
-### `CounterfactualEvaluation`
+### `CounterfactualEdit`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Verdict of the caller-supplied targeted evaluator, retained verbatim.
+One proposed edit Δ of the parent workflow, as data, paired with the fix set T+ it should repair
+and the guard set T- it must not regress (paper Appendix F.1). Retained verbatim in the proposal
+and candidate records; the caller's CounterfactualEditApplier turns it into replacements.
+
+Signature:
+
+```ts
+export type CounterfactualEdit = {
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly fix_set: readonly string[];
+    readonly guard_set: readonly string[];
+    readonly mechanism: string;
+    readonly name: string;
+    readonly patch: SemanticValue;
+    readonly prior: number;
+    readonly rationale: string;
+    readonly scope: CounterfactualEditScope;
+    readonly step_index: number;
+};
+```
+
+### `CounterfactualEditApplication`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Replacements one edit applies to its parent's resolved workflow.
+
+Signature:
+
+```ts
+export type CounterfactualEditApplication = {
+    readonly handlers?: EffectHandlerStack;
+    readonly program?: CounterfactualProgram;
+    readonly provider?: ModelProvider;
+    readonly task?: CounterfactualTaskFactory;
+};
+```
+
+### `CounterfactualEditApplier`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Applies one edit (c = p ⊕ Δ): returns exactly the replacements of the declared change
+dimensions and optionally a program. It must be a deterministic function of the edit, because a
+rerun re-applies retained edits. A throw or an application that does not match the declared
+changes refuses the proposal.
+
+Signature:
+
+```ts
+export type CounterfactualEditApplier = (context: CounterfactualEditContext) => Promise<CounterfactualEditApplication> | CounterfactualEditApplication;
+```
+
+Parameter:
+
+- context - Edit, parent plan, and protocol.
+
+Returns:
+
+- The replacements.
+
+### `CounterfactualEditContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context the edit applier receives.
+
+Signature:
+
+```ts
+export type CounterfactualEditContext = {
+    readonly edit: CounterfactualEdit;
+    readonly parent: CounterfactualCandidatePlan | null;
+    readonly protocol: ApplicationProtocolDefinition;
+};
+```
+
+### `CounterfactualEditScope`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured candidate edit scope, ordered `request` then `downstream`.
+
+A `request` edit changes the edited step's own request, so its branch re-executes from the
+boundary immediately before the edited step; the declared changes must explain a divergence of
+that step's kind (task or provider for a provider step, handlers for an effect step). A
+`downstream` edit leaves the edited step's recorded output in place and changes only how its
+dependents consume it, so its branch replays from the boundary before the first transitive
+dependent, or from the source's final boundary when nothing depends on the edited step.
+
+Signature:
+
+```ts
+export type CounterfactualEditScope = (typeof APPLICATION_CRO_EDIT_SCOPES)[number];
+```
+
+### `CounterfactualEvaluation`
+
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
+
+Verdict of the caller-supplied targeted evaluator before 11.0.0.
 
 Signature:
 
@@ -3080,6 +3536,12 @@ export type CounterfactualEvaluation = {
     readonly score: number;
 };
 ```
+
+Deprecated:
+
+- Since 11.0.0: the targeted gate is {@link CounterfactualGateVerdict}, computed from
+per-example {@link CounterfactualMetric} scores; no API consumes this type, and it is removed once
+the deprecation window elapses.
 
 ### `CounterfactualEvaluationBinding`
 
@@ -3098,9 +3560,9 @@ export type CounterfactualEvaluationBinding = {
 
 ### `CounterfactualEvaluationContext`
 
-Classification: `type-only`. Kind: `type alias`.
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
 
-Context the targeted evaluator receives for one proven candidate branch.
+Context the targeted evaluator received for one proven candidate branch before 11.0.0.
 
 Signature:
 
@@ -3116,20 +3578,27 @@ export type CounterfactualEvaluationContext = {
 };
 ```
 
+Deprecated:
+
+- Since 11.0.0: see {@link CounterfactualMetricContext}; no API consumes this type, and
+it is removed once the deprecation window elapses.
+
 ### `CounterfactualEvaluator`
 
-Classification: `type-only`. Kind: `type alias`.
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
 
-Caller-supplied targeted evaluator gating promotion.
-
-A thrown error or a malformed verdict is a verification failure: the candidate is retained as
-rejected and nothing is promoted.
+Caller-supplied targeted evaluator gating promotion before 11.0.0.
 
 Signature:
 
 ```ts
 export type CounterfactualEvaluator = (context: CounterfactualEvaluationContext) => Promise<CounterfactualEvaluation> | CounterfactualEvaluation;
 ```
+
+Deprecated:
+
+- Since 11.0.0: see {@link CounterfactualMetric}; no API consumes this type, and it is
+removed once the deprecation window elapses.
 
 Parameter:
 
@@ -3139,11 +3608,61 @@ Returns:
 
 - The verdict retained verbatim.
 
+### `CounterfactualExample`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One dataset example: an identity from the protocol's dataset items and its canonical input.
+
+Signature:
+
+```ts
+export type CounterfactualExample = {
+    readonly id: string;
+    readonly input: SemanticValue;
+};
+```
+
+### `CounterfactualExampleResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Counterfactual replay of one candidate on one example, scored against its parent.
+
+Signature:
+
+```ts
+export type CounterfactualExampleResult = {
+    readonly affected_steps: readonly number[];
+    readonly baseline: CounterfactualBaselineComparison | null;
+    readonly cost: ApplicationCostSummary;
+    readonly divergence: CounterfactualDivergenceSummary;
+    readonly example_id: string;
+    readonly parent_score: number;
+    readonly role: CounterfactualExampleRole;
+    readonly score: number;
+    readonly session_id: string;
+    readonly target: CounterfactualTarget;
+};
+```
+
+### `CounterfactualExampleRole`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured example result role: `fix`, `guard`, `dev`, or `train`.
+
+Signature:
+
+```ts
+export type CounterfactualExampleRole = (typeof APPLICATION_CRO_EXAMPLE_ROLES)[number];
+```
+
 ### `CounterfactualFailure`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Retained failure that rejected a candidate and stopped the run.
+Retained failure that rejected a candidate or proposal and stopped the run.
 
 Signature:
 
@@ -3151,6 +3670,96 @@ Signature:
 export type CounterfactualFailure = {
     readonly code: string;
     readonly reason: string;
+};
+```
+
+### `CounterfactualGateVerdict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Targeted fix/guard gate verdict (paper Appendix F.2.5), recomputed from retained results.
+
+Signature:
+
+```ts
+export type CounterfactualGateVerdict = {
+    readonly aggregate_lift: number;
+    readonly improve_fraction: number;
+    readonly max_guard_drop: number;
+    readonly passed: boolean;
+    readonly reason: string;
+};
+```
+
+### `CounterfactualHandoff`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Handoff manifest of one completed optimization run: every candidate in proposal order with its
+lineage and status, and the selected candidate. It is derived from retained records and
+validated against every protocol `schema` surface of the configured handoff role before it is
+returned.
+
+Signature:
+
+```ts
+export type CounterfactualHandoff = {
+    readonly candidates: readonly CounterfactualHandoffCandidate[];
+    readonly selected_candidate_id: string | null;
+};
+```
+
+### `CounterfactualHandoffCandidate`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One candidate entry of the handoff manifest.
+
+Signature:
+
+```ts
+export type CounterfactualHandoffCandidate = {
+    readonly candidate_id: string;
+    readonly parent_candidate_id: string | null;
+    readonly status: CounterfactualCandidateStatus;
+};
+```
+
+### `CounterfactualMetric`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Per-example workflow metric; higher is better. A throw or a non-finite score is a verification
+failure.
+
+Signature:
+
+```ts
+export type CounterfactualMetric = (context: CounterfactualMetricContext) => Promise<number> | number;
+```
+
+Parameter:
+
+- context - Candidate, example, split, and finished session.
+
+Returns:
+
+- The finite example score.
+
+### `CounterfactualMetricContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context the metric receives for one finished session.
+
+Signature:
+
+```ts
+export type CounterfactualMetricContext = {
+    readonly candidate: CounterfactualCandidatePlan | null;
+    readonly example: CounterfactualExample;
+    readonly session: ReplaySessionInspection;
+    readonly split: CounterfactualSplit;
 };
 ```
 
@@ -3165,17 +3774,22 @@ Signature:
 ```ts
 export type CounterfactualOptimizationInspection = {
     readonly application_id: string;
-    readonly baseline_session_id: string;
     readonly baselines: readonly CounterfactualBaselineKind[];
-    readonly candidates: readonly CounterfactualCandidateInspection[];
+    readonly budgets: Readonly<Record<string, number>>;
+    readonly candidates: readonly CounterfactualCandidateRecord[];
     readonly command_id: string;
+    readonly computation_reuse: readonly CounterfactualComputationReuse[];
     readonly cut_id: CutId | null;
+    readonly examples: readonly CounterfactualBaselineExample[];
     readonly kind: ApplicationKind;
     readonly manifest: ApplicationManifest | null;
     readonly manifest_record_id: RecordId | null;
     readonly opened_record_id: RecordId;
-    readonly promotion: CounterfactualCandidateRecord | null;
+    readonly pool: readonly CounterfactualPoolMember[];
+    readonly proposals: readonly CounterfactualProposalRecord[];
     readonly protocol_id: string;
+    readonly selection: CounterfactualSelection | null;
+    readonly thresholds: Readonly<Record<string, number>>;
 };
 ```
 
@@ -3189,8 +3803,132 @@ Signature:
 
 ```ts
 export type CounterfactualOptimizationReceipt = {
+    readonly handoff: CounterfactualHandoff;
     readonly inspection: CounterfactualOptimizationInspection;
     readonly manifest: ApplicationManifest;
+};
+```
+
+### `CounterfactualPoolMember`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One parent-pool member offered to the proposer.
+
+Signature:
+
+```ts
+export type CounterfactualPoolMember = {
+    readonly candidate_id: string | null;
+    readonly dev_score: number;
+    readonly name: string | null;
+};
+```
+
+### `CounterfactualProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Workflow program for one example. The returned session program must be deterministic in the
+example and must re-issue a recorded prefix exactly so a branch can serve it.
+
+Signature:
+
+```ts
+export type CounterfactualProgram = (example: CounterfactualExample) => ReplaySessionProgram;
+```
+
+Parameter:
+
+- example - Example the session runs.
+
+Returns:
+
+- The session program.
+
+### `CounterfactualProposal`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One proposer answer: a parent from the pool, at most k edits, and the reflection.
+
+Signature:
+
+```ts
+export type CounterfactualProposal = {
+    readonly edits: readonly CounterfactualEdit[];
+    readonly parent: string | null;
+    readonly reflection: SemanticValue;
+};
+```
+
+### `CounterfactualProposalRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained proposer iteration record.
+
+Signature:
+
+```ts
+export type CounterfactualProposalRecord = {
+    readonly attempts: number;
+    readonly candidates: readonly CounterfactualCandidatePlan[];
+    readonly failure: CounterfactualFailure | null;
+    readonly iteration: number;
+    readonly parent_candidate_id: string | null;
+    readonly proposer_session_ids: readonly string[];
+    readonly record_id: RecordId;
+    readonly reflection: SemanticValue;
+    readonly refusals: readonly string[];
+};
+```
+
+### `CounterfactualProposer`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Proposer P of Algorithm 1: reads the run and returns a parent and edits with fix and guard sets.
+
+A malformed or inadmissible proposal is refused with a reason and the proposer is asked again
+with the reason in `feedback`, up to the protocol's attempt budget. A thrown error propagates.
+
+Signature:
+
+```ts
+export type CounterfactualProposer = (context: CounterfactualProposerContext) => Promise<CounterfactualProposal> | CounterfactualProposal;
+```
+
+Parameter:
+
+- context - Run inspection, pool, capacity, feedback, and session identity.
+
+Returns:
+
+- The proposal.
+
+### `CounterfactualProposerContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context one proposer attempt receives.
+
+Signature:
+
+```ts
+export type CounterfactualProposerContext = {
+    readonly applicationId: string;
+    readonly attempt: number;
+    readonly capacity: number;
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly feedback: readonly string[];
+    readonly inspection: CounterfactualOptimizationInspection;
+    readonly iteration: number;
+    readonly pool: readonly CounterfactualPoolMember[];
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly store: SQLiteTraceStore;
 };
 ```
 
@@ -3198,7 +3936,7 @@ export type CounterfactualOptimizationReceipt = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured counterfactual optimizer record phase: the opened record or a candidate record.
+Configured counterfactual optimizer record phase: opened, proposal, candidate, or selection.
 
 Signature:
 
@@ -3206,42 +3944,90 @@ Signature:
 export type CounterfactualRecordPhase = (typeof APPLICATION_CRO_PHASES)[number];
 ```
 
+### `CounterfactualSelection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Terminal selection c* of Algorithm 1.
+
+Signature:
+
+```ts
+export type CounterfactualSelection = {
+    readonly dev_score: number;
+    readonly pool: readonly string[];
+    readonly record_id: RecordId;
+    readonly selected_candidate_id: string | null;
+};
+```
+
+### `CounterfactualSplit`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured example split: `train` or `dev`.
+
+Signature:
+
+```ts
+export type CounterfactualSplit = (typeof APPLICATION_CRO_SPLITS)[number];
+```
+
 ### `CounterfactualTarget`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Step boundary a candidate branch starts from.
+Step boundary one example branch starts from.
 
 Signature:
 
 ```ts
 export type CounterfactualTarget = {
-    readonly prefix_id: string;
+    readonly prefix_id: string | null;
     readonly source_session_id: string;
     readonly step_index: number;
 };
 ```
 
+### `CounterfactualTaskFactory`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Task factory for one example.
+
+Signature:
+
+```ts
+export type CounterfactualTaskFactory = (example: CounterfactualExample) => ReplaySessionTaskDefinition;
+```
+
+Parameter:
+
+- example - Example the session runs.
+
+Returns:
+
+- The task and input bound to the example's session.
+
 ### `CounterfactualWorkflowDefinition`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Baseline workflow recorded once through a root replay session.
+Baseline workflow W0, recorded once per train and dev example through a root replay session.
 
 The program must bind no worlds or processes so every step boundary is an admissible branch
-target. The provider, handler stack, and task service the baseline session and every branch
-suffix that does not declare the corresponding change, so a provider must be able to answer
-repeated sessions.
+target. The provider and handler stack serve every example session and every branch suffix that
+does not declare the corresponding change, so a provider must be able to answer repeated sessions.
 
 Signature:
 
 ```ts
 export type CounterfactualWorkflowDefinition = {
     readonly handlers?: EffectHandlerStack;
-    readonly program: ReplaySessionProgram;
+    readonly program: CounterfactualProgram;
     readonly programId: string;
     readonly provider?: ModelProvider;
-    readonly task?: ReplaySessionTaskDefinition;
+    readonly task?: CounterfactualTaskFactory;
 };
 ```
 
@@ -3257,6 +4043,7 @@ Signature:
 export type CreateApplicationManifestOptions = {
     readonly applicationId: string;
     readonly artifacts: readonly ApplicationArtifactSource[];
+    readonly computationReuse?: readonly ApplicationComputationReuse[];
     readonly costs: ApplicationCostSummary;
     readonly protocol: ApplicationProtocolDefinition;
 };
@@ -3945,6 +4732,393 @@ Signature:
 export type DelegationTreeRootKind = (typeof DELEGATION_TREE_ROOT_KINDS)[number];
 ```
 
+### `DeviceLayerAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Pluggable device-layer adapter contract: the carrier backend contract generalized to any
+substrate that can freeze a writable layer as a named lower layer. Adapters pass
+checkDeviceLayerConformance before use.
+
+Signature:
+
+```ts
+export type DeviceLayerAdapter = {
+    readonly name: string;
+    readonly open: (context: DeviceLayerOpenContext) => Promise<DeviceLayerDevice>;
+    readonly probe: (context: Readonly<{
+        root: string;
+    }>) => Promise<DeviceLayerProbe>;
+};
+```
+
+### `DeviceLayerAdapterName`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured built-in device-layer adapter name.
+
+Signature:
+
+```ts
+export type DeviceLayerAdapterName = (typeof DEVICE_LAYER_ADAPTERS)[number];
+```
+
+### `DeviceLayerCheckpoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of freezing one named checkpoint.
+
+Signature:
+
+```ts
+export type DeviceLayerCheckpoint = {
+    readonly checkpoint: string;
+    readonly compaction: DeviceLayerCompaction | null;
+    readonly depth: number;
+    readonly layer: string;
+};
+```
+
+### `DeviceLayerCompaction`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Evidence of one compaction performed while freezing a checkpoint.
+
+Signature:
+
+```ts
+export type DeviceLayerCompaction = {
+    readonly into: string;
+    readonly layers: readonly string[];
+    readonly retired: readonly string[];
+};
+```
+
+### `DeviceLayerCompactionRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Frozen layers the device flattens while freezing one checkpoint.
+
+Signature:
+
+```ts
+export type DeviceLayerCompactionRequest = {
+    readonly into: string;
+    readonly layers: readonly string[];
+};
+```
+
+### `DeviceLayerConformanceCase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One case of the device-layer conformance kit.
+
+Signature:
+
+```ts
+export type DeviceLayerConformanceCase = {
+    readonly error: string | null;
+    readonly name: string;
+    readonly passed: boolean;
+};
+```
+
+### `DeviceLayerConformanceReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of checkDeviceLayerConformance.
+
+Signature:
+
+```ts
+export type DeviceLayerConformanceReport = {
+    readonly adapter: string;
+    readonly cases: readonly DeviceLayerConformanceCase[];
+    readonly passed: boolean;
+};
+```
+
+### `DeviceLayerDepthPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Depth bound and compaction retention of one world.
+
+Signature:
+
+```ts
+export type DeviceLayerDepthPolicy = {
+    readonly maxDepth: number;
+    readonly retainNewest: number;
+};
+```
+
+### `DeviceLayerDevice`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One open device: the physical world an adapter maintains as a stack of frozen layers under one
+writable layer. Every method is called by the engine one at a time, never concurrently.
+
+Signature:
+
+```ts
+export type DeviceLayerDevice = {
+    readonly close: () => Promise<void>;
+    readonly freeze: (request: DeviceLayerFreezeRequest) => Promise<void>;
+    readonly listFiles: () => Promise<readonly DeviceLayerFileEntry[]>;
+    readonly maxLayers: number;
+    readonly path: string | null;
+    readonly readFile: (relativePath: string) => Promise<Buffer>;
+    readonly removePath: (relativePath: string) => Promise<void>;
+    readonly revert: (layers: readonly string[]) => Promise<void>;
+    readonly writeFile: (relativePath: string, bytes: Buffer) => Promise<void>;
+};
+```
+
+### `DeviceLayerError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a device-layer world, checkpoint, path, or adapter refuses an operation.
+
+Signature:
+
+```ts
+export declare class DeviceLayerError extends Error {
+    readonly code: string;
+    constructor(code: string, message: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable machine-readable device-layer failure code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a device-layer failure.
+
+```ts
+constructor(code: string, message: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- code - Configured machine-readable failure code.
+
+Parameter:
+
+- message - Diagnostic describing the rejected operation.
+
+Parameter:
+
+- options - Optional underlying cause.
+
+### `DeviceLayerFileEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One regular file of a device-layer world.
+
+Signature:
+
+```ts
+export type DeviceLayerFileEntry = {
+    readonly digest: string;
+    readonly path: string;
+};
+```
+
+### `DeviceLayerFreezeRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One freeze instruction the engine gives a device.
+
+Signature:
+
+```ts
+export type DeviceLayerFreezeRequest = {
+    readonly compaction: DeviceLayerCompactionRequest | null;
+    readonly layer: string;
+};
+```
+
+### `DeviceLayerLayer`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One frozen layer of a world's current stack.
+
+Signature:
+
+```ts
+export type DeviceLayerLayer = {
+    readonly checkpoint: string;
+    readonly index: number;
+    readonly layer: string;
+};
+```
+
+### `DeviceLayerOpenContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Private host locations and seed the engine hands to DeviceLayerAdapter.open.
+
+Signature:
+
+```ts
+export type DeviceLayerOpenContext = {
+    readonly baseLayer: string;
+    readonly deviceId: string;
+    readonly root: string;
+    readonly seed: string | null;
+};
+```
+
+### `DeviceLayerProbe`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Host availability reported by one device-layer adapter probe.
+
+Signature:
+
+```ts
+export type DeviceLayerProbe = {
+    readonly available: true;
+} | {
+    readonly available: false;
+    readonly reason: string;
+    readonly detail: string;
+};
+```
+
+### `DeviceLayerRestore`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of restoring one named checkpoint.
+
+Signature:
+
+```ts
+export type DeviceLayerRestore = {
+    readonly checkpoint: string;
+    readonly depth: number;
+    readonly discarded: readonly string[];
+};
+```
+
+### `DeviceLayerSelection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Selection evidence naming the requested and the actually used adapter.
+
+Signature:
+
+```ts
+export type DeviceLayerSelection = {
+    readonly attempts: readonly DeviceLayerSelectionAttempt[];
+    readonly mode: BackendSelectionMode;
+    readonly requested: string;
+    readonly used: string;
+};
+```
+
+### `DeviceLayerSelectionAttempt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One adapter tried while selecting the adapter of a device-layer world.
+
+Signature:
+
+```ts
+export type DeviceLayerSelectionAttempt = {
+    readonly adapter: string;
+    readonly available: boolean;
+    readonly reason: string;
+};
+```
+
+### `DeviceLayerWorld`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One open layered world: a writable layer over a bounded stack of named frozen checkpoints.
+Operations are serialized; callers must quiesce writers that bypass these methods through
+DeviceLayerWorld.path before calling DeviceLayerWorld.checkpoint or
+DeviceLayerWorld.restore.
+
+Signature:
+
+```ts
+export type DeviceLayerWorld = {
+    readonly adapter: string;
+    readonly checkpoint: (name: string) => Promise<DeviceLayerCheckpoint>;
+    readonly close: () => Promise<void>;
+    readonly depth: DeviceLayerDepthPolicy;
+    readonly deviceId: string;
+    readonly layers: () => readonly DeviceLayerLayer[];
+    readonly listFiles: () => Promise<readonly DeviceLayerFileEntry[]>;
+    readonly path: string | null;
+    readonly readFile: (relativePath: string) => Promise<Buffer>;
+    readonly removePath: (relativePath: string) => Promise<void>;
+    readonly restore: (name: string) => Promise<DeviceLayerRestore>;
+    readonly selection: DeviceLayerSelection;
+    readonly writeFile: (relativePath: string, bytes: Buffer) => Promise<void>;
+};
+```
+
+### `DeviceLayerWorldOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for openDeviceLayerWorld.
+
+Signature:
+
+```ts
+export type DeviceLayerWorldOptions = {
+    readonly adapter?: string;
+    readonly adapters?: readonly DeviceLayerAdapter[];
+    readonly depth?: Partial<DeviceLayerDepthPolicy>;
+    readonly fallbackOrder?: readonly string[];
+    readonly root: string;
+    readonly seed?: string;
+    readonly selection?: BackendSelectionMode;
+};
+```
+
+### `DiffReplaySessionsOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for diffReplaySessions.
+
+Signature:
+
+```ts
+export type DiffReplaySessionsOptions = {
+    readonly clock?: () => number;
+    readonly sessionIds: readonly string[];
+};
+```
+
 ### `DiscardChildRunOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -3991,6 +5165,7 @@ Signature:
 export type DiscardScopeOptions = {
     readonly carrier?: ReferenceCopyCarrier;
     readonly commandId: string;
+    readonly compensation?: EffectCompensationRegistry;
     readonly expectedHeadRecordId: RecordId;
     readonly nowMilliseconds?: number;
     readonly parent: ScopeWriter;
@@ -4624,6 +5799,7 @@ export type DurableTaskExecutionInspection = {
     readonly cut: Cut | null;
     readonly lifecycle: DurableTaskExecutionLifecycleInspection;
     readonly outcome: DurableTaskExecutionOutcomeInspection | null;
+    readonly proof: ProofEnvelope;
     readonly run_id: string;
     readonly settlements: readonly DurableTaskExecutionSettlementInspection[];
     readonly status: (typeof DURABLE_EXECUTION_RECOVERY_STATUSES)[number];
@@ -5029,6 +6205,100 @@ export type DurableTaskWaitingReceipt = {
 };
 ```
 
+### `EFFECT_COMPENSABLE_TIERS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured reversibility tiers whose materialized effects are compensated.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSABLE_TIERS: readonly [
+    "compensable"
+];
+```
+
+### `EFFECT_COMPENSATION_EVIDENCE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured compensation evidence kinds ordered replay step then supervised dispatch.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_EVIDENCE_KINDS: readonly [
+    "replay_step",
+    "supervised_dispatch"
+];
+```
+
+### `EFFECT_COMPENSATION_OUTCOMES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured compensation outcomes ordered compensated then failed.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_OUTCOMES: readonly [
+    "compensated",
+    "failed"
+];
+```
+
+### `EFFECT_COMPENSATION_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured compensation record phases ordered intent, attempt, outcome.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_PHASES: readonly [
+    "intent",
+    "attempt",
+    "outcome"
+];
+```
+
+### `EFFECT_COMPENSATION_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured derived compensation statuses ordered pending, uncertain, failed, compensated.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_STATUSES: readonly [
+    "pending",
+    "uncertain",
+    "failed",
+    "compensated"
+];
+```
+
+### `EFFECT_COMPENSATION_TRIGGERS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured compensation triggers ordered scope discard, replay rewind, replay replay, command.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_TRIGGERS: readonly [
+    "scope_discard",
+    "replay_rewind",
+    "replay_replay",
+    "command"
+];
+```
+
 ### `EVIDENCE_RECORD_LATEST_SELECTOR`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -5056,6 +6326,352 @@ export declare const EVIDENCE_RECORD_LIMITS: {
     readonly maxPageSize: 100;
     readonly maxSelectorBytes: 512;
 };
+```
+
+### `EffectCompensationAttemptInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained attempt and its outcome.
+
+Signature:
+
+```ts
+export type EffectCompensationAttemptInspection = {
+    readonly attempt: number;
+    readonly handler_id: string;
+    readonly outcome: {
+        readonly record_id: RecordId;
+        readonly result: EffectResult<SemanticValue, SemanticValue>;
+        readonly status: EffectCompensationOutcomeStatus;
+    } | null;
+    readonly record_id: RecordId;
+    readonly trigger: EffectCompensationTrigger;
+};
+```
+
+### `EffectCompensationConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when another compensator appended to the same compensation path between this
+compensator's read and its append. Retrying the trigger continues from the retained records.
+
+Signature:
+
+```ts
+export declare class EffectCompensationConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly compensation_id: string;
+    constructor(compensationId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned concurrent-advance code.
+
+```ts
+readonly code: string;
+```
+
+#### `compensation_id`
+
+Compensation identity that advanced concurrently.
+
+```ts
+readonly compensation_id: string;
+```
+
+#### `constructor`
+
+Creates a concurrent-advance failure.
+
+```ts
+constructor(compensationId: string);
+```
+
+Parameter:
+
+- compensationId - Compensation identity that advanced concurrently.
+
+### `EffectCompensationEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or cited compensation evidence is absent, malformed, or inconsistent, or a
+trigger exceeds the configured effect bound.
+
+Signature:
+
+```ts
+export declare class EffectCompensationEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `EffectCompensationFailedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised after every effect of a trigger was attempted when at least one compensation handler
+returned a failure result. The failures are retained; a later trigger attempts them again.
+
+Signature:
+
+```ts
+export declare class EffectCompensationFailedError extends TraceStoreError {
+    readonly code: string;
+    readonly compensation_ids: readonly string[];
+    constructor(compensationIds: readonly string[]);
+}
+```
+
+#### `code`
+
+Stable configuration-owned failed-compensation code.
+
+```ts
+readonly code: string;
+```
+
+#### `compensation_ids`
+
+Compensation identities whose latest attempt failed, in compensation order.
+
+```ts
+readonly compensation_ids: readonly string[];
+```
+
+#### `constructor`
+
+Creates a failed-compensation failure.
+
+```ts
+constructor(compensationIds: readonly string[]);
+```
+
+Parameter:
+
+- compensationIds - Failed compensation identities in compensation order.
+
+### `EffectCompensationHandler`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Compensation handler registered for one exact effect kind.
+
+Signature:
+
+```ts
+export type EffectCompensationHandler = {
+    readonly compensate: (request: EffectCompensationRequest) => EffectResult<SemanticValue, SemanticValue> | Promise<EffectResult<SemanticValue, SemanticValue>>;
+    readonly handlerId: string;
+    readonly kind: string;
+};
+```
+
+### `EffectCompensationHandlerNotFoundError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised before any compensation runs when a compensable effect that still needs compensation has
+no registered handler for its exact kind.
+
+Signature:
+
+```ts
+export declare class EffectCompensationHandlerNotFoundError extends TraceStoreError {
+    readonly code: string;
+    readonly compensation_id: string;
+    readonly kind: string;
+    constructor(compensationId: string, kind: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned missing-handler code.
+
+```ts
+readonly code: string;
+```
+
+#### `compensation_id`
+
+Compensation identity of the first unhandled effect.
+
+```ts
+readonly compensation_id: string;
+```
+
+#### `kind`
+
+Exact effect kind without a registered handler.
+
+```ts
+readonly kind: string;
+```
+
+#### `constructor`
+
+Creates a missing-handler failure.
+
+```ts
+constructor(compensationId: string, kind: string);
+```
+
+Parameter:
+
+- compensationId - Compensation identity of the unhandled effect.
+
+Parameter:
+
+- kind - Exact effect kind without a handler.
+
+### `EffectCompensationInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived view of one compensation path.
+
+Signature:
+
+```ts
+export type EffectCompensationInspection = {
+    readonly attempts: readonly EffectCompensationAttemptInspection[];
+    readonly compensation_id: string;
+    readonly effect_intent: EffectIntent;
+    readonly effect_outcome: EffectOutcome;
+    readonly head_record_id: RecordId;
+    readonly intent_record_id: RecordId;
+    readonly materialization: MaterializedEffectEvidence;
+    readonly status: EffectCompensationStatus;
+};
+```
+
+### `EffectCompensationOutcomeStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured outcome status of one compensation attempt.
+
+Signature:
+
+```ts
+export type EffectCompensationOutcomeStatus = (typeof EFFECT_COMPENSATION_OUTCOMES)[number];
+```
+
+### `EffectCompensationReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Receipt of one trigger's compensation pass.
+
+Signature:
+
+```ts
+export type EffectCompensationReceipt = {
+    readonly compensations: readonly EffectCompensationInspection[];
+};
+```
+
+### `EffectCompensationRegistry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable registry holding exactly one compensation handler per effect kind.
+
+Signature:
+
+```ts
+export type EffectCompensationRegistry = {
+    readonly kinds: readonly string[];
+    readonly resolve: (kind: string) => EffectCompensationHandler | undefined;
+};
+```
+
+### `EffectCompensationRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request passed to a compensation handler for one attempt.
+
+Signature:
+
+```ts
+export type EffectCompensationRequest = {
+    readonly attempt: number;
+    readonly compensationId: string;
+    readonly idempotencyKey: string;
+    readonly intent: EffectIntent;
+    readonly outcome: EffectOutcome;
+    readonly trigger: EffectCompensationTrigger;
+};
+```
+
+### `EffectCompensationStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured derived compensation status.
+
+Signature:
+
+```ts
+export type EffectCompensationStatus = (typeof EFFECT_COMPENSATION_STATUSES)[number];
+```
+
+### `EffectCompensationTrigger`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Trigger that caused one compensation attempt.
+
+Signature:
+
+```ts
+export type EffectCompensationTrigger = {
+    readonly command_id: string;
+    readonly kind: EffectCompensationTriggerKind;
+};
+```
+
+### `EffectCompensationTriggerKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured compensation trigger kind.
+
+Signature:
+
+```ts
+export type EffectCompensationTriggerKind = (typeof EFFECT_COMPENSATION_TRIGGERS)[number];
 ```
 
 ### `EffectFailure`
@@ -5465,6 +7081,23 @@ export type FailedRunOutcome = {
     readonly message: string;
     readonly retryable: boolean | null;
     readonly status: (typeof RUN_TERMINAL_STATUSES)[1];
+};
+```
+
+### `FindFirstReplayRegressionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for findFirstReplayRegression.
+
+Signature:
+
+```ts
+export type FindFirstReplayRegressionOptions = {
+    readonly clock?: () => number;
+    readonly sessionId: string;
+    readonly strategy?: ReplayRegressionStrategy;
+    readonly verdict: (revision: ReplayRevision) => boolean | Promise<boolean>;
 };
 ```
 
@@ -6012,14 +7645,28 @@ export type InferTaskSchema<S extends TaskSchema<unknown>> = S extends TaskSchem
 
 Classification: `type-only`. Kind: `type alias`.
 
-Value inferred from a task object-schema shape.
+Value inferred from a task object-schema shape; optional fields become optional properties.
 
 Signature:
 
 ```ts
 export type InferTaskSchemaShape<S extends TaskSchemaShape> = {
-    readonly [K in keyof S]: InferTaskSchema<S[K]>;
+    readonly [K in Exclude<keyof S, OptionalTaskSchemaShapeKeys<S>>]: InferTaskSchemaShapeField<S[K]>;
+} & {
+    readonly [K in OptionalTaskSchemaShapeKeys<S>]?: InferTaskSchemaShapeField<S[K]>;
 };
+```
+
+### `InferTaskSchemaShapeField`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Value inferred from one task object-schema shape field.
+
+Signature:
+
+```ts
+export type InferTaskSchemaShapeField<F> = F extends TaskOptionalSchema<infer T> ? T : F extends TaskSchema<infer T> ? T : never;
 ```
 
 ### `InjectChildRunContextOptions`
@@ -6073,6 +7720,20 @@ export type InspectChildRunOptions = {
 };
 ```
 
+### `InspectEffectCompensationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by inspectEffectCompensation.
+
+Signature:
+
+```ts
+export type InspectEffectCompensationOptions = {
+    readonly compensationId: string;
+};
+```
+
 ### `InspectReplaySessionOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -6084,6 +7745,7 @@ Signature:
 ```ts
 export type InspectReplaySessionOptions = {
     readonly clock?: () => number;
+    readonly lowerProof?: boolean;
     readonly sessionId: string;
 };
 ```
@@ -6129,6 +7791,163 @@ Signature:
 export type InspectSupervisedDispatchOptions = {
     readonly dispatchId: string;
 };
+```
+
+### `JSONSchemaDocument`
+
+Classification: `type-only`. Kind: `type alias`.
+
+JSON Schema document accepted by compileJSONSchema: a boolean or an object schema.
+
+Signature:
+
+```ts
+export type JSONSchemaDocument = boolean | {
+    readonly [key: string]: SemanticValue | undefined;
+};
+```
+
+### `JSONSchemaIssue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One path-level reason a value does not satisfy a schema.
+
+Signature:
+
+```ts
+export type JSONSchemaIssue = {
+    readonly keyword: string;
+    readonly message: string;
+    readonly path: string;
+    readonly schemaPath: string;
+};
+```
+
+### `JSONSchemaValidationError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a value does not satisfy a task schema or a compiled JSON Schema document.
+
+The error is a `TypeError`, the documented class for invalid input, with the configured
+`SCHEMA_VALIDATION_FAILED` code and the complete list of path-level issues. The message joins
+every issue as `<path> <message>`, optionally prefixed by a subject; it never embeds the refused
+value itself.
+
+Signature:
+
+```ts
+export declare class JSONSchemaValidationError extends TypeError {
+    readonly code: string;
+    readonly issues: readonly JSONSchemaIssue[];
+    constructor(issues: readonly JSONSchemaIssue[], subject?: string, options?: ErrorOptions);
+}
+```
+
+Example:
+
+- ```ts
+try {
+    validator.parse(untrusted);
+} catch (error) {
+    if (error instanceof JSONSchemaValidationError) {
+        for (const issue of error.issues) console.error(issue.path, issue.message);
+    }
+}
+```
+
+#### `code`
+
+Stable configured machine-readable schema-validation code.
+
+```ts
+readonly code: string;
+```
+
+#### `issues`
+
+Every issue found, in document order; never empty.
+
+```ts
+readonly issues: readonly JSONSchemaIssue[];
+```
+
+#### `constructor`
+
+Creates a validation refusal.
+
+```ts
+constructor(issues: readonly JSONSchemaIssue[], subject?: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- issues - Non-empty path-level issues.
+
+Parameter:
+
+- subject - Optional description of the validated value prefixed to the message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `JSONSchemaValidator`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Compiled, reusable validator for one JSON Schema document.
+
+Signature:
+
+```ts
+export type JSONSchemaValidator = {
+    readonly document: JSONSchemaDocument;
+    readonly validate: (value: unknown) => readonly JSONSchemaIssue[];
+    readonly parse: (value: unknown, subject?: string) => SemanticValue;
+};
+```
+
+### `JSON_SCHEMA_SUPPORTED_KEYWORDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+JSON Schema 2020-12 keywords `compileJSONSchema` evaluates, in addition to the boolean schemas
+`true` and `false`. Any other keyword is refused at compile time rather than silently ignored.
+
+`$schema` is accepted only at the document root and only with the configured dialect
+(`kernel.schemas.dialect`); `$comment`, `description`, and `title` are annotations.
+
+Signature:
+
+```ts
+export declare const JSON_SCHEMA_SUPPORTED_KEYWORDS: readonly [
+    "$comment",
+    "$schema",
+    "additionalProperties",
+    "allOf",
+    "anyOf",
+    "const",
+    "description",
+    "enum",
+    "exclusiveMaximum",
+    "exclusiveMinimum",
+    "items",
+    "maxItems",
+    "maxLength",
+    "maximum",
+    "minItems",
+    "minLength",
+    "minimum",
+    "oneOf",
+    "pattern",
+    "properties",
+    "required",
+    "title",
+    "type",
+    "uniqueItems"
+];
 ```
 
 ### `JailedTaskWorldCaptureResult`
@@ -6279,6 +8098,219 @@ Parameter:
 
 - code - Stable machine-readable missing-selector code.
 
+### `LiveProviderDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Definition accepted by createLiveProvider.
+
+Signature:
+
+```ts
+export type LiveProviderDefinition = {
+    readonly credential?: string;
+    readonly endpoint?: string;
+    readonly environment?: Readonly<Record<string, string | undefined>>;
+    readonly id: string;
+    readonly kind: ProviderKind;
+    readonly maxOutputTokens?: number;
+    readonly model: string;
+    readonly transport?: LiveProviderTransport;
+};
+```
+
+### `LiveProviderError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Error raised by a live provider adapter. Its message never contains the provider credential:
+provider-supplied detail is bounded and every occurrence of the credential is redacted before
+the message is built.
+
+Signature:
+
+```ts
+export declare class LiveProviderError extends Error {
+    readonly code: string;
+    readonly reason: LiveProviderErrorReason;
+    readonly status: number | null;
+    constructor(reason: LiveProviderErrorReason, detail: string | null, status?: number | null, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable error code.
+
+```ts
+readonly code: string;
+```
+
+#### `reason`
+
+Failure reason.
+
+```ts
+readonly reason: LiveProviderErrorReason;
+```
+
+#### `status`
+
+HTTP status for an `http` failure, otherwise null.
+
+```ts
+readonly status: number | null;
+```
+
+#### `constructor`
+
+Creates a live-provider failure.
+
+```ts
+constructor(reason: LiveProviderErrorReason, detail: string | null, status?: number | null, options?: ErrorOptions);
+```
+
+Parameter:
+
+- reason - Failure reason selecting the configured code and message.
+
+Parameter:
+
+- detail - Already-redacted bounded detail appended to the configured message, or null.
+
+Parameter:
+
+- status - HTTP status for an `http` failure, otherwise null.
+
+Parameter:
+
+- options - Standard error options; a cause stays an in-memory diagnostic.
+
+### `LiveProviderErrorReason`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured live-provider failure reason.
+
+Signature:
+
+```ts
+export type LiveProviderErrorReason = "credential" | "http" | "response" | "transport";
+```
+
+### `LiveProviderHttpRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One HTTP request a live provider hands to its transport.
+
+Signature:
+
+```ts
+export type LiveProviderHttpRequest = {
+    readonly body: string;
+    readonly headers: Readonly<Record<string, string>>;
+    readonly url: string;
+};
+```
+
+### `LiveProviderHttpResponse`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One HTTP response returned by a live provider transport.
+
+Signature:
+
+```ts
+export type LiveProviderHttpResponse = {
+    readonly body: string;
+    readonly status: number;
+};
+```
+
+### `LiveProviderTransport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Injectable HTTP transport of a live provider. The default posts with the global `fetch`.
+
+Signature:
+
+```ts
+export type LiveProviderTransport = (request: LiveProviderHttpRequest, signal: AbortSignal) => Promise<LiveProviderHttpResponse>;
+```
+
+Parameter:
+
+- request - Serialized request with headers.
+
+Parameter:
+
+- signal - Cancellation signal the transport must observe while pending.
+
+Returns:
+
+- The response status and body text.
+
+### `MODEL_CONTENT_BLOCK_TYPES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured provider-neutral message content block types ordered text, tool use, tool result.
+
+Signature:
+
+```ts
+export declare const MODEL_CONTENT_BLOCK_TYPES: readonly [
+    "text",
+    "tool_use",
+    "tool_result"
+];
+```
+
+### `MODEL_MESSAGE_ROLES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured provider-neutral message roles ordered user then assistant.
+
+Signature:
+
+```ts
+export declare const MODEL_MESSAGE_ROLES: readonly [
+    "user",
+    "assistant"
+];
+```
+
+### `MaterializedEffectEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record that retains the original materialization of one effect.
+
+Signature:
+
+```ts
+export type MaterializedEffectEvidence = {
+    readonly kind: MaterializedEffectEvidenceKind;
+    readonly record_id: RecordId;
+};
+```
+
+### `MaterializedEffectEvidenceKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured materialization evidence kind.
+
+Signature:
+
+```ts
+export type MaterializedEffectEvidenceKind = (typeof EFFECT_COMPENSATION_EVIDENCE_KINDS)[number];
+```
+
 ### `MergeScopeOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -6296,6 +8328,98 @@ export type MergeScopeOptions = {
     readonly expectedParentHeadRecordId: RecordId;
     readonly nowMilliseconds?: number;
     readonly parent: ScopeWriter;
+};
+```
+
+### `MetaAgentToolEnvironment`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Environment backing the substrate-native meta-agent tools.
+
+Signature:
+
+```ts
+export type MetaAgentToolEnvironment = {
+    readonly allocateRoot: (request: {
+        readonly commandId: string;
+        readonly operation: string;
+        readonly world: string;
+    }) => Promise<string>;
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly store: SQLiteTraceStore;
+    readonly workers: Readonly<Record<string, MetaAgentWorkerDefinition>>;
+    readonly world?: ApplicationWorldAdapter;
+};
+```
+
+### `MetaAgentTools`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Catalog tools and their handlers.
+
+Signature:
+
+```ts
+export type MetaAgentTools = {
+    readonly handlers: readonly EffectHandler[];
+    readonly tools: readonly ToolLoopTool[];
+};
+```
+
+### `MetaAgentTreeRlForkSelectorOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createMetaAgentTreeRlForkSelector.
+
+Signature:
+
+```ts
+export type MetaAgentTreeRlForkSelectorOptions = {
+    readonly provider: ModelProvider;
+    readonly signal?: AbortSignal;
+};
+```
+
+### `MetaAgentWorkerDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+A worker a meta-agent may fork, identified to the model by its definition name.
+
+Signature:
+
+```ts
+export type MetaAgentWorkerDefinition = {
+    readonly compensation?: EffectCompensationRegistry;
+    readonly handlers?: (root: string) => EffectHandlerStack;
+    readonly program: ReplaySessionProgram;
+    readonly programId: string;
+    readonly provider?: ModelProvider;
+    readonly task?: ReplaySessionTaskDefinition;
+    readonly variants?: Readonly<Record<string, MetaAgentWorkerVariant>>;
+    readonly world: string;
+};
+```
+
+### `MetaAgentWorkerVariant`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One replacement a meta-agent may apply when it replays a worker.
+
+Signature:
+
+```ts
+export type MetaAgentWorkerVariant = {
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly handlers?: (root: string) => EffectHandlerStack;
+    readonly policy?: (request: ReplayEffectApprovalRequest) => Promise<ReplayEffectApprovalVerdict> | ReplayEffectApprovalVerdict;
+    readonly provider?: ModelProvider;
+    readonly task?: ReplaySessionTaskDefinition;
 };
 ```
 
@@ -6326,6 +8450,93 @@ export type ModelArtifactDefinition = {
     readonly metadata: SemanticRecord;
     readonly name: string;
 };
+```
+
+### `ModelContentBlock`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One content block of a provider-neutral message: text, a model tool call (assistant messages
+only), or a tool result (user messages only).
+
+Signature:
+
+```ts
+export type ModelContentBlock = ModelTextBlock | ModelToolUseBlock | ModelToolResultBlock;
+```
+
+### `ModelContentBlockType`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured provider-neutral content block type.
+
+Signature:
+
+```ts
+export type ModelContentBlockType = (typeof MODEL_CONTENT_BLOCK_TYPES)[number];
+```
+
+### `ModelConversationRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Provider-neutral multi-turn request sent through ConversationalModelProvider.converse.
+
+Signature:
+
+```ts
+export type ModelConversationRequest = {
+    readonly cachePrefixMessages: number;
+    readonly messages: readonly ModelMessage[];
+    readonly outputSchema: SemanticRecord | null;
+    readonly system: string | null;
+    readonly tools?: readonly ModelToolDefinition[];
+};
+```
+
+### `ModelConversationResponse`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Provider-neutral response of one multi-turn request.
+
+Signature:
+
+```ts
+export type ModelConversationResponse = {
+    readonly message: ModelMessage;
+    readonly output: SemanticValue;
+    readonly stopReason: string;
+    readonly usage: ModelUsage;
+};
+```
+
+### `ModelMessage`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One provider-neutral conversation message.
+
+Signature:
+
+```ts
+export type ModelMessage = {
+    readonly content: readonly ModelContentBlock[];
+    readonly role: ModelMessageRole;
+};
+```
+
+### `ModelMessageRole`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured provider-neutral message role.
+
+Signature:
+
+```ts
+export type ModelMessageRole = (typeof MODEL_MESSAGE_ROLES)[number];
 ```
 
 ### `ModelProvider`
@@ -6372,6 +8583,86 @@ export type ModelResponse = {
     readonly artifacts?: readonly ModelArtifactDefinition[];
     readonly output: SemanticValue;
     readonly usage: ModelUsage;
+};
+```
+
+### `ModelRuntimeSupervisorPolicyOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createModelRuntimeSupervisorPolicy.
+
+Signature:
+
+```ts
+export type ModelRuntimeSupervisorPolicyOptions = {
+    readonly model: ToolLoopModel;
+    readonly protocol: ApplicationProtocolDefinition;
+};
+```
+
+### `ModelTextBlock`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One text content block of a provider-neutral message.
+
+Signature:
+
+```ts
+export type ModelTextBlock = {
+    readonly text: string;
+    readonly type: (typeof MODEL_CONTENT_BLOCK_TYPES)[0];
+};
+```
+
+### `ModelToolDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One tool offered to the model in a multi-turn request.
+
+Signature:
+
+```ts
+export type ModelToolDefinition = {
+    readonly description: string;
+    readonly inputSchema: SemanticRecord;
+    readonly name: string;
+};
+```
+
+### `ModelToolResultBlock`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One tool result returned to the model in a user message.
+
+Signature:
+
+```ts
+export type ModelToolResultBlock = {
+    readonly content: string;
+    readonly isError: boolean;
+    readonly type: (typeof MODEL_CONTENT_BLOCK_TYPES)[2];
+    readonly toolUseId: string;
+};
+```
+
+### `ModelToolUseBlock`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One tool call requested by the model in an assistant message.
+
+Signature:
+
+```ts
+export type ModelToolUseBlock = {
+    readonly id: string;
+    readonly input: SemanticRecord;
+    readonly name: string;
+    readonly type: (typeof MODEL_CONTENT_BLOCK_TYPES)[1];
 };
 ```
 
@@ -7106,6 +9397,20 @@ export type OperationSessionDeathEvidence = {
 };
 ```
 
+### `OptionalTaskSchemaShapeKeys`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Keys of a task object-schema shape declared with `schema.optional()`.
+
+Signature:
+
+```ts
+export type OptionalTaskSchemaShapeKeys<S extends TaskSchemaShape> = {
+    [K in keyof S]-?: S[K] extends TaskOptionalSchema<unknown> ? K : never;
+}[keyof S];
+```
+
 ### `OrphanOperationDiagnosis`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -7662,6 +9967,24 @@ export declare const PLACEMENT_RESOLUTION_STATUSES: readonly [
 ];
 ```
 
+### `PROVIDER_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured provider kinds ordered static, program, then live kinds.
+
+Signature:
+
+```ts
+export declare const PROVIDER_KINDS: readonly [
+    "static",
+    "program",
+    "anthropic",
+    "openai",
+    "openrouter"
+];
+```
+
 ### `PinnedTheoremArtifactEvidence`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -7926,6 +10249,22 @@ export type PreparedRetainedWorldSettlement = RetainedWorldSettlementAdmission &
 };
 ```
 
+### `ProgramConversationProviderDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Definition accepted by createProgramConversationProvider.
+
+Signature:
+
+```ts
+export type ProgramConversationProviderDefinition = {
+    readonly id: string;
+    readonly model?: string;
+    readonly respond: (request: ModelConversationRequest, signal: AbortSignal) => ModelConversationResponse | Promise<ModelConversationResponse>;
+};
+```
+
 ### `ProjectChildRunResultOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -8044,6 +10383,40 @@ export type ProviderCapabilities = {
 };
 ```
 
+### `ProviderConversation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Stateful multi-turn conversation bound to a replay provider-session adapter.
+
+Signature:
+
+```ts
+export type ProviderConversation = {
+    readonly contextPrefixId: () => string | null;
+    readonly messages: () => readonly ModelMessage[];
+    readonly provider: ModelProvider;
+    readonly rebuild: (steps: readonly ReplayStepInspection[]) => void;
+    readonly session: ReplayProviderSessionAdapter;
+};
+```
+
+### `ProviderConversationDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Definition accepted by createProviderConversation.
+
+Signature:
+
+```ts
+export type ProviderConversationDefinition = {
+    readonly adapterId: string;
+    readonly provider: ConversationalModelProvider;
+    readonly system?: string;
+};
+```
+
 ### `ProviderDescriptor`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -8065,7 +10438,7 @@ export type ProviderDescriptor = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured provider-kind vocabulary implemented by provider protocol v1.
+Configured provider-kind vocabulary: static, program, and every configured live kind.
 
 Signature:
 
@@ -8226,6 +10599,23 @@ export declare const REPLAY_CHECKPOINT_EVIDENCE_STATUSES: readonly [
 ];
 ```
 
+### `REPLAY_CHECKPOINT_POLICIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured automatic checkpoint policies ordered none, provider step, effect step, every N steps.
+
+Signature:
+
+```ts
+export declare const REPLAY_CHECKPOINT_POLICIES: readonly [
+    "none",
+    "provider_step",
+    "effect_step",
+    "every_n_steps"
+];
+```
+
 ### `REPLAY_COMPATIBILITY_VERSION`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -8380,6 +10770,36 @@ export declare const REPLAY_RECOVERY_CLASSIFICATIONS: readonly [
     "running",
     "interrupted",
     "materialization_uncertain"
+];
+```
+
+### `REPLAY_REGRESSION_STRATEGIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured first-regression search strategies ordered bisect, linear.
+
+Signature:
+
+```ts
+export declare const REPLAY_REGRESSION_STRATEGIES: readonly [
+    "bisect",
+    "linear"
+];
+```
+
+### `REPLAY_SOURCE_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured branch source dispositions ordered compensate, retain.
+
+Signature:
+
+```ts
+export declare const REPLAY_SOURCE_DISPOSITIONS: readonly [
+    "compensate",
+    "retain"
 ];
 ```
 
@@ -9133,6 +11553,7 @@ Signature:
 ```ts
 export type ReferenceCopyCarrier = {
     readonly backend: WorldCarrierBackend;
+    readonly backendSelection: WorldCarrierBackendSelection;
     readonly captureCustody: (custodyId: string) => Promise<WorldRevision>;
     readonly discard: (custodyId: string) => Promise<void>;
     readonly fork: (revisionId: string) => Promise<WorldCustody>;
@@ -9155,6 +11576,7 @@ Signature:
 ```ts
 export type ReferenceCopyCarrierOptions = {
     readonly backend?: WorldCarrierBackend;
+    readonly backendSelection?: BackendSelectionMode;
     readonly faultInjection?: WorkspaceCustodyFaultInjection;
     readonly workspaceRoot: string;
 };
@@ -9257,6 +11679,43 @@ export type ReleasedRetainedWorldSettlement = {
 };
 ```
 
+### `ReplayBranchDiff`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One branch of an N-way diff.
+
+Signature:
+
+```ts
+export type ReplayBranchDiff = {
+    readonly effects: readonly ReplayCapturedEffect[];
+    readonly first_divergence_index: number | null;
+    readonly lineage: readonly string[];
+    readonly session_id: string;
+    readonly step_count: number;
+    readonly steps: readonly ReplayBranchDiffStep[];
+};
+```
+
+### `ReplayBranchDiffStep`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One step of a branch aligned against the common ancestor in an N-way diff.
+
+Signature:
+
+```ts
+export type ReplayBranchDiffStep = {
+    readonly ancestor_step_id: string | null;
+    readonly branch_step_id: string | null;
+    readonly index: number;
+    readonly kind: ReplayStepKind;
+    readonly status: ReplayDivergenceStatus;
+};
+```
+
 ### `ReplayBranchOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -9270,9 +11729,11 @@ export type ReplayBranchOptions = {
     readonly claimId: string;
     readonly clock?: () => number;
     readonly commandId: string;
+    readonly compensation?: EffectCompensationRegistry;
     readonly processes?: readonly ReplayProcessAdapter[];
     readonly providerSession?: ReplayProviderSessionAdapter;
     readonly signal?: AbortSignal;
+    readonly sourceDisposition?: ReplaySourceDisposition;
     readonly sourceSessionId: string;
     readonly target: ReplayTarget;
     readonly worlds?: readonly ReplayWorldBinding[];
@@ -9307,6 +11768,25 @@ Signature:
 
 ```ts
 export type ReplayCacheStatus = (typeof REPLAY_CACHE_STATUSES)[number];
+```
+
+### `ReplayCapturedEffect`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One effect step a branch captured past the shared base.
+
+Signature:
+
+```ts
+export type ReplayCapturedEffect = {
+    readonly disposition: ReplayEffectDisposition;
+    readonly effect_id: string;
+    readonly effect_kind: string;
+    readonly index: number;
+    readonly intent_ref: string;
+    readonly step_id: string;
+};
 ```
 
 ### `ReplayChangeDimension`
@@ -9397,6 +11877,41 @@ export type ReplayCheckpointInspection = {
     readonly step_count: number;
     readonly trace_cut_id: string;
 };
+```
+
+### `ReplayCheckpointPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Automatic step-boundary checkpoint policy of one session.
+
+Kinds are the configured `replay.checkpoint.automatic.policies`, ordered none, provider step,
+effect step, and every N steps. A selected boundary is captured immediately before the step that
+selects it, exactly as an explicit `checkpoint()` call there would be: `provider_step` before
+every provider step, `effect_step` before every effect step, and `every_n_steps` before any step
+whose index is a multiple of `interval` (so boundary 0 is always captured). A replay branch
+captures only boundaries at or after its target; the recorded prefix reuses the source's
+checkpoints.
+
+Signature:
+
+```ts
+export type ReplayCheckpointPolicy = {
+    readonly interval?: number;
+    readonly kind: ReplayCheckpointPolicyKind;
+};
+```
+
+### `ReplayCheckpointPolicyKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured automatic checkpoint policy kind.
+
+Signature:
+
+```ts
+export type ReplayCheckpointPolicyKind = (typeof REPLAY_CHECKPOINT_POLICIES)[number];
 ```
 
 ### `ReplayCheckpointUnavailableError`
@@ -9694,6 +12209,26 @@ Signature:
 
 ```ts
 export type ReplayEffectDisposition = (typeof REPLAY_EFFECT_DISPOSITIONS)[number];
+```
+
+### `ReplayEffectPresence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One distinct captured effect across the branches of an N-way diff.
+
+Signature:
+
+```ts
+export type ReplayEffectPresence = {
+    readonly disposition: ReplayEffectDisposition;
+    readonly effect_id: string;
+    readonly effect_kind: string;
+    readonly in_ancestor: boolean;
+    readonly intent_ref: string;
+    readonly session_ids: readonly string[];
+    readonly step_id: string;
+};
 ```
 
 ### `ReplayEffectRefusedError`
@@ -10240,6 +12775,52 @@ Signature:
 export type ReplayRecoveryClassification = (typeof REPLAY_RECOVERY_CLASSIFICATIONS)[number];
 ```
 
+### `ReplayRegressionEvaluation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One evaluated verdict of a regression search.
+
+Signature:
+
+```ts
+export type ReplayRegressionEvaluation = {
+    readonly good: boolean;
+    readonly step_count: number;
+};
+```
+
+### `ReplayRegressionSearch`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of a first-regression search over a session lineage.
+
+Signature:
+
+```ts
+export type ReplayRegressionSearch = {
+    readonly evaluations: readonly ReplayRegressionEvaluation[];
+    readonly first_bad: ReplayRevisionAddress | null;
+    readonly last_good: ReplayRevisionAddress | null;
+    readonly lineage: readonly string[];
+    readonly session_id: string;
+    readonly strategy: ReplayRegressionStrategy;
+};
+```
+
+### `ReplayRegressionStrategy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured first-regression search strategy.
+
+Signature:
+
+```ts
+export type ReplayRegressionStrategy = (typeof REPLAY_REGRESSION_STRATEGIES)[number];
+```
+
 ### `ReplayReplaySessionOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -10250,6 +12831,7 @@ Signature:
 
 ```ts
 export type ReplayReplaySessionOptions = ReplayBranchOptions & {
+    readonly checkpointPolicy?: ReplayCheckpointPolicy;
     readonly changes?: readonly ReplayChangeDimension[];
     readonly handlers?: EffectHandlerStack;
     readonly policy?: (request: ReplayEffectApprovalRequest) => Promise<ReplayEffectApprovalVerdict> | ReplayEffectApprovalVerdict;
@@ -10316,6 +12898,39 @@ export type ReplayRestoreInspection = {
 };
 ```
 
+### `ReplayRevision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One revision of a session lineage presented to a regression verdict.
+
+Signature:
+
+```ts
+export type ReplayRevision = {
+    readonly prefix_id: string | null;
+    readonly session_id: string;
+    readonly step_count: number;
+    readonly steps: readonly ReplayStepInspection[];
+};
+```
+
+### `ReplayRevisionAddress`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Revision address reported by a regression search.
+
+Signature:
+
+```ts
+export type ReplayRevisionAddress = {
+    readonly prefix_id: string | null;
+    readonly session_id: string;
+    readonly step_count: number;
+};
+```
+
 ### `ReplaySessionContext`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -10335,6 +12950,25 @@ export type ReplaySessionContext = {
     readonly signal: AbortSignal;
     readonly step_count: number;
     readonly task: ReplaySessionTask | null;
+};
+```
+
+### `ReplaySessionDiff`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only N-way diff of replay sessions against their common lineage ancestor.
+
+Signature:
+
+```ts
+export type ReplaySessionDiff = {
+    readonly ancestor_session_id: string | null;
+    readonly base_prefix_id: string | null;
+    readonly base_step_count: number;
+    readonly branches: readonly ReplayBranchDiff[];
+    readonly effects: readonly ReplayEffectPresence[];
+    readonly session_ids: readonly string[];
 };
 ```
 
@@ -10361,6 +12995,7 @@ export type ReplaySessionInspection = {
         readonly process_id: string;
     }[];
     readonly program_id: string;
+    readonly proof: ProofEnvelope;
     readonly provider: ProviderDescriptor | null;
     readonly provider_session_adapter_id: string | null;
     readonly restore: ReplayRestoreInspection | null;
@@ -10489,6 +13124,20 @@ export type ReplaySessionTaskDefinition = {
     readonly descriptor: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>;
     readonly input: unknown;
 };
+```
+
+### `ReplaySourceDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured disposition of a branch's source session: `compensate` abandons the source's suffix
+and compensates its successful compensable effects before the branch opens; `retain` keeps the
+source as a live alternative and compensates nothing.
+
+Signature:
+
+```ts
+export type ReplaySourceDisposition = (typeof REPLAY_SOURCE_DISPOSITIONS)[number];
 ```
 
 ### `ReplayStepFailure`
@@ -10706,6 +13355,21 @@ Signature:
 
 ```ts
 export type ReplayTerminalStatus = (typeof REPLAY_TERMINAL_STATUSES)[number];
+```
+
+### `ReplayToolLoopBindings`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Model and effect boundaries of a loop running inside a replay session program.
+
+Signature:
+
+```ts
+export type ReplayToolLoopBindings = {
+    readonly effects: ToolLoopEffects;
+    readonly model: ToolLoopModel;
+};
 ```
 
 ### `ReplayWorldBinding`
@@ -11840,14 +14504,16 @@ Signature:
 
 ```ts
 export type RunCounterfactualOptimizationOptions = {
+    readonly applyEdit: CounterfactualEditApplier;
     readonly baseline: CounterfactualWorkflowDefinition;
     readonly baselines?: readonly CounterfactualBaselineKind[];
-    readonly candidates: readonly CounterfactualCandidateDefinition[];
     readonly claimId: string;
     readonly clock?: () => number;
     readonly commandId: string;
-    readonly evaluate: CounterfactualEvaluator;
+    readonly dataset: CounterfactualDataset;
+    readonly metric: CounterfactualMetric;
     readonly protocol: ApplicationProtocolDefinition;
+    readonly proposer: CounterfactualProposer;
 };
 ```
 
@@ -12002,6 +14668,7 @@ Signature:
 
 ```ts
 export type RunReplaySessionOptions = {
+    readonly checkpointPolicy?: ReplayCheckpointPolicy;
     readonly claimId: string;
     readonly clock?: () => number;
     readonly commandId: string;
@@ -12014,6 +14681,28 @@ export type RunReplaySessionOptions = {
     readonly signal?: AbortSignal;
     readonly task?: ReplaySessionTaskDefinition;
     readonly worlds?: readonly ReplayWorldBinding[];
+};
+```
+
+### `RunRuntimeSupervisorOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for runRuntimeSupervisor.
+
+Signature:
+
+```ts
+export type RunRuntimeSupervisorOptions = {
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly policy: RuntimeSupervisorPolicy;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly signal?: AbortSignal;
+    readonly supervisorId: string;
+    readonly wait?: RuntimeSupervisorWait;
+    readonly workers: readonly RuntimeSupervisorWorkerDefinition[];
+    readonly world: ApplicationWorldAdapter;
 };
 ```
 
@@ -12098,6 +14787,30 @@ export type RunTextArtifactContentDefinition = {
 };
 ```
 
+### `RunToolLoopOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for runToolLoop.
+
+Signature:
+
+```ts
+export type RunToolLoopOptions = {
+    readonly effects: ToolLoopEffects;
+    readonly guidance?: (request: ToolLoopGuidanceRequest) => Promise<string | null> | string | null;
+    readonly loopId: string;
+    readonly maxTurns?: number;
+    readonly messages: readonly ModelMessage[];
+    readonly model: ToolLoopModel;
+    readonly onTurn?: (turn: ToolLoopTurn) => Promise<void> | void;
+    readonly outputSchema?: SemanticRecord | null;
+    readonly signal?: AbortSignal;
+    readonly system?: string;
+    readonly tools: readonly ToolLoopTool[];
+};
+```
+
 ### `RunTrajectoryCompressionOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -12133,15 +14846,17 @@ Signature:
 ```ts
 export type RunTreeRlRolloutsOptions = {
     readonly baselines?: readonly TreeRlBaselineKind[];
+    readonly bindings?: TreeRlBindingsFactory;
     readonly claimId: string;
     readonly clock?: () => number;
     readonly commandId: string;
-    readonly handlers?: EffectHandlerStack;
-    readonly program: ReplaySessionProgram;
+    readonly concurrency?: number;
+    readonly normalization?: TreeRlNormalization;
+    readonly prompts: readonly TreeRlPrompt[];
     readonly protocol: ApplicationProtocolDefinition;
     readonly provider: TreeRlProviderFactory;
     readonly reward: TreeRlRewardFunction;
-    readonly sourceSessionId: string;
+    readonly selector: TreeRlForkSelector;
 };
 ```
 
@@ -12181,6 +14896,439 @@ export type RunUsageDefinition = {
     readonly inputTokens: number;
     readonly outputTokens: number;
     readonly runId: string;
+};
+```
+
+### `RuntimeSupervisorAction`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured Appendix E decision action: `none`, `inject`, `handoff`, or `discard`.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorAction = (typeof APPLICATION_RUNTIME_SUPERVISION_ACTIONS)[number];
+```
+
+### `RuntimeSupervisorAgentSnapshot`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Per-agent entry of one tick snapshot (paper Appendix E, observation cadence).
+
+Signature:
+
+```ts
+export type RuntimeSupervisorAgentSnapshot = {
+    readonly agent: string;
+    readonly attempt: number;
+    readonly consecutive_errors: number;
+    readonly events: number;
+    readonly feature: string;
+    readonly last_action: RuntimeSupervisorLastAction | null;
+    readonly modified_files: readonly string[];
+    readonly status: RuntimeSupervisorAttemptStatus;
+    readonly trailing_tool_calls: readonly RuntimeSupervisorToolCallSummary[];
+};
+```
+
+### `RuntimeSupervisorAttemptCause`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured cause of one worker attempt: `start`, `handoff`, or `discard`.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorAttemptCause = (typeof APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_CAUSES)[number];
+```
+
+### `RuntimeSupervisorAttemptInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One worker attempt: a session over one custody.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorAttemptInspection = {
+    readonly attempt: number;
+    readonly cause: RuntimeSupervisorAttemptCause;
+    readonly completion: RuntimeSupervisorCompletionInspection | null;
+    readonly custody: {
+        readonly custody_id: string;
+        readonly receipt_id: string;
+        readonly source_custody_id: string | null;
+    };
+    readonly guidance: string | null;
+    readonly leader: string | null;
+    readonly record_id: RecordId;
+    readonly tick: number;
+    readonly turns: readonly RuntimeSupervisorTurnInspection[];
+};
+```
+
+### `RuntimeSupervisorAttemptStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured status of one worker attempt; every status but the first is terminal.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorAttemptStatus = (typeof APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_STATUSES)[number];
+```
+
+### `RuntimeSupervisorCompletionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Terminal record of one worker attempt.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorCompletionInspection = {
+    readonly cause: {
+        readonly action: RuntimeSupervisorAction;
+        readonly tick: number;
+    } | null;
+    readonly error: string | null;
+    readonly output: SemanticValue;
+    readonly record_id: RecordId;
+    readonly status: RuntimeSupervisorAttemptStatus;
+};
+```
+
+### `RuntimeSupervisorDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One validated Appendix E decision.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorDecision = {
+    readonly action: RuntimeSupervisorAction;
+    readonly agent: string;
+    readonly guidance?: string;
+    readonly leader?: string;
+    readonly reason: string;
+};
+```
+
+### `RuntimeSupervisorInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one runtime supervisor run.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorInspection = {
+    readonly application_id: string;
+    readonly command_id: string;
+    readonly cut_id: CutId | null;
+    readonly manifest: ApplicationManifest | null;
+    readonly opened_record_id: RecordId;
+    readonly protocol_id: string;
+    readonly settlement: RuntimeSupervisorSettlementInspection | null;
+    readonly supervisor_id: string;
+    readonly ticks: readonly RuntimeSupervisorTickInspection[];
+    readonly workers: readonly RuntimeSupervisorWorkerInspection[];
+};
+```
+
+### `RuntimeSupervisorLastAction`
+
+Classification: `type-only`. Kind: `type alias`.
+
+The supervisor's most recent non-`none` action on one agent.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorLastAction = {
+    readonly action: RuntimeSupervisorAction;
+    readonly ticks_ago: number;
+};
+```
+
+### `RuntimeSupervisorPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Supervisor policy consulted exactly once per tick with the combined snapshot of every agent.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorPolicy = (context: RuntimeSupervisorPolicyContext) => Promise<RuntimeSupervisorPolicyResult> | RuntimeSupervisorPolicyResult;
+```
+
+Parameter:
+
+- context - Tick, snapshot, protocol, and signal.
+
+Returns:
+
+- The raw decision object and optional usage.
+
+### `RuntimeSupervisorPolicyContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context the policy receives once per tick.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorPolicyContext = {
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly signal: AbortSignal;
+    readonly snapshot: RuntimeSupervisorSnapshot;
+    readonly tick: number;
+};
+```
+
+### `RuntimeSupervisorPolicyResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Raw policy response of one tick.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorPolicyResult = {
+    readonly output: unknown;
+    readonly usage: ModelUsage | null;
+};
+```
+
+### `RuntimeSupervisorReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of runRuntimeSupervisor.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorReceipt = {
+    readonly custody: readonly {
+        readonly custody: ApplicationWorldCustody;
+        readonly worker_id: string;
+    }[];
+    readonly inspection: RuntimeSupervisorInspection;
+    readonly manifest: ApplicationManifest;
+};
+```
+
+### `RuntimeSupervisorRefusal`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Refusal of one tick's decision batch; no decision of a refused batch is applied.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorRefusal = {
+    readonly issues: readonly string[];
+};
+```
+
+### `RuntimeSupervisorSettlementInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained settlement of a run.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorSettlementInspection = {
+    readonly discard_custody_ids: readonly string[];
+    readonly record_id: RecordId;
+    readonly ticks: number;
+    readonly undelivered: readonly {
+        readonly tick: number;
+        readonly worker_id: string;
+    }[];
+    readonly workers: readonly {
+        readonly attempt: number;
+        readonly custody_id: string;
+        readonly status: RuntimeSupervisorAttemptStatus;
+        readonly worker_id: string;
+    }[];
+};
+```
+
+### `RuntimeSupervisorSnapshot`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One combined snapshot the policy receives per tick.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorSnapshot = {
+    readonly agents: readonly RuntimeSupervisorAgentSnapshot[];
+    readonly tick: number;
+};
+```
+
+### `RuntimeSupervisorTickInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained tick.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorTickInspection = {
+    readonly cursor: TraceSubscriptionCursor;
+    readonly decisions: readonly RuntimeSupervisorDecision[];
+    readonly output: SemanticValue;
+    readonly record_id: RecordId;
+    readonly refusal: RuntimeSupervisorRefusal | null;
+    readonly snapshot: RuntimeSupervisorSnapshot;
+    readonly tick: number;
+    readonly usage: ModelUsage | null;
+};
+```
+
+### `RuntimeSupervisorToolCallStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured tool-call disposition carried by a snapshot summary.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorToolCallStatus = (typeof TOOL_CALL_DISPOSITIONS)[number];
+```
+
+### `RuntimeSupervisorToolCallSummary`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Bounded summary of one worker tool call.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorToolCallSummary = {
+    readonly error: string | null;
+    readonly status: RuntimeSupervisorToolCallStatus;
+    readonly target: string | null;
+    readonly tool: string;
+};
+```
+
+### `RuntimeSupervisorTurnInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained model turn of a worker attempt.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorTurnInspection = {
+    readonly assistant: ModelMessage;
+    readonly cache_prefix_messages: number;
+    readonly calls: readonly RuntimeSupervisorToolCallSummary[];
+    readonly guidance_ticks: readonly number[];
+    readonly index: number;
+    readonly message_count: number;
+    readonly output: SemanticValue;
+    readonly record_id: RecordId;
+    readonly request_digest: string;
+    readonly results: ModelMessage | null;
+    readonly usage: ModelUsage;
+};
+```
+
+### `RuntimeSupervisorWait`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Tick scheduler: resolves after the configured cadence, or rejects when the signal aborts.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorWait = (milliseconds: number, signal: AbortSignal) => Promise<void>;
+```
+
+Parameter:
+
+- milliseconds - The protocol's tick interval.
+
+Parameter:
+
+- signal - Run cancellation.
+
+### `RuntimeSupervisorWorkerDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One concurrently supervised worker: a tool-use loop over its own forked custody.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorWorkerDefinition = {
+    readonly effects: (context: RuntimeSupervisorWorkerEffectsContext) => ToolLoopEffects;
+    readonly feature: string;
+    readonly model: ToolLoopModel;
+    readonly outputSchema?: SemanticRecord | null;
+    readonly system?: string;
+    readonly tools: readonly ToolLoopTool[];
+    readonly workerId: string;
+};
+```
+
+### `RuntimeSupervisorWorkerEffectsContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a worker's effect factory receives when an attempt starts or resumes.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorWorkerEffectsContext = {
+    readonly attempt: number;
+    readonly custody: ApplicationWorldCustody;
+    readonly workerId: string;
+};
+```
+
+### `RuntimeSupervisorWorkerInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One worker stream.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorWorkerInspection = {
+    readonly attempts: readonly RuntimeSupervisorAttemptInspection[];
+    readonly stream_id: string;
+    readonly worker_id: string;
 };
 ```
 
@@ -12901,8 +16049,8 @@ matches a configured detector; nothing is written and the intent remains reusabl
 Throws:
 
 - {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
-owner path reserved for supervised dispatches, context channels, replay sessions, or child
-run handles.
+owner path reserved for supervised dispatches, context channels, replay sessions, child run
+handles, applications, or effect compensations.
 
 Throws:
 
@@ -13592,7 +16740,8 @@ Returns:
 Throws:
 
 - {TraceStoreError} If the target occurrence is absent, the publishing owner path is
-reserved for replay sessions or child run handles, or the store is closed.
+reserved for replay sessions, child run handles, applications, or effect compensations, or the
+store is closed.
 
 Throws:
 
@@ -16479,6 +19628,25 @@ export type SupervisedDispatchInspection = {
 };
 ```
 
+### `SupervisedToolLoopEffectsOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createSupervisedToolLoopEffects.
+
+Signature:
+
+```ts
+export type SupervisedToolLoopEffectsOptions = {
+    readonly approvalTimeoutMilliseconds?: number;
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly handlers: EffectHandlerStack;
+    readonly interceptors?: readonly SupervisionInterceptor[];
+    readonly store: SQLiteTraceStore;
+};
+```
+
 ### `SupervisionApprovalConflictError`
 
 Classification: `runtime-and-type`. Kind: `class`.
@@ -17186,6 +20354,38 @@ export declare const TELEMETRY_BODY_MODES: readonly [
 ];
 ```
 
+### `TOOL_CALL_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured tool-call dispositions ordered materialized, denied, invalid, failed.
+
+Signature:
+
+```ts
+export declare const TOOL_CALL_DISPOSITIONS: readonly [
+    "materialized",
+    "denied",
+    "invalid",
+    "failed"
+];
+```
+
+### `TOOL_LOOP_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured tool-use loop statuses ordered completed then turn limit.
+
+Signature:
+
+```ts
+export declare const TOOL_LOOP_STATUSES: readonly [
+    "completed",
+    "turn_limit"
+];
+```
+
 ### `TaskArtifact`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -17357,6 +20557,24 @@ export type TaskLedgerRepositoryGrantEvidence = {
 };
 ```
 
+### `TaskOptionalSchema`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Marker declaring one object field optional; accepted only inside `schema.object()` shapes.
+
+The field's document is the wrapped schema's document; the parent object omits the field from
+`required`.
+
+Signature:
+
+```ts
+export type TaskOptionalSchema<T> = {
+    readonly optional: true;
+    readonly schema: TaskSchema<T>;
+};
+```
+
 ### `TaskRegistration`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -17413,30 +20631,54 @@ export type TaskSchema<T> = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Public factory surface for the supported task schema primitives.
+Public factory surface for the supported task schema forms.
 
 Signature:
 
 ```ts
 export type TaskSchemaFactory = {
+    readonly array: <S extends TaskSchema<unknown>>(items: S) => TaskSchema<readonly InferTaskSchema<S>[]>;
+    readonly boolean: () => TaskSchema<boolean>;
+    readonly enum: <const V extends readonly [
+        TaskSchemaScalar,
+        ...TaskSchemaScalar[]
+    ]>(values: V) => TaskSchema<V[number]>;
     readonly fromJSONSchema: (document: unknown) => TaskSchema<unknown>;
+    readonly integer: () => TaskSchema<number>;
+    readonly literal: <const V extends TaskSchemaScalar>(value: V) => TaskSchema<V>;
+    readonly null: () => TaskSchema<null>;
+    readonly number: () => TaskSchema<number>;
     readonly object: <S extends TaskSchemaShape>(shape: S) => TaskSchema<InferTaskSchemaShape<S>>;
+    readonly optional: <S extends TaskSchema<unknown>>(schema: S) => TaskOptionalSchema<InferTaskSchema<S>>;
     readonly string: () => TaskSchema<string>;
     readonly task: () => TaskSchema<TaskValue>;
+    readonly union: <const S extends UnionMembers>(members: S) => TaskSchema<InferTaskSchema<S[number]>>;
     readonly void: () => TaskSchema<void>;
 };
+```
+
+### `TaskSchemaScalar`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Scalar value admitted by task enum and literal schemas.
+
+Signature:
+
+```ts
+export type TaskSchemaScalar = boolean | null | number | string;
 ```
 
 ### `TaskSchemaShape`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Shape accepted by `schema.object()`.
+Shape accepted by `schema.object()`: field names mapped to schemas or optional markers.
 
 Signature:
 
 ```ts
-export type TaskSchemaShape = Readonly<Record<string, TaskSchema<unknown>>>;
+export type TaskSchemaShape = Readonly<Record<string, TaskSchema<unknown> | TaskOptionalSchema<unknown>>>;
 ```
 
 ### `TaskValue`
@@ -17640,6 +20882,184 @@ Signature:
 ```ts
 export type TelemetrySink = {
     readonly write: (batch: TelemetryBatch) => Promise<void> | void;
+};
+```
+
+### `ToolCallDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured disposition of one model tool call.
+
+Signature:
+
+```ts
+export type ToolCallDisposition = (typeof TOOL_CALL_DISPOSITIONS)[number];
+```
+
+### `ToolLoopCall`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One model tool call and how the loop resolved it.
+
+Signature:
+
+```ts
+export type ToolLoopCall = {
+    readonly disposition: ToolCallDisposition;
+    readonly input: SemanticRecord;
+    readonly intent: EffectIntent | null;
+    readonly name: string;
+    readonly outcome: EffectOutcome | null;
+    readonly reason: string | null;
+    readonly result: ModelToolResultBlock;
+    readonly toolUseId: string;
+};
+```
+
+### `ToolLoopCounterfactualProposerOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createToolLoopCounterfactualProposer.
+
+Signature:
+
+```ts
+export type ToolLoopCounterfactualProposerOptions = {
+    readonly maxTurns?: number;
+    readonly model: ConversationalModelProvider;
+};
+```
+
+### `ToolLoopEffectResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of dispatching one tool-call intent.
+
+Signature:
+
+```ts
+export type ToolLoopEffectResult = {
+    readonly disposition: (typeof TOOL_CALL_DISPOSITIONS)[0];
+    readonly outcome: EffectOutcome;
+} | {
+    readonly disposition: (typeof TOOL_CALL_DISPOSITIONS)[1];
+    readonly reason: string;
+} | {
+    readonly disposition: (typeof TOOL_CALL_DISPOSITIONS)[3];
+    readonly reason: string;
+};
+```
+
+### `ToolLoopEffects`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Effect boundary of a tool-use loop.
+
+Signature:
+
+```ts
+export type ToolLoopEffects = {
+    readonly dispatch: (intent: EffectIntent, signal: AbortSignal) => Promise<ToolLoopEffectResult>;
+};
+```
+
+### `ToolLoopGuidanceRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request presented to a loop's guidance callback between turns.
+
+Signature:
+
+```ts
+export type ToolLoopGuidanceRequest = {
+    readonly messages: readonly ModelMessage[];
+    readonly signal: AbortSignal;
+    readonly turn: ToolLoopTurn;
+};
+```
+
+### `ToolLoopModel`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Model boundary of a tool-use loop: one multi-turn request per turn.
+
+Signature:
+
+```ts
+export type ToolLoopModel = {
+    readonly converse: ConversationalModelProvider["converse"];
+};
+```
+
+### `ToolLoopResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one tool-use loop.
+
+Signature:
+
+```ts
+export type ToolLoopResult = {
+    readonly messages: readonly ModelMessage[];
+    readonly output: SemanticValue;
+    readonly status: ToolLoopStatus;
+    readonly turns: readonly ToolLoopTurn[];
+};
+```
+
+### `ToolLoopStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured tool-use loop result status.
+
+Signature:
+
+```ts
+export type ToolLoopStatus = (typeof TOOL_LOOP_STATUSES)[number];
+```
+
+### `ToolLoopTool`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One tool offered to the model and the effect family its calls become.
+
+Signature:
+
+```ts
+export type ToolLoopTool = {
+    readonly description: string;
+    readonly effectKind: string;
+    readonly inputSchema: SemanticRecord;
+    readonly name: string;
+    readonly reversibility: EffectReversibility;
+};
+```
+
+### `ToolLoopTurn`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One completed model turn of a tool-use loop.
+
+Signature:
+
+```ts
+export type ToolLoopTurn = {
+    readonly calls: readonly ToolLoopCall[];
+    readonly guidance: string | null;
+    readonly index: number;
+    readonly request: ModelConversationRequest;
+    readonly response: ModelConversationResponse;
 };
 ```
 
@@ -18478,6 +21898,38 @@ Signature:
 export type TrajectoryCompressionBaselineKind = (typeof APPLICATION_COMPRESSION_BASELINE_KINDS)[number];
 ```
 
+### `TrajectoryCompressionBindings`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Worlds, processes, and handler stack bound to one workflow session.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionBindings = {
+    readonly handlers?: EffectHandlerStack;
+    readonly processes?: readonly ReplayProcessAdapter[];
+    readonly worlds?: readonly ReplayWorldBinding[];
+};
+```
+
+### `TrajectoryCompressionBindingsContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Session a workflow `bindings` factory is asked to bind.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionBindingsContext = {
+    readonly application_id: string;
+    readonly role: string;
+    readonly seed: number | null;
+};
+```
+
 ### `TrajectoryCompressionCandidateInspection`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -18522,6 +21974,7 @@ export type TrajectoryCompressionCandidateRecord = {
     readonly compressor_handle_id: string | null;
     readonly cost: ApplicationCostSummary | null;
     readonly failure: TrajectoryCompressionFailure | null;
+    readonly fork_clamp: TrajectoryForkClamp | null;
     readonly fork_id: string | null;
     readonly fork_point: TrajectoryForkPoint | null;
     readonly hint_digest: string | null;
@@ -18714,7 +22167,8 @@ Returns:
 
 Classification: `type-only`. Kind: `type alias`.
 
-Validated compressor proposal: a fork point and hint, or null for no compression.
+Validated compressor proposal: a fork point and hint. A proposal whose fork point or fork step is
+absent or null is a missing fork step and settles `no_prune`.
 
 Signature:
 
@@ -18758,14 +22212,18 @@ Classification: `type-only`. Kind: `type alias`.
 
 Source workflow recorded once through a root replay session.
 
-The workflow binds no worlds or processes, so every step boundary is an admissible fork point.
-The provider, handler stack, task, and provider-session adapter service the source session,
-every suffix replay, and every control rerun, so the provider must answer repeated sessions.
+A workflow without `bindings` binds no worlds or processes, so every step boundary is an
+admissible fork point. A world- or process-bound workflow is restorable only at the checkpoints
+its `checkpointPolicy` retains; a fork point elsewhere settles `no_prune` as unavailable. The
+provider, handler stack, task, and provider-session adapter service the source session, every
+suffix replay, and every control rerun, so the provider must answer repeated sessions.
 
 Signature:
 
 ```ts
 export type TrajectoryCompressionWorkflow = {
+    readonly bindings?: (context: TrajectoryCompressionBindingsContext) => Promise<TrajectoryCompressionBindings> | TrajectoryCompressionBindings;
+    readonly checkpointPolicy?: ReplayCheckpointPolicy;
     readonly handlers?: EffectHandlerStack;
     readonly program: TrajectoryCompressionProgram;
     readonly programId: string;
@@ -18829,20 +22287,53 @@ Returns:
 
 - The compressor output.
 
+### `TrajectoryForkClamp`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained evidence that the configured policy clamped an out-of-range proposed fork step to the
+nearest bound of `[0, n - 1]` (Appendix D.6).
+
+Signature:
+
+```ts
+export type TrajectoryForkClamp = {
+    readonly policy: TrajectoryForkStepPolicy;
+    readonly proposed_prefix_id: string | null;
+    readonly proposed_step_index: number;
+};
+```
+
 ### `TrajectoryForkPoint`
 
 Classification: `type-only`. Kind: `type alias`.
 
 Step boundary of the source session a compressor proposes to fork from.
 
+In a proposal `step_index` is any safe integer; it is resolved against an `n`-step source under
+the configured fork-step policy. A retained (resolved) fork point always satisfies
+`0 <= step_index <= n - 1`; step `0` restarts from the initial prefix.
+
 Signature:
 
 ```ts
 export type TrajectoryForkPoint = {
-    readonly prefix_id: string;
+    readonly prefix_id: string | null;
     readonly session_id: string;
     readonly step_index: number;
 };
+```
+
+### `TrajectoryForkStepPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured fork-step policy: clamp an out-of-range proposed step, or reject the proposal.
+
+Signature:
+
+```ts
+export type TrajectoryForkStepPolicy = (typeof APPLICATION_COMPRESSION_FORK_STEP_POLICIES)[number];
 ```
 
 ### `TrajectoryHint`
@@ -18963,27 +22454,58 @@ export type TransparentProcessAdapterOptions = {
 };
 ```
 
+### `TreeRlActionAdvantage`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One action (turn) of a training line and the advantage attributed to it.
+
+Signature:
+
+```ts
+export type TreeRlActionAdvantage = {
+    readonly advantage: number;
+    readonly segment: TreeRlActionSegment;
+    readonly step_index: number;
+    readonly turn: number;
+};
+```
+
+### `TreeRlActionSegment`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured per-action advantage segment: prefix, suffix, or flat (baseline only).
+
+Signature:
+
+```ts
+export type TreeRlActionSegment = (typeof APPLICATION_TREE_RL_ACTION_SEGMENTS)[number];
+```
+
 ### `TreeRlAdvantage`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Advantages of one completed rollout.
+Algorithm 2 advantages of one tree.
 
 Signature:
 
 ```ts
 export type TreeRlAdvantage = {
-    readonly inter_branch_advantage: number;
-    readonly intra_branch_advantage: number;
-    readonly rollout_id: string;
+    readonly branch_intra_advantages: readonly (number | null)[];
+    readonly group_index: number;
+    readonly inter_root_advantage: number | null;
+    readonly prompt_id: string;
+    readonly root_intra_advantage: number | null;
 };
 ```
 
 ### `TreeRlAdvantageInput`
 
-Classification: `type-only`. Kind: `type alias`.
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
 
-Rollout fields computeTreeRlAdvantages reads.
+Rollout fields the per-fork-point advantage computation read before 10.0.0.
 
 Signature:
 
@@ -18995,6 +22517,27 @@ export type TreeRlAdvantageInput = {
     readonly reward: number | null;
     readonly rollout_id: string;
     readonly status: TreeRlRolloutStatus;
+};
+```
+
+Deprecated:
+
+- Since 10.0.0: {@link computeTreeRlAdvantages} reads {@link TreeRlAdvantageTree}values and no API consumes this type; it is removed once the deprecation window elapses.
+
+### `TreeRlAdvantageTree`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Rewards of one tree computeTreeRlAdvantages reads.
+
+Signature:
+
+```ts
+export type TreeRlAdvantageTree = {
+    readonly branches: readonly (number | null)[];
+    readonly group_index: number;
+    readonly prompt_id: string;
+    readonly root: number | null;
 };
 ```
 
@@ -19070,19 +22613,57 @@ export type TreeRlBatchSummary = {
 };
 ```
 
+### `TreeRlBindingsFactory`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied factory returning each rollout's restoration bindings. It is called once for
+every rollout whose record is not yet retained, before its session opens.
+
+Signature:
+
+```ts
+export type TreeRlBindingsFactory = (context: TreeRlProviderContext) => Promise<TreeRlRolloutBindings> | TreeRlRolloutBindings;
+```
+
+Parameter:
+
+- context - Prompt, root, branch, fork point, seed, and seeding tool call of the rollout.
+
+Returns:
+
+- The rollout's handler stack, empty world roots, and process adapters.
+
 ### `TreeRlEvaluationBinding`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Executable Tree-RL binding: the source workflow and the rollout options.
+Executable Tree-RL binding: the prompt batch with its root workflows and the rollout options.
 
 Signature:
 
 ```ts
 export type TreeRlEvaluationBinding = {
     readonly kind: (typeof APPLICATION_KINDS)[3];
-    readonly options: Omit<RunTreeRlRolloutsOptions, "baselines" | "commandId" | "protocol" | "sourceSessionId">;
-    readonly source: Omit<RunReplaySessionOptions, "commandId">;
+    readonly options: Omit<RunTreeRlRolloutsOptions, "baselines" | "commandId" | "prompts" | "protocol">;
+    readonly prompts: readonly TreeRlEvaluationPrompt[];
+};
+```
+
+### `TreeRlEvaluationPrompt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One Tree-RL evaluation prompt: its program and the G root workflows the evaluation records.
+
+Signature:
+
+```ts
+export type TreeRlEvaluationPrompt = {
+    readonly handlers?: EffectHandlerStack;
+    readonly id: string;
+    readonly program: ReplaySessionProgram;
+    readonly roots: readonly Omit<RunReplaySessionOptions, "commandId" | "program">[];
 };
 ```
 
@@ -19090,7 +22671,7 @@ export type TreeRlEvaluationBinding = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Retained failure of one rollout.
+Retained failure of one root grading or rollout.
 
 Signature:
 
@@ -19101,12 +22682,30 @@ export type TreeRlFailure = {
 };
 ```
 
+### `TreeRlForkDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained fork decision of one root.
+
+Signature:
+
+```ts
+export type TreeRlForkDecision = {
+    readonly branch_turn: number;
+    readonly fork_point: TreeRlForkPoint;
+    readonly proposed_turn: number;
+    readonly reason: string;
+    readonly tool_call: TreeRlToolCall | null;
+};
+```
+
 ### `TreeRlForkPoint`
 
 Classification: `type-only`. Kind: `type alias`.
 
 Step boundary a rollout branch starts from: the fork step is the first step the branch executes
-live, and every earlier step is served from the source journal.
+live, and every earlier step is served from the root journal.
 
 Signature:
 
@@ -19117,20 +22716,127 @@ export type TreeRlForkPoint = {
 };
 ```
 
+### `TreeRlForkProposal`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Fork proposal of one root rollout (paper Appendix F.7): the one-based turn to fork at, the tool
+call the selector would make there, and its reason.
+
+Signature:
+
+```ts
+export type TreeRlForkProposal = {
+    readonly branch_turn: number;
+    readonly reason: string;
+    readonly tool_call: TreeRlToolCall | null;
+};
+```
+
+### `TreeRlForkSelectionContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a fork selector receives for one graded root rollout.
+
+Signature:
+
+```ts
+export type TreeRlForkSelectionContext = {
+    readonly group_index: number;
+    readonly prompt_id: string;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly reward: number | null;
+    readonly root: ReplaySessionInspection;
+    readonly turn_bounds: {
+        readonly first: number;
+        readonly last: number;
+    };
+    readonly turns: readonly TreeRlTurn[];
+};
+```
+
+### `TreeRlForkSelector`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Fork-selection interface (paper Algorithm 2 line 12, `t* <- P(tau_root)`): returns the fork turn,
+the tool call that seeds one branch, and a reason. It is called once per root that has no
+retained root record, after the root is graded.
+
+Signature:
+
+```ts
+export type TreeRlForkSelector = (context: TreeRlForkSelectionContext) => Promise<TreeRlForkProposal> | TreeRlForkProposal;
+```
+
+Parameter:
+
+- context - Root session, reward, turns, admissible bounds, and protocol.
+
+Returns:
+
+- The fork proposal.
+
+### `TreeRlMemberKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured tree member kind: the root rollout or one of its K branches.
+
+Signature:
+
+```ts
+export type TreeRlMemberKind = (typeof APPLICATION_TREE_RL_MEMBER_KINDS)[number];
+```
+
+### `TreeRlNormalization`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured advantage normalization: raw centered values or per-group standardization.
+
+Signature:
+
+```ts
+export type TreeRlNormalization = (typeof APPLICATION_TREE_RL_NORMALIZATIONS)[number];
+```
+
+### `TreeRlPrompt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One prompt of a Tree-RL batch and its G recorded root rollouts.
+
+Signature:
+
+```ts
+export type TreeRlPrompt = {
+    readonly handlers?: EffectHandlerStack;
+    readonly id: string;
+    readonly program: ReplaySessionProgram;
+    readonly roots: readonly string[];
+};
+```
+
 ### `TreeRlProviderContext`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Identity of one planned rollout the provider factory receives.
+Identity of one planned branch rollout the provider and bindings factories receive.
 
 Signature:
 
 ```ts
 export type TreeRlProviderContext = {
     readonly branch: number;
+    readonly branch_turn: number;
     readonly fork_point: TreeRlForkPoint;
+    readonly group_index: number;
+    readonly prompt_id: string;
+    readonly root_session_id: string;
     readonly seed: number;
-    readonly source_session_id: string;
+    readonly tool_call: TreeRlToolCall | null;
 };
 ```
 
@@ -19140,8 +22846,9 @@ Classification: `type-only`. Kind: `type alias`.
 
 Caller-supplied factory returning the rollout's own static provider cassette.
 
-It is called once for every planned rollout before any record is written; each call must return
-a distinct provider whose descriptor kind is the configured static provider kind.
+It is called once for every planned rollout without a retained record, after every root is
+graded and before the first branch rollout opens; each call must return a distinct provider
+whose descriptor kind is the configured static provider kind.
 
 Signature:
 
@@ -19151,7 +22858,7 @@ export type TreeRlProviderFactory = (context: TreeRlProviderContext) => ModelPro
 
 Parameter:
 
-- context - Fork point, branch, seed, and source session of the rollout.
+- context - Prompt, root, fork point, branch, seed, and seeding tool call of the rollout.
 
 Returns:
 
@@ -19161,7 +22868,7 @@ Returns:
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured Tree-RL record phase: opened, rollout, or batch.
+Configured Tree-RL record phase: opened, root, rollout, or batch.
 
 Signature:
 
@@ -19173,19 +22880,22 @@ export type TreeRlRecordPhase = (typeof APPLICATION_TREE_RL_PHASES)[number];
 
 Classification: `type-only`. Kind: `type alias`.
 
-Context the reward function receives for one finished, proven rollout.
+Context the reward function (`Grade`) receives for one finished tree member.
 
 Signature:
 
 ```ts
 export type TreeRlRewardContext = {
-    readonly branch: number;
+    readonly branch: number | null;
     readonly cost: ApplicationCostSummary;
-    readonly fork_point: TreeRlForkPoint;
+    readonly fork_point: TreeRlForkPoint | null;
+    readonly group_index: number;
+    readonly member: TreeRlMemberKind;
+    readonly prompt_id: string;
     readonly protocol: ApplicationProtocolDefinition;
+    readonly root: ReplaySessionInspection;
     readonly rollout: ReplaySessionInspection;
-    readonly seed: number;
-    readonly source: ReplaySessionInspection;
+    readonly seed: number | null;
 };
 ```
 
@@ -19193,10 +22903,10 @@ export type TreeRlRewardContext = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Caller-supplied reward function returning one finite scalar per completed rollout.
+Caller-supplied reward function returning one finite scalar per finished tree member.
 
-A thrown error or a non-finite result retains the rollout as failed with the verification code;
-the run continues and the rollout is excluded from every mean.
+A thrown error or a non-finite result retains the member as failed with the verification code;
+the run continues and the member is excluded from every mean.
 
 Signature:
 
@@ -19206,11 +22916,30 @@ export type TreeRlRewardFunction = (context: TreeRlRewardContext) => Promise<num
 
 Parameter:
 
-- context - Rollout session, fork point, seed, cost, and protocol.
+- context - Graded session, root, member, fork point, seed, cost, and protocol.
 
 Returns:
 
 - The finite reward.
+
+### `TreeRlRolloutBindings`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Restoration bindings of one rollout of a world- or process-bound root.
+
+Every rollout restores the fork point's retained checkpoint into its own bindings, so each call
+must return fresh empty world roots and process adapters of its own.
+
+Signature:
+
+```ts
+export type TreeRlRolloutBindings = {
+    readonly handlers?: EffectHandlerStack;
+    readonly processes?: readonly ReplayProcessAdapter[];
+    readonly worlds?: readonly ReplayWorldBinding[];
+};
+```
 
 ### `TreeRlRolloutInspection`
 
@@ -19230,17 +22959,22 @@ export type TreeRlRolloutInspection = TreeRlRolloutPlan & {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Identity of one planned rollout, fixed when the run is opened.
+Identity of one planned branch rollout, fixed by its root's retained fork decision.
 
 Signature:
 
 ```ts
 export type TreeRlRolloutPlan = {
     readonly branch: number;
+    readonly branch_turn: number;
     readonly fork_point: TreeRlForkPoint;
+    readonly group_index: number;
+    readonly prompt_id: string;
     readonly replay_session_id: string;
     readonly rollout_id: string;
+    readonly root_session_id: string;
     readonly seed: number;
+    readonly seeded: boolean;
 };
 ```
 
@@ -19248,7 +22982,7 @@ export type TreeRlRolloutPlan = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-One retained rollout record.
+One retained branch rollout record.
 
 Signature:
 
@@ -19260,6 +22994,7 @@ export type TreeRlRolloutRecord = TreeRlRolloutPlan & {
     readonly reward: number | null;
     readonly status: TreeRlRolloutStatus;
     readonly step_count: number;
+    readonly turns: readonly number[];
 };
 ```
 
@@ -19267,12 +23002,36 @@ export type TreeRlRolloutRecord = TreeRlRolloutPlan & {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured rollout status: completed or failed.
+Configured rollout and root grading status: completed or failed.
 
 Signature:
 
 ```ts
 export type TreeRlRolloutStatus = (typeof APPLICATION_TREE_RL_ROLLOUT_STATUSES)[number];
+```
+
+### `TreeRlRootRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained root record: grading and fork decision of one recorded root rollout.
+
+Signature:
+
+```ts
+export type TreeRlRootRecord = {
+    readonly cost: ApplicationCostSummary;
+    readonly failure: TreeRlFailure | null;
+    readonly fork: TreeRlForkDecision;
+    readonly group_index: number;
+    readonly prompt_id: string;
+    readonly record_id: RecordId;
+    readonly reward: number | null;
+    readonly root_session_id: string;
+    readonly status: TreeRlRolloutStatus;
+    readonly step_count: number;
+    readonly turns: readonly number[];
+};
 ```
 
 ### `TreeRlRunInspection`
@@ -19290,15 +23049,19 @@ export type TreeRlRunInspection = {
     readonly batch: TreeRlBatchRecord | null;
     readonly command_id: string;
     readonly cut_id: CutId | null;
-    readonly fork_points: readonly TreeRlSelectedForkPoint[];
     readonly kind: ApplicationKind;
     readonly manifest: ApplicationManifest | null;
     readonly manifest_record_id: RecordId | null;
+    readonly normalization: TreeRlNormalization;
     readonly opened_record_id: RecordId;
+    readonly prompts: readonly {
+        readonly id: string;
+        readonly roots: readonly string[];
+    }[];
     readonly protocol_id: string;
     readonly rollouts: readonly TreeRlRolloutInspection[];
+    readonly roots: readonly TreeRlRootRecord[];
     readonly seeds: readonly number[];
-    readonly source_session_id: string;
 };
 ```
 
@@ -19332,6 +23095,38 @@ export type TreeRlSelectedForkPoint = TreeRlForkPoint & {
 };
 ```
 
+### `TreeRlToolCall`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Tool call a fork proposal injects as the first action of one branch at the fork turn.
+
+Signature:
+
+```ts
+export type TreeRlToolCall = {
+    readonly arguments: SemanticRecord;
+    readonly name: string;
+};
+```
+
+### `TreeRlTrainerAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Optional trainer-export adapter: the seam a trainer integration implements to receive a
+retained training batch. No trainer ships with this package.
+
+Signature:
+
+```ts
+export type TreeRlTrainerAdapter<TResult> = {
+    readonly formats: readonly TreeRlBatchFormat[];
+    readonly id: string;
+    readonly submit: (batch: TreeRlTrainingBatch) => Promise<TResult> | TResult;
+};
+```
+
 ### `TreeRlTrainingBatch`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -19346,6 +23141,7 @@ export type TreeRlTrainingBatch = TreeRlBatchExport & {
     readonly baseline: (TreeRlBatchExport & {
         readonly kind: TreeRlBaselineKind;
     }) | null;
+    readonly normalization: TreeRlNormalization;
 };
 ```
 
@@ -19353,18 +23149,46 @@ export type TreeRlTrainingBatch = TreeRlBatchExport & {
 
 Classification: `type-only`. Kind: `type alias`.
 
-One canonical `jsonl_v1` training batch line.
+One canonical `jsonl_v2` training batch line: one graded tree member.
 
 Signature:
 
 ```ts
-export type TreeRlTrainingLine = TreeRlAdvantage & {
+export type TreeRlTrainingLine = {
+    readonly actions: readonly TreeRlActionAdvantage[];
+    readonly branch: number | null;
+    readonly branch_turn: number;
     readonly fork_point: TreeRlForkPoint;
+    readonly group_index: number;
+    readonly inter_root_advantage: number | null;
+    readonly intra_tree_advantage: number | null;
+    readonly member: TreeRlMemberKind;
+    readonly prompt_id: string;
     readonly replay_session_id: string;
     readonly reward: number;
-    readonly seed: number;
-    readonly session_id: string;
+    readonly rollout_id: string | null;
+    readonly root_session_id: string;
+    readonly seed: number | null;
+    readonly seeded: boolean;
     readonly step_count: number;
+};
+```
+
+### `TreeRlTurn`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One turn (provider step) of a root rollout presented to a fork selector.
+
+Signature:
+
+```ts
+export type TreeRlTurn = {
+    readonly output: SemanticValue | null;
+    readonly request: ModelRequest;
+    readonly restorable: boolean;
+    readonly step_index: number;
+    readonly turn: number;
 };
 ```
 
@@ -20087,6 +23911,39 @@ Signature:
 
 ```ts
 export type WorldCarrierBackend = (typeof WORLD_CARRIER_BACKENDS)[number];
+```
+
+### `WorldCarrierBackendAttempt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One carrier backend probed while selecting the backend of a carrier.
+
+Signature:
+
+```ts
+export type WorldCarrierBackendAttempt = {
+    readonly backend: WorldCarrierBackend;
+    readonly reason: string;
+    readonly status: string;
+};
+```
+
+### `WorldCarrierBackendSelection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Selection evidence naming the requested and the actually used carrier backend.
+
+Signature:
+
+```ts
+export type WorldCarrierBackendSelection = {
+    readonly attempts: readonly WorldCarrierBackendAttempt[];
+    readonly mode: BackendSelectionMode;
+    readonly requested: WorldCarrierBackend;
+    readonly used: WorldCarrierBackend;
+};
 ```
 
 ### `WorldCarrierError`
@@ -21349,6 +25206,49 @@ const report = await checkBlobStoreBackendConformance(() => createMyBackend());
 if (!report.passed) console.error(report.laws.filter(({ passed }) => !passed));
 ```
 
+### `checkDeviceLayerConformance`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the device-layer conformance kit against one adapter.
+
+Every case opens a fresh world through openDeviceLayerWorld in strict mode, so the
+adapter is exercised through the same engine that production callers use. The kit covers probe
+availability, seeding and file operations, path refusal, named checkpoints and restore with
+discard of newer checkpoints, duplicate and invalid names, deletions that survive freezing, the
+configured conformance depth bound with compaction and retirement of flattened names, exact
+restoration of every retained checkpoint after compaction, and close semantics. A case failure
+is reported, never thrown.
+
+Signature:
+
+```ts
+export declare function checkDeviceLayerConformance(adapter: DeviceLayerAdapter, options: Readonly<{
+    root: string;
+}>): Promise<DeviceLayerConformanceReport>;
+```
+
+Parameter:
+
+- adapter - Adapter under test; it must be available on this host.
+
+Parameter:
+
+- options - Existing host directory used for seeds and device roots.
+
+Returns:
+
+- Report listing every case in order.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- const report = await checkDeviceLayerConformance(createCopyDeviceLayerAdapter(), { root });
+assert.equal(report.passed, true);
+
 ### `checkStorageCoordinatorConformance`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -21673,44 +25573,179 @@ const values = compareApplicationBaseline(run.metrics, baseline.metrics);
 console.log(values.find((value) => value.metric === "provider_calls")?.delta);
 ```
 
-### `computeTreeRlAdvantages`
+### `compensateEffects`
 
 Classification: `runtime-only`. Kind: `function`.
 
-Computes intra- and inter-branch advantages over completed rollouts only.
+Compensates explicitly named materialized effects in reverse order under one command.
 
-Rollouts sharing a fork point step index form one group. For every completed rollout,
-`intra_branch_advantage = reward - mean(completed rewards in its group)` and
-`inter_branch_advantage = mean(completed rewards in its group) - mean(every completed reward)`.
-Failed rollouts are excluded from every mean and receive no advantage. A group with one completed
-rollout yields an intra-branch advantage of exactly `0`, and a run whose completed rollouts share
-one fork point yields inter-branch advantages of exactly `0`. Means sum in input order, so the
-result is a pure function of the input sequence.
+Each record must retain a successful materialization of a compensable effect: a live or
+recorded replay effect step (resolved to the live step it copies) or a supervised dispatch
+resolution. Every compensation path is keyed by its original materialization, so an effect
+already compensated by a discard, a branch, or an earlier command is never compensated again.
+The compensation intent is retained before the first attempt, each attempt before its handler
+runs, and each outcome after it returns. A handler that throws leaves its attempt uncertain and
+the error propagates; the next trigger invokes the handler again under the same idempotency key.
 
 Signature:
 
 ```ts
-export declare function computeTreeRlAdvantages(rollouts: readonly TreeRlAdvantageInput[]): readonly TreeRlAdvantage[];
+export declare function compensateEffects(store: SQLiteTraceStore, options: CompensateEffectsOptions): Promise<EffectCompensationReceipt>;
 ```
 
 Parameter:
 
-- rollouts - Rollouts in batch order, such as retained rollout records; other fields are
-ignored.
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command identity, materialization records in materialization order, registry.
 
 Returns:
 
-- One advantage per completed rollout, in input order.
+- The compensations in the order they ran.
 
 Throws:
 
-- {TypeError} If a rollout is malformed, its status and reward disagree, a reward is not
-finite, or rollout identities repeat.
+- {EffectCompensationHandlerNotFoundError} Before anything runs, if an effect that still
+needs compensation has no handler.
+
+Throws:
+
+- {EffectCompensationEvidenceError} If a record is absent, is not a successful compensable
+materialization, or the command exceeds the configured bound.
+
+Throws:
+
+- {EffectCompensationFailedError} After every effect was attempted, if a handler returned
+a failure result.
+
+Throws:
+
+- {EffectCompensationConflictError} If another compensator advanced the same path
+concurrently.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Throws:
+
+- Handler failures propagate unchanged.
 
 Example:
 
 - ```ts
-const advantages = computeTreeRlAdvantages(inspection.rollouts.map((entry) => entry.record!));
+const { compensations } = await compensateEffects(store, {
+    commandId: "compensate:order:1",
+    effectRecordIds: [resolution.record_id],
+    registry,
+});
+```
+
+### `compileJSONSchema`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Compiles one JSON Schema document in the supported 2020-12 subset into a reusable validator.
+
+The document is snapshotted canonically (accessors, cycles, non-finite numbers, and malformed
+strings are refused) and every keyword is checked against JSON_SCHEMA_SUPPORTED_KEYWORDS
+before any value is validated, so an unsupported or malformed document fails at compile time.
+`type` is a type name or a non-empty array of distinct names; `integer` accepts any number with
+a zero fractional part. String lengths count Unicode code points; `pattern` is an ECMAScript
+regular expression evaluated with the `u` flag. `enum`, `const`, and `uniqueItems` compare
+canonical JSON, so object key order never matters. `oneOf` requires exactly one matching member.
+
+Signature:
+
+```ts
+export declare function compileJSONSchema(document: unknown): JSONSchemaValidator;
+```
+
+Parameter:
+
+- document - Untrusted JSON Schema document or boolean schema.
+
+Returns:
+
+- A frozen validator whose `validate` reports every path-level issue.
+
+Throws:
+
+- {TypeError} If the document is not canonical data, uses a keyword outside the supported
+subset, declares a malformed keyword value, or names another `$schema` dialect.
+
+Throws:
+
+- {CanonicalNestingLimitError} If the document nests deeper than the configured bound.
+
+Example:
+
+- ```ts
+const action = compileJSONSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: { kind: { enum: ["observe", "accept"] }, worker_id: { type: ["string", "null"] } },
+    required: ["kind", "worker_id"],
+});
+action.validate({ kind: "merge", worker_id: null });
+// [{ path: "$.kind", keyword: "enum", schemaPath: "#/properties/kind/enum", message: "..." }]
+```
+
+### `computeTreeRlAdvantages`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Computes the Algorithm 2 advantages (paper Appendix F.6, lines 22-25) of a batch of trees.
+
+Trees sharing a `prompt_id` form one G-root group. With `R` the rewards of the completed members
+of a group, `mean(R)` their mean, and `n` their count:
+
+- inter-root advantage of root `g` (its prefix actions `j < t*`):
+  `A_inter = R_root,g - mean(R_root over the prompt's completed roots)`;
+- intra-tree advantage of member `k` in `{root, 0..K-1}` (its suffix actions `j >= t*`):
+  `A_intra,k = R_k - mean(R over the tree's completed members, root included)`.
+
+Under the `group_std` normalization (F.6: "advantages are GRPO-normalized and standardized per
+group") each centered value is divided by `std + epsilon` of the same group, with the configured
+estimator (`sample` divides the squared deviations by `n - 1`, `population` by `n`) and
+`epsilon`; a group with fewer than two completed members has standard deviation `0`. Under
+`none` the centered values are returned unchanged. Failed members (null rewards) are excluded
+from every mean and receive null. Sums run in input order, so the result is a pure function of
+the input sequence.
+
+Signature:
+
+```ts
+export declare function computeTreeRlAdvantages(trees: readonly TreeRlAdvantageTree[], normalization?: TreeRlNormalization): readonly TreeRlAdvantage[];
+```
+
+Parameter:
+
+- trees - Trees in batch order; `group_index` values are distinct within a prompt.
+
+Parameter:
+
+- normalization - Advantage normalization; defaults to the configured one.
+
+Returns:
+
+- One advantage entry per tree, in input order.
+
+Throws:
+
+- {TypeError} If a tree is malformed, a reward is not finite or null, identities repeat,
+or the normalization is not configured.
+
+Example:
+
+- ```ts
+const [tree] = computeTreeRlAdvantages(
+    [{ branches: [3, 5], group_index: 0, prompt_id: "p", root: 1 }],
+    "none",
+);
+console.log(tree.branch_intra_advantages); // [0, 2]
 ```
 
 ### `createApplicationManifest`
@@ -21722,7 +25757,8 @@ Builds the canonical manifest of one application run.
 Surfaces are cited by the digest of their canonical content; artifacts by the digest of the
 supplied content with the record and cut they live in; the manifest identity is the digest of
 the manifest body without the identity field, so the same protocol, artifacts, and costs yield
-the same manifest identity.
+the same manifest identity. The protocol's `thresholds` and the optional per-session
+`computationReuse` are retained only when present, so manifests without them keep their shape.
 
 Signature:
 
@@ -21732,7 +25768,8 @@ export declare function createApplicationManifest(options: CreateApplicationMani
 
 Parameter:
 
-- options - Application identity, artifact sources, measured costs, and protocol.
+- options - Application identity, artifact sources, measured costs, protocol, and optional
+computation reuse.
 
 Returns:
 
@@ -21745,6 +25782,60 @@ Throws:
 Throws:
 
 - {TypeError} If the options, an artifact, or the costs are malformed or exceed bounds.
+
+### `createCloneDeviceLayerAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the clone device-layer adapter.
+
+Like the copy adapter, but every frozen layer clones each regular file (reflink on Linux,
+`clonefile(2)` on macOS) and verifies the clone byte for byte, so storage grows with changed
+bytes while capture time still grows with the number of files. It is available where the clone
+carrier backend probe succeeds on the device root's filesystem.
+
+Signature:
+
+```ts
+export declare function createCloneDeviceLayerAdapter(): DeviceLayerAdapter;
+```
+
+Returns:
+
+- Frozen clone adapter.
+
+### `createContainerDeviceLayerAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the reference container device-layer adapter driven through the configured container
+CLI (`docker` by default) without a shell.
+
+The world lives at the configured path inside a container started from a local image; the
+adapter never pulls. A checkpoint commits the container's writable layer as a new image layer
+(`docker commit`) and replaces the container with one started from that image, so the frozen
+layer becomes a lower layer and the new writable layer is empty. Compaction exports the newest
+flattened image and imports it as one single-layer replacement, then re-flattens every retained
+image the same way so no image chain exceeds the configured layer bound. Every container and
+image carries a label or tag naming the device and is removed when the world closes.
+
+Signature:
+
+```ts
+export declare function createContainerDeviceLayerAdapter(options?: ContainerDeviceLayerAdapterOptions): DeviceLayerAdapter;
+```
+
+Parameter:
+
+- options - Optional base image override.
+
+Returns:
+
+- Frozen container adapter.
+
+Throws:
+
+- {TypeError} If options are malformed.
 
 ### `createCooperativeProcessAdapter`
 
@@ -21788,6 +25879,110 @@ const worker = createCooperativeProcessAdapter({
     processId: "counter",
 });
 await worker.request({ op: "increment" });
+```
+
+### `createCopyDeviceLayerAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the portable copy device-layer adapter, the `cp -a` reference.
+
+The world is a plain host directory. Every checkpoint freezes a full verified-byte copy of the
+world as its layer, so capture time and storage grow with world size; compaction keeps only the
+newest flattened snapshot. It is available on every host.
+
+Signature:
+
+```ts
+export declare function createCopyDeviceLayerAdapter(): DeviceLayerAdapter;
+```
+
+Returns:
+
+- Frozen copy adapter.
+
+### `createDependencyTreeRlForkSelector`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the deterministic dependency-count fork selector: among the admissible restorable turns
+of a root, it proposes the one whose provider step has the most transitive dependents in the
+root's declared dependency graph (the earliest on ties), proposes no tool call, and gives the
+configured `dependencySelection` reason. It reads only the root inspection in its context, so it
+is a pure function of the retained root.
+
+Signature:
+
+```ts
+export declare function createDependencyTreeRlForkSelector(): TreeRlForkSelector;
+```
+
+Returns:
+
+- The fork selector.
+
+Example:
+
+- ```ts
+await runTreeRlRollouts(store, { ...options, selector: createDependencyTreeRlForkSelector() });
+```
+
+### `createDeviceLayerAdapters`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates every built-in device-layer adapter in configured role order.
+
+Signature:
+
+```ts
+export declare function createDeviceLayerAdapters(): readonly DeviceLayerAdapter[];
+```
+
+Returns:
+
+- Frozen copy, clone, overlay, and container adapters.
+
+Example:
+
+- const world = await openDeviceLayerWorld({ adapters: createDeviceLayerAdapters(), root });
+
+### `createEffectCompensationRegistry`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates an immutable registry holding exactly one compensation handler per effect kind.
+
+Definitions are validated and snapshotted without evaluating accessors; mutating a source
+definition afterwards changes nothing.
+
+Signature:
+
+```ts
+export declare function createEffectCompensationRegistry(handlers: readonly EffectCompensationHandler[]): EffectCompensationRegistry;
+```
+
+Parameter:
+
+- handlers - Compensation handlers, one per exact effect kind.
+
+Returns:
+
+- A frozen registry accepted by discard, rewind, replay, and {@link compensateEffects}.
+
+Throws:
+
+- {TypeError} If the array or a definition is malformed, or a kind or handler identity
+repeats.
+
+Example:
+
+- ```ts
+const registry = createEffectCompensationRegistry([{
+    handlerId: "rows.delete",
+    kind: "rows.insert",
+    compensate: ({ intent, idempotencyKey }) => deleteRow(intent.payload, idempotencyKey),
+}]);
 ```
 
 ### `createEffectHandlerStack`
@@ -22134,6 +26329,38 @@ const placement = createGrantedPlacementResolution({
 });
 ```
 
+### `createHandlerToolLoopEffects`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the in-process effect boundary: every tool-call intent is dispatched through an
+ordinary effect handler stack and is always `materialized`. Handler failures and a missing
+handler propagate unchanged, as they do from the stack.
+
+Signature:
+
+```ts
+export declare function createHandlerToolLoopEffects(handlers: EffectHandlerStack): ToolLoopEffects;
+```
+
+Parameter:
+
+- handlers - Handler stack holding one handler per tool effect kind.
+
+Returns:
+
+- A tool-loop effect boundary.
+
+Throws:
+
+- {TypeError} If `handlers` is not a handler stack.
+
+Example:
+
+- ```ts
+const effects = createHandlerToolLoopEffects(createEffectHandlerStack(metaTools.handlers));
+```
+
 ### `createJsonLinesTelemetrySink`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -22176,6 +26403,56 @@ const sink = createJsonLinesTelemetrySink({
     logsPath: "telemetry/logs.jsonl",
     tracesPath: "telemetry/traces.jsonl",
 });
+```
+
+### `createLiveProvider`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a live model provider for one configured live kind.
+
+Endpoint, headers, credential header and environment variable, prompt-cache marker, output-token
+field, and complete stop reasons all come from the kind's `providers.live.kinds` entry in
+`protocol.config.json`; the kind's wire dialect encodes requests and decodes responses. The
+credential is read once from `definition.credential` or the configured environment variable and
+is held only in the provider closure: it is never part of the descriptor, a request other than
+its credential header, a response, or an error message.
+
+`invoke` sends one request as a single user turn. `converse` sends a multi-turn message list and
+places the configured cache-control marker on the last content block of the last prefix
+message. When the request offers tools they are sent under the kind's configured
+`toolUse.requestField`; a response whose stop reason is one of the kind's `toolUse.stopReasons`
+returns the assistant message with its text and tool-use blocks and a null output. Both observe
+the signal while the request is pending and reject with its reason.
+
+Signature:
+
+```ts
+export declare function createLiveProvider(definition: LiveProviderDefinition): ConversationalModelProvider;
+```
+
+Parameter:
+
+- definition - Kind, identity, model, and optional credential, endpoint, environment,
+output-token limit, and transport.
+
+Returns:
+
+- A conversational provider.
+
+Throws:
+
+- {TypeError} If the definition is malformed or the kind is not a configured live kind.
+
+Throws:
+
+- {LiveProviderError} With reason `credential` when no credential is configured.
+
+Example:
+
+- ```ts
+const provider = createLiveProvider({ id: "reviewer", kind, model });
+const response = await provider.invoke(request, new AbortController().signal);
 ```
 
 ### `createMemoryBlobStoreBackend`
@@ -22231,6 +26508,153 @@ Example:
 - ```ts
 const coordinator = createMemoryStorageCoordinator();
 const { status } = await coordinator.compareAndSwapRef("heads/main", 0, "sha256:...");
+```
+
+### `createMetaAgentTools`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the substrate-native meta-agent tools declared by `providers.tools.metaAgent.tools`:
+one tool and one exact-kind effect handler per catalog entry, bound to its configured operation.
+
+| Operation | Substrate API |
+| --- | --- |
+| `observe` | `inspectReplaySession`: mode, status, checkpoints, and a bounded step summary |
+| `fork` | world-adapter `fork` (or an allocated root), then `runReplaySession` of a declared worker |
+| `discard` | world-adapter `discard` of a forked custody |
+| `rewind` | `rewindReplaySession` into allocated empty roots |
+| `replay` | `replayReplaySession` under a declared worker variant |
+| `read_trace` | bounded exact-ordinal reads of one owner path |
+| `diff` | `analyzeReplayDivergence` |
+
+Every handler re-validates the call input against the tool's schema and derives the substrate
+command identity `<commandIdPrefix><session_id>:<effect_id>` inside a replay-bound tool loop
+(createReplayToolLoopBindings), where `session_id` is the session executing the call, and
+`<commandIdPrefix><effect_id>` otherwise. A repeated intent in the same session therefore converges
+on the retained receipts, while a replay branch that runs a call live issues fresh substrate
+commands instead of colliding with its source's (a branch's recorded prefix invokes no handler). A substrate refusal returns a failure result `{ name, message }` to the model instead
+of throwing; an input that fails the schema throws `TypeError`.
+
+Signature:
+
+```ts
+export declare function createMetaAgentTools(environment: MetaAgentToolEnvironment): MetaAgentTools;
+```
+
+Parameter:
+
+- environment - Store, claim, workers, root allocator, and optional world adapter and clock.
+
+Returns:
+
+- The catalog tools and their handlers.
+
+Throws:
+
+- {TypeError} If the environment is malformed.
+
+Example:
+
+- ```ts
+const meta = createMetaAgentTools({ allocateRoot, claimId: "meta", store, workers, world });
+await runToolLoop({
+    effects: createHandlerToolLoopEffects(createEffectHandlerStack(meta.handlers)),
+    loopId: "meta:1",
+    messages,
+    model,
+    tools: meta.tools,
+});
+```
+
+### `createMetaAgentTreeRlForkSelector`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the provider-backed meta-agent fork selector of paper Appendix F.7.
+
+For each root it sends one structured request to `provider`: the instruction is the protocol's
+`prompt` surface with the configured `fork_selector` role, the output schema is its `schema`
+surface with the `fork_proposal` role, and the input is the root as a numbered turn list
+(`{ turn, step_index, request: { instruction, input }, output }`) with the root's final reward,
+the prompt identity, the turn count, and the admissible turn bounds. The response output must
+satisfy every `fork_proposal` schema surface and the proposal grammar
+`{ branch_turn, tool_call: { name, arguments } | null, reason }`. The run clamps the proposed
+turn into `[1, T - 2]` (configured) and seeds the first branch with the tool call.
+
+Signature:
+
+```ts
+export declare function createMetaAgentTreeRlForkSelector(options: MetaAgentTreeRlForkSelectorOptions): TreeRlForkSelector;
+```
+
+Parameter:
+
+- options - Meta-agent provider and optional cancellation signal.
+
+Returns:
+
+- The fork selector.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+The returned selector throws {@link ApplicationProtocolError} when the protocol lacks the
+`fork_selector` prompt or `fork_proposal` schema surface, and
+{@link ApplicationVerificationError} when the provider output violates a proposal schema
+surface or grammar; provider errors propagate.
+
+Example:
+
+- ```ts
+const selector = createMetaAgentTreeRlForkSelector({ provider: metaAgentProvider });
+await runTreeRlRollouts(store, { ...options, selector });
+```
+
+### `createModelRuntimeSupervisorPolicy`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the provider-backed runtime supervisor policy: one JSON-mode model request per tick.
+
+Each request carries the protocol's `action` prompt (the Appendix E meta-agent prompt) as the
+system prompt, one user message holding the `observation` prompt followed by the canonical JSON
+of the tick's snapshot, and the protocol's `action` schema as the output schema; the stable
+system prompt is the cacheable prefix. A structured output is returned as the decision object; a
+text output is parsed as JSON, and text that is not JSON is returned unchanged so the runtime
+refuses the batch and retains the refusal. The response usage is returned for cost accounting.
+
+Signature:
+
+```ts
+export declare function createModelRuntimeSupervisorPolicy(options: ModelRuntimeSupervisorPolicyOptions): RuntimeSupervisorPolicy;
+```
+
+Parameter:
+
+- options - Conversational model and runtime supervision protocol.
+
+Returns:
+
+- A policy for {@link runRuntimeSupervisor}.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol is not a valid runtime supervision protocol.
+
+Throws:
+
+- {TypeError} If the options or the model are malformed. The returned policy rethrows model
+errors and the signal's reason.
+
+Example:
+
+- ```ts
+const policy = createModelRuntimeSupervisorPolicy({
+    model: createLiveProvider({ id: "meta", kind: "anthropic", model: "claude-opus-4-7" }),
+    protocol,
+});
+await runRuntimeSupervisor(store, { ...options, policy, protocol });
 ```
 
 ### `createNativeJailCommand`
@@ -22341,6 +26765,28 @@ const runner = createNativeJailRunner({
 });
 ```
 
+### `createOverlayDeviceLayerAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the Linux stacked-overlay device-layer adapter.
+
+The world is an overlay mount of an upper layer over the frozen stack. A checkpoint unmounts,
+renames the upper directory into the stack as the new named lower layer, and remounts, so its
+cost does not depend on world size. Compaction mounts the flattened layers read-only and copies
+their merged view into one replacement layer. It is available where the overlay carrier backend
+probe succeeds.
+
+Signature:
+
+```ts
+export declare function createOverlayDeviceLayerAdapter(): DeviceLayerAdapter;
+```
+
+Returns:
+
+- Frozen overlay adapter.
+
 ### `createPlacementPlatformEvidence`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -22377,6 +26823,95 @@ const platform = createPlacementPlatformEvidence({
     nodePlatform: process.platform,
     osRelease: release(),
     environmentVariables: Object.keys(process.env),
+});
+```
+
+### `createProgramConversationProvider`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a conversational provider of the configured program kind whose turns are answered by a
+deterministic caller program. It is the offline way to script multi-turn and tool-calling
+models, for example a meta-agent that forks, observes, and rewinds workers in tests.
+
+`converse` validates the request, invokes `respond`, and validates the returned assistant message
+(text, tool-use, and no tool-result blocks), output, stop reason, and usage. `invoke` sends one
+request as a single rendered user turn and returns the output and usage. The descriptor declares
+`providers.program.conversationCapabilities`.
+
+Signature:
+
+```ts
+export declare function createProgramConversationProvider(definition: ProgramConversationProviderDefinition): ConversationalModelProvider;
+```
+
+Parameter:
+
+- definition - Identity, optional model, and the responding program.
+
+Returns:
+
+- A conversational provider.
+
+Throws:
+
+- {TypeError} If the definition is malformed. Returned calls throw `TypeError` for a
+malformed request or reply, the signal's reason when aborted, and program errors unchanged.
+
+Example:
+
+- ```ts
+const provider = createProgramConversationProvider({
+    id: "scripted-meta-agent",
+    respond: (request) => nextScriptedTurn(request),
+});
+```
+
+### `createProviderConversation`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a stateful multi-turn conversation over a conversational provider, together with the
+replay provider-session adapter that captures and restores it.
+
+Each `provider.invoke(request)` renders the request as the next user message, sends the held
+conversation plus that message with the whole list as the cacheable prefix, and on success
+appends the canonical rendering of the output as the assistant message. Held messages are pure
+functions of retained requests and outputs, so a conversation restored after a rewind, or
+rebuilt from retained steps, sends a byte-identical message prefix and the provider's prompt
+cache can serve it. The conversation mirrors the replay session's chained context prefix
+identity, including failed exchanges, so checkpoint evidence can be verified.
+
+The session adapter's `checkpoint` retains the held state under a content-derived receipt in
+this conversation's memory; `restore` resets the held state to a retained receipt. Receipts do
+not survive the process; use `rebuild` with the retained steps after a restart.
+
+Signature:
+
+```ts
+export declare function createProviderConversation(definition: ProviderConversationDefinition): ProviderConversation;
+```
+
+Parameter:
+
+- definition - Adapter identity, conversational provider, and optional system prompt.
+
+Returns:
+
+- The conversation handle.
+
+Throws:
+
+- {TypeError} If the definition is malformed.
+
+Example:
+
+- ```ts
+const conversation = createProviderConversation({ adapterId: "claude-session", provider });
+await runReplaySession(store, {
+    ...options,
+    provider: conversation.provider,
+    providerSession: conversation.session,
 });
 ```
 
@@ -22472,6 +27007,50 @@ Throws:
 Throws:
 
 - {TypeError} If options are malformed.
+
+### `createReplayToolLoopBindings`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the model and effect boundaries of a tool-use loop running inside a replay session
+program. Each turn becomes one provider step whose request is the encoded turn (see
+encodeToolTurnRequest) and whose output is the encoded response; each tool-call intent
+becomes one effect step. A rewind or replay of the session therefore serves the recorded prefix
+of the loop, turn requests and tool outcomes alike, byte-identically without invoking the model
+or any handler. The session provider must be a createToolTurnProvider wrapper.
+
+A branch-suffix effect refused by replay policy resolves the call as `denied`, and a retained
+handler failure as `failed`; a failed provider step propagates. Every dispatch runs with the
+executing session's identity in scope, so the meta-agent tool handlers derive substrate command
+identities that are distinct in each branch that runs a call live.
+
+Signature:
+
+```ts
+export declare function createReplayToolLoopBindings(context: ReplaySessionContext): ReplayToolLoopBindings;
+```
+
+Parameter:
+
+- context - Replay session context of the running program.
+
+Returns:
+
+- The loop's model and effect boundaries.
+
+Throws:
+
+- {TypeError} If the context is malformed.
+
+Example:
+
+- ```ts
+await runReplaySession(store, {
+    ...options,
+    provider: createToolTurnProvider(model),
+    program: (context) => runToolLoop({ ...loop, ...createReplayToolLoopBindings(context) }),
+});
+```
 
 ### `createRetainedWorldRunner`
 
@@ -22743,18 +27322,30 @@ const lease = await coordinator.acquireLease("jobs/nightly", "worker-a", 30_000,
 
 Classification: `runtime-only`. Kind: `function`.
 
-Creates the concrete world adapter the coding supervisor composes over scope forks, merges,
-discards, and changesets.
+Creates the concrete world adapter the coding and runtime supervisors compose over scope forks,
+merges, discards, and changesets.
 
 `fork` captures the parent's current custody as the origin and forks one child scope with
-reference-copy custody under the parent writer; a fork command already completed returns its
-retained receipt without carrier work. `merge` claims the child writer under the merge command
-identity and merges the child into the parent at both current heads; `discard` discards the
-child subtree and cleans its custody; both return the retained receipt when the command already
-completed. `changedPaths` compares the custody's origin revision with a capture of its current
-custody and returns the canonical changed paths. Custody identities are resolved through the
-receipts the adapter returned or replayed, so a fresh process rebuilds them by re-issuing the
-same fork commands.
+reference-copy custody under the parent writer. With `sourceCustodyId` it instead captures that
+custody's current content and forks a nested child of the source's scope, so the new custody
+starts from the source's working tree (the runtime supervisor's cross-agent handoff). A fork
+command already completed returns its retained receipt without carrier work. Every forked scope
+is written only under a writer claimed with its own fork command identity, so a nested fork,
+merge, or discard beneath it re-derives the same claim. `merge` always lands the custody in the
+parent world. A custody forked from the parent world merges into it at both current heads. A
+nested custody is rebased: its changes relative to its lineage's base revision (the parent world
+its first ancestor was forked from, so they include what it inherited from its source, but never
+what the source wrote after the fork) must not overlap the parent world's changes since that base,
+or the merge fails with ScopeMergeConflictError before anything is retained; they are then
+published into a fresh fork of the current parent world, the nested custody is sealed by a discard
+beneath its source, and the fresh fork merges into the parent world. `discard` discards the
+custody's subtree and cleans its custody; both return the retained receipt when the command
+already completed, before the custody is resolved, and an interrupted rebase resumes from its
+retained steps. `changedPaths` compares the base revision of the first parent-world fork in the
+custody's lineage with a capture of its current custody. Custody identities are resolved through
+the receipts the adapter returned or replayed, so a fresh process rebuilds them by re-issuing the
+same fork commands in their original order; a replayed fork registers its lineage before opening
+the custody, so a merge or discard can still resolve a custody whose discard already began.
 
 Signature:
 
@@ -22776,8 +27367,13 @@ Throws:
 
 Throws:
 
-- {TypeError} If a handle is forged, the parent holds no world custody, or options are
-malformed.
+- {ScopeMergeConflictError} From `merge`, if the custody's changes overlap the parent
+world's.
+
+Throws:
+
+- {TypeError} If a handle is forged, the parent holds no world custody, options are
+malformed, or a request names custody this adapter has not forked or replayed.
 
 Example:
 
@@ -22824,6 +27420,136 @@ const provider = createStaticProvider({
     exchanges: [{ request, response }],
 });
 await provider.invoke(request, new AbortController().signal);
+```
+
+### `createSupervisedToolLoopEffects`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the supervised effect boundary: every tool-call intent is durably supervised by
+`dispatchSupervisedEffect` under the command identity equal to its effect identity, so each
+interceptor decision, approval, admission, and resolution is retained before any outcome.
+
+A `materialized` resolution returns its correlated outcome; `denied` and `rejected` resolve the
+call as `denied` with the deciding reason and no outcome; `materialization_failed` resolves it as
+`failed`. A `cancelled` resolution rethrows the signal's reason.
+
+Signature:
+
+```ts
+export declare function createSupervisedToolLoopEffects(options: SupervisedToolLoopEffectsOptions): ToolLoopEffects;
+```
+
+Parameter:
+
+- options - Store, claim, handler stack, and optional interceptors, clock, and approval wait.
+
+Returns:
+
+- A tool-loop effect boundary.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const effects = createSupervisedToolLoopEffects({
+    claimId: "meta-agent",
+    handlers,
+    interceptors: [policy],
+    store,
+});
+```
+
+### `createToolLoopCounterfactualProposer`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the provider-backed CRO proposer: each attempt runs one bounded tool-use loop
+(`runToolLoop`) inside a replay session recorded under the attempt's reserved command identity,
+so its turns and tool calls are retained, replayable, counted against the provider-call budget,
+and cited by the proposal record.
+
+The loop's system prompt is the protocol's `proposer` prompt surfaces, its tools are the
+protocol's `proposer` tool surfaces (each `{ name, description, inputSchema }` naming one
+configured operation in `applications.cro.proposer.operations`), and its output schema is the
+first `reflection` schema surface. The first user message carries the attempt brief: iteration,
+attempt, capacity, parent pool, train and dev example identities, and earlier refusal reasons.
+
+| Operation | Result |
+| --- | --- |
+| `inspectCandidates` | The pool, baseline example scores, and every candidate's plan, status, gate, dev score, and cost |
+| `readTrace` | Bounded step summaries of one pool member's (or the baseline's, for a null candidate) session on one example |
+| `grepTraces` | Bounded regex matches over one member's example step summaries |
+| `proposeCandidate` | Accepts one edit with its fix and guard sets; the edit joins the proposal |
+
+The proposal is the accepted `proposeCandidate` inputs in call order, the final output as the
+reflection (parsed from JSON text when the model returns text), and the reflection's configured
+`parent` field as the parent. An attempt whose session does not finish or whose loop reaches its
+turn limit is refused by throwing ApplicationVerificationError, which the optimizer
+records as a refusal and retries.
+
+Signature:
+
+```ts
+export declare function createToolLoopCounterfactualProposer(options: ToolLoopCounterfactualProposerOptions): CounterfactualProposer;
+```
+
+Parameter:
+
+- options - Conversational model and optional turn bound.
+
+Returns:
+
+- The proposer.
+
+Throws:
+
+- {TypeError} If the options are malformed. The returned proposer throws
+{@link ApplicationProtocolError} if a proposer tool surface is malformed or names no configured
+operation, or the protocol offers no propose tool.
+
+Example:
+
+- ```ts
+const proposer = createToolLoopCounterfactualProposer({
+    model: createLiveProvider({ id: "proposer", kind: "anthropic", model: "claude-sonnet-4-6" }),
+});
+```
+
+### `createToolTurnProvider`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Wraps a conversational provider as the replay session provider of a tool-use loop. Its `invoke`
+accepts only encoded turn requests, sends the decoded multi-turn request through `converse`, and
+returns the encoded response as the step output with the provider's usage.
+
+Signature:
+
+```ts
+export declare function createToolTurnProvider(provider: ConversationalModelProvider): ModelProvider;
+```
+
+Parameter:
+
+- provider - Conversational provider answering every turn.
+
+Returns:
+
+- A model provider with the wrapped provider's descriptor.
+
+Throws:
+
+- {TypeError} If `provider` is not conversational; returned calls throw `TypeError` for a
+request that is not an encoded turn.
+
+Example:
+
+- ```ts
+const provider = createToolTurnProvider(createLiveProvider({ id, kind, model }));
 ```
 
 ### `createTraceTelemetryExporter`
@@ -23093,6 +27819,38 @@ Throws:
 
 - {TypeError} If the command identity is malformed.
 
+### `deriveEffectCompensationId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the compensation identity of one materialized effect. The identity is also the owner
+path retaining its compensation records, so every trigger that reaches the same materialization
+shares one compensation.
+
+Signature:
+
+```ts
+export declare function deriveEffectCompensationId(materializationRecordId: RecordId): string;
+```
+
+Parameter:
+
+- materializationRecordId - Record that retains the original materialization.
+
+Returns:
+
+- The configured compensation identity.
+
+Throws:
+
+- {TypeError} If the record identity is malformed.
+
+Example:
+
+- ```ts
+const compensationId = deriveEffectCompensationId(step.record_id);
+```
+
 ### `deriveReplaySessionId`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -23236,6 +27994,59 @@ Example:
 const traceId = deriveTelemetryTraceId(runId);
 ```
 
+### `diffReplaySessions`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Diffs any set of replay sessions against their lowest common lineage ancestor by captured effects.
+
+The lineage of a session is the chain of retained branch origins from its root session to itself.
+The ancestor is the deepest session present in every lineage, so sibling rollouts, workers
+replayed from one source, and candidate branches all resolve to their shared source; sessions
+without a shared root have no ancestor. The base is the longest ancestor prefix that every branch
+retains with identical step identities (empty without an ancestor). Each branch is aligned by index
+against the ancestor from the base onward, and every effect step a branch retains past the base
+is reported per branch and once in the cross-branch effect table with the branches that captured
+it and whether the ancestor retains it too. Effects are identified by step content identity, so
+the same intent with another outcome is a different captured effect. Diffing is read-only.
+
+Signature:
+
+```ts
+export declare function diffReplaySessions(store: SQLiteTraceStore, options: DiffReplaySessionsOptions): ReplaySessionDiff;
+```
+
+Parameter:
+
+- store - Open trace store holding every session and its lineage.
+
+Parameter:
+
+- options - Session identities and an optional clock.
+
+Returns:
+
+- Frozen N-way diff.
+
+Throws:
+
+- {ReplayEvidenceError} If a session is absent or its evidence is inconsistent.
+
+Throws:
+
+- {ReplayCompatibilityError} If retained evidence names an unsupported replay version.
+
+Throws:
+
+- {TypeError} If options are malformed, repeat a session, or exceed the configured bound.
+
+Example:
+
+- ```ts
+const diff = diffReplaySessions(store, { sessionIds: [rolloutA, rolloutB, rolloutC] });
+console.log(diff.ancestor_session_id, diff.effects.map((effect) => effect.session_ids));
+```
+
 ### `discardChildRun`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -23353,8 +28164,14 @@ subtree. One transaction seals every open scope of the subtree with a decision r
 own path; merged and already discarded descendants keep their terminal evidence, and a
 descendant's in-flight merge or fork can never complete afterwards. The parent's head,
 managed custody, and effective history are untouched: discard is not a rollback of the parent
-to fork time. Scope evidence retains application data only, so no escaped external effect is
-representable to reverse.
+to fork time.
+
+External effects are reversed only through compensation. Every successful compensable effect
+cited by the selected history of a sealed scope (a replay effect step or a supervised dispatch
+resolution) is compensated once through `compensation` after the decision, in reverse
+materialization order: the subtree root first and each child after its parent, each history in
+order. Compensation intent, attempts, and outcomes are retained on the compensation's own path,
+so a retry never compensates an effect twice. A missing handler is refused before the decision.
 
 Cleanup progress is separate from the logical decision. The decision names the exact custody
 identities of every forked scope in the subtree, read from their retained fork journals, and
@@ -23411,6 +28228,16 @@ Throws:
 Throws:
 
 - {WorldCarrierError} If owned custody is in an unknown physical state.
+
+Throws:
+
+- {EffectCompensationHandlerNotFoundError} If a cited compensable effect still needing
+compensation has no handler; before the decision when the discard is new.
+
+Throws:
+
+- {EffectCompensationFailedError} After cleanup, if a compensation handler failed; a retry
+attempts the failed compensations again.
 
 Throws:
 
@@ -23585,6 +28412,32 @@ const emitted = emitScopeRecord(store, {
 });
 ```
 
+### `encodeToolTurnRequest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Encodes one multi-turn request as a replayable provider request: the configured turn
+instruction, the canonical `{ cache_prefix_messages, messages, output_schema, system, tools }`
+input, and the configured turn output schema. Equal requests encode to equal prompt identities.
+
+Signature:
+
+```ts
+export declare function encodeToolTurnRequest(request: ModelConversationRequest): ModelRequest;
+```
+
+Parameter:
+
+- request - Multi-turn request.
+
+Returns:
+
+- The encoded provider request.
+
+Throws:
+
+- {TypeError} If the request is malformed.
+
 ### `executeTask`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -23727,17 +28580,80 @@ const summary = verifyRedactedTraceArchive(redacted);
 console.log(summary.redacted_record_count);
 ```
 
+### `exportTreeRlBatchToTrainer`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Hands the retained training batch of one Tree-RL run to a trainer-export adapter.
+
+The batch is exported with exportTreeRlTrainingBatch (so its digest equals the retained
+one) and passed to `adapter.submit` when the adapter accepts its format. Nothing is written; the
+adapter's result is returned unchanged. No trainer ships with this package: the adapter is the
+seam a trainer integration implements.
+
+Signature:
+
+```ts
+export declare function exportTreeRlBatchToTrainer<TResult>(store: SQLiteTraceStore, applicationId: string, adapter: TreeRlTrainerAdapter<TResult>): Promise<TResult>;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Parameter:
+
+- adapter - Trainer-export adapter.
+
+Returns:
+
+- The adapter's result.
+
+Throws:
+
+- {ApplicationProtocolError} If the adapter does not accept the batch format.
+
+Throws:
+
+- {ApplicationEvidenceError} If the batch is not retained or does not re-derive.
+
+Throws:
+
+- {TypeError} If the adapter or application identity is malformed.
+
+Throws:
+
+- Errors thrown by `adapter.submit` propagate.
+
+Example:
+
+- ```ts
+const jobId = await exportTreeRlBatchToTrainer(store, applicationId, {
+    formats: ["jsonl_v2"],
+    id: "my-trainer",
+    submit: (batch) => trainer.enqueue(batch.text),
+});
+```
+
 ### `exportTreeRlTrainingBatch`
 
 Classification: `runtime-only`. Kind: `function`.
 
 Exports the retained training batch of one Tree-RL run without mutation.
 
-The canonical `jsonl_v1` lines are re-derived from the retained rollout records: one line per
-completed rollout in fork-point, then branch order, carrying its identity, source and rollout
-sessions, fork point, seed, reward, advantages, and step count. The text is the canonical JSON of
-each line followed by a line feed, and its digest must equal the retained batch digest. Export
-works on reopened, read-only, and imported stores and yields an identical digest.
+The canonical `jsonl_v2` lines are re-derived from the retained root and rollout records: one
+line per completed tree member in prompt, root, then member (root first, then branches) order,
+carrying its prompt, root, member session, fork turn and point, seed, whether the proposed tool
+call seeded it, reward, inter-root and intra-tree advantages, and the per-action attribution
+(`prefix` actions carry the inter-root advantage, `suffix` actions the member's intra-tree
+advantage; the flat baseline marks every action `flat` with the inter-root advantage). The text
+is the canonical JSON of each line followed by a line feed, and its digest must equal the
+retained batch digest. Export works on reopened, read-only, and imported stores and yields an
+identical digest.
 
 Signature:
 
@@ -23755,7 +28671,7 @@ Parameter:
 
 Returns:
 
-- The batch lines, text, digest, and the optional single-rollout baseline batch.
+- The batch lines, text, digest, normalization, and the optional flat GRPO baseline batch.
 
 Throws:
 
@@ -23811,6 +28727,61 @@ is absent, `manifest-invalid` when the manifest object does not match the refere
 Throws:
 
 - {TypeError} If options are malformed.
+
+### `findFirstReplayRegression`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Locates the first revision of a session lineage that a caller verdict rejects.
+
+Revision `k` is the first `k` steps of the searched session (revision 0 is empty). A branch
+session retains its inherited prefix as recorded steps, so its revisions span its whole lineage;
+each revision is attributed to the lineage session that executed its newest step live, found by
+walking recorded steps back through their source sessions. `linear` evaluates revisions from 0
+upward and stops at the first rejection. `bisect` evaluates the newest revision (nothing
+regressed when accepted), then revision 0 (the first revision is bad when rejected), then halves
+the good/bad interval at the lower midpoint; it needs `O(log n)` verdicts and assumes a monotone
+verdict. Both are deterministic, evaluate each revision at most once, and append nothing.
+
+Signature:
+
+```ts
+export declare function findFirstReplayRegression(store: SQLiteTraceStore, options: FindFirstReplayRegressionOptions): Promise<ReplayRegressionSearch>;
+```
+
+Parameter:
+
+- store - Open trace store holding the session and its lineage.
+
+Parameter:
+
+- options - Session identity, verdict, and optional strategy and clock.
+
+Returns:
+
+- Frozen search result with every evaluation in order.
+
+Throws:
+
+- {ReplayEvidenceError} If a session is absent or its evidence is inconsistent.
+
+Throws:
+
+- {ReplayCompatibilityError} If retained evidence names an unsupported replay version.
+
+Throws:
+
+- {TypeError} If options are malformed or a verdict returns a non-boolean.
+
+Example:
+
+- ```ts
+const search = await findFirstReplayRegression(store, {
+    sessionId,
+    verdict: (revision) => revision.steps.every((step) => step.effect?.disposition !== "refused"),
+});
+console.log(search.first_bad?.step_count, search.first_bad?.session_id);
+```
 
 ### `forkScope`
 
@@ -24305,12 +29276,15 @@ Classification: `runtime-only`. Kind: `function`.
 
 Reads one counterfactual optimization run as an immutable record-derived view without mutation.
 
-Every record on the application owner path is validated: the opened record and its candidate
-plan, each candidate's proposed and outcome records in declared order with identical plan,
-target, affected steps, and derived branch identity, the lineage of every target to its parent's
-branch or the baseline, the single terminal promotion, the manifest, and the terminal cut.
-Inspection works on reopened, read-only, and imported stores and never embeds live-session
-state, so it is identical across them.
+Every record on the application owner path is validated: the opened record with its derived
+baseline session identities; each proposal in iteration order with derived candidate and
+proposer-session identities, a parent from the pool at that point, and a candidate count within
+the iteration's capacity; each candidate outcome in proposal order with derived branch and
+comparison session identities, targets forking the parent's session on each example, parent
+scores, the gate verdict and the promotion decision recomputed from the retained results and
+thresholds, and summed cost; the selection recomputed from the pool; the manifest; and the
+terminal cut. Inspection works on reopened, read-only, and imported stores and never embeds
+live-session state, so it is identical across them.
 
 Signature:
 
@@ -24347,7 +29321,7 @@ Example:
 
 - ```ts
 const inspection = inspectCounterfactualOptimization(store, deriveApplicationOwnerId(commandId));
-console.log(inspection.promotion?.name ?? "nothing promoted");
+console.log(inspection.selection?.selected_candidate_id ?? "baseline");
 ```
 
 ### `inspectDurableTaskExecution`
@@ -24373,10 +29347,15 @@ Parameter:
 Parameter:
 
 - runId - Stable durable run owner to inspect.
+The view carries a `proof` envelope. Production runs are `runtime_only`; a non-runtime claim
+imported through the configured run-artifact carrier-metadata key surfaces only as
+`metadata.claimed_proof_backed`, and retained-world settlement citations (a delayed terminal
+publication) classify the envelope as the configured `extension` profile.
 
 Returns:
 
-- Lifecycle, quiescent continuation, artifact, usage, outcome, cut, and causal evidence.
+- Lifecycle, quiescent continuation, artifact, usage, outcome, cut, causal, and proof
+evidence.
 
 Throws:
 
@@ -24394,6 +29373,47 @@ if (inspection.status === "committed") {
     inspection.artifacts;
     inspection.causal_edges;
 }
+```
+
+### `inspectEffectCompensation`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates and projects one compensation path from its retained records without mutation.
+
+Signature:
+
+```ts
+export declare function inspectEffectCompensation(store: SQLiteTraceStore, options: InspectEffectCompensationOptions): EffectCompensationInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- options - Exact compensation identity.
+
+Returns:
+
+- The frozen inspection with its derived status.
+
+Throws:
+
+- {EffectCompensationEvidenceError} If the path is absent or its records are inconsistent.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectEffectCompensation(store, {
+    compensationId: deriveEffectCompensationId(step.record_id),
+});
+console.log(inspection.status, inspection.attempts.length);
 ```
 
 ### `inspectLocalNativeJailBackend`
@@ -24453,6 +29473,13 @@ step order and dependencies, chained prefix and context prefix identities, cache
 admission-before-materialization, recorded steps against their source records, checkpoint cuts
 and constituents, restore evidence, and terminal consistency. Inspection appends nothing and works
 on read-only and imported stores; an imported session has no live row and is never `running`.
+
+The inspection carries a `proof` envelope: `runtime_only` for root sessions and the configured
+`extension` profile for branch sessions, whose rewind and replay are publication controls. With
+`lowerProof`, an eligible static root session (finished, effect steps only, every effect
+materialized) is lowered into Core-A records; the envelope is then whatever the executable
+reference machine accepts (`reference_core_a` / `reference_validated`), never proof-backed. An
+ineligible session keeps its envelope and reports `metadata.lowering_ineligible`.
 
 Signature:
 
@@ -24625,6 +29652,50 @@ Example:
 - ```ts
 const settlement = inspectRetainedWorldSettlement(store, captured.output.output_id);
 settlement?.request.execution_cut_id;
+```
+
+### `inspectRuntimeSupervisorRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one runtime supervisor run as an immutable record-derived view without mutation.
+
+The application path (opened record, contiguous ticks, settlement, manifest, terminal cut) and
+every worker stream (attempts numbered from one, contiguous turns, one completion per attempt)
+are validated against the runtime supervision record schema. Inspection works on reopened,
+read-only, and imported stores.
+
+Signature:
+
+```ts
+export declare function inspectRuntimeSupervisorRun(store: SQLiteTraceStore, applicationId: string): RuntimeSupervisorInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ApplicationEvidenceError} If the run is not retained or its evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Example:
+
+- ```ts
+const inspection = inspectRuntimeSupervisorRun(store, deriveApplicationOwnerId(commandId));
+console.log(inspection.ticks.map((tick) => tick.decisions));
 ```
 
 ### `inspectScope`
@@ -24914,11 +29985,11 @@ Classification: `runtime-only`. Kind: `function`.
 
 Reads one Tree-RL run as an immutable record-derived view without mutation.
 
-Every record on the application owner path is validated: the opened record and its selection,
-each rollout record in fork-point, then branch order with its derived rollout and session
-identities, the batch record whose digests re-derive from the rollouts, the manifest, and the
-terminal cut. Inspection works on reopened, read-only, and imported stores and is identical
-across them.
+Every record on the application owner path is validated: the opened record and its prompts, each
+root record in prompt then root order with its fork decision, each rollout record in plan order
+with its derived rollout and session identities, the batch record whose digests re-derive from
+the records, the manifest, and the terminal cut. Inspection works on reopened, read-only, and
+imported stores and is identical across them.
 
 Signature:
 
@@ -24955,7 +30026,7 @@ Example:
 
 - ```ts
 const inspection = inspectTreeRlRun(store, deriveApplicationOwnerId(commandId));
-console.log(inspection.rollouts.filter((entry) => entry.record?.status === "failed").length);
+console.log(inspection.roots.map((root) => root.fork.branch_turn));
 ```
 
 ### `inspectWorkspacePathProtection`
@@ -25484,6 +30555,44 @@ const { handle } = openChildRun(store, {
 });
 ```
 
+### `openDeviceLayerWorld`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Selects an adapter, opens a device-layer world, and records which adapter was used.
+
+Strict selection probes only the requested adapter and refuses when it is unavailable. Fallback
+selection probes the requested adapter and then every later adapter of the fallback order and
+uses the first available one; the configured order ends with the always-available copy adapter.
+
+Signature:
+
+```ts
+export declare function openDeviceLayerWorld(options: DeviceLayerWorldOptions): Promise<DeviceLayerWorld>;
+```
+
+Parameter:
+
+- options - Root, optional seed, adapters, requested adapter, mode, order, and depth.
+
+Returns:
+
+- Open world whose base layer holds the seed.
+
+Throws:
+
+- {TypeError} If options are malformed or name an unknown adapter or invalid depth.
+
+Throws:
+
+- {DeviceLayerError} If no candidate adapter is available or the adapter fails to open.
+
+Example:
+
+- const world = await openDeviceLayerWorld({ adapter: "overlay", root, selection: "fallback" });
+await world.writeFile("notes.txt", Buffer.from("draft"));
+await world.checkpoint("step-1");
+
 ### `openTraceSubscription`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -25985,7 +31094,7 @@ The definition must be a plain data object of exactly `evaluationId`, `experimen
 protocol definition accepted by `readApplicationProtocol` whose kind selects the application, and
 a baseline whose kind is a configured baseline kind of that application; the coding supervisor
 baseline also names its `commandId` and `workerId`, and a Tree-RL experiment names the
-`sourceCommandId` recording its source session. Command identities are distinct across the
+`sourceCommandId` prefix of its root sessions. Command identities are distinct across the
 definition. Limitations are distinct by identity and within the configured length bound.
 Experiment and limitation counts are bounded by `APPLICATION_EVALUATION_LIMITS`.
 
@@ -26022,10 +31131,13 @@ Classification: `runtime-only`. Kind: `function`.
 Validates an untrusted application protocol definition into its canonical frozen form.
 
 The definition must be a plain data object of exactly `budgets`, `dataset`, `kind`,
-`protocolVersion`, `seeds`, and `surfaces`. Kinds and surface kinds must be configured, surface
-identities distinct, every surface content canonical and within the configured byte bound for
-its kind, budgets non-negative integers by non-empty metric name, seeds distinct integers, and
-the dataset selection a distinct item list, all within `APPLICATION_LIMITS`.
+`protocolVersion`, `seeds`, and `surfaces`, plus optional `thresholds`. Kinds and surface kinds
+must be configured, surface identities distinct, every surface content canonical and within the
+configured byte bound for its kind, every `schema` surface a document in the supported JSON
+Schema subset (`compileJSONSchema`), budgets non-negative integers by non-empty metric name,
+thresholds finite numbers by non-empty metric name, seeds distinct integers, and the dataset
+selection a distinct item list, all within `APPLICATION_LIMITS`. A definition without
+`thresholds` keeps its canonical form and protocol identity.
 
 Signature:
 
@@ -26673,8 +31785,11 @@ Restoration follows rewindReplaySession. The program is then re-executed: steps 
 target are served from the source journal only when the program issues the exact recorded request
 or intent with the same dependencies, and are retained as recorded steps with no provider or
 handler invocation. Later steps run live with the supplied provider, handler stack, and declared
-replacement task. Approval-required suffix effects run only when `policy` approves them; otherwise
-they are retained as refused and never reach a handler.
+replacement task. `checkpointPolicy` selects automatic checkpoints of the branch's own worlds and
+processes at boundaries at or after the target. The source disposition and compensation of the
+source suffix follow rewindReplaySession; an exploratory replay that keeps its source as a
+retained alternative declares `sourceDisposition: "retain"`. Approval-required suffix effects run
+only when `policy` approves them; otherwise they are retained as refused and never reach a handler.
 
 Signature:
 
@@ -26717,6 +31832,15 @@ Throws:
 Throws:
 
 - {ReplayCompatibilityError} If the source uses an unsupported replay version.
+
+Throws:
+
+- {EffectCompensationHandlerNotFoundError} Before anything is written, if the source is
+compensated and a suffix effect needing compensation has no handler.
+
+Throws:
+
+- {EffectCompensationFailedError} Before the branch opens, if a compensation failed.
 
 Throws:
 
@@ -27412,8 +32536,13 @@ Every constituent the target claims verified is re-verified before anything is w
 unavailable target is refused. Worlds are restored byte-equivalently into caller-selected empty
 roots, verified provider-session and process captures are handed to their adapters, a restore
 record retains the classification, the source prefix is copied as verified recorded steps, and
-the branch ends `rewound`. No provider or handler is invoked. Repeating a completed branch command
-returns its retained receipt without restoring anything.
+the branch ends `rewound`. No provider or effect handler is invoked. With the source disposition
+`compensate` (the configured default), before the branch opens every successful compensable effect
+the source materialized at or after the target is compensated once through `compensation`, in
+reverse step order, with retained intent, attempt, and outcome records. With `retain` the source
+stays a retained alternative and no compensation handler is invoked.
+Repeating a completed branch command returns its retained receipt without restoring or
+compensating anything.
 
 Signature:
 
@@ -27455,7 +32584,17 @@ Throws:
 
 Throws:
 
-- {TypeError} If options are malformed or omit a required adapter or root.
+- {EffectCompensationHandlerNotFoundError} Before anything is written, if the source is
+compensated and a suffix effect needing compensation has no handler.
+
+Throws:
+
+- {EffectCompensationFailedError} Before the branch opens, if a compensation failed.
+
+Throws:
+
+- {TypeError} If options are malformed, name an unknown source disposition, or omit a
+required adapter or root.
 
 Example:
 
@@ -27481,8 +32620,10 @@ order under their fixed command identities: the coding supervisor through
 `runCodingSupervisor` with its `no_supervision` baseline constructed as one plain child run of the
 named worker (no policy, trace-only, never accepted or discarded); the counterfactual optimizer
 with its `full_replay` baseline; trajectory compression with its `no_compression` baseline; and
-Tree-RL over a source session recorded under `sourceCommandId` with its `single_rollout`
-baseline. Every metric is measured from retained evidence; nothing is estimated. The evaluation
+Tree-RL over G root sessions per prompt recorded under the `sourceCommandId` prefix with its `flat_grpo`
+baseline. Every metric is measured from retained evidence; nothing is estimated. The report's
+`rescues` counts the experiments whose baseline failed its success condition while the
+application run passed (Appendix D, Table 12). The evaluation
 writes no record of its own, and every application command is idempotent, so a repeated or
 resumed evaluation converges on the same report without re-running settled work. An application
 refusal leaves the evidence of earlier experiments for a corrected rerun to reuse.
@@ -27683,7 +32824,14 @@ Returns:
 Throws:
 
 - {ApplicationProtocolError} If the protocol definition is malformed, is not a coding
-supervisor protocol, lacks a required surface or budget, or differs from the retained one.
+supervisor protocol, lacks a required surface or budget, differs from the retained one, or its
+observation schema surface refuses a round's observation message (before the policy is
+consulted).
+
+Throws:
+
+- {JSONSchemaValidationError} If a policy decision's `{ kind, reason, worker_id }` action
+message violates the protocol's action schema surface; the decision is not applied.
 
 Throws:
 
@@ -27733,33 +32881,40 @@ const { manifest, inspection } = await runCodingSupervisor(store, {
 
 Classification: `runtime-only`. Kind: `function`.
 
-Runs the counterfactual workflow optimizer (Appendix F) over replay sessions.
+Runs Counterfactual Replay Optimization (paper §5.2, Appendix F.1 Algorithm 1) over replay
+sessions.
 
-The baseline workflow is recorded once through `runReplaySession`. Each declared candidate, in
-order, forks its source session (its parent candidate's branch, or the baseline): the affected
-steps are the transitive dependents of the edited step from `analyzeReplayDependencies`, and the
-branch replays from the step boundary immediately before the earliest affected step through
-`replayReplaySession`, declaring exactly the candidate's change dimensions; every earlier step is
-served from the source journal. The live suffix runs with the candidate's program, provider, and
-handler stack where it supplies them, else those of the nearest ancestor in its parent chain that
-did, else the baseline's; an undeclared task resolves through the source's branch ancestry. A
-candidate whose edited step has no dependent branches at the
-source's final boundary and replays zero live steps. The baseline session must finish. A branch
-(or, with the `full_replay` baseline, its full replay) that ended with any terminal status other
-than `finished` is retained as rejected with the evidence failure before the evaluator is
-consulted, and the run stops, as for a disproven candidate. `analyzeReplayDivergence` must prove
-that no step before the target diverged and that no divergence is unexplained. The caller's
-evaluator gates each proven candidate, and the best passing candidate whose score reaches the protocol's
-minimum promotion score is promoted once. Every candidate is retained as proposed and then as
-evaluated or rejected in `shepherd.application.cro_candidate.v1` records with lineage, target,
-affected steps, branch identity, divergence summary, verdict, and measured cost; the manifest is
-retained last with the terminal cut. With the `full_replay` baseline, each proven candidate is
-also replayed live from step boundary zero of its source with the same resolved workflow and its
-measured provider calls and cache reads are retained. The baseline's measured provider calls,
-and every candidate session's projected and then measured calls, are checked against the
-provider-call budget.
-Repeating the command resumes from retained evidence: terminal sessions are never re-executed,
-and a completed run returns its retained manifest.
+1. The baseline workflow W0 is recorded once per train and dev example through
+   `runReplaySession` and scored by the metric; every baseline session must finish.
+2. The parent pool starts as the baseline. For N iterations (the `iterations` budget) the
+   proposer reads the run and returns a pool parent and at most k edits (the
+   `proposalsPerIteration` budget, capped by the remaining `maxCandidates`), each with a fix set
+   and a guard set of train examples. Before any evaluation the proposal is validated: shape,
+   pool membership, unique names, train-only disjoint example sets, admissible edited steps on
+   every parent example session, the caller's edit application, the reflection against every
+   pinned `reflection` schema surface, and the reflection contract. A refused proposal is
+   retried with the refusal reasons up to `maxProposalAttempts`; exhaustion is retained and
+   raised as a verification failure.
+3. Each edit c = p ⊕ Δ is replayed counterfactually on every fix and guard example: the parent's
+   session on the example is forked at the first affected event (the edit scope's target rule),
+   the suffix runs under the candidate, `analyzeReplayDivergence` must prove no earlier or
+   unexplained divergence, and the metric scores the branch. The targeted gate applies the
+   protocol thresholds; a failing candidate is `archived`.
+4. A graduate is replayed counterfactually on every dev example. It is `promoted` into the
+   parent pool when its mean dev score reaches `minPromotionScore` and lies within
+   `promoteDevEpsilon` of the current promoted member's dev score, and is then replayed on the
+   remaining train examples so children can fork it; otherwise it is `evaluated` and never a
+   parent.
+5. After the iterations the pool member with the highest dev score is selected, the most recently
+   promoted member winning ties; the baseline is selected as null.
+
+Every proposal, candidate outcome, and the selection are retained as
+`shepherd.application.cro_candidate.v1` records, and the manifest last with the per-proposer-
+session computation-reuse ratio. A branch or comparison session that did not finish, a disproven
+or interrupted branch, or a failing metric retains the candidate as `rejected` and stops the run.
+Every session's projected and measured live provider calls, the baselines' and proposer
+sessions' included, are checked against `maxProviderCalls`. Repeating the command resumes from
+retained evidence and never re-executes a terminal session.
 
 Signature:
 
@@ -27773,39 +32928,33 @@ Parameter:
 
 Parameter:
 
-- options - Command, claim, protocol, baseline workflow, candidates, evaluator, and
-optional baselines and clock.
+- options - Command, claim, protocol, baseline workflow, dataset, proposer, edit applier,
+metric, and optional comparison baselines and clock.
 
 Returns:
 
-- The retained manifest and the record-derived inspection.
+- The retained manifest, the record-derived inspection, and the handoff manifest.
 
 Throws:
 
 - {ApplicationProtocolError} If the protocol is malformed, is not a counterfactual
-optimization protocol, lacks a required surface or budget, a candidate declares an edit kind
-outside the replay change dimensions, an edited step index lies outside the baseline session (after
-the baseline and before any application record), or the run was opened under another protocol.
-Declared candidates are otherwise validated before any record is written.
+optimization protocol, lacks a required surface, budget, or threshold, the handoff schema refuses
+the handoff, or the run was opened under another protocol.
 
 Throws:
 
-- {ApplicationBudgetError} If the candidate set exceeds the protocol's candidate budget, the
-measured baseline exceeds the provider-call budget (before any application record), a new
-session's projected calls would exceed it, or a session's measured calls exceeded it.
+- {ApplicationBudgetError} If a session's projected or measured calls exceed the budget.
 
 Throws:
 
-- {ApplicationEvidenceError} If the baseline session did not finish (before any application
-record), a branch diverged before its target or without explanation, a branch or full-replay
-session ended failed or cancelled, or a branch or full-replay session was left interrupted by a dead writer whose lease expired (the
-candidate is retained as rejected first), a child's edited step is not retained in its parent's
-branch, or retained evidence is inconsistent.
+- {ApplicationEvidenceError} If a baseline session did not finish (before any application
+record), a branch failed its proof or did not finish, the run was opened with a different
+dataset or baselines, or retained evidence is inconsistent.
 
 Throws:
 
-- {ApplicationVerificationError} If the evaluator throws or returns a malformed verdict (the
-candidate is retained as rejected first).
+- {ApplicationVerificationError} If a metric throws or returns a non-finite score, or every
+proposer attempt of an iteration was refused.
 
 Throws:
 
@@ -27813,9 +32962,8 @@ Throws:
 
 Throws:
 
-- {ReplaySessionInterruptedError} If the baseline session was left non-terminal by a dead
-writer (every rerun of the command raises it; recover under a new command identity), or a
-candidate session is still `running` under a live lease.
+- {ReplaySessionInterruptedError} If a baseline session was left non-terminal by a dead
+writer, or a candidate session is still `running` under a live lease.
 
 Throws:
 
@@ -27823,20 +32971,22 @@ Throws:
 
 Throws:
 
-- {TypeError} If options or a candidate definition are malformed.
+- {TypeError} If options or the dataset are malformed.
 
 Example:
 
 - ```ts
-const { inspection, manifest } = await runCounterfactualOptimization(store, {
-    baseline: { program, programId: "workflow.v1", provider },
-    baselines: ["full_replay"],
-    candidates: [{ changes: ["provider"], name: "stronger-draft", provider: alternate, stepIndex: 0 }],
+const { inspection } = await runCounterfactualOptimization(store, {
+    applyEdit: ({ edit }) => ({ provider: variants[edit.patch as string] }),
+    baseline: { program: () => program, programId: "workflow.v1", provider },
     claimId: "optimizer",
     commandId: "application:cro:1",
-    evaluate: ({ branch }) => ({ passed: true, reason: "tests pass", score: 1 }),
+    dataset: { dev: [{ id: "d1", input: {} }], train: [{ id: "t1", input: {} }] },
+    metric: ({ session }) => (session.terminal?.status === "finished" ? 1 : 0),
+    proposer: createToolLoopCounterfactualProposer({ model }),
     protocol,
 });
+console.log(inspection.selection?.selected_candidate_id);
 ```
 
 ### `runReplaySession`
@@ -27849,7 +32999,9 @@ The session record, every provider exchange, every effect admission and step, ev
 and the terminal record are retained on the session's own owner path under a fenced lease. A
 program failure is retained as a `failed` terminal and returned; caller cancellation is retained
 as `cancelled`. Repeating a terminal command returns the retained receipt without running the
-program; a non-terminal session is never resumed in place.
+program; a non-terminal session is never resumed in place. `checkpointPolicy` (default: the
+configured `replay.checkpoint.automatic.defaultPolicy`) captures a coupled checkpoint immediately
+before every step it selects, exactly as an explicit `checkpoint()` there would.
 
 Signature:
 
@@ -27863,7 +33015,8 @@ Parameter:
 
 Parameter:
 
-- options - Command, claim, program, provider, handlers, task, worlds, processes, and signal.
+- options - Command, claim, program, provider, handlers, task, worlds, processes, automatic
+checkpoint policy, and signal.
 
 Returns:
 
@@ -27911,6 +33064,106 @@ const { inspection } = await runReplaySession(store, {
     programId: "review.v1",
     provider,
     program: async (context) => (await context.invokeProvider(request)).response.output,
+});
+```
+
+### `runRuntimeSupervisor`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the paper's Section 5.1 runtime supervisor: two or more workers run concurrently in forked
+custody while a supervisor ticks over their live streams and issues per-agent batched Appendix E
+decisions that take effect on the running workers.
+
+Every worker is a runToolLoop session over its own custody from `world.fork`. Each
+completed turn is retained on the worker's reserved stream (tool-call summaries, the exact
+request digest, the assistant message, and the next user message), and every attempt opens and
+completes on the same stream. The supervisor waits the protocol's tick cadence, drains one live
+trace subscription over every stream, and builds one combined snapshot: per agent the truncated
+feature, cumulative tool-call events, consecutive errors, the custody's modified files, the
+status of the current attempt, the last non-`none` action and its age in ticks, and the trailing
+tool-call summaries. The snapshot must satisfy the protocol's observation schema. The policy is
+consulted once per tick; its `{ decisions }` object is validated against the protocol's action
+schema, the fixed decision shape of the tick record schema, and the admission rules (known and
+distinct agents, guidance required for `inject` and
+allowed only for `inject` and `handoff`, `leader` only for `handoff`, word bounds). A refused
+batch is retained with its issues and nothing is applied; unlisted agents are `none`. The tick
+record, with the snapshot and the subscription cursor, is retained before any decision is
+applied, in declared worker order:
+
+- `inject` appends the guidance after the tool results of the running attempt's next user message
+  (between turns), so every earlier message and the cache prefix stay byte-identical;
+- `handoff` aborts the attempt and starts a fresh session on the same custody whose first user
+  message carries the feature and the guidance; with `leader` it first forks the leader's
+  custody, quiesced between tool calls, as the agent's new root;
+- `discard` aborts the attempt and starts a fresh session on a clean fork of the pre-run world.
+
+When no worker is running after a tick the run settles: the settlement record names each worker's
+final attempt and custody and the guidance that never reached its attempt, custody abandoned by a
+handoff or discard is discarded unless a final custody was forked from it, and the manifest is
+retained. Final custody is left open and returned for the caller to integrate.
+
+A rerun of the same command replays the retained run: the opened record must match, forks are
+re-issued under their derived command identities in creation order, each retained tick's
+decisions are completed idempotently (the policy is never consulted for a retained tick), a
+running attempt resumes from its retained conversation with a byte-identical prefix, undelivered
+injected guidance is delivered at its next turn boundary, and ticking continues. A rerun after the
+settlement record re-issues every fork, so a settlement interrupted between two discards replays
+the completed ones and runs the rest. After the manifest is retained, a rerun returns it without
+running a policy or a worker.
+
+Signature:
+
+```ts
+export declare function runRuntimeSupervisor(store: SQLiteTraceStore, options: RunRuntimeSupervisorOptions): Promise<RuntimeSupervisorReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, supervisor, protocol, workers, world, policy, and optional clock, wait,
+and signal.
+
+Returns:
+
+- The retained manifest, the inspection, and every worker's final custody.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol is malformed, differs from the retained one, or
+refuses a runtime snapshot.
+
+Throws:
+
+- {ApplicationBudgetError} If the tick or provider-call budget is exhausted, including by a
+worker's own model call; every running worker is aborted first and its attempt stays open.
+
+Throws:
+
+- {ApplicationEvidenceError} If retained evidence is inconsistent or the rerun names other
+workers or supervisor.
+
+Throws:
+
+- {TypeError} If options, a worker definition, or a world result are malformed.
+
+Throws:
+
+- The policy's error or the signal's reason, after every running worker was aborted.
+
+Example:
+
+- ```ts
+const { custody, manifest } = await runRuntimeSupervisor(store, {
+    commandId: "application:pair:1",
+    policy: createModelRuntimeSupervisorPolicy({ model: meta, protocol }),
+    protocol,
+    supervisorId: "supervisor:meta",
+    workers: [featureA, featureB],
+    world,
 });
 ```
 
@@ -27999,6 +33252,66 @@ const report = await runScopeTree(store, {
 });
 ```
 
+### `runToolLoop`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs a bounded multi-turn tool-use loop in which every admissible model tool call becomes a typed
+effect intent dispatched through the supplied effect boundary.
+
+Each turn sends the whole conversation, the offered tools, the output schema, and the system
+prompt as one ModelConversationRequest, with the whole conversation as the cacheable
+prefix. A response without tool-use blocks ends the loop as `completed` with its output. Otherwise
+each tool call, in the order requested, is resolved as follows:
+
+- An unknown tool, or an input that fails the tool's JSON Schema, is `invalid`: no intent is
+  created and the model receives the validation issues.
+- Otherwise the loop creates an intent of the tool's `effectKind` and `reversibility`, with the
+  payload `{ input, tool, tool_use_id }` and the runtime-derived effect identity
+  `<effectIdPrefix><loopId>:<turn>:<call>`, and dispatches it. The boundary reports it
+  `materialized` with its correlated outcome, `denied` before any outcome, or `failed`.
+
+Every call receives exactly one tool-result block carrying the canonical JSON of its disposition
+and result, bounded by `providers.tools.loop.maxResultBytes`. The next user message holds the tool
+results followed by the optional guidance text. The loop stops as `turn_limit` with a null output
+after `maxTurns` turns that all requested tools.
+
+Signature:
+
+```ts
+export declare function runToolLoop(options: RunToolLoopOptions): Promise<ToolLoopResult>;
+```
+
+Parameter:
+
+- options - Loop identity, initial messages, tools, model and effect boundaries, and optional
+bound, output schema, system prompt, guidance hook, turn observer, and signal.
+
+Returns:
+
+- The final conversation, output, status, and turns.
+
+Throws:
+
+- {TypeError} If options, a tool definition, a request, or a response are malformed.
+
+Throws:
+
+- The signal's reason when it aborts, and model, effect-boundary, guidance, and observer
+errors unchanged.
+
+Example:
+
+- ```ts
+const result = await runToolLoop({
+    effects: createHandlerToolLoopEffects(handlers),
+    loopId: "meta-agent:1",
+    messages: [{ content: [{ text: "Fix the failing worker.", type: "text" }], role: "user" }],
+    model: provider,
+    tools,
+});
+```
+
 ### `runTrajectoryCompression`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -28009,9 +33322,14 @@ The source workflow is recorded once through `runReplaySession` with `program(nu
 compressor runs as a delegated child through `openChildRun`, `runChildRun`, and
 `acceptChildRunResult`; it receives the canonical source evidence and returns a proposal
 `{ fork_point, hint }` as canonical JSON text in the configured output field. The proposal is
-validated against the closed fork-point and hint grammar and the source: the fork point must name
-the source session, retain at least one and fewer than all source steps, and carry the retained
-prefix identity. A null fork point settles `no_prune` and the source is the result. A fork point
+validated against every protocol `schema` surface of the compression role (`compileJSONSchema`),
+then against the closed fork-point and hint grammar and the source (Appendix D.5 and D.6): the
+fork point must name the source session; a step index in `[0, n - 1]` of the `n`-step source must
+carry the retained prefix identity (null at step `0`, which restarts from the initial prefix with
+the hint applied); an index outside that range is clamped to the nearest bound under the
+configured `clamp` fork-step policy, with the proposed step and prefix retained as `fork_clamp`
+evidence, or refused under the `reject` policy. An absent or null fork point, or one without a
+step index, is a missing fork step: it settles `no_prune` and the source is the result. A fork point
 at a retained checkpoint is classified with `classifyReplayCheckpoint`; an `unavailable`
 classification refuses the prune, retains the classification, constituents, and reason, and
 settles `no_prune`. Otherwise `rewindReplaySession` restores the fork point, its restore
@@ -28070,7 +33388,8 @@ session's measured calls exceeded it (the session is retained, the candidate is 
 Throws:
 
 - {ApplicationEvidenceError} If the source did not finish, the compressor terminally fails
-or returns a proposal the grammar or the source refuses, the rewind fails or retains no restore
+or returns a proposal the compression schema surface, the grammar, or the source refuses (the
+cause carries the path-level issues), the rewind fails or retains no restore
 record, a restoration or control session ended failed or cancelled or was interrupted by a dead
 writer whose lease expired (the candidate is retained as rejected first), or retained evidence is inconsistent.
 
@@ -28126,30 +33445,37 @@ console.log(inspection.outcome?.outcome, inspection.outcome?.step_count_ratio);
 
 Classification: `runtime-only`. Kind: `function`.
 
-Runs the Tree-RL adapter (§5.3) over a recorded replay session and exports a training batch.
+Runs Meta-Agent Guided Tree-RL (paper §5.3, Appendix F.6 Algorithm 2) over a batch of recorded
+root rollouts and exports a per-action training batch.
 
-Fork points are selected from the finished source session by selectTreeRlForkPoints with
-the protocol's dependent-count minimum and fork-point budget. Per fork point, the protocol's
-branch count of rollouts is replayed from the fork point's step boundary through
-`replayReplaySession` declaring the `provider` change, branch `k` under the protocol's seed `k`
-and the static provider cassette the caller's factory returns for it; every earlier step is
-served from the source journal. `analyzeReplayDivergence` must show no divergence before the fork
-point and none unexplained. The caller's reward function scores each finished, proven rollout.
-Every rollout is retained in fork-point, then branch order as one
-`shepherd.application.tree_rl_rollout.v1` record with status `completed` or `failed`; a session
-that did not finish, diverged, was interrupted by a dead writer whose lease expired, or whose
-reward threw or was not finite is retained as `failed` with its configured reason and the run
-continues. Advantages are computed over completed rollouts only by computeTreeRlAdvantages,
-the canonical `jsonl_v1` batch and its digest (and, with the `single_rollout` baseline, the batch
-of each fork point's first branch) are retained in a batch record, and the manifest citing the
-source session, every rollout record, and the batch as `training_batch` is retained last with
-the terminal cut.
+The batch is B `prompts`, each with its deterministic `program` and exactly the protocol's
+`groupSize` G finished root sessions the caller recorded (Algorithm 2 part A, for example with
+`runReplaySession`). Part B: every root is graded by `reward` (member `root`) and handed with its
+reward and numbered turns (provider steps) to `selector`, whose proposed `branch_turn` is clamped
+into the configured admissible range `[1, T - 2]` and, for a world- or process-bound root,
+moved to the nearest turn whose boundary retains a restorable checkpoint. Each root's grading and
+fork decision is retained as one `root` record. From the fork turn's step boundary the protocol's
+branch count K of rollouts is replayed through `replayReplaySession` declaring the `provider`
+change, branch `k` under the protocol's seed `k` and the static provider cassette `provider`
+returns for it; the first branch of a root whose proposal named a tool call receives that call
+in its provider context so its first live action carries it. `analyzeReplayDivergence` must show
+no divergence before the fork step and none unexplained, and `reward` grades each finished,
+proven rollout (member `branch`). Root gradings and branch rollouts run with up to `concurrency`
+in flight; their records are appended in prompt, root, then branch order, so retained output
+does not depend on concurrency. Part C: computeTreeRlAdvantages gives each completed
+root its inter-root advantage and each completed member its intra-tree advantage under the
+retained normalization, and the `jsonl_v2` batch attributes the inter-root advantage to every
+prefix action (turns before the fork turn) and the member's intra-tree advantage to every suffix
+action. With the `flat_grpo` baseline the batch record also retains the roots-only batch in which
+every action carries the inter-root advantage. The manifest citing every root record, every
+rollout record, the batch, and the baseline batch is retained last with the terminal cut.
 
-Every option, the protocol, the source session, the selection, the rollout bounds, every
-provider, and the projected provider calls are validated before any record is written, so a
-refusal writes nothing. Repeating the command resumes from retained evidence: a terminal rollout
-session is never re-executed, the reward function is not called for a retained rollout, and a
-completed run returns its retained manifest and batch.
+Every option, the protocol, every root, the bounds, and the projected provider calls (each root
+assumed to fork at its earliest admissible turn unless its decision is retained) are validated
+before any record is written, so a refusal writes nothing. Repeating the command resumes from
+retained evidence: a retained root is not re-graded or re-selected, a terminal rollout session
+is never re-executed, the reward function is not called for a retained record, and a completed
+run returns its retained manifest and batch.
 
 Signature:
 
@@ -28163,8 +33489,8 @@ Parameter:
 
 Parameter:
 
-- options - Command, claim, protocol, source session, program, provider factory, reward
-function, and optional baselines, handlers, and clock.
+- options - Command, claim, protocol, prompts, selector, provider factory, reward function,
+and optional baselines, restoration bindings factory, concurrency, normalization, and clock.
 
 Returns:
 
@@ -28173,26 +33499,29 @@ Returns:
 Throws:
 
 - {ApplicationProtocolError} If the protocol is malformed, is not a Tree-RL protocol, lacks
-a required surface or budget, declares a zero branch or fork-point budget or fewer seeds than
-branches, or the run was opened under another protocol. Nothing is written.
+a required surface or budget, declares a zero branch or group size or fewer seeds than branches,
+a prompt does not carry exactly `groupSize` roots, or the run was opened under another protocol
+(nothing is written), or the `training_batch` schema surface refuses an exported line (records
+stay retained; the batch record and manifest are not written).
 
 Throws:
 
-- {ApplicationBudgetError} If the fork-point budget exceeds `limits.maxForkPoints`, the
-branch budget exceeds `limits.maxBranches`, the planned rollouts exceed `limits.maxRollouts`, or
-the projected provider calls exceed the provider-call budget; the first three and the whole-run
-projection are checked before any record, and each new rollout session is checked before it
+- {ApplicationBudgetError} If the branch count exceeds `limits.maxBranches`, the group size
+exceeds `APPLICATION_TREE_RL_LIMITS.maxGroupSize`, the prompts exceed `maxPrompts`, the
+concurrency exceeds `maxConcurrency`, the planned rollouts exceed `limits.maxRollouts`, the cited
+artifacts exceed `limits.maxArtifacts`, or the projected provider calls exceed the provider-call
+budget; each new rollout session is also checked, counting in-flight projections, before it
 opens.
 
 Throws:
 
-- {ApplicationEvidenceError} If the source session is not finished, binds worlds or
-processes, has no qualifying fork point, the run was opened with a different source, selection,
-or baselines, or retained evidence is inconsistent. Nothing is written by a refusal.
+- {ApplicationEvidenceError} If a root is not finished or has no turn, a world- or
+process-bound root has no admissible restorable turn, the run was opened with different prompts,
+baselines, or normalization, or retained evidence is inconsistent.
 
 Throws:
 
-- {ReplayEvidenceError} If the source session is not retained or its evidence is invalid.
+- {ReplayEvidenceError} If a root session is not retained or its evidence is invalid.
 
 Throws:
 
@@ -28201,7 +33530,7 @@ Throws:
 Throws:
 
 - {ReplaySessionInterruptedError} If a rollout session is still `running` under a live
-lease; nothing is written.
+lease; nothing is written for it.
 
 Throws:
 
@@ -28209,8 +33538,10 @@ Throws:
 
 Throws:
 
-- {TypeError} If options are malformed or the provider factory returns a provider that is
-not a distinct static provider.
+- {TypeError} If options are malformed, a world- or process-bound root has no `bindings`
+factory, the selector returns a malformed proposal, or the provider factory returns a provider
+that is not a distinct static provider. Errors thrown by the selector propagate after the root
+records before it are retained.
 
 Example:
 
@@ -28218,13 +33549,13 @@ Example:
 const { batch } = await runTreeRlRollouts(store, {
     claimId: "tree-rl",
     commandId: "application:tree-rl:1",
-    program,
+    prompts: [{ id: "task-1", program, roots: rootSessionIds }],
     protocol,
-    provider: ({ fork_point, seed }) => cassetteFor(fork_point, seed),
+    provider: ({ root_session_id, seed, tool_call }) => cassetteFor(root_session_id, seed, tool_call),
     reward: ({ rollout }) => score(rollout.terminal?.result),
-    sourceSessionId,
+    selector: createMetaAgentTreeRlForkSelector({ provider: metaAgent }),
 });
-console.log(batch.batch_digest, batch.line_count);
+console.log(batch.batch_digest, batch.lines[0]?.actions);
 ```
 
 ### `scanSemanticValueForSecrets`
@@ -28334,9 +33665,11 @@ Selects deterministic trace-selected fork points of one recorded replay session.
 
 For each provider step of the session, in index order, `analyzeReplayDependencies` gives its
 transitive dependents; a step qualifies when its dependent count reaches `minDependents`, and
-qualifying steps are taken in index order up to `maxForkPoints`. Each fork point names the step
-and the source prefix identity at its boundary (null at step 0). The selection is a pure function
-of the retained session and writes nothing.
+qualifying steps are taken in index order up to `maxForkPoints`. When the session binds worlds or
+processes, a step qualifies only where the session retains a checkpoint at its boundary that is
+not classified `unavailable`, since only such a boundary can be restored. Each fork point names
+the step and the prefix identity at its boundary (null at step 0). The selection is a pure
+function of the retained session and writes nothing.
 
 Signature:
 
@@ -28489,7 +33822,8 @@ Validates an untrusted evaluation report, re-deriving every comparison and the r
 The document must be a plain data object of exactly the report fields with the configured report
 and compatibility versions and metric order; runs, baselines, and comparisons align by experiment
 in order; every baseline kind is configured for its run's application kind; every comparison
-equals `compareApplicationBaseline` over its run and baseline; and `report_id` is the digest of
+equals `compareApplicationBaseline` over its run and baseline; `rescues` equals the experiments
+whose baseline failed while the run passed, in order; and `report_id` is the digest of
 the canonical body without it.
 
 Signature:
@@ -28773,11 +34107,11 @@ const { manifest } = await verifyTraceStoreBackup("/backups/2026-09-18");
 
 Package entry: `./applications`
 
-Application manifests, protocol identity, the two-worker coding supervisor over child run handles, the counterfactual workflow optimizer over replay sessions, Appendix D trajectory compression, the §5.3 Tree-RL adapter, and offline evaluation reports against simple baselines.
+Application manifests, protocol identity, the two-worker coding supervisor over child run handles, the counterfactual workflow optimizer over replay sessions, Appendix D trajectory compression, the §5.3 Tree-RL adapter, offline evaluation reports against simple baselines, the tool-use loop with handler, supervised, and replay effect boundaries, and the configured meta-agent tool catalog.
 
 Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
-Authority and mutation: Running and inspecting the coding supervisor, the counterfactual optimizer, trajectory compression, and the Tree-RL adapter, running an evaluation, and retaining manifests require an explicit trace-store handle; workers, policies, workflow programs, evaluators, compressors, verifiers, reward functions, evaluation bindings, and providers are caller-supplied; an evaluation writes no record of its own beyond the application commands it issues; world custody is reached only through a caller-supplied adapter. Every supervisor command and every compressor and verifier child runs through the delegation seam under the caller's root declaration and never amplifies authority; every optimizer, compression, and Tree-RL rollout session runs through the replay seam without bound worlds or processes. No provider, filesystem, workspace, custody, or settlement authority is created.
+Authority and mutation: Running and inspecting the coding supervisor, the counterfactual optimizer, trajectory compression, and the Tree-RL adapter, running an evaluation, and retaining manifests require an explicit trace-store handle; workers, policies, workflow programs, evaluators, compressors, verifiers, reward functions, evaluation bindings, and providers are caller-supplied; an evaluation writes no record of its own beyond the application commands it issues; world custody is reached only through a caller-supplied adapter. Every supervisor command and every compressor and verifier child runs through the delegation seam under the caller's root declaration and never amplifies authority; every optimizer, compression, and Tree-RL rollout session runs through the replay seam without bound worlds or processes. No provider, filesystem, workspace, custody, or settlement authority is created. The tool-use loop owns no authority beyond the model and effect boundaries the caller passes; the meta-agent tools act with the caller's store, claim, world adapter, and root allocator, may read any owner path in that store, and run only caller-declared worker programs and variants.
 
 Import example:
 
@@ -28786,7 +34120,7 @@ import * as api from "@avnionur/shepherd-typescript/applications";
 void api;
 ```
 
-Exported symbols: 188.
+Exported symbols: 309.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -28843,6 +34177,21 @@ export declare const APPLICATION_COMPRESSION_CANDIDATE_STATUSES: readonly [
     "rewound",
     "settled",
     "rejected"
+];
+```
+
+### `APPLICATION_COMPRESSION_FORK_STEP_POLICIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured trajectory compression fork-step policies ordered clamp then reject.
+
+Signature:
+
+```ts
+export declare const APPLICATION_COMPRESSION_FORK_STEP_POLICIES: readonly [
+    "clamp",
+    "reject"
 ];
 ```
 
@@ -28911,16 +34260,48 @@ export declare const APPLICATION_CRO_BASELINE_KINDS: readonly [
 
 Classification: `runtime-only`. Kind: `variable`.
 
-Configured counterfactual candidate statuses ordered proposed, evaluated, promoted, rejected.
+Configured counterfactual candidate outcome statuses ordered archived, evaluated, promoted, rejected.
 
 Signature:
 
 ```ts
 export declare const APPLICATION_CRO_CANDIDATE_STATUSES: readonly [
-    "proposed",
+    "archived",
     "evaluated",
     "promoted",
     "rejected"
+];
+```
+
+### `APPLICATION_CRO_EDIT_SCOPES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual candidate edit scopes ordered request then downstream.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_EDIT_SCOPES: readonly [
+    "request",
+    "downstream"
+];
+```
+
+### `APPLICATION_CRO_EXAMPLE_ROLES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual example result roles ordered fix, guard, dev, train.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_EXAMPLE_ROLES: readonly [
+    "fix",
+    "guard",
+    "dev",
+    "train"
 ];
 ```
 
@@ -28928,14 +34309,31 @@ export declare const APPLICATION_CRO_CANDIDATE_STATUSES: readonly [
 
 Classification: `runtime-only`. Kind: `variable`.
 
-Configured counterfactual optimizer record phases ordered opened then candidate.
+Configured counterfactual optimizer record phases ordered opened, proposal, candidate, selection.
 
 Signature:
 
 ```ts
 export declare const APPLICATION_CRO_PHASES: readonly [
     "opened",
-    "candidate"
+    "proposal",
+    "candidate",
+    "selection"
+];
+```
+
+### `APPLICATION_CRO_SPLITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured counterfactual example splits ordered train then dev.
+
+Signature:
+
+```ts
+export declare const APPLICATION_CRO_SPLITS: readonly [
+    "train",
+    "dev"
 ];
 ```
 
@@ -28983,7 +34381,7 @@ Configured application evaluation report version.
 Signature:
 
 ```ts
-export declare const APPLICATION_EVALUATION_REPORT_VERSION: 1;
+export declare const APPLICATION_EVALUATION_REPORT_VERSION: 2;
 ```
 
 ### `APPLICATION_KINDS`
@@ -29026,6 +34424,8 @@ export declare const APPLICATION_LIMITS: Readonly<{
     readonly maxSchemaBytes: 16384;
     readonly maxSeeds: 16;
     readonly maxSurfaces: 32;
+    readonly maxTickIntervalMilliseconds: 600000;
+    readonly maxTicks: 4096;
     readonly maxToolBytes: 16384;
     readonly maxWorkers: 8;
     readonly minWorkers: 2;
@@ -29070,6 +34470,76 @@ Signature:
 
 ```ts
 export declare const APPLICATION_RECORD_VERSION: 1;
+```
+
+### `APPLICATION_RUNTIME_SUPERVISION_ACTIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Appendix E runtime supervisor decision actions ordered none, inject, handoff, discard.
+
+Signature:
+
+```ts
+export declare const APPLICATION_RUNTIME_SUPERVISION_ACTIONS: readonly [
+    "none",
+    "inject",
+    "handoff",
+    "discard"
+];
+```
+
+### `APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_CAUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured runtime supervisor worker attempt causes ordered start, handoff, discard.
+
+Signature:
+
+```ts
+export declare const APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_CAUSES: readonly [
+    "start",
+    "handoff",
+    "discard"
+];
+```
+
+### `APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured runtime supervisor worker attempt statuses ordered running, completed, turn limit, failed, aborted.
+
+Signature:
+
+```ts
+export declare const APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_STATUSES: readonly [
+    "running",
+    "completed",
+    "turn_limit",
+    "failed",
+    "aborted"
+];
+```
+
+### `APPLICATION_RUNTIME_SUPERVISION_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured runtime supervision record phases ordered opened, tick, settled, attempt, turn, completed.
+
+Signature:
+
+```ts
+export declare const APPLICATION_RUNTIME_SUPERVISION_PHASES: readonly [
+    "opened",
+    "tick",
+    "settled",
+    "attempt",
+    "turn",
+    "completed"
+];
 ```
 
 ### `APPLICATION_SUPERVISION_BASELINE_KINDS`
@@ -29152,6 +34622,22 @@ export declare const APPLICATION_SUPERVISION_WORKER_STATUSES: readonly [
 ];
 ```
 
+### `APPLICATION_TREE_RL_ACTION_SEGMENTS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL per-action advantage segments ordered prefix, suffix, flat.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_ACTION_SEGMENTS: readonly [
+    "prefix",
+    "suffix",
+    "flat"
+];
+```
+
 ### `APPLICATION_TREE_RL_BASELINE_KINDS`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -29162,7 +34648,7 @@ Signature:
 
 ```ts
 export declare const APPLICATION_TREE_RL_BASELINE_KINDS: readonly [
-    "single_rollout"
+    "flat_grpo"
 ];
 ```
 
@@ -29176,7 +34662,54 @@ Signature:
 
 ```ts
 export declare const APPLICATION_TREE_RL_BATCH_FORMATS: readonly [
-    "jsonl_v1"
+    "jsonl_v2"
+];
+```
+
+### `APPLICATION_TREE_RL_LIMITS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL batch and concurrency bounds.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_LIMITS: Readonly<{
+    readonly defaultConcurrency: 4;
+    readonly maxConcurrency: 16;
+    readonly maxGroupSize: 16;
+    readonly maxPrompts: 16;
+}>;
+```
+
+### `APPLICATION_TREE_RL_MEMBER_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL tree member kinds ordered root then branch.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_MEMBER_KINDS: readonly [
+    "root",
+    "branch"
+];
+```
+
+### `APPLICATION_TREE_RL_NORMALIZATIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured Tree-RL advantage normalizations ordered none then per-group standardization.
+
+Signature:
+
+```ts
+export declare const APPLICATION_TREE_RL_NORMALIZATIONS: readonly [
+    "none",
+    "group_std"
 ];
 ```
 
@@ -29184,13 +34717,14 @@ export declare const APPLICATION_TREE_RL_BATCH_FORMATS: readonly [
 
 Classification: `runtime-only`. Kind: `variable`.
 
-Configured Tree-RL record phases ordered opened, rollout, batch.
+Configured Tree-RL record phases ordered opened, root, rollout, batch.
 
 Signature:
 
 ```ts
 export declare const APPLICATION_TREE_RL_PHASES: readonly [
     "opened",
+    "root",
     "rollout",
     "batch"
 ];
@@ -29304,6 +34838,23 @@ constructor(detail: string);
 Parameter:
 
 - detail - Specific description appended to the configured message.
+
+### `ApplicationComputationReuse`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Step reuse of one application session, such as one counterfactual proposer session.
+
+Signature:
+
+```ts
+export type ApplicationComputationReuse = {
+    readonly live_steps: number;
+    readonly recorded_steps: number;
+    readonly reuse_ratio: number | null;
+    readonly session_index: number;
+};
+```
 
 ### `ApplicationCostSummary`
 
@@ -29554,8 +35105,25 @@ export type ApplicationEvaluationReport = {
     readonly metrics: readonly ApplicationEvaluationMetric[];
     readonly report_id: string;
     readonly report_version: number;
+    readonly rescues: ApplicationEvaluationRescues;
     readonly revision: string;
     readonly runs: readonly ApplicationEvaluationRun[];
+};
+```
+
+### `ApplicationEvaluationRescues`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Rescue counts of one report (Appendix D, Table 12): the experiments whose baseline failed its
+success condition while the application run passed its own. Derived from the runs and baselines.
+
+Signature:
+
+```ts
+export type ApplicationEvaluationRescues = {
+    readonly count: number;
+    readonly experiment_ids: readonly string[];
 };
 ```
 
@@ -29656,6 +35224,8 @@ export type ApplicationManifest = {
     readonly protocol_version: string;
     readonly seeds: readonly number[];
     readonly surfaces: readonly ApplicationManifestSurface[];
+    readonly thresholds?: Readonly<Record<string, number>>;
+    readonly computation_reuse?: readonly ApplicationComputationReuse[];
 };
 ```
 
@@ -29725,6 +35295,7 @@ export type ApplicationProtocolDefinition = {
     readonly protocolVersion: string;
     readonly seeds: readonly number[];
     readonly surfaces: readonly ApplicationProtocolSurface[];
+    readonly thresholds?: Readonly<Record<string, number>>;
 };
 ```
 
@@ -29896,7 +35467,7 @@ export type ApplicationWorldDiscardRequest = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Request to fork clean isolated custody for one worker attempt.
+Request to fork isolated custody for one worker attempt.
 
 Signature:
 
@@ -29904,6 +35475,7 @@ Signature:
 export type ApplicationWorldForkRequest = {
     readonly commandId: string;
     readonly nowMilliseconds: number;
+    readonly sourceCustodyId?: string;
     readonly workerId: string;
 };
 ```
@@ -30365,7 +35937,7 @@ export type CodingSupervisorWorkerStatus = (typeof APPLICATION_SUPERVISION_WORKE
 
 Classification: `type-only`. Kind: `type alias`.
 
-Measured whole-workflow comparison of one candidate.
+Measured whole-workflow comparison of one example branch.
 
 Signature:
 
@@ -30375,6 +35947,24 @@ export type CounterfactualBaselineComparison = {
     readonly kind: CounterfactualBaselineKind;
     readonly provider_calls: number;
     readonly session_id: string;
+};
+```
+
+### `CounterfactualBaselineExample`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One recorded baseline example session.
+
+Signature:
+
+```ts
+export type CounterfactualBaselineExample = {
+    readonly example_id: string;
+    readonly input_digest: string;
+    readonly score: number;
+    readonly session_id: string;
+    readonly split: CounterfactualSplit;
 };
 ```
 
@@ -30392,14 +35982,9 @@ export type CounterfactualBaselineKind = (typeof APPLICATION_CRO_BASELINE_KINDS)
 
 ### `CounterfactualCandidateDefinition`
 
-Classification: `type-only`. Kind: `type alias`.
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
 
-One declared candidate edit of the workflow at a step boundary.
-
-Exactly the replacements for the declared change dimensions are supplied: `task` requires
-`task`, `provider` requires `provider`, and `handlers` requires `handlers`. The edit takes
-effect in the affected suffix: the transitive dependents of the edited step in the source
-session, which is the parent candidate's branch or, without a parent, the baseline.
+One caller-declared candidate edit accepted by the optimizer before 11.0.0.
 
 Signature:
 
@@ -30411,16 +35996,23 @@ export type CounterfactualCandidateDefinition = {
     readonly parent?: string;
     readonly program?: ReplaySessionProgram;
     readonly provider?: ModelProvider;
+    readonly scope: CounterfactualEditScope;
     readonly stepIndex: number;
     readonly task?: ReplaySessionTaskDefinition;
 };
 ```
 
+Deprecated:
+
+- Since 11.0.0: candidates come from a {@link CounterfactualProposer} as
+{@link CounterfactualEdit} data applied by a {@link CounterfactualEditApplier}; no API consumes
+this type, and it is removed once the deprecation window elapses.
+
 ### `CounterfactualCandidateInspection`
 
-Classification: `type-only`. Kind: `type alias`.
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
 
-Record-derived state of one declared candidate.
+Record-derived state of one declared candidate before 11.0.0.
 
 Signature:
 
@@ -30431,11 +36023,16 @@ export type CounterfactualCandidateInspection = CounterfactualCandidatePlan & {
 };
 ```
 
+Deprecated:
+
+- Since 11.0.0: inspection lists {@link CounterfactualCandidateRecord} outcomes
+directly; no API returns this type, and it is removed once the deprecation window elapses.
+
 ### `CounterfactualCandidatePlan`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Identity and declared edit of one candidate, fixed when the run is opened.
+Identity, lineage, and edit of one candidate, fixed by its proposal.
 
 Signature:
 
@@ -30443,9 +36040,17 @@ Signature:
 export type CounterfactualCandidatePlan = {
     readonly candidate_id: string;
     readonly changes: readonly ReplayChangeDimension[];
+    readonly edit_scope: CounterfactualEditScope;
     readonly edited_step_index: number;
+    readonly fix_set: readonly string[];
+    readonly guard_set: readonly string[];
+    readonly iteration: number;
+    readonly mechanism: string;
     readonly name: string;
     readonly parent_candidate_id: string | null;
+    readonly patch: SemanticValue;
+    readonly prior: number;
+    readonly rationale: string;
 };
 ```
 
@@ -30453,22 +36058,22 @@ export type CounterfactualCandidatePlan = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-One retained candidate record.
+One retained candidate outcome record.
 
 Signature:
 
 ```ts
 export type CounterfactualCandidateRecord = CounterfactualCandidatePlan & {
-    readonly affected_steps: readonly number[];
-    readonly baseline: CounterfactualBaselineComparison | null;
-    readonly branch_session_id: string;
-    readonly cost: ApplicationCostSummary | null;
-    readonly divergence: CounterfactualDivergenceSummary | null;
-    readonly evaluation: CounterfactualEvaluation | null;
+    readonly cost: ApplicationCostSummary;
+    readonly dev: readonly CounterfactualExampleResult[] | null;
+    readonly dev_score: number | null;
     readonly failure: CounterfactualFailure | null;
+    readonly gate: CounterfactualGateVerdict | null;
+    readonly promotion_reference: number | null;
     readonly record_id: RecordId;
     readonly status: CounterfactualCandidateStatus;
-    readonly target: CounterfactualTarget;
+    readonly targeted: readonly CounterfactualExampleResult[];
+    readonly train: readonly CounterfactualExampleResult[] | null;
 };
 ```
 
@@ -30476,7 +36081,7 @@ export type CounterfactualCandidateRecord = CounterfactualCandidatePlan & {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured candidate status: proposed, evaluated, promoted, or rejected.
+Configured candidate outcome status: archived, evaluated, promoted, or rejected.
 
 Signature:
 
@@ -30484,11 +36089,38 @@ Signature:
 export type CounterfactualCandidateStatus = (typeof APPLICATION_CRO_CANDIDATE_STATUSES)[number];
 ```
 
+### `CounterfactualComputationReuse`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Step reuse of every candidate branch session one proposer session produced.
+
+Signature:
+
+```ts
+export type CounterfactualComputationReuse = ApplicationComputationReuse;
+```
+
+### `CounterfactualDataset`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Train and dev splits of one optimization run; identities are distinct across both.
+
+Signature:
+
+```ts
+export type CounterfactualDataset = {
+    readonly dev: readonly CounterfactualExample[];
+    readonly train: readonly CounterfactualExample[];
+};
+```
+
 ### `CounterfactualDivergenceSummary`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Retained summary of the divergence proof of one candidate branch.
+Retained summary of the divergence proof of one example branch.
 
 Signature:
 
@@ -30502,11 +36134,111 @@ export type CounterfactualDivergenceSummary = {
 };
 ```
 
-### `CounterfactualEvaluation`
+### `CounterfactualEdit`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Verdict of the caller-supplied targeted evaluator, retained verbatim.
+One proposed edit Δ of the parent workflow, as data, paired with the fix set T+ it should repair
+and the guard set T- it must not regress (paper Appendix F.1). Retained verbatim in the proposal
+and candidate records; the caller's CounterfactualEditApplier turns it into replacements.
+
+Signature:
+
+```ts
+export type CounterfactualEdit = {
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly fix_set: readonly string[];
+    readonly guard_set: readonly string[];
+    readonly mechanism: string;
+    readonly name: string;
+    readonly patch: SemanticValue;
+    readonly prior: number;
+    readonly rationale: string;
+    readonly scope: CounterfactualEditScope;
+    readonly step_index: number;
+};
+```
+
+### `CounterfactualEditApplication`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Replacements one edit applies to its parent's resolved workflow.
+
+Signature:
+
+```ts
+export type CounterfactualEditApplication = {
+    readonly handlers?: EffectHandlerStack;
+    readonly program?: CounterfactualProgram;
+    readonly provider?: ModelProvider;
+    readonly task?: CounterfactualTaskFactory;
+};
+```
+
+### `CounterfactualEditApplier`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Applies one edit (c = p ⊕ Δ): returns exactly the replacements of the declared change
+dimensions and optionally a program. It must be a deterministic function of the edit, because a
+rerun re-applies retained edits. A throw or an application that does not match the declared
+changes refuses the proposal.
+
+Signature:
+
+```ts
+export type CounterfactualEditApplier = (context: CounterfactualEditContext) => Promise<CounterfactualEditApplication> | CounterfactualEditApplication;
+```
+
+Parameter:
+
+- context - Edit, parent plan, and protocol.
+
+Returns:
+
+- The replacements.
+
+### `CounterfactualEditContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context the edit applier receives.
+
+Signature:
+
+```ts
+export type CounterfactualEditContext = {
+    readonly edit: CounterfactualEdit;
+    readonly parent: CounterfactualCandidatePlan | null;
+    readonly protocol: ApplicationProtocolDefinition;
+};
+```
+
+### `CounterfactualEditScope`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured candidate edit scope, ordered `request` then `downstream`.
+
+A `request` edit changes the edited step's own request, so its branch re-executes from the
+boundary immediately before the edited step; the declared changes must explain a divergence of
+that step's kind (task or provider for a provider step, handlers for an effect step). A
+`downstream` edit leaves the edited step's recorded output in place and changes only how its
+dependents consume it, so its branch replays from the boundary before the first transitive
+dependent, or from the source's final boundary when nothing depends on the edited step.
+
+Signature:
+
+```ts
+export type CounterfactualEditScope = (typeof APPLICATION_CRO_EDIT_SCOPES)[number];
+```
+
+### `CounterfactualEvaluation`
+
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
+
+Verdict of the caller-supplied targeted evaluator before 11.0.0.
 
 Signature:
 
@@ -30517,6 +36249,12 @@ export type CounterfactualEvaluation = {
     readonly score: number;
 };
 ```
+
+Deprecated:
+
+- Since 11.0.0: the targeted gate is {@link CounterfactualGateVerdict}, computed from
+per-example {@link CounterfactualMetric} scores; no API consumes this type, and it is removed once
+the deprecation window elapses.
 
 ### `CounterfactualEvaluationBinding`
 
@@ -30535,9 +36273,9 @@ export type CounterfactualEvaluationBinding = {
 
 ### `CounterfactualEvaluationContext`
 
-Classification: `type-only`. Kind: `type alias`.
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
 
-Context the targeted evaluator receives for one proven candidate branch.
+Context the targeted evaluator received for one proven candidate branch before 11.0.0.
 
 Signature:
 
@@ -30553,20 +36291,27 @@ export type CounterfactualEvaluationContext = {
 };
 ```
 
+Deprecated:
+
+- Since 11.0.0: see {@link CounterfactualMetricContext}; no API consumes this type, and
+it is removed once the deprecation window elapses.
+
 ### `CounterfactualEvaluator`
 
-Classification: `type-only`. Kind: `type alias`.
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
 
-Caller-supplied targeted evaluator gating promotion.
-
-A thrown error or a malformed verdict is a verification failure: the candidate is retained as
-rejected and nothing is promoted.
+Caller-supplied targeted evaluator gating promotion before 11.0.0.
 
 Signature:
 
 ```ts
 export type CounterfactualEvaluator = (context: CounterfactualEvaluationContext) => Promise<CounterfactualEvaluation> | CounterfactualEvaluation;
 ```
+
+Deprecated:
+
+- Since 11.0.0: see {@link CounterfactualMetric}; no API consumes this type, and it is
+removed once the deprecation window elapses.
 
 Parameter:
 
@@ -30576,11 +36321,61 @@ Returns:
 
 - The verdict retained verbatim.
 
+### `CounterfactualExample`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One dataset example: an identity from the protocol's dataset items and its canonical input.
+
+Signature:
+
+```ts
+export type CounterfactualExample = {
+    readonly id: string;
+    readonly input: SemanticValue;
+};
+```
+
+### `CounterfactualExampleResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Counterfactual replay of one candidate on one example, scored against its parent.
+
+Signature:
+
+```ts
+export type CounterfactualExampleResult = {
+    readonly affected_steps: readonly number[];
+    readonly baseline: CounterfactualBaselineComparison | null;
+    readonly cost: ApplicationCostSummary;
+    readonly divergence: CounterfactualDivergenceSummary;
+    readonly example_id: string;
+    readonly parent_score: number;
+    readonly role: CounterfactualExampleRole;
+    readonly score: number;
+    readonly session_id: string;
+    readonly target: CounterfactualTarget;
+};
+```
+
+### `CounterfactualExampleRole`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured example result role: `fix`, `guard`, `dev`, or `train`.
+
+Signature:
+
+```ts
+export type CounterfactualExampleRole = (typeof APPLICATION_CRO_EXAMPLE_ROLES)[number];
+```
+
 ### `CounterfactualFailure`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Retained failure that rejected a candidate and stopped the run.
+Retained failure that rejected a candidate or proposal and stopped the run.
 
 Signature:
 
@@ -30588,6 +36383,96 @@ Signature:
 export type CounterfactualFailure = {
     readonly code: string;
     readonly reason: string;
+};
+```
+
+### `CounterfactualGateVerdict`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Targeted fix/guard gate verdict (paper Appendix F.2.5), recomputed from retained results.
+
+Signature:
+
+```ts
+export type CounterfactualGateVerdict = {
+    readonly aggregate_lift: number;
+    readonly improve_fraction: number;
+    readonly max_guard_drop: number;
+    readonly passed: boolean;
+    readonly reason: string;
+};
+```
+
+### `CounterfactualHandoff`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Handoff manifest of one completed optimization run: every candidate in proposal order with its
+lineage and status, and the selected candidate. It is derived from retained records and
+validated against every protocol `schema` surface of the configured handoff role before it is
+returned.
+
+Signature:
+
+```ts
+export type CounterfactualHandoff = {
+    readonly candidates: readonly CounterfactualHandoffCandidate[];
+    readonly selected_candidate_id: string | null;
+};
+```
+
+### `CounterfactualHandoffCandidate`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One candidate entry of the handoff manifest.
+
+Signature:
+
+```ts
+export type CounterfactualHandoffCandidate = {
+    readonly candidate_id: string;
+    readonly parent_candidate_id: string | null;
+    readonly status: CounterfactualCandidateStatus;
+};
+```
+
+### `CounterfactualMetric`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Per-example workflow metric; higher is better. A throw or a non-finite score is a verification
+failure.
+
+Signature:
+
+```ts
+export type CounterfactualMetric = (context: CounterfactualMetricContext) => Promise<number> | number;
+```
+
+Parameter:
+
+- context - Candidate, example, split, and finished session.
+
+Returns:
+
+- The finite example score.
+
+### `CounterfactualMetricContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context the metric receives for one finished session.
+
+Signature:
+
+```ts
+export type CounterfactualMetricContext = {
+    readonly candidate: CounterfactualCandidatePlan | null;
+    readonly example: CounterfactualExample;
+    readonly session: ReplaySessionInspection;
+    readonly split: CounterfactualSplit;
 };
 ```
 
@@ -30602,17 +36487,22 @@ Signature:
 ```ts
 export type CounterfactualOptimizationInspection = {
     readonly application_id: string;
-    readonly baseline_session_id: string;
     readonly baselines: readonly CounterfactualBaselineKind[];
-    readonly candidates: readonly CounterfactualCandidateInspection[];
+    readonly budgets: Readonly<Record<string, number>>;
+    readonly candidates: readonly CounterfactualCandidateRecord[];
     readonly command_id: string;
+    readonly computation_reuse: readonly CounterfactualComputationReuse[];
     readonly cut_id: CutId | null;
+    readonly examples: readonly CounterfactualBaselineExample[];
     readonly kind: ApplicationKind;
     readonly manifest: ApplicationManifest | null;
     readonly manifest_record_id: RecordId | null;
     readonly opened_record_id: RecordId;
-    readonly promotion: CounterfactualCandidateRecord | null;
+    readonly pool: readonly CounterfactualPoolMember[];
+    readonly proposals: readonly CounterfactualProposalRecord[];
     readonly protocol_id: string;
+    readonly selection: CounterfactualSelection | null;
+    readonly thresholds: Readonly<Record<string, number>>;
 };
 ```
 
@@ -30626,8 +36516,132 @@ Signature:
 
 ```ts
 export type CounterfactualOptimizationReceipt = {
+    readonly handoff: CounterfactualHandoff;
     readonly inspection: CounterfactualOptimizationInspection;
     readonly manifest: ApplicationManifest;
+};
+```
+
+### `CounterfactualPoolMember`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One parent-pool member offered to the proposer.
+
+Signature:
+
+```ts
+export type CounterfactualPoolMember = {
+    readonly candidate_id: string | null;
+    readonly dev_score: number;
+    readonly name: string | null;
+};
+```
+
+### `CounterfactualProgram`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Workflow program for one example. The returned session program must be deterministic in the
+example and must re-issue a recorded prefix exactly so a branch can serve it.
+
+Signature:
+
+```ts
+export type CounterfactualProgram = (example: CounterfactualExample) => ReplaySessionProgram;
+```
+
+Parameter:
+
+- example - Example the session runs.
+
+Returns:
+
+- The session program.
+
+### `CounterfactualProposal`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One proposer answer: a parent from the pool, at most k edits, and the reflection.
+
+Signature:
+
+```ts
+export type CounterfactualProposal = {
+    readonly edits: readonly CounterfactualEdit[];
+    readonly parent: string | null;
+    readonly reflection: SemanticValue;
+};
+```
+
+### `CounterfactualProposalRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained proposer iteration record.
+
+Signature:
+
+```ts
+export type CounterfactualProposalRecord = {
+    readonly attempts: number;
+    readonly candidates: readonly CounterfactualCandidatePlan[];
+    readonly failure: CounterfactualFailure | null;
+    readonly iteration: number;
+    readonly parent_candidate_id: string | null;
+    readonly proposer_session_ids: readonly string[];
+    readonly record_id: RecordId;
+    readonly reflection: SemanticValue;
+    readonly refusals: readonly string[];
+};
+```
+
+### `CounterfactualProposer`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Proposer P of Algorithm 1: reads the run and returns a parent and edits with fix and guard sets.
+
+A malformed or inadmissible proposal is refused with a reason and the proposer is asked again
+with the reason in `feedback`, up to the protocol's attempt budget. A thrown error propagates.
+
+Signature:
+
+```ts
+export type CounterfactualProposer = (context: CounterfactualProposerContext) => Promise<CounterfactualProposal> | CounterfactualProposal;
+```
+
+Parameter:
+
+- context - Run inspection, pool, capacity, feedback, and session identity.
+
+Returns:
+
+- The proposal.
+
+### `CounterfactualProposerContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context one proposer attempt receives.
+
+Signature:
+
+```ts
+export type CounterfactualProposerContext = {
+    readonly applicationId: string;
+    readonly attempt: number;
+    readonly capacity: number;
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly feedback: readonly string[];
+    readonly inspection: CounterfactualOptimizationInspection;
+    readonly iteration: number;
+    readonly pool: readonly CounterfactualPoolMember[];
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly store: SQLiteTraceStore;
 };
 ```
 
@@ -30635,7 +36649,7 @@ export type CounterfactualOptimizationReceipt = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured counterfactual optimizer record phase: the opened record or a candidate record.
+Configured counterfactual optimizer record phase: opened, proposal, candidate, or selection.
 
 Signature:
 
@@ -30643,42 +36657,90 @@ Signature:
 export type CounterfactualRecordPhase = (typeof APPLICATION_CRO_PHASES)[number];
 ```
 
+### `CounterfactualSelection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Terminal selection c* of Algorithm 1.
+
+Signature:
+
+```ts
+export type CounterfactualSelection = {
+    readonly dev_score: number;
+    readonly pool: readonly string[];
+    readonly record_id: RecordId;
+    readonly selected_candidate_id: string | null;
+};
+```
+
+### `CounterfactualSplit`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured example split: `train` or `dev`.
+
+Signature:
+
+```ts
+export type CounterfactualSplit = (typeof APPLICATION_CRO_SPLITS)[number];
+```
+
 ### `CounterfactualTarget`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Step boundary a candidate branch starts from.
+Step boundary one example branch starts from.
 
 Signature:
 
 ```ts
 export type CounterfactualTarget = {
-    readonly prefix_id: string;
+    readonly prefix_id: string | null;
     readonly source_session_id: string;
     readonly step_index: number;
 };
 ```
 
+### `CounterfactualTaskFactory`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Task factory for one example.
+
+Signature:
+
+```ts
+export type CounterfactualTaskFactory = (example: CounterfactualExample) => ReplaySessionTaskDefinition;
+```
+
+Parameter:
+
+- example - Example the session runs.
+
+Returns:
+
+- The task and input bound to the example's session.
+
 ### `CounterfactualWorkflowDefinition`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Baseline workflow recorded once through a root replay session.
+Baseline workflow W0, recorded once per train and dev example through a root replay session.
 
 The program must bind no worlds or processes so every step boundary is an admissible branch
-target. The provider, handler stack, and task service the baseline session and every branch
-suffix that does not declare the corresponding change, so a provider must be able to answer
-repeated sessions.
+target. The provider and handler stack serve every example session and every branch suffix that
+does not declare the corresponding change, so a provider must be able to answer repeated sessions.
 
 Signature:
 
 ```ts
 export type CounterfactualWorkflowDefinition = {
     readonly handlers?: EffectHandlerStack;
-    readonly program: ReplaySessionProgram;
+    readonly program: CounterfactualProgram;
     readonly programId: string;
     readonly provider?: ModelProvider;
-    readonly task?: ReplaySessionTaskDefinition;
+    readonly task?: CounterfactualTaskFactory;
 };
 ```
 
@@ -30694,8 +36756,131 @@ Signature:
 export type CreateApplicationManifestOptions = {
     readonly applicationId: string;
     readonly artifacts: readonly ApplicationArtifactSource[];
+    readonly computationReuse?: readonly ApplicationComputationReuse[];
     readonly costs: ApplicationCostSummary;
     readonly protocol: ApplicationProtocolDefinition;
+};
+```
+
+### `MetaAgentToolEnvironment`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Environment backing the substrate-native meta-agent tools.
+
+Signature:
+
+```ts
+export type MetaAgentToolEnvironment = {
+    readonly allocateRoot: (request: {
+        readonly commandId: string;
+        readonly operation: string;
+        readonly world: string;
+    }) => Promise<string>;
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly store: SQLiteTraceStore;
+    readonly workers: Readonly<Record<string, MetaAgentWorkerDefinition>>;
+    readonly world?: ApplicationWorldAdapter;
+};
+```
+
+### `MetaAgentTools`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Catalog tools and their handlers.
+
+Signature:
+
+```ts
+export type MetaAgentTools = {
+    readonly handlers: readonly EffectHandler[];
+    readonly tools: readonly ToolLoopTool[];
+};
+```
+
+### `MetaAgentTreeRlForkSelectorOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createMetaAgentTreeRlForkSelector.
+
+Signature:
+
+```ts
+export type MetaAgentTreeRlForkSelectorOptions = {
+    readonly provider: ModelProvider;
+    readonly signal?: AbortSignal;
+};
+```
+
+### `MetaAgentWorkerDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+A worker a meta-agent may fork, identified to the model by its definition name.
+
+Signature:
+
+```ts
+export type MetaAgentWorkerDefinition = {
+    readonly compensation?: EffectCompensationRegistry;
+    readonly handlers?: (root: string) => EffectHandlerStack;
+    readonly program: ReplaySessionProgram;
+    readonly programId: string;
+    readonly provider?: ModelProvider;
+    readonly task?: ReplaySessionTaskDefinition;
+    readonly variants?: Readonly<Record<string, MetaAgentWorkerVariant>>;
+    readonly world: string;
+};
+```
+
+### `MetaAgentWorkerVariant`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One replacement a meta-agent may apply when it replays a worker.
+
+Signature:
+
+```ts
+export type MetaAgentWorkerVariant = {
+    readonly changes: readonly ReplayChangeDimension[];
+    readonly handlers?: (root: string) => EffectHandlerStack;
+    readonly policy?: (request: ReplayEffectApprovalRequest) => Promise<ReplayEffectApprovalVerdict> | ReplayEffectApprovalVerdict;
+    readonly provider?: ModelProvider;
+    readonly task?: ReplaySessionTaskDefinition;
+};
+```
+
+### `ModelRuntimeSupervisorPolicyOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createModelRuntimeSupervisorPolicy.
+
+Signature:
+
+```ts
+export type ModelRuntimeSupervisorPolicyOptions = {
+    readonly model: ToolLoopModel;
+    readonly protocol: ApplicationProtocolDefinition;
+};
+```
+
+### `ReplayToolLoopBindings`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Model and effect boundaries of a loop running inside a replay session program.
+
+Signature:
+
+```ts
+export type ReplayToolLoopBindings = {
+    readonly effects: ToolLoopEffects;
+    readonly model: ToolLoopModel;
 };
 ```
 
@@ -30760,14 +36945,62 @@ Signature:
 
 ```ts
 export type RunCounterfactualOptimizationOptions = {
+    readonly applyEdit: CounterfactualEditApplier;
     readonly baseline: CounterfactualWorkflowDefinition;
     readonly baselines?: readonly CounterfactualBaselineKind[];
-    readonly candidates: readonly CounterfactualCandidateDefinition[];
     readonly claimId: string;
     readonly clock?: () => number;
     readonly commandId: string;
-    readonly evaluate: CounterfactualEvaluator;
+    readonly dataset: CounterfactualDataset;
+    readonly metric: CounterfactualMetric;
     readonly protocol: ApplicationProtocolDefinition;
+    readonly proposer: CounterfactualProposer;
+};
+```
+
+### `RunRuntimeSupervisorOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed options for runRuntimeSupervisor.
+
+Signature:
+
+```ts
+export type RunRuntimeSupervisorOptions = {
+    readonly clock?: () => number;
+    readonly commandId: string;
+    readonly policy: RuntimeSupervisorPolicy;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly signal?: AbortSignal;
+    readonly supervisorId: string;
+    readonly wait?: RuntimeSupervisorWait;
+    readonly workers: readonly RuntimeSupervisorWorkerDefinition[];
+    readonly world: ApplicationWorldAdapter;
+};
+```
+
+### `RunToolLoopOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for runToolLoop.
+
+Signature:
+
+```ts
+export type RunToolLoopOptions = {
+    readonly effects: ToolLoopEffects;
+    readonly guidance?: (request: ToolLoopGuidanceRequest) => Promise<string | null> | string | null;
+    readonly loopId: string;
+    readonly maxTurns?: number;
+    readonly messages: readonly ModelMessage[];
+    readonly model: ToolLoopModel;
+    readonly onTurn?: (turn: ToolLoopTurn) => Promise<void> | void;
+    readonly outputSchema?: SemanticRecord | null;
+    readonly signal?: AbortSignal;
+    readonly system?: string;
+    readonly tools: readonly ToolLoopTool[];
 };
 ```
 
@@ -30806,15 +37039,450 @@ Signature:
 ```ts
 export type RunTreeRlRolloutsOptions = {
     readonly baselines?: readonly TreeRlBaselineKind[];
+    readonly bindings?: TreeRlBindingsFactory;
     readonly claimId: string;
     readonly clock?: () => number;
     readonly commandId: string;
-    readonly handlers?: EffectHandlerStack;
-    readonly program: ReplaySessionProgram;
+    readonly concurrency?: number;
+    readonly normalization?: TreeRlNormalization;
+    readonly prompts: readonly TreeRlPrompt[];
     readonly protocol: ApplicationProtocolDefinition;
     readonly provider: TreeRlProviderFactory;
     readonly reward: TreeRlRewardFunction;
-    readonly sourceSessionId: string;
+    readonly selector: TreeRlForkSelector;
+};
+```
+
+### `RuntimeSupervisorAction`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured Appendix E decision action: `none`, `inject`, `handoff`, or `discard`.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorAction = (typeof APPLICATION_RUNTIME_SUPERVISION_ACTIONS)[number];
+```
+
+### `RuntimeSupervisorAgentSnapshot`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Per-agent entry of one tick snapshot (paper Appendix E, observation cadence).
+
+Signature:
+
+```ts
+export type RuntimeSupervisorAgentSnapshot = {
+    readonly agent: string;
+    readonly attempt: number;
+    readonly consecutive_errors: number;
+    readonly events: number;
+    readonly feature: string;
+    readonly last_action: RuntimeSupervisorLastAction | null;
+    readonly modified_files: readonly string[];
+    readonly status: RuntimeSupervisorAttemptStatus;
+    readonly trailing_tool_calls: readonly RuntimeSupervisorToolCallSummary[];
+};
+```
+
+### `RuntimeSupervisorAttemptCause`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured cause of one worker attempt: `start`, `handoff`, or `discard`.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorAttemptCause = (typeof APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_CAUSES)[number];
+```
+
+### `RuntimeSupervisorAttemptInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One worker attempt: a session over one custody.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorAttemptInspection = {
+    readonly attempt: number;
+    readonly cause: RuntimeSupervisorAttemptCause;
+    readonly completion: RuntimeSupervisorCompletionInspection | null;
+    readonly custody: {
+        readonly custody_id: string;
+        readonly receipt_id: string;
+        readonly source_custody_id: string | null;
+    };
+    readonly guidance: string | null;
+    readonly leader: string | null;
+    readonly record_id: RecordId;
+    readonly tick: number;
+    readonly turns: readonly RuntimeSupervisorTurnInspection[];
+};
+```
+
+### `RuntimeSupervisorAttemptStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured status of one worker attempt; every status but the first is terminal.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorAttemptStatus = (typeof APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_STATUSES)[number];
+```
+
+### `RuntimeSupervisorCompletionInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Terminal record of one worker attempt.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorCompletionInspection = {
+    readonly cause: {
+        readonly action: RuntimeSupervisorAction;
+        readonly tick: number;
+    } | null;
+    readonly error: string | null;
+    readonly output: SemanticValue;
+    readonly record_id: RecordId;
+    readonly status: RuntimeSupervisorAttemptStatus;
+};
+```
+
+### `RuntimeSupervisorDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One validated Appendix E decision.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorDecision = {
+    readonly action: RuntimeSupervisorAction;
+    readonly agent: string;
+    readonly guidance?: string;
+    readonly leader?: string;
+    readonly reason: string;
+};
+```
+
+### `RuntimeSupervisorInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable record-derived view of one runtime supervisor run.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorInspection = {
+    readonly application_id: string;
+    readonly command_id: string;
+    readonly cut_id: CutId | null;
+    readonly manifest: ApplicationManifest | null;
+    readonly opened_record_id: RecordId;
+    readonly protocol_id: string;
+    readonly settlement: RuntimeSupervisorSettlementInspection | null;
+    readonly supervisor_id: string;
+    readonly ticks: readonly RuntimeSupervisorTickInspection[];
+    readonly workers: readonly RuntimeSupervisorWorkerInspection[];
+};
+```
+
+### `RuntimeSupervisorLastAction`
+
+Classification: `type-only`. Kind: `type alias`.
+
+The supervisor's most recent non-`none` action on one agent.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorLastAction = {
+    readonly action: RuntimeSupervisorAction;
+    readonly ticks_ago: number;
+};
+```
+
+### `RuntimeSupervisorPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Supervisor policy consulted exactly once per tick with the combined snapshot of every agent.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorPolicy = (context: RuntimeSupervisorPolicyContext) => Promise<RuntimeSupervisorPolicyResult> | RuntimeSupervisorPolicyResult;
+```
+
+Parameter:
+
+- context - Tick, snapshot, protocol, and signal.
+
+Returns:
+
+- The raw decision object and optional usage.
+
+### `RuntimeSupervisorPolicyContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context the policy receives once per tick.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorPolicyContext = {
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly signal: AbortSignal;
+    readonly snapshot: RuntimeSupervisorSnapshot;
+    readonly tick: number;
+};
+```
+
+### `RuntimeSupervisorPolicyResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Raw policy response of one tick.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorPolicyResult = {
+    readonly output: unknown;
+    readonly usage: ModelUsage | null;
+};
+```
+
+### `RuntimeSupervisorReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of runRuntimeSupervisor.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorReceipt = {
+    readonly custody: readonly {
+        readonly custody: ApplicationWorldCustody;
+        readonly worker_id: string;
+    }[];
+    readonly inspection: RuntimeSupervisorInspection;
+    readonly manifest: ApplicationManifest;
+};
+```
+
+### `RuntimeSupervisorRefusal`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Refusal of one tick's decision batch; no decision of a refused batch is applied.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorRefusal = {
+    readonly issues: readonly string[];
+};
+```
+
+### `RuntimeSupervisorSettlementInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained settlement of a run.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorSettlementInspection = {
+    readonly discard_custody_ids: readonly string[];
+    readonly record_id: RecordId;
+    readonly ticks: number;
+    readonly undelivered: readonly {
+        readonly tick: number;
+        readonly worker_id: string;
+    }[];
+    readonly workers: readonly {
+        readonly attempt: number;
+        readonly custody_id: string;
+        readonly status: RuntimeSupervisorAttemptStatus;
+        readonly worker_id: string;
+    }[];
+};
+```
+
+### `RuntimeSupervisorSnapshot`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One combined snapshot the policy receives per tick.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorSnapshot = {
+    readonly agents: readonly RuntimeSupervisorAgentSnapshot[];
+    readonly tick: number;
+};
+```
+
+### `RuntimeSupervisorTickInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained tick.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorTickInspection = {
+    readonly cursor: TraceSubscriptionCursor;
+    readonly decisions: readonly RuntimeSupervisorDecision[];
+    readonly output: SemanticValue;
+    readonly record_id: RecordId;
+    readonly refusal: RuntimeSupervisorRefusal | null;
+    readonly snapshot: RuntimeSupervisorSnapshot;
+    readonly tick: number;
+    readonly usage: ModelUsage | null;
+};
+```
+
+### `RuntimeSupervisorToolCallStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured tool-call disposition carried by a snapshot summary.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorToolCallStatus = (typeof TOOL_CALL_DISPOSITIONS)[number];
+```
+
+### `RuntimeSupervisorToolCallSummary`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Bounded summary of one worker tool call.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorToolCallSummary = {
+    readonly error: string | null;
+    readonly status: RuntimeSupervisorToolCallStatus;
+    readonly target: string | null;
+    readonly tool: string;
+};
+```
+
+### `RuntimeSupervisorTurnInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained model turn of a worker attempt.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorTurnInspection = {
+    readonly assistant: ModelMessage;
+    readonly cache_prefix_messages: number;
+    readonly calls: readonly RuntimeSupervisorToolCallSummary[];
+    readonly guidance_ticks: readonly number[];
+    readonly index: number;
+    readonly message_count: number;
+    readonly output: SemanticValue;
+    readonly record_id: RecordId;
+    readonly request_digest: string;
+    readonly results: ModelMessage | null;
+    readonly usage: ModelUsage;
+};
+```
+
+### `RuntimeSupervisorWait`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Tick scheduler: resolves after the configured cadence, or rejects when the signal aborts.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorWait = (milliseconds: number, signal: AbortSignal) => Promise<void>;
+```
+
+Parameter:
+
+- milliseconds - The protocol's tick interval.
+
+Parameter:
+
+- signal - Run cancellation.
+
+### `RuntimeSupervisorWorkerDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One concurrently supervised worker: a tool-use loop over its own forked custody.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorWorkerDefinition = {
+    readonly effects: (context: RuntimeSupervisorWorkerEffectsContext) => ToolLoopEffects;
+    readonly feature: string;
+    readonly model: ToolLoopModel;
+    readonly outputSchema?: SemanticRecord | null;
+    readonly system?: string;
+    readonly tools: readonly ToolLoopTool[];
+    readonly workerId: string;
+};
+```
+
+### `RuntimeSupervisorWorkerEffectsContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a worker's effect factory receives when an attempt starts or resumes.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorWorkerEffectsContext = {
+    readonly attempt: number;
+    readonly custody: ApplicationWorldCustody;
+    readonly workerId: string;
+};
+```
+
+### `RuntimeSupervisorWorkerInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One worker stream.
+
+Signature:
+
+```ts
+export type RuntimeSupervisorWorkerInspection = {
+    readonly attempts: readonly RuntimeSupervisorAttemptInspection[];
+    readonly stream_id: string;
+    readonly worker_id: string;
 };
 ```
 
@@ -30832,6 +37500,235 @@ export type SelectTreeRlForkPointsOptions = {
     readonly maxForkPoints: number;
     readonly minDependents: number;
     readonly sessionId: string;
+};
+```
+
+### `SupervisedToolLoopEffectsOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createSupervisedToolLoopEffects.
+
+Signature:
+
+```ts
+export type SupervisedToolLoopEffectsOptions = {
+    readonly approvalTimeoutMilliseconds?: number;
+    readonly claimId: string;
+    readonly clock?: () => number;
+    readonly handlers: EffectHandlerStack;
+    readonly interceptors?: readonly SupervisionInterceptor[];
+    readonly store: SQLiteTraceStore;
+};
+```
+
+### `TOOL_CALL_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured tool-call dispositions ordered materialized, denied, invalid, failed.
+
+Signature:
+
+```ts
+export declare const TOOL_CALL_DISPOSITIONS: readonly [
+    "materialized",
+    "denied",
+    "invalid",
+    "failed"
+];
+```
+
+### `TOOL_LOOP_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured tool-use loop statuses ordered completed then turn limit.
+
+Signature:
+
+```ts
+export declare const TOOL_LOOP_STATUSES: readonly [
+    "completed",
+    "turn_limit"
+];
+```
+
+### `ToolCallDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured disposition of one model tool call.
+
+Signature:
+
+```ts
+export type ToolCallDisposition = (typeof TOOL_CALL_DISPOSITIONS)[number];
+```
+
+### `ToolLoopCall`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One model tool call and how the loop resolved it.
+
+Signature:
+
+```ts
+export type ToolLoopCall = {
+    readonly disposition: ToolCallDisposition;
+    readonly input: SemanticRecord;
+    readonly intent: EffectIntent | null;
+    readonly name: string;
+    readonly outcome: EffectOutcome | null;
+    readonly reason: string | null;
+    readonly result: ModelToolResultBlock;
+    readonly toolUseId: string;
+};
+```
+
+### `ToolLoopCounterfactualProposerOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for createToolLoopCounterfactualProposer.
+
+Signature:
+
+```ts
+export type ToolLoopCounterfactualProposerOptions = {
+    readonly maxTurns?: number;
+    readonly model: ConversationalModelProvider;
+};
+```
+
+### `ToolLoopEffectResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of dispatching one tool-call intent.
+
+Signature:
+
+```ts
+export type ToolLoopEffectResult = {
+    readonly disposition: (typeof TOOL_CALL_DISPOSITIONS)[0];
+    readonly outcome: EffectOutcome;
+} | {
+    readonly disposition: (typeof TOOL_CALL_DISPOSITIONS)[1];
+    readonly reason: string;
+} | {
+    readonly disposition: (typeof TOOL_CALL_DISPOSITIONS)[3];
+    readonly reason: string;
+};
+```
+
+### `ToolLoopEffects`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Effect boundary of a tool-use loop.
+
+Signature:
+
+```ts
+export type ToolLoopEffects = {
+    readonly dispatch: (intent: EffectIntent, signal: AbortSignal) => Promise<ToolLoopEffectResult>;
+};
+```
+
+### `ToolLoopGuidanceRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request presented to a loop's guidance callback between turns.
+
+Signature:
+
+```ts
+export type ToolLoopGuidanceRequest = {
+    readonly messages: readonly ModelMessage[];
+    readonly signal: AbortSignal;
+    readonly turn: ToolLoopTurn;
+};
+```
+
+### `ToolLoopModel`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Model boundary of a tool-use loop: one multi-turn request per turn.
+
+Signature:
+
+```ts
+export type ToolLoopModel = {
+    readonly converse: ConversationalModelProvider["converse"];
+};
+```
+
+### `ToolLoopResult`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of one tool-use loop.
+
+Signature:
+
+```ts
+export type ToolLoopResult = {
+    readonly messages: readonly ModelMessage[];
+    readonly output: SemanticValue;
+    readonly status: ToolLoopStatus;
+    readonly turns: readonly ToolLoopTurn[];
+};
+```
+
+### `ToolLoopStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured tool-use loop result status.
+
+Signature:
+
+```ts
+export type ToolLoopStatus = (typeof TOOL_LOOP_STATUSES)[number];
+```
+
+### `ToolLoopTool`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One tool offered to the model and the effect family its calls become.
+
+Signature:
+
+```ts
+export type ToolLoopTool = {
+    readonly description: string;
+    readonly effectKind: string;
+    readonly inputSchema: SemanticRecord;
+    readonly name: string;
+    readonly reversibility: EffectReversibility;
+};
+```
+
+### `ToolLoopTurn`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One completed model turn of a tool-use loop.
+
+Signature:
+
+```ts
+export type ToolLoopTurn = {
+    readonly calls: readonly ToolLoopCall[];
+    readonly guidance: string | null;
+    readonly index: number;
+    readonly request: ModelConversationRequest;
+    readonly response: ModelConversationResponse;
 };
 ```
 
@@ -30867,6 +37764,38 @@ Signature:
 
 ```ts
 export type TrajectoryCompressionBaselineKind = (typeof APPLICATION_COMPRESSION_BASELINE_KINDS)[number];
+```
+
+### `TrajectoryCompressionBindings`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Worlds, processes, and handler stack bound to one workflow session.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionBindings = {
+    readonly handlers?: EffectHandlerStack;
+    readonly processes?: readonly ReplayProcessAdapter[];
+    readonly worlds?: readonly ReplayWorldBinding[];
+};
+```
+
+### `TrajectoryCompressionBindingsContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Session a workflow `bindings` factory is asked to bind.
+
+Signature:
+
+```ts
+export type TrajectoryCompressionBindingsContext = {
+    readonly application_id: string;
+    readonly role: string;
+    readonly seed: number | null;
+};
 ```
 
 ### `TrajectoryCompressionCandidateInspection`
@@ -30913,6 +37842,7 @@ export type TrajectoryCompressionCandidateRecord = {
     readonly compressor_handle_id: string | null;
     readonly cost: ApplicationCostSummary | null;
     readonly failure: TrajectoryCompressionFailure | null;
+    readonly fork_clamp: TrajectoryForkClamp | null;
     readonly fork_id: string | null;
     readonly fork_point: TrajectoryForkPoint | null;
     readonly hint_digest: string | null;
@@ -31105,7 +38035,8 @@ Returns:
 
 Classification: `type-only`. Kind: `type alias`.
 
-Validated compressor proposal: a fork point and hint, or null for no compression.
+Validated compressor proposal: a fork point and hint. A proposal whose fork point or fork step is
+absent or null is a missing fork step and settles `no_prune`.
 
 Signature:
 
@@ -31149,14 +38080,18 @@ Classification: `type-only`. Kind: `type alias`.
 
 Source workflow recorded once through a root replay session.
 
-The workflow binds no worlds or processes, so every step boundary is an admissible fork point.
-The provider, handler stack, task, and provider-session adapter service the source session,
-every suffix replay, and every control rerun, so the provider must answer repeated sessions.
+A workflow without `bindings` binds no worlds or processes, so every step boundary is an
+admissible fork point. A world- or process-bound workflow is restorable only at the checkpoints
+its `checkpointPolicy` retains; a fork point elsewhere settles `no_prune` as unavailable. The
+provider, handler stack, task, and provider-session adapter service the source session, every
+suffix replay, and every control rerun, so the provider must answer repeated sessions.
 
 Signature:
 
 ```ts
 export type TrajectoryCompressionWorkflow = {
+    readonly bindings?: (context: TrajectoryCompressionBindingsContext) => Promise<TrajectoryCompressionBindings> | TrajectoryCompressionBindings;
+    readonly checkpointPolicy?: ReplayCheckpointPolicy;
     readonly handlers?: EffectHandlerStack;
     readonly program: TrajectoryCompressionProgram;
     readonly programId: string;
@@ -31220,20 +38155,53 @@ Returns:
 
 - The compressor output.
 
+### `TrajectoryForkClamp`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained evidence that the configured policy clamped an out-of-range proposed fork step to the
+nearest bound of `[0, n - 1]` (Appendix D.6).
+
+Signature:
+
+```ts
+export type TrajectoryForkClamp = {
+    readonly policy: TrajectoryForkStepPolicy;
+    readonly proposed_prefix_id: string | null;
+    readonly proposed_step_index: number;
+};
+```
+
 ### `TrajectoryForkPoint`
 
 Classification: `type-only`. Kind: `type alias`.
 
 Step boundary of the source session a compressor proposes to fork from.
 
+In a proposal `step_index` is any safe integer; it is resolved against an `n`-step source under
+the configured fork-step policy. A retained (resolved) fork point always satisfies
+`0 <= step_index <= n - 1`; step `0` restarts from the initial prefix.
+
 Signature:
 
 ```ts
 export type TrajectoryForkPoint = {
-    readonly prefix_id: string;
+    readonly prefix_id: string | null;
     readonly session_id: string;
     readonly step_index: number;
 };
+```
+
+### `TrajectoryForkStepPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured fork-step policy: clamp an out-of-range proposed step, or reject the proposal.
+
+Signature:
+
+```ts
+export type TrajectoryForkStepPolicy = (typeof APPLICATION_COMPRESSION_FORK_STEP_POLICIES)[number];
 ```
 
 ### `TrajectoryHint`
@@ -31340,27 +38308,58 @@ Returns:
 
 - The verifier output.
 
+### `TreeRlActionAdvantage`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One action (turn) of a training line and the advantage attributed to it.
+
+Signature:
+
+```ts
+export type TreeRlActionAdvantage = {
+    readonly advantage: number;
+    readonly segment: TreeRlActionSegment;
+    readonly step_index: number;
+    readonly turn: number;
+};
+```
+
+### `TreeRlActionSegment`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured per-action advantage segment: prefix, suffix, or flat (baseline only).
+
+Signature:
+
+```ts
+export type TreeRlActionSegment = (typeof APPLICATION_TREE_RL_ACTION_SEGMENTS)[number];
+```
+
 ### `TreeRlAdvantage`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Advantages of one completed rollout.
+Algorithm 2 advantages of one tree.
 
 Signature:
 
 ```ts
 export type TreeRlAdvantage = {
-    readonly inter_branch_advantage: number;
-    readonly intra_branch_advantage: number;
-    readonly rollout_id: string;
+    readonly branch_intra_advantages: readonly (number | null)[];
+    readonly group_index: number;
+    readonly inter_root_advantage: number | null;
+    readonly prompt_id: string;
+    readonly root_intra_advantage: number | null;
 };
 ```
 
 ### `TreeRlAdvantageInput`
 
-Classification: `type-only`. Kind: `type alias`.
+Classification: `type-only`. Kind: `type alias`. Status: `deprecated`.
 
-Rollout fields computeTreeRlAdvantages reads.
+Rollout fields the per-fork-point advantage computation read before 10.0.0.
 
 Signature:
 
@@ -31372,6 +38371,27 @@ export type TreeRlAdvantageInput = {
     readonly reward: number | null;
     readonly rollout_id: string;
     readonly status: TreeRlRolloutStatus;
+};
+```
+
+Deprecated:
+
+- Since 10.0.0: {@link computeTreeRlAdvantages} reads {@link TreeRlAdvantageTree}values and no API consumes this type; it is removed once the deprecation window elapses.
+
+### `TreeRlAdvantageTree`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Rewards of one tree computeTreeRlAdvantages reads.
+
+Signature:
+
+```ts
+export type TreeRlAdvantageTree = {
+    readonly branches: readonly (number | null)[];
+    readonly group_index: number;
+    readonly prompt_id: string;
+    readonly root: number | null;
 };
 ```
 
@@ -31447,19 +38467,57 @@ export type TreeRlBatchSummary = {
 };
 ```
 
+### `TreeRlBindingsFactory`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Caller-supplied factory returning each rollout's restoration bindings. It is called once for
+every rollout whose record is not yet retained, before its session opens.
+
+Signature:
+
+```ts
+export type TreeRlBindingsFactory = (context: TreeRlProviderContext) => Promise<TreeRlRolloutBindings> | TreeRlRolloutBindings;
+```
+
+Parameter:
+
+- context - Prompt, root, branch, fork point, seed, and seeding tool call of the rollout.
+
+Returns:
+
+- The rollout's handler stack, empty world roots, and process adapters.
+
 ### `TreeRlEvaluationBinding`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Executable Tree-RL binding: the source workflow and the rollout options.
+Executable Tree-RL binding: the prompt batch with its root workflows and the rollout options.
 
 Signature:
 
 ```ts
 export type TreeRlEvaluationBinding = {
     readonly kind: (typeof APPLICATION_KINDS)[3];
-    readonly options: Omit<RunTreeRlRolloutsOptions, "baselines" | "commandId" | "protocol" | "sourceSessionId">;
-    readonly source: Omit<RunReplaySessionOptions, "commandId">;
+    readonly options: Omit<RunTreeRlRolloutsOptions, "baselines" | "commandId" | "prompts" | "protocol">;
+    readonly prompts: readonly TreeRlEvaluationPrompt[];
+};
+```
+
+### `TreeRlEvaluationPrompt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One Tree-RL evaluation prompt: its program and the G root workflows the evaluation records.
+
+Signature:
+
+```ts
+export type TreeRlEvaluationPrompt = {
+    readonly handlers?: EffectHandlerStack;
+    readonly id: string;
+    readonly program: ReplaySessionProgram;
+    readonly roots: readonly Omit<RunReplaySessionOptions, "commandId" | "program">[];
 };
 ```
 
@@ -31467,7 +38525,7 @@ export type TreeRlEvaluationBinding = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Retained failure of one rollout.
+Retained failure of one root grading or rollout.
 
 Signature:
 
@@ -31478,12 +38536,30 @@ export type TreeRlFailure = {
 };
 ```
 
+### `TreeRlForkDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained fork decision of one root.
+
+Signature:
+
+```ts
+export type TreeRlForkDecision = {
+    readonly branch_turn: number;
+    readonly fork_point: TreeRlForkPoint;
+    readonly proposed_turn: number;
+    readonly reason: string;
+    readonly tool_call: TreeRlToolCall | null;
+};
+```
+
 ### `TreeRlForkPoint`
 
 Classification: `type-only`. Kind: `type alias`.
 
 Step boundary a rollout branch starts from: the fork step is the first step the branch executes
-live, and every earlier step is served from the source journal.
+live, and every earlier step is served from the root journal.
 
 Signature:
 
@@ -31494,20 +38570,127 @@ export type TreeRlForkPoint = {
 };
 ```
 
+### `TreeRlForkProposal`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Fork proposal of one root rollout (paper Appendix F.7): the one-based turn to fork at, the tool
+call the selector would make there, and its reason.
+
+Signature:
+
+```ts
+export type TreeRlForkProposal = {
+    readonly branch_turn: number;
+    readonly reason: string;
+    readonly tool_call: TreeRlToolCall | null;
+};
+```
+
+### `TreeRlForkSelectionContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Context a fork selector receives for one graded root rollout.
+
+Signature:
+
+```ts
+export type TreeRlForkSelectionContext = {
+    readonly group_index: number;
+    readonly prompt_id: string;
+    readonly protocol: ApplicationProtocolDefinition;
+    readonly reward: number | null;
+    readonly root: ReplaySessionInspection;
+    readonly turn_bounds: {
+        readonly first: number;
+        readonly last: number;
+    };
+    readonly turns: readonly TreeRlTurn[];
+};
+```
+
+### `TreeRlForkSelector`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Fork-selection interface (paper Algorithm 2 line 12, `t* <- P(tau_root)`): returns the fork turn,
+the tool call that seeds one branch, and a reason. It is called once per root that has no
+retained root record, after the root is graded.
+
+Signature:
+
+```ts
+export type TreeRlForkSelector = (context: TreeRlForkSelectionContext) => Promise<TreeRlForkProposal> | TreeRlForkProposal;
+```
+
+Parameter:
+
+- context - Root session, reward, turns, admissible bounds, and protocol.
+
+Returns:
+
+- The fork proposal.
+
+### `TreeRlMemberKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured tree member kind: the root rollout or one of its K branches.
+
+Signature:
+
+```ts
+export type TreeRlMemberKind = (typeof APPLICATION_TREE_RL_MEMBER_KINDS)[number];
+```
+
+### `TreeRlNormalization`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured advantage normalization: raw centered values or per-group standardization.
+
+Signature:
+
+```ts
+export type TreeRlNormalization = (typeof APPLICATION_TREE_RL_NORMALIZATIONS)[number];
+```
+
+### `TreeRlPrompt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One prompt of a Tree-RL batch and its G recorded root rollouts.
+
+Signature:
+
+```ts
+export type TreeRlPrompt = {
+    readonly handlers?: EffectHandlerStack;
+    readonly id: string;
+    readonly program: ReplaySessionProgram;
+    readonly roots: readonly string[];
+};
+```
+
 ### `TreeRlProviderContext`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Identity of one planned rollout the provider factory receives.
+Identity of one planned branch rollout the provider and bindings factories receive.
 
 Signature:
 
 ```ts
 export type TreeRlProviderContext = {
     readonly branch: number;
+    readonly branch_turn: number;
     readonly fork_point: TreeRlForkPoint;
+    readonly group_index: number;
+    readonly prompt_id: string;
+    readonly root_session_id: string;
     readonly seed: number;
-    readonly source_session_id: string;
+    readonly tool_call: TreeRlToolCall | null;
 };
 ```
 
@@ -31517,8 +38700,9 @@ Classification: `type-only`. Kind: `type alias`.
 
 Caller-supplied factory returning the rollout's own static provider cassette.
 
-It is called once for every planned rollout before any record is written; each call must return
-a distinct provider whose descriptor kind is the configured static provider kind.
+It is called once for every planned rollout without a retained record, after every root is
+graded and before the first branch rollout opens; each call must return a distinct provider
+whose descriptor kind is the configured static provider kind.
 
 Signature:
 
@@ -31528,7 +38712,7 @@ export type TreeRlProviderFactory = (context: TreeRlProviderContext) => ModelPro
 
 Parameter:
 
-- context - Fork point, branch, seed, and source session of the rollout.
+- context - Prompt, root, fork point, branch, seed, and seeding tool call of the rollout.
 
 Returns:
 
@@ -31538,7 +38722,7 @@ Returns:
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured Tree-RL record phase: opened, rollout, or batch.
+Configured Tree-RL record phase: opened, root, rollout, or batch.
 
 Signature:
 
@@ -31550,19 +38734,22 @@ export type TreeRlRecordPhase = (typeof APPLICATION_TREE_RL_PHASES)[number];
 
 Classification: `type-only`. Kind: `type alias`.
 
-Context the reward function receives for one finished, proven rollout.
+Context the reward function (`Grade`) receives for one finished tree member.
 
 Signature:
 
 ```ts
 export type TreeRlRewardContext = {
-    readonly branch: number;
+    readonly branch: number | null;
     readonly cost: ApplicationCostSummary;
-    readonly fork_point: TreeRlForkPoint;
+    readonly fork_point: TreeRlForkPoint | null;
+    readonly group_index: number;
+    readonly member: TreeRlMemberKind;
+    readonly prompt_id: string;
     readonly protocol: ApplicationProtocolDefinition;
+    readonly root: ReplaySessionInspection;
     readonly rollout: ReplaySessionInspection;
-    readonly seed: number;
-    readonly source: ReplaySessionInspection;
+    readonly seed: number | null;
 };
 ```
 
@@ -31570,10 +38757,10 @@ export type TreeRlRewardContext = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Caller-supplied reward function returning one finite scalar per completed rollout.
+Caller-supplied reward function returning one finite scalar per finished tree member.
 
-A thrown error or a non-finite result retains the rollout as failed with the verification code;
-the run continues and the rollout is excluded from every mean.
+A thrown error or a non-finite result retains the member as failed with the verification code;
+the run continues and the member is excluded from every mean.
 
 Signature:
 
@@ -31583,11 +38770,30 @@ export type TreeRlRewardFunction = (context: TreeRlRewardContext) => Promise<num
 
 Parameter:
 
-- context - Rollout session, fork point, seed, cost, and protocol.
+- context - Graded session, root, member, fork point, seed, cost, and protocol.
 
 Returns:
 
 - The finite reward.
+
+### `TreeRlRolloutBindings`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Restoration bindings of one rollout of a world- or process-bound root.
+
+Every rollout restores the fork point's retained checkpoint into its own bindings, so each call
+must return fresh empty world roots and process adapters of its own.
+
+Signature:
+
+```ts
+export type TreeRlRolloutBindings = {
+    readonly handlers?: EffectHandlerStack;
+    readonly processes?: readonly ReplayProcessAdapter[];
+    readonly worlds?: readonly ReplayWorldBinding[];
+};
+```
 
 ### `TreeRlRolloutInspection`
 
@@ -31607,17 +38813,22 @@ export type TreeRlRolloutInspection = TreeRlRolloutPlan & {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Identity of one planned rollout, fixed when the run is opened.
+Identity of one planned branch rollout, fixed by its root's retained fork decision.
 
 Signature:
 
 ```ts
 export type TreeRlRolloutPlan = {
     readonly branch: number;
+    readonly branch_turn: number;
     readonly fork_point: TreeRlForkPoint;
+    readonly group_index: number;
+    readonly prompt_id: string;
     readonly replay_session_id: string;
     readonly rollout_id: string;
+    readonly root_session_id: string;
     readonly seed: number;
+    readonly seeded: boolean;
 };
 ```
 
@@ -31625,7 +38836,7 @@ export type TreeRlRolloutPlan = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-One retained rollout record.
+One retained branch rollout record.
 
 Signature:
 
@@ -31637,6 +38848,7 @@ export type TreeRlRolloutRecord = TreeRlRolloutPlan & {
     readonly reward: number | null;
     readonly status: TreeRlRolloutStatus;
     readonly step_count: number;
+    readonly turns: readonly number[];
 };
 ```
 
@@ -31644,12 +38856,36 @@ export type TreeRlRolloutRecord = TreeRlRolloutPlan & {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured rollout status: completed or failed.
+Configured rollout and root grading status: completed or failed.
 
 Signature:
 
 ```ts
 export type TreeRlRolloutStatus = (typeof APPLICATION_TREE_RL_ROLLOUT_STATUSES)[number];
+```
+
+### `TreeRlRootRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained root record: grading and fork decision of one recorded root rollout.
+
+Signature:
+
+```ts
+export type TreeRlRootRecord = {
+    readonly cost: ApplicationCostSummary;
+    readonly failure: TreeRlFailure | null;
+    readonly fork: TreeRlForkDecision;
+    readonly group_index: number;
+    readonly prompt_id: string;
+    readonly record_id: RecordId;
+    readonly reward: number | null;
+    readonly root_session_id: string;
+    readonly status: TreeRlRolloutStatus;
+    readonly step_count: number;
+    readonly turns: readonly number[];
+};
 ```
 
 ### `TreeRlRunInspection`
@@ -31667,15 +38903,19 @@ export type TreeRlRunInspection = {
     readonly batch: TreeRlBatchRecord | null;
     readonly command_id: string;
     readonly cut_id: CutId | null;
-    readonly fork_points: readonly TreeRlSelectedForkPoint[];
     readonly kind: ApplicationKind;
     readonly manifest: ApplicationManifest | null;
     readonly manifest_record_id: RecordId | null;
+    readonly normalization: TreeRlNormalization;
     readonly opened_record_id: RecordId;
+    readonly prompts: readonly {
+        readonly id: string;
+        readonly roots: readonly string[];
+    }[];
     readonly protocol_id: string;
     readonly rollouts: readonly TreeRlRolloutInspection[];
+    readonly roots: readonly TreeRlRootRecord[];
     readonly seeds: readonly number[];
-    readonly source_session_id: string;
 };
 ```
 
@@ -31709,6 +38949,38 @@ export type TreeRlSelectedForkPoint = TreeRlForkPoint & {
 };
 ```
 
+### `TreeRlToolCall`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Tool call a fork proposal injects as the first action of one branch at the fork turn.
+
+Signature:
+
+```ts
+export type TreeRlToolCall = {
+    readonly arguments: SemanticRecord;
+    readonly name: string;
+};
+```
+
+### `TreeRlTrainerAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Optional trainer-export adapter: the seam a trainer integration implements to receive a
+retained training batch. No trainer ships with this package.
+
+Signature:
+
+```ts
+export type TreeRlTrainerAdapter<TResult> = {
+    readonly formats: readonly TreeRlBatchFormat[];
+    readonly id: string;
+    readonly submit: (batch: TreeRlTrainingBatch) => Promise<TResult> | TResult;
+};
+```
+
 ### `TreeRlTrainingBatch`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -31723,6 +38995,7 @@ export type TreeRlTrainingBatch = TreeRlBatchExport & {
     readonly baseline: (TreeRlBatchExport & {
         readonly kind: TreeRlBaselineKind;
     }) | null;
+    readonly normalization: TreeRlNormalization;
 };
 ```
 
@@ -31730,18 +39003,46 @@ export type TreeRlTrainingBatch = TreeRlBatchExport & {
 
 Classification: `type-only`. Kind: `type alias`.
 
-One canonical `jsonl_v1` training batch line.
+One canonical `jsonl_v2` training batch line: one graded tree member.
 
 Signature:
 
 ```ts
-export type TreeRlTrainingLine = TreeRlAdvantage & {
+export type TreeRlTrainingLine = {
+    readonly actions: readonly TreeRlActionAdvantage[];
+    readonly branch: number | null;
+    readonly branch_turn: number;
     readonly fork_point: TreeRlForkPoint;
+    readonly group_index: number;
+    readonly inter_root_advantage: number | null;
+    readonly intra_tree_advantage: number | null;
+    readonly member: TreeRlMemberKind;
+    readonly prompt_id: string;
     readonly replay_session_id: string;
     readonly reward: number;
-    readonly seed: number;
-    readonly session_id: string;
+    readonly rollout_id: string | null;
+    readonly root_session_id: string;
+    readonly seed: number | null;
+    readonly seeded: boolean;
     readonly step_count: number;
+};
+```
+
+### `TreeRlTurn`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One turn (provider step) of a root rollout presented to a fork selector.
+
+Signature:
+
+```ts
+export type TreeRlTurn = {
+    readonly output: SemanticValue | null;
+    readonly request: ModelRequest;
+    readonly restorable: boolean;
+    readonly step_index: number;
+    readonly turn: number;
 };
 ```
 
@@ -31811,40 +39112,55 @@ console.log(values.find((value) => value.metric === "provider_calls")?.delta);
 
 Classification: `runtime-only`. Kind: `function`.
 
-Computes intra- and inter-branch advantages over completed rollouts only.
+Computes the Algorithm 2 advantages (paper Appendix F.6, lines 22-25) of a batch of trees.
 
-Rollouts sharing a fork point step index form one group. For every completed rollout,
-`intra_branch_advantage = reward - mean(completed rewards in its group)` and
-`inter_branch_advantage = mean(completed rewards in its group) - mean(every completed reward)`.
-Failed rollouts are excluded from every mean and receive no advantage. A group with one completed
-rollout yields an intra-branch advantage of exactly `0`, and a run whose completed rollouts share
-one fork point yields inter-branch advantages of exactly `0`. Means sum in input order, so the
-result is a pure function of the input sequence.
+Trees sharing a `prompt_id` form one G-root group. With `R` the rewards of the completed members
+of a group, `mean(R)` their mean, and `n` their count:
+
+- inter-root advantage of root `g` (its prefix actions `j < t*`):
+  `A_inter = R_root,g - mean(R_root over the prompt's completed roots)`;
+- intra-tree advantage of member `k` in `{root, 0..K-1}` (its suffix actions `j >= t*`):
+  `A_intra,k = R_k - mean(R over the tree's completed members, root included)`.
+
+Under the `group_std` normalization (F.6: "advantages are GRPO-normalized and standardized per
+group") each centered value is divided by `std + epsilon` of the same group, with the configured
+estimator (`sample` divides the squared deviations by `n - 1`, `population` by `n`) and
+`epsilon`; a group with fewer than two completed members has standard deviation `0`. Under
+`none` the centered values are returned unchanged. Failed members (null rewards) are excluded
+from every mean and receive null. Sums run in input order, so the result is a pure function of
+the input sequence.
 
 Signature:
 
 ```ts
-export declare function computeTreeRlAdvantages(rollouts: readonly TreeRlAdvantageInput[]): readonly TreeRlAdvantage[];
+export declare function computeTreeRlAdvantages(trees: readonly TreeRlAdvantageTree[], normalization?: TreeRlNormalization): readonly TreeRlAdvantage[];
 ```
 
 Parameter:
 
-- rollouts - Rollouts in batch order, such as retained rollout records; other fields are
-ignored.
+- trees - Trees in batch order; `group_index` values are distinct within a prompt.
+
+Parameter:
+
+- normalization - Advantage normalization; defaults to the configured one.
 
 Returns:
 
-- One advantage per completed rollout, in input order.
+- One advantage entry per tree, in input order.
 
 Throws:
 
-- {TypeError} If a rollout is malformed, its status and reward disagree, a reward is not
-finite, or rollout identities repeat.
+- {TypeError} If a tree is malformed, a reward is not finite or null, identities repeat,
+or the normalization is not configured.
 
 Example:
 
 - ```ts
-const advantages = computeTreeRlAdvantages(inspection.rollouts.map((entry) => entry.record!));
+const [tree] = computeTreeRlAdvantages(
+    [{ branches: [3, 5], group_index: 0, prompt_id: "p", root: 1 }],
+    "none",
+);
+console.log(tree.branch_intra_advantages); // [0, 2]
 ```
 
 ### `createApplicationManifest`
@@ -31856,7 +39172,8 @@ Builds the canonical manifest of one application run.
 Surfaces are cited by the digest of their canonical content; artifacts by the digest of the
 supplied content with the record and cut they live in; the manifest identity is the digest of
 the manifest body without the identity field, so the same protocol, artifacts, and costs yield
-the same manifest identity.
+the same manifest identity. The protocol's `thresholds` and the optional per-session
+`computationReuse` are retained only when present, so manifests without them keep their shape.
 
 Signature:
 
@@ -31866,7 +39183,8 @@ export declare function createApplicationManifest(options: CreateApplicationMani
 
 Parameter:
 
-- options - Application identity, artifact sources, measured costs, and protocol.
+- options - Application identity, artifact sources, measured costs, protocol, and optional
+computation reuse.
 
 Returns:
 
@@ -31879,6 +39197,385 @@ Throws:
 Throws:
 
 - {TypeError} If the options, an artifact, or the costs are malformed or exceed bounds.
+
+### `createDependencyTreeRlForkSelector`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the deterministic dependency-count fork selector: among the admissible restorable turns
+of a root, it proposes the one whose provider step has the most transitive dependents in the
+root's declared dependency graph (the earliest on ties), proposes no tool call, and gives the
+configured `dependencySelection` reason. It reads only the root inspection in its context, so it
+is a pure function of the retained root.
+
+Signature:
+
+```ts
+export declare function createDependencyTreeRlForkSelector(): TreeRlForkSelector;
+```
+
+Returns:
+
+- The fork selector.
+
+Example:
+
+- ```ts
+await runTreeRlRollouts(store, { ...options, selector: createDependencyTreeRlForkSelector() });
+```
+
+### `createHandlerToolLoopEffects`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the in-process effect boundary: every tool-call intent is dispatched through an
+ordinary effect handler stack and is always `materialized`. Handler failures and a missing
+handler propagate unchanged, as they do from the stack.
+
+Signature:
+
+```ts
+export declare function createHandlerToolLoopEffects(handlers: EffectHandlerStack): ToolLoopEffects;
+```
+
+Parameter:
+
+- handlers - Handler stack holding one handler per tool effect kind.
+
+Returns:
+
+- A tool-loop effect boundary.
+
+Throws:
+
+- {TypeError} If `handlers` is not a handler stack.
+
+Example:
+
+- ```ts
+const effects = createHandlerToolLoopEffects(createEffectHandlerStack(metaTools.handlers));
+```
+
+### `createMetaAgentTools`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the substrate-native meta-agent tools declared by `providers.tools.metaAgent.tools`:
+one tool and one exact-kind effect handler per catalog entry, bound to its configured operation.
+
+| Operation | Substrate API |
+| --- | --- |
+| `observe` | `inspectReplaySession`: mode, status, checkpoints, and a bounded step summary |
+| `fork` | world-adapter `fork` (or an allocated root), then `runReplaySession` of a declared worker |
+| `discard` | world-adapter `discard` of a forked custody |
+| `rewind` | `rewindReplaySession` into allocated empty roots |
+| `replay` | `replayReplaySession` under a declared worker variant |
+| `read_trace` | bounded exact-ordinal reads of one owner path |
+| `diff` | `analyzeReplayDivergence` |
+
+Every handler re-validates the call input against the tool's schema and derives the substrate
+command identity `<commandIdPrefix><session_id>:<effect_id>` inside a replay-bound tool loop
+(createReplayToolLoopBindings), where `session_id` is the session executing the call, and
+`<commandIdPrefix><effect_id>` otherwise. A repeated intent in the same session therefore converges
+on the retained receipts, while a replay branch that runs a call live issues fresh substrate
+commands instead of colliding with its source's (a branch's recorded prefix invokes no handler). A substrate refusal returns a failure result `{ name, message }` to the model instead
+of throwing; an input that fails the schema throws `TypeError`.
+
+Signature:
+
+```ts
+export declare function createMetaAgentTools(environment: MetaAgentToolEnvironment): MetaAgentTools;
+```
+
+Parameter:
+
+- environment - Store, claim, workers, root allocator, and optional world adapter and clock.
+
+Returns:
+
+- The catalog tools and their handlers.
+
+Throws:
+
+- {TypeError} If the environment is malformed.
+
+Example:
+
+- ```ts
+const meta = createMetaAgentTools({ allocateRoot, claimId: "meta", store, workers, world });
+await runToolLoop({
+    effects: createHandlerToolLoopEffects(createEffectHandlerStack(meta.handlers)),
+    loopId: "meta:1",
+    messages,
+    model,
+    tools: meta.tools,
+});
+```
+
+### `createMetaAgentTreeRlForkSelector`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the provider-backed meta-agent fork selector of paper Appendix F.7.
+
+For each root it sends one structured request to `provider`: the instruction is the protocol's
+`prompt` surface with the configured `fork_selector` role, the output schema is its `schema`
+surface with the `fork_proposal` role, and the input is the root as a numbered turn list
+(`{ turn, step_index, request: { instruction, input }, output }`) with the root's final reward,
+the prompt identity, the turn count, and the admissible turn bounds. The response output must
+satisfy every `fork_proposal` schema surface and the proposal grammar
+`{ branch_turn, tool_call: { name, arguments } | null, reason }`. The run clamps the proposed
+turn into `[1, T - 2]` (configured) and seeds the first branch with the tool call.
+
+Signature:
+
+```ts
+export declare function createMetaAgentTreeRlForkSelector(options: MetaAgentTreeRlForkSelectorOptions): TreeRlForkSelector;
+```
+
+Parameter:
+
+- options - Meta-agent provider and optional cancellation signal.
+
+Returns:
+
+- The fork selector.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+The returned selector throws {@link ApplicationProtocolError} when the protocol lacks the
+`fork_selector` prompt or `fork_proposal` schema surface, and
+{@link ApplicationVerificationError} when the provider output violates a proposal schema
+surface or grammar; provider errors propagate.
+
+Example:
+
+- ```ts
+const selector = createMetaAgentTreeRlForkSelector({ provider: metaAgentProvider });
+await runTreeRlRollouts(store, { ...options, selector });
+```
+
+### `createModelRuntimeSupervisorPolicy`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the provider-backed runtime supervisor policy: one JSON-mode model request per tick.
+
+Each request carries the protocol's `action` prompt (the Appendix E meta-agent prompt) as the
+system prompt, one user message holding the `observation` prompt followed by the canonical JSON
+of the tick's snapshot, and the protocol's `action` schema as the output schema; the stable
+system prompt is the cacheable prefix. A structured output is returned as the decision object; a
+text output is parsed as JSON, and text that is not JSON is returned unchanged so the runtime
+refuses the batch and retains the refusal. The response usage is returned for cost accounting.
+
+Signature:
+
+```ts
+export declare function createModelRuntimeSupervisorPolicy(options: ModelRuntimeSupervisorPolicyOptions): RuntimeSupervisorPolicy;
+```
+
+Parameter:
+
+- options - Conversational model and runtime supervision protocol.
+
+Returns:
+
+- A policy for {@link runRuntimeSupervisor}.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol is not a valid runtime supervision protocol.
+
+Throws:
+
+- {TypeError} If the options or the model are malformed. The returned policy rethrows model
+errors and the signal's reason.
+
+Example:
+
+- ```ts
+const policy = createModelRuntimeSupervisorPolicy({
+    model: createLiveProvider({ id: "meta", kind: "anthropic", model: "claude-opus-4-7" }),
+    protocol,
+});
+await runRuntimeSupervisor(store, { ...options, policy, protocol });
+```
+
+### `createReplayToolLoopBindings`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the model and effect boundaries of a tool-use loop running inside a replay session
+program. Each turn becomes one provider step whose request is the encoded turn (see
+encodeToolTurnRequest) and whose output is the encoded response; each tool-call intent
+becomes one effect step. A rewind or replay of the session therefore serves the recorded prefix
+of the loop, turn requests and tool outcomes alike, byte-identically without invoking the model
+or any handler. The session provider must be a createToolTurnProvider wrapper.
+
+A branch-suffix effect refused by replay policy resolves the call as `denied`, and a retained
+handler failure as `failed`; a failed provider step propagates. Every dispatch runs with the
+executing session's identity in scope, so the meta-agent tool handlers derive substrate command
+identities that are distinct in each branch that runs a call live.
+
+Signature:
+
+```ts
+export declare function createReplayToolLoopBindings(context: ReplaySessionContext): ReplayToolLoopBindings;
+```
+
+Parameter:
+
+- context - Replay session context of the running program.
+
+Returns:
+
+- The loop's model and effect boundaries.
+
+Throws:
+
+- {TypeError} If the context is malformed.
+
+Example:
+
+- ```ts
+await runReplaySession(store, {
+    ...options,
+    provider: createToolTurnProvider(model),
+    program: (context) => runToolLoop({ ...loop, ...createReplayToolLoopBindings(context) }),
+});
+```
+
+### `createSupervisedToolLoopEffects`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the supervised effect boundary: every tool-call intent is durably supervised by
+`dispatchSupervisedEffect` under the command identity equal to its effect identity, so each
+interceptor decision, approval, admission, and resolution is retained before any outcome.
+
+A `materialized` resolution returns its correlated outcome; `denied` and `rejected` resolve the
+call as `denied` with the deciding reason and no outcome; `materialization_failed` resolves it as
+`failed`. A `cancelled` resolution rethrows the signal's reason.
+
+Signature:
+
+```ts
+export declare function createSupervisedToolLoopEffects(options: SupervisedToolLoopEffectsOptions): ToolLoopEffects;
+```
+
+Parameter:
+
+- options - Store, claim, handler stack, and optional interceptors, clock, and approval wait.
+
+Returns:
+
+- A tool-loop effect boundary.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const effects = createSupervisedToolLoopEffects({
+    claimId: "meta-agent",
+    handlers,
+    interceptors: [policy],
+    store,
+});
+```
+
+### `createToolLoopCounterfactualProposer`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the provider-backed CRO proposer: each attempt runs one bounded tool-use loop
+(`runToolLoop`) inside a replay session recorded under the attempt's reserved command identity,
+so its turns and tool calls are retained, replayable, counted against the provider-call budget,
+and cited by the proposal record.
+
+The loop's system prompt is the protocol's `proposer` prompt surfaces, its tools are the
+protocol's `proposer` tool surfaces (each `{ name, description, inputSchema }` naming one
+configured operation in `applications.cro.proposer.operations`), and its output schema is the
+first `reflection` schema surface. The first user message carries the attempt brief: iteration,
+attempt, capacity, parent pool, train and dev example identities, and earlier refusal reasons.
+
+| Operation | Result |
+| --- | --- |
+| `inspectCandidates` | The pool, baseline example scores, and every candidate's plan, status, gate, dev score, and cost |
+| `readTrace` | Bounded step summaries of one pool member's (or the baseline's, for a null candidate) session on one example |
+| `grepTraces` | Bounded regex matches over one member's example step summaries |
+| `proposeCandidate` | Accepts one edit with its fix and guard sets; the edit joins the proposal |
+
+The proposal is the accepted `proposeCandidate` inputs in call order, the final output as the
+reflection (parsed from JSON text when the model returns text), and the reflection's configured
+`parent` field as the parent. An attempt whose session does not finish or whose loop reaches its
+turn limit is refused by throwing ApplicationVerificationError, which the optimizer
+records as a refusal and retries.
+
+Signature:
+
+```ts
+export declare function createToolLoopCounterfactualProposer(options: ToolLoopCounterfactualProposerOptions): CounterfactualProposer;
+```
+
+Parameter:
+
+- options - Conversational model and optional turn bound.
+
+Returns:
+
+- The proposer.
+
+Throws:
+
+- {TypeError} If the options are malformed. The returned proposer throws
+{@link ApplicationProtocolError} if a proposer tool surface is malformed or names no configured
+operation, or the protocol offers no propose tool.
+
+Example:
+
+- ```ts
+const proposer = createToolLoopCounterfactualProposer({
+    model: createLiveProvider({ id: "proposer", kind: "anthropic", model: "claude-sonnet-4-6" }),
+});
+```
+
+### `createToolTurnProvider`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Wraps a conversational provider as the replay session provider of a tool-use loop. Its `invoke`
+accepts only encoded turn requests, sends the decoded multi-turn request through `converse`, and
+returns the encoded response as the step output with the provider's usage.
+
+Signature:
+
+```ts
+export declare function createToolTurnProvider(provider: ConversationalModelProvider): ModelProvider;
+```
+
+Parameter:
+
+- provider - Conversational provider answering every turn.
+
+Returns:
+
+- A model provider with the wrapped provider's descriptor.
+
+Throws:
+
+- {TypeError} If `provider` is not conversational; returned calls throw `TypeError` for a
+request that is not an encoded turn.
+
+Example:
+
+- ```ts
+const provider = createToolTurnProvider(createLiveProvider({ id, kind, model }));
+```
 
 ### `deriveApplicationOwnerId`
 
@@ -31904,17 +39601,106 @@ Throws:
 
 - {TypeError} If the command identity is malformed.
 
+### `encodeToolTurnRequest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Encodes one multi-turn request as a replayable provider request: the configured turn
+instruction, the canonical `{ cache_prefix_messages, messages, output_schema, system, tools }`
+input, and the configured turn output schema. Equal requests encode to equal prompt identities.
+
+Signature:
+
+```ts
+export declare function encodeToolTurnRequest(request: ModelConversationRequest): ModelRequest;
+```
+
+Parameter:
+
+- request - Multi-turn request.
+
+Returns:
+
+- The encoded provider request.
+
+Throws:
+
+- {TypeError} If the request is malformed.
+
+### `exportTreeRlBatchToTrainer`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Hands the retained training batch of one Tree-RL run to a trainer-export adapter.
+
+The batch is exported with exportTreeRlTrainingBatch (so its digest equals the retained
+one) and passed to `adapter.submit` when the adapter accepts its format. Nothing is written; the
+adapter's result is returned unchanged. No trainer ships with this package: the adapter is the
+seam a trainer integration implements.
+
+Signature:
+
+```ts
+export declare function exportTreeRlBatchToTrainer<TResult>(store: SQLiteTraceStore, applicationId: string, adapter: TreeRlTrainerAdapter<TResult>): Promise<TResult>;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Parameter:
+
+- adapter - Trainer-export adapter.
+
+Returns:
+
+- The adapter's result.
+
+Throws:
+
+- {ApplicationProtocolError} If the adapter does not accept the batch format.
+
+Throws:
+
+- {ApplicationEvidenceError} If the batch is not retained or does not re-derive.
+
+Throws:
+
+- {TypeError} If the adapter or application identity is malformed.
+
+Throws:
+
+- Errors thrown by `adapter.submit` propagate.
+
+Example:
+
+- ```ts
+const jobId = await exportTreeRlBatchToTrainer(store, applicationId, {
+    formats: ["jsonl_v2"],
+    id: "my-trainer",
+    submit: (batch) => trainer.enqueue(batch.text),
+});
+```
+
 ### `exportTreeRlTrainingBatch`
 
 Classification: `runtime-only`. Kind: `function`.
 
 Exports the retained training batch of one Tree-RL run without mutation.
 
-The canonical `jsonl_v1` lines are re-derived from the retained rollout records: one line per
-completed rollout in fork-point, then branch order, carrying its identity, source and rollout
-sessions, fork point, seed, reward, advantages, and step count. The text is the canonical JSON of
-each line followed by a line feed, and its digest must equal the retained batch digest. Export
-works on reopened, read-only, and imported stores and yields an identical digest.
+The canonical `jsonl_v2` lines are re-derived from the retained root and rollout records: one
+line per completed tree member in prompt, root, then member (root first, then branches) order,
+carrying its prompt, root, member session, fork turn and point, seed, whether the proposed tool
+call seeded it, reward, inter-root and intra-tree advantages, and the per-action attribution
+(`prefix` actions carry the inter-root advantage, `suffix` actions the member's intra-tree
+advantage; the flat baseline marks every action `flat` with the inter-root advantage). The text
+is the canonical JSON of each line followed by a line feed, and its digest must equal the
+retained batch digest. Export works on reopened, read-only, and imported stores and yields an
+identical digest.
 
 Signature:
 
@@ -31932,7 +39718,7 @@ Parameter:
 
 Returns:
 
-- The batch lines, text, digest, and the optional single-rollout baseline batch.
+- The batch lines, text, digest, normalization, and the optional flat GRPO baseline batch.
 
 Throws:
 
@@ -32053,12 +39839,15 @@ Classification: `runtime-only`. Kind: `function`.
 
 Reads one counterfactual optimization run as an immutable record-derived view without mutation.
 
-Every record on the application owner path is validated: the opened record and its candidate
-plan, each candidate's proposed and outcome records in declared order with identical plan,
-target, affected steps, and derived branch identity, the lineage of every target to its parent's
-branch or the baseline, the single terminal promotion, the manifest, and the terminal cut.
-Inspection works on reopened, read-only, and imported stores and never embeds live-session
-state, so it is identical across them.
+Every record on the application owner path is validated: the opened record with its derived
+baseline session identities; each proposal in iteration order with derived candidate and
+proposer-session identities, a parent from the pool at that point, and a candidate count within
+the iteration's capacity; each candidate outcome in proposal order with derived branch and
+comparison session identities, targets forking the parent's session on each example, parent
+scores, the gate verdict and the promotion decision recomputed from the retained results and
+thresholds, and summed cost; the selection recomputed from the pool; the manifest; and the
+terminal cut. Inspection works on reopened, read-only, and imported stores and never embeds
+live-session state, so it is identical across them.
 
 Signature:
 
@@ -32095,7 +39884,51 @@ Example:
 
 - ```ts
 const inspection = inspectCounterfactualOptimization(store, deriveApplicationOwnerId(commandId));
-console.log(inspection.promotion?.name ?? "nothing promoted");
+console.log(inspection.selection?.selected_candidate_id ?? "baseline");
+```
+
+### `inspectRuntimeSupervisorRun`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reads one runtime supervisor run as an immutable record-derived view without mutation.
+
+The application path (opened record, contiguous ticks, settlement, manifest, terminal cut) and
+every worker stream (attempts numbered from one, contiguous turns, one completion per attempt)
+are validated against the runtime supervision record schema. Inspection works on reopened,
+read-only, and imported stores.
+
+Signature:
+
+```ts
+export declare function inspectRuntimeSupervisorRun(store: SQLiteTraceStore, applicationId: string): RuntimeSupervisorInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+
+Returns:
+
+- The validated inspection.
+
+Throws:
+
+- {ApplicationEvidenceError} If the run is not retained or its evidence is inconsistent.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+Example:
+
+- ```ts
+const inspection = inspectRuntimeSupervisorRun(store, deriveApplicationOwnerId(commandId));
+console.log(inspection.ticks.map((tick) => tick.decisions));
 ```
 
 ### `inspectTrajectoryCompression`
@@ -32154,11 +39987,11 @@ Classification: `runtime-only`. Kind: `function`.
 
 Reads one Tree-RL run as an immutable record-derived view without mutation.
 
-Every record on the application owner path is validated: the opened record and its selection,
-each rollout record in fork-point, then branch order with its derived rollout and session
-identities, the batch record whose digests re-derive from the rollouts, the manifest, and the
-terminal cut. Inspection works on reopened, read-only, and imported stores and is identical
-across them.
+Every record on the application owner path is validated: the opened record and its prompts, each
+root record in prompt then root order with its fork decision, each rollout record in plan order
+with its derived rollout and session identities, the batch record whose digests re-derive from
+the records, the manifest, and the terminal cut. Inspection works on reopened, read-only, and
+imported stores and is identical across them.
 
 Signature:
 
@@ -32195,7 +40028,7 @@ Example:
 
 - ```ts
 const inspection = inspectTreeRlRun(store, deriveApplicationOwnerId(commandId));
-console.log(inspection.rollouts.filter((entry) => entry.record?.status === "failed").length);
+console.log(inspection.roots.map((root) => root.fork.branch_turn));
 ```
 
 ### `readApplicationEvaluationDefinition`
@@ -32209,7 +40042,7 @@ The definition must be a plain data object of exactly `evaluationId`, `experimen
 protocol definition accepted by `readApplicationProtocol` whose kind selects the application, and
 a baseline whose kind is a configured baseline kind of that application; the coding supervisor
 baseline also names its `commandId` and `workerId`, and a Tree-RL experiment names the
-`sourceCommandId` recording its source session. Command identities are distinct across the
+`sourceCommandId` prefix of its root sessions. Command identities are distinct across the
 definition. Limitations are distinct by identity and within the configured length bound.
 Experiment and limitation counts are bounded by `APPLICATION_EVALUATION_LIMITS`.
 
@@ -32246,10 +40079,13 @@ Classification: `runtime-only`. Kind: `function`.
 Validates an untrusted application protocol definition into its canonical frozen form.
 
 The definition must be a plain data object of exactly `budgets`, `dataset`, `kind`,
-`protocolVersion`, `seeds`, and `surfaces`. Kinds and surface kinds must be configured, surface
-identities distinct, every surface content canonical and within the configured byte bound for
-its kind, budgets non-negative integers by non-empty metric name, seeds distinct integers, and
-the dataset selection a distinct item list, all within `APPLICATION_LIMITS`.
+`protocolVersion`, `seeds`, and `surfaces`, plus optional `thresholds`. Kinds and surface kinds
+must be configured, surface identities distinct, every surface content canonical and within the
+configured byte bound for its kind, every `schema` surface a document in the supported JSON
+Schema subset (`compileJSONSchema`), budgets non-negative integers by non-empty metric name,
+thresholds finite numbers by non-empty metric name, seeds distinct integers, and the dataset
+selection a distinct item list, all within `APPLICATION_LIMITS`. A definition without
+`thresholds` keeps its canonical form and protocol identity.
 
 Signature:
 
@@ -32330,8 +40166,10 @@ order under their fixed command identities: the coding supervisor through
 `runCodingSupervisor` with its `no_supervision` baseline constructed as one plain child run of the
 named worker (no policy, trace-only, never accepted or discarded); the counterfactual optimizer
 with its `full_replay` baseline; trajectory compression with its `no_compression` baseline; and
-Tree-RL over a source session recorded under `sourceCommandId` with its `single_rollout`
-baseline. Every metric is measured from retained evidence; nothing is estimated. The evaluation
+Tree-RL over G root sessions per prompt recorded under the `sourceCommandId` prefix with its `flat_grpo`
+baseline. Every metric is measured from retained evidence; nothing is estimated. The report's
+`rescues` counts the experiments whose baseline failed its success condition while the
+application run passed (Appendix D, Table 12). The evaluation
 writes no record of its own, and every application command is idempotent, so a repeated or
 resumed evaluation converges on the same report without re-running settled work. An application
 refusal leaves the evidence of earlier experiments for a corrected rerun to reuse.
@@ -32427,7 +40265,14 @@ Returns:
 Throws:
 
 - {ApplicationProtocolError} If the protocol definition is malformed, is not a coding
-supervisor protocol, lacks a required surface or budget, or differs from the retained one.
+supervisor protocol, lacks a required surface or budget, differs from the retained one, or its
+observation schema surface refuses a round's observation message (before the policy is
+consulted).
+
+Throws:
+
+- {JSONSchemaValidationError} If a policy decision's `{ kind, reason, worker_id }` action
+message violates the protocol's action schema surface; the decision is not applied.
 
 Throws:
 
@@ -32477,33 +40322,40 @@ const { manifest, inspection } = await runCodingSupervisor(store, {
 
 Classification: `runtime-only`. Kind: `function`.
 
-Runs the counterfactual workflow optimizer (Appendix F) over replay sessions.
+Runs Counterfactual Replay Optimization (paper §5.2, Appendix F.1 Algorithm 1) over replay
+sessions.
 
-The baseline workflow is recorded once through `runReplaySession`. Each declared candidate, in
-order, forks its source session (its parent candidate's branch, or the baseline): the affected
-steps are the transitive dependents of the edited step from `analyzeReplayDependencies`, and the
-branch replays from the step boundary immediately before the earliest affected step through
-`replayReplaySession`, declaring exactly the candidate's change dimensions; every earlier step is
-served from the source journal. The live suffix runs with the candidate's program, provider, and
-handler stack where it supplies them, else those of the nearest ancestor in its parent chain that
-did, else the baseline's; an undeclared task resolves through the source's branch ancestry. A
-candidate whose edited step has no dependent branches at the
-source's final boundary and replays zero live steps. The baseline session must finish. A branch
-(or, with the `full_replay` baseline, its full replay) that ended with any terminal status other
-than `finished` is retained as rejected with the evidence failure before the evaluator is
-consulted, and the run stops, as for a disproven candidate. `analyzeReplayDivergence` must prove
-that no step before the target diverged and that no divergence is unexplained. The caller's
-evaluator gates each proven candidate, and the best passing candidate whose score reaches the protocol's
-minimum promotion score is promoted once. Every candidate is retained as proposed and then as
-evaluated or rejected in `shepherd.application.cro_candidate.v1` records with lineage, target,
-affected steps, branch identity, divergence summary, verdict, and measured cost; the manifest is
-retained last with the terminal cut. With the `full_replay` baseline, each proven candidate is
-also replayed live from step boundary zero of its source with the same resolved workflow and its
-measured provider calls and cache reads are retained. The baseline's measured provider calls,
-and every candidate session's projected and then measured calls, are checked against the
-provider-call budget.
-Repeating the command resumes from retained evidence: terminal sessions are never re-executed,
-and a completed run returns its retained manifest.
+1. The baseline workflow W0 is recorded once per train and dev example through
+   `runReplaySession` and scored by the metric; every baseline session must finish.
+2. The parent pool starts as the baseline. For N iterations (the `iterations` budget) the
+   proposer reads the run and returns a pool parent and at most k edits (the
+   `proposalsPerIteration` budget, capped by the remaining `maxCandidates`), each with a fix set
+   and a guard set of train examples. Before any evaluation the proposal is validated: shape,
+   pool membership, unique names, train-only disjoint example sets, admissible edited steps on
+   every parent example session, the caller's edit application, the reflection against every
+   pinned `reflection` schema surface, and the reflection contract. A refused proposal is
+   retried with the refusal reasons up to `maxProposalAttempts`; exhaustion is retained and
+   raised as a verification failure.
+3. Each edit c = p ⊕ Δ is replayed counterfactually on every fix and guard example: the parent's
+   session on the example is forked at the first affected event (the edit scope's target rule),
+   the suffix runs under the candidate, `analyzeReplayDivergence` must prove no earlier or
+   unexplained divergence, and the metric scores the branch. The targeted gate applies the
+   protocol thresholds; a failing candidate is `archived`.
+4. A graduate is replayed counterfactually on every dev example. It is `promoted` into the
+   parent pool when its mean dev score reaches `minPromotionScore` and lies within
+   `promoteDevEpsilon` of the current promoted member's dev score, and is then replayed on the
+   remaining train examples so children can fork it; otherwise it is `evaluated` and never a
+   parent.
+5. After the iterations the pool member with the highest dev score is selected, the most recently
+   promoted member winning ties; the baseline is selected as null.
+
+Every proposal, candidate outcome, and the selection are retained as
+`shepherd.application.cro_candidate.v1` records, and the manifest last with the per-proposer-
+session computation-reuse ratio. A branch or comparison session that did not finish, a disproven
+or interrupted branch, or a failing metric retains the candidate as `rejected` and stops the run.
+Every session's projected and measured live provider calls, the baselines' and proposer
+sessions' included, are checked against `maxProviderCalls`. Repeating the command resumes from
+retained evidence and never re-executes a terminal session.
 
 Signature:
 
@@ -32517,39 +40369,33 @@ Parameter:
 
 Parameter:
 
-- options - Command, claim, protocol, baseline workflow, candidates, evaluator, and
-optional baselines and clock.
+- options - Command, claim, protocol, baseline workflow, dataset, proposer, edit applier,
+metric, and optional comparison baselines and clock.
 
 Returns:
 
-- The retained manifest and the record-derived inspection.
+- The retained manifest, the record-derived inspection, and the handoff manifest.
 
 Throws:
 
 - {ApplicationProtocolError} If the protocol is malformed, is not a counterfactual
-optimization protocol, lacks a required surface or budget, a candidate declares an edit kind
-outside the replay change dimensions, an edited step index lies outside the baseline session (after
-the baseline and before any application record), or the run was opened under another protocol.
-Declared candidates are otherwise validated before any record is written.
+optimization protocol, lacks a required surface, budget, or threshold, the handoff schema refuses
+the handoff, or the run was opened under another protocol.
 
 Throws:
 
-- {ApplicationBudgetError} If the candidate set exceeds the protocol's candidate budget, the
-measured baseline exceeds the provider-call budget (before any application record), a new
-session's projected calls would exceed it, or a session's measured calls exceeded it.
+- {ApplicationBudgetError} If a session's projected or measured calls exceed the budget.
 
 Throws:
 
-- {ApplicationEvidenceError} If the baseline session did not finish (before any application
-record), a branch diverged before its target or without explanation, a branch or full-replay
-session ended failed or cancelled, or a branch or full-replay session was left interrupted by a dead writer whose lease expired (the
-candidate is retained as rejected first), a child's edited step is not retained in its parent's
-branch, or retained evidence is inconsistent.
+- {ApplicationEvidenceError} If a baseline session did not finish (before any application
+record), a branch failed its proof or did not finish, the run was opened with a different
+dataset or baselines, or retained evidence is inconsistent.
 
 Throws:
 
-- {ApplicationVerificationError} If the evaluator throws or returns a malformed verdict (the
-candidate is retained as rejected first).
+- {ApplicationVerificationError} If a metric throws or returns a non-finite score, or every
+proposer attempt of an iteration was refused.
 
 Throws:
 
@@ -32557,9 +40403,8 @@ Throws:
 
 Throws:
 
-- {ReplaySessionInterruptedError} If the baseline session was left non-terminal by a dead
-writer (every rerun of the command raises it; recover under a new command identity), or a
-candidate session is still `running` under a live lease.
+- {ReplaySessionInterruptedError} If a baseline session was left non-terminal by a dead
+writer, or a candidate session is still `running` under a live lease.
 
 Throws:
 
@@ -32567,19 +40412,181 @@ Throws:
 
 Throws:
 
-- {TypeError} If options or a candidate definition are malformed.
+- {TypeError} If options or the dataset are malformed.
 
 Example:
 
 - ```ts
-const { inspection, manifest } = await runCounterfactualOptimization(store, {
-    baseline: { program, programId: "workflow.v1", provider },
-    baselines: ["full_replay"],
-    candidates: [{ changes: ["provider"], name: "stronger-draft", provider: alternate, stepIndex: 0 }],
+const { inspection } = await runCounterfactualOptimization(store, {
+    applyEdit: ({ edit }) => ({ provider: variants[edit.patch as string] }),
+    baseline: { program: () => program, programId: "workflow.v1", provider },
     claimId: "optimizer",
     commandId: "application:cro:1",
-    evaluate: ({ branch }) => ({ passed: true, reason: "tests pass", score: 1 }),
+    dataset: { dev: [{ id: "d1", input: {} }], train: [{ id: "t1", input: {} }] },
+    metric: ({ session }) => (session.terminal?.status === "finished" ? 1 : 0),
+    proposer: createToolLoopCounterfactualProposer({ model }),
     protocol,
+});
+console.log(inspection.selection?.selected_candidate_id);
+```
+
+### `runRuntimeSupervisor`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the paper's Section 5.1 runtime supervisor: two or more workers run concurrently in forked
+custody while a supervisor ticks over their live streams and issues per-agent batched Appendix E
+decisions that take effect on the running workers.
+
+Every worker is a runToolLoop session over its own custody from `world.fork`. Each
+completed turn is retained on the worker's reserved stream (tool-call summaries, the exact
+request digest, the assistant message, and the next user message), and every attempt opens and
+completes on the same stream. The supervisor waits the protocol's tick cadence, drains one live
+trace subscription over every stream, and builds one combined snapshot: per agent the truncated
+feature, cumulative tool-call events, consecutive errors, the custody's modified files, the
+status of the current attempt, the last non-`none` action and its age in ticks, and the trailing
+tool-call summaries. The snapshot must satisfy the protocol's observation schema. The policy is
+consulted once per tick; its `{ decisions }` object is validated against the protocol's action
+schema, the fixed decision shape of the tick record schema, and the admission rules (known and
+distinct agents, guidance required for `inject` and
+allowed only for `inject` and `handoff`, `leader` only for `handoff`, word bounds). A refused
+batch is retained with its issues and nothing is applied; unlisted agents are `none`. The tick
+record, with the snapshot and the subscription cursor, is retained before any decision is
+applied, in declared worker order:
+
+- `inject` appends the guidance after the tool results of the running attempt's next user message
+  (between turns), so every earlier message and the cache prefix stay byte-identical;
+- `handoff` aborts the attempt and starts a fresh session on the same custody whose first user
+  message carries the feature and the guidance; with `leader` it first forks the leader's
+  custody, quiesced between tool calls, as the agent's new root;
+- `discard` aborts the attempt and starts a fresh session on a clean fork of the pre-run world.
+
+When no worker is running after a tick the run settles: the settlement record names each worker's
+final attempt and custody and the guidance that never reached its attempt, custody abandoned by a
+handoff or discard is discarded unless a final custody was forked from it, and the manifest is
+retained. Final custody is left open and returned for the caller to integrate.
+
+A rerun of the same command replays the retained run: the opened record must match, forks are
+re-issued under their derived command identities in creation order, each retained tick's
+decisions are completed idempotently (the policy is never consulted for a retained tick), a
+running attempt resumes from its retained conversation with a byte-identical prefix, undelivered
+injected guidance is delivered at its next turn boundary, and ticking continues. A rerun after the
+settlement record re-issues every fork, so a settlement interrupted between two discards replays
+the completed ones and runs the rest. After the manifest is retained, a rerun returns it without
+running a policy or a worker.
+
+Signature:
+
+```ts
+export declare function runRuntimeSupervisor(store: SQLiteTraceStore, options: RunRuntimeSupervisorOptions): Promise<RuntimeSupervisorReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command, supervisor, protocol, workers, world, policy, and optional clock, wait,
+and signal.
+
+Returns:
+
+- The retained manifest, the inspection, and every worker's final custody.
+
+Throws:
+
+- {ApplicationProtocolError} If the protocol is malformed, differs from the retained one, or
+refuses a runtime snapshot.
+
+Throws:
+
+- {ApplicationBudgetError} If the tick or provider-call budget is exhausted, including by a
+worker's own model call; every running worker is aborted first and its attempt stays open.
+
+Throws:
+
+- {ApplicationEvidenceError} If retained evidence is inconsistent or the rerun names other
+workers or supervisor.
+
+Throws:
+
+- {TypeError} If options, a worker definition, or a world result are malformed.
+
+Throws:
+
+- The policy's error or the signal's reason, after every running worker was aborted.
+
+Example:
+
+- ```ts
+const { custody, manifest } = await runRuntimeSupervisor(store, {
+    commandId: "application:pair:1",
+    policy: createModelRuntimeSupervisorPolicy({ model: meta, protocol }),
+    protocol,
+    supervisorId: "supervisor:meta",
+    workers: [featureA, featureB],
+    world,
+});
+```
+
+### `runToolLoop`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs a bounded multi-turn tool-use loop in which every admissible model tool call becomes a typed
+effect intent dispatched through the supplied effect boundary.
+
+Each turn sends the whole conversation, the offered tools, the output schema, and the system
+prompt as one ModelConversationRequest, with the whole conversation as the cacheable
+prefix. A response without tool-use blocks ends the loop as `completed` with its output. Otherwise
+each tool call, in the order requested, is resolved as follows:
+
+- An unknown tool, or an input that fails the tool's JSON Schema, is `invalid`: no intent is
+  created and the model receives the validation issues.
+- Otherwise the loop creates an intent of the tool's `effectKind` and `reversibility`, with the
+  payload `{ input, tool, tool_use_id }` and the runtime-derived effect identity
+  `<effectIdPrefix><loopId>:<turn>:<call>`, and dispatches it. The boundary reports it
+  `materialized` with its correlated outcome, `denied` before any outcome, or `failed`.
+
+Every call receives exactly one tool-result block carrying the canonical JSON of its disposition
+and result, bounded by `providers.tools.loop.maxResultBytes`. The next user message holds the tool
+results followed by the optional guidance text. The loop stops as `turn_limit` with a null output
+after `maxTurns` turns that all requested tools.
+
+Signature:
+
+```ts
+export declare function runToolLoop(options: RunToolLoopOptions): Promise<ToolLoopResult>;
+```
+
+Parameter:
+
+- options - Loop identity, initial messages, tools, model and effect boundaries, and optional
+bound, output schema, system prompt, guidance hook, turn observer, and signal.
+
+Returns:
+
+- The final conversation, output, status, and turns.
+
+Throws:
+
+- {TypeError} If options, a tool definition, a request, or a response are malformed.
+
+Throws:
+
+- The signal's reason when it aborts, and model, effect-boundary, guidance, and observer
+errors unchanged.
+
+Example:
+
+- ```ts
+const result = await runToolLoop({
+    effects: createHandlerToolLoopEffects(handlers),
+    loopId: "meta-agent:1",
+    messages: [{ content: [{ text: "Fix the failing worker.", type: "text" }], role: "user" }],
+    model: provider,
+    tools,
 });
 ```
 
@@ -32593,9 +40600,14 @@ The source workflow is recorded once through `runReplaySession` with `program(nu
 compressor runs as a delegated child through `openChildRun`, `runChildRun`, and
 `acceptChildRunResult`; it receives the canonical source evidence and returns a proposal
 `{ fork_point, hint }` as canonical JSON text in the configured output field. The proposal is
-validated against the closed fork-point and hint grammar and the source: the fork point must name
-the source session, retain at least one and fewer than all source steps, and carry the retained
-prefix identity. A null fork point settles `no_prune` and the source is the result. A fork point
+validated against every protocol `schema` surface of the compression role (`compileJSONSchema`),
+then against the closed fork-point and hint grammar and the source (Appendix D.5 and D.6): the
+fork point must name the source session; a step index in `[0, n - 1]` of the `n`-step source must
+carry the retained prefix identity (null at step `0`, which restarts from the initial prefix with
+the hint applied); an index outside that range is clamped to the nearest bound under the
+configured `clamp` fork-step policy, with the proposed step and prefix retained as `fork_clamp`
+evidence, or refused under the `reject` policy. An absent or null fork point, or one without a
+step index, is a missing fork step: it settles `no_prune` and the source is the result. A fork point
 at a retained checkpoint is classified with `classifyReplayCheckpoint`; an `unavailable`
 classification refuses the prune, retains the classification, constituents, and reason, and
 settles `no_prune`. Otherwise `rewindReplaySession` restores the fork point, its restore
@@ -32654,7 +40666,8 @@ session's measured calls exceeded it (the session is retained, the candidate is 
 Throws:
 
 - {ApplicationEvidenceError} If the source did not finish, the compressor terminally fails
-or returns a proposal the grammar or the source refuses, the rewind fails or retains no restore
+or returns a proposal the compression schema surface, the grammar, or the source refuses (the
+cause carries the path-level issues), the rewind fails or retains no restore
 record, a restoration or control session ended failed or cancelled or was interrupted by a dead
 writer whose lease expired (the candidate is retained as rejected first), or retained evidence is inconsistent.
 
@@ -32710,30 +40723,37 @@ console.log(inspection.outcome?.outcome, inspection.outcome?.step_count_ratio);
 
 Classification: `runtime-only`. Kind: `function`.
 
-Runs the Tree-RL adapter (§5.3) over a recorded replay session and exports a training batch.
+Runs Meta-Agent Guided Tree-RL (paper §5.3, Appendix F.6 Algorithm 2) over a batch of recorded
+root rollouts and exports a per-action training batch.
 
-Fork points are selected from the finished source session by selectTreeRlForkPoints with
-the protocol's dependent-count minimum and fork-point budget. Per fork point, the protocol's
-branch count of rollouts is replayed from the fork point's step boundary through
-`replayReplaySession` declaring the `provider` change, branch `k` under the protocol's seed `k`
-and the static provider cassette the caller's factory returns for it; every earlier step is
-served from the source journal. `analyzeReplayDivergence` must show no divergence before the fork
-point and none unexplained. The caller's reward function scores each finished, proven rollout.
-Every rollout is retained in fork-point, then branch order as one
-`shepherd.application.tree_rl_rollout.v1` record with status `completed` or `failed`; a session
-that did not finish, diverged, was interrupted by a dead writer whose lease expired, or whose
-reward threw or was not finite is retained as `failed` with its configured reason and the run
-continues. Advantages are computed over completed rollouts only by computeTreeRlAdvantages,
-the canonical `jsonl_v1` batch and its digest (and, with the `single_rollout` baseline, the batch
-of each fork point's first branch) are retained in a batch record, and the manifest citing the
-source session, every rollout record, and the batch as `training_batch` is retained last with
-the terminal cut.
+The batch is B `prompts`, each with its deterministic `program` and exactly the protocol's
+`groupSize` G finished root sessions the caller recorded (Algorithm 2 part A, for example with
+`runReplaySession`). Part B: every root is graded by `reward` (member `root`) and handed with its
+reward and numbered turns (provider steps) to `selector`, whose proposed `branch_turn` is clamped
+into the configured admissible range `[1, T - 2]` and, for a world- or process-bound root,
+moved to the nearest turn whose boundary retains a restorable checkpoint. Each root's grading and
+fork decision is retained as one `root` record. From the fork turn's step boundary the protocol's
+branch count K of rollouts is replayed through `replayReplaySession` declaring the `provider`
+change, branch `k` under the protocol's seed `k` and the static provider cassette `provider`
+returns for it; the first branch of a root whose proposal named a tool call receives that call
+in its provider context so its first live action carries it. `analyzeReplayDivergence` must show
+no divergence before the fork step and none unexplained, and `reward` grades each finished,
+proven rollout (member `branch`). Root gradings and branch rollouts run with up to `concurrency`
+in flight; their records are appended in prompt, root, then branch order, so retained output
+does not depend on concurrency. Part C: computeTreeRlAdvantages gives each completed
+root its inter-root advantage and each completed member its intra-tree advantage under the
+retained normalization, and the `jsonl_v2` batch attributes the inter-root advantage to every
+prefix action (turns before the fork turn) and the member's intra-tree advantage to every suffix
+action. With the `flat_grpo` baseline the batch record also retains the roots-only batch in which
+every action carries the inter-root advantage. The manifest citing every root record, every
+rollout record, the batch, and the baseline batch is retained last with the terminal cut.
 
-Every option, the protocol, the source session, the selection, the rollout bounds, every
-provider, and the projected provider calls are validated before any record is written, so a
-refusal writes nothing. Repeating the command resumes from retained evidence: a terminal rollout
-session is never re-executed, the reward function is not called for a retained rollout, and a
-completed run returns its retained manifest and batch.
+Every option, the protocol, every root, the bounds, and the projected provider calls (each root
+assumed to fork at its earliest admissible turn unless its decision is retained) are validated
+before any record is written, so a refusal writes nothing. Repeating the command resumes from
+retained evidence: a retained root is not re-graded or re-selected, a terminal rollout session
+is never re-executed, the reward function is not called for a retained record, and a completed
+run returns its retained manifest and batch.
 
 Signature:
 
@@ -32747,8 +40767,8 @@ Parameter:
 
 Parameter:
 
-- options - Command, claim, protocol, source session, program, provider factory, reward
-function, and optional baselines, handlers, and clock.
+- options - Command, claim, protocol, prompts, selector, provider factory, reward function,
+and optional baselines, restoration bindings factory, concurrency, normalization, and clock.
 
 Returns:
 
@@ -32757,26 +40777,29 @@ Returns:
 Throws:
 
 - {ApplicationProtocolError} If the protocol is malformed, is not a Tree-RL protocol, lacks
-a required surface or budget, declares a zero branch or fork-point budget or fewer seeds than
-branches, or the run was opened under another protocol. Nothing is written.
+a required surface or budget, declares a zero branch or group size or fewer seeds than branches,
+a prompt does not carry exactly `groupSize` roots, or the run was opened under another protocol
+(nothing is written), or the `training_batch` schema surface refuses an exported line (records
+stay retained; the batch record and manifest are not written).
 
 Throws:
 
-- {ApplicationBudgetError} If the fork-point budget exceeds `limits.maxForkPoints`, the
-branch budget exceeds `limits.maxBranches`, the planned rollouts exceed `limits.maxRollouts`, or
-the projected provider calls exceed the provider-call budget; the first three and the whole-run
-projection are checked before any record, and each new rollout session is checked before it
+- {ApplicationBudgetError} If the branch count exceeds `limits.maxBranches`, the group size
+exceeds `APPLICATION_TREE_RL_LIMITS.maxGroupSize`, the prompts exceed `maxPrompts`, the
+concurrency exceeds `maxConcurrency`, the planned rollouts exceed `limits.maxRollouts`, the cited
+artifacts exceed `limits.maxArtifacts`, or the projected provider calls exceed the provider-call
+budget; each new rollout session is also checked, counting in-flight projections, before it
 opens.
 
 Throws:
 
-- {ApplicationEvidenceError} If the source session is not finished, binds worlds or
-processes, has no qualifying fork point, the run was opened with a different source, selection,
-or baselines, or retained evidence is inconsistent. Nothing is written by a refusal.
+- {ApplicationEvidenceError} If a root is not finished or has no turn, a world- or
+process-bound root has no admissible restorable turn, the run was opened with different prompts,
+baselines, or normalization, or retained evidence is inconsistent.
 
 Throws:
 
-- {ReplayEvidenceError} If the source session is not retained or its evidence is invalid.
+- {ReplayEvidenceError} If a root session is not retained or its evidence is invalid.
 
 Throws:
 
@@ -32785,7 +40808,7 @@ Throws:
 Throws:
 
 - {ReplaySessionInterruptedError} If a rollout session is still `running` under a live
-lease; nothing is written.
+lease; nothing is written for it.
 
 Throws:
 
@@ -32793,8 +40816,10 @@ Throws:
 
 Throws:
 
-- {TypeError} If options are malformed or the provider factory returns a provider that is
-not a distinct static provider.
+- {TypeError} If options are malformed, a world- or process-bound root has no `bindings`
+factory, the selector returns a malformed proposal, or the provider factory returns a provider
+that is not a distinct static provider. Errors thrown by the selector propagate after the root
+records before it are retained.
 
 Example:
 
@@ -32802,13 +40827,13 @@ Example:
 const { batch } = await runTreeRlRollouts(store, {
     claimId: "tree-rl",
     commandId: "application:tree-rl:1",
-    program,
+    prompts: [{ id: "task-1", program, roots: rootSessionIds }],
     protocol,
-    provider: ({ fork_point, seed }) => cassetteFor(fork_point, seed),
+    provider: ({ root_session_id, seed, tool_call }) => cassetteFor(root_session_id, seed, tool_call),
     reward: ({ rollout }) => score(rollout.terminal?.result),
-    sourceSessionId,
+    selector: createMetaAgentTreeRlForkSelector({ provider: metaAgent }),
 });
-console.log(batch.batch_digest, batch.line_count);
+console.log(batch.batch_digest, batch.lines[0]?.actions);
 ```
 
 ### `selectTreeRlForkPoints`
@@ -32819,9 +40844,11 @@ Selects deterministic trace-selected fork points of one recorded replay session.
 
 For each provider step of the session, in index order, `analyzeReplayDependencies` gives its
 transitive dependents; a step qualifies when its dependent count reaches `minDependents`, and
-qualifying steps are taken in index order up to `maxForkPoints`. Each fork point names the step
-and the source prefix identity at its boundary (null at step 0). The selection is a pure function
-of the retained session and writes nothing.
+qualifying steps are taken in index order up to `maxForkPoints`. When the session binds worlds or
+processes, a step qualifies only where the session retains a checkpoint at its boundary that is
+not classified `unavailable`, since only such a boundary can be restored. Each fork point names
+the step and the prefix identity at its boundary (null at step 0). The selection is a pure
+function of the retained session and writes nothing.
 
 Signature:
 
@@ -32872,7 +40899,8 @@ Validates an untrusted evaluation report, re-deriving every comparison and the r
 The document must be a plain data object of exactly the report fields with the configured report
 and compatibility versions and metric order; runs, baselines, and comparisons align by experiment
 in order; every baseline kind is configured for its run's application kind; every comparison
-equals `compareApplicationBaseline` over its run and baseline; and `report_id` is the digest of
+equals `compareApplicationBaseline` over its run and baseline; `rescues` equals the experiments
+whose baseline failed while the run passed, in order; and `report_id` is the digest of
 the canonical body without it.
 
 Signature:
@@ -33546,6 +41574,7 @@ export type ChildRunInspection = {
     readonly opened_supervisor_id: string;
     readonly parent: ChildRunParentInspection;
     readonly predecessor: ChildRunPredecessorInspection | null;
+    readonly proof: ProofEnvelope;
     readonly provenance: ChildRunProvenance;
     readonly status: ChildRunStatus;
     readonly supervisor_id: string;
@@ -35626,7 +43655,463 @@ import * as api from "@avnionur/shepherd-typescript/effects";
 void api;
 ```
 
-Exported symbols: 17.
+Exported symbols: 45.
+
+### `CompensateEffectsOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by compensateEffects.
+
+Signature:
+
+```ts
+export type CompensateEffectsOptions = {
+    readonly commandId: string;
+    readonly effectRecordIds: readonly RecordId[];
+    readonly registry: EffectCompensationRegistry;
+};
+```
+
+### `EFFECT_COMPENSABLE_TIERS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured reversibility tiers whose materialized effects are compensated.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSABLE_TIERS: readonly [
+    "compensable"
+];
+```
+
+### `EFFECT_COMPENSATION_EVIDENCE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured compensation evidence kinds ordered replay step then supervised dispatch.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_EVIDENCE_KINDS: readonly [
+    "replay_step",
+    "supervised_dispatch"
+];
+```
+
+### `EFFECT_COMPENSATION_OUTCOMES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured compensation outcomes ordered compensated then failed.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_OUTCOMES: readonly [
+    "compensated",
+    "failed"
+];
+```
+
+### `EFFECT_COMPENSATION_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured compensation record phases ordered intent, attempt, outcome.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_PHASES: readonly [
+    "intent",
+    "attempt",
+    "outcome"
+];
+```
+
+### `EFFECT_COMPENSATION_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured derived compensation statuses ordered pending, uncertain, failed, compensated.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_STATUSES: readonly [
+    "pending",
+    "uncertain",
+    "failed",
+    "compensated"
+];
+```
+
+### `EFFECT_COMPENSATION_TRIGGERS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured compensation triggers ordered scope discard, replay rewind, replay replay, command.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_TRIGGERS: readonly [
+    "scope_discard",
+    "replay_rewind",
+    "replay_replay",
+    "command"
+];
+```
+
+### `EffectCompensationAttemptInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One retained attempt and its outcome.
+
+Signature:
+
+```ts
+export type EffectCompensationAttemptInspection = {
+    readonly attempt: number;
+    readonly handler_id: string;
+    readonly outcome: {
+        readonly record_id: RecordId;
+        readonly result: EffectResult<SemanticValue, SemanticValue>;
+        readonly status: EffectCompensationOutcomeStatus;
+    } | null;
+    readonly record_id: RecordId;
+    readonly trigger: EffectCompensationTrigger;
+};
+```
+
+### `EffectCompensationConflictError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when another compensator appended to the same compensation path between this
+compensator's read and its append. Retrying the trigger continues from the retained records.
+
+Signature:
+
+```ts
+export declare class EffectCompensationConflictError extends TraceStoreError {
+    readonly code: string;
+    readonly compensation_id: string;
+    constructor(compensationId: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned concurrent-advance code.
+
+```ts
+readonly code: string;
+```
+
+#### `compensation_id`
+
+Compensation identity that advanced concurrently.
+
+```ts
+readonly compensation_id: string;
+```
+
+#### `constructor`
+
+Creates a concurrent-advance failure.
+
+```ts
+constructor(compensationId: string);
+```
+
+Parameter:
+
+- compensationId - Compensation identity that advanced concurrently.
+
+### `EffectCompensationEvidenceError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when retained or cited compensation evidence is absent, malformed, or inconsistent, or a
+trigger exceeds the configured effect bound.
+
+Signature:
+
+```ts
+export declare class EffectCompensationEvidenceError extends TraceStoreError {
+    readonly code: string;
+    constructor(detail: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configuration-owned invalid-evidence code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates an invalid-evidence failure.
+
+```ts
+constructor(detail: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- detail - Specific description appended to the configured message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `EffectCompensationFailedError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised after every effect of a trigger was attempted when at least one compensation handler
+returned a failure result. The failures are retained; a later trigger attempts them again.
+
+Signature:
+
+```ts
+export declare class EffectCompensationFailedError extends TraceStoreError {
+    readonly code: string;
+    readonly compensation_ids: readonly string[];
+    constructor(compensationIds: readonly string[]);
+}
+```
+
+#### `code`
+
+Stable configuration-owned failed-compensation code.
+
+```ts
+readonly code: string;
+```
+
+#### `compensation_ids`
+
+Compensation identities whose latest attempt failed, in compensation order.
+
+```ts
+readonly compensation_ids: readonly string[];
+```
+
+#### `constructor`
+
+Creates a failed-compensation failure.
+
+```ts
+constructor(compensationIds: readonly string[]);
+```
+
+Parameter:
+
+- compensationIds - Failed compensation identities in compensation order.
+
+### `EffectCompensationHandler`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Compensation handler registered for one exact effect kind.
+
+Signature:
+
+```ts
+export type EffectCompensationHandler = {
+    readonly compensate: (request: EffectCompensationRequest) => EffectResult<SemanticValue, SemanticValue> | Promise<EffectResult<SemanticValue, SemanticValue>>;
+    readonly handlerId: string;
+    readonly kind: string;
+};
+```
+
+### `EffectCompensationHandlerNotFoundError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised before any compensation runs when a compensable effect that still needs compensation has
+no registered handler for its exact kind.
+
+Signature:
+
+```ts
+export declare class EffectCompensationHandlerNotFoundError extends TraceStoreError {
+    readonly code: string;
+    readonly compensation_id: string;
+    readonly kind: string;
+    constructor(compensationId: string, kind: string);
+}
+```
+
+#### `code`
+
+Stable configuration-owned missing-handler code.
+
+```ts
+readonly code: string;
+```
+
+#### `compensation_id`
+
+Compensation identity of the first unhandled effect.
+
+```ts
+readonly compensation_id: string;
+```
+
+#### `kind`
+
+Exact effect kind without a registered handler.
+
+```ts
+readonly kind: string;
+```
+
+#### `constructor`
+
+Creates a missing-handler failure.
+
+```ts
+constructor(compensationId: string, kind: string);
+```
+
+Parameter:
+
+- compensationId - Compensation identity of the unhandled effect.
+
+Parameter:
+
+- kind - Exact effect kind without a handler.
+
+### `EffectCompensationInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record-derived view of one compensation path.
+
+Signature:
+
+```ts
+export type EffectCompensationInspection = {
+    readonly attempts: readonly EffectCompensationAttemptInspection[];
+    readonly compensation_id: string;
+    readonly effect_intent: EffectIntent;
+    readonly effect_outcome: EffectOutcome;
+    readonly head_record_id: RecordId;
+    readonly intent_record_id: RecordId;
+    readonly materialization: MaterializedEffectEvidence;
+    readonly status: EffectCompensationStatus;
+};
+```
+
+### `EffectCompensationOutcomeStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured outcome status of one compensation attempt.
+
+Signature:
+
+```ts
+export type EffectCompensationOutcomeStatus = (typeof EFFECT_COMPENSATION_OUTCOMES)[number];
+```
+
+### `EffectCompensationReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Receipt of one trigger's compensation pass.
+
+Signature:
+
+```ts
+export type EffectCompensationReceipt = {
+    readonly compensations: readonly EffectCompensationInspection[];
+};
+```
+
+### `EffectCompensationRegistry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable registry holding exactly one compensation handler per effect kind.
+
+Signature:
+
+```ts
+export type EffectCompensationRegistry = {
+    readonly kinds: readonly string[];
+    readonly resolve: (kind: string) => EffectCompensationHandler | undefined;
+};
+```
+
+### `EffectCompensationRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Request passed to a compensation handler for one attempt.
+
+Signature:
+
+```ts
+export type EffectCompensationRequest = {
+    readonly attempt: number;
+    readonly compensationId: string;
+    readonly idempotencyKey: string;
+    readonly intent: EffectIntent;
+    readonly outcome: EffectOutcome;
+    readonly trigger: EffectCompensationTrigger;
+};
+```
+
+### `EffectCompensationStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured derived compensation status.
+
+Signature:
+
+```ts
+export type EffectCompensationStatus = (typeof EFFECT_COMPENSATION_STATUSES)[number];
+```
+
+### `EffectCompensationTrigger`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Trigger that caused one compensation attempt.
+
+Signature:
+
+```ts
+export type EffectCompensationTrigger = {
+    readonly command_id: string;
+    readonly kind: EffectCompensationTriggerKind;
+};
+```
+
+### `EffectCompensationTriggerKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured compensation trigger kind.
+
+Signature:
+
+```ts
+export type EffectCompensationTriggerKind = (typeof EFFECT_COMPENSATION_TRIGGERS)[number];
+```
 
 ### `EffectFailure`
 
@@ -35839,6 +44324,47 @@ export type EffectSuccess<V extends SemanticValue> = {
 };
 ```
 
+### `InspectEffectCompensationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options accepted by inspectEffectCompensation.
+
+Signature:
+
+```ts
+export type InspectEffectCompensationOptions = {
+    readonly compensationId: string;
+};
+```
+
+### `MaterializedEffectEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Record that retains the original materialization of one effect.
+
+Signature:
+
+```ts
+export type MaterializedEffectEvidence = {
+    readonly kind: MaterializedEffectEvidenceKind;
+    readonly record_id: RecordId;
+};
+```
+
+### `MaterializedEffectEvidenceKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured materialization evidence kind.
+
+Signature:
+
+```ts
+export type MaterializedEffectEvidenceKind = (typeof EFFECT_COMPENSATION_EVIDENCE_KINDS)[number];
+```
+
 ### `TypedEffectHandlerOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -35854,6 +44380,114 @@ export type TypedEffectHandlerOptions<P> = {
     readonly payloadSchema: TaskSchema<P>;
     readonly handle: (payload: P, intent: EffectIntent) => EffectResult<SemanticValue, SemanticValue> | Promise<EffectResult<SemanticValue, SemanticValue>>;
 };
+```
+
+### `compensateEffects`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Compensates explicitly named materialized effects in reverse order under one command.
+
+Each record must retain a successful materialization of a compensable effect: a live or
+recorded replay effect step (resolved to the live step it copies) or a supervised dispatch
+resolution. Every compensation path is keyed by its original materialization, so an effect
+already compensated by a discard, a branch, or an earlier command is never compensated again.
+The compensation intent is retained before the first attempt, each attempt before its handler
+runs, and each outcome after it returns. A handler that throws leaves its attempt uncertain and
+the error propagates; the next trigger invokes the handler again under the same idempotency key.
+
+Signature:
+
+```ts
+export declare function compensateEffects(store: SQLiteTraceStore, options: CompensateEffectsOptions): Promise<EffectCompensationReceipt>;
+```
+
+Parameter:
+
+- store - Open writable trace store.
+
+Parameter:
+
+- options - Command identity, materialization records in materialization order, registry.
+
+Returns:
+
+- The compensations in the order they ran.
+
+Throws:
+
+- {EffectCompensationHandlerNotFoundError} Before anything runs, if an effect that still
+needs compensation has no handler.
+
+Throws:
+
+- {EffectCompensationEvidenceError} If a record is absent, is not a successful compensable
+materialization, or the command exceeds the configured bound.
+
+Throws:
+
+- {EffectCompensationFailedError} After every effect was attempted, if a handler returned
+a failure result.
+
+Throws:
+
+- {EffectCompensationConflictError} If another compensator advanced the same path
+concurrently.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Throws:
+
+- Handler failures propagate unchanged.
+
+Example:
+
+- ```ts
+const { compensations } = await compensateEffects(store, {
+    commandId: "compensate:order:1",
+    effectRecordIds: [resolution.record_id],
+    registry,
+});
+```
+
+### `createEffectCompensationRegistry`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates an immutable registry holding exactly one compensation handler per effect kind.
+
+Definitions are validated and snapshotted without evaluating accessors; mutating a source
+definition afterwards changes nothing.
+
+Signature:
+
+```ts
+export declare function createEffectCompensationRegistry(handlers: readonly EffectCompensationHandler[]): EffectCompensationRegistry;
+```
+
+Parameter:
+
+- handlers - Compensation handlers, one per exact effect kind.
+
+Returns:
+
+- A frozen registry accepted by discard, rewind, replay, and {@link compensateEffects}.
+
+Throws:
+
+- {TypeError} If the array or a definition is malformed, or a kind or handler identity
+repeats.
+
+Example:
+
+- ```ts
+const registry = createEffectCompensationRegistry([{
+    handlerId: "rows.delete",
+    kind: "rows.insert",
+    compensate: ({ intent, idempotencyKey }) => deleteRow(intent.payload, idempotencyKey),
+}]);
 ```
 
 ### `createEffectHandlerStack`
@@ -36003,6 +44637,79 @@ Example:
   payloadSchema: schema.object({ text: schema.string() }),
   handle: ({ text }) => ({ ok: true, value: text.toUpperCase() }),
 });
+
+### `deriveEffectCompensationId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the compensation identity of one materialized effect. The identity is also the owner
+path retaining its compensation records, so every trigger that reaches the same materialization
+shares one compensation.
+
+Signature:
+
+```ts
+export declare function deriveEffectCompensationId(materializationRecordId: RecordId): string;
+```
+
+Parameter:
+
+- materializationRecordId - Record that retains the original materialization.
+
+Returns:
+
+- The configured compensation identity.
+
+Throws:
+
+- {TypeError} If the record identity is malformed.
+
+Example:
+
+- ```ts
+const compensationId = deriveEffectCompensationId(step.record_id);
+```
+
+### `inspectEffectCompensation`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates and projects one compensation path from its retained records without mutation.
+
+Signature:
+
+```ts
+export declare function inspectEffectCompensation(store: SQLiteTraceStore, options: InspectEffectCompensationOptions): EffectCompensationInspection;
+```
+
+Parameter:
+
+- store - Open trace store, writable or read-only.
+
+Parameter:
+
+- options - Exact compensation identity.
+
+Returns:
+
+- The frozen inspection with its derived status.
+
+Throws:
+
+- {EffectCompensationEvidenceError} If the path is absent or its records are inconsistent.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- ```ts
+const inspection = inspectEffectCompensation(store, {
+    compensationId: deriveEffectCompensationId(step.record_id),
+});
+console.log(inspection.status, inspection.attempts.length);
+```
 
 ### `validateEffectCorrelation`
 
@@ -38652,11 +47359,11 @@ const { manifest } = await verifyTraceStoreBackup("/backups/2026-09-18");
 
 Package entry: `./providers`
 
-Provider-neutral contracts and deterministic static-provider fixtures.
+Provider-neutral contracts, deterministic static-provider fixtures, a program conversation provider, configured live Anthropic Messages and OpenAI-compatible adapters with tool calls and prompt-cache prefix reuse, and replay provider-session conversations.
 
 Runtime: ESM on Node >=24.12.0 <25, except the type-only /read entry (no Node runtime required).
 
-Authority and mutation: Provider authority is supplied explicitly by the consumer. The deterministic static adapter owns no credentials, network access, execution, or workspace authority.
+Authority and mutation: Provider authority is supplied explicitly by the consumer. The deterministic static adapter owns no credentials, network access, execution, or workspace authority. A live adapter reads its credential once from the caller definition or the configured environment variable, holds it only in its closure, and sends HTTP requests only to the configured or caller-supplied endpoint through the global fetch or a caller-supplied transport; it never appends records. A provider conversation holds messages and checkpoint receipts in process memory only.
 
 Import example:
 
@@ -38665,7 +47372,207 @@ import * as api from "@avnionur/shepherd-typescript/providers";
 void api;
 ```
 
-Exported symbols: 14.
+Exported symbols: 40.
+
+### `ConversationalModelProvider`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Model provider that also accepts multi-turn message-list requests.
+
+Signature:
+
+```ts
+export type ConversationalModelProvider = ModelProvider & {
+    readonly converse: (request: ModelConversationRequest, signal: AbortSignal) => Promise<ModelConversationResponse>;
+};
+```
+
+### `LiveProviderDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Definition accepted by createLiveProvider.
+
+Signature:
+
+```ts
+export type LiveProviderDefinition = {
+    readonly credential?: string;
+    readonly endpoint?: string;
+    readonly environment?: Readonly<Record<string, string | undefined>>;
+    readonly id: string;
+    readonly kind: ProviderKind;
+    readonly maxOutputTokens?: number;
+    readonly model: string;
+    readonly transport?: LiveProviderTransport;
+};
+```
+
+### `LiveProviderError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Error raised by a live provider adapter. Its message never contains the provider credential:
+provider-supplied detail is bounded and every occurrence of the credential is redacted before
+the message is built.
+
+Signature:
+
+```ts
+export declare class LiveProviderError extends Error {
+    readonly code: string;
+    readonly reason: LiveProviderErrorReason;
+    readonly status: number | null;
+    constructor(reason: LiveProviderErrorReason, detail: string | null, status?: number | null, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable configured machine-readable error code.
+
+```ts
+readonly code: string;
+```
+
+#### `reason`
+
+Failure reason.
+
+```ts
+readonly reason: LiveProviderErrorReason;
+```
+
+#### `status`
+
+HTTP status for an `http` failure, otherwise null.
+
+```ts
+readonly status: number | null;
+```
+
+#### `constructor`
+
+Creates a live-provider failure.
+
+```ts
+constructor(reason: LiveProviderErrorReason, detail: string | null, status?: number | null, options?: ErrorOptions);
+```
+
+Parameter:
+
+- reason - Failure reason selecting the configured code and message.
+
+Parameter:
+
+- detail - Already-redacted bounded detail appended to the configured message, or null.
+
+Parameter:
+
+- status - HTTP status for an `http` failure, otherwise null.
+
+Parameter:
+
+- options - Standard error options; a cause stays an in-memory diagnostic.
+
+### `LiveProviderErrorReason`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured live-provider failure reason.
+
+Signature:
+
+```ts
+export type LiveProviderErrorReason = "credential" | "http" | "response" | "transport";
+```
+
+### `LiveProviderHttpRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One HTTP request a live provider hands to its transport.
+
+Signature:
+
+```ts
+export type LiveProviderHttpRequest = {
+    readonly body: string;
+    readonly headers: Readonly<Record<string, string>>;
+    readonly url: string;
+};
+```
+
+### `LiveProviderHttpResponse`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One HTTP response returned by a live provider transport.
+
+Signature:
+
+```ts
+export type LiveProviderHttpResponse = {
+    readonly body: string;
+    readonly status: number;
+};
+```
+
+### `LiveProviderTransport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Injectable HTTP transport of a live provider. The default posts with the global `fetch`.
+
+Signature:
+
+```ts
+export type LiveProviderTransport = (request: LiveProviderHttpRequest, signal: AbortSignal) => Promise<LiveProviderHttpResponse>;
+```
+
+Parameter:
+
+- request - Serialized request with headers.
+
+Parameter:
+
+- signal - Cancellation signal the transport must observe while pending.
+
+Returns:
+
+- The response status and body text.
+
+### `MODEL_CONTENT_BLOCK_TYPES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured provider-neutral message content block types ordered text, tool use, tool result.
+
+Signature:
+
+```ts
+export declare const MODEL_CONTENT_BLOCK_TYPES: readonly [
+    "text",
+    "tool_use",
+    "tool_result"
+];
+```
+
+### `MODEL_MESSAGE_ROLES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured provider-neutral message roles ordered user then assistant.
+
+Signature:
+
+```ts
+export declare const MODEL_MESSAGE_ROLES: readonly [
+    "user",
+    "assistant"
+];
+```
 
 ### `ModelArtifactDefinition`
 
@@ -38682,6 +47589,93 @@ export type ModelArtifactDefinition = {
     readonly metadata: SemanticRecord;
     readonly name: string;
 };
+```
+
+### `ModelContentBlock`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One content block of a provider-neutral message: text, a model tool call (assistant messages
+only), or a tool result (user messages only).
+
+Signature:
+
+```ts
+export type ModelContentBlock = ModelTextBlock | ModelToolUseBlock | ModelToolResultBlock;
+```
+
+### `ModelContentBlockType`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured provider-neutral content block type.
+
+Signature:
+
+```ts
+export type ModelContentBlockType = (typeof MODEL_CONTENT_BLOCK_TYPES)[number];
+```
+
+### `ModelConversationRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Provider-neutral multi-turn request sent through ConversationalModelProvider.converse.
+
+Signature:
+
+```ts
+export type ModelConversationRequest = {
+    readonly cachePrefixMessages: number;
+    readonly messages: readonly ModelMessage[];
+    readonly outputSchema: SemanticRecord | null;
+    readonly system: string | null;
+    readonly tools?: readonly ModelToolDefinition[];
+};
+```
+
+### `ModelConversationResponse`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Provider-neutral response of one multi-turn request.
+
+Signature:
+
+```ts
+export type ModelConversationResponse = {
+    readonly message: ModelMessage;
+    readonly output: SemanticValue;
+    readonly stopReason: string;
+    readonly usage: ModelUsage;
+};
+```
+
+### `ModelMessage`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One provider-neutral conversation message.
+
+Signature:
+
+```ts
+export type ModelMessage = {
+    readonly content: readonly ModelContentBlock[];
+    readonly role: ModelMessageRole;
+};
+```
+
+### `ModelMessageRole`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured provider-neutral message role.
+
+Signature:
+
+```ts
+export type ModelMessageRole = (typeof MODEL_MESSAGE_ROLES)[number];
 ```
 
 ### `ModelProvider`
@@ -38731,6 +47725,71 @@ export type ModelResponse = {
 };
 ```
 
+### `ModelTextBlock`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One text content block of a provider-neutral message.
+
+Signature:
+
+```ts
+export type ModelTextBlock = {
+    readonly text: string;
+    readonly type: (typeof MODEL_CONTENT_BLOCK_TYPES)[0];
+};
+```
+
+### `ModelToolDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One tool offered to the model in a multi-turn request.
+
+Signature:
+
+```ts
+export type ModelToolDefinition = {
+    readonly description: string;
+    readonly inputSchema: SemanticRecord;
+    readonly name: string;
+};
+```
+
+### `ModelToolResultBlock`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One tool result returned to the model in a user message.
+
+Signature:
+
+```ts
+export type ModelToolResultBlock = {
+    readonly content: string;
+    readonly isError: boolean;
+    readonly type: (typeof MODEL_CONTENT_BLOCK_TYPES)[2];
+    readonly toolUseId: string;
+};
+```
+
+### `ModelToolUseBlock`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One tool call requested by the model in an assistant message.
+
+Signature:
+
+```ts
+export type ModelToolUseBlock = {
+    readonly id: string;
+    readonly input: SemanticRecord;
+    readonly name: string;
+    readonly type: (typeof MODEL_CONTENT_BLOCK_TYPES)[1];
+};
+```
+
 ### `ModelUsage`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -38749,6 +47808,40 @@ export type ModelUsage = {
 };
 ```
 
+### `PROVIDER_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured provider kinds ordered static, program, then live kinds.
+
+Signature:
+
+```ts
+export declare const PROVIDER_KINDS: readonly [
+    "static",
+    "program",
+    "anthropic",
+    "openai",
+    "openrouter"
+];
+```
+
+### `ProgramConversationProviderDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Definition accepted by createProgramConversationProvider.
+
+Signature:
+
+```ts
+export type ProgramConversationProviderDefinition = {
+    readonly id: string;
+    readonly model?: string;
+    readonly respond: (request: ModelConversationRequest, signal: AbortSignal) => ModelConversationResponse | Promise<ModelConversationResponse>;
+};
+```
+
 ### `ProviderCapabilities`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -38762,6 +47855,40 @@ export type ProviderCapabilities = {
     readonly streaming: boolean;
     readonly structuredOutput: boolean;
     readonly tools: boolean;
+};
+```
+
+### `ProviderConversation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Stateful multi-turn conversation bound to a replay provider-session adapter.
+
+Signature:
+
+```ts
+export type ProviderConversation = {
+    readonly contextPrefixId: () => string | null;
+    readonly messages: () => readonly ModelMessage[];
+    readonly provider: ModelProvider;
+    readonly rebuild: (steps: readonly ReplayStepInspection[]) => void;
+    readonly session: ReplayProviderSessionAdapter;
+};
+```
+
+### `ProviderConversationDefinition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Definition accepted by createProviderConversation.
+
+Signature:
+
+```ts
+export type ProviderConversationDefinition = {
+    readonly adapterId: string;
+    readonly provider: ConversationalModelProvider;
+    readonly system?: string;
 };
 ```
 
@@ -38786,7 +47913,7 @@ export type ProviderDescriptor = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Configured provider-kind vocabulary implemented by provider protocol v1.
+Configured provider-kind vocabulary: static, program, and every configured live kind.
 
 Signature:
 
@@ -38926,6 +48053,145 @@ constructor(position: number);
 Parameter:
 
 - position - Zero-based expected exchange position.
+
+### `createLiveProvider`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a live model provider for one configured live kind.
+
+Endpoint, headers, credential header and environment variable, prompt-cache marker, output-token
+field, and complete stop reasons all come from the kind's `providers.live.kinds` entry in
+`protocol.config.json`; the kind's wire dialect encodes requests and decodes responses. The
+credential is read once from `definition.credential` or the configured environment variable and
+is held only in the provider closure: it is never part of the descriptor, a request other than
+its credential header, a response, or an error message.
+
+`invoke` sends one request as a single user turn. `converse` sends a multi-turn message list and
+places the configured cache-control marker on the last content block of the last prefix
+message. When the request offers tools they are sent under the kind's configured
+`toolUse.requestField`; a response whose stop reason is one of the kind's `toolUse.stopReasons`
+returns the assistant message with its text and tool-use blocks and a null output. Both observe
+the signal while the request is pending and reject with its reason.
+
+Signature:
+
+```ts
+export declare function createLiveProvider(definition: LiveProviderDefinition): ConversationalModelProvider;
+```
+
+Parameter:
+
+- definition - Kind, identity, model, and optional credential, endpoint, environment,
+output-token limit, and transport.
+
+Returns:
+
+- A conversational provider.
+
+Throws:
+
+- {TypeError} If the definition is malformed or the kind is not a configured live kind.
+
+Throws:
+
+- {LiveProviderError} With reason `credential` when no credential is configured.
+
+Example:
+
+- ```ts
+const provider = createLiveProvider({ id: "reviewer", kind, model });
+const response = await provider.invoke(request, new AbortController().signal);
+```
+
+### `createProgramConversationProvider`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a conversational provider of the configured program kind whose turns are answered by a
+deterministic caller program. It is the offline way to script multi-turn and tool-calling
+models, for example a meta-agent that forks, observes, and rewinds workers in tests.
+
+`converse` validates the request, invokes `respond`, and validates the returned assistant message
+(text, tool-use, and no tool-result blocks), output, stop reason, and usage. `invoke` sends one
+request as a single rendered user turn and returns the output and usage. The descriptor declares
+`providers.program.conversationCapabilities`.
+
+Signature:
+
+```ts
+export declare function createProgramConversationProvider(definition: ProgramConversationProviderDefinition): ConversationalModelProvider;
+```
+
+Parameter:
+
+- definition - Identity, optional model, and the responding program.
+
+Returns:
+
+- A conversational provider.
+
+Throws:
+
+- {TypeError} If the definition is malformed. Returned calls throw `TypeError` for a
+malformed request or reply, the signal's reason when aborted, and program errors unchanged.
+
+Example:
+
+- ```ts
+const provider = createProgramConversationProvider({
+    id: "scripted-meta-agent",
+    respond: (request) => nextScriptedTurn(request),
+});
+```
+
+### `createProviderConversation`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a stateful multi-turn conversation over a conversational provider, together with the
+replay provider-session adapter that captures and restores it.
+
+Each `provider.invoke(request)` renders the request as the next user message, sends the held
+conversation plus that message with the whole list as the cacheable prefix, and on success
+appends the canonical rendering of the output as the assistant message. Held messages are pure
+functions of retained requests and outputs, so a conversation restored after a rewind, or
+rebuilt from retained steps, sends a byte-identical message prefix and the provider's prompt
+cache can serve it. The conversation mirrors the replay session's chained context prefix
+identity, including failed exchanges, so checkpoint evidence can be verified.
+
+The session adapter's `checkpoint` retains the held state under a content-derived receipt in
+this conversation's memory; `restore` resets the held state to a retained receipt. Receipts do
+not survive the process; use `rebuild` with the retained steps after a restart.
+
+Signature:
+
+```ts
+export declare function createProviderConversation(definition: ProviderConversationDefinition): ProviderConversation;
+```
+
+Parameter:
+
+- definition - Adapter identity, conversational provider, and optional system prompt.
+
+Returns:
+
+- The conversation handle.
+
+Throws:
+
+- {TypeError} If the definition is malformed.
+
+Example:
+
+- ```ts
+const conversation = createProviderConversation({ adapterId: "claude-session", provider });
+await runReplaySession(store, {
+    ...options,
+    provider: conversation.provider,
+    providerSession: conversation.session,
+});
+```
 
 ### `createStaticProvider`
 
@@ -39331,7 +48597,7 @@ import * as api from "@avnionur/shepherd-typescript/replay";
 void api;
 ```
 
-Exported symbols: 102.
+Exported symbols: 122.
 
 ### `AnalyzeReplayDependenciesOptions`
 
@@ -39420,6 +48686,38 @@ export type CooperativeProcessAdapterOptions = {
 };
 ```
 
+### `DiffReplaySessionsOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for diffReplaySessions.
+
+Signature:
+
+```ts
+export type DiffReplaySessionsOptions = {
+    readonly clock?: () => number;
+    readonly sessionIds: readonly string[];
+};
+```
+
+### `FindFirstReplayRegressionOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for findFirstReplayRegression.
+
+Signature:
+
+```ts
+export type FindFirstReplayRegressionOptions = {
+    readonly clock?: () => number;
+    readonly sessionId: string;
+    readonly strategy?: ReplayRegressionStrategy;
+    readonly verdict: (revision: ReplayRevision) => boolean | Promise<boolean>;
+};
+```
+
 ### `InspectReplaySessionOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -39431,6 +48729,7 @@ Signature:
 ```ts
 export type InspectReplaySessionOptions = {
     readonly clock?: () => number;
+    readonly lowerProof?: boolean;
     readonly sessionId: string;
 };
 ```
@@ -39528,6 +48827,23 @@ export declare const REPLAY_CHECKPOINT_EVIDENCE_STATUSES: readonly [
     "reconstructive",
     "not_applicable",
     "unavailable"
+];
+```
+
+### `REPLAY_CHECKPOINT_POLICIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured automatic checkpoint policies ordered none, provider step, effect step, every N steps.
+
+Signature:
+
+```ts
+export declare const REPLAY_CHECKPOINT_POLICIES: readonly [
+    "none",
+    "provider_step",
+    "effect_step",
+    "every_n_steps"
 ];
 ```
 
@@ -39688,6 +49004,36 @@ export declare const REPLAY_RECOVERY_CLASSIFICATIONS: readonly [
 ];
 ```
 
+### `REPLAY_REGRESSION_STRATEGIES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured first-regression search strategies ordered bisect, linear.
+
+Signature:
+
+```ts
+export declare const REPLAY_REGRESSION_STRATEGIES: readonly [
+    "bisect",
+    "linear"
+];
+```
+
+### `REPLAY_SOURCE_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured branch source dispositions ordered compensate, retain.
+
+Signature:
+
+```ts
+export declare const REPLAY_SOURCE_DISPOSITIONS: readonly [
+    "compensate",
+    "retain"
+];
+```
+
 ### `REPLAY_STEP_KINDS`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -39735,6 +49081,43 @@ export declare const REPLAY_TERMINAL_STATUSES: readonly [
 ];
 ```
 
+### `ReplayBranchDiff`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One branch of an N-way diff.
+
+Signature:
+
+```ts
+export type ReplayBranchDiff = {
+    readonly effects: readonly ReplayCapturedEffect[];
+    readonly first_divergence_index: number | null;
+    readonly lineage: readonly string[];
+    readonly session_id: string;
+    readonly step_count: number;
+    readonly steps: readonly ReplayBranchDiffStep[];
+};
+```
+
+### `ReplayBranchDiffStep`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One step of a branch aligned against the common ancestor in an N-way diff.
+
+Signature:
+
+```ts
+export type ReplayBranchDiffStep = {
+    readonly ancestor_step_id: string | null;
+    readonly branch_step_id: string | null;
+    readonly index: number;
+    readonly kind: ReplayStepKind;
+    readonly status: ReplayDivergenceStatus;
+};
+```
+
 ### `ReplayBranchOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -39748,9 +49131,11 @@ export type ReplayBranchOptions = {
     readonly claimId: string;
     readonly clock?: () => number;
     readonly commandId: string;
+    readonly compensation?: EffectCompensationRegistry;
     readonly processes?: readonly ReplayProcessAdapter[];
     readonly providerSession?: ReplayProviderSessionAdapter;
     readonly signal?: AbortSignal;
+    readonly sourceDisposition?: ReplaySourceDisposition;
     readonly sourceSessionId: string;
     readonly target: ReplayTarget;
     readonly worlds?: readonly ReplayWorldBinding[];
@@ -39785,6 +49170,25 @@ Signature:
 
 ```ts
 export type ReplayCacheStatus = (typeof REPLAY_CACHE_STATUSES)[number];
+```
+
+### `ReplayCapturedEffect`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One effect step a branch captured past the shared base.
+
+Signature:
+
+```ts
+export type ReplayCapturedEffect = {
+    readonly disposition: ReplayEffectDisposition;
+    readonly effect_id: string;
+    readonly effect_kind: string;
+    readonly index: number;
+    readonly intent_ref: string;
+    readonly step_id: string;
+};
 ```
 
 ### `ReplayChangeDimension`
@@ -39875,6 +49279,41 @@ export type ReplayCheckpointInspection = {
     readonly step_count: number;
     readonly trace_cut_id: string;
 };
+```
+
+### `ReplayCheckpointPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Automatic step-boundary checkpoint policy of one session.
+
+Kinds are the configured `replay.checkpoint.automatic.policies`, ordered none, provider step,
+effect step, and every N steps. A selected boundary is captured immediately before the step that
+selects it, exactly as an explicit `checkpoint()` call there would be: `provider_step` before
+every provider step, `effect_step` before every effect step, and `every_n_steps` before any step
+whose index is a multiple of `interval` (so boundary 0 is always captured). A replay branch
+captures only boundaries at or after its target; the recorded prefix reuses the source's
+checkpoints.
+
+Signature:
+
+```ts
+export type ReplayCheckpointPolicy = {
+    readonly interval?: number;
+    readonly kind: ReplayCheckpointPolicyKind;
+};
+```
+
+### `ReplayCheckpointPolicyKind`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured automatic checkpoint policy kind.
+
+Signature:
+
+```ts
+export type ReplayCheckpointPolicyKind = (typeof REPLAY_CHECKPOINT_POLICIES)[number];
 ```
 
 ### `ReplayCheckpointUnavailableError`
@@ -40172,6 +49611,26 @@ Signature:
 
 ```ts
 export type ReplayEffectDisposition = (typeof REPLAY_EFFECT_DISPOSITIONS)[number];
+```
+
+### `ReplayEffectPresence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One distinct captured effect across the branches of an N-way diff.
+
+Signature:
+
+```ts
+export type ReplayEffectPresence = {
+    readonly disposition: ReplayEffectDisposition;
+    readonly effect_id: string;
+    readonly effect_kind: string;
+    readonly in_ancestor: boolean;
+    readonly intent_ref: string;
+    readonly session_ids: readonly string[];
+    readonly step_id: string;
+};
 ```
 
 ### `ReplayEffectRefusedError`
@@ -40718,6 +50177,52 @@ Signature:
 export type ReplayRecoveryClassification = (typeof REPLAY_RECOVERY_CLASSIFICATIONS)[number];
 ```
 
+### `ReplayRegressionEvaluation`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One evaluated verdict of a regression search.
+
+Signature:
+
+```ts
+export type ReplayRegressionEvaluation = {
+    readonly good: boolean;
+    readonly step_count: number;
+};
+```
+
+### `ReplayRegressionSearch`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of a first-regression search over a session lineage.
+
+Signature:
+
+```ts
+export type ReplayRegressionSearch = {
+    readonly evaluations: readonly ReplayRegressionEvaluation[];
+    readonly first_bad: ReplayRevisionAddress | null;
+    readonly last_good: ReplayRevisionAddress | null;
+    readonly lineage: readonly string[];
+    readonly session_id: string;
+    readonly strategy: ReplayRegressionStrategy;
+};
+```
+
+### `ReplayRegressionStrategy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured first-regression search strategy.
+
+Signature:
+
+```ts
+export type ReplayRegressionStrategy = (typeof REPLAY_REGRESSION_STRATEGIES)[number];
+```
+
 ### `ReplayReplaySessionOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -40728,6 +50233,7 @@ Signature:
 
 ```ts
 export type ReplayReplaySessionOptions = ReplayBranchOptions & {
+    readonly checkpointPolicy?: ReplayCheckpointPolicy;
     readonly changes?: readonly ReplayChangeDimension[];
     readonly handlers?: EffectHandlerStack;
     readonly policy?: (request: ReplayEffectApprovalRequest) => Promise<ReplayEffectApprovalVerdict> | ReplayEffectApprovalVerdict;
@@ -40794,6 +50300,39 @@ export type ReplayRestoreInspection = {
 };
 ```
 
+### `ReplayRevision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One revision of a session lineage presented to a regression verdict.
+
+Signature:
+
+```ts
+export type ReplayRevision = {
+    readonly prefix_id: string | null;
+    readonly session_id: string;
+    readonly step_count: number;
+    readonly steps: readonly ReplayStepInspection[];
+};
+```
+
+### `ReplayRevisionAddress`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Revision address reported by a regression search.
+
+Signature:
+
+```ts
+export type ReplayRevisionAddress = {
+    readonly prefix_id: string | null;
+    readonly session_id: string;
+    readonly step_count: number;
+};
+```
+
 ### `ReplaySessionContext`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -40813,6 +50352,25 @@ export type ReplaySessionContext = {
     readonly signal: AbortSignal;
     readonly step_count: number;
     readonly task: ReplaySessionTask | null;
+};
+```
+
+### `ReplaySessionDiff`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only N-way diff of replay sessions against their common lineage ancestor.
+
+Signature:
+
+```ts
+export type ReplaySessionDiff = {
+    readonly ancestor_session_id: string | null;
+    readonly base_prefix_id: string | null;
+    readonly base_step_count: number;
+    readonly branches: readonly ReplayBranchDiff[];
+    readonly effects: readonly ReplayEffectPresence[];
+    readonly session_ids: readonly string[];
 };
 ```
 
@@ -40839,6 +50397,7 @@ export type ReplaySessionInspection = {
         readonly process_id: string;
     }[];
     readonly program_id: string;
+    readonly proof: ProofEnvelope;
     readonly provider: ProviderDescriptor | null;
     readonly provider_session_adapter_id: string | null;
     readonly restore: ReplayRestoreInspection | null;
@@ -40967,6 +50526,20 @@ export type ReplaySessionTaskDefinition = {
     readonly descriptor: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>;
     readonly input: unknown;
 };
+```
+
+### `ReplaySourceDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured disposition of a branch's source session: `compensate` abandons the source's suffix
+and compensates its successful compensable effects before the branch opens; `retain` keeps the
+source as a live alternative and compensates nothing.
+
+Signature:
+
+```ts
+export type ReplaySourceDisposition = (typeof REPLAY_SOURCE_DISPOSITIONS)[number];
 ```
 
 ### `ReplayStepFailure`
@@ -41223,6 +50796,7 @@ Signature:
 
 ```ts
 export type RunReplaySessionOptions = {
+    readonly checkpointPolicy?: ReplayCheckpointPolicy;
     readonly claimId: string;
     readonly clock?: () => number;
     readonly commandId: string;
@@ -41509,6 +51083,114 @@ const inspection = inspectReplaySession(store, {
 });
 ```
 
+### `diffReplaySessions`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Diffs any set of replay sessions against their lowest common lineage ancestor by captured effects.
+
+The lineage of a session is the chain of retained branch origins from its root session to itself.
+The ancestor is the deepest session present in every lineage, so sibling rollouts, workers
+replayed from one source, and candidate branches all resolve to their shared source; sessions
+without a shared root have no ancestor. The base is the longest ancestor prefix that every branch
+retains with identical step identities (empty without an ancestor). Each branch is aligned by index
+against the ancestor from the base onward, and every effect step a branch retains past the base
+is reported per branch and once in the cross-branch effect table with the branches that captured
+it and whether the ancestor retains it too. Effects are identified by step content identity, so
+the same intent with another outcome is a different captured effect. Diffing is read-only.
+
+Signature:
+
+```ts
+export declare function diffReplaySessions(store: SQLiteTraceStore, options: DiffReplaySessionsOptions): ReplaySessionDiff;
+```
+
+Parameter:
+
+- store - Open trace store holding every session and its lineage.
+
+Parameter:
+
+- options - Session identities and an optional clock.
+
+Returns:
+
+- Frozen N-way diff.
+
+Throws:
+
+- {ReplayEvidenceError} If a session is absent or its evidence is inconsistent.
+
+Throws:
+
+- {ReplayCompatibilityError} If retained evidence names an unsupported replay version.
+
+Throws:
+
+- {TypeError} If options are malformed, repeat a session, or exceed the configured bound.
+
+Example:
+
+- ```ts
+const diff = diffReplaySessions(store, { sessionIds: [rolloutA, rolloutB, rolloutC] });
+console.log(diff.ancestor_session_id, diff.effects.map((effect) => effect.session_ids));
+```
+
+### `findFirstReplayRegression`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Locates the first revision of a session lineage that a caller verdict rejects.
+
+Revision `k` is the first `k` steps of the searched session (revision 0 is empty). A branch
+session retains its inherited prefix as recorded steps, so its revisions span its whole lineage;
+each revision is attributed to the lineage session that executed its newest step live, found by
+walking recorded steps back through their source sessions. `linear` evaluates revisions from 0
+upward and stops at the first rejection. `bisect` evaluates the newest revision (nothing
+regressed when accepted), then revision 0 (the first revision is bad when rejected), then halves
+the good/bad interval at the lower midpoint; it needs `O(log n)` verdicts and assumes a monotone
+verdict. Both are deterministic, evaluate each revision at most once, and append nothing.
+
+Signature:
+
+```ts
+export declare function findFirstReplayRegression(store: SQLiteTraceStore, options: FindFirstReplayRegressionOptions): Promise<ReplayRegressionSearch>;
+```
+
+Parameter:
+
+- store - Open trace store holding the session and its lineage.
+
+Parameter:
+
+- options - Session identity, verdict, and optional strategy and clock.
+
+Returns:
+
+- Frozen search result with every evaluation in order.
+
+Throws:
+
+- {ReplayEvidenceError} If a session is absent or its evidence is inconsistent.
+
+Throws:
+
+- {ReplayCompatibilityError} If retained evidence names an unsupported replay version.
+
+Throws:
+
+- {TypeError} If options are malformed or a verdict returns a non-boolean.
+
+Example:
+
+- ```ts
+const search = await findFirstReplayRegression(store, {
+    sessionId,
+    verdict: (revision) => revision.steps.every((step) => step.effect?.disposition !== "refused"),
+});
+console.log(search.first_bad?.step_count, search.first_bad?.session_id);
+```
+
 ### `inspectReplaySession`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -41520,6 +51202,13 @@ step order and dependencies, chained prefix and context prefix identities, cache
 admission-before-materialization, recorded steps against their source records, checkpoint cuts
 and constituents, restore evidence, and terminal consistency. Inspection appends nothing and works
 on read-only and imported stores; an imported session has no live row and is never `running`.
+
+The inspection carries a `proof` envelope: `runtime_only` for root sessions and the configured
+`extension` profile for branch sessions, whose rewind and replay are publication controls. With
+`lowerProof`, an eligible static root session (finished, effect steps only, every effect
+materialized) is lowered into Core-A records; the envelope is then whatever the executable
+reference machine accepts (`reference_core_a` / `reference_validated`), never proof-backed. An
+ineligible session keeps its envelope and reports `metadata.lowering_ineligible`.
 
 Signature:
 
@@ -41572,8 +51261,11 @@ Restoration follows rewindReplaySession. The program is then re-executed: steps 
 target are served from the source journal only when the program issues the exact recorded request
 or intent with the same dependencies, and are retained as recorded steps with no provider or
 handler invocation. Later steps run live with the supplied provider, handler stack, and declared
-replacement task. Approval-required suffix effects run only when `policy` approves them; otherwise
-they are retained as refused and never reach a handler.
+replacement task. `checkpointPolicy` selects automatic checkpoints of the branch's own worlds and
+processes at boundaries at or after the target. The source disposition and compensation of the
+source suffix follow rewindReplaySession; an exploratory replay that keeps its source as a
+retained alternative declares `sourceDisposition: "retain"`. Approval-required suffix effects run
+only when `policy` approves them; otherwise they are retained as refused and never reach a handler.
 
 Signature:
 
@@ -41619,6 +51311,15 @@ Throws:
 
 Throws:
 
+- {EffectCompensationHandlerNotFoundError} Before anything is written, if the source is
+compensated and a suffix effect needing compensation has no handler.
+
+Throws:
+
+- {EffectCompensationFailedError} Before the branch opens, if a compensation failed.
+
+Throws:
+
 - {TypeError} If options or declared changes are malformed.
 
 Example:
@@ -41645,8 +51346,13 @@ Every constituent the target claims verified is re-verified before anything is w
 unavailable target is refused. Worlds are restored byte-equivalently into caller-selected empty
 roots, verified provider-session and process captures are handed to their adapters, a restore
 record retains the classification, the source prefix is copied as verified recorded steps, and
-the branch ends `rewound`. No provider or handler is invoked. Repeating a completed branch command
-returns its retained receipt without restoring anything.
+the branch ends `rewound`. No provider or effect handler is invoked. With the source disposition
+`compensate` (the configured default), before the branch opens every successful compensable effect
+the source materialized at or after the target is compensated once through `compensation`, in
+reverse step order, with retained intent, attempt, and outcome records. With `retain` the source
+stays a retained alternative and no compensation handler is invoked.
+Repeating a completed branch command returns its retained receipt without restoring or
+compensating anything.
 
 Signature:
 
@@ -41688,7 +51394,17 @@ Throws:
 
 Throws:
 
-- {TypeError} If options are malformed or omit a required adapter or root.
+- {EffectCompensationHandlerNotFoundError} Before anything is written, if the source is
+compensated and a suffix effect needing compensation has no handler.
+
+Throws:
+
+- {EffectCompensationFailedError} Before the branch opens, if a compensation failed.
+
+Throws:
+
+- {TypeError} If options are malformed, name an unknown source disposition, or omit a
+required adapter or root.
 
 Example:
 
@@ -41712,7 +51428,9 @@ The session record, every provider exchange, every effect admission and step, ev
 and the terminal record are retained on the session's own owner path under a fenced lease. A
 program failure is retained as a `failed` terminal and returned; caller cancellation is retained
 as `cancelled`. Repeating a terminal command returns the retained receipt without running the
-program; a non-terminal session is never resumed in place.
+program; a non-terminal session is never resumed in place. `checkpointPolicy` (default: the
+configured `replay.checkpoint.automatic.defaultPolicy`) captures a coupled checkpoint immediately
+before every step it selects, exactly as an explicit `checkpoint()` there would.
 
 Signature:
 
@@ -41726,7 +51444,8 @@ Parameter:
 
 Parameter:
 
-- options - Command, claim, program, provider, handlers, task, worlds, processes, and signal.
+- options - Command, claim, program, provider, handlers, task, worlds, processes, automatic
+checkpoint policy, and signal.
 
 Returns:
 
@@ -42367,6 +52086,7 @@ export type DurableTaskExecutionInspection = {
     readonly cut: Cut | null;
     readonly lifecycle: DurableTaskExecutionLifecycleInspection;
     readonly outcome: DurableTaskExecutionOutcomeInspection | null;
+    readonly proof: ProofEnvelope;
     readonly run_id: string;
     readonly settlements: readonly DurableTaskExecutionSettlementInspection[];
     readonly status: (typeof DURABLE_EXECUTION_RECOVERY_STATUSES)[number];
@@ -44071,10 +53791,15 @@ Parameter:
 Parameter:
 
 - runId - Stable durable run owner to inspect.
+The view carries a `proof` envelope. Production runs are `runtime_only`; a non-runtime claim
+imported through the configured run-artifact carrier-metadata key surfaces only as
+`metadata.claimed_proof_backed`, and retained-world settlement citations (a delayed terminal
+publication) classify the envelope as the configured `extension` profile.
 
 Returns:
 
-- Lifecycle, quiescent continuation, artifact, usage, outcome, cut, and causal evidence.
+- Lifecycle, quiescent continuation, artifact, usage, outcome, cut, causal, and proof
+evidence.
 
 Throws:
 
@@ -48808,7 +58533,7 @@ import * as api from "@avnionur/shepherd-typescript/tasks";
 void api;
 ```
 
-Exported symbols: 29.
+Exported symbols: 39.
 
 ### `ExactTaskReference`
 
@@ -48841,14 +58566,185 @@ export type InferTaskSchema<S extends TaskSchema<unknown>> = S extends TaskSchem
 
 Classification: `type-only`. Kind: `type alias`.
 
-Value inferred from a task object-schema shape.
+Value inferred from a task object-schema shape; optional fields become optional properties.
 
 Signature:
 
 ```ts
 export type InferTaskSchemaShape<S extends TaskSchemaShape> = {
-    readonly [K in keyof S]: InferTaskSchema<S[K]>;
+    readonly [K in Exclude<keyof S, OptionalTaskSchemaShapeKeys<S>>]: InferTaskSchemaShapeField<S[K]>;
+} & {
+    readonly [K in OptionalTaskSchemaShapeKeys<S>]?: InferTaskSchemaShapeField<S[K]>;
 };
+```
+
+### `InferTaskSchemaShapeField`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Value inferred from one task object-schema shape field.
+
+Signature:
+
+```ts
+export type InferTaskSchemaShapeField<F> = F extends TaskOptionalSchema<infer T> ? T : F extends TaskSchema<infer T> ? T : never;
+```
+
+### `JSONSchemaDocument`
+
+Classification: `type-only`. Kind: `type alias`.
+
+JSON Schema document accepted by compileJSONSchema: a boolean or an object schema.
+
+Signature:
+
+```ts
+export type JSONSchemaDocument = boolean | {
+    readonly [key: string]: SemanticValue | undefined;
+};
+```
+
+### `JSONSchemaIssue`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One path-level reason a value does not satisfy a schema.
+
+Signature:
+
+```ts
+export type JSONSchemaIssue = {
+    readonly keyword: string;
+    readonly message: string;
+    readonly path: string;
+    readonly schemaPath: string;
+};
+```
+
+### `JSONSchemaValidationError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a value does not satisfy a task schema or a compiled JSON Schema document.
+
+The error is a `TypeError`, the documented class for invalid input, with the configured
+`SCHEMA_VALIDATION_FAILED` code and the complete list of path-level issues. The message joins
+every issue as `<path> <message>`, optionally prefixed by a subject; it never embeds the refused
+value itself.
+
+Signature:
+
+```ts
+export declare class JSONSchemaValidationError extends TypeError {
+    readonly code: string;
+    readonly issues: readonly JSONSchemaIssue[];
+    constructor(issues: readonly JSONSchemaIssue[], subject?: string, options?: ErrorOptions);
+}
+```
+
+Example:
+
+- ```ts
+try {
+    validator.parse(untrusted);
+} catch (error) {
+    if (error instanceof JSONSchemaValidationError) {
+        for (const issue of error.issues) console.error(issue.path, issue.message);
+    }
+}
+```
+
+#### `code`
+
+Stable configured machine-readable schema-validation code.
+
+```ts
+readonly code: string;
+```
+
+#### `issues`
+
+Every issue found, in document order; never empty.
+
+```ts
+readonly issues: readonly JSONSchemaIssue[];
+```
+
+#### `constructor`
+
+Creates a validation refusal.
+
+```ts
+constructor(issues: readonly JSONSchemaIssue[], subject?: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- issues - Non-empty path-level issues.
+
+Parameter:
+
+- subject - Optional description of the validated value prefixed to the message.
+
+Parameter:
+
+- options - Optional in-memory cause retained for diagnostics.
+
+### `JSONSchemaValidator`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Compiled, reusable validator for one JSON Schema document.
+
+Signature:
+
+```ts
+export type JSONSchemaValidator = {
+    readonly document: JSONSchemaDocument;
+    readonly validate: (value: unknown) => readonly JSONSchemaIssue[];
+    readonly parse: (value: unknown, subject?: string) => SemanticValue;
+};
+```
+
+### `JSON_SCHEMA_SUPPORTED_KEYWORDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+JSON Schema 2020-12 keywords `compileJSONSchema` evaluates, in addition to the boolean schemas
+`true` and `false`. Any other keyword is refused at compile time rather than silently ignored.
+
+`$schema` is accepted only at the document root and only with the configured dialect
+(`kernel.schemas.dialect`); `$comment`, `description`, and `title` are annotations.
+
+Signature:
+
+```ts
+export declare const JSON_SCHEMA_SUPPORTED_KEYWORDS: readonly [
+    "$comment",
+    "$schema",
+    "additionalProperties",
+    "allOf",
+    "anyOf",
+    "const",
+    "description",
+    "enum",
+    "exclusiveMaximum",
+    "exclusiveMinimum",
+    "items",
+    "maxItems",
+    "maxLength",
+    "maximum",
+    "minItems",
+    "minLength",
+    "minimum",
+    "oneOf",
+    "pattern",
+    "properties",
+    "required",
+    "title",
+    "type",
+    "uniqueItems"
+];
 ```
 
 ### `LedgerListOptions`
@@ -48943,6 +58839,20 @@ Parameter:
 Parameter:
 
 - code - Stable machine-readable missing-selector code.
+
+### `OptionalTaskSchemaShapeKeys`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Keys of a task object-schema shape declared with `schema.optional()`.
+
+Signature:
+
+```ts
+export type OptionalTaskSchemaShapeKeys<S extends TaskSchemaShape> = {
+    [K in keyof S]-?: S[K] extends TaskOptionalSchema<unknown> ? K : never;
+}[keyof S];
+```
 
 ### `SQLiteTaskRegistry`
 
@@ -49208,6 +59118,24 @@ export type TaskLedgerRepositoryGrantEvidence = {
 };
 ```
 
+### `TaskOptionalSchema`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Marker declaring one object field optional; accepted only inside `schema.object()` shapes.
+
+The field's document is the wrapped schema's document; the parent object omits the field from
+`required`.
+
+Signature:
+
+```ts
+export type TaskOptionalSchema<T> = {
+    readonly optional: true;
+    readonly schema: TaskSchema<T>;
+};
+```
+
 ### `TaskRegistration`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -49264,30 +59192,54 @@ export type TaskSchema<T> = {
 
 Classification: `type-only`. Kind: `type alias`.
 
-Public factory surface for the supported task schema primitives.
+Public factory surface for the supported task schema forms.
 
 Signature:
 
 ```ts
 export type TaskSchemaFactory = {
+    readonly array: <S extends TaskSchema<unknown>>(items: S) => TaskSchema<readonly InferTaskSchema<S>[]>;
+    readonly boolean: () => TaskSchema<boolean>;
+    readonly enum: <const V extends readonly [
+        TaskSchemaScalar,
+        ...TaskSchemaScalar[]
+    ]>(values: V) => TaskSchema<V[number]>;
     readonly fromJSONSchema: (document: unknown) => TaskSchema<unknown>;
+    readonly integer: () => TaskSchema<number>;
+    readonly literal: <const V extends TaskSchemaScalar>(value: V) => TaskSchema<V>;
+    readonly null: () => TaskSchema<null>;
+    readonly number: () => TaskSchema<number>;
     readonly object: <S extends TaskSchemaShape>(shape: S) => TaskSchema<InferTaskSchemaShape<S>>;
+    readonly optional: <S extends TaskSchema<unknown>>(schema: S) => TaskOptionalSchema<InferTaskSchema<S>>;
     readonly string: () => TaskSchema<string>;
     readonly task: () => TaskSchema<TaskValue>;
+    readonly union: <const S extends UnionMembers>(members: S) => TaskSchema<InferTaskSchema<S[number]>>;
     readonly void: () => TaskSchema<void>;
 };
+```
+
+### `TaskSchemaScalar`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Scalar value admitted by task enum and literal schemas.
+
+Signature:
+
+```ts
+export type TaskSchemaScalar = boolean | null | number | string;
 ```
 
 ### `TaskSchemaShape`
 
 Classification: `type-only`. Kind: `type alias`.
 
-Shape accepted by `schema.object()`.
+Shape accepted by `schema.object()`: field names mapped to schemas or optional markers.
 
 Signature:
 
 ```ts
-export type TaskSchemaShape = Readonly<Record<string, TaskSchema<unknown>>>;
+export type TaskSchemaShape = Readonly<Record<string, TaskSchema<unknown> | TaskOptionalSchema<unknown>>>;
 ```
 
 ### `TaskValue`
@@ -49350,6 +59302,56 @@ Stable configured machine-readable unsupported-schema code.
 
 ```ts
 readonly code: string;
+```
+
+### `compileJSONSchema`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Compiles one JSON Schema document in the supported 2020-12 subset into a reusable validator.
+
+The document is snapshotted canonically (accessors, cycles, non-finite numbers, and malformed
+strings are refused) and every keyword is checked against JSON_SCHEMA_SUPPORTED_KEYWORDS
+before any value is validated, so an unsupported or malformed document fails at compile time.
+`type` is a type name or a non-empty array of distinct names; `integer` accepts any number with
+a zero fractional part. String lengths count Unicode code points; `pattern` is an ECMAScript
+regular expression evaluated with the `u` flag. `enum`, `const`, and `uniqueItems` compare
+canonical JSON, so object key order never matters. `oneOf` requires exactly one matching member.
+
+Signature:
+
+```ts
+export declare function compileJSONSchema(document: unknown): JSONSchemaValidator;
+```
+
+Parameter:
+
+- document - Untrusted JSON Schema document or boolean schema.
+
+Returns:
+
+- A frozen validator whose `validate` reports every path-level issue.
+
+Throws:
+
+- {TypeError} If the document is not canonical data, uses a keyword outside the supported
+subset, declares a malformed keyword value, or names another `$schema` dialect.
+
+Throws:
+
+- {CanonicalNestingLimitError} If the document nests deeper than the configured bound.
+
+Example:
+
+- ```ts
+const action = compileJSONSchema({
+    type: "object",
+    additionalProperties: false,
+    properties: { kind: { enum: ["observe", "accept"] }, worker_id: { type: ["string", "null"] } },
+    required: ["kind", "worker_id"],
+});
+action.validate({ kind: "merge", worker_id: null });
+// [{ path: "$.kind", keyword: "enum", schemaPath: "#/properties/kind/enum", message: "..." }]
 ```
 
 ### `listTaskLedger`
@@ -50377,8 +60379,8 @@ matches a configured detector; nothing is written and the intent remains reusabl
 Throws:
 
 - {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
-owner path reserved for supervised dispatches, context channels, replay sessions, or child
-run handles.
+owner path reserved for supervised dispatches, context channels, replay sessions, child run
+handles, applications, or effect compensations.
 
 Throws:
 
@@ -51068,7 +61070,8 @@ Returns:
 Throws:
 
 - {TraceStoreError} If the target occurrence is absent, the publishing owner path is
-reserved for replay sessions or child run handles, or the store is closed.
+reserved for replay sessions, child run handles, applications, or effect compensations, or the
+store is closed.
 
 Throws:
 
@@ -52133,7 +62136,7 @@ import * as api from "@avnionur/shepherd-typescript/workspace";
 void api;
 ```
 
-Exported symbols: 204.
+Exported symbols: 235.
 
 ### `AppliedRetainedWorldSettlement`
 
@@ -52175,6 +62178,19 @@ export type ApplyRetainedWorldSettlementOptions = {
     readonly outputId: string;
     readonly store: SQLiteTraceStore;
 };
+```
+
+### `BackendSelectionMode`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured backend selection mode: `strict` refuses when the requested backend is unavailable;
+`fallback` degrades along the configured fallback order and records the backend actually used.
+
+Signature:
+
+```ts
+export type BackendSelectionMode = (typeof BACKEND_SELECTION_MODES)[number];
 ```
 
 ### `CaptureGrantedTaskWorldOptions`
@@ -52240,6 +62256,392 @@ export type CaptureTaskWorldOptions<I extends TaskSchema<unknown>, O extends Tas
 };
 ```
 
+### `ContainerDeviceLayerAdapterOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Optional overrides of the configured reference container adapter.
+
+Signature:
+
+```ts
+export type ContainerDeviceLayerAdapterOptions = {
+    readonly image?: string;
+};
+```
+
+### `DeviceLayerAdapter`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Pluggable device-layer adapter contract: the carrier backend contract generalized to any
+substrate that can freeze a writable layer as a named lower layer. Adapters pass
+checkDeviceLayerConformance before use.
+
+Signature:
+
+```ts
+export type DeviceLayerAdapter = {
+    readonly name: string;
+    readonly open: (context: DeviceLayerOpenContext) => Promise<DeviceLayerDevice>;
+    readonly probe: (context: Readonly<{
+        root: string;
+    }>) => Promise<DeviceLayerProbe>;
+};
+```
+
+### `DeviceLayerAdapterName`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured built-in device-layer adapter name.
+
+Signature:
+
+```ts
+export type DeviceLayerAdapterName = (typeof DEVICE_LAYER_ADAPTERS)[number];
+```
+
+### `DeviceLayerCheckpoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of freezing one named checkpoint.
+
+Signature:
+
+```ts
+export type DeviceLayerCheckpoint = {
+    readonly checkpoint: string;
+    readonly compaction: DeviceLayerCompaction | null;
+    readonly depth: number;
+    readonly layer: string;
+};
+```
+
+### `DeviceLayerCompaction`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Evidence of one compaction performed while freezing a checkpoint.
+
+Signature:
+
+```ts
+export type DeviceLayerCompaction = {
+    readonly into: string;
+    readonly layers: readonly string[];
+    readonly retired: readonly string[];
+};
+```
+
+### `DeviceLayerCompactionRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Frozen layers the device flattens while freezing one checkpoint.
+
+Signature:
+
+```ts
+export type DeviceLayerCompactionRequest = {
+    readonly into: string;
+    readonly layers: readonly string[];
+};
+```
+
+### `DeviceLayerConformanceCase`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One case of the device-layer conformance kit.
+
+Signature:
+
+```ts
+export type DeviceLayerConformanceCase = {
+    readonly error: string | null;
+    readonly name: string;
+    readonly passed: boolean;
+};
+```
+
+### `DeviceLayerConformanceReport`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of checkDeviceLayerConformance.
+
+Signature:
+
+```ts
+export type DeviceLayerConformanceReport = {
+    readonly adapter: string;
+    readonly cases: readonly DeviceLayerConformanceCase[];
+    readonly passed: boolean;
+};
+```
+
+### `DeviceLayerDepthPolicy`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Depth bound and compaction retention of one world.
+
+Signature:
+
+```ts
+export type DeviceLayerDepthPolicy = {
+    readonly maxDepth: number;
+    readonly retainNewest: number;
+};
+```
+
+### `DeviceLayerDevice`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One open device: the physical world an adapter maintains as a stack of frozen layers under one
+writable layer. Every method is called by the engine one at a time, never concurrently.
+
+Signature:
+
+```ts
+export type DeviceLayerDevice = {
+    readonly close: () => Promise<void>;
+    readonly freeze: (request: DeviceLayerFreezeRequest) => Promise<void>;
+    readonly listFiles: () => Promise<readonly DeviceLayerFileEntry[]>;
+    readonly maxLayers: number;
+    readonly path: string | null;
+    readonly readFile: (relativePath: string) => Promise<Buffer>;
+    readonly removePath: (relativePath: string) => Promise<void>;
+    readonly revert: (layers: readonly string[]) => Promise<void>;
+    readonly writeFile: (relativePath: string, bytes: Buffer) => Promise<void>;
+};
+```
+
+### `DeviceLayerError`
+
+Classification: `runtime-and-type`. Kind: `class`.
+
+Raised when a device-layer world, checkpoint, path, or adapter refuses an operation.
+
+Signature:
+
+```ts
+export declare class DeviceLayerError extends Error {
+    readonly code: string;
+    constructor(code: string, message: string, options?: ErrorOptions);
+}
+```
+
+#### `code`
+
+Stable machine-readable device-layer failure code.
+
+```ts
+readonly code: string;
+```
+
+#### `constructor`
+
+Creates a device-layer failure.
+
+```ts
+constructor(code: string, message: string, options?: ErrorOptions);
+```
+
+Parameter:
+
+- code - Configured machine-readable failure code.
+
+Parameter:
+
+- message - Diagnostic describing the rejected operation.
+
+Parameter:
+
+- options - Optional underlying cause.
+
+### `DeviceLayerFileEntry`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One regular file of a device-layer world.
+
+Signature:
+
+```ts
+export type DeviceLayerFileEntry = {
+    readonly digest: string;
+    readonly path: string;
+};
+```
+
+### `DeviceLayerFreezeRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One freeze instruction the engine gives a device.
+
+Signature:
+
+```ts
+export type DeviceLayerFreezeRequest = {
+    readonly compaction: DeviceLayerCompactionRequest | null;
+    readonly layer: string;
+};
+```
+
+### `DeviceLayerLayer`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One frozen layer of a world's current stack.
+
+Signature:
+
+```ts
+export type DeviceLayerLayer = {
+    readonly checkpoint: string;
+    readonly index: number;
+    readonly layer: string;
+};
+```
+
+### `DeviceLayerOpenContext`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Private host locations and seed the engine hands to DeviceLayerAdapter.open.
+
+Signature:
+
+```ts
+export type DeviceLayerOpenContext = {
+    readonly baseLayer: string;
+    readonly deviceId: string;
+    readonly root: string;
+    readonly seed: string | null;
+};
+```
+
+### `DeviceLayerProbe`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Host availability reported by one device-layer adapter probe.
+
+Signature:
+
+```ts
+export type DeviceLayerProbe = {
+    readonly available: true;
+} | {
+    readonly available: false;
+    readonly reason: string;
+    readonly detail: string;
+};
+```
+
+### `DeviceLayerRestore`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Result of restoring one named checkpoint.
+
+Signature:
+
+```ts
+export type DeviceLayerRestore = {
+    readonly checkpoint: string;
+    readonly depth: number;
+    readonly discarded: readonly string[];
+};
+```
+
+### `DeviceLayerSelection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Selection evidence naming the requested and the actually used adapter.
+
+Signature:
+
+```ts
+export type DeviceLayerSelection = {
+    readonly attempts: readonly DeviceLayerSelectionAttempt[];
+    readonly mode: BackendSelectionMode;
+    readonly requested: string;
+    readonly used: string;
+};
+```
+
+### `DeviceLayerSelectionAttempt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One adapter tried while selecting the adapter of a device-layer world.
+
+Signature:
+
+```ts
+export type DeviceLayerSelectionAttempt = {
+    readonly adapter: string;
+    readonly available: boolean;
+    readonly reason: string;
+};
+```
+
+### `DeviceLayerWorld`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One open layered world: a writable layer over a bounded stack of named frozen checkpoints.
+Operations are serialized; callers must quiesce writers that bypass these methods through
+DeviceLayerWorld.path before calling DeviceLayerWorld.checkpoint or
+DeviceLayerWorld.restore.
+
+Signature:
+
+```ts
+export type DeviceLayerWorld = {
+    readonly adapter: string;
+    readonly checkpoint: (name: string) => Promise<DeviceLayerCheckpoint>;
+    readonly close: () => Promise<void>;
+    readonly depth: DeviceLayerDepthPolicy;
+    readonly deviceId: string;
+    readonly layers: () => readonly DeviceLayerLayer[];
+    readonly listFiles: () => Promise<readonly DeviceLayerFileEntry[]>;
+    readonly path: string | null;
+    readonly readFile: (relativePath: string) => Promise<Buffer>;
+    readonly removePath: (relativePath: string) => Promise<void>;
+    readonly restore: (name: string) => Promise<DeviceLayerRestore>;
+    readonly selection: DeviceLayerSelection;
+    readonly writeFile: (relativePath: string, bytes: Buffer) => Promise<void>;
+};
+```
+
+### `DeviceLayerWorldOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Options for openDeviceLayerWorld.
+
+Signature:
+
+```ts
+export type DeviceLayerWorldOptions = {
+    readonly adapter?: string;
+    readonly adapters?: readonly DeviceLayerAdapter[];
+    readonly depth?: Partial<DeviceLayerDepthPolicy>;
+    readonly fallbackOrder?: readonly string[];
+    readonly root: string;
+    readonly seed?: string;
+    readonly selection?: BackendSelectionMode;
+};
+```
+
 ### `DiscardRetainedWorldSettlementOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -52268,6 +62670,7 @@ Signature:
 export type DiscardScopeOptions = {
     readonly carrier?: ReferenceCopyCarrier;
     readonly commandId: string;
+    readonly compensation?: EffectCompensationRegistry;
     readonly expectedHeadRecordId: RecordId;
     readonly nowMilliseconds?: number;
     readonly parent: ScopeWriter;
@@ -53514,6 +63917,7 @@ Signature:
 ```ts
 export type ReferenceCopyCarrier = {
     readonly backend: WorldCarrierBackend;
+    readonly backendSelection: WorldCarrierBackendSelection;
     readonly captureCustody: (custodyId: string) => Promise<WorldRevision>;
     readonly discard: (custodyId: string) => Promise<void>;
     readonly fork: (revisionId: string) => Promise<WorldCustody>;
@@ -53536,6 +63940,7 @@ Signature:
 ```ts
 export type ReferenceCopyCarrierOptions = {
     readonly backend?: WorldCarrierBackend;
+    readonly backendSelection?: BackendSelectionMode;
     readonly faultInjection?: WorkspaceCustodyFaultInjection;
     readonly workspaceRoot: string;
 };
@@ -54743,6 +65148,39 @@ Signature:
 export type WorldCarrierBackend = (typeof WORLD_CARRIER_BACKENDS)[number];
 ```
 
+### `WorldCarrierBackendAttempt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+One carrier backend probed while selecting the backend of a carrier.
+
+Signature:
+
+```ts
+export type WorldCarrierBackendAttempt = {
+    readonly backend: WorldCarrierBackend;
+    readonly reason: string;
+    readonly status: string;
+};
+```
+
+### `WorldCarrierBackendSelection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Selection evidence naming the requested and the actually used carrier backend.
+
+Signature:
+
+```ts
+export type WorldCarrierBackendSelection = {
+    readonly attempts: readonly WorldCarrierBackendAttempt[];
+    readonly mode: BackendSelectionMode;
+    readonly requested: WorldCarrierBackend;
+    readonly used: WorldCarrierBackend;
+};
+```
+
 ### `WorldCarrierError`
 
 Classification: `runtime-and-type`. Kind: `class`.
@@ -55396,6 +65834,143 @@ const result = await captureTaskWorldDurably({
 result.output.head_revision_id;
 ```
 
+### `checkDeviceLayerConformance`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Runs the device-layer conformance kit against one adapter.
+
+Every case opens a fresh world through openDeviceLayerWorld in strict mode, so the
+adapter is exercised through the same engine that production callers use. The kit covers probe
+availability, seeding and file operations, path refusal, named checkpoints and restore with
+discard of newer checkpoints, duplicate and invalid names, deletions that survive freezing, the
+configured conformance depth bound with compaction and retirement of flattened names, exact
+restoration of every retained checkpoint after compaction, and close semantics. A case failure
+is reported, never thrown.
+
+Signature:
+
+```ts
+export declare function checkDeviceLayerConformance(adapter: DeviceLayerAdapter, options: Readonly<{
+    root: string;
+}>): Promise<DeviceLayerConformanceReport>;
+```
+
+Parameter:
+
+- adapter - Adapter under test; it must be available on this host.
+
+Parameter:
+
+- options - Existing host directory used for seeds and device roots.
+
+Returns:
+
+- Report listing every case in order.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Example:
+
+- const report = await checkDeviceLayerConformance(createCopyDeviceLayerAdapter(), { root });
+assert.equal(report.passed, true);
+
+### `createCloneDeviceLayerAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the clone device-layer adapter.
+
+Like the copy adapter, but every frozen layer clones each regular file (reflink on Linux,
+`clonefile(2)` on macOS) and verifies the clone byte for byte, so storage grows with changed
+bytes while capture time still grows with the number of files. It is available where the clone
+carrier backend probe succeeds on the device root's filesystem.
+
+Signature:
+
+```ts
+export declare function createCloneDeviceLayerAdapter(): DeviceLayerAdapter;
+```
+
+Returns:
+
+- Frozen clone adapter.
+
+### `createContainerDeviceLayerAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the reference container device-layer adapter driven through the configured container
+CLI (`docker` by default) without a shell.
+
+The world lives at the configured path inside a container started from a local image; the
+adapter never pulls. A checkpoint commits the container's writable layer as a new image layer
+(`docker commit`) and replaces the container with one started from that image, so the frozen
+layer becomes a lower layer and the new writable layer is empty. Compaction exports the newest
+flattened image and imports it as one single-layer replacement, then re-flattens every retained
+image the same way so no image chain exceeds the configured layer bound. Every container and
+image carries a label or tag naming the device and is removed when the world closes.
+
+Signature:
+
+```ts
+export declare function createContainerDeviceLayerAdapter(options?: ContainerDeviceLayerAdapterOptions): DeviceLayerAdapter;
+```
+
+Parameter:
+
+- options - Optional base image override.
+
+Returns:
+
+- Frozen container adapter.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+### `createCopyDeviceLayerAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the portable copy device-layer adapter, the `cp -a` reference.
+
+The world is a plain host directory. Every checkpoint freezes a full verified-byte copy of the
+world as its layer, so capture time and storage grow with world size; compaction keeps only the
+newest flattened snapshot. It is available on every host.
+
+Signature:
+
+```ts
+export declare function createCopyDeviceLayerAdapter(): DeviceLayerAdapter;
+```
+
+Returns:
+
+- Frozen copy adapter.
+
+### `createDeviceLayerAdapters`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates every built-in device-layer adapter in configured role order.
+
+Signature:
+
+```ts
+export declare function createDeviceLayerAdapters(): readonly DeviceLayerAdapter[];
+```
+
+Returns:
+
+- Frozen copy, clone, overlay, and container adapters.
+
+Example:
+
+- const world = await openDeviceLayerWorld({ adapters: createDeviceLayerAdapters(), root });
+
 ### `createGitAwareCustody`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -55694,6 +66269,28 @@ const runner = createNativeJailRunner({
 });
 ```
 
+### `createOverlayDeviceLayerAdapter`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates the Linux stacked-overlay device-layer adapter.
+
+The world is an overlay mount of an upper layer over the frozen stack. A checkpoint unmounts,
+renames the upper directory into the stack as the new named lower layer, and remounts, so its
+cost does not depend on world size. Compaction mounts the flattened layers read-only and copies
+their merged view into one replacement layer. It is available where the overlay carrier backend
+probe succeeds.
+
+Signature:
+
+```ts
+export declare function createOverlayDeviceLayerAdapter(): DeviceLayerAdapter;
+```
+
+Returns:
+
+- Frozen overlay adapter.
+
 ### `createPlacementPlatformEvidence`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -55809,18 +66406,30 @@ const runner = createRetainedWorldRunner({
 
 Classification: `runtime-only`. Kind: `function`.
 
-Creates the concrete world adapter the coding supervisor composes over scope forks, merges,
-discards, and changesets.
+Creates the concrete world adapter the coding and runtime supervisors compose over scope forks,
+merges, discards, and changesets.
 
 `fork` captures the parent's current custody as the origin and forks one child scope with
-reference-copy custody under the parent writer; a fork command already completed returns its
-retained receipt without carrier work. `merge` claims the child writer under the merge command
-identity and merges the child into the parent at both current heads; `discard` discards the
-child subtree and cleans its custody; both return the retained receipt when the command already
-completed. `changedPaths` compares the custody's origin revision with a capture of its current
-custody and returns the canonical changed paths. Custody identities are resolved through the
-receipts the adapter returned or replayed, so a fresh process rebuilds them by re-issuing the
-same fork commands.
+reference-copy custody under the parent writer. With `sourceCustodyId` it instead captures that
+custody's current content and forks a nested child of the source's scope, so the new custody
+starts from the source's working tree (the runtime supervisor's cross-agent handoff). A fork
+command already completed returns its retained receipt without carrier work. Every forked scope
+is written only under a writer claimed with its own fork command identity, so a nested fork,
+merge, or discard beneath it re-derives the same claim. `merge` always lands the custody in the
+parent world. A custody forked from the parent world merges into it at both current heads. A
+nested custody is rebased: its changes relative to its lineage's base revision (the parent world
+its first ancestor was forked from, so they include what it inherited from its source, but never
+what the source wrote after the fork) must not overlap the parent world's changes since that base,
+or the merge fails with ScopeMergeConflictError before anything is retained; they are then
+published into a fresh fork of the current parent world, the nested custody is sealed by a discard
+beneath its source, and the fresh fork merges into the parent world. `discard` discards the
+custody's subtree and cleans its custody; both return the retained receipt when the command
+already completed, before the custody is resolved, and an interrupted rebase resumes from its
+retained steps. `changedPaths` compares the base revision of the first parent-world fork in the
+custody's lineage with a capture of its current custody. Custody identities are resolved through
+the receipts the adapter returned or replayed, so a fresh process rebuilds them by re-issuing the
+same fork commands in their original order; a replayed fork registers its lineage before opening
+the custody, so a merge or discard can still resolve a custody whose discard already began.
 
 Signature:
 
@@ -55842,8 +66451,13 @@ Throws:
 
 Throws:
 
-- {TypeError} If a handle is forged, the parent holds no world custody, or options are
-malformed.
+- {ScopeMergeConflictError} From `merge`, if the custody's changes overlap the parent
+world's.
+
+Throws:
+
+- {TypeError} If a handle is forged, the parent holds no world custody, options are
+malformed, or a request names custody this adapter has not forked or replayed.
 
 Example:
 
@@ -56028,8 +66642,14 @@ subtree. One transaction seals every open scope of the subtree with a decision r
 own path; merged and already discarded descendants keep their terminal evidence, and a
 descendant's in-flight merge or fork can never complete afterwards. The parent's head,
 managed custody, and effective history are untouched: discard is not a rollback of the parent
-to fork time. Scope evidence retains application data only, so no escaped external effect is
-representable to reverse.
+to fork time.
+
+External effects are reversed only through compensation. Every successful compensable effect
+cited by the selected history of a sealed scope (a replay effect step or a supervised dispatch
+resolution) is compensated once through `compensation` after the decision, in reverse
+materialization order: the subtree root first and each child after its parent, each history in
+order. Compensation intent, attempts, and outcomes are retained on the compensation's own path,
+so a retry never compensates an effect twice. A missing handler is refused before the decision.
 
 Cleanup progress is separate from the logical decision. The decision names the exact custody
 identities of every forked scope in the subtree, read from their retained fork journals, and
@@ -56086,6 +66706,16 @@ Throws:
 Throws:
 
 - {WorldCarrierError} If owned custody is in an unknown physical state.
+
+Throws:
+
+- {EffectCompensationHandlerNotFoundError} If a cited compensable effect still needing
+compensation has no handler; before the decision when the discard is new.
+
+Throws:
+
+- {EffectCompensationFailedError} After cleanup, if a compensation handler failed; a retry
+attempts the failed compensations again.
 
 Throws:
 
@@ -56670,6 +67300,44 @@ const merged = await mergeScope(store, {
     parent: parentWriter,
 });
 ```
+
+### `openDeviceLayerWorld`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Selects an adapter, opens a device-layer world, and records which adapter was used.
+
+Strict selection probes only the requested adapter and refuses when it is unavailable. Fallback
+selection probes the requested adapter and then every later adapter of the fallback order and
+uses the first available one; the configured order ends with the always-available copy adapter.
+
+Signature:
+
+```ts
+export declare function openDeviceLayerWorld(options: DeviceLayerWorldOptions): Promise<DeviceLayerWorld>;
+```
+
+Parameter:
+
+- options - Root, optional seed, adapters, requested adapter, mode, order, and depth.
+
+Returns:
+
+- Open world whose base layer holds the seed.
+
+Throws:
+
+- {TypeError} If options are malformed or name an unknown adapter or invalid depth.
+
+Throws:
+
+- {DeviceLayerError} If no candidate adapter is available or the adapter fails to open.
+
+Example:
+
+- const world = await openDeviceLayerWorld({ adapter: "overlay", root, selection: "fallback" });
+await world.writeFile("notes.txt", Buffer.from("draft"));
+await world.checkpoint("step-1");
 
 ### `openWorkspace`
 

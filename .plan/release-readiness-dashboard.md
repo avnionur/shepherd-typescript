@@ -9,7 +9,10 @@ GitHub Advanced Security, email vulnerability intake, registry name decided, F-0
 owner actions moved to #199), and in 2.34.0 for the owner decisions of 2026-09-23 closing #199
 (external review, signing, publication, and name reservation waived for 1.0; local macOS gates and
 the local Docker Linux lane accepted in place of hosted CI; no Windows lane; Linux volume fault
-suite and Linux SLO host class delivered through the local lane).
+suite and Linux SLO host class delivered through the local lane), and in 5.1.0 for the live
+provider adapters (#204: the OpenRouter/provider adapter row moves to implemented with a deferred
+remainder; it is tested against stub transports only and not live-verified), and in 7.0.0 for effect
+compensation (#209: the compensable tier row moves to implemented with a deferred remainder).
 Companion to the
 [Phase 11 exit audit](./phase-11-exit-audit.md). It shows every phase epic, every
 [parity matrix](./parity-matrix.md) row, and every [paper coverage](./paper-coverage.md) row with
@@ -79,7 +82,7 @@ the [parity matrix](./parity-matrix.md) states the full requirement.
 | Pre-materialization interception | Implemented | Phase 7 ([supervised effects](../docs/supervised-effects.md)) |
 | Custom effect families | Implemented | Custom effect kinds with exact-kind handlers (#101, [examples](../docs/typescript-examples.md)); unknown schema fields preserved by native interchange |
 | Reversible tier | Implemented | World-owned state restored byte-equivalently by rewind ([Phase 8 exit audit](./phase-8-exit-audit.md)); the tier annotation alone does not reverse arbitrary callbacks |
-| Compensable tier | Classified deferred | Vocabulary only; no idempotent compensation fixture |
+| Compensable tier | Implemented, remainder deferred | [Effect compensation](../docs/compensation.md) (7.0.0, #209): per-kind handlers, reverse-order exactly-once compensation on discard, rewind, and replay, retained records, node:sqlite idempotent fixture, SIGKILL suite; no compensation lease or waiver |
 | Irreversible tier | Implemented | Replay never re-materializes without policy approval (Phase 8); approval frontier (Phase 7) |
 
 ### Runs, traces, and kernel
@@ -141,11 +144,11 @@ the [parity matrix](./parity-matrix.md) states the full requirement.
 | Row | Classification | Evidence or boundary |
 | --- | --- | --- |
 | Deterministic/static provider | Implemented | [Static provider](../docs/static-provider.md) |
-| Claude CLI provider | Classified deferred | No live provider adapter ships |
-| Codex provider | Classified deferred | No live provider adapter ships |
-| OpenRouter/provider adapter | Classified deferred | No live provider adapter ships |
+| Claude CLI provider | Classified deferred | No Claude CLI process adapter ships; the Anthropic Messages HTTP adapter (5.1.0) is a different surface |
+| Codex provider | Classified deferred | No Codex process adapter ships |
+| OpenRouter/provider adapter | Implemented, remainder deferred | Configured Anthropic Messages and OpenAI-compatible (OpenAI, OpenRouter) HTTP adapters, 5.1.0 ([live providers](../docs/live-providers.md)); stub-transport tested, the opt-in live test not run, so live behavior is unverified |
 | Provider-neutral event model | Implemented, remainder deferred | Request/response and descriptor normalization; streaming event normalization remains |
-| Provider prompt/cache identity | Implemented, remainder deferred | Offline identities and cache-hit evidence (Phase 8); live provider adapters remain |
+| Provider prompt/cache identity | Implemented, remainder deferred | Offline identities and cache-hit evidence (Phase 8); live adapters and byte-identical prefix restore after rewind (5.1.0, #204); a measured live cache-hit rate remains |
 | Cancellation and budgets | Implemented, remainder deferred | Counter and duration controls; effect accounting remains |
 | Runtime supervisor | Implemented | [Phase 10 exit audit](./phase-10-exit-audit.md) |
 | Inject/steer | Implemented | Phase 9; provider-side conversation mutation not claimed |
@@ -196,8 +199,8 @@ the [parity matrix](./parity-matrix.md) states the full requirement.
 | `store verify/backup/restore/export/import/maintain` | Implemented | Phase 11 #182, #183 |
 | fenced `run start` compatibility | Version-fenced | Configured and disabled by default |
 
-Totals (99 rows): 73 implemented; 9 implemented with a deferred remainder; 3 implemented and
-platform-fenced; 3 platform-fenced; 2 version-fenced; 9 classified (6 deferred, 1 unsupported, 1
+Totals (99 rows): 73 implemented; 11 implemented with a deferred remainder; 3 implemented and
+platform-fenced; 3 platform-fenced; 2 version-fenced; 7 classified (4 deferred, 1 unsupported, 1
 adapted, 1 external). No row is unclassified.
 
 ## Paper coverage rows
@@ -207,7 +210,7 @@ adapted, 1 external). No row is unclassified.
 | §1 Introduction | Implemented | End-to-end supervisor scenario (Phase 10 conformance) |
 | §2 Related work | Implemented | [Upstream baseline](./upstream-baseline.md), this dashboard, and the parity matrix |
 | §3.1 Tasks | Implemented | Phases 2 and 9 |
-| §3.2 Effects | Implemented, remainder deferred | Phases 2, 7, 8; compensation fixture and effect accounting remain |
+| §3.2 Effects | Implemented, remainder deferred | Phases 2, 7, 8; compensation 7.0.0 (#209); effect accounting remains |
 | §3.3 Scopes | Implemented, platform-fenced | Phases 6 to 8; optimized carriers on recorded hosts |
 | §3.4 Traces | Implemented | Phases 1, 6, 8; shared-prefix storage benchmark on recorded hosts |
 | §4 Performance | Platform-fenced | Phase 8 and 10 measurements, Phase 11 kernel benchmark and SLOs on the reference host only |

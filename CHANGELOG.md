@@ -5,6 +5,794 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [12.0.0] - 2026-09-25
+
+Review fix pass for epic [#202](https://github.com/avnionur/shepherd-typescript/issues/202).
+
+### Breaking Changes
+
+- `schema.fromJSONSchema` adapts a required `{type: "null"}` object property to `schema.null()`
+  (`schema.void()` is produced only at the document root), so a rehydrated descriptor parses values
+  exactly like the original; `schema.void()` is refused as an object field. Golden descriptor
+  identities are unchanged (#205).
+- Scope world adapter merge semantics (#211): merge always lands in the parent world. A custody
+  forked from another custody (a handoff follower forked from the leader) is rebased against its
+  lineage base, so the source's post-fork writes are excluded, then sealed and merged through a
+  fresh parent fork; discard releases adapter-held writer claims first. Limitation: when the
+  leader custody is also final, landing the second lineage is refused as a conflict on the
+  leader's pre-fork paths.
+- Replay protocol v3 (`REPLAY_PROTOCOL_V3_CONTRACT`, config `replay.branch`): replay branches
+  carry a source disposition (see New Feature); rewind keeps compensating the abandoned suffix by
+  default (#209, #210).
+
+### New Feature
+
+- `rewindReplaySession` and `replayReplaySession` take an optional `sourceDisposition`
+  (`REPLAY_SOURCE_DISPOSITIONS`: `compensate`, the configured default, or `retain`). `retain`
+  leaves the source's successful compensable effects in place because the source is not abandoned.
+  Tree-RL rollouts, counterfactual optimization candidates, trajectory compression, and the
+  meta-agent `replay` tool branch with `retain`, so sources with compensable effects no longer
+  throw `EffectCompensationHandlerNotFoundError` (regression since 7.0.0; #209, #213, #212, #208,
+  #206). `REPLAY_SOURCE_DISPOSITIONS` and `ReplaySourceDisposition` are exported from the package
+  root and `./replay`.
+
+### Defect Fixes
+
+- The meta-agent `replay` tool is declared `reversible` like `rewind`, so rewinding a meta session
+  before a replay call no longer requires a compensation handler (#206).
+- Meta-agent substrate commands inside a replay-bound tool loop are scoped to the executing session
+  (`<prefix><session_id>:<effect_id>`), so a replay branch of a meta session no longer collides
+  with the source's fork, discard, rewind, and replay commands (#206).
+- OpenAI-compatible (OpenAI, OpenRouter) dialects place the cache marker on the last tool message
+  when the cache prefix ends with tool results only (#204).
+- Append batches refuse a non-text owner path with a path-level `TypeError`.
+- Runtime supervisor (#211): a rerun after a crash between two settlement discards completes the
+  settlement; a run stopped while a handoff or discard waits for the aborted attempt no longer
+  starts the replacement worker; exhausting `maxProviderCalls` inside a worker aborts the run and
+  leaves attempts open, as documented; policy output is also checked against the fixed record
+  decision schema, so a looser protocol action schema yields a retained refusal instead of a crash.
+- Container device layer (#215): configured tokens are substituted in one pass, so a path
+  containing a token is no longer re-expanded; an image value starting with `-` is rejected.
+- Scope benchmark SLO budgets are recomputed as three times the worst p95 of three runs including
+  the committed artifact; the policy text is corrected (#214).
+- Counterfactual optimization reads protocol thresholds through an explicit check. Impossible
+  fallbacks were removed (CRO parent plans, Tree-RL seeded tool calls, compression rewind
+  evidence, recorded replay source steps) and real error paths gained tests where Node's parallel
+  coverage merge hid uncovered branches: append store, scope inspection, retained-world
+  settlements, the SQLite read-only root witness, provider messages and tool-only assistant turns,
+  delegation handles, wrapped delegation and replay inspection errors, truncated process images
+  and store failures during replay restore, worlds changed during checkpoint capture, denied
+  supervised dispatches cited by a discarded scope, caller errors in proof evidence, a runtime
+  supervisor stopped during a replacement fork, and nested scope-world merges retried after their
+  rebase fork or seal. Every source file the epic changed is fully covered under a summed V8
+  measurement (#212, #217).
+
+### Improvement
+
+- Threat model covers live provider transport and credentials, the container device-layer
+  (`docker` CLI) boundary, and the meta-agent's store-wide `read_trace` authority; tool input
+  schemas are documented as trusted configuration or caller code
+  ([JSON Schema validation](./docs/json-schema-validation.md)); stale package-export and
+  device-layer wording fixed (#204, #206, #215).
+- Documentation of source disposition in [effect compensation](./docs/compensation.md),
+  [rewind and replay](./docs/rewind-and-replay.md), and the Tree-RL, counterfactual optimization,
+  and trajectory compression pages.
+
+### Impact
+
+Callers that built descriptors with `schema.void()` object fields must use `schema.null()` or an
+optional field; rehydrated descriptors now round-trip `null` values. Scope world adapter callers
+that relied on a nested merge publishing into the source custody now land in the parent world.
+Exploratory replay applications work over sources with compensable effects without a
+compensation registry. Replay records and inspection shapes are unchanged except for the new
+branch option.
+
+## [11.3.1] - 2026-09-25
+
+### Improvement
+
+- Adds research notes for the paper v3 Appendix A.2 and §6 future-work directions under
+  [`.plan/research/`](./.plan/research/README.md) (#218): interpretability probes via
+  counterfactual replay, reversible environments for continual learning, substrate-native
+  fork/discard/replay actions for post-training, compressing execution traces into reusable
+  workflows (follow-up to Appendix D), and a safety deployment profile (external override of
+  irreversible effects, rollback to the last materialization point). Notes are not normative and
+  claim no results; no implementation issue is filed until a note is reviewed.
+
+### Impact
+
+Documentation only; no runtime, API, or protocol change. The notes flag unverified premises: an
+unfinished session as a branch source, nested cost roll-up, and Tree-RL from branch sessions
+(needs a protocol change).
+
+## [11.3.0] - 2026-09-25
+
+### New Feature
+
+- Layered device-layer checkpoints for paper §3.3 and Appendix C.4 and C.7 (#215), workspace
+  protocol v27 (`workspaces.deviceLayers`, `WORKSPACE_PROTOCOL_V27_CONTRACT`):
+  `openDeviceLayerWorld` opens a seeded world whose `checkpoint(name)` freezes the writable layer
+  as a named lower layer and whose `restore(name)` discards the writable layer and every newer
+  checkpoint. A configured depth bound (`maxDepth` 48, `retainNewest` 4) compacts the oldest frozen
+  layers into one replacement base when a checkpoint would exceed it; the newest flattened name
+  moves to the base and older ones are retired (`DEVICE_LAYER_CHECKPOINT_RETIRED`).
+- Pluggable `DeviceLayerAdapter` contract (`probe`, `open`, and a device with file operations,
+  `freeze`, `revert`, `close`, and `maxLayers`), the carrier backend contract generalized, with the
+  public conformance kit `checkDeviceLayerConformance` covering file semantics, named checkpoints,
+  restore and discard, the depth limit, compaction and retirement, and close.
+- Built-in adapters: `copy` (full verified copy per checkpoint, the `cp -a` reference), `clone`
+  (verified reflink or `clonefile(2)` per file), Linux stacked `overlay` (unmount, rename the upper
+  directory into `lowerdir`, remount; read-only merged-view compaction; depth also bounded by the
+  mount-option bytes), and a reference `container` adapter driven through the `docker` CLI without
+  a shell (`docker commit` per checkpoint, export/import compaction, command names, image, and
+  flags from configuration; never pulls). The container conformance test is opt-in
+  (`SHEPHERD_DEVICE_LAYER_OPT_IN=container`) and reports unavailability without Docker.
+- Configured fallback ordering: device-layer selection is `strict` by default and `fallback`
+  degrades along `overlay`, `container`, `clone`, `copy`, recording `{ mode, requested, used,
+  attempts }` in `world.selection`. `createReferenceCopyCarrier` gains the same opt-in
+  `backendSelection: "fallback"` over `workspaces.carrierBackends.selection.fallbackOrder`
+  (`overlay`, `clone`, `copy`) and every carrier exposes `backendSelection`; strict refusal remains
+  the configured default, so existing carriers are unchanged.
+- `pnpm bench:device-layers` and the privileged Linux lane `pnpm bench:device-layers:linux`
+  measure checkpoint and restore latency against world size and a 100-checkpoint depth sweep. On
+  the Linux tmpfs overlay lane the overlay checkpoint median was 2.06, 3.06, and 2.71 ms for 1, 16,
+  and 128 MiB worlds (ratio 1.32) and 2.5–2.9 ms through 48 stacked layers, while copy grew 80x; on
+  macOS the Docker adapter was flat in world size at 357–419 ms. Results are this repository's
+  measurements only ([device layers](./docs/device-layers.md#measured-capture-cost),
+  [performance report](./docs/performance-report.md#device-layer-checkpoint-benchmark)).
+- New public error class `DeviceLayerError` with configured codes.
+
+### Impact
+
+Callers gain a constant-time (on overlay) layered checkpoint primitive with a bounded depth and a
+seam for other sandbox substrates, plus recorded, opt-in backend fallback. Additive only: carrier
+custody, `captureCustody`, `forkScope`, and replay world images are unchanged and do not use device
+layers, so scope fork latency still grows with world size. No remote sandbox (E2B, Modal, Daytona)
+adapters.
+
+## [11.2.0] - 2026-09-25
+
+### New Feature
+
+- Scope fork/revert and observer-overhead benchmark for paper Section 4 and Appendix C (#214):
+  `pnpm bench:scopes` ([`scripts/bench-scopes.ts`](./scripts/bench-scopes.ts), logic in
+  [`tooling/benchmark/scope-benchmark.ts`](./tooling/benchmark/scope-benchmark.ts), procedure in
+  [`config/scope-benchmark.config.json`](./config/scope-benchmark.config.json)) measures, for every
+  carrier backend conformant on the host, `forkScope` and `discardScope` latency over three
+  configured world sizes (30 KB, 10 MB, 100 MB); a K=4 branching pattern (baseline writes in a
+  parent, a checkpoint, K - 1 sibling forks with one write each) reporting per-branch and
+  K-branch free-space use, trace-store growth, and process RSS growth; a per-write mutation-size
+  sweep (1 KiB to 10 MiB) with a least-squares fit of storage against bytes written; and per-event
+  `dispatchEffect` record and trace-subscription observe latency at 1 to 200 steps with 0, 1, and
+  4 observers, plus committed records and JSON bytes per event.
+- Every revert is checked independently of the carrier: the source binding, the parent custody,
+  and a fresh fork of the checkpoint are compared by a SHA-256 tree digest with their pre-fork
+  state, discarded custody must no longer open, and observers must not change the recorded
+  stream; any failure fails the run.
+- Raw samples, summaries, host facts, and the configuration digest are written to
+  `docs/generated/benchmarks/scope-benchmark-<host-class>.json`. Budgets per configured host class
+  (`macos-arm64-apfs`, `linux-arm64-xfs-privileged-container`) are checked by `pnpm check:scopes`,
+  which is not part of `pnpm verify` (about seven minutes per run). `pnpm bench:scopes:linux` runs
+  the benchmark in a privileged Linux container on loopback XFS with reflink, where the copy,
+  clone, and overlay carriers are all conformant.
+- Results are this repository's measurements on the recorded hosts only; see the
+  [performance report](./docs/performance-report.md#scope-forkrevert-and-observation-benchmark).
+  Tooling: `readBenchmarkEnvironment` is exported from the kernel benchmark module and
+  `digestBenchmarkConfiguration` accepts any configuration object.
+
+### Impact
+
+Fork/revert latency, branch storage scaling, revert correctness, and observer overhead are now
+measured and budgeted on the recorded hosts instead of being absent. No runtime API or protocol
+changes.
+
+## [11.1.0] - 2026-09-25
+
+### New Feature
+
+- Concurrent runtime supervisor for paper Section 5.1 and Appendix E (#211):
+  `runRuntimeSupervisor` runs two or more workers concurrently, each a `runToolLoop` session over
+  its own custody from `world.fork`, while a supervisor ticks at the protocol's
+  `tickIntervalMilliseconds` (5000, the paper's 5 s; an optional `wait` replaces the timer). Every
+  worker has a reserved stream owner path retaining its `attempt`, `turn` (tool-call summaries,
+  exact request digest, assistant and next-user messages, delivered guidance ticks, usage), and
+  `completed` records; each tick drains one live trace subscription over every stream and builds
+  one combined snapshot with the paper's per-agent fields (feature truncated to 350 characters,
+  cumulative events, consecutive errors, modified files, last action and ticks since, the trailing
+  25 tool-call summaries of at most 150 canonical bytes), validated against the pinned observation
+  schema.
+- Per-agent batched decisions: the policy returns the Appendix E `{ decisions: [{ agent, action,
+  reason, guidance?, leader? }] }` object once per tick; `none` is the default for unlisted agents.
+  The batch is validated against the pinned action schema and admission rules (known, distinct
+  agents; guidance required for `inject`, allowed only for `inject` and `handoff`; `leader` only for
+  `handoff`; 20 reason and 60 guidance words) and refused as a whole otherwise, with the refusal
+  retained. The tick record, with the exact snapshot and subscription cursor, is retained before any
+  decision takes effect.
+- `inject` appends guidance to a running worker's next user message between turns, keeping every
+  earlier message and the cache prefix byte-identical; `handoff` aborts the attempt and starts a
+  fresh session whose first user message carries the feature and the guidance, on the same custody
+  or, with `leader`, on a fork of the leader's quiesced custody; `discard` restarts on a clean fork
+  of the pre-run world. Settlement retains final attempts and undelivered guidance, discards
+  abandoned custody no final custody descends from, and retains the manifest; final custody is
+  returned for the caller to integrate.
+- Provider-backed policy: `createModelRuntimeSupervisorPolicy({ model, protocol })` sends one
+  JSON-mode request per tick (the pinned Appendix E meta-agent prompt as system prompt, the
+  observation prompt and canonical snapshot as the user message, the decision schema as output
+  schema) and parses JSON decisions; text that is not JSON is refused and retained.
+- Recovery: a rerun completes retained ticks without the policy (retained forks replay under
+  derived command identities), resumes open attempts from their retained conversations with a
+  byte-identical request, and re-queues undelivered guidance; a run that fails or is cancelled
+  leaves open attempts resumable, as a crash does.
+- World adapters: `ApplicationWorldForkRequest.sourceCustodyId` forks another custody's current
+  tree. `createScopeWorldAdapter` implements it as a nested scope fork under a writer claimed with
+  the source's fork command identity; merge publishes into the world a custody was forked from;
+  completed merge and discard commands replay before the custody is resolved; changed paths are
+  relative to the lineage's first parent-world fork.
+- Applications protocol v10 (`APPLICATIONS_PROTOCOL_V10_CONTRACT`) appends
+  `applications.runtimeSupervision`, the `maxTicks` and `maxTickIntervalMilliseconds` limits, and
+  the `shepherd.application.runtime_supervision.v1` trace schema with the generated
+  `application-runtime-supervision-v1.schema.json`. The repository protocol is the new
+  `runtimeSupervision` section of `config/research-applications.config.json`.
+- New exports: `runRuntimeSupervisor`, `inspectRuntimeSupervisorRun`,
+  `createModelRuntimeSupervisorPolicy`, `APPLICATION_RUNTIME_SUPERVISION_ACTIONS`,
+  `APPLICATION_RUNTIME_SUPERVISION_PHASES`, `APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_CAUSES`,
+  `APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_STATUSES`, and the `RuntimeSupervisor*`,
+  `RunRuntimeSupervisorOptions`, and `ModelRuntimeSupervisorPolicyOptions` types.
+
+### Impact
+
+The paper's live supervisor is available alongside the unchanged round-based
+`runCodingSupervisor`. Existing protocols, records, and adapters keep their meaning; the scope
+world adapter's merge now claims the child writer under its fork command identity. The policy and
+workers were exercised only against scripted providers; no CooperBench pair rate is measured, the
+cross-agent `leader` field is a repository extension of the printed schema, and a worker turn in
+flight at a crash is re-sent after recovery.
+
+## [11.0.0] - 2026-09-25
+
+### New Feature
+
+- Counterfactual Replay Optimization follows paper Appendix F.1 Algorithm 1 (#212, §5.2,
+  F.2.3-F.2.5, Figure 5): `runCounterfactualOptimization` records the baseline workflow once per
+  train and dev example (`dataset: { train, dev }` drawn from the protocol's dataset items, scored
+  by a caller `metric`), then runs `iterations` proposer iterations of at most
+  `proposalsPerIteration` edits, each paired with a fix set and a guard set of train examples. Each
+  edit is replayed counterfactually from the first affected step of the parent's session on every
+  fix and guard example, gated by the configured thresholds, replayed on every dev example when it
+  graduates, and promoted into the graduate-only parent pool within `promoteDevEpsilon` of the
+  current promoted dev score (promoted candidates are also replayed on the remaining train
+  examples). The pool member with the best dev score is selected.
+- Proposers: any `CounterfactualProposer` function, or `createToolLoopCounterfactualProposer({ model,
+  maxTurns? })`, which records each attempt as a replayable tool-use loop session over the pinned
+  proposer prompt, reflection schema, and tools `inspect_candidates`, `read_effect_trace`,
+  `grep_effect_traces` (the F.2.3 regex trace search), and `propose_candidate`; its provider calls
+  are budgeted, costed, and cited in the proposal record.
+- Admission before any evaluation: proposal shape, pool parent, capacity, unique names, train-only
+  disjoint fix and guard sets, admissible edited steps on every parent example session, the caller
+  `applyEdit`, the pinned reflection schema, and the F.2.5 reflection contract (prior citations,
+  near-duplicate `differs by:` explanations at Jaccard similarity `reflectionDuplicateSimilarity`,
+  and the `reflectionMinMechanisms`/`reflectionAudaciousPrior` verbalized-sampling floor). Refusals
+  are fed back and retried up to `maxProposalAttempts` and retained in the proposal record.
+- Fractional thresholds: application protocols accept an optional `thresholds` map of finite numbers
+  (definitions without it keep their identity); the optimizer reads `targetedMinScoreLift`,
+  `targetedMaxScoreDrop`, `targetedImproveThreshold`, `promoteDevEpsilon`, `minPromotionScore`,
+  `reflectionDuplicateSimilarity`, and `reflectionAudaciousPrior` from it (paper defaults in the
+  repository protocol).
+- Manifests may carry the protocol `thresholds` and a per-session `computation_reuse` table
+  (`session_index`, `recorded_steps`, `live_steps`, `reuse_ratio`); the optimizer retains one entry
+  per proposer session. `createApplicationManifest` accepts `computationReuse`.
+- New exports: `createToolLoopCounterfactualProposer`, `APPLICATION_CRO_SPLITS`,
+  `APPLICATION_CRO_EXAMPLE_ROLES`, and the types `ApplicationComputationReuse`,
+  `CounterfactualDataset`, `CounterfactualExample`, `CounterfactualProgram`,
+  `CounterfactualTaskFactory`, `CounterfactualEdit`, `CounterfactualEditApplication`,
+  `CounterfactualEditApplier`, `CounterfactualEditContext`, `CounterfactualMetric`,
+  `CounterfactualMetricContext`, `CounterfactualProposal`, `CounterfactualProposer`,
+  `CounterfactualProposerContext`, `CounterfactualPoolMember`, `CounterfactualProposalRecord`,
+  `CounterfactualExampleResult`, `CounterfactualExampleRole`, `CounterfactualGateVerdict`,
+  `CounterfactualBaselineExample`, `CounterfactualSelection`, `CounterfactualSplit`,
+  `CounterfactualComputationReuse`, and `ToolLoopCounterfactualProposerOptions`.
+
+### Breaking Changes
+
+- Applications protocol v9 (`APPLICATIONS_PROTOCOL_V9_CONTRACT`) replaces `applications.cro`:
+  phases `opened`, `proposal`, `candidate`, `selection`; statuses `archived`, `evaluated`,
+  `promoted`, `rejected` (`proposed` removed); artifact roles `baseline`, `proposal`, `candidate`,
+  `selection`; budget keys `iterations`, `proposalsPerIteration`, `maxCandidates`,
+  `maxProposalAttempts`, `maxProviderCalls`, `reflectionMinMechanisms`; new `thresholdKeys`,
+  `splits`, `exampleRoles`, `proposer`, and `reflection` sub-objects. `minPromotionScore` is no
+  longer an integer budget but a fractional threshold. Configurations written for v8 are refused.
+- `runCounterfactualOptimization` options: `candidates` and `evaluate` are replaced by `dataset`,
+  `proposer`, `applyEdit`, and `metric`; the baseline `program` and `task` are factories of the
+  example. `CounterfactualCandidateDefinition`, `CounterfactualCandidateInspection`,
+  `CounterfactualEvaluation`, `CounterfactualEvaluationContext`, and `CounterfactualEvaluator` are
+  removed; `CounterfactualCandidatePlan`, `CounterfactualCandidateRecord`,
+  `CounterfactualOptimizationInspection`, `CounterfactualHandoff` (`selected_candidate_id` replaces
+  `promoted_candidate_id`), and `CounterfactualWorkflowDefinition` change shape.
+- Optimizer records (`application-cro-candidate-v1` schema, same trace schema reference) change
+  shape; runs retained before 11.0.0 are refused. The repository `counterfactual` protocol
+  (`appendix-f.v2`) pins new reflection, handoff, and proposer tool surfaces, and the evaluation's
+  optimizer binding is a scripted proposer over four train and two dev examples (definition revision
+  4, regenerated report, new `scripted-proposer` limitation).
+
+### Impact
+
+The optimizer now runs the paper's loop instead of evaluating caller-declared candidates, and its
+records show the fix/guard verdict, dev promotion, parent pool, and per-session reuse. Callers must
+supply train and dev examples, a metric, a proposer, and an edit applier. Edits remain declared data
+applied by caller code; the tool-loop proposer ran only against scripted models (no credentials);
+promoted parents are replayed eagerly on the remaining train examples, and reuse counts replay
+steps, not provider or subtask cache hits.
+
+## [10.0.0] - 2026-09-25
+
+### New Feature
+
+- Tree-RL follows paper Appendix F.6 Algorithm 2 (#213, §5.3, F.6-F.7): `runTreeRlRollouts` takes a
+  batch of `prompts` (`{ id, program, handlers?, roots }`) with exactly the protocol's `groupSize`
+  G recorded roots each, grades every root with the reward (member `root`), and asks a fork
+  `selector` for `{ branch_turn, tool_call, reason }` per root. The proposed turn is clamped into
+  the configured `[1, T - 2]` (`applications.treeRl.forkTurn`) and, for world- or process-bound
+  roots, moved to the nearest restorable turn; K branches replay each root from the boundary
+  before the fork turn, and the proposed tool call seeds branch 0 through the provider factory
+  context (`tool_call`, `seeded`).
+- Fork selectors: `createMetaAgentTreeRlForkSelector({ provider })` sends the numbered root turns and
+  final reward to a meta-agent provider under the protocol's `fork_selector` prompt and
+  `fork_proposal` schema surfaces and validates its proposal; `createDependencyTreeRlForkSelector()`
+  keeps the deterministic most-dependents heuristic. `selectTreeRlForkPoints` is unchanged.
+- `computeTreeRlAdvantages(trees, normalization?)` computes the Algorithm 2 inter-root advantage
+  (root reward minus the prompt's root mean) and intra-tree advantage (member reward minus the
+  (K+1)-member tree mean), standardized per group by default (`group_std`: configured `sample`
+  estimator, `epsilon` 1e-6) or raw (`none`), with an exact-value test against a hand-computed
+  fixture.
+- New `jsonl_v2` batch format: one line per graded member with per-action attribution (`prefix`
+  actions carry the inter-root advantage, `suffix` actions the member's intra-tree advantage), and
+  the `flat_grpo` baseline over the roots only.
+- Root gradings and branch rollouts run with configurable `concurrency`
+  (`APPLICATION_TREE_RL_LIMITS`); records append in prompt, root, branch order, so retained output
+  is independent of concurrency.
+- `exportTreeRlBatchToTrainer(store, applicationId, adapter)` is the optional trainer-export adapter
+  seam (`TreeRlTrainerAdapter`); no trainer ships.
+- New exports: `APPLICATION_TREE_RL_MEMBER_KINDS`, `APPLICATION_TREE_RL_ACTION_SEGMENTS`,
+  `APPLICATION_TREE_RL_NORMALIZATIONS`, `APPLICATION_TREE_RL_LIMITS`, and the types
+  `TreeRlPrompt`, `TreeRlForkSelector`, `TreeRlForkSelectionContext`, `TreeRlForkProposal`,
+  `TreeRlForkDecision`, `TreeRlToolCall`, `TreeRlTurn`, `TreeRlRootRecord`, `TreeRlAdvantageTree`,
+  `TreeRlActionAdvantage`, `TreeRlActionSegment`, `TreeRlMemberKind`, `TreeRlNormalization`,
+  `TreeRlTrainerAdapter`, `MetaAgentTreeRlForkSelectorOptions`, and `TreeRlEvaluationPrompt`.
+
+### Breaking Changes
+
+- Applications protocol v8 (`APPLICATIONS_PROTOCOL_V8_CONTRACT`) replaces `applications.treeRl`:
+  phases gain `root`, budget keys are `branches`, `groupSize`, `maxProviderCalls`
+  (`maxForkPoints` and `minDependents` removed), the baseline kind `single_rollout` is replaced by
+  `flat_grpo`, the batch format `jsonl_v1` by `jsonl_v2`, and the artifact role `source_session` by
+  `root`. Configurations written for v7 are refused.
+- `runTreeRlRollouts` options: `sourceSessionId` and `program` are replaced by `prompts`, and
+  `selector` is required; `handlers` moved into each prompt. `TreeRlProviderContext`,
+  `TreeRlRewardContext`, `TreeRlRolloutPlan`, `TreeRlRolloutRecord`, `TreeRlRunInspection`,
+  `TreeRlTrainingLine`, `TreeRlTrainingBatch`, `TreeRlAdvantage`, and `computeTreeRlAdvantages`
+  change shape; `TreeRlAdvantageInput` is deprecated. The provider factory is called after the root
+  records are retained, so its refusals no longer write nothing.
+- Tree-RL records (`application-tree-rl-rollout-v1` schema, same trace schema reference) change
+  shape; runs retained before 10.0.0 are refused. The evaluation's Tree-RL binding takes `prompts`
+  (roots recorded under `<sourceCommandId>:<prompt>:<group>`), its baseline is `flat_grpo`, and the
+  application side now counts the roots; the repository report is regenerated (definition revision
+  3).
+- The per-rollout budget check counts in-flight projections under concurrency.
+
+### Impact
+
+Tree-RL batches now carry the paper's two-level credit assignment per action and can be driven by a
+meta-agent. Callers must record G roots per prompt, pass a selector, and read `jsonl_v2` lines.
+Nothing trains a policy; the meta-agent selector ran only against fixture providers here; the
+standard deviation estimator and epsilon are this repository's pinned choice because the paper
+names neither; `maxRollouts` (64) bounds B·G·K below the paper's configuration.
+
+## [9.1.0] - 2026-09-25
+
+### New Feature
+
+- N-way diff (#217, paper §3.4): `diffReplaySessions(store, { sessionIds })` diffs two to the
+  configured `replay.divergence.maxSessions` (16) replay sessions against their lowest common
+  replay-session lineage ancestor, so sibling rollouts, candidate branches, workers, and nested
+  branches can be compared; `analyzeReplayDivergence` still requires a direct source-branch pair.
+  The result reports the ancestor (or `null` for unrelated roots), the shared base, each branch's
+  lineage and index alignment against the ancestor, and every captured effect past the base by step
+  content identity with the branches that captured it and whether the ancestor retains it.
+- First-regression search: `findFirstReplayRegression(store, { sessionId, verdict, strategy })`
+  evaluates a caller verdict over the revisions (step prefixes) of a session lineage with the
+  configured deterministic strategies `bisect` (default) and `linear`, reports every evaluation,
+  `first_bad`, and `last_good`, and attributes each revision to the lineage session that executed
+  its newest step live.
+- Read-only trace CLI: `shepherd-ts replay log [SESSION]`, `replay show SESSION`,
+  `replay diff SESSION SESSION ...`, `scope list`, and `scope show SCOPE` open existing stores
+  read-only, accept exact, prefix, and `@latest` selectors, and return the stable JSON results
+  `replay_sessions`, `replay_log`, `replay_session`, `replay_diff`, `scopes`, and
+  `lineage`/`scope`. The packaged-bin probe exercises `replay log`, `scope list`, and the
+  `replay diff` usage refusal.
+- New public exports: `diffReplaySessions`, `findFirstReplayRegression`,
+  `REPLAY_REGRESSION_STRATEGIES`, and their option and result types.
+
+### Improvement
+
+- CLI pagination, read-only store opening, and single-selector parsing moved into the shared
+  argument module used by every handler; behavior is unchanged.
+
+### Impact
+
+Additive: new functions, types, configuration keys (`replay.divergence.maxSessions`,
+`replay.divergence.regressionStrategies`, `cli.messages.replayDiffUsage`,
+`cli.messages.scopeUnavailable`), and CLI groups; existing APIs, records, and commands are
+unchanged, and the compatibility gate accepted every change as additive. The N-way diff assigns no
+divergence causes, scopes are shown with lineage but not diffed, and the meta-agent `diff` tool
+remains pairwise.
+
+## [9.0.0] - 2026-09-25
+
+### New Feature
+
+- Proof envelopes on inspections (#216, paper Appendix B): `inspectDurableTaskExecution`,
+  `inspectReplaySession`, and `inspectChildRun` expose a frozen `proof` envelope defaulting to
+  `runtime_only`, so claim strength is inspectable without a separate `classifyProofEnvelope` call.
+  Replay-session receipts and run-ledger entries carry it too.
+- Imported claims: a run artifact whose metadata carries the configured
+  `formalAssurance.inspection.importedClaim.metadataKey` (`proof_envelope`) imports one
+  `{ evidence_id, profile, strength, validator }` claim. It surfaces only as
+  `metadata.claimed_proof_backed: true` plus `metadata.claim`; the envelope stays `runtime_only`
+  and not proof-backed. Claims that are malformed, runtime-only, not issued by the configured
+  reference validator, without a `proof-evidence:sha256:` identity, or ambiguous are reported in
+  `metadata.claim_rejection`.
+- Publication controls classify as the configured `extension` profile (`runtime_only` strength,
+  `metadata.publication_controls`): retained-world settlement on a run (`delay`), rewind branch
+  sessions (`fork`), replay branch sessions (`replay`), and delegated child runs with a supervisor
+  handoff (`forwarding`).
+- Optional lowering: `inspectReplaySession(store, { sessionId, lowerProof: true })` lowers an
+  eligible static session (configured: `root` mode, `finished`, effect steps only, every effect
+  materialized) into Core-A declaration, selection, handle, resume, return, and capture records and
+  classifies them with the executable reference machine (`reference_core_a` /
+  `reference_validated`, never proof-backed); ineligible sessions report
+  `metadata.lowering_ineligible`.
+- Configuration `formalAssurance.inspection` (formal assurance protocol v2,
+  `FORMAL_ASSURANCE_V2_CONTRACT`) owns the extension profile, imported-claim key and rejections,
+  publication-control kinds and sources, lowering eligibility and version, and envelope reasons,
+  validated against the replay vocabularies.
+
+### Breaking Changes
+
+- `run-ledger-entry-v1.schema.json` requires `inspection.proof`; entries produced before 9.0.0 no
+  longer validate, and earlier readers refuse entries carrying it.
+- Formal assurance protocol v2 adds `formalAssurance.inspection`; configurations written for v1
+  are refused.
+- `DurableTaskExecutionInspection`, `ReplaySessionInspection`, and `ChildRunInspection` gain a
+  required `proof` field; code that constructs these values or compares them structurally must
+  include it.
+
+### Impact
+
+Callers can read the strength of every run and replay claim directly from inspections. Imported
+proof claims are visible but never treated as verified, and publication controls are explicitly
+outside the base theorem surface. Lowering is structural reference validation over retained
+effect lifecycles; it does not establish source-to-kernel lowering adequacy, and no Lean build
+runs in this repository.
+
+## [8.0.0] - 2026-09-25
+
+### New Feature
+
+- Automatic coupled checkpoints (#210, paper §3.4, §5.3, Appendix D): `runReplaySession` and
+  `replayReplaySession` accept `checkpointPolicy: { kind, interval? }` over the configured
+  `replay.checkpoint.automatic.policies` (`REPLAY_CHECKPOINT_POLICIES`: `none`, `provider_step`,
+  `effect_step`, `every_n_steps`); a session without it uses the configured `defaultPolicy`
+  (`none`). A selected boundary is captured immediately before the step that selects it, with the
+  same descriptor, cut, and record as an explicit `checkpoint()`; a replay branch captures only
+  boundaries at or after its target. Every checkpointed step of a world- or process-bound session
+  is a rewind and replay target: tests hash the restored world tree at every checkpoint against
+  the source's tree at that boundary, and rewinding still compensates effects past the target
+  exactly once. New types `ReplayCheckpointPolicy` and `ReplayCheckpointPolicyKind`.
+- Tree-RL accepts world- and process-bound sources: fork points qualify only at boundaries with a
+  restorable checkpoint, each rollout targets that checkpoint, and a new `bindings` factory
+  (`TreeRlBindingsFactory`, `TreeRlRolloutBindings`) supplies per-rollout empty world roots,
+  process adapters, and a handler stack.
+- Trajectory compression accepts world- and process-bound workflows through `workflow.bindings`
+  (`TrajectoryCompressionBindings`, `TrajectoryCompressionBindingsContext`: per-session role and
+  seed) and `workflow.checkpointPolicy`; a fork point without a retained checkpoint settles
+  `no_prune` as `unavailable` with the configured `boundaryWithoutCheckpoint` reason.
+- `pnpm bench:checkpoints` (`scripts/bench-checkpoints.ts`,
+  `config/checkpoint-benchmark.config.json`) measures on-disk storage growth per checkpoint; this
+  repository's macOS measurement is recorded in `docs/generated/benchmarks/` and
+  `docs/coupled-checkpoints.md`.
+
+### Breaking Changes
+
+- Replay protocol v2 (`REPLAY_PROTOCOL_V2_CONTRACT`) adds `replay.checkpoint.automatic`;
+  configurations written for replay protocol v1 are refused. Replay records are unchanged
+  (`shepherd.replay.v1`).
+- `runTreeRlRollouts` no longer refuses a world- or process-bound source with
+  `ApplicationEvidenceError`; it requires the `bindings` factory for such a source (`TypeError`
+  before any record) and refuses one with no restorable provider fork point.
+
+### Impact
+
+World-bound agent sessions can be rewound and replayed at every step a configured policy
+checkpoints, and Tree-RL and trajectory compression can run over them. Step boundaries without a
+checkpoint remain refused for world-bound sessions (address checkpoints with `{ checkpointId }`).
+Each checkpoint stores changed file bytes plus a full world manifest, so storage grows with the
+world's entry count per checkpoint; the measured figures are one host's, not a bound.
+
+## [7.0.0] - 2026-09-25
+
+### New Feature
+
+- Effect compensation (#209, paper §3.2, Appendix A.2): `createEffectCompensationRegistry`
+  registers exactly one compensation handler per effect kind. `discardScope`,
+  `rewindReplaySession`, and `replayReplaySession` accept an optional `compensation` registry and
+  compensate every successful effect of a compensable tier (`effects.compensation.compensableTiers`,
+  `EFFECT_COMPENSABLE_TIERS`) that they abandon: effects cited by the selected history of a scope the
+  discard seals (replay effect steps and supervised dispatch resolutions), and effects the source
+  session materialized at or after the branch target. Compensation runs in reverse materialization
+  order, once per original materialization (`deriveEffectCompensationId`), so a discard, a rewind, a
+  replay, and an explicit `compensateEffects` command share one compensation and a retry never
+  compensates twice. Recorded replay steps resolve to the live step they copy.
+- Compensation intent, every attempt (handler identity and trigger), and every outcome
+  (`compensated` or `failed` with the handler's result) are retained as
+  `shepherd.effect.compensation.v1` records on a reserved owner path
+  (`effect-compensation:sha256:`), validated by `inspectEffectCompensation` with the derived status
+  `pending`, `uncertain`, `failed`, or `compensated`. Handlers receive a stable idempotency key; an
+  attempt interrupted after the world changed is re-invoked under the same key, and a
+  `compensated` outcome is never followed by another invocation.
+- New errors `EffectCompensationHandlerNotFoundError`, `EffectCompensationFailedError`,
+  `EffectCompensationConflictError`, and `EffectCompensationEvidenceError` (codes in
+  `effects.compensation.errors`); schema `spec/schemas/effect-compensation-v1.schema.json`.
+- Tool-loop calls of `compensable` tools are compensated like any other effect (replay-bound calls
+  on rewind or replay, supervised calls when a discarded scope cites them); meta-agent worker
+  definitions accept an optional `compensation` registry used by the `rewind` and `replay` tools.
+- Fault evidence: a node:sqlite row-insert fixture compensated by an idempotent delete, a SIGKILL
+  suite (`test/faults/compensation-kill.test.ts`, `faults.processKill.compensation`) that kills a
+  compensating child at seeded delays and requires one world change per effect after recovery, and
+  deterministic kills after the handler's world change and after the retained outcome.
+
+### Breaking Changes
+
+- Effect protocol v2 (`EFFECT_PROTOCOL_V2_CONTRACT`) adds `effects.compensation`; configurations
+  written for effect protocol v1 are refused.
+- `discardScope`, `rewindReplaySession`, and `replayReplaySession` now refuse, before writing
+  anything, to abandon a successful compensable effect that is not yet compensated unless a
+  `compensation` registry supplies a handler for its kind
+  (`EffectCompensationHandlerNotFoundError`), and fail with `EffectCompensationFailedError` when a
+  handler returns a failure result (a discard reports it after its logical decision and cleanup).
+- `SQLiteTraceStore.append` and `publishCut` refuse owner paths with the compensation prefix.
+
+### Impact
+
+Compensable effects are no longer vocabulary only: abandoning work through a discard or a branch
+reverses its compensable side effects exactly once and leaves auditable evidence. Callers that
+discard scopes citing compensable effects, or branch past compensable replay steps, must pass a
+`compensation` registry. Handlers must be idempotent under the supplied key; there is no
+compensation lease, no waiver for a permanently failing compensation, and effects without a
+retained successful outcome are not compensated.
+
+## [6.0.0] - 2026-09-25
+
+### New Feature
+
+- Tool-use loop (#206, paper Figure 1, §3.2, Appendix A.2, F.2.3): `runToolLoop` runs a bounded
+  multi-turn conversation in which every tool call whose input satisfies the tool's JSON Schema
+  (`compileJSONSchema`) becomes an effect intent of the tool's `effectKind` and reversibility with
+  the runtime-derived identity `<effectIdPrefix><loopId>:<turn>:<call>`, dispatched through
+  `createHandlerToolLoopEffects` (handler stack), `createSupervisedToolLoopEffects`
+  (`dispatchSupervisedEffect`, so interceptors deny before any outcome), or
+  `createReplayToolLoopBindings` (replay session provider and effect steps). Calls resolve as
+  `materialized`, `denied`, `invalid`, or `failed` (`TOOL_CALL_DISPOSITIONS`); the loop ends
+  `completed` or at the configured turn bound (`TOOL_LOOP_STATUSES`,
+  `providers.tools.loop`), accepts guidance between turns, reports each turn to an observer, and
+  honors an abort signal.
+- Replayable loops: `createToolTurnProvider` and `encodeToolTurnRequest` encode each turn as a
+  replay provider step, so `replayReplaySession` serves a recorded loop prefix byte-identically
+  without calling the model or any handler.
+- Substrate-native meta-agent tools: `providers.tools.metaAgent.tools` declares `observe`, `fork`,
+  `discard`, `rewind`, `replay`, `read_trace`, and `diff` with JSON Schemas, and
+  `createMetaAgentTools` backs them with `inspectReplaySession`, a world adapter
+  (`createScopeWorldAdapter`) plus `runReplaySession`, `rewindReplaySession`,
+  `replayReplaySession` under declared worker variants, bounded owner-path reads, and
+  `analyzeReplayDivergence`. The paper's F.2.3 proposer names are mapped in
+  [docs/tool-use-loop.md](docs/tool-use-loop.md#paper-proposer-tool-names).
+- Tool wire support: `ModelToolUseBlock`, `ModelToolResultBlock`, and `ModelToolDefinition`;
+  `ModelConversationRequest.tools`; both live dialects map tool definitions, `tool_use` /
+  `tool_calls`, and `tool_result` / role `tool` messages under per-kind `toolUse.requestField` and
+  `toolUse.stopReasons`, and live kinds declare `tools: true`. `createProgramConversationProvider`
+  scripts conversational and tool-calling models offline.
+
+### Breaking Changes
+
+- `ModelContentBlock` is now `ModelTextBlock | ModelToolUseBlock | ModelToolResultBlock` and
+  `MODEL_CONTENT_BLOCK_TYPES` is `["text", "tool_use", "tool_result"]`; `ModelTextBlock.type` is
+  the text discriminant only. Code that reads `.text` from every block must narrow on `type`.
+- Provider protocol v3 (`PROVIDER_PROTOCOL_V3_CONTRACT`) adds `providers.tools`, each live kind's
+  `toolUse`, and `providers.program.conversationCapabilities`; configurations written for v2 are
+  refused.
+- A live `converse` response whose stop reason is a configured tool-use stop reason returns
+  `output: null` with the tool-use blocks in `message`; a complete response carrying tool calls is
+  a `LIVE_PROVIDER_RESPONSE_INVALID` error.
+
+### Impact
+
+An LLM meta-agent can observe, fork, discard, rewind, replay, read, and diff another agent's trace
+through tools, and every call is an interceptable, replayable effect. The loop, its effect
+boundaries, and the meta-agent tools are exported from the root and `./applications`; tool message
+types and `createProgramConversationProvider` also from `./providers`. Requests without tools are
+byte-identical to 5.1.0. The meta-agent model is scripted in every test; no live model ran the loop
+because no credentials were available.
+
+## [5.1.0] - 2026-09-25
+
+### New Feature
+
+- Live model provider adapters (#204, paper §3.1, §4, Appendix C.6, §5, Appendix D): provider kinds
+  are declared in configuration (`providers.kinds`, `providers.live.kinds`; provider protocol v2)
+  and generated as `PROVIDER_KINDS`. `createLiveProvider` builds a `ConversationalModelProvider`
+  for the configured `anthropic` (Anthropic Messages), `openai`, and `openrouter`
+  (OpenAI-compatible chat completions) kinds. Endpoints, headers, API version, credential header
+  and environment variable, cache-control shape, output-token field, structured-output format, and
+  complete stop reasons come from configuration; the injectable `LiveProviderTransport` defaults to
+  the global `fetch`.
+- The Anthropic adapter places `cache_control: {type: "ephemeral"}` on the last content block of
+  the last prefix message and reports `cache_read_input_tokens` and `cache_creation_input_tokens`
+  as `ModelUsage` cache tokens; the OpenAI-compatible adapter reports
+  `prompt_tokens_details.cached_tokens` and places the configured marker for OpenRouter.
+- Provider-neutral multi-turn message model: `ModelMessage`, `ModelContentBlock` (text today; the
+  extension point for tool blocks in #206), `ModelConversationRequest` with `cachePrefixMessages`,
+  and `ModelConversationResponse`, with configured `MODEL_MESSAGE_ROLES` and
+  `MODEL_CONTENT_BLOCK_TYPES`.
+- `createProviderConversation` holds a multi-turn conversation over a conversational provider and
+  supplies a `ReplayProviderSessionAdapter` whose checkpoint and restore resend a byte-identical
+  message prefix after rewind, declares a `provider-prefix:` cache identity, mirrors the session's
+  context prefix chain (including failed turns), and can `rebuild` from retained steps.
+- `LiveProviderError` with configured codes `LIVE_PROVIDER_CREDENTIAL_MISSING`,
+  `LIVE_PROVIDER_TRANSPORT_FAILED`, `LIVE_PROVIDER_HTTP_FAILED`, and
+  `LIVE_PROVIDER_RESPONSE_INVALID`; provider error detail is bounded and the credential is redacted.
+- Adapters reject with the caller's `AbortSignal` reason while a request is pending.
+
+### Impact
+
+Tasks, replay sessions, and research applications can run against a real provider by passing a
+live provider, and replay after rewind reuses the provider's prompt cache. Credentials are read
+only from the caller definition or the configured environment variable and never reach retained
+records (whole-store secret-scan test). The replay-session and run-ledger schemas admit the new
+provider kinds (additive). Evidence is stub-transport and simulated-cache tests; the opt-in live
+test (`SHEPHERD_LIVE_PROVIDER_TEST=1`) was not run because no credentials were available, so no live
+cache-hit rate is measured. No streaming, tools, cost reporting, or retries; checkpoint receipts
+are process-local. See [live providers](docs/live-providers.md).
+
+## [5.0.0] - 2026-09-25
+
+### Breaking Changes
+
+- Trajectory compression (#208): retained `shepherd.application.compression.v1` candidate records
+  carry a required `fork_clamp` field, and a retained `fork_point` may be step `0` with a `null`
+  `prefix_id`; `TrajectoryForkPoint.prefix_id` is `string | null`. 4.0.0 compression records no
+  longer decode, so 4.0.0 compression runs cannot be inspected or resumed.
+- The proposal grammar (`$defs.proposal`) makes `fork_point`, `hint`, and `fork_point.step_index`
+  optional, admits any integer step, and admits a `null` prefix identity. A proposal that was
+  refused before (step 0, a step at or beyond the source step count, a hint without a fork point,
+  a missing fork point) now settles instead of raising `ApplicationEvidenceError`.
+- Evaluation report version 2 (applications protocol v7): `ApplicationEvaluationReport` gains a
+  required `rescues` field; `validateApplicationEvaluationReport` refuses version 1 reports.
+
+### New Feature
+
+- Fork step `0` restarts from the initial prefix with the hint applied (Appendix D.5).
+- Out-of-range fork steps are resolved by the configured `applications.compression.forkStepPolicy`,
+  one of `forkStepPolicies` (`clamp`, `reject`; `APPLICATION_COMPRESSION_FORK_STEP_POLICIES`). The
+  repository default `clamp` moves the step to the nearest bound of `[0, n - 1]` (Appendix D.6) and
+  retains `fork_clamp { policy, proposed_step_index, proposed_prefix_id }` on every candidate record;
+  `reject` refuses the proposal. New public types `TrajectoryForkClamp` and `TrajectoryForkStepPolicy`.
+- A missing fork step (absent or null fork point, or a fork point without `step_index`) settles
+  `no_prune`, with or without a hint (Appendix D.6).
+- `ApplicationEvaluationReport.rescues` (`ApplicationEvaluationRescues`): the experiments whose
+  baseline failed its success condition while the application run passed (Appendix D, Table 12),
+  rendered in the generated page under "Rescues".
+
+### Impact
+
+Compressors may now propose a full restart or an out-of-range step without losing the candidate;
+the applied clamp is auditable on the record. Consumers of retained compression evidence and of
+evaluation reports must re-run on 5.0.0. The repository Appendix D protocol is `appendix-d.v2`
+(schema surface `compression.fork-hint.v2`), the evaluation definition is revision `2`, and the
+regenerated report measures zero rescues: compression requires a finished source and no task-level
+source success judge is run (new `rescue-scope` limitation). Compression step counts and ratios in
+the report are unchanged.
+
+## [4.0.0] - 2026-09-25
+
+### Breaking Changes
+
+- Counterfactual optimization (#207): every candidate passed to `runCounterfactualOptimization`
+  must declare `scope`, one of `APPLICATION_CRO_EDIT_SCOPES` (`request`, `downstream`, configured
+  as `applications.cro.editScopes`, applications protocol v6). A candidate without it is a
+  `TypeError`; an unknown scope is `ApplicationProtocolError` before any record.
+- Retained `shepherd.application.cro_candidate.v1` plans carry `edit_scope`, which also enters the
+  candidate identity, so candidate identities, branch sessions, and records differ from 3.0.0 and
+  3.0.0 optimizer runs cannot be inspected or resumed. The candidate record schema now allows target
+  `step_index` 0 with a `null` `prefix_id`; `CounterfactualTarget.prefix_id` is `string | null`.
+- A `request` candidate whose change dimensions cannot alter the kind of its edited step (task or
+  provider for a provider step, handlers for an effect step) is refused with
+  `ApplicationProtocolError` after the baseline and before the `opened` record, or with
+  `ApplicationEvidenceError` before a child's `proposed` record.
+
+### Defect Fixes
+
+- The optimizer always replayed from the first dependent of the edited step, so the edited step was
+  served from the journal and a final-step edit evaluated nothing. A `request` edit now replays from
+  the boundary before the edited step (Appendix F.1, first affected event): the edited step runs
+  live and diverges as `root`, and a final-step edit replays one live step. A `downstream` edit
+  keeps the first-dependent target, or zero live steps when nothing depends on the edited step.
+
+### New Feature
+
+- `CounterfactualEditScope` type and `APPLICATION_CRO_EDIT_SCOPES` constant, exported from the root
+  and `./applications`; the repository Appendix F `propose_candidate` tool schema and proposer prompt
+  require the scope.
+
+### Impact
+
+Instruction and provider edits to a step are now evaluated on that step. Callers must add `scope`
+to every candidate: `request` for edits that change the edited step's own request (the usual case
+for task and provider edits), `downstream` to keep the previous first-dependent behavior. The
+checked application evaluation report was regenerated: the counterfactual fixture's two `request`
+candidates replay 7 compared provider calls (was 2) against the unchanged full-replay 8.
+
+## [3.0.0] - 2026-09-25
+
+### Breaking Changes
+
+- Application protocols (#205): `readApplicationProtocol` now compiles every `schema` surface with
+  `compileJSONSchema`, so a protocol whose schema surface uses vocabulary outside the supported
+  JSON Schema 2020-12 subset (for example `$ref`, `$defs`, `format`, `not`, `patternProperties`)
+  or is not a schema at all is refused with `ApplicationProtocolError` before any record.
+  Previously schema surfaces were pinned by digest and never evaluated.
+- `runCodingSupervisor` refuses a policy decision whose action message `{ kind, reason,
+  worker_id }` the protocol's `action` schema refuses (`JSONSchemaValidationError`, not applied or
+  retained), and stops with `ApplicationProtocolError` when a round's observation message is not
+  admitted by the `observation` schema. Trajectory compression rejects a proposal the
+  `compression` schema refuses; counterfactual optimization and Tree-RL refuse a handoff manifest
+  or batch line their `handoff` or `training_batch` schema refuses.
+- Task schema parse failures are now `JSONSchemaValidationError`, a `TypeError` subclass with the
+  new public code `SCHEMA_VALIDATION_FAILED`, so `isPublicError` returns `true` for them. Object
+  field mismatches are reported per field (`$.x is not a declared task schema field`,
+  `$.y is a required task schema field`) instead of one object-level message.
+
+### New Feature
+
+- Task schemas (#205): `schema.number()`, `schema.integer()`, `schema.boolean()`, `schema.null()`,
+  `schema.array(items)`, `schema.enum(values)`, `schema.literal(value)`, `schema.union(members)`
+  (JSON Schema `oneOf`), and `schema.optional(field)` inside `schema.object()`, with static type
+  inference (`TaskOptionalSchema`, `TaskSchemaScalar`, `OptionalTaskSchemaShapeKeys`,
+  `InferTaskSchemaShapeField`). Invalid values, including invalid provider output, are refused
+  with a path-level issue such as `$.findings[2].line must be a safe integer`.
+- `schema.fromJSONSchema`, task registry decoding, task values, and the generated
+  `task-descriptor-v1`, `task-value-v1`, and delegation schemas accept the matching documents
+  (`type` number/integer/boolean, `{ type: "array", items }`, `enum`, `const`, `oneOf`, and
+  `required` as a subset of the declared properties).
+- Reusable validator: `compileJSONSchema(document)` returns a frozen validator whose `validate`
+  lists every `{ path, keyword, message, schemaPath }` issue and whose `parse` returns a frozen
+  canonical snapshot or throws `JSONSchemaValidationError`; `JSON_SCHEMA_SUPPORTED_KEYWORDS` lists
+  the closed subset. Exported from the root and `./tasks`. `pattern` is compiled without
+  complexity bounds, so schema documents must come from trusted configuration.
+- `runCounterfactualOptimization` receipts carry `handoff`, the Appendix F handoff manifest derived
+  from retained candidate records and validated against the pinned handoff schema
+  (`CounterfactualHandoff`, `CounterfactualHandoffCandidate`).
+- Docs: new [JSON Schema validation](docs/json-schema-validation.md) page; task descriptors,
+  Python-to-TypeScript guide, coding supervisor, trajectory compression, counterfactual
+  optimization, Tree-RL, application manifests, public errors, package exports, README paper
+  coverage, and the paper coverage map updated.
+
+### Impact
+
+Tasks can declare realistic typed inputs and outputs, and the Appendix E and F protocol schemas
+now constrain what runs at runtime. Existing task descriptors keep byte-identical documents and
+artifact locks. Callers with custom application protocols must keep their schema surfaces inside
+the supported subset and their policies consistent with their own action schemas. The repository
+protocols in `config/research-applications.config.json` are unchanged.
+
 ## [2.35.1] - 2026-09-25
 
 ### Improvement

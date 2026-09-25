@@ -151,16 +151,13 @@ export function beginRetainedWorldSettlement(
         const row = requiredRow(database, outputId);
         const current = journalFromStoredRow(row);
         if (current.state !== PREPARED_STATE) {
-            if (
-                releaseBasisId !== null &&
-                current.admission.action !== RETAINED_WORLD_SETTLEMENT_ACTIONS[3]
-            ) {
-                encodeRetainedWorldSettlementOperation(
-                    current.admission,
-                    applicationPlan,
-                    releaseBasisId,
-                );
-            }
+            // Replay still refuses planning evidence that does not fit the admitted action; a
+            // release replay may observe a different basis, so its basis is not compared.
+            encodeRetainedWorldSettlementOperation(
+                current.admission,
+                applicationPlan,
+                releaseBasisId,
+            );
             if (applicationPlan !== null) {
                 // Every validated non-prepared state has an operation.
                 /* node:coverage ignore next 2 */

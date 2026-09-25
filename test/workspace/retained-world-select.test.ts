@@ -99,9 +99,14 @@ test("public select publishes one exact retained world and replays after reopen"
     );
     assert.ok(terminal?.receipt);
     assert.equal(JSON.parse(terminal.receipt.json).publication_id, selected.publication_id);
-    const settlement = inspectDurableTaskExecution(fixture.store, fixture.captured.output.run_id)
-        .settlements[0];
+    const settled = inspectDurableTaskExecution(fixture.store, fixture.captured.output.run_id);
+    const settlement = settled.settlements[0];
     assert.ok(settlement);
+    // A retained-world settlement delays terminal publication: an extension publication control.
+    assert.equal(settled.proof.profile, "extension");
+    assert.equal(settled.proof.strength, "runtime_only");
+    assert.equal(settled.proof.proof_backed, false);
+    assert.deepEqual(settled.proof.metadata.publication_controls, ["delay"]);
     assert.equal(settlement.action, "select");
     assert.equal(settlement.command_id, terminal.admission.request.command_id);
     assert.equal(settlement.output_id, fixture.captured.output.output_id);

@@ -15,6 +15,40 @@ export {
 export { createWorldChangesetInspection } from "../workspace/changeset-inspection.ts";
 export { createWorldChangeset } from "../workspace/changesets.ts";
 export {
+    createCloneDeviceLayerAdapter,
+    createCopyDeviceLayerAdapter,
+    createDeviceLayerAdapters,
+    createOverlayDeviceLayerAdapter,
+    openDeviceLayerWorld,
+} from "../workspace/device-layer.ts";
+export { checkDeviceLayerConformance } from "../workspace/device-layer-conformance.ts";
+export {
+    type ContainerDeviceLayerAdapterOptions,
+    createContainerDeviceLayerAdapter,
+} from "../workspace/device-layer-container.ts";
+export type {
+    DeviceLayerAdapter,
+    DeviceLayerAdapterName,
+    DeviceLayerCheckpoint,
+    DeviceLayerCompaction,
+    DeviceLayerCompactionRequest,
+    DeviceLayerConformanceCase,
+    DeviceLayerConformanceReport,
+    DeviceLayerDepthPolicy,
+    DeviceLayerDevice,
+    DeviceLayerFileEntry,
+    DeviceLayerFreezeRequest,
+    DeviceLayerLayer,
+    DeviceLayerOpenContext,
+    DeviceLayerProbe,
+    DeviceLayerRestore,
+    DeviceLayerSelection,
+    DeviceLayerSelectionAttempt,
+    DeviceLayerWorld,
+    DeviceLayerWorldOptions,
+} from "../workspace/device-layer-types.ts";
+export {
+    DeviceLayerError,
     GitCustodyError,
     RetainedWorldApplicationConflictError,
     WorkspaceBindingError,
@@ -201,6 +235,7 @@ export type {
     TaskWorldCaptureJournalTransition,
 } from "../workspace/task-world-journal-types.ts";
 export type {
+    BackendSelectionMode,
     GitAwareCustody,
     GitAwareCustodyOptions,
     GitBasisEvidence,
@@ -232,6 +267,8 @@ export type {
     WorkspaceRepositoryBindingEvidence,
     WorkspaceState,
     WorldCarrierBackend,
+    WorldCarrierBackendAttempt,
+    WorldCarrierBackendSelection,
     WorldChangeNode,
     WorldChangeOperation,
     WorldChangeset,

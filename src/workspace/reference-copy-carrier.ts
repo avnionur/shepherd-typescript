@@ -37,12 +37,14 @@ import type { RetainedWorldSettlementOperationEncoding } from "../store/retained
 import { createWorkspaceBindings, createWorkspaceBindingsForRetainedCustody } from "./bindings.ts";
 import {
     type CarrierBackendRuntime,
+    type CarrierBackendSelectionEvidence,
     type CarrierFileMaterializer,
     mountOverlay,
     type OverlayLayers,
-    openCarrierBackend,
+    readBackendSelectionOption,
     readCarrierBackendOption,
     readOverlayMountState,
+    selectCarrierBackend,
     unmountOverlay,
     writeCopiedFile,
 } from "./carrier-backends.ts";
@@ -88,6 +90,7 @@ import type {
 
 type CarrierPaths = {
     readonly backend: CarrierBackendRuntime;
+    readonly backendSelection: CarrierBackendSelectionEvidence;
     readonly carrier: string;
     readonly custodies: string;
     readonly discarded: string;
@@ -643,17 +646,19 @@ function createCarrier(
     open: typeof openWorkspace,
     createBindings: typeof createWorkspaceBindings,
 ): ReferenceCopyCarrier {
-    const { backend, faultInjection, workspaceRoot } = readOptions(options);
+    const { backend, backendSelection, faultInjection, workspaceRoot } = readOptions(options);
     const workspace = open(workspaceRoot);
     const paths = createCarrierPaths(
         workspace.control_path,
         createBindings,
         faultInjection,
         backend,
+        backendSelection,
     );
 
     const carrier = Object.freeze({
         backend: paths.backend.name as ReferenceCopyCarrier["backend"],
+        backendSelection: paths.backendSelection as ReferenceCopyCarrier["backendSelection"],
         captureCustody: async (custodyId: string) =>
             invokeCarrier(() => captureCustody(paths, custodyId)),
         discard: async (custodyId: string) => invokeCarrier(() => discardCustody(paths, custodyId)),
@@ -834,6 +839,7 @@ function assertGitStagingSource(controlPath: string, sourceRoot: string): string
 
 function readOptions(value: unknown): Readonly<{
     backend: string;
+    backendSelection: string;
     faultInjection: WorkspaceCustodyFaultInjection | null;
     workspaceRoot: string;
 }> {
@@ -844,11 +850,12 @@ function readOptions(value: unknown): Readonly<{
     if (
         Object.getPrototypeOf(value) !== Object.prototype ||
         Object.getOwnPropertySymbols(value).length > 0 ||
-        Object.keys(descriptors).length > 3 ||
+        Object.keys(descriptors).length > 4 ||
         !("workspaceRoot" in descriptors) ||
         Object.values(descriptors).some((descriptor) => !("value" in descriptor)) ||
         Object.keys(descriptors).some(
-            (key) => !["backend", "faultInjection", "workspaceRoot"].includes(key),
+            (key) =>
+                !["backend", "backendSelection", "faultInjection", "workspaceRoot"].includes(key),
         )
     ) {
         throw new TypeError("reference copy carrier options must be exact data");
@@ -859,6 +866,7 @@ function readOptions(value: unknown): Readonly<{
     }
     return {
         backend: readCarrierBackendOption(descriptors.backend?.value),
+        backendSelection: readBackendSelectionOption(descriptors.backendSelection?.value),
         faultInjection: readWorkspaceCustodyFaultInjection(
             "faultInjection" in descriptors ? descriptors.faultInjection?.value : undefined,
         ),
@@ -871,6 +879,7 @@ function createCarrierPaths(
     createBindings: typeof createWorkspaceBindings,
     faultInjection: WorkspaceCustodyFaultInjection | null = null,
     backendName = workspaceProtocolConfig.carrierBackends.defaultBackend,
+    selectionMode = workspaceProtocolConfig.carrierBackends.selection.defaultMode,
 ): CarrierPaths {
     const config = workspaceProtocolConfig.carrier;
     const carrier = path.join(controlPath, config.carrierDirectory);
@@ -899,9 +908,11 @@ function createCarrierPaths(
             syncDirectory(directory);
             syncDirectory(path.dirname(directory));
         }
+        const selected = selectCarrierBackend(backendName, selectionMode, basePaths.staging);
         return {
             ...basePaths,
-            backend: openCarrierBackend(backendName, basePaths.staging),
+            backend: selected.runtime,
+            backendSelection: selected.selection,
             identities: Object.values(basePaths).map((directory) => ({
                 identity: directoryIdentity(directory),
                 path: directory,

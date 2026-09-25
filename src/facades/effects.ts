@@ -1,4 +1,32 @@
-/** Stable Node-only ESM subpath for effect records and in-process handler dispatch. */
+/** Stable Node-only ESM subpath for effect records, in-process handler dispatch, and compensation. */
+export {
+    compensateEffects,
+    createEffectCompensationRegistry,
+    inspectEffectCompensation,
+} from "../effect/compensation.ts";
+export {
+    EffectCompensationConflictError,
+    EffectCompensationEvidenceError,
+    EffectCompensationFailedError,
+    EffectCompensationHandlerNotFoundError,
+} from "../effect/compensation-errors.ts";
+export { deriveEffectCompensationId } from "../effect/compensation-records.ts";
+export type {
+    CompensateEffectsOptions,
+    EffectCompensationAttemptInspection,
+    EffectCompensationHandler,
+    EffectCompensationInspection,
+    EffectCompensationOutcomeStatus,
+    EffectCompensationReceipt,
+    EffectCompensationRegistry,
+    EffectCompensationRequest,
+    EffectCompensationStatus,
+    EffectCompensationTrigger,
+    EffectCompensationTriggerKind,
+    InspectEffectCompensationOptions,
+    MaterializedEffectEvidence,
+    MaterializedEffectEvidenceKind,
+} from "../effect/compensation-types.ts";
 export { EffectHandlerNotFoundError } from "../effect/handler-errors.ts";
 export type {
     EffectHandler,
@@ -24,3 +52,11 @@ export type {
     EffectReversibility,
     EffectSuccess,
 } from "../effect/types.ts";
+export {
+    EFFECT_COMPENSABLE_TIERS,
+    EFFECT_COMPENSATION_EVIDENCE_KINDS,
+    EFFECT_COMPENSATION_OUTCOMES,
+    EFFECT_COMPENSATION_PHASES,
+    EFFECT_COMPENSATION_STATUSES,
+    EFFECT_COMPENSATION_TRIGGERS,
+} from "../protocol/values.generated.ts";

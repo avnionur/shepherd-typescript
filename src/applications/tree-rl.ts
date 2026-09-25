@@ -8,11 +8,16 @@ import {
     APPLICATION_KINDS,
     APPLICATION_PROTOCOL_SURFACES,
     APPLICATION_TREE_RL_BASELINE_KINDS,
+    APPLICATION_TREE_RL_LIMITS,
+    APPLICATION_TREE_RL_MEMBER_KINDS,
+    APPLICATION_TREE_RL_NORMALIZATIONS,
     APPLICATION_TREE_RL_PHASES,
     APPLICATION_TREE_RL_ROLLOUT_STATUSES,
     RECORD_MODES,
     REPLAY_CHANGE_DIMENSIONS,
+    REPLAY_CHECKPOINT_CLASSIFICATIONS,
     REPLAY_RECOVERY_CLASSIFICATIONS,
+    REPLAY_SOURCE_DISPOSITIONS,
     REPLAY_STEP_KINDS,
     REPLAY_TERMINAL_STATUSES,
 } from "../protocol/values.generated.ts";
@@ -24,7 +29,13 @@ import { replayReplaySession } from "../replay/branch.ts";
 import { ReplaySessionInterruptedError } from "../replay/errors.ts";
 import { inspectReplaySession } from "../replay/inspection.ts";
 import { deriveReplaySessionId } from "../replay/session.ts";
-import type { ReplaySessionInspection, ReplayTerminalInspection } from "../replay/types.ts";
+import type {
+    ReplayCheckpointInspection,
+    ReplaySessionInspection,
+    ReplayStepInspection,
+    ReplayTarget,
+    ReplayTerminalInspection,
+} from "../replay/types.ts";
 import { assertScopeText, readScopeDataObject } from "../scope/validation.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { OwnerRecord } from "../store/types.ts";
@@ -32,6 +43,7 @@ import {
     ApplicationBudgetError,
     ApplicationEvidenceError,
     ApplicationProtocolError,
+    ApplicationVerificationError,
 } from "./errors.ts";
 import {
     applicationProtocolId,
@@ -41,6 +53,11 @@ import {
     readRetainedManifest,
     retainApplicationManifest,
 } from "./manifest.ts";
+import {
+    type ApplicationSchemaSurface,
+    assertApplicationMessage,
+    compileApplicationSchemaSurfaces,
+} from "./protocol-schemas.ts";
 import {
     addApplicationCosts,
     assertApplicationDigest,
@@ -58,27 +75,44 @@ import {
     canonical,
     readTreeRlBaselines,
     readTreeRlBatchBody,
+    readTreeRlForkProposal,
     readTreeRlOpenedBody,
+    readTreeRlPrompts,
     readTreeRlRolloutBody,
+    readTreeRlRootBody,
+    resolveTreeRlForkTurn,
     type TreeRlBatchBody,
     type TreeRlOpenedBody,
     type TreeRlRolloutBody,
+    type TreeRlRootBody,
+    treeRlTurnBounds,
 } from "./tree-rl-records.ts";
 import type {
+    MetaAgentTreeRlForkSelectorOptions,
     RunTreeRlRolloutsOptions,
     SelectTreeRlForkPointsOptions,
     TreeRlBatchExport,
     TreeRlBatchSummary,
+    TreeRlBindingsFactory,
     TreeRlFailure,
+    TreeRlForkDecision,
     TreeRlForkPoint,
+    TreeRlForkSelector,
+    TreeRlNormalization,
+    TreeRlPrompt,
+    TreeRlProviderContext,
     TreeRlProviderFactory,
     TreeRlRewardFunction,
     TreeRlRolloutPlan,
     TreeRlRolloutRecord,
+    TreeRlRootRecord,
     TreeRlRunInspection,
     TreeRlRunReceipt,
     TreeRlSelectedForkPoint,
+    TreeRlTrainerAdapter,
     TreeRlTrainingBatch,
+    TreeRlTrainingLine,
+    TreeRlTurn,
 } from "./tree-rl-types.ts";
 import type { ApplicationArtifactSource, ApplicationProtocolDefinition } from "./types.ts";
 
@@ -87,22 +121,26 @@ const treeRl = config.treeRl;
 const [CAPTURE_MODE] = RECORD_MODES;
 const [, , , TREE_RL_KIND] = APPLICATION_KINDS;
 const [PROMPT_KIND, SCHEMA_KIND] = APPLICATION_PROTOCOL_SURFACES;
-const [OPENED_PHASE, ROLLOUT_PHASE, BATCH_PHASE] = APPLICATION_TREE_RL_PHASES;
+const [OPENED_PHASE, ROOT_PHASE, ROLLOUT_PHASE, BATCH_PHASE] = APPLICATION_TREE_RL_PHASES;
 const [COMPLETED, FAILED] = APPLICATION_TREE_RL_ROLLOUT_STATUSES;
-const [SINGLE_ROLLOUT] = APPLICATION_TREE_RL_BASELINE_KINDS;
+const [FLAT_GRPO] = APPLICATION_TREE_RL_BASELINE_KINDS;
+const [ROOT_MEMBER, BRANCH_MEMBER] = APPLICATION_TREE_RL_MEMBER_KINDS;
 const [, PROVIDER_CHANGE] = REPLAY_CHANGE_DIMENSIONS;
 const [, RUNNING_CLASSIFICATION] = REPLAY_RECOVERY_CLASSIFICATIONS;
+const [, RETAIN_SOURCE] = REPLAY_SOURCE_DISPOSITIONS;
 const [FINISHED_SESSION] = REPLAY_TERMINAL_STATUSES;
 const [PROVIDER_STEP] = REPLAY_STEP_KINDS;
+const [, , UNAVAILABLE_CHECKPOINT] = REPLAY_CHECKPOINT_CLASSIFICATIONS;
 const OPENED_STEP = "opened";
+const ROOT_STEP = "root";
 const ROLLOUT_STEP = "rollout";
 const BATCH_STEP = "batch";
 
 type TreeRlProtocol = {
+    readonly batch: readonly ApplicationSchemaSurface[];
     readonly branches: number;
     readonly definition: ApplicationProtocolDefinition;
-    readonly forkPoints: number;
-    readonly minDependents: number;
+    readonly groupSize: number;
     readonly providerCalls: number;
 };
 
@@ -118,18 +156,26 @@ type RetainedRecords = {
     readonly opened: RetainedEntry<TreeRlOpenedBody>;
     readonly plans: readonly TreeRlRolloutPlan[];
     readonly rollouts: readonly RetainedEntry<TreeRlRolloutBody>[];
+    readonly roots: readonly RetainedEntry<TreeRlRootBody>[];
+};
+
+/** One root of the batch with its prompt and inspection. */
+type RootEntry = {
+    readonly groupIndex: number;
+    readonly prompt: TreeRlPrompt;
+    readonly session: ReplaySessionInspection;
 };
 
 type Run = {
     readonly applicationId: string;
+    readonly bindings: TreeRlBindingsFactory | null;
     readonly claimId: string;
     readonly clock: { readonly clock?: () => number };
-    readonly handlers: unknown;
     head: RecordId;
-    readonly program: unknown;
     readonly protocol: TreeRlProtocol;
+    reserved: number;
     readonly reward: TreeRlRewardFunction;
-    readonly source: ReplaySessionInspection;
+    readonly roots: ReadonlyMap<string, RootEntry>;
     spent: number;
     readonly store: SQLiteTraceStore;
 };
@@ -139,9 +185,11 @@ type Run = {
  *
  * For each provider step of the session, in index order, `analyzeReplayDependencies` gives its
  * transitive dependents; a step qualifies when its dependent count reaches `minDependents`, and
- * qualifying steps are taken in index order up to `maxForkPoints`. Each fork point names the step
- * and the source prefix identity at its boundary (null at step 0). The selection is a pure function
- * of the retained session and writes nothing.
+ * qualifying steps are taken in index order up to `maxForkPoints`. When the session binds worlds or
+ * processes, a step qualifies only where the session retains a checkpoint at its boundary that is
+ * not classified `unavailable`, since only such a boundary can be restored. Each fork point names
+ * the step and the prefix identity at its boundary (null at step 0). The selection is a pure
+ * function of the retained session and writes nothing.
  *
  * @param store - Open trace store holding the session, writable or read-only.
  * @param options - Session identity, dependent-count minimum, fork-point bound, and optional clock.
@@ -181,76 +229,248 @@ export function selectTreeRlForkPoints(
         fields.clock === undefined
             ? {}
             : { clock: readFunction(fields.clock, "clock") as () => number };
-    return selectForkPoints(
-        store,
-        inspectReplaySession(store, { sessionId: fields.sessionId, ...clock }),
-        minDependents,
-        maxForkPoints,
-        clock,
-    );
+    const source = inspectReplaySession(store, { sessionId: fields.sessionId, ...clock });
+    const selected: TreeRlSelectedForkPoint[] = [];
+    for (const step of source.steps) {
+        if (selected.length === maxForkPoints) {
+            break;
+        }
+        if (
+            step.kind !== PROVIDER_STEP ||
+            (bindsResources(source) && restorableCheckpoint(source, step.index) === null)
+        ) {
+            continue;
+        }
+        const { dependents } = analyzeReplayDependencies(store, {
+            sessionId: source.session_id,
+            stepIndex: step.index,
+            ...clock,
+        });
+        if (dependents.length >= minDependents) {
+            selected.push(
+                Object.freeze({
+                    dependents: dependents.length,
+                    ...forkPointOf(source, step.index),
+                }),
+            );
+        }
+    }
+    return Object.freeze(selected);
 }
 
 /**
- * Runs the Tree-RL adapter (§5.3) over a recorded replay session and exports a training batch.
+ * Creates the deterministic dependency-count fork selector: among the admissible restorable turns
+ * of a root, it proposes the one whose provider step has the most transitive dependents in the
+ * root's declared dependency graph (the earliest on ties), proposes no tool call, and gives the
+ * configured `dependencySelection` reason. It reads only the root inspection in its context, so it
+ * is a pure function of the retained root.
  *
- * Fork points are selected from the finished source session by {@link selectTreeRlForkPoints} with
- * the protocol's dependent-count minimum and fork-point budget. Per fork point, the protocol's
- * branch count of rollouts is replayed from the fork point's step boundary through
- * `replayReplaySession` declaring the `provider` change, branch `k` under the protocol's seed `k`
- * and the static provider cassette the caller's factory returns for it; every earlier step is
- * served from the source journal. `analyzeReplayDivergence` must show no divergence before the fork
- * point and none unexplained. The caller's reward function scores each finished, proven rollout.
- * Every rollout is retained in fork-point, then branch order as one
- * `shepherd.application.tree_rl_rollout.v1` record with status `completed` or `failed`; a session
- * that did not finish, diverged, was interrupted by a dead writer whose lease expired, or whose
- * reward threw or was not finite is retained as `failed` with its configured reason and the run
- * continues. Advantages are computed over completed rollouts only by {@link computeTreeRlAdvantages},
- * the canonical `jsonl_v1` batch and its digest (and, with the `single_rollout` baseline, the batch
- * of each fork point's first branch) are retained in a batch record, and the manifest citing the
- * source session, every rollout record, and the batch as `training_batch` is retained last with
- * the terminal cut.
+ * @returns The fork selector.
  *
- * Every option, the protocol, the source session, the selection, the rollout bounds, every
- * provider, and the projected provider calls are validated before any record is written, so a
- * refusal writes nothing. Repeating the command resumes from retained evidence: a terminal rollout
- * session is never re-executed, the reward function is not called for a retained rollout, and a
- * completed run returns its retained manifest and batch.
+ * @example
+ * ```ts
+ * await runTreeRlRollouts(store, { ...options, selector: createDependencyTreeRlForkSelector() });
+ * ```
+ */
+export function createDependencyTreeRlForkSelector(): TreeRlForkSelector {
+    return (context) => {
+        const { first, last } = context.turn_bounds;
+        let best: { readonly dependents: number; readonly turn: number } | null = null;
+        for (const turn of context.turns) {
+            if (turn.turn < first || turn.turn > last || !turn.restorable) {
+                continue;
+            }
+            const dependents = dependentCount(context.root.steps, turn.step_index);
+            if (best === null || dependents > best.dependents) {
+                best = { dependents, turn: turn.turn };
+            }
+        }
+        return Object.freeze({
+            branch_turn: best?.turn ?? first,
+            reason: treeRl.reasons.dependencySelection,
+            tool_call: null,
+        });
+    };
+}
+
+/**
+ * Creates the provider-backed meta-agent fork selector of paper Appendix F.7.
+ *
+ * For each root it sends one structured request to `provider`: the instruction is the protocol's
+ * `prompt` surface with the configured `fork_selector` role, the output schema is its `schema`
+ * surface with the `fork_proposal` role, and the input is the root as a numbered turn list
+ * (`{ turn, step_index, request: { instruction, input }, output }`) with the root's final reward,
+ * the prompt identity, the turn count, and the admissible turn bounds. The response output must
+ * satisfy every `fork_proposal` schema surface and the proposal grammar
+ * `{ branch_turn, tool_call: { name, arguments } | null, reason }`. The run clamps the proposed
+ * turn into `[1, T - 2]` (configured) and seeds the first branch with the tool call.
+ *
+ * @param options - Meta-agent provider and optional cancellation signal.
+ * @returns The fork selector.
+ * @throws {TypeError} If options are malformed.
+ *
+ * The returned selector throws {@link ApplicationProtocolError} when the protocol lacks the
+ * `fork_selector` prompt or `fork_proposal` schema surface, and
+ * {@link ApplicationVerificationError} when the provider output violates a proposal schema
+ * surface or grammar; provider errors propagate.
+ *
+ * @example
+ * ```ts
+ * const selector = createMetaAgentTreeRlForkSelector({ provider: metaAgentProvider });
+ * await runTreeRlRollouts(store, { ...options, selector });
+ * ```
+ */
+export function createMetaAgentTreeRlForkSelector(
+    options: MetaAgentTreeRlForkSelectorOptions,
+): TreeRlForkSelector {
+    const fields = readScopeDataObject(
+        options,
+        ["provider"],
+        "createMetaAgentTreeRlForkSelector options",
+        ["signal"],
+    );
+    const provider = fields.provider as Partial<ModelProvider> | null;
+    if (
+        provider === null ||
+        typeof provider !== "object" ||
+        typeof provider.invoke !== "function" ||
+        typeof provider.descriptor !== "function"
+    ) {
+        throw new TypeError("provider must be a model provider");
+    }
+    if (fields.signal !== undefined && !(fields.signal instanceof AbortSignal)) {
+        throw new TypeError("signal must be an AbortSignal");
+    }
+    const signal = (fields.signal as AbortSignal | undefined) ?? new AbortController().signal;
+    const invoke = provider.invoke as ModelProvider["invoke"];
+    return async (context) => {
+        const roles = treeRl.surfaceRoles;
+        const instruction = context.protocol.surfaces.find(
+            (surface) => surface.kind === PROMPT_KIND && surface.role === roles.forkSelector,
+        );
+        const schema = context.protocol.surfaces.find(
+            (surface) => surface.kind === SCHEMA_KIND && surface.role === roles.forkProposal,
+        );
+        if (
+            instruction === undefined ||
+            typeof instruction.content !== "string" ||
+            schema === undefined
+        ) {
+            throw new ApplicationProtocolError(
+                `the meta-agent selector requires a ${PROMPT_KIND} surface with role ${roles.forkSelector} and a ${SCHEMA_KIND} surface with role ${roles.forkProposal}`,
+            );
+        }
+        const response = await invoke(
+            {
+                input: {
+                    prompt_id: context.prompt_id,
+                    reward: context.reward,
+                    turn_bounds: { ...context.turn_bounds },
+                    turn_count: context.turns.length,
+                    turns: context.turns.map((turn) => ({
+                        output: turn.output,
+                        request: {
+                            input: turn.request.input,
+                            instruction: turn.request.instruction,
+                        },
+                        step_index: turn.step_index,
+                        turn: turn.turn,
+                    })),
+                },
+                instruction: instruction.content,
+                outputSchema: schema.content as never,
+            },
+            signal,
+        );
+        try {
+            assertApplicationMessage(
+                compileApplicationSchemaSurfaces(context.protocol, roles.forkProposal),
+                response.output,
+                "fork proposal",
+            );
+            return readTreeRlForkProposal(response.output, "fork proposal");
+        } catch (error) {
+            throw new ApplicationVerificationError(
+                `the meta-agent fork proposal for root ${context.root.session_id} is malformed`,
+                { cause: error },
+            );
+        }
+    };
+}
+
+/**
+ * Runs Meta-Agent Guided Tree-RL (paper §5.3, Appendix F.6 Algorithm 2) over a batch of recorded
+ * root rollouts and exports a per-action training batch.
+ *
+ * The batch is B `prompts`, each with its deterministic `program` and exactly the protocol's
+ * `groupSize` G finished root sessions the caller recorded (Algorithm 2 part A, for example with
+ * `runReplaySession`). Part B: every root is graded by `reward` (member `root`) and handed with its
+ * reward and numbered turns (provider steps) to `selector`, whose proposed `branch_turn` is clamped
+ * into the configured admissible range `[1, T - 2]` and, for a world- or process-bound root,
+ * moved to the nearest turn whose boundary retains a restorable checkpoint. Each root's grading and
+ * fork decision is retained as one `root` record. From the fork turn's step boundary the protocol's
+ * branch count K of rollouts is replayed through `replayReplaySession` declaring the `provider`
+ * change, branch `k` under the protocol's seed `k` and the static provider cassette `provider`
+ * returns for it; the first branch of a root whose proposal named a tool call receives that call
+ * in its provider context so its first live action carries it. `analyzeReplayDivergence` must show
+ * no divergence before the fork step and none unexplained, and `reward` grades each finished,
+ * proven rollout (member `branch`). Root gradings and branch rollouts run with up to `concurrency`
+ * in flight; their records are appended in prompt, root, then branch order, so retained output
+ * does not depend on concurrency. Part C: {@link computeTreeRlAdvantages} gives each completed
+ * root its inter-root advantage and each completed member its intra-tree advantage under the
+ * retained normalization, and the `jsonl_v2` batch attributes the inter-root advantage to every
+ * prefix action (turns before the fork turn) and the member's intra-tree advantage to every suffix
+ * action. With the `flat_grpo` baseline the batch record also retains the roots-only batch in which
+ * every action carries the inter-root advantage. The manifest citing every root record, every
+ * rollout record, the batch, and the baseline batch is retained last with the terminal cut.
+ *
+ * Every option, the protocol, every root, the bounds, and the projected provider calls (each root
+ * assumed to fork at its earliest admissible turn unless its decision is retained) are validated
+ * before any record is written, so a refusal writes nothing. Repeating the command resumes from
+ * retained evidence: a retained root is not re-graded or re-selected, a terminal rollout session
+ * is never re-executed, the reward function is not called for a retained record, and a completed
+ * run returns its retained manifest and batch.
  *
  * @param store - Open writable trace store.
- * @param options - Command, claim, protocol, source session, program, provider factory, reward
- * function, and optional baselines, handlers, and clock.
+ * @param options - Command, claim, protocol, prompts, selector, provider factory, reward function,
+ * and optional baselines, restoration bindings factory, concurrency, normalization, and clock.
  * @returns The retained manifest, the record-derived inspection, and the exported batch.
  * @throws {ApplicationProtocolError} If the protocol is malformed, is not a Tree-RL protocol, lacks
- * a required surface or budget, declares a zero branch or fork-point budget or fewer seeds than
- * branches, or the run was opened under another protocol. Nothing is written.
- * @throws {ApplicationBudgetError} If the fork-point budget exceeds `limits.maxForkPoints`, the
- * branch budget exceeds `limits.maxBranches`, the planned rollouts exceed `limits.maxRollouts`, or
- * the projected provider calls exceed the provider-call budget; the first three and the whole-run
- * projection are checked before any record, and each new rollout session is checked before it
+ * a required surface or budget, declares a zero branch or group size or fewer seeds than branches,
+ * a prompt does not carry exactly `groupSize` roots, or the run was opened under another protocol
+ * (nothing is written), or the `training_batch` schema surface refuses an exported line (records
+ * stay retained; the batch record and manifest are not written).
+ * @throws {ApplicationBudgetError} If the branch count exceeds `limits.maxBranches`, the group size
+ * exceeds `APPLICATION_TREE_RL_LIMITS.maxGroupSize`, the prompts exceed `maxPrompts`, the
+ * concurrency exceeds `maxConcurrency`, the planned rollouts exceed `limits.maxRollouts`, the cited
+ * artifacts exceed `limits.maxArtifacts`, or the projected provider calls exceed the provider-call
+ * budget; each new rollout session is also checked, counting in-flight projections, before it
  * opens.
- * @throws {ApplicationEvidenceError} If the source session is not finished, binds worlds or
- * processes, has no qualifying fork point, the run was opened with a different source, selection,
- * or baselines, or retained evidence is inconsistent. Nothing is written by a refusal.
- * @throws {ReplayEvidenceError} If the source session is not retained or its evidence is invalid.
+ * @throws {ApplicationEvidenceError} If a root is not finished or has no turn, a world- or
+ * process-bound root has no admissible restorable turn, the run was opened with different prompts,
+ * baselines, or normalization, or retained evidence is inconsistent.
+ * @throws {ReplayEvidenceError} If a root session is not retained or its evidence is invalid.
  * @throws {ReplayLeaseConflictError} If a rollout session is held by another writer.
  * @throws {ReplaySessionInterruptedError} If a rollout session is still `running` under a live
- * lease; nothing is written.
+ * lease; nothing is written for it.
  * @throws {TraceStoreError} If the store is closed.
- * @throws {TypeError} If options are malformed or the provider factory returns a provider that is
- * not a distinct static provider.
+ * @throws {TypeError} If options are malformed, a world- or process-bound root has no `bindings`
+ * factory, the selector returns a malformed proposal, or the provider factory returns a provider
+ * that is not a distinct static provider. Errors thrown by the selector propagate after the root
+ * records before it are retained.
  *
  * @example
  * ```ts
  * const { batch } = await runTreeRlRollouts(store, {
  *     claimId: "tree-rl",
  *     commandId: "application:tree-rl:1",
- *     program,
+ *     prompts: [{ id: "task-1", program, roots: rootSessionIds }],
  *     protocol,
- *     provider: ({ fork_point, seed }) => cassetteFor(fork_point, seed),
+ *     provider: ({ root_session_id, seed, tool_call }) => cassetteFor(root_session_id, seed, tool_call),
  *     reward: ({ rollout }) => score(rollout.terminal?.result),
- *     sourceSessionId,
+ *     selector: createMetaAgentTreeRlForkSelector({ provider: metaAgent }),
  * });
- * console.log(batch.batch_digest, batch.line_count);
+ * console.log(batch.batch_digest, batch.lines[0]?.actions);
  * ```
  */
 export async function runTreeRlRollouts(
@@ -259,23 +479,45 @@ export async function runTreeRlRollouts(
 ): Promise<TreeRlRunReceipt> {
     const fields = readScopeDataObject(
         options,
-        ["claimId", "commandId", "program", "protocol", "provider", "reward", "sourceSessionId"],
+        ["claimId", "commandId", "prompts", "protocol", "provider", "reward", "selector"],
         "runTreeRlRollouts options",
-        ["baselines", "clock", "handlers"],
+        ["baselines", "bindings", "clock", "concurrency", "normalization"],
     );
     assertScopeText(fields.commandId, "commandId");
     assertScopeText(fields.claimId, "claimId");
-    assertScopeText(fields.sourceSessionId, "sourceSessionId");
     const protocol = readTreeRlProtocol(fields.protocol);
     const protocolId = applicationProtocolId(protocol.definition);
     const baselines = readTreeRlBaselines(fields.baselines ?? []);
-    readFunction(fields.program, "program");
     const factory = readFunction(fields.provider, "provider") as TreeRlProviderFactory;
     const reward = readFunction(fields.reward, "reward") as TreeRlRewardFunction;
+    const selector = readFunction(fields.selector, "selector") as TreeRlForkSelector;
+    const bindings =
+        fields.bindings === undefined
+            ? null
+            : (readFunction(fields.bindings, "bindings") as TreeRlBindingsFactory);
     const clock =
         fields.clock === undefined
             ? {}
             : { clock: readFunction(fields.clock, "clock") as () => number };
+    const concurrency =
+        fields.concurrency === undefined
+            ? APPLICATION_TREE_RL_LIMITS.defaultConcurrency
+            : readCount(fields.concurrency, "concurrency");
+    if (concurrency === 0) {
+        throw new TypeError("concurrency must be positive");
+    }
+    if (concurrency > APPLICATION_TREE_RL_LIMITS.maxConcurrency) {
+        throw new ApplicationBudgetError(
+            `concurrency ${concurrency} exceeds the configured bound ${APPLICATION_TREE_RL_LIMITS.maxConcurrency}`,
+        );
+    }
+    const normalization = (fields.normalization ??
+        treeRl.advantage.normalization) as TreeRlNormalization;
+    if (!APPLICATION_TREE_RL_NORMALIZATIONS.includes(normalization)) {
+        throw new TypeError("normalization must be a configured Tree-RL normalization");
+    }
+    const prompts = readPrompts(fields.prompts, protocol);
+    const openedPrompts = prompts.map((prompt) => ({ id: prompt.id, roots: prompt.roots }));
     const applicationId = deriveApplicationOwnerId(fields.commandId);
     const retained =
         store.readOwner(applicationId).length === 0
@@ -290,136 +532,160 @@ export async function runTreeRlRollouts(
         }
         assert(
             opened.command_id === fields.commandId &&
-                opened.source_session_id === fields.sourceSessionId &&
-                canonical(opened.baselines) === canonical(baselines),
-            `application ${applicationId} was opened with a different source or baselines`,
+                canonical(opened.prompts) === canonical(openedPrompts) &&
+                canonical(opened.baselines) === canonical(baselines) &&
+                opened.normalization === normalization,
+            `application ${applicationId} was opened with different prompts, baselines, or normalization`,
         );
         if (retained.manifest !== null) {
             return receiptOf(store, applicationId, retained.manifest.manifest);
         }
     }
-    const source = inspectReplaySession(store, { sessionId: fields.sourceSessionId, ...clock });
-    if (
-        source.terminal?.status !== FINISHED_SESSION ||
-        source.worlds.length > 0 ||
-        source.processes.length > 0
-    ) {
-        throw new ApplicationEvidenceError(
-            `source session ${source.session_id} did not finish or binds worlds or processes`,
-        );
-    }
-    const forkPoints = selectForkPoints(
-        store,
-        source,
-        protocol.minDependents,
-        protocol.forkPoints,
-        clock,
-    );
-    if (forkPoints.length === 0) {
-        throw new ApplicationEvidenceError(
-            `source session ${source.session_id} has no provider step with ${protocol.minDependents} dependent(s)`,
-        );
+    const roots = new Map<string, RootEntry>();
+    for (const prompt of prompts) {
+        for (const [groupIndex, sessionId] of prompt.roots.entries()) {
+            const session = inspectReplaySession(store, { sessionId, ...clock });
+            if (session.terminal?.status !== FINISHED_SESSION) {
+                throw new ApplicationEvidenceError(`root session ${sessionId} did not finish`);
+            }
+            const turns = turnsOf(session);
+            if (turns.length === 0) {
+                throw new ApplicationEvidenceError(`root session ${sessionId} has no turn`);
+            }
+            if (bindsResources(session) && bindings === null) {
+                throw new TypeError("bindings is required when a root binds worlds or processes");
+            }
+            if (
+                resolveTreeRlForkTurn(
+                    treeRl.forkTurn.first,
+                    turns.length,
+                    (turn) => (turns[turn - 1] as TreeRlTurn).restorable,
+                ) === null
+            ) {
+                throw new ApplicationEvidenceError(
+                    `root session ${sessionId} has no admissible restorable fork turn`,
+                );
+            }
+            roots.set(sessionId, { groupIndex, prompt, session });
+        }
     }
     const seeds = protocol.definition.seeds.slice(0, protocol.branches);
-    const rollouts = forkPoints.length * seeds.length;
+    const rollouts = roots.size * seeds.length;
     if (rollouts > config.limits.maxRollouts) {
         throw new ApplicationBudgetError(
             `${rollouts} planned rollouts exceed the configured bound ${config.limits.maxRollouts}`,
         );
     }
-    const plans = planRollouts(applicationId, forkPoints, seeds);
-    assert(
-        retained === null || canonical(retained.opened.body.fork_points) === canonical(forkPoints),
-        `application ${applicationId} was opened with a different fork-point selection`,
-    );
-    const providers = plans.map((plan) =>
-        readRolloutProvider(
-            factory(
-                Object.freeze({
-                    branch: plan.branch,
-                    fork_point: plan.fork_point,
-                    seed: plan.seed,
-                    source_session_id: source.session_id,
-                }),
-            ),
-            plan,
-        ),
-    );
-    if (new Set(providers).size !== providers.length) {
-        throw new TypeError("provider must return a distinct provider for every rollout");
+    if (rollouts + roots.size + 2 > config.limits.maxArtifacts) {
+        throw new ApplicationBudgetError(
+            `${rollouts + roots.size + 2} cited artifacts exceed the configured bound ${config.limits.maxArtifacts}`,
+        );
     }
-    const run: Run = {
-        applicationId,
-        claimId: fields.claimId,
-        clock,
-        handlers: fields.handlers,
-        head: "" as RecordId,
-        program: fields.program,
-        protocol,
-        reward,
-        source,
-        spent: 0,
-        store,
-    };
-    const projected = plans.reduce(
-        (total, plan, index) =>
-            total +
-            (retained?.rollouts[index]?.body.cost.provider_calls ??
-                projectedCalls(source, plan.fork_point.step_index)),
-        0,
-    );
+    let projected = 0;
+    for (const [index, entry] of [...roots.values()].entries()) {
+        const decided = retained?.roots[index]?.body.fork.fork_point.step_index;
+        const turns = turnsOf(entry.session);
+        const earliest = resolveTreeRlForkTurn(
+            treeRl.forkTurn.first,
+            turns.length,
+            (turn) => (turns[turn - 1] as TreeRlTurn).restorable,
+        ) as number;
+        const stepIndex = decided ?? (turns[earliest - 1] as TreeRlTurn).step_index;
+        for (let branch = 0; branch < seeds.length; branch += 1) {
+            projected +=
+                retained?.rollouts[index * seeds.length + branch]?.body.cost.provider_calls ??
+                projectedCalls(entry.session, stepIndex);
+        }
+    }
     if (projected > protocol.providerCalls) {
         throw new ApplicationBudgetError(
             `${projected} projected live provider call(s) exceed ${treeRl.budgetKeys.providerCalls} ${protocol.providerCalls}`,
         );
     }
+    const run: Run = {
+        applicationId,
+        bindings,
+        claimId: fields.claimId,
+        clock,
+        head: "" as RecordId,
+        protocol,
+        reserved: 0,
+        reward,
+        roots,
+        spent: 0,
+        store,
+    };
     if (retained === null) {
-        append(
-            run,
-            null,
-            OPENED_STEP,
-            {
-                application_id: applicationId,
-                baselines,
-                command_id: fields.commandId,
-                fork_points: forkPoints,
-                kind: TREE_RL_KIND,
-                phase: OPENED_PHASE,
-                protocol_id: protocolId,
-                seeds,
-                source_session_id: source.session_id,
-            },
-            [(source.terminal as ReplayTerminalInspection).record_id],
-        );
+        append(run, null, OPENED_STEP, {
+            application_id: applicationId,
+            baselines,
+            command_id: fields.commandId,
+            kind: TREE_RL_KIND,
+            normalization,
+            phase: OPENED_PHASE,
+            prompts: openedPrompts,
+            protocol_id: protocolId,
+            seeds,
+        });
     } else {
         run.head = retained.head;
     }
-    for (const [index, plan] of plans.entries()) {
-        const entry = retained?.rollouts[index];
-        if (entry === undefined) {
-            await settleRollout(run, plan, providers[index] as ModelProvider);
-        } else {
-            run.spent += entry.body.cost.provider_calls;
-        }
+    const entries = [...roots.values()];
+    const retainedRoots = retained?.roots.length ?? 0;
+    await settleInOrder(
+        entries.length - retainedRoots,
+        concurrency,
+        (index) => settleRoot(run, entries[retainedRoots + index] as RootEntry, selector),
+        (_index, body) =>
+            append(run, run.head, `${ROOT_STEP}:${body.root_session_id}`, body, [
+                (
+                    (roots.get(body.root_session_id) as RootEntry).session
+                        .terminal as ReplayTerminalInspection
+                ).record_id,
+            ]),
+    );
+    const rooted = readTreeRlRecords(store, applicationId);
+    const pending = rooted.plans.slice(rooted.rollouts.length);
+    run.spent = rooted.rollouts.reduce((total, entry) => total + entry.body.cost.provider_calls, 0);
+    const toolCalls = new Map(
+        rooted.roots.map((entry) => [entry.body.root_session_id, entry.body.fork.tool_call]),
+    );
+    const contexts = pending.map((plan) => providerContext(plan, toolCalls));
+    const providers = contexts.map((context) => readRolloutProvider(factory(context), context));
+    if (new Set(providers).size !== providers.length) {
+        throw new TypeError("provider must return a distinct provider for every rollout");
     }
+    await settleInOrder(
+        pending.length,
+        concurrency,
+        (index) =>
+            settleRollout(
+                run,
+                pending[index] as TreeRlRolloutPlan,
+                contexts[index] as TreeRlProviderContext,
+                providers[index] as ModelProvider,
+            ),
+        (_index, settled) =>
+            append(run, run.head, `${ROLLOUT_STEP}:${settled.body.rollout_id}`, settled.body, [
+                settled.head,
+            ]),
+    );
     const settled = readTreeRlRecords(store, applicationId);
     if (settled.batch === null) {
-        const batches = batchesOf(settled.opened.body, settled.rollouts);
-        append(
-            run,
-            run.head,
-            BATCH_STEP,
-            {
-                application_id: applicationId,
-                baseline:
-                    batches.baseline === null
-                        ? null
-                        : { ...summaryOf(batches.baseline), kind: SINGLE_ROLLOUT },
-                ...summaryOf(batches.batch),
-                phase: BATCH_PHASE,
-            },
-            [],
-        );
+        const batches = batchesOf(settled);
+        assertBatchLines(run.protocol, applicationId, [
+            ...batches.batch.lines,
+            ...(batches.baseline?.lines ?? []),
+        ]);
+        append(run, run.head, BATCH_STEP, {
+            application_id: applicationId,
+            baseline:
+                batches.baseline === null
+                    ? null
+                    : { ...summaryOf(batches.baseline), kind: FLAT_GRPO },
+            ...summaryOf(batches.batch),
+            phase: BATCH_PHASE,
+        });
     }
     const receipt = retainApplicationManifest(store, {
         manifest: buildManifest(run, readTreeRlRecords(store, applicationId)),
@@ -430,15 +696,19 @@ export async function runTreeRlRollouts(
 /**
  * Exports the retained training batch of one Tree-RL run without mutation.
  *
- * The canonical `jsonl_v1` lines are re-derived from the retained rollout records: one line per
- * completed rollout in fork-point, then branch order, carrying its identity, source and rollout
- * sessions, fork point, seed, reward, advantages, and step count. The text is the canonical JSON of
- * each line followed by a line feed, and its digest must equal the retained batch digest. Export
- * works on reopened, read-only, and imported stores and yields an identical digest.
+ * The canonical `jsonl_v2` lines are re-derived from the retained root and rollout records: one
+ * line per completed tree member in prompt, root, then member (root first, then branches) order,
+ * carrying its prompt, root, member session, fork turn and point, seed, whether the proposed tool
+ * call seeded it, reward, inter-root and intra-tree advantages, and the per-action attribution
+ * (`prefix` actions carry the inter-root advantage, `suffix` actions the member's intra-tree
+ * advantage; the flat baseline marks every action `flat` with the inter-root advantage). The text
+ * is the canonical JSON of each line followed by a line feed, and its digest must equal the
+ * retained batch digest. Export works on reopened, read-only, and imported stores and yields an
+ * identical digest.
  *
  * @param store - Open trace store, writable or read-only.
  * @param applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
- * @returns The batch lines, text, digest, and the optional single-rollout baseline batch.
+ * @returns The batch lines, text, digest, normalization, and the optional flat GRPO baseline batch.
  * @throws {ApplicationEvidenceError} If the application or its batch is not retained, or a
  * re-derived digest disagrees with the retained one.
  * @throws {TraceStoreError} If the store is closed.
@@ -457,22 +727,72 @@ export function exportTreeRlTrainingBatch(
     assertApplicationDigest(applicationId, config.identity.applicationIdPrefix, "applicationId");
     const retained = readTreeRlRecords(store, applicationId);
     assert(retained.batch !== null, `application ${applicationId} retains no training batch`);
-    const { baseline, batch } = batchesOf(retained.opened.body, retained.rollouts);
+    const { baseline, batch } = batchesOf(retained);
     return Object.freeze({
         ...batch,
         application_id: applicationId,
-        baseline: baseline === null ? null : Object.freeze({ ...baseline, kind: SINGLE_ROLLOUT }),
+        baseline: baseline === null ? null : Object.freeze({ ...baseline, kind: FLAT_GRPO }),
+        normalization: retained.opened.body.normalization,
     }) as TreeRlTrainingBatch;
+}
+
+/**
+ * Hands the retained training batch of one Tree-RL run to a trainer-export adapter.
+ *
+ * The batch is exported with {@link exportTreeRlTrainingBatch} (so its digest equals the retained
+ * one) and passed to `adapter.submit` when the adapter accepts its format. Nothing is written; the
+ * adapter's result is returned unchanged. No trainer ships with this package: the adapter is the
+ * seam a trainer integration implements.
+ *
+ * @param store - Open trace store, writable or read-only.
+ * @param applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
+ * @param adapter - Trainer-export adapter.
+ * @returns The adapter's result.
+ * @throws {ApplicationProtocolError} If the adapter does not accept the batch format.
+ * @throws {ApplicationEvidenceError} If the batch is not retained or does not re-derive.
+ * @throws {TypeError} If the adapter or application identity is malformed.
+ * @throws Errors thrown by `adapter.submit` propagate.
+ *
+ * @example
+ * ```ts
+ * const jobId = await exportTreeRlBatchToTrainer(store, applicationId, {
+ *     formats: ["jsonl_v2"],
+ *     id: "my-trainer",
+ *     submit: (batch) => trainer.enqueue(batch.text),
+ * });
+ * ```
+ */
+export async function exportTreeRlBatchToTrainer<TResult>(
+    store: SQLiteTraceStore,
+    applicationId: string,
+    adapter: TreeRlTrainerAdapter<TResult>,
+): Promise<TResult> {
+    const fields = readScopeDataObject(adapter, ["formats", "id", "submit"], "trainer adapter");
+    assertScopeText(fields.id, "trainer adapter id");
+    const submit = readFunction(
+        fields.submit,
+        "trainer adapter submit",
+    ) as TreeRlTrainerAdapter<TResult>["submit"];
+    if (!Array.isArray(fields.formats)) {
+        throw new TypeError("trainer adapter formats must be an array");
+    }
+    const batch = exportTreeRlTrainingBatch(store, applicationId);
+    if (!fields.formats.includes(batch.format)) {
+        throw new ApplicationProtocolError(
+            `trainer adapter ${fields.id} does not accept the ${batch.format} batch format`,
+        );
+    }
+    return await submit(batch);
 }
 
 /**
  * Reads one Tree-RL run as an immutable record-derived view without mutation.
  *
- * Every record on the application owner path is validated: the opened record and its selection,
- * each rollout record in fork-point, then branch order with its derived rollout and session
- * identities, the batch record whose digests re-derive from the rollouts, the manifest, and the
- * terminal cut. Inspection works on reopened, read-only, and imported stores and is identical
- * across them.
+ * Every record on the application owner path is validated: the opened record and its prompts, each
+ * root record in prompt then root order with its fork decision, each rollout record in plan order
+ * with its derived rollout and session identities, the batch record whose digests re-derive from
+ * the records, the manifest, and the terminal cut. Inspection works on reopened, read-only, and
+ * imported stores and is identical across them.
  *
  * @param store - Open trace store, writable or read-only.
  * @param applicationId - Application identity derived by {@link deriveApplicationOwnerId}.
@@ -485,7 +805,7 @@ export function exportTreeRlTrainingBatch(
  * @example
  * ```ts
  * const inspection = inspectTreeRlRun(store, deriveApplicationOwnerId(commandId));
- * console.log(inspection.rollouts.filter((entry) => entry.record?.status === "failed").length);
+ * console.log(inspection.roots.map((root) => root.fork.branch_turn));
  * ```
  */
 export function inspectTreeRlRun(
@@ -512,23 +832,24 @@ export function inspectTreeRlRun(
                   }),
         command_id: opened.command_id,
         cut_id: manifest === null ? null : manifest.cut_id,
-        fork_points: opened.fork_points,
         kind: opened.kind,
         manifest: manifest === null ? null : manifest.manifest,
         manifest_record_id: manifest === null ? null : manifest.record_id,
+        normalization: opened.normalization,
         opened_record_id: retained.opened.record_id,
+        prompts: opened.prompts,
         protocol_id: opened.protocol_id,
         rollouts: Object.freeze(
             retained.plans.map((plan, index) => {
                 const entry = retained.rollouts[index];
                 return Object.freeze({
                     ...plan,
-                    record: entry === undefined ? null : toRecord(entry),
+                    record: entry === undefined ? null : (toRecord(entry) as TreeRlRolloutRecord),
                 });
             }),
         ),
+        roots: Object.freeze(retained.roots.map((entry) => toRecord(entry) as TreeRlRootRecord)),
         seeds: opened.seeds,
-        source_session_id: opened.source_session_id,
     });
 }
 
@@ -544,43 +865,205 @@ function receiptOf(
     });
 }
 
-async function settleRollout(run: Run, plan: TreeRlRolloutPlan, provider: ModelProvider) {
-    const { source, store } = run;
+/**
+ * Runs `work` for indices `0..count-1` with at most `concurrency` in flight and commits each
+ * result in index order as soon as every earlier one has been committed. After the first failure
+ * no new work starts; the in-flight work settles, the contiguous committed prefix stays, and the
+ * first error is rethrown.
+ */
+async function settleInOrder<T>(
+    count: number,
+    concurrency: number,
+    work: (index: number) => Promise<T>,
+    commit: (index: number, value: T) => void,
+): Promise<void> {
+    const results = new Map<number, T>();
+    let next = 0;
+    let committed = 0;
+    type Failure = { readonly error: unknown; readonly index: number };
+    const state: { failure: Failure | null } = { failure: null };
+    const flush = () => {
+        while (results.has(committed)) {
+            commit(committed, results.get(committed) as T);
+            results.delete(committed);
+            committed += 1;
+        }
+    };
+    const worker = async () => {
+        while (state.failure === null && next < count) {
+            const index = next;
+            next += 1;
+            try {
+                results.set(index, await work(index));
+                flush();
+            } catch (error) {
+                const current = state.failure as Failure | null;
+                if (current === null || index < current.index) {
+                    state.failure = { error, index };
+                }
+            }
+        }
+    };
+    await Promise.all(Array.from({ length: Math.min(concurrency, count) }, worker));
+    if (state.failure !== null) {
+        throw state.failure.error;
+    }
+}
+
+async function settleRoot(
+    run: Run,
+    entry: RootEntry,
+    selector: TreeRlForkSelector,
+): Promise<Readonly<Record<string, unknown>> & { readonly root_session_id: string }> {
+    const { session } = entry;
+    const cost = measureReplaySessionCost(session);
+    let reward: number | null = null;
+    let failure: TreeRlFailure | null = null;
+    try {
+        reward = await grade(run, {
+            branch: null,
+            cost,
+            fork_point: null,
+            group_index: entry.groupIndex,
+            member: ROOT_MEMBER,
+            prompt_id: entry.prompt.id,
+            protocol: run.protocol.definition,
+            root: session,
+            rollout: session,
+            seed: null,
+        });
+    } catch {
+        failure = { code: config.errors.verificationCode, reason: treeRl.reasons.rewardFailed };
+    }
+    const turns = turnsOf(session);
+    const bounds = treeRlTurnBounds(turns.length);
+    const proposal = readTreeRlForkProposal(
+        await selector(
+            Object.freeze({
+                group_index: entry.groupIndex,
+                prompt_id: entry.prompt.id,
+                protocol: run.protocol.definition,
+                reward,
+                root: session,
+                turn_bounds: bounds,
+                turns,
+            }),
+        ),
+        `fork proposal for root ${session.session_id}`,
+    );
+    const branchTurn = resolveTreeRlForkTurn(
+        proposal.branch_turn,
+        turns.length,
+        (turn) => (turns[turn - 1] as TreeRlTurn).restorable,
+    ) as number;
+    const fork: TreeRlForkDecision = {
+        branch_turn: branchTurn,
+        fork_point: forkPointOf(session, (turns[branchTurn - 1] as TreeRlTurn).step_index),
+        proposed_turn: proposal.branch_turn,
+        reason: proposal.reason,
+        tool_call: proposal.tool_call,
+    };
+    return {
+        application_id: run.applicationId,
+        cost,
+        failure,
+        fork,
+        group_index: entry.groupIndex,
+        phase: ROOT_PHASE,
+        prompt_id: entry.prompt.id,
+        reward,
+        root_session_id: session.session_id,
+        status: failure === null ? COMPLETED : FAILED,
+        step_count: (session.terminal as ReplayTerminalInspection).step_count,
+        turns: turns.map((turn) => turn.step_index),
+    };
+}
+
+async function grade(run: Run, context: Parameters<TreeRlRewardFunction>[0]): Promise<number> {
+    const scored = await run.reward(Object.freeze(context));
+    if (typeof scored !== "number" || !Number.isFinite(scored)) {
+        throw new TypeError("reward must be a finite number");
+    }
+    return scored;
+}
+
+async function settleRollout(
+    run: Run,
+    plan: TreeRlRolloutPlan,
+    context: TreeRlProviderContext,
+    provider: ModelProvider,
+): Promise<{
+    readonly body: Readonly<Record<string, unknown>> & { readonly rollout_id: string };
+    readonly head: RecordId;
+}> {
+    const { store } = run;
+    const entry = run.roots.get(plan.root_session_id) as RootEntry;
+    const root = entry.session;
     const stepIndex = plan.fork_point.step_index;
+    let reservation = 0;
     if (store.readOwner(plan.replay_session_id).length === 0) {
-        const projected = projectedCalls(source, stepIndex);
-        if (run.spent + projected > run.protocol.providerCalls) {
+        const projected = projectedCalls(root, stepIndex);
+        if (run.spent + run.reserved + projected > run.protocol.providerCalls) {
             throw new ApplicationBudgetError(
-                `${projected} projected live provider call(s) after ${run.spent} exceed ${treeRl.budgetKeys.providerCalls} ${run.protocol.providerCalls}`,
+                `${projected} projected live provider call(s) after ${run.spent + run.reserved} exceed ${treeRl.budgetKeys.providerCalls} ${run.protocol.providerCalls}`,
             );
         }
+        reservation = projected;
+        run.reserved += reservation;
     }
     let session: ReplaySessionInspection;
     let failure: TreeRlFailure | null = null;
     try {
-        session = (
-            await replayReplaySession(store, {
-                changes: [PROVIDER_CHANGE],
-                claimId: run.claimId,
-                ...run.clock,
-                commandId: rolloutCommand(run.applicationId, plan),
-                ...(run.handlers === undefined ? {} : { handlers: run.handlers as never }),
-                program: run.program as never,
-                provider,
-                sourceSessionId: source.session_id,
-                target: { stepCount: stepIndex },
-            })
-        ).inspection;
-    } catch (error) {
-        if (
-            !(error instanceof ReplaySessionInterruptedError) ||
-            error.classification === RUNNING_CLASSIFICATION ||
-            error.session_id !== plan.replay_session_id
-        ) {
-            throw error;
+        const checkpoint = restorableCheckpoint(root, stepIndex);
+        const target: ReplayTarget =
+            checkpoint === null
+                ? { stepCount: stepIndex }
+                : { checkpointId: checkpoint.checkpoint_id };
+        const restoration =
+            run.bindings === null
+                ? {}
+                : readScopeDataObject(
+                      await run.bindings(context),
+                      [],
+                      `bindings for rollout ${plan.rollout_id}`,
+                      ["handlers", "processes", "worlds"],
+                  );
+        const handlers = restoration.handlers ?? entry.prompt.handlers;
+        try {
+            session = (
+                await replayReplaySession(store, {
+                    changes: [PROVIDER_CHANGE],
+                    claimId: run.claimId,
+                    ...run.clock,
+                    commandId: rolloutCommand(run.applicationId, plan),
+                    ...(handlers === undefined ? {} : { handlers: handlers as never }),
+                    ...(restoration.processes === undefined
+                        ? {}
+                        : { processes: restoration.processes as never }),
+                    ...(restoration.worlds === undefined
+                        ? {}
+                        : { worlds: restoration.worlds as never }),
+                    program: entry.prompt.program,
+                    provider,
+                    // Sibling rollouts branch from the same retained root: none abandons it.
+                    sourceDisposition: RETAIN_SOURCE,
+                    sourceSessionId: root.session_id,
+                    target,
+                })
+            ).inspection;
+        } catch (error) {
+            if (
+                !(error instanceof ReplaySessionInterruptedError) ||
+                error.classification === RUNNING_CLASSIFICATION ||
+                error.session_id !== plan.replay_session_id
+            ) {
+                throw error;
+            }
+            session = inspectReplaySession(store, { sessionId: error.session_id, ...run.clock });
+            failure = { code: config.errors.evidenceCode, reason: treeRl.reasons.interrupted };
         }
-        session = inspectReplaySession(store, { sessionId: error.session_id, ...run.clock });
-        failure = { code: config.errors.evidenceCode, reason: treeRl.reasons.interrupted };
+    } finally {
+        run.reserved -= reservation;
     }
     const cost = measureReplaySessionCost(session);
     run.spent += cost.provider_calls;
@@ -591,7 +1074,7 @@ async function settleRollout(run: Run, plan: TreeRlRolloutPlan, provider: ModelP
     if (failure === null) {
         const analysis = analyzeReplayDivergence(store, {
             replaySessionId: session.session_id,
-            sourceSessionId: source.session_id,
+            sourceSessionId: root.session_id,
             ...run.clock,
         });
         if (
@@ -604,30 +1087,24 @@ async function settleRollout(run: Run, plan: TreeRlRolloutPlan, provider: ModelP
     let reward: number | null = null;
     if (failure === null) {
         try {
-            const scored = await run.reward(
-                Object.freeze({
-                    branch: plan.branch,
-                    cost,
-                    fork_point: plan.fork_point,
-                    protocol: run.protocol.definition,
-                    rollout: session,
-                    seed: plan.seed,
-                    source,
-                }),
-            );
-            if (typeof scored !== "number" || !Number.isFinite(scored)) {
-                throw new TypeError("reward must be a finite number");
-            }
-            reward = scored;
+            reward = await grade(run, {
+                branch: plan.branch,
+                cost,
+                fork_point: plan.fork_point,
+                group_index: plan.group_index,
+                member: BRANCH_MEMBER,
+                prompt_id: plan.prompt_id,
+                protocol: run.protocol.definition,
+                root,
+                rollout: session,
+                seed: plan.seed,
+            });
         } catch {
             failure = { code: config.errors.verificationCode, reason: treeRl.reasons.rewardFailed };
         }
     }
-    append(
-        run,
-        run.head,
-        `${ROLLOUT_STEP}:${plan.rollout_id}`,
-        {
+    return {
+        body: {
             ...plan,
             application_id: run.applicationId,
             cost,
@@ -636,67 +1113,106 @@ async function settleRollout(run: Run, plan: TreeRlRolloutPlan, provider: ModelP
             reward,
             status: failure === null ? COMPLETED : FAILED,
             step_count: terminal?.step_count ?? session.steps.length,
+            turns: session.steps
+                .filter((step) => step.kind === PROVIDER_STEP)
+                .map((step) => step.index),
         },
-        [session.head_record_id],
+        head: session.head_record_id,
+    };
+}
+
+/** Every provider step of a session as a numbered turn, with its boundary restorability. */
+function turnsOf(session: ReplaySessionInspection): readonly TreeRlTurn[] {
+    return Object.freeze(
+        session.steps
+            .filter((step) => step.kind === PROVIDER_STEP)
+            .map((step, index) =>
+                Object.freeze({
+                    output: step.provider?.response?.output ?? null,
+                    request: step.provider?.request as TreeRlTurn["request"],
+                    restorable:
+                        !bindsResources(session) ||
+                        restorableCheckpoint(session, step.index) !== null,
+                    step_index: step.index,
+                    turn: index + 1,
+                }),
+            ),
     );
 }
 
-function selectForkPoints(
-    store: SQLiteTraceStore,
-    source: ReplaySessionInspection,
-    minDependents: number,
-    maxForkPoints: number,
-    clock: { readonly clock?: () => number },
-): readonly TreeRlSelectedForkPoint[] {
-    const selected: TreeRlSelectedForkPoint[] = [];
-    for (const step of source.steps) {
-        if (selected.length === maxForkPoints) {
-            break;
-        }
-        if (step.kind !== PROVIDER_STEP) {
-            continue;
-        }
-        const { dependents } = analyzeReplayDependencies(store, {
-            sessionId: source.session_id,
-            stepIndex: step.index,
-            ...clock,
-        });
-        if (dependents.length >= minDependents) {
-            selected.push(
-                Object.freeze({
-                    dependents: dependents.length,
-                    prefix_id:
-                        step.index === 0
-                            ? null
-                            : (source.steps[step.index - 1] as { readonly prefix_id: string })
-                                  .prefix_id,
-                    step_index: step.index,
-                }),
-            );
+/** Number of transitive dependents of one step in a session's declared dependency graph. */
+function dependentCount(steps: readonly ReplayStepInspection[], stepIndex: number): number {
+    const affected = new Set([stepIndex]);
+    for (const step of steps.slice(stepIndex + 1)) {
+        if (step.depends_on.some((dependency) => affected.has(dependency))) {
+            affected.add(step.index);
         }
     }
-    return Object.freeze(selected);
+    return affected.size - 1;
+}
+
+function forkPointOf(session: ReplaySessionInspection, stepIndex: number): TreeRlForkPoint {
+    return Object.freeze({
+        prefix_id:
+            stepIndex === 0
+                ? null
+                : (session.steps[stepIndex - 1] as { readonly prefix_id: string }).prefix_id,
+        step_index: stepIndex,
+    });
+}
+
+function bindsResources(session: ReplaySessionInspection): boolean {
+    return session.worlds.length > 0 || session.processes.length > 0;
+}
+
+/**
+ * Returns the checkpoint a world- or process-bound session retains at `stepCount` when it can be
+ * restored, and null for a session that binds neither (its step boundaries are admissible targets).
+ */
+function restorableCheckpoint(
+    session: ReplaySessionInspection,
+    stepCount: number,
+): ReplayCheckpointInspection | null {
+    if (!bindsResources(session)) {
+        return null;
+    }
+    return (
+        session.checkpoints.find(
+            (checkpoint) =>
+                checkpoint.step_count === stepCount &&
+                checkpoint.classification !== UNAVAILABLE_CHECKPOINT,
+        ) ?? null
+    );
 }
 
 function planRollouts(
     applicationId: string,
-    forkPoints: readonly TreeRlForkPoint[],
+    roots: readonly RetainedEntry<TreeRlRootBody>[],
     seeds: readonly number[],
 ): readonly TreeRlRolloutPlan[] {
     return Object.freeze(
-        forkPoints.flatMap((point) =>
+        roots.flatMap(({ body }) =>
             seeds.map((seed, branch) => {
-                const forkPoint = Object.freeze({
-                    prefix_id: point.prefix_id,
-                    step_index: point.step_index,
-                });
-                const plan = { branch, fork_point: forkPoint, rollout_id: "", seed };
+                const forkPoint = Object.freeze({ ...body.fork.fork_point });
+                const identity = {
+                    branch,
+                    branch_turn: body.fork.branch_turn,
+                    fork_point: forkPoint,
+                    group_index: body.group_index,
+                    prompt_id: body.prompt_id,
+                    root_session_id: body.root_session_id,
+                    seed,
+                    seeded: branch === 0 && body.fork.tool_call !== null,
+                };
                 return Object.freeze({
-                    ...plan,
-                    replay_session_id: deriveReplaySessionId(rolloutCommand(applicationId, plan)),
+                    ...identity,
+                    replay_session_id: deriveReplaySessionId(
+                        rolloutCommand(applicationId, identity),
+                    ),
                     rollout_id: prefixedApplicationId(config.identity.rolloutIdPrefix, {
                         application_id: applicationId,
                         fork_point: forkPoint,
+                        root_session_id: body.root_session_id,
                         seed,
                     }),
                 });
@@ -707,16 +1223,36 @@ function planRollouts(
 
 function rolloutCommand(
     applicationId: string,
-    plan: Pick<TreeRlRolloutPlan, "fork_point" | "seed">,
+    plan: Pick<TreeRlRolloutPlan, "fork_point" | "root_session_id" | "seed">,
 ): string {
     return createApplicationCommandId(applicationId, ROLLOUT_STEP, {
+        root_session_id: plan.root_session_id,
         seed: plan.seed,
         step_index: plan.fork_point.step_index,
     });
 }
 
-function readRolloutProvider(value: unknown, plan: TreeRlRolloutPlan): ModelProvider {
-    const subject = `provider for rollout ${plan.fork_point.step_index}:${plan.seed}`;
+function providerContext(
+    plan: TreeRlRolloutPlan,
+    toolCalls: ReadonlyMap<string, TreeRlForkDecision["tool_call"]>,
+): TreeRlProviderContext {
+    return Object.freeze({
+        branch: plan.branch,
+        branch_turn: plan.branch_turn,
+        fork_point: plan.fork_point,
+        group_index: plan.group_index,
+        prompt_id: plan.prompt_id,
+        root_session_id: plan.root_session_id,
+        seed: plan.seed,
+        // A seeded plan is derived from a retained root whose fork decision carries the tool call.
+        tool_call: plan.seeded
+            ? (toolCalls.get(plan.root_session_id) as TreeRlForkDecision["tool_call"])
+            : null,
+    });
+}
+
+function readRolloutProvider(value: unknown, context: TreeRlProviderContext): ModelProvider {
+    const subject = `provider for rollout ${context.root_session_id}:${context.seed}`;
     const provider = value as Partial<ModelProvider> | null;
     if (
         provider === null ||
@@ -730,24 +1266,83 @@ function readRolloutProvider(value: unknown, plan: TreeRlRolloutPlan): ModelProv
     return provider as ModelProvider;
 }
 
-function batchesOf(
-    opened: TreeRlOpenedBody,
-    entries: readonly RetainedEntry<TreeRlRolloutBody>[],
-): {
+function readPrompts(value: unknown, protocol: TreeRlProtocol): readonly TreeRlPrompt[] {
+    const entries = Array.isArray(value)
+        ? value.map((entry, index) => {
+              const fields = readScopeDataObject(
+                  entry,
+                  ["id", "program", "roots"],
+                  `prompts[${index}]`,
+                  ["handlers"],
+              );
+              readFunction(fields.program, `prompts[${index}].program`);
+              return fields;
+          })
+        : value;
+    const data = readTreeRlPrompts(
+        Array.isArray(entries)
+            ? entries.map((entry) => ({ id: entry.id, roots: entry.roots }))
+            : entries,
+        "prompts",
+    );
+    if ((data[0] as { readonly roots: readonly string[] }).roots.length !== protocol.groupSize) {
+        throw new ApplicationProtocolError(
+            `${treeRl.budgetKeys.groupSize} ${protocol.groupSize} requires exactly ${protocol.groupSize} root(s) per prompt`,
+        );
+    }
+    return Object.freeze(
+        data.map((prompt, index) => {
+            const fields = (entries as Record<string, unknown>[])[index] as Record<string, unknown>;
+            return Object.freeze({
+                ...(fields.handlers === undefined
+                    ? {}
+                    : { handlers: fields.handlers as NonNullable<TreeRlPrompt["handlers"]> }),
+                id: prompt.id,
+                program: fields.program as TreeRlPrompt["program"],
+                roots: prompt.roots,
+            });
+        }),
+    );
+}
+
+function batchesOf(retained: RetainedRecords): {
     readonly baseline: TreeRlBatchExport | null;
     readonly batch: TreeRlBatchExport;
 } {
-    const sessionId = opened.source_session_id;
-    const rollouts = entries.map((entry) => entry.body);
+    const opened = retained.opened.body;
+    const roots = retained.roots.map((entry) => entry.body);
+    const rollouts = retained.rollouts.map((entry) => entry.body);
     return {
-        baseline: opened.baselines.includes(SINGLE_ROLLOUT)
-            ? buildTreeRlBatch(
-                  sessionId,
-                  rollouts.filter((rollout) => rollout.branch === 0),
-              )
+        baseline: opened.baselines.includes(FLAT_GRPO)
+            ? buildTreeRlBatch(opened, roots, [], true)
             : null,
-        batch: buildTreeRlBatch(sessionId, rollouts),
+        batch: buildTreeRlBatch(opened, roots, rollouts, false),
     };
+}
+
+/**
+ * Validates every exported line against the protocol's training-batch schema surfaces before the
+ * batch record is retained. A line the pinned schema refuses is a protocol mismatch.
+ */
+function assertBatchLines(
+    protocol: TreeRlProtocol,
+    applicationId: string,
+    lines: readonly TreeRlTrainingLine[],
+): void {
+    try {
+        for (const [index, line] of lines.entries()) {
+            assertApplicationMessage(
+                protocol.batch,
+                line as unknown as SemanticValue,
+                `training batch line ${index}`,
+            );
+        }
+    } catch (error) {
+        throw new ApplicationProtocolError(
+            `training batch of application ${applicationId} is not admitted by the protocol batch schema`,
+            { cause: error },
+        );
+    }
 }
 
 function summaryOf(batch: TreeRlBatchSummary): TreeRlBatchSummary {
@@ -760,31 +1355,21 @@ function summaryOf(batch: TreeRlBatchSummary): TreeRlBatchSummary {
 
 function buildManifest(run: Run, retained: RetainedRecords) {
     const roles = treeRl.artifactRoles;
-    const source = run.source;
-    const terminal = source.terminal as ReplayTerminalInspection;
-    const artifacts: ApplicationArtifactSource[] = [
-        {
-            content: {
-                prefix_id: terminal.prefix_id,
-                session_id: source.session_id,
-                status: terminal.status,
-                step_count: terminal.step_count,
-                terminal_record_id: terminal.record_id,
-            },
-            cut_id: null,
-            record_id: terminal.record_id,
-            role: roles.source,
-        },
-    ];
+    const artifacts: ApplicationArtifactSource[] = [];
     let costs = ZERO_APPLICATION_COST;
-    for (const entry of retained.rollouts) {
-        artifacts.push({
-            content: entry.body as unknown as SemanticValue,
-            cut_id: null,
-            record_id: entry.record_id,
-            role: roles.rollout,
-        });
-        costs = addApplicationCosts(costs, entry.body.cost);
+    for (const [role, entries] of [
+        [roles.root, retained.roots],
+        [roles.rollout, retained.rollouts],
+    ] as const) {
+        for (const entry of entries) {
+            artifacts.push({
+                content: entry.body as unknown as SemanticValue,
+                cut_id: null,
+                record_id: entry.record_id,
+                role,
+            });
+            costs = addApplicationCosts(costs, entry.body.cost);
+        }
     }
     const batch = retained.batch as RetainedEntry<TreeRlBatchBody>;
     artifacts.push({
@@ -814,7 +1399,7 @@ function append(
     head: RecordId | null,
     step: string,
     fields: Readonly<Record<string, unknown>>,
-    causes: readonly RecordId[],
+    causes: readonly RecordId[] = [],
 ): void {
     const appended = run.store.appendApplicationRecord(
         run.applicationId,
@@ -844,9 +1429,13 @@ function readTreeRlRecords(store: SQLiteTraceStore, applicationId: string): Reta
             deriveApplicationOwnerId(opened.command_id) === applicationId,
         "opened record names another application",
     );
-    const plans = planRollouts(applicationId, opened.fork_points, opened.seeds);
+    const expectedRoots = opened.prompts.flatMap((prompt) =>
+        prompt.roots.map((root, groupIndex) => ({ groupIndex, promptId: prompt.id, root })),
+    );
     const manifest = readRetainedManifest(store, applicationId);
+    const roots: RetainedEntry<TreeRlRootBody>[] = [];
     const rollouts: RetainedEntry<TreeRlRolloutBody>[] = [];
+    let plans: readonly TreeRlRolloutPlan[] = [];
     let batch: RetainedEntry<TreeRlBatchBody> | null = null;
     let head = first.envelope.record_id;
     let manifestSeen = false;
@@ -860,23 +1449,48 @@ function readTreeRlRecords(store: SQLiteTraceStore, applicationId: string): Reta
         );
         if (schemaRef === config.traceSchemas.treeRlRollout && batch === null) {
             assertRecord(record, schemaRef);
-            if (record.body.phase === BATCH_PHASE) {
+            const entry = { record_id: record.envelope.record_id };
+            if (record.body.phase === ROOT_PHASE) {
+                const body = readTreeRlRootBody(record.body);
+                const expected = expectedRoots[roots.length];
+                assert(
+                    expected !== undefined &&
+                        rollouts.length === 0 &&
+                        body.application_id === applicationId &&
+                        body.prompt_id === expected.promptId &&
+                        body.group_index === expected.groupIndex &&
+                        body.root_session_id === expected.root,
+                    "root record is out of order or names another root",
+                );
+                roots.push(Object.freeze({ ...entry, body }));
+                if (roots.length === expectedRoots.length) {
+                    plans = planRollouts(applicationId, roots, opened.seeds);
+                }
+            } else if (record.body.phase === BATCH_PHASE) {
                 const body = readTreeRlBatchBody(record.body);
-                const entry = Object.freeze({ body, record_id: record.envelope.record_id });
-                const expected = batchesOf(opened, rollouts);
+                const expected = batchesOf({
+                    batch: null,
+                    head,
+                    manifest: null,
+                    opened: Object.freeze({ body: opened, record_id: first.envelope.record_id }),
+                    plans,
+                    rollouts,
+                    roots,
+                });
                 assert(
                     body.application_id === applicationId &&
+                        roots.length === expectedRoots.length &&
                         rollouts.length === plans.length &&
                         canonical(summaryOf(body)) === canonical(summaryOf(expected.batch)) &&
                         canonical(body.baseline) ===
                             canonical(
                                 expected.baseline === null
                                     ? null
-                                    : { ...summaryOf(expected.baseline), kind: SINGLE_ROLLOUT },
+                                    : { ...summaryOf(expected.baseline), kind: FLAT_GRPO },
                             ),
-                    "batch record does not re-derive from every rollout",
+                    "batch record does not re-derive from every root and rollout",
                 );
-                batch = entry;
+                batch = Object.freeze({ ...entry, body });
             } else {
                 const body = readTreeRlRolloutBody(record.body);
                 const plan = plans[rollouts.length];
@@ -886,7 +1500,7 @@ function readTreeRlRecords(store: SQLiteTraceStore, applicationId: string): Reta
                         canonical(planOf(body)) === canonical(plan),
                     "rollout record is out of order or disagrees with its plan",
                 );
-                rollouts.push(Object.freeze({ body, record_id: record.envelope.record_id }));
+                rollouts.push(Object.freeze({ ...entry, body }));
             }
         } else if (schemaRef === config.traceSchemas.manifest) {
             assertRecord(record, schemaRef);
@@ -917,31 +1531,41 @@ function readTreeRlRecords(store: SQLiteTraceStore, applicationId: string): Reta
         opened: Object.freeze({ body: opened, record_id: first.envelope.record_id }),
         plans,
         rollouts,
+        roots,
     });
 }
 
 function planOf(body: TreeRlRolloutBody): TreeRlRolloutPlan {
     return {
         branch: body.branch,
+        branch_turn: body.branch_turn,
         fork_point: body.fork_point,
+        group_index: body.group_index,
+        prompt_id: body.prompt_id,
         replay_session_id: body.replay_session_id,
         rollout_id: body.rollout_id,
+        root_session_id: body.root_session_id,
         seed: body.seed,
+        seeded: body.seeded,
     };
 }
 
-function toRecord(entry: RetainedEntry<TreeRlRolloutBody>): TreeRlRolloutRecord {
+function toRecord(
+    entry: RetainedEntry<TreeRlRolloutBody> | RetainedEntry<TreeRlRootBody>,
+): TreeRlRolloutRecord | TreeRlRootRecord {
     const {
         application_id: _application,
         application_version: _version,
         compatibility_version: _compatibility,
         phase: _phase,
         ...record
-    } = entry.body as TreeRlRolloutBody & {
+    } = entry.body as (TreeRlRolloutBody | TreeRlRootBody) & {
         readonly application_version: number;
         readonly compatibility_version: string;
     };
-    return Object.freeze({ ...record, record_id: entry.record_id });
+    return Object.freeze({ ...record, record_id: entry.record_id }) as
+        | TreeRlRolloutRecord
+        | TreeRlRootRecord;
 }
 
 function projectedCalls(source: ReplaySessionInspection, from: number): number {
@@ -965,30 +1589,19 @@ function readTreeRlProtocol(value: unknown): TreeRlProtocol {
         }
     }
     const keys = treeRl.budgetKeys;
-    const [branches, forkPoints, minDependents, providerCalls] = [
+    const [branches, groupSize, providerCalls] = [
         keys.branches,
-        keys.forkPoints,
-        keys.minDependents,
+        keys.groupSize,
         keys.providerCalls,
     ].map((key) => definition.budgets[key]);
-    if (
-        branches === undefined ||
-        forkPoints === undefined ||
-        minDependents === undefined ||
-        providerCalls === undefined
-    ) {
+    if (branches === undefined || groupSize === undefined || providerCalls === undefined) {
         throw new ApplicationProtocolError(
-            `budgets must declare ${keys.branches}, ${keys.forkPoints}, ${keys.minDependents}, and ${keys.providerCalls}`,
+            `budgets must declare ${keys.branches}, ${keys.groupSize}, and ${keys.providerCalls}`,
         );
     }
-    if (branches === 0 || forkPoints === 0) {
+    if (branches === 0 || groupSize === 0) {
         throw new ApplicationProtocolError(
-            `${keys.branches} and ${keys.forkPoints} must be positive`,
-        );
-    }
-    if (forkPoints > config.limits.maxForkPoints) {
-        throw new ApplicationBudgetError(
-            `${keys.forkPoints} ${forkPoints} exceeds the configured bound ${config.limits.maxForkPoints}`,
+            `${keys.branches} and ${keys.groupSize} must be positive`,
         );
     }
     if (branches > config.limits.maxBranches) {
@@ -996,12 +1609,23 @@ function readTreeRlProtocol(value: unknown): TreeRlProtocol {
             `${keys.branches} ${branches} exceeds the configured bound ${config.limits.maxBranches}`,
         );
     }
+    if (groupSize > APPLICATION_TREE_RL_LIMITS.maxGroupSize) {
+        throw new ApplicationBudgetError(
+            `${keys.groupSize} ${groupSize} exceeds the configured bound ${APPLICATION_TREE_RL_LIMITS.maxGroupSize}`,
+        );
+    }
     if (branches > definition.seeds.length) {
         throw new ApplicationProtocolError(
             `${keys.branches} ${branches} exceeds the ${definition.seeds.length} declared seed(s)`,
         );
     }
-    return { branches, definition, forkPoints, minDependents, providerCalls };
+    return {
+        batch: compileApplicationSchemaSurfaces(definition, roles.batch),
+        branches,
+        definition,
+        groupSize,
+        providerCalls,
+    };
 }
 
 function readFunction(value: unknown, subject: string): (...args: never[]) => unknown {

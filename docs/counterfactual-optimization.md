@@ -1,18 +1,26 @@
 # Counterfactual workflow optimization
 
+Status: normative from 11.0.0 (issue [#212](https://github.com/avnionur/shepherd-typescript/issues/212),
+epic [#202](https://github.com/avnionur/shepherd-typescript/issues/202); paper §5.2, Appendix F.1
+Algorithm 1, F.2.3-F.2.5, Figure 5).
+
 Implementation:
 [`src/applications/counterfactual-optimizer.ts`](../src/applications/counterfactual-optimizer.ts),
+[`src/applications/counterfactual-gate.ts`](../src/applications/counterfactual-gate.ts),
+[`src/applications/counterfactual-proposer.ts`](../src/applications/counterfactual-proposer.ts),
 [`src/applications/counterfactual-records.ts`](../src/applications/counterfactual-records.ts), and
 [`src/applications/counterfactual-types.ts`](../src/applications/counterfactual-types.ts). Public
-entry point: [`src/facades/applications.ts`](../src/facades/applications.ts) (`./applications`:
-`runCounterfactualOptimization`, `inspectCounterfactualOptimization`), with root exports from
-[`src/index.ts`](../src/index.ts). Configuration: `applications.cro` and `applications.limits` in
-[`protocol.config.json`](../protocol.config.json) (applications protocol v2); the repository's
-Appendix F protocol is the `counterfactual` definition in
-[`config/research-applications.config.json`](../config/research-applications.config.json).
+entry points: [`src/facades/applications.ts`](../src/facades/applications.ts) (`./applications`:
+`runCounterfactualOptimization`, `inspectCounterfactualOptimization`,
+`createToolLoopCounterfactualProposer`), with root exports from [`src/index.ts`](../src/index.ts).
+Configuration: `applications.cro` and `applications.limits` in
+[`protocol.config.json`](../protocol.config.json) (applications protocol v9,
+`APPLICATIONS_PROTOCOL_V9_CONTRACT`); the repository's Appendix F protocol is the `counterfactual`
+definition in [`config/research-applications.config.json`](../config/research-applications.config.json).
 Generated schema:
 [`application-cro-candidate-v1.schema.json`](../spec/schemas/application-cro-candidate-v1.schema.json).
 Tests: [`counterfactual-optimizer.test.ts`](../test/applications/counterfactual-optimizer.test.ts),
+[`counterfactual-proposer.test.ts`](../test/applications/counterfactual-proposer.test.ts),
 [`counterfactual-failures.test.ts`](../test/applications/counterfactual-failures.test.ts),
 [`counterfactual-lineage.test.ts`](../test/applications/counterfactual-lineage.test.ts),
 [`counterfactual-recovery.test.ts`](../test/applications/counterfactual-recovery.test.ts), and
@@ -22,213 +30,274 @@ rules: [application manifests](./application-manifests.md). Design constraints:
 
 ## Composition
 
-The optimizer adds no substrate. It records a baseline workflow with
-[`runReplaySession`](./replay-sessions.md) and evaluates each candidate edit on a branch opened with
-[`replayReplaySession`](./rewind-and-replay.md), scoped by `analyzeReplayDependencies`, proven by
-`analyzeReplayDivergence`, and measured from `inspectReplaySession`. Every session, record, and
-append intent identity is derived from the application identity, the step, and the candidate
-identity, so a repeated command converges on retained evidence.
+The optimizer adds no substrate. It records the baseline workflow once per example with
+[`runReplaySession`](./replay-sessions.md) and evaluates each candidate edit on per-example
+branches opened with [`replayReplaySession`](./rewind-and-replay.md), scoped by
+`analyzeReplayDependencies`, proven by `analyzeReplayDivergence`, and measured from
+`inspectReplaySession`. The provider-backed proposer is a [tool-use loop](./tool-use-loop.md)
+recorded as a replay session. Every session, record, and append intent identity is derived from the
+application identity, the step, the iteration and attempt, the candidate identity, and the example,
+so a repeated command converges on retained evidence.
 
 ## Protocol
 
 `runCounterfactualOptimization` requires a protocol of kind `counterfactual_optimization` with:
 
-- a `prompt` and at least one `tool` surface with the configured `proposer` role (the Appendix F
-  proposer prompt and tools), a `schema` surface with the `reflection` role (the scratchpad), and a
-  `schema` surface with the `handoff` role (the handoff manifest);
-- the budgets named by `applications.cro.budgetKeys`: `maxCandidates` (positive, at most
-  `limits.maxCandidates`) bounds the declared candidate set, `maxProviderCalls` bounds live
-  provider calls across every session the run opens, including the baseline, and
-  `minPromotionScore` is the gate threshold a promoted candidate's score must reach. Like every
-  protocol budget, `minPromotionScore` is a non-negative integer; it is compared with the
-  evaluator's finite score (`score >= minPromotionScore`), so a fractional score can be promoted but
-  the threshold itself is whole.
+- a `prompt` and at least one `tool` surface with the configured `proposer` role, a `schema` surface
+  with the `reflection` role, and a `schema` surface with the `handoff` role;
+- the integer budgets named by `applications.cro.budgetKeys`:
 
-Surfaces are pinned into the manifest by digest. The retained candidate records are the machine
-form of the handoff manifest; the runtime does not evaluate the caller's schema documents.
+  | Key | Meaning | Bound |
+  | --- | --- | --- |
+  | `iterations` | Proposer iterations N of Algorithm 1 | positive, at most `limits.maxRounds` |
+  | `proposalsPerIteration` | Edits k one proposal may carry | positive, at most `limits.maxCandidates` |
+  | `maxCandidates` | Candidates over the whole run | positive, at most `limits.maxCandidates` |
+  | `maxProposalAttempts` | Proposer attempts per iteration, including repairs | positive, at most `limits.maxRounds` |
+  | `maxProviderCalls` | Live provider calls across every session the run opens | non-negative |
+  | `reflectionMinMechanisms` | Verbalized-sampling floor of the reflection contract | non-negative |
 
-## Candidates
+- the finite `thresholds` named by `applications.cro.thresholdKeys`. `thresholds` is an optional
+  protocol field (a definition without it keeps its protocol identity); it holds numbers, so
+  fractional thresholds are expressible:
 
-The caller supplies the baseline workflow `{ program, programId, provider?, handlers?, task? }` and
-an ordered list of candidates `{ name, stepIndex, changes, parent?, program?, provider?, handlers?,
-task? }`:
+  | Key | Meaning | Repository value (paper default) |
+  | --- | --- | --- |
+  | `targetedMinScoreLift` | Minimum mean score lift over the parent on the fix and guard union | `0` |
+  | `targetedMaxScoreDrop` | Largest drop any guard example may show against the parent | `0.02` |
+  | `targetedImproveThreshold` | Fraction of fix examples scoring strictly above the parent | `0.67` |
+  | `promoteDevEpsilon` | Dev distance from the current promoted member within which a graduate is promoted | `0.05` |
+  | `minPromotionScore` | Minimum dev score of a promoted candidate | `0.5` (repository choice) |
+  | `reflectionDuplicateSimilarity` | Jaccard token similarity of a near-duplicate mechanism | `0.85` |
+  | `reflectionAudaciousPrior` | Prior at least one selected edit must fall strictly below | `0.2` |
 
-- `changes` is a non-empty, distinct subset of `REPLAY_CHANGE_DIMENSIONS` (`task`, `provider`,
-  `handlers`), and exactly the replacements for the declared dimensions are supplied.
-- `parent` names an earlier candidate; the candidate then forks the parent's branch instead of the
-  baseline. The retained `parent_candidate_id` chain is the candidate lineage.
-- `program`, `provider`, and `handlers` not supplied by a candidate resolve from the nearest
-  ancestor in its `parent` chain that supplied them, else from the baseline, so a child keeps every
-  ancestor edit it does not itself replace. The program must re-issue the recorded prefix exactly.
-- The candidate identity (`cro-candidate:sha256:`) is derived from the application, name, parent,
-  edited step, and changes.
+The thresholds are pinned by the protocol identity and retained verbatim in the opened record and
+the manifest. A missing surface, budget, or threshold, or a budget outside its bound, is
+`ApplicationProtocolError` before any record.
 
-The whole plan is validated before anything is written: an edit kind outside the change dimensions
-is `ApplicationProtocolError`, a candidate set larger than `maxCandidates` is
-`ApplicationBudgetError`, and any other malformed candidate is `TypeError`. No application record,
-replay session, or provider call exists after a refusal.
+## Dataset and metric
 
-After the baseline session is recorded and before the `opened` record, the baseline session must
-have finished: one that ended `failed` or `cancelled` is `ApplicationEvidenceError` and no
-application record exists. Then every candidate's edited step
-index, root or child, is checked against the baseline's step count: an index outside the baseline is
-`ApplicationProtocolError`, and no application record exists (the baseline session stays retained
-and is reused by a corrected rerun of the same command). A child edits a step of its parent's
-branch, which normally has the baseline's step count; when a program's control flow makes the
-parent branch shorter than the child's edited step, the child is refused with
-`ApplicationEvidenceError` before its `proposed` record, and every rerun refuses the same way.
+The caller supplies `dataset: { train, dev }`, two non-empty lists of `{ id, input }` examples with
+distinct identities drawn from the protocol's `dataset.items` and canonical inputs, and a
+`metric({ candidate, example, split, session })` returning a finite score, higher is better. A
+metric that throws or returns a non-finite score is a verification failure.
 
-## Affected-suffix rule
+The baseline workflow W0 is `{ program(example), programId, provider?, handlers?, task?(example) }`:
+the program and the task are factories of the example, so one workflow runs every example.
 
-For each candidate in order, with the source being the parent's branch or the baseline:
+## Algorithm 1
 
-1. The affected steps are the transitive `dependents` of the edited step from
-   `analyzeReplayDependencies`.
-2. The branch target is the step boundary immediately before the earliest affected step. When the
-   edited step has no dependent, the target is the source's final boundary.
-3. `replayReplaySession` replays from the target declaring exactly the candidate's change
-   dimensions. The live suffix runs with the resolved program, provider, and handler stack: the
-   candidate's replacement for a declared dimension, otherwise the replacement of the nearest
-   ancestor that declared it, otherwise the baseline's. An undeclared task is the task the source
-   had in force at each step, which the replay substrate resolves through the source's branch
-   ancestry, so an ancestor's replacement task stays in force. Every step before the target,
-   including the edited step and any independent step before the first dependent, is served from
-   the source journal without a provider or handler invocation.
+1. **Baseline (line 4).** W0 runs once per train then dev example through `runReplaySession`; every
+   baseline session must finish (otherwise `ApplicationEvidenceError` before any record), and its
+   metric score is retained. The measured calls are checked against `maxProviderCalls` before the
+   `opened` record.
+2. **Parent pool (line 5).** The pool starts as the baseline, whose dev score is the mean of its dev
+   example scores.
+3. **Proposals (lines 6-8).** For each iteration `t` in `0..N-1`, the iteration's capacity is
+   `min(proposalsPerIteration, maxCandidates - candidates so far)`; a zero capacity ends the loop.
+   The proposer receives the record-derived inspection, the pool, the capacity, the iteration, the
+   attempt, earlier refusal reasons (`feedback`), and a reserved session command identity, and
+   returns `{ parent, edits, reflection }`. Admission (below) runs before any evaluation.
+4. **Counterfactual replay (lines 10-14).** Each edit `c = p ⊕ Δ` is materialized by the caller's
+   `applyEdit({ edit, parent, protocol })`, which returns exactly the replacements of the declared
+   change dimensions (`task`, `provider`, `handlers`) and optionally a program. For each fix example
+   then each guard example, the parent's session on that example is forked at the first affected
+   event ([replay target rule](#replay-target-rule)) and the suffix runs under the candidate. The
+   branch must be proven ([divergence proof](#divergence-proof)) and is scored by the metric; the
+   parent's score on the example is retained next to it.
+5. **Targeted gate (line 15, F.2.5).** Over the fix and guard results: the candidate's mean score
+   minus the parent's must be at least `targetedMinScoreLift`, no guard example may drop by more
+   than `targetedMaxScoreDrop`, and at least `targetedImproveThreshold` of the fix examples must
+   score strictly above the parent. Scores are compared in IEEE-754 double arithmetic, so
+   `2/3 < 0.67` fails the repository threshold. A failing candidate is `archived` without any dev
+   replay.
+6. **Dev evaluation and promotion (lines 16-17, F.2.5).** A graduate is replayed counterfactually on
+   every dev example and its dev score is the mean. It is `promoted` when
+   `dev >= minPromotionScore` and `dev + promoteDevEpsilon >= reference`, where `reference` is the
+   dev score of the most recently promoted pool member (initially the baseline); otherwise it is
+   `evaluated`. A promoted candidate is then replayed counterfactually on the remaining train
+   examples, so every pool member retains a session on every example for children to fork, and it
+   joins the parent pool. Archived, evaluated, and rejected candidates never become parents
+   (graduate-only pool).
+7. **Selection (line 21).** After the iterations the pool member with the highest dev score is
+   selected; on a tie the most recently promoted member wins. The baseline is selected as `null`.
 
-A candidate whose edited step has no dependent replays zero live steps. The replay substrate runs
-every step from the target onward live, so a later step independent of the edit is replayed when it
-follows the first affected step; the divergence proof below classifies it.
+## Proposers
 
-## Divergence proof and evaluation gate
+A `CounterfactualProposer` is any function of `CounterfactualProposerContext`; a caller-supplied
+proposer returns proposals directly (the evaluation fixture replays scripted iterations).
 
-A branch session, or under the `full_replay` baseline its comparison session, that ended with any
-terminal status other than `finished` (for example `failed` because a provider threw) proves nothing
-about the edit. Before the divergence proof and before the evaluator is consulted, the candidate is
-retained as `rejected` with failure code `APPLICATION_EVIDENCE_INVALID`, its measured cost, and no
-`evaluation` or `baseline` comparison; the run stops, nothing is promoted, and
-`ApplicationEvidenceError` is raised. A rerun re-raises the retained failure without a record.
+`createToolLoopCounterfactualProposer({ model, maxTurns? })` is the provider-backed proposer. Each
+attempt runs one bounded [`runToolLoop`](./tool-use-loop.md) inside a replay session under the
+attempt's reserved command identity and the configured program identity
+(`applications.cro.proposer.programId`), using `createReplayToolLoopBindings` and
+`createToolTurnProvider(model)`, so every turn is a provider step and every tool call an effect step.
+The system prompt is the protocol's `proposer` prompt surfaces, the tools are its `proposer` tool
+surfaces, the output schema is its first `reflection` schema surface, and the first user message is
+the attempt brief (iteration, attempt, capacity, pool, train and dev example identities, feedback).
+Each tool surface's content is `{ name, description, inputSchema }` and its name must be one of the
+configured operations (`applications.cro.proposer.operations`); the effect kind is
+`effectKindPrefix` plus the name:
 
-`analyzeReplayDivergence` over the source and the branch must report no step before the target as
-diverged and no `unexplained` divergence. Otherwise the candidate is retained as `rejected` with
-failure code `APPLICATION_EVIDENCE_INVALID`, the run stops, and `ApplicationEvidenceError` is
-raised; the candidate is never evaluated or promoted.
+| Operation | Repository tool | Result |
+| --- | --- | --- |
+| `inspectCandidates` | `inspect_candidates` | The pool, baseline scores, and every candidate's plan, status, per-example scores, gate, dev score, and cost |
+| `readTrace` | `read_effect_trace` | The terminal status and at most `limits.maxTraceSteps` step summaries (index, kind, source, and the retained provider request, response, and failure or effect intent and outcome) of one candidate's (null: the baseline's) session on one example |
+| `grepTraces` | `grep_effect_traces` | Up to `limits.maxGrepMatches` regex matches (pattern at most `limits.maxPatternLength`) with excerpts of at most `limits.maxExcerptLength` over one candidate's example step summaries |
+| `proposeCandidate` | `propose_candidate` | Accepts one edit; accepted edits form the proposal in call order |
 
-A proven candidate is passed to the caller's evaluator with the candidate plan, the validated branch
-inspection, the divergence analysis, the measured branch cost, the affected steps, the target, and
-the protocol. The evaluator returns `{ score, passed, reason }`, retained verbatim: `passed` yields
-`evaluated`, otherwise `rejected`. An evaluator that throws or returns a malformed verdict is a
-verification failure: the candidate is retained as `rejected` with failure code
-`APPLICATION_VERIFICATION_FAILED`, the run stops, nothing is promoted, and
-`ApplicationVerificationError` is raised with the evaluator error as its cause.
+The final output is the reflection (JSON text is parsed), and its configured `parent` field names
+the parent. An attempt whose session does not finish or whose loop reaches its turn limit throws
+`ApplicationVerificationError`, which the optimizer records as a refusal and retries under the next
+attempt identity. The session's measured provider calls count against `maxProviderCalls` and the
+manifest costs, and its identity is retained in the proposal record. A repeat serves the retained
+session without calling the model. No live provider has run this proposer in this repository; its
+tests script the model.
 
-## Promotion
+## Admission and the reflection contract
 
-After every candidate is evaluated, the `evaluated` candidate with the highest score that reaches
-`minPromotionScore` is promoted; the earliest candidate wins a tie. Promotion is retained once as a
-`promoted` record repeating that candidate's outcome, it is terminal for the run, and inspection
-refuses any later candidate record. When no candidate qualifies, nothing is promoted.
+Before any evaluation, a proposal is refused with a reason when: it is malformed; its parent is not
+a pool member name (or null); it carries no edit or more than the capacity; an edit name is not
+unique in the run; a fix or guard example is not a train example, the fix set is empty or
+overlaps the guard set; a prior lies outside `[0, 1]`; the reflection's `parent` field disagrees
+with the proposal; the reflection fails any `reflection` schema surface; the reflection contract
+fails; an edit's step is outside, or (for a `request` edit) of a kind its changes cannot alter in,
+any of the parent's example sessions; or `applyEdit` throws or does not return exactly the declared
+replacements. Refusal reasons are fed back to the next attempt; after `maxProposalAttempts` refused
+attempts the iteration's proposal record is retained with a verification failure and
+`ApplicationVerificationError` stops the run.
+
+The reflection contract (F.2.5) reads the configured field names
+(`applications.cro.reflection.fields`):
+
+1. Once any archived or evaluated candidate exists, the `findings` must cite at least one retained
+   candidate name.
+2. An edit whose `mechanism` has token similarity (case-folded letter and digit tokens, Jaccard) at
+   least `reflectionDuplicateSimilarity` with an archived or evaluated candidate's mechanism needs
+   findings that contain that candidate's name and the configured `differsByPhrase` (`differs by:`);
+   near-duplicates of promoted mechanisms pass.
+3. The `hypotheses` must enumerate at least `reflectionMinMechanisms` entries with a `mechanism` and a
+   finite `prior`, and at least one edit's prior must be strictly below `reflectionAudaciousPrior`.
+
+## Replay target rule
+
+A branch forks the parent's session on the example at the first event the edit affects (Appendix
+F.1). The affected steps are the transitive `dependents` of the edited step from
+`analyzeReplayDependencies`, and the target depends on the declared `scope`
+(`applications.cro.editScopes`):
+
+- `request`: the step boundary immediately before the edited step. The edited step and every later
+  step run live; an edit of step 0 replays from boundary zero with a `null` target `prefix_id`.
+- `downstream`: the step boundary immediately before the earliest affected step, or the source's
+  final boundary (zero live steps) when nothing depends on the edited step.
+
+`replayReplaySession` replays from the target declaring exactly the candidate's change dimensions
+and `sourceDisposition: "retain"`: every candidate is scored against the same retained parent, so a
+candidate replay never compensates the parent's compensable suffix effects
+([source disposition](./compensation.md#source-disposition),
+[`exploratory-branch-compensation.test.ts`](../test/applications/exploratory-branch-compensation.test.ts)).
+The live suffix runs with the candidate's program, provider, and handler stack where it supplies
+them, else those of the nearest ancestor in its parent chain that did, else the baseline's; an
+undeclared task resolves through the source's branch ancestry. Every step before the target is
+served from the source journal.
+
+## Divergence proof
+
+A branch, or under `full_replay` its comparison session, that ended with any terminal status other
+than `finished`, or that was interrupted by a dead writer whose lease expired, rejects the candidate
+with `APPLICATION_EVIDENCE_INVALID`. `analyzeReplayDivergence` over the source and the branch must
+report no step before the target as diverged and no `unexplained` divergence; otherwise the
+candidate is rejected with `APPLICATION_EVIDENCE_INVALID` and the reason names the branch session,
+first divergence, and unexplained indices. A rejected candidate is never scored or promoted, the run
+stops with the matching error, and a rerun re-raises it without a record.
 
 ## Retained records
 
 Every record is `shepherd.application.cro_candidate.v1` on the application owner path and conforms
 to the closed [`application-cro-candidate-v1`](../spec/schemas/application-cro-candidate-v1.schema.json)
-schema; the record codec re-validates every record, including status and evidence consistency,
-whenever it is read:
+schema:
 
-- the `opened` record names the command, the protocol identity, the baseline session, the requested
-  comparison baselines, and the whole candidate plan;
-- per candidate, a `proposed` record, then an `evaluated` or `rejected` outcome, each retaining the
-  plan, `affected_steps`, `target` `{ source_session_id, step_index, prefix_id }`, and
-  `branch_session_id`; the outcome adds the `divergence` summary (common prefix, first divergence,
-  live and recorded step counts, unexplained indices), measured `cost`, the `evaluation` or the
-  `failure`, and the `baseline` comparison;
-- at most one `promoted` record.
+- `opened`: command, protocol identity, comparison baselines, the protocol `budgets` and
+  `thresholds`, and every example `{ example_id, split, input_digest, session_id, score }` in train
+  then dev order;
+- `proposal` per iteration: `iteration`, `attempts`, `refusals`, `proposer_session_ids`,
+  `parent_candidate_id`, the accepted `reflection`, and the candidate plans (identity, parent,
+  iteration, edited step, scope, changes, fix and guard sets, mechanism, rationale, prior, patch),
+  or an empty plan list with the verification `failure`;
+- `candidate` per edit: the plan, `status`, `targeted` (fix then guard results), `gate`, `dev`,
+  `dev_score`, `promotion_reference`, `train` (promoted only), summed `cost`, and `failure`. Each
+  example result retains its role, branch `session_id`, `target`, `affected_steps`, `divergence`
+  summary, `score`, `parent_score`, measured `cost`, and `baseline` comparison. A rejected
+  candidate retains the completed results and the measured cost of the failing branch;
+- `selection`: the selected candidate (or `null`), its dev score, and the promoted pool.
 
-The manifest is retained last with the terminal cut. Its artifacts are the baseline session
-(`baseline_session`), each outcome record (`candidate`), each branch (`candidate_branch`), each
-comparison session (`full_replay_session`), and the promotion (`promotion`); sessions are cited by
-their terminal record. Costs are measured from the live provider steps of every session the run
-opened; a failed provider invocation counts as one call without usage whose cost is unknown, so it
-makes `cost_usd` null.
+The record codec re-validates every body when read. `inspectCounterfactualOptimization` also
+recomputes the gate verdict and the promotion decision from the retained results and thresholds,
+checks every target against the parent's session and score on that example, the derived branch,
+comparison, baseline, and proposer session identities, the pool at every proposal, the capacity,
+the selection, the manifest, and the terminal cut. It embeds no live session state, so it is
+identical on the writing store, a reopened or read-only store, and an imported archive.
+
+## Manifest, handoff, and computation reuse
+
+The manifest is retained last with the terminal cut. Its artifacts are the opened record
+(`baseline`), each proposal (`proposal`), each candidate outcome (`candidate`), and the selection
+(`selection`); each record cites its sessions as causal parents. Costs are measured from the live
+provider steps of every baseline, proposer, branch, and comparison session.
+
+The manifest carries the protocol `thresholds` and `computation_reuse`: one entry per proposer
+session (iteration) with the `recorded_steps` served from source journals and the `live_steps`
+executed over every candidate branch session of that iteration, and
+`reuse_ratio = recorded / (recorded + live)` (null when both are zero). This is the step-level
+analogue of the paper's per-session subtask cache reuse (Figure 5); comparison sessions are
+excluded, and provider prompt-cache reads are reported separately in the costs.
+
+The handoff manifest `{ candidates: [{ candidate_id, parent_candidate_id, status }],
+selected_candidate_id }` is derived from the records and validated against every `handoff` schema
+surface before the manifest is retained; a refusal is `ApplicationProtocolError` and the manifest is
+not retained.
 
 ## Full-replay baseline
 
-With `baselines: ["full_replay"]`, each proven candidate is also replayed through
-`replayReplaySession` from step boundary zero of its source session (the parent's branch or the
-baseline), so no step is served from a journal and every step runs live. The session declares the
-candidate's change dimensions and runs with the same resolved program, provider, and handler stack
-as the branch, so ancestor edits are included; the task in force at each step is the source's
-(ancestor replacement tasks from their targets onward), replaced from step zero by the candidate's
-replacement task when it declares `task`. A provider or handler edit therefore applies to every step
-of the comparison, including steps the branch serves from its source. The outcome retains the
-comparison session's measured live `provider_calls` and `cache_read_input_tokens` next to the
-branch's own measured cost. The comparison is reported as measured and makes no claim beyond these
-measurements.
+With `baselines: ["full_replay"]`, every example branch is also replayed from step boundary zero of
+its source with the same resolved workflow, so every step runs live; its measured `provider_calls`
+and `cache_read_input_tokens` are retained in the example result's `baseline`.
 
 ## Budgets
 
-The baseline is measured, candidate sessions are projected. The baseline session has no source to
-project from, so it runs first and its measured live provider calls are checked against
-`maxProviderCalls` before the `opened` record; an over-budget baseline is `ApplicationBudgetError`
-with no application record.
-
-Before a candidate session that is not yet retained is opened, the optimizer projects its live
-provider calls as the source's provider steps at or after the target (all of them for a full
-replay) and refuses with `ApplicationBudgetError` when the calls already measured plus the
-projection exceed `maxProviderCalls`. The projection assumes the program re-issues the source's
-shape; after every session the measured total is checked again, so a program that issues more calls
-than projected is refused with `ApplicationBudgetError` right after the session that overran. The
-overrunning session stays retained, its candidate stays `proposed`, and every rerun refuses the same
-way without replaying. Retained evidence up to a refusal stays; the retained costs are always
-measured.
+The baselines and proposer sessions are measured; candidate sessions are projected as the source's
+provider steps at or after the target (all of them for a full replay) and refused with
+`ApplicationBudgetError` before they open when the measured total plus the projection exceeds
+`maxProviderCalls`. After every session the measured total is checked again. A proposer session is
+measured after its proposal is retained. Retained evidence up to a refusal stays, and every rerun
+refuses the same way without replaying.
 
 ## Repeats, crashes, and inspection
 
-- Repeating a completed command returns the retained manifest without replaying, evaluating, or
-  writing. A repeat under a different protocol is `ApplicationProtocolError`; a repeat with a
-  different candidate plan or baselines is `ApplicationEvidenceError`.
-- A crash at any application append converges on rerun: after the baseline and before `opened`, the
-  baseline command returns its retained session and `opened` is appended; before a `proposed`
-  record, the record is appended and the branch runs once; after a candidate's branch and before its
-  outcome record, the branch and comparison commands return their retained terminal sessions
-  without re-executing the program, the evaluator runs, and the outcome is retained; before the
-  promotion, the promotion is appended once; after the promotion and before the manifest, the
-  manifest is retained without a second promotion.
-- A process that dies inside a candidate's branch or full-replay session leaves that session without
-  a terminal record. Once its lease has expired the session is `interrupted`, and the rerun retains
-  the candidate as `rejected` with failure code `APPLICATION_EVIDENCE_INVALID`, the measured cost
-  and divergence summary of the branch as far as it was retained, and no comparison; the run stops
-  with `ApplicationEvidenceError` whose cause is the `ReplaySessionInterruptedError`. While the
-  lease is still live the session is `running` and the rerun raises `ReplaySessionInterruptedError`
-  without a record, because another writer may still hold it.
-- A process that dies inside the baseline session leaves no application record. Every rerun of the
-  command raises `ReplaySessionInterruptedError`, because the baseline session identity is derived
-  from the command and a non-terminal session is never resumed in place (see
-  [replay sessions](./replay-sessions.md#leases-and-recovery)). Recovery is a new command identity,
-  which records a fresh baseline; the interrupted session stays inspectable and can be rewound from a
-  retained checkpoint or step boundary.
-- A rerun after a retained failure raises the same error class without replaying or writing.
+- Repeating a completed command returns the retained manifest without proposing, scoring, or
+  replaying. A repeat under another protocol is `ApplicationProtocolError`; a repeat with another
+  dataset (identities, splits, or input digests) or baselines is `ApplicationEvidenceError`.
+- A crash at any application append converges on rerun: terminal sessions are served from their
+  retained records, retained proposals are reused without calling the proposer, and the metric
+  re-scores only branches whose outcome was not retained.
+- A process death inside a candidate session is `ReplaySessionInterruptedError` while its lease is
+  live and a rejected candidate with the interruption as cause once it expired; a death inside a
+  baseline session leaves no application record and every rerun raises
+  `ReplaySessionInterruptedError`; recovery is a new command identity.
 - A moved application head is `ApplicationEvidenceError`.
 
-`inspectCounterfactualOptimization(store, applicationId)` validates the whole owner path: the opened
-plan and its derived identities, proposed-then-outcome order per candidate with identical plan,
-target, affected steps, and derived branch and comparison session identities, every target's
-lineage to its parent's branch or the baseline, comparison presence against the requested
-baselines, the single terminal promotion, the manifest, and the terminal cut. It embeds no live
-session state, so it is identical on the writing store, a reopened or read-only store, and an
-imported archive.
+## Limits and deviations from the paper
 
-## Limits
-
-- Edits are limited to the declarable change dimensions at a step boundary; arbitrary workflow
-  rewrites that do not re-issue the recorded prefix fail the divergence proof.
-- The baseline must bind no worlds or processes, because a step-boundary target requires it.
-- Providers must be able to service repeated sessions: the baseline provider serves the baseline
-  and every session of a candidate whose parent chain declares no `provider`, and a candidate's
-  provider serves its own sessions and those of descendants that do not replace it.
-- A session runs with one provider and one handler stack, so a resolved ancestor provider or handler
-  stack applies to the whole live suffix of a descendant, including steps before that ancestor's
-  own target when the descendant edits an earlier step.
-- Dependency scoping relies on the program's declared `dependsOn`; the divergence proof can report
-  divergences the declarations do not explain but cannot prove that a program used no undeclared
-  data.
+- Edits are declared data (change dimensions at a step boundary plus a caller-interpreted `patch`);
+  the proposer cannot author program code, and the edit scope is declared, not inferred.
+- The paper hydrates a promoted parent's per-task outputs lazily through its typed cache; this
+  repository replays a promoted candidate on the remaining train examples eagerly so every pool
+  member retains a session per example.
+- The paper applies the epsilon rule for promotion and frontier selection by raw dev score; this
+  repository additionally requires `minPromotionScore` for promotion.
+- Computation reuse counts replay steps, not provider prompt-cache hits or subtask cache entries.
+- The reflection contract applies to structured findings and hypotheses, not the paper's Markdown
+  hypothesis logs; archived and evaluated (graduated but not promoted) candidates both count as
+  archived rows.
+- The baseline must bind no worlds or processes; providers must serve repeated sessions; dependency
+  scoping relies on the program's declared `dependsOn`.
+- No live provider ran the tool-loop proposer, and no figure here reproduces the paper's results.

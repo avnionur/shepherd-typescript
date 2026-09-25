@@ -1,0 +1,765 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/application-runtime-supervision-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Application Runtime Supervision Record v1",
+    "description": "Closed records of one concurrent runtime supervisor run (paper Section 5.1 and Appendix E): the opened, per-tick batched decision, and settled records of the application path and the attempt, turn, and completed records of every worker stream.",
+    "oneOf": [
+        {
+            "additionalProperties": false,
+            "properties": {
+                "application_id": {
+                    "pattern": "^application:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "phase": {
+                    "const": "opened"
+                },
+                "command_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "coding_supervisor"
+                },
+                "protocol_id": {
+                    "pattern": "^application-protocol:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "supervisor_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "workers": {
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "stream_id": {
+                                "pattern": "^application:sha256:[0-9a-f]{64}$",
+                                "type": "string"
+                            },
+                            "worker_id": {
+                                "minLength": 1,
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "stream_id",
+                            "worker_id"
+                        ],
+                        "type": "object"
+                    },
+                    "maxItems": 8,
+                    "minItems": 2,
+                    "type": "array"
+                }
+            },
+            "required": [
+                "application_id",
+                "application_version",
+                "command_id",
+                "compatibility_version",
+                "kind",
+                "phase",
+                "protocol_id",
+                "supervisor_id",
+                "workers"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "application_id": {
+                    "pattern": "^application:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "phase": {
+                    "const": "tick"
+                },
+                "cursor": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "compatibility_version": {
+                            "const": "shepherd.supervision.v1"
+                        },
+                        "cursor_id": {
+                            "pattern": "^supervision-cursor:sha256:[0-9a-f]{64}$",
+                            "type": "string"
+                        },
+                        "cursor_version": {
+                            "const": 1
+                        },
+                        "positions": {
+                            "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "next_ordinal": {
+                                        "minimum": 0,
+                                        "type": "integer"
+                                    },
+                                    "owner_id": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "next_ordinal",
+                                    "owner_id"
+                                ],
+                                "type": "object"
+                            },
+                            "maxItems": 8,
+                            "minItems": 2,
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "compatibility_version",
+                        "cursor_id",
+                        "cursor_version",
+                        "positions"
+                    ],
+                    "type": "object"
+                },
+                "decisions": {
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "action": {
+                                "enum": [
+                                    "none",
+                                    "inject",
+                                    "handoff",
+                                    "discard"
+                                ]
+                            },
+                            "agent": {
+                                "minLength": 1,
+                                "type": "string"
+                            },
+                            "guidance": {
+                                "minLength": 1,
+                                "type": "string"
+                            },
+                            "leader": {
+                                "minLength": 1,
+                                "type": "string"
+                            },
+                            "reason": {
+                                "minLength": 1,
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "action",
+                            "agent",
+                            "reason"
+                        ],
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "output": true,
+                "refusal": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "issues": {
+                                    "items": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                    },
+                                    "minItems": 1,
+                                    "type": "array"
+                                }
+                            },
+                            "required": [
+                                "issues"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                "snapshot": {
+                    "type": "object"
+                },
+                "supervisor_id": {
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "tick": {
+                    "maximum": 4096,
+                    "minimum": 1,
+                    "type": "integer"
+                },
+                "usage": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "cacheCreationInputTokens": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                },
+                                "cacheReadInputTokens": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                },
+                                "costUsd": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "minimum": 0,
+                                            "type": "number"
+                                        }
+                                    ]
+                                },
+                                "inputTokens": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                },
+                                "outputTokens": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "cacheCreationInputTokens",
+                                "cacheReadInputTokens",
+                                "costUsd",
+                                "inputTokens",
+                                "outputTokens"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "application_id",
+                "application_version",
+                "compatibility_version",
+                "cursor",
+                "decisions",
+                "output",
+                "phase",
+                "refusal",
+                "snapshot",
+                "supervisor_id",
+                "tick",
+                "usage"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "application_id": {
+                    "pattern": "^application:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "phase": {
+                    "const": "settled"
+                },
+                "discard_custody_ids": {
+                    "items": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "type": "array",
+                    "uniqueItems": true
+                },
+                "ticks": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "undelivered": {
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "tick": {
+                                "minimum": 1,
+                                "type": "integer"
+                            },
+                            "worker_id": {
+                                "minLength": 1,
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "tick",
+                            "worker_id"
+                        ],
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "workers": {
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "attempt": {
+                                "minimum": 1,
+                                "type": "integer"
+                            },
+                            "custody_id": {
+                                "minLength": 1,
+                                "type": "string"
+                            },
+                            "status": {
+                                "enum": [
+                                    "completed",
+                                    "turn_limit",
+                                    "failed",
+                                    "aborted"
+                                ]
+                            },
+                            "worker_id": {
+                                "minLength": 1,
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "attempt",
+                            "custody_id",
+                            "status",
+                            "worker_id"
+                        ],
+                        "type": "object"
+                    },
+                    "maxItems": 8,
+                    "minItems": 2,
+                    "type": "array"
+                }
+            },
+            "required": [
+                "application_id",
+                "application_version",
+                "compatibility_version",
+                "discard_custody_ids",
+                "phase",
+                "ticks",
+                "undelivered",
+                "workers"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "application_id": {
+                    "pattern": "^application:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "phase": {
+                    "const": "attempt"
+                },
+                "attempt": {
+                    "minimum": 1,
+                    "type": "integer"
+                },
+                "cause": {
+                    "enum": [
+                        "start",
+                        "handoff",
+                        "discard"
+                    ]
+                },
+                "custody": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "custody_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "receipt_id": {
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "source_custody_id": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "minLength": 1,
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    },
+                    "required": [
+                        "custody_id",
+                        "receipt_id",
+                        "source_custody_id"
+                    ],
+                    "type": "object"
+                },
+                "guidance": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "minLength": 1,
+                            "type": "string"
+                        }
+                    ]
+                },
+                "leader": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "minLength": 1,
+                            "type": "string"
+                        }
+                    ]
+                },
+                "tick": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "worker_id": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "application_id",
+                "application_version",
+                "attempt",
+                "cause",
+                "compatibility_version",
+                "custody",
+                "guidance",
+                "leader",
+                "phase",
+                "tick",
+                "worker_id"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "application_id": {
+                    "pattern": "^application:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "phase": {
+                    "const": "turn"
+                },
+                "assistant": {
+                    "properties": {
+                        "content": {
+                            "type": "array"
+                        },
+                        "role": {
+                            "minLength": 1,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "content",
+                        "role"
+                    ],
+                    "type": "object"
+                },
+                "attempt": {
+                    "minimum": 1,
+                    "type": "integer"
+                },
+                "cache_prefix_messages": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "calls": {
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "error": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "minLength": 1,
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "status": {
+                                "enum": [
+                                    "materialized",
+                                    "denied",
+                                    "invalid",
+                                    "failed"
+                                ]
+                            },
+                            "target": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "minLength": 1,
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "tool": {
+                                "minLength": 1,
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "error",
+                            "status",
+                            "target",
+                            "tool"
+                        ],
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "guidance_ticks": {
+                    "items": {
+                        "minimum": 1,
+                        "type": "integer"
+                    },
+                    "type": "array",
+                    "uniqueItems": true
+                },
+                "index": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "message_count": {
+                    "minimum": 1,
+                    "type": "integer"
+                },
+                "output": true,
+                "request_digest": {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "results": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "properties": {
+                                "content": {
+                                    "type": "array"
+                                },
+                                "role": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "content",
+                                "role"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                "usage": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "cacheCreationInputTokens": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "cacheReadInputTokens": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "costUsd": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "minimum": 0,
+                                    "type": "number"
+                                }
+                            ]
+                        },
+                        "inputTokens": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "outputTokens": {
+                            "minimum": 0,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "cacheCreationInputTokens",
+                        "cacheReadInputTokens",
+                        "costUsd",
+                        "inputTokens",
+                        "outputTokens"
+                    ],
+                    "type": "object"
+                },
+                "worker_id": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "application_id",
+                "application_version",
+                "assistant",
+                "attempt",
+                "cache_prefix_messages",
+                "calls",
+                "compatibility_version",
+                "guidance_ticks",
+                "index",
+                "message_count",
+                "output",
+                "phase",
+                "request_digest",
+                "results",
+                "usage",
+                "worker_id"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "application_id": {
+                    "pattern": "^application:sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "application_version": {
+                    "const": 1
+                },
+                "compatibility_version": {
+                    "const": "shepherd.applications.v1"
+                },
+                "phase": {
+                    "const": "completed"
+                },
+                "attempt": {
+                    "minimum": 1,
+                    "type": "integer"
+                },
+                "cause": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "action": {
+                                    "enum": [
+                                        "inject",
+                                        "handoff",
+                                        "discard"
+                                    ]
+                                },
+                                "tick": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "action",
+                                "tick"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                "error": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "maxLength": 1024,
+                            "minLength": 1,
+                            "type": "string"
+                        }
+                    ]
+                },
+                "output": true,
+                "status": {
+                    "enum": [
+                        "completed",
+                        "turn_limit",
+                        "failed",
+                        "aborted"
+                    ]
+                },
+                "worker_id": {
+                    "minLength": 1,
+                    "type": "string"
+                }
+            },
+            "required": [
+                "application_id",
+                "application_version",
+                "attempt",
+                "cause",
+                "compatibility_version",
+                "error",
+                "output",
+                "phase",
+                "status",
+                "worker_id"
+            ],
+            "type": "object"
+        }
+    ]
+}

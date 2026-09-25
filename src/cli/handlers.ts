@@ -30,14 +30,18 @@ import {
     selectRetainedWorldSettlement,
 } from "../workspace/retained-world-settlement.ts";
 import {
+    openStore,
     type ParsedOptions,
+    pagination,
     parseOptions,
     requireNoPositionals,
+    requireOnePositional,
     requireOption,
     resolveOptionPath,
 } from "./arguments.ts";
 import { CliUnavailableError, CliUsageError } from "./errors.ts";
 import { createStoreCliHandlers } from "./store-handlers.ts";
+import { createTraceCliHandlers } from "./trace-handlers.ts";
 import type { CliHandler, CliHandlerIo } from "./types.ts";
 
 const [SELECT_ACTION, DISCARD_ACTION, APPLY_ACTION, RELEASE_ACTION] =
@@ -75,6 +79,7 @@ export function createCliHandlers(): ReadonlyMap<string, CliHandler> {
         [HANDLERS.demoWrite, demoWrite],
         [HANDLERS.unsupportedPackageInit, unsupported(cliProtocolConfig.remedies.packageInit)],
         ...createStoreCliHandlers(),
+        ...createTraceCliHandlers(),
     ]);
 }
 
@@ -575,50 +580,6 @@ function readPackageArtifact(relativePath: string): string {
     /* node:coverage enable */
 }
 
-function pagination(parsed: ParsedOptions): { readonly limit: number; readonly offset: number } {
-    return {
-        limit: readNonNegativeIntegerOption(
-            parsed,
-            OPTIONS.limit,
-            cliProtocolConfig.limits.defaultPageSize,
-            true,
-        ),
-        offset: readNonNegativeIntegerOption(parsed, OPTIONS.offset, 0, false),
-    };
-}
-
-function readNonNegativeIntegerOption(
-    parsed: ParsedOptions,
-    name: string,
-    fallback: number,
-    positive: boolean,
-): number {
-    const raw = parsed.options.get(name);
-    if (raw === undefined) return fallback;
-    const value = Number(raw);
-    if (!Number.isSafeInteger(value) || value < (positive ? 1 : 0)) {
-        throw new CliUsageError(
-            `--${name} must be a ${positive ? "positive" : "non-negative"} integer`,
-        );
-    }
-    if (value > cliProtocolConfig.limits.maxPageSize) {
-        throw new CliUsageError(`--${name} exceeds the configured page bound`);
-    }
-    return value;
-}
-
-function openStore(parsed: ParsedOptions, io: CliHandlerIo, readOnly = true): SQLiteTraceStore {
-    const storePath = resolveOptionPath(
-        parsed,
-        OPTIONS.store,
-        io,
-        cliProtocolConfig.defaults.traceStorePath,
-    );
-    if (!existsSync(storePath))
-        throw new CliUnavailableError(`trace store is unavailable: ${storePath}`);
-    return new SQLiteTraceStore(storePath, { readOnly });
-}
-
 function openRegistry(parsed: ParsedOptions, io: CliHandlerIo): SQLiteTaskRegistry {
     const registryPath = resolveOptionPath(
         parsed,
@@ -649,10 +610,4 @@ function inspectWorkspace(workspacePath: string): string {
     } catch {
         return "missing or invalid";
     }
-}
-
-function requireOnePositional(parsed: ParsedOptions): string {
-    if (parsed.positionals.length !== 1)
-        throw new CliUsageError("command requires exactly one selector");
-    return parsed.positionals[0] as string;
 }

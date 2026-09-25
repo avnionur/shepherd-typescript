@@ -145,6 +145,7 @@
             }
         },
         "processKill": {
+            "compensation": { "cycles": 4, "effects": 256 },
             "cyclesPerOperation": 3,
             "killDelayMilliseconds": { "max": 250, "min": 0 },
             "operations": ["append", "blob", "cut", "import", "backup", "vacuum"],

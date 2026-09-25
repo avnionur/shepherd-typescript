@@ -5,7 +5,6 @@ import {
     ApplicationEvidenceError,
     deriveApplicationOwnerId,
     inspectCounterfactualOptimization,
-    inspectReplaySession,
     REPLAY_LEASE_LIMITS,
     ReplaySessionInterruptedError,
     type RunCounterfactualOptimizationOptions,
@@ -13,12 +12,13 @@ import {
     SQLiteTraceStore,
 } from "../../src/index.ts";
 import {
-    type KeyedProvider,
-    keyedProvider,
+    counterfactualProtocolWith,
+    labelMetric,
     optimizerOptions,
-    pass,
-    providerCandidate,
-    scriptedEvaluator,
+    providerEdit,
+    providerRegistry,
+    reflection,
+    scriptedProposer,
 } from "./counterfactual-fixtures.ts";
 
 /**
@@ -69,21 +69,45 @@ function leaseClock(): { readonly clock: () => number; readonly expire: () => vo
     };
 }
 
+function twoEdits(
+    commandId: string,
+    overrides: Partial<RunCounterfactualOptimizationOptions>,
+    registry = providerRegistry(),
+): RunCounterfactualOptimizationOptions {
+    return optimizerOptions(
+        commandId,
+        {
+            metric: labelMetric({ first: { "dev-1": 1, "dev-2": 1, "train-1": 1 } }),
+            proposer: scriptedProposer([
+                [
+                    {
+                        edits: [
+                            providerEdit("first", 0, "first"),
+                            providerEdit("later", 3, "later"),
+                        ],
+                        parent: null,
+                        reflection: reflection(null),
+                    },
+                ],
+            ]),
+            protocol: counterfactualProtocolWith({ iterations: 1 }),
+            ...overrides,
+        },
+        registry,
+    );
+}
+
 test("a process death inside a candidate branch is retained as an evidence failure once its lease expires", async () => {
+    // Terminals 1-6 are the baseline example sessions; 7 is the first branch, 8 its full replay.
     for (const [label, dieAtTerminal, baselines] of [
-        ["branch", 2, []],
-        ["full-replay", 3, ["full_replay"]],
+        ["branch", 7, []],
+        ["full-replay", 8, ["full_replay"]],
     ] as const) {
         using store = new DyingStore();
         const commandId = `application:cro:interrupted:${label}`;
         const lease = leaseClock();
-        const alt = keyedProvider("alt");
-        const later = keyedProvider("later");
-        const options = optimizerOptions(commandId, {
-            baselines,
-            candidates: [providerCandidate("dies", 0, alt), providerCandidate("later", 2, later)],
-            clock: lease.clock,
-        });
+        const registry = providerRegistry();
+        const options = twoEdits(commandId, { baselines, clock: lease.clock }, registry);
         store.dieAtTerminal = dieAtTerminal;
         await assert.rejects(runCounterfactualOptimization(store, options), /process death/u);
         const records = ownerCount(store, commandId);
@@ -104,44 +128,35 @@ test("a process death inside a candidate branch is retained as an evidence failu
                 error.cause instanceof ReplaySessionInterruptedError &&
                 /was interrupted before its terminal record/u.test(error.message),
         );
-        const applicationId = deriveApplicationOwnerId(commandId);
-        const inspection = inspectCounterfactualOptimization(store, applicationId);
-        const [dies, unreached] = inspection.candidates;
-        assert.equal(dies?.outcome?.status, "rejected", label);
-        assert.equal(dies?.outcome?.failure?.code, "APPLICATION_EVIDENCE_INVALID");
-        assert.equal(dies?.outcome?.evaluation, null);
-        assert.equal(dies?.outcome?.baseline, null);
-        assert.equal(dies?.outcome?.cost?.provider_calls, 2);
-        assert.equal(
-            inspectReplaySession(store, {
-                clock: lease.clock,
-                sessionId: dies?.outcome?.branch_session_id as string,
-            }).terminal === null,
-            label === "branch",
+        const inspection = inspectCounterfactualOptimization(
+            store,
+            deriveApplicationOwnerId(commandId),
         );
-        assert.equal(unreached?.proposed, null);
-        assert.equal(inspection.promotion, null);
+        const [dies] = inspection.candidates;
+        assert.equal(inspection.candidates.length, 1, label);
+        assert.equal(dies?.status, "rejected");
+        assert.equal(dies?.failure?.code, "APPLICATION_EVIDENCE_INVALID");
+        assert.deepEqual(dies?.targeted, []);
+        assert.equal(dies?.cost.provider_calls, 4);
+        assert.equal(inspection.selection, null);
         // Later reruns re-raise the retained failure without replaying or writing.
-        const calls = alt.calls.length;
+        const calls = registry.get("first").calls.length;
         const retained = ownerCount(store, commandId);
         await assert.rejects(
             runCounterfactualOptimization(store, options),
             ApplicationEvidenceError,
         );
         assert.equal(ownerCount(store, commandId), retained);
-        assert.equal(alt.calls.length, calls);
-        assert.deepEqual(later.calls, []);
+        assert.equal(registry.get("first").calls.length, calls);
+        assert.deepEqual(registry.get("later").calls, []);
         assert.equal(store.verifyIntegrity().ok, true);
     }
 });
 
-test("a process death inside the baseline leaves no application record and recovers under a new command", async () => {
+test("a process death inside a baseline session leaves no application record and recovers under a new command", async () => {
     using store = new DyingStore();
     const lease = leaseClock();
-    const options = optimizerOptions("application:cro:baseline-death", {
-        candidates: [providerCandidate("x", 0, keyedProvider("alt"))],
-        clock: lease.clock,
-    });
+    const options = twoEdits("application:cro:baseline-death", { clock: lease.clock });
     store.dieAtTerminal = 1;
     await assert.rejects(runCounterfactualOptimization(store, options), /process death/u);
     lease.expire();
@@ -156,62 +171,42 @@ test("a process death inside the baseline leaves no application record and recov
         ...options,
         commandId: "application:cro:baseline-death:2",
     });
-    assert.equal(inspection.candidates[0]?.outcome?.status, "evaluated");
+    assert.equal(inspection.candidates[0]?.status, "promoted");
 });
 
-function crashOptions(
-    commandId: string,
-    providers: readonly KeyedProvider[],
-): RunCounterfactualOptimizationOptions {
-    const [base, first, second] = providers as [KeyedProvider, KeyedProvider, KeyedProvider];
-    return optimizerOptions(commandId, {
-        baseline: {
-            program: optimizerOptions("unused").baseline.program,
-            programId: "workflow:plan-draft-review.v1",
-            provider: base,
-        },
-        baselines: ["full_replay"],
-        candidates: [providerCandidate("first", 0, first), providerCandidate("second", 2, second)],
-        clock: () => 5_000,
-        evaluate: scriptedEvaluator({ first: pass(2), second: pass(1) }),
-    });
-}
-
-test("a crash at the opened, a proposed, or the promotion append converges on rerun", async () => {
-    const providers = () => ["base", "first", "second"].map((label) => keyedProvider(label));
+test("a crash at the opened, proposal, outcome, or selection append converges on rerun", async () => {
+    const commandId = "application:cro:append-crash";
     using clean = new SQLiteTraceStore();
-    const cleanProviders = providers();
+    const cleanRegistry = providerRegistry();
     const expected = await runCounterfactualOptimization(
         clean,
-        crashOptions("application:cro:append-crash", cleanProviders),
+        twoEdits(commandId, { baselines: ["full_replay"], clock: () => 5_000 }, cleanRegistry),
     );
-    const expectedCalls = cleanProviders.map((provider) => provider.calls.length);
-    // Application appends: opened (1), proposed/outcome per candidate (2-5), promotion (6).
+    const callsOf = (registry: ReturnType<typeof providerRegistry>) =>
+        [...registry.providers.entries()].map(([label, provider]) => [
+            label,
+            provider.calls.length,
+        ]);
+    // Application appends: opened (1), proposal (2), outcomes (3, 4), selection (5).
     for (const [label, append] of [
         ["opened", 1],
-        ["proposed", 4],
-        ["promotion", 6],
+        ["proposal", 2],
+        ["outcome", 4],
+        ["selection", 5],
     ] as const) {
         using store = new DyingStore();
-        const crashProviders = providers();
-        const options = crashOptions("application:cro:append-crash", crashProviders);
+        const registry = providerRegistry();
+        const options = twoEdits(
+            commandId,
+            { baselines: ["full_replay"], clock: () => 5_000 },
+            registry,
+        );
         store.dieAtApplicationAppend = append;
         await assert.rejects(runCounterfactualOptimization(store, options), /process death/u);
         const { inspection, manifest } = await runCounterfactualOptimization(store, options);
-        assert.deepEqual(
-            crashProviders.map((provider) => provider.calls.length),
-            expectedCalls,
-            label,
-        );
+        assert.deepEqual(callsOf(registry), callsOf(cleanRegistry), label);
         assert.deepEqual(inspection, expected.inspection, label);
         assert.deepEqual(manifest, expected.manifest, label);
-        assert.equal(
-            store
-                .readOwner(deriveApplicationOwnerId("application:cro:append-crash"))
-                .filter((record) => (record.body as { status?: string }).status === "promoted")
-                .length,
-            1,
-        );
         assert.equal(store.verifyIntegrity().ok, true);
     }
 });

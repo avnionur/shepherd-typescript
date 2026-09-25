@@ -1,18 +1,23 @@
 import type { SemanticRecord, SemanticValue } from "../canonical/canonical-record.ts";
+import type { EffectCompensationRegistry } from "../effect/compensation-types.ts";
 import type { EffectHandlerStack } from "../effect/handler-types.ts";
 import type { EffectIntent, EffectOutcome } from "../effect/types.ts";
+import type { ProofEnvelope } from "../formal/types.ts";
 import type {
     REPLAY_CACHE_STATUSES,
     REPLAY_CHANGE_DIMENSIONS,
     REPLAY_CHECKPOINT_CLASSIFICATIONS,
     REPLAY_CHECKPOINT_CONSTITUENT_KINDS,
     REPLAY_CHECKPOINT_EVIDENCE_STATUSES,
+    REPLAY_CHECKPOINT_POLICIES,
     REPLAY_DIVERGENCE_CAUSES,
     REPLAY_DIVERGENCE_STATUSES,
     REPLAY_EFFECT_DISPOSITIONS,
     REPLAY_MODES,
     REPLAY_PROCESS_BACKENDS,
     REPLAY_RECOVERY_CLASSIFICATIONS,
+    REPLAY_REGRESSION_STRATEGIES,
+    REPLAY_SOURCE_DISPOSITIONS,
     REPLAY_STEP_KINDS,
     REPLAY_STEP_SOURCES,
     REPLAY_TERMINAL_STATUSES,
@@ -29,6 +34,13 @@ import type { TaskArtifactLock, TaskDescriptor } from "../task/types.ts";
 
 /** Configured replay session mode. */
 export type ReplayMode = (typeof REPLAY_MODES)[number];
+
+/**
+ * Configured disposition of a branch's source session: `compensate` abandons the source's suffix
+ * and compensates its successful compensable effects before the branch opens; `retain` keeps the
+ * source as a live alternative and compensates nothing.
+ */
+export type ReplaySourceDisposition = (typeof REPLAY_SOURCE_DISPOSITIONS)[number];
 
 /** Configured replay step kind. */
 export type ReplayStepKind = (typeof REPLAY_STEP_KINDS)[number];
@@ -65,6 +77,9 @@ export type ReplayDivergenceStatus = (typeof REPLAY_DIVERGENCE_STATUSES)[number]
 
 /** Configured divergence cause. */
 export type ReplayDivergenceCause = (typeof REPLAY_DIVERGENCE_CAUSES)[number];
+
+/** Configured first-regression search strategy. */
+export type ReplayRegressionStrategy = (typeof REPLAY_REGRESSION_STRATEGIES)[number];
 
 /** Configured process checkpoint backend kind. */
 export type ReplayProcessBackend = (typeof REPLAY_PROCESS_BACKENDS)[number];
@@ -310,6 +325,30 @@ export type ReplayProcessAdapter = {
     readonly restore: (image: Uint8Array, context: ReplayProcessCheckpointContext) => Promise<void>;
 };
 
+/** Configured automatic checkpoint policy kind. */
+export type ReplayCheckpointPolicyKind = (typeof REPLAY_CHECKPOINT_POLICIES)[number];
+
+/**
+ * Automatic step-boundary checkpoint policy of one session.
+ *
+ * Kinds are the configured `replay.checkpoint.automatic.policies`, ordered none, provider step,
+ * effect step, and every N steps. A selected boundary is captured immediately before the step that
+ * selects it, exactly as an explicit `checkpoint()` call there would be: `provider_step` before
+ * every provider step, `effect_step` before every effect step, and `every_n_steps` before any step
+ * whose index is a multiple of `interval` (so boundary 0 is always captured). A replay branch
+ * captures only boundaries at or after its target; the recorded prefix reuses the source's
+ * checkpoints.
+ */
+export type ReplayCheckpointPolicy = {
+    /**
+     * Positive step interval of at most `REPLAY_LIMITS.maxSteps`; required by and only allowed
+     * for the every-N-steps kind.
+     */
+    readonly interval?: number;
+    /** Configured policy kind. */
+    readonly kind: ReplayCheckpointPolicyKind;
+};
+
 /** One managed world directory bound to a session. */
 export type ReplayWorldBinding = {
     /** Stable world name within the session. */
@@ -320,6 +359,11 @@ export type ReplayWorldBinding = {
 
 /** Options for running one root replay session. */
 export type RunReplaySessionOptions = {
+    /**
+     * Automatic checkpoint policy; defaults to the configured
+     * `replay.checkpoint.automatic.defaultPolicy`.
+     */
+    readonly checkpointPolicy?: ReplayCheckpointPolicy;
     /** Proposed writer lease holder. */
     readonly claimId: string;
     /** Lease clock in Unix milliseconds; defaults to `Date.now`. */
@@ -382,7 +426,10 @@ export type ReplayTarget =
           readonly checkpointId: string;
       }
     | {
-          /** Step boundary of a session without bound worlds or processes. */
+          /**
+           * Step boundary of a session without bound worlds or processes; a world- or
+           * process-bound session is addressed by the checkpoint retained at the boundary.
+           */
           readonly stepCount: number;
       };
 
@@ -394,12 +441,24 @@ export type ReplayBranchOptions = {
     readonly clock?: () => number;
     /** Globally idempotent branch command identity. */
     readonly commandId: string;
+    /**
+     * Compensation handlers for the successful compensable effects the source materialized at or
+     * after the target; required when the source disposition is `compensate` and any of them is not
+     * yet compensated.
+     */
+    readonly compensation?: EffectCompensationRegistry;
     /** Process adapters that receive verified images, one per source process. */
     readonly processes?: readonly ReplayProcessAdapter[];
     /** Provider-session adapter receiving a verified provider-session receipt. */
     readonly providerSession?: ReplayProviderSessionAdapter;
     /** Caller cancellation. */
     readonly signal?: AbortSignal;
+    /**
+     * What happens to the source session's suffix; defaults to the configured
+     * `replay.branch.defaultSourceDisposition`. An exploratory branch that keeps the source as a
+     * retained alternative (a rollout, a candidate evaluation, a rerun) declares `retain`.
+     */
+    readonly sourceDisposition?: ReplaySourceDisposition;
     /** Source session identity. */
     readonly sourceSessionId: string;
     /** Checkpoint or step boundary. */
@@ -413,6 +472,11 @@ export type RewindReplaySessionOptions = ReplayBranchOptions;
 
 /** Options for replaying a session from a checkpoint or step boundary. */
 export type ReplayReplaySessionOptions = ReplayBranchOptions & {
+    /**
+     * Automatic checkpoint policy of the live suffix; defaults to the configured
+     * `replay.checkpoint.automatic.defaultPolicy`.
+     */
+    readonly checkpointPolicy?: ReplayCheckpointPolicy;
     /** Declared changes of the live suffix. */
     readonly changes?: readonly ReplayChangeDimension[];
     /** Handler stack used by the live suffix. */
@@ -660,6 +724,11 @@ export type ReplaySessionInspection = {
     }[];
     /** Program identity. */
     readonly program_id: string;
+    /**
+     * Inspectable claim strength: `runtime_only` for root sessions, `extension` for branch
+     * sessions, and a reference-machine classification only when lowering was requested.
+     */
+    readonly proof: ProofEnvelope;
     /** Provider descriptor, or null. */
     readonly provider: ProviderDescriptor | null;
     /** Provider-session adapter identity, or null. */
@@ -728,4 +797,139 @@ export type ReplayDependencyAnalysis = {
     readonly session_id: string;
     /** Analyzed step index. */
     readonly step_index: number;
+};
+
+/** One step of a branch aligned against the common ancestor in an N-way diff. */
+export type ReplayBranchDiffStep = {
+    /** Ancestor step identity at the index, or null. */
+    readonly ancestor_step_id: string | null;
+    /** Branch step identity at the index, or null. */
+    readonly branch_step_id: string | null;
+    /** Step index. */
+    readonly index: number;
+    /** Kind of the branch step, or of the ancestor step when the branch has none. */
+    readonly kind: ReplayStepKind;
+    /**
+     * Alignment status against the ancestor: `identical`, `diverged`, `source_only` (the ancestor
+     * retains the index and the branch does not), or `replay_only` (only the branch retains it).
+     */
+    readonly status: ReplayDivergenceStatus;
+};
+
+/** One effect step a branch captured past the shared base. */
+export type ReplayCapturedEffect = {
+    /** Retained effect disposition. */
+    readonly disposition: ReplayEffectDisposition;
+    /** Effect intent identity. */
+    readonly effect_id: string;
+    /** Effect intent kind. */
+    readonly effect_kind: string;
+    /** Step index at which the branch retains the effect. */
+    readonly index: number;
+    /** Effect intent content identity. */
+    readonly intent_ref: string;
+    /** Effect step content identity (intent, disposition, outcome, and failure). */
+    readonly step_id: string;
+};
+
+/** One branch of an N-way diff. */
+export type ReplayBranchDiff = {
+    /** Effects the branch captured at or after the shared base, in step order. */
+    readonly effects: readonly ReplayCapturedEffect[];
+    /** First index at or after the base whose status is not `identical`, or null. */
+    readonly first_divergence_index: number | null;
+    /** Replay-session lineage from the root session to this session. */
+    readonly lineage: readonly string[];
+    /** Branch session identity. */
+    readonly session_id: string;
+    /** Retained step count of the branch. */
+    readonly step_count: number;
+    /** Steps aligned against the ancestor from the base onward. */
+    readonly steps: readonly ReplayBranchDiffStep[];
+};
+
+/** One distinct captured effect across the branches of an N-way diff. */
+export type ReplayEffectPresence = {
+    /** Retained effect disposition. */
+    readonly disposition: ReplayEffectDisposition;
+    /** Effect intent identity. */
+    readonly effect_id: string;
+    /** Effect intent kind. */
+    readonly effect_kind: string;
+    /** Whether the ancestor also retains this effect step at or after the base. */
+    readonly in_ancestor: boolean;
+    /** Effect intent content identity. */
+    readonly intent_ref: string;
+    /** Branches that captured the effect, in input order. */
+    readonly session_ids: readonly string[];
+    /** Effect step content identity. */
+    readonly step_id: string;
+};
+
+/** Read-only N-way diff of replay sessions against their common lineage ancestor. */
+export type ReplaySessionDiff = {
+    /** Lowest common replay-session ancestor of every branch, or null when they share none. */
+    readonly ancestor_session_id: string | null;
+    /** Prefix identity of the shared base, or null for an empty base. */
+    readonly base_prefix_id: string | null;
+    /** Length of the longest ancestor prefix every branch retains identically; 0 without an ancestor. */
+    readonly base_step_count: number;
+    /** Branch diffs in input order. */
+    readonly branches: readonly ReplayBranchDiff[];
+    /** Distinct captured effects past the base, in first-capture order. */
+    readonly effects: readonly ReplayEffectPresence[];
+    /** Compared session identities in input order. */
+    readonly session_ids: readonly string[];
+};
+
+/** One revision of a session lineage presented to a regression verdict. */
+export type ReplayRevision = {
+    /** Prefix identity of the revision, or null for the empty revision. */
+    readonly prefix_id: string | null;
+    /**
+     * Lineage session that executed the newest step live (recorded steps resolve through their
+     * source), or the searched session for the empty revision.
+     */
+    readonly session_id: string;
+    /** Number of steps in the revision. */
+    readonly step_count: number;
+    /** Steps of the revision, in index order. */
+    readonly steps: readonly ReplayStepInspection[];
+};
+
+/** One evaluated verdict of a regression search. */
+export type ReplayRegressionEvaluation = {
+    /** Whether the verdict accepted the revision. */
+    readonly good: boolean;
+    /** Evaluated revision step count. */
+    readonly step_count: number;
+};
+
+/** Revision address reported by a regression search. */
+export type ReplayRevisionAddress = {
+    /** Prefix identity, or null for the empty revision. */
+    readonly prefix_id: string | null;
+    /** Lineage session that executed the newest step live. */
+    readonly session_id: string;
+    /** Revision step count. */
+    readonly step_count: number;
+};
+
+/** Result of a first-regression search over a session lineage. */
+export type ReplayRegressionSearch = {
+    /** Verdicts in evaluation order; each revision is evaluated at most once. */
+    readonly evaluations: readonly ReplayRegressionEvaluation[];
+    /** First revision the verdict rejects, or null when the newest revision is accepted. */
+    readonly first_bad: ReplayRevisionAddress | null;
+    /**
+     * Newest accepted revision before `first_bad` (the newest revision when nothing regressed), or
+     * null when revision 0 is rejected.
+     */
+    readonly last_good: ReplayRevisionAddress | null;
+    /** Replay-session lineage from the root session to the searched session. */
+    readonly lineage: readonly string[];
+    /** Searched session identity. */
+    readonly session_id: string;
+    /** Strategy used. */
+    readonly strategy: ReplayRegressionStrategy;
 };

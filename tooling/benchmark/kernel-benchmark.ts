@@ -410,10 +410,10 @@ export function renderSloEvaluation(evaluation: SloEvaluation): string {
 /**
  * Digests the canonical benchmark configuration so a result names the exact procedure.
  *
- * @param configuration - Validated benchmark configuration.
+ * @param configuration - Validated benchmark configuration (kernel, scope, or any JSON value).
  * @returns `sha256:<hex>` over the key-sorted JSON.
  */
-export function digestBenchmarkConfiguration(configuration: KernelBenchmarkConfiguration): string {
+export function digestBenchmarkConfiguration(configuration: object): string {
     return `sha256:${createHash("sha256")
         .update(JSON.stringify(sortKeys(configuration)))
         .digest("hex")}`;
@@ -444,7 +444,7 @@ export async function runKernelBenchmark(
 ): Promise<KernelBenchmarkResult> {
     const root = mkdtempSync(path.join(os.tmpdir(), configuration.temporaryDirectoryPrefix));
     try {
-        const environment = readEnvironment(root, options.repositoryRoot);
+        const environment = readBenchmarkEnvironment(root, options.repositoryRoot);
         const metrics = await measure(configuration, root, options.repositoryRoot);
         return {
             configuration,
@@ -676,7 +676,18 @@ async function measure(
     return metrics;
 }
 
-function readEnvironment(root: string, repositoryRoot: string): BenchmarkEnvironment {
+/**
+ * Reads the host facts recorded with every benchmark result.
+ *
+ * @param root - Benchmark scratch directory whose `statfs` type is recorded.
+ * @param repositoryRoot - Repository root holding the `package.json` whose version is recorded.
+ * @returns Platform, architecture, CPU, memory, filesystem, Node.js, SQLite, and package facts.
+ * @throws {Error} If `package.json` cannot be read or the scratch directory does not exist.
+ */
+export function readBenchmarkEnvironment(
+    root: string,
+    repositoryRoot: string,
+): BenchmarkEnvironment {
     const manifest = JSON.parse(
         readFileSync(path.join(repositoryRoot, "package.json"), "utf8"),
     ) as {

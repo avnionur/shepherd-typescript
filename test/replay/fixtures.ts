@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { mkdir, mkdtemp, readdir, readFile, readlink, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -14,6 +15,9 @@ import {
     type ModelRequest,
     type ReplaySessionContext,
     type ReplaySessionProgram,
+    replayReplaySession,
+    runReplaySession,
+    type SQLiteTraceStore,
     type StaticProviderExchange,
 } from "../../src/index.ts";
 
@@ -162,4 +166,68 @@ export async function readTree(root: string): Promise<Record<string, string>> {
     };
     await walk("");
     return entries;
+}
+
+const lineageHandlers = createEffectHandlerStack([
+    {
+        handle: (intent) => ({ ok: true, value: intent.payload }),
+        handlerId: "handler:record",
+        kind: "record",
+    },
+]);
+
+/** Lineage program: provider step 0, effect 1 (depends on 0), provider step 2 (depends on 0), effect 3 (on 2). */
+export const lineageProgram: ReplaySessionProgram = async (context: ReplaySessionContext) => {
+    const plan = await context.invokeProvider(requestOf(0));
+    await context.dispatchEffect(intentOf("effect:draft", "record", { text: "draft" }), {
+        dependsOn: [plan.handle],
+    });
+    const final = await context.invokeProvider(requestOf(1), { dependsOn: [plan.handle] });
+    const text = (final.response.output as { readonly text: string }).text;
+    await context.dispatchEffect(intentOf("effect:publish", "record", { text }), {
+        dependsOn: [final.handle],
+    });
+    return { text };
+};
+
+/** Records one root session of the lineage program with the given final provider text. */
+export async function recordLineageRoot(
+    store: SQLiteTraceStore,
+    commandId: string,
+    finalText = "final",
+) {
+    const { inspection } = await runReplaySession(store, {
+        claimId: "worker",
+        commandId,
+        handlers: lineageHandlers,
+        program: lineageProgram,
+        programId: "program:lineage.v1",
+        provider: providerOf("provider:lineage", [
+            exchangeOf(requestOf(0), { text: "plan" }),
+            exchangeOf(requestOf(1), { text: finalText }),
+        ]),
+    });
+    return inspection;
+}
+
+/** Replays a lineage session from a step boundary with another final provider text. */
+export async function lineageRollout(
+    store: SQLiteTraceStore,
+    sourceSessionId: string,
+    commandId: string,
+    finalText: string,
+    stepCount = 2,
+) {
+    const { inspection } = await replayReplaySession(store, {
+        changes: ["provider"],
+        claimId: "operator",
+        commandId,
+        handlers: lineageHandlers,
+        program: lineageProgram,
+        provider: providerOf("provider:lineage", [exchangeOf(requestOf(1), { text: finalText })]),
+        sourceSessionId,
+        target: { stepCount },
+    });
+    assert.equal(inspection.terminal?.status, "finished", JSON.stringify(inspection.terminal));
+    return inspection;
 }

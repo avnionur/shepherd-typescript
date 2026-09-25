@@ -26,6 +26,12 @@ Usage counts must be non-negative safe integers. `costUsd` must be finite and no
 known; omission becomes `null` in the closed wire record. Counts represent aggregate run totals,
 not one provider call.
 
+Cache token counts are the provider-reported prompt-cache reads and writes. The
+[live adapters](./live-providers.md#usage-normalization) normalize them: `input_tokens` counts
+uncached input only, `cache_read_input_tokens` counts tokens served from the provider's prompt
+cache, and `cache_creation_input_tokens` counts tokens written to it (always `0` for the
+OpenAI-compatible dialect, which does not report writes). Live adapters report no cost.
+
 Both builders reject unexpected fields, accessors, symbols, class instances, malformed Unicode,
 invalid semantic metadata, unsafe ordinals, and invalid blob receipts. Returned records and nested
 content are deeply frozen canonical snapshots.

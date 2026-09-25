@@ -54,6 +54,11 @@ import {
     retainApplicationManifest,
 } from "./manifest.ts";
 import {
+    type ApplicationSchemaSurface,
+    assertApplicationMessage,
+    compileApplicationSchemaSurfaces,
+} from "./protocol-schemas.ts";
+import {
     type ApplicationDecisionBody,
     type ApplicationOpenedBody,
     assertApplicationDigest,
@@ -137,7 +142,9 @@ type WorkerState = {
 };
 
 type SupervisionProtocol = {
+    readonly action: readonly ApplicationSchemaSurface[];
     readonly definition: ApplicationProtocolDefinition;
+    readonly observation: readonly ApplicationSchemaSurface[];
     readonly providerCalls: number;
     readonly rounds: number;
 };
@@ -190,7 +197,11 @@ type Run = {
  * one of a world adapter or a trace-only changed-path reader.
  * @returns The retained manifest and the record-derived inspection.
  * @throws {ApplicationProtocolError} If the protocol definition is malformed, is not a coding
- * supervisor protocol, lacks a required surface or budget, or differs from the retained one.
+ * supervisor protocol, lacks a required surface or budget, differs from the retained one, or its
+ * observation schema surface refuses a round's observation message (before the policy is
+ * consulted).
+ * @throws {JSONSchemaValidationError} If a policy decision's `{ kind, reason, worker_id }` action
+ * message violates the protocol's action schema surface; the decision is not applied.
  * @throws {ApplicationBudgetError} If a worker budget exceeds the protocol's, the round budget is
  * exhausted, or a worker start would exceed the provider-call budget.
  * @throws {ApplicationEvidenceError} If retained application evidence is inconsistent.
@@ -321,9 +332,9 @@ export async function runCodingSupervisor(
             const observations = await observeWorkers(run, consumedCustody(run, applied));
             const conflict = classifyConflict(observations);
             observed = { conflict, observations };
-            decision =
-                applied ??
-                readDecision(
+            if (applied === null) {
+                assertObservationMessage(protocol, round, conflict, observations);
+                decision = readDecision(
                     await policy(
                         Object.freeze({
                             conflict,
@@ -335,6 +346,14 @@ export async function runCodingSupervisor(
                     ),
                     run,
                 );
+                assertApplicationMessage(
+                    protocol.action,
+                    actionMessage(decision),
+                    `policy decision of round ${round}`,
+                );
+            } else {
+                decision = applied;
+            }
         } else {
             decision = retainedDecision.body.decision;
         }
@@ -1149,7 +1168,63 @@ function readSupervisionProtocol(value: unknown): SupervisionProtocol {
             `${roundsKey} exceeds the configured bound ${config.limits.maxRounds}`,
         );
     }
-    return { definition, providerCalls, rounds };
+    return {
+        action: compileApplicationSchemaSurfaces(definition, supervision.surfaceRoles.action),
+        definition,
+        observation: compileApplicationSchemaSurfaces(
+            definition,
+            supervision.surfaceRoles.observation,
+        ),
+        providerCalls,
+        rounds,
+    };
+}
+
+/**
+ * Projects one decision onto the Appendix E action message `{ kind, reason, worker_id }`: the
+ * fields a decision kind does not carry are null. Kind-specific arguments (citations, data,
+ * successor) remain governed by the closed supervision decision grammar.
+ */
+function actionMessage(decision: CodingSupervisorDecision): SemanticValue {
+    return {
+        kind: decision.kind,
+        reason: "reason" in decision ? decision.reason : null,
+        worker_id: "worker_id" in decision ? decision.worker_id : null,
+    };
+}
+
+/**
+ * Validates the Appendix E observation message `{ conflict, round, workers }` the policy is about
+ * to see against the protocol's observation schema surfaces. A runtime observation the pinned
+ * schema refuses is a protocol mismatch, raised before the policy is consulted.
+ */
+function assertObservationMessage(
+    protocol: SupervisionProtocol,
+    round: number,
+    conflict: CodingSupervisorConflict,
+    observations: readonly CodingSupervisorObservation[],
+): void {
+    try {
+        assertApplicationMessage(
+            protocol.observation,
+            {
+                conflict: conflict.kind,
+                round,
+                workers: observations.map((observation) => ({
+                    changed_paths: observation.changed_paths,
+                    completion_status: observation.completion_status,
+                    status: observation.status,
+                    worker_id: observation.worker_id,
+                })),
+            },
+            `observation of round ${round}`,
+        );
+    } catch (error) {
+        throw new ApplicationProtocolError(
+            `observation of round ${round} is not admitted by the protocol observation schema`,
+            { cause: error },
+        );
+    }
 }
 
 function readWorkers(value: unknown, protocol: SupervisionProtocol): readonly WorkerDefinition[] {

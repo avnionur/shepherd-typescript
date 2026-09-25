@@ -28,7 +28,8 @@ state:
 - the immutable terminal cut when it has been published;
 - ordered terminal retained-world settlements with their exact command, request, operation,
   receipt, trace identities, citation record, and immutable citation cut;
-- direct canonical causal edges between the selected durable execution records.
+- direct canonical causal edges between the selected durable execution records;
+- a `proof` envelope ([proof envelope](#proof-envelope)).
 
 Missing evidence is represented by empty arrays or `null`; it is never fabricated. Artifact order
 matches configured durable ordinals. Causal edges preserve selected record order and each
@@ -76,6 +77,16 @@ Unavailable continuation constituents are not resumable.
 The function throws `TypeError` for an invalid run ID and `TraceStoreError` for missing, malformed,
 unavailable, or inconsistent retained evidence. An incomplete `started` view remains observable,
 but inspection does not make that execution safe to resume; provider replay remains fail-closed.
+
+## Proof envelope
+
+`proof` is `runtime_only` for every recovery state. A non-runtime claim imported through the
+configured artifact carrier-metadata key surfaces only as `metadata.claimed_proof_backed` and
+`metadata.claim`, never as verified proof authority; a run with retained-world settlement
+citations classifies as the configured `extension` profile with the `delay` publication control.
+Normative rules: [inspection envelopes](./formal-assurance.md#inspection-envelopes). Tests:
+[`test/formal/inspection-proof-envelope.test.ts`](../test/formal/inspection-proof-envelope.test.ts)
+and [`retained-world-select.test.ts`](../test/workspace/retained-world-select.test.ts).
 
 ## Persistence
 

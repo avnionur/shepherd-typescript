@@ -1,18 +1,18 @@
 import {
-    APPLICATIONS_PROTOCOL_V5_CONTRACT,
+    APPLICATIONS_PROTOCOL_V10_CONTRACT,
     BACKUP_PROTOCOL_V1_CONTRACT,
     CLI_PROTOCOL_V1_CONTRACT,
     DELEGATION_PROTOCOL_V1_CONTRACT,
-    EFFECT_PROTOCOL_V1_CONTRACT,
+    EFFECT_PROTOCOL_V2_CONTRACT,
     EVIDENCE_RECORD_PROJECTION_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
-    FORMAL_ASSURANCE_V1_CONTRACT,
+    FORMAL_ASSURANCE_V2_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
     KERNEL_ABI_V0_STORE_V13_CONTRACT,
     OBSERVABILITY_PROTOCOL_V1_CONTRACT,
     ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT,
-    PROVIDER_PROTOCOL_V1_CONTRACT,
-    REPLAY_PROTOCOL_V1_CONTRACT,
+    PROVIDER_PROTOCOL_V3_CONTRACT,
+    REPLAY_PROTOCOL_V3_CONTRACT,
     RETENTION_PROTOCOL_V1_CONTRACT,
     RUN_PROTOCOL_V1_CONTRACT,
     SCOPE_PROTOCOL_V6_CONTRACT,
@@ -20,7 +20,7 @@ import {
     SUPERVISION_PROTOCOL_V1_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
     TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
-    WORKSPACE_PROTOCOL_V26_CONTRACT,
+    WORKSPACE_PROTOCOL_V27_CONTRACT,
 } from "./compatibility-constants.ts";
 import type { ProtocolConfig } from "./config-types.ts";
 import { sameStrings } from "./config-value-readers.ts";
@@ -74,6 +74,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         ...Object.values(config.cli.artifacts),
         ...Object.values(config.delegation.artifacts),
         ...Object.values(config.effects.artifacts),
+        ...Object.values(config.effects.compensation.artifacts),
         ...Object.values(config.kernel.artifacts),
         ...Object.values(config.observability.artifacts),
         ...Object.values(config.orphanRepair.artifacts),
@@ -122,16 +123,16 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (!sameJson(config.projections.taskRunLedgers, TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT)) {
         throw new TypeError("task/run ledger projection constants require a new projection");
     }
-    if (!sameJson(config.providers, PROVIDER_PROTOCOL_V1_CONTRACT)) {
+    if (!sameJson(config.providers, PROVIDER_PROTOCOL_V3_CONTRACT)) {
         throw new TypeError("provider constants require a new provider protocol");
     }
     if (!sameJson(config.tasks, TASK_PROTOCOL_V1_CONTRACT)) {
         throw new TypeError("task descriptor constants require a new task protocol");
     }
-    if (!sameJson(config.effects, EFFECT_PROTOCOL_V1_CONTRACT)) {
+    if (!sameJson(config.effects, EFFECT_PROTOCOL_V2_CONTRACT)) {
         throw new TypeError("effect record constants require a new effect protocol");
     }
-    if (!sameJson(config.formalAssurance, FORMAL_ASSURANCE_V1_CONTRACT)) {
+    if (!sameJson(config.formalAssurance, FORMAL_ASSURANCE_V2_CONTRACT)) {
         throw new TypeError("formal assurance constants require a new formal assurance protocol");
     }
     if (!sameJson(config.runs, RUN_PROTOCOL_V1_CONTRACT)) {
@@ -140,7 +141,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (!sameJson(config.scopes, SCOPE_PROTOCOL_V6_CONTRACT)) {
         throw new TypeError("scope constants require a new scope protocol");
     }
-    if (!sameJson(config.replay, REPLAY_PROTOCOL_V1_CONTRACT)) {
+    if (!sameJson(config.replay, REPLAY_PROTOCOL_V3_CONTRACT)) {
         throw new TypeError("replay constants require a new replay protocol");
     }
     if (!sameJson(config.supervision, SUPERVISION_PROTOCOL_V1_CONTRACT)) {
@@ -151,10 +152,10 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     // Git subprocess hardening is operational and never reaches recorded workspace evidence.
     const { gitInvocation: _gitInvocation, ...workspaceIdentity } = config.workspaces;
-    if (!sameJson(workspaceIdentity, WORKSPACE_PROTOCOL_V26_CONTRACT)) {
+    if (!sameJson(workspaceIdentity, WORKSPACE_PROTOCOL_V27_CONTRACT)) {
         throw new TypeError("workspace constants require a new workspace protocol");
     }
-    if (!sameJson(config.applications, APPLICATIONS_PROTOCOL_V5_CONTRACT)) {
+    if (!sameJson(config.applications, APPLICATIONS_PROTOCOL_V10_CONTRACT)) {
         throw new TypeError("application constants require a new applications protocol");
     }
     const retention = config.retention;

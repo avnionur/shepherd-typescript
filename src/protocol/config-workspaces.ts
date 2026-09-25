@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { readCarrierBackendsConfig } from "./config-carrier-backends.ts";
+import { readDeviceLayersConfig } from "./config-device-layers.ts";
 import { type ProtocolConfig, SECURE_HASH_ALGORITHMS } from "./config-types.ts";
 import {
     readAbsoluteUrl,
@@ -69,6 +70,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "controlDirectory",
             "defaultAdoptionMode",
             "defaultInitializeGit",
+            "deviceLayers",
             "digestAlgorithm",
             "errors",
             "format",
@@ -1381,6 +1383,25 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
     ) {
         throw new TypeError("workspace selection-publication digest prefixes must differ");
     }
+    const carrierBackends = readCarrierBackendsConfig(config.carrierBackends, {
+        copyBackend: readNonEmptyString(carrier.backendKind, "workspaces.carrier.backendKind"),
+        custodyDescriptorFile: readSimpleName(
+            carrier.custodyDescriptorFile,
+            "workspaces.carrier.custodyDescriptorFile",
+        ),
+        worldDirectory: readSimpleName(carrier.worldDirectory, "workspaces.carrier.worldDirectory"),
+    });
+    const deviceLayers = readDeviceLayersConfig(config.deviceLayers, {
+        cloneBackend: carrierBackends.clone.backend,
+        copyBackend: carrierBackends.defaultBackend,
+        overlayBackend: carrierBackends.overlay.backend,
+        overlayLowerToken: carrierBackends.overlay.tokens.lower,
+    });
+    if (
+        !Object.values(deviceLayers.selection.modes).includes(carrierBackends.selection.defaultMode)
+    ) {
+        throw new TypeError("workspaces.carrierBackends.selection.defaultMode must be configured");
+    }
     return {
         adoptionModes,
         bindingErrors: {
@@ -1430,17 +1451,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "workspaces.bindingIdentityKind",
         ),
         bindingVersion: readPositiveInteger(config.bindingVersion, "workspaces.bindingVersion"),
-        carrierBackends: readCarrierBackendsConfig(config.carrierBackends, {
-            copyBackend: readNonEmptyString(carrier.backendKind, "workspaces.carrier.backendKind"),
-            custodyDescriptorFile: readSimpleName(
-                carrier.custodyDescriptorFile,
-                "workspaces.carrier.custodyDescriptorFile",
-            ),
-            worldDirectory: readSimpleName(
-                carrier.worldDirectory,
-                "workspaces.carrier.worldDirectory",
-            ),
-        }),
+        carrierBackends,
         carrier: {
             backendKind: readNonEmptyString(carrier.backendKind, "workspaces.carrier.backendKind"),
             blobIdPrefix,
@@ -1919,6 +1930,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
         controlDirectory,
         defaultAdoptionMode,
         defaultInitializeGit: config.defaultInitializeGit,
+        deviceLayers,
         digestAlgorithm,
         errors: {
             conflictCode: readNonEmptyString(errors.conflictCode, "workspaces.errors.conflictCode"),

@@ -21,6 +21,7 @@ export function readEffectConfig(value: unknown): ProtocolConfig["effects"] {
         value,
         [
             "artifacts",
+            "compensation",
             "digestAlgorithm",
             "digestPrefix",
             "hexLength",
@@ -54,6 +55,10 @@ export function readEffectConfig(value: unknown): ProtocolConfig["effects"] {
     if (hexLength !== createHash(digestAlgorithm).digest("hex").length) {
         throw new TypeError("effects.hexLength must match the configured hash algorithm");
     }
+    const reversibilityTiers = readUniqueStrings(
+        effect.reversibilityTiers,
+        "effects.reversibilityTiers",
+    );
     const intent = readNonEmptyString(phases.intent, "effects.phases.intent");
     const outcome = readNonEmptyString(phases.outcome, "effects.phases.outcome");
     if (intent === outcome) {
@@ -70,6 +75,11 @@ export function readEffectConfig(value: unknown): ProtocolConfig["effects"] {
                 "effects.artifacts.outcomeSchema",
             ),
         },
+        compensation: readCompensationConfig(
+            effect.compensation,
+            reversibilityTiers,
+            digestAlgorithm,
+        ),
         digestAlgorithm,
         digestPrefix,
         hexLength,
@@ -88,13 +98,124 @@ export function readEffectConfig(value: unknown): ProtocolConfig["effects"] {
         intentVersion: readPositiveInteger(effect.intentVersion, "effects.intentVersion"),
         outcomeVersion: readPositiveInteger(effect.outcomeVersion, "effects.outcomeVersion"),
         phases: { intent, outcome },
-        reversibilityTiers: readUniqueStrings(
-            effect.reversibilityTiers,
-            "effects.reversibilityTiers",
-        ),
+        reversibilityTiers,
         schemas: {
             intentId: readAbsoluteUrl(schemas.intentId, "effects.schemas.intentId"),
             outcomeId: readAbsoluteUrl(schemas.outcomeId, "effects.schemas.outcomeId"),
         },
+    };
+}
+
+const COMPENSATION_ERROR_KEYS = [
+    "conflictCode",
+    "conflictMessage",
+    "evidenceCode",
+    "evidenceMessage",
+    "failedCode",
+    "failedMessage",
+    "handlerNotFoundCode",
+    "handlerNotFoundMessage",
+] as const;
+
+function readCompensationConfig(
+    value: unknown,
+    reversibilityTiers: readonly string[],
+    digestAlgorithm: string,
+): ProtocolConfig["effects"]["compensation"] {
+    const path = "effects.compensation";
+    const compensation = readObject(
+        value,
+        [
+            "artifacts",
+            "compatibilityVersion",
+            "compensableTiers",
+            "errors",
+            "evidenceKinds",
+            "identity",
+            "limits",
+            "outcomes",
+            "phases",
+            "recordVersion",
+            "schemaId",
+            "statuses",
+            "traceSchema",
+            "triggers",
+        ],
+        path,
+    );
+    const artifacts = readObject(compensation.artifacts, ["recordSchema"], `${path}.artifacts`);
+    const errors = readObject(compensation.errors, COMPENSATION_ERROR_KEYS, `${path}.errors`);
+    const identity = readObject(
+        compensation.identity,
+        ["appendIntentKind", "compensationIdPrefix"],
+        `${path}.identity`,
+    );
+    const limits = readObject(compensation.limits, ["maxEffectsPerTrigger"], `${path}.limits`);
+    const compensableTiers = readUniqueStrings(
+        compensation.compensableTiers,
+        `${path}.compensableTiers`,
+    );
+    if (compensableTiers.some((tier) => !reversibilityTiers.includes(tier))) {
+        throw new TypeError(`${path}.compensableTiers must name configured reversibility tiers`);
+    }
+    const compensationIdPrefix = readNonEmptyString(
+        identity.compensationIdPrefix,
+        `${path}.identity.compensationIdPrefix`,
+    );
+    if (!compensationIdPrefix.endsWith(`:${digestAlgorithm}:`)) {
+        throw new TypeError(`${path}.identity.compensationIdPrefix must name the digest algorithm`);
+    }
+    const readFixed = (key: string, length: number): readonly string[] => {
+        const values = readUniqueStrings(compensation[key], `${path}.${key}`);
+        if (values.length !== length) {
+            throw new TypeError(`${path}.${key} must contain exactly ${length} values`);
+        }
+        return values;
+    };
+    const readErrorText = (key: (typeof COMPENSATION_ERROR_KEYS)[number]): string =>
+        readNonEmptyString(errors[key], `${path}.errors.${key}`);
+    return {
+        artifacts: {
+            recordSchema: readNonEmptyString(
+                artifacts.recordSchema,
+                `${path}.artifacts.recordSchema`,
+            ),
+        },
+        compatibilityVersion: readNonEmptyString(
+            compensation.compatibilityVersion,
+            `${path}.compatibilityVersion`,
+        ),
+        compensableTiers,
+        errors: {
+            conflictCode: readErrorText("conflictCode"),
+            conflictMessage: readErrorText("conflictMessage"),
+            evidenceCode: readErrorText("evidenceCode"),
+            evidenceMessage: readErrorText("evidenceMessage"),
+            failedCode: readErrorText("failedCode"),
+            failedMessage: readErrorText("failedMessage"),
+            handlerNotFoundCode: readErrorText("handlerNotFoundCode"),
+            handlerNotFoundMessage: readErrorText("handlerNotFoundMessage"),
+        },
+        evidenceKinds: readFixed("evidenceKinds", 2),
+        identity: {
+            appendIntentKind: readNonEmptyString(
+                identity.appendIntentKind,
+                `${path}.identity.appendIntentKind`,
+            ),
+            compensationIdPrefix,
+        },
+        limits: {
+            maxEffectsPerTrigger: readPositiveInteger(
+                limits.maxEffectsPerTrigger,
+                `${path}.limits.maxEffectsPerTrigger`,
+            ),
+        },
+        outcomes: readFixed("outcomes", 2),
+        phases: readFixed("phases", 3),
+        recordVersion: readPositiveInteger(compensation.recordVersion, `${path}.recordVersion`),
+        schemaId: readAbsoluteUrl(compensation.schemaId, `${path}.schemaId`),
+        statuses: readFixed("statuses", 4),
+        traceSchema: readNonEmptyString(compensation.traceSchema, `${path}.traceSchema`),
+        triggers: readFixed("triggers", 4),
     };
 }

@@ -19,6 +19,7 @@ import type { ReplaySessionRow } from "../store/replay-sessions.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { OwnerRecord } from "../store/types.ts";
 import { ReplayCompatibilityError, ReplayEvidenceError } from "./errors.ts";
+import { classifyReplaySessionProof } from "./proof-lowering.ts";
 import {
     createReplayContextPrefixId,
     createReplayCutId,
@@ -60,6 +61,11 @@ const [, FAILED_STATUS, , REWOUND_STATUS] = REPLAY_TERMINAL_STATUSES;
 export type InspectReplaySessionOptions = {
     /** Clock used to classify live leases; defaults to `Date.now`. */
     readonly clock?: () => number;
+    /**
+     * Whether to lower an eligible static session into Core-A reference records and classify the
+     * lowered trace with the executable reference machine; defaults to `false`.
+     */
+    readonly lowerProof?: boolean;
     /** Replay session identity. */
     readonly sessionId: string;
 };
@@ -72,6 +78,13 @@ export type InspectReplaySessionOptions = {
  * admission-before-materialization, recorded steps against their source records, checkpoint cuts
  * and constituents, restore evidence, and terminal consistency. Inspection appends nothing and works
  * on read-only and imported stores; an imported session has no live row and is never `running`.
+ *
+ * The inspection carries a `proof` envelope: `runtime_only` for root sessions and the configured
+ * `extension` profile for branch sessions, whose rewind and replay are publication controls. With
+ * `lowerProof`, an eligible static root session (finished, effect steps only, every effect
+ * materialized) is lowered into Core-A records; the envelope is then whatever the executable
+ * reference machine accepts (`reference_core_a` / `reference_validated`), never proof-backed. An
+ * ineligible session keeps its envelope and reports `metadata.lowering_ineligible`.
  *
  * @param store - Open trace store, writable or read-only.
  * @param options - Session identity and optional clock.
@@ -93,19 +106,27 @@ export function inspectReplaySession(
 ): ReplaySessionInspection {
     const fields = readScopeDataObject(options, ["sessionId"], "inspectReplaySession options", [
         "clock",
+        "lowerProof",
     ]);
     assertScopeText(fields.sessionId, "sessionId");
     const clock = (fields.clock ?? Date.now) as () => number;
     if (typeof clock !== "function") {
         throw new TypeError("clock must be a function");
     }
-    return foldReplaySession(
+    const lowerProof = fields.lowerProof ?? false;
+    if (typeof lowerProof !== "boolean") {
+        throw new TypeError("lowerProof must be a boolean");
+    }
+    const inspection = foldReplaySession(
         store,
         fields.sessionId,
         store.readOwner(fields.sessionId),
         store.readReplaySession(fields.sessionId),
         clock(),
     );
+    return lowerProof
+        ? Object.freeze({ ...inspection, proof: classifyReplaySessionProof(inspection, true) })
+        : inspection;
 }
 
 /** Folds retained session records into a validated inspection. @internal */
@@ -379,7 +400,7 @@ function fold(
                 row.terminal === (state.terminal !== null)),
         "session row disagrees with its records",
     );
-    return Object.freeze({
+    const inspection = {
         checkpoints: Object.freeze(state.checkpoints),
         classification,
         command_id: session.command_id,
@@ -410,7 +431,8 @@ function fold(
         task: session.task,
         terminal: state.terminal,
         worlds: session.worlds,
-    });
+    };
+    return Object.freeze({ ...inspection, proof: classifyReplaySessionProof(inspection, false) });
 }
 
 function foldRestore(
@@ -613,15 +635,11 @@ function foldStep(
                 ) === canonical(step.effect),
             "recorded step content differs from its source step",
         );
+        // The validated source inspection retains this record as one of its steps.
         const source = store.readRecord(step.source_step_record_id as RecordId);
-        const sourceStep =
-            source?.envelope.schema_ref === config.traceSchemas.step
-                ? readReplayStepBody(source.body)
-                : null;
+        const sourceStep = readReplayStepBody((source as NonNullable<typeof source>).body);
         assert(
-            sourceStep !== null &&
-                sourceStep.session_id === origin?.source_session_id &&
-                sameStep(sourceStep, step),
+            sourceStep.session_id === origin?.source_session_id && sameStep(sourceStep, step),
             "recorded step differs from its source step",
         );
     }

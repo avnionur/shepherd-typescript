@@ -60,6 +60,12 @@ test("an opening or retry cannot reuse a command identity retained by a handle c
         assert.equal(store.readOwner(createChildRunHandleId(commandId)).length, 0);
     }
     assert.equal(inspectChildRun(store, first.handle.handle_id).head_record_id, handed.record_id);
+    // A supervisor handoff forwards publication authority: an extension publication control.
+    const forwarded = inspectChildRun(store, first.handle.handle_id).proof;
+    assert.equal(forwarded.profile, "extension");
+    assert.equal(forwarded.reference_validated, false);
+    assert.deepEqual(forwarded.metadata.publication_controls, ["forwarding"]);
+    assert.equal(inspectChildRun(store, second.handle.handle_id).proof.profile, "runtime_only");
     assert.equal(
         inspectChildRun(store, second.handle.handle_id).head_record_id,
         discarded.record_id,

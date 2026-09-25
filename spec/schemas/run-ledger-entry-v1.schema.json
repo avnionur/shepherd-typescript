@@ -271,6 +271,9 @@
                         }
                     ]
                 },
+                "proof": {
+                    "$ref": "#/$defs/proofEnvelope"
+                },
                 "run_id": {
                     "minLength": 1,
                     "type": "string"
@@ -322,6 +325,7 @@
                 "cut",
                 "lifecycle",
                 "outcome",
+                "proof",
                 "run_id",
                 "settlements",
                 "status",
@@ -357,6 +361,124 @@
                 }
             ]
         },
+        "proofEnvelope": {
+            "additionalProperties": false,
+            "properties": {
+                "evidence_id": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "excluded_runtime_surfaces": {
+                    "items": {
+                        "enum": [
+                            "arbitrary_control_flow",
+                            "provider_sdk_behavior",
+                            "model_outputs",
+                            "prompt_cache_state",
+                            "shell_commands",
+                            "filesystem_mutation_correctness",
+                            "sandbox_implementations",
+                            "carrier_storage",
+                            "scheduling",
+                            "cancellation",
+                            "retries",
+                            "recovery",
+                            "multi_branch_replay"
+                        ],
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "metadata": {
+                    "additionalProperties": {
+                        "$ref": "#/$defs/jsonValue"
+                    },
+                    "type": "object"
+                },
+                "profile": {
+                    "enum": [
+                        "runtime_only",
+                        "reference_core_a",
+                        "core0",
+                        "core_a",
+                        "core0h",
+                        "extension"
+                    ],
+                    "type": "string"
+                },
+                "program_ref": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "proof_backed": {
+                    "type": "boolean"
+                },
+                "reference_validated": {
+                    "type": "boolean"
+                },
+                "schema_version": {
+                    "const": "shepherd_kernel_v3_reference.proof-envelope.v1",
+                    "type": "string"
+                },
+                "strength": {
+                    "enum": [
+                        "runtime_only",
+                        "reference_validated",
+                        "forward_simulation",
+                        "semantic_adequacy"
+                    ],
+                    "type": "string"
+                },
+                "theorem_ids": {
+                    "items": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "trace_ref": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "validator": {
+                    "const": "shepherd-kernel-v3-reference.proof-envelope.v1",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "evidence_id",
+                "excluded_runtime_surfaces",
+                "metadata",
+                "profile",
+                "program_ref",
+                "proof_backed",
+                "reference_validated",
+                "schema_version",
+                "strength",
+                "theorem_ids",
+                "trace_ref",
+                "validator"
+            ],
+            "type": "object"
+        },
         "provider": {
             "additionalProperties": false,
             "properties": {
@@ -387,7 +509,10 @@
                 "kind": {
                     "enum": [
                         "static",
-                        "program"
+                        "program",
+                        "anthropic",
+                        "openai",
+                        "openrouter"
                     ],
                     "type": "string"
                 },

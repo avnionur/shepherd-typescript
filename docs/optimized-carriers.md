@@ -24,8 +24,23 @@ and `discardScope`) takes the same carrier object and runs unchanged on every ba
 An optimized backend is opened only after a deterministic host probe inside the carrier's private
 staging directory succeeds. A refused probe throws `WorldCarrierError` with the configured
 `WORLD_CARRIER_BACKEND_UNAVAILABLE` code and a message naming the backend and configured reason.
-There is no fallback: a clone carrier never silently byte-copies, and an overlay carrier never
-silently copies custody.
+A carrier never degrades silently: a clone carrier never byte-copies, and an overlay carrier never
+copies custody, unless fallback selection was requested and recorded (below).
+
+## Backend selection
+
+Since 11.3.0 (workspace protocol v27, [#215](https://github.com/avnionur/shepherd-typescript/issues/215))
+`createReferenceCopyCarrier` also accepts `backendSelection: "strict" | "fallback"`; omitting it uses
+`workspaces.carrierBackends.selection.defaultMode`, which is `strict`, so the refusal above is
+unchanged by default. Under `fallback` the carrier probes the requested backend and then every later
+backend of `workspaces.carrierBackends.selection.fallbackOrder` (`overlay`, `clone`, `copy`; the
+order must name every backend once and end with the copy reference) and uses the first whose probe
+succeeds. Every carrier exposes `backendSelection: { mode, requested, used, attempts }`, where each
+attempt names the backend with its configured status and reason, and `backend` equals `used`.
+Custody descriptors keep recording the materializing backend, so custody created after a fallback is
+ordinary custody of the used backend. A probe failure other than the configured unavailability
+(for example unsafe staging) is never skipped. The device layer uses the same modes for its adapters
+([device layers](./device-layers.md#selection-and-fallback)).
 
 ## Identity equality
 
@@ -192,7 +207,11 @@ only their verified bytes and mode in the manifest.
 ## Non-claims
 
 - Captured revisions, selection staging, and user publication under the overlay backend remain full
-  verified copies; overlay scales branch custody storage only.
+  verified copies; overlay scales branch custody storage only. Carrier custody mounts exactly one
+  immutable lower revision. Stacked frozen layers, a depth bound with compaction, and
+  constant-time layered checkpoints are provided by the separate
+  [device layer](./device-layers.md), which carrier custody, `captureCustody`, and `forkScope` do
+  not use.
 - No Windows ReFS block cloning, btrfs or ZFS snapshot carriers, unprivileged or user-namespace
   overlay mounts, or distributed storage.
 - Cloning and overlay do not make capture kernel-atomic; captures stay quiescent verified scans and

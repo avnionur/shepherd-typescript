@@ -21,7 +21,7 @@ import {
     TraceStoreError,
     task,
 } from "../../src/index.ts";
-import { runProtocolConfig } from "../../src/protocol/config.ts";
+import { formalAssuranceProtocolConfig, runProtocolConfig } from "../../src/protocol/config.ts";
 
 class InterruptingStartStore extends SQLiteTraceStore {
     override appendDurableExecutionStart(
@@ -277,6 +277,22 @@ test("inspectDurableTaskExecution projects every incomplete recovery state", asy
             terminal_schema_ref: null,
         },
         outcome: null,
+        proof: {
+            evidence_id: null,
+            excluded_runtime_surfaces: [
+                ...formalAssuranceProtocolConfig.proofEnvelope.excludedRuntimeSurfaces,
+            ],
+            metadata: { claimed_proof_backed: false, reason: "production_runtime" },
+            profile: "runtime_only",
+            program_ref: null,
+            proof_backed: false,
+            reference_validated: false,
+            schema_version: formalAssuranceProtocolConfig.proofEnvelope.schemaVersion,
+            strength: "runtime_only",
+            theorem_ids: [],
+            trace_ref: null,
+            validator: formalAssuranceProtocolConfig.proofEnvelope.validator,
+        },
         run_id: "run:inspection:absent",
         settlements: [],
         status: "absent",

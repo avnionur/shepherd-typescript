@@ -46,17 +46,26 @@ encoding/identity surface; from 2.33.0 it and the root also export `CanonicalNes
 [canonical nesting bound](./canonical-records.md#nesting-bound). `./cli` contains the reusable runner and injectable I/O boundary.
 The root also exports `PublicError`, `PublicErrorCode`, and `isPublicError` for additive in-memory
 classification without adding error metadata to canonical records or CLI JSON.
-`./tasks` owns task/schema construction, task registry contracts/errors, and bounded task-ledger
-reads; it intentionally excludes providers, run execution/control, trace stores, workspace grants,
+`./tasks` owns task/schema construction, the reusable JSON Schema validator (`compileJSONSchema`,
+`JSONSchemaValidationError`, from 3.0.0; also exported from the root), task registry
+contracts/errors, and bounded task-ledger reads; it intentionally excludes providers, run execution/control, trace stores, workspace grants,
 and private migrations. `./providers` owns the provider-neutral contract, descriptors,
-artifact/usage response types, deterministic static adapter, and stable errors; execution, tools,
-credentials, and workspace authority remain excluded. Undeclared deep imports are rejected.
+artifact/usage response types, deterministic static adapter, program conversation provider, live
+adapters, provider conversations, tool-calling message types, and stable errors; execution and
+workspace authority remain excluded. From 6.0.0 `./applications` also owns the
+[tool-use loop](./tool-use-loop.md), its handler, supervised, and replay effect boundaries, and the
+configured meta-agent tool catalog, which act only with the store, handlers, world adapter, and
+root allocator the caller passes. Undeclared deep imports are rejected.
 
 `./effects` owns immutable effect intent/outcome builders, exact correlation validation, ordered
 exact-kind handler stacks, schema-validated typed payload adapters, their public types, and stable
 unhandled-effect errors. Handlers are
-caller-supplied in-process callbacks and dispatch is non-durable. The facade does not append trace
-records, materialize world changes, intercept execution, provide replay, or create a sandbox. It
+caller-supplied in-process callbacks and dispatch is non-durable. From 7.0.0 it also owns
+[effect compensation](./compensation.md): per-kind compensation registries, `compensateEffects`,
+`inspectEffectCompensation`, `deriveEffectCompensationId`, the compensation errors, and the
+compensation vocabulary constants; compensation appends its own records to a caller-supplied store.
+Apart from compensation records, the facade does not append trace records, materialize world
+changes, intercept execution, provide replay, or create a sandbox. It
 excludes formal proof/reference machinery, task/provider/run execution, trace persistence,
 workspace settlement, private validators, migrations, and protocol configuration.
 
@@ -113,7 +122,7 @@ migrations, and protocol configuration. See [trace subscriptions](./trace-subscr
 
 `./replay` is Node-only and owns replay sessions, coupled checkpoints, rewind and suffix replay,
 record-derived session inspection, checkpoint classification, divergence and dependency analysis,
-the cooperative and transparent process checkpoint adapters, generated replay constants, and the
+N-way lineage diff and first-regression search, the cooperative and transparent process checkpoint adapters, generated replay constants, and the
 replay error classes. Consumers supply an open trace store from `./trace`, providers from
 `./providers`, handler stacks from `./effects`, and task descriptors from `./tasks`; programs,
 replay policies, and provider-session adapters stay caller-supplied. Rewind and replay write only
@@ -144,19 +153,22 @@ store constructor, private codecs, migrations, and protocol configuration. See
 (`readApplicationProtocol`, `applicationProtocolId`, `deriveApplicationOwnerId`), manifests
 (`createApplicationManifest`, `validateApplicationManifest`, `retainApplicationManifest`,
 `inspectApplicationManifest`), the two-worker coding supervisor (`runCodingSupervisor`,
-`inspectCodingSupervisorRun`), the counterfactual workflow optimizer
-(`runCounterfactualOptimization`, `inspectCounterfactualOptimization`), trajectory compression
+`inspectCodingSupervisorRun`), the concurrent runtime supervisor (`runRuntimeSupervisor`,
+`inspectRuntimeSupervisorRun`, `createModelRuntimeSupervisorPolicy`), the counterfactual workflow optimizer
+(`runCounterfactualOptimization`, `inspectCounterfactualOptimization`,
+`createToolLoopCounterfactualProposer`), trajectory compression
 (`runTrajectoryCompression`, `inspectTrajectoryCompression`), the Tree-RL adapter
-(`selectTreeRlForkPoints`, `runTreeRlRollouts`, `computeTreeRlAdvantages`,
-`exportTreeRlTrainingBatch`, `inspectTreeRlRun`), offline evaluation
+(`runTreeRlRollouts`, `createMetaAgentTreeRlForkSelector`, `createDependencyTreeRlForkSelector`,
+`selectTreeRlForkPoints`, `computeTreeRlAdvantages`, `exportTreeRlTrainingBatch`,
+`exportTreeRlBatchToTrainer`, `inspectTreeRlRun`), offline evaluation
 (`runApplicationEvaluation`, `readApplicationEvaluationDefinition`, `compareApplicationBaseline`,
 `validateApplicationEvaluationReport`), the world adapter types,
 generated application constants, and the application error classes. Consumers supply an open trace
 store from `./trace`, task descriptors from `./tasks` or task values from `./delegation`, providers
 from `./providers`, and optionally a world adapter such as `createScopeWorldAdapter` from
 `./workspace`; policies, worker programs, workflow programs, evaluators, compressors,
-verifiers, Tree-RL provider factories, reward functions, and evaluation bindings stay
-caller-supplied. Every supervisor command and every compressor and verifier child
+verifiers, Tree-RL fork selectors, provider factories, reward functions, trainer adapters, and
+evaluation bindings stay caller-supplied. Every supervisor command and every compressor and verifier child
 runs through the delegation seam under the caller's root declaration, and every optimizer,
 compression, and Tree-RL rollout session runs through the replay seam without bound worlds or
 processes. The facade
@@ -211,9 +223,11 @@ this entry already exports.
 `./workspace` is Node-only and owns workspace initialization/bindings, copy and Git custody,
 changeset inspection, repository grants, placement/native-jail evidence, retained-world runners
 and execution journals, reference-copy scope forks, the scope world adapter (`createScopeWorldAdapter`), and exact prepare/select/apply/release/discard
-settlement operations. These
-APIs can read or mutate caller-selected filesystem/Git state, and native runners can launch a
-capability-probed process. Consumers must explicitly supply the required task, provider, run,
+settlement operations, and layered device-layer worlds (`openDeviceLayerWorld`, the built-in
+adapter factories, and `checkDeviceLayerConformance`, since 11.3.0). These
+APIs can read or mutate caller-selected filesystem/Git state, native runners can launch a
+capability-probed process, the overlay device-layer adapter mounts and unmounts under a
+caller-selected root, and the container adapter runs the configured container CLI. Consumers must explicitly supply the required task, provider, run,
 trace-store, carrier, runner, and grant handles from their owning domains. The facade excludes task
 registries, provider adapters, run builders/controls, the SQLite store constructor, low-level trace
 mutation, private codecs, migrations, and protocol configuration; it creates no ambient authority.
@@ -313,6 +327,7 @@ accepted in the test policy; other warnings fail bundling. Runtime execution and
 checks remain mandatory.
 
 This evidence covers the two stated Node fixtures, not arbitrary root-export combinations,
-browser targets, CommonJS bundles, all bundlers, bundled source-map portability, or optional
-provider/native adapters that do not yet exist. The unchanged unbundled package still has its
+browser targets, CommonJS bundles, all bundlers, bundled source-map portability, or the live
+provider and native or container adapters, whose network, helper, and daemon paths the bundle
+fixtures do not exercise. The unchanged unbundled package still has its
 separate installed source-map and all-export conformance checks.

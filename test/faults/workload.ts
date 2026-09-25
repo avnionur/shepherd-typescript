@@ -20,8 +20,18 @@ export const repositoryRoot = path.resolve(fileURLToPath(new URL("../../", impor
 /** Inclusive integer range from configuration. */
 export type IntegerRange = { readonly max: number; readonly min: number };
 
-/** Operations a killed child writer loops over. */
-export type FaultOperation = "append" | "backup" | "blob" | "cut" | "import" | "vacuum";
+/**
+ * Operations a killed child writer loops over. `compensation` compensates one prepared
+ * materialized effect per index and is driven only by the compensation kill suite.
+ */
+export type FaultOperation =
+    | "append"
+    | "backup"
+    | "blob"
+    | "compensation"
+    | "cut"
+    | "import"
+    | "vacuum";
 
 /** The `faults` section of `config/hardening-suites.config.json`. */
 export type FaultSettings = {
@@ -72,6 +82,8 @@ export type FaultSettings = {
         };
     };
     readonly processKill: {
+        /** Compensation kill suite: kill cycles and prepared compensable effects. */
+        readonly compensation: { readonly cycles: number; readonly effects: number };
         readonly cyclesPerOperation: number;
         readonly killDelayMilliseconds: IntegerRange;
         readonly operations: readonly FaultOperation[];
@@ -226,6 +238,8 @@ export type FaultProcessArguments = {
     readonly operation: FaultOperation;
     readonly seed: number;
     readonly stopAfterError?: boolean;
+    /** Row-world database of the `compensation` operation. */
+    readonly worldPath?: string;
 };
 
 /** Result of one child run. */
@@ -371,4 +385,12 @@ export function startedIndices(events: readonly FaultEvent[]): readonly number[]
 /** Indices whose operation returned before the kill. */
 export function completedIndices(events: readonly FaultEvent[]): ReadonlySet<number> {
     return new Set(events.flatMap((event) => (event.event === "done" ? [event.index] : [])));
+}
+
+/** Command identity of the replay session whose effects the `compensation` operation compensates. */
+export const COMPENSATION_SESSION_COMMAND = "session:fault:compensation";
+
+/** Command identity compensating one prepared effect. */
+export function compensationCommandFor(label: string, index: number): string {
+    return `compensate:fault:${label}:${index}`;
 }

@@ -7,6 +7,7 @@
             "tooling/api-reference/generator.ts",
             "tooling/benchmark/kernel-benchmark.ts",
             "tooling/benchmark/kernel-dataset.ts",
+            "tooling/benchmark/scope-benchmark-config.ts",
             "tooling/build/output.ts",
             "tooling/compatibility/api-surface.ts",
             "tooling/compatibility/policy.ts",

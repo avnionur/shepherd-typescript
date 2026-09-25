@@ -39,6 +39,11 @@ JSON schema: `https://avnionur.github.io/shepherd-typescript/schemas/cli-output-
 - `shepherd-ts store export`
 - `shepherd-ts store import`
 - `shepherd-ts store maintain`
+- `shepherd-ts replay log`
+- `shepherd-ts replay show`
+- `shepherd-ts replay diff`
+- `shepherd-ts scope list`
+- `shepherd-ts scope show`
 
 ## Options
 

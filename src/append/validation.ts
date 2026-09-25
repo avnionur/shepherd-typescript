@@ -30,6 +30,8 @@ export function normalizeAppendBatchDraft(value: unknown): AppendBatchDraft {
         groups: groups.map((groupValue, groupIndex) => {
             const path = `groups[${groupIndex}]`;
             const group = readDataObject(groupValue, groupKeys, ["owner_id", "records"], path);
+            // Owner paths are validated here so every reserved-owner guard reads text.
+            assertNonEmptyString(group.owner_id, `${path}.owner_id`);
             return {
                 ...(group.caused_by_record_ids === undefined
                     ? {}

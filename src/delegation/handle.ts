@@ -9,7 +9,12 @@ import {
     DELEGATION_STATUSES,
     RECORD_MODES,
 } from "../protocol/values.generated.ts";
-import type { ModelProvider, ModelRequest, ModelResponse } from "../provider/types.ts";
+import type {
+    ModelProvider,
+    ModelRequest,
+    ModelResponse,
+    ProviderKind,
+} from "../provider/types.ts";
 import { assertRecordId } from "../record/guards.ts";
 import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
 import type { RecordBody, RecordId } from "../record/types.ts";
@@ -806,7 +811,7 @@ function createProgramProvider(
     const descriptor = Object.freeze({
         capabilities: providerProtocolConfig.program.capabilities,
         id: handle.handle_id,
-        kind: providerProtocolConfig.program.kind,
+        kind: providerProtocolConfig.program.kind as ProviderKind,
         model: null,
     });
     return Object.freeze({

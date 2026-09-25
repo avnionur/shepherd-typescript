@@ -42,15 +42,22 @@ Shepherd treats agent execution as a first-class value. Four primitives define t
 | Primitive | Meaning | Main entry |
 | --- | --- | --- |
 | **Task** | A typed, content-addressed agent definition that can be passed, returned, revised, or synthesized | `./tasks`, `./delegation` |
-| **Effect** | A typed intent/outcome pair for every action, observable and interceptable before its outcome exists | `./effects`, `./supervision` |
+| **Effect** | A typed intent/outcome pair for every action, observable and interceptable before its outcome exists; compensable effects are compensated once, in reverse order, when a discard or rewind abandons them | `./effects`, `./supervision` |
 | **Scope** | An isolated agent-and-environment region supporting `emit`, `fork`, `merge`, and `discard` | `./scopes`, `./workspace` |
 | **Trace** | An immutable, content-addressed record graph with historical cuts, rewind, and suffix replay | `./trace`, `./replay` |
 
-On top of these, `./applications` implements the paper's meta-agents: a runtime coding supervisor,
-counterfactual replay optimization, trajectory compression, and Tree-RL rollouts.
+On top of these, `./applications` implements the paper's meta-agents: a concurrent runtime
+supervisor (with a round-based handle-level coding supervisor), counterfactual replay optimization, trajectory compression, and meta-agent-guided Tree-RL. A bounded
+[tool-use loop](docs/tool-use-loop.md) turns every model tool call into an effect intent through a
+handler stack, supervised dispatch, or replay session, and a configured catalog exposes observe,
+fork, discard, rewind, replay, read-trace, and diff to an LLM meta-agent.
 
-Everything runs offline and deterministically: providers are exact-cassette (`static`) or program
-serviced, and all results are this repository's measurements, never upstream numbers.
+The default path runs offline and deterministically: providers are exact-cassette (`static`) or
+program serviced. Configured live adapters for the Anthropic Messages API and OpenAI-compatible
+chat completions (OpenAI, OpenRouter) are opt-in and restore a byte-identical message prefix after
+rewind so the provider's prompt cache can serve replay ([live providers](docs/live-providers.md));
+they are tested against stub transports and have not been live-verified here. All results are this
+repository's measurements, never upstream numbers.
 
 ## Status
 
@@ -75,17 +82,17 @@ The 2026-09-25 audit of [paper v3](https://arxiv.org/abs/2605.10913) is tracked 
 
 | Paper section | Implemented | Known gaps |
 | --- | --- | --- |
-| §3.1 Tasks | Typed task values, substitution, revision, synthesis, nested meta-agents | Schemas limited to string, object, and void ([#205](https://github.com/avnionur/shepherd-typescript/issues/205)) |
-| §3.2 Effects | Intent/outcome records, handlers, live observation, allow/deny/replace/pause interception, irreversible approval frontier | No compensation handlers ([#209](https://github.com/avnionur/shepherd-typescript/issues/209)); no tool-use loop ([#206](https://github.com/avnionur/shepherd-typescript/issues/206)) |
-| §3.3 Scopes | `emit`, `fork`, `merge`, `discard`, nesting, parallel scheduling, copy/clone/overlay carriers | Single-layer overlay, no sandbox device layer ([#215](https://github.com/avnionur/shepherd-typescript/issues/215)) |
-| §3.4 Trace | Content-addressed graph, cuts, rewind, suffix replay, branch divergence | Per-step world checkpoints ([#210](https://github.com/avnionur/shepherd-typescript/issues/210)); N-way diff and trace CLI ([#217](https://github.com/avnionur/shepherd-typescript/issues/217)) |
-| §4, App. C Performance | Kernel benchmarks and SLOs on recorded hosts | Fork/revert and observer benchmarks ([#214](https://github.com/avnionur/shepherd-typescript/issues/214)); live providers and prompt-cache reuse ([#204](https://github.com/avnionur/shepherd-typescript/issues/204)) |
-| §5.1, App. E Supervisor | Two-worker supervisor with inject, handoff, discard-and-restart | Concurrent workers and per-tick decisions ([#211](https://github.com/avnionur/shepherd-typescript/issues/211)) |
-| §5.2, App. F CRO | Affected-suffix replay of caller-declared candidates | Edited step not re-executed ([#207](https://github.com/avnionur/shepherd-typescript/issues/207)); Algorithm 1 loop ([#212](https://github.com/avnionur/shepherd-typescript/issues/212)) |
-| §5.3 Tree-RL | Branched rollouts, advantages, `jsonl_v1` batches | Algorithm 2 and meta-agent fork selection ([#213](https://github.com/avnionur/shepherd-typescript/issues/213)) |
-| App. D Compression | Fork point and hint, verifier gate, best-of-N control | `fork_step` 0 and clamping ([#208](https://github.com/avnionur/shepherd-typescript/issues/208)) |
-| App. B Proof envelopes | Core-0/Core-A classification; Core-0H fenced; Lean external | Runs do not carry envelopes ([#216](https://github.com/avnionur/shepherd-typescript/issues/216)) |
-| App. A.2, §6 Future work | Classified research backlog | [#218](https://github.com/avnionur/shepherd-typescript/issues/218) |
+| §3.1 Tasks | Typed task values, substitution, revision, synthesis, nested meta-agents; string, number, integer, boolean, null, array, enum/literal, union, and optional-field schemas with path-level refusal of invalid values (3.0.0, [#205](https://github.com/avnionur/shepherd-typescript/issues/205)) | No constraint keywords (`minimum`, `minLength`), arbitrary-key records, or recursive schemas |
+| §3.2 Effects | Intent/outcome records, handlers, live observation, allow/deny/replace/pause interception, irreversible approval frontier; a tool-use loop in which every model tool call is a schema-validated `ToolCallIntent`-style effect with deny-before-outcome and byte-identical replay, plus substrate-native meta-agent tools, end-to-end tested on the Figure 1 fork/observe/revert/retry scenario with a scripted model (6.0.0, [#206](https://github.com/avnionur/shepherd-typescript/issues/206)); per-kind compensation handlers invoked exactly once, in reverse materialization order, when a scope discard or a replay rewind/replay abandons a successful compensable effect, with retained intent/attempt/outcome records and a SIGKILL fault suite (7.0.0, [#209](https://github.com/avnionur/shepherd-typescript/issues/209)); exploratory replay branches (Tree-RL, CRO, compression, the meta-agent `replay` tool) declare the `retain` source disposition and compensate nothing, while abandoning rewinds keep the configured `compensate` default (12.0.0) | Compensation relies on idempotent handlers (no lease; concurrent triggers can both invoke) and has no waiver for a permanently failing compensation; no live model has run the loop here (no credentials) |
+| §3.3 Scopes | `emit`, `fork`, `merge`, `discard`, nesting, parallel scheduling, copy/clone/overlay carriers with opt-in recorded fallback selection; a pluggable device layer whose checkpoints freeze the writable layer as a named lower layer under a configured depth bound with compaction, with copy, clone, stacked-overlay, and reference Docker adapters and a conformance kit; overlay checkpoints measured constant in world size (2.1–3.1 ms over 1–128 MiB on the Linux lane) (11.3.0, [#215](https://github.com/avnionur/shepherd-typescript/issues/215)) | Carrier custody, `forkScope`, and replay world images do not use device layers (still verified full copies); no E2B/Modal/Daytona or other remote sandbox adapter; device-layer worlds are process-scoped |
+| §3.4 Trace | Content-addressed graph, cuts, rewind, suffix replay, branch divergence; configured automatic checkpoint policies (per provider step, per effect, every N steps) make every checkpointed step of a world-bound session a byte-equivalent rewind and replay target, with measured storage growth per checkpoint (8.0.0, [#210](https://github.com/avnionur/shepherd-typescript/issues/210)); N-way diff of any sessions against their common lineage ancestor by captured effects, deterministic bisect/linear first-regression search over a session lineage, and read-only `shepherd-ts replay log/show/diff` and `scope list/show` (9.1.0, [#217](https://github.com/avnionur/shepherd-typescript/issues/217)); rewind and replay branches take a configured `sourceDisposition` (`compensate` or `retain`, replay protocol v3, 12.0.0) | Uncheckpointed step boundaries of world-bound sessions stay refused; each checkpoint rewrites the full world manifest; scopes are listed and shown with lineage but not diffed; the N-way diff assigns no divergence causes |
+| §4, App. C Performance | Kernel benchmarks and SLOs on recorded hosts; `pnpm bench:scopes` measures scope fork/revert (`forkScope`/`discardScope`) latency over three world sizes and every conformant carrier, K=4 branch disk and RSS, a per-write mutation-size sweep with independent hash checks of every revert, and per-event record and observe overhead through 200 steps with 0, 1, and 4 observers, with raw samples and per-host-class SLOs (`pnpm check:scopes`) for macOS APFS (copy, clone) and a privileged Linux XFS container (copy, clone, overlay) (11.2.0, [#214](https://github.com/avnionur/shepherd-typescript/issues/214)); Anthropic Messages and OpenAI-compatible (OpenRouter) live adapters with `cache_control` on the last prefix message, cache read/creation tokens in usage, and provider conversations that resend a byte-identical prefix after rewind (5.1.0, [#204](https://github.com/avnionur/shepherd-typescript/issues/204)) | Fork latency grows with world size on every backend (each fork durably publishes custody and re-verifies custody and origin before completing), unlike the paper's constant-time overlay fork; device-layer checkpoints are constant in world size and flat through 48 stacked layers on the Linux overlay lane (`pnpm bench:device-layers`, [#215](https://github.com/avnionur/shepherd-typescript/issues/215)); no bare-metal Linux or x86-64 measurement; no live cache-hit rate measured (opt-in live test not run without credentials) |
+| §5.1, App. E Supervisor | Concurrent runtime supervisor: workers run in forked custody while a supervisor ticks over their live streams and applies per-agent batched `none`/`inject`/`handoff`/`discard` decisions validated against the pinned Appendix E schema; inject between turns with a byte-identical prefix, cross-agent handoff from the leader's custody, a provider-backed JSON-mode policy, and crash recovery of mid-run interventions (11.1.0, [#211](https://github.com/avnionur/shepherd-typescript/issues/211)); the round-based handle supervisor remains | Policy and workers ran only against scripted providers; no CooperBench pair rate measured |
+| §5.2, App. F CRO | Algorithm 1: per-example train and dev baselines, N proposer iterations of k edits with fix and guard sets (caller-supplied proposer or a replayable tool-loop proposer with `read_effect_trace`/`grep_effect_traces`), reflection-schema and reflection-contract admission, counterfactual replay from the first affected step (`request` or `downstream` scope), the fractional fix/guard gate, dev evaluation with epsilon promotion into a graduate-only pool, dev selection, and a per-proposer-session computation-reuse ratio in the manifest (11.0.0, [#212](https://github.com/avnionur/shepherd-typescript/issues/212)) | Edits are declared data applied by caller code; no live provider ran the proposer; reuse counts replay steps, not provider cache hits |
+| §5.3 Tree-RL | Algorithm 2 over a batch of prompts with G graded roots each: a meta-agent (or deterministic) fork selector returns `{branch_turn, tool_call, reason}` clamped to `[1, T-2]`, the tool call seeds one of K concurrent branches, and inter-root/intra-tree advantages with per-group standardization are attributed per action in the `jsonl_v2` batch, with a trainer-export adapter seam (10.0.0, [#213](https://github.com/avnionur/shepherd-typescript/issues/213)); world- and process-bound roots fork at checkpointed boundaries (8.0.0, [#210](https://github.com/avnionur/shepherd-typescript/issues/210)) | No trainer or policy update and no learning result; meta-agent selector exercised only with fixture providers |
+| App. D Compression | Fork point and hint, verifier gate, best-of-N control; fork step 0 restarts with the hint, out-of-range steps clamped to `[0, n - 1]` by configured policy and retained, missing fork step settles `no_prune`; rescue counts in the evaluation report (5.0.0, [#208](https://github.com/avnionur/shepherd-typescript/issues/208)) | No task-level source success judge, so no compression rescue is measured; world-bound sources prune only at checkpointed fork points (8.0.0, [#210](https://github.com/avnionur/shepherd-typescript/issues/210)) |
+| App. B Proof envelopes | Core-0/Core-A classification; Core-0H fenced; Lean external; run, replay, and child-run inspections carry a `proof` envelope (`runtime_only` by default, imported claims only as `claimed_proof_backed` metadata, forwarding/delay/fork/replay as `extension`) and eligible static replay sessions lower into Core-A records checked by the reference machine (9.0.0, [#216](https://github.com/avnionur/shepherd-typescript/issues/216)) | Lowering covers finished effect-only root sessions and is reference-validated, never proof-backed; imported claims are never verified; no Lean build runs here |
+| App. A.2, §6 Future work | Research notes for five directions (interpretability probes, reversible continual learning, substrate-native post-training actions, trace-to-workflow compression, safety deployment profile) in [`.plan/research/`](./.plan/research/README.md) (11.3.1, [#218](https://github.com/avnionur/shepherd-typescript/issues/218)) | Notes only: not normative, no results, no implementation issue until reviewed |
 
 ## Requirements
 
@@ -199,17 +206,17 @@ More examples:
 | Entry | Purpose |
 | --- | --- |
 | `.` | Complete public API |
-| `./tasks` | Task and schema builders, task registry, task ledgers |
-| `./effects` | Effect intent/outcome builders, correlation, ordered and typed handlers |
-| `./providers` | Provider contract and deterministic static provider |
+| `./tasks` | Task and schema builders, `compileJSONSchema` validator, task registry, task ledgers |
+| `./effects` | Effect intent/outcome builders, correlation, ordered and typed handlers, compensation registries and inspection |
+| `./providers` | Provider contract, deterministic static provider, program conversation provider, live Anthropic and OpenAI-compatible adapters with tool calls, provider conversations |
 | `./runs` | Offline and durable execution, budgets, cancellation, recovery, pause/resume |
 | `./trace` | `SQLiteTraceStore`, cuts, slices, projections, interchange, trace revisions |
 | `./scopes` | Scope registration, writer fencing, emission, inspection, recovery classification |
-| `./workspace` | Workspace initialization, bindings, carriers, capture, settlement, scope fork, merge, and discard |
+| `./workspace` | Workspace initialization, bindings, carriers, capture, settlement, scope fork, merge, and discard, layered device-layer worlds and adapters |
 | `./supervision` | Trace subscriptions, supervised effect interception, approvals, worker control |
 | `./replay` | Replay sessions, coupled checkpoints, rewind, suffix replay, divergence analysis |
 | `./delegation` | Task values, child run handles, delegated authority, supervisor operations |
-| `./applications` | Coding supervisor, counterfactual optimizer, trajectory compression, Tree-RL, evaluation |
+| `./applications` | Runtime and coding supervisors, counterfactual optimizer, trajectory compression, Tree-RL, evaluation, tool-use loop, meta-agent tools |
 | `./operations` | Secrets and retention, backup and restore, storage interfaces, telemetry |
 | `./canonical` | Canonical encoding and record identity |
 | `./cli` | Reusable CLI runner with injectable I/O |
@@ -228,18 +235,20 @@ The [documentation index](./docs/README.md) lists every guide. Starting points:
   [SQLite trace store](./docs/sqlite-trace-store.md), [cuts and slices](./docs/trace-queries.md),
   [interchange](./docs/trace-interchange.md), [vocabulary](./CONTEXT.md)
 - **Tasks and runs:** [task descriptors](./docs/task-descriptors.md),
+  [JSON Schema validation](./docs/json-schema-validation.md),
   [durable execution](./docs/durable-task-execution.md),
   [execution control](./docs/durable-execution-control.md),
-  [effect handlers](./docs/effect-handlers.md)
+  [effect handlers](./docs/effect-handlers.md), [effect compensation](./docs/compensation.md)
 - **Scopes and worlds:** [scope fork](./docs/scope-fork.md),
   [merge and discard](./docs/scope-merge-discard.md), [scope laws](./docs/scope-laws.md),
-  [optimized carriers](./docs/optimized-carriers.md),
+  [optimized carriers](./docs/optimized-carriers.md), [device layers](./docs/device-layers.md),
   [native jail execution](./docs/native-jail-execution.md)
 - **Supervision and replay:** [trace subscriptions](./docs/trace-subscriptions.md),
   [supervised effects](./docs/supervised-effects.md),
   [replay sessions](./docs/replay-sessions.md), [rewind and replay](./docs/rewind-and-replay.md),
   [task values](./docs/task-values.md), [supervisor operations](./docs/supervisor-operations.md)
-- **Research applications:** [coding supervisor](./docs/coding-supervisor.md),
+- **Research applications:** [runtime supervisor](./docs/runtime-supervisor.md),
+  [coding supervisor](./docs/coding-supervisor.md),
   [counterfactual optimization](./docs/counterfactual-optimization.md),
   [trajectory compression](./docs/trajectory-compression.md),
   [Tree-RL rollouts](./docs/tree-rl-rollouts.md),
@@ -267,6 +276,7 @@ node src/cli/main.ts     # run the CLI from source
 | `pnpm verify:serial` | `pnpm verify` without native-probe process contention |
 | `pnpm verify:release` | Adds SLO checks, byte-identical double build and pack, SBOM, and unsigned provenance in `release/` |
 | `pnpm bench:kernel`, `pnpm check:slo` | Record kernel benchmarks; check budgets for the current host class |
+| `pnpm bench:scopes`, `pnpm check:scopes`, `pnpm bench:scopes:linux` | Record scope fork/revert, storage, and observation benchmarks; check their budgets; record the privileged Linux XFS container lane |
 | `pnpm fuzz` | Extended fuzz tier (`--seed`, `--iterations`, `--target`, `--json`) |
 | `pnpm test:soak --duration 600` | Mixed soak for a wall-clock budget |
 | `pnpm test:faults:volume` | Real `ENOSPC` on a macOS disk image or, as root, a Linux ext4 loop image |

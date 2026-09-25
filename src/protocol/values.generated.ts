@@ -276,6 +276,12 @@ export const WORLD_ENTRY_KINDS = ["directory", "file", "symlink"] as const;
 /** Configured selectable world-carrier backends. @public */
 export const WORLD_CARRIER_BACKENDS = ["copy", "clone", "overlay"] as const;
 
+/** Configured backend and device-layer adapter selection modes. @public */
+export const BACKEND_SELECTION_MODES = ["fallback", "strict"] as const;
+
+/** Configured built-in device-layer adapter names. @public */
+export const DEVICE_LAYER_ADAPTERS = ["clone", "container", "copy", "overlay"] as const;
+
 /** Configured retained-world runner enforcement classifications. @public */
 export const RETAINED_WORLD_ENFORCEMENT_KINDS = ["advisory", "native-syscall-deny"] as const;
 
@@ -663,11 +669,54 @@ export const SUPERVISION_LIMITS = Object.freeze({
 /** Configured replay evidence compatibility namespace. @public */
 export const REPLAY_COMPATIBILITY_VERSION = "shepherd.replay.v1" as const;
 
+/** Configured provider kinds ordered static, program, then live kinds. @public */
+export const PROVIDER_KINDS = ["static", "program", "anthropic", "openai", "openrouter"] as const;
+
+/** Configured provider-neutral message roles ordered user then assistant. @public */
+export const MODEL_MESSAGE_ROLES = ["user", "assistant"] as const;
+
+/** Configured provider-neutral message content block types ordered text, tool use, tool result. @public */
+export const MODEL_CONTENT_BLOCK_TYPES = ["text", "tool_use", "tool_result"] as const;
+
+/** Configured tool-use loop statuses ordered completed then turn limit. @public */
+export const TOOL_LOOP_STATUSES = ["completed", "turn_limit"] as const;
+
+/** Configured tool-call dispositions ordered materialized, denied, invalid, failed. @public */
+export const TOOL_CALL_DISPOSITIONS = ["materialized", "denied", "invalid", "failed"] as const;
+
 /** Configured canonical replay record version. @public */
 export const REPLAY_RECORD_VERSION = 1 as const;
 
 /** Configured replay session modes ordered root, rewind, replay. @public */
 export const REPLAY_MODES = ["root", "rewind", "replay"] as const;
+
+/** Configured reversibility tiers whose materialized effects are compensated. @public */
+export const EFFECT_COMPENSABLE_TIERS = ["compensable"] as const;
+
+/** Configured compensation evidence kinds ordered replay step then supervised dispatch. @public */
+export const EFFECT_COMPENSATION_EVIDENCE_KINDS = ["replay_step", "supervised_dispatch"] as const;
+
+/** Configured compensation record phases ordered intent, attempt, outcome. @public */
+export const EFFECT_COMPENSATION_PHASES = ["intent", "attempt", "outcome"] as const;
+
+/** Configured compensation outcomes ordered compensated then failed. @public */
+export const EFFECT_COMPENSATION_OUTCOMES = ["compensated", "failed"] as const;
+
+/** Configured derived compensation statuses ordered pending, uncertain, failed, compensated. @public */
+export const EFFECT_COMPENSATION_STATUSES = [
+    "pending",
+    "uncertain",
+    "failed",
+    "compensated",
+] as const;
+
+/** Configured compensation triggers ordered scope discard, replay rewind, replay replay, command. @public */
+export const EFFECT_COMPENSATION_TRIGGERS = [
+    "scope_discard",
+    "replay_rewind",
+    "replay_replay",
+    "command",
+] as const;
 
 /** Configured replay step kinds ordered provider then effect. @public */
 export const REPLAY_STEP_KINDS = ["provider", "effect"] as const;
@@ -715,6 +764,17 @@ export const REPLAY_CHECKPOINT_EVIDENCE_STATUSES = [
     "unavailable",
 ] as const;
 
+/** Configured automatic checkpoint policies ordered none, provider step, effect step, every N steps. @public */
+export const REPLAY_CHECKPOINT_POLICIES = [
+    "none",
+    "provider_step",
+    "effect_step",
+    "every_n_steps",
+] as const;
+
+/** Configured branch source dispositions ordered compensate, retain. @public */
+export const REPLAY_SOURCE_DISPOSITIONS = ["compensate", "retain"] as const;
+
 /** Configured session terminal statuses ordered finished, failed, cancelled, rewound. @public */
 export const REPLAY_TERMINAL_STATUSES = ["finished", "failed", "cancelled", "rewound"] as const;
 
@@ -736,6 +796,9 @@ export const REPLAY_DIVERGENCE_STATUSES = [
 
 /** Configured divergence causes ordered root, propagated, unexplained. @public */
 export const REPLAY_DIVERGENCE_CAUSES = ["root", "propagated", "unexplained"] as const;
+
+/** Configured first-regression search strategies ordered bisect, linear. @public */
+export const REPLAY_REGRESSION_STRATEGIES = ["bisect", "linear"] as const;
 
 /** Configured process checkpoint backends ordered cooperative then transparent. @public */
 export const REPLAY_PROCESS_BACKENDS = ["cooperative", "transparent"] as const;
@@ -858,12 +921,46 @@ export const APPLICATION_SUPERVISION_WORKER_STATUSES = [
     "handed_off",
 ] as const;
 
-/** Configured counterfactual optimizer record phases ordered opened then candidate. @public */
-export const APPLICATION_CRO_PHASES = ["opened", "candidate"] as const;
+/** Configured Appendix E runtime supervisor decision actions ordered none, inject, handoff, discard. @public */
+export const APPLICATION_RUNTIME_SUPERVISION_ACTIONS = [
+    "none",
+    "inject",
+    "handoff",
+    "discard",
+] as const;
 
-/** Configured counterfactual candidate statuses ordered proposed, evaluated, promoted, rejected. @public */
+/** Configured runtime supervision record phases ordered opened, tick, settled, attempt, turn, completed. @public */
+export const APPLICATION_RUNTIME_SUPERVISION_PHASES = [
+    "opened",
+    "tick",
+    "settled",
+    "attempt",
+    "turn",
+    "completed",
+] as const;
+
+/** Configured runtime supervisor worker attempt causes ordered start, handoff, discard. @public */
+export const APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_CAUSES = [
+    "start",
+    "handoff",
+    "discard",
+] as const;
+
+/** Configured runtime supervisor worker attempt statuses ordered running, completed, turn limit, failed, aborted. @public */
+export const APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_STATUSES = [
+    "running",
+    "completed",
+    "turn_limit",
+    "failed",
+    "aborted",
+] as const;
+
+/** Configured counterfactual optimizer record phases ordered opened, proposal, candidate, selection. @public */
+export const APPLICATION_CRO_PHASES = ["opened", "proposal", "candidate", "selection"] as const;
+
+/** Configured counterfactual candidate outcome statuses ordered archived, evaluated, promoted, rejected. @public */
 export const APPLICATION_CRO_CANDIDATE_STATUSES = [
-    "proposed",
+    "archived",
     "evaluated",
     "promoted",
     "rejected",
@@ -871,6 +968,15 @@ export const APPLICATION_CRO_CANDIDATE_STATUSES = [
 
 /** Configured counterfactual comparison baseline kinds. @public */
 export const APPLICATION_CRO_BASELINE_KINDS = ["full_replay"] as const;
+
+/** Configured counterfactual candidate edit scopes ordered request then downstream. @public */
+export const APPLICATION_CRO_EDIT_SCOPES = ["request", "downstream"] as const;
+
+/** Configured counterfactual example splits ordered train then dev. @public */
+export const APPLICATION_CRO_SPLITS = ["train", "dev"] as const;
+
+/** Configured counterfactual example result roles ordered fix, guard, dev, train. @public */
+export const APPLICATION_CRO_EXAMPLE_ROLES = ["fix", "guard", "dev", "train"] as const;
 
 /** Configured trajectory compression record phases ordered opened, candidate, outcome. @public */
 export const APPLICATION_COMPRESSION_PHASES = ["opened", "candidate", "outcome"] as const;
@@ -895,17 +1001,37 @@ export const APPLICATION_COMPRESSION_VERDICTS = ["accepted", "rejected"] as cons
 /** Configured trajectory compression comparison baseline kinds. @public */
 export const APPLICATION_COMPRESSION_BASELINE_KINDS = ["no_compression"] as const;
 
-/** Configured Tree-RL record phases ordered opened, rollout, batch. @public */
-export const APPLICATION_TREE_RL_PHASES = ["opened", "rollout", "batch"] as const;
+/** Configured trajectory compression fork-step policies ordered clamp then reject. @public */
+export const APPLICATION_COMPRESSION_FORK_STEP_POLICIES = ["clamp", "reject"] as const;
+
+/** Configured Tree-RL record phases ordered opened, root, rollout, batch. @public */
+export const APPLICATION_TREE_RL_PHASES = ["opened", "root", "rollout", "batch"] as const;
+
+/** Configured Tree-RL tree member kinds ordered root then branch. @public */
+export const APPLICATION_TREE_RL_MEMBER_KINDS = ["root", "branch"] as const;
+
+/** Configured Tree-RL per-action advantage segments ordered prefix, suffix, flat. @public */
+export const APPLICATION_TREE_RL_ACTION_SEGMENTS = ["prefix", "suffix", "flat"] as const;
+
+/** Configured Tree-RL advantage normalizations ordered none then per-group standardization. @public */
+export const APPLICATION_TREE_RL_NORMALIZATIONS = ["none", "group_std"] as const;
+
+/** Configured Tree-RL batch and concurrency bounds. @public */
+export const APPLICATION_TREE_RL_LIMITS = Object.freeze({
+    defaultConcurrency: 4,
+    maxConcurrency: 16,
+    maxGroupSize: 16,
+    maxPrompts: 16,
+} as const);
 
 /** Configured Tree-RL rollout statuses ordered completed then failed. @public */
 export const APPLICATION_TREE_RL_ROLLOUT_STATUSES = ["completed", "failed"] as const;
 
 /** Configured Tree-RL comparison baseline kinds. @public */
-export const APPLICATION_TREE_RL_BASELINE_KINDS = ["single_rollout"] as const;
+export const APPLICATION_TREE_RL_BASELINE_KINDS = ["flat_grpo"] as const;
 
 /** Configured Tree-RL training batch formats. @public */
-export const APPLICATION_TREE_RL_BATCH_FORMATS = ["jsonl_v1"] as const;
+export const APPLICATION_TREE_RL_BATCH_FORMATS = ["jsonl_v2"] as const;
 
 /** Configured coding supervisor comparison baseline kinds. @public */
 export const APPLICATION_SUPERVISION_BASELINE_KINDS = ["no_supervision"] as const;
@@ -921,7 +1047,7 @@ export const APPLICATION_EVALUATION_METRICS = [
 ] as const;
 
 /** Configured application evaluation report version. @public */
-export const APPLICATION_EVALUATION_REPORT_VERSION = 1 as const;
+export const APPLICATION_EVALUATION_REPORT_VERSION = 2 as const;
 
 /** Configured application evaluation definition bounds. @public */
 export const APPLICATION_EVALUATION_LIMITS = Object.freeze({
@@ -945,6 +1071,8 @@ export const APPLICATION_LIMITS = Object.freeze({
     maxSchemaBytes: 16384,
     maxSeeds: 16,
     maxSurfaces: 32,
+    maxTickIntervalMilliseconds: 600000,
+    maxTicks: 4096,
     maxToolBytes: 16384,
     maxWorkers: 8,
     minWorkers: 2,

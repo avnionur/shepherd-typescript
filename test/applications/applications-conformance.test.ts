@@ -123,15 +123,16 @@ function inspectAll(store: SQLiteTraceStore, report: ApplicationEvaluationReport
         ...(report.baselines[0]?.evidence ?? []),
     ];
     const sessions = [
-        optimizer.baseline_session_id,
-        ...optimizer.candidates.flatMap((candidate) => [
-            candidate.outcome?.branch_session_id as string,
-            candidate.outcome?.baseline?.session_id as string,
-        ]),
+        ...optimizer.examples.map((example) => example.session_id),
+        ...optimizer.candidates.flatMap((candidate) =>
+            [...candidate.targeted, ...(candidate.dev ?? []), ...(candidate.train ?? [])].flatMap(
+                (result) => [result.session_id, result.baseline?.session_id as string],
+            ),
+        ),
         compression.source_session_id,
         compression.compression.rewound?.restore?.rewind_session_id as string,
         compression.outcome?.result_session_id as string,
-        treeRl.source_session_id,
+        ...treeRl.roots.map((root) => root.root_session_id),
         ...treeRl.rollouts.map((rollout) => rollout.replay_session_id),
     ];
     return {
@@ -376,31 +377,49 @@ test("research applications conformance: four applications in one store, visible
         ["world_discard", "world_discard", "world_fork", "world_fork", "world_fork", "world_merge"],
     );
 
-    // Counterfactual optimizer: every candidate branch is restored from its target prefix and a
-    // single passing candidate is promoted.
+    // Counterfactual optimizer: every candidate example branch is restored from its target prefix
+    // on its parent's session for that example, and the promoted candidate is selected.
     const optimizer = inspectCounterfactualOptimization(
         imported,
         report.runs[1]?.application_id as string,
     );
-    assert.equal(optimizer.candidates.length, 2);
+    assert.equal(optimizer.candidates.length, 3);
+    const baselineSessions = new Set(optimizer.examples.map((example) => example.session_id));
     for (const candidate of optimizer.candidates) {
-        const outcome = candidate.outcome;
-        assert.ok(outcome);
-        assert.equal(outcome.target.source_session_id, optimizer.baseline_session_id);
-        assertBranchOrigin(
-            imported,
-            outcome.branch_session_id,
-            outcome.target,
-            `candidate ${outcome.candidate_id}`,
+        const parent = optimizer.candidates.find(
+            (entry) => entry.candidate_id === candidate.parent_candidate_id,
         );
-        // The full-replay baseline starts at step zero of the same source.
-        const full = inspectReplaySession(imported, {
-            sessionId: outcome.baseline?.session_id as string,
-        });
-        assert.equal(full.origin?.source_session_id, optimizer.baseline_session_id);
-        assert.equal(full.origin?.target_step_count, 0);
+        const parentSessions = new Set(
+            parent === undefined
+                ? baselineSessions
+                : [...parent.targeted, ...(parent.dev ?? []), ...(parent.train ?? [])].map(
+                      (result) => result.session_id,
+                  ),
+        );
+        for (const result of [
+            ...candidate.targeted,
+            ...(candidate.dev ?? []),
+            ...(candidate.train ?? []),
+        ]) {
+            assert.ok(parentSessions.has(result.target.source_session_id));
+            assertBranchOrigin(
+                imported,
+                result.session_id,
+                result.target,
+                `candidate ${candidate.candidate_id} on ${result.example_id}`,
+            );
+            // The full-replay baseline starts at step zero of the same source.
+            const full = inspectReplaySession(imported, {
+                sessionId: result.baseline?.session_id as string,
+            });
+            assert.equal(full.origin?.source_session_id, result.target.source_session_id);
+            assert.equal(full.origin?.target_step_count, 0);
+        }
     }
-    assert.notEqual(optimizer.promotion, null);
+    assert.equal(
+        optimizer.selection?.selected_candidate_id,
+        optimizer.candidates.find((candidate) => candidate.status === "promoted")?.candidate_id,
+    );
 
     // Trajectory compression: the rewind and the compressed suffix are restored from the
     // compressor's fork point on the source.
@@ -428,14 +447,14 @@ test("research applications conformance: four applications in one store, visible
             (compression.outcome?.original_step_count as number),
     );
 
-    // Tree-RL: every rollout is restored from its trace-selected fork point, and the training batch
+    // Tree-RL: every rollout is restored from its root's selected fork point, and the training batch
     // digest reads identically.
     const treeRl = inspectTreeRlRun(imported, report.runs[3]?.application_id as string);
     for (const rollout of treeRl.rollouts) {
         assertBranchOrigin(
             imported,
             rollout.replay_session_id,
-            { ...rollout.fork_point, source_session_id: treeRl.source_session_id },
+            { ...rollout.fork_point, source_session_id: rollout.root_session_id },
             rollout.rollout_id,
         );
     }

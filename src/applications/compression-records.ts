@@ -9,6 +9,7 @@ import {
     APPLICATION_COMPRESSION_BASELINE_KINDS,
     APPLICATION_COMPRESSION_CANDIDATE_KINDS,
     APPLICATION_COMPRESSION_CANDIDATE_STATUSES,
+    APPLICATION_COMPRESSION_FORK_STEP_POLICIES,
     APPLICATION_COMPRESSION_OUTCOMES,
     APPLICATION_COMPRESSION_PHASES,
     APPLICATION_COMPRESSION_VERDICTS,
@@ -19,6 +20,7 @@ import {
 } from "../protocol/values.generated.ts";
 import { assertRecordId } from "../record/guards.ts";
 import type { RecordBody } from "../record/types.ts";
+import type { ReplaySessionInspection } from "../replay/types.ts";
 import {
     assertPrefixedDigest,
     assertScopeText,
@@ -32,7 +34,9 @@ import type {
     TrajectoryCompressionOutcomeRecord,
     TrajectoryCompressionProposal,
     TrajectoryCompressionVerdict,
+    TrajectoryForkClamp,
     TrajectoryForkPoint,
+    TrajectoryForkStepPolicy,
     TrajectoryHint,
     TrajectoryRestoreConstituent,
     TrajectoryRestoreEvidence,
@@ -56,11 +60,13 @@ const [OPENED_PHASE, CANDIDATE_PHASE, OUTCOME_PHASE] = APPLICATION_COMPRESSION_P
 const [COMPRESSION_CANDIDATE, CONTROL_CANDIDATE] = APPLICATION_COMPRESSION_CANDIDATE_KINDS;
 const [, , UNAVAILABLE_CLASSIFICATION] = REPLAY_CHECKPOINT_CLASSIFICATIONS;
 const [ACCEPTED] = APPLICATION_COMPRESSION_VERDICTS;
+const [CLAMP_POLICY] = APPLICATION_COMPRESSION_FORK_STEP_POLICIES;
 const CANDIDATE_KEYS = [
     "candidate",
     "compressor_handle_id",
     "cost",
     "failure",
+    "fork_clamp",
     "fork_id",
     "fork_point",
     "hint_digest",
@@ -224,6 +230,7 @@ export function readCompressionCandidateBody(body: RecordBody): CompressionCandi
                     ? null
                     : Object.freeze({ ...readApplicationCosts(fields.cost) }),
             failure: fields.failure === null ? null : readFailure(fields.failure),
+            fork_clamp: fields.fork_clamp === null ? null : readForkClamp(fields.fork_clamp),
             fork_point: fields.fork_point === null ? null : readForkPoint(fields.fork_point),
             reason: fields.reason === null ? null : readApplicationReason(fields.reason, "reason"),
             restore: fields.restore === null ? null : readRestore(fields.restore),
@@ -238,9 +245,16 @@ export function readCompressionCandidateBody(body: RecordBody): CompressionCandi
                 `${String(fields.candidate)}:${String(fields.status)}:${fields.outcome ?? ""}`
             ];
         const restore = record.restore;
+        const clamp = record.fork_clamp;
+        const forkPoint = record.fork_point;
         if (
             [
                 fields.phase !== CANDIDATE_PHASE,
+                clamp !== null &&
+                    (forkPoint === null ||
+                        (clamp.proposed_step_index < 0
+                            ? forkPoint.step_index !== 0
+                            : clamp.proposed_step_index <= forkPoint.step_index)),
                 expected === undefined,
                 [...(expected ?? "")].some(
                     (flag, index) => flag !== "?" && flag !== presence[index],
@@ -326,16 +340,88 @@ export function readCompressionOutcomeBody(body: RecordBody): CompressionOutcome
 /**
  * Validates one untrusted compressor proposal against the closed fork-point and hint grammar.
  *
+ * Both fields are optional. An absent or null fork point, or a fork point without `step_index`, is
+ * a missing fork step and validates to a null fork point (Appendix D.6: it settles `no_prune`). A
+ * present step index is any safe integer; range is resolved by {@link resolveTrajectoryProposal}.
+ *
  * @internal
  */
 export function readTrajectoryProposal(value: unknown): TrajectoryCompressionProposal {
-    const fields = readScopeDataObject(value, ["fork_point", "hint"], "proposal");
-    const forkPoint = fields.fork_point === null ? null : readForkPoint(fields.fork_point);
-    const hint = fields.hint === null ? null : readHint(fields.hint);
-    if (hint !== null && forkPoint === null) {
-        throw new TypeError("proposal.hint requires a fork point");
-    }
+    const fields = readScopeDataObject(value, [], "proposal", ["fork_point", "hint"]);
+    const forkPoint = fields.fork_point == null ? null : readProposedForkPoint(fields.fork_point);
+    const hint = fields.hint == null ? null : readHint(fields.hint);
     return Object.freeze({ fork_point: forkPoint, hint });
+}
+
+/**
+ * Resolves a validated proposal against the finished source session under a fork-step policy.
+ *
+ * A null fork point resolves to null (settled `no_prune` by the caller). A fork point must name the
+ * source session. With `n` source steps, a step index in `[0, n - 1]` must carry the retained
+ * prefix identity (null for step `0`, which restarts from the initial prefix). An index outside that
+ * range is refused under the reject policy; under the clamp policy it is moved to the nearest bound
+ * (`0` below, `n - 1` above), the fork point takes the retained prefix identity at that bound, and
+ * the clamp is returned as retained evidence. Every cited hint step must exist in the source.
+ *
+ * @param proposal - Proposal validated by {@link readTrajectoryProposal}.
+ * @param source - Finished source session inspection.
+ * @param policy - Configured fork-step policy.
+ * @returns The resolved fork point and clamp evidence, both null for a missing fork step.
+ * @throws {TypeError} If the fork point names another session, an in-range prefix identity differs
+ * from the retained one, the source retains no step, the reject policy refuses an out-of-range step,
+ * or the hint cites a step outside the source.
+ * @internal
+ */
+export function resolveTrajectoryProposal(
+    proposal: TrajectoryCompressionProposal,
+    source: Pick<ReplaySessionInspection, "session_id" | "steps">,
+    policy: TrajectoryForkStepPolicy,
+): {
+    readonly fork_clamp: TrajectoryForkClamp | null;
+    readonly fork_point: TrajectoryForkPoint | null;
+} {
+    const { fork_point: proposed, hint } = proposal;
+    const steps = source.steps;
+    // Cited indices are non-negative and strictly ascending by the grammar.
+    if (hint?.cited_step_indices.some((index) => index >= steps.length)) {
+        throw new TypeError("hint cites a step outside the source session");
+    }
+    if (proposed === null) {
+        return Object.freeze({ fork_clamp: null, fork_point: null });
+    }
+    if (proposed.session_id !== source.session_id) {
+        throw new TypeError("fork point must name a step boundary of the source session");
+    }
+    if (steps.length === 0) {
+        throw new TypeError("the source session retains no step boundary to fork from");
+    }
+    const prefixAt = (index: number) =>
+        index === 0 ? null : (steps[index - 1] as { readonly prefix_id: string }).prefix_id;
+    const index = proposed.step_index;
+    if (index >= 0 && index < steps.length) {
+        if (proposed.prefix_id !== prefixAt(index)) {
+            throw new TypeError("fork point prefix identity does not equal the retained prefix");
+        }
+        return Object.freeze({ fork_clamp: null, fork_point: proposed });
+    }
+    if (policy !== CLAMP_POLICY) {
+        throw new TypeError(
+            `fork point step ${index} is outside [0, ${steps.length - 1}] and the ${policy} fork-step policy refuses it`,
+        );
+    }
+    const clamped = index < 0 ? 0 : steps.length - 1;
+    return Object.freeze({
+        fork_clamp: Object.freeze({
+            policy,
+            proposed_prefix_id: proposed.prefix_id,
+            proposed_step_index: index,
+        }),
+        fork_point: Object.freeze({
+            prefix_id: prefixAt(clamped),
+            session_id: proposed.session_id,
+            step_index: clamped,
+        }),
+    });
 }
 
 /** Validates one untrusted verifier verdict. @internal */
@@ -406,20 +492,70 @@ function readForkPoint(value: unknown): TrajectoryForkPoint {
         ["prefix_id", "session_id", "step_index"],
         "fork_point",
     );
-    assertPrefixedDigest(fields.prefix_id, replayIdentity.prefixIdPrefix, "fork_point.prefix_id");
+    const stepIndex = readCount(fields.step_index, "fork_point.step_index");
+    if ((stepIndex === 0) !== (fields.prefix_id === null)) {
+        throw new TypeError("fork_point.prefix_id must be null exactly at step 0");
+    }
+    return readForkPointFields(fields, stepIndex);
+}
+
+/** Reads a proposed fork point; a missing `step_index` is a missing fork step (null). */
+function readProposedForkPoint(value: unknown): TrajectoryForkPoint | null {
+    const fields = readScopeDataObject(value, ["prefix_id", "session_id"], "fork_point", [
+        "step_index",
+    ]);
+    if (fields.step_index === undefined) {
+        return null;
+    }
+    if (!Number.isSafeInteger(fields.step_index)) {
+        throw new TypeError("fork_point.step_index must be a safe integer");
+    }
+    return readForkPointFields(fields, fields.step_index as number);
+}
+
+function readForkPointFields(
+    fields: Record<string, unknown>,
+    stepIndex: number,
+): TrajectoryForkPoint {
+    if (fields.prefix_id !== null) {
+        assertPrefixedDigest(
+            fields.prefix_id,
+            replayIdentity.prefixIdPrefix,
+            "fork_point.prefix_id",
+        );
+    }
     assertPrefixedDigest(
         fields.session_id,
         replayIdentity.sessionIdPrefix,
         "fork_point.session_id",
     );
-    const stepIndex = readCount(fields.step_index, "fork_point.step_index");
-    if (stepIndex === 0) {
-        throw new TypeError("fork_point.step_index must retain at least one step");
-    }
     return Object.freeze({
-        prefix_id: fields.prefix_id as string,
+        prefix_id: fields.prefix_id as string | null,
         session_id: fields.session_id as string,
         step_index: stepIndex,
+    });
+}
+
+function readForkClamp(value: unknown): TrajectoryForkClamp {
+    const fields = readScopeDataObject(
+        value,
+        ["policy", "proposed_prefix_id", "proposed_step_index"],
+        "fork_clamp",
+    );
+    if (fields.policy !== CLAMP_POLICY || !Number.isSafeInteger(fields.proposed_step_index)) {
+        throw new TypeError("fork_clamp must name the clamp policy and a safe integer step");
+    }
+    if (fields.proposed_prefix_id !== null) {
+        assertPrefixedDigest(
+            fields.proposed_prefix_id,
+            replayIdentity.prefixIdPrefix,
+            "fork_clamp.proposed_prefix_id",
+        );
+    }
+    return Object.freeze({
+        policy: fields.policy as TrajectoryForkStepPolicy,
+        proposed_prefix_id: fields.proposed_prefix_id as string | null,
+        proposed_step_index: fields.proposed_step_index as number,
     });
 }
 

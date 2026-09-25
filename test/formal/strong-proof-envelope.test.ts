@@ -482,3 +482,26 @@ function accessorObject(): object {
         get: () => "core0",
     });
 }
+
+test("a caller error raised while reading proof evidence propagates instead of downgrading", () => {
+    const core0 = fixtureCase("core0-handled-return");
+    const failure = new Error("evidence reader failed");
+    const evidence = new Proxy(
+        {},
+        {
+            getPrototypeOf() {
+                throw failure;
+            },
+        },
+    );
+    assert.throws(
+        () =>
+            classifyProofEnvelope({
+                completed: true,
+                programRef: core0.program_ref,
+                proofEvidence: evidence as never,
+                trace: core0.trace,
+            }),
+        (error: unknown) => error === failure,
+    );
+});
