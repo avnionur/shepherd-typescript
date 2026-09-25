@@ -11,6 +11,7 @@ import {
     readCompressionOutcomeBody,
     readTrajectoryProposal,
     readTrajectoryVerdict,
+    resolveTrajectoryProposal,
 } from "../../src/applications/compression-records.ts";
 import {
     createApplicationAppendIntentId,
@@ -22,6 +23,7 @@ import {
     APPLICATION_COMPRESSION_BASELINE_KINDS,
     APPLICATION_COMPRESSION_CANDIDATE_KINDS,
     APPLICATION_COMPRESSION_CANDIDATE_STATUSES,
+    APPLICATION_COMPRESSION_FORK_STEP_POLICIES,
     APPLICATION_COMPRESSION_OUTCOMES,
     APPLICATION_COMPRESSION_PHASES,
     APPLICATION_COMPRESSION_VERDICTS,
@@ -37,6 +39,7 @@ import {
 import {
     APPLICATIONS_PROTOCOL_V2_CONTRACT,
     APPLICATIONS_PROTOCOL_V3_CONTRACT,
+    APPLICATIONS_PROTOCOL_V7_CONTRACT,
 } from "../../src/protocol/compatibility-constants.ts";
 import { applicationsProtocolConfig } from "../../src/protocol/config.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
@@ -45,6 +48,7 @@ import {
     compressionProtocolWithBudgets,
     compressorOf,
     exploreWorkflow,
+    forkAt,
     notifyHandlers,
     stageProvider,
     unavailableSession,
@@ -123,6 +127,26 @@ async function recordShapes(): Promise<Record<string, RecordBody>> {
         )
     ).inspection;
     shapes.noPrune = bodyOf(store, noPrune.compression.outcome?.record_id);
+    const restart = (
+        await runTrajectoryCompression(
+            store,
+            compressionOptions("application:compression:shapes:restart", {
+                compressor: compressorOf(forkAt(0)),
+                protocol: compressionProtocolWithBudgets({ bestOfN: 0 }),
+            }),
+        )
+    ).inspection;
+    shapes.restart = bodyOf(store, restart.compression.outcome?.record_id);
+    const clamped = (
+        await runTrajectoryCompression(
+            store,
+            compressionOptions("application:compression:shapes:clamped", {
+                compressor: compressorOf(forkAt(-1)),
+                protocol: compressionProtocolWithBudgets({ bestOfN: 0 }),
+            }),
+        )
+    ).inspection;
+    shapes.clamped = bodyOf(store, clamped.compression.outcome?.record_id);
     const verificationCommand = "application:compression:shapes:verification";
     await assert.rejects(
         runTrajectoryCompression(
@@ -196,9 +220,15 @@ test("applications protocol v3 appends the compression vocabulary to v2 and refu
         APPLICATIONS_PROTOCOL_V3_CONTRACT.traceSchemas.compression,
         "shepherd.application.compression.v1",
     );
+    const { forkStepPolicies, forkStepPolicy, ...v3Compression } =
+        APPLICATIONS_PROTOCOL_V7_CONTRACT.compression;
+    assert.deepEqual(v3Compression, APPLICATIONS_PROTOCOL_V3_CONTRACT.compression);
+    assert.deepEqual(forkStepPolicies, ["clamp", "reject"]);
+    assert.equal(forkStepPolicy, "clamp");
+    assert.deepEqual(APPLICATION_COMPRESSION_FORK_STEP_POLICIES, forkStepPolicies);
     assert.deepEqual(
         applicationsProtocolConfig.compression,
-        APPLICATIONS_PROTOCOL_V3_CONTRACT.compression,
+        APPLICATIONS_PROTOCOL_V7_CONTRACT.compression,
     );
     assert.deepEqual(APPLICATION_COMPRESSION_PHASES, ["opened", "candidate", "outcome"]);
     assert.deepEqual(APPLICATION_COMPRESSION_CANDIDATE_KINDS, ["compression", "control"]);
@@ -235,6 +265,12 @@ test("applications protocol v3 appends the compression vocabulary to v2 and refu
         },
         (compression) => {
             delete compression.verdicts;
+        },
+        (compression) => {
+            compression.forkStepPolicy = "wrap";
+        },
+        (compression) => {
+            compression.forkStepPolicies = ["clamp"];
         },
     ];
     for (const mutate of mutations) {
@@ -309,12 +345,31 @@ test("every retained compression record conforms to the generated schema", async
         true,
     );
     assert.equal(proposal({ fork_point: null, hint: null }), true);
-    assert.equal(proposal({ fork_point: null }), false);
+    // A missing fork step (Appendix D.6) is admitted and settles no_prune.
+    assert.equal(proposal({}), true);
+    assert.equal(proposal({ fork_point: null }), true);
+    const sessionId = (shapes.proposed as { fork_point: { session_id: string } }).fork_point
+        .session_id;
+    for (const stepIndex of [-1, 0, 99]) {
+        assert.equal(
+            proposal({
+                fork_point: { prefix_id: null, session_id: sessionId, step_index: stepIndex },
+            }),
+            true,
+        );
+    }
+    assert.equal(proposal({ fork_point: { prefix_id: null, session_id: sessionId } }), true);
+    assert.equal(proposal({ fork_point: { session_id: sessionId, step_index: 1 } }), false);
+    assert.equal(
+        proposal({ fork_point: { prefix_id: null, session_id: sessionId, step_index: 1.5 } }),
+        false,
+    );
 });
 
 test("the compression record codecs refuse every inconsistent retained body", async () => {
     const shapes = await recordShapes();
     const {
+        clamped,
         control,
         controlRejected,
         noPrune,
@@ -324,6 +379,7 @@ test("the compression record codecs refuse every inconsistent retained body", as
         proposed,
         pruned,
         restored,
+        restart,
         rewound,
         unavailable,
         verificationRejected,
@@ -332,6 +388,8 @@ test("the compression record codecs refuse every inconsistent retained body", as
         proposed,
         rewound,
         pruned,
+        restart,
+        clamped,
         restored,
         unavailable,
         noPrune,
@@ -385,6 +443,32 @@ test("the compression record codecs refuse every inconsistent retained body", as
         { ...pruned, reason: "x".repeat(applicationsProtocolConfig.limits.maxReasonLength + 1) },
         { ...pruned, cost: { ...(pruned?.cost as RecordBody), cost_usd: -1 } },
         { ...pruned, fork_point: { ...(pruned?.fork_point as RecordBody), step_index: 0 } },
+        { ...restart, fork_point: { ...(pruned?.fork_point as RecordBody), step_index: 0 } },
+        { ...restart, fork_point: { ...(restart?.fork_point as RecordBody), step_index: 1 } },
+        { ...restart, fork_point: { ...(restart?.fork_point as RecordBody), step_index: -1 } },
+        { ...clamped, fork_clamp: { ...(clamped?.fork_clamp as RecordBody), policy: "reject" } },
+        {
+            ...clamped,
+            fork_clamp: { ...(clamped?.fork_clamp as RecordBody), proposed_step_index: 1.5 },
+        },
+        // A clamp below range must land on step 0; one above range must land below it.
+        {
+            ...clamped,
+            fork_clamp: { ...(clamped?.fork_clamp as RecordBody), proposed_step_index: 0 },
+        },
+        {
+            ...pruned,
+            fork_clamp: { ...(clamped?.fork_clamp as RecordBody), proposed_step_index: -1 },
+        },
+        {
+            ...pruned,
+            fork_clamp: { ...(clamped?.fork_clamp as RecordBody), proposed_step_index: 1 },
+        },
+        { ...noPrune, fork_clamp: clamped?.fork_clamp as RecordBody },
+        {
+            ...clamped,
+            fork_clamp: { ...(clamped?.fork_clamp as RecordBody), proposed_prefix_id: "zz" },
+        },
         { ...verificationRejected, failure: { code: "OTHER", reason: "x" } },
         { ...pruned, restore: { ...restore, classification: "partial" } },
         { ...pruned, restore: { ...restore, constituents: [] } },
@@ -430,9 +514,120 @@ test("the compression record codecs refuse every inconsistent retained body", as
         () => readTrajectoryVerdict({ reason: "r", score: 1, verdict: "maybe" }),
         TypeError,
     );
-    assert.throws(() => readTrajectoryProposal({ fork_point: null }), TypeError);
+    // A missing fork step validates to a null fork point instead of refusing the proposal.
+    assert.equal(readTrajectoryProposal({}).fork_point, null);
+    assert.equal(readTrajectoryProposal({ fork_point: null }).fork_point, null);
+    assert.equal(
+        readTrajectoryProposal({
+            fork_point: {
+                prefix_id: null,
+                session_id: ((pruned as RecordBody).fork_point as { session_id: string })
+                    .session_id,
+            },
+            hint: null,
+        }).fork_point,
+        null,
+    );
+    assert.throws(() => readTrajectoryProposal({ fork_point: 1 }), TypeError);
+    assert.throws(
+        () =>
+            readTrajectoryProposal({
+                fork_point: { ...(pruned?.fork_point as RecordBody), step_index: 1.5 },
+            }),
+        TypeError,
+    );
     assert.throws(() => readChildOutputText({ result: "" }), TypeError);
     assert.throws(() => readChildOutputText({ other: "{}" }), TypeError);
+});
+
+test("fork-step resolution restarts at step 0 and clamps or rejects out-of-range steps by policy", () => {
+    const [clamp, reject] = APPLICATION_COMPRESSION_FORK_STEP_POLICIES;
+    const sessionId = `replay-session:sha256:${"a".repeat(64)}`;
+    const prefixes = [1, 2, 3].map((digit) => `replay-prefix:sha256:${String(digit).repeat(64)}`);
+    const source = { session_id: sessionId, steps: prefixes.map((prefix_id) => ({ prefix_id })) };
+    const resolve = (
+        stepIndex: number,
+        prefixId: string | null,
+        policy: typeof clamp | typeof reject = clamp,
+        hint: { cited_step_indices: number[]; text: string } | null = null,
+    ) =>
+        resolveTrajectoryProposal(
+            readTrajectoryProposal({
+                fork_point: { prefix_id: prefixId, session_id: sessionId, step_index: stepIndex },
+                hint,
+            }),
+            source as never,
+            policy as never,
+        );
+    // f = 0 restarts from the initial prefix: the prefix identity is null and nothing is clamped.
+    assert.deepEqual(resolve(0, null), {
+        fork_clamp: null,
+        fork_point: { prefix_id: null, session_id: sessionId, step_index: 0 },
+    });
+    assert.throws(() => resolve(0, prefixes[0] as string), /prefix identity/u);
+    // In range, the retained prefix identity is required.
+    assert.equal(resolve(2, prefixes[1] as string).fork_point?.step_index, 2);
+    assert.throws(() => resolve(2, prefixes[0] as string), /prefix identity/u);
+    // f = n clamps to n - 1 and f = -1 clamps to 0, retaining the proposal as evidence.
+    assert.deepEqual(resolve(3, null), {
+        fork_clamp: { policy: clamp, proposed_prefix_id: null, proposed_step_index: 3 },
+        fork_point: { prefix_id: prefixes[1], session_id: sessionId, step_index: 2 },
+    });
+    assert.deepEqual(resolve(-1, prefixes[2] as string), {
+        fork_clamp: { policy: clamp, proposed_prefix_id: prefixes[2], proposed_step_index: -1 },
+        fork_point: { prefix_id: null, session_id: sessionId, step_index: 0 },
+    });
+    // The reject policy refuses every out-of-range step.
+    for (const stepIndex of [-1, 3, 99]) {
+        assert.throws(() => resolve(stepIndex, null, reject), /reject fork-step policy/u);
+    }
+    assert.equal(resolve(0, null, reject).fork_clamp, null);
+    // Session, empty-source, and citation checks run under either policy.
+    assert.throws(
+        () =>
+            resolveTrajectoryProposal(
+                readTrajectoryProposal({
+                    fork_point: {
+                        prefix_id: null,
+                        session_id: `replay-session:sha256:${"b".repeat(64)}`,
+                        step_index: 0,
+                    },
+                }),
+                source as never,
+                clamp as never,
+            ),
+        /source session/u,
+    );
+    assert.throws(
+        () =>
+            resolveTrajectoryProposal(
+                readTrajectoryProposal({
+                    fork_point: { prefix_id: null, session_id: sessionId, step_index: 0 },
+                }),
+                { session_id: sessionId, steps: [] } as never,
+                clamp as never,
+            ),
+        /retains no step/u,
+    );
+    assert.throws(
+        () => resolve(9, null, clamp, { cited_step_indices: [3], text: "hint" }),
+        /hint cites a step outside/u,
+    );
+    // A missing fork step resolves to null, with or without a hint.
+    for (const proposal of [
+        {},
+        { fork_point: null },
+        { hint: { cited_step_indices: [0], text: "h" } },
+    ]) {
+        assert.deepEqual(
+            resolveTrajectoryProposal(
+                readTrajectoryProposal(proposal),
+                source as never,
+                clamp as never,
+            ),
+            { fork_clamp: null, fork_point: null },
+        );
+    }
 });
 
 test("inspection refuses forged, late, reordered, or inconsistent compression records", async () => {

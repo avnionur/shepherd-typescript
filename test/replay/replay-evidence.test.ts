@@ -730,6 +730,31 @@ test("session folds reject reordered, forged, and inconsistent record sequences"
             ),
         ReplayCompatibilityError,
     );
+    // A store that no longer holds the published source cut fails as inconsistent evidence.
+    const withoutCut = new Proxy(store, {
+        get(target, key) {
+            if (key === "readCut") {
+                return () => target.readCut("cut:sha256:absent" as never);
+            }
+            const value = Reflect.get(target, key);
+            return typeof value === "function" ? value.bind(target) : value;
+        },
+    });
+    assert.throws(
+        () =>
+            foldReplaySession(
+                withoutCut,
+                boundary.session_id,
+                store.readOwner(boundary.session_id),
+                undefined,
+                Date.now(),
+            ),
+        (error: unknown) =>
+            error instanceof ReplayEvidenceError &&
+            error.message.includes(`session ${boundary.session_id} evidence is inconsistent`) &&
+            error.cause instanceof Error &&
+            !(error.cause instanceof ReplayEvidenceError),
+    );
     const manifestBlob = root.checkpoints[0]?.constituents[1]?.evidence?.manifest_blob_id as string;
     const oversized = store.putBlob(
         Buffer.from(JSON.stringify(Array.from({ length: 65_537 }, () => null))),

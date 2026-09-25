@@ -13,7 +13,9 @@ row updated and the F-016 residual row replaced by #189 in 2.33.0; carrier clean
 set, and F-008 rows updated by the Linux verification lane, #190, in 2.33.1; packed file set
 row (F-032 fixed) and F-008, F-009, and F-010 residual rows updated by #191 in 2.33.3; F-008,
 F-009, and F-010 residual rows updated and an external-review row added for the owner decisions of
-2026-09-23, #199, in 2.34.0). Findings, severities, and owning issues live
+2026-09-23, #199, in 2.34.0; live provider transport and credential rows (B11), container
+device-layer rows (B12), and the meta-agent `read_trace` residual row added by the epic #202 review
+fixes). Findings, severities, and owning issues live
 in the [internal security review](../.plan/security-review.md); the
 [production hardening contract](../.plan/production-hardening-contract.md) owns the slice map.
 This page states what the runtime defends, where, and with which test. A threat without a cited
@@ -22,7 +24,14 @@ mitigation and test is a residual risk with a register finding.
 ## Scope and assumptions
 
 - Shepherd TypeScript is an in-process library and a local CLI (`shepherd-ts`). It opens no network
-  listener and ships no live provider adapter.
+  listener. Its only outbound network client is the live provider adapter (`createLiveProvider`,
+  [live providers](./live-providers.md)), which sends requests only when the caller constructs one,
+  to the kind's configured HTTPS endpoint (`providers.live.kinds.*.endpoint`) or a caller-supplied
+  endpoint, with a credential taken from the caller or the configured environment variable.
+- The container device layer ([device layers](./device-layers.md)) drives the configured local
+  container CLI (`workspaces.deviceLayers.container.executable`, `docker`) only when the caller
+  selects it. The container daemon and the local base image are trusted like the host operating
+  system; the adapter never pulls an image.
 - The calling process is trusted with the authority it passes in (store paths, grants, runners,
   handlers, providers). The runtime defends the integrity of its records against malformed input
   and against its own crashes, and defends managed worlds against effects that exceed declared
@@ -46,7 +55,7 @@ mitigation and test is a residual risk with a register finding.
 | Trace archives | Caller-held JSON text | Integrity on import, confidentiality after export |
 | Store backups | Backup directory (database copy, blobs, manifest) or a caller blob backend ([backup, restore, and migration](./backup-restore-and-migration.md)) | Integrity, completeness, confidentiality |
 | Telemetry batches and files | Caller-supplied sink; JSON-lines files at caller-named paths ([observability](./observability.md)) | Confidentiality; never canonical |
-| Caller credentials | Caller process (provider implementations) | Never persisted by the runtime |
+| Caller credentials | Caller process: provider implementations, or the live provider closure (`definition.credential` or the configured environment variable) | Never persisted by the runtime; sent only in the configured credential header |
 
 ## Trust boundaries
 
@@ -62,6 +71,8 @@ mitigation and test is a residual risk with a register finding.
 | B8 | Interceptors and supervisors (`src/supervision/`) | Decision callbacks, supervisor processes |
 | B9 | Git executable (`src/workspace/git-aware-custody.ts`, `bindings.ts`, `initialization.ts`) | Repository contents and configuration, `PATH` |
 | B10 | Build and release supply chain (`pnpm-lock.yaml`, `tooling/release/`, `tooling/compatibility/`, `.github/workflows/release.yml`) | Registry packages, build host, release consumers |
+| B11 | Live provider transport and credentials (`src/provider/live-provider.ts`, `src/provider/live-dialects.ts`) | Network path, provider endpoint, HTTP status and response body |
+| B12 | Container CLI device layer (`src/workspace/device-layer-container.ts`) | Container CLI output, world contents inside the container |
 
 ## STRIDE per boundary
 
@@ -188,6 +199,27 @@ privilege. Paths are repository-relative.
 | T | Silent API or protocol break reaches consumers | `pnpm check:compatibility` over emitted declarations and protocol artifacts (schemas, version markers, migrations, error codes, CLI commands, exit codes, per-command CLI options, identity settings) with an append-only classified change log; version-marker increases need a noted classification or matching migrations, changed API declarations and markers are classified one at a time, the deprecation window counts released versions, and declarations older than `src` are refused (`tooling/compatibility/policy.ts`, `config/compatibility-policy.config.json`) | `test/compatibility-policy.test.ts`; F-022 fixed |
 | R | A release cannot be tied to its commit and inputs | Unsigned in-toto/SLSA provenance naming the tarball digest, commit, lockfile digest, and tool versions (`tooling/release/provenance.ts`) | `test/release-integrity.test.ts` ("release evidence binds"); signing waived for 1.0 by owner decision (F-010 accepted, #199) |
 
+### B11 live provider transport and credentials
+
+| STRIDE | Threat | Mitigation | Test |
+| --- | --- | --- | --- |
+| I | The credential is persisted in a run outcome, replay step, blob, export, or store file | The credential is read once from `definition.credential` or the kind's configured `credential.environmentVariable`, held only in the provider closure, and sent only in the configured credential header; it is never part of the descriptor, a request body, or a response. Provider error detail is bounded to `providers.live.limits.maxErrorDetailBytes` and every occurrence of the credential is replaced with `providers.live.redaction` before an error message is built; transport causes stay in memory (`src/provider/live-provider.ts`) | `test/provider/live-provider-secrets.test.ts` ("provider-backed tasks and replay sessions retain no credential in any record, blob, or trace file"), `test/provider/live-provider.test.ts` ("credentials come only from configuration or the environment and never reach errors") |
+| I | A missing credential is sent as an empty header or leaks through a default | Construction fails with `LiveProviderError` reason `credential` naming only the variable when no non-blank credential is available | `test/provider/live-provider.test.ts` ("credentials come only from configuration or the environment and never reach errors") |
+| S, T | The request reaches an endpoint other than the configured provider, or is read or altered in transit | Default endpoints are the configured `https://` URLs; the default transport is the global `fetch`, which verifies TLS certificates with the Node runtime's trust store. A caller `endpoint` or `transport` override is caller authority (the calling process is trusted) and is not restricted to HTTPS | `test/provider/live-provider.test.ts` ("the default transport posts the serialized request with fetch", "runtime source contains no provider-specific literals"); residual: an override can point at a plain-HTTP or hostile endpoint (caller-trusted, accepted) |
+| T | A malformed, incomplete, or tool-bearing response is accepted as task output | Status must be a 2xx safe integer and the body a string; the body must be JSON; the kind's dialect decodes a closed shape; only configured complete stop reasons yield output, tool-use stop reasons must carry tool calls, a complete response must not; structured output must be canonical JSON and is then validated against the task output schema by execution (`src/provider/live-provider.ts`, `src/provider/live-dialects.ts`) | `test/provider/live-provider.test.ts` ("anthropic adapter sends a configured request ...", "openai-compatible adapters cover OpenAI and OpenRouter behind the same contract", "definitions and conversation requests are validated") |
+| E | Model output or tool calls gain authority | Response content is data: tool calls run only through the caller's tool-use loop and effect boundary with declared reversibility; model-supplied tool arguments are validated against trusted tool schemas ([JSON Schema validation](./json-schema-validation.md)) | `test/agent/tool-loop.test.ts` ("a denied tool-call intent resolves before any outcome and the handler never runs"), `test/agent/tool-loop-boundaries.test.ts` ("live tool calls with non-canonical inputs or unparsable arguments are refused") |
+| D | A slow or hung provider blocks a run | The caller's `AbortSignal` rejects a pending request and is passed to `fetch`; no retries are performed | `test/provider/live-provider.test.ts` ("adapters honor an AbortSignal while the request is pending"); residual: no built-in timeout, retry, or rate limit (caller policy) |
+
+### B12 container CLI device layer
+
+| STRIDE | Threat | Mitigation | Test |
+| --- | --- | --- | --- |
+| E | Shell or argument injection through a world path, device identifier, or image | The configured CLI is spawned with literal argv and no shell; every argument is a configured template (`workspaces.deviceLayers.container.arguments`, `.commands`) whose tokens are substituted in a single pass, so token text inside a value is kept literally; in-container commands receive paths as positional arguments after `--`, never interpolated into script text; an image override starting with `-` is refused (`src/workspace/device-layer-container.ts`) | `test/workspace/device-layer.test.ts` ("container adapter templates and list output are rendered and parsed exactly") |
+| E, I | A world container reaches the network or fetches an unreviewed image | Containers are created with `--network none` and `--pull never` from the configured local image (`workspaces.deviceLayers.container.arguments.create`, `.run`) | `test/workspace/device-layer.test.ts` (configured templates); opt-in container conformance (`SHEPHERD_DEVICE_LAYER_OPT_IN`, [device layers](./device-layers.md#conformance-kit)) |
+| D | Unbounded CLI output or a hung CLI | Every command has `workspaces.deviceLayers.commandTimeoutMs` and output is bounded by `commandMaxBytes` | Opt-in container conformance; residual: the default lane has no container daemon, so these paths are exercised only by the opt-in run and the device-layer benchmark |
+| T | Unexpected list output is read as world files | List output must match the configured `listLinePattern`, otherwise `DeviceLayerError` | `test/workspace/device-layer.test.ts` ("container adapter templates and list output are rendered and parsed exactly") |
+| E | The container daemon grants root-equivalent host access | Out of the runtime's control: access to the daemon socket is trusted host configuration, like the OS | Accepted residual (below) |
+
 ## Residual risks
 
 | Risk | Finding | Owner |
@@ -207,6 +239,9 @@ privilege. Paths are repository-relative.
 | No hosted workflow runs: attempts on 2026-09-23 to run `CI` (#191 and the #199 recheck) were blocked by the account's Actions billing or spending limit and the workflows were disabled again, and CodeQL needs GitHub Advanced Security on a private repository. By owner decision of 2026-09-23 the local macOS gates (`pnpm verify`, `pnpm verify:release`, `pnpm build:desktop`) and the local Docker Linux lane are the 1.0 verification substitute; CodeQL is waived while the repository is private; there is no Windows lane or hosted privileged-jail lane | F-008 | accepted (owner decision, #199) |
 | GitHub private vulnerability reporting is unavailable while the repository is private and is waived while it stays private; intake is by email as documented in `SECURITY.md` | F-009 (fixed by documented email intake) | waived while private (owner decision, #199) |
 | Release evidence is unsigned and nothing is published; the release workflow has never run. 1.0 is a private, unpublished source release by owner decision of 2026-09-23 | F-010 | accepted (owner decision, #199) |
+| The meta-agent `read_trace` tool reads any owner path in the store it is given: the meta-agent holds store-wide read authority over that store ([tool-use loop](./tool-use-loop.md)); callers that need narrower authority must give it a separate store | none | accepted |
+| A caller `endpoint` or `transport` override for a live provider is not restricted to HTTPS, and there is no built-in timeout, retry, or rate limit | none | accepted (caller authority) |
+| The container device layer trusts the container daemon, whose socket is root-equivalent on most hosts, and the local base image | none | accepted |
 | No external security review has been performed; the owner waived it for 1.0 and accepted the internal review (implementing agents plus one independent internal reviewer) in its place | none (O-1) | accepted (owner decision, #199) |
 
 ## Out of scope
@@ -214,6 +249,7 @@ privilege. Paths are repository-relative.
 - A hostile process running as the same OS user, a compromised Node runtime, or a modified package.
 - Reversal of external network actions, sent messages, consumed API cost, or leaked credentials
   ([SECURITY.md](../SECURITY.md)).
-- Native Windows (unsupported), live provider adapters (none ship), and remote storage (interfaces,
+- Native Windows (unsupported), the provider service behind a live provider endpoint (its handling
+  of prompts, credentials, and billing), and remote storage (interfaces,
   conformance kits, and local reference adapters only, D-018; no network adapter ships, and a
   third-party adapter's transport, credentials, and durability are the adapter's responsibility).

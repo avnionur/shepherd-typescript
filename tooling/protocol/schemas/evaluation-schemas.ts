@@ -10,8 +10,9 @@ type Schema = Readonly<Record<string, unknown>>;
  * configured metric order, one run per experiment (kind, application, manifest and protocol
  * identities, protocol version, seeds, dataset, measured manifest costs, and measured metrics), one
  * baseline per experiment (configured baseline kind, cited evidence, and measured metrics), one
- * comparison per experiment (application value, baseline value, and delta per metric), and the
- * published limitations. No wall-clock, host, or duration field is admitted.
+ * comparison per experiment (application value, baseline value, and delta per metric), the rescue
+ * counts (experiments whose baseline failed while the application passed), and the published
+ * limitations. No wall-clock, host, or duration field is admitted.
  *
  * @param config - Validated protocol configuration.
  * @returns The configured closed evaluation report schema.
@@ -50,7 +51,7 @@ export function renderApplicationEvaluationSchema(config: ProtocolConfig): Schem
         $comment: "Generated from protocol.config.json. Do not edit directly.",
         title: `Shepherd Application Evaluation Report v${evaluation.reportVersion}`,
         description:
-            "Measured-only offline evaluation report: one run and one configured baseline per experiment with measured metrics, per-metric comparisons, and the published limitations. The report identity is the digest of the canonical report body without it; no wall-clock, host, node version, or duration field is admitted.",
+            "Measured-only offline evaluation report: one run and one configured baseline per experiment with measured metrics, per-metric comparisons, rescue counts (baseline failed, application passed), and the published limitations. The report identity is the digest of the canonical report body without it; no wall-clock, host, node version, or duration field is admitted.",
         type: "object",
         required: [
             "baselines",
@@ -61,6 +62,7 @@ export function renderApplicationEvaluationSchema(config: ProtocolConfig): Schem
             "metrics",
             "report_id",
             "report_version",
+            "rescues",
             "revision",
             "runs",
         ],
@@ -128,6 +130,20 @@ export function renderApplicationEvaluationSchema(config: ProtocolConfig): Schem
             metrics: { const: [...evaluation.metrics] },
             report_id: prefixed(applications.identity.reportIdPrefix, config),
             report_version: { const: evaluation.reportVersion },
+            rescues: {
+                type: "object",
+                required: ["count", "experiment_ids"],
+                properties: {
+                    count: { type: "integer", minimum: 0, maximum: limits.maxExperiments },
+                    experiment_ids: {
+                        type: "array",
+                        maxItems: limits.maxExperiments,
+                        items: experimentId,
+                        uniqueItems: true,
+                    },
+                },
+                additionalProperties: false,
+            },
             revision: { type: "string", minLength: 1 },
             runs: experiments({
                 type: "object",

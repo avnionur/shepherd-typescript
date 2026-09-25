@@ -15,6 +15,7 @@ const ARTIFACT_KEYS = [
     "croCandidateSchema",
     "evaluationSchema",
     "manifestSchema",
+    "runtimeSupervisionSchema",
     "supervisionSchema",
     "treeRlRolloutSchema",
 ] as const;
@@ -23,6 +24,7 @@ const SCHEMA_KEYS = [
     "croCandidateId",
     "evaluationId",
     "manifestId",
+    "runtimeSupervisionId",
     "supervisionId",
     "treeRlRolloutId",
 ] as const;
@@ -30,6 +32,7 @@ const TRACE_SCHEMA_KEYS = [
     "compression",
     "croCandidate",
     "manifest",
+    "runtimeSupervision",
     "supervision",
     "treeRlRollout",
 ] as const;
@@ -70,6 +73,8 @@ const LIMIT_KEYS = [
     "maxSchemaBytes",
     "maxSeeds",
     "maxSurfaces",
+    "maxTickIntervalMilliseconds",
+    "maxTicks",
     "maxToolBytes",
     "maxWorkers",
     "minWorkers",
@@ -82,15 +87,62 @@ const ARTIFACT_ROLE_KEYS = [
     "worldMerge",
 ] as const;
 const SURFACE_ROLE_KEYS = ["action", "observation"] as const;
-const REASON_KEYS = ["notAccepted"] as const;
-const CRO_ARTIFACT_ROLE_KEYS = [
-    "baseline",
-    "branch",
-    "candidate",
-    "fullReplay",
-    "promotion",
+const RUNTIME_ARTIFACT_ROLE_KEYS = [
+    "settlement",
+    "worldDiscard",
+    "worldFork",
+    "workerStream",
 ] as const;
-const CRO_BUDGET_KEYS = ["candidates", "minPromotionScore", "providerCalls"] as const;
+const RUNTIME_BUDGET_KEYS = [
+    "featureCharacters",
+    "guidanceWords",
+    "providerCalls",
+    "reasonWords",
+    "tickInterval",
+    "ticks",
+    "toolCallSummaryBytes",
+    "trailingToolCalls",
+    "turnsPerWorker",
+] as const;
+const REASON_KEYS = ["notAccepted"] as const;
+const CRO_ARTIFACT_ROLE_KEYS = ["baseline", "candidate", "proposal", "selection"] as const;
+const CRO_BUDGET_KEYS = [
+    "candidates",
+    "iterations",
+    "proposalAttempts",
+    "proposals",
+    "providerCalls",
+    "reflectionMechanisms",
+] as const;
+const CRO_THRESHOLD_KEYS = [
+    "audaciousPrior",
+    "duplicateSimilarity",
+    "improveThreshold",
+    "maxScoreDrop",
+    "minPromotionScore",
+    "minScoreLift",
+    "promoteDevEpsilon",
+] as const;
+const CRO_PROPOSER_LIMIT_KEYS = [
+    "defaultMaxTurns",
+    "maxExcerptLength",
+    "maxGrepMatches",
+    "maxPatternLength",
+    "maxTraceSteps",
+] as const;
+const CRO_PROPOSER_OPERATION_KEYS = [
+    "grepTraces",
+    "inspectCandidates",
+    "proposeCandidate",
+    "readTrace",
+] as const;
+const CRO_REFLECTION_FIELD_KEYS = [
+    "findings",
+    "hypotheses",
+    "mechanism",
+    "parent",
+    "prior",
+] as const;
 const CRO_SURFACE_ROLE_KEYS = ["handoff", "proposer", "reflection"] as const;
 const COMPRESSION_ARTIFACT_ROLE_KEYS = [
     "candidate",
@@ -107,10 +159,22 @@ const COMPRESSION_BUDGET_KEYS = ["bestOfN", "providerCalls"] as const;
 const COMPRESSION_CHILD_FIELD_KEYS = ["input", "output"] as const;
 const COMPRESSION_REASON_KEYS = ["noForkPoint", "notAdmissible", "restoreUnavailable"] as const;
 const COMPRESSION_SURFACE_ROLE_KEYS = ["compression", "compressor", "verifier"] as const;
-const TREE_RL_ARTIFACT_ROLE_KEYS = ["baselineBatch", "batch", "rollout", "source"] as const;
-const TREE_RL_BUDGET_KEYS = ["branches", "forkPoints", "minDependents", "providerCalls"] as const;
-const TREE_RL_REASON_KEYS = ["diverged", "interrupted", "notFinished", "rewardFailed"] as const;
-const TREE_RL_SURFACE_ROLE_KEYS = ["batch", "rollout"] as const;
+const TREE_RL_ARTIFACT_ROLE_KEYS = ["baselineBatch", "batch", "root", "rollout"] as const;
+const TREE_RL_BUDGET_KEYS = ["branches", "groupSize", "providerCalls"] as const;
+const TREE_RL_LIMIT_KEYS = [
+    "defaultConcurrency",
+    "maxConcurrency",
+    "maxGroupSize",
+    "maxPrompts",
+] as const;
+const TREE_RL_REASON_KEYS = [
+    "dependencySelection",
+    "diverged",
+    "interrupted",
+    "notFinished",
+    "rewardFailed",
+] as const;
+const TREE_RL_SURFACE_ROLE_KEYS = ["batch", "forkProposal", "forkSelector", "rollout"] as const;
 const EVALUATION_LIMIT_KEYS = ["maxExperiments", "maxLimitationLength", "maxLimitations"] as const;
 
 /**
@@ -136,6 +200,7 @@ export function readApplicationsConfig(value: unknown): ApplicationsConfig {
             "manifestVersion",
             "protocolSurfaces",
             "recordVersion",
+            "runtimeSupervision",
             "schemas",
             "supervision",
             "traceSchemas",
@@ -213,6 +278,7 @@ export function readApplicationsConfig(value: unknown): ApplicationsConfig {
             applications.recordVersion,
             "applications.recordVersion",
         ),
+        runtimeSupervision: readRuntimeSupervision(applications.runtimeSupervision),
         schemas: readRecord(
             applications.schemas,
             SCHEMA_KEYS,
@@ -222,6 +288,54 @@ export function readApplicationsConfig(value: unknown): ApplicationsConfig {
         supervision: readSupervision(applications.supervision),
         traceSchemas,
         treeRl: readTreeRl(applications.treeRl),
+    };
+}
+
+function readRuntimeSupervision(value: unknown): ApplicationsConfig["runtimeSupervision"] {
+    const path = "applications.runtimeSupervision";
+    const runtime = readObject(
+        value,
+        [
+            "actions",
+            "artifactRoles",
+            "attemptCauses",
+            "attemptStatuses",
+            "budgetKeys",
+            "guidanceSeparator",
+            "phases",
+            "surfaceRoles",
+            "targetInputKeys",
+            "truncationMarker",
+        ],
+        path,
+    );
+    const surfaceRoles = readDistinctRecord(
+        runtime.surfaceRoles,
+        SURFACE_ROLE_KEYS,
+        `${path}.surfaceRoles`,
+    );
+    return {
+        actions: readVocabulary(runtime.actions, `${path}.actions`, 4),
+        artifactRoles: readDistinctRecord(
+            runtime.artifactRoles,
+            RUNTIME_ARTIFACT_ROLE_KEYS,
+            `${path}.artifactRoles`,
+        ),
+        attemptCauses: readVocabulary(runtime.attemptCauses, `${path}.attemptCauses`, 3),
+        attemptStatuses: readVocabulary(runtime.attemptStatuses, `${path}.attemptStatuses`, 5),
+        budgetKeys: readDistinctRecord(
+            runtime.budgetKeys,
+            RUNTIME_BUDGET_KEYS,
+            `${path}.budgetKeys`,
+        ),
+        guidanceSeparator: readNonEmptyString(
+            runtime.guidanceSeparator,
+            `${path}.guidanceSeparator`,
+        ),
+        phases: readVocabulary(runtime.phases, `${path}.phases`, 6),
+        surfaceRoles,
+        targetInputKeys: readUniqueStrings(runtime.targetInputKeys, `${path}.targetInputKeys`),
+        truncationMarker: readNonEmptyString(runtime.truncationMarker, `${path}.truncationMarker`),
     };
 }
 
@@ -327,10 +441,26 @@ function readCro(value: unknown): ApplicationsConfig["cro"] {
             "baselineKinds",
             "budgetKeys",
             "candidateStatuses",
+            "editScopes",
+            "exampleRoles",
             "phases",
+            "proposer",
+            "reflection",
+            "splits",
             "surfaceRoles",
+            "thresholdKeys",
         ],
         "applications.cro",
+    );
+    const proposer = readObject(
+        cro.proposer,
+        ["effectKindPrefix", "limits", "operations", "programId"],
+        "applications.cro.proposer",
+    );
+    const reflection = readObject(
+        cro.reflection,
+        ["differsByPhrase", "fields"],
+        "applications.cro.reflection",
     );
     return {
         artifactRoles: readDistinctRecord(
@@ -349,11 +479,51 @@ function readCro(value: unknown): ApplicationsConfig["cro"] {
             "applications.cro.candidateStatuses",
             4,
         ),
-        phases: readVocabulary(cro.phases, "applications.cro.phases", 2),
+        editScopes: readVocabulary(cro.editScopes, "applications.cro.editScopes", 2),
+        exampleRoles: readVocabulary(cro.exampleRoles, "applications.cro.exampleRoles", 4),
+        phases: readVocabulary(cro.phases, "applications.cro.phases", 4),
+        proposer: {
+            effectKindPrefix: readNonEmptyString(
+                proposer.effectKindPrefix,
+                "applications.cro.proposer.effectKindPrefix",
+            ),
+            limits: readRecord(
+                proposer.limits,
+                CRO_PROPOSER_LIMIT_KEYS,
+                "applications.cro.proposer.limits",
+                readPositiveInteger,
+            ),
+            operations: readDistinctRecord(
+                proposer.operations,
+                CRO_PROPOSER_OPERATION_KEYS,
+                "applications.cro.proposer.operations",
+            ),
+            programId: readNonEmptyString(
+                proposer.programId,
+                "applications.cro.proposer.programId",
+            ),
+        },
+        reflection: {
+            differsByPhrase: readNonEmptyString(
+                reflection.differsByPhrase,
+                "applications.cro.reflection.differsByPhrase",
+            ),
+            fields: readDistinctRecord(
+                reflection.fields,
+                CRO_REFLECTION_FIELD_KEYS,
+                "applications.cro.reflection.fields",
+            ),
+        },
+        splits: readVocabulary(cro.splits, "applications.cro.splits", 2),
         surfaceRoles: readDistinctRecord(
             cro.surfaceRoles,
             CRO_SURFACE_ROLE_KEYS,
             "applications.cro.surfaceRoles",
+        ),
+        thresholdKeys: readDistinctRecord(
+            cro.thresholdKeys,
+            CRO_THRESHOLD_KEYS,
+            "applications.cro.thresholdKeys",
         ),
     };
 }
@@ -368,6 +538,8 @@ function readCompression(value: unknown): ApplicationsConfig["compression"] {
             "candidateKinds",
             "candidateStatuses",
             "childFields",
+            "forkStepPolicies",
+            "forkStepPolicy",
             "outcomes",
             "phases",
             "reasons",
@@ -375,6 +547,11 @@ function readCompression(value: unknown): ApplicationsConfig["compression"] {
             "verdicts",
         ],
         "applications.compression",
+    );
+    const forkStepPolicies = readVocabulary(
+        compression.forkStepPolicies,
+        "applications.compression.forkStepPolicies",
+        2,
     );
     return {
         artifactRoles: readDistinctRecord(
@@ -407,6 +584,12 @@ function readCompression(value: unknown): ApplicationsConfig["compression"] {
             COMPRESSION_CHILD_FIELD_KEYS,
             "applications.compression.childFields",
         ),
+        forkStepPolicies,
+        forkStepPolicy: readEnum(
+            compression.forkStepPolicy,
+            forkStepPolicies,
+            "applications.compression.forkStepPolicy",
+        ),
         outcomes: readVocabulary(compression.outcomes, "applications.compression.outcomes", 3),
         phases: readVocabulary(compression.phases, "applications.compression.phases", 3),
         reasons: readRecord(
@@ -428,10 +611,15 @@ function readTreeRl(value: unknown): ApplicationsConfig["treeRl"] {
     const treeRl = readObject(
         value,
         [
+            "actionSegments",
+            "advantage",
             "artifactRoles",
             "baselineKinds",
             "batchFormats",
             "budgetKeys",
+            "forkTurn",
+            "limits",
+            "memberKinds",
             "phases",
             "reasons",
             "rolloutStatuses",
@@ -439,7 +627,66 @@ function readTreeRl(value: unknown): ApplicationsConfig["treeRl"] {
         ],
         "applications.treeRl",
     );
+    const advantage = readObject(
+        treeRl.advantage,
+        ["epsilon", "normalization", "normalizations", "stdEstimator", "stdEstimators"],
+        "applications.treeRl.advantage",
+    );
+    const normalizations = readVocabulary(
+        advantage.normalizations,
+        "applications.treeRl.advantage.normalizations",
+        2,
+    );
+    const stdEstimators = readVocabulary(
+        advantage.stdEstimators,
+        "applications.treeRl.advantage.stdEstimators",
+        2,
+    );
+    if (
+        typeof advantage.epsilon !== "number" ||
+        !Number.isFinite(advantage.epsilon) ||
+        advantage.epsilon <= 0
+    ) {
+        throw new TypeError("applications.treeRl.advantage.epsilon must be a positive number");
+    }
+    const forkTurn = readRecord(
+        treeRl.forkTurn,
+        ["first", "trailing"] as const,
+        "applications.treeRl.forkTurn",
+        readPositiveInteger,
+    );
+    const limits = readRecord(
+        treeRl.limits,
+        TREE_RL_LIMIT_KEYS,
+        "applications.treeRl.limits",
+        readPositiveInteger,
+    );
+    if (limits.defaultConcurrency > limits.maxConcurrency) {
+        throw new TypeError(
+            "applications.treeRl.limits.defaultConcurrency must not exceed maxConcurrency",
+        );
+    }
     return {
+        actionSegments: readVocabulary(
+            treeRl.actionSegments,
+            "applications.treeRl.actionSegments",
+            3,
+        ),
+        advantage: {
+            epsilon: advantage.epsilon,
+            normalization: readEnum(
+                advantage.normalization,
+                normalizations,
+                "applications.treeRl.advantage.normalization",
+            ),
+            normalizations,
+            stdEstimator: readEnum(
+                advantage.stdEstimator,
+                stdEstimators,
+                "applications.treeRl.advantage.stdEstimator",
+            ),
+            stdEstimators,
+        },
         artifactRoles: readDistinctRecord(
             treeRl.artifactRoles,
             TREE_RL_ARTIFACT_ROLE_KEYS,
@@ -452,7 +699,10 @@ function readTreeRl(value: unknown): ApplicationsConfig["treeRl"] {
             TREE_RL_BUDGET_KEYS,
             "applications.treeRl.budgetKeys",
         ),
-        phases: readVocabulary(treeRl.phases, "applications.treeRl.phases", 3),
+        forkTurn,
+        limits,
+        memberKinds: readVocabulary(treeRl.memberKinds, "applications.treeRl.memberKinds", 2),
+        phases: readVocabulary(treeRl.phases, "applications.treeRl.phases", 4),
         reasons: readDistinctRecord(
             treeRl.reasons,
             TREE_RL_REASON_KEYS,

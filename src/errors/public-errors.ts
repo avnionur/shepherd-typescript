@@ -19,6 +19,7 @@ type FixedPublicErrorCodes = {
         readonly budgetExhausted: PublicErrorCode;
         readonly cancelled: PublicErrorCode;
     };
+    readonly schemas: { readonly validation: PublicErrorCode };
     readonly storage: {
         readonly adapter: PublicErrorCode;
         readonly blobContentMismatch: PublicErrorCode;
@@ -98,6 +99,7 @@ export function readPublicErrorConfig(value: unknown): FixedPublicErrorCodes {
             "effects",
             "formal",
             "runs",
+            "schemas",
             "storage",
             "tasks",
             "trace",
@@ -111,6 +113,7 @@ export function readPublicErrorConfig(value: unknown): FixedPublicErrorCodes {
         effects: readCodeGroup(codes.effects, ["handlerNotFound"], "effects"),
         formal: readCodeGroup(codes.formal, ["typedTraceInvalid"], "formal"),
         runs: readCodeGroup(codes.runs, ["budgetExhausted", "cancelled"], "runs"),
+        schemas: readCodeGroup(codes.schemas, ["validation"], "schemas"),
         storage: readCodeGroup(codes.storage, ["adapter", "blobContentMismatch"], "storage"),
         tasks: readCodeGroup(
             codes.tasks,

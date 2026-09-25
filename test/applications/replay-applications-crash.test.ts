@@ -27,8 +27,8 @@ test("a process killed inside a Tree-RL rollout session is refused under its liv
     const databasePath = await temporaryDatabasePath(context, "tree-rl-crash");
     const commandId = "application:tree-rl:killed";
     new SQLiteTraceStore(databasePath).close();
-    // Terminal 1 is the source session; terminal 4 is the third rollout's.
-    const { child, line } = await runUntil(context, [databasePath, "tree_rl", commandId, "4"]);
+    // Terminals 1 and 2 are the root sessions; terminal 5 is the third rollout's.
+    const { child, line } = await runUntil(context, [databasePath, "tree_rl", commandId, "5"]);
     await kill(child);
     const [, sessionId] = line.split(" ") as [string, string];
     using store = new SQLiteTraceStore(databasePath);
@@ -36,7 +36,7 @@ test("a process killed inside a Tree-RL rollout session is refused under its liv
     const crashed = inspectTreeRlRun(store, applicationId);
     assert.deepEqual(
         crashed.rollouts.map((rollout) => rollout.record?.status ?? null),
-        ["completed", "completed", null, null, null, null],
+        ["completed", "completed", null, null],
     );
     assert.equal(crashed.rollouts[2]?.replay_session_id, sessionId);
     assert.equal(inspectReplaySession(store, { clock: live, sessionId }).terminal, null);
@@ -63,8 +63,9 @@ test("a process killed inside a Tree-RL rollout session is refused under its liv
     assert.equal(store.readOwner(sessionId).length, sessionRecords);
     assert.equal(
         inspection.rollouts.filter((rollout) => rollout.record?.status === "completed").length,
-        5,
+        3,
     );
+    // Two graded roots plus the three completed rollouts.
     assert.equal(batch.line_count, 5);
     assert.equal(
         batch.lines.some((entry) => entry.replay_session_id === sessionId),
@@ -80,20 +81,21 @@ test("a process killed inside a counterfactual candidate branch is refused under
     const databasePath = await temporaryDatabasePath(context, "cro-crash");
     const commandId = "application:cro:killed";
     new SQLiteTraceStore(databasePath).close();
-    // Terminal 1 is the recorded baseline session; terminal 2 is the first candidate branch's.
+    // Terminals 1-6 are the recorded baseline example sessions; terminal 7 is the first candidate
+    // branch's.
     const { child, line } = await runUntil(context, [
         databasePath,
         "counterfactual_optimization",
         commandId,
-        "2",
+        "7",
     ]);
     await kill(child);
     const [, sessionId] = line.split(" ") as [string, string];
     using store = new SQLiteTraceStore(databasePath);
     const applicationId = deriveApplicationOwnerId(commandId);
     const crashed = inspectCounterfactualOptimization(store, applicationId);
-    assert.equal(crashed.candidates[0]?.outcome, null);
-    assert.equal(crashed.candidates[0]?.proposed?.branch_session_id, sessionId);
+    assert.deepEqual(crashed.candidates, []);
+    assert.equal(crashed.proposals[0]?.candidates[0]?.name, "dies");
     assert.equal(inspectReplaySession(store, { clock: live, sessionId }).terminal, null);
     const records = store.readOwner(applicationId).length;
     await assert.rejects(
@@ -114,15 +116,15 @@ test("a process killed inside a counterfactual candidate branch is refused under
         runCounterfactualOptimization(store, options),
         (error: unknown) =>
             error instanceof ApplicationEvidenceError &&
-            error.cause instanceof ReplaySessionInterruptedError,
+            error.cause instanceof ReplaySessionInterruptedError &&
+            error.message.includes(sessionId),
     );
     const inspection = inspectCounterfactualOptimization(store, applicationId);
-    const [dies, later] = inspection.candidates;
-    assert.equal(dies?.outcome?.status, "rejected");
-    assert.equal(dies?.outcome?.failure?.code, "APPLICATION_EVIDENCE_INVALID");
-    assert.equal(dies?.outcome?.branch_session_id, sessionId);
-    assert.equal(later?.proposed, null);
-    assert.equal(inspection.promotion, null);
+    const [dies] = inspection.candidates;
+    assert.equal(inspection.candidates.length, 1);
+    assert.equal(dies?.status, "rejected");
+    assert.equal(dies?.failure?.code, "APPLICATION_EVIDENCE_INVALID");
+    assert.equal(inspection.selection, null);
     const retained = store.readOwner(applicationId).length;
     await assert.rejects(runCounterfactualOptimization(store, options), ApplicationEvidenceError);
     assert.equal(store.readOwner(applicationId).length, retained);

@@ -98,7 +98,7 @@ test("result projection re-validates accepted outputs and proves the caller sche
         schema.void(),
         schema.task(),
         schema.object({ text: schema.string(), extra: schema.string() }),
-        schema.object({ text: schema.void() }),
+        schema.object({ text: schema.null() }),
     ]) {
         assert.throws(
             () => projectChildRunResult(store, handle.handle_id, { schema: mismatched }),

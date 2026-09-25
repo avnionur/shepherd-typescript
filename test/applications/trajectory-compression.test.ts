@@ -450,6 +450,145 @@ test("a null fork point settles no_prune and leaves the source untouched", async
     );
 });
 
+test("a missing fork step settles no_prune, with or without a hint", async () => {
+    const proposals: readonly [string, (context: TrajectoryCompressorContext) => unknown][] = [
+        ["absent", () => ({})],
+        ["hint-only", () => ({ hint: { cited_step_indices: [1], text: "answer from the plan" } })],
+        [
+            "no-step",
+            ({ source }) => ({
+                fork_point: { prefix_id: null, session_id: source.session_id },
+                hint: null,
+            }),
+        ],
+    ];
+    for (const [label, propose] of proposals) {
+        using store = new SQLiteTraceStore();
+        const verifierContexts: TrajectoryVerifierContext[] = [];
+        const { inspection } = await runTrajectoryCompression(
+            store,
+            compressionOptions(`application:compression:missing-step:${label}`, {
+                compressor: compressorOf(propose),
+                protocol: compressionProtocolWithBudgets({ bestOfN: 0 }),
+                verifier: verifierOf(undefined, verifierContexts),
+            }),
+        );
+        const settled = inspection.compression.outcome;
+        assert.equal(settled?.outcome, "no_prune", label);
+        assert.equal(settled?.reason, "the compressor proposed no fork point", label);
+        assert.equal(settled?.fork_point, null, label);
+        assert.equal(settled?.fork_clamp, null, label);
+        assert.equal(settled?.hint_digest === null, label !== "hint-only", label);
+        assert.deepEqual(verifierContexts, [], label);
+        assert.deepEqual(replaySessions(store), [inspection.source_session_id], label);
+        assert.equal(inspection.outcome?.step_count_ratio, 1, label);
+    }
+});
+
+test("fork step 0 restarts from the initial prefix with the hint applied", async () => {
+    using store = new SQLiteTraceStore();
+    const guided: TrajectoryCompressionGuidance[] = [];
+    const base = stageProvider("base");
+    const { inspection } = await runTrajectoryCompression(
+        store,
+        compressionOptions("application:compression:restart", {
+            compressor: compressorOf(forkAt(0)),
+            protocol: compressionProtocolWithBudgets({ bestOfN: 0 }),
+            workflow: {
+                handlers: notifyHandlers,
+                program: exploreWorkflow({ guided }),
+                programId: "workflow:explore-answer.v1",
+                provider: base,
+            },
+        }),
+    );
+    const { outcome: settled, proposed, rewound } = inspection.compression;
+    const forkPoint = { prefix_id: null, session_id: inspection.source_session_id, step_index: 0 };
+    assert.deepEqual(proposed?.fork_point, forkPoint);
+    assert.equal(proposed?.fork_clamp, null);
+    const rewind = inspectReplaySession(store, {
+        sessionId: rewound?.restore?.rewind_session_id as string,
+    });
+    assert.equal(rewind.origin?.target_step_count, 0);
+    assert.equal(rewind.steps.length, 0);
+    // Every step of the rerun is live: nothing of the source is reused, and the hint shortcut ran.
+    assert.equal(settled?.outcome, "pruned");
+    const compressed = inspectReplaySession(store, { sessionId: settled?.session_id as string });
+    assert.equal(compressed.origin?.target_step_count, 0);
+    assert.deepEqual(
+        compressed.steps.map((step) => step.source),
+        ["live", "live"],
+    );
+    assert.equal(settled?.step_count, 2);
+    assert.deepEqual(guided, [
+        {
+            fork_point: forkPoint,
+            hint: { cited_step_indices: [1, 2], text: "answer directly from the plan" },
+        },
+    ]);
+    assert.equal(inspection.outcome?.step_count_ratio, 2 / 5);
+});
+
+test("out-of-range fork steps are clamped to [0, n - 1] under the configured policy and retained", async () => {
+    // The explore source has n = 5 steps: f = n and beyond clamp to 4, f = -1 clamps to 0.
+    const cases: readonly [number, number, string, number][] = [
+        [5, 4, "restored", 5],
+        [99, 4, "restored", 5],
+        [-1, 0, "pruned", 2],
+    ];
+    for (const [proposedStep, appliedStep, outcome, stepCount] of cases) {
+        using store = new SQLiteTraceStore();
+        const guided: TrajectoryCompressionGuidance[] = [];
+        let proposedPrefix: string | null = null;
+        const { inspection } = await runTrajectoryCompression(
+            store,
+            compressionOptions(`application:compression:clamp:${proposedStep}`, {
+                compressor: compressorOf((context) => {
+                    const proposal = forkAt(proposedStep)(context);
+                    proposedPrefix = proposal.fork_point?.prefix_id ?? null;
+                    return proposal;
+                }),
+                protocol: compressionProtocolWithBudgets({ bestOfN: 0 }),
+                workflow: {
+                    handlers: notifyHandlers,
+                    program: exploreWorkflow({ guided }),
+                    programId: "workflow:explore-answer.v1",
+                    provider: stageProvider("base"),
+                },
+            }),
+        );
+        const label = `f=${proposedStep}`;
+        const source = inspectReplaySession(store, { sessionId: inspection.source_session_id });
+        const forkPoint = {
+            prefix_id: appliedStep === 0 ? null : source.steps[appliedStep - 1]?.prefix_id,
+            session_id: source.session_id,
+            step_index: appliedStep,
+        };
+        const clamp = {
+            policy: "clamp",
+            proposed_prefix_id: proposedPrefix,
+            proposed_step_index: proposedStep,
+        };
+        const { outcome: settled, proposed, rewound } = inspection.compression;
+        // The clamp is retained on every candidate record, and the rerun used the clamped step.
+        for (const record of [proposed, rewound, settled]) {
+            assert.deepEqual(record?.fork_point, forkPoint, label);
+            assert.deepEqual(record?.fork_clamp, clamp, label);
+        }
+        assert.deepEqual(
+            guided.map((guidance) => guidance.fork_point),
+            [forkPoint],
+            label,
+        );
+        assert.equal(settled?.outcome, outcome, label);
+        assert.equal(settled?.step_count, stepCount, label);
+        const compressed = inspectReplaySession(store, {
+            sessionId: settled?.session_id as string,
+        });
+        assert.equal(compressed.origin?.target_step_count, appliedStep, label);
+    }
+});
+
 test("an unavailable restore constituent refuses the prune and retains the reason", async () => {
     using store = new SQLiteTraceStore();
     const verifierContexts: TrajectoryVerifierContext[] = [];

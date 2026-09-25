@@ -102,7 +102,7 @@ Process tests kill a writer between steps and after an admission and recover thr
 
 ## Inspection and reserved owners
 
-`inspectReplaySession(store, { sessionId, clock? })` folds every record on the session owner path
+`inspectReplaySession(store, { sessionId, clock?, lowerProof? })` folds every record on the session owner path
 and validates versions, schemas, modes, witnesses, causal parents, step order and dependencies,
 chained identities, cache evidence, admission before materialization, recorded steps against their
 source steps, checkpoint cuts and constituents, restore evidence, terminal consistency, and the live
@@ -112,6 +112,17 @@ suffix effect to the replay approval rule. It appends nothing and works on read-
 imported stores; imported sessions
 have `live: false`. Unsupported record versions raise `ReplayCompatibilityError`; every other
 inconsistency raises `ReplayEvidenceError`.
+
+### Proof envelope
+
+Every session inspection carries `proof`: `runtime_only` for a root session and the configured
+`extension` profile for a branch session, whose rewind (`fork`) and replay (`replay`) are
+publication controls. With `lowerProof: true`, an eligible static root session is lowered into
+Core-A records and classified by the executable reference machine (`reference_core_a` /
+`reference_validated`, never proof-backed); an ineligible session keeps its envelope and reports
+`metadata.lowering_ineligible`. Receipts returned by session commands carry the unlowered envelope.
+Normative rules: [inspection envelopes](./formal-assurance.md#inspection-envelopes). Tests:
+[`test/formal/inspection-proof-envelope.test.ts`](../test/formal/inspection-proof-envelope.test.ts).
 
 `SQLiteTraceStore.append` refuses groups on replay session owner paths, and `publishCut` refuses a
 replay session as the publishing owner, so only fenced session transactions write session evidence.

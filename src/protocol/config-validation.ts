@@ -96,13 +96,19 @@ export function parseProtocolConfig(
     }
     const workspaces = readWorkspaceConfig(root.workspaces);
     const effects = readEffectConfig(root.effects);
+    const replay = readReplayConfig(root.replay, effects.reversibilityTiers);
     const config = {
         applications: readApplicationsConfig(root.applications),
         backup: readBackupConfig(root.backup, kernel.interchange.format, kernel.store.blobs),
         cli: readCliConfig(root.cli),
         delegation: readDelegationConfig(root.delegation),
         effects,
-        formalAssurance: readFormalAssuranceConfig(root.formalAssurance),
+        formalAssurance: readFormalAssuranceConfig(root.formalAssurance, {
+            dispositions: replay.effects.dispositions,
+            modes: replay.modes,
+            stepKinds: replay.steps.kinds,
+            terminalStatuses: replay.terminal.statuses,
+        }),
         kernel,
         observability: readObservabilityConfig(
             root.observability,
@@ -111,9 +117,9 @@ export function parseProtocolConfig(
         ),
         orphanRepair: readOrphanRepairConfig(root.orphanRepair),
         projections,
-        providers: readProviderConfig(root.providers),
+        providers: readProviderConfig(root.providers, effects.reversibilityTiers),
         recordId,
-        replay: readReplayConfig(root.replay, effects.reversibilityTiers),
+        replay,
         retention: readRetentionConfig(root.retention, root, kernel.interchange.format),
         runs: readRunConfig(root.runs),
         scopes: readScopeConfig(root.scopes, workspaces.repositoryGrants.atoms),

@@ -176,7 +176,10 @@
                         "kind": {
                             "enum": [
                                 "static",
-                                "program"
+                                "program",
+                                "anthropic",
+                                "openai",
+                                "openrouter"
                             ]
                         },
                         "model": {

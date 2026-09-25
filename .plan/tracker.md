@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-25
 
-Current version: `2.36.0`
+Current version: `12.0.0`
 
 Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
@@ -732,6 +732,163 @@ open for a follow-up PATCH before the candidate is tagged.
 - [x] README restructure (PATCH 2.35.1, docs only): consumer-first layout with concepts, status,
   paper coverage, installation, a verified quick start, package entries, grouped docs, development,
   and releases; historical inventories moved to existing changelog, tracker, and docs index.
+- [x] Paper v3 audit #205 (MAJOR 3.0.0): task schemas widened with `number`, `integer`,
+  `boolean`, `null`, `array`, `enum`, `literal`, `union`, and `optional` builders with static
+  inference and path-level `JSONSchemaValidationError` refusals (`SCHEMA_VALIDATION_FAILED`);
+  `schema.fromJSONSchema` and the published task descriptor schema accept the matching documents;
+  existing artifact locks unchanged. New reusable
+  [`compileJSONSchema`](../docs/json-schema-validation.md) validator; application protocols
+  refuse schema surfaces outside its subset and evaluate supervisor observation/action messages,
+  compression proposals, the CRO handoff manifest (`receipt.handoff`), and Tree-RL batch lines
+  against their pinned schemas. Breaking: protocols with unsupported schema vocabulary and
+  decisions their action schema refuses are now refused.
+- [x] Paper v3 audit #207 (MAJOR 4.0.0): counterfactual candidates declare a required edit
+  `scope` (`request` or `downstream`, `applications.cro.editScopes`, applications protocol v6,
+  `APPLICATION_CRO_EDIT_SCOPES`); a `request` edit replays from the boundary before the edited
+  step, so the edited step re-executes and diverges as `root` (a final-step edit replays one live
+  step, a step-0 edit targets boundary zero with a `null` prefix), and a `downstream` edit keeps
+  the first-dependent target. Retained plans carry `edit_scope`, which enters the candidate
+  identity; the candidate record schema admits target step 0. Evaluation report regenerated
+  (counterfactual compared calls 2 -> 7 against the unchanged full-replay 8).
+- [x] Paper v3 audit #208 (MAJOR 5.0.0): trajectory compression admits fork step 0 (restart
+  from the initial prefix with the hint; `prefix_id` null), resolves an out-of-range step under
+  the configured `applications.compression.forkStepPolicy` (`clamp` to `[0, n - 1]` retained as
+  `fork_clamp`, or `reject`; applications protocol v7, `APPLICATION_COMPRESSION_FORK_STEP_POLICIES`),
+  and settles a missing fork step (absent fork point or `step_index`, hint-only) as `no_prune`.
+  Evaluation report version 2 carries `rescues { count, experiment_ids }` (baseline failed,
+  application passed), re-derived by the validator; the repository measures zero rescues
+  (`rescue-scope` limitation). Compression records and v1 reports from 4.0.0 no longer decode.
+- [x] Paper v3 audit #204 (MINOR 5.1.0): provider kinds are configured (`providers.kinds` and
+  `providers.live.kinds`, provider protocol v2, generated `PROVIDER_KINDS`); `createLiveProvider`
+  implements the Anthropic Messages dialect (`cache_control` on the last prefix message, cache
+  read/creation tokens in usage) and an OpenAI-compatible dialect for OpenAI and OpenRouter, with
+  an injectable transport (default global `fetch`), `AbortSignal` cancellation, `LiveProviderError`,
+  and credential redaction; a provider-neutral multi-turn message model (`converse`) prepares the
+  #206 tool extension; `createProviderConversation` supplies a replay provider-session adapter that
+  resends a byte-identical message prefix after rewind. Evidence: stub-transport tests, a
+  whole-store secret scan, and replay byte-identity and simulated cache-hit tests
+  ([live providers](../docs/live-providers.md)). The opt-in live cache test was not run (no
+  credentials); no live cache-hit rate is measured.
+- [x] Paper v3 audit #206 (MAJOR 6.0.0): messages carry `tool_use` and `tool_result` blocks and
+  `ModelConversationRequest` optional `tools` (provider protocol v3, `PROVIDER_PROTOCOL_V3_CONTRACT`);
+  both live dialects map tool definitions, calls, and results under configured per-kind
+  `toolUse` settings and declare `tools: true`; `createProgramConversationProvider` scripts
+  tool-calling turns. `runToolLoop` turns every schema-valid tool call into an intent/outcome effect
+  through a handler stack, supervised dispatch, or replay session (configured turn bound,
+  guidance between turns, turn observer, abort signal); deny-before-outcome and byte-identical
+  replay over a recorded prefix are tested. `providers.tools.metaAgent.tools` declares observe,
+  fork, discard, rewind, replay, read-trace, and diff, and `createMetaAgentTools` backs them with
+  replay inspection, scope-world fork/discard, rewind, replay, owner reads, and divergence
+  analysis; the Figure 1 fork/observe/revert/retry scenario passes end to end with a scripted
+  model ([tool-use loop](../docs/tool-use-loop.md)). Breaking: `ModelContentBlock` is a union of
+  three block kinds. No live model ran the loop (no credentials).
+- [x] Paper v3 audit #209 (MAJOR 7.0.0): per-kind compensation handlers
+  (`createEffectCompensationRegistry`); `discardScope`, `rewindReplaySession`, and
+  `replayReplaySession` compensate every successful compensable effect they abandon exactly once,
+  in reverse materialization order, keyed by the original materialization (replay effect step or
+  supervised dispatch resolution) so all triggers share one compensation; intent, attempts, and
+  outcomes are retained as `shepherd.effect.compensation.v1` records on a reserved owner path
+  (effect protocol v2). Evidence: node:sqlite row-insert fixture with an idempotent delete, a
+  SIGKILL suite, deterministic kills after the world change and after the outcome, and tool-loop
+  compensation ([effect compensation](../docs/compensation.md)). Breaking: discard and branches
+  refuse uncompensated compensable effects without a handler. No compensation lease or waiver.
+- [x] Paper v3 audit #210 (MAJOR 8.0.0): configured automatic checkpoint policies
+  (`replay.checkpoint.automatic`, `REPLAY_CHECKPOINT_POLICIES`: `none`, `provider_step`,
+  `effect_step`, `every_n_steps`; replay protocol v2, `REPLAY_PROTOCOL_V2_CONTRACT`) selected by
+  `checkpointPolicy` on `runReplaySession` and `replayReplaySession` capture the coupled checkpoint
+  immediately before each selected step; rewind and replay to every checkpoint of a world-bound
+  session restore a world whose tree hash equals the source's at that boundary, and rewind still
+  compensates the suffix exactly once. Tree-RL (`bindings` restoration factory) and trajectory
+  compression (`workflow.bindings`, `workflow.checkpointPolicy`) accept world- and process-bound
+  sources at checkpointed fork points. Storage growth per checkpoint measured by
+  `pnpm bench:checkpoints` on one macOS host
+  ([coupled checkpoints](../docs/coupled-checkpoints.md#storage-growth-per-checkpoint)). Breaking:
+  replay protocol v1 configurations are refused. No Linux measurement.
+- [x] Paper v3 audit #216 (MAJOR 9.0.0): run, replay-session, and delegated child-run inspections
+  expose a `proof` envelope (`runtime_only` by default); non-runtime claims imported through run
+  artifact carrier metadata surface only as `metadata.claimed_proof_backed`; retained-world
+  settlement, rewind, replay, and delegation handoff classify as the configured `extension`
+  profile; `inspectReplaySession({ lowerProof: true })` lowers eligible static sessions into Core-A
+  records classified by the executable reference machine (formal assurance protocol v2,
+  `FORMAL_ASSURANCE_V2_CONTRACT`; [inspection envelopes](../docs/formal-assurance.md#inspection-envelopes)).
+  Breaking: run-ledger entry inspections require `proof`. Lowering is reference-validated only.
+- [x] Paper v3 audit #217 (MINOR 9.1.0): `diffReplaySessions` diffs any set of replay sessions
+  against their lowest common lineage ancestor by captured effects; `findFirstReplayRegression`
+  runs a deterministic `bisect` or `linear` first-regression search over a session lineage with a
+  caller verdict (configured `replay.divergence.maxSessions` and `regressionStrategies`); read-only
+  `shepherd-ts replay log/show/diff` and `scope list/show` with stable JSON
+  ([N-way diff](../docs/rewind-and-replay.md#n-way-diff), [CLI](../docs/cli.md)). No divergence
+  causes in the N-way diff; scopes are not diffed.
+- [x] Paper v3 audit #213 (MAJOR 10.0.0): Tree-RL follows Appendix F.6 Algorithm 2 over a batch
+  of prompts with `groupSize` G graded roots each; a fork-selection interface returns
+  `{ branch_turn, tool_call, reason }` clamped to the configured `[1, T - 2]`, with the
+  provider-backed meta-agent selector and the deterministic dependency selector; the proposed tool
+  call seeds branch 0; `computeTreeRlAdvantages` gives inter-root and intra-tree advantages with
+  per-group standardization (exact-value fixture); the per-action `jsonl_v2` batch, the
+  `flat_grpo` baseline, concurrent rollouts with order-independent retained output, and the
+  `exportTreeRlBatchToTrainer` seam ([Tree-RL adapter](../docs/tree-rl-rollouts.md)). Applications
+  protocol v8. Breaking: the Tree-RL options, records, batch format, and baseline change. No trainer;
+  the meta-agent ran only against fixture providers.
+- [x] Paper v3 audit #212 (MAJOR 11.0.0): counterfactual optimization runs Appendix F.1
+  Algorithm 1: per-example train and dev baselines, N proposer iterations of at most k edits with
+  fix and guard sets (caller-supplied or `createToolLoopCounterfactualProposer`, a replayable
+  tool-loop session with `read_effect_trace` and `grep_effect_traces`), reflection-schema and
+  reflection-contract admission with retried refusals, the configured fractional fix/guard gate,
+  dev evaluation with epsilon promotion into a graduate-only pool, dev selection, and the
+  per-proposer-session computation-reuse ratio in the manifest
+  ([counterfactual optimization](../docs/counterfactual-optimization.md)). Applications protocol
+  v9; optional protocol `thresholds`; `minPromotionScore` is a fractional threshold. Breaking: the
+  optimizer options, records, statuses, handoff, and exports change. No live provider ran the
+  proposer.
+- [x] Paper v3 audit #211 (MINOR 11.1.0): the concurrent runtime supervisor
+  (`runRuntimeSupervisor`, `inspectRuntimeSupervisorRun`, `createModelRuntimeSupervisorPolicy`)
+  runs two or more tool-loop workers concurrently in forked custody while a supervisor ticks at the
+  protocol's `tickIntervalMilliseconds` over one live subscription of their streams, builds the
+  paper's per-agent snapshot, and applies per-agent batched Appendix E decisions validated against
+  the pinned schema and admission rules: `inject` between turns of a running worker with a
+  byte-identical prefix, `handoff` with a fresh session (optionally forked from the leader's
+  custody through the new `sourceCustodyId` world fork), and `discard` from a clean fork. Ticks are
+  retained before they take effect; a rerun completes retained ticks without the policy and
+  resumes open attempts byte for byte (SIGKILL and in-process recovery tests)
+  ([runtime supervisor](../docs/runtime-supervisor.md)). Applications protocol v10. The round-based
+  coding supervisor is unchanged. No live model ran the policy or the workers.
+- [x] Paper v3 audit #214 (MINOR 11.2.0): `pnpm bench:scopes` measures `forkScope`/`discardScope`
+  latency over three configured world sizes for every conformant carrier, K=4 branch disk, trace
+  store, and RSS growth, a per-write mutation-size sweep with a storage-versus-written line fit,
+  and per-event record and observe overhead through 200 steps with 0, 1, and 4 observers; every
+  revert is hash-checked against the pre-fork state independently of the carrier. Raw samples in
+  `docs/generated/benchmarks/scope-benchmark-<host-class>.json`, budgets per host class checked by
+  `pnpm check:scopes` (not in `pnpm verify`), and a privileged Linux XFS container lane
+  (`pnpm bench:scopes:linux`) with copy, clone, and overlay
+  ([performance report](../docs/performance-report.md#scope-forkrevert-and-observation-benchmark)).
+  Repository measurements only; no layer-depth sweep (#215) and no bare-metal Linux host.
+- [x] Paper v3 audit #215 (MINOR 11.3.0): workspace protocol v27 device layer. Checkpoints
+  freeze the writable layer as a named lower layer (`openDeviceLayerWorld`, `checkpoint`,
+  `restore`) under a configured depth bound (48, retain 4) with compaction that flattens the
+  oldest layers and retires their names; a pluggable `DeviceLayerAdapter` contract with a public
+  conformance kit (`checkDeviceLayerConformance`, depth and compaction included); copy, clone,
+  stacked-overlay, and reference Docker container (`docker` CLI, config-owned templates, opt-in
+  test) adapters; configured fallback ordering that records the adapter used, and the same opt-in
+  `backendSelection: "fallback"` for carrier backends (strict stays the default).
+  `pnpm bench:device-layers[:linux]` measured overlay checkpoints at 2.06–3.06 ms over 1–128 MiB
+  (ratio 1.32) and flat through 48 layers on the Linux lane
+  ([device layers](../docs/device-layers.md)). Carrier custody, `forkScope`, and replay world
+  images still do not use device layers; no remote sandbox adapters.
+- [x] Paper v3 audit #218 (PATCH 11.3.1): research notes for the Appendix A.2 and §6 future-work
+  directions under [`.plan/research/`](./research/README.md) (interpretability probes,
+  reversible continual learning, substrate-native post-training actions, trace-to-workflow
+  compression, safety deployment profile). Not normative, no results; implementation issues only
+  after review.
+- [x] Epic #202 review fix pass (MAJOR 12.0.0): `schema.void()` refused as an object field and
+  required `{type: "null"}` properties rehydrate as `schema.null()` (#205); replay protocol v3
+  branch `sourceDisposition` (`compensate` default, `retain`) used by Tree-RL, CRO, compression,
+  and the meta-agent `replay` tool (#209); `replay` tool declared reversible and replay-bound
+  substrate commands scoped per session (#206); OpenAI-compatible cache marker on tool-only
+  prefixes (#204); runtime supervisor settlement-rerun, stop, budget, and decision-schema fixes and
+  parent-world merge with lineage rebase (#211); container device-layer single-pass templates
+  (#215); recomputed scope SLO budgets (#214); threat model and trust-boundary docs; coverage gaps
+  hidden by the parallel coverage merge closed in epic-touched files
+  ([close-out](./paper-coverage.md#epic-202-close-out-1200)).
 - [ ] npm readiness, epic #220 (MINOR 2.36.0, branch `codex/phase-13-220-npm-readiness`):
   - [ ] #221 owner publication: prepared only; `"private": true` kept by decision D-020
     (`publishConfig`, prepublish guard, attested packer, trusted publishing, owner checklist in

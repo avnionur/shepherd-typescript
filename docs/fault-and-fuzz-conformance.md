@@ -219,6 +219,7 @@ reproducible from its seed (`SHEPHERD_FAULT_SEED` overrides the configured seed)
 | Looping child writer that is killed | [`test/fixtures/fault-process.ts`](../test/fixtures/fault-process.ts) |
 | Recovery classifier and retries | [`test/faults/recovery.ts`](../test/faults/recovery.ts) |
 | Process kill | [`test/faults/process-kill.test.ts`](../test/faults/process-kill.test.ts) |
+| Compensation kill (7.0.0, #209) | [`test/faults/compensation-kill.test.ts`](../test/faults/compensation-kill.test.ts), fixture [`test/fixtures/compensation-process.ts`](../test/fixtures/compensation-process.ts) |
 | Disk full (`max_page_count`, `ulimit -f`) | [`test/faults/disk-full.test.ts`](../test/faults/disk-full.test.ts) |
 | Real-volume ENOSPC (opt-in) | [`test/faults/volume-enospc.suite.ts`](../test/faults/volume-enospc.suite.ts), `pnpm test:faults:volume` |
 | Corruption | [`test/faults/corruption.test.ts`](../test/faults/corruption.test.ts) |
@@ -290,6 +291,26 @@ directory (`.shepherd-import-stage-*`, owner-only, holding copies of archive blo
 2.32.2 that directory is created beside the target store instead of in the OS temporary directory
 (F-019, fixed). The suite points the child's `TMPDIR` at a private directory, asserts that nothing
 at all is left there, and counts staging directories beside the import targets.
+
+### Compensation kill
+
+`compensation-kill.test.ts` drives the `compensation` operation, which is not in the
+process-kill operation list and therefore not in soak. The parent prepares a root replay session
+that materialized `processKill.compensation.effects` (256) compensable row inserts into a node:sqlite
+fixture world, then runs `processKill.compensation.cycles` (4) kill cycles. The child compensates one
+effect per index with `compensateEffects` and an idempotent handler that deletes the row by primary
+key and logs every world-changing deletion under the idempotency key; a child that runs out of
+effects idles until the kill. Recovery classifies an index `complete` when its compensation was
+already `compensated` (the retry then runs with a handler that fails the test if invoked) and
+`retryable` otherwise (absent, `pending`, or `uncertain`); the retry must end `compensated` with
+one compensated outcome, the row gone, and exactly one world-changing deletion. Two deterministic
+kills cover the moment after the handler's world change (recovered through a rewind trigger) and
+the moment after the outcome is retained ([effect compensation](./compensation.md#crash-and-recovery)).
+
+Recorded results (seed 20260919, 7.0.0 working tree, macOS arm64): 19 complete, 3 retryable, 0
+refused (suite run alone) and 9 complete, 2 retryable, 0 refused (inside `pnpm verify`), with 4
+kills inside a compensation each time; every effect changed the world once. Counts depend on how
+many compensations run before each kill.
 
 ### Disk full
 

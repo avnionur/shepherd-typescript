@@ -67,7 +67,7 @@ export function createTypedEffectHandler<P>(options: TypedEffectHandlerOptions<P
             const validated = createCanonicalSnapshot(readEffectIntent(intent)) as EffectIntent;
             if (validated.kind !== kind)
                 throw new TypeError("typed effect handler kind does not match intent");
-            const payload = metadata.parse(validated.payload, "$");
+            const payload = metadata.parse(validated.payload, "$", "#");
             return createCanonicalSnapshot(
                 readEffectResult(await handle(payload, validated)),
             ) as EffectResult<SemanticValue, SemanticValue>;

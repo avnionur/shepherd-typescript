@@ -1,8 +1,12 @@
+import { existsSync } from "node:fs";
 import path from "node:path";
 
 import { cliProtocolConfig } from "../protocol/config.ts";
-import { CliUsageError } from "./errors.ts";
+import { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
+import { CliUnavailableError, CliUsageError } from "./errors.ts";
 import type { CliHandlerIo } from "./types.ts";
+
+const OPTIONS = cliProtocolConfig.options;
 
 /** @internal Parsed command options, flags, and positional arguments. */
 export type ParsedOptions = {
@@ -69,4 +73,67 @@ export function requireOption(parsed: ParsedOptions, name: string): string {
 export function requireNoPositionals(parsed: ParsedOptions): void {
     if (parsed.positionals.length !== 0)
         throw new CliUsageError("command accepts no positional arguments");
+}
+
+/** @internal Reads the configured bounded `--limit`/`--offset` page. */
+export function pagination(parsed: ParsedOptions): {
+    readonly limit: number;
+    readonly offset: number;
+} {
+    return {
+        limit: readNonNegativeIntegerOption(
+            parsed,
+            OPTIONS.limit,
+            cliProtocolConfig.limits.defaultPageSize,
+            true,
+        ),
+        offset: readNonNegativeIntegerOption(parsed, OPTIONS.offset, 0, false),
+    };
+}
+
+function readNonNegativeIntegerOption(
+    parsed: ParsedOptions,
+    name: string,
+    fallback: number,
+    positive: boolean,
+): number {
+    const raw = parsed.options.get(name);
+    if (raw === undefined) return fallback;
+    const value = Number(raw);
+    if (!Number.isSafeInteger(value) || value < (positive ? 1 : 0)) {
+        throw new CliUsageError(
+            `--${name} must be a ${positive ? "positive" : "non-negative"} integer`,
+        );
+    }
+    if (value > cliProtocolConfig.limits.maxPageSize) {
+        throw new CliUsageError(`--${name} exceeds the configured page bound`);
+    }
+    return value;
+}
+
+/**
+ * @internal Opens the existing `--store` trace store (read-only by default); a missing store is an
+ * unavailable capability and is never created.
+ */
+export function openStore(
+    parsed: ParsedOptions,
+    io: CliHandlerIo,
+    readOnly = true,
+): SQLiteTraceStore {
+    const storePath = resolveOptionPath(
+        parsed,
+        OPTIONS.store,
+        io,
+        cliProtocolConfig.defaults.traceStorePath,
+    );
+    if (!existsSync(storePath))
+        throw new CliUnavailableError(`trace store is unavailable: ${storePath}`);
+    return new SQLiteTraceStore(storePath, { readOnly });
+}
+
+/** @internal Returns the single required selector positional. */
+export function requireOnePositional(parsed: ParsedOptions): string {
+    if (parsed.positionals.length !== 1)
+        throw new CliUsageError("command requires exactly one selector");
+    return parsed.positionals[0] as string;
 }

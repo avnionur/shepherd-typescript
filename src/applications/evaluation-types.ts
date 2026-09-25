@@ -1,3 +1,4 @@
+import type { EffectHandlerStack } from "../effect/handler-types.ts";
 import type {
     APPLICATION_COMPRESSION_BASELINE_KINDS,
     APPLICATION_CRO_BASELINE_KINDS,
@@ -6,7 +7,7 @@ import type {
     APPLICATION_SUPERVISION_BASELINE_KINDS,
     APPLICATION_TREE_RL_BASELINE_KINDS,
 } from "../protocol/values.generated.ts";
-import type { RunReplaySessionOptions } from "../replay/types.ts";
+import type { ReplaySessionProgram, RunReplaySessionOptions } from "../replay/types.ts";
 import type { RunTrajectoryCompressionOptions } from "./compression-types.ts";
 import type { RunCounterfactualOptimizationOptions } from "./counterfactual-types.ts";
 import type { RunCodingSupervisorOptions } from "./supervisor-types.ts";
@@ -58,7 +59,10 @@ export type ApplicationEvaluationExperiment = {
     readonly id: string;
     /** Application protocol definition the experiment runs. */
     readonly protocol: ApplicationProtocolDefinition;
-    /** Command identity recording the Tree-RL source session; required exactly for Tree-RL. */
+    /**
+     * Command identity prefix of the Tree-RL root sessions; required exactly for Tree-RL. Root `g`
+     * of prompt `p` is recorded under `<sourceCommandId>:<p>:<g>`.
+     */
     readonly sourceCommandId?: string;
 };
 
@@ -109,17 +113,29 @@ export type TrajectoryCompressionEvaluationBinding = {
     readonly options: Omit<RunTrajectoryCompressionOptions, "baselines" | "commandId" | "protocol">;
 };
 
-/** Executable Tree-RL binding: the source workflow and the rollout options. */
+/** One Tree-RL evaluation prompt: its program and the G root workflows the evaluation records. */
+export type TreeRlEvaluationPrompt = {
+    /** Handler stack of every rollout suffix of this prompt. */
+    readonly handlers?: EffectHandlerStack;
+    /** Prompt identity. */
+    readonly id: string;
+    /** Deterministic program of every root session of this prompt. */
+    readonly program: ReplaySessionProgram;
+    /** Root workflows in group order, each recorded with the prompt's program. */
+    readonly roots: readonly Omit<RunReplaySessionOptions, "commandId" | "program">[];
+};
+
+/** Executable Tree-RL binding: the prompt batch with its root workflows and the rollout options. */
 export type TreeRlEvaluationBinding = {
     /** Tree-RL kind. */
     readonly kind: (typeof APPLICATION_KINDS)[3];
-    /** Rollout options; the source session is recorded by the evaluation. */
+    /** Rollout options; the prompts and their root sessions are recorded by the evaluation. */
     readonly options: Omit<
         RunTreeRlRolloutsOptions,
-        "baselines" | "commandId" | "protocol" | "sourceSessionId"
+        "baselines" | "commandId" | "prompts" | "protocol"
     >;
-    /** Source workflow recorded under the experiment's `sourceCommandId`. */
-    readonly source: Omit<RunReplaySessionOptions, "commandId">;
+    /** Prompt batch whose roots are recorded under the experiment's `sourceCommandId` prefix. */
+    readonly prompts: readonly TreeRlEvaluationPrompt[];
 };
 
 /** Executable binding of one experiment, discriminated by application kind. */
@@ -223,6 +239,17 @@ export type ApplicationEvaluationComparison = {
     readonly values: readonly ApplicationEvaluationComparisonValue[];
 };
 
+/**
+ * Rescue counts of one report (Appendix D, Table 12): the experiments whose baseline failed its
+ * success condition while the application run passed its own. Derived from the runs and baselines.
+ */
+export type ApplicationEvaluationRescues = {
+    /** Number of rescued experiments. */
+    readonly count: number;
+    /** Rescued experiment identities in experiment order. */
+    readonly experiment_ids: readonly string[];
+};
+
 /** Canonical, digest-bearing `application-evaluation-v1` report. */
 export type ApplicationEvaluationReport = {
     /** One measured baseline per experiment, in experiment order. */
@@ -241,6 +268,8 @@ export type ApplicationEvaluationReport = {
     readonly report_id: string;
     /** Configured report version. */
     readonly report_version: number;
+    /** Rescue counts derived from the runs and baselines. */
+    readonly rescues: ApplicationEvaluationRescues;
     /** Evaluation definition revision. */
     readonly revision: string;
     /** One measured application run per experiment, in experiment order. */

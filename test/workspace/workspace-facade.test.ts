@@ -5,6 +5,7 @@ import * as workspace from "../../src/facades/workspace.ts";
 
 test("workspace facade exposes only workspace-owned runtime symbols", () => {
     assert.deepEqual(Object.keys(workspace), [
+        "DeviceLayerError",
         "GitCustodyError",
         "NativeJailExecutionError",
         "NativeJailUnavailableError",
@@ -24,6 +25,11 @@ test("workspace facade exposes only workspace-owned runtime symbols", () => {
         "captureJailedGrantedTaskWorldDurably",
         "capturePlacedGrantedTaskWorldDurably",
         "captureTaskWorldDurably",
+        "checkDeviceLayerConformance",
+        "createCloneDeviceLayerAdapter",
+        "createContainerDeviceLayerAdapter",
+        "createCopyDeviceLayerAdapter",
+        "createDeviceLayerAdapters",
         "createGitAwareCustody",
         "createGitChangesetInspection",
         "createGitRepositoryBindings",
@@ -32,6 +38,7 @@ test("workspace facade exposes only workspace-owned runtime symbols", () => {
         "createNativeJailCommand",
         "createNativeJailPlacementResolution",
         "createNativeJailRunner",
+        "createOverlayDeviceLayerAdapter",
         "createPlacementPlatformEvidence",
         "createReferenceCopyCarrier",
         "createRetainedWorldRunner",
@@ -54,6 +61,7 @@ test("workspace facade exposes only workspace-owned runtime symbols", () => {
         "inspectWorkspacePathProtection",
         "inspectWorkspacePlatformConformance",
         "mergeScope",
+        "openDeviceLayerWorld",
         "openWorkspace",
         "prepareRetainedWorldSettlement",
         "recoverGrantedTaskWorldDurably",

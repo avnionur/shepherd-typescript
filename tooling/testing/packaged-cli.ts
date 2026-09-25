@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
     existsSync,
     mkdirSync,
@@ -51,7 +51,7 @@ const protocol = JSON.parse(
             readonly compatibilityVersion: string;
             readonly version: number;
         };
-        readonly exitCodes: { readonly failure: number };
+        readonly exitCodes: { readonly failure: number; readonly usage: number };
         readonly options: { readonly json: string };
     };
     readonly kernel: { readonly store: { readonly schemaVersion: number } };
@@ -381,11 +381,11 @@ process.stdout.write(inspection.status + "\\n" + inspection.depth + "\\n" + tree
         const applicationsFacadeProbe = path.join(consumerRoot, "applications-facade-probe.mjs");
         writeFileSync(
             applicationsFacadeProbe,
-            `import { readApplicationProtocol as rootReadApplicationProtocol, runCodingSupervisor as rootRunCodingSupervisor } from ${JSON.stringify(packageManifest.name)};
-import { APPLICATION_KINDS, APPLICATION_SUPERVISION_POLICY_KINDS, applicationProtocolId, deriveApplicationOwnerId, inspectApplicationManifest, inspectCodingSupervisorRun, readApplicationProtocol, runCodingSupervisor, validateApplicationManifest } from ${JSON.stringify(`${packageManifest.name}/applications`)};
+            `import { createModelRuntimeSupervisorPolicy as rootCreateModelRuntimeSupervisorPolicy, readApplicationProtocol as rootReadApplicationProtocol, runCodingSupervisor as rootRunCodingSupervisor, runRuntimeSupervisor as rootRunRuntimeSupervisor } from ${JSON.stringify(packageManifest.name)};
+import { APPLICATION_KINDS, APPLICATION_RUNTIME_SUPERVISION_ACTIONS, APPLICATION_SUPERVISION_POLICY_KINDS, applicationProtocolId, createModelRuntimeSupervisorPolicy, deriveApplicationOwnerId, inspectApplicationManifest, inspectCodingSupervisorRun, inspectRuntimeSupervisorRun, readApplicationProtocol, runCodingSupervisor, runRuntimeSupervisor, validateApplicationManifest } from ${JSON.stringify(`${packageManifest.name}/applications`)};
 import { schema, task } from ${JSON.stringify(`${packageManifest.name}/tasks`)};
 import { SQLiteTraceStore } from ${JSON.stringify(`${packageManifest.name}/trace`)};
-if (readApplicationProtocol !== rootReadApplicationProtocol || runCodingSupervisor !== rootRunCodingSupervisor) throw new Error("applications facade mismatch");
+if (readApplicationProtocol !== rootReadApplicationProtocol || runCodingSupervisor !== rootRunCodingSupervisor || runRuntimeSupervisor !== rootRunRuntimeSupervisor || createModelRuntimeSupervisorPolicy !== rootCreateModelRuntimeSupervisorPolicy || typeof inspectRuntimeSupervisorRun !== "function") throw new Error("applications facade mismatch");
 const protocol = readApplicationProtocol({ budgets: { maxProviderCalls: 2, maxRounds: 4, maxTurnsPerWorker: 1 }, dataset: { id: "probe", items: ["file.txt"], revision: "1" }, kind: APPLICATION_KINDS[0], protocolVersion: "probe.v1", seeds: [1], surfaces: [{ content: "observe", id: "observe", kind: "prompt", role: "observation" }, { content: "act", id: "act", kind: "prompt", role: "action" }, { content: { type: "object" }, id: "observation-schema", kind: "schema", role: "observation" }, { content: { type: "object" }, id: "action-schema", kind: "schema", role: "action" }, { content: { name: "accept" }, id: "tool", kind: "tool", role: "action" }] });
 const descriptor = task({ input: schema.object({ path: schema.string() }), instruction: "Edit the path.", name: "applications-probe", output: schema.object({ path: schema.string() }), version: "1" });
 const worker = (workerId) => ({ budget: { maxTurns: 1 }, grant: [], input: { path: "file.txt" }, program: ({ input }) => input, task: descriptor, workerId });
@@ -394,7 +394,7 @@ const { manifest, inspection } = await runCodingSupervisor(store, { changedPaths
 const applicationId = deriveApplicationOwnerId("application:probe");
 if (manifest.protocol_id !== applicationProtocolId(protocol) || validateApplicationManifest(JSON.parse(JSON.stringify(manifest))).manifest_id !== manifest.manifest_id) throw new Error("manifest mismatch");
 if (inspectApplicationManifest(store, applicationId).manifest.manifest_id !== manifest.manifest_id || inspectCodingSupervisorRun(store, applicationId).decisions.length !== inspection.decisions.length) throw new Error("inspection mismatch");
-process.stdout.write(inspection.decisions.map((decision) => decision.decision.kind).join(",") + "\\n" + inspection.decisions[1].conflict.kind + "\\n" + inspection.workers.map((entry) => entry.attempts[0].status).join(",") + "\\n");
+process.stdout.write(inspection.decisions.map((decision) => decision.decision.kind).join(",") + "\\n" + inspection.decisions[1].conflict.kind + "\\n" + inspection.workers.map((entry) => entry.attempts[0].status).join(",") + "\\n" + APPLICATION_RUNTIME_SUPERVISION_ACTIONS.join(",") + "\\n");
 `,
         );
         assert.equal(
@@ -402,7 +402,7 @@ process.stdout.write(inspection.decisions.map((decision) => decision.decision.ki
                 cwd: consumerRoot,
                 encoding: "utf8",
             }),
-            "observe,accept\npath_overlap\naccepted,discarded\n",
+            "observe,accept\npath_overlap\naccepted,discarded\nnone,inject,handoff,discard\n",
         );
         const counterfactualProbe = path.join(consumerRoot, "counterfactual-probe.mjs");
         writeFileSync(
@@ -415,11 +415,13 @@ if (runCounterfactualOptimization !== rootRunCounterfactualOptimization) throw n
 const provider = (label) => ({ descriptor: createStaticProvider({ descriptor: { id: label, model: "probe" }, exchanges: [] }).descriptor, invoke: async (request) => ({ output: { text: label + ":" + request.input.stage }, usage: { cacheCreationInputTokens: 0, cacheReadInputTokens: 0, costUsd: null, inputTokens: 1, outputTokens: 1 } }) });
 const request = (stage, prior) => ({ input: { prior, stage }, instruction: stage, outputSchema: { type: "object" } });
 const program = async (context) => { const plan = await context.invokeProvider(request("plan", null)); await context.invokeProvider(request("aside", null), { dependsOn: [] }); const draft = await context.invokeProvider(request("draft", plan.response.output), { dependsOn: [plan.handle] }); return draft.response.output; };
-const protocol = readApplicationProtocol({ budgets: { maxCandidates: 2, maxProviderCalls: 20, minPromotionScore: 1 }, dataset: { id: "probe", items: ["workflow"], revision: "1" }, kind: "counterfactual_optimization", protocolVersion: "probe.v1", seeds: [1], surfaces: [{ content: "propose", id: "propose", kind: "prompt", role: "proposer" }, { content: { name: "propose_candidate" }, id: "tool", kind: "tool", role: "proposer" }, { content: { type: "object" }, id: "reflection", kind: "schema", role: "reflection" }, { content: { type: "object" }, id: "handoff", kind: "schema", role: "handoff" }] });
+const protocol = readApplicationProtocol({ budgets: { iterations: 1, maxCandidates: 2, maxProposalAttempts: 1, maxProviderCalls: 40, proposalsPerIteration: 2, reflectionMinMechanisms: 0 }, dataset: { id: "probe", items: ["t1", "d1"], revision: "1" }, kind: "counterfactual_optimization", protocolVersion: "probe.v1", seeds: [1], surfaces: [{ content: "propose", id: "propose", kind: "prompt", role: "proposer" }, { content: { name: "propose_candidate" }, id: "tool", kind: "tool", role: "proposer" }, { content: { type: "object" }, id: "reflection", kind: "schema", role: "reflection" }, { content: { type: "object" }, id: "handoff", kind: "schema", role: "handoff" }], thresholds: { minPromotionScore: 0.5, promoteDevEpsilon: 0.05, reflectionAudaciousPrior: 0.2, reflectionDuplicateSimilarity: 0.85, targetedImproveThreshold: 0.67, targetedMaxScoreDrop: 0.02, targetedMinScoreLift: 0 } });
+const edit = (name, step, label, prior) => ({ changes: ["provider"], fix_set: ["t1"], guard_set: [], mechanism: name, name, patch: label, prior, rationale: name, scope: "request", step_index: step });
 using store = new SQLiteTraceStore();
-const { inspection, manifest } = await runCounterfactualOptimization(store, { baseline: { program, programId: "probe.v1", provider: provider("base") }, baselines: ["full_replay"], candidates: [{ changes: ["provider"], name: "plan", provider: provider("alt"), stepIndex: 0 }, { changes: ["provider"], name: "aside", provider: provider("aside"), stepIndex: 1 }], claimId: "probe", commandId: "application:cro:probe", evaluate: ({ candidate }) => ({ passed: true, reason: "ok", score: candidate.name === "plan" ? 2 : 1 }), protocol });
-if (inspectCounterfactualOptimization(store, deriveApplicationOwnerId("application:cro:probe")).promotion?.name !== "plan" || !APPLICATION_CRO_CANDIDATE_STATUSES.includes(inspection.promotion.status)) throw new Error("promotion mismatch");
-process.stdout.write(inspection.candidates.map((candidate) => candidate.outcome.target.step_index + "/" + candidate.outcome.divergence.live_steps + "/" + candidate.outcome.baseline.provider_calls).join(",") + "\\n" + manifest.costs.provider_calls + "\\n");
+const { inspection, manifest } = await runCounterfactualOptimization(store, { applyEdit: ({ edit }) => ({ provider: provider(edit.patch) }), baseline: { program: () => program, programId: "probe.v1", provider: provider("base") }, baselines: ["full_replay"], claimId: "probe", commandId: "application:cro:probe", dataset: { dev: [{ id: "d1", input: null }], train: [{ id: "t1", input: null }] }, metric: ({ session }) => (session.terminal.result.value.text.startsWith("alt:") ? 1 : 0), proposer: () => ({ edits: [edit("plan", 0, "alt", 0.1), edit("aside", 1, "aside", 0.5)], parent: null, reflection: {} }), protocol });
+const [plan] = inspection.candidates;
+if (inspectCounterfactualOptimization(store, deriveApplicationOwnerId("application:cro:probe")).selection?.selected_candidate_id !== plan.candidate_id || !APPLICATION_CRO_CANDIDATE_STATUSES.includes(plan.status)) throw new Error("selection mismatch");
+process.stdout.write(inspection.candidates.map((candidate) => candidate.status + "/" + candidate.targeted[0].target.step_index + "/" + candidate.targeted[0].divergence.live_steps + "/" + candidate.targeted[0].baseline.provider_calls).join(",") + "\\n" + manifest.costs.provider_calls + "\\n" + manifest.computation_reuse[0].recorded_steps + "/" + manifest.computation_reuse[0].live_steps + "\\n");
 `,
         );
         assert.equal(
@@ -427,7 +429,7 @@ process.stdout.write(inspection.candidates.map((candidate) => candidate.outcome.
                 cwd: consumerRoot,
                 encoding: "utf8",
             }),
-            "2/1/3,3/0/3\n10\n",
+            "promoted/0/3/3,archived/1/2/3\n23\n1/8\n",
         );
         const compressionProbe = path.join(consumerRoot, "compression-probe.mjs");
         writeFileSync(
@@ -460,7 +462,7 @@ process.stdout.write(inspection.outcome.outcome + "\\n" + inspection.outcome.ori
         writeFileSync(
             treeRlProbe,
             `import { runTreeRlRollouts as rootRunTreeRlRollouts } from ${JSON.stringify(packageManifest.name)};
-import { APPLICATION_TREE_RL_BATCH_FORMATS, deriveApplicationOwnerId, exportTreeRlTrainingBatch, readApplicationProtocol, runTreeRlRollouts } from ${JSON.stringify(`${packageManifest.name}/applications`)};
+import { APPLICATION_TREE_RL_BATCH_FORMATS, createDependencyTreeRlForkSelector, deriveApplicationOwnerId, exportTreeRlTrainingBatch, readApplicationProtocol, runTreeRlRollouts } from ${JSON.stringify(`${packageManifest.name}/applications`)};
 import { createStaticProvider } from ${JSON.stringify(`${packageManifest.name}/providers`)};
 import { runReplaySession } from ${JSON.stringify(`${packageManifest.name}/replay`)};
 import { SQLiteTraceStore } from ${JSON.stringify(`${packageManifest.name}/trace`)};
@@ -468,14 +470,15 @@ if (runTreeRlRollouts !== rootRunTreeRlRollouts) throw new Error("tree-rl facade
 const provider = (label) => ({ descriptor: createStaticProvider({ descriptor: { id: label, model: "probe" }, exchanges: [] }).descriptor, invoke: async (request) => ({ output: { text: label + ":" + request.input.stage }, usage: { cacheCreationInputTokens: 0, cacheReadInputTokens: 0, costUsd: null, inputTokens: 1, outputTokens: 1 } }) });
 const request = (stage) => ({ input: { stage }, instruction: stage, outputSchema: { type: "object" } });
 const program = async (context) => { const plan = await context.invokeProvider(request("plan")); const answer = await context.invokeProvider(request("answer"), { dependsOn: [plan.handle] }); return answer.response.output; };
-const protocol = readApplicationProtocol({ budgets: { branches: 2, maxForkPoints: 2, maxProviderCalls: 8, minDependents: 1 }, dataset: { id: "probe", items: ["workflow"], revision: "1" }, kind: "tree_rl", protocolVersion: "probe.v1", seeds: [1, 2], surfaces: [{ content: "continue", id: "rollout", kind: "prompt", role: "rollout" }, { content: { type: "object" }, id: "line", kind: "schema", role: "training_batch" }] });
+const protocol = readApplicationProtocol({ budgets: { branches: 2, groupSize: 2, maxProviderCalls: 8 }, dataset: { id: "probe", items: ["workflow"], revision: "1" }, kind: "tree_rl", protocolVersion: "probe.v1", seeds: [1, 2], surfaces: [{ content: "continue", id: "rollout", kind: "prompt", role: "rollout" }, { content: { type: "object" }, id: "line", kind: "schema", role: "training_batch" }] });
 using store = new SQLiteTraceStore();
-const source = await runReplaySession(store, { claimId: "probe", commandId: "source:probe", program, programId: "probe.v1", provider: provider("base") });
-const { batch, manifest } = await runTreeRlRollouts(store, { claimId: "probe", commandId: "application:tree-rl:probe", program, protocol, provider: ({ seed }) => provider("s" + seed), reward: ({ seed }) => seed, sourceSessionId: source.inspection.session_id });
+const roots = [];
+for (const label of ["base", "alt"]) roots.push((await runReplaySession(store, { claimId: "probe", commandId: "root:probe:" + label, program, programId: "probe.v1", provider: provider(label) })).inspection.session_id);
+const { batch, manifest } = await runTreeRlRollouts(store, { claimId: "probe", commandId: "application:tree-rl:probe", normalization: "none", prompts: [{ id: "task", program, roots }], protocol, provider: ({ root_session_id, seed }) => provider("s" + seed + ":" + root_session_id), reward: ({ group_index, seed }) => (seed ?? 0) + 3 * group_index, selector: createDependencyTreeRlForkSelector() });
 using imported = new SQLiteTraceStore();
 imported.importTrace(store.exportTrace());
 if (exportTreeRlTrainingBatch(imported, deriveApplicationOwnerId("application:tree-rl:probe")).batch_digest !== batch.batch_digest || batch.format !== APPLICATION_TREE_RL_BATCH_FORMATS[0]) throw new Error("batch mismatch");
-process.stdout.write(batch.line_count + "\\n" + batch.lines.map((line) => line.intra_branch_advantage).join(",") + "\\n" + batch.lines.map((line) => line.inter_branch_advantage).join(",") + "\\n" + manifest.costs.provider_calls + "\\n");
+process.stdout.write(batch.line_count + "\\n" + batch.lines.map((line) => line.intra_tree_advantage).join(",") + "\\n" + batch.lines.map((line) => line.inter_root_advantage).join(",") + "\\n" + batch.lines[1].actions.map((action) => action.segment).join(",") + "\\n" + manifest.costs.provider_calls + "\\n");
 `,
         );
         assert.equal(
@@ -483,22 +486,22 @@ process.stdout.write(batch.line_count + "\\n" + batch.lines.map((line) => line.i
                 cwd: consumerRoot,
                 encoding: "utf8",
             }),
-            "2\n-0.5,0.5\n0,0\n4\n",
+            "6\n-1,0,1,-1,0,1\n-1.5,-1.5,-1.5,1.5,1.5,1.5\nsuffix,suffix\n12\n",
         );
         const evaluationProbe = path.join(consumerRoot, "evaluation-probe.mjs");
         writeFileSync(
             evaluationProbe,
             `import { runApplicationEvaluation as rootRunApplicationEvaluation } from ${JSON.stringify(packageManifest.name)};
-import { APPLICATION_EVALUATION_METRICS, compareApplicationBaseline, runApplicationEvaluation, validateApplicationEvaluationReport } from ${JSON.stringify(`${packageManifest.name}/applications`)};
+import { APPLICATION_EVALUATION_METRICS, compareApplicationBaseline, createDependencyTreeRlForkSelector, runApplicationEvaluation, validateApplicationEvaluationReport } from ${JSON.stringify(`${packageManifest.name}/applications`)};
 import { createStaticProvider } from ${JSON.stringify(`${packageManifest.name}/providers`)};
 import { SQLiteTraceStore } from ${JSON.stringify(`${packageManifest.name}/trace`)};
 if (runApplicationEvaluation !== rootRunApplicationEvaluation) throw new Error("evaluation facade mismatch");
 const provider = (label) => ({ descriptor: createStaticProvider({ descriptor: { id: label, model: "probe" }, exchanges: [] }).descriptor, invoke: async (request) => ({ output: { text: label + ":" + request.input.stage }, usage: { cacheCreationInputTokens: 0, cacheReadInputTokens: 0, costUsd: 0.5, inputTokens: 1, outputTokens: 1 } }) });
 const request = (stage) => ({ input: { stage }, instruction: stage, outputSchema: { type: "object" } });
 const program = async (context) => { const plan = await context.invokeProvider(request("plan")); const answer = await context.invokeProvider(request("answer"), { dependsOn: [plan.handle] }); return answer.response.output; };
-const protocol = { budgets: { branches: 2, maxForkPoints: 2, maxProviderCalls: 8, minDependents: 1 }, dataset: { id: "probe", items: ["workflow"], revision: "1" }, kind: "tree_rl", protocolVersion: "probe.v1", seeds: [1, 2], surfaces: [{ content: "continue", id: "rollout", kind: "prompt", role: "rollout" }, { content: { type: "object" }, id: "line", kind: "schema", role: "training_batch" }] };
-const definition = { evaluationId: "probe", experiments: [{ baseline: { kind: "single_rollout" }, commandId: "evaluation:probe", id: "tree-rl", protocol, sourceCommandId: "evaluation:probe:source" }], limitations: [{ id: "probe", text: "Synthetic probe." }], revision: "1" };
-const bind = () => ({ kind: "tree_rl", options: { claimId: "probe", program, provider: ({ seed }) => provider("s" + seed), reward: ({ seed }) => seed }, source: { claimId: "probe", program, programId: "probe.v1", provider: provider("base") } });
+const protocol = { budgets: { branches: 2, groupSize: 2, maxProviderCalls: 8 }, dataset: { id: "probe", items: ["workflow"], revision: "1" }, kind: "tree_rl", protocolVersion: "probe.v1", seeds: [1, 2], surfaces: [{ content: "continue", id: "rollout", kind: "prompt", role: "rollout" }, { content: { type: "object" }, id: "line", kind: "schema", role: "training_batch" }] };
+const definition = { evaluationId: "probe", experiments: [{ baseline: { kind: "flat_grpo" }, commandId: "evaluation:probe", id: "tree-rl", protocol, sourceCommandId: "evaluation:probe:root" }], limitations: [{ id: "probe", text: "Synthetic probe." }], revision: "1" };
+const bind = () => ({ kind: "tree_rl", options: { claimId: "probe", provider: ({ root_session_id, seed }) => provider("s" + seed + ":" + root_session_id), reward: ({ seed }) => seed ?? 0, selector: createDependencyTreeRlForkSelector() }, prompts: [{ id: "task", program, roots: [{ claimId: "probe", programId: "probe.v1", provider: provider("base") }, { claimId: "probe", programId: "probe.v1", provider: provider("alt") }] }] });
 using store = new SQLiteTraceStore();
 const report = await runApplicationEvaluation(store, { bind, definition });
 using other = new SQLiteTraceStore();
@@ -513,7 +516,7 @@ process.stdout.write(values.map((value) => value.metric + "=" + value.delta).joi
                 cwd: consumerRoot,
                 encoding: "utf8",
             }),
-            "cost_usd=1,provider_calls=2,input_tokens=2,output_tokens=2,steps=2,success=null\ntrue\n",
+            "cost_usd=4,provider_calls=8,input_tokens=8,output_tokens=8,steps=8,success=null\ntrue\n",
         );
         const publicErrorProbe = path.join(consumerRoot, "public-error-probe.mjs");
         writeFileSync(
@@ -874,6 +877,14 @@ process.stdout.write(values.join(",") + "\\n");
             traceStorePath,
         ]);
         assert.deepEqual(traceRevisions.result.trace_revisions, traces.result.trace_revisions);
+        const replaySessions = invokeJson(executable, ["replay", "log", "--store", traceStorePath]);
+        assert.equal(Array.isArray(replaySessions.result.replay_sessions), true);
+        const scopes = invokeJson(executable, ["scope", "list", "--store", traceStorePath]);
+        assert.equal(Array.isArray(scopes.result.scopes), true);
+        assert.equal(
+            spawnSync(executable, ["replay", "diff", "@latest", "--store", traceStorePath]).status,
+            protocol.cli.exitCodes.usage,
+        );
         const storeVerification = invokeJson(executable, [
             "store",
             "verify",
@@ -1022,6 +1033,8 @@ type InstalledJsonEnvelope = {
             readonly inspection: { readonly status: string };
             readonly run_id: string;
         };
+        readonly replay_sessions?: readonly unknown[];
+        readonly scopes?: readonly unknown[];
         readonly trace_revisions?: readonly unknown[];
         readonly vcscore?: { readonly output: { readonly output_id: string } };
     };

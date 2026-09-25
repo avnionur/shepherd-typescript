@@ -83,7 +83,7 @@ test("SQLiteTaskRegistry rejects consistently locked unsupported schema document
     using registry = new SQLiteTaskRegistry();
     const descriptor = task(taskDefinition());
     const malformedSchemas = [
-        { type: "number" },
+        { minimum: 0, type: "number" },
         { type: 1 },
         { extra: true, type: "string" },
         { additionalProperties: true, properties: {}, required: [], type: "object" },
@@ -94,15 +94,18 @@ test("SQLiteTaskRegistry rejects consistently locked unsupported schema document
         {
             additionalProperties: false,
             properties: { value: { type: "string" } },
-            required: [],
+            required: ["other"],
             type: "object",
         },
         {
             additionalProperties: false,
-            properties: { value: { type: "number" } },
+            properties: { value: { type: "decimal" } },
             required: ["value"],
             type: "object",
         },
+        { items: { type: "string" }, type: "array", uniqueItems: true },
+        { enum: [] },
+        { oneOf: [{ type: "string" }] },
         {},
     ];
 

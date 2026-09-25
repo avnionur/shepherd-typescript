@@ -1,3 +1,4 @@
+import type { ProofEnvelope } from "../formal/types.ts";
 import type {
     DURABLE_EXECUTION_RECOVERY_STATUSES,
     RETAINED_WORLD_SETTLEMENT_ACTIONS,
@@ -178,6 +179,11 @@ export type DurableTaskExecutionInspection = {
     readonly lifecycle: DurableTaskExecutionLifecycleInspection;
     /** Exact terminal outcome evidence, or `null` before terminal publication. */
     readonly outcome: DurableTaskExecutionOutcomeInspection | null;
+    /**
+     * Inspectable claim strength: `runtime_only` by default, imported non-runtime claims only as
+     * `claimed_proof_backed` metadata, and `extension` for publication controls.
+     */
+    readonly proof: ProofEnvelope;
     /** Stable durable run identity. */
     readonly run_id: string;
     /** Ordered terminal settlement citations published for this execution. */

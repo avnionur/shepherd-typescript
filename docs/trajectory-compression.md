@@ -8,7 +8,7 @@ point: [`src/facades/applications.ts`](../src/facades/applications.ts) (`./appli
 `runTrajectoryCompression`, `inspectTrajectoryCompression`), with root exports from
 [`src/index.ts`](../src/index.ts). Configuration: `applications.compression` and
 `applications.limits` in [`protocol.config.json`](../protocol.config.json) (applications protocol
-v3); the repository's Appendix D protocol is the `compression` definition in
+v3; the fork-step policy since applications protocol v7); the repository's Appendix D protocol is the `compression` definition in
 [`config/research-applications.config.json`](../config/research-applications.config.json).
 Generated schema:
 [`application-compression-v1.schema.json`](../spec/schemas/application-compression-v1.schema.json).
@@ -18,7 +18,8 @@ Tests: [`trajectory-compression.test.ts`](../test/applications/trajectory-compre
 [`trajectory-compression-crash.test.ts`](../test/applications/trajectory-compression-crash.test.ts),
 [`trajectory-compression-recovery.test.ts`](
 ../test/applications/trajectory-compression-recovery.test.ts),
-and [`compression-records.test.ts`](../test/applications/compression-records.test.ts). Manifest
+[`compression-records.test.ts`](../test/applications/compression-records.test.ts), and
+[`trajectory-compression-worlds.test.ts`](../test/applications/trajectory-compression-worlds.test.ts). Manifest
 rules: [application manifests](./application-manifests.md). Design constraints:
 [research applications contract](../.plan/research-applications-contract.md).
 
@@ -47,19 +48,31 @@ identity and the step, so a repeated command converges on retained evidence.
 
 `bestOfN` above `limits.maxBestOfN` is `ApplicationBudgetError`; `bestOfN` above the number of
 declared seeds is `ApplicationProtocolError`. Both, and every other malformed option or protocol,
-are refused before any record, session, or provider call. Surfaces are pinned into the manifest by
-digest; the repository has no runtime JSON Schema evaluator, so the proposal is validated against
-the closed grammar published as `$defs.proposal` of the generated compression schema.
+are refused before any record, session, or provider call, as is a schema surface outside the
+[supported JSON Schema subset](./json-schema-validation.md). Surfaces are pinned into the manifest
+by digest. The compressor's proposal is validated at runtime against every `schema` surface of the
+`compression` role (`compileJSONSchema`), then against the closed grammar published as
+`$defs.proposal` of the generated compression schema and against the source. A proposal either
+refuses is retained as a rejected candidate and raised as `ApplicationEvidenceError` whose cause
+carries the path-level issues (for example `$.fork_point.step_index must be an integer`).
 
 ## Workflow and children
 
 The caller supplies:
 
-- `workflow` `{ program, programId, provider?, handlers?, task?, providerSession? }`. `program` is a
+- `workflow` `{ program, programId, provider?, handlers?, task?, providerSession?, bindings?,
+  checkpointPolicy? }`. `program` is a
   factory: `program(null)` is the recorded workflow and every plain rerun, and
   `program({ fork_point, hint })` re-executes the same workflow under a proposal. The guided
   program must issue the recorded prefix unchanged; only steps at or after the fork point may use
-  the hint. The workflow binds no worlds or processes.
+  the hint. Since 8.0.0 `bindings({ application_id, role, seed })` binds worlds, processes, and a
+  handler stack to each session: `source` (the live source world), `rewind`, `compressed`, and
+  `restoration` (fresh empty restoration roots), and `control` (a fresh world per seed at the
+  initial state the caller prepares). It is called at every session start, including a resumed
+  one, so it must return the same bindings for the same role and seed. `checkpointPolicy` is the
+  [automatic checkpoint policy](./coupled-checkpoints.md#automatic-checkpoints) of the source,
+  every suffix replay, and every control. Without `bindings` the workflow binds no worlds or
+  processes.
 - `compressor` and `verifier`: child run definitions `{ task, budget, grant, provenance?, program |
   provider }` opened under `parent` as `supervisorId`. Task schemas admit only strings and closed
   objects, so evidence and results cross the delegation seam as canonical JSON text: the child input
@@ -80,13 +93,28 @@ step's index, kind, prefix identity, dependencies, source, request, response out
 intent, and every checkpoint's identity, boundary, prefix, and classification) and returns
 `{ fork_point, hint }`:
 
-- `fork_point` is `{ session_id, step_index, prefix_id }` or null. It must name the source session,
-  retain at least one and fewer than all source steps, and carry exactly the prefix identity the
-  source retains through `step_index` steps. It names the retained checkpoint at that boundary when
-  one exists, otherwise the step boundary.
-- `hint` is `{ text, cited_step_indices }` or null; the text fits `limits.maxPromptBytes`, cited
-  indices are strictly ascending and name retained source steps (each below the source step count),
-  and a hint requires a fork point.
+Both fields are optional; an absent field is null.
+
+- `fork_point` is `{ session_id, prefix_id, step_index? }` or null. It must name the source session.
+  For an `n`-step source, `step_index` in `[0, n - 1]` must carry exactly the prefix identity the
+  source retains through `step_index` steps, which is null at step `0`. Step `0` restarts from the
+  initial prefix: the rewind and the compressed session retain no source step and the whole
+  workflow reruns under the hint (Appendix D.5). The fork point names the retained checkpoint at
+  that boundary when one exists, otherwise the step boundary.
+- **Missing fork step.** A null or absent `fork_point`, or one without `step_index`, is a missing
+  fork step and settles `no_prune` (Appendix D.6), with or without a hint.
+- **Out-of-range fork step.** `step_index` is any safe integer. An index outside `[0, n - 1]` is
+  resolved by the configured `applications.compression.forkStepPolicy`, one of
+  `forkStepPolicies` (`APPLICATION_COMPRESSION_FORK_STEP_POLICIES`):
+  - `clamp` (the repository default, Appendix D.6) moves the index to the nearest bound, `0` below
+    the range and `n - 1` above it, and the fork point takes the retained prefix identity at that
+    bound. The proposed index and prefix identity are retained as
+    `fork_clamp { policy, proposed_step_index, proposed_prefix_id }` on every candidate record, so
+    `f = n` forks at `n - 1` and `f = -1` restarts at `0`;
+  - `reject` refuses the proposal like any other grammar violation.
+- `hint` is `{ text, cited_step_indices }` or null; the text fits `limits.maxPromptBytes`, and cited
+  indices are strictly ascending and name retained source steps (each below the source step count).
+  A hint without a fork step is retained only by its digest and prunes nothing.
 
 A proposal the grammar or the source refuses, a compressor child that terminally failed (its
 completion is not `finished`, including a child settled `cancelled` by the cancellation path), or
@@ -97,18 +125,24 @@ rerun under another supervisor or content raises `DelegationCommandConflictError
 `running` by a dead process raises `DelegationStatusError` and stays fail-closed until the
 [cancellation path](./supervisor-operations.md) settles it, and lease and store errors raise
 unchanged. The same rule applies to every verifier child.
-A valid proposal is retained as `proposed` with the fork point, `hint_digest` (the configured digest
-of the canonical hint), and `fork_id` (`compression-fork:sha256:` over the application, fork point,
-and hint digest).
+A valid proposal is retained as `proposed` with the resolved fork point, the `fork_clamp` evidence
+(null when the step was in range or missing), `hint_digest` (the configured digest of the canonical
+hint), and `fork_id` (`compression-fork:sha256:` over the application, resolved fork point, and hint
+digest).
 
 ## Outcomes
 
-- **`no_prune`, no fork point.** A null fork point settles `no_prune` with the configured
+- **`no_prune`, no fork point.** A missing fork step settles `no_prune` with the configured
   `noForkPoint` reason. The source is the result; nothing is rewound or replayed.
 - **`no_prune`, unavailable restore.** A fork point at a retained checkpoint is classified with
   `classifyReplayCheckpoint`. An `unavailable` classification refuses the prune: the candidate
   settles `no_prune` with the configured `restoreUnavailable` reason and the classification and every
   constituent with its reason, and nothing is rewound.
+- **`no_prune`, no checkpoint at a world-bound fork point.** A source that binds worlds or
+  processes is restorable only at a retained checkpoint. A fork point without one settles
+  `no_prune` with the `restoreUnavailable` reason, classification `unavailable`, and every world
+  and process `unavailable` with the configured `boundaryWithoutCheckpoint` reason; nothing is
+  rewound.
 - **Restoration.** Otherwise `rewindReplaySession` restores the fork point (the checkpoint, or the
   step boundary) from the source. The rewind's restore classification and constituents, its restore
   record, and its session are retained as `rewound` before any suffix runs. A rewind that does not
@@ -119,6 +153,10 @@ and hint digest).
 - **Compressed suffix.** `replayReplaySession` replays the source from the same target with
   `program(guidance)`: the prefix is served from the source journal and the suffix runs live under
   the hint.
+- **Retained source.** The rewind and the compressed rerun declare `sourceDisposition: "retain"`:
+  the source is the uncompressed trajectory the result is measured against, so neither compensates
+  its compensable suffix effects ([source disposition](./compensation.md#source-disposition),
+  [`exploratory-branch-compensation.test.ts`](../test/applications/exploratory-branch-compensation.test.ts)).
 - **`pruned`.** A compressed session that finished with strictly fewer steps than the source is
   passed to the verifier, which returns `{ verdict, score, reason }`. `accepted` settles `pruned` and
   the compressed session is the result.
@@ -157,7 +195,8 @@ status, and outcome, whenever it is read:
 
 - the `opened` record names the command, protocol, source session, control seeds, and baselines;
 - the compression candidate retains `proposed`, `rewound`, and `settled` records, or a `rejected`
-  record, each with `candidate`, `seed`, `status`, `outcome`, `fork_point`, `fork_id`, `hint_digest`,
+  record, each with `candidate`, `seed`, `status`, `outcome`, `fork_point` (null prefix exactly at
+  step `0`), `fork_clamp`, `fork_id`, `hint_digest`,
   `restore` (classification, constituents, restore record, rewind session), `session_id` (the
   compressed session), `restoration_session_id`, `verifier_handle_id`, `verdict`, `score`, `reason`,
   `step_count`, measured `cost`, and `failure`;
@@ -228,9 +267,14 @@ reopened or read-only store, and an imported archive.
 
 - Compression prunes and restores a suffix of a recorded trajectory. It does not compress model
   context or provider state.
-- The workflow binds no worlds or processes. A provider-session adapter may be bound; its checkpoint
-  evidence decides whether a checkpoint fork point is `atomic`, `reconstructive`, or `unavailable`.
+- A world- or process-bound workflow prunes only at checkpointed fork points, so its
+  `checkpointPolicy` bounds which proposals can prune. A provider-session adapter may be bound; its
+  checkpoint evidence decides whether a checkpoint fork point is `atomic`, `reconstructive`, or
+  `unavailable`.
 - The guided program is caller code: the hint reaches the suffix only through `program(guidance)`,
   and the verifier, not the application, decides whether the compressed result is acceptable.
 - Providers must be able to service repeated sessions.
 - The reported ratios are this repository's offline measurements; no claim beyond them is made.
+- The evaluation report's rescue count (Appendix D, Table 12) uses the session `success` condition;
+  compression requires a finished source, so it reports no compression rescue and runs no
+  task-level success judge of the source. See [application evaluation](./application-evaluation.md).

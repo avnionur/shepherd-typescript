@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
 import { link, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { test } from "node:test";
@@ -16,8 +17,10 @@ import {
     rewindReplaySession,
     runReplaySession,
     SQLiteTraceStore,
+    TraceStoreError,
 } from "../../src/index.ts";
 import { probeTransparentCheckpointing } from "../../src/replay/processes.ts";
+import { createReplaySessionId } from "../../src/replay/records.ts";
 import {
     COUNTER_WORKER,
     emptyDirectory,
@@ -148,6 +151,68 @@ test("verified provider-session and cooperative process captures restore as an a
         worlds: [{ name: "main", root: await emptyDirectory(directory, "failing-process") }],
     });
     assert.equal(failingProcess.inspection.terminal?.failure?.message, "image rejected");
+
+    // A process image the store returns with the wrong length is refused before the branch opens.
+    const processReceipt = String(
+        checkpoint.constituents.find((entry) => entry.kind === "process")?.receipt_id,
+    );
+    const truncated = new Proxy(store, {
+        get(target, key) {
+            if (key === "readBlob") {
+                return (blobId: string) =>
+                    blobId === processReceipt
+                        ? new Uint8Array(0)
+                        : target.readBlob(blobId as never);
+            }
+            const value = Reflect.get(target, key);
+            return typeof value === "function" ? value.bind(target) : value;
+        },
+    });
+    await assert.rejects(
+        rewindReplaySession(truncated, {
+            claimId: "operator",
+            commandId: "rewind:truncated-image",
+            processes: [restoredWorker],
+            providerSession: providerSession("adapter:5"),
+            sourceSessionId: inspection.session_id,
+            target: { checkpointId: checkpoint.checkpoint_id },
+            worlds: [{ name: "main", root: await emptyDirectory(directory, "truncated") }],
+        }),
+        (error: unknown) =>
+            error instanceof ReplayRestoreError &&
+            /process image for counter is incomplete/u.test(error.message),
+    );
+    assert.equal(store.readOwner(createReplaySessionId("rewind:truncated-image")).length, 0);
+
+    // A store failure during restoration propagates instead of being retained as a failed branch.
+    const closing = new SQLiteTraceStore(path.join(directory, "trace.sqlite"));
+    await assert.rejects(
+        rewindReplaySession(closing, {
+            claimId: "operator",
+            commandId: "rewind:store-closed",
+            processes: [
+                {
+                    ...restoredWorker,
+                    restore: async () => {
+                        closing.close();
+                    },
+                },
+            ],
+            providerSession: providerSession("adapter:6"),
+            sourceSessionId: inspection.session_id,
+            target: { checkpointId: checkpoint.checkpoint_id },
+            worlds: [{ name: "main", root: await emptyDirectory(directory, "store-closed") }],
+        }),
+        (error: unknown) =>
+            error instanceof TraceStoreError &&
+            !(error instanceof ReplayRestoreError) &&
+            /trace store is closed/u.test(error.message),
+    );
+    const interrupted = store.readOwner(createReplaySessionId("rewind:store-closed"));
+    assert.ok(interrupted.length > 0);
+    assert.ok(
+        interrupted.every((record) => record.envelope.schema_ref !== "shepherd.replay.terminal.v1"),
+    );
 });
 
 test("unavailable adapters and uncapturable worlds are retained with exact reasons and refuse restoration", async (context) => {
@@ -260,6 +325,38 @@ test("unavailable adapters and uncapturable worlds are retained with exact reaso
         ReplayCheckpointUnavailableError,
     );
     assert.throws(() => classifyReplayCheckpoint({ constituents: [] }), TypeError);
+    // A world a concurrent writer changes during capture is retained with the bare capture reason.
+    const changing = await emptyDirectory(directory, "changing");
+    await writeFile(path.join(changing, "a"), "a");
+    let mutated = false;
+    const mutating = new Proxy(store, {
+        get(target, key) {
+            if (key === "putBlob") {
+                return (bytes: Uint8Array) => {
+                    if (!mutated) {
+                        mutated = true;
+                        writeFileSync(path.join(changing, "b"), "b");
+                    }
+                    return target.putBlob(bytes);
+                };
+            }
+            const value = Reflect.get(target, key);
+            return typeof value === "function" ? value.bind(target) : value;
+        },
+    });
+    const raced = (
+        await runReplaySession(mutating, {
+            claimId: "worker:1",
+            commandId: "session:changing-world",
+            program: async (replayContext) => replayContext.checkpoint(),
+            programId: "program:unavailable",
+            worlds: [{ name: "main", root: changing }],
+        })
+    ).inspection.checkpoints[0];
+    assert.deepEqual(
+        classifyReplayCheckpoint(raced as never).unavailable.map((entry) => entry.reason),
+        ["world capture failed"],
+    );
     const imaged = await runReplaySession(store, {
         claimId: "worker:1",
         commandId: "session:image",

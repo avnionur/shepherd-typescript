@@ -16,7 +16,6 @@ import {
     DELEGATION_LIMITS,
     DelegationAuthorityError,
     DelegationCommandConflictError,
-    DelegationEvidenceError,
     DelegationHeadConflictError,
     DelegationStatusError,
     DelegationSupervisorError,

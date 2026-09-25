@@ -11,12 +11,13 @@ import {
     analyzeReplayDivergence,
     REPLAY_COMPATIBILITY_VERSION,
     REPLAY_LIMITS,
+    REPLAY_SOURCE_DISPOSITIONS,
     ReplayEvidenceError,
     replayReplaySession,
     runReplaySession,
     SQLiteTraceStore,
 } from "../../src/index.ts";
-import { REPLAY_PROTOCOL_V1_CONTRACT } from "../../src/protocol/compatibility-constants.ts";
+import { REPLAY_PROTOCOL_V3_CONTRACT } from "../../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
 import {
     emptyDirectory,
@@ -183,6 +184,8 @@ test("the replay facade, generated schemas, and configuration contract agree", a
     assert.equal(typeof facade.runReplaySession, "function");
     assert.equal(typeof facade.rewindReplaySession, "function");
     assert.equal(typeof facade.createCooperativeProcessAdapter, "function");
+    assert.equal(facade.REPLAY_SOURCE_DISPOSITIONS, REPLAY_SOURCE_DISPOSITIONS);
+    assert.deepEqual(REPLAY_SOURCE_DISPOSITIONS, ["compensate", "retain"]);
     assert.equal(REPLAY_LIMITS.maxSteps, 4096);
     const directory = await temporaryDirectory(context, "schemas");
     using store = new SQLiteTraceStore(path.join(directory, "trace.sqlite"));
@@ -232,7 +235,7 @@ test("the replay facade, generated schemas, and configuration contract agree", a
         }
     }
     const parsed = parseProtocolConfig(structuredClone(validConfig));
-    assert.deepEqual(parsed.replay, REPLAY_PROTOCOL_V1_CONTRACT);
+    assert.deepEqual(parsed.replay, REPLAY_PROTOCOL_V3_CONTRACT);
     assert.equal(Object.isFrozen(parsed.replay), true);
 });
 
@@ -266,6 +269,12 @@ test("replay configuration rejects malformed and inconsistent values", () => {
             replay.limits.maxSteps = 0;
         },
         (replay) => {
+            replay.divergence.maxSessions = 1;
+        },
+        (replay) => {
+            replay.divergence.regressionStrategies = ["bisect"];
+        },
+        (replay) => {
             replay.schemas.stepId = "relative";
         },
     ];
@@ -276,7 +285,47 @@ test("replay configuration rejects malformed and inconsistent values", () => {
     }
 });
 
+test("replay configuration validates the branch source dispositions and their default", () => {
+    const mutations: readonly ((branch: Record<string, unknown>) => void)[] = [
+        (branch) => {
+            branch.extra = true;
+        },
+        (branch) => {
+            branch.sourceDispositions = ["compensate"];
+        },
+        (branch) => {
+            branch.sourceDispositions = ["compensate", "compensate"];
+        },
+        (branch) => {
+            branch.defaultSourceDisposition = "abandon";
+        },
+        (branch) => {
+            branch.defaultSourceDisposition = "";
+        },
+    ];
+    for (const mutate of mutations) {
+        const config = structuredClone(validConfig);
+        mutate((config.replay as ReplaySection).branch as Record<string, unknown>);
+        assert.throws(
+            () => parseProtocolConfig(config, { enforceCompatibility: false }),
+            /replay\.branch/u,
+        );
+    }
+    const retaining = structuredClone(validConfig);
+    (
+        (retaining.replay as ReplaySection).branch as Record<string, unknown>
+    ).defaultSourceDisposition = "retain";
+    assert.equal(
+        parseProtocolConfig(retaining, { enforceCompatibility: false }).replay.branch
+            .defaultSourceDisposition,
+        "retain",
+    );
+    // The default is part of the pinned replay protocol contract.
+    assert.throws(() => parseProtocolConfig(structuredClone(retaining)), /replay constants/u);
+});
+
 type ReplaySection = Record<string, unknown> & {
+    divergence: Record<string, unknown>;
     effects: Record<string, unknown>;
     lease: { leaseMilliseconds: number; renewalMilliseconds: number };
     limits: Record<string, number>;

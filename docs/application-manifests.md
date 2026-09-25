@@ -15,7 +15,7 @@ constraints: [research applications contract](../.plan/research-applications-con
 ## Protocol definitions
 
 An application protocol definition pins everything a run depends on besides the store. It is a
-plain data object of exactly these keys:
+plain data object of exactly these keys, plus the optional `thresholds`:
 
 | Key | Meaning |
 | --- | --- |
@@ -25,12 +25,14 @@ plain data object of exactly these keys:
 | `budgets` | Non-negative integer budgets by non-empty metric name; the application interprets the keys |
 | `seeds` | Distinct safe integers, in declared order |
 | `dataset` | `{ id, revision, items }` with distinct item identities |
+| `thresholds` | Optional finite numbers by non-empty metric name, such as the [counterfactual optimizer](./counterfactual-optimization.md#protocol)'s fractional gate and promotion thresholds (since 11.0.0); omitted when absent, so definitions without it keep their canonical form and identity |
 
 `readApplicationProtocol(value)` validates an untrusted definition and returns its canonical frozen
 form. It refuses unknown keys, unknown kinds and surface kinds, duplicate surface identities,
-non-integer budgets and seeds, and anything over `APPLICATION_LIMITS` (`maxSurfaces`, `maxSeeds`,
-`maxDatasetItems`, and the per-kind canonical byte bounds `maxPromptBytes`, `maxSchemaBytes`, and
-`maxToolBytes`). Every refusal is `ApplicationProtocolError` (`APPLICATION_PROTOCOL_INVALID`) with
+non-integer budgets and seeds, non-finite thresholds, `schema` surfaces outside the
+[supported JSON Schema subset](./json-schema-validation.md), and anything over `APPLICATION_LIMITS`
+(`maxSurfaces`, `maxSeeds`, `maxDatasetItems`, and the per-kind canonical byte bounds
+`maxPromptBytes`, `maxSchemaBytes`, and `maxToolBytes`). Every refusal is `ApplicationProtocolError` (`APPLICATION_PROTOCOL_INVALID`) with
 the validation failure as its in-memory cause.
 
 `applicationProtocolId(definition)` is the digest of the canonical definition under the configured
@@ -51,8 +53,8 @@ there, each comparing the exact owner head before appending.
 
 ## Manifests
 
-`createApplicationManifest({ applicationId, protocol, artifacts, costs })` builds the canonical
-manifest of one run:
+`createApplicationManifest({ applicationId, protocol, artifacts, costs, computationReuse? })` builds
+the canonical manifest of one run:
 
 | Field | Meaning |
 | --- | --- |
@@ -63,6 +65,8 @@ manifest of one run:
 | `budgets`, `seeds`, `dataset` | Retained verbatim from the protocol |
 | `artifacts` | `{ artifact_id, role, digest, record_id, cut_id }`; `artifact_id` is `application-artifact:sha256:` over the citation, `digest` covers the artifact's canonical content |
 | `costs` | Measured `provider_calls`, `input_tokens`, `output_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens`, and `cost_usd` |
+| `thresholds` | The protocol thresholds, verbatim; present only when the protocol declares them |
+| `computation_reuse` | Optional per-session `{ session_index, recorded_steps, live_steps, reuse_ratio }`, with sessions numbered from zero and `reuse_ratio = recorded / (recorded + live)` or null; the [counterfactual optimizer](./counterfactual-optimization.md#manifest-handoff-and-computation-reuse) retains one entry per proposer session |
 
 `cost_usd` is null when any observed usage reported no cost, including a live replay provider call
 that failed before a response and so retained no usage. Costs are folded from observed usage,
@@ -92,7 +96,7 @@ or read-only store, and a store that imported the trace archive.
 | Class | Code | Raised when |
 | --- | --- | --- |
 | `ApplicationProtocolError` | `APPLICATION_PROTOCOL_INVALID` | A definition is malformed, lacks a surface or budget the application needs, or differs from the retained one |
-| `ApplicationBudgetError` | `APPLICATION_BUDGET_EXCEEDED` | A call would exceed a protocol budget or bound, such as the [Tree-RL](./tree-rl-rollouts.md) fork-point, branch, and rollout limits; nothing is written by the refusal |
+| `ApplicationBudgetError` | `APPLICATION_BUDGET_EXCEEDED` | A call would exceed a protocol budget or bound, such as the [Tree-RL](./tree-rl-rollouts.md) branch, group-size, prompt, concurrency, and rollout limits; nothing is written by the refusal |
 | `ApplicationEvidenceError` | `APPLICATION_EVIDENCE_INVALID` | Retained or supplied evidence is absent, malformed, or inconsistent |
 | `ApplicationVerificationError` | `APPLICATION_VERIFICATION_FAILED` | A verifier or evaluator threw or returned a malformed verdict, as in the [counterfactual optimizer](./counterfactual-optimization.md) and [trajectory compression](./trajectory-compression.md) |
 

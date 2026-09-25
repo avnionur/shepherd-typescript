@@ -1736,6 +1736,340 @@
                     "type": "integer"
                 },
                 "command": {
+                    "const": [
+                        "replay"
+                    ],
+                    "type": "array"
+                },
+                "ok": {
+                    "const": true,
+                    "type": "boolean"
+                },
+                "result": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "commands": {
+                            "$ref": "#/$defs/jsonValue"
+                        },
+                        "group": {
+                            "$ref": "#/$defs/jsonValue"
+                        }
+                    },
+                    "required": [
+                        "commands",
+                        "group"
+                    ],
+                    "type": "object"
+                }
+            },
+            "required": [
+                "cli_compatibility_version",
+                "cli_output_version",
+                "command",
+                "ok",
+                "result"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "cli_compatibility_version": {
+                    "const": "shepherd.cli.json.v1",
+                    "type": "string"
+                },
+                "cli_output_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "command": {
+                    "const": [
+                        "replay",
+                        "log"
+                    ],
+                    "type": "array"
+                },
+                "ok": {
+                    "const": true,
+                    "type": "boolean"
+                },
+                "result": {
+                    "oneOf": [
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "replay_log": {
+                                    "$ref": "#/$defs/jsonValue"
+                                }
+                            },
+                            "required": [
+                                "replay_log"
+                            ],
+                            "type": "object"
+                        },
+                        {
+                            "additionalProperties": false,
+                            "properties": {
+                                "replay_sessions": {
+                                    "$ref": "#/$defs/jsonValue"
+                                }
+                            },
+                            "required": [
+                                "replay_sessions"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "cli_compatibility_version",
+                "cli_output_version",
+                "command",
+                "ok",
+                "result"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "cli_compatibility_version": {
+                    "const": "shepherd.cli.json.v1",
+                    "type": "string"
+                },
+                "cli_output_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "command": {
+                    "const": [
+                        "replay",
+                        "show"
+                    ],
+                    "type": "array"
+                },
+                "ok": {
+                    "const": true,
+                    "type": "boolean"
+                },
+                "result": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "replay_session": {
+                            "$ref": "#/$defs/jsonValue"
+                        }
+                    },
+                    "required": [
+                        "replay_session"
+                    ],
+                    "type": "object"
+                }
+            },
+            "required": [
+                "cli_compatibility_version",
+                "cli_output_version",
+                "command",
+                "ok",
+                "result"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "cli_compatibility_version": {
+                    "const": "shepherd.cli.json.v1",
+                    "type": "string"
+                },
+                "cli_output_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "command": {
+                    "const": [
+                        "replay",
+                        "diff"
+                    ],
+                    "type": "array"
+                },
+                "ok": {
+                    "const": true,
+                    "type": "boolean"
+                },
+                "result": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "replay_diff": {
+                            "$ref": "#/$defs/jsonValue"
+                        }
+                    },
+                    "required": [
+                        "replay_diff"
+                    ],
+                    "type": "object"
+                }
+            },
+            "required": [
+                "cli_compatibility_version",
+                "cli_output_version",
+                "command",
+                "ok",
+                "result"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "cli_compatibility_version": {
+                    "const": "shepherd.cli.json.v1",
+                    "type": "string"
+                },
+                "cli_output_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "command": {
+                    "const": [
+                        "scope"
+                    ],
+                    "type": "array"
+                },
+                "ok": {
+                    "const": true,
+                    "type": "boolean"
+                },
+                "result": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "commands": {
+                            "$ref": "#/$defs/jsonValue"
+                        },
+                        "group": {
+                            "$ref": "#/$defs/jsonValue"
+                        }
+                    },
+                    "required": [
+                        "commands",
+                        "group"
+                    ],
+                    "type": "object"
+                }
+            },
+            "required": [
+                "cli_compatibility_version",
+                "cli_output_version",
+                "command",
+                "ok",
+                "result"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "cli_compatibility_version": {
+                    "const": "shepherd.cli.json.v1",
+                    "type": "string"
+                },
+                "cli_output_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "command": {
+                    "const": [
+                        "scope",
+                        "list"
+                    ],
+                    "type": "array"
+                },
+                "ok": {
+                    "const": true,
+                    "type": "boolean"
+                },
+                "result": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "scopes": {
+                            "$ref": "#/$defs/jsonValue"
+                        }
+                    },
+                    "required": [
+                        "scopes"
+                    ],
+                    "type": "object"
+                }
+            },
+            "required": [
+                "cli_compatibility_version",
+                "cli_output_version",
+                "command",
+                "ok",
+                "result"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "cli_compatibility_version": {
+                    "const": "shepherd.cli.json.v1",
+                    "type": "string"
+                },
+                "cli_output_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "command": {
+                    "const": [
+                        "scope",
+                        "show"
+                    ],
+                    "type": "array"
+                },
+                "ok": {
+                    "const": true,
+                    "type": "boolean"
+                },
+                "result": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "lineage": {
+                            "$ref": "#/$defs/jsonValue"
+                        },
+                        "scope": {
+                            "$ref": "#/$defs/jsonValue"
+                        }
+                    },
+                    "required": [
+                        "lineage",
+                        "scope"
+                    ],
+                    "type": "object"
+                }
+            },
+            "required": [
+                "cli_compatibility_version",
+                "cli_output_version",
+                "command",
+                "ok",
+                "result"
+            ],
+            "type": "object"
+        },
+        {
+            "additionalProperties": false,
+            "properties": {
+                "cli_compatibility_version": {
+                    "const": "shepherd.cli.json.v1",
+                    "type": "string"
+                },
+                "cli_output_version": {
+                    "const": 1,
+                    "type": "integer"
+                },
+                "command": {
                     "items": {
                         "type": "string"
                     },

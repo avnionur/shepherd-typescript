@@ -5,6 +5,7 @@
             "croCandidateSchema": "spec/schemas/application-cro-candidate-v1.schema.json",
             "evaluationSchema": "spec/schemas/application-evaluation-v1.schema.json",
             "manifestSchema": "spec/schemas/application-manifest-v1.schema.json",
+            "runtimeSupervisionSchema": "spec/schemas/application-runtime-supervision-v1.schema.json",
             "supervisionSchema": "spec/schemas/application-supervision-v1.schema.json",
             "treeRlRolloutSchema": "spec/schemas/application-tree-rl-rollout-v1.schema.json"
         },
@@ -32,6 +33,8 @@
                 "input": "evidence",
                 "output": "result"
             },
+            "forkStepPolicies": ["clamp", "reject"],
+            "forkStepPolicy": "clamp",
             "outcomes": ["pruned", "no_prune", "restored"],
             "phases": ["opened", "candidate", "outcome"],
             "reasons": {
@@ -48,24 +51,65 @@
         },
         "cro": {
             "artifactRoles": {
-                "baseline": "baseline_session",
-                "branch": "candidate_branch",
+                "baseline": "baseline",
                 "candidate": "candidate",
-                "fullReplay": "full_replay_session",
-                "promotion": "promotion"
+                "proposal": "proposal",
+                "selection": "selection"
             },
             "baselineKinds": ["full_replay"],
             "budgetKeys": {
                 "candidates": "maxCandidates",
-                "minPromotionScore": "minPromotionScore",
-                "providerCalls": "maxProviderCalls"
+                "iterations": "iterations",
+                "proposalAttempts": "maxProposalAttempts",
+                "proposals": "proposalsPerIteration",
+                "providerCalls": "maxProviderCalls",
+                "reflectionMechanisms": "reflectionMinMechanisms"
             },
-            "candidateStatuses": ["proposed", "evaluated", "promoted", "rejected"],
-            "phases": ["opened", "candidate"],
+            "candidateStatuses": ["archived", "evaluated", "promoted", "rejected"],
+            "editScopes": ["request", "downstream"],
+            "exampleRoles": ["fix", "guard", "dev", "train"],
+            "phases": ["opened", "proposal", "candidate", "selection"],
+            "proposer": {
+                "effectKindPrefix": "application.cro.proposer.",
+                "limits": {
+                    "defaultMaxTurns": 16,
+                    "maxExcerptLength": 256,
+                    "maxGrepMatches": 32,
+                    "maxPatternLength": 256,
+                    "maxTraceSteps": 64
+                },
+                "operations": {
+                    "grepTraces": "grep_effect_traces",
+                    "inspectCandidates": "inspect_candidates",
+                    "proposeCandidate": "propose_candidate",
+                    "readTrace": "read_effect_trace"
+                },
+                "programId": "shepherd.application.cro.proposer.v1"
+            },
+            "reflection": {
+                "differsByPhrase": "differs by:",
+                "fields": {
+                    "findings": "findings",
+                    "hypotheses": "hypotheses",
+                    "mechanism": "mechanism",
+                    "parent": "parent",
+                    "prior": "prior"
+                }
+            },
+            "splits": ["train", "dev"],
             "surfaceRoles": {
                 "handoff": "handoff",
                 "proposer": "proposer",
                 "reflection": "reflection"
+            },
+            "thresholdKeys": {
+                "audaciousPrior": "reflectionAudaciousPrior",
+                "duplicateSimilarity": "reflectionDuplicateSimilarity",
+                "improveThreshold": "targetedImproveThreshold",
+                "maxScoreDrop": "targetedMaxScoreDrop",
+                "minPromotionScore": "minPromotionScore",
+                "minScoreLift": "targetedMinScoreLift",
+                "promoteDevEpsilon": "promoteDevEpsilon"
             }
         },
         "errors": {
@@ -92,7 +136,7 @@
                 "steps",
                 "success"
             ],
-            "reportVersion": 1,
+            "reportVersion": 2,
             "supervisionBaselineKinds": ["no_supervision"]
         },
         "identity": {
@@ -128,6 +172,8 @@
             "maxSchemaBytes": 16384,
             "maxSeeds": 16,
             "maxSurfaces": 32,
+            "maxTickIntervalMilliseconds": 600000,
+            "maxTicks": 4096,
             "maxToolBytes": 16384,
             "maxWorkers": 8,
             "minWorkers": 2
@@ -135,11 +181,42 @@
         "manifestVersion": 1,
         "protocolSurfaces": ["prompt", "schema", "tool"],
         "recordVersion": 1,
+        "runtimeSupervision": {
+            "actions": ["none", "inject", "handoff", "discard"],
+            "artifactRoles": {
+                "settlement": "runtime_settlement",
+                "worldDiscard": "world_discard",
+                "worldFork": "world_fork",
+                "workerStream": "worker_stream"
+            },
+            "attemptCauses": ["start", "handoff", "discard"],
+            "attemptStatuses": ["running", "completed", "turn_limit", "failed", "aborted"],
+            "budgetKeys": {
+                "featureCharacters": "maxFeatureCharacters",
+                "guidanceWords": "maxGuidanceWords",
+                "providerCalls": "maxProviderCalls",
+                "reasonWords": "maxReasonWords",
+                "tickInterval": "tickIntervalMilliseconds",
+                "ticks": "maxTicks",
+                "toolCallSummaryBytes": "maxToolCallSummaryBytes",
+                "trailingToolCalls": "trailingToolCalls",
+                "turnsPerWorker": "maxTurnsPerWorker"
+            },
+            "guidanceSeparator": "\n\n",
+            "phases": ["opened", "tick", "settled", "attempt", "turn", "completed"],
+            "surfaceRoles": {
+                "action": "action",
+                "observation": "observation"
+            },
+            "targetInputKeys": ["path", "file_path", "file", "target", "command", "cmd"],
+            "truncationMarker": "..."
+        },
         "schemas": {
             "compressionId": "https://avnionur.github.io/shepherd-typescript/schemas/application-compression-v1.schema.json",
             "croCandidateId": "https://avnionur.github.io/shepherd-typescript/schemas/application-cro-candidate-v1.schema.json",
             "evaluationId": "https://avnionur.github.io/shepherd-typescript/schemas/application-evaluation-v1.schema.json",
             "manifestId": "https://avnionur.github.io/shepherd-typescript/schemas/application-manifest-v1.schema.json",
+            "runtimeSupervisionId": "https://avnionur.github.io/shepherd-typescript/schemas/application-runtime-supervision-v1.schema.json",
             "supervisionId": "https://avnionur.github.io/shepherd-typescript/schemas/application-supervision-v1.schema.json",
             "treeRlRolloutId": "https://avnionur.github.io/shepherd-typescript/schemas/application-tree-rl-rollout-v1.schema.json"
         },
@@ -174,26 +251,46 @@
             "compression": "shepherd.application.compression.v1",
             "croCandidate": "shepherd.application.cro_candidate.v1",
             "manifest": "shepherd.application.manifest.v1",
+            "runtimeSupervision": "shepherd.application.runtime_supervision.v1",
             "supervision": "shepherd.application.supervision.v1",
             "treeRlRollout": "shepherd.application.tree_rl_rollout.v1"
         },
         "treeRl": {
-            "artifactRoles": {
-                "baselineBatch": "single_rollout_batch",
-                "batch": "training_batch",
-                "rollout": "rollout",
-                "source": "source_session"
+            "actionSegments": ["prefix", "suffix", "flat"],
+            "advantage": {
+                "epsilon": 0.000001,
+                "normalization": "group_std",
+                "normalizations": ["none", "group_std"],
+                "stdEstimator": "sample",
+                "stdEstimators": ["population", "sample"]
             },
-            "baselineKinds": ["single_rollout"],
-            "batchFormats": ["jsonl_v1"],
+            "artifactRoles": {
+                "baselineBatch": "flat_grpo_batch",
+                "batch": "training_batch",
+                "root": "root",
+                "rollout": "rollout"
+            },
+            "baselineKinds": ["flat_grpo"],
+            "batchFormats": ["jsonl_v2"],
             "budgetKeys": {
                 "branches": "branches",
-                "forkPoints": "maxForkPoints",
-                "minDependents": "minDependents",
+                "groupSize": "groupSize",
                 "providerCalls": "maxProviderCalls"
             },
-            "phases": ["opened", "rollout", "batch"],
+            "forkTurn": {
+                "first": 1,
+                "trailing": 2
+            },
+            "limits": {
+                "defaultConcurrency": 4,
+                "maxConcurrency": 16,
+                "maxGroupSize": 16,
+                "maxPrompts": 16
+            },
+            "memberKinds": ["root", "branch"],
+            "phases": ["opened", "root", "rollout", "batch"],
             "reasons": {
+                "dependencySelection": "the admissible turn with the most transitive dependents",
                 "diverged": "the rollout diverged before its fork point or without explanation",
                 "interrupted": "the rollout session was interrupted before its terminal record",
                 "notFinished": "the rollout session did not finish",
@@ -202,6 +299,8 @@
             "rolloutStatuses": ["completed", "failed"],
             "surfaceRoles": {
                 "batch": "training_batch",
+                "forkProposal": "fork_proposal",
+                "forkSelector": "fork_selector",
                 "rollout": "rollout"
             }
         }
@@ -255,8 +354,14 @@
             "quickstartDemo": "examples/quickstart.mjs"
         },
         "commandOptions": {
-            "demo-write": { "flags": [], "values": [] },
-            "doctor": { "flags": [], "values": ["registry", "store", "workspace"] },
+            "demo-write": {
+                "flags": [],
+                "values": []
+            },
+            "doctor": {
+                "flags": [],
+                "values": ["registry", "store", "workspace"]
+            },
             "run-apply": {
                 "flags": [],
                 "values": ["bindingName", "bindingRoot", "command", "store", "workspace"]
@@ -269,37 +374,126 @@
                 "flags": [],
                 "values": ["bindingName", "bindingRoot", "command", "store", "workspace"]
             },
-            "run-list": { "flags": [], "values": ["limit", "offset", "store"] },
-            "run-output-citations": { "flags": [], "values": ["limit", "offset", "store"] },
-            "run-outputs": { "flags": [], "values": ["limit", "offset", "store"] },
-            "run-publish-retained-workspace-output": { "flags": [], "values": ["store"] },
-            "run-recovery-records": { "flags": [], "values": ["limit", "offset", "store"] },
+            "run-list": {
+                "flags": [],
+                "values": ["limit", "offset", "store"]
+            },
+            "run-output-citations": {
+                "flags": [],
+                "values": ["limit", "offset", "store"]
+            },
+            "run-outputs": {
+                "flags": [],
+                "values": ["limit", "offset", "store"]
+            },
+            "run-publish-retained-workspace-output": {
+                "flags": [],
+                "values": ["store"]
+            },
+            "run-recovery-records": {
+                "flags": [],
+                "values": ["limit", "offset", "store"]
+            },
             "run-release": {
                 "flags": [],
                 "values": ["bindingName", "bindingRoot", "command", "store", "workspace"]
             },
-            "run-repair": { "flags": [], "values": ["command", "store"] },
+            "run-repair": {
+                "flags": [],
+                "values": ["command", "store"]
+            },
             "run-select": {
                 "flags": [],
                 "values": ["bindingName", "bindingRoot", "command", "store", "workspace"]
             },
-            "run-show": { "flags": [], "values": ["store"] },
-            "run-trace": { "flags": [], "values": ["limit", "offset", "store"] },
-            "run-trace-revision": { "flags": [], "values": ["limit", "offset", "store"] },
-            "run-vcscore": { "flags": [], "values": ["store"] },
-            "store-backup": { "flags": [], "values": ["output", "store"] },
-            "store-export": { "flags": ["redacted"], "values": ["output", "store"] },
-            "store-import": { "flags": [], "values": ["input", "store"] },
-            "store-maintain": { "flags": [], "values": ["mode", "store"] },
-            "store-restore": { "flags": [], "values": ["backup", "manifest", "store"] },
-            "store-verify": { "flags": [], "values": ["backup", "manifest", "store"] },
-            "task-list": { "flags": [], "values": ["limit", "offset", "registry"] },
-            "task-resolve": { "flags": [], "values": ["registry"] },
-            "task-show": { "flags": [], "values": ["registry"] },
-            "unsupported-package-init": { "flags": [], "values": [] },
-            "unsupported-start": { "flags": [], "values": [] },
-            "unsupported-task-register": { "flags": [], "values": [] },
-            "workspace-init": { "flags": ["initializeGit", "noInitializeGit"], "values": ["adopt"] }
+            "run-show": {
+                "flags": [],
+                "values": ["store"]
+            },
+            "run-trace": {
+                "flags": [],
+                "values": ["limit", "offset", "store"]
+            },
+            "run-trace-revision": {
+                "flags": [],
+                "values": ["limit", "offset", "store"]
+            },
+            "run-vcscore": {
+                "flags": [],
+                "values": ["store"]
+            },
+            "replay-diff": {
+                "flags": [],
+                "values": ["store"]
+            },
+            "replay-log": {
+                "flags": [],
+                "values": ["limit", "offset", "store"]
+            },
+            "replay-show": {
+                "flags": [],
+                "values": ["store"]
+            },
+            "scope-list": {
+                "flags": [],
+                "values": ["limit", "offset", "store"]
+            },
+            "scope-show": {
+                "flags": [],
+                "values": ["store"]
+            },
+            "store-backup": {
+                "flags": [],
+                "values": ["output", "store"]
+            },
+            "store-export": {
+                "flags": ["redacted"],
+                "values": ["output", "store"]
+            },
+            "store-import": {
+                "flags": [],
+                "values": ["input", "store"]
+            },
+            "store-maintain": {
+                "flags": [],
+                "values": ["mode", "store"]
+            },
+            "store-restore": {
+                "flags": [],
+                "values": ["backup", "manifest", "store"]
+            },
+            "store-verify": {
+                "flags": [],
+                "values": ["backup", "manifest", "store"]
+            },
+            "task-list": {
+                "flags": [],
+                "values": ["limit", "offset", "registry"]
+            },
+            "task-resolve": {
+                "flags": [],
+                "values": ["registry"]
+            },
+            "task-show": {
+                "flags": [],
+                "values": ["registry"]
+            },
+            "unsupported-package-init": {
+                "flags": [],
+                "values": []
+            },
+            "unsupported-start": {
+                "flags": [],
+                "values": []
+            },
+            "unsupported-task-register": {
+                "flags": [],
+                "values": []
+            },
+            "workspace-init": {
+                "flags": ["initializeGit", "noInitializeGit"],
+                "values": ["adopt"]
+            }
         },
         "compatibilityVersion": "shepherd.cli.v1",
         "defaults": {
@@ -335,6 +529,11 @@
             "runTrace": "run-trace",
             "runTraceRevision": "run-trace-revision",
             "runVcsCore": "run-vcscore",
+            "replayDiff": "replay-diff",
+            "replayLog": "replay-log",
+            "replayShow": "replay-show",
+            "scopeList": "scope-list",
+            "scopeShow": "scope-show",
             "storeBackup": "store-backup",
             "storeExport": "store-export",
             "storeImport": "store-import",
@@ -364,60 +563,177 @@
             },
             {
                 "commands": [
-                    { "handler": "run-list", "name": "list" },
-                    { "handler": "run-show", "name": "show" },
-                    { "handler": "run-changeset", "name": "changeset" },
-                    { "handler": "run-trace", "name": "trace" },
-                    { "handler": "run-trace-revision", "name": "trace-revision" },
-                    { "handler": "run-output-citations", "name": "output-citations" },
-                    { "handler": "run-outputs", "name": "outputs" },
-                    { "handler": "run-vcscore", "name": "vcscore" },
+                    {
+                        "handler": "run-list",
+                        "name": "list"
+                    },
+                    {
+                        "handler": "run-show",
+                        "name": "show"
+                    },
+                    {
+                        "handler": "run-changeset",
+                        "name": "changeset"
+                    },
+                    {
+                        "handler": "run-trace",
+                        "name": "trace"
+                    },
+                    {
+                        "handler": "run-trace-revision",
+                        "name": "trace-revision"
+                    },
+                    {
+                        "handler": "run-output-citations",
+                        "name": "output-citations"
+                    },
+                    {
+                        "handler": "run-outputs",
+                        "name": "outputs"
+                    },
+                    {
+                        "handler": "run-vcscore",
+                        "name": "vcscore"
+                    },
                     {
                         "handler": "run-publish-retained-workspace-output",
                         "name": "publish-retained-workspace-output"
                     },
-                    { "handler": "run-recovery-records", "name": "recovery-records" },
-                    { "handler": "run-select", "name": "select" },
-                    { "handler": "run-apply", "name": "apply" },
-                    { "handler": "run-release", "name": "release" },
-                    { "handler": "run-discard", "name": "discard" },
-                    { "handler": "run-repair", "name": "repair" },
-                    { "handler": "unsupported-start", "name": "start" }
+                    {
+                        "handler": "run-recovery-records",
+                        "name": "recovery-records"
+                    },
+                    {
+                        "handler": "run-select",
+                        "name": "select"
+                    },
+                    {
+                        "handler": "run-apply",
+                        "name": "apply"
+                    },
+                    {
+                        "handler": "run-release",
+                        "name": "release"
+                    },
+                    {
+                        "handler": "run-discard",
+                        "name": "discard"
+                    },
+                    {
+                        "handler": "run-repair",
+                        "name": "repair"
+                    },
+                    {
+                        "handler": "unsupported-start",
+                        "name": "start"
+                    }
                 ],
                 "handler": null,
                 "name": "run"
             },
             {
                 "commands": [
-                    { "handler": "task-list", "name": "list" },
-                    { "handler": "task-show", "name": "show" },
-                    { "handler": "task-resolve", "name": "resolve" },
-                    { "handler": "unsupported-task-register", "name": "register" }
+                    {
+                        "handler": "task-list",
+                        "name": "list"
+                    },
+                    {
+                        "handler": "task-show",
+                        "name": "show"
+                    },
+                    {
+                        "handler": "task-resolve",
+                        "name": "resolve"
+                    },
+                    {
+                        "handler": "unsupported-task-register",
+                        "name": "register"
+                    }
                 ],
                 "handler": null,
                 "name": "task"
             },
             {
-                "commands": [{ "handler": "demo-write", "name": "write" }],
+                "commands": [
+                    {
+                        "handler": "demo-write",
+                        "name": "write"
+                    }
+                ],
                 "handler": null,
                 "name": "demo"
             },
             {
-                "commands": [{ "handler": "unsupported-package-init", "name": "init" }],
+                "commands": [
+                    {
+                        "handler": "unsupported-package-init",
+                        "name": "init"
+                    }
+                ],
                 "handler": null,
                 "name": "package"
             },
             {
                 "commands": [
-                    { "handler": "store-verify", "name": "verify" },
-                    { "handler": "store-backup", "name": "backup" },
-                    { "handler": "store-restore", "name": "restore" },
-                    { "handler": "store-export", "name": "export" },
-                    { "handler": "store-import", "name": "import" },
-                    { "handler": "store-maintain", "name": "maintain" }
+                    {
+                        "handler": "store-verify",
+                        "name": "verify"
+                    },
+                    {
+                        "handler": "store-backup",
+                        "name": "backup"
+                    },
+                    {
+                        "handler": "store-restore",
+                        "name": "restore"
+                    },
+                    {
+                        "handler": "store-export",
+                        "name": "export"
+                    },
+                    {
+                        "handler": "store-import",
+                        "name": "import"
+                    },
+                    {
+                        "handler": "store-maintain",
+                        "name": "maintain"
+                    }
                 ],
                 "handler": null,
                 "name": "store"
+            },
+            {
+                "commands": [
+                    {
+                        "handler": "replay-log",
+                        "name": "log"
+                    },
+                    {
+                        "handler": "replay-show",
+                        "name": "show"
+                    },
+                    {
+                        "handler": "replay-diff",
+                        "name": "diff"
+                    }
+                ],
+                "handler": null,
+                "name": "replay"
+            },
+            {
+                "commands": [
+                    {
+                        "handler": "scope-list",
+                        "name": "list"
+                    },
+                    {
+                        "handler": "scope-show",
+                        "name": "show"
+                    }
+                ],
+                "handler": null,
+                "name": "scope"
             }
         ],
         "limits": {
@@ -463,6 +779,11 @@
                 "run-trace": [["trace_revision"], ["trace_revisions"]],
                 "run-trace-revision": [["trace_revision"], ["trace_revisions"]],
                 "run-vcscore": [["vcscore"]],
+                "replay-diff": [["replay_diff"]],
+                "replay-log": [["replay_log"], ["replay_sessions"]],
+                "replay-show": [["replay_session"]],
+                "scope-list": [["scopes"]],
+                "scope-show": [["lineage", "scope"]],
                 "store-backup": [["backup"]],
                 "store-export": [["export"]],
                 "store-import": [["import"]],
@@ -493,7 +814,9 @@
             "demoNameUsage": "demo write requires exactly one configured demo name",
             "publicationExactRun": "retained-output publication requires an exact run identity",
             "publicationUnavailable": "retained-output citation repair requires managed recovery authority",
-            "quickstartUnavailable": "quickstart demo artifact is unavailable"
+            "quickstartUnavailable": "quickstart demo artifact is unavailable",
+            "replayDiffUsage": "replay diff requires at least two distinct session selectors",
+            "scopeUnavailable": "scope evidence is unavailable"
         },
         "options": {
             "adopt": "adopt",
@@ -607,6 +930,38 @@
             "intentSchema": "spec/schemas/effect-intent-v1.schema.json",
             "outcomeSchema": "spec/schemas/effect-outcome-v1.schema.json"
         },
+        "compensation": {
+            "artifacts": {
+                "recordSchema": "spec/schemas/effect-compensation-v1.schema.json"
+            },
+            "compatibilityVersion": "shepherd.effect-compensation.v1",
+            "compensableTiers": ["compensable"],
+            "errors": {
+                "conflictCode": "EFFECT_COMPENSATION_CONFLICT",
+                "conflictMessage": "another compensator advanced this compensation concurrently",
+                "evidenceCode": "EFFECT_COMPENSATION_EVIDENCE_INVALID",
+                "evidenceMessage": "effect compensation evidence is absent, malformed, or inconsistent",
+                "failedCode": "EFFECT_COMPENSATION_FAILED",
+                "failedMessage": "one or more compensation handlers returned a failure result",
+                "handlerNotFoundCode": "EFFECT_COMPENSATION_HANDLER_NOT_FOUND",
+                "handlerNotFoundMessage": "no compensation handler is registered for a compensable effect kind"
+            },
+            "evidenceKinds": ["replay_step", "supervised_dispatch"],
+            "identity": {
+                "appendIntentKind": "effect_compensation",
+                "compensationIdPrefix": "effect-compensation:sha256:"
+            },
+            "limits": {
+                "maxEffectsPerTrigger": 4096
+            },
+            "outcomes": ["compensated", "failed"],
+            "phases": ["intent", "attempt", "outcome"],
+            "recordVersion": 1,
+            "schemaId": "https://avnionur.github.io/shepherd-typescript/schemas/effect-compensation-v1.schema.json",
+            "statuses": ["pending", "uncertain", "failed", "compensated"],
+            "traceSchema": "shepherd.effect.compensation.v1",
+            "triggers": ["scope_discard", "replay_rewind", "replay_replay", "command"]
+        },
         "digestAlgorithm": "sha256",
         "digestPrefix": "sha256:",
         "hexLength": 64,
@@ -627,6 +982,46 @@
         }
     },
     "formalAssurance": {
+        "inspection": {
+            "extensionProfile": "extension",
+            "importedClaim": {
+                "metadataKey": "proof_envelope",
+                "rejections": {
+                    "ambiguous": "claim_ambiguous",
+                    "evidenceRef": "claim_evidence_ref_invalid",
+                    "malformed": "claim_malformed",
+                    "provenance": "claim_provenance_unrecognized",
+                    "runtime": "claim_runtime_only"
+                }
+            },
+            "lowering": {
+                "eligibleDispositions": ["materialized"],
+                "eligibleModes": ["root"],
+                "eligibleStepKinds": ["effect"],
+                "eligibleTerminalStatuses": ["finished"],
+                "ineligibility": {
+                    "disposition": "effect_not_materialized",
+                    "mode": "branch_session",
+                    "stepKind": "non_static_step",
+                    "terminal": "not_finished"
+                },
+                "localRefPrefix": "lowered:",
+                "schemaVersion": "shepherd.replay-session.core-a-lowering.v1"
+            },
+            "publicationControls": {
+                "delegationHandoff": "forwarding",
+                "kinds": ["forwarding", "delay", "fork", "replay"],
+                "replayModes": {
+                    "replay": "replay",
+                    "rewind": "fork"
+                },
+                "retainedWorldSettlement": "delay"
+            },
+            "reasons": {
+                "productionRuntime": "production_runtime",
+                "publicationControl": "publication_control"
+            }
+        },
         "proofEnvelope": {
             "digestAlgorithm": "sha256",
             "evidenceRefPrefix": "proof-evidence:sha256:",
@@ -859,11 +1254,21 @@
             "stepSchema": "spec/schemas/replay-step-v1.schema.json",
             "terminalSchema": "spec/schemas/replay-terminal-v1.schema.json"
         },
+        "branch": {
+            "defaultSourceDisposition": "compensate",
+            "sourceDispositions": ["compensate", "retain"]
+        },
         "cache": {
             "statuses": ["hit", "not_observed"]
         },
         "changes": ["task", "provider", "handlers"],
         "checkpoint": {
+            "automatic": {
+                "defaultPolicy": {
+                    "kind": "none"
+                },
+                "policies": ["none", "provider_step", "effect_step", "every_n_steps"]
+            },
             "classifications": ["atomic", "reconstructive", "unavailable"],
             "constituentKinds": [
                 "trace_cut",
@@ -884,6 +1289,8 @@
         "compatibilityVersion": "shepherd.replay.v1",
         "divergence": {
             "causes": ["root", "propagated", "unexplained"],
+            "maxSessions": 16,
+            "regressionStrategies": ["bisect", "linear"],
             "statuses": ["identical", "diverged", "source_only", "replay_only"]
         },
         "effects": {
@@ -1038,46 +1445,166 @@
             "modes": ["off", "refuse"]
         },
         "schemaFamilies": [
-            { "dataClass": "general", "path": "applications.schemas" },
-            { "dataClass": "general", "path": "applications.traceSchemas" },
-            { "dataClass": "general", "path": "backup.schemas" },
-            { "dataClass": "general", "path": "delegation.schemas" },
-            { "dataClass": "context", "path": "delegation.schemas.contextId" },
-            { "dataClass": "general", "path": "delegation.traceSchemas" },
-            { "dataClass": "context", "path": "delegation.traceSchemas.context" },
-            { "dataClass": "general", "path": "effects.schemas" },
-            { "dataClass": "general", "path": "kernel.schemas" },
-            { "dataClass": "general", "path": "observability.schemas" },
-            { "dataClass": "general", "path": "orphanRepair.schemas" },
-            { "dataClass": "general", "path": "orphanRepair.traceSchemas" },
-            { "dataClass": "provider-citation", "path": "projections.evidenceRecords.schemas" },
-            { "dataClass": "general", "path": "projections.taskRunLedgers.schemas" },
-            { "dataClass": "general", "path": "replay.schemas" },
-            { "dataClass": "checkpoint", "path": "replay.schemas.checkpointId" },
-            { "dataClass": "checkpoint", "path": "replay.schemas.restoreId" },
-            { "dataClass": "provider-citation", "path": "replay.schemas.stepId" },
-            { "dataClass": "general", "path": "replay.traceSchemas" },
-            { "dataClass": "checkpoint", "path": "replay.traceSchemas.checkpoint" },
-            { "dataClass": "checkpoint", "path": "replay.traceSchemas.restore" },
-            { "dataClass": "provider-citation", "path": "replay.traceSchemas.step" },
-            { "dataClass": "general", "path": "retention.schemas" },
-            { "dataClass": "general", "path": "runs.schemas" },
-            { "dataClass": "provider-citation", "path": "runs.schemas.artifactId" },
-            { "dataClass": "checkpoint", "path": "runs.schemas.continuationDescriptorId" },
-            { "dataClass": "provider-citation", "path": "runs.schemas.outcomeId" },
-            { "dataClass": "provider-citation", "path": "runs.schemas.usageId" },
-            { "dataClass": "general", "path": "scopes.schemas" },
-            { "dataClass": "general", "path": "scopes.traceSchemas" },
-            { "dataClass": "general", "path": "supervision.schemas" },
-            { "dataClass": "context", "path": "supervision.schemas.contextId" },
-            { "dataClass": "general", "path": "supervision.traceSchemas" },
-            { "dataClass": "context", "path": "supervision.traceSchemas.context" },
-            { "dataClass": "general", "path": "tasks.schemas" },
-            { "dataClass": "general", "path": "workspaces.placements.nativeJails.schemas" },
-            { "dataClass": "general", "path": "workspaces.placements.schemas" },
-            { "dataClass": "general", "path": "workspaces.repositoryGrants.schemas" },
-            { "dataClass": "general", "path": "workspaces.settlement.application.schemas" },
-            { "dataClass": "checkpoint", "path": "workspaces.worldTaskCapture.captureSchemaId" }
+            {
+                "dataClass": "general",
+                "path": "applications.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "applications.traceSchemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "backup.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "delegation.schemas"
+            },
+            {
+                "dataClass": "context",
+                "path": "delegation.schemas.contextId"
+            },
+            {
+                "dataClass": "general",
+                "path": "delegation.traceSchemas"
+            },
+            {
+                "dataClass": "context",
+                "path": "delegation.traceSchemas.context"
+            },
+            {
+                "dataClass": "general",
+                "path": "effects.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "kernel.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "observability.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "orphanRepair.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "orphanRepair.traceSchemas"
+            },
+            {
+                "dataClass": "provider-citation",
+                "path": "projections.evidenceRecords.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "projections.taskRunLedgers.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "replay.schemas"
+            },
+            {
+                "dataClass": "checkpoint",
+                "path": "replay.schemas.checkpointId"
+            },
+            {
+                "dataClass": "checkpoint",
+                "path": "replay.schemas.restoreId"
+            },
+            {
+                "dataClass": "provider-citation",
+                "path": "replay.schemas.stepId"
+            },
+            {
+                "dataClass": "general",
+                "path": "replay.traceSchemas"
+            },
+            {
+                "dataClass": "checkpoint",
+                "path": "replay.traceSchemas.checkpoint"
+            },
+            {
+                "dataClass": "checkpoint",
+                "path": "replay.traceSchemas.restore"
+            },
+            {
+                "dataClass": "provider-citation",
+                "path": "replay.traceSchemas.step"
+            },
+            {
+                "dataClass": "general",
+                "path": "retention.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "runs.schemas"
+            },
+            {
+                "dataClass": "provider-citation",
+                "path": "runs.schemas.artifactId"
+            },
+            {
+                "dataClass": "checkpoint",
+                "path": "runs.schemas.continuationDescriptorId"
+            },
+            {
+                "dataClass": "provider-citation",
+                "path": "runs.schemas.outcomeId"
+            },
+            {
+                "dataClass": "provider-citation",
+                "path": "runs.schemas.usageId"
+            },
+            {
+                "dataClass": "general",
+                "path": "scopes.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "scopes.traceSchemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "supervision.schemas"
+            },
+            {
+                "dataClass": "context",
+                "path": "supervision.schemas.contextId"
+            },
+            {
+                "dataClass": "general",
+                "path": "supervision.traceSchemas"
+            },
+            {
+                "dataClass": "context",
+                "path": "supervision.traceSchemas.context"
+            },
+            {
+                "dataClass": "general",
+                "path": "tasks.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "workspaces.placements.nativeJails.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "workspaces.placements.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "workspaces.repositoryGrants.schemas"
+            },
+            {
+                "dataClass": "general",
+                "path": "workspaces.settlement.application.schemas"
+            },
+            {
+                "dataClass": "checkpoint",
+                "path": "workspaces.worldTaskCapture.captureSchemaId"
+            }
         ],
         "schemas": {
             "redactedArchiveId": "https://avnionur.github.io/shepherd-typescript/schemas/redacted-trace-archive-v1.schema.json",
@@ -1099,7 +1626,11 @@
                 "name": "github-token",
                 "pattern": "\\b(?:gh[oprsu]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{40,})"
             },
-            { "flags": "u", "name": "google-api-key", "pattern": "\\bAIza[0-9A-Za-z_-]{35}" },
+            {
+                "flags": "u",
+                "name": "google-api-key",
+                "pattern": "\\bAIza[0-9A-Za-z_-]{35}"
+            },
             {
                 "flags": "u",
                 "name": "pem-private-key",
@@ -1110,7 +1641,11 @@
                 "name": "provider-api-key",
                 "pattern": "\\bsk-(?:ant-|proj-)?[A-Za-z0-9_-]{20,}"
             },
-            { "flags": "u", "name": "slack-token", "pattern": "\\bxox[aboprs]-[A-Za-z0-9-]{10,}" }
+            {
+                "flags": "u",
+                "name": "slack-token",
+                "pattern": "\\bxox[aboprs]-[A-Za-z0-9-]{10,}"
+            }
         ],
         "storeFiles": {
             "mode": "0600",
@@ -1672,12 +2207,137 @@
         }
     },
     "providers": {
-        "kinds": ["static", "program"],
+        "conversation": {
+            "cacheIdentityPrefix": "provider-prefix:",
+            "receiptIdPrefix": "provider-conversation:"
+        },
+        "kinds": ["static", "program", "anthropic", "openai", "openrouter"],
+        "live": {
+            "errors": {
+                "credentialCode": "LIVE_PROVIDER_CREDENTIAL_MISSING",
+                "credentialMessage": "live provider credential is not configured",
+                "httpCode": "LIVE_PROVIDER_HTTP_FAILED",
+                "httpMessage": "live provider request failed",
+                "responseCode": "LIVE_PROVIDER_RESPONSE_INVALID",
+                "responseMessage": "live provider response is malformed or incomplete",
+                "transportCode": "LIVE_PROVIDER_TRANSPORT_FAILED",
+                "transportMessage": "live provider transport failed"
+            },
+            "kinds": {
+                "anthropic": {
+                    "cacheControl": {
+                        "type": "ephemeral"
+                    },
+                    "capabilities": {
+                        "streaming": false,
+                        "structuredOutput": true,
+                        "tools": true
+                    },
+                    "completeStopReasons": ["end_turn"],
+                    "credential": {
+                        "environmentVariable": "ANTHROPIC_API_KEY",
+                        "header": "x-api-key",
+                        "scheme": null
+                    },
+                    "dialect": "anthropic_messages",
+                    "endpoint": "https://api.anthropic.com/v1/messages",
+                    "headers": {
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json"
+                    },
+                    "maxOutputTokens": 16000,
+                    "maxTokensField": "max_tokens",
+                    "outputFormat": null,
+                    "toolUse": {
+                        "requestField": "tools",
+                        "stopReasons": ["tool_use"]
+                    }
+                },
+                "openai": {
+                    "cacheControl": null,
+                    "capabilities": {
+                        "streaming": false,
+                        "structuredOutput": true,
+                        "tools": true
+                    },
+                    "completeStopReasons": ["stop"],
+                    "credential": {
+                        "environmentVariable": "OPENAI_API_KEY",
+                        "header": "authorization",
+                        "scheme": "Bearer"
+                    },
+                    "dialect": "openai_chat_completions",
+                    "endpoint": "https://api.openai.com/v1/chat/completions",
+                    "headers": {
+                        "content-type": "application/json"
+                    },
+                    "maxOutputTokens": 16000,
+                    "maxTokensField": "max_completion_tokens",
+                    "outputFormat": {
+                        "name": "shepherd_output",
+                        "strict": false
+                    },
+                    "toolUse": {
+                        "requestField": "tools",
+                        "stopReasons": ["tool_calls"]
+                    }
+                },
+                "openrouter": {
+                    "cacheControl": {
+                        "type": "ephemeral"
+                    },
+                    "capabilities": {
+                        "streaming": false,
+                        "structuredOutput": true,
+                        "tools": true
+                    },
+                    "completeStopReasons": ["stop"],
+                    "credential": {
+                        "environmentVariable": "OPENROUTER_API_KEY",
+                        "header": "authorization",
+                        "scheme": "Bearer"
+                    },
+                    "dialect": "openai_chat_completions",
+                    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+                    "headers": {
+                        "content-type": "application/json"
+                    },
+                    "maxOutputTokens": 16000,
+                    "maxTokensField": "max_tokens",
+                    "outputFormat": {
+                        "name": "shepherd_output",
+                        "strict": false
+                    },
+                    "toolUse": {
+                        "requestField": "tools",
+                        "stopReasons": ["tool_calls"]
+                    }
+                }
+            },
+            "limits": {
+                "maxErrorDetailBytes": 512
+            },
+            "redaction": "[redacted]"
+        },
+        "messages": {
+            "contentTypes": ["text", "tool_use", "tool_result"],
+            "rendering": {
+                "input": "input",
+                "instruction": "instruction",
+                "outputSchema": "output_schema"
+            },
+            "roles": ["user", "assistant"]
+        },
         "program": {
             "capabilities": {
                 "streaming": false,
                 "structuredOutput": true,
                 "tools": false
+            },
+            "conversationCapabilities": {
+                "streaming": false,
+                "structuredOutput": true,
+                "tools": true
             },
             "kind": "program"
         },
@@ -1694,6 +2354,223 @@
                 "mismatchMessage": "static provider request does not match the next exchange"
             },
             "kind": "static"
+        },
+        "tools": {
+            "loop": {
+                "defaultMaxTurns": 8,
+                "dispositions": ["materialized", "denied", "invalid", "failed"],
+                "effectIdPrefix": "tool-call:",
+                "maxResultBytes": 16384,
+                "maxTurns": 64,
+                "statuses": ["completed", "turn_limit"],
+                "truncationMarker": "[truncated]"
+            },
+            "metaAgent": {
+                "commandIdPrefix": "meta-agent:",
+                "limits": {
+                    "maxObservedSteps": 64,
+                    "maxTraceRecords": 32
+                },
+                "tools": [
+                    {
+                        "description": "Observe one replay session: its mode, status, checkpoints, and a summary of every step, including each effect's kind and whether its outcome succeeded.",
+                        "effectKind": "meta_agent.observe",
+                        "inputSchema": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "session_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["session_id"],
+                            "type": "object"
+                        },
+                        "name": "observe",
+                        "operation": "observe",
+                        "reversibility": "reversible"
+                    },
+                    {
+                        "description": "Fork a new worker from a declared worker definition into isolated world custody and run it to its terminal record. Returns the worker session and custody identities.",
+                        "effectKind": "meta_agent.fork",
+                        "inputSchema": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "worker": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                },
+                                "worker_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["worker", "worker_id"],
+                            "type": "object"
+                        },
+                        "name": "fork",
+                        "operation": "fork",
+                        "reversibility": "reversible"
+                    },
+                    {
+                        "description": "Discard a forked worker's world custody. The custody and every change in it are removed.",
+                        "effectKind": "meta_agent.discard",
+                        "inputSchema": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "custody_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                },
+                                "worker_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["custody_id", "worker_id"],
+                            "type": "object"
+                        },
+                        "name": "discard",
+                        "operation": "discard",
+                        "reversibility": "irreversible"
+                    },
+                    {
+                        "description": "Rewind a replay session to a retained checkpoint or step boundary: its worlds are restored into fresh roots and its prefix is copied without re-running anything.",
+                        "effectKind": "meta_agent.rewind",
+                        "inputSchema": {
+                            "additionalProperties": false,
+                            "oneOf": [
+                                {
+                                    "required": ["checkpoint_id"]
+                                },
+                                {
+                                    "required": ["step_count"]
+                                }
+                            ],
+                            "properties": {
+                                "checkpoint_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                },
+                                "session_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                },
+                                "step_count": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                }
+                            },
+                            "required": ["session_id"],
+                            "type": "object"
+                        },
+                        "name": "rewind",
+                        "operation": "rewind",
+                        "reversibility": "reversible"
+                    },
+                    {
+                        "description": "Replay a replay session from a retained checkpoint or step boundary under a declared worker variant: the prefix is served from the record and the suffix runs live with the variant's changes.",
+                        "effectKind": "meta_agent.replay",
+                        "inputSchema": {
+                            "additionalProperties": false,
+                            "oneOf": [
+                                {
+                                    "required": ["checkpoint_id"]
+                                },
+                                {
+                                    "required": ["step_count"]
+                                }
+                            ],
+                            "properties": {
+                                "checkpoint_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                },
+                                "session_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                },
+                                "step_count": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                },
+                                "variant": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["session_id", "variant"],
+                            "type": "object"
+                        },
+                        "name": "replay",
+                        "operation": "replay",
+                        "reversibility": "reversible"
+                    },
+                    {
+                        "description": "Read retained records of one trace owner path in ordinal order, starting at an ordinal, bounded by a record count.",
+                        "effectKind": "meta_agent.read_trace",
+                        "inputSchema": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "from_ordinal": {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                },
+                                "max_records": {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                "owner_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["owner_id"],
+                            "type": "object"
+                        },
+                        "name": "read_trace",
+                        "operation": "read_trace",
+                        "reversibility": "reversible"
+                    },
+                    {
+                        "description": "Align a rewind or replay branch with its source session step by step and report the first divergence, the common prefix, and every divergence the declared changes do not explain.",
+                        "effectKind": "meta_agent.diff",
+                        "inputSchema": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "replay_session_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                },
+                                "source_session_id": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["replay_session_id", "source_session_id"],
+                            "type": "object"
+                        },
+                        "name": "diff",
+                        "operation": "diff",
+                        "reversibility": "reversible"
+                    }
+                ]
+            },
+            "turn": {
+                "instruction": "shepherd.tool_turn.v1",
+                "outputSchema": {
+                    "properties": {
+                        "message": {
+                            "type": "object"
+                        },
+                        "stop_reason": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["message", "output", "stop_reason"],
+                    "type": "object"
+                }
+            }
         }
     },
     "kernel": {
@@ -1976,6 +2853,10 @@
                 "upperDirectory": "upper",
                 "workDirectory": "work"
             },
+            "selection": {
+                "defaultMode": "strict",
+                "fallbackOrder": ["overlay", "clone", "copy"]
+            },
             "version": 26
         },
         "changesets": {
@@ -2120,6 +3001,152 @@
         "controlDirectory": ".vcscore",
         "defaultAdoptionMode": "worktree",
         "defaultInitializeGit": true,
+        "deviceLayers": {
+            "adapters": {
+                "clone": "clone",
+                "container": "container",
+                "copy": "copy",
+                "overlay": "overlay"
+            },
+            "baseCheckpointName": "base",
+            "checkpointNamePattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+            "commandMaxBytes": 268435456,
+            "commandTimeoutMs": 120000,
+            "conformance": {
+                "checkpoints": 7,
+                "maxDepth": 4,
+                "retainNewest": 1
+            },
+            "container": {
+                "arguments": {
+                    "commit": ["commit", "{container}", "{image}"],
+                    "copyIn": ["cp", "{source}/.", "{container}:{world}"],
+                    "create": [
+                        "create",
+                        "--pull",
+                        "never",
+                        "--network",
+                        "none",
+                        "--label",
+                        "{label}",
+                        "{image}",
+                        "sleep",
+                        "infinity"
+                    ],
+                    "exec": ["exec", "--interactive", "{container}"],
+                    "export": ["export", "{container}"],
+                    "import": ["import", "-", "{image}"],
+                    "inspectImage": [
+                        "image",
+                        "inspect",
+                        "--format",
+                        "{{len .RootFS.Layers}}",
+                        "{image}"
+                    ],
+                    "probe": ["version", "--format", "{{.Server.Version}}"],
+                    "removeContainer": ["rm", "--force", "{container}"],
+                    "removeImage": ["image", "rm", "--force", "{image}"],
+                    "run": [
+                        "run",
+                        "--detach",
+                        "--pull",
+                        "never",
+                        "--network",
+                        "none",
+                        "--label",
+                        "{label}",
+                        "{image}",
+                        "sleep",
+                        "infinity"
+                    ]
+                },
+                "commands": {
+                    "list": [
+                        "sh",
+                        "-c",
+                        "cd -- \"$1\" && find . -type f -exec sha256sum {} +",
+                        "sh",
+                        "{world}"
+                    ],
+                    "prepare": ["mkdir", "-p", "--", "{world}"],
+                    "read": ["cat", "--", "{path}"],
+                    "remove": ["rm", "-rf", "--", "{path}"],
+                    "write": [
+                        "sh",
+                        "-c",
+                        "mkdir -p -- \"$(dirname -- \"$1\")\" && cat > \"$1\"",
+                        "sh",
+                        "{path}"
+                    ]
+                },
+                "executable": "docker",
+                "image": "alpine:3.22",
+                "imageRepository": "shepherd-device-layer",
+                "labelKey": "org.shepherd.device-layer",
+                "listLinePattern": "^([0-9a-f]{64})  \\./(.+)$",
+                "maxImageLayers": 120,
+                "tokens": {
+                    "container": "{container}",
+                    "image": "{image}",
+                    "label": "{label}",
+                    "path": "{path}",
+                    "source": "{source}",
+                    "world": "{world}"
+                },
+                "worldPath": "/world"
+            },
+            "depth": {
+                "maxDepth": 48,
+                "retainNewest": 4
+            },
+            "deviceDirectoryPrefix": "device-",
+            "directories": {
+                "compaction": "compaction",
+                "layers": "layers",
+                "upper": "upper",
+                "work": "work",
+                "world": "world"
+            },
+            "errors": {
+                "checkpointInvalidCode": "DEVICE_LAYER_CHECKPOINT_INVALID",
+                "checkpointInvalidMessage": "device-layer checkpoint name is invalid or already in use",
+                "checkpointRetiredCode": "DEVICE_LAYER_CHECKPOINT_RETIRED",
+                "checkpointRetiredMessage": "device-layer checkpoint was retired by compaction",
+                "checkpointUnknownCode": "DEVICE_LAYER_CHECKPOINT_UNKNOWN",
+                "checkpointUnknownMessage": "device-layer checkpoint is not in the current layer stack",
+                "closedCode": "DEVICE_LAYER_CLOSED",
+                "closedMessage": "device-layer world is closed",
+                "operationCode": "DEVICE_LAYER_OPERATION_FAILED",
+                "operationMessage": "device-layer adapter operation failed",
+                "pathCode": "DEVICE_LAYER_PATH_INVALID",
+                "pathMessage": "device-layer world path is invalid",
+                "unavailableCode": "DEVICE_LAYER_UNAVAILABLE",
+                "unavailableMessage": "no selectable device-layer adapter is available on this host"
+            },
+            "layerNameWidth": 6,
+            "maxPathBytes": 4096,
+            "overlay": {
+                "lowerSeparator": ":",
+                "maxMountOptionBytes": 4000,
+                "readOnlyMountOptions": "lowerdir={lower}"
+            },
+            "reasons": {
+                "available": "available",
+                "containerDaemonUnavailable": "container-daemon-unavailable",
+                "containerExecutableUnavailable": "container-executable-unavailable",
+                "containerImageUnavailable": "container-image-unavailable"
+            },
+            "selection": {
+                "defaultAdapter": "copy",
+                "defaultMode": "strict",
+                "fallbackOrder": ["overlay", "container", "clone", "copy"],
+                "modes": {
+                    "fallback": "fallback",
+                    "strict": "strict"
+                }
+            },
+            "version": 27
+        },
         "digestAlgorithm": "sha256",
         "errors": {
             "conflictCode": "WORKSPACE_INITIALIZATION_CONFLICT",
@@ -2205,8 +3232,14 @@
             "planIdPrefix": "repository-grant-plan:sha256:",
             "planVersion": 1,
             "profiles": [
-                { "atoms": ["read"], "name": "read-only" },
-                { "atoms": ["read", "write"], "name": "read-write" }
+                {
+                    "atoms": ["read"],
+                    "name": "read-only"
+                },
+                {
+                    "atoms": ["read", "write"],
+                    "name": "read-write"
+                }
             ],
             "schemas": {
                 "grantPlanId": "https://avnionur.github.io/shepherd-typescript/schemas/repository-grant-plan-v1.schema.json",
@@ -2349,9 +3382,18 @@
                 "families": ["macos", "linux", "windows", "unsupported"],
                 "nativeEnvironment": "native",
                 "nodePlatforms": [
-                    { "family": "macos", "name": "darwin" },
-                    { "family": "linux", "name": "linux" },
-                    { "family": "windows", "name": "win32" }
+                    {
+                        "family": "macos",
+                        "name": "darwin"
+                    },
+                    {
+                        "family": "linux",
+                        "name": "linux"
+                    },
+                    {
+                        "family": "windows",
+                        "name": "win32"
+                    }
                 ],
                 "unsupportedEnvironment": "unsupported",
                 "unsupportedFamily": "unsupported",
@@ -2441,25 +3483,82 @@
                 ],
                 "metadataClassification": "unsupported-metadata",
                 "phases": [
-                    { "name": "snapshot-source-inspection", "recovery": "retry-safe" },
-                    { "name": "snapshot-staging-write", "recovery": "retry-safe" },
-                    { "name": "snapshot-source-revalidation", "recovery": "retry-safe" },
-                    { "name": "snapshot-publication", "recovery": "retry-safe" },
-                    { "name": "snapshot-post-publication", "recovery": "reopen-and-verify" },
-                    { "name": "custody-capture-source-inspection", "recovery": "retry-safe" },
-                    { "name": "custody-capture-staging-write", "recovery": "retry-safe" },
-                    { "name": "custody-capture-source-revalidation", "recovery": "retry-safe" },
-                    { "name": "custody-capture-publication", "recovery": "retry-safe" },
-                    { "name": "custody-capture-post-publication", "recovery": "reopen-and-verify" },
-                    { "name": "custody-discard-cleanup", "recovery": "reopen-and-verify" },
-                    { "name": "git-materialization", "recovery": "retry-safe" },
-                    { "name": "git-basis-capture", "recovery": "retry-safe" },
-                    { "name": "git-basis-revalidation", "recovery": "retry-safe" },
-                    { "name": "git-custody-publication", "recovery": "retry-safe" },
-                    { "name": "git-post-publication", "recovery": "retry-safe" },
-                    { "name": "selection-before-write", "recovery": "exact-recovery-required" },
-                    { "name": "selection-after-write", "recovery": "exact-recovery-required" },
-                    { "name": "selection-post-publication", "recovery": "reopen-and-verify" }
+                    {
+                        "name": "snapshot-source-inspection",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "snapshot-staging-write",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "snapshot-source-revalidation",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "snapshot-publication",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "snapshot-post-publication",
+                        "recovery": "reopen-and-verify"
+                    },
+                    {
+                        "name": "custody-capture-source-inspection",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "custody-capture-staging-write",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "custody-capture-source-revalidation",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "custody-capture-publication",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "custody-capture-post-publication",
+                        "recovery": "reopen-and-verify"
+                    },
+                    {
+                        "name": "custody-discard-cleanup",
+                        "recovery": "reopen-and-verify"
+                    },
+                    {
+                        "name": "git-materialization",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "git-basis-capture",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "git-basis-revalidation",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "git-custody-publication",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "git-post-publication",
+                        "recovery": "retry-safe"
+                    },
+                    {
+                        "name": "selection-before-write",
+                        "recovery": "exact-recovery-required"
+                    },
+                    {
+                        "name": "selection-after-write",
+                        "recovery": "exact-recovery-required"
+                    },
+                    {
+                        "name": "selection-post-publication",
+                        "recovery": "reopen-and-verify"
+                    }
                 ],
                 "platformClassification": "platform-unsupported"
             },

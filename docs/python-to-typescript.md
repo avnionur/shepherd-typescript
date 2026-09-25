@@ -50,13 +50,35 @@ tarball commands. No Python runtime is required.
 
 ## 1. Make task schemas and execution explicit
 
-Python annotations do not translate into runtime validation automatically. The current public
-schema factory supports strings, strict objects, and void. Object fields are required; do not
-assume general Pydantic, arbitrary JSON Schema, optional-field, or numeric-builder compatibility.
-Void is normalized to canonical null by execution. Inspect each supported interface rather than
-casting a TypeScript type over unvalidated input. `schema.fromJSONSchema` adapts only this
-supported subset into authenticated schemas; it returns unknown for dynamic documents, validates
-all supplied keywords, and normalizes property/required order through the existing builders.
+Python annotations do not translate into runtime validation automatically; declare each task
+input and output with the schema factory. The Python type hints of upstream tasks map as follows:
+
+| Python annotation | TypeScript schema |
+| --- | --- |
+| `str` | `schema.string()` |
+| `int` | `schema.integer()` (safe integers) |
+| `float` | `schema.number()` (finite numbers) |
+| `bool` | `schema.boolean()` |
+| `None` return | `schema.void()` |
+| `None` inside a value | `schema.null()` |
+| `list[T]` | `schema.array(T)` |
+| `Literal["a", "b"]` | `schema.enum(["a", "b"])`, or `schema.literal("a")` for one value |
+| `T \| U`, `Optional[T]` as a value | `schema.union([T, U])`, `schema.union([T, schema.null()])` |
+| Pydantic model / `TypedDict` | `schema.object({ ... })` |
+| Field with a default, `NotRequired[T]` | `schema.optional(T)` inside `schema.object()` |
+| A task as data | `schema.task()` |
+
+Unions follow JSON Schema `oneOf`: a value matching several members is refused, so prefer disjoint
+members (`schema.union([schema.integer(), schema.number()])` refuses `1`). There are no validators
+for constraints such as `Field(ge=0)`, string formats, dictionaries with arbitrary keys, tuples, or
+recursive models; do not assume general Pydantic or arbitrary JSON Schema compatibility. Void is
+normalized to canonical null by execution. Invalid values are refused with a path-level
+`JSONSchemaValidationError`, such as `$.items[1].count must be a safe integer`. Inspect each
+supported interface rather than casting a TypeScript type over unvalidated input.
+`schema.fromJSONSchema` adapts exactly this language into authenticated schemas; it returns unknown
+for dynamic documents, validates all supplied keywords, and normalizes property/required order
+through the existing builders. To validate other data against a JSON Schema document, such as a
+tool input, use `compileJSONSchema` ([JSON Schema validation](./json-schema-validation.md)).
 
 The retained-coding example declares its runtime schemas explicitly:
 
@@ -146,7 +168,9 @@ Reversibility annotations do not implement rollback or compensation for arbitrar
 
 ## Unsupported translations and recovery
 
-Do not present these as shipped TS equivalents: live Claude/Codex/OpenRouter providers, ambient
+Do not present these as shipped TS equivalents: Claude CLI or Codex process providers (the
+configured Anthropic Messages and OpenAI-compatible HTTP adapters in
+[live providers](./live-providers.md) ship from 5.1.0 but are not live-verified here), ambient
 bodyless task calls, scope algebra and nested multi-world runs, live subscriptions, supervisor
 injection/handoff, arbitrary rewind/suffix replay, process checkpoint restoration, or paper-level
 formal guarantees for production execution. The public reference/proof-envelope machinery has

@@ -77,6 +77,7 @@
                 "compressor_handle_id",
                 "cost",
                 "failure",
+                "fork_clamp",
                 "fork_id",
                 "fork_point",
                 "hint_digest",
@@ -194,6 +195,40 @@
                                     "type": "string",
                                     "minLength": 1,
                                     "maxLength": 1024
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "fork_clamp": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "policy",
+                                "proposed_prefix_id",
+                                "proposed_step_index"
+                            ],
+                            "properties": {
+                                "policy": {
+                                    "const": "clamp"
+                                },
+                                "proposed_prefix_id": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "$ref": "#/$defs/prefixId"
+                                        }
+                                    ]
+                                },
+                                "proposed_step_index": {
+                                    "type": "integer"
                                 }
                             },
                             "additionalProperties": false
@@ -581,18 +616,28 @@
             ],
             "properties": {
                 "prefix_id": {
-                    "type": "string",
-                    "pattern": "^replay-prefix:sha256:[0-9a-f]{64}$"
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/$defs/prefixId"
+                        }
+                    ]
                 },
                 "session_id": {
                     "$ref": "#/$defs/sessionId"
                 },
                 "step_index": {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 0
                 }
             },
             "additionalProperties": false
+        },
+        "prefixId": {
+            "type": "string",
+            "pattern": "^replay-prefix:sha256:[0-9a-f]{64}$"
         },
         "handleId": {
             "type": "string",
@@ -600,10 +645,6 @@
         },
         "proposal": {
             "type": "object",
-            "required": [
-                "fork_point",
-                "hint"
-            ],
             "properties": {
                 "fork_point": {
                     "oneOf": [
@@ -611,7 +652,30 @@
                             "type": "null"
                         },
                         {
-                            "$ref": "#/$defs/forkPoint"
+                            "type": "object",
+                            "required": [
+                                "prefix_id",
+                                "session_id"
+                            ],
+                            "properties": {
+                                "prefix_id": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "$ref": "#/$defs/prefixId"
+                                        }
+                                    ]
+                                },
+                                "session_id": {
+                                    "$ref": "#/$defs/sessionId"
+                                },
+                                "step_index": {
+                                    "type": "integer"
+                                }
+                            },
+                            "additionalProperties": false
                         }
                     ]
                 },

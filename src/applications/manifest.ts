@@ -4,6 +4,7 @@ import { applicationsProtocolConfig } from "../protocol/config.ts";
 import { APPLICATION_KINDS, APPLICATION_PROTOCOL_SURFACES } from "../protocol/values.generated.ts";
 import { assertRecordId } from "../record/guards.ts";
 import type { RecordBody, RecordId } from "../record/types.ts";
+import { compileJSONSchema } from "../schema/json-schema-validator.ts";
 import { assertScopeText, readScopeArray, readScopeDataObject } from "../scope/validation.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { Cut, CutId } from "../store/types.ts";
@@ -17,10 +18,12 @@ import {
     createApplicationCutId,
     prefixedApplicationId,
     readApplicationCosts,
+    readCount,
     readNullableText,
 } from "./records.ts";
 import type {
     ApplicationArtifactCitation,
+    ApplicationComputationReuse,
     ApplicationDatasetSelection,
     ApplicationManifest,
     ApplicationManifestInspection,
@@ -47,10 +50,13 @@ const MANIFEST_STEP = "manifest";
  * Validates an untrusted application protocol definition into its canonical frozen form.
  *
  * The definition must be a plain data object of exactly `budgets`, `dataset`, `kind`,
- * `protocolVersion`, `seeds`, and `surfaces`. Kinds and surface kinds must be configured, surface
- * identities distinct, every surface content canonical and within the configured byte bound for
- * its kind, budgets non-negative integers by non-empty metric name, seeds distinct integers, and
- * the dataset selection a distinct item list, all within `APPLICATION_LIMITS`.
+ * `protocolVersion`, `seeds`, and `surfaces`, plus optional `thresholds`. Kinds and surface kinds
+ * must be configured, surface identities distinct, every surface content canonical and within the
+ * configured byte bound for its kind, every `schema` surface a document in the supported JSON
+ * Schema subset (`compileJSONSchema`), budgets non-negative integers by non-empty metric name,
+ * thresholds finite numbers by non-empty metric name, seeds distinct integers, and the dataset
+ * selection a distinct item list, all within `APPLICATION_LIMITS`. A definition without
+ * `thresholds` keeps its canonical form and protocol identity.
  *
  * @param value - Untrusted protocol definition.
  * @returns The canonical frozen definition.
@@ -68,6 +74,7 @@ export function readApplicationProtocol(value: unknown): ApplicationProtocolDefi
             value,
             ["budgets", "dataset", "kind", "protocolVersion", "seeds", "surfaces"],
             "application protocol",
+            ["thresholds"],
         );
         if (!APPLICATION_KINDS.includes(fields.kind as never)) {
             throw new TypeError("kind must be a configured application kind");
@@ -90,6 +97,9 @@ export function readApplicationProtocol(value: unknown): ApplicationProtocolDefi
             protocolVersion: fields.protocolVersion,
             seeds: readSeeds(fields.seeds),
             surfaces,
+            ...(fields.thresholds === undefined
+                ? {}
+                : { thresholds: readThresholds(fields.thresholds) }),
         } as unknown as RecordBody) as unknown as ApplicationProtocolDefinition;
     } catch (error) {
         throw new ApplicationProtocolError("definition is malformed", { cause: error });
@@ -128,9 +138,11 @@ export function deriveApplicationOwnerId(commandId: string): string {
  * Surfaces are cited by the digest of their canonical content; artifacts by the digest of the
  * supplied content with the record and cut they live in; the manifest identity is the digest of
  * the manifest body without the identity field, so the same protocol, artifacts, and costs yield
- * the same manifest identity.
+ * the same manifest identity. The protocol's `thresholds` and the optional per-session
+ * `computationReuse` are retained only when present, so manifests without them keep their shape.
  *
- * @param options - Application identity, artifact sources, measured costs, and protocol.
+ * @param options - Application identity, artifact sources, measured costs, protocol, and optional
+ * computation reuse.
  * @returns The frozen manifest.
  * @throws {ApplicationProtocolError} If the protocol definition is malformed.
  * @throws {TypeError} If the options, an artifact, or the costs are malformed or exceed bounds.
@@ -142,6 +154,7 @@ export function createApplicationManifest(
         options,
         ["applicationId", "artifacts", "costs", "protocol"],
         "createApplicationManifest options",
+        ["computationReuse"],
     );
     assertApplicationDigest(
         fields.applicationId,
@@ -188,6 +201,10 @@ export function createApplicationManifest(
             kind: surface.kind,
             role: surface.role,
         })),
+        ...(protocol.thresholds === undefined ? {} : { thresholds: protocol.thresholds }),
+        ...(fields.computationReuse === undefined
+            ? {}
+            : { computation_reuse: readComputationReuse(fields.computationReuse) }),
     };
     return validateApplicationManifest({
         ...body,
@@ -223,6 +240,7 @@ export function validateApplicationManifest(value: unknown): ApplicationManifest
                 "surfaces",
             ],
             "application manifest",
+            ["computation_reuse", "thresholds"],
         );
         if (
             fields.compatibility_version !== config.compatibilityVersion ||
@@ -297,6 +315,12 @@ export function validateApplicationManifest(value: unknown): ApplicationManifest
             dataset: readDataset(fields.dataset),
             seeds: readSeeds(fields.seeds),
             surfaces,
+            ...(fields.thresholds === undefined
+                ? {}
+                : { thresholds: readThresholds(fields.thresholds) }),
+            ...(fields.computation_reuse === undefined
+                ? {}
+                : { computation_reuse: readComputationReuse(fields.computation_reuse) }),
         };
         if (
             manifestId !==
@@ -465,8 +489,12 @@ function readSurface(value: unknown, subject: string): ApplicationProtocolSurfac
     if (Buffer.byteLength(text, "utf8") > SURFACE_BYTE_LIMITS[kind]) {
         throw new TypeError(`${subject}.content exceeds the configured byte bound`);
     }
+    const content = JSON.parse(text) as SemanticValue;
+    if (kind === SCHEMA_KIND) {
+        compileJSONSchema(content);
+    }
     return Object.freeze({
-        content: JSON.parse(text) as SemanticValue,
+        content,
         id: fields.id,
         kind,
         role: fields.role,
@@ -486,6 +514,49 @@ function readBudgets(value: unknown): Readonly<Record<string, number>> {
         budgets[key] = fields[key] as number;
     }
     return Object.freeze(budgets);
+}
+
+function readThresholds(value: unknown): Readonly<Record<string, number>> {
+    const keys = Object.keys(Object(value));
+    const fields = readScopeDataObject(value, [], "thresholds", keys);
+    const thresholds: Record<string, number> = {};
+    for (const key of keys) {
+        assertScopeText(key, "thresholds metric name");
+        if (typeof fields[key] !== "number" || !Number.isFinite(fields[key])) {
+            throw new TypeError(`thresholds.${key} must be a finite number`);
+        }
+        thresholds[key] = fields[key] as number;
+    }
+    return Object.freeze(thresholds);
+}
+
+function readComputationReuse(value: unknown): readonly ApplicationComputationReuse[] {
+    const entries = readScopeArray(value, "computation_reuse").map((entry, index) => {
+        const subject = `computation_reuse[${index}]`;
+        const fields = readScopeDataObject(
+            entry,
+            ["live_steps", "recorded_steps", "reuse_ratio", "session_index"],
+            subject,
+        );
+        const live = readCount(fields.live_steps, `${subject}.live_steps`);
+        const recorded = readCount(fields.recorded_steps, `${subject}.recorded_steps`);
+        const total = live + recorded;
+        if (
+            readCount(fields.session_index, `${subject}.session_index`) !== index ||
+            fields.reuse_ratio !== (total === 0 ? null : recorded / total)
+        ) {
+            throw new TypeError(
+                `${subject} must name session ${index} and the ratio of recorded to all steps`,
+            );
+        }
+        return Object.freeze({
+            live_steps: live,
+            recorded_steps: recorded,
+            reuse_ratio: fields.reuse_ratio as number | null,
+            session_index: index,
+        });
+    });
+    return Object.freeze(entries);
 }
 
 /** Validates distinct safe-integer protocol seeds within the configured bound. @internal */

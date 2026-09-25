@@ -135,7 +135,14 @@ function runtimeOnlyEnvelope(reason: string): ProofEnvelope {
     });
 }
 
-function freezeEnvelope(value: {
+/**
+ * Freezes one proof envelope with the configured schema version, validator, and exclusions.
+ *
+ * @param value - Claim-specific envelope fields.
+ * @returns The frozen envelope.
+ * @internal
+ */
+export function freezeEnvelope(value: {
     readonly evidence_id: string | null;
     readonly metadata: Readonly<Record<string, SemanticValue>>;
     readonly profile: ProofEnvelopeProfile;

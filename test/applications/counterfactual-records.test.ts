@@ -7,8 +7,10 @@ import { Ajv2020, type AnySchemaObject } from "ajv/dist/2020.js";
 import {
     readCroCandidateBody,
     readCroChanges,
+    readCroEdit,
     readCroOpenedBody,
-    readEvaluation,
+    readCroProposalBody,
+    readCroSelectionBody,
 } from "../../src/applications/counterfactual-records.ts";
 import {
     createApplicationAppendIntentId,
@@ -19,92 +21,144 @@ import * as root from "../../src/index.ts";
 import {
     APPLICATION_CRO_BASELINE_KINDS,
     APPLICATION_CRO_CANDIDATE_STATUSES,
+    APPLICATION_CRO_EDIT_SCOPES,
+    APPLICATION_CRO_EXAMPLE_ROLES,
     APPLICATION_CRO_PHASES,
+    APPLICATION_CRO_SPLITS,
     ApplicationEvidenceError,
+    createApplicationManifest,
     deriveApplicationOwnerId,
     inspectCounterfactualOptimization,
     type RecordBody,
     type RecordId,
     runCounterfactualOptimization,
     SQLiteTraceStore,
+    validateApplicationManifest,
 } from "../../src/index.ts";
 import {
-    APPLICATIONS_PROTOCOL_V1_CONTRACT,
-    APPLICATIONS_PROTOCOL_V2_CONTRACT,
+    APPLICATIONS_PROTOCOL_V8_CONTRACT,
+    APPLICATIONS_PROTOCOL_V9_CONTRACT,
 } from "../../src/protocol/compatibility-constants.ts";
 import { applicationsProtocolConfig } from "../../src/protocol/config.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
 import {
-    fail,
-    keyedProvider,
-    mismatchedProgram,
+    counterfactualProtocolWith,
+    labelMetric,
     optimizerOptions,
-    pass,
-    providerCandidate,
+    providerEdit,
+    reflection,
+    scriptedProposer,
 } from "./counterfactual-fixtures.ts";
 
 const validConfig = JSON.parse(
     readFileSync(new URL("../../protocol.config.json", import.meta.url), "utf8"),
 ) as Record<string, Record<string, Record<string, unknown>>>;
 
+/** One iteration: a promoted, an archived, and (on a second iteration) an evaluated candidate. */
 async function completedRun(store: SQLiteTraceStore, commandId: string) {
     return runCounterfactualOptimization(
         store,
         optimizerOptions(commandId, {
             baselines: ["full_replay"],
-            candidates: [
-                providerCandidate("promoted", 0, keyedProvider("alt")),
-                providerCandidate("rejected", 2, keyedProvider("other"), { parent: "promoted" }),
-            ],
-            evaluate: ({ candidate }) => (candidate.name === "promoted" ? pass(2) : fail(1)),
+            metric: labelMetric({
+                good: { "dev-1": 1, "dev-2": 1, "train-1": 1 },
+                weak: { "train-1": 1, "train-4": 1 },
+            }),
+            proposer: scriptedProposer([
+                [
+                    {
+                        edits: [
+                            providerEdit("promoted", 0, "good"),
+                            providerEdit("archived", 3, "none"),
+                        ],
+                        parent: null,
+                        reflection: reflection(null),
+                    },
+                ],
+                [
+                    {
+                        edits: [
+                            providerEdit("evaluated", 3, "weak", {
+                                fix_set: ["train-4"],
+                                guard_set: ["train-1"],
+                            }),
+                        ],
+                        parent: "promoted",
+                        reflection: reflection("promoted", ["archived did not reach the plan"]),
+                    },
+                ],
+            ]),
+            protocol: counterfactualProtocolWith({ iterations: 2 }),
         }),
     );
+}
+
+/** Store that fails the append of the first candidate outcome, simulating a crash before it. */
+class OutcomeCrashingStore extends SQLiteTraceStore {
+    armed = true;
+
+    override appendApplicationRecord(
+        ...args: Parameters<SQLiteTraceStore["appendApplicationRecord"]>
+    ): ReturnType<SQLiteTraceStore["appendApplicationRecord"]> {
+        const body = args[2].batch.groups[0]?.records[0]?.body as { readonly phase?: string };
+        if (this.armed && body?.phase === "candidate") {
+            this.armed = false;
+            throw new Error("simulated crash");
+        }
+        return super.appendApplicationRecord(...args);
+    }
 }
 
 function bodyOf(store: SQLiteTraceStore, recordId: RecordId | undefined): RecordBody {
     return store.readRecord(recordId as RecordId)?.body as RecordBody;
 }
 
-test("applications protocol v2 appends the cro vocabulary to v1 and refuses cro drift", () => {
-    assert.deepEqual(
-        APPLICATIONS_PROTOCOL_V2_CONTRACT.kinds,
-        APPLICATIONS_PROTOCOL_V1_CONTRACT.kinds,
-    );
-    assert.deepEqual(
-        APPLICATIONS_PROTOCOL_V2_CONTRACT.supervision,
-        APPLICATIONS_PROTOCOL_V1_CONTRACT.supervision,
-    );
-    assert.equal(
-        APPLICATIONS_PROTOCOL_V2_CONTRACT.artifacts.manifestSchema,
-        APPLICATIONS_PROTOCOL_V1_CONTRACT.artifacts.manifestSchema,
-    );
-    assert.deepEqual(applicationsProtocolConfig.cro, APPLICATIONS_PROTOCOL_V2_CONTRACT.cro);
-    assert.deepEqual(APPLICATION_CRO_PHASES, ["opened", "candidate"]);
+test("applications protocol v9 replaces the cro vocabulary for Algorithm 1 and refuses cro drift", () => {
+    const { cro: _v9, ...v9Rest } = APPLICATIONS_PROTOCOL_V9_CONTRACT;
+    const { cro: _v8, ...v8Rest } = APPLICATIONS_PROTOCOL_V8_CONTRACT;
+    assert.deepEqual(v9Rest, v8Rest);
+    assert.deepEqual(applicationsProtocolConfig.cro, APPLICATIONS_PROTOCOL_V9_CONTRACT.cro);
+    assert.deepEqual(APPLICATION_CRO_PHASES, ["opened", "proposal", "candidate", "selection"]);
     assert.deepEqual(APPLICATION_CRO_CANDIDATE_STATUSES, [
-        "proposed",
+        "archived",
         "evaluated",
         "promoted",
         "rejected",
     ]);
+    assert.deepEqual(APPLICATION_CRO_EDIT_SCOPES, ["request", "downstream"]);
+    assert.deepEqual(APPLICATION_CRO_SPLITS, ["train", "dev"]);
+    assert.deepEqual(APPLICATION_CRO_EXAMPLE_ROLES, ["fix", "guard", "dev", "train"]);
     assert.deepEqual(APPLICATION_CRO_BASELINE_KINDS, ["full_replay"]);
     const mutations: readonly ((cro: Record<string, unknown>) => void)[] = [
         (cro) => {
-            cro.artifactRoles = { ...(cro.artifactRoles as object), promotion: "candidate" };
+            cro.artifactRoles = { ...(cro.artifactRoles as object), selection: "candidate" };
         },
         (cro) => {
-            cro.baselineKinds = ["full_replay", "other"];
+            cro.budgetKeys = { ...(cro.budgetKeys as object), iterations: "maxCandidates" };
         },
         (cro) => {
-            cro.budgetKeys = { ...(cro.budgetKeys as object), providerCalls: "maxCandidates" };
+            cro.thresholdKeys = {
+                ...(cro.thresholdKeys as object),
+                minScoreLift: "promoteDevEpsilon",
+            };
         },
         (cro) => {
-            cro.surfaceRoles = { handoff: "same", proposer: "same", reflection: "other" };
+            cro.candidateStatuses = ["archived"];
         },
         (cro) => {
-            cro.candidateStatuses = ["proposed"];
+            cro.splits = ["train"];
         },
         (cro) => {
-            delete cro.phases;
+            cro.exampleRoles = ["fix", "guard", "dev"];
+        },
+        (cro) => {
+            cro.proposer = { ...(cro.proposer as object), programId: "" };
+        },
+        (cro) => {
+            cro.reflection = { differsByPhrase: "differs by:" };
+        },
+        (cro) => {
+            delete cro.thresholdKeys;
         },
     ];
     for (const mutate of mutations) {
@@ -113,7 +167,8 @@ test("applications protocol v2 appends the cro vocabulary to v1 and refuses cro 
         assert.throws(() => parseProtocolConfig(config), TypeError, mutate.toString());
     }
     const drifted = structuredClone(validConfig);
-    (drifted.applications?.cro as Record<string, unknown>).baselineKinds = ["whole_replay"];
+    const croConfig = drifted.applications?.cro as Record<string, Record<string, unknown>>;
+    croConfig.reflection = { ...croConfig.reflection, differsByPhrase: "differs because:" };
     assert.throws(
         () => parseProtocolConfig(drifted),
         (error: unknown) =>
@@ -121,49 +176,75 @@ test("applications protocol v2 appends the cro vocabulary to v1 and refuses cro 
     );
 });
 
-test("the applications facade exposes the optimizer as the root does", () => {
+test("the applications facade exposes the optimizer and the proposer as the root does", () => {
     assert.equal(applications.runCounterfactualOptimization, root.runCounterfactualOptimization);
     assert.equal(
         applications.inspectCounterfactualOptimization,
         root.inspectCounterfactualOptimization,
     );
-    assert.equal(applications.APPLICATION_CRO_PHASES, root.APPLICATION_CRO_PHASES);
     assert.equal(
-        applications.APPLICATION_CRO_CANDIDATE_STATUSES,
-        root.APPLICATION_CRO_CANDIDATE_STATUSES,
+        applications.createToolLoopCounterfactualProposer,
+        root.createToolLoopCounterfactualProposer,
     );
-    assert.equal(applications.APPLICATION_CRO_BASELINE_KINDS, root.APPLICATION_CRO_BASELINE_KINDS);
+    assert.equal(applications.APPLICATION_CRO_PHASES, root.APPLICATION_CRO_PHASES);
+    assert.equal(applications.APPLICATION_CRO_SPLITS, root.APPLICATION_CRO_SPLITS);
+    assert.equal(applications.APPLICATION_CRO_EXAMPLE_ROLES, root.APPLICATION_CRO_EXAMPLE_ROLES);
 });
 
-test("retained optimizer records conform to the generated candidate schema", async () => {
+test("retained optimizer records and the manifest conform to the generated schemas", async () => {
     using store = new SQLiteTraceStore();
-    const { inspection } = await completedRun(store, "application:cro:schema");
-    const validator = new Ajv2020({ strict: true, strictTypes: false });
-    const validate = validator.compile(
-        JSON.parse(
-            readFileSync(
-                new URL(
-                    `../../${applicationsProtocolConfig.artifacts.croCandidateSchema}`,
-                    import.meta.url,
-                ),
-                "utf8",
-            ),
-        ) as AnySchemaObject,
+    const { inspection, manifest } = await completedRun(store, "application:cro:schema");
+    assert.deepEqual(
+        inspection.candidates.map((candidate) => candidate.status),
+        ["promoted", "archived", "evaluated"],
     );
+    const validator = new Ajv2020({ strict: true, strictTypes: false });
+    const compile = (artifact: string) =>
+        validator.compile(
+            JSON.parse(
+                readFileSync(new URL(`../../${artifact}`, import.meta.url), "utf8"),
+            ) as AnySchemaObject,
+        );
+    const validate = compile(applicationsProtocolConfig.artifacts.croCandidateSchema);
     const applicationId = deriveApplicationOwnerId("application:cro:schema");
     const bodies = store
         .readOwner(applicationId)
         .filter((record) => record.envelope.schema_ref === "shepherd.application.cro_candidate.v1")
         .map((record) => record.body);
-    assert.equal(bodies.length, 6);
+    // opened, 2 proposals, 3 outcomes, selection
+    assert.equal(bodies.length, 7);
     for (const body of bodies) {
         assert.equal(validate(body), true, validator.errorsText(validate.errors));
     }
-    const outcome = bodyOf(store, inspection.candidates[0]?.outcome?.record_id);
+    const outcome = bodyOf(store, inspection.candidates[0]?.record_id);
     assert.equal(validate({ ...outcome, status: "merged" }), false);
     assert.equal(validate({ ...outcome, extra: true }), false);
+    assert.equal(validate({ ...outcome, prior: 2 }), false);
+    assert.equal(validate({ ...bodyOf(store, inspection.opened_record_id), examples: [] }), false);
+    // Retained computation reuse is re-validated: sessions from zero and the exact ratio.
+    for (const computation_reuse of [
+        [{ live_steps: 1, recorded_steps: 1, reuse_ratio: 0.5, session_index: 1 }],
+        [{ live_steps: 1, recorded_steps: 1, reuse_ratio: 0.25, session_index: 0 }],
+    ]) {
+        assert.throws(
+            () => validateApplicationManifest({ ...manifest, computation_reuse }),
+            ApplicationEvidenceError,
+        );
+    }
+    const empty = createApplicationManifest({
+        applicationId: manifest.application_id,
+        artifacts: [],
+        computationReuse: [
+            { live_steps: 0, recorded_steps: 0, reuse_ratio: null, session_index: 0 },
+        ],
+        costs: manifest.costs,
+        protocol: counterfactualProtocolWith({ iterations: 2 }),
+    });
+    assert.equal(empty.computation_reuse?.[0]?.reuse_ratio, null);
+    const validateManifest = compile(applicationsProtocolConfig.artifacts.manifestSchema);
+    assert.equal(validateManifest(manifest), true, validator.errorsText(validateManifest.errors));
     assert.equal(
-        validate({ ...bodyOf(store, inspection.opened_record_id), candidates: [] }),
+        validateManifest({ ...manifest, computation_reuse: [{ session_index: 0 }] }),
         false,
     );
 });
@@ -172,81 +253,138 @@ test("the optimizer record codecs refuse every inconsistent retained body", asyn
     using store = new SQLiteTraceStore();
     const { inspection } = await completedRun(store, "application:cro:codec");
     const opened = bodyOf(store, inspection.opened_record_id);
-    const proposed = bodyOf(store, inspection.candidates[0]?.proposed?.record_id);
-    const evaluated = bodyOf(store, inspection.candidates[0]?.outcome?.record_id);
-    const rejected = bodyOf(store, inspection.candidates[1]?.outcome?.record_id);
-    const promoted = bodyOf(store, inspection.promotion?.record_id);
-    assert.equal(readCroOpenedBody(opened).candidates.length, 2);
-    for (const body of [proposed, evaluated, rejected, promoted]) {
+    const proposal = bodyOf(store, inspection.proposals[0]?.record_id);
+    const promoted = bodyOf(store, inspection.candidates[0]?.record_id);
+    const archived = bodyOf(store, inspection.candidates[1]?.record_id);
+    const evaluated = bodyOf(store, inspection.candidates[2]?.record_id);
+    const selection = bodyOf(store, inspection.selection?.record_id);
+    assert.equal(readCroOpenedBody(opened).examples.length, 6);
+    assert.equal(readCroProposalBody(proposal).candidates.length, 2);
+    assert.equal(readCroSelectionBody(selection).pool.length, 1);
+    for (const body of [promoted, archived, evaluated]) {
         assert.equal(
             readCroCandidateBody(body).candidate_id,
             (body as { candidate_id: string }).candidate_id,
         );
     }
-    const [firstPlan, secondPlan] = opened.candidates as readonly RecordBody[];
+    const examples = opened.examples as readonly RecordBody[];
     const openedMutations: readonly RecordBody[] = [
         { ...opened, kind: "tree_rl" },
         { ...opened, phase: "candidate" },
         { ...opened, baselines: ["whole_replay"] },
-        { ...opened, baselines: ["full_replay", "full_replay"] },
-        { ...opened, candidates: [] },
-        { ...opened, candidates: [firstPlan as RecordBody, firstPlan as RecordBody] },
-        { ...opened, candidates: [secondPlan as RecordBody, firstPlan as RecordBody] },
+        { ...opened, examples: [] },
+        { ...opened, examples: [...examples].reverse() },
+        { ...opened, examples: [examples[0] as RecordBody, examples[0] as RecordBody] },
+        { ...opened, examples: [{ ...(examples[0] as RecordBody), split: "test" }] },
+        { ...opened, thresholds: { minPromotionScore: "0.5" } },
+        { ...opened, budgets: { iterations: 0.5 } },
+        { ...opened, budgets: null },
         { ...opened, application_version: 2 },
     ];
     for (const body of openedMutations) {
         assert.throws(() => readCroOpenedBody(body), ApplicationEvidenceError);
     }
-    const divergence = evaluated.divergence as RecordBody;
+    const plans = proposal.candidates as readonly RecordBody[];
+    const proposalMutations: readonly RecordBody[] = [
+        { ...proposal, attempts: 0 },
+        { ...proposal, refusals: ["one"] },
+        { ...proposal, candidates: [] },
+        { ...proposal, candidates: [plans[0] as RecordBody, plans[0] as RecordBody] },
+        { ...proposal, candidates: [{ ...(plans[0] as RecordBody), iteration: 3 }] },
+        { ...proposal, failure: { code: "APPLICATION_VERIFICATION_FAILED", reason: "x" } },
+        { ...proposal, candidates: [{ ...(plans[0] as RecordBody), fix_set: [] }] },
+        {
+            ...proposal,
+            candidates: [{ ...(plans[0] as RecordBody), fix_set: ["train-1", "train-1"] }],
+        },
+        {
+            ...proposal,
+            candidates: [{ ...(plans[0] as RecordBody), changes: ["provider", "task"] }],
+        },
+        {
+            ...proposal,
+            candidates: [{ ...(plans[0] as RecordBody), guard_set: ["train-1"] }],
+        },
+    ];
+    for (const body of proposalMutations) {
+        assert.throws(() => readCroProposalBody(body), ApplicationEvidenceError);
+    }
+    const targeted = promoted.targeted as readonly RecordBody[];
+    const first = targeted[0] as RecordBody;
     const candidateMutations: readonly RecordBody[] = [
-        { ...evaluated, phase: "opened" },
-        { ...evaluated, status: "merged" },
-        { ...evaluated, affected_steps: [3, 2] },
-        { ...evaluated, affected_steps: [3] },
-        { ...evaluated, edited_step_index: 5 },
-        { ...evaluated, failure: { code: "OTHER", reason: "x" } },
-        { ...evaluated, baseline: { ...(evaluated.baseline as RecordBody), kind: "whole" } },
-        { ...evaluated, evaluation: { ...(evaluated.evaluation as RecordBody), passed: false } },
-        { ...evaluated, evaluation: null },
-        { ...evaluated, cost: null },
-        { ...evaluated, divergence: { ...divergence, unexplained: [3] } },
-        { ...evaluated, divergence: { ...divergence, first_divergence_index: 1 } },
-        { ...proposed, cost: evaluated.cost as RecordBody },
-        { ...proposed, divergence },
-        { ...rejected, evaluation: { ...(rejected.evaluation as RecordBody), passed: true } },
-        { ...evaluated, changes: ["provider", "task"] },
-        { ...evaluated, parent_candidate_id: "cro-candidate:sha256:zz" },
+        { ...promoted, phase: "opened" },
+        { ...promoted, status: "merged" },
+        { ...promoted, status: "archived" },
+        { ...promoted, train: null },
+        { ...promoted, dev_score: null },
+        { ...promoted, failure: { code: "OTHER", reason: "x" } },
+        { ...promoted, status: "rejected" },
+        { ...promoted, targeted: [{ ...first, role: "guard" }] },
+        { ...promoted, targeted: [{ ...first, example_id: "train-2" }] },
+        { ...promoted, targeted: [{ ...first, affected_steps: [3, 2] }] },
+        {
+            ...promoted,
+            targeted: [
+                {
+                    ...first,
+                    divergence: { ...(first.divergence as RecordBody), unexplained: [3] },
+                },
+            ],
+        },
+        {
+            ...promoted,
+            targeted: [{ ...first, target: { ...(first.target as RecordBody), step_index: 1 } }],
+        },
+        { ...promoted, targeted: [{ ...first, role: "other" }] },
+        {
+            ...promoted,
+            targeted: [
+                { ...first, baseline: { ...(first.baseline as RecordBody), kind: "whole" } },
+            ],
+        },
+        {
+            ...promoted,
+            dev: [
+                ...(promoted.dev as RecordBody[]),
+                (promoted.dev as RecordBody[])[0] as RecordBody,
+            ],
+        },
+        { ...promoted, gate: { ...(promoted.gate as RecordBody), passed: "yes" } },
+        { ...archived, dev: [] },
+        { ...archived, gate: { ...(archived.gate as RecordBody), passed: true } },
+        { ...evaluated, promotion_reference: null },
+        { ...evaluated, edit_scope: "suffix" },
     ];
     for (const body of candidateMutations) {
         assert.throws(() => readCroCandidateBody(body), ApplicationEvidenceError);
     }
+    for (const body of [
+        { ...selection, phase: "opened" },
+        { ...selection, selected_candidate_id: "cro-candidate:sha256:zz" },
+        { ...selection, pool: [], selected_candidate_id: selection.selected_candidate_id },
+    ] as readonly RecordBody[]) {
+        assert.throws(() => readCroSelectionBody(body), ApplicationEvidenceError);
+    }
     assert.throws(() => readCroChanges([], "changes"), TypeError);
-    assert.throws(() => readEvaluation({ passed: "yes", reason: "r", score: 1 }), TypeError);
     assert.throws(
-        () =>
-            readEvaluation({
-                passed: true,
-                reason: "x".repeat(applicationsProtocolConfig.limits.maxReasonLength + 1),
-                score: 1,
-            }),
+        () => readCroEdit({ ...providerEdit("x", 0, "x"), prior: 1.5 }, "edit"),
         TypeError,
     );
 });
 
-test("inspection refuses forged, late, or duplicate optimizer records", async () => {
+test("inspection refuses forged, late, recomputation-inconsistent, or duplicate optimizer records", async () => {
     using store = new SQLiteTraceStore();
     const commandId = "application:cro:forged";
     const { inspection } = await completedRun(store, commandId);
     const applicationId = deriveApplicationOwnerId(commandId);
-    const promotion = bodyOf(store, inspection.promotion?.record_id);
-    const forge = (step: string, body: RecordBody) => {
-        const head = store.readOwner(applicationId).at(-1)?.envelope.record_id as RecordId;
-        const appended = store.appendApplicationRecord(
-            applicationId,
+    const forge = (target: SQLiteTraceStore, owner: string, step: string, body: RecordBody) => {
+        const head = target.readOwner(owner).at(-1)?.envelope.record_id as RecordId;
+        const appended = target.appendApplicationRecord(
+            owner,
             head,
             createApplicationAppendRequest(
-                createApplicationAppendIntentId(applicationId, step),
-                applicationId,
+                createApplicationAppendIntentId(owner, step),
+                owner,
                 body,
                 applicationsProtocolConfig.traceSchemas.croCandidate,
                 [head],
@@ -255,49 +393,28 @@ test("inspection refuses forged, late, or duplicate optimizer records", async ()
         );
         assert.equal(appended.status, "appended");
     };
-    // A second promotion after the terminal cut is refused.
-    forge("forged-promotion", promotion);
+    // A second selection after the terminal cut is refused.
+    forge(store, applicationId, "forged-selection", bodyOf(store, inspection.selection?.record_id));
     assert.throws(
         () => inspectCounterfactualOptimization(store, applicationId),
         (error: unknown) =>
             error instanceof ApplicationEvidenceError && /terminal cut/u.test(error.message),
     );
-    // A stopped run refuses any later candidate record.
-    using stopped = new SQLiteTraceStore();
-    const stoppedCommand = "application:cro:stopped";
-    await assert.rejects(
-        runCounterfactualOptimization(
-            stopped,
-            optimizerOptions(stoppedCommand, {
-                candidates: [
-                    providerCandidate("wrong-prefix", 0, keyedProvider("alt"), {
-                        program: mismatchedProgram,
-                    }),
-                ],
-            }),
-        ),
-        ApplicationEvidenceError,
-    );
-    const stoppedId = deriveApplicationOwnerId(stoppedCommand);
-    const stoppedInspection = inspectCounterfactualOptimization(stopped, stoppedId);
-    const failed = bodyOf(stopped, stoppedInspection.candidates[0]?.outcome?.record_id);
-    const head = stopped.readOwner(stoppedId).at(-1)?.envelope.record_id as RecordId;
-    stopped.appendApplicationRecord(
-        stoppedId,
-        head,
-        createApplicationAppendRequest(
-            createApplicationAppendIntentId(stoppedId, "forged-promotion"),
-            stoppedId,
-            failed,
-            applicationsProtocolConfig.traceSchemas.croCandidate,
-            [head],
-        ),
-        null,
-    );
+    // An outcome whose gate disagrees with the gate recomputed from its results is refused.
+    using crashed = new OutcomeCrashingStore();
+    await assert.rejects(completedRun(crashed, commandId), /simulated crash/u);
+    const forgedGate = bodyOf(store, inspection.candidates[0]?.record_id);
+    forge(crashed, applicationId, "forged-outcome", {
+        ...forgedGate,
+        gate: { ...(forgedGate.gate as RecordBody), aggregate_lift: 0.123 },
+    });
     assert.throws(
-        () => inspectCounterfactualOptimization(stopped, stoppedId),
+        () => inspectCounterfactualOptimization(crashed, applicationId),
         (error: unknown) =>
-            error instanceof ApplicationEvidenceError && /late/u.test(error.message),
+            error instanceof ApplicationEvidenceError &&
+            /outcome disagrees with its parent, examples, gate, promotion, or cost/u.test(
+                error.message,
+            ),
     );
     // An application path that holds no optimizer record is not an optimization.
     assert.throws(

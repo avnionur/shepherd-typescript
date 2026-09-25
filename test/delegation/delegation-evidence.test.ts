@@ -361,5 +361,21 @@ test("inspection refuses forged handle, origin cut, parent chain, and completion
     for (const [label, handleId, forged] of cases) {
         assert.throws(() => inspectChildRun(forged, handleId), DelegationEvidenceError, label);
     }
+    // Malformed child durable-execution evidence surfaces as delegation evidence with its cause.
+    const runRecords = store.readOwner(root.handle.child_run_id);
+    assert.throws(
+        () =>
+            inspectChildRun(
+                viewing({
+                    [root.handle.child_run_id]: forge(runRecords, 1, { mode: "declaration" }),
+                }),
+                rootId,
+            ),
+        (error: unknown) =>
+            error instanceof DelegationEvidenceError &&
+            error.message.includes(`handle ${rootId} evidence is inconsistent`) &&
+            error.cause instanceof Error &&
+            !(error.cause instanceof DelegationEvidenceError),
+    );
     assert.deepEqual(inspectChildRun(viewing({}), childId), inspectChildRun(store, childId));
 });

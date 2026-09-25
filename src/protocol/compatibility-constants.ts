@@ -40,6 +40,11 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
         "run-trace": { flags: [], values: ["limit", "offset", "store"] },
         "run-trace-revision": { flags: [], values: ["limit", "offset", "store"] },
         "run-vcscore": { flags: [], values: ["store"] },
+        "replay-diff": { flags: [], values: ["store"] },
+        "replay-log": { flags: [], values: ["limit", "offset", "store"] },
+        "replay-show": { flags: [], values: ["store"] },
+        "scope-list": { flags: [], values: ["limit", "offset", "store"] },
+        "scope-show": { flags: [], values: ["store"] },
         "store-backup": { flags: [], values: ["output", "store"] },
         "store-export": { flags: ["redacted"], values: ["output", "store"] },
         "store-import": { flags: [], values: ["input", "store"] },
@@ -88,6 +93,11 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
         runTrace: "run-trace",
         runTraceRevision: "run-trace-revision",
         runVcsCore: "run-vcscore",
+        replayDiff: "replay-diff",
+        replayLog: "replay-log",
+        replayShow: "replay-show",
+        scopeList: "scope-list",
+        scopeShow: "scope-show",
         storeBackup: "store-backup",
         storeExport: "store-export",
         storeImport: "store-import",
@@ -164,6 +174,23 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
             handler: null,
             name: "store",
         },
+        {
+            commands: [
+                { handler: "replay-log", name: "log" },
+                { handler: "replay-show", name: "show" },
+                { handler: "replay-diff", name: "diff" },
+            ],
+            handler: null,
+            name: "replay",
+        },
+        {
+            commands: [
+                { handler: "scope-list", name: "list" },
+                { handler: "scope-show", name: "show" },
+            ],
+            handler: null,
+            name: "scope",
+        },
     ],
     limits: {
         defaultPageSize: 25,
@@ -208,6 +235,11 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
             "run-trace": [["trace_revision"], ["trace_revisions"]],
             "run-trace-revision": [["trace_revision"], ["trace_revisions"]],
             "run-vcscore": [["vcscore"]],
+            "replay-diff": [["replay_diff"]],
+            "replay-log": [["replay_log"], ["replay_sessions"]],
+            "replay-show": [["replay_session"]],
+            "scope-list": [["scopes"]],
+            "scope-show": [["lineage", "scope"]],
             "store-backup": [["backup"]],
             "store-export": [["export"]],
             "store-import": [["import"]],
@@ -241,6 +273,8 @@ export const CLI_PROTOCOL_V1_CONTRACT = deepFreeze({
         publicationUnavailable:
             "retained-output citation repair requires managed recovery authority",
         quickstartUnavailable: "quickstart demo artifact is unavailable",
+        replayDiffUsage: "replay diff requires at least two distinct session selectors",
+        scopeUnavailable: "scope evidence is unavailable",
     },
     options: {
         adopt: "adopt",
@@ -672,6 +706,505 @@ export const PROVIDER_PROTOCOL_V1_CONTRACT = deepFreeze({
     },
 } as const);
 
+/**
+ * Immutable live-provider extension implemented by provider protocol v2: configured live provider
+ * kinds (Anthropic Messages and OpenAI-compatible chat completions), their wire settings, the
+ * provider-neutral message model, and provider-conversation identity prefixes.
+ */
+export const PROVIDER_PROTOCOL_V2_CONTRACT = deepFreeze({
+    ...PROVIDER_PROTOCOL_V1_CONTRACT,
+    conversation: {
+        cacheIdentityPrefix: "provider-prefix:",
+        receiptIdPrefix: "provider-conversation:",
+    },
+    kinds: ["static", "program", "anthropic", "openai", "openrouter"],
+    live: {
+        errors: {
+            credentialCode: "LIVE_PROVIDER_CREDENTIAL_MISSING",
+            credentialMessage: "live provider credential is not configured",
+            httpCode: "LIVE_PROVIDER_HTTP_FAILED",
+            httpMessage: "live provider request failed",
+            responseCode: "LIVE_PROVIDER_RESPONSE_INVALID",
+            responseMessage: "live provider response is malformed or incomplete",
+            transportCode: "LIVE_PROVIDER_TRANSPORT_FAILED",
+            transportMessage: "live provider transport failed",
+        },
+        kinds: {
+            anthropic: {
+                cacheControl: {
+                    type: "ephemeral",
+                },
+                capabilities: {
+                    streaming: false,
+                    structuredOutput: true,
+                    tools: false,
+                },
+                completeStopReasons: ["end_turn"],
+                credential: {
+                    environmentVariable: "ANTHROPIC_API_KEY",
+                    header: "x-api-key",
+                    scheme: null,
+                },
+                dialect: "anthropic_messages",
+                endpoint: "https://api.anthropic.com/v1/messages",
+                headers: {
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                maxOutputTokens: 16000,
+                maxTokensField: "max_tokens",
+                outputFormat: null,
+            },
+            openai: {
+                cacheControl: null,
+                capabilities: {
+                    streaming: false,
+                    structuredOutput: true,
+                    tools: false,
+                },
+                completeStopReasons: ["stop"],
+                credential: {
+                    environmentVariable: "OPENAI_API_KEY",
+                    header: "authorization",
+                    scheme: "Bearer",
+                },
+                dialect: "openai_chat_completions",
+                endpoint: "https://api.openai.com/v1/chat/completions",
+                headers: {
+                    "content-type": "application/json",
+                },
+                maxOutputTokens: 16000,
+                maxTokensField: "max_completion_tokens",
+                outputFormat: {
+                    name: "shepherd_output",
+                    strict: false,
+                },
+            },
+            openrouter: {
+                cacheControl: {
+                    type: "ephemeral",
+                },
+                capabilities: {
+                    streaming: false,
+                    structuredOutput: true,
+                    tools: false,
+                },
+                completeStopReasons: ["stop"],
+                credential: {
+                    environmentVariable: "OPENROUTER_API_KEY",
+                    header: "authorization",
+                    scheme: "Bearer",
+                },
+                dialect: "openai_chat_completions",
+                endpoint: "https://openrouter.ai/api/v1/chat/completions",
+                headers: {
+                    "content-type": "application/json",
+                },
+                maxOutputTokens: 16000,
+                maxTokensField: "max_tokens",
+                outputFormat: {
+                    name: "shepherd_output",
+                    strict: false,
+                },
+            },
+        },
+        limits: {
+            maxErrorDetailBytes: 512,
+        },
+        redaction: "[redacted]",
+    },
+    messages: {
+        contentTypes: ["text"],
+        rendering: {
+            input: "input",
+            instruction: "instruction",
+            outputSchema: "output_schema",
+        },
+        roles: ["user", "assistant"],
+    },
+} as const);
+
+/**
+ * Immutable tool-use extension implemented by provider protocol v3: tool-use and tool-result content
+ * blocks, per-kind tool wire settings and tool capabilities, program conversation capabilities, the
+ * tool-use loop bounds and vocabularies, the replayable turn encoding, and the meta-agent tool
+ * catalog.
+ */
+export const PROVIDER_PROTOCOL_V3_CONTRACT = deepFreeze({
+    conversation: {
+        cacheIdentityPrefix: "provider-prefix:",
+        receiptIdPrefix: "provider-conversation:",
+    },
+    kinds: ["static", "program", "anthropic", "openai", "openrouter"],
+    live: {
+        errors: {
+            credentialCode: "LIVE_PROVIDER_CREDENTIAL_MISSING",
+            credentialMessage: "live provider credential is not configured",
+            httpCode: "LIVE_PROVIDER_HTTP_FAILED",
+            httpMessage: "live provider request failed",
+            responseCode: "LIVE_PROVIDER_RESPONSE_INVALID",
+            responseMessage: "live provider response is malformed or incomplete",
+            transportCode: "LIVE_PROVIDER_TRANSPORT_FAILED",
+            transportMessage: "live provider transport failed",
+        },
+        kinds: {
+            anthropic: {
+                cacheControl: {
+                    type: "ephemeral",
+                },
+                capabilities: {
+                    streaming: false,
+                    structuredOutput: true,
+                    tools: true,
+                },
+                completeStopReasons: ["end_turn"],
+                credential: {
+                    environmentVariable: "ANTHROPIC_API_KEY",
+                    header: "x-api-key",
+                    scheme: null,
+                },
+                dialect: "anthropic_messages",
+                endpoint: "https://api.anthropic.com/v1/messages",
+                headers: {
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                maxOutputTokens: 16000,
+                maxTokensField: "max_tokens",
+                outputFormat: null,
+                toolUse: {
+                    requestField: "tools",
+                    stopReasons: ["tool_use"],
+                },
+            },
+            openai: {
+                cacheControl: null,
+                capabilities: {
+                    streaming: false,
+                    structuredOutput: true,
+                    tools: true,
+                },
+                completeStopReasons: ["stop"],
+                credential: {
+                    environmentVariable: "OPENAI_API_KEY",
+                    header: "authorization",
+                    scheme: "Bearer",
+                },
+                dialect: "openai_chat_completions",
+                endpoint: "https://api.openai.com/v1/chat/completions",
+                headers: {
+                    "content-type": "application/json",
+                },
+                maxOutputTokens: 16000,
+                maxTokensField: "max_completion_tokens",
+                outputFormat: {
+                    name: "shepherd_output",
+                    strict: false,
+                },
+                toolUse: {
+                    requestField: "tools",
+                    stopReasons: ["tool_calls"],
+                },
+            },
+            openrouter: {
+                cacheControl: {
+                    type: "ephemeral",
+                },
+                capabilities: {
+                    streaming: false,
+                    structuredOutput: true,
+                    tools: true,
+                },
+                completeStopReasons: ["stop"],
+                credential: {
+                    environmentVariable: "OPENROUTER_API_KEY",
+                    header: "authorization",
+                    scheme: "Bearer",
+                },
+                dialect: "openai_chat_completions",
+                endpoint: "https://openrouter.ai/api/v1/chat/completions",
+                headers: {
+                    "content-type": "application/json",
+                },
+                maxOutputTokens: 16000,
+                maxTokensField: "max_tokens",
+                outputFormat: {
+                    name: "shepherd_output",
+                    strict: false,
+                },
+                toolUse: {
+                    requestField: "tools",
+                    stopReasons: ["tool_calls"],
+                },
+            },
+        },
+        limits: {
+            maxErrorDetailBytes: 512,
+        },
+        redaction: "[redacted]",
+    },
+    messages: {
+        contentTypes: ["text", "tool_use", "tool_result"],
+        rendering: {
+            input: "input",
+            instruction: "instruction",
+            outputSchema: "output_schema",
+        },
+        roles: ["user", "assistant"],
+    },
+    program: {
+        capabilities: {
+            streaming: false,
+            structuredOutput: true,
+            tools: false,
+        },
+        conversationCapabilities: {
+            streaming: false,
+            structuredOutput: true,
+            tools: true,
+        },
+        kind: "program",
+    },
+    static: {
+        capabilities: {
+            streaming: false,
+            structuredOutput: true,
+            tools: false,
+        },
+        errors: {
+            exhaustedCode: "STATIC_PROVIDER_EXHAUSTED",
+            exhaustedMessage: "static provider cassette is exhausted",
+            mismatchCode: "STATIC_PROVIDER_REQUEST_MISMATCH",
+            mismatchMessage: "static provider request does not match the next exchange",
+        },
+        kind: "static",
+    },
+    tools: {
+        loop: {
+            defaultMaxTurns: 8,
+            dispositions: ["materialized", "denied", "invalid", "failed"],
+            effectIdPrefix: "tool-call:",
+            maxResultBytes: 16384,
+            maxTurns: 64,
+            statuses: ["completed", "turn_limit"],
+            truncationMarker: "[truncated]",
+        },
+        metaAgent: {
+            commandIdPrefix: "meta-agent:",
+            limits: {
+                maxObservedSteps: 64,
+                maxTraceRecords: 32,
+            },
+            tools: [
+                {
+                    description:
+                        "Observe one replay session: its mode, status, checkpoints, and a summary of every step, including each effect's kind and whether its outcome succeeded.",
+                    effectKind: "meta_agent.observe",
+                    inputSchema: {
+                        additionalProperties: false,
+                        properties: {
+                            session_id: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                        },
+                        required: ["session_id"],
+                        type: "object",
+                    },
+                    name: "observe",
+                    operation: "observe",
+                    reversibility: "reversible",
+                },
+                {
+                    description:
+                        "Fork a new worker from a declared worker definition into isolated world custody and run it to its terminal record. Returns the worker session and custody identities.",
+                    effectKind: "meta_agent.fork",
+                    inputSchema: {
+                        additionalProperties: false,
+                        properties: {
+                            worker: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                            worker_id: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                        },
+                        required: ["worker", "worker_id"],
+                        type: "object",
+                    },
+                    name: "fork",
+                    operation: "fork",
+                    reversibility: "reversible",
+                },
+                {
+                    description:
+                        "Discard a forked worker's world custody. The custody and every change in it are removed.",
+                    effectKind: "meta_agent.discard",
+                    inputSchema: {
+                        additionalProperties: false,
+                        properties: {
+                            custody_id: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                            worker_id: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                        },
+                        required: ["custody_id", "worker_id"],
+                        type: "object",
+                    },
+                    name: "discard",
+                    operation: "discard",
+                    reversibility: "irreversible",
+                },
+                {
+                    description:
+                        "Rewind a replay session to a retained checkpoint or step boundary: its worlds are restored into fresh roots and its prefix is copied without re-running anything.",
+                    effectKind: "meta_agent.rewind",
+                    inputSchema: {
+                        additionalProperties: false,
+                        oneOf: [
+                            {
+                                required: ["checkpoint_id"],
+                            },
+                            {
+                                required: ["step_count"],
+                            },
+                        ],
+                        properties: {
+                            checkpoint_id: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                            session_id: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                            step_count: {
+                                minimum: 0,
+                                type: "integer",
+                            },
+                        },
+                        required: ["session_id"],
+                        type: "object",
+                    },
+                    name: "rewind",
+                    operation: "rewind",
+                    reversibility: "reversible",
+                },
+                {
+                    description:
+                        "Replay a replay session from a retained checkpoint or step boundary under a declared worker variant: the prefix is served from the record and the suffix runs live with the variant's changes.",
+                    effectKind: "meta_agent.replay",
+                    inputSchema: {
+                        additionalProperties: false,
+                        oneOf: [
+                            {
+                                required: ["checkpoint_id"],
+                            },
+                            {
+                                required: ["step_count"],
+                            },
+                        ],
+                        properties: {
+                            checkpoint_id: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                            session_id: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                            step_count: {
+                                minimum: 0,
+                                type: "integer",
+                            },
+                            variant: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                        },
+                        required: ["session_id", "variant"],
+                        type: "object",
+                    },
+                    name: "replay",
+                    operation: "replay",
+                    reversibility: "reversible",
+                },
+                {
+                    description:
+                        "Read retained records of one trace owner path in ordinal order, starting at an ordinal, bounded by a record count.",
+                    effectKind: "meta_agent.read_trace",
+                    inputSchema: {
+                        additionalProperties: false,
+                        properties: {
+                            from_ordinal: {
+                                minimum: 0,
+                                type: "integer",
+                            },
+                            max_records: {
+                                minimum: 1,
+                                type: "integer",
+                            },
+                            owner_id: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                        },
+                        required: ["owner_id"],
+                        type: "object",
+                    },
+                    name: "read_trace",
+                    operation: "read_trace",
+                    reversibility: "reversible",
+                },
+                {
+                    description:
+                        "Align a rewind or replay branch with its source session step by step and report the first divergence, the common prefix, and every divergence the declared changes do not explain.",
+                    effectKind: "meta_agent.diff",
+                    inputSchema: {
+                        additionalProperties: false,
+                        properties: {
+                            replay_session_id: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                            source_session_id: {
+                                minLength: 1,
+                                type: "string",
+                            },
+                        },
+                        required: ["replay_session_id", "source_session_id"],
+                        type: "object",
+                    },
+                    name: "diff",
+                    operation: "diff",
+                    reversibility: "reversible",
+                },
+            ],
+        },
+        turn: {
+            instruction: "shepherd.tool_turn.v1",
+            outputSchema: {
+                properties: {
+                    message: {
+                        type: "object",
+                    },
+                    stop_reason: {
+                        type: "string",
+                    },
+                },
+                required: ["message", "output", "stop_reason"],
+                type: "object",
+            },
+        },
+    },
+} as const);
+
 /** Immutable task descriptor and artifact-lock contract implemented by task protocol v1. */
 export const TASK_PROTOCOL_V1_CONTRACT = deepFreeze({
     artifactLockVersion: 1,
@@ -814,6 +1347,44 @@ export const EFFECT_PROTOCOL_V1_CONTRACT = deepFreeze({
             "https://avnionur.github.io/shepherd-typescript/schemas/effect-intent-v1.schema.json",
         outcomeId:
             "https://avnionur.github.io/shepherd-typescript/schemas/effect-outcome-v1.schema.json",
+    },
+} as const);
+
+/**
+ * Immutable effect contract implemented by effect protocol v2: the unchanged v1 intent/outcome
+ * records plus the compensation records, vocabularies, identity, errors, and bounds.
+ */
+export const EFFECT_PROTOCOL_V2_CONTRACT = deepFreeze({
+    ...EFFECT_PROTOCOL_V1_CONTRACT,
+    compensation: {
+        artifacts: { recordSchema: "spec/schemas/effect-compensation-v1.schema.json" },
+        compatibilityVersion: "shepherd.effect-compensation.v1",
+        compensableTiers: ["compensable"],
+        errors: {
+            conflictCode: "EFFECT_COMPENSATION_CONFLICT",
+            conflictMessage: "another compensator advanced this compensation concurrently",
+            evidenceCode: "EFFECT_COMPENSATION_EVIDENCE_INVALID",
+            evidenceMessage: "effect compensation evidence is absent, malformed, or inconsistent",
+            failedCode: "EFFECT_COMPENSATION_FAILED",
+            failedMessage: "one or more compensation handlers returned a failure result",
+            handlerNotFoundCode: "EFFECT_COMPENSATION_HANDLER_NOT_FOUND",
+            handlerNotFoundMessage:
+                "no compensation handler is registered for a compensable effect kind",
+        },
+        evidenceKinds: ["replay_step", "supervised_dispatch"],
+        identity: {
+            appendIntentKind: "effect_compensation",
+            compensationIdPrefix: "effect-compensation:sha256:",
+        },
+        limits: { maxEffectsPerTrigger: 4096 },
+        outcomes: ["compensated", "failed"],
+        phases: ["intent", "attempt", "outcome"],
+        recordVersion: 1,
+        schemaId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/effect-compensation-v1.schema.json",
+        statuses: ["pending", "uncertain", "failed", "compensated"],
+        traceSchema: "shepherd.effect.compensation.v1",
+        triggers: ["scope_discard", "replay_rewind", "replay_replay", "command"],
     },
 } as const);
 
@@ -973,6 +1544,52 @@ export const FORMAL_ASSURANCE_V1_CONTRACT = deepFreeze({
                 "core0h_trace_monotonic",
                 "single_child_branch_replay_sound",
             ],
+        },
+    },
+} as const);
+
+/**
+ * Immutable Appendix B contract implemented by formal assurance v2: the unchanged v1 reference
+ * machine and proof-envelope vocabulary plus inspection envelopes for runs, replay sessions, and
+ * delegated child runs (imported-claim metadata, publication controls, and optional lowering).
+ */
+export const FORMAL_ASSURANCE_V2_CONTRACT = deepFreeze({
+    ...FORMAL_ASSURANCE_V1_CONTRACT,
+    inspection: {
+        extensionProfile: "extension",
+        importedClaim: {
+            metadataKey: "proof_envelope",
+            rejections: {
+                ambiguous: "claim_ambiguous",
+                evidenceRef: "claim_evidence_ref_invalid",
+                malformed: "claim_malformed",
+                provenance: "claim_provenance_unrecognized",
+                runtime: "claim_runtime_only",
+            },
+        },
+        lowering: {
+            eligibleDispositions: ["materialized"],
+            eligibleModes: ["root"],
+            eligibleStepKinds: ["effect"],
+            eligibleTerminalStatuses: ["finished"],
+            ineligibility: {
+                disposition: "effect_not_materialized",
+                mode: "branch_session",
+                stepKind: "non_static_step",
+                terminal: "not_finished",
+            },
+            localRefPrefix: "lowered:",
+            schemaVersion: "shepherd.replay-session.core-a-lowering.v1",
+        },
+        publicationControls: {
+            delegationHandoff: "forwarding",
+            kinds: ["forwarding", "delay", "fork", "replay"],
+            replayModes: { replay: "replay", rewind: "fork" },
+            retainedWorldSettlement: "delay",
+        },
+        reasons: {
+            productionRuntime: "production_runtime",
+            publicationControl: "publication_control",
         },
     },
 } as const);
@@ -1341,6 +1958,8 @@ export const REPLAY_PROTOCOL_V1_CONTRACT = deepFreeze({
     compatibilityVersion: "shepherd.replay.v1",
     divergence: {
         causes: ["root", "propagated", "unexplained"],
+        maxSessions: 16,
+        regressionStrategies: ["bisect", "linear"],
         statuses: ["identical", "diverged", "source_only", "replay_only"],
     },
     effects: {
@@ -1466,6 +2085,33 @@ export const REPLAY_PROTOCOL_V1_CONTRACT = deepFreeze({
         session: "shepherd.replay.session.v1",
         step: "shepherd.replay.step.v1",
         terminal: "shepherd.replay.terminal.v1",
+    },
+} as const);
+
+/**
+ * Immutable replay contract implemented by replay protocol v2: the unchanged v1 records and
+ * vocabularies plus the configured automatic step-boundary checkpoint policies and their default.
+ */
+export const REPLAY_PROTOCOL_V2_CONTRACT = deepFreeze({
+    ...REPLAY_PROTOCOL_V1_CONTRACT,
+    checkpoint: {
+        ...REPLAY_PROTOCOL_V1_CONTRACT.checkpoint,
+        automatic: {
+            defaultPolicy: { interval: null, kind: "none" },
+            policies: ["none", "provider_step", "effect_step", "every_n_steps"],
+        },
+    },
+} as const);
+
+/**
+ * Immutable replay contract implemented by replay protocol v3: the unchanged v2 records and
+ * vocabularies plus the configured branch source dispositions and their default.
+ */
+export const REPLAY_PROTOCOL_V3_CONTRACT = deepFreeze({
+    ...REPLAY_PROTOCOL_V2_CONTRACT,
+    branch: {
+        defaultSourceDisposition: "compensate",
+        sourceDispositions: ["compensate", "retain"],
     },
 } as const);
 
@@ -2574,6 +3220,158 @@ export const WORKSPACE_PROTOCOL_V26_CONTRACT = deepFreeze({
     },
 } as const);
 
+/** Immutable layered device-layer and backend-selection extension implemented by workspace protocol v27. */
+export const WORKSPACE_PROTOCOL_V27_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V26_CONTRACT,
+    carrierBackends: {
+        ...WORKSPACE_PROTOCOL_V26_CONTRACT.carrierBackends,
+        selection: {
+            defaultMode: "strict",
+            fallbackOrder: ["overlay", "clone", "copy"],
+        },
+    },
+    deviceLayers: {
+        adapters: {
+            clone: "clone",
+            container: "container",
+            copy: "copy",
+            overlay: "overlay",
+        },
+        baseCheckpointName: "base",
+        checkpointNamePattern: "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+        commandMaxBytes: 268435456,
+        commandTimeoutMs: 120000,
+        conformance: {
+            checkpoints: 7,
+            maxDepth: 4,
+            retainNewest: 1,
+        },
+        container: {
+            arguments: {
+                commit: ["commit", "{container}", "{image}"],
+                copyIn: ["cp", "{source}/.", "{container}:{world}"],
+                create: [
+                    "create",
+                    "--pull",
+                    "never",
+                    "--network",
+                    "none",
+                    "--label",
+                    "{label}",
+                    "{image}",
+                    "sleep",
+                    "infinity",
+                ],
+                exec: ["exec", "--interactive", "{container}"],
+                export: ["export", "{container}"],
+                import: ["import", "-", "{image}"],
+                inspectImage: ["image", "inspect", "--format", "{{len .RootFS.Layers}}", "{image}"],
+                probe: ["version", "--format", "{{.Server.Version}}"],
+                removeContainer: ["rm", "--force", "{container}"],
+                removeImage: ["image", "rm", "--force", "{image}"],
+                run: [
+                    "run",
+                    "--detach",
+                    "--pull",
+                    "never",
+                    "--network",
+                    "none",
+                    "--label",
+                    "{label}",
+                    "{image}",
+                    "sleep",
+                    "infinity",
+                ],
+            },
+            commands: {
+                list: [
+                    "sh",
+                    "-c",
+                    'cd -- "$1" && find . -type f -exec sha256sum {} +',
+                    "sh",
+                    "{world}",
+                ],
+                prepare: ["mkdir", "-p", "--", "{world}"],
+                read: ["cat", "--", "{path}"],
+                remove: ["rm", "-rf", "--", "{path}"],
+                write: [
+                    "sh",
+                    "-c",
+                    'mkdir -p -- "$(dirname -- "$1")" && cat > "$1"',
+                    "sh",
+                    "{path}",
+                ],
+            },
+            executable: "docker",
+            image: "alpine:3.22",
+            imageRepository: "shepherd-device-layer",
+            labelKey: "org.shepherd.device-layer",
+            listLinePattern: "^([0-9a-f]{64})  \\./(.+)$",
+            maxImageLayers: 120,
+            tokens: {
+                container: "{container}",
+                image: "{image}",
+                label: "{label}",
+                path: "{path}",
+                source: "{source}",
+                world: "{world}",
+            },
+            worldPath: "/world",
+        },
+        depth: {
+            maxDepth: 48,
+            retainNewest: 4,
+        },
+        deviceDirectoryPrefix: "device-",
+        directories: {
+            compaction: "compaction",
+            layers: "layers",
+            upper: "upper",
+            work: "work",
+            world: "world",
+        },
+        errors: {
+            checkpointInvalidCode: "DEVICE_LAYER_CHECKPOINT_INVALID",
+            checkpointInvalidMessage: "device-layer checkpoint name is invalid or already in use",
+            checkpointRetiredCode: "DEVICE_LAYER_CHECKPOINT_RETIRED",
+            checkpointRetiredMessage: "device-layer checkpoint was retired by compaction",
+            checkpointUnknownCode: "DEVICE_LAYER_CHECKPOINT_UNKNOWN",
+            checkpointUnknownMessage: "device-layer checkpoint is not in the current layer stack",
+            closedCode: "DEVICE_LAYER_CLOSED",
+            closedMessage: "device-layer world is closed",
+            operationCode: "DEVICE_LAYER_OPERATION_FAILED",
+            operationMessage: "device-layer adapter operation failed",
+            pathCode: "DEVICE_LAYER_PATH_INVALID",
+            pathMessage: "device-layer world path is invalid",
+            unavailableCode: "DEVICE_LAYER_UNAVAILABLE",
+            unavailableMessage: "no selectable device-layer adapter is available on this host",
+        },
+        layerNameWidth: 6,
+        maxPathBytes: 4096,
+        overlay: {
+            lowerSeparator: ":",
+            maxMountOptionBytes: 4000,
+            readOnlyMountOptions: "lowerdir={lower}",
+        },
+        reasons: {
+            available: "available",
+            containerDaemonUnavailable: "container-daemon-unavailable",
+            containerExecutableUnavailable: "container-executable-unavailable",
+            containerImageUnavailable: "container-image-unavailable",
+        },
+        selection: {
+            defaultAdapter: "copy",
+            defaultMode: "strict",
+            fallbackOrder: ["overlay", "container", "clone", "copy"],
+            modes: {
+                fallback: "fallback",
+                strict: "strict",
+            },
+        },
+        version: 27,
+    },
+} as const);
+
 /** Immutable research application manifest, protocol identity, and coding supervisor contract implemented by applications protocol v1. */
 export const APPLICATIONS_PROTOCOL_V1_CONTRACT = deepFreeze({
     artifacts: {
@@ -2841,6 +3639,226 @@ export const APPLICATIONS_PROTOCOL_V5_CONTRACT = deepFreeze({
         ...APPLICATIONS_PROTOCOL_V4_CONTRACT.schemas,
         evaluationId:
             "https://avnionur.github.io/shepherd-typescript/schemas/application-evaluation-v1.schema.json",
+    },
+} as const);
+
+/**
+ * Immutable counterfactual edit-scope extension implemented by applications protocol v6: each
+ * declared candidate names whether its edit changes the edited step's own request or only how
+ * later steps consume it.
+ */
+export const APPLICATIONS_PROTOCOL_V6_CONTRACT = deepFreeze({
+    ...APPLICATIONS_PROTOCOL_V5_CONTRACT,
+    cro: {
+        ...APPLICATIONS_PROTOCOL_V5_CONTRACT.cro,
+        editScopes: ["request", "downstream"],
+    },
+} as const);
+
+/**
+ * Immutable fork-step and rescue extension implemented by applications protocol v7: trajectory
+ * compression resolves an out-of-range proposed fork step under the selected policy (clamp to
+ * `[0, n - 1]` or reject), and the evaluation report version 2 retains rescue counts.
+ */
+export const APPLICATIONS_PROTOCOL_V7_CONTRACT = deepFreeze({
+    ...APPLICATIONS_PROTOCOL_V6_CONTRACT,
+    compression: {
+        ...APPLICATIONS_PROTOCOL_V6_CONTRACT.compression,
+        forkStepPolicies: ["clamp", "reject"],
+        forkStepPolicy: "clamp",
+    },
+    evaluation: {
+        ...APPLICATIONS_PROTOCOL_V6_CONTRACT.evaluation,
+        reportVersion: 2,
+    },
+} as const);
+
+/**
+ * Immutable Tree-RL Algorithm 2 contract implemented by applications protocol v8: G graded roots
+ * per prompt over a batch, one meta-agent or caller fork decision per root, K branches per root
+ * with one seeded by the proposed tool call, inter-root and intra-tree advantages with per-group
+ * standardization, per-action prefix/suffix attribution in the `jsonl_v2` batch format, and the
+ * flat GRPO baseline.
+ */
+export const APPLICATIONS_PROTOCOL_V8_CONTRACT = deepFreeze({
+    ...APPLICATIONS_PROTOCOL_V7_CONTRACT,
+    treeRl: {
+        actionSegments: ["prefix", "suffix", "flat"],
+        advantage: {
+            epsilon: 0.000001,
+            normalization: "group_std",
+            normalizations: ["none", "group_std"],
+            stdEstimator: "sample",
+            stdEstimators: ["population", "sample"],
+        },
+        artifactRoles: {
+            baselineBatch: "flat_grpo_batch",
+            batch: "training_batch",
+            root: "root",
+            rollout: "rollout",
+        },
+        baselineKinds: ["flat_grpo"],
+        batchFormats: ["jsonl_v2"],
+        budgetKeys: {
+            branches: "branches",
+            groupSize: "groupSize",
+            providerCalls: "maxProviderCalls",
+        },
+        forkTurn: { first: 1, trailing: 2 },
+        limits: {
+            defaultConcurrency: 4,
+            maxConcurrency: 16,
+            maxGroupSize: 16,
+            maxPrompts: 16,
+        },
+        memberKinds: ["root", "branch"],
+        phases: ["opened", "root", "rollout", "batch"],
+        reasons: {
+            dependencySelection: "the admissible turn with the most transitive dependents",
+            diverged: "the rollout diverged before its fork point or without explanation",
+            interrupted: "the rollout session was interrupted before its terminal record",
+            notFinished: "the rollout session did not finish",
+            rewardFailed: "the reward function threw or returned a non-finite reward",
+        },
+        rolloutStatuses: ["completed", "failed"],
+        surfaceRoles: {
+            batch: "training_batch",
+            forkProposal: "fork_proposal",
+            forkSelector: "fork_selector",
+            rollout: "rollout",
+        },
+    },
+} as const);
+
+/**
+ * Immutable counterfactual replay optimization contract implemented by applications protocol v9:
+ * paper Appendix F.1 Algorithm 1 with per-example train and dev baselines, N proposer iterations of
+ * k edits carrying fix and guard sets, the targeted fix/guard gate, dev evaluation with epsilon
+ * promotion into a graduate-only parent pool, the reflection contract, fractional thresholds, and
+ * the per-session computation-reuse ratio.
+ */
+export const APPLICATIONS_PROTOCOL_V9_CONTRACT = deepFreeze({
+    ...APPLICATIONS_PROTOCOL_V8_CONTRACT,
+    cro: {
+        artifactRoles: {
+            baseline: "baseline",
+            candidate: "candidate",
+            proposal: "proposal",
+            selection: "selection",
+        },
+        baselineKinds: ["full_replay"],
+        budgetKeys: {
+            candidates: "maxCandidates",
+            iterations: "iterations",
+            proposalAttempts: "maxProposalAttempts",
+            proposals: "proposalsPerIteration",
+            providerCalls: "maxProviderCalls",
+            reflectionMechanisms: "reflectionMinMechanisms",
+        },
+        candidateStatuses: ["archived", "evaluated", "promoted", "rejected"],
+        editScopes: ["request", "downstream"],
+        exampleRoles: ["fix", "guard", "dev", "train"],
+        phases: ["opened", "proposal", "candidate", "selection"],
+        proposer: {
+            effectKindPrefix: "application.cro.proposer.",
+            limits: {
+                defaultMaxTurns: 16,
+                maxExcerptLength: 256,
+                maxGrepMatches: 32,
+                maxPatternLength: 256,
+                maxTraceSteps: 64,
+            },
+            operations: {
+                grepTraces: "grep_effect_traces",
+                inspectCandidates: "inspect_candidates",
+                proposeCandidate: "propose_candidate",
+                readTrace: "read_effect_trace",
+            },
+            programId: "shepherd.application.cro.proposer.v1",
+        },
+        reflection: {
+            differsByPhrase: "differs by:",
+            fields: {
+                findings: "findings",
+                hypotheses: "hypotheses",
+                mechanism: "mechanism",
+                parent: "parent",
+                prior: "prior",
+            },
+        },
+        splits: ["train", "dev"],
+        surfaceRoles: {
+            handoff: "handoff",
+            proposer: "proposer",
+            reflection: "reflection",
+        },
+        thresholdKeys: {
+            audaciousPrior: "reflectionAudaciousPrior",
+            duplicateSimilarity: "reflectionDuplicateSimilarity",
+            improveThreshold: "targetedImproveThreshold",
+            maxScoreDrop: "targetedMaxScoreDrop",
+            minPromotionScore: "minPromotionScore",
+            minScoreLift: "targetedMinScoreLift",
+            promoteDevEpsilon: "promoteDevEpsilon",
+        },
+    },
+} as const);
+
+/**
+ * Immutable concurrent runtime supervisor contract implemented by applications protocol v10: paper
+ * Section 5.1 and Appendix E workers running concurrently in forked scopes, a configured tick
+ * cadence, per-agent batched `none`/`inject`/`handoff`/`discard` decisions, per-tick snapshots, and
+ * the runtime supervision record schema.
+ */
+export const APPLICATIONS_PROTOCOL_V10_CONTRACT = deepFreeze({
+    ...APPLICATIONS_PROTOCOL_V9_CONTRACT,
+    artifacts: {
+        ...APPLICATIONS_PROTOCOL_V9_CONTRACT.artifacts,
+        runtimeSupervisionSchema: "spec/schemas/application-runtime-supervision-v1.schema.json",
+    },
+    limits: {
+        ...APPLICATIONS_PROTOCOL_V9_CONTRACT.limits,
+        maxTickIntervalMilliseconds: 600000,
+        maxTicks: 4096,
+    },
+    runtimeSupervision: {
+        actions: ["none", "inject", "handoff", "discard"],
+        artifactRoles: {
+            settlement: "runtime_settlement",
+            worldDiscard: "world_discard",
+            worldFork: "world_fork",
+            workerStream: "worker_stream",
+        },
+        attemptCauses: ["start", "handoff", "discard"],
+        attemptStatuses: ["running", "completed", "turn_limit", "failed", "aborted"],
+        budgetKeys: {
+            featureCharacters: "maxFeatureCharacters",
+            guidanceWords: "maxGuidanceWords",
+            providerCalls: "maxProviderCalls",
+            reasonWords: "maxReasonWords",
+            tickInterval: "tickIntervalMilliseconds",
+            ticks: "maxTicks",
+            toolCallSummaryBytes: "maxToolCallSummaryBytes",
+            trailingToolCalls: "trailingToolCalls",
+            turnsPerWorker: "maxTurnsPerWorker",
+        },
+        guidanceSeparator: "\n\n",
+        phases: ["opened", "tick", "settled", "attempt", "turn", "completed"],
+        surfaceRoles: {
+            action: "action",
+            observation: "observation",
+        },
+        targetInputKeys: ["path", "file_path", "file", "target", "command", "cmd"],
+        truncationMarker: "...",
+    },
+    schemas: {
+        ...APPLICATIONS_PROTOCOL_V9_CONTRACT.schemas,
+        runtimeSupervisionId:
+            "https://avnionur.github.io/shepherd-typescript/schemas/application-runtime-supervision-v1.schema.json",
+    },
+    traceSchemas: {
+        ...APPLICATIONS_PROTOCOL_V9_CONTRACT.traceSchemas,
+        runtimeSupervision: "shepherd.application.runtime_supervision.v1",
     },
 } as const);
 

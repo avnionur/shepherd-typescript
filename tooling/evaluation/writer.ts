@@ -101,7 +101,7 @@ export function renderEvaluationReportJson(report: ApplicationEvaluationReport):
 
 /**
  * Renders the host-independent page body: provenance, runs, manifest costs, comparisons with the
- * baseline evidence, and the published limitations, ending with the host marker.
+ * baseline evidence, rescue counts, and the published limitations, ending with the host marker.
  *
  * @param report - Validated evaluation report.
  * @param artifacts - Repository-relative page, report, and documentation paths.
@@ -157,6 +157,12 @@ export function renderEvaluationPage(
             "",
             "These values measure only the compared sessions of each side, not the whole run; a delta is not a whole-run saving. Whole-run costs are in the manifest costs table above.",
         ]),
+        "",
+        "## Rescues",
+        "",
+        "Experiments whose baseline failed its success condition while the application run passed (Appendix D, Table 12).",
+        "",
+        `Rescued: ${report.rescues.count} of ${report.runs.length}${report.rescues.experiment_ids.length === 0 ? "." : ` (${report.rescues.experiment_ids.join(", ")}).`}`,
         "",
         "## Limitations",
         "",

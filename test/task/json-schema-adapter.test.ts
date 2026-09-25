@@ -22,9 +22,20 @@ test("adapted schemas reject unsupported documents without evaluating accessors"
                 type: "object",
                 additionalProperties: false,
                 properties: hiddenProperties,
-                required: [],
+                required: ["other"],
             }),
         TypeError,
+    );
+    assert.deepEqual(
+        schema
+            .fromJSONSchema({
+                type: "object",
+                additionalProperties: false,
+                properties: hiddenProperties,
+                required: [],
+            })
+            .parse({}),
+        {},
     );
     assert.deepEqual(
         schema
@@ -72,15 +83,27 @@ test("adapted schemas reject unsupported documents without evaluating accessors"
         [],
         "string",
         {},
-        { type: "number" },
         { type: "string", minLength: 1 },
+        { type: "integer", minimum: 0 },
+        { type: ["string", "null"] },
+        { type: "array" },
+        { type: "array", items: { type: "string" }, minItems: 1 },
+        { enum: [] },
+        { enum: ["a", "a"] },
+        { enum: [{}] },
+        { enum: ["a"], type: "string" },
+        { const: [] },
+        { oneOf: [{ type: "string" }] },
+        { oneOf: [{ type: "string" }, { type: "string" }] },
+        { oneOf: [{ type: "string" }, { type: "decimal" }] },
+        { anyOf: [{ type: "string" }, { type: "null" }] },
         { type: "null", extra: undefined },
         { type: "object", additionalProperties: true, properties: {}, required: [] },
         {
             type: "object",
             additionalProperties: false,
             properties: { text: { type: "string" } },
-            required: [],
+            required: ["other"],
         },
         {
             type: "object",
@@ -189,7 +212,7 @@ test("JSON Schema adapters preserve builder behavior, identities, and registry r
         required: ["z", "a"],
     };
     const adapted = schema.fromJSONSchema(document);
-    const built = schema.object({ a: schema.object({ text: schema.string() }), z: schema.void() });
+    const built = schema.object({ a: schema.object({ text: schema.string() }), z: schema.null() });
     assert.deepEqual(adapted.toJSONSchema(), built.toJSONSchema());
     const value = { a: { text: "hello" }, z: null };
     assert.deepEqual(adapted.parse(value), built.parse(value));

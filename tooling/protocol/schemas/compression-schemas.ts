@@ -11,7 +11,10 @@ type Schema = Readonly<Record<string, unknown>>;
  * the restore classification and constituents, the compressed, control, and restoration sessions,
  * the verifier verdict, the outcome, the measured step count and cost, and any failure; and the
  * aggregate outcome record reporting measured step-count ratios only. `$defs.proposal` is the
- * closed fork-point and hint grammar a compressor emits.
+ * closed fork-point and hint grammar a compressor emits: both fields and the fork step are optional
+ * (a missing fork step settles `no_prune`) and the proposed step is any integer, resolved under the
+ * configured fork-step policy. A retained fork point lies in `[0, n - 1]` with a null prefix at
+ * step `0`; `fork_clamp` retains an out-of-range proposal the clamp policy moved to a bound.
  *
  * @param config - Validated protocol configuration.
  * @returns The configured closed compression record schema.
@@ -21,6 +24,7 @@ export function renderApplicationCompressionSchema(config: ProtocolConfig): Sche
     const compression = applications.compression;
     const [, , compressionKind] = applications.kinds;
     const [openedPhase, candidatePhase, outcomePhase] = compression.phases;
+    const [clampPolicy] = compression.forkStepPolicies;
     const versions = {
         application_version: { const: applications.recordVersion },
         compatibility_version: { const: applications.compatibilityVersion },
@@ -58,6 +62,16 @@ export function renderApplicationCompressionSchema(config: ProtocolConfig): Sche
                     enum: [applications.errors.evidenceCode, applications.errors.verificationCode],
                 },
                 reason: reason(config),
+            },
+            additionalProperties: false,
+        }),
+        fork_clamp: nullable({
+            type: "object",
+            required: ["policy", "proposed_prefix_id", "proposed_step_index"],
+            properties: {
+                policy: { const: clampPolicy },
+                proposed_prefix_id: nullable({ $ref: "#/$defs/prefixId" }),
+                proposed_step_index: { type: "integer" },
             },
             additionalProperties: false,
         }),
@@ -207,18 +221,27 @@ export function renderApplicationCompressionSchema(config: ProtocolConfig): Sche
                 type: "object",
                 required: ["prefix_id", "session_id", "step_index"],
                 properties: {
-                    prefix_id: prefixed(config.replay.identity.prefixIdPrefix, config),
+                    prefix_id: nullable({ $ref: "#/$defs/prefixId" }),
                     session_id: { $ref: "#/$defs/sessionId" },
-                    step_index: { type: "integer", minimum: 1 },
+                    step_index: count(),
                 },
                 additionalProperties: false,
             },
+            prefixId: prefixed(config.replay.identity.prefixIdPrefix, config),
             handleId: prefixed(config.delegation.identity.handleIdPrefix, config),
             proposal: {
                 type: "object",
-                required: ["fork_point", "hint"],
                 properties: {
-                    fork_point: nullable({ $ref: "#/$defs/forkPoint" }),
+                    fork_point: nullable({
+                        type: "object",
+                        required: ["prefix_id", "session_id"],
+                        properties: {
+                            prefix_id: nullable({ $ref: "#/$defs/prefixId" }),
+                            session_id: { $ref: "#/$defs/sessionId" },
+                            step_index: { type: "integer" },
+                        },
+                        additionalProperties: false,
+                    }),
                     hint: nullable({
                         type: "object",
                         required: ["cited_step_indices", "text"],

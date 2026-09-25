@@ -1,4 +1,5 @@
 import type {
+    BACKEND_SELECTION_MODES,
     GIT_HEAD_KINDS,
     GITLINK_ENTRY_KIND,
     WORKSPACE_ADOPTION_MODES,
@@ -159,6 +160,34 @@ export type WorldManifestEntry = {
 
 /** Configured selectable world-carrier backend name. */
 export type WorldCarrierBackend = (typeof WORLD_CARRIER_BACKENDS)[number];
+
+/**
+ * Configured backend selection mode: `strict` refuses when the requested backend is unavailable;
+ * `fallback` degrades along the configured fallback order and records the backend actually used.
+ */
+export type BackendSelectionMode = (typeof BACKEND_SELECTION_MODES)[number];
+
+/** One carrier backend probed while selecting the backend of a carrier. */
+export type WorldCarrierBackendAttempt = {
+    /** Configured backend that was probed. */
+    readonly backend: WorldCarrierBackend;
+    /** Configured availability reason observed for the backend. */
+    readonly reason: string;
+    /** Configured parity status observed for the backend. */
+    readonly status: string;
+};
+
+/** Selection evidence naming the requested and the actually used carrier backend. */
+export type WorldCarrierBackendSelection = {
+    /** Every backend probed, in order, ending with the used backend. */
+    readonly attempts: readonly WorldCarrierBackendAttempt[];
+    /** Selection mode applied. */
+    readonly mode: BackendSelectionMode;
+    /** Backend the caller requested, or the configured default. */
+    readonly requested: WorldCarrierBackend;
+    /** Backend the carrier uses; equals `requested` in strict mode. */
+    readonly used: WorldCarrierBackend;
+};
 
 /** Immutable verified copy-world revision retained under carrier custody. */
 export type WorldRevision = {
@@ -422,8 +451,9 @@ export type WorldVerification = {
 /** Closed options accepted by {@link createReferenceCopyCarrier}. */
 export type ReferenceCopyCarrierOptions = {
     /**
-     * Optional configured physical backend; omitted selects the copy reference backend. Optimized
-     * backends fail closed at creation when the host cannot run them and never fall back to copy.
+     * Optional configured physical backend; omitted selects the copy reference backend. Under the
+     * default `strict` selection an optimized backend fails closed at creation when the host cannot
+     * run it; under `fallback` selection the carrier degrades along the configured order instead.
      *
      * `clone` uses forced FICLONE on Linux reflink filesystems. On macOS, where Node cannot force a
      * clone, it requires a configured C compiler: a `clonefile(2)` helper is compiled once per
@@ -433,6 +463,13 @@ export type ReferenceCopyCarrierOptions = {
      * requires Linux with permission to run the configured mount and unmount executables.
      */
     readonly backend?: WorldCarrierBackend;
+    /**
+     * Optional selection mode; omitted uses `workspaces.carrierBackends.selection.defaultMode`
+     * (`strict`). `fallback` tries `backend` and then every later backend of the configured
+     * fallback order, which ends with `copy`, and records the attempts in
+     * {@link ReferenceCopyCarrier.backendSelection}.
+     */
+    readonly backendSelection?: BackendSelectionMode;
     /** Optional deterministic conformance fault injected at one configured custody boundary. */
     readonly faultInjection?: WorkspaceCustodyFaultInjection;
     /** Existing initialized workspace whose protected control root owns carrier custody. */
@@ -441,8 +478,10 @@ export type ReferenceCopyCarrierOptions = {
 
 /** Public workspace protocol v6 reference copy-carrier operations. */
 export type ReferenceCopyCarrier = {
-    /** Configured physical backend selected for this carrier. */
+    /** Configured physical backend this carrier actually uses. */
     readonly backend: WorldCarrierBackend;
+    /** Requested backend, selection mode, probe attempts, and the backend actually used. */
+    readonly backendSelection: WorldCarrierBackendSelection;
     /**
      * Publishes the current verified custody as an immutable child world revision.
      *

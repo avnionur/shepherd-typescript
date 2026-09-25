@@ -86,11 +86,9 @@ function appendScannedWithinTransaction(
                 `append intent ${normalizedRequest.append_intent_id} already committed different content`,
             );
         }
-        if (typeof existingIntent.receipt_json !== "string") {
-            throw new TraceStoreError("stored append receipt must be JSON text");
-        }
+        // The STRICT `TEXT NOT NULL` column always yields a string.
         const receipt = decodeAppendReceipt(
-            existingIntent.receipt_json,
+            String(existingIntent.receipt_json),
             normalizedRequest.append_intent_id,
         );
         assertStoredReceiptMatches(database, receipt);
@@ -100,7 +98,7 @@ function appendScannedWithinTransaction(
     // Planning needs only the retained records this batch cites and the owners it extends, so
     // both are read by primary key instead of loading every record identity and owner ordinal.
     const referencedRecordIds = new Set<unknown>();
-    const batchOwnerIds = new Set<unknown>();
+    const batchOwnerIds = new Set<string>();
     for (const group of batch.groups) {
         batchOwnerIds.add(group.owner_id);
         for (const parentId of group.caused_by_record_ids ?? []) referencedRecordIds.add(parentId);
@@ -121,8 +119,8 @@ function appendScannedWithinTransaction(
     const ownerOrdinalStatement = database.prepare(HOT_PATH_SQL.appendOwnerNextOrdinal);
     const nextOwnerOrdinals = new Map<string, number>();
     for (const ownerId of batchOwnerIds) {
-        const row = typeof ownerId === "string" ? ownerOrdinalStatement.get(ownerId) : undefined;
-        if (row !== undefined) nextOwnerOrdinals.set(ownerId as string, Number(row.next_ordinal));
+        const row = ownerOrdinalStatement.get(ownerId);
+        if (row !== undefined) nextOwnerOrdinals.set(ownerId, Number(row.next_ordinal));
     }
     const plan = planAppendBatch(batch, {
         known_record_ids: knownRecordIds,

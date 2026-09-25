@@ -53,6 +53,14 @@ ceiling that differs from the parent's effective authority, a budget ceiling tha
 parent's child budget, or a depth that is not the parent's plus one. Budget attenuation is
 re-checked from the retained values. Every refusal is `DelegationEvidenceError`.
 
+### Proof envelope
+
+`inspectChildRun` exposes `proof`, derived from the child run's inspection envelope. A retained
+supervisor handoff forwards publication authority, so a handle with at least one handoff classifies
+as the configured `extension` profile with the `forwarding` publication control. Normative rules:
+[inspection envelopes](./formal-assurance.md#inspection-envelopes). Tests:
+[`delegation-review.test.ts`](../test/delegation/delegation-review.test.ts).
+
 ## Laws
 
 The seeded reference-model suite builds random handle trees across a root ceiling and nested

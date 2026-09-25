@@ -7,9 +7,10 @@ import {
     EVIDENCE_RECORD_PROJECTION_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     FORMAL_ASSURANCE_V1_CONTRACT,
+    FORMAL_ASSURANCE_V2_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
     KERNEL_ABI_V0_STORE_V7_CONTRACT,
-    PROVIDER_PROTOCOL_V1_CONTRACT,
+    PROVIDER_PROTOCOL_V3_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
     TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V1_CONTRACT,
@@ -37,6 +38,7 @@ import {
     WORKSPACE_PROTOCOL_V24_CONTRACT,
     WORKSPACE_PROTOCOL_V25_CONTRACT,
     WORKSPACE_PROTOCOL_V26_CONTRACT,
+    WORKSPACE_PROTOCOL_V27_CONTRACT,
 } from "../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../src/protocol/config-validation.ts";
 
@@ -86,8 +88,8 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(TASK_PROTOCOL_V1_CONTRACT), true);
     assert.deepEqual(parsed.tasks, TASK_PROTOCOL_V1_CONTRACT);
     assert.match(parsed.tasks.schemas.valueId, /task-value-v1\.schema\.json$/u);
-    assert.deepEqual(parsed.providers, PROVIDER_PROTOCOL_V1_CONTRACT);
-    assert.deepEqual(parsed.providers.kinds, ["static", "program"]);
+    assert.deepEqual(parsed.providers, PROVIDER_PROTOCOL_V3_CONTRACT);
+    assert.deepEqual(parsed.providers.kinds.slice(0, 2), ["static", "program"]);
     assert.equal(parsed.providers.program.kind, "program");
     assert.equal(Object.isFrozen(parsed.providers.program), true);
     assert.deepEqual(parsed.delegation, DELEGATION_PROTOCOL_V1_CONTRACT);
@@ -117,6 +119,15 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(parsed.formalAssurance.proofEnvelope.runtimeOnlyProfile, "runtime_only");
     assert.equal(Object.isFrozen(parsed.formalAssurance), true);
     assert.equal(Object.isFrozen(FORMAL_ASSURANCE_V1_CONTRACT), true);
+    assert.equal(Object.isFrozen(FORMAL_ASSURANCE_V2_CONTRACT), true);
+    assert.deepEqual(
+        parsed.formalAssurance.inspection,
+        structuredClone(FORMAL_ASSURANCE_V2_CONTRACT.inspection),
+    );
+    assert.deepEqual(
+        parsed.formalAssurance.proofEnvelope,
+        structuredClone(FORMAL_ASSURANCE_V1_CONTRACT.proofEnvelope),
+    );
     assert.equal(parsed.workspaces.defaultAdoptionMode, "worktree");
     assert.equal(parsed.workspaces.bindingVersion, 2);
     assert.equal(parsed.workspaces.carrier.descriptorVersion, 1);
@@ -219,6 +230,15 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal("carrierBackends" in WORKSPACE_PROTOCOL_V25_CONTRACT, false);
     assert.deepEqual(parsed.workspaces.carrierBackends.backends, ["copy", "clone", "overlay"]);
     assert.equal(parsed.workspaces.carrierBackends.version, 26);
+    assert.equal(Object.isFrozen(WORKSPACE_PROTOCOL_V27_CONTRACT), true);
+    assert.equal("deviceLayers" in WORKSPACE_PROTOCOL_V26_CONTRACT, false);
+    assert.equal("selection" in WORKSPACE_PROTOCOL_V26_CONTRACT.carrierBackends, false);
+    assert.equal(parsed.workspaces.deviceLayers.version, 27);
+    assert.deepEqual(parsed.workspaces.carrierBackends.selection.fallbackOrder, [
+        "overlay",
+        "clone",
+        "copy",
+    ]);
     assert.equal(Object.isFrozen(parsed.workspaces.carrierBackends.overlay.tokens), true);
     assert.equal("release" in WORKSPACE_PROTOCOL_V24_CONTRACT.settlement, false);
     assert.equal("placements" in WORKSPACE_PROTOCOL_V21_CONTRACT, false);
@@ -1752,6 +1772,95 @@ test("protocol configuration rejects invalid or drifted workspace contracts", ()
             objectAt(carrierBackendsConfigOf(config), "errors").unavailableCode = "";
         },
         (config) => {
+            objectAt(carrierBackendsConfigOf(config), "selection").extra = true;
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "selection").fallbackOrder = [
+                "copy",
+                "clone",
+            ];
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "selection").fallbackOrder = [
+                "copy",
+                "clone",
+                "overlay",
+            ];
+        },
+        (config) => {
+            objectAt(carrierBackendsConfigOf(config), "selection").defaultMode = "other";
+        },
+        (config) => {
+            deviceLayersConfigOf(config).extra = true;
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "adapters").copy = "other";
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "adapters").clone = "other";
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "adapters").overlay = "other";
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "adapters").container = "copy";
+        },
+        (config) => {
+            deviceLayersConfigOf(config).checkpointNamePattern = "(";
+        },
+        (config) => {
+            deviceLayersConfigOf(config).baseCheckpointName = "not a name";
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "depth").retainNewest = 47;
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "conformance").maxDepth = 49;
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "conformance").checkpoints = 3;
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "directories").layers = "a/b";
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "overlay").readOnlyMountOptions = "ro";
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "selection").fallbackOrder = ["copy", "clone"];
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "selection").fallbackOrder = [
+                "copy",
+                "clone",
+                "overlay",
+                "container",
+            ];
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "selection").defaultAdapter = "other";
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "selection").defaultMode = "other";
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "container").imageRepository = "Upper";
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "container").worldPath = "relative";
+        },
+        (config) => {
+            objectAt(objectAt(deviceLayersConfigOf(config), "container"), "arguments").commit = [
+                "commit",
+            ];
+        },
+        (config) => {
+            objectAt(objectAt(deviceLayersConfigOf(config), "container"), "commands").read = [];
+        },
+        (config) => {
+            objectAt(deviceLayersConfigOf(config), "container").listLinePattern = "(";
+        },
+        (config) => {
             settlementReleaseConfigOf(config).receiptVersion = 0;
         },
         (config) => {
@@ -2296,6 +2405,10 @@ function settlementApplicationConfigOf(config: Record<string, unknown>): Record<
 
 function settlementReleaseConfigOf(config: Record<string, unknown>): Record<string, unknown> {
     return objectAt(objectAt(workspaceConfigOf(config), "settlement"), "release");
+}
+
+function deviceLayersConfigOf(config: Record<string, unknown>): Record<string, unknown> {
+    return objectAt(workspaceConfigOf(config), "deviceLayers");
 }
 
 function carrierBackendsConfigOf(config: Record<string, unknown>): Record<string, unknown> {

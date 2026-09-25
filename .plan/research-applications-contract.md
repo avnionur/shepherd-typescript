@@ -28,8 +28,9 @@ Pinned release source: `a8196d4c453514836d06bd2fece91a03cdc37107`
   divergence proof.
 - The paper (§5.3) describes meta-agent-guided Tree-RL: G root rollouts, a fork turn per root,
   K sibling branches, inter-root advantages for the prefix and intra-tree advantages for the
-  suffix, and a training adapter emitting per-action advantages. It gives no fork-point selection
-  rule, no advantage formula beyond the group-relative sketch, and no batch format.
+  suffix, and a training adapter emitting per-action advantages. Appendix F.6 (Algorithm 2) gives
+  the exact advantage formulas and F.7 the meta-agent's `{branch_turn, tool_call, reason}` output
+  over `[1, T - 2]`; it gives no batch format and does not name the standard deviation estimator.
 - The paper (Appendix D) describes hindsight trajectory compression: a meta-agent proposes fork
   points and hints so a shorter passing rerun replaces the original, a verifier admits the rerun,
   the original is kept when no shorter rerun is admitted, and a best-of-N control compares against
@@ -109,7 +110,10 @@ compatibility asserts against the latest, and each version gets one paragraph in
 
 v1 also carries the `supervision` vocabulary and the manifest and supervision trace schemas; v2
 appends `cro` and the candidate schema; v3 appends `compression`; v4 appends `treeRl`; v5 appends
-`evaluation`. Every later slice adds only its own sub-object and its own `traceSchemas`, `schemas`,
+`evaluation`; v6 and v7 extend `cro`, `compression`, and `evaluation`; v8 replaces `treeRl` with the
+Algorithm 2 vocabulary (#213); v9 replaces `cro` with the Algorithm 1 vocabulary (#212); v10
+appends `runtimeSupervision`, the `maxTicks` and `maxTickIntervalMilliseconds` limits, and the
+runtime supervision trace schema (#211). Every other slice adds only its own sub-object and its own `traceSchemas`, `schemas`,
 and `artifacts` keys. Identity prefixes and trace schema references are distinct, bounds are
 positive, and schema identifiers are absolute URLs, validated at every configuration load.
 
@@ -164,68 +168,87 @@ The supervisor is a composition over child run handles: `openChildRun`, `runChil
   receipt identities. The manifest cites worker cuts, decision records, and merge and discard
   receipts as artifacts.
 
+## Concurrent runtime supervisor (§5.1, Appendix E)
+
+Added by #211 (11.1.0); normative behavior is in the
+[runtime supervisor](../docs/runtime-supervisor.md). The round-based supervisor above stays the
+handle-level supervisor; the runtime supervisor is the paper's live one.
+
+- Two or more workers run concurrently, each a tool-use loop over its own forked custody. Each
+  worker has a reserved stream owner path retaining its attempts, turns, and completions.
+- The supervisor ticks at the protocol's `tickIntervalMilliseconds`, drains one live trace
+  subscription over every stream, and builds one combined snapshot with the paper's per-agent
+  fields (truncated feature, cumulative events, consecutive errors, modified files, last action and
+  its age, trailing 25 tool-call summaries of at most 150 bytes).
+- The policy returns the Appendix E `{ decisions }` batch once per tick; `none` is the default for
+  unlisted agents. The batch is validated against the pinned action schema and the admission rules
+  and refused as a whole on any issue. The tick record, with the exact snapshot and cursor, is
+  retained before any decision takes effect.
+- `inject` joins the next user message of a running attempt between turns without changing any
+  earlier message; `handoff` restarts a fresh session with the guidance, on the same custody or,
+  with `leader`, on a fork of the leader's custody (nested scope fork through the adapter's
+  `sourceCustodyId`); `discard` restarts on a clean fork of the pre-run world.
+- Settlement retains final attempts and undelivered guidance, discards abandoned custody that no
+  final custody descends from, and retains the manifest; final custody is returned unmerged.
+- Recovery replays retained ticks without the policy, re-derives forks in creation order, resumes
+  open attempts from their retained conversations byte for byte, and re-queues undelivered
+  guidance.
+
 ## Counterfactual replay optimization (Appendix F)
 
-The optimizer composes `runReplaySession`, `analyzeReplayDependencies`, `replayReplaySession`,
-`analyzeReplayDivergence`, `inspectReplaySession`, and `deriveReplaySessionId`.
+Algorithm 1 since 11.0.0 ([#212](https://github.com/avnionur/shepherd-typescript/issues/212),
+applications protocol v9). The optimizer composes `runReplaySession`, `analyzeReplayDependencies`,
+`replayReplaySession`, `analyzeReplayDivergence`, `inspectReplaySession`,
+`deriveReplaySessionId`, and, for the provider-backed proposer, `runToolLoop` inside a replay
+session. Normative behavior: [counterfactual optimization](../docs/counterfactual-optimization.md).
 
-- A **candidate** is a declared edit of the baseline workflow: a candidate identity, the edited
-  step, a non-empty subset of the declared change dimensions (`REPLAY_CHANGE_DIMENSIONS`: `task`,
-  `provider`, `handlers`), the replacement task, provider, or handler stack for each declared
-  dimension, and the deterministic program. An edit kind outside the declared dimensions is refused
-  before any record is written. Candidates are bounded by `limits.maxCandidates`. A candidate's
-  program, provider, and handler stack not supplied by it resolve from the nearest ancestor in its
-  parent chain that supplied them, else from the baseline; an undeclared task resolves through the
-  source's branch ancestry, so a child keeps every ancestor edit it does not replace. Every edited
-  step index, root or child, is checked against the baseline's step count after the baseline session
-  and before the `opened` record (`APPLICATION_PROTOCOL_INVALID`, no application record); a child
-  whose parent branch is shorter than its edited step is `APPLICATION_EVIDENCE_INVALID` before its
-  `proposed` record.
-- Dependency-scoped suffix rule: the affected steps are the transitive `dependents` of the edited
-  step from `analyzeReplayDependencies`; the branch target is the step boundary immediately before
-  the earliest affected step, or the source's final boundary when the edited step has no dependent,
-  declared as exactly the candidate's change dimensions. Steps before the target, including the
-  edited step, are served from the source journal without provider or handler invocation; a
-  candidate whose edit affects no later step replays zero live steps. (#173 fixed this reading of
-  the earlier "the edited step itself when it has no earlier dependent" wording.)
-- Divergence proof: `analyzeReplayDivergence` over the source and the branch must report no step
-  before the target diverged and no `unexplained` divergence; either is an evidence error and the
-  candidate is retained as failed, never promoted.
-- Finished-session gate: the baseline session must finish, else `APPLICATION_EVIDENCE_INVALID`
-  before any application record. A candidate branch, or under the `full_replay` baseline its full
-  replay, that ended `failed` or `cancelled` is retained as `rejected` with
-  `APPLICATION_EVIDENCE_INVALID` before the divergence proof and the evaluator, never promoted, and
-  the run stops, as for a disproven candidate. (The #173 review fixed this reading: a branch whose
-  provider threw was evaluated and could be promoted.)
-- Targeted-eval gate: a caller-supplied evaluator receives the candidate, its branch inspection, its
-  divergence report, and its measured cost and returns `{ score, passed, reason }`. Only a passing
-  candidate may be promoted; the verdict is retained verbatim.
-- Candidate lineage is a `parent_candidate_id` chain; every candidate is a
-  `shepherd.application.cro_candidate.v1` record retaining its status (`proposed`, `evaluated`,
-  `promoted`, `rejected`), parent, edit kinds, target `{ source_session_id, step_index,
-  prefix_id }`, affected steps, branch session identity, divergence summary, evaluation, and cost.
-  Promotion is retained once and is terminal for the run. The owner path starts with one `opened`
-  record (phase `opened`) naming the command, the protocol identity, the baseline session, the
-  requested comparison baselines, and the whole candidate plan; candidate records follow in declared
-  order, then the promotion, the manifest, and the terminal cut.
-- Protocol budgets (`applications.cro.budgetKeys`): `maxCandidates` bounds the declared candidate
-  set (positive, at most `limits.maxCandidates`); `maxProviderCalls` bounds live provider calls
-  across every session the run opens, the baseline included, where the baseline is measured (checked
-  after it runs and before the `opened` record) and each candidate session is projected before it
-  opens and measured after it ends; `minPromotionScore` is the promotion gate, a non-negative integer
-  like every protocol budget, compared with the evaluator's finite score (`score >=
-  minPromotionScore`).
-- The scratchpad layout and handoff manifest of Appendix F are versioned protocol surfaces (the
-  proposer prompt, the proposer tool declarations, and the reflection and handoff schemas) cited by
-  digest in the manifest; the retained candidate records are the machine form of the handoff.
-- The `full_replay` baseline re-runs the whole workflow for the same edit from step boundary zero of
-  the candidate's source session, every step live, with the same resolved program, provider, and
-  handler stack as the branch (ancestor edits included) and the candidate's replacement task, when
-  declared, from step zero.
-  Comparison is by measured `provider_calls` and `cache_read_input_tokens` from the session
-  inspections; because the target always follows the edited step, suffix replay issues fewer live
-  provider calls whenever the source has a provider step before the target. No claim beyond the
-  measurement is made.
+- **Examples and baselines.** The caller supplies train and dev splits of `{ id, input }` examples
+  drawn from the protocol's dataset items and a per-example metric. The baseline workflow (program
+  and task are factories of the example) is recorded once per example and scored before the
+  `opened` record, which retains every example's split, input digest, session, and score.
+- **Proposer.** N iterations (`iterations`) of at most k edits (`proposalsPerIteration`, capped by
+  the remaining `maxCandidates`). The proposer is caller-supplied or
+  `createToolLoopCounterfactualProposer`, which records each attempt as a tool-use loop replay
+  session over the pinned proposer prompt, tools (`inspect_candidates`, `read_effect_trace`,
+  `grep_effect_traces`, `propose_candidate`), and reflection schema. An edit is data (scope,
+  changes, edited step, fix set, guard set, mechanism, rationale, prior, patch); the caller's edit
+  applier returns the replacements. Admission (shape, pool parent, capacity, train-only disjoint
+  sets, admissible steps on every parent example session, the applier, the reflection schema, and
+  the reflection contract) runs before any evaluation; refusals are retried with feedback up to
+  `maxProposalAttempts` and retained in the proposal record.
+- **Replay target rule** (Appendix F.1, fork at the first affected event) is unchanged per example:
+  a `request` edit replays from the boundary before the edited step, a `downstream` edit from the
+  boundary before the first transitive dependent or the final boundary; the source is the parent's
+  session on that example. (#173 fixed an earlier reading of the rule; #207 fixed the 3.0.0 rule
+  that always targeted the first dependent.)
+- **Divergence proof and finished-session gate** are unchanged: an unfinished, interrupted, or
+  disproven branch rejects the candidate with `APPLICATION_EVIDENCE_INVALID` and stops the run.
+- **Targeted gate** (F.2.5): configured fractional thresholds from the optional protocol
+  `thresholds` field (`targetedMinScoreLift` 0, `targetedMaxScoreDrop` 0.02,
+  `targetedImproveThreshold` 0.67) over the fix and guard results against the parent's scores;
+  failures are `archived`.
+- **Dev evaluation and promotion** (Algorithm 1 line 16, F.2.5): graduates are replayed on every
+  dev example and promoted when the dev mean reaches `minPromotionScore` (now a fractional
+  threshold, no longer an integer budget) and lies within `promoteDevEpsilon` (0.05) of the most
+  recently promoted member's dev score; promoted candidates are replayed on the remaining train
+  examples and join the graduate-only parent pool; others are `evaluated`.
+- **Selection** (line 21): the pool member with the highest dev score, the most recently promoted
+  winning ties; the baseline is `null`.
+- **Records.** `opened`, one `proposal` per iteration, one `candidate` outcome per edit (every
+  example result with target, affected steps, divergence summary, score, parent score, cost, and
+  comparison), and the `selection`, then the manifest and the terminal cut. Inspection recomputes
+  the gate and promotion from retained results and thresholds.
+- **Computation reuse** (Figure 5): the manifest retains per proposer session the recorded and live
+  steps of every candidate branch and their ratio.
+- **Budgets:** `maxProviderCalls` covers baselines, proposer sessions, branches, and comparisons;
+  candidate sessions are projected before they open and every session is measured after it ends.
+- The `full_replay` baseline re-runs each example branch from step boundary zero of its source with
+  the same resolved workflow; comparison is by measured `provider_calls` and
+  `cache_read_input_tokens` only.
+- Deviations: promoted parents are replayed on the remaining train examples eagerly (the paper
+  hydrates cached outputs lazily); reuse counts replay steps, not provider or subtask cache hits;
+  the reflection contract reads structured findings and hypotheses instead of Markdown logs; no live
+  provider ran the tool-loop proposer.
 
 ## Trajectory compression (Appendix D)
 
@@ -243,6 +266,13 @@ children through `openChildRun` and `runChildRun` (accepted with `acceptChildRun
   which the protocol's `compression` schema surface pins by digest. Task schemas admit only strings
   and closed objects, so evidence and proposals cross the delegation seam as canonical JSON text in
   configured child fields. (#174 fixed this reading.)
+- Fork-step range (Appendix D.5 and D.6): `step_index` `0` is admissible and restarts from the
+  initial prefix with the hint applied (the prefix identity is null there); a proposal without a
+  fork point or a fork step settles `no_prune`; a step outside `[0, n - 1]` is resolved by the
+  configured `applications.compression.forkStepPolicy` (`clamp` to the nearest bound, retaining
+  `fork_clamp { policy, proposed_step_index, proposed_prefix_id }` on the candidate records, or
+  `reject`). Applications protocol v7 adds the policy vocabulary. (#208 fixed this reading: the
+  implementation required `1 <= step_index < n` and refused a missing fork step.)
 - Suffix restoration: the application rewinds to the fork point with `rewindReplaySession`, then
   re-executes the suffix with `replayReplaySession` under the hint. The restore classification
   comes from `classifyReplayCheckpoint` for a checkpoint fork point and from the rewind's restore
@@ -253,7 +283,7 @@ children through `openChildRun` and `runChildRun` (accepted with `acceptChildRun
   restore); each suffix replay restores the same target from the source session, because a rewound
   session retains no checkpoints and a program that checkpoints inside the prefix could not be
   replayed from it. (#174 fixed this reading of "then re-executes the suffix".)
-- `no_prune`: a null fork point leaves the source suffix untouched and retains the outcome. The
+- `no_prune`: a missing fork step leaves the source suffix untouched and retains the outcome. The
   original is the result.
 - Verifier gate: the verifier receives the original and compressed inspections, the fork point, and
   the hint and returns `{ verdict, score, reason }`. `accepted` makes the compressed session the
@@ -275,45 +305,46 @@ children through `openChildRun` and `runChildRun` (accepted with `acceptChildRun
 
 ## Tree-RL adapter (§5.3)
 
-The adapter composes `inspectReplaySession`, `analyzeReplayDependencies`, `replayReplaySession`, and
-`analyzeReplayDivergence`. It produces a training batch; it trains nothing. The caller records the
-source session (finished, without bound worlds or processes) and names it by identity.
+The adapter composes `inspectReplaySession`, `replayReplaySession`, and `analyzeReplayDivergence`
+into paper Appendix F.6 Algorithm 2 up to the policy update. It produces a training batch; it
+trains nothing. #213 (10.0.0, applications protocol v8) replaced the earlier single-source,
+trace-selected, per-fork-point reading with the rules below.
 
-- Fork points are trace-selected and deterministic: for each provider step of the recorded
-  session, `analyzeReplayDependencies` gives its transitive dependents; a step qualifies when the
-  dependent count reaches the caller's configured minimum (protocol budget `minDependents`), and
-  qualifying steps are taken in index order up to the protocol's `maxForkPoints`, itself bounded by
-  `limits.maxForkPoints`. The selection is a pure function of the retained session. A fork point's
-  boundary is the step count equal to the forked step's index, and its `prefix_id` is the source
-  prefix identity at that boundary, null when the forked step is step 0 (#175 fixed this reading:
-  the replay substrate has no prefix identity at boundary zero).
-- Branched rollouts: per fork point, the protocol's `branches` count of rollouts (bounded by
-  `limits.maxBranches` and by the declared seeds; the total bounded by `limits.maxRollouts`) is
-  replayed from the fork point's step boundary declaring the `provider` change, branch `k` under the
-  protocol's seed `k` and its own static provider cassette returned by a caller factory, and a
-  caller-supplied reward function returns the scalar. Every provider is obtained and checked
-  (distinct, static kind) before any record. Each rollout is a
-  `shepherd.application.tree_rl_rollout.v1` record with status `completed` or `failed`, the fork
-  point, branch, seed, rollout session, reward, step count, and cost. A rollout whose session did not
-  finish, diverged before its fork point or without explanation, was interrupted by a dead writer
-  whose lease expired, or whose reward threw or was not finite is retained as `failed` and the run
-  continues (#175 fixed this reading so a failed rollout never blocks the batch). Failed rollouts are
-  retained and excluded from every mean.
-- Advantages, over completed rollouts only:
-  `intra_branch_advantage = reward - mean(rewards of rollouts sharing the fork point)` and
-  `inter_branch_advantage = mean(rewards at the fork point) - mean(all rewards)`. A fork point with
-  one rollout, or a run with one fork point, yields `0` for the degenerate term.
-- Training batch: `jsonl_v1`, one canonical line per completed rollout
-  `{ rollout_id, session_id, replay_session_id, fork_point: { step_index, prefix_id }, seed,
-  reward, intra_branch_advantage, inter_branch_advantage, step_count }`, with a batch digest over
-  the UTF-8 text of the canonical lines, each followed by a line feed. The digest is identical across
-  runs of the same command over the same source with the same seeds and after archive import; the
-  manifest cites the batch as an artifact of role `training_batch`.
-- The `single_rollout` baseline uses one branch per fork point: the batch of each fork point's
-  branch 0, reusing those rollouts rather than running separate sessions.
-- Protocol budget `maxProviderCalls` bounds live rollout provider calls: the whole-run projection
-  (source provider steps at or after each fork point) is checked before any record, and each new
-  rollout session is checked against the measured total before it opens.
+- Batch and roots (Algorithm 2 part A): the caller passes B prompts, each with its deterministic
+  program and exactly the protocol's `groupSize` G finished root sessions it recorded. The adapter
+  grades each root with the caller's reward (member `root`); a throwing or non-finite reward retains
+  the root grading as `failed`, and the root is still forked.
+- Fork selection (part B, F.7): a fork-selection interface returns
+  `{ branch_turn, tool_call, reason }` per root. A turn is one provider step; the proposed turn is
+  clamped into the configured `[1, T - 2]` (`forkTurn`; a root of fewer than three turns forks at
+  turn 1) and, for a world- or process-bound root, moved to the nearest restorable turn. The
+  provider-backed meta-agent selector reads the protocol's `fork_selector` prompt and
+  `fork_proposal` schema surfaces and receives the numbered turns and the final reward; the
+  deterministic dependency selector (most transitive dependents) remains available, and
+  `selectTreeRlForkPoints` still lists trace-selected candidates. Each root's grading and fork
+  decision is one retained `root` record.
+- Branches: per root, K = `branches` rollouts replay the root from the boundary before the fork turn
+  declaring the `provider` change, branch `k` under seed `k` and its own static cassette from the
+  caller's factory. The proposed tool call seeds branch 0: its plan is `seeded` and the factory
+  receives the call to render as the branch's first live action. Root gradings and branch rollouts
+  run with configurable concurrency; records append in prompt, root, branch order, so retained
+  output is independent of concurrency. Failed rollouts (not finished, diverged, interrupted,
+  reward failed) are retained and excluded from every mean.
+- Advantages (part C): `A_inter = R_root - mean(prompt's completed roots)` for prefix actions
+  `j < t*`; `A_intra(k) = R_k - mean(tree's completed members, root included)` for suffix actions
+  `j >= t*`. Under the default `group_std` normalization each is divided by the group's standard
+  deviation (configured `sample` estimator) plus `epsilon`; `none` keeps the raw values. The
+  paper names neither estimator nor epsilon; the configured values are this repository's choice.
+- Training batch: `jsonl_v2`, one canonical line per graded member with its per-action attribution
+  (`prefix` actions carry the inter-root advantage, `suffix` actions the member's intra-tree
+  advantage), and a digest over the UTF-8 text. The digest is identical across stores, concurrency,
+  and archive import. The `flat_grpo` baseline is the roots-only batch with the inter-root advantage
+  on every action. `exportTreeRlBatchToTrainer` is the optional trainer-export adapter seam; no
+  trainer ships.
+- Protocol budget `maxProviderCalls` bounds live branch provider calls: the whole-run projection
+  (each root assumed to fork at its earliest admissible turn) is checked before any record, and each
+  new rollout session is checked against the measured total plus in-flight projections before it
+  opens. `maxRollouts` bounds B·G·K.
 
 ## Evaluation, baselines, and reporting
 
@@ -324,12 +355,12 @@ source session (finished, without bound worlds or processes) and names it by ide
   and one baseline side per kind: the supervisor manifest costs (whose provider calls count worker
   starts) against one plain child run of the named worker; the candidate branch sessions against the
   full-replay sessions; the compression result session against the source session; and every
-  Tree-RL rollout against the branch-0 rollouts. Work outside those sides stays in each run's
+  Tree-RL root and branch rollout against the roots alone (#213). Work outside those sides stays in each run's
   manifest costs, which the report carries verbatim. (#176 fixed this reading: the contract named the
   metrics but not which evidence each side measures.)
 - Baseline kinds: `no_supervision` (one worker, no policy intervention), `full_replay` (whole
-  workflow re-run per candidate), `no_compression` (whole trajectory kept), `single_rollout` (one
-  branch per fork point). Baselines resolve from the caller's evaluation definition; none is coded.
+  workflow re-run per candidate), `no_compression` (whole trajectory kept), `flat_grpo` (the G
+  graded roots per prompt; replaced `single_rollout` in #213). Baselines resolve from the caller's evaluation definition; none is coded.
   An unknown baseline, or one not configured for the experiment's application kind, is refused
   before any record. `no_supervision` is configured in the v5 `evaluation` sub-object; the others
   keep their v2–v4 vocabularies.
@@ -339,7 +370,9 @@ source session (finished, without bound worlds or processes) and names it by ide
 - The report (`evaluation-report:sha256:`) carries the runs (kind, manifest, protocol, seeds,
   dataset, costs, metrics), the baselines (with the session or handle identities they were measured
   from), the comparisons (application value, baseline value, delta per metric; the delta is null
-  unless both values are numbers), and the configured limitations. Determinism rule: no wall clock,
+  unless both values are numbers), the rescue counts (experiments whose baseline failed while the
+  application passed; Appendix D, Table 12; report version 2 since applications protocol v7, #208),
+  and the configured limitations. Determinism rule: no wall clock,
   host, node version, or duration appears in any digest-bearing JSON, so repeated runs on any
   supported host produce an identical report digest. Host and platform metadata appear only in the
   human-readable generated page, in a trailing section after a marker that the check excludes, so
@@ -352,10 +385,9 @@ source session (finished, without bound worlds or processes) and names it by ide
 - Limitations are published with the report: offline static-provider cassettes, synthetic and small
   fixtures, no live provider, no wall-clock or throughput measurement, baselines that are this
   repository's constructions, single-host evidence, and no reproduction of upstream headline
-  results. The repository report also states that `single_rollout` shares its cost with the tree
-  batch (not an equal budget; a failed branch-0 rollout still counts in the baseline's cost and
-  steps and makes baseline success false, while the v4 `single_rollout` training batch drops that
-  fork point), which side each metric measures, and that the Tree-RL adapter trains nothing.
+  results. The repository report also states that `flat_grpo` is the tree run's own roots (a subset
+  of its cost, not the paper's matched budget), which side each metric measures, and that the
+  Tree-RL adapter trains nothing.
 
 ## Failure and recovery
 
@@ -372,12 +404,15 @@ source session (finished, without bound worlds or processes) and names it by ide
 | An optimizer branch or full-replay session, or a compression restoration or control session, ended `failed` or `cancelled` | The candidate is retained as `rejected` with `APPLICATION_EVIDENCE_INVALID` before any evaluator or verifier is consulted, nothing is promoted or pruned from it, and the run stops; a rerun re-raises the retained failure without a record |
 | Crash inside a compressor or verifier child | The child stays `running` and every rerun raises `DelegationStatusError` without a record until the documented cancellation path settles it; the settled (cancelled) child is then a terminal child failure and its candidate is retained as `rejected` |
 | Verifier or evaluator unavailable or throws | `APPLICATION_VERIFICATION_FAILED`; the candidate is retained as rejected, nothing is promoted or pruned |
-| Tree-RL reward throws, a rollout session did not finish or diverged, or a rollout session was interrupted and its lease expired | The rollout is retained as `failed` with the configured reason (`APPLICATION_VERIFICATION_FAILED` for the reward, `APPLICATION_EVIDENCE_INVALID` otherwise), excluded from every mean, and the run completes; while the lease is live the rerun raises `ReplaySessionInterruptedError` without a record |
+| Tree-RL reward throws, a rollout session did not finish or diverged, or a rollout session was interrupted and its lease expired | A root whose reward failed is retained as a `failed` grading and still forked; the rollout is retained as `failed` with the configured reason (`APPLICATION_VERIFICATION_FAILED` for the reward, `APPLICATION_EVIDENCE_INVALID` otherwise), excluded from every mean, and the run completes; while the lease is live the rerun raises `ReplaySessionInterruptedError` without a record |
 | Budget exceeded | `APPLICATION_BUDGET_EXCEEDED` before the offending call; retained evidence up to that point stays. The optimizer baseline and the compression source are measured and refused before any application record; a candidate, suffix, restoration, or control session whose measured calls overrun its projection is refused right after it, the session retained and the candidate left unsettled |
 | Protocol definition malformed or digest differs from the retained manifest | `APPLICATION_PROTOCOL_INVALID`; no record written |
 | Retained application evidence inconsistent or unexplained divergence | `APPLICATION_EVIDENCE_INVALID`; the affected candidate is never promoted |
 | Command under a moved head or from a former supervisor | Refused by the delegation seam; no record written |
 | Supervisor crashes after applying a decision, before its supervision record | Rerun rebuilds the decision from the retained round-derived delegation commands without consulting the policy; observations are re-derived at recovery |
+| Runtime supervisor crashes after retaining a tick, before or while applying it | Rerun completes the tick's handoffs and discards idempotently (retained forks replay), never consults the policy for it, resumes open attempts from their retained conversations, and re-queues its undelivered injects |
+| Runtime supervisor crashes or fails while workers run | Open attempts carry no completion; the rerun resumes each with a byte-identical request; a turn in flight at the crash is re-sent and its tool effects may already have reached custody |
+| Runtime supervisor policy output fails the Appendix E schema or admission | The batch is retained as refused with its issues; nothing is applied and the run continues |
 | Imported store | Manifests and applications are inspection sources; mutation requires a store that retained the manifest |
 
 ## Non-claims
@@ -392,7 +427,8 @@ source session (finished, without bound worlds or processes) and names it by ide
 - The Tree-RL adapter emits a training batch; it is not a trainer and claims no learning result.
 - Trajectory compression prunes and restores a suffix of a recorded trajectory; it does not compress
   model context or provider state.
-- No transfer of live process, provider session, or world state on handoff; handoff transfers
-  supervisor ownership of the handle only.
+- The round-based coding supervisor's handoff transfers supervisor ownership of the handle only; the
+  runtime supervisor's handoff restarts a session and may re-root it on the leader's custody, but no
+  live process or provider session moves.
 - No new substrate, storage schema, or record kind outside the application trace schemas; every
   application is a composition of existing public delegation, replay, scope, and provider seams.

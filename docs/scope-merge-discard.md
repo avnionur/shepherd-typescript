@@ -119,8 +119,14 @@ identity, and optionally a carrier.
   subtree and records them `discarded`. Merged and already discarded descendants keep their
   evidence. A descendant's in-flight fork or merge can never complete afterwards, because every
   completion requires open scopes. The parent's head, custody, and selected history are unchanged.
-  Discard is not a rollback to fork time. Scope evidence carries application data only, so no
-  escaped external effect exists to reverse.
+  Discard is not a rollback to fork time.
+- **Compensation.** External effects a sealed scope materialized are reversed only through
+  [effect compensation](./compensation.md). Every successful compensable effect cited by a sealed
+  scope's selected history (a replay effect step or a supervised dispatch resolution) is
+  compensated once through the `compensation` registry after the decision and before cleanup, in
+  reverse materialization order: the subtree root first, each child after its parent, each history
+  in order. A missing handler is refused before the decision; a failed compensation is reported with
+  `EffectCompensationFailedError` after cleanup, and the same command retries it.
 - **Cleanup.** The decision names every custody identity of the subtree, read from each scope's
   retained fork journal and from the plan of any retained merge reservation (its protected
   application custody), never from a directory scan. With a carrier, cleanup discards each
@@ -176,6 +182,7 @@ terminal evidence fails closed on reopened and imported stores alike.
 | Third-state and unverifiable parent custody stay blocked; prefix convergence | `scope-terminal-recovery.test.ts` |
 | Ancestor discard seals a reserved merge; incomplete fork discard | `scope-terminal-recovery.test.ts` |
 | Malformed and forged terminal evidence, integrity of row state, in-store replay | `scope-terminal-codec.test.ts` |
+| Reverse-order compensation of cited effects, pre-decision handler refusal, failed-compensation retry | `scope-discard-compensation.test.ts` |
 | Generated merge, child-merged, and discard schemas; scope v3 compatibility | `scope-schema.test.ts` |
 
 Attached children, scheduling integration, optimized carriers, multi-resource merges, user

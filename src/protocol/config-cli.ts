@@ -87,6 +87,11 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             "runTrace",
             "runTraceRevision",
             "runVcsCore",
+            "replayDiff",
+            "replayLog",
+            "replayShow",
+            "scopeList",
+            "scopeShow",
             "storeBackup",
             "storeExport",
             "storeImport",
@@ -158,6 +163,8 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             "publicationExactRun",
             "publicationUnavailable",
             "quickstartUnavailable",
+            "replayDiffUsage",
+            "scopeUnavailable",
         ],
         "cli.messages",
     );
@@ -381,6 +388,14 @@ export function readCliConfig(value: unknown): ProtocolConfig["cli"] {
             quickstartUnavailable: readNonEmptyString(
                 messages.quickstartUnavailable,
                 "cli.messages.quickstartUnavailable",
+            ),
+            replayDiffUsage: readNonEmptyString(
+                messages.replayDiffUsage,
+                "cli.messages.replayDiffUsage",
+            ),
+            scopeUnavailable: readNonEmptyString(
+                messages.scopeUnavailable,
+                "cli.messages.scopeUnavailable",
             ),
         },
         options: configuredOptions as ProtocolConfig["cli"]["options"],

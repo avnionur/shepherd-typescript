@@ -2,6 +2,11 @@ import type { ProtocolConfig } from "../../../src/protocol/config-types.ts";
 
 type Schema = Readonly<Record<string, unknown>>;
 
+/** Scalar admitted by task `enum` members and `const` values. */
+const TASK_SCHEMA_SCALAR: Schema = {
+    anyOf: [{ type: "boolean" }, { type: "null" }, { type: "number" }, { type: "string" }],
+};
+
 /**
  * Renders the normative bodyless task descriptor v1 JSON Schema.
  *
@@ -150,6 +155,53 @@ function taskSchemaDefinition(config: ProtocolConfig): Schema {
                 type: "object",
                 required: ["$ref"],
                 properties: { $ref: { const: config.tasks.schemas.valueId } },
+                additionalProperties: false,
+            },
+            {
+                type: "object",
+                required: ["type"],
+                properties: { type: { enum: ["boolean", "integer", "number"] } },
+                additionalProperties: false,
+            },
+            {
+                type: "object",
+                required: ["items", "type"],
+                properties: {
+                    items: { $ref: "#/$defs/taskSchema" },
+                    type: { const: "array" },
+                },
+                additionalProperties: false,
+            },
+            {
+                type: "object",
+                required: ["enum"],
+                properties: {
+                    enum: {
+                        type: "array",
+                        items: TASK_SCHEMA_SCALAR,
+                        minItems: 1,
+                        uniqueItems: true,
+                    },
+                },
+                additionalProperties: false,
+            },
+            {
+                type: "object",
+                required: ["const"],
+                properties: { const: TASK_SCHEMA_SCALAR },
+                additionalProperties: false,
+            },
+            {
+                type: "object",
+                required: ["oneOf"],
+                properties: {
+                    oneOf: {
+                        type: "array",
+                        items: { $ref: "#/$defs/taskSchema" },
+                        minItems: 2,
+                        uniqueItems: true,
+                    },
+                },
                 additionalProperties: false,
             },
         ],

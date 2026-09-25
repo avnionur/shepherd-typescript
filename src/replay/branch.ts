@@ -1,14 +1,19 @@
 import { readdirSync } from "node:fs";
 
 import { canonicalizeSemanticValue, type SemanticValue } from "../canonical/canonical-record.ts";
+import { readEffectCompensationRegistry, runEffectCompensations } from "../effect/compensation.ts";
+import { EffectCompensationFailedError } from "../effect/compensation-errors.ts";
+import { collectReplaySuffixEffects } from "../effect/compensation-evidence.ts";
+import type { EffectCompensationRegistry } from "../effect/compensation-types.ts";
 import { replayProtocolConfig } from "../protocol/config.ts";
 import {
+    EFFECT_COMPENSATION_TRIGGERS,
     RECORD_MODES,
     REPLAY_CHANGE_DIMENSIONS,
     REPLAY_CHECKPOINT_CONSTITUENT_KINDS,
     REPLAY_CHECKPOINT_EVIDENCE_STATUSES,
-    REPLAY_EFFECT_DISPOSITIONS,
     REPLAY_MODES,
+    REPLAY_SOURCE_DISPOSITIONS,
     REPLAY_TERMINAL_STATUSES,
 } from "../protocol/values.generated.ts";
 import type { RecordId } from "../record/types.ts";
@@ -77,10 +82,19 @@ const [TASK_CHANGE] = REPLAY_CHANGE_DIMENSIONS;
 const [TRACE_CUT_KIND, WORLD_KIND, PROVIDER_SESSION_KIND, PROCESS_KIND, IRREVERSIBLE_KIND] =
     REPLAY_CHECKPOINT_CONSTITUENT_KINDS;
 const [VERIFIED, RECONSTRUCTIVE, NOT_APPLICABLE] = REPLAY_CHECKPOINT_EVIDENCE_STATUSES;
-const [MATERIALIZED] = REPLAY_EFFECT_DISPOSITIONS;
 const [, FAILED, , REWOUND] = REPLAY_TERMINAL_STATUSES;
 const BRANCH_KEYS = ["claimId", "commandId", "sourceSessionId", "target"] as const;
-const BRANCH_OPTIONAL_KEYS = ["clock", "processes", "providerSession", "signal", "worlds"] as const;
+const [, REWIND_TRIGGER, REPLAY_TRIGGER] = EFFECT_COMPENSATION_TRIGGERS;
+const [COMPENSATE_SOURCE] = REPLAY_SOURCE_DISPOSITIONS;
+const BRANCH_OPTIONAL_KEYS = [
+    "clock",
+    "compensation",
+    "processes",
+    "providerSession",
+    "signal",
+    "sourceDisposition",
+    "worlds",
+] as const;
 
 /**
  * Rewinds a session to a retained checkpoint or step boundary as a new branch session.
@@ -89,8 +103,13 @@ const BRANCH_OPTIONAL_KEYS = ["clock", "processes", "providerSession", "signal",
  * unavailable target is refused. Worlds are restored byte-equivalently into caller-selected empty
  * roots, verified provider-session and process captures are handed to their adapters, a restore
  * record retains the classification, the source prefix is copied as verified recorded steps, and
- * the branch ends `rewound`. No provider or handler is invoked. Repeating a completed branch command
- * returns its retained receipt without restoring anything.
+ * the branch ends `rewound`. No provider or effect handler is invoked. With the source disposition
+ * `compensate` (the configured default), before the branch opens every successful compensable effect
+ * the source materialized at or after the target is compensated once through `compensation`, in
+ * reverse step order, with retained intent, attempt, and outcome records. With `retain` the source
+ * stays a retained alternative and no compensation handler is invoked.
+ * Repeating a completed branch command returns its retained receipt without restoring or
+ * compensating anything.
  *
  * @param store - Open writable trace store holding the source session.
  * @param options - Branch command, claim, source, target, restoration roots, and adapters.
@@ -100,7 +119,11 @@ const BRANCH_OPTIONAL_KEYS = ["clock", "processes", "providerSession", "signal",
  * @throws {ReplaySessionInterruptedError} If the branch command names a non-terminal session.
  * @throws {ReplayEvidenceError} If source or branch evidence is inconsistent.
  * @throws {ReplayCompatibilityError} If the source uses an unsupported replay version.
- * @throws {TypeError} If options are malformed or omit a required adapter or root.
+ * @throws {EffectCompensationHandlerNotFoundError} Before anything is written, if the source is
+ * compensated and a suffix effect needing compensation has no handler.
+ * @throws {EffectCompensationFailedError} Before the branch opens, if a compensation failed.
+ * @throws {TypeError} If options are malformed, name an unknown source disposition, or omit a
+ * required adapter or root.
  *
  * @example
  * ```ts
@@ -133,8 +156,11 @@ export async function rewindReplaySession(
  * target are served from the source journal only when the program issues the exact recorded request
  * or intent with the same dependencies, and are retained as recorded steps with no provider or
  * handler invocation. Later steps run live with the supplied provider, handler stack, and declared
- * replacement task. Approval-required suffix effects run only when `policy` approves them; otherwise
- * they are retained as refused and never reach a handler.
+ * replacement task. `checkpointPolicy` selects automatic checkpoints of the branch's own worlds and
+ * processes at boundaries at or after the target. The source disposition and compensation of the
+ * source suffix follow {@link rewindReplaySession}; an exploratory replay that keeps its source as a
+ * retained alternative declares `sourceDisposition: "retain"`. Approval-required suffix effects run
+ * only when `policy` approves them; otherwise they are retained as refused and never reach a handler.
  *
  * @param store - Open writable trace store holding the source session.
  * @param options - Branch options plus program, suffix provider and handlers, changes, and policy.
@@ -145,6 +171,9 @@ export async function rewindReplaySession(
  * @throws {ReplayLeaseFencedError} If the branch writer loses its lease.
  * @throws {ReplayEvidenceError} If source or branch evidence is inconsistent.
  * @throws {ReplayCompatibilityError} If the source uses an unsupported replay version.
+ * @throws {EffectCompensationHandlerNotFoundError} Before anything is written, if the source is
+ * compensated and a suffix effect needing compensation has no handler.
+ * @throws {EffectCompensationFailedError} Before the branch opens, if a compensation failed.
  * @throws {TypeError} If options or declared changes are malformed.
  *
  * @example
@@ -168,7 +197,15 @@ export async function replayReplaySession(
         options,
         [...BRANCH_KEYS, "program"],
         "replayReplaySession options",
-        [...BRANCH_OPTIONAL_KEYS, "changes", "handlers", "policy", "provider", "task"],
+        [
+            ...BRANCH_OPTIONAL_KEYS,
+            "changes",
+            "checkpointPolicy",
+            "handlers",
+            "policy",
+            "provider",
+            "task",
+        ],
     );
     const changes = readReplayChanges(fields.changes ?? []);
     const program = readProgram(fields.program);
@@ -232,6 +269,17 @@ async function branch(
     ) {
         throw new TypeError("a declared task change must replace the source task");
     }
+    const registry = readEffectCompensationRegistry(fields.compensation);
+    if (readSourceDisposition(fields.sourceDisposition) === COMPENSATE_SOURCE) {
+        await compensateSuffix(
+            store,
+            source,
+            plan.stepCount,
+            registry,
+            mode === REWIND_MODE ? REWIND_TRIGGER : REPLAY_TRIGGER,
+            bindings.commandId,
+        );
+    }
     const targetTraceCutId =
         plan.checkpoint?.trace_cut_id ??
         createReplayCutId(sessionId, source.session_id, plan.stepCount);
@@ -287,6 +335,40 @@ async function branch(
         });
     }
     return Object.freeze({ inspection: await executeReplayProgram(engine, replay.program) });
+}
+
+function readSourceDisposition(value: unknown): string {
+    if (value === undefined) {
+        return config.branch.defaultSourceDisposition;
+    }
+    if (typeof value !== "string" || !config.branch.sourceDispositions.includes(value)) {
+        throw new TypeError("sourceDisposition must be a configured replay source disposition");
+    }
+    return value;
+}
+
+/**
+ * Compensates, in reverse step order, every successful compensable effect the source materialized
+ * at or after the target, before the branch opens. Recorded source steps resolve to the live step
+ * they copy, so an effect compensated by an earlier branch is never compensated again.
+ */
+async function compensateSuffix(
+    store: SQLiteTraceStore,
+    source: ReplaySessionInspection,
+    stepCount: number,
+    registry: EffectCompensationRegistry | null,
+    kind: (typeof EFFECT_COMPENSATION_TRIGGERS)[number],
+    commandId: string,
+): Promise<void> {
+    const { failed } = await runEffectCompensations(
+        store,
+        collectReplaySuffixEffects(store, source, stepCount),
+        registry,
+        { command_id: commandId, kind },
+    );
+    if (failed.length > 0) {
+        throw new EffectCompensationFailedError(failed);
+    }
 }
 
 /**

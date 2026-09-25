@@ -11,11 +11,33 @@ import {
     readUniqueStrings,
 } from "./config-value-readers.ts";
 
-/** Validates executable reference-machine and proof-envelope configuration. */
-export function readFormalAssuranceConfig(value: unknown): ProtocolConfig["formalAssurance"] {
+/** Replay vocabularies against which inspection lowering eligibility is validated. */
+export type FormalAssuranceReplayVocabulary = {
+    /** Configured replay effect dispositions. */
+    readonly dispositions: readonly string[];
+    /** Configured replay session modes. */
+    readonly modes: readonly string[];
+    /** Configured replay step kinds. */
+    readonly stepKinds: readonly string[];
+    /** Configured replay terminal statuses. */
+    readonly terminalStatuses: readonly string[];
+};
+
+/**
+ * Validates executable reference-machine, proof-envelope, and inspection-envelope configuration.
+ *
+ * @param value - Untrusted `formalAssurance` configuration section.
+ * @param replay - Validated replay vocabularies used by inspection lowering and controls.
+ * @returns The validated formal-assurance configuration.
+ * @throws {TypeError} If any field is missing, malformed, or inconsistent.
+ */
+export function readFormalAssuranceConfig(
+    value: unknown,
+    replay: FormalAssuranceReplayVocabulary,
+): ProtocolConfig["formalAssurance"] {
     const config = readObject(
         value,
-        ["proofEnvelope", "referenceMachine", "strongEvidence"],
+        ["inspection", "proofEnvelope", "referenceMachine", "strongEvidence"],
         "formalAssurance",
     );
     const proof = readObject(
@@ -407,6 +429,16 @@ export function readFormalAssuranceConfig(value: unknown): ProtocolConfig["forma
         true,
     );
     return {
+        inspection: readInspectionConfig(
+            config.inspection,
+            profiles,
+            [
+                runtimeOnlyProfile,
+                referenceValidatedProfile,
+                ...profileClaims.map((claim) => claim.profile),
+            ],
+            replay,
+        ),
         proofEnvelope: {
             digestAlgorithm,
             evidenceRefPrefix,
@@ -519,6 +551,167 @@ export function readFormalAssuranceConfig(value: unknown): ProtocolConfig["forma
                 metadataRef,
             },
         },
+    };
+}
+
+function readInspectionConfig(
+    value: unknown,
+    profiles: readonly string[],
+    reservedProfiles: readonly string[],
+    replay: FormalAssuranceReplayVocabulary,
+): ProtocolConfig["formalAssurance"]["inspection"] {
+    const path = "formalAssurance.inspection";
+    const inspection = readObject(
+        value,
+        ["extensionProfile", "importedClaim", "lowering", "publicationControls", "reasons"],
+        path,
+    );
+    const extensionProfile = readMember(
+        inspection.extensionProfile,
+        profiles,
+        `${path}.extensionProfile`,
+    );
+    if (reservedProfiles.includes(extensionProfile)) {
+        throw new TypeError(`${path}.extensionProfile must differ from every claimed profile`);
+    }
+    const importedClaim = readObject(
+        inspection.importedClaim,
+        ["metadataKey", "rejections"],
+        `${path}.importedClaim`,
+    );
+    const rejections = readObject(
+        importedClaim.rejections,
+        ["ambiguous", "evidenceRef", "malformed", "provenance", "runtime"],
+        `${path}.importedClaim.rejections`,
+    );
+    const lowering = readObject(
+        inspection.lowering,
+        [
+            "eligibleDispositions",
+            "eligibleModes",
+            "eligibleStepKinds",
+            "eligibleTerminalStatuses",
+            "ineligibility",
+            "localRefPrefix",
+            "schemaVersion",
+        ],
+        `${path}.lowering`,
+    );
+    const ineligibility = readObject(
+        lowering.ineligibility,
+        ["disposition", "mode", "stepKind", "terminal"],
+        `${path}.lowering.ineligibility`,
+    );
+    const controls = readObject(
+        inspection.publicationControls,
+        ["delegationHandoff", "kinds", "replayModes", "retainedWorldSettlement"],
+        `${path}.publicationControls`,
+    );
+    const kinds = readUniqueStrings(controls.kinds, `${path}.publicationControls.kinds`);
+    const replayModeControls = readObject(
+        controls.replayModes,
+        [],
+        `${path}.publicationControls.replayModes`,
+        true,
+    );
+    const eligibleModes = readMembers(
+        lowering.eligibleModes,
+        replay.modes,
+        `${path}.lowering.eligibleModes`,
+    );
+    const replayModes = Object.fromEntries(
+        Object.keys(replayModeControls)
+            .sort()
+            .map((mode) => [
+                readMember(mode, replay.modes, `${path}.publicationControls.replayModes key`),
+                readMember(
+                    replayModeControls[mode],
+                    kinds,
+                    `${path}.publicationControls.replayModes.${mode}`,
+                ),
+            ]),
+    );
+    if (
+        replay.modes.some(
+            (mode) => Object.hasOwn(replayModes, mode) === eligibleModes.includes(mode),
+        )
+    ) {
+        throw new TypeError(
+            `${path} must classify every replay mode as either lowerable or a publication control`,
+        );
+    }
+    const readStrings = (source: Record<string, unknown>, context: string) =>
+        Object.fromEntries(
+            Object.keys(source).map((key) => [
+                key,
+                readNonEmptyString(source[key], `${context}.${key}`),
+            ]),
+        );
+    const reasons = readObject(
+        inspection.reasons,
+        ["productionRuntime", "publicationControl"],
+        `${path}.reasons`,
+    );
+    return {
+        extensionProfile,
+        importedClaim: {
+            metadataKey: readNonEmptyString(
+                importedClaim.metadataKey,
+                `${path}.importedClaim.metadataKey`,
+            ),
+            rejections: readStrings(
+                rejections,
+                `${path}.importedClaim.rejections`,
+            ) as ProtocolConfig["formalAssurance"]["inspection"]["importedClaim"]["rejections"],
+        },
+        lowering: {
+            eligibleDispositions: readMembers(
+                lowering.eligibleDispositions,
+                replay.dispositions,
+                `${path}.lowering.eligibleDispositions`,
+            ),
+            eligibleModes,
+            eligibleStepKinds: readMembers(
+                lowering.eligibleStepKinds,
+                replay.stepKinds,
+                `${path}.lowering.eligibleStepKinds`,
+            ),
+            eligibleTerminalStatuses: readMembers(
+                lowering.eligibleTerminalStatuses,
+                replay.terminalStatuses,
+                `${path}.lowering.eligibleTerminalStatuses`,
+            ),
+            ineligibility: readStrings(
+                ineligibility,
+                `${path}.lowering.ineligibility`,
+            ) as ProtocolConfig["formalAssurance"]["inspection"]["lowering"]["ineligibility"],
+            localRefPrefix: readNonEmptyString(
+                lowering.localRefPrefix,
+                `${path}.lowering.localRefPrefix`,
+            ),
+            schemaVersion: readNonEmptyString(
+                lowering.schemaVersion,
+                `${path}.lowering.schemaVersion`,
+            ),
+        },
+        publicationControls: {
+            delegationHandoff: readMember(
+                controls.delegationHandoff,
+                kinds,
+                `${path}.publicationControls.delegationHandoff`,
+            ),
+            kinds,
+            replayModes,
+            retainedWorldSettlement: readMember(
+                controls.retainedWorldSettlement,
+                kinds,
+                `${path}.publicationControls.retainedWorldSettlement`,
+            ),
+        },
+        reasons: readStrings(
+            reasons,
+            `${path}.reasons`,
+        ) as ProtocolConfig["formalAssurance"]["inspection"]["reasons"],
     };
 }
 

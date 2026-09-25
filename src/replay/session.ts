@@ -6,10 +6,12 @@ import { createIntentReference, validateEffectCorrelation } from "../effect/reco
 import type { EffectIntent, EffectOutcome } from "../effect/types.ts";
 import { readEffectIntent } from "../effect/validation.ts";
 import { replayProtocolConfig } from "../protocol/config.ts";
+import { readReplayCheckpointPolicy } from "../protocol/config-replay.ts";
 import {
     RECORD_MODES,
     REPLAY_CHECKPOINT_CONSTITUENT_KINDS,
     REPLAY_CHECKPOINT_EVIDENCE_STATUSES,
+    REPLAY_CHECKPOINT_POLICIES,
     REPLAY_EFFECT_DISPOSITIONS,
     REPLAY_MODES,
     REPLAY_PROCESS_BACKENDS,
@@ -106,9 +108,11 @@ const [TRACE_CUT_KIND, WORLD_KIND, PROVIDER_SESSION_KIND, PROCESS_KIND, IRREVERS
     REPLAY_CHECKPOINT_CONSTITUENT_KINDS;
 const [VERIFIED, RECONSTRUCTIVE, NOT_APPLICABLE, UNAVAILABLE] = REPLAY_CHECKPOINT_EVIDENCE_STATUSES;
 const [FINISHED, FAILED, CANCELLED] = REPLAY_TERMINAL_STATUSES;
+const [, PROVIDER_STEP_POLICY, EFFECT_STEP_POLICY, INTERVAL_POLICY] = REPLAY_CHECKPOINT_POLICIES;
 
 /** Validated session-level options shared by root sessions and branches. @internal */
 export type ReplaySessionBindings = {
+    readonly checkpointPolicy: { readonly interval: number | null; readonly kind: string };
     readonly claimId: string;
     readonly clock: () => number;
     readonly commandId: string;
@@ -169,10 +173,13 @@ export type ReplayEngine = {
  * and the terminal record are retained on the session's own owner path under a fenced lease. A
  * program failure is retained as a `failed` terminal and returned; caller cancellation is retained
  * as `cancelled`. Repeating a terminal command returns the retained receipt without running the
- * program; a non-terminal session is never resumed in place.
+ * program; a non-terminal session is never resumed in place. `checkpointPolicy` (default: the
+ * configured `replay.checkpoint.automatic.defaultPolicy`) captures a coupled checkpoint immediately
+ * before every step it selects, exactly as an explicit `checkpoint()` there would.
  *
  * @param store - Open writable trace store.
- * @param options - Command, claim, program, provider, handlers, task, worlds, processes, and signal.
+ * @param options - Command, claim, program, provider, handlers, task, worlds, processes, automatic
+ * checkpoint policy, and signal.
  * @returns The validated terminal session inspection.
  * @throws {ReplaySessionInterruptedError} If the command names a non-terminal session.
  * @throws {ReplayMaterializationUncertainError} If the command names a session with an effect
@@ -204,6 +211,7 @@ export async function runReplaySession(
         ["claimId", "commandId", "program", "programId"],
         "runReplaySession options",
         [
+            "checkpointPolicy",
             "clock",
             "handlers",
             "processes",
@@ -500,6 +508,15 @@ export function readReplaySessionBindings(fields: Record<string, unknown>): Repl
         readProviderDescriptor((provider as ModelProvider).descriptor());
     }
     return Object.freeze({
+        checkpointPolicy:
+            fields.checkpointPolicy === undefined
+                ? config.checkpoint.automatic.defaultPolicy
+                : readReplayCheckpointPolicy(
+                      fields.checkpointPolicy,
+                      REPLAY_CHECKPOINT_POLICIES,
+                      config.limits.maxSteps,
+                      "checkpointPolicy",
+                  ),
         claimId: fields.claimId,
         clock,
         commandId: fields.commandId,
@@ -670,6 +687,7 @@ async function invokeProvider(
     const request = readModelRequest(requestValue);
     const index = nextIndex(engine);
     const dependsOn = readDependencies(engine, options, index);
+    await captureSelectedBoundary(engine, PROVIDER_KIND);
     const source = recordedStep(engine, index);
     let step: ReplayStepInspection;
     if (source !== null) {
@@ -753,6 +771,7 @@ async function dispatchEffect(
     const intentRef = createIntentReference(intent);
     const index = nextIndex(engine);
     const dependsOn = readDependencies(engine, options, index);
+    await captureSelectedBoundary(engine, EFFECT_KIND);
     const source = recordedStep(engine, index);
     let step: ReplayStepInspection;
     if (source !== null) {
@@ -873,6 +892,24 @@ async function approve(
         reason: verdict.reason,
         rematerialization: sourceIndex !== null,
     });
+}
+
+/**
+ * Captures the current boundary before a step of `kind` when the session's automatic checkpoint
+ * policy selects it. Boundaries inside a branch's recorded prefix are never captured: the source's
+ * retained checkpoints serve them.
+ */
+async function captureSelectedBoundary(engine: ReplayEngine, kind: string): Promise<void> {
+    const boundary = engine.steps.length;
+    const policy = engine.bindings.checkpointPolicy;
+    if (
+        boundary >= (engine.recorded?.targetStepCount ?? 0) &&
+        ((policy.kind === PROVIDER_STEP_POLICY && kind === PROVIDER_KIND) ||
+            (policy.kind === EFFECT_STEP_POLICY && kind === EFFECT_KIND) ||
+            (policy.kind === INTERVAL_POLICY && boundary % (policy.interval as number) === 0))
+    ) {
+        await checkpoint(engine);
+    }
 }
 
 async function checkpoint(engine: ReplayEngine): Promise<ReplayCheckpointInspection> {

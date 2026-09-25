@@ -9,6 +9,13 @@ export type {
     TaskLedgerEntry,
     TaskLedgerRepositoryGrantEvidence,
 } from "../ledger/types.ts";
+export { type JSONSchemaIssue, JSONSchemaValidationError } from "../schema/errors.ts";
+export {
+    compileJSONSchema,
+    JSON_SCHEMA_SUPPORTED_KEYWORDS,
+    type JSONSchemaDocument,
+    type JSONSchemaValidator,
+} from "../schema/json-schema-validator.ts";
 export { task } from "../task/descriptor.ts";
 export {
     TaskRegistryError,
@@ -18,9 +25,13 @@ export {
 export {
     type InferTaskSchema,
     type InferTaskSchemaShape,
+    type InferTaskSchemaShapeField,
+    type OptionalTaskSchemaShapeKeys,
     schema,
+    type TaskOptionalSchema,
     type TaskSchema,
     type TaskSchemaFactory,
+    type TaskSchemaScalar,
     type TaskSchemaShape,
 } from "../task/schema.ts";
 export { SQLiteTaskRegistry } from "../task/sqlite-task-registry.ts";

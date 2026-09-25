@@ -1,4 +1,5 @@
 import type { SemanticValue } from "../canonical/canonical-record.ts";
+import type { ProofEnvelope } from "../formal/types.ts";
 import type {
     DELEGATION_APPROVAL_VERDICTS,
     DELEGATION_CONTEXT_PHASES,
@@ -376,6 +377,11 @@ export type ChildRunInspection = {
     readonly parent: ChildRunParentInspection;
     /** Retained discarded predecessor of a retry, or null. */
     readonly predecessor: ChildRunPredecessorInspection | null;
+    /**
+     * Child-run proof envelope; retained supervisor handoffs forward publication authority and
+     * classify it as the configured `extension` profile.
+     */
+    readonly proof: ProofEnvelope;
     /** Retained task provenance. */
     readonly provenance: ChildRunProvenance;
     /** Derived handle status. */

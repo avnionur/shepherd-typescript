@@ -53,8 +53,40 @@ export type OverlayLayers = {
     readonly work: string;
 };
 
+/** Exact stacked overlay layer paths for one mount; no writable layers mounts read-only. @internal */
+export type OverlayStack = {
+    /** Lower directories, topmost first. */
+    readonly lowers: readonly string[];
+    /** Mount target exposing the merged world. */
+    readonly target: string;
+    /** Private upper and work directories, or null for a read-only mount. */
+    readonly writable: Readonly<{ upper: string; work: string }> | null;
+};
+
 /** Observed state of one custody overlay mount target. @internal */
 export type OverlayMountState = "absent" | "foreign" | "owned";
+
+/** One backend tried while selecting a carrier backend. @internal */
+export type CarrierBackendAttemptEvidence = {
+    /** Configured backend that was probed. */
+    readonly backend: string;
+    /** Configured availability reason observed for the backend. */
+    readonly reason: string;
+    /** Configured parity status observed for the backend. */
+    readonly status: string;
+};
+
+/** Selection evidence naming the requested and actually used carrier backend. @internal */
+export type CarrierBackendSelectionEvidence = {
+    /** Every backend probed, in order, ending with the used backend. */
+    readonly attempts: readonly CarrierBackendAttemptEvidence[];
+    /** Configured selection mode applied. */
+    readonly mode: string;
+    /** Backend the caller requested. */
+    readonly requested: string;
+    /** Backend whose host probe succeeded and that the carrier uses. */
+    readonly used: string;
+};
 
 /** Frozen availability evidence for one optimized backend on the current host. @internal */
 export type CarrierBackendAvailability = {
@@ -93,6 +125,7 @@ export class CarrierBackendUnavailableError extends WorldCarrierError {
 }
 
 const BACKENDS = workspaceProtocolConfig.carrierBackends;
+const SELECTION_MODES = workspaceProtocolConfig.deviceLayers.selection.modes;
 const CLONE_HELPER_SOURCE = `#include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -126,6 +159,83 @@ export function readCarrierBackendOption(value: unknown): string {
         throw new TypeError("reference copy carrier backend is unsupported");
     }
     return value;
+}
+
+/**
+ * Reads an optional exact backend selection mode.
+ *
+ * @param value - Candidate selection mode.
+ * @returns The configured mode, or the configured carrier default when omitted.
+ * @throws {TypeError} If the value is not a configured selection mode.
+ * @internal
+ */
+export function readBackendSelectionOption(value: unknown): string {
+    if (value === undefined) return BACKENDS.selection.defaultMode;
+    if (typeof value !== "string" || !Object.values(SELECTION_MODES).includes(value)) {
+        throw new TypeError("backend selection mode is unsupported");
+    }
+    return value;
+}
+
+/**
+ * Selects the carrier backend under one configured mode and records which backend was used.
+ *
+ * Strict mode opens exactly the requested backend and propagates its refusal. Fallback mode tries
+ * the requested backend and then every later backend of the configured fallback order, recording
+ * each refusal, and uses the first whose host probe succeeds; the order ends with the copy
+ * reference backend, which is always available.
+ *
+ * @param requested - Configured backend the caller requested.
+ * @param mode - Configured selection mode.
+ * @param stagingDirectory - Owned private carrier staging directory used for host probes.
+ * @returns Frozen backend strategy and selection evidence.
+ * @throws {WorldCarrierError} If the last candidate is unavailable or a probe leaves unsafe state.
+ * @internal
+ */
+export function selectCarrierBackend(
+    requested: string,
+    mode: string,
+    stagingDirectory: string,
+): Readonly<{ runtime: CarrierBackendRuntime; selection: CarrierBackendSelectionEvidence }> {
+    const order = BACKENDS.selection.fallbackOrder;
+    const candidates =
+        mode === SELECTION_MODES.strict ? [requested] : order.slice(order.indexOf(requested));
+    const roles = BACKENDS.conformance;
+    const attempts: CarrierBackendAttemptEvidence[] = [];
+    const use = (backend: string) => {
+        const runtime = openCarrierBackend(backend, stagingDirectory);
+        attempts.push(
+            Object.freeze({
+                backend,
+                reason: roles.reasonRoles.available,
+                status: roles.statusRoles.conformant,
+            }),
+        );
+        return Object.freeze({
+            runtime,
+            selection: Object.freeze({
+                attempts: Object.freeze(attempts),
+                mode,
+                requested,
+                used: backend,
+            }),
+        });
+    };
+    for (const backend of candidates.slice(0, -1)) {
+        try {
+            return use(backend);
+        } catch (error) {
+            if (!(error instanceof CarrierBackendUnavailableError)) throw error;
+            attempts.push(
+                Object.freeze({
+                    backend,
+                    reason: error.reason,
+                    status: roles.statusRoles.unavailable,
+                }),
+            );
+        }
+    }
+    return use(candidates.at(-1) as string);
 }
 
 /**
@@ -169,8 +279,8 @@ export function openCarrierBackend(
         }
         probeOverlay(stagingDirectory);
         return Object.freeze({ materializeFile: writeCopiedFile, name: backend, overlay: true });
-        /* node:coverage enable */
     }
+    /* node:coverage enable */
     return Object.freeze({ materializeFile: writeCopiedFile, name: backend, overlay: false });
 }
 
@@ -271,8 +381,22 @@ export function materializeClonedFile(
  * @internal
  */
 export function mountOverlay(layers: OverlayLayers): void {
+    mountOverlayStack({
+        lowers: [layers.lower],
+        target: layers.target,
+        writable: { upper: layers.upper, work: layers.work },
+    });
+}
+
+/**
+ * Mounts one stacked overlay from exact layers, read-only when the stack has no upper layer.
+ *
+ * @throws {WorldCarrierError} If a layer path cannot be expressed or mounting is refused.
+ * @internal
+ */
+export function mountOverlayStack(stack: OverlayStack): void {
     const overlay = BACKENDS.overlay;
-    for (const layer of Object.values(layers)) {
+    for (const layer of [...stack.lowers, stack.target, ...Object.values(stack.writable ?? {})]) {
         if (overlay.reservedPathCharacters.some((character) => layer.includes(character))) {
             throw new CarrierBackendUnavailableError(
                 overlay.backend,
@@ -281,14 +405,14 @@ export function mountOverlay(layers: OverlayLayers): void {
             );
         }
     }
-    const options = renderOverlayOptions(layers);
+    const options = renderOverlayStackOptions(stack);
     const result = runCommand(
         overlay.mountExecutable,
         overlay.mountArguments.map((argument) =>
             argument === overlay.tokens.options
                 ? options
                 : argument === overlay.tokens.target
-                  ? layers.target
+                  ? stack.target
                   : argument,
         ),
     );
@@ -326,6 +450,20 @@ export function unmountOverlay(target: string): void {
  */
 export function readOverlayMountState(layers: OverlayLayers): OverlayMountState {
     return classifyOverlayMountInfo(readFileSync(BACKENDS.overlay.mountInfoPath, "utf8"), layers);
+}
+
+/**
+ * Classifies the current mount at a stacked overlay target against its exact layers.
+ *
+ * @returns `absent` without a mount, `owned` for the exact overlay, otherwise `foreign`.
+ * @internal
+ */
+export function readOverlayStackMountState(stack: OverlayStack): OverlayMountState {
+    return classifyMountInfo(
+        readFileSync(BACKENDS.overlay.mountInfoPath, "utf8"),
+        stack.target,
+        renderOverlayStackOptions(stack),
+    );
 }
 
 function probeOverlay(stagingDirectory: string): void {
@@ -389,13 +527,21 @@ export function classifyOverlayMountInfo(
     mountInfo: string,
     layers: OverlayLayers,
 ): OverlayMountState {
+    return classifyMountInfo(mountInfo, layers.target, renderOverlayOptions(layers));
+}
+
+function classifyMountInfo(
+    mountInfo: string,
+    target: string,
+    renderedOptions: string,
+): OverlayMountState {
     const overlay = BACKENDS.overlay;
     let entry: { readonly filesystem: string; readonly options: readonly string[] } | null = null;
     for (const line of mountInfo.split("\n")) {
         const separator = line.indexOf(" - ");
         if (separator < 0) continue;
         const fields = line.slice(0, separator).split(" ");
-        if (unescapeMountText(fields[4] ?? "") !== layers.target) continue;
+        if (unescapeMountText(fields[4] ?? "") !== target) continue;
         const [filesystem = "", , superOptions = ""] = line.slice(separator + 3).split(" ");
         entry = {
             filesystem,
@@ -403,11 +549,33 @@ export function classifyOverlayMountInfo(
         };
     }
     if (entry === null) return "absent";
-    const expected = renderOverlayOptions(layers).split(overlay.mountOptionSeparator);
+    const expected = renderedOptions.split(overlay.mountOptionSeparator);
     return entry.filesystem === overlay.filesystemType &&
         expected.every((option) => entry.options.includes(option))
         ? "owned"
         : "foreign";
+}
+
+/**
+ * Renders the exact mount options for one stacked overlay.
+ *
+ * Lower directories are joined topmost first with the configured separator; a stack without an
+ * upper layer renders the configured read-only template. Host-independent so the device layer
+ * can bound its mountable depth by the configured option bytes anywhere.
+ *
+ * @param stack - Exact stacked overlay layers.
+ * @returns Rendered mount options.
+ * @internal
+ */
+export function renderOverlayStackOptions(stack: OverlayStack): string {
+    const lower = stack.lowers.join(workspaceProtocolConfig.deviceLayers.overlay.lowerSeparator);
+    if (stack.writable === null) {
+        return workspaceProtocolConfig.deviceLayers.overlay.readOnlyMountOptions.replaceAll(
+            BACKENDS.overlay.tokens.lower,
+            lower,
+        );
+    }
+    return renderOverlayOptions({ lower, target: stack.target, ...stack.writable });
 }
 
 function renderOverlayOptions(layers: OverlayLayers): string {

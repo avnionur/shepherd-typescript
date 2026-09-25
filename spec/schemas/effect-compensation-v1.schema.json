@@ -1,0 +1,335 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/effect-compensation-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd Effect Compensation v1",
+    "description": "Durable intent, attempt, and outcome of compensating one materialized compensable effect.",
+    "oneOf": [
+        {
+            "type": "object",
+            "required": [
+                "compatibility_version",
+                "compensation_id",
+                "effect_intent",
+                "effect_outcome",
+                "materialization",
+                "phase",
+                "record_version"
+            ],
+            "properties": {
+                "compatibility_version": {
+                    "const": "shepherd.effect-compensation.v1"
+                },
+                "compensation_id": {
+                    "type": "string",
+                    "pattern": "^effect-compensation:sha256:[0-9a-f]{64}$"
+                },
+                "record_version": {
+                    "const": 1
+                },
+                "effect_intent": {
+                    "$ref": "#/$defs/effectIntent"
+                },
+                "effect_outcome": {
+                    "$ref": "#/$defs/effectOutcome"
+                },
+                "materialization": {
+                    "type": "object",
+                    "required": [
+                        "kind",
+                        "record_id"
+                    ],
+                    "properties": {
+                        "kind": {
+                            "enum": [
+                                "replay_step",
+                                "supervised_dispatch"
+                            ]
+                        },
+                        "record_id": {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "phase": {
+                    "const": "intent"
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "attempt",
+                "compatibility_version",
+                "compensation_id",
+                "handler_id",
+                "phase",
+                "record_version",
+                "trigger"
+            ],
+            "properties": {
+                "compatibility_version": {
+                    "const": "shepherd.effect-compensation.v1"
+                },
+                "compensation_id": {
+                    "type": "string",
+                    "pattern": "^effect-compensation:sha256:[0-9a-f]{64}$"
+                },
+                "record_version": {
+                    "const": 1
+                },
+                "attempt": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "handler_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "phase": {
+                    "const": "attempt"
+                },
+                "trigger": {
+                    "type": "object",
+                    "required": [
+                        "command_id",
+                        "kind"
+                    ],
+                    "properties": {
+                        "command_id": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "kind": {
+                            "enum": [
+                                "scope_discard",
+                                "replay_rewind",
+                                "replay_replay",
+                                "command"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "attempt",
+                "compatibility_version",
+                "compensation_id",
+                "phase",
+                "record_version",
+                "result",
+                "status"
+            ],
+            "properties": {
+                "compatibility_version": {
+                    "const": "shepherd.effect-compensation.v1"
+                },
+                "compensation_id": {
+                    "type": "string",
+                    "pattern": "^effect-compensation:sha256:[0-9a-f]{64}$"
+                },
+                "record_version": {
+                    "const": 1
+                },
+                "attempt": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "phase": {
+                    "const": "outcome"
+                },
+                "result": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "ok",
+                                "value"
+                            ],
+                            "properties": {
+                                "ok": {
+                                    "const": true
+                                },
+                                "value": {
+                                    "$ref": "#/$defs/semanticValue"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "error",
+                                "ok"
+                            ],
+                            "properties": {
+                                "error": {
+                                    "$ref": "#/$defs/semanticValue"
+                                },
+                                "ok": {
+                                    "const": false
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "status": {
+                    "enum": [
+                        "compensated",
+                        "failed"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        }
+    ],
+    "$defs": {
+        "effectIntent": {
+            "title": "Shepherd Effect Intent v1",
+            "description": "Typed action record emitted before an effect may materialize.",
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_version",
+                "kind",
+                "payload",
+                "phase",
+                "reversibility"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "intent_version": {
+                    "const": 1
+                },
+                "kind": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "payload": {
+                    "$ref": "#/$defs/semanticValue"
+                },
+                "phase": {
+                    "const": "intent"
+                },
+                "reversibility": {
+                    "enum": [
+                        "reversible",
+                        "compensable",
+                        "irreversible"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "effectOutcome": {
+            "title": "Shepherd Effect Outcome v1",
+            "description": "Typed world response bound to one complete canonical effect intent.",
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_ref",
+                "kind",
+                "outcome_version",
+                "phase",
+                "result"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "intent_ref": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "kind": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "outcome_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "outcome"
+                },
+                "result": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "ok",
+                                "value"
+                            ],
+                            "properties": {
+                                "ok": {
+                                    "const": true
+                                },
+                                "value": {
+                                    "$ref": "#/$defs/semanticValue"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "error",
+                                "ok"
+                            ],
+                            "properties": {
+                                "error": {
+                                    "$ref": "#/$defs/semanticValue"
+                                },
+                                "ok": {
+                                    "const": false
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        }
+    }
+}

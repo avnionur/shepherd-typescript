@@ -21,7 +21,7 @@ import {
     runCodingSupervisor,
     SQLiteTraceStore,
 } from "../../src/index.ts";
-import { APPLICATIONS_PROTOCOL_V5_CONTRACT } from "../../src/protocol/compatibility-constants.ts";
+import { APPLICATIONS_PROTOCOL_V10_CONTRACT } from "../../src/protocol/compatibility-constants.ts";
 import { applicationsProtocolConfig } from "../../src/protocol/config.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
 import {
@@ -45,15 +45,16 @@ function supervision(config: Record<string, unknown>): Record<string, Record<str
     return applications(config).supervision as unknown as Record<string, Record<string, unknown>>;
 }
 
-test("the applications protocol section equals the locked latest (v5) contract and refuses drift", () => {
+test("the applications protocol section equals the locked latest (v10) contract and refuses drift", () => {
     const parsed = parseProtocolConfig(structuredClone(validConfig));
-    assert.deepEqual(parsed.applications, APPLICATIONS_PROTOCOL_V5_CONTRACT);
+    assert.deepEqual(parsed.applications, APPLICATIONS_PROTOCOL_V10_CONTRACT);
     const mutations: readonly ((config: Record<string, unknown>) => void)[] = [
         (config) => {
             applications(config).traceSchemas = {
                 compression: "shepherd.application.same.v1",
                 croCandidate: "shepherd.application.same.v1",
                 manifest: "shepherd.application.same.v1",
+                runtimeSupervision: "shepherd.application.same.v1",
                 supervision: "shepherd.application.same.v1",
                 treeRlRollout: "shepherd.application.same.v1",
             };

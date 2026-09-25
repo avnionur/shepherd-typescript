@@ -18,7 +18,7 @@ export function renderApplicationManifestSchema(config: ProtocolConfig): Schema 
         $comment: "Generated from protocol.config.json. Do not edit directly.",
         title: `Shepherd Application Manifest v${applications.manifestVersion}`,
         description:
-            "Canonical digest-bearing manifest of one application run: protocol identity over prompt, schema, and tool surfaces, budgets, seeds, dataset selection, produced artifacts cited by identity, and measured costs.",
+            "Canonical digest-bearing manifest of one application run: protocol identity over prompt, schema, and tool surfaces, budgets, optional thresholds, seeds, dataset selection, produced artifacts cited by identity, measured costs, and optional per-session computation reuse.",
         type: "object",
         required: [
             "application_id",
@@ -55,6 +55,22 @@ export function renderApplicationManifestSchema(config: ProtocolConfig): Schema 
             },
             budgets: { type: "object", additionalProperties: { type: "integer", minimum: 0 } },
             compatibility_version: { const: applications.compatibilityVersion },
+            computation_reuse: {
+                type: "array",
+                items: {
+                    type: "object",
+                    required: ["live_steps", "recorded_steps", "reuse_ratio", "session_index"],
+                    properties: {
+                        live_steps: count(),
+                        recorded_steps: count(),
+                        reuse_ratio: {
+                            oneOf: [{ type: "null" }, { type: "number", minimum: 0, maximum: 1 }],
+                        },
+                        session_index: count(),
+                    },
+                    additionalProperties: false,
+                },
+            },
             costs: {
                 type: "object",
                 required: [
@@ -118,6 +134,7 @@ export function renderApplicationManifestSchema(config: ProtocolConfig): Schema 
                     additionalProperties: false,
                 },
             },
+            thresholds: { type: "object", additionalProperties: { type: "number" } },
         },
         additionalProperties: false,
         $defs: definitions(config),

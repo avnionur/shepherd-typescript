@@ -1,4 +1,4 @@
-/** Stable Node-only ESM subpath for replay sessions, coupled checkpoints, rewind, suffix replay, process checkpoint backends, and divergence analysis. */
+/** Stable Node-only ESM subpath for replay sessions, coupled checkpoints, rewind, suffix replay, process checkpoint backends, divergence analysis, N-way diff, and regression search. */
 export {
     REPLAY_APPROVAL_REQUIRED_TIERS,
     REPLAY_CACHE_STATUSES,
@@ -6,6 +6,7 @@ export {
     REPLAY_CHECKPOINT_CLASSIFICATIONS,
     REPLAY_CHECKPOINT_CONSTITUENT_KINDS,
     REPLAY_CHECKPOINT_EVIDENCE_STATUSES,
+    REPLAY_CHECKPOINT_POLICIES,
     REPLAY_COMPATIBILITY_VERSION,
     REPLAY_DIVERGENCE_CAUSES,
     REPLAY_DIVERGENCE_STATUSES,
@@ -16,6 +17,8 @@ export {
     REPLAY_PROCESS_BACKENDS,
     REPLAY_RECORD_VERSION,
     REPLAY_RECOVERY_CLASSIFICATIONS,
+    REPLAY_REGRESSION_STRATEGIES,
+    REPLAY_SOURCE_DISPOSITIONS,
     REPLAY_STEP_KINDS,
     REPLAY_STEP_SOURCES,
     REPLAY_TERMINAL_STATUSES,
@@ -43,6 +46,12 @@ export {
 } from "../replay/errors.ts";
 export { type InspectReplaySessionOptions, inspectReplaySession } from "../replay/inspection.ts";
 export {
+    type DiffReplaySessionsOptions,
+    diffReplaySessions,
+    type FindFirstReplayRegressionOptions,
+    findFirstReplayRegression,
+} from "../replay/lineage.ts";
+export {
     type CooperativeProcessAdapter,
     type CooperativeProcessAdapterOptions,
     createCooperativeProcessAdapter,
@@ -51,15 +60,20 @@ export {
 } from "../replay/processes.ts";
 export { deriveReplaySessionId, runReplaySession } from "../replay/session.ts";
 export type {
+    ReplayBranchDiff,
+    ReplayBranchDiffStep,
     ReplayBranchOptions,
     ReplayCacheEvidence,
     ReplayCacheStatus,
+    ReplayCapturedEffect,
     ReplayChangeDimension,
     ReplayCheckpointClassification,
     ReplayCheckpointClassificationResult,
     ReplayCheckpointConstituentKind,
     ReplayCheckpointEvidenceStatus,
     ReplayCheckpointInspection,
+    ReplayCheckpointPolicy,
+    ReplayCheckpointPolicyKind,
     ReplayConstituent,
     ReplayConstituentName,
     ReplayDependencyAnalysis,
@@ -71,6 +85,7 @@ export type {
     ReplayEffectApprovalRequest,
     ReplayEffectApprovalVerdict,
     ReplayEffectDisposition,
+    ReplayEffectPresence,
     ReplayEffectStepInspection,
     ReplayEffectStepResult,
     ReplayMode,
@@ -85,14 +100,21 @@ export type {
     ReplayProviderStepInspection,
     ReplayProviderStepResult,
     ReplayRecoveryClassification,
+    ReplayRegressionEvaluation,
+    ReplayRegressionSearch,
+    ReplayRegressionStrategy,
     ReplayReplaySessionOptions,
     ReplayRestoreInspection,
+    ReplayRevision,
+    ReplayRevisionAddress,
     ReplaySessionContext,
+    ReplaySessionDiff,
     ReplaySessionInspection,
     ReplaySessionProgram,
     ReplaySessionReceipt,
     ReplaySessionTask,
     ReplaySessionTaskDefinition,
+    ReplaySourceDisposition,
     ReplayStepFailure,
     ReplayStepHandle,
     ReplayStepInspection,

@@ -239,8 +239,25 @@ function divergenceCause(
         return PROPAGATED_CAUSE;
     }
     const explained =
-        step.kind === PROVIDER_KIND
-            ? changes.includes(TASK_CHANGE) || changes.includes(PROVIDER_CHANGE)
-            : changes.includes(HANDLERS_CHANGE) || step.effect?.disposition === REFUSED;
+        replayChangesExplainStepKind(step.kind, changes) ||
+        (step.kind !== PROVIDER_KIND && step.effect?.disposition === REFUSED);
     return explained ? ROOT_CAUSE : UNEXPLAINED_CAUSE;
+}
+
+/**
+ * Reports whether declared suffix changes explain a root divergence of a step of the given kind:
+ * a task or provider change for a provider step, a handlers change for an effect step.
+ *
+ * @param kind - Replay step kind.
+ * @param changes - Declared change dimensions.
+ * @returns True when the changes can alter a step of that kind.
+ * @internal
+ */
+export function replayChangesExplainStepKind(
+    kind: ReplayStepInspection["kind"],
+    changes: readonly string[],
+): boolean {
+    return kind === PROVIDER_KIND
+        ? changes.includes(TASK_CHANGE) || changes.includes(PROVIDER_CHANGE)
+        : changes.includes(HANDLERS_CHANGE);
 }

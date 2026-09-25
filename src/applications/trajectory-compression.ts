@@ -9,7 +9,11 @@ import type {
     ChildRunProgramContext,
     RunChildRunOptions,
 } from "../delegation/types.ts";
-import { applicationsProtocolConfig, kernelProtocolConfig } from "../protocol/config.ts";
+import {
+    applicationsProtocolConfig,
+    kernelProtocolConfig,
+    replayProtocolConfig,
+} from "../protocol/config.ts";
 import {
     APPLICATION_COMPRESSION_BASELINE_KINDS,
     APPLICATION_COMPRESSION_CANDIDATE_KINDS,
@@ -21,7 +25,10 @@ import {
     APPLICATION_PROTOCOL_SURFACES,
     RECORD_MODES,
     REPLAY_CHECKPOINT_CLASSIFICATIONS,
+    REPLAY_CHECKPOINT_CONSTITUENT_KINDS,
+    REPLAY_CHECKPOINT_EVIDENCE_STATUSES,
     REPLAY_RECOVERY_CLASSIFICATIONS,
+    REPLAY_SOURCE_DISPOSITIONS,
     REPLAY_STEP_KINDS,
     REPLAY_TERMINAL_STATUSES,
     RUN_TERMINAL_STATUSES,
@@ -59,6 +66,7 @@ import {
     readCompressionOutcomeBody,
     readTrajectoryProposal,
     readTrajectoryVerdict,
+    resolveTrajectoryProposal,
     snapshot,
     stepCountRatio,
 } from "./compression-records.ts";
@@ -71,10 +79,11 @@ import type {
     TrajectoryCompressionFailure,
     TrajectoryCompressionInspection,
     TrajectoryCompressionOutcomeRecord,
-    TrajectoryCompressionProposal,
     TrajectoryCompressionReceipt,
     TrajectoryCompressionWorkflow,
+    TrajectoryForkClamp,
     TrajectoryForkPoint,
+    TrajectoryForkStepPolicy,
     TrajectoryHint,
     TrajectoryRestoreEvidence,
 } from "./compression-types.ts";
@@ -92,6 +101,11 @@ import {
     readRetainedManifest,
     retainApplicationManifest,
 } from "./manifest.ts";
+import {
+    type ApplicationSchemaSurface,
+    assertApplicationMessage,
+    compileApplicationSchemaSurfaces,
+} from "./protocol-schemas.ts";
 import {
     addApplicationCosts,
     applicationDigest,
@@ -124,8 +138,11 @@ const [NO_COMPRESSION] = APPLICATION_COMPRESSION_BASELINE_KINDS;
 const [, , UNAVAILABLE] = REPLAY_CHECKPOINT_CLASSIFICATIONS;
 const [FINISHED_SESSION, , , REWOUND_SESSION] = REPLAY_TERMINAL_STATUSES;
 const [, RUNNING_SESSION] = REPLAY_RECOVERY_CLASSIFICATIONS;
+const [, RETAIN_SOURCE] = REPLAY_SOURCE_DISPOSITIONS;
 const [FINISHED_CHILD] = RUN_TERMINAL_STATUSES;
 const [PROVIDER_STEP] = REPLAY_STEP_KINDS;
+const [, WORLD_CONSTITUENT, , PROCESS_CONSTITUENT] = REPLAY_CHECKPOINT_CONSTITUENT_KINDS;
+const [, , , UNAVAILABLE_STATUS] = REPLAY_CHECKPOINT_EVIDENCE_STATUSES;
 const SOURCE_STEP = "source";
 const OPENED_STEP = "opened";
 const COMPRESSOR_STEP = "compressor";
@@ -140,6 +157,7 @@ const OUTCOME_STEP = "outcome";
 type CompressionProtocol = {
     readonly bestOfN: number;
     readonly definition: ApplicationProtocolDefinition;
+    readonly proposal: readonly ApplicationSchemaSurface[];
     readonly providerCalls: number;
 };
 
@@ -207,9 +225,14 @@ type ChildResult = {
  * compressor runs as a delegated child through `openChildRun`, `runChildRun`, and
  * `acceptChildRunResult`; it receives the canonical source evidence and returns a proposal
  * `{ fork_point, hint }` as canonical JSON text in the configured output field. The proposal is
- * validated against the closed fork-point and hint grammar and the source: the fork point must name
- * the source session, retain at least one and fewer than all source steps, and carry the retained
- * prefix identity. A null fork point settles `no_prune` and the source is the result. A fork point
+ * validated against every protocol `schema` surface of the compression role (`compileJSONSchema`),
+ * then against the closed fork-point and hint grammar and the source (Appendix D.5 and D.6): the
+ * fork point must name the source session; a step index in `[0, n - 1]` of the `n`-step source must
+ * carry the retained prefix identity (null at step `0`, which restarts from the initial prefix with
+ * the hint applied); an index outside that range is clamped to the nearest bound under the
+ * configured `clamp` fork-step policy, with the proposed step and prefix retained as `fork_clamp`
+ * evidence, or refused under the `reject` policy. An absent or null fork point, or one without a
+ * step index, is a missing fork step: it settles `no_prune` and the source is the result. A fork point
  * at a retained checkpoint is classified with `classifyReplayCheckpoint`; an `unavailable`
  * classification refuses the prune, retains the classification, constituents, and reason, and
  * settles `no_prune`. Otherwise `rewindReplaySession` restores the fork point, its restore
@@ -245,7 +268,8 @@ type ChildResult = {
  * a new session or child would exceed it by projection, or a suffix, restoration, or control
  * session's measured calls exceeded it (the session is retained, the candidate is not settled).
  * @throws {ApplicationEvidenceError} If the source did not finish, the compressor terminally fails
- * or returns a proposal the grammar or the source refuses, the rewind fails or retains no restore
+ * or returns a proposal the compression schema surface, the grammar, or the source refuses (the
+ * cause carries the path-level issues), the rewind fails or retains no restore
  * record, a restoration or control session ended failed or cancelled or was interrupted by a dead
  * writer whose lease expired (the candidate is retained as rejected first), or retained evidence is inconsistent.
  * @throws {ApplicationVerificationError} If a verifier terminally fails or returns a malformed
@@ -357,7 +381,8 @@ export async function runTrajectoryCompression(
     const source = (
         await runReplaySession(store, {
             ...sessionBindings(run, commandOf(run, SOURCE_STEP, {})),
-            ...definedFields({ handlers: workflow.handlers, task: workflow.task }),
+            ...(await boundResources(run, SOURCE_STEP, null, true)),
+            ...definedFields({ task: workflow.task }),
             program: workflow.program(null),
             programId: workflow.programId,
             ...definedFields({ provider: workflow.provider }),
@@ -482,7 +507,9 @@ async function settleCompression(run: Run, state: CandidateState): Promise<void>
         compressor_handle_id: createChildRunHandleId(compressorCommand),
         seed: null,
     };
-    let proposal: TrajectoryCompressionProposal;
+    let forkPoint: TrajectoryForkPoint | null;
+    let forkClamp: TrajectoryForkClamp | null;
+    let hint: TrajectoryHint | null;
     assertChildBudget(run, compressorCommand);
     // Delegation, lease, and store refusals raise from the seam without a record: only a child
     // that terminally failed or a proposal the grammar or the source refuses is retained.
@@ -497,8 +524,21 @@ async function settleCompression(run: Run, state: CandidateState): Promise<void>
         },
     );
     try {
-        proposal = readTrajectoryProposal(snapshot(readChildValue(proposed, COMPRESSOR_STEP)));
-        assertProposal(proposal, source);
+        const proposalValue = snapshot(readChildValue(proposed, COMPRESSOR_STEP));
+        assertApplicationMessage(
+            run.protocol.proposal,
+            proposalValue as SemanticValue,
+            "compressor proposal",
+        );
+        const proposal = readTrajectoryProposal(proposalValue);
+        const resolved = resolveTrajectoryProposal(
+            proposal,
+            source,
+            compression.forkStepPolicy as TrajectoryForkStepPolicy,
+        );
+        forkPoint = resolved.fork_point;
+        forkClamp = resolved.fork_clamp;
+        hint = proposal.hint;
     } catch (error) {
         retainFailure(
             run,
@@ -511,8 +551,6 @@ async function settleCompression(run: Run, state: CandidateState): Promise<void>
             error,
         );
     }
-    const forkPoint = proposal.fork_point;
-    const hint = proposal.hint;
     const hintDigest = hint === null ? null : applicationDigest(hint as unknown as SemanticValue);
     const proposalFields = {
         ...base,
@@ -524,6 +562,7 @@ async function settleCompression(run: Run, state: CandidateState): Promise<void>
                       fork_point: forkPoint,
                       hint_digest: hintDigest,
                   }),
+        fork_clamp: forkClamp,
         fork_point: forkPoint,
         hint_digest: hintDigest,
     };
@@ -543,6 +582,32 @@ async function settleCompression(run: Run, state: CandidateState): Promise<void>
     }
     const checkpoint =
         source.checkpoints.find((entry) => entry.step_count === forkPoint.step_index) ?? null;
+    if (checkpoint === null && (source.worlds.length > 0 || source.processes.length > 0)) {
+        // A world- or process-bound source is restorable only at a retained checkpoint.
+        settleNoPrune(
+            run,
+            proposalFields,
+            {
+                classification: UNAVAILABLE,
+                constituents: [
+                    ...source.worlds.map((name) => ({ kind: WORLD_CONSTITUENT, name })),
+                    ...source.processes.map((entry) => ({
+                        kind: PROCESS_CONSTITUENT,
+                        name: entry.process_id,
+                    })),
+                ].map((entry) => ({
+                    ...entry,
+                    reason: replayProtocolConfig.checkpoint.reasons.boundaryWithoutCheckpoint,
+                    status: UNAVAILABLE_STATUS,
+                })) as TrajectoryRestoreEvidence["constituents"],
+                restore_record_id: null,
+                rewind_session_id: null,
+            },
+            compression.reasons.restoreUnavailable,
+            proposed.cost,
+        );
+        return;
+    }
     if (checkpoint !== null) {
         const classified = classifyReplayCheckpoint(checkpoint);
         if (classified.classification === UNAVAILABLE) {
@@ -567,9 +632,13 @@ async function settleCompression(run: Run, state: CandidateState): Promise<void>
             : { checkpointId: checkpoint.checkpoint_id };
     // The rewind is restoration evidence only: a rewind left non-terminal by a dead writer after
     // its restore record is admitted from that record, never restored a second time.
+    const rewindBound = await boundResources(run, REWIND_STEP, null, false);
     const rewind = await sessionOrInterrupted(run, () =>
         rewindReplaySession(run.store, {
             ...sessionBindings(run, commandOf(run, REWIND_STEP, {})),
+            ...rewindBound,
+            // The source stays the uncompressed trajectory the result is measured against.
+            sourceDisposition: RETAIN_SOURCE,
             sourceSessionId: source.session_id,
             target,
         }),
@@ -582,7 +651,8 @@ async function settleCompression(run: Run, state: CandidateState): Promise<void>
         retainFailure(
             run,
             candidateFields({ ...proposalFields, status: REJECTED }),
-            [rewindTerminal === null ? rewind.head_record_id : rewindTerminal.record_id],
+            // The head is the terminal record once the rewind settled, else its last evidence.
+            [rewind.head_record_id],
             {
                 code: config.errors.evidenceCode,
                 reason: `rewind of application ${applicationId} did not restore the fork point`,
@@ -749,11 +819,12 @@ async function settleControl(
     if (run.store.readOwner(deriveReplaySessionId(commandId)).length === 0) {
         assertBudget(run, providerSteps(source, 0));
     }
+    const bound = await boundResources(run, CONTROL_STEP, seed, true);
     const control = await sessionOrInterrupted(run, () =>
         runReplaySession(run.store, {
             ...sessionBindings(run, commandId),
+            ...bound,
             ...definedFields({
-                handlers: workflow.handlers,
                 provider:
                     run.controlProvider === null ? workflow.provider : run.controlProvider(seed),
                 task: workflow.task,
@@ -992,11 +1063,14 @@ async function replaySuffix(
     if (store.readOwner(deriveReplaySessionId(commandId)).length === 0) {
         assertBudget(run, providerSteps(source, stepIndex));
     }
+    const bound = await boundResources(run, step, null, true);
     const inspection = await sessionOrInterrupted(run, () =>
         replayReplaySession(store, {
             ...sessionBindings(run, commandId),
-            ...definedFields({ handlers: workflow.handlers, provider: workflow.provider }),
+            ...bound,
+            ...definedFields({ provider: workflow.provider }),
             program,
+            sourceDisposition: RETAIN_SOURCE,
             sourceSessionId: source.session_id,
             target,
         }),
@@ -1207,29 +1281,6 @@ function restoreConstituents(
     }));
 }
 
-function assertProposal(
-    proposal: TrajectoryCompressionProposal,
-    source: ReplaySessionInspection,
-): void {
-    const { fork_point: forkPoint, hint } = proposal;
-    if (forkPoint === null) {
-        return;
-    }
-    const steps = source.steps;
-    if (forkPoint.session_id !== source.session_id || forkPoint.step_index >= steps.length) {
-        throw new TypeError("fork point must name a strict prefix boundary of the source session");
-    }
-    if (
-        forkPoint.prefix_id !== (steps[forkPoint.step_index - 1] as { prefix_id: string }).prefix_id
-    ) {
-        throw new TypeError("fork point prefix identity does not equal the retained prefix");
-    }
-    // Cited indices are non-negative and strictly ascending by the grammar.
-    if (hint?.cited_step_indices.some((index) => index >= steps.length)) {
-        throw new TypeError("hint cites a step outside the source session");
-    }
-}
-
 function candidateFields(
     fields: Readonly<Record<string, unknown>>,
 ): Readonly<Record<string, unknown>> {
@@ -1237,6 +1288,7 @@ function candidateFields(
         compressor_handle_id: null,
         cost: null,
         failure: null,
+        fork_clamp: null,
         fork_id: null,
         fork_point: null,
         hint_digest: null,
@@ -1558,6 +1610,7 @@ function assertOutcome(
 function proposalOf(body: CompressionCandidateBody): SemanticValue {
     return {
         compressor_handle_id: body.compressor_handle_id,
+        fork_clamp: body.fork_clamp,
         fork_id: body.fork_id,
         fork_point: body.fork_point,
         hint_digest: body.hint_digest,
@@ -1640,6 +1693,37 @@ function sessionBindings(
     };
 }
 
+/**
+ * Resolves the handler stack, worlds, and processes of one workflow session through the workflow's
+ * `bindings` factory, plus the workflow checkpoint policy of every session that runs the program.
+ * Rewind sessions take restoration roots only.
+ */
+async function boundResources(
+    run: Run,
+    role: string,
+    seed: number | null,
+    executes: boolean,
+): Promise<Record<string, unknown>> {
+    const { workflow } = run;
+    const bound =
+        workflow.bindings === undefined
+            ? {}
+            : readScopeDataObject(
+                  await workflow.bindings(
+                      Object.freeze({ application_id: run.applicationId, role, seed }) as never,
+                  ),
+                  [],
+                  `workflow bindings for ${role}`,
+                  ["handlers", "processes", "worlds"],
+              );
+    return definedFields({
+        checkpointPolicy: executes ? workflow.checkpointPolicy : undefined,
+        handlers: executes ? (bound.handlers ?? workflow.handlers) : undefined,
+        processes: bound.processes,
+        worlds: bound.worlds,
+    });
+}
+
 function commandOf(run: Run, step: string, fields: SemanticRecord): string {
     return createApplicationCommandId(run.applicationId, step, fields);
 }
@@ -1679,17 +1763,27 @@ function readCompressionProtocol(value: unknown): CompressionProtocol {
             `${keys.bestOfN} ${bestOfN} exceeds the ${definition.seeds.length} declared seed(s)`,
         );
     }
-    return { bestOfN, definition, providerCalls };
+    return {
+        bestOfN,
+        definition,
+        proposal: compileApplicationSchemaSurfaces(definition, roles.compression),
+        providerCalls,
+    };
 }
 
 function readWorkflow(value: unknown): TrajectoryCompressionWorkflow {
     const fields = readScopeDataObject(value, ["program", "programId"], "workflow", [
+        "bindings",
+        "checkpointPolicy",
         "handlers",
         "provider",
         "providerSession",
         "task",
     ]);
     readFunction(fields.program, "workflow.program");
+    if (fields.bindings !== undefined) {
+        readFunction(fields.bindings, "workflow.bindings");
+    }
     assertScopeText(fields.programId, "workflow.programId");
     return fields as unknown as TrajectoryCompressionWorkflow;
 }

@@ -103,6 +103,11 @@ denied, and approved supervised effects) twice on fresh stores: without observer
 durable subscriptions, one ephemeral subscription, and one subscription that overflows. The
 exported trace archives are byte-identical and every dispatch inspection is equal.
 
+The [runtime supervisor](./runtime-supervisor.md#ticks-and-snapshots) is a live consumer: each
+tick it drains one ephemeral subscription over every worker stream up to the current heads, folds
+the delivered records into the tick's snapshot, and retains the delivered cursor in the tick record,
+so each decision names exactly the worker records it saw.
+
 ## Limits
 
 - Subscriptions do not discover new owner paths.

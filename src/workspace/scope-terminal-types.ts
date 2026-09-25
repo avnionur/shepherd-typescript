@@ -1,3 +1,4 @@
+import type { EffectCompensationRegistry } from "../effect/compensation-types.ts";
 import type { RecordId } from "../record/types.ts";
 import type { ScopeWriter } from "../scope/types.ts";
 import type { ReferenceCopyCarrier } from "./types.ts";
@@ -29,6 +30,11 @@ export type DiscardScopeOptions = {
     readonly carrier?: ReferenceCopyCarrier;
     /** Globally idempotent discard command identity. */
     readonly commandId: string;
+    /**
+     * Compensation handlers for the successful compensable effects cited by the sealed scopes'
+     * selected histories; required when any of them is not yet compensated.
+     */
+    readonly compensation?: EffectCompensationRegistry;
     /** Exact current head of the discarded subtree root. */
     readonly expectedHeadRecordId: RecordId;
     /** Unix time used for deterministic fence evaluation; defaults to the current time. */

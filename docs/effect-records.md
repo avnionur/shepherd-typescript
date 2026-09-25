@@ -51,10 +51,21 @@ This module defines records and correlation only. The separate
 module materializes world changes, appends records, enforces intent-before-outcome ordering across
 storage, or runs observers and interceptors.
 
+## Reversibility tiers
+
+The tier governs how the substrate undoes an effect it abandons. `reversible` effects are undone by
+restoring world checkpoints. `compensable` effects (the configured
+`effects.compensation.compensableTiers`) are undone by a registered compensation handler when a
+scope discard or a replay branch abandons their successful materialization; see
+[effect compensation](./compensation.md). `irreversible` effects are gated by the approval frontier
+([supervised effects](./supervised-effects.md), [rewind and replay](./rewind-and-replay.md#irreversible-effects)).
+
 ## Protocol artifacts
 
 Versions, phases, reversibility vocabulary, digest settings, schema IDs, and generated artifact
 paths are defined in [`protocol.config.json`](../protocol.config.json) and compatibility locked as
-effect protocol v1. Generated JSON Schemas live at
+effect protocol v2 (`EFFECT_PROTOCOL_V2_CONTRACT`): the v1 intent and outcome records are unchanged,
+and v2 adds the `compensation` section and the
+[`effect-compensation-v1`](../spec/schemas/effect-compensation-v1.schema.json) record schema. Generated JSON Schemas live at
 [`spec/schemas/effect-intent-v1.schema.json`](../spec/schemas/effect-intent-v1.schema.json) and
 [`spec/schemas/effect-outcome-v1.schema.json`](../spec/schemas/effect-outcome-v1.schema.json).

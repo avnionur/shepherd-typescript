@@ -81,7 +81,9 @@ the current one. Ownership is derived from the opened record and every retained 
 after a handoff, every later command, including the completion retained by `runChildRun`, must name
 the successor. A command naming a former or unknown supervisor is refused with
 `DelegationSupervisorError` without writing. Handoff transfers handle ownership only: no process,
-provider session, or world state moves, and a decided handle cannot be handed off.
+provider session, or world state moves, and a decided handle cannot be handed off. The paper's session-level handoff (a
+fresh session, optionally re-rooted on a leader's custody) and injection into a running worker are
+provided by the [runtime supervisor](./runtime-supervisor.md), not by child run handles.
 
 ## Decisions
 

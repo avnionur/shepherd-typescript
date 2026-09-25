@@ -2,8 +2,8 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://avnionur.github.io/shepherd-typescript/schemas/application-evaluation-v1.schema.json",
     "$comment": "Generated from protocol.config.json. Do not edit directly.",
-    "title": "Shepherd Application Evaluation Report v1",
-    "description": "Measured-only offline evaluation report: one run and one configured baseline per experiment with measured metrics, per-metric comparisons, and the published limitations. The report identity is the digest of the canonical report body without it; no wall-clock, host, node version, or duration field is admitted.",
+    "title": "Shepherd Application Evaluation Report v2",
+    "description": "Measured-only offline evaluation report: one run and one configured baseline per experiment with measured metrics, per-metric comparisons, rescue counts (baseline failed, application passed), and the published limitations. The report identity is the digest of the canonical report body without it; no wall-clock, host, node version, or duration field is admitted.",
     "type": "object",
     "required": [
         "baselines",
@@ -14,6 +14,7 @@
         "metrics",
         "report_id",
         "report_version",
+        "rescues",
         "revision",
         "runs"
     ],
@@ -48,7 +49,7 @@
                             "no_supervision",
                             "full_replay",
                             "no_compression",
-                            "single_rollout"
+                            "flat_grpo"
                         ]
                     },
                     "metrics": {
@@ -75,7 +76,7 @@
                             "no_supervision",
                             "full_replay",
                             "no_compression",
-                            "single_rollout"
+                            "flat_grpo"
                         ]
                     },
                     "experiment_id": {
@@ -195,7 +196,31 @@
             "pattern": "^evaluation-report:sha256:[0-9a-f]{64}$"
         },
         "report_version": {
-            "const": 1
+            "const": 2
+        },
+        "rescues": {
+            "type": "object",
+            "required": [
+                "count",
+                "experiment_ids"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 16
+                },
+                "experiment_ids": {
+                    "type": "array",
+                    "maxItems": 16,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "uniqueItems": true
+                }
+            },
+            "additionalProperties": false
         },
         "revision": {
             "type": "string",

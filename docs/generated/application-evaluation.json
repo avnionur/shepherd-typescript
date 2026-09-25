@@ -17,17 +17,27 @@
         },
         {
             "evidence": [
-                "replay-session:sha256:309b60fec6864782e41845105ae91cef224866cb218d0e1b0e05756b965bcc69",
-                "replay-session:sha256:c6ccf5ea2f2f63e179b3c2226e014430f48af0252b769e131f0ef1ec589b10c1"
+                "replay-session:sha256:8c16fce4062b8d80fa53263a7273d655265e7bfabd066037e4cdaf82a3446722",
+                "replay-session:sha256:daebe9fcacd405ea8711fd636766ac2ad497013c98e20e4a73c3e51a918efe15",
+                "replay-session:sha256:774e528659e23e5a01e92d8ce76728eb06a7b2aedb22ca701f0f20f1c8323529",
+                "replay-session:sha256:6b14dc53f042104717d34e08eb24a4f65f1ad20f706a70e36ff1063304110083",
+                "replay-session:sha256:eb3bcab678c74df482ac34b1394daad1923eddc5aab71d007c112ed2fb4b77b8",
+                "replay-session:sha256:0b037e1556b8009e8fba5f02c8a461e4af55f1cd750e64d9efba010e1ca829a3",
+                "replay-session:sha256:8240410fec2543cb836209514b772f1045ab157fef495d775b2e9ae02a992909",
+                "replay-session:sha256:c86915d8184df979408b02a0b9b7d3fc18a24e15aa49d2efd19e9971af172c4c",
+                "replay-session:sha256:a27d4938eed6cdc7f80fcdd4753fde9a15907f00f6658dee3d1bbd443e55458b",
+                "replay-session:sha256:f272b3bf66975b17a98d1c570f5b9f64aa9719c086b40be7bbeef9fd9776bf5a",
+                "replay-session:sha256:ee910866ce6a662e5c7c21f88bf4915dfa9df914604a9c75c514c9c61bd2c4a0",
+                "replay-session:sha256:1be3f229c6a6edac930a90ea3ce1c53fbb8dcc6561ad3c6ef3cc32a5ac8c72ba"
             ],
             "experiment_id": "counterfactual-optimization",
             "kind": "full_replay",
             "metrics": {
-                "cost_usd": 2,
-                "input_tokens": 80,
-                "output_tokens": 16,
-                "provider_calls": 8,
-                "steps": 8,
+                "cost_usd": 12,
+                "input_tokens": 480,
+                "output_tokens": 96,
+                "provider_calls": 48,
+                "steps": 48,
                 "success": true
             }
         },
@@ -48,18 +58,17 @@
         },
         {
             "evidence": [
-                "replay-session:sha256:baa735dbb881cebf86713e93946b970938545ff69f095511ce4fffb7599ea572",
-                "replay-session:sha256:12d488b490dd9c46fa59c659de62a77d83c29371f358835b5c7355351439cb4f",
-                "replay-session:sha256:eb16e1166a18213fd0a414cf7d64064e1d2d7ae5585165d7d6f1c3663a536a8b"
+                "replay-session:sha256:c9f5f3acc2c13c07e41c3146fbf07bbd51f4c1b23d01b0311eeff2cef32ccd98",
+                "replay-session:sha256:58e9e0971d6b862bc4d11e78df03c3b6bedf7db9031b262bd70e38e3b0820bf2"
             ],
             "experiment_id": "tree-rl",
-            "kind": "single_rollout",
+            "kind": "flat_grpo",
             "metrics": {
-                "cost_usd": 3,
-                "input_tokens": 120,
-                "output_tokens": 24,
-                "provider_calls": 12,
-                "steps": 15,
+                "cost_usd": 2.5,
+                "input_tokens": 100,
+                "output_tokens": 20,
+                "provider_calls": 10,
+                "steps": 10,
                 "success": true
             }
         }
@@ -112,32 +121,32 @@
             "experiment_id": "counterfactual-optimization",
             "values": [
                 {
-                    "application": 0.5,
-                    "baseline": 2,
-                    "delta": -1.5,
+                    "application": 8.5,
+                    "baseline": 12,
+                    "delta": -3.5,
                     "metric": "cost_usd"
                 },
                 {
-                    "application": 2,
-                    "baseline": 8,
-                    "delta": -6,
+                    "application": 34,
+                    "baseline": 48,
+                    "delta": -14,
                     "metric": "provider_calls"
                 },
                 {
-                    "application": 20,
-                    "baseline": 80,
-                    "delta": -60,
+                    "application": 340,
+                    "baseline": 480,
+                    "delta": -140,
                     "metric": "input_tokens"
                 },
                 {
-                    "application": 4,
-                    "baseline": 16,
-                    "delta": -12,
+                    "application": 68,
+                    "baseline": 96,
+                    "delta": -28,
                     "metric": "output_tokens"
                 },
                 {
-                    "application": 8,
-                    "baseline": 8,
+                    "application": 48,
+                    "baseline": 48,
                     "delta": 0,
                     "metric": "steps"
                 },
@@ -192,37 +201,37 @@
             ]
         },
         {
-            "baseline_kind": "single_rollout",
+            "baseline_kind": "flat_grpo",
             "experiment_id": "tree-rl",
             "values": [
                 {
-                    "application": 6,
-                    "baseline": 3,
-                    "delta": 3,
+                    "application": 6.5,
+                    "baseline": 2.5,
+                    "delta": 4,
                     "metric": "cost_usd"
                 },
                 {
-                    "application": 24,
-                    "baseline": 12,
-                    "delta": 12,
+                    "application": 26,
+                    "baseline": 10,
+                    "delta": 16,
                     "metric": "provider_calls"
                 },
                 {
-                    "application": 240,
-                    "baseline": 120,
-                    "delta": 120,
+                    "application": 260,
+                    "baseline": 100,
+                    "delta": 160,
                     "metric": "input_tokens"
                 },
                 {
-                    "application": 48,
-                    "baseline": 24,
-                    "delta": 24,
+                    "application": 52,
+                    "baseline": 20,
+                    "delta": 32,
                     "metric": "output_tokens"
                 },
                 {
                     "application": 30,
-                    "baseline": 15,
-                    "delta": 15,
+                    "baseline": 10,
+                    "delta": 20,
                     "metric": "steps"
                 },
                 {
@@ -239,7 +248,7 @@
     "limitations": [
         {
             "id": "offline-static-providers",
-            "text": "Every provider is an offline static fixture: exact order-bound cassettes for the Tree-RL source and rollouts, and request-keyed providers with a static descriptor where an application serves repeated sessions or workers from one provider. Token counts and costs are the fixtures' configured per-call usage, not provider billing."
+            "text": "Every provider is an offline static fixture: exact order-bound cassettes for the Tree-RL roots and rollouts, and request-keyed providers with a static descriptor where an application serves repeated sessions or workers from one provider. Token counts and costs are the fixtures' configured per-call usage, not provider billing."
         },
         {
             "id": "no-live-provider",
@@ -247,7 +256,7 @@
         },
         {
             "id": "synthetic-fixtures",
-            "text": "Fixtures are synthetic and small: one dataset item per application, four or five workflow stages, two supervised workers, two optimizer candidates, and the configured seeds. The figures describe these fixtures, not a benchmark or task distribution."
+            "text": "Fixtures are synthetic and small: one dataset item per application except the optimizer's four train and two dev examples, four or five workflow stages, two supervised workers, two scripted optimizer iterations with three candidate edits, and the configured seeds. The figures describe these fixtures, not a benchmark or task distribution."
         },
         {
             "id": "no-wall-clock",
@@ -255,19 +264,23 @@
         },
         {
             "id": "repository-baselines",
-            "text": "Baselines are this repository's constructions: no_supervision runs one worker once as a plain child run without a policy, full_replay re-runs the whole workflow per candidate, no_compression keeps the recorded source trajectory, and single_rollout reuses branch 0 of each fork point. None is an upstream baseline."
+            "text": "Baselines are this repository's constructions: no_supervision runs one worker once as a plain child run without a policy, full_replay re-runs the whole workflow per candidate example branch, no_compression keeps the recorded source trajectory, and flat_grpo keeps only the G graded roots of each prompt with the inter-root advantage on every action. None is an upstream baseline."
         },
         {
-            "id": "single-rollout-shared-cost",
-            "text": "The Tree-RL single_rollout baseline reuses the tree's branch-0 rollouts instead of running separate sessions, so its cost is a subset of the tree batch's cost, not an equal budget; a failed branch-0 rollout still counts in the baseline's cost and steps and makes baseline success false (the v4 single_rollout training batch drops that fork point)."
+            "id": "flat-grpo-shared-roots",
+            "text": "The Tree-RL flat_grpo baseline is the tree run's own G roots per prompt, so its cost is a subset of the tree run's cost (roots plus K branches per root), not a matched generation budget as in the paper's comparison. The fixture forks every root at a configured turn instead of consulting a meta-agent, so no proposed tool call seeds a branch here."
         },
         {
             "id": "measurement-scope",
-            "text": "Application-side metrics count only the work compared against the baseline: supervised worker starts and retained completions, counterfactual candidate branch sessions, the compression result session, and every Tree-RL rollout. Supervisor rounds, recorded baseline and source sessions, compressor and verifier children, and best-of-N controls appear only in each run's manifest costs."
+            "text": "Application-side metrics count only the work compared against the baseline: supervised worker starts and retained completions, counterfactual candidate example branch sessions, the compression result session, and every Tree-RL root and branch rollout. Supervisor rounds, recorded baseline and source sessions, compressor and verifier children, and best-of-N controls appear only in each run's manifest costs."
         },
         {
             "id": "single-host",
             "text": "Each generation runs on one host. The report bytes are host-independent by construction, but no multi-host, concurrent-writer, or crash-injected evaluation is performed."
+        },
+        {
+            "id": "rescue-scope",
+            "text": "A rescue counts an experiment whose baseline failed its success condition while the application run passed. Trajectory compression requires a finished source and every fixture baseline here succeeds, so the measured rescue count is zero; no task-level success judge of the source trajectory (the upstream Table 12 notion) is run."
         },
         {
             "id": "no-upstream-reproduction",
@@ -276,6 +289,10 @@
         {
             "id": "no-training",
             "text": "The Tree-RL adapter emits a training batch and trains nothing; no learning result is claimed."
+        },
+        {
+            "id": "scripted-proposer",
+            "text": "The optimizer's proposer is a scripted caller proposer replaying configured iterations; no provider-backed tool-loop proposer runs in the evaluation, and the per-example metric is a configured score table keyed by the provider that produced the final stage."
         }
     ],
     "metrics": [
@@ -286,9 +303,13 @@
         "steps",
         "success"
     ],
-    "report_id": "evaluation-report:sha256:bd7e90a66c916ebeeea9be26947981c6ef878827f35826c5572f00baea7b74b5",
-    "report_version": 1,
-    "revision": "1",
+    "report_id": "evaluation-report:sha256:f2074346c5222c7c993514c94c9c019fde5bd81e5e1afbd00add97d1480f3a62",
+    "report_version": 2,
+    "rescues": {
+        "count": 0,
+        "experiment_ids": []
+    },
+    "revision": "4",
     "runs": [
         {
             "application_id": "application:sha256:475abb0a6628996d26f98e7eb2b0c79ba1f87941739ed50bffde1d850ace00be",
@@ -328,33 +349,38 @@
         {
             "application_id": "application:sha256:9423c12b35b70183dc52d03eaa5136769c7edccd4bbfd6af02496cb341fd0b36",
             "costs": {
-                "cache_creation_input_tokens": 14,
-                "cache_read_input_tokens": 28,
-                "cost_usd": 3.5,
-                "input_tokens": 140,
-                "output_tokens": 28,
-                "provider_calls": 14
+                "cache_creation_input_tokens": 106,
+                "cache_read_input_tokens": 212,
+                "cost_usd": 26.5,
+                "input_tokens": 1060,
+                "output_tokens": 212,
+                "provider_calls": 106
             },
             "dataset": {
                 "id": "draft-review-workflow-fixture",
                 "items": [
-                    "plan-draft-review"
+                    "train-1",
+                    "train-2",
+                    "train-3",
+                    "train-4",
+                    "dev-1",
+                    "dev-2"
                 ],
-                "revision": "1"
+                "revision": "2"
             },
             "experiment_id": "counterfactual-optimization",
             "kind": "counterfactual_optimization",
-            "manifest_id": "application-manifest:sha256:69492f5bafa00ed40892782da9785a183e48629ae52f5944da6c517b4de3ea48",
+            "manifest_id": "application-manifest:sha256:5e972faa6707013f0ec1d1e86ce3a5051a602780cf8f5e556a7dab2814289ba9",
             "metrics": {
-                "cost_usd": 0.5,
-                "input_tokens": 20,
-                "output_tokens": 4,
-                "provider_calls": 2,
-                "steps": 8,
+                "cost_usd": 8.5,
+                "input_tokens": 340,
+                "output_tokens": 68,
+                "provider_calls": 34,
+                "steps": 48,
                 "success": true
             },
-            "protocol_id": "application-protocol:sha256:1b6b60e83832006f0bfb1dce6e432921366d3ad470bab670cd294ed23e3e68d5",
-            "protocol_version": "appendix-f.v1",
+            "protocol_id": "application-protocol:sha256:eabc39b07a56760813234382c3626903963011e3883c6a0e099567d34860dde4",
+            "protocol_version": "appendix-f.v2",
             "seeds": [
                 7,
                 19
@@ -379,7 +405,7 @@
             },
             "experiment_id": "trajectory-compression",
             "kind": "trajectory_compression",
-            "manifest_id": "application-manifest:sha256:9e95c6e3640d86bc4d789660b10d1dd6ec9e4ef973e741ba6fba3af9dd1500dc",
+            "manifest_id": "application-manifest:sha256:0f719a83a70154715d76811b0d4c52e3383a77dae821fcc4d940f4ef82bdc41a",
             "metrics": {
                 "cost_usd": 0.25,
                 "input_tokens": 10,
@@ -388,8 +414,8 @@
                 "steps": 2,
                 "success": true
             },
-            "protocol_id": "application-protocol:sha256:a9e27ced2a165e4930646f2e925680c296d6baba9a6bd4d7e2bcd38e72419c9f",
-            "protocol_version": "appendix-d.v1",
+            "protocol_id": "application-protocol:sha256:436ca9a04b1038b6e875563eda78bc5799561f1902ed9d6b1ca00bb6cf841da9",
+            "protocol_version": "appendix-d.v2",
             "seeds": [
                 7,
                 19,
@@ -399,12 +425,12 @@
         {
             "application_id": "application:sha256:2c2ec01791fbdd8fd390a9405ebe5f05b27365445a6c51e47301a3e291c07a97",
             "costs": {
-                "cache_creation_input_tokens": 24,
-                "cache_read_input_tokens": 48,
-                "cost_usd": 6,
-                "input_tokens": 240,
-                "output_tokens": 48,
-                "provider_calls": 24
+                "cache_creation_input_tokens": 26,
+                "cache_read_input_tokens": 52,
+                "cost_usd": 6.5,
+                "input_tokens": 260,
+                "output_tokens": 52,
+                "provider_calls": 26
             },
             "dataset": {
                 "id": "plan-explore-draft-answer-fixture",
@@ -415,17 +441,17 @@
             },
             "experiment_id": "tree-rl",
             "kind": "tree_rl",
-            "manifest_id": "application-manifest:sha256:6c0fe302767554eb4e8ec2eb53ac6caba9505754d7d0b0f1667b10870a4e3e3c",
+            "manifest_id": "application-manifest:sha256:6ed415155e18b1a3d8f816d29a17f6a6c215ada354107693086408210db15074",
             "metrics": {
-                "cost_usd": 6,
-                "input_tokens": 240,
-                "output_tokens": 48,
-                "provider_calls": 24,
+                "cost_usd": 6.5,
+                "input_tokens": 260,
+                "output_tokens": 52,
+                "provider_calls": 26,
                 "steps": 30,
                 "success": true
             },
-            "protocol_id": "application-protocol:sha256:46278694e1903c22b6d317ec246da6f508a0db45e8baf7c82f617c14de121b3c",
-            "protocol_version": "section-5.3.v1",
+            "protocol_id": "application-protocol:sha256:51df6d5c3ddfcb015760bf0827f26fbb7af20509fc3cfb5a426cbb91ccf85dc1",
+            "protocol_version": "section-5.3.algorithm-2.v2",
             "seeds": [
                 3,
                 5,

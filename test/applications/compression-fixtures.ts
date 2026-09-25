@@ -202,14 +202,17 @@ export function childOutput(value: unknown): Record<string, string> {
     return { [fields.output]: JSON.stringify(value) };
 }
 
-/** Proposal forking the source at a boundary with a hint citing the explorations. */
+/**
+ * Proposal forking the source at a boundary with a hint citing the explorations. The prefix identity
+ * is the retained one at the boundary, or null at step 0 and outside the source.
+ */
 export function forkAt(
     stepIndex: number,
     hint: string | null = "answer directly from the plan",
 ): (context: TrajectoryCompressorContext) => TrajectoryCompressionProposal {
     return ({ source }) => ({
         fork_point: {
-            prefix_id: source.steps[stepIndex - 1]?.prefix_id as string,
+            prefix_id: source.steps[stepIndex - 1]?.prefix_id ?? null,
             session_id: source.session_id,
             step_index: stepIndex,
         },

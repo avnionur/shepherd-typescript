@@ -1,4 +1,8 @@
-import { runProtocolConfig } from "../protocol/config.ts";
+import {
+    createRuntimeInspectionEnvelope,
+    withPublicationControls,
+} from "../formal/inspection-envelope.ts";
+import { formalAssuranceProtocolConfig, runProtocolConfig } from "../protocol/config.ts";
 import {
     DURABLE_EXECUTION_RECOVERY_STATUSES,
     RECORD_MODES,
@@ -50,7 +54,13 @@ type IncompleteLifecycleInspection = {
  *
  * @param store - Open trace store containing durable task-execution evidence.
  * @param runId - Stable durable run owner to inspect.
- * @returns Lifecycle, quiescent continuation, artifact, usage, outcome, cut, and causal evidence.
+ * The view carries a `proof` envelope. Production runs are `runtime_only`; a non-runtime claim
+ * imported through the configured run-artifact carrier-metadata key surfaces only as
+ * `metadata.claimed_proof_backed`, and retained-world settlement citations (a delayed terminal
+ * publication) classify the envelope as the configured `extension` profile.
+ *
+ * @returns Lifecycle, quiescent continuation, artifact, usage, outcome, cut, causal, and proof
+ * evidence.
  * @throws {TypeError} If the run identity is malformed.
  * @throws {TraceStoreError} If retained evidence is missing, malformed, or inconsistent.
  *
@@ -135,6 +145,7 @@ function createIncompleteInspection(
             terminal_schema_ref: null,
         }),
         outcome: null,
+        proof: createRuntimeInspectionEnvelope([]),
         run_id: runId,
         settlements: Object.freeze([]),
         status,
@@ -196,6 +207,20 @@ function createTerminalInspection(
             outcome: execution.outcome,
             record_id: ledger.outcome_record_id,
         }),
+        proof: withPublicationControls(
+            createRuntimeInspectionEnvelope(
+                ledger.artifact_record_ids.map((recordId, index) => ({
+                    metadata: (execution.artifacts[index] as RunArtifact).metadata,
+                    record_id: recordId,
+                })),
+            ),
+            settlements.length === 0
+                ? []
+                : [
+                      formalAssuranceProtocolConfig.inspection.publicationControls
+                          .retainedWorldSettlement,
+                  ],
+        ),
         run_id: runId,
         settlements,
         status,

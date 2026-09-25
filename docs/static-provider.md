@@ -45,14 +45,16 @@ replay from the beginning; there is no mutable reset surface.
 
 `invoke` requires an `AbortSignal` and checks it before reading or consuming an exchange. A
 pre-aborted signal rejects with its original reason, leaving the cassette unchanged. The static
-provider performs no asynchronous transport work; future live adapters must continue observing the
-same signal while their operations are pending.
+provider performs no asynchronous transport work. The [live adapters](./live-providers.md) observe
+the same signal while their requests are pending.
 
 Definitions and invocation requests are closed descriptor-safe data. The implementation rejects
 accessors, symbols, sparse/custom arrays, unknown fields, invalid Unicode, non-canonical semantic
 values, unsafe token counts, and invalid cost values. Provider kinds, static capabilities, and
 error codes/messages are compatibility-locked under `providers` in
-[`protocol.config.json`](../protocol.config.json).
+[`protocol.config.json`](../protocol.config.json). Since 5.1.0 the kind vocabulary also lists the
+configured live kinds; see [live providers](./live-providers.md) for the Anthropic Messages and
+OpenAI-compatible adapters, the multi-turn message model, and provider conversations.
 
 The provider itself does not append events, validate task output, or create run outcomes. The
 offline executor owns task-schema validation, artifact ordinal assignment, and terminal

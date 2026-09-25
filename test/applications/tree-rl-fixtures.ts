@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 
 import {
     type ApplicationProtocolDefinition,
+    canonicalizeRecord,
     createEffectHandlerStack,
     createEffectIntent,
     createStaticProvider,
@@ -15,8 +16,11 @@ import {
     runReplaySession,
     type SQLiteTraceStore,
     type StaticProviderExchange,
+    type TreeRlForkSelectionContext,
+    type TreeRlForkSelector,
     type TreeRlProviderContext,
     type TreeRlRewardContext,
+    type TreeRlToolCall,
 } from "../../src/index.ts";
 
 /** Repository §5.3 experiment definition read by the Tree-RL tests. */
@@ -102,15 +106,31 @@ export const workflowProgram: ReplaySessionProgram = async (context: ReplaySessi
     return { answer: outputs[4] as never, note: outputs[3] as never };
 };
 
+/** Canonical rendering of a proposed tool call as a workflow stage output (the "renderer"). */
+export function renderToolCall(toolCall: TreeRlToolCall): { readonly text: string } {
+    return { text: `${toolCall.name}(${canonicalizeRecord(toolCall.arguments)})` };
+}
+
 /**
  * Builds the exact static cassette of the synthetic workflow from one step on: stages before
- * `from` answer with the `base` label, stages from `from` on with `label`.
+ * `from` answer with the `prefix` label, stages from `from` on with `label`; a `toolCall` replaces
+ * the first live stage's answer with its rendering.
  */
-export function cassette(label: string, from = 0, id = label): ModelProvider {
+export function cassette(
+    label: string,
+    from = 0,
+    id = label,
+    prefix = "base",
+    toolCall: TreeRlToolCall | null = null,
+): ModelProvider {
     const outputs: unknown[] = [];
     const exchanges: StaticProviderExchange[] = [];
     for (const [index, { dependsOn, stage }] of STAGES.entries()) {
-        const answer = response(index < from ? "base" : label, stage);
+        const base = response(index < from ? prefix : label, stage);
+        const answer =
+            index === from && toolCall !== null
+                ? { ...base, output: renderToolCall(toolCall) }
+                : base;
         if (index >= from) {
             exchanges.push({
                 request: stageRequest(stage, dependsOn === null ? null : outputs[dependsOn]),
@@ -144,10 +164,44 @@ export async function recordSource(
     return inspection.session_id;
 }
 
+/** Root session identity to its cassette label, in group order. */
+export type RootLabels = ReadonlyMap<string, string>;
+
+/**
+ * Records one root session per label (each answering every stage with its label) and returns the
+ * identities with their labels in order.
+ */
+export async function recordRoots(
+    store: SQLiteTraceStore,
+    labels: readonly string[] = ["base", "alt"],
+    commandPrefix = "root:tree-rl",
+): Promise<RootLabels> {
+    const roots = new Map<string, string>();
+    for (const label of labels) {
+        roots.set(
+            await recordSource(
+                store,
+                `${commandPrefix}:${label}`,
+                workflowProgram,
+                cassette(label),
+            ),
+            label,
+        );
+    }
+    return roots;
+}
+
 /** Provider factory returning each rollout's cassette, with a log of every context. */
 export function providerFactory(
-    build: (context: TreeRlProviderContext) => ModelProvider = ({ fork_point, seed }) =>
-        cassette(`s${seed}`, fork_point.step_index, `s${seed}:${fork_point.step_index}`),
+    labels: RootLabels,
+    build: (context: TreeRlProviderContext, root: string) => ModelProvider = (context, root) =>
+        cassette(
+            `s${context.seed}`,
+            context.fork_point.step_index,
+            `${root}:s${context.seed}:${context.fork_point.step_index}`,
+            root,
+            context.tool_call,
+        ),
 ): ((context: TreeRlProviderContext) => ModelProvider) & {
     readonly contexts: TreeRlProviderContext[];
 } {
@@ -155,51 +209,71 @@ export function providerFactory(
     return Object.assign(
         (context: TreeRlProviderContext) => {
             contexts.push(context);
-            return build(context);
+            return build(context, labels.get(context.root_session_id) as string);
         },
         { contexts },
     );
 }
 
-/** Reward table keyed by `<fork step>:<seed>`: exact values with an exact overall mean of 3. */
+/**
+ * Reward table keyed by `<root label>` for a root and `<root label>:<seed>` for a branch. Tree
+ * `base`: 1, 3, 5 (mean 3); tree `alt`: 3, 1, 2 (mean 2); roots 1 and 3 (mean 2).
+ */
 export const REWARDS: Readonly<Record<string, number>> = {
-    "0:3": 1,
-    "0:5": 3,
-    "1:3": 4,
-    "1:5": 8,
-    "2:3": 0,
-    "2:5": 2,
+    alt: 3,
+    "alt:3": 1,
+    "alt:5": 2,
+    base: 1,
+    "base:3": 3,
+    "base:5": 5,
 };
 
-/** Reward function reading a table by fork step and seed, with a log of every context. */
+/** Reward function reading a table by root label and seed, with a log of every context. */
 export function rewardOf(
+    labels: RootLabels,
     table: Readonly<Record<string, number | (() => number)>> = REWARDS,
 ): ((context: TreeRlRewardContext) => number) & { readonly contexts: TreeRlRewardContext[] } {
     const contexts: TreeRlRewardContext[] = [];
     return Object.assign(
         (context: TreeRlRewardContext) => {
             contexts.push(context);
-            const entry = table[`${context.fork_point.step_index}:${context.seed}`];
+            const root = labels.get(context.root.session_id) as string;
+            const entry = table[context.seed === null ? root : `${root}:${context.seed}`];
             return typeof entry === "function" ? entry() : (entry as number);
         },
         { contexts },
     );
 }
 
-/** Base Tree-RL options over the synthetic workflow and the repository protocol. */
+/** Selector proposing a fixed turn and tool call, with a log of every context. */
+export function fixedSelector(
+    turn = 2,
+    toolCall: TreeRlToolCall | null = null,
+): TreeRlForkSelector & { readonly contexts: TreeRlForkSelectionContext[] } {
+    const contexts: TreeRlForkSelectionContext[] = [];
+    return Object.assign(
+        (context: TreeRlForkSelectionContext) => {
+            contexts.push(context);
+            return { branch_turn: turn, reason: `fork at turn ${turn}`, tool_call: toolCall };
+        },
+        { contexts },
+    );
+}
+
+/** Base Tree-RL options: one prompt over the given roots and the repository protocol. */
 export function treeRlOptions(
     commandId: string,
-    sourceSessionId: string,
+    labels: RootLabels,
     overrides: Partial<RunTreeRlRolloutsOptions> = {},
 ): RunTreeRlRolloutsOptions {
     return {
         claimId: "tree-rl",
         commandId,
-        program: workflowProgram,
+        prompts: [{ id: "task", program: workflowProgram, roots: [...labels.keys()] }],
         protocol: treeRlProtocol(),
-        provider: providerFactory(),
-        reward: rewardOf(),
-        sourceSessionId,
+        provider: providerFactory(labels),
+        reward: rewardOf(labels),
+        selector: fixedSelector(),
         ...overrides,
     };
 }

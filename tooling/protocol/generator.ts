@@ -22,6 +22,7 @@ import {
     renderDelegationOpenedSchema,
 } from "./schemas/delegation-schemas.ts";
 import {
+    renderEffectCompensationSchema,
     renderEffectIntentSchema,
     renderEffectOutcomeSchema,
 } from "./schemas/effect-protocol-schemas.ts";
@@ -57,6 +58,7 @@ import {
 } from "./schemas/run-lifecycle-schemas.ts";
 import { renderRunOutcomeSchema } from "./schemas/run-protocol-schema.ts";
 import { renderRunUsageSchema } from "./schemas/run-usage-schema.ts";
+import { renderApplicationRuntimeSupervisionSchema } from "./schemas/runtime-supervision-schemas.ts";
 import {
     renderScopeChildMergedSchema,
     renderScopeChildRegisteredSchema,
@@ -262,6 +264,10 @@ export async function synchronizeProtocolArtifacts(
             relativePath: config.effects.artifacts.outcomeSchema,
         },
         {
+            content: renderJson(renderEffectCompensationSchema(config)),
+            relativePath: config.effects.compensation.artifacts.recordSchema,
+        },
+        {
             content: renderJson(renderRunArtifactSchema(config)),
             relativePath: config.runs.artifacts.artifactSchema,
         },
@@ -392,6 +398,10 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderApplicationSupervisionSchema(config)),
             relativePath: config.applications.artifacts.supervisionSchema,
+        },
+        {
+            content: renderJson(renderApplicationRuntimeSupervisionSchema(config)),
+            relativePath: config.applications.artifacts.runtimeSupervisionSchema,
         },
         {
             content: renderJson(renderApplicationCroCandidateSchema(config)),
@@ -1795,6 +1805,14 @@ function renderProtocolValues(
     const renderedWorldCarrierBackends = config.workspaces.carrierBackends.backends
         .map((backend) => JSON.stringify(backend))
         .join(", ");
+    const renderedBackendSelectionModes = Object.values(
+        config.workspaces.deviceLayers.selection.modes,
+    )
+        .map((mode) => JSON.stringify(mode))
+        .join(", ");
+    const renderedDeviceLayerAdapters = Object.values(config.workspaces.deviceLayers.adapters)
+        .map((adapter) => JSON.stringify(adapter))
+        .join(", ");
     const renderedGitHeadKinds = config.workspaces.gitCustody.headKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
@@ -2161,6 +2179,12 @@ export const WORLD_ENTRY_KINDS = [${renderedWorldEntryKinds}] as const;
 /** Configured selectable world-carrier backends. @public */
 export const WORLD_CARRIER_BACKENDS = [${renderedWorldCarrierBackends}] as const;
 
+/** Configured backend and device-layer adapter selection modes. @public */
+export const BACKEND_SELECTION_MODES = [${renderedBackendSelectionModes}] as const;
+
+/** Configured built-in device-layer adapter names. @public */
+export const DEVICE_LAYER_ADAPTERS = [${renderedDeviceLayerAdapters}] as const;
+
 /** Configured retained-world runner enforcement classifications. @public */
 export const RETAINED_WORLD_ENFORCEMENT_KINDS = [${renderedRetainedWorldEnforcementKinds}] as const;
 
@@ -2475,11 +2499,44 @@ export const SUPERVISION_LIMITS = Object.freeze({
 /** Configured replay evidence compatibility namespace. @public */
 export const REPLAY_COMPATIBILITY_VERSION = ${JSON.stringify(config.replay.compatibilityVersion)} as const;
 
+/** Configured provider kinds ordered static, program, then live kinds. @public */
+${renderConstStrings("PROVIDER_KINDS", config.providers.kinds)}
+
+/** Configured provider-neutral message roles ordered user then assistant. @public */
+${renderConstStrings("MODEL_MESSAGE_ROLES", config.providers.messages.roles)}
+
+/** Configured provider-neutral message content block types ordered text, tool use, tool result. @public */
+${renderConstStrings("MODEL_CONTENT_BLOCK_TYPES", config.providers.messages.contentTypes)}
+
+/** Configured tool-use loop statuses ordered completed then turn limit. @public */
+${renderConstStrings("TOOL_LOOP_STATUSES", config.providers.tools.loop.statuses)}
+
+/** Configured tool-call dispositions ordered materialized, denied, invalid, failed. @public */
+${renderConstStrings("TOOL_CALL_DISPOSITIONS", config.providers.tools.loop.dispositions)}
+
 /** Configured canonical replay record version. @public */
 export const REPLAY_RECORD_VERSION = ${config.replay.recordVersion} as const;
 
 /** Configured replay session modes ordered root, rewind, replay. @public */
 ${renderConstStrings("REPLAY_MODES", config.replay.modes)}
+
+/** Configured reversibility tiers whose materialized effects are compensated. @public */
+${renderConstStrings("EFFECT_COMPENSABLE_TIERS", config.effects.compensation.compensableTiers)}
+
+/** Configured compensation evidence kinds ordered replay step then supervised dispatch. @public */
+${renderConstStrings("EFFECT_COMPENSATION_EVIDENCE_KINDS", config.effects.compensation.evidenceKinds)}
+
+/** Configured compensation record phases ordered intent, attempt, outcome. @public */
+${renderConstStrings("EFFECT_COMPENSATION_PHASES", config.effects.compensation.phases)}
+
+/** Configured compensation outcomes ordered compensated then failed. @public */
+${renderConstStrings("EFFECT_COMPENSATION_OUTCOMES", config.effects.compensation.outcomes)}
+
+/** Configured derived compensation statuses ordered pending, uncertain, failed, compensated. @public */
+${renderConstStrings("EFFECT_COMPENSATION_STATUSES", config.effects.compensation.statuses)}
+
+/** Configured compensation triggers ordered scope discard, replay rewind, replay replay, command. @public */
+${renderConstStrings("EFFECT_COMPENSATION_TRIGGERS", config.effects.compensation.triggers)}
 
 /** Configured replay step kinds ordered provider then effect. @public */
 ${renderConstStrings("REPLAY_STEP_KINDS", config.replay.steps.kinds)}
@@ -2508,6 +2565,12 @@ ${renderConstStrings("REPLAY_CHECKPOINT_CONSTITUENT_KINDS", config.replay.checkp
 /** Configured checkpoint evidence statuses ordered verified, reconstructive, not applicable, unavailable. @public */
 ${renderConstStrings("REPLAY_CHECKPOINT_EVIDENCE_STATUSES", config.replay.checkpoint.evidenceStatuses)}
 
+/** Configured automatic checkpoint policies ordered none, provider step, effect step, every N steps. @public */
+${renderConstStrings("REPLAY_CHECKPOINT_POLICIES", config.replay.checkpoint.automatic.policies)}
+
+/** Configured branch source dispositions ordered compensate, retain. @public */
+${renderConstStrings("REPLAY_SOURCE_DISPOSITIONS", config.replay.branch.sourceDispositions)}
+
 /** Configured session terminal statuses ordered finished, failed, cancelled, rewound. @public */
 ${renderConstStrings("REPLAY_TERMINAL_STATUSES", config.replay.terminal.statuses)}
 
@@ -2519,6 +2582,9 @@ ${renderConstStrings("REPLAY_DIVERGENCE_STATUSES", config.replay.divergence.stat
 
 /** Configured divergence causes ordered root, propagated, unexplained. @public */
 ${renderConstStrings("REPLAY_DIVERGENCE_CAUSES", config.replay.divergence.causes)}
+
+/** Configured first-regression search strategies ordered bisect, linear. @public */
+${renderConstStrings("REPLAY_REGRESSION_STRATEGIES", config.replay.divergence.regressionStrategies)}
 
 /** Configured process checkpoint backends ordered cooperative then transparent. @public */
 ${renderConstStrings("REPLAY_PROCESS_BACKENDS", config.replay.processes.backends)}
@@ -2611,14 +2677,35 @@ ${renderConstStrings("APPLICATION_SUPERVISION_CONFLICT_KINDS", config.applicatio
 /** Configured worker lineage statuses ordered running, accepted, discarded, restarted, handed off. @public */
 ${renderConstStrings("APPLICATION_SUPERVISION_WORKER_STATUSES", config.applications.supervision.workerStatuses)}
 
-/** Configured counterfactual optimizer record phases ordered opened then candidate. @public */
+/** Configured Appendix E runtime supervisor decision actions ordered none, inject, handoff, discard. @public */
+${renderConstStrings("APPLICATION_RUNTIME_SUPERVISION_ACTIONS", config.applications.runtimeSupervision.actions)}
+
+/** Configured runtime supervision record phases ordered opened, tick, settled, attempt, turn, completed. @public */
+${renderConstStrings("APPLICATION_RUNTIME_SUPERVISION_PHASES", config.applications.runtimeSupervision.phases)}
+
+/** Configured runtime supervisor worker attempt causes ordered start, handoff, discard. @public */
+${renderConstStrings("APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_CAUSES", config.applications.runtimeSupervision.attemptCauses)}
+
+/** Configured runtime supervisor worker attempt statuses ordered running, completed, turn limit, failed, aborted. @public */
+${renderConstStrings("APPLICATION_RUNTIME_SUPERVISION_ATTEMPT_STATUSES", config.applications.runtimeSupervision.attemptStatuses)}
+
+/** Configured counterfactual optimizer record phases ordered opened, proposal, candidate, selection. @public */
 ${renderConstStrings("APPLICATION_CRO_PHASES", config.applications.cro.phases)}
 
-/** Configured counterfactual candidate statuses ordered proposed, evaluated, promoted, rejected. @public */
+/** Configured counterfactual candidate outcome statuses ordered archived, evaluated, promoted, rejected. @public */
 ${renderConstStrings("APPLICATION_CRO_CANDIDATE_STATUSES", config.applications.cro.candidateStatuses)}
 
 /** Configured counterfactual comparison baseline kinds. @public */
 ${renderConstStrings("APPLICATION_CRO_BASELINE_KINDS", config.applications.cro.baselineKinds)}
+
+/** Configured counterfactual candidate edit scopes ordered request then downstream. @public */
+${renderConstStrings("APPLICATION_CRO_EDIT_SCOPES", config.applications.cro.editScopes)}
+
+/** Configured counterfactual example splits ordered train then dev. @public */
+${renderConstStrings("APPLICATION_CRO_SPLITS", config.applications.cro.splits)}
+
+/** Configured counterfactual example result roles ordered fix, guard, dev, train. @public */
+${renderConstStrings("APPLICATION_CRO_EXAMPLE_ROLES", config.applications.cro.exampleRoles)}
 
 /** Configured trajectory compression record phases ordered opened, candidate, outcome. @public */
 ${renderConstStrings("APPLICATION_COMPRESSION_PHASES", config.applications.compression.phases)}
@@ -2638,8 +2725,27 @@ ${renderConstStrings("APPLICATION_COMPRESSION_VERDICTS", config.applications.com
 /** Configured trajectory compression comparison baseline kinds. @public */
 ${renderConstStrings("APPLICATION_COMPRESSION_BASELINE_KINDS", config.applications.compression.baselineKinds)}
 
-/** Configured Tree-RL record phases ordered opened, rollout, batch. @public */
+/** Configured trajectory compression fork-step policies ordered clamp then reject. @public */
+${renderConstStrings("APPLICATION_COMPRESSION_FORK_STEP_POLICIES", config.applications.compression.forkStepPolicies)}
+
+/** Configured Tree-RL record phases ordered opened, root, rollout, batch. @public */
 ${renderConstStrings("APPLICATION_TREE_RL_PHASES", config.applications.treeRl.phases)}
+
+/** Configured Tree-RL tree member kinds ordered root then branch. @public */
+${renderConstStrings("APPLICATION_TREE_RL_MEMBER_KINDS", config.applications.treeRl.memberKinds)}
+
+/** Configured Tree-RL per-action advantage segments ordered prefix, suffix, flat. @public */
+${renderConstStrings("APPLICATION_TREE_RL_ACTION_SEGMENTS", config.applications.treeRl.actionSegments)}
+
+/** Configured Tree-RL advantage normalizations ordered none then per-group standardization. @public */
+${renderConstStrings("APPLICATION_TREE_RL_NORMALIZATIONS", config.applications.treeRl.advantage.normalizations)}
+
+/** Configured Tree-RL batch and concurrency bounds. @public */
+export const APPLICATION_TREE_RL_LIMITS = Object.freeze({
+${Object.entries(config.applications.treeRl.limits)
+    .map(([name, bound]) => `    ${name}: ${bound},`)
+    .join("\n")}
+} as const);
 
 /** Configured Tree-RL rollout statuses ordered completed then failed. @public */
 ${renderConstStrings("APPLICATION_TREE_RL_ROLLOUT_STATUSES", config.applications.treeRl.rolloutStatuses)}

@@ -30,8 +30,19 @@ export const EFFECT_HANDLER_SELECTIONS = ["last_matching"] as const;
 /** Unhandled effect policies supported by this runtime. */
 export const EFFECT_UNHANDLED_POLICIES = ["throw"] as const;
 
-/** Provider kinds implemented by the current provider protocol. */
-export const PROVIDER_KINDS = ["static", "program"] as const;
+/** Live provider wire dialects implemented by the current provider protocol. */
+export const LIVE_PROVIDER_DIALECTS = ["anthropic_messages", "openai_chat_completions"] as const;
+
+/** Substrate operations a configured meta-agent tool can be bound to. */
+export const META_AGENT_TOOL_OPERATIONS = [
+    "observe",
+    "fork",
+    "discard",
+    "rewind",
+    "replay",
+    "read_trace",
+    "diff",
+] as const;
 
 /** Validated configured CLI command descriptor. */
 export type CliCommandConfig = {
@@ -100,6 +111,11 @@ export type CliProtocolConfig = {
         readonly runTrace: string;
         readonly runTraceRevision: string;
         readonly runVcsCore: string;
+        readonly replayDiff: string;
+        readonly replayLog: string;
+        readonly replayShow: string;
+        readonly scopeList: string;
+        readonly scopeShow: string;
         readonly storeBackup: string;
         readonly storeExport: string;
         readonly storeImport: string;
@@ -147,6 +163,8 @@ export type CliProtocolConfig = {
         readonly publicationExactRun: string;
         readonly publicationUnavailable: string;
         readonly quickstartUnavailable: string;
+        readonly replayDiffUsage: string;
+        readonly scopeUnavailable: string;
     };
     readonly options: {
         readonly adopt: string;
@@ -521,35 +539,188 @@ export type ProjectionProtocolConfig = {
     readonly taskRunLedgers: TaskRunLedgerProjectionConfig;
 };
 
-/** Validated provider-neutral and deterministic-provider configuration. */
+/** Validated provider capability declaration. */
+export type ProviderCapabilitiesConfig = {
+    /** Whether the provider exposes streaming responses. */
+    readonly streaming: boolean;
+    /** Whether the provider returns structured values. */
+    readonly structuredOutput: boolean;
+    /** Whether the provider can invoke tools. */
+    readonly tools: boolean;
+};
+
+/** Validated configuration of one live provider kind. */
+export type LiveProviderKindConfig = {
+    /** Prompt-cache breakpoint marker placed on the last cacheable prefix block, or null. */
+    readonly cacheControl: Readonly<Record<string, unknown>> | null;
+    /** Capabilities declared by every provider of this kind. */
+    readonly capabilities: ProviderCapabilitiesConfig;
+    /** Provider stop reasons that mark a complete response. */
+    readonly completeStopReasons: readonly string[];
+    /** Credential source and request header. */
+    readonly credential: {
+        /** Environment variable read when the caller supplies no credential. */
+        readonly environmentVariable: string;
+        /** Request header carrying the credential. */
+        readonly header: string;
+        /** Authorization scheme prefixed to the credential, or null for the bare credential. */
+        readonly scheme: string | null;
+    };
+    /** Implemented wire dialect. */
+    readonly dialect: (typeof LIVE_PROVIDER_DIALECTS)[number];
+    /** Default absolute request endpoint. */
+    readonly endpoint: string;
+    /** Static request headers. */
+    readonly headers: Readonly<Record<string, string>>;
+    /** Default maximum output tokens per request. */
+    readonly maxOutputTokens: number;
+    /** Request body field carrying the output-token limit. */
+    readonly maxTokensField: string;
+    /** Named structured-output format, or null when the dialect needs no name. */
+    readonly outputFormat: {
+        /** Schema name sent with the output format. */
+        readonly name: string;
+        /** Whether the provider must enforce the schema strictly. */
+        readonly strict: boolean;
+    } | null;
+    /** Tool-use wire settings of this kind. */
+    readonly toolUse: {
+        /** Request body field carrying the tool definitions. */
+        readonly requestField: string;
+        /** Provider stop reasons that mark a complete turn requesting tool calls. */
+        readonly stopReasons: readonly string[];
+    };
+};
+
+/** Validated configuration of one meta-agent catalog tool. */
+export type MetaAgentToolConfig = {
+    /** Description sent to the model with the tool definition. */
+    readonly description: string;
+    /** Exact effect kind of every intent this tool's calls become. */
+    readonly effectKind: string;
+    /** Canonical JSON Schema of the tool input. */
+    readonly inputSchema: Readonly<Record<string, unknown>>;
+    /** Tool name the model calls. */
+    readonly name: string;
+    /** Substrate operation the tool is bound to. */
+    readonly operation: (typeof META_AGENT_TOOL_OPERATIONS)[number];
+    /** Declared reversibility tier of the tool's intents. */
+    readonly reversibility: string;
+};
+
+/** Validated tool-use loop, turn encoding, and meta-agent catalog configuration. */
+export type ProviderToolsConfig = {
+    /** Multi-turn tool-use loop bounds and vocabularies. */
+    readonly loop: {
+        /** Turn bound used when a loop declares none. */
+        readonly defaultMaxTurns: number;
+        /** Tool-call dispositions ordered materialized, denied, invalid, failed. */
+        readonly dispositions: readonly string[];
+        /** Prefix of every runtime-derived tool-call effect identity. */
+        readonly effectIdPrefix: string;
+        /** Maximum UTF-8 bytes of one tool result sent back to the model. */
+        readonly maxResultBytes: number;
+        /** Largest turn bound a loop may declare. */
+        readonly maxTurns: number;
+        /** Loop result statuses ordered completed then turn limit. */
+        readonly statuses: readonly string[];
+        /** Marker appended to a truncated tool result. */
+        readonly truncationMarker: string;
+    };
+    /** Substrate-native meta-agent tool catalog. */
+    readonly metaAgent: {
+        /** Prefix of every substrate command identity derived from a tool-call effect identity. */
+        readonly commandIdPrefix: string;
+        /** Meta-agent tool result bounds. */
+        readonly limits: {
+            /** Maximum steps summarized by one observe call. */
+            readonly maxObservedSteps: number;
+            /** Maximum records returned by one read-trace call. */
+            readonly maxTraceRecords: number;
+        };
+        /** Catalog tools, one per operation. */
+        readonly tools: readonly MetaAgentToolConfig[];
+    };
+    /** Encoding of one tool-use turn as a replayable provider request. */
+    readonly turn: {
+        /** Instruction marking an encoded tool-use turn request. */
+        readonly instruction: string;
+        /** Output JSON Schema of an encoded tool-use turn response. */
+        readonly outputSchema: Readonly<Record<string, unknown>>;
+    };
+};
+
+/** Validated provider-neutral, deterministic, program, and live provider configuration. */
 export type ProviderProtocolConfig = {
+    /** Provider conversation identity prefixes. */
+    readonly conversation: {
+        /** Prefix of a provider conversation's declared cache identity. */
+        readonly cacheIdentityPrefix: string;
+        /** Prefix of a provider conversation checkpoint receipt. */
+        readonly receiptIdPrefix: string;
+    };
     /** Closed provider-kind vocabulary. */
     readonly kinds: readonly string[];
+    /** Live provider adapters, errors, limits, and redaction. */
+    readonly live: {
+        /** Stable live-provider error codes and messages. */
+        readonly errors: {
+            /** Missing-credential error code. */
+            readonly credentialCode: string;
+            /** Missing-credential error message. */
+            readonly credentialMessage: string;
+            /** Non-success HTTP status error code. */
+            readonly httpCode: string;
+            /** Non-success HTTP status error message. */
+            readonly httpMessage: string;
+            /** Malformed or incomplete response error code. */
+            readonly responseCode: string;
+            /** Malformed or incomplete response error message. */
+            readonly responseMessage: string;
+            /** Transport failure error code. */
+            readonly transportCode: string;
+            /** Transport failure error message. */
+            readonly transportMessage: string;
+        };
+        /** Configured live provider kinds by kind name. */
+        readonly kinds: Readonly<Record<string, LiveProviderKindConfig>>;
+        /** Live-provider bounds. */
+        readonly limits: {
+            /** Maximum UTF-8 bytes of provider error detail kept in an error message. */
+            readonly maxErrorDetailBytes: number;
+        };
+        /** Replacement text for a credential found in provider error detail. */
+        readonly redaction: string;
+    };
+    /** Provider-neutral message model. */
+    readonly messages: {
+        /** Content block types ordered text, tool use, then tool result. */
+        readonly contentTypes: readonly string[];
+        /** Field names of a rendered provider request message. */
+        readonly rendering: {
+            /** Field carrying the canonical input. */
+            readonly input: string;
+            /** Field carrying the behavioral instruction. */
+            readonly instruction: string;
+            /** Field carrying the output JSON Schema. */
+            readonly outputSchema: string;
+        };
+        /** Message roles ordered user then assistant. */
+        readonly roles: readonly string[];
+    };
     /** Caller-program provider contract used by program-serviced child runs. */
     readonly program: {
         /** Capabilities declared by every program provider. */
-        readonly capabilities: {
-            /** Whether the provider exposes streaming responses. */
-            readonly streaming: boolean;
-            /** Whether the provider returns structured values. */
-            readonly structuredOutput: boolean;
-            /** Whether the provider can invoke tools. */
-            readonly tools: boolean;
-        };
+        readonly capabilities: ProviderCapabilitiesConfig;
+        /** Capabilities declared by every program conversation provider. */
+        readonly conversationCapabilities: ProviderCapabilitiesConfig;
         /** Configured provider-kind discriminant. */
-        readonly kind: (typeof PROVIDER_KINDS)[number];
+        readonly kind: string;
     };
     /** Deterministic static-provider contract. */
     readonly static: {
         /** Capabilities declared by every static provider. */
-        readonly capabilities: {
-            /** Whether the provider exposes streaming responses. */
-            readonly streaming: boolean;
-            /** Whether the provider returns structured values. */
-            readonly structuredOutput: boolean;
-            /** Whether the provider can invoke tools. */
-            readonly tools: boolean;
-        };
+        readonly capabilities: ProviderCapabilitiesConfig;
         /** Stable typed-error codes and messages. */
         readonly errors: {
             /** Cassette-exhaustion error code. */
@@ -562,8 +733,10 @@ export type ProviderProtocolConfig = {
             readonly mismatchMessage: string;
         };
         /** Configured provider-kind discriminant. */
-        readonly kind: (typeof PROVIDER_KINDS)[number];
+        readonly kind: string;
     };
+    /** Tool-use loop, turn encoding, and meta-agent tool catalog. */
+    readonly tools: ProviderToolsConfig;
 };
 
 /** Validated durable replay session, coupled checkpoint, rewind, and replay configuration. */
@@ -583,6 +756,17 @@ export type ReplayProtocolConfig = {
         /** Repository-relative terminal record schema destination. */
         readonly terminalSchema: string;
     };
+    /** Disposition of the source session when a branch opens. */
+    readonly branch: {
+        /** Disposition a branch uses when it declares none. */
+        readonly defaultSourceDisposition: string;
+        /**
+         * Source dispositions ordered compensate (the branch abandons the source's suffix and
+         * compensates its successful compensable effects), then retain (the source stays retained
+         * as a live alternative and nothing is compensated).
+         */
+        readonly sourceDispositions: readonly string[];
+    };
     /** Provider cache evidence vocabulary. */
     readonly cache: {
         /** Cache statuses ordered hit, then not observed. */
@@ -592,6 +776,18 @@ export type ReplayProtocolConfig = {
     readonly changes: readonly string[];
     /** Coupled checkpoint vocabulary. */
     readonly checkpoint: {
+        /** Automatic step-boundary checkpoint policies. */
+        readonly automatic: {
+            /** Policy a session uses when it declares none. */
+            readonly defaultPolicy: {
+                /** Interval of the every-N-steps policy, otherwise null. */
+                readonly interval: number | null;
+                /** Configured policy kind. */
+                readonly kind: string;
+            };
+            /** Policy kinds ordered none, provider step, effect step, every N steps. */
+            readonly policies: readonly string[];
+        };
         /** Classifications ordered atomic, reconstructive, unavailable. */
         readonly classifications: readonly string[];
         /** Constituent kinds ordered trace cut, world, provider session, process, irreversible effects. */
@@ -618,6 +814,10 @@ export type ReplayProtocolConfig = {
     readonly divergence: {
         /** Divergence causes ordered root, propagated, unexplained. */
         readonly causes: readonly string[];
+        /** Maximum number of sessions one N-way diff compares. */
+        readonly maxSessions: number;
+        /** First-regression search strategies ordered bisect, linear. */
+        readonly regressionStrategies: readonly string[];
         /** Alignment statuses ordered identical, diverged, source only, replay only. */
         readonly statuses: readonly string[];
     };
@@ -1064,7 +1264,67 @@ export type TaskProtocolConfig = {
     readonly taskIdPrefix: string;
 };
 
-/** Validated effect intent, outcome, identity, and schema configuration. */
+/** Configured effect compensation protocol: records, vocabularies, identity, errors, and bounds. */
+export type EffectCompensationProtocolConfig = {
+    /** Generated language-neutral compensation schema destination. */
+    readonly artifacts: {
+        /** Repository-relative compensation record schema destination. */
+        readonly recordSchema: string;
+    };
+    /** Compatibility namespace retained on every compensation record. */
+    readonly compatibilityVersion: string;
+    /** Reversibility tiers whose materialized effects are compensated. */
+    readonly compensableTiers: readonly string[];
+    /** Stable codes and messages of compensation failures. */
+    readonly errors: {
+        /** Concurrent-advance code. */
+        readonly conflictCode: string;
+        /** Concurrent-advance message. */
+        readonly conflictMessage: string;
+        /** Invalid-evidence code. */
+        readonly evidenceCode: string;
+        /** Invalid-evidence message. */
+        readonly evidenceMessage: string;
+        /** Failed-compensation code. */
+        readonly failedCode: string;
+        /** Failed-compensation message. */
+        readonly failedMessage: string;
+        /** Missing-handler code. */
+        readonly handlerNotFoundCode: string;
+        /** Missing-handler message. */
+        readonly handlerNotFoundMessage: string;
+    };
+    /** Materialization evidence kinds: a replay effect step, then a supervised dispatch. */
+    readonly evidenceKinds: readonly string[];
+    /** Identity derivation settings. */
+    readonly identity: {
+        /** Append-intent derivation namespace. */
+        readonly appendIntentKind: string;
+        /** Prefix of compensation identities, which are also their owner paths. */
+        readonly compensationIdPrefix: string;
+    };
+    /** Operational bounds. */
+    readonly limits: {
+        /** Maximum compensable effects one trigger may compensate. */
+        readonly maxEffectsPerTrigger: number;
+    };
+    /** Outcome statuses: compensated, then failed. */
+    readonly outcomes: readonly string[];
+    /** Record phases: intent, attempt, then outcome. */
+    readonly phases: readonly string[];
+    /** Compensation record wire version. */
+    readonly recordVersion: number;
+    /** Absolute compensation record schema identifier. */
+    readonly schemaId: string;
+    /** Derived statuses: pending, uncertain, failed, then compensated. */
+    readonly statuses: readonly string[];
+    /** Trace schema reference of compensation records. */
+    readonly traceSchema: string;
+    /** Trigger kinds: scope discard, replay rewind, replay replay, then explicit command. */
+    readonly triggers: readonly string[];
+};
+
+/** Validated effect intent, outcome, identity, compensation, and schema configuration. */
 export type EffectProtocolConfig = {
     /** Generated language-neutral effect schema destinations. */
     readonly artifacts: {
@@ -1073,6 +1333,8 @@ export type EffectProtocolConfig = {
         /** Repository-relative effect outcome schema destination. */
         readonly outcomeSchema: string;
     };
+    /** Compensation of materialized compensable effects on discard, rewind, and replay. */
+    readonly compensation: EffectCompensationProtocolConfig;
     /** Hash algorithm used to bind an outcome to its complete intent. */
     readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
     /** Prefix applied to canonical intent digests. */
@@ -1110,6 +1372,73 @@ export type EffectProtocolConfig = {
 
 /** Validated executable reference-machine and proof-envelope configuration. */
 export type FormalAssuranceProtocolConfig = {
+    /** Proof envelopes attached to run, replay, and delegated child-run inspections. */
+    readonly inspection: {
+        /** Profile emitted for publication controls outside the base theorem surface. */
+        readonly extensionProfile: string;
+        /** Carrier-metadata import of non-runtime claims, exposed only as claimed. */
+        readonly importedClaim: {
+            /** Run-artifact metadata key carrying one imported envelope claim. */
+            readonly metadataKey: string;
+            /** Stable reasons for refusing to surface an imported claim. */
+            readonly rejections: {
+                /** More than one retained artifact carries a claim. */
+                readonly ambiguous: string;
+                /** The claim does not cite a configured proof-evidence identity. */
+                readonly evidenceRef: string;
+                /** The claim is not an exact configured claim object. */
+                readonly malformed: string;
+                /** The claim does not cite the configured reference validator. */
+                readonly provenance: string;
+                /** The claim names only runtime-only strength or profile. */
+                readonly runtime: string;
+            };
+        };
+        /** Optional lowering of static replay sessions into Core-A reference records. */
+        readonly lowering: {
+            /** Replay effect dispositions admitted by the lowering. */
+            readonly eligibleDispositions: readonly string[];
+            /** Replay session modes admitted by the lowering. */
+            readonly eligibleModes: readonly string[];
+            /** Replay step kinds admitted by the lowering. */
+            readonly eligibleStepKinds: readonly string[];
+            /** Replay terminal statuses admitted by the lowering. */
+            readonly eligibleTerminalStatuses: readonly string[];
+            /** Stable reasons reported when a session is not eligible. */
+            readonly ineligibility: {
+                /** A step has an effect disposition outside the admitted set. */
+                readonly disposition: string;
+                /** The session mode is outside the admitted set. */
+                readonly mode: string;
+                /** A step kind is outside the admitted set. */
+                readonly stepKind: string;
+                /** The session is not terminal with an admitted status. */
+                readonly terminal: string;
+            };
+            /** Prefix of trace-local identities derived by the lowering. */
+            readonly localRefPrefix: string;
+            /** Stable lowering version reported in envelope metadata. */
+            readonly schemaVersion: string;
+        };
+        /** Publication-control vocabulary and its runtime evidence sources. */
+        readonly publicationControls: {
+            /** Control reported for a delegated child run with retained handoffs. */
+            readonly delegationHandoff: string;
+            /** Closed publication-control vocabulary in reporting order. */
+            readonly kinds: readonly string[];
+            /** Control reported for each branch replay mode. */
+            readonly replayModes: Readonly<Record<string, string>>;
+            /** Control reported for a run with retained-world settlement citations. */
+            readonly retainedWorldSettlement: string;
+        };
+        /** Stable envelope reasons for runtime-only and publication-control envelopes. */
+        readonly reasons: {
+            /** Default production runtime evidence reason. */
+            readonly productionRuntime: string;
+            /** Publication-control extension reason. */
+            readonly publicationControl: string;
+        };
+    };
     /** Conservative proof-envelope claim vocabulary and content identities. */
     readonly proofEnvelope: {
         /** Hash algorithm used for proof evidence and trace identities. */
@@ -1788,6 +2117,13 @@ export type WorkspaceProtocolConfig = {
             /** Private overlay work directory inside one custody root. */
             readonly workDirectory: string;
         };
+        /** Backend selection policy: strict refusal or configured fallback ordering. */
+        readonly selection: {
+            /** Selection mode used when carrier options omit one. */
+            readonly defaultMode: string;
+            /** Degradation order tried from the requested backend's position in fallback mode. */
+            readonly fallbackOrder: readonly string[];
+        };
         /** Workspace protocol version that introduced configured carrier backends. */
         readonly version: number;
     };
@@ -2034,6 +2370,8 @@ export type WorkspaceProtocolConfig = {
     readonly defaultAdoptionMode: string;
     /** Whether initialization creates a Git repository when none contains the workspace. */
     readonly defaultInitializeGit: boolean;
+    /** Layered device-layer adapter, checkpoint, depth, and compaction policy. */
+    readonly deviceLayers: DeviceLayersConfig;
     /** Secure digest algorithm for worktree baseline identity. */
     readonly digestAlgorithm: (typeof SECURE_HASH_ALGORITHMS)[number];
     /** Stable public workspace error contract. */
@@ -2701,6 +3039,8 @@ export type ApplicationsProtocolConfig = {
         readonly evaluationSchema: string;
         /** Repository-relative manifest record schema destination. */
         readonly manifestSchema: string;
+        /** Repository-relative runtime supervision record schema destination. */
+        readonly runtimeSupervisionSchema: string;
         /** Repository-relative supervision record schema destination. */
         readonly supervisionSchema: string;
         /** Repository-relative Tree-RL rollout record schema destination. */
@@ -2751,6 +3091,14 @@ export type ApplicationsProtocolConfig = {
             /** Task output field carrying the canonical proposal or verdict text. */
             readonly output: string;
         };
+        /**
+         * Fork-step policies ordered clamp, then reject: `clamp` moves a proposed step index outside
+         * `[0, n - 1]` of an `n`-step source to the nearest bound and retains the clamp as evidence;
+         * `reject` refuses the proposal and rejects the candidate.
+         */
+        readonly forkStepPolicies: readonly string[];
+        /** Selected fork-step policy applied to every out-of-range proposal; one of the policies. */
+        readonly forkStepPolicy: string;
         /** Compression outcomes ordered pruned, no prune, restored. */
         readonly outcomes: readonly string[];
         /** Compression record phases ordered opened, candidate, outcome. */
@@ -2776,44 +3124,128 @@ export type ApplicationsProtocolConfig = {
         /** Verifier verdicts ordered accepted, then rejected. */
         readonly verdicts: readonly string[];
     };
-    /** Counterfactual replay optimizer vocabulary appended by applications protocol v2. */
+    /**
+     * Counterfactual replay optimizer vocabulary appended by applications protocol v2 and replaced
+     * by applications protocol v9 to follow paper Appendix F.1 Algorithm 1.
+     */
     readonly cro: {
         /** Manifest artifact roles cited by the optimizer. */
         readonly artifactRoles: {
-            /** Role of the recorded baseline workflow session. */
+            /** Role of the opened record retaining every per-example baseline session. */
             readonly baseline: string;
-            /** Role of one candidate's affected-suffix branch session. */
-            readonly branch: string;
-            /** Role of one candidate's terminal evaluation record. */
+            /** Role of one candidate's outcome record, which cites its example sessions. */
             readonly candidate: string;
-            /** Role of one candidate's whole-workflow comparison session. */
-            readonly fullReplay: string;
-            /** Role of the terminal promotion record. */
-            readonly promotion: string;
+            /** Role of one proposer iteration record, which cites its proposer sessions. */
+            readonly proposal: string;
+            /** Role of the terminal selection record. */
+            readonly selection: string;
         };
-        /** Comparison baseline kinds; the first re-runs the whole workflow per candidate. */
+        /** Comparison baseline kinds; the first re-runs the whole workflow per branch. */
         readonly baselineKinds: readonly string[];
-        /** Protocol budget keys the optimizer consults. */
+        /** Integer protocol budget keys the optimizer consults. */
         readonly budgetKeys: {
-            /** Budget key bounding the declared candidate count. */
+            /** Budget key bounding the total candidate count over every iteration. */
             readonly candidates: string;
-            /** Budget key naming the minimum evaluation score a promoted candidate reaches. */
-            readonly minPromotionScore: string;
+            /** Budget key naming the proposer iteration count N. */
+            readonly iterations: string;
+            /** Budget key bounding proposer attempts per iteration, including repairs. */
+            readonly proposalAttempts: string;
+            /** Budget key bounding the edits k one proposal may carry. */
+            readonly proposals: string;
             /** Budget key bounding live provider calls across every session the run opens. */
             readonly providerCalls: string;
+            /** Budget key naming the verbalized-sampling floor of enumerated mechanisms. */
+            readonly reflectionMechanisms: string;
         };
-        /** Candidate statuses ordered proposed, evaluated, promoted, rejected. */
+        /** Candidate outcome statuses ordered archived, evaluated, promoted, rejected. */
         readonly candidateStatuses: readonly string[];
-        /** Candidate record phases ordered opened, then candidate. */
+        /**
+         * Declared candidate edit scopes ordered request, then downstream: a request edit changes the
+         * edited step's own request and replays from the boundary before the edited step; a
+         * downstream edit changes only how later steps consume it and replays from the boundary
+         * before the first dependent.
+         */
+        readonly editScopes: readonly string[];
+        /** Example result roles ordered fix, guard, dev, train. */
+        readonly exampleRoles: readonly string[];
+        /** Record phases ordered opened, proposal, candidate, selection. */
         readonly phases: readonly string[];
+        /** Provider-backed proposer tool loop. */
+        readonly proposer: {
+            /** Prefix of every proposer tool's effect kind; the tool name completes it. */
+            readonly effectKindPrefix: string;
+            /** Proposer bounds. */
+            readonly limits: {
+                /** Default tool-loop turn bound. */
+                readonly defaultMaxTurns: number;
+                /** Maximum characters of one grep match excerpt. */
+                readonly maxExcerptLength: number;
+                /** Maximum grep matches returned per call. */
+                readonly maxGrepMatches: number;
+                /** Maximum grep pattern length. */
+                readonly maxPatternLength: number;
+                /** Maximum step summaries one trace read returns. */
+                readonly maxTraceSteps: number;
+            };
+            /** Tool names of the proposer operations. */
+            readonly operations: {
+                /** Regex search across one candidate's example traces. */
+                readonly grepTraces: string;
+                /** Read the candidate pool. */
+                readonly inspectCandidates: string;
+                /** Propose one edit with its fix and guard sets. */
+                readonly proposeCandidate: string;
+                /** Read one candidate's trace on one example. */
+                readonly readTrace: string;
+            };
+            /** Program identity of every proposer tool-loop session. */
+            readonly programId: string;
+        };
+        /** Reflection contract field names and the near-duplicate explanation phrase. */
+        readonly reflection: {
+            /** Case-folded phrase a near-duplicate explanation must contain. */
+            readonly differsByPhrase: string;
+            /** Reflection and edit field names the contract reads. */
+            readonly fields: {
+                /** Reflection field listing findings that cite prior candidates. */
+                readonly findings: string;
+                /** Reflection field enumerating considered mechanisms with priors. */
+                readonly hypotheses: string;
+                /** Hypothesis field naming a mechanism. */
+                readonly mechanism: string;
+                /** Reflection field naming the parent, or null for the baseline. */
+                readonly parent: string;
+                /** Hypothesis field carrying a prior. */
+                readonly prior: string;
+            };
+        };
+        /** Example splits ordered train, then dev. */
+        readonly splits: readonly string[];
         /** Surface roles the optimizer protocol must declare. */
         readonly surfaceRoles: {
             /** Role of the handoff manifest schema. */
             readonly handoff: string;
             /** Role of the proposer prompt and tools. */
             readonly proposer: string;
-            /** Role of the reflection scratchpad schema. */
+            /** Role of the reflection schema. */
             readonly reflection: string;
+        };
+        /** Fractional protocol threshold keys the optimizer consults. */
+        readonly thresholdKeys: {
+            /** Prior ceiling at least one selected edit must fall strictly below. */
+            readonly audaciousPrior: string;
+            /** Jaccard token similarity at which a mechanism is a near-duplicate. */
+            readonly duplicateSimilarity: string;
+            /** Fraction of fix examples that must score strictly above the parent. */
+            readonly improveThreshold: string;
+            /** Largest score drop a guard example may show against the parent. */
+            readonly maxScoreDrop: string;
+            /** Minimum dev score a promoted candidate reaches. */
+            readonly minPromotionScore: string;
+            /** Minimum mean score lift over the parent on the fix and guard union. */
+            readonly minScoreLift: string;
+            /** Dev score distance from the current promoted candidate within which to promote. */
+            readonly promoteDevEpsilon: string;
         };
     };
     /** Stable error codes and messages. */
@@ -2908,6 +3340,10 @@ export type ApplicationsProtocolConfig = {
         readonly maxSeeds: number;
         /** Maximum surfaces one protocol declares. */
         readonly maxSurfaces: number;
+        /** Maximum runtime supervisor tick interval in milliseconds. */
+        readonly maxTickIntervalMilliseconds: number;
+        /** Maximum runtime supervisor ticks per run. */
+        readonly maxTicks: number;
         /** Maximum canonical bytes of one tool surface. */
         readonly maxToolBytes: number;
         /** Maximum supervised workers per run. */
@@ -2921,6 +3357,65 @@ export type ApplicationsProtocolConfig = {
     readonly protocolSurfaces: readonly string[];
     /** Application record version. */
     readonly recordVersion: number;
+    /**
+     * Concurrent runtime supervisor vocabulary appended by applications protocol v10: paper
+     * Section 5.1 and Appendix E per-tick batched decisions over concurrently running workers.
+     */
+    readonly runtimeSupervision: {
+        /** Appendix E decision actions ordered none, inject, handoff, discard. */
+        readonly actions: readonly string[];
+        /** Manifest artifact roles cited by the runtime supervisor. */
+        readonly artifactRoles: {
+            /** Role of the retained settlement record. */
+            readonly settlement: string;
+            /** Role of a world discard receipt retained at settlement. */
+            readonly worldDiscard: string;
+            /** Role of the final world fork receipt of one worker. */
+            readonly worldFork: string;
+            /** Role of one worker stream head. */
+            readonly workerStream: string;
+        };
+        /** Worker attempt causes ordered start, handoff, discard. */
+        readonly attemptCauses: readonly string[];
+        /** Worker attempt statuses ordered running, completed, turn limit, failed, aborted. */
+        readonly attemptStatuses: readonly string[];
+        /** Protocol budget keys the runtime supervisor consults. */
+        readonly budgetKeys: {
+            /** Budget key bounding the feature characters shown per agent. */
+            readonly featureCharacters: string;
+            /** Budget key bounding guidance words per decision. */
+            readonly guidanceWords: string;
+            /** Budget key bounding worker model turns plus policy consultations. */
+            readonly providerCalls: string;
+            /** Budget key bounding reason words per decision. */
+            readonly reasonWords: string;
+            /** Budget key naming the tick cadence in milliseconds. */
+            readonly tickInterval: string;
+            /** Budget key bounding ticks per run. */
+            readonly ticks: string;
+            /** Budget key bounding the canonical bytes of one tool-call summary. */
+            readonly toolCallSummaryBytes: string;
+            /** Budget key naming the trailing tool-call summaries shown per agent. */
+            readonly trailingToolCalls: string;
+            /** Budget key bounding model turns per worker attempt. */
+            readonly turnsPerWorker: string;
+        };
+        /** Separator joining several pending guidance texts delivered at one turn boundary. */
+        readonly guidanceSeparator: string;
+        /** Record phases ordered opened, tick, settled, attempt, turn, completed. */
+        readonly phases: readonly string[];
+        /** Surface roles the runtime supervisor protocol must declare. */
+        readonly surfaceRoles: {
+            /** Role of the system prompt and decision schema. */
+            readonly action: string;
+            /** Role of the snapshot prompt and schema. */
+            readonly observation: string;
+        };
+        /** Tool input keys searched, in order, for the primary target of a tool-call summary. */
+        readonly targetInputKeys: readonly string[];
+        /** Marker appended to truncated snapshot text. */
+        readonly truncationMarker: string;
+    };
     /** Stable JSON Schema identifiers. */
     readonly schemas: {
         /** Trajectory compression record schema identifier. */
@@ -2931,6 +3426,8 @@ export type ApplicationsProtocolConfig = {
         readonly evaluationId: string;
         /** Manifest record schema identifier. */
         readonly manifestId: string;
+        /** Runtime supervision record schema identifier. */
+        readonly runtimeSupervisionId: string;
         /** Supervision record schema identifier. */
         readonly supervisionId: string;
         /** Tree-RL rollout record schema identifier. */
@@ -2989,43 +3486,83 @@ export type ApplicationsProtocolConfig = {
         readonly croCandidate: string;
         /** Manifest record schema reference. */
         readonly manifest: string;
+        /** Runtime supervision record schema reference. */
+        readonly runtimeSupervision: string;
         /** Supervision record schema reference. */
         readonly supervision: string;
         /** Tree-RL rollout record schema reference. */
         readonly treeRlRollout: string;
     };
-    /** Tree-RL adapter vocabulary appended by applications protocol v4. */
+    /**
+     * Tree-RL adapter vocabulary appended by applications protocol v4 and aligned with Algorithm 2
+     * of the paper by applications protocol v8.
+     */
     readonly treeRl: {
+        /** Per-action advantage segments ordered prefix, suffix, then flat (baseline). */
+        readonly actionSegments: readonly string[];
+        /** Algorithm 2 advantage normalization. */
+        readonly advantage: {
+            /** Positive constant added to the group standard deviation before dividing. */
+            readonly epsilon: number;
+            /** Default normalization, one of `normalizations`. */
+            readonly normalization: string;
+            /** Normalizations ordered none (raw centered) then per-group standardization. */
+            readonly normalizations: readonly string[];
+            /** Standard deviation estimator, one of `stdEstimators`. */
+            readonly stdEstimator: string;
+            /** Standard deviation estimators ordered population then sample. */
+            readonly stdEstimators: readonly string[];
+        };
         /** Manifest artifact roles cited by the Tree-RL adapter. */
         readonly artifactRoles: {
-            /** Role of the single-rollout baseline batch. */
+            /** Role of the flat GRPO baseline batch. */
             readonly baselineBatch: string;
             /** Role of the training batch. */
             readonly batch: string;
+            /** Role of one graded root record. */
+            readonly root: string;
             /** Role of one rollout record. */
             readonly rollout: string;
-            /** Role of the recorded source session. */
-            readonly source: string;
         };
-        /** Comparison baseline kinds; the first uses one branch per fork point. */
+        /** Comparison baseline kinds; the first is flat GRPO over the roots only. */
         readonly baselineKinds: readonly string[];
-        /** Training batch formats; the first is canonical JSON lines. */
+        /** Training batch formats; the first is the canonical per-action JSON lines format. */
         readonly batchFormats: readonly string[];
         /** Protocol budget keys the Tree-RL adapter consults. */
         readonly budgetKeys: {
-            /** Budget key naming the branch count per fork point. */
+            /** Budget key naming the branch count K per root. */
             readonly branches: string;
-            /** Budget key bounding the selected fork points. */
-            readonly forkPoints: string;
-            /** Budget key naming the minimum transitive dependent count of a fork point. */
-            readonly minDependents: string;
+            /** Budget key naming the root count G per prompt. */
+            readonly groupSize: string;
             /** Budget key bounding live provider calls across every rollout session. */
             readonly providerCalls: string;
         };
-        /** Tree-RL record phases ordered opened, rollout, batch. */
+        /** Admissible fork-turn range `[first, T - trailing]` over a root of `T` turns. */
+        readonly forkTurn: {
+            /** First admissible one-based fork turn. */
+            readonly first: number;
+            /** Turns kept after the last admissible fork turn. */
+            readonly trailing: number;
+        };
+        /** Tree-RL batch and concurrency bounds. */
+        readonly limits: {
+            /** Concurrent root gradings and branch rollouts when the caller names none. */
+            readonly defaultConcurrency: number;
+            /** Largest admissible concurrency. */
+            readonly maxConcurrency: number;
+            /** Largest admissible root count G per prompt. */
+            readonly maxGroupSize: number;
+            /** Largest admissible prompt count B per batch. */
+            readonly maxPrompts: number;
+        };
+        /** Tree member kinds ordered root then branch. */
+        readonly memberKinds: readonly string[];
+        /** Tree-RL record phases ordered opened, root, rollout, batch. */
         readonly phases: readonly string[];
-        /** Retained failure reasons the Tree-RL adapter writes. */
+        /** Retained reasons the Tree-RL adapter writes. */
         readonly reasons: {
+            /** Reason the dependency fork selector gives for its proposal. */
+            readonly dependencySelection: string;
             /** Reason retained when a rollout diverged before its fork point or without explanation. */
             readonly diverged: string;
             /** Reason retained when a rollout session was left non-terminal by a dead writer. */
@@ -3037,11 +3574,15 @@ export type ApplicationsProtocolConfig = {
         };
         /** Rollout statuses ordered completed, then failed. */
         readonly rolloutStatuses: readonly string[];
-        /** Surface roles the Tree-RL protocol must declare. */
+        /** Surface roles of a Tree-RL protocol. */
         readonly surfaceRoles: {
-            /** Role of the training batch line schema. */
+            /** Role of the training batch line schema (required). */
             readonly batch: string;
-            /** Role of the rollout policy prompt. */
+            /** Role of the meta-agent fork proposal schema (meta-agent selector only). */
+            readonly forkProposal: string;
+            /** Role of the meta-agent fork selection prompt (meta-agent selector only). */
+            readonly forkSelector: string;
+            /** Role of the rollout policy prompt (required). */
             readonly rollout: string;
         };
     };
@@ -3350,4 +3891,147 @@ export type ProtocolConfig = {
     readonly supervision: SupervisionProtocolConfig;
     readonly tasks: TaskProtocolConfig;
     readonly workspaces: WorkspaceProtocolConfig;
+};
+
+/** Validated workspace protocol v27 device-layer configuration. */
+export type DeviceLayersConfig = {
+    /** Built-in adapter names by role. */
+    readonly adapters: {
+        readonly clone: string;
+        readonly container: string;
+        readonly copy: string;
+        readonly overlay: string;
+    };
+    /** Checkpoint name carried by the seeded base layer of every new world. */
+    readonly baseCheckpointName: string;
+    /** Regular expression every checkpoint name must match. */
+    readonly checkpointNamePattern: string;
+    /** Maximum captured bytes from one adapter command. */
+    readonly commandMaxBytes: number;
+    /** Maximum milliseconds for one adapter command. */
+    readonly commandTimeoutMs: number;
+    /** Conformance-kit workload: checkpoints frozen under a small depth bound. */
+    readonly conformance: {
+        /** Checkpoints the depth case freezes; enough to force at least one compaction. */
+        readonly checkpoints: number;
+        /** Depth bound applied by the depth case. */
+        readonly maxDepth: number;
+        /** Compaction retention applied by the depth case. */
+        readonly retainNewest: number;
+    };
+    /** Reference container adapter driven through a container CLI. */
+    readonly container: {
+        /** Container CLI argument templates by operation. */
+        readonly arguments: {
+            readonly commit: readonly string[];
+            readonly copyIn: readonly string[];
+            readonly create: readonly string[];
+            readonly exec: readonly string[];
+            readonly export: readonly string[];
+            readonly import: readonly string[];
+            readonly inspectImage: readonly string[];
+            readonly probe: readonly string[];
+            readonly removeContainer: readonly string[];
+            readonly removeImage: readonly string[];
+            readonly run: readonly string[];
+        };
+        /** In-container command templates appended to the exec arguments. */
+        readonly commands: {
+            readonly list: readonly string[];
+            readonly prepare: readonly string[];
+            readonly read: readonly string[];
+            readonly remove: readonly string[];
+            readonly write: readonly string[];
+        };
+        /** Container CLI executable resolved through `PATH`. */
+        readonly executable: string;
+        /** Local base image; the adapter never pulls. */
+        readonly image: string;
+        /** Lowercase image repository receiving frozen layers. */
+        readonly imageRepository: string;
+        /** Container label key naming the owning device. */
+        readonly labelKey: string;
+        /** Pattern parsing one list-command output line into digest and relative path. */
+        readonly listLinePattern: string;
+        /** Maximum image layers any frozen image may carry. */
+        readonly maxImageLayers: number;
+        /** Template tokens substituted into arguments and commands. */
+        readonly tokens: {
+            readonly container: string;
+            readonly image: string;
+            readonly label: string;
+            readonly path: string;
+            readonly source: string;
+            readonly world: string;
+        };
+        /** Absolute world directory inside the container. */
+        readonly worldPath: string;
+    };
+    /** Frozen-layer depth bound and compaction retention. */
+    readonly depth: {
+        /** Maximum frozen layers, the base included, in one world's stack. */
+        readonly maxDepth: number;
+        /** Newest frozen layers kept separate when compaction flattens the rest. */
+        readonly retainNewest: number;
+    };
+    /** Prefix of the private per-device directory created under the caller root. */
+    readonly deviceDirectoryPrefix: string;
+    /** Private directory names inside one device root. */
+    readonly directories: {
+        readonly compaction: string;
+        readonly layers: string;
+        readonly upper: string;
+        readonly work: string;
+        readonly world: string;
+    };
+    /** Stable public device-layer error contract. */
+    readonly errors: {
+        readonly checkpointInvalidCode: string;
+        readonly checkpointInvalidMessage: string;
+        readonly checkpointRetiredCode: string;
+        readonly checkpointRetiredMessage: string;
+        readonly checkpointUnknownCode: string;
+        readonly checkpointUnknownMessage: string;
+        readonly closedCode: string;
+        readonly closedMessage: string;
+        readonly operationCode: string;
+        readonly operationMessage: string;
+        readonly pathCode: string;
+        readonly pathMessage: string;
+        readonly unavailableCode: string;
+        readonly unavailableMessage: string;
+    };
+    /** Fixed decimal width of engine-assigned layer identifiers. */
+    readonly layerNameWidth: number;
+    /** Maximum UTF-8 bytes of one world-relative path. */
+    readonly maxPathBytes: number;
+    /** Stacked overlay settings layered on the carrier overlay command policy. */
+    readonly overlay: {
+        /** Separator between lower directories, topmost first. */
+        readonly lowerSeparator: string;
+        /** Maximum rendered mount-option bytes; bounds the mountable stack. */
+        readonly maxMountOptionBytes: number;
+        /** Read-only mount option template used to flatten frozen layers. */
+        readonly readOnlyMountOptions: string;
+    };
+    /** Availability reasons owned by the device layer. */
+    readonly reasons: {
+        readonly available: string;
+        readonly containerDaemonUnavailable: string;
+        readonly containerExecutableUnavailable: string;
+        readonly containerImageUnavailable: string;
+    };
+    /** Adapter selection policy. */
+    readonly selection: {
+        /** Adapter requested when options omit one. */
+        readonly defaultAdapter: string;
+        /** Selection mode used when options omit one. */
+        readonly defaultMode: string;
+        /** Degradation order tried from the requested adapter's position in fallback mode. */
+        readonly fallbackOrder: readonly string[];
+        /** Selection mode names by role. */
+        readonly modes: { readonly fallback: string; readonly strict: string };
+    };
+    /** Workspace protocol version that introduced device layers. */
+    readonly version: number;
 };

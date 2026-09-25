@@ -10,11 +10,11 @@
             "revision": "1"
         },
         "kind": "trajectory_compression",
-        "protocolVersion": "appendix-d.v1",
+        "protocolVersion": "appendix-d.v2",
         "seeds": [7, 19, 23],
         "surfaces": [
             {
-                "content": "You compress a recorded agent trajectory in hindsight. Inspect the source steps, their requests and outputs, and the retained checkpoints. Propose at most one fork point: the step boundary after which the remaining steps could be replaced by a shorter rerun that reaches the same verified result, and a hint telling the rerun how to get there, citing the source steps it relies on. Return the proposal as JSON matching the compression schema; return a null fork point when no shorter rerun is plausible. Never propose a fork point inside a prefix you cannot restore.",
+                "content": "You compress a recorded agent trajectory in hindsight. Inspect the source steps, their requests and outputs, and the retained checkpoints. Propose at most one fork point: the step boundary after which the remaining steps could be replaced by a shorter rerun that reaches the same verified result, and a hint telling the rerun how to get there, citing the source steps it relies on. Step 0 restarts the whole trajectory from its initial prefix with the hint applied. Return the proposal as JSON matching the compression schema; return a null fork point, or omit the fork step, when no shorter rerun is plausible. Never propose a fork point inside a prefix you cannot restore.",
                 "id": "compressor.propose",
                 "kind": "prompt",
                 "role": "compressor"
@@ -33,17 +33,23 @@
                                     "additionalProperties": false,
                                     "properties": {
                                         "prefix_id": {
-                                            "type": "string"
+                                            "oneOf": [
+                                                {
+                                                    "type": "null"
+                                                },
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ]
                                         },
                                         "session_id": {
                                             "type": "string"
                                         },
                                         "step_index": {
-                                            "minimum": 1,
                                             "type": "integer"
                                         }
                                     },
-                                    "required": ["prefix_id", "session_id", "step_index"],
+                                    "required": ["prefix_id", "session_id"],
                                     "type": "object"
                                 }
                             ]
@@ -75,10 +81,9 @@
                             ]
                         }
                     },
-                    "required": ["fork_point", "hint"],
                     "type": "object"
                 },
-                "id": "compression.fork-hint.v1",
+                "id": "compression.fork-hint.v2",
                 "kind": "schema",
                 "role": "compression"
             },
@@ -92,36 +97,34 @@
     },
     "counterfactual": {
         "budgets": {
+            "iterations": 2,
             "maxCandidates": 4,
-            "maxProviderCalls": 40,
-            "minPromotionScore": 1
+            "maxProposalAttempts": 2,
+            "maxProviderCalls": 128,
+            "proposalsPerIteration": 2,
+            "reflectionMinMechanisms": 12
         },
         "dataset": {
             "id": "draft-review-workflow-fixture",
-            "items": ["plan-draft-review"],
-            "revision": "1"
+            "items": ["train-1", "train-2", "train-3", "train-4", "dev-1", "dev-2"],
+            "revision": "2"
         },
         "kind": "counterfactual_optimization",
-        "protocolVersion": "appendix-f.v1",
+        "protocolVersion": "appendix-f.v2",
         "seeds": [7, 19],
         "surfaces": [
             {
-                "content": "You optimize a recorded workflow. Inspect the pool of retained candidates and their branch traces, pick a parent candidate (or the baseline), and propose candidate edits. Each edit names the edited step and changes only declarable dimensions: task, provider, or handlers. For every edit, state the fix set (failures it should repair) and the guard set (behaviors it must preserve). Only the affected suffix of the parent's trace is replayed; do not propose rewrites of the recorded prefix.",
+                "content": "You optimize a recorded workflow by Counterfactual Replay Optimization. Read the candidate pool and the per-example execution traces of the baseline and of promoted candidates, identify a failure class that explains at least two failing train examples, pick one parent from the pool, and propose at most the brief's capacity of candidate edits with propose_candidate. Each edit names the edited step, changes only declarable dimensions (task, provider, or handlers), and declares its scope: request when the edit changes the edited step's own request, downstream when only the steps that consume it change. Pair every edit with a fix set of train examples it should repair and a guard set whose scores must not regress; the host replays only the parent's trace from the first affected step on those examples before any dev evaluation. Then answer with the reflection: the parent name (null for the baseline), findings that cite prior candidates by name (write 'differs by:' when you revisit an archived mechanism), and every mechanism you considered with its prior.",
                 "id": "proposer.propose",
                 "kind": "prompt",
                 "role": "proposer"
             },
             {
                 "content": {
-                    "description": "Read the retained candidate pool: every candidate record with its status, parent, edited step, affected steps, divergence summary, verdict, and measured cost.",
+                    "description": "Read the parent pool, the baseline example scores, and every retained candidate with its parent, fix and guard sets, per-example scores, gate verdict, dev score, status, and cost.",
                     "inputSchema": {
                         "additionalProperties": false,
-                        "properties": {
-                            "application_id": {
-                                "type": "string"
-                            }
-                        },
-                        "required": ["application_id"],
+                        "properties": {},
                         "type": "object"
                     },
                     "name": "inspect_candidates"
@@ -132,7 +135,51 @@
             },
             {
                 "content": {
-                    "description": "Propose one candidate edit of the parent's workflow at a step boundary.",
+                    "description": "Read the step summaries (requests, outputs, effects) of one candidate's session on one example; a null candidate reads the baseline.",
+                    "inputSchema": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "candidate": {
+                                "type": ["string", "null"]
+                            },
+                            "example_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["candidate", "example_id"],
+                        "type": "object"
+                    },
+                    "name": "read_effect_trace"
+                },
+                "id": "tool.read_effect_trace",
+                "kind": "tool",
+                "role": "proposer"
+            },
+            {
+                "content": {
+                    "description": "Search one candidate's example sessions (a null candidate searches the baseline) with a regular expression over each step summary and return bounded excerpts.",
+                    "inputSchema": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "candidate": {
+                                "type": ["string", "null"]
+                            },
+                            "pattern": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["candidate", "pattern"],
+                        "type": "object"
+                    },
+                    "name": "grep_effect_traces"
+                },
+                "id": "tool.grep_effect_traces",
+                "kind": "tool",
+                "role": "proposer"
+            },
+            {
+                "content": {
+                    "description": "Propose one candidate edit of the parent with its fix set and guard set of train examples, its mechanism, rationale, prior, and patch.",
                     "inputSchema": {
                         "additionalProperties": false,
                         "properties": {
@@ -144,18 +191,56 @@
                                 "type": "array",
                                 "uniqueItems": true
                             },
+                            "fix_set": {
+                                "items": {
+                                    "type": "string"
+                                },
+                                "minItems": 1,
+                                "type": "array",
+                                "uniqueItems": true
+                            },
+                            "guard_set": {
+                                "items": {
+                                    "type": "string"
+                                },
+                                "type": "array",
+                                "uniqueItems": true
+                            },
+                            "mechanism": {
+                                "type": "string"
+                            },
                             "name": {
                                 "type": "string"
                             },
-                            "parent": {
-                                "type": ["string", "null"]
+                            "patch": {},
+                            "prior": {
+                                "maximum": 1,
+                                "minimum": 0,
+                                "type": "number"
+                            },
+                            "rationale": {
+                                "type": "string"
+                            },
+                            "scope": {
+                                "enum": ["request", "downstream"]
                             },
                             "step_index": {
                                 "minimum": 0,
                                 "type": "integer"
                             }
                         },
-                        "required": ["changes", "name", "parent", "step_index"],
+                        "required": [
+                            "changes",
+                            "fix_set",
+                            "guard_set",
+                            "mechanism",
+                            "name",
+                            "patch",
+                            "prior",
+                            "rationale",
+                            "scope",
+                            "step_index"
+                        ],
                         "type": "object"
                     },
                     "name": "propose_candidate"
@@ -169,21 +254,27 @@
                     "$schema": "https://json-schema.org/draft/2020-12/schema",
                     "additionalProperties": false,
                     "properties": {
-                        "fix_set": {
+                        "findings": {
                             "items": {
                                 "type": "string"
                             },
                             "type": "array"
                         },
-                        "guard_set": {
+                        "hypotheses": {
                             "items": {
-                                "type": "string"
-                            },
-                            "type": "array"
-                        },
-                        "observations": {
-                            "items": {
-                                "type": "string"
+                                "additionalProperties": false,
+                                "properties": {
+                                    "mechanism": {
+                                        "type": "string"
+                                    },
+                                    "prior": {
+                                        "maximum": 1,
+                                        "minimum": 0,
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["mechanism", "prior"],
+                                "type": "object"
                             },
                             "type": "array"
                         },
@@ -191,10 +282,10 @@
                             "type": ["string", "null"]
                         }
                     },
-                    "required": ["fix_set", "guard_set", "observations", "parent"],
+                    "required": ["findings", "hypotheses", "parent"],
                     "type": "object"
                 },
-                "id": "scratchpad.reflection.v1",
+                "id": "scratchpad.reflection.v2",
                 "kind": "schema",
                 "role": "reflection"
             },
@@ -214,7 +305,7 @@
                                         "type": ["string", "null"]
                                     },
                                     "status": {
-                                        "enum": ["proposed", "evaluated", "promoted", "rejected"]
+                                        "enum": ["archived", "evaluated", "promoted", "rejected"]
                                     }
                                 },
                                 "required": ["candidate_id", "parent_candidate_id", "status"],
@@ -222,18 +313,27 @@
                             },
                             "type": "array"
                         },
-                        "promoted_candidate_id": {
+                        "selected_candidate_id": {
                             "type": ["string", "null"]
                         }
                     },
-                    "required": ["candidates", "promoted_candidate_id"],
+                    "required": ["candidates", "selected_candidate_id"],
                     "type": "object"
                 },
-                "id": "handoff.manifest.v1",
+                "id": "handoff.manifest.v2",
                 "kind": "schema",
                 "role": "handoff"
             }
-        ]
+        ],
+        "thresholds": {
+            "minPromotionScore": 0.5,
+            "promoteDevEpsilon": 0.05,
+            "reflectionAudaciousPrior": 0.2,
+            "reflectionDuplicateSimilarity": 0.85,
+            "targetedImproveThreshold": 0.67,
+            "targetedMaxScoreDrop": 0.02,
+            "targetedMinScoreLift": 0
+        }
     },
     "evaluation": {
         "artifacts": {
@@ -272,18 +372,18 @@
                 },
                 {
                     "baseline": {
-                        "kind": "single_rollout"
+                        "kind": "flat_grpo"
                     },
                     "commandId": "evaluation:tree-rl",
                     "id": "tree-rl",
                     "protocol": "treeRl",
-                    "sourceCommandId": "evaluation:tree-rl:source"
+                    "sourceCommandId": "evaluation:tree-rl:root"
                 }
             ],
             "limitations": [
                 {
                     "id": "offline-static-providers",
-                    "text": "Every provider is an offline static fixture: exact order-bound cassettes for the Tree-RL source and rollouts, and request-keyed providers with a static descriptor where an application serves repeated sessions or workers from one provider. Token counts and costs are the fixtures' configured per-call usage, not provider billing."
+                    "text": "Every provider is an offline static fixture: exact order-bound cassettes for the Tree-RL roots and rollouts, and request-keyed providers with a static descriptor where an application serves repeated sessions or workers from one provider. Token counts and costs are the fixtures' configured per-call usage, not provider billing."
                 },
                 {
                     "id": "no-live-provider",
@@ -291,7 +391,7 @@
                 },
                 {
                     "id": "synthetic-fixtures",
-                    "text": "Fixtures are synthetic and small: one dataset item per application, four or five workflow stages, two supervised workers, two optimizer candidates, and the configured seeds. The figures describe these fixtures, not a benchmark or task distribution."
+                    "text": "Fixtures are synthetic and small: one dataset item per application except the optimizer's four train and two dev examples, four or five workflow stages, two supervised workers, two scripted optimizer iterations with three candidate edits, and the configured seeds. The figures describe these fixtures, not a benchmark or task distribution."
                 },
                 {
                     "id": "no-wall-clock",
@@ -299,19 +399,23 @@
                 },
                 {
                     "id": "repository-baselines",
-                    "text": "Baselines are this repository's constructions: no_supervision runs one worker once as a plain child run without a policy, full_replay re-runs the whole workflow per candidate, no_compression keeps the recorded source trajectory, and single_rollout reuses branch 0 of each fork point. None is an upstream baseline."
+                    "text": "Baselines are this repository's constructions: no_supervision runs one worker once as a plain child run without a policy, full_replay re-runs the whole workflow per candidate example branch, no_compression keeps the recorded source trajectory, and flat_grpo keeps only the G graded roots of each prompt with the inter-root advantage on every action. None is an upstream baseline."
                 },
                 {
-                    "id": "single-rollout-shared-cost",
-                    "text": "The Tree-RL single_rollout baseline reuses the tree's branch-0 rollouts instead of running separate sessions, so its cost is a subset of the tree batch's cost, not an equal budget; a failed branch-0 rollout still counts in the baseline's cost and steps and makes baseline success false (the v4 single_rollout training batch drops that fork point)."
+                    "id": "flat-grpo-shared-roots",
+                    "text": "The Tree-RL flat_grpo baseline is the tree run's own G roots per prompt, so its cost is a subset of the tree run's cost (roots plus K branches per root), not a matched generation budget as in the paper's comparison. The fixture forks every root at a configured turn instead of consulting a meta-agent, so no proposed tool call seeds a branch here."
                 },
                 {
                     "id": "measurement-scope",
-                    "text": "Application-side metrics count only the work compared against the baseline: supervised worker starts and retained completions, counterfactual candidate branch sessions, the compression result session, and every Tree-RL rollout. Supervisor rounds, recorded baseline and source sessions, compressor and verifier children, and best-of-N controls appear only in each run's manifest costs."
+                    "text": "Application-side metrics count only the work compared against the baseline: supervised worker starts and retained completions, counterfactual candidate example branch sessions, the compression result session, and every Tree-RL root and branch rollout. Supervisor rounds, recorded baseline and source sessions, compressor and verifier children, and best-of-N controls appear only in each run's manifest costs."
                 },
                 {
                     "id": "single-host",
                     "text": "Each generation runs on one host. The report bytes are host-independent by construction, but no multi-host, concurrent-writer, or crash-injected evaluation is performed."
+                },
+                {
+                    "id": "rescue-scope",
+                    "text": "A rescue counts an experiment whose baseline failed its success condition while the application run passed. Trajectory compression requires a finished source and every fixture baseline here succeeds, so the measured rescue count is zero; no task-level success judge of the source trajectory (the upstream Table 12 notion) is run."
                 },
                 {
                     "id": "no-upstream-reproduction",
@@ -320,9 +424,13 @@
                 {
                     "id": "no-training",
                     "text": "The Tree-RL adapter emits a training batch and trains nothing; no learning result is claimed."
+                },
+                {
+                    "id": "scripted-proposer",
+                    "text": "The optimizer's proposer is a scripted caller proposer replaying configured iterations; no provider-backed tool-loop proposer runs in the evaluation, and the per-example metric is a configured score table keyed by the provider that produced the final stage."
                 }
             ],
-            "revision": "1"
+            "revision": "4"
         },
         "fixtures": {
             "coding-supervisor": {
@@ -356,30 +464,148 @@
             },
             "counterfactual-optimization": {
                 "baselineLabel": "base",
-                "candidates": [
+                "claimId": "evaluation:optimizer",
+                "dataset": {
+                    "dev": ["dev-1", "dev-2"],
+                    "train": ["train-1", "train-2", "train-3", "train-4"]
+                },
+                "hypotheses": [
                     {
-                        "label": "replanned",
-                        "name": "replan",
-                        "stepIndex": 0,
-                        "verdict": {
-                            "passed": true,
-                            "reason": "the replanned draft and review pass the targeted check",
-                            "score": 2
-                        }
+                        "mechanism": "replan the draft stage from a stronger plan",
+                        "prior": 0.1
                     },
                     {
-                        "label": "reresearched",
-                        "name": "reresearch",
-                        "stepIndex": 1,
-                        "verdict": {
-                            "passed": true,
-                            "reason": "the research edit affects no later step",
-                            "score": 1
-                        }
+                        "mechanism": "re-execute the independent research stage",
+                        "prior": 0.5
+                    },
+                    {
+                        "mechanism": "re-review the draft with a stricter reviewer",
+                        "prior": 0.15
+                    },
+                    {
+                        "mechanism": "add a critic pass after the draft",
+                        "prior": 0.3
+                    },
+                    {
+                        "mechanism": "split the plan into outline and constraints",
+                        "prior": 0.25
+                    },
+                    {
+                        "mechanism": "best-of-two drafts with a judge",
+                        "prior": 0.2
+                    },
+                    {
+                        "mechanism": "route long topics to a specialized drafter",
+                        "prior": 0.35
+                    },
+                    {
+                        "mechanism": "retrieve examples before planning",
+                        "prior": 0.4
+                    },
+                    {
+                        "mechanism": "tighten the review instruction wording",
+                        "prior": 0.45
+                    },
+                    {
+                        "mechanism": "merge research into the plan request",
+                        "prior": 0.3
+                    },
+                    {
+                        "mechanism": "retry the review on low-confidence output",
+                        "prior": 0.25
+                    },
+                    {
+                        "mechanism": "replace the review with a checklist editor",
+                        "prior": 0.12
                     }
                 ],
-                "claimId": "evaluation:optimizer",
+                "iterations": [
+                    {
+                        "edits": [
+                            {
+                                "changes": ["provider"],
+                                "fix_set": ["train-1", "train-2"],
+                                "guard_set": ["train-3"],
+                                "mechanism": "replan the draft stage from a stronger plan",
+                                "name": "replan",
+                                "patch": "replanned",
+                                "prior": 0.1,
+                                "rationale": "the base plan misses the constraints that train-1 and train-2 fail on",
+                                "scope": "request",
+                                "step_index": 0
+                            },
+                            {
+                                "changes": ["provider"],
+                                "fix_set": ["train-1"],
+                                "guard_set": ["train-2"],
+                                "mechanism": "re-execute the independent research stage",
+                                "name": "reresearch",
+                                "patch": "reresearched",
+                                "prior": 0.5,
+                                "rationale": "the research stage may feed stale facts to the review",
+                                "scope": "request",
+                                "step_index": 1
+                            }
+                        ],
+                        "findings": ["baseline traces fail train-1 and train-2 at the plan stage"],
+                        "parent": null
+                    },
+                    {
+                        "edits": [
+                            {
+                                "changes": ["provider"],
+                                "fix_set": ["train-4"],
+                                "guard_set": ["train-1"],
+                                "mechanism": "re-review the draft with a stricter reviewer",
+                                "name": "rereview",
+                                "patch": "reviewed",
+                                "prior": 0.15,
+                                "rationale": "replan still fails train-4 at the review stage",
+                                "scope": "request",
+                                "step_index": 3
+                            }
+                        ],
+                        "findings": [
+                            "replan repaired train-1 and train-2; reresearch was archived because research does not reach the review"
+                        ],
+                        "parent": "replan"
+                    }
+                ],
                 "programId": "workflow:plan-draft-review.v1",
+                "scores": {
+                    "base": {
+                        "dev-1": 0,
+                        "dev-2": 1,
+                        "train-1": 0,
+                        "train-2": 0,
+                        "train-3": 1,
+                        "train-4": 0
+                    },
+                    "replanned": {
+                        "dev-1": 1,
+                        "dev-2": 1,
+                        "train-1": 1,
+                        "train-2": 1,
+                        "train-3": 1,
+                        "train-4": 0
+                    },
+                    "reresearched": {
+                        "dev-1": 0,
+                        "dev-2": 1,
+                        "train-1": 0,
+                        "train-2": 0,
+                        "train-3": 1,
+                        "train-4": 0
+                    },
+                    "reviewed": {
+                        "dev-1": 1,
+                        "dev-2": 0,
+                        "train-1": 1,
+                        "train-2": 1,
+                        "train-3": 1,
+                        "train-4": 1
+                    }
+                },
                 "stages": [
                     {
                         "dependsOn": null,
@@ -401,18 +627,27 @@
             },
             "tree-rl": {
                 "claimId": "evaluation:tree-rl",
+                "fork": {
+                    "reason": "the configured fixture fork turn",
+                    "turn": 2
+                },
                 "programId": "workflow:plan-explore-draft-note-answer.v1",
+                "prompts": [
+                    {
+                        "id": "plan-explore-draft-note-answer",
+                        "roots": ["base", "alt"]
+                    }
+                ],
                 "rewards": {
-                    "0:3": 1,
-                    "0:5": 3,
-                    "1:3": 4,
-                    "1:5": 8,
-                    "2:3": 0,
-                    "2:5": 2
+                    "alt": 3,
+                    "alt:3": 0,
+                    "alt:5": 2,
+                    "base": 1,
+                    "base:3": 4,
+                    "base:5": 8
                 },
                 "seedLabelPrefix": "s",
                 "sourceClaimId": "evaluation:tree-rl-source",
-                "sourceLabel": "base",
                 "stages": [
                     {
                         "dependsOn": null,
@@ -507,6 +742,208 @@
                 "outputTokens": 2
             }
         }
+    },
+    "runtimeSupervision": {
+        "budgets": {
+            "maxFeatureCharacters": 350,
+            "maxGuidanceWords": 60,
+            "maxProviderCalls": 1200,
+            "maxReasonWords": 20,
+            "maxTicks": 660,
+            "maxToolCallSummaryBytes": 150,
+            "maxTurnsPerWorker": 64,
+            "tickIntervalMilliseconds": 5000,
+            "trailingToolCalls": 25
+        },
+        "dataset": {
+            "id": "complementary-feature-pair-fixture",
+            "items": ["feature-a", "feature-b"],
+            "revision": "1"
+        },
+        "kind": "coding_supervisor",
+        "protocolVersion": "appendix-e.v2",
+        "seeds": [5],
+        "surfaces": [
+            {
+                "content": "Every tick you receive one JSON snapshot covering every agent in flight. For each agent it carries: the feature description (truncated), the attempt number, the cumulative tool-call event count, the consecutive-error count, the modified-file set, the status of its current session, your most recent non-none action on it and how many ticks ago it was issued, and its trailing tool-call summaries (tool name, disposition, primary target file or command, short error if any). Observing never perturbs an agent.",
+                "id": "runtime-supervisor.observe",
+                "kind": "prompt",
+                "role": "observation"
+            },
+            {
+                "content": "You are a meta-agent supervising several coding agents working in parallel on the same repository. Each agent is implementing a different feature in its own isolated sandbox (separate forked scope per agent), and their patches will be merged afterwards.\n\nEvery few seconds you receive a snapshot of every agent: the last few tool calls it made, what files it touched, whether it's erroring, and how long since you last intervened on it.\n\nFor EACH agent, pick exactly one of four actions. The cost order is inject << handoff = discard, so match the action to the severity of what you see.\n\n1. \"none\" - everything is fine, let the agent keep working. This should be the default for the vast majority of agents on most ticks. Over-intervention destroys progress.\n\n2. \"inject\" - CHEAPEST intervention. The agent's conversation is kept intact; we only append a new user message with your guidance so the agent sees it as \"oh, the supervisor is nudging me\". Full conversation history and tool call context are preserved, KV cache is reused. Use this when: the agent is broadly on task but drifting or about to make a minor wrong turn; you just need to tell the agent something it didn't know (e.g. another agent is editing the same area); the agent's reasoning is fine but needs a small course correction.\n\n3. \"handoff\" - EXPENSIVE. The agent's current session is aborted and a fresh session starts with your guidance as message 1. The agent loses ALL memory of what it has explored, read, tried, or learned - it starts from scratch (but the files it already edited are still there on disk). If you also name a \"leader\" agent, the leader's scope is forked as this agent's new root, so it restarts from the leader's working tree instead of its own. Use this when: the agent is stuck in an obvious loop (same tool, same target, same error, 5+ times); the agent's conversation has gone off the rails and a nudge is not enough - its memory needs to be wiped; the agent is confused about the task and the best fix is a clean re-read with new framing.\n\n4. \"discard\" - EXPENSIVE and destructive. Same as handoff on the LLM side (new session, lost memory) PLUS the sandbox filesystem is rolled back to the pre-run checkpoint. All files the agent edited are discarded. Use this ONLY when: the agent wrote files that corrupt the repo (overwrote core code with garbage, introduced unrelated changes, broke syntax); the agent ran destructive commands (rm -rf, git reset --hard, git push --force) that you want to undo; the filesystem state is so broken that the agent cannot continue, and you cannot explain-your-way-out via inject/handoff.\n\nDecision heuristics, not hard rules - trust your judgement: Default to \"none\". Most agents on most ticks need no intervention. Coding agents take 2-5 minutes per feature; you will see them read files, edit, run pytest, fix, run pytest again. That's normal iteration, not a problem. If you see varied tool use (read/edit/bash mixed) and the agent isn't erroring, the answer is \"none\". \"Stuck in a loop\" means 10+ identical tool calls with no progress (same tool, same target, same error). 3-5 retries is normal iteration, not a loop. Prefer \"inject\" over \"handoff\". Handoff throws away context; inject preserves it. If the agent can understand a nudge, don't wipe its memory. Prefer \"handoff\" over \"discard\". Discard throws away filesystem work; handoff preserves it. If the files are salvageable, don't roll back. Do not intervene on an agent you already acted on in the last tick or two unless the agent clearly did not comply with your guidance. Give it time to react. Different agents editing the same file is USUALLY fine - they are in separate sandboxes and their patches will be merged by git afterwards. Only call this a conflict if the edits would be irreconcilable at merge time (same lines, different intent). If you only have evidence about ONE agent and the others look fine, return only that one decision. Don't pad the list with no-op entries.\n\nRespond with a single JSON object. Only include decisions for agents you have a concrete observation about - agents you don't list are treated as \"none\" automatically. Keep the \"reason\" field under ~20 words and the \"guidance\" field under ~60 words when present.",
+                "id": "runtime-supervisor.meta-prompt.v1",
+                "kind": "prompt",
+                "role": "action"
+            },
+            {
+                "content": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "additionalProperties": false,
+                    "properties": {
+                        "agents": {
+                            "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "agent": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                    },
+                                    "attempt": {
+                                        "minimum": 1,
+                                        "type": "integer"
+                                    },
+                                    "consecutive_errors": {
+                                        "minimum": 0,
+                                        "type": "integer"
+                                    },
+                                    "events": {
+                                        "minimum": 0,
+                                        "type": "integer"
+                                    },
+                                    "feature": {
+                                        "maxLength": 350,
+                                        "type": "string"
+                                    },
+                                    "last_action": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "additionalProperties": false,
+                                                "properties": {
+                                                    "action": {
+                                                        "enum": ["inject", "handoff", "discard"]
+                                                    },
+                                                    "ticks_ago": {
+                                                        "minimum": 0,
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "required": ["action", "ticks_ago"],
+                                                "type": "object"
+                                            }
+                                        ]
+                                    },
+                                    "modified_files": {
+                                        "items": {
+                                            "minLength": 1,
+                                            "type": "string"
+                                        },
+                                        "type": "array",
+                                        "uniqueItems": true
+                                    },
+                                    "status": {
+                                        "enum": [
+                                            "running",
+                                            "completed",
+                                            "turn_limit",
+                                            "failed",
+                                            "aborted"
+                                        ]
+                                    },
+                                    "trailing_tool_calls": {
+                                        "items": {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                                "error": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "status": {
+                                                    "enum": [
+                                                        "materialized",
+                                                        "denied",
+                                                        "invalid",
+                                                        "failed"
+                                                    ]
+                                                },
+                                                "target": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "tool": {
+                                                    "minLength": 1,
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["error", "status", "target", "tool"],
+                                            "type": "object"
+                                        },
+                                        "maxItems": 25,
+                                        "type": "array"
+                                    }
+                                },
+                                "required": [
+                                    "agent",
+                                    "attempt",
+                                    "consecutive_errors",
+                                    "events",
+                                    "feature",
+                                    "last_action",
+                                    "modified_files",
+                                    "status",
+                                    "trailing_tool_calls"
+                                ],
+                                "type": "object"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                        },
+                        "tick": {
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "required": ["agents", "tick"],
+                    "type": "object"
+                },
+                "id": "runtime-supervision.snapshot.v1",
+                "kind": "schema",
+                "role": "observation"
+            },
+            {
+                "content": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "additionalProperties": false,
+                    "properties": {
+                        "decisions": {
+                            "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "action": {
+                                        "enum": ["none", "inject", "handoff", "discard"]
+                                    },
+                                    "agent": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                    },
+                                    "guidance": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                    },
+                                    "leader": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                    },
+                                    "reason": {
+                                        "minLength": 1,
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["action", "agent", "reason"],
+                                "type": "object"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": ["decisions"],
+                    "type": "object"
+                },
+                "id": "runtime-supervision.decisions.v1",
+                "kind": "schema",
+                "role": "action"
+            }
+        ]
     },
     "supervision": {
         "budgets": {
@@ -712,9 +1149,8 @@
     "treeRl": {
         "budgets": {
             "branches": 2,
-            "maxForkPoints": 4,
-            "maxProviderCalls": 40,
-            "minDependents": 1
+            "groupSize": 2,
+            "maxProviderCalls": 40
         },
         "dataset": {
             "id": "plan-explore-draft-answer-fixture",
@@ -722,7 +1158,7 @@
             "revision": "1"
         },
         "kind": "tree_rl",
-        "protocolVersion": "section-5.3.v1",
+        "protocolVersion": "section-5.3.algorithm-2.v2",
         "seeds": [3, 5, 8],
         "surfaces": [
             {
@@ -732,10 +1168,91 @@
                 "role": "rollout"
             },
             {
+                "content": "You are the meta-agent of a tree-search RL run. You receive an inner agent's full trajectory as a numbered turn list (each turn's request and output) and its final reward. Pick the one-based turn at which a different action most improves the outcome, preferring the earliest turn where a wrong choice was made and following symptoms back to their cause, and return the tool call you would make at that turn instead. Answer with JSON: branch_turn (integer within the given turn bounds), tool_call ({ name, arguments }), and a one-sentence reason.",
+                "id": "tree-rl.fork-selector",
+                "kind": "prompt",
+                "role": "fork_selector"
+            },
+            {
                 "content": {
                     "$schema": "https://json-schema.org/draft/2020-12/schema",
                     "additionalProperties": false,
                     "properties": {
+                        "branch_turn": {
+                            "type": "integer"
+                        },
+                        "reason": {
+                            "maxLength": 1024,
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "tool_call": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "arguments": {
+                                    "type": "object"
+                                },
+                                "name": {
+                                    "minLength": 1,
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["arguments", "name"],
+                            "type": "object"
+                        }
+                    },
+                    "required": ["branch_turn", "reason", "tool_call"],
+                    "title": "meta-agent fork proposal",
+                    "type": "object"
+                },
+                "id": "tree-rl.fork-proposal",
+                "kind": "schema",
+                "role": "fork_proposal"
+            },
+            {
+                "content": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "additionalProperties": false,
+                    "properties": {
+                        "actions": {
+                            "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "advantage": {
+                                        "type": "number"
+                                    },
+                                    "segment": {
+                                        "enum": ["prefix", "suffix", "flat"]
+                                    },
+                                    "step_index": {
+                                        "minimum": 0,
+                                        "type": "integer"
+                                    },
+                                    "turn": {
+                                        "minimum": 1,
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": ["advantage", "segment", "step_index", "turn"],
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "branch": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "branch_turn": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
                         "fork_point": {
                             "additionalProperties": false,
                             "properties": {
@@ -757,11 +1274,36 @@
                             "required": ["prefix_id", "step_index"],
                             "type": "object"
                         },
-                        "inter_branch_advantage": {
-                            "type": "number"
+                        "group_index": {
+                            "minimum": 0,
+                            "type": "integer"
                         },
-                        "intra_branch_advantage": {
-                            "type": "number"
+                        "inter_root_advantage": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "number"
+                                }
+                            ]
+                        },
+                        "intra_tree_advantage": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "number"
+                                }
+                            ]
+                        },
+                        "member": {
+                            "enum": ["root", "branch"]
+                        },
+                        "prompt_id": {
+                            "minLength": 1,
+                            "type": "string"
                         },
                         "replay_session_id": {
                             "type": "string"
@@ -770,13 +1312,30 @@
                             "type": "number"
                         },
                         "rollout_id": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "root_session_id": {
                             "type": "string"
                         },
                         "seed": {
-                            "type": "integer"
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
                         },
-                        "session_id": {
-                            "type": "string"
+                        "seeded": {
+                            "type": "boolean"
                         },
                         "step_count": {
                             "minimum": 0,
@@ -784,20 +1343,27 @@
                         }
                     },
                     "required": [
+                        "actions",
+                        "branch",
+                        "branch_turn",
                         "fork_point",
-                        "inter_branch_advantage",
-                        "intra_branch_advantage",
+                        "group_index",
+                        "inter_root_advantage",
+                        "intra_tree_advantage",
+                        "member",
+                        "prompt_id",
                         "replay_session_id",
                         "reward",
                         "rollout_id",
+                        "root_session_id",
                         "seed",
-                        "session_id",
+                        "seeded",
                         "step_count"
                     ],
-                    "title": "jsonl_v1 training batch line",
+                    "title": "jsonl_v2 training batch line",
                     "type": "object"
                 },
-                "id": "tree-rl.batch-line.jsonl_v1",
+                "id": "tree-rl.batch-line.jsonl_v2",
                 "kind": "schema",
                 "role": "training_batch"
             }
