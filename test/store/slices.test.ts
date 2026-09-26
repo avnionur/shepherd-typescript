@@ -319,3 +319,17 @@ test("slice reads reject retained records that cite non-witness evidence", async
     assert.throws(() => store.readCausalClosure([invalid.record_id]), TraceStoreError);
     store.close();
 });
+
+test("shape-only causal slices hide the payload of a record with no owner view", () => {
+    const store = new SQLiteTraceStore();
+    const slice = store.readCausalClosure([ROOT_WITNESS_ID], {
+        visibility_profile: "shape_only",
+    });
+    const witness = slice.visible_records_by_id[ROOT_WITNESS_ID];
+
+    assert.equal(witness?.envelope.record_id, ROOT_WITNESS_ID);
+    assert.deepEqual(Object.keys(witness ?? {}).sort(), ["envelope", "hidden_reason"]);
+    assert.equal((witness as { readonly hidden_reason?: string }).hidden_reason, "payload_hidden");
+    assert.deepEqual(slice.owner_paths, {});
+    store.close();
+});

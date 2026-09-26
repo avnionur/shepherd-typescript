@@ -319,6 +319,11 @@ function retainTerminal(
             },
         }),
     );
+    const outcomeCauses = [
+        ...(contribution === null ? [] : [contribution.localId]),
+        ...artifactLocalIds,
+        ...(execution.usage === null ? [] : [usageLocalId]),
+    ];
     const terminalRequest = {
         append_intent_id: createLedgerIntentId(runId, runProtocolConfig.schemas.outcomeId),
         batch: {
@@ -368,26 +373,9 @@ function retainTerminal(
                         {
                             append_local_id: outcomeLocalId,
                             body: execution.outcome,
-                            ...(execution.usage === null
-                                ? artifactLocalIds.length === 0
-                                    ? contribution === null
-                                        ? {}
-                                        : { caused_by_local_refs: [contribution.localId] }
-                                    : {
-                                          caused_by_local_refs: [
-                                              ...(contribution === null
-                                                  ? []
-                                                  : [contribution.localId]),
-                                              ...artifactLocalIds,
-                                          ],
-                                      }
-                                : {
-                                      caused_by_local_refs: [
-                                          ...(contribution === null ? [] : [contribution.localId]),
-                                          ...artifactLocalIds,
-                                          usageLocalId,
-                                      ],
-                                  }),
+                            ...(outcomeCauses.length === 0
+                                ? {}
+                                : { caused_by_local_refs: outcomeCauses }),
                             mode: CAPTURE_MODE,
                             schema_ref: runProtocolConfig.schemas.outcomeId,
                             witness_ref: ROOT_WITNESS_ID,
@@ -407,33 +395,27 @@ function retainTerminal(
             ],
         },
     };
-    const terminal =
-        invocationAuthority === null
-            ? store.append(terminalRequest)
-            : store.appendDurableExecutionTerminal(
-                  runId,
-                  invocationAuthority.claimId,
-                  invocationAuthority.fencingToken,
-                  terminalRequest,
-                  releaseClaim,
-              );
-    if ("status" in terminal) {
-        if (terminal.status === FENCED_APPEND_STATUS) {
-            throw new DurableExecutionClaimFencedError(
-                runId,
-                invocationAuthority?.claimId ?? runId,
-            );
-        }
+    if (invocationAuthority === null) {
         return retainTerminalReceipt(
             store,
             runId,
             createdRecordId,
             startedRecordId,
             execution,
-            terminal.receipt,
+            store.append(terminalRequest),
             contribution,
             onContributionRecordId,
         );
+    }
+    const terminal = store.appendDurableExecutionTerminal(
+        runId,
+        invocationAuthority.claimId,
+        invocationAuthority.fencingToken,
+        terminalRequest,
+        releaseClaim,
+    );
+    if (terminal.status === FENCED_APPEND_STATUS) {
+        throw new DurableExecutionClaimFencedError(runId, invocationAuthority.claimId);
     }
     return retainTerminalReceipt(
         store,
@@ -441,7 +423,7 @@ function retainTerminal(
         createdRecordId,
         startedRecordId,
         execution,
-        terminal,
+        terminal.receipt,
         contribution,
         onContributionRecordId,
     );

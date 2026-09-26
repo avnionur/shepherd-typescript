@@ -293,7 +293,8 @@ node src/cli/main.ts     # run the CLI from source
 | `pnpm test:faults:volume` | Real `ENOSPC` on a macOS disk image or, as root, a Linux ext4 loop image |
 | `pnpm generate:protocol` | Regenerate schemas after changing `protocol.config.json` |
 
-Biome formats and lints; Node's built-in test runner executes TypeScript directly. `scripts/` holds
+Biome formats and lints; Node's built-in test runner executes TypeScript directly. Coverage is merged
+from raw V8 data by the repository's own [coverage gate](https://github.com/avnionur/shepherd-typescript/blob/main/docs/coverage-gate.md). `scripts/` holds
 thin command adapters and `tooling/` holds tested build, release, and conformance code; only `src/`
 is emitted. `pnpm verify` also enforces the [compatibility policy](https://github.com/avnionur/shepherd-typescript/blob/main/docs/compatibility-policy.md)
 for exports, error codes, CLI commands, schemas, and migrations.

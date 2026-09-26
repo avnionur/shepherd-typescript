@@ -309,6 +309,27 @@ test("durable result codec cross-validates control, usage, start, and budget evi
     ] as const) {
         assert.throws(() => decode(outcome, retainedUsage, control, budget, started), TypeError);
     }
+    // A self-consistent outcome and exhaustion reason must still match the retained consumption.
+    const overstatedReason = { ...turnReason, observed: 2 };
+    const overstated = createRunOutcome({
+        outcome: {
+            reason: new RunBudgetExhaustedError(overstatedReason).message,
+            status: "exhausted",
+        },
+        runId: "run:codec",
+        taskArtifactLock: fixtureTask.artifactLock,
+    });
+    assert.throws(
+        () =>
+            decode(
+                overstated,
+                null,
+                { ...turnExhaustion, reason: overstatedReason },
+                { maxTurns: 0 },
+                false,
+            ),
+        /disagrees with control consumption/u,
+    );
 });
 
 test("persisted control codec rejects every malformed terminal discriminant", () => {

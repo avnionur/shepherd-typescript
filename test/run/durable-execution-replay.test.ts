@@ -764,3 +764,64 @@ test("executeTaskDurably rejects changed evidence for an existing run before inv
         AppendIntentConflictError,
     );
 });
+
+test("durable start refuses recovery command evidence the run does not own", () => {
+    using store = new SQLiteTraceStore();
+    const runId = "run:claim-recovery-evidence";
+    const appendOne = (ownerId: string, intent: string, schemaRef: string) => {
+        const recordId = store.append({
+            append_intent_id: intent,
+            batch: {
+                groups: [
+                    {
+                        owner_id: ownerId,
+                        records: [
+                            {
+                                body: { value: intent },
+                                mode: "declaration",
+                                schema_ref: schemaRef,
+                                witness_ref: ROOT_WITNESS_ID,
+                            },
+                        ],
+                    },
+                ],
+            },
+        }).record_ids[0];
+        assert.ok(recordId);
+        return recordId;
+    };
+    const createdRecordId = appendOne(
+        runId,
+        "claim:recovery-evidence:creation",
+        "shepherd2.execution.created.v1",
+    );
+    const claim = store.claimDurableExecutionInvocation(
+        runId,
+        createdRecordId,
+        "claim:recovery-evidence",
+        0,
+    );
+    assert.equal(claim.status, "acquired");
+    // Neither a run record of another schema nor another owner's record is recovery evidence.
+    for (const recoveryCommandRecordId of [
+        createdRecordId,
+        appendOne("run:other", "claim:recovery-evidence:foreign", "shepherd2.execution.created.v1"),
+    ]) {
+        assert.throws(
+            () =>
+                store.appendDurableExecutionStart(
+                    runId,
+                    claim.claim_id,
+                    claim.fencing_token,
+                    0,
+                    recoveryCommandRecordId,
+                ),
+            /recovery command evidence owned by the run/u,
+        );
+    }
+    // The refusal rolls back without consuming the claim.
+    assert.equal(
+        store.appendDurableExecutionStart(runId, claim.claim_id, claim.fencing_token, 0).status,
+        "committed",
+    );
+});

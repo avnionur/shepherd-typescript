@@ -889,6 +889,11 @@ open for a follow-up PATCH before the candidate is tagged.
   (#215); recomputed scope SLO budgets (#214); threat model and trust-boundary docs; coverage gaps
   hidden by the parallel coverage merge closed in epic-touched files
   ([close-out](./paper-coverage.md#epic-202-close-out-1200)).
+- [x] #232 coverage gate (PATCH 12.0.1, branch `codex/phase-12-232-coverage-merge`): the test
+  runner merges raw V8 coverage by summing per-process innermost-range counts
+  ([coverage gate](../docs/coverage-gate.md)); `pnpm test` and `pnpm test:serial` flag identical
+  sets. The 20 pre-existing gaps are covered by tests or removed as unreachable, and the
+  never-loaded `./canonical` and `./cli` facades are now tested.
 - [ ] npm readiness, epic #220 (MINOR 2.36.0, branch `codex/phase-13-220-npm-readiness`):
   - [ ] #221 owner publication: prepared only; `"private": true` kept by decision D-020
     (`publishConfig`, prepublish guard, attested packer, trusted publishing, owner checklist in

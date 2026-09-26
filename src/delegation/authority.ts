@@ -2,7 +2,7 @@ import { canonicalizeSemanticValue, type SemanticValue } from "../canonical/cano
 import type { RunBudgetDefinition } from "../run/control-types.ts";
 import { readRunControlOptions } from "../run/control-validation.ts";
 import { attenuateScopeAuthority } from "../scope/authority.ts";
-import { ScopeAuthorityError } from "../scope/errors.ts";
+import type { ScopeAuthorityError } from "../scope/errors.ts";
 import type { ScopeAuthority, ScopeResourceGrant } from "../scope/types.ts";
 import { DelegationAuthorityError } from "./errors.ts";
 
@@ -52,6 +52,11 @@ export function assertBudgetAttenuated(
  * parent's effective authority. Effective authority is the per-resource intersection of the
  * requested grant and the ceiling, so delegation never amplifies.
  *
+ * Both lists are canonical grants read by `readScopeResourceGrants`, and without a parent scope
+ * the attenuation refuses only a resource outside the ceiling, with {@link ScopeAuthorityError};
+ * that refusal is the only failure translated here.
+ *
+ * @throws {DelegationAuthorityError} If a requested resource is outside the ceiling.
  * @internal
  */
 export function deriveDelegatedAuthority(
@@ -61,10 +66,8 @@ export function deriveDelegatedAuthority(
     try {
         return attenuateScopeAuthority(ceiling, null, grant);
     } catch (error) {
-        if (error instanceof ScopeAuthorityError) {
-            throw new DelegationAuthorityError(error.message, { cause: error });
-        }
-        throw error;
+        const refusal = error as ScopeAuthorityError;
+        throw new DelegationAuthorityError(refusal.message, { cause: refusal });
     }
 }
 

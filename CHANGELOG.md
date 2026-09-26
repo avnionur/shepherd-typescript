@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [12.0.1] - 2026-09-25
+
+Coverage gate fix for [#232](https://github.com/avnionur/shepherd-typescript/issues/232).
+
+### Defect Fixes
+
+- The test runner no longer uses Node's built-in coverage merge, which dropped zero-count ranges
+  depending on merge order and so reported 100% for code no test executes. Test processes write
+  raw V8 coverage to a temporary `NODE_V8_COVERAGE` directory, and
+  `tooling/testing/coverage-merge.ts` sums the innermost-range count of each line, branch, and
+  function across processes. `pnpm test` and `pnpm test:serial` now flag identical sets, and
+  included files that no test loads are reported ([coverage gate](docs/coverage-gate.md)).
+- The pre-existing gaps it exposed are covered by tests: blob publish and I/O rethrows, blob
+  verification rethrow, delegation handle parent and predecessor refusals, shape-only slices
+  without an owner view, scope fork registration without its prepared intent, replay checkpoint
+  constituent ordering, durable result exhaustion that disagrees with consumption, durable start
+  without owned recovery evidence, scope merge journal refusals, and the `./canonical` and `./cli`
+  facades.
+- Unreachable code is removed with its invariant documented: the non-refusal rethrow in delegated
+  authority derivation, the empty-cause alternative in recovery command evidence, the missing
+  placement rule guard, the missing reconstructed durable artifact guard, the usage-less outcome
+  cause arm and the claim-id fallback in durable terminal retention, and the `ScopeEvidenceError`
+  pass-through in scope evidence decoding.
+
+### Impact
+
+No public API, protocol, or behavior change for any reachable input. The coverage report printed by
+`pnpm test` has a new format and prints one Node 24 experimental warning for type stripping.
+
 ## [12.0.0] - 2026-09-25
 
 Review fix pass for epic [#202](https://github.com/avnionur/shepherd-typescript/issues/202).

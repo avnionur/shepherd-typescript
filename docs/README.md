@@ -190,6 +190,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   occurrence, retention-governed bodies withheld by default, at-least-once delivery from an
   acknowledged subscription cursor), the `shepherd.telemetry.batch` v1 schema, the OTLP/JSON
   encoding rules it relies on, and the owner-only JSON-lines sink, through the `./operations` entry.
+- [Coverage gate](./coverage-gate.md) defines how `pnpm test` merges raw V8 coverage from every
+  test process by summing per-process innermost-range counts, so zero-count ranges cannot be hidden
+  and parallel and serial runs agree, and how the configured thresholds are enforced.
 - [Fault and fuzz conformance](./fault-and-fuzz-conformance.md) defines the seeded dependency-free
   fuzz suite (mutators, the shared oracle, every target and its allowed errors, the `verify` and
   `extended` tiers, `pnpm fuzz`), the replayed regression corpus, the recorded extended run, and the

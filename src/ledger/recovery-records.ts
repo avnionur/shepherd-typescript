@@ -203,14 +203,15 @@ function commandEvidence(
                   : (() => {
                         throw new TypeError("recovery record command kind is unsupported");
                     })();
+    // The closed command codecs admit only these shapes: resume cites its lifecycle record and
+    // continuation descriptor, pause and cancellation cite their lifecycle record, and recovery
+    // cites neither and is caused by run creation.
     const expectedCauses =
-        kind === RECOVER_KIND
-            ? [createdRecordId]
-            : kind === RESUME_KIND && "continuation_descriptor_id" in command
-              ? [command.expected_lifecycle_record_id, command.continuation_descriptor_id]
-              : "expected_lifecycle_record_id" in command
-                ? [command.expected_lifecycle_record_id]
-                : [];
+        "continuation_descriptor_id" in command
+            ? [command.expected_lifecycle_record_id, command.continuation_descriptor_id]
+            : "expected_lifecycle_record_id" in command
+              ? [command.expected_lifecycle_record_id]
+              : [createdRecordId];
     if (
         record.envelope.caused_by_record_ids.length !== expectedCauses.length ||
         expectedCauses.some(

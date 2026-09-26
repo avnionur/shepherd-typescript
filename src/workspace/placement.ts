@@ -214,13 +214,12 @@ export function createGrantedPlacementResolution<
         workspaceProtocolConfig.worldTaskCapture.maxCaptureIdBytes,
     );
     const request = readPlacementRequest(fields.placement);
+    // The configuration loader refuses rules that do not cover each configured request exactly
+    // once, and `readPlacementRequest` admits only configured requests, so a rule always exists.
     const rule = workspaceProtocolConfig.placements.rules.find(
         ({ request: configured }) => configured === request,
-    );
-    if (rule === undefined || !rule.supported || rule.resolved === null) {
-        if (rule === undefined) {
-            throw new TypeError("placement request has no configured resolution rule");
-        }
+    ) as (typeof workspaceProtocolConfig.placements.rules)[number];
+    if (!rule.supported || rule.resolved === null) {
         throw new PlacementUnavailableError({
             placement_version: workspaceProtocolConfig.placements.artifactVersion,
             reason: rule.reason as PlacementRefusalEvidence["reason"],

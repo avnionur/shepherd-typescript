@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { mkdir, mkdtemp, rm, unlink, writeFile } from "node:fs/promises";
+import { syncBuiltinESMExports } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -59,6 +61,39 @@ test("blob verification classifies missing, size, file-type, and receipt failure
         assert.throws(() => store.readBlob(blobId), BlobIntegrityError);
     }
     assert.throws(() => store.readBlob(orphanBlobId), BlobIntegrityError);
+    store.close();
+});
+
+test("blob verification propagates an unexpected filesystem read failure", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "shepherd-blob-verify-fault-test-"));
+    context.after(() => rm(directory, { force: true, recursive: true }));
+    const blobDirectory = path.join(directory, "blobs");
+    const store = new SQLiteTraceStore(path.join(directory, "trace.sqlite"), { blobDirectory });
+    const { blob_id: blobId } = store.putBlob(new TextEncoder().encode("unreadable"));
+    const digest = blobId.slice("sha256:".length);
+    const injected = Object.assign(new Error("injected read failure"), { code: "EIO" });
+    const readFileSync = fs.readFileSync;
+    const read = context.mock.method(
+        fs,
+        "readFileSync",
+        (...args: Parameters<typeof fs.readFileSync>) => {
+            if (path.basename(String(args[0])) === digest) {
+                throw injected;
+            }
+            return readFileSync(...args);
+        },
+    );
+    syncBuiltinESMExports();
+    try {
+        assert.throws(
+            () => store.verifyBlobs(),
+            (error) => error === injected,
+        );
+    } finally {
+        read.mock.restore();
+        syncBuiltinESMExports();
+    }
+    assert.deepEqual(store.verifyBlobs(), { checked_blob_count: 1, issues: [], ok: true });
     store.close();
 });
 
