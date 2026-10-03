@@ -111,6 +111,7 @@ import {
     type ReplaySessionRow,
     readReplaySessionRow,
     renewReplaySessionLeaseInStore,
+    retainReplayBranchRequestInStore,
 } from "./replay-sessions.ts";
 import type { RetainedWorldSettlementTerminalEvidence } from "./retained-world-settlement-codec.ts";
 import {
@@ -1213,6 +1214,20 @@ export class SQLiteTraceStore implements Disposable {
             nowMilliseconds,
             request,
         );
+    }
+
+    /**
+     * Retains an immutable normalized branch request before compensation or restoration.
+     * @param sessionId - Derived replay session identity.
+     * @param request - Exact single-record append intent and semantic request.
+     * @returns The appended or replayed receipt.
+     * @throws {AppendIntentConflictError} If the command names a different request.
+     * @throws {TraceStoreError} If the store is closed or cannot append.
+     * @internal
+     */
+    appendReplayBranchRequest(sessionId: string, request: StoreAppendRequest): AppendReceipt {
+        this.#assertOpen();
+        return retainReplayBranchRequestInStore(this.#database, sessionId, request);
     }
 
     /**

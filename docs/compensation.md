@@ -162,8 +162,9 @@ measured against and compensating it on the first branch would corrupt every lat
 
 A retaining branch's live suffix runs its effects through its own handlers, so an exploratory caller
 is responsible for binding them to an isolated world (the applications' `bindings` factories) when
-re-materializing a compensable effect against the source's world would be wrong. A branch retains
-no record of its disposition; a compensating branch is evidenced by its compensation records. Tests:
+re-materializing a compensable effect against the source's world would be wrong. The [branch request journal](./replay-request-identity.md) retains the normalized disposition
+before compensation or restoration. Reusing a command with another disposition fails before
+any handler runs, including while the original command is compensating. Tests:
 [`replay-source-disposition.test.ts`](../test/replay/replay-source-disposition.test.ts),
 [`exploratory-branch-compensation.test.ts`](../test/applications/exploratory-branch-compensation.test.ts)
 (each application over a source with a successful compensable effect completes and leaves no

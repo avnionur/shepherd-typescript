@@ -638,6 +638,7 @@
             "ReplayBranchDiff": {"digest":"sha256:a817c136bd34b0ff8ce4fa31c08c2ab95e47741d5595c31937e28bdd1cb6c3ab","kind":"type alias"},
             "ReplayBranchDiffStep": {"digest":"sha256:af763c9c56fb61b726e36e934439444020db90de0c0507c7c80076ff49cb7f6f","kind":"type alias"},
             "ReplayBranchOptions": {"digest":"sha256:228934d4dabfd0c19f5291d1dc352d5b3d8a3a1c73a9cd8a4ea5a8ebd1b0f725","kind":"type alias"},
+            "ReplayBranchRequestInspection": {"digest":"sha256:c3751d0561af09b9f400f07bc4fbfc14a918177c38e6d698ad256483397b4876","kind":"type alias"},
             "ReplayCacheEvidence": {"digest":"sha256:8b369c17a1c21e208d7a51283b932bb7a602a8901fd85fe22dc5c60bf6327b84","kind":"type alias"},
             "ReplayCacheStatus": {"digest":"sha256:026805ee23624a1ec4a95802b8b01d39bd21cabc1fd0a1d9a2a0453faf8e003b","kind":"type alias"},
             "ReplayCapturedEffect": {"digest":"sha256:156aaff131967c080e11a0e4b6ebbce5ca73659192f42ace72d26c88e9c39990","kind":"type alias"},
@@ -1345,6 +1346,7 @@
             "inspectEffectCompensation": {"digest":"sha256:e019db3891e7f9b86df7a3763d2522930d619984e48211515e1e9d6f4ebb7f4c","kind":"function"},
             "inspectLocalNativeJailBackend": {"digest":"sha256:472ab0c92c9e2fd0f9d6ffa9793db174d8da618e55143a2f496802a346f0c130","kind":"function"},
             "inspectLocalPlacementPlatformEvidence": {"digest":"sha256:d27f178dcdfc6286d8eb61dcb5d3c9d304bf7d59a8fceaaac599d6c07cf522fb","kind":"function"},
+            "inspectReplayBranchRequest": {"digest":"sha256:5e31eab43768577039da56de304408a733725fff01ab89255d6a3d5e9cd615ee","kind":"function"},
             "inspectReplaySession": {"digest":"sha256:956d7a6d73bd881c79c3835a395f2082c20d53aa34d7aa278f259b22e5187619","kind":"function"},
             "inspectRetainedWorldApplicationConflicts": {"digest":"sha256:fd75194c09470c36b27d003c8b33683b756ee6cad05994892f3b7ad85e6ab529","kind":"function"},
             "inspectRetainedWorldApplicationPlan": {"digest":"sha256:db2aef57aa2fc9cdbd2850f38f7beb7e99312424d6dfbbdcd45989b719921bc7","kind":"function"},
@@ -2115,6 +2117,7 @@
             "ReplayBranchDiff": {"digest":"sha256:a817c136bd34b0ff8ce4fa31c08c2ab95e47741d5595c31937e28bdd1cb6c3ab","kind":"type alias"},
             "ReplayBranchDiffStep": {"digest":"sha256:af763c9c56fb61b726e36e934439444020db90de0c0507c7c80076ff49cb7f6f","kind":"type alias"},
             "ReplayBranchOptions": {"digest":"sha256:228934d4dabfd0c19f5291d1dc352d5b3d8a3a1c73a9cd8a4ea5a8ebd1b0f725","kind":"type alias"},
+            "ReplayBranchRequestInspection": {"digest":"sha256:c3751d0561af09b9f400f07bc4fbfc14a918177c38e6d698ad256483397b4876","kind":"type alias"},
             "ReplayCacheEvidence": {"digest":"sha256:8b369c17a1c21e208d7a51283b932bb7a602a8901fd85fe22dc5c60bf6327b84","kind":"type alias"},
             "ReplayCacheStatus": {"digest":"sha256:026805ee23624a1ec4a95802b8b01d39bd21cabc1fd0a1d9a2a0453faf8e003b","kind":"type alias"},
             "ReplayCapturedEffect": {"digest":"sha256:156aaff131967c080e11a0e4b6ebbce5ca73659192f42ace72d26c88e9c39990","kind":"type alias"},
@@ -2200,6 +2203,7 @@
             "deriveReplaySessionId": {"digest":"sha256:f8f02a32695a6f71ec8e663e570fa13f068dcec4b3f50dd4931a8189609808e6","kind":"function"},
             "diffReplaySessions": {"digest":"sha256:c628a92340f5df60d9395ff6d81cd1af4cb3768c7a617802037462f8fa2d94d5","kind":"function"},
             "findFirstReplayRegression": {"digest":"sha256:cd9d7693e1313c4f7dba7e4266f5462bd4f418a316cc9acba55c42a899884014","kind":"function"},
+            "inspectReplayBranchRequest": {"digest":"sha256:5e31eab43768577039da56de304408a733725fff01ab89255d6a3d5e9cd615ee","kind":"function"},
             "inspectReplaySession": {"digest":"sha256:956d7a6d73bd881c79c3835a395f2082c20d53aa34d7aa278f259b22e5187619","kind":"function"},
             "replayReplaySession": {"digest":"sha256:cc000a7d52207768271dccc4a6f6beafdfb5f2a9fb390c6dfdcad77a40bb9b97","kind":"function"},
             "rewindReplaySession": {"digest":"sha256:297804589c26eff0aa3878a18b050d39eae02ea03fdfc47385c44067ff5ef6c8","kind":"function"},
@@ -2849,6 +2853,6 @@
             "selectRetainedWorldSettlement": {"digest":"sha256:2e4cadd824902afb6b200a6b858a1a52414a3ff94d5078de3a668baa696e541c","kind":"function"}
         }
     },
-    "packageVersion": "12.0.2",
-    "previousVersion": "12.0.1"
+    "packageVersion": "13.0.0",
+    "previousVersion": "12.0.2"
 }

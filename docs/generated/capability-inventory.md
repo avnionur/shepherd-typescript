@@ -219,12 +219,12 @@ Outstanding issues: [242](https://github.com/avnionur/shepherd-typescript/issues
 
 Paper §3.4.
 
-Public entry points: `./replay#rewindReplaySession`, `./replay#replayReplaySession`, `./replay#diffReplaySessions`, `./replay#findFirstReplayRegression`
+Public entry points: `./replay#rewindReplaySession`, `./replay#replayReplaySession`, `./replay#diffReplaySessions`, `./replay#findFirstReplayRegression`, `./replay#inspectReplayBranchRequest`
 
 | Dimension | Evidence boundary |
 | --- | --- |
 | API availability | Supported: retained replay sessions, rewind, recorded-prefix suffix replay, divergence and lineage comparison. |
-| Composed behavior | Adapted: restoration requires available checkpoint constituents; side effects are not automatically reversible. Completed replay identity does not yet refuse changed source disposition. |
+| Composed behavior | Adapted: restoration requires available checkpoint constituents; side effects are not automatically reversible. Branch request identity is now bound before receipt replay, compensation and restoration; legacy branches without request journals refuse retries. |
 | Restart recovery | Replay records survive reopen/import; uncertain started effects remain fenced. Provider receipt durability is separate. |
 | Live-provider evidence | No live-provider result claimed; ordinary tests use deterministic providers. |
 | Performance evidence | Replay-step reuse is observable; it is not measured live KV-cache reuse. |
@@ -237,8 +237,10 @@ Reviewed evidence (content pinned; existence is not a passing test result):
 - [test/replay/replay-lineage.test.ts](../../test/replay/replay-lineage.test.ts)
 - [test/replay/replay-crash.test.ts](../../test/replay/replay-crash.test.ts)
 - [docs/rewind-and-replay.md](../rewind-and-replay.md)
+- [test/replay/replay-request-identity.test.ts](../../test/replay/replay-request-identity.test.ts)
+- [docs/replay-request-identity.md](../replay-request-identity.md)
 
-Outstanding issues: [237](https://github.com/avnionur/shepherd-typescript/issues/237), [242](https://github.com/avnionur/shepherd-typescript/issues/242), [262](https://github.com/avnionur/shepherd-typescript/issues/262)
+Outstanding issues: [242](https://github.com/avnionur/shepherd-typescript/issues/242), [262](https://github.com/avnionur/shepherd-typescript/issues/262)
 
 ### Concurrent runtime supervisor
 

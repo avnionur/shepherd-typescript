@@ -1,7 +1,11 @@
 import { readdirSync } from "node:fs";
 
 import { canonicalizeSemanticValue, type SemanticValue } from "../canonical/canonical-record.ts";
-import { readEffectCompensationRegistry, runEffectCompensations } from "../effect/compensation.ts";
+import {
+    planEffectCompensations,
+    readEffectCompensationRegistry,
+    runEffectCompensations,
+} from "../effect/compensation.ts";
 import { EffectCompensationFailedError } from "../effect/compensation-errors.ts";
 import { collectReplaySuffixEffects } from "../effect/compensation-evidence.ts";
 import type { EffectCompensationRegistry } from "../effect/compensation-types.ts";
@@ -18,11 +22,17 @@ import {
 } from "../protocol/values.generated.ts";
 import type { RecordId } from "../record/types.ts";
 import { assertScopeText, readScopeDataObject } from "../scope/validation.ts";
-import { TraceStoreError } from "../store/errors.ts";
+import { AppendIntentConflictError, TraceStoreError } from "../store/errors.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { Cut } from "../store/types.ts";
 import {
+    assertReplayBranchRequest,
+    createReplayBranchRequest,
+    retainReplayBranchRequest,
+} from "./branch-request.ts";
+import {
     ReplayCheckpointUnavailableError,
+    ReplayCompatibilityError,
     ReplayEvidenceError,
     ReplayRestoreError,
     ReplaySessionInterruptedError,
@@ -108,8 +118,9 @@ const BRANCH_OPTIONAL_KEYS = [
  * the source materialized at or after the target is compensated once through `compensation`, in
  * reverse step order, with retained intent, attempt, and outcome records. With `retain` the source
  * stays a retained alternative and no compensation handler is invoked.
- * Repeating a completed branch command returns its retained receipt without restoring or
- * compensating anything.
+ * Repeating a completed branch command returns its retained receipt only after its normalized
+ * request matches the retained request journal. It restores and compensates nothing. Legacy
+ * branch commands without this journal are refused; use inspectReplayBranchRequest for evidence.
  *
  * @param store - Open writable trace store holding the source session.
  * @param options - Branch command, claim, source, target, restoration roots, and adapters.
@@ -118,7 +129,9 @@ const BRANCH_OPTIONAL_KEYS = [
  * @throws {ReplayRestoreError} If a restoration root or claimed constituent fails verification.
  * @throws {ReplaySessionInterruptedError} If the branch command names a non-terminal session.
  * @throws {ReplayEvidenceError} If source or branch evidence is inconsistent.
- * @throws {ReplayCompatibilityError} If the source uses an unsupported replay version.
+ * @throws {ReplayCompatibilityError} If evidence uses an unsupported version or a legacy branch
+ * command has no normalized request journal.
+ * @throws {AppendIntentConflictError} If the command already names a different branch request.
  * @throws {EffectCompensationHandlerNotFoundError} Before anything is written, if the source is
  * compensated and a suffix effect needing compensation has no handler.
  * @throws {EffectCompensationFailedError} Before the branch opens, if a compensation failed.
@@ -170,7 +183,9 @@ export async function rewindReplaySession(
  * @throws {ReplaySessionInterruptedError} If the branch command names a non-terminal session.
  * @throws {ReplayLeaseFencedError} If the branch writer loses its lease.
  * @throws {ReplayEvidenceError} If source or branch evidence is inconsistent.
- * @throws {ReplayCompatibilityError} If the source uses an unsupported replay version.
+ * @throws {ReplayCompatibilityError} If evidence uses an unsupported version or a legacy branch
+ * command has no normalized request journal.
+ * @throws {AppendIntentConflictError} If the command already names a different branch request.
  * @throws {EffectCompensationHandlerNotFoundError} Before anything is written, if the source is
  * compensated and a suffix effect needing compensation has no handler.
  * @throws {EffectCompensationFailedError} Before the branch opens, if a compensation failed.
@@ -249,28 +264,62 @@ async function branch(
     const bindings = readReplaySessionBindings(fields);
     assertScopeText(fields.sourceSessionId, "sourceSessionId");
     const sessionId = createReplaySessionId(bindings.commandId);
-    if (store.readOwner(sessionId).length > 0) {
-        const retained = inspectReplaySession(store, { clock: bindings.clock, sessionId });
-        if (retained.terminal === null) {
-            throw new ReplaySessionInterruptedError(sessionId, retained.classification);
-        }
-        return Object.freeze({ inspection: retained });
-    }
+    const disposition = readSourceDisposition(fields.sourceDisposition);
     const source = inspectReplaySession(store, {
         clock: bindings.clock,
         sessionId: fields.sourceSessionId,
     });
     const taskAt = createTaskResolver(store, source, bindings.clock);
-    const plan = planRestore(store, source, bindings, fields.target);
+    const targetPlan = planRestore(store, source, bindings, fields.target, false);
     if (
         replay !== null &&
         replay.replacementTask !== null &&
-        canonical(replay.replacementTask) === canonical(taskAt(plan.stepCount))
+        canonical(replay.replacementTask) === canonical(taskAt(targetPlan.stepCount))
     ) {
         throw new TypeError("a declared task change must replace the source task");
     }
+    const targetTraceCutId =
+        targetPlan.checkpoint?.trace_cut_id ??
+        createReplayCutId(sessionId, source.session_id, targetPlan.stepCount);
+    const origin: ReplayOriginBody = {
+        changes: replay?.changes ?? [],
+        replacement_task: replay?.replacementTask ?? null,
+        source_session_id: source.session_id,
+        source_session_record_id: source.session_record_id,
+        target_checkpoint_id: targetPlan.checkpoint?.checkpoint_id ?? null,
+        target_step_count: targetPlan.stepCount,
+        target_trace_cut_id: targetTraceCutId,
+    };
+    const sessionBody = createReplaySessionBody(
+        replaySessionFields(bindings, sessionId, source.program_id, mode, taskAt(0), origin),
+    );
+    const request = createReplayBranchRequest(
+        sessionBody,
+        disposition,
+        replay === null ? null : bindings.checkpointPolicy,
+    );
+    const hasRequest = assertReplayBranchRequest(store, bindings.commandId, request);
+    if (store.readOwner(sessionId).length > 0) {
+        const retained = inspectReplaySession(store, { clock: bindings.clock, sessionId });
+        if (retained.mode !== mode)
+            throw new AppendIntentConflictError("command already names a different session mode");
+        if (!hasRequest) throw new ReplayCompatibilityError(null, null);
+        if (retained.terminal === null) {
+            throw new ReplaySessionInterruptedError(sessionId, retained.classification);
+        }
+        return Object.freeze({ inspection: retained });
+    }
+    const plan = planRestore(store, source, bindings, fields.target);
     const registry = readEffectCompensationRegistry(fields.compensation);
-    if (readSourceDisposition(fields.sourceDisposition) === COMPENSATE_SOURCE) {
+    if (disposition === COMPENSATE_SOURCE) {
+        planEffectCompensations(
+            store,
+            collectReplaySuffixEffects(store, source, plan.stepCount),
+            registry,
+        );
+    }
+    const requestRecordId = retainReplayBranchRequest(store, bindings.commandId, request);
+    if (disposition === COMPENSATE_SOURCE) {
         await compensateSuffix(
             store,
             source,
@@ -280,27 +329,10 @@ async function branch(
             bindings.commandId,
         );
     }
-    const targetTraceCutId =
-        plan.checkpoint?.trace_cut_id ??
-        createReplayCutId(sessionId, source.session_id, plan.stepCount);
-    const origin: ReplayOriginBody = {
-        changes: replay?.changes ?? [],
-        replacement_task: replay?.replacementTask ?? null,
-        source_session_id: source.session_id,
-        source_session_record_id: source.session_record_id,
-        target_checkpoint_id: plan.checkpoint?.checkpoint_id ?? null,
-        target_step_count: plan.stepCount,
-        target_trace_cut_id: targetTraceCutId,
-    };
-    const opened = await openReplayEngine(
-        store,
-        bindings,
-        sessionId,
-        createReplaySessionBody(
-            replaySessionFields(bindings, sessionId, source.program_id, mode, taskAt(0), origin),
-        ),
-        [source.session_record_id],
-    );
+    const opened = await openReplayEngine(store, bindings, sessionId, sessionBody, [
+        source.session_record_id,
+        requestRecordId,
+    ]);
     // A concurrent writer can complete this branch between the retained-receipt check and open.
     /* node:coverage ignore next 3 */
     if ("inspection" in opened) {
@@ -409,6 +441,7 @@ function planRestore(
     source: ReplaySessionInspection,
     bindings: ReplaySessionBindings,
     targetValue: unknown,
+    verifyPhysical = true,
 ): RestorePlan {
     const target = readScopeDataObject(targetValue, [], "target", ["checkpointId", "stepCount"]);
     let checkpoint: ReplayCheckpointInspection | null = null;
@@ -455,8 +488,8 @@ function planRestore(
             source.worlds,
         ) ||
         !sameNames(
-            bindings.processes.map((adapter) => `${adapter.processId} ${adapter.backend}`),
-            source.processes.map((process) => `${process.process_id} ${process.backend}`),
+            bindings.processes.map((adapter) => `${adapter.processId}\u0000${adapter.backend}`),
+            source.processes.map((process) => `${process.process_id}\u0000${process.backend}`),
         )
     ) {
         throw new TypeError("branch worlds and processes must match the source session exactly");
@@ -486,7 +519,9 @@ function planRestore(
         // journal; reading the cut re-verifies its resolver entry before anything is written.
         store.readCut(checkpoint.trace_cut_id);
         for (const retained of checkpoint.constituents) {
-            constituents.push(planConstituent(store, retained, bindings, manifests));
+            constituents.push(
+                verifyPhysical ? planConstituent(store, retained, bindings, manifests) : retained,
+            );
         }
     }
     const withFrontier =

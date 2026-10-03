@@ -1,0 +1,283 @@
+{
+    "append_intents": [
+        {
+            "append_intent_id": "sha256:3076e5dd2d0433e270f8fc8d06322ebfe026e14714d0bf4b1ba4076526084880",
+            "batch_digest": "8765d2116e23562157b3f192eacaa2cf7aa796c95c1e13002e75d94e227386cc",
+            "receipt_json": "{\"append_intent_id\":\"sha256:3076e5dd2d0433e270f8fc8d06322ebfe026e14714d0bf4b1ba4076526084880\",\"causal_edges\":[[\"sha256:867417424debec84ef464c489af35c47d65674bd4900720ba46c2f3f1091dc7d\",\"sha256:f16124de4cfdaf37d6db478d1b1831d6116f7cc21217ea6bb0815003fbf471d6\"]],\"owner_ordinal_ranges\":[[\"replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a\",[3,3]]],\"record_ids\":[\"sha256:f16124de4cfdaf37d6db478d1b1831d6116f7cc21217ea6bb0815003fbf471d6\"]}"
+        },
+        {
+            "append_intent_id": "sha256:31aa9124d23bb828c5c56232be9a9b468db284080d0513a7d89be9b9f73b8e0f",
+            "batch_digest": "3df64ebea0153295d2a46d3b43fa834fd0b9be944b765bec8d5e6d466d7517a3",
+            "receipt_json": "{\"append_intent_id\":\"sha256:31aa9124d23bb828c5c56232be9a9b468db284080d0513a7d89be9b9f73b8e0f\",\"causal_edges\":[[\"sha256:9d876da2bb2fb47a54d130484aebfc21f6fde0e6b0626f4cec60a2b55444bd3f\",\"sha256:867417424debec84ef464c489af35c47d65674bd4900720ba46c2f3f1091dc7d\"]],\"owner_ordinal_ranges\":[[\"replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a\",[2,2]]],\"record_ids\":[\"sha256:867417424debec84ef464c489af35c47d65674bd4900720ba46c2f3f1091dc7d\"]}"
+        },
+        {
+            "append_intent_id": "sha256:3613810b9d00203e1319857ceaeb4aff0a3a87fc5cd190127d0f6ab1153160e4",
+            "batch_digest": "6ce5419548365bae3752333687b3cfebfae97b75038f1347294e6161bf443f40",
+            "receipt_json": "{\"append_intent_id\":\"sha256:3613810b9d00203e1319857ceaeb4aff0a3a87fc5cd190127d0f6ab1153160e4\",\"causal_edges\":[[\"sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf\",\"sha256:9d876da2bb2fb47a54d130484aebfc21f6fde0e6b0626f4cec60a2b55444bd3f\"]],\"owner_ordinal_ranges\":[[\"replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a\",[1,1]]],\"record_ids\":[\"sha256:9d876da2bb2fb47a54d130484aebfc21f6fde0e6b0626f4cec60a2b55444bd3f\"]}"
+        },
+        {
+            "append_intent_id": "sha256:3fa5679fa6ef5f05246fa983a4cedf13bb00156cf8a0dd0347841c59aed49e7c",
+            "batch_digest": "aad2e98585554dfb1fcf2f96f9cf10a6775b062cb90e0037c194c7e5f3d04957",
+            "receipt_json": "{\"append_intent_id\":\"sha256:3fa5679fa6ef5f05246fa983a4cedf13bb00156cf8a0dd0347841c59aed49e7c\",\"causal_edges\":[],\"owner_ordinal_ranges\":[[\"replay-session:sha256:a887d6dac6863a15943b8cda7526955c2d2aee98cd1e63c96b27e7d4e340fcec\",[0,0]]],\"record_ids\":[\"sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf\"]}"
+        },
+        {
+            "append_intent_id": "sha256:c4433a6495cf6d6e31833c882bbf17f69884a9b136194afa6d330ceeedb9e116",
+            "batch_digest": "e1779db5d8e98f18b67935b84a330abafbfc6ce7d82bc6c10f7737d59c9b5676",
+            "receipt_json": "{\"append_intent_id\":\"sha256:c4433a6495cf6d6e31833c882bbf17f69884a9b136194afa6d330ceeedb9e116\",\"causal_edges\":[[\"sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf\",\"sha256:151269a9424ac7feb8e4dfb7181fc3183eebf30b694752567c1f2566fa1bc7bc\"]],\"owner_ordinal_ranges\":[[\"replay-session:sha256:a887d6dac6863a15943b8cda7526955c2d2aee98cd1e63c96b27e7d4e340fcec\",[1,1]]],\"record_ids\":[\"sha256:151269a9424ac7feb8e4dfb7181fc3183eebf30b694752567c1f2566fa1bc7bc\"]}"
+        },
+        {
+            "append_intent_id": "sha256:dbf6c5a354ad6290be595e164800c184397da46d5cc52ca32dc4888224428d92",
+            "batch_digest": "7113def0c24abd41969f79717155f650433b3aea43f5b3df74e0eb92c27f1ee6",
+            "receipt_json": "{\"append_intent_id\":\"sha256:dbf6c5a354ad6290be595e164800c184397da46d5cc52ca32dc4888224428d92\",\"causal_edges\":[[\"sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf\",\"sha256:a9d4cffe7592bf08cfcf30907ba794dcdbf9cd53ca0efa77816af5162985769c\"]],\"owner_ordinal_ranges\":[[\"replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a\",[0,0]]],\"record_ids\":[\"sha256:a9d4cffe7592bf08cfcf30907ba794dcdbf9cd53ca0efa77816af5162985769c\"]}"
+        }
+    ],
+    "blobs": [],
+    "canonical_version": "shepherd.kernel.canonical.v2",
+    "cuts": [
+        {
+            "append_intent_id": "sha256:3613810b9d00203e1319857ceaeb4aff0a3a87fc5cd190127d0f6ab1153160e4",
+            "created_by_record_id": "sha256:9d876da2bb2fb47a54d130484aebfc21f6fde0e6b0626f4cec60a2b55444bd3f",
+            "cut_id": "replay-cut:sha256:546d739ca5ae0dca02b88048ce93e9e8075681d496fc53e31f250964239aa0ba",
+            "publisher_owner_id": "replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a",
+            "target_owner_id": "replay-session:sha256:a887d6dac6863a15943b8cda7526955c2d2aee98cd1e63c96b27e7d4e340fcec",
+            "through_owner_ordinal": 0,
+            "through_record_id": "sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf"
+        }
+    ],
+    "format": "shepherd.trace.archive",
+    "format_version": 1,
+    "kernel_abi_version": "shepherd.kernel.abi.v0",
+    "record_views": [
+        {
+            "append_intent_id": "sha256:dbf6c5a354ad6290be595e164800c184397da46d5cc52ca32dc4888224428d92",
+            "append_position": 0,
+            "owner_id": "replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a",
+            "owner_ordinal": 0,
+            "record_id": "sha256:a9d4cffe7592bf08cfcf30907ba794dcdbf9cd53ca0efa77816af5162985769c"
+        },
+        {
+            "append_intent_id": "sha256:3613810b9d00203e1319857ceaeb4aff0a3a87fc5cd190127d0f6ab1153160e4",
+            "append_position": 0,
+            "owner_id": "replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a",
+            "owner_ordinal": 1,
+            "record_id": "sha256:9d876da2bb2fb47a54d130484aebfc21f6fde0e6b0626f4cec60a2b55444bd3f"
+        },
+        {
+            "append_intent_id": "sha256:31aa9124d23bb828c5c56232be9a9b468db284080d0513a7d89be9b9f73b8e0f",
+            "append_position": 0,
+            "owner_id": "replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a",
+            "owner_ordinal": 2,
+            "record_id": "sha256:867417424debec84ef464c489af35c47d65674bd4900720ba46c2f3f1091dc7d"
+        },
+        {
+            "append_intent_id": "sha256:3076e5dd2d0433e270f8fc8d06322ebfe026e14714d0bf4b1ba4076526084880",
+            "append_position": 0,
+            "owner_id": "replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a",
+            "owner_ordinal": 3,
+            "record_id": "sha256:f16124de4cfdaf37d6db478d1b1831d6116f7cc21217ea6bb0815003fbf471d6"
+        },
+        {
+            "append_intent_id": "sha256:3fa5679fa6ef5f05246fa983a4cedf13bb00156cf8a0dd0347841c59aed49e7c",
+            "append_position": 0,
+            "owner_id": "replay-session:sha256:a887d6dac6863a15943b8cda7526955c2d2aee98cd1e63c96b27e7d4e340fcec",
+            "owner_ordinal": 0,
+            "record_id": "sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf"
+        },
+        {
+            "append_intent_id": "sha256:c4433a6495cf6d6e31833c882bbf17f69884a9b136194afa6d330ceeedb9e116",
+            "append_position": 0,
+            "owner_id": "replay-session:sha256:a887d6dac6863a15943b8cda7526955c2d2aee98cd1e63c96b27e7d4e340fcec",
+            "owner_ordinal": 1,
+            "record_id": "sha256:151269a9424ac7feb8e4dfb7181fc3183eebf30b694752567c1f2566fa1bc7bc"
+        }
+    ],
+    "records": [
+        {
+            "body": {
+                "compatibility_version": "shepherd.replay.v1",
+                "failure": null,
+                "prefix_id": null,
+                "replay_version": 1,
+                "result": { "value": null },
+                "session_id": "replay-session:sha256:a887d6dac6863a15943b8cda7526955c2d2aee98cd1e63c96b27e7d4e340fcec",
+                "status": "finished",
+                "step_count": 0
+            },
+            "envelope": {
+                "caused_by_record_ids": [
+                    "sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf"
+                ],
+                "digest": "sha256:151269a9424ac7feb8e4dfb7181fc3183eebf30b694752567c1f2566fa1bc7bc",
+                "mode": "capture",
+                "record_id": "sha256:151269a9424ac7feb8e4dfb7181fc3183eebf30b694752567c1f2566fa1bc7bc",
+                "schema_ref": "shepherd.replay.terminal.v1",
+                "witness_ref": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777"
+            }
+        },
+        {
+            "body": {
+                "active_binding_refs": [],
+                "actor_ref": "kernel:root",
+                "authority_refs": [],
+                "containment": "full",
+                "provenance_policy_refs": [],
+                "semantic_environment_refs": [],
+                "substrate_ref": "kernel",
+                "visibility_policy_refs": []
+            },
+            "envelope": {
+                "caused_by_record_ids": [],
+                "digest": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777",
+                "mode": "capture",
+                "record_id": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777",
+                "schema_ref": "kernel.witness.root.v1",
+                "witness_ref": ""
+            }
+        },
+        {
+            "body": {
+                "classification": "atomic",
+                "compatibility_version": "shepherd.replay.v1",
+                "constituents": [
+                    {
+                        "evidence": null,
+                        "kind": "trace_cut",
+                        "name": null,
+                        "reason": null,
+                        "receipt_id": "replay-cut:sha256:546d739ca5ae0dca02b88048ce93e9e8075681d496fc53e31f250964239aa0ba",
+                        "status": "verified"
+                    },
+                    {
+                        "evidence": null,
+                        "kind": "provider_session",
+                        "name": null,
+                        "reason": null,
+                        "receipt_id": null,
+                        "status": "not_applicable"
+                    },
+                    {
+                        "evidence": { "step_indices": [] },
+                        "kind": "irreversible_effects",
+                        "name": null,
+                        "reason": null,
+                        "receipt_id": "replay-frontier:sha256:26faa6e77328796d8c5e301f91e05e00605e6e554344482c32e952d05636cf66",
+                        "status": "verified"
+                    }
+                ],
+                "context_prefix_id": null,
+                "prefix_id": null,
+                "replay_version": 1,
+                "session_id": "replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a"
+            },
+            "envelope": {
+                "caused_by_record_ids": [
+                    "sha256:9d876da2bb2fb47a54d130484aebfc21f6fde0e6b0626f4cec60a2b55444bd3f"
+                ],
+                "digest": "sha256:867417424debec84ef464c489af35c47d65674bd4900720ba46c2f3f1091dc7d",
+                "mode": "capture",
+                "record_id": "sha256:867417424debec84ef464c489af35c47d65674bd4900720ba46c2f3f1091dc7d",
+                "schema_ref": "shepherd.replay.restore.v1",
+                "witness_ref": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777"
+            }
+        },
+        {
+            "body": {
+                "command_id": "legacy-source",
+                "compatibility_version": "shepherd.replay.v1",
+                "mode": "root",
+                "origin": null,
+                "processes": [],
+                "program_id": "legacy-program",
+                "provider": null,
+                "provider_session_adapter_id": null,
+                "replay_version": 1,
+                "session_id": "replay-session:sha256:a887d6dac6863a15943b8cda7526955c2d2aee98cd1e63c96b27e7d4e340fcec",
+                "task": null,
+                "worlds": []
+            },
+            "envelope": {
+                "caused_by_record_ids": [],
+                "digest": "sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf",
+                "mode": "declaration",
+                "record_id": "sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf",
+                "schema_ref": "shepherd.replay.session.v1",
+                "witness_ref": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777"
+            }
+        },
+        {
+            "body": {
+                "cut_id": "replay-cut:sha256:546d739ca5ae0dca02b88048ce93e9e8075681d496fc53e31f250964239aa0ba",
+                "publisher_owner_id": "replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a",
+                "target_owner_id": "replay-session:sha256:a887d6dac6863a15943b8cda7526955c2d2aee98cd1e63c96b27e7d4e340fcec",
+                "through_owner_ordinal": 0,
+                "through_record_id": "sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf"
+            },
+            "envelope": {
+                "caused_by_record_ids": [
+                    "sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf"
+                ],
+                "digest": "sha256:9d876da2bb2fb47a54d130484aebfc21f6fde0e6b0626f4cec60a2b55444bd3f",
+                "mode": "capture",
+                "record_id": "sha256:9d876da2bb2fb47a54d130484aebfc21f6fde0e6b0626f4cec60a2b55444bd3f",
+                "schema_ref": "kernel.cut.owner-prefix.v1",
+                "witness_ref": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777"
+            }
+        },
+        {
+            "body": {
+                "command_id": "legacy-branch",
+                "compatibility_version": "shepherd.replay.v1",
+                "mode": "rewind",
+                "origin": {
+                    "changes": [],
+                    "replacement_task": null,
+                    "source_session_id": "replay-session:sha256:a887d6dac6863a15943b8cda7526955c2d2aee98cd1e63c96b27e7d4e340fcec",
+                    "source_session_record_id": "sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf",
+                    "target_checkpoint_id": null,
+                    "target_step_count": 0,
+                    "target_trace_cut_id": "replay-cut:sha256:546d739ca5ae0dca02b88048ce93e9e8075681d496fc53e31f250964239aa0ba"
+                },
+                "processes": [],
+                "program_id": "legacy-program",
+                "provider": null,
+                "provider_session_adapter_id": null,
+                "replay_version": 1,
+                "session_id": "replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a",
+                "task": null,
+                "worlds": []
+            },
+            "envelope": {
+                "caused_by_record_ids": [
+                    "sha256:87cfced862ee194aed0e3bbcf4dce9079e1e8a2a984024f1fb1f6d1fdc210ccf"
+                ],
+                "digest": "sha256:a9d4cffe7592bf08cfcf30907ba794dcdbf9cd53ca0efa77816af5162985769c",
+                "mode": "declaration",
+                "record_id": "sha256:a9d4cffe7592bf08cfcf30907ba794dcdbf9cd53ca0efa77816af5162985769c",
+                "schema_ref": "shepherd.replay.session.v1",
+                "witness_ref": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777"
+            }
+        },
+        {
+            "body": {
+                "compatibility_version": "shepherd.replay.v1",
+                "failure": null,
+                "prefix_id": null,
+                "replay_version": 1,
+                "result": null,
+                "session_id": "replay-session:sha256:a15f115e480d45eba848fadbb6a4b4973476edacb767409d4d4b62c748a6091a",
+                "status": "rewound",
+                "step_count": 0
+            },
+            "envelope": {
+                "caused_by_record_ids": [
+                    "sha256:867417424debec84ef464c489af35c47d65674bd4900720ba46c2f3f1091dc7d"
+                ],
+                "digest": "sha256:f16124de4cfdaf37d6db478d1b1831d6116f7cc21217ea6bb0815003fbf471d6",
+                "mode": "capture",
+                "record_id": "sha256:f16124de4cfdaf37d6db478d1b1831d6116f7cc21217ea6bb0815003fbf471d6",
+                "schema_ref": "shepherd.replay.terminal.v1",
+                "witness_ref": "sha256:4826dd37b9ecc0c00121d77ccb9247d2e70b4f5386d6e3d464f2811fbc739777"
+            }
+        }
+    ]
+}

@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.0.0] - 2026-10-03
+
+### Breaking Changes
+
+- Replay protocol v4 binds branch commands to a separately versioned normalized request before
+  compensation or restoration. A changed request now raises an explicit conflict before receipt
+  replay or physical work; malformed dispositions are rejected on completed commands too (#237).
+- Legacy branch commands without a request journal no longer replay their completed receipt through
+  rewind/replay. Their trace remains inspectable, but disposition and checkpoint policy cannot be
+  inferred safely. There is no automatic backfill; inspect the old result and choose any new branch
+  deliberately. New branch session records causally cite their request record.
+
+### New Feature
+
+- `inspectReplayBranchRequest` exposes immutable normalized request evidence after reopen/import,
+  including interrupted compensation before the branch session opened. It returns null for absent
+  or legacy requests. Exact retries preserve the retained result and materialization-keyed
+  compensation semantics.
+
+### Impact
+
+MAJOR release for the durable branch-retry contract. Request identity covers mode, source, target,
+source disposition, declared changes, replacement task, checkpoint policy and declared session
+bindings. Operational clocks, claims, signals, physical roots and callback objects are excluded as
+specified in the request-identity guide. Compensation attempt ownership remains tracked in #240.
+
 ## [12.0.2] - 2026-10-03
 
 ### Defect Fixes

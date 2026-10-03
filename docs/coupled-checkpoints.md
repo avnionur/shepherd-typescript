@@ -62,7 +62,8 @@ explicit `checkpoint()` there would be: the same descriptor, the same cut, the s
 explicit call at that boundary returns the automatic capture. A replay branch captures only
 boundaries at or after its target, starting with the restored target boundary; its recorded prefix
 reuses the source's retained checkpoints. Rewind runs no program and takes no policy. The policy
-itself is not retained: the retained checkpoints are the evidence.
+is retained for branch replays in the [normalized request journal](./replay-request-identity.md);
+root sessions still retain only their checkpoint evidence.
 
 Every checkpointed boundary of a world- or process-bound session is a rewind and replay target
 (`{ checkpointId }`); a step-boundary target without a checkpoint is still refused

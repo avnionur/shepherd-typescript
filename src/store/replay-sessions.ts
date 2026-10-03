@@ -1,8 +1,10 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { AppendBatchDraft } from "../append/types.ts";
+import { canonicalizeSemanticValue, type SemanticValue } from "../canonical/canonical-record.ts";
 import { kernelProtocolConfig, replayProtocolConfig } from "../protocol/config.ts";
 import type { RecordId } from "../record/types.ts";
 import {
+    ReplayCompatibilityError,
     ReplayEvidenceError,
     ReplayLeaseConflictError,
     ReplayLeaseFencedError,
@@ -12,7 +14,7 @@ import { appendWithinTraceStoreTransaction } from "./append.ts";
 import { STORE_TABLES, STORE_TRANSACTION_SQL } from "./constants.ts";
 import { publishStoredCutWithinTransaction } from "./cuts.ts";
 import { assertNonNegativeMilliseconds } from "./durable-execution-claims.ts";
-import { TraceStoreError } from "./errors.ts";
+import { AppendIntentConflictError, TraceStoreError } from "./errors.ts";
 import { readOwnerRecordAtOrdinal } from "./read.ts";
 import { hasAppendIntent, readScopeHead } from "./scope-registrations.ts";
 import type { AppendReceipt, Cut, CutSpec, StoreAppendRequest } from "./types.ts";
@@ -80,6 +82,14 @@ export function openReplaySessionInStore(
     const leaseExpiresAt = readLeaseExpiry(nowMilliseconds);
     database.exec(STORE_TRANSACTION_SQL.begin);
     try {
+        const proposed = request.batch.groups[0]?.records[0]?.body;
+        if (
+            proposed?.mode === replayProtocolConfig.modes[0] &&
+            readScopeHead(database, sessionId + replayProtocolConfig.branch.request.ownerSuffix) !==
+                undefined
+        ) {
+            throw new AppendIntentConflictError("command is reserved for a replay branch");
+        }
         const replay = hasAppendIntent(database, request.append_intent_id);
         if (!replay && readScopeHead(database, sessionId) !== undefined) {
             throw new ReplayEvidenceError(`owner path ${sessionId} already retains records`);
@@ -105,6 +115,44 @@ export function openReplaySessionInStore(
         }
         database.exec(STORE_TRANSACTION_SQL.commit);
         return Object.freeze({ created: !replay, row });
+    } catch (error) {
+        rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
+        throw error;
+    }
+}
+
+/** Atomically reserves a normalized branch request while refusing a raced root session. @internal */
+export function retainReplayBranchRequestInStore(
+    database: DatabaseSync,
+    sessionId: string,
+    request: StoreAppendRequest,
+): AppendReceipt {
+    database.exec(STORE_TRANSACTION_SQL.begin);
+    try {
+        const head = readScopeHead(database, sessionId);
+        if (head !== undefined) {
+            const first = readOwnerRecordAtOrdinal(
+                database,
+                sessionId,
+                kernelProtocolConfig.append.firstOwnerOrdinal,
+            );
+            if (
+                canonicalizeSemanticValue(first.body) !==
+                canonicalizeSemanticValue(
+                    request.batch.groups[0]?.records[0]?.body.session as SemanticValue,
+                )
+            ) {
+                throw new AppendIntentConflictError(
+                    "command already names a different replay session",
+                );
+            }
+            if (!hasAppendIntent(database, request.append_intent_id)) {
+                throw new ReplayCompatibilityError(null, null);
+            }
+        }
+        const receipt = appendWithinTraceStoreTransaction(database, request);
+        database.exec(STORE_TRANSACTION_SQL.commit);
+        return receipt;
     } catch (error) {
         rollbackFailedTransaction(database, STORE_TRANSACTION_SQL.rollback);
         throw error;

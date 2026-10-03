@@ -2115,6 +2115,24 @@ export const REPLAY_PROTOCOL_V3_CONTRACT = deepFreeze({
     },
 } as const);
 
+/** Replay v4 adds a separately versioned normalized branch-request journal before physical work. */
+export const REPLAY_PROTOCOL_V4_CONTRACT = deepFreeze({
+    ...REPLAY_PROTOCOL_V3_CONTRACT,
+    branch: {
+        ...REPLAY_PROTOCOL_V3_CONTRACT.branch,
+        request: {
+            appendIntentKind: "branch-request",
+            compatibilityVersion: "shepherd.replay.branch-request.v1",
+            ownerSuffix: ":request",
+            recordVersion: 1,
+            schemaId:
+                "https://avnionur.github.io/shepherd-typescript/schemas/replay-branch-request-v1.schema.json",
+            schemaPath: "spec/schemas/replay-branch-request-v1.schema.json",
+            schemaRef: "shepherd.replay.branch-request.v1",
+        },
+    },
+} as const);
+
 /** Immutable live subscription, supervised interception, approval, and context contract implemented by supervision v1. */
 export const SUPERVISION_PROTOCOL_V1_CONTRACT = deepFreeze({
     approval: {

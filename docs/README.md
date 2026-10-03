@@ -5,6 +5,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 
 ## Guides
 
+- [Replay request identity](./replay-request-identity.md) defines normalized branch commands,
+  reservation before physical work, read-only inspection, concurrent conflicts and legacy refusal.
+
 - [Capability evidence inventory](./generated/capability-inventory.md) separates upstream release
   vocabulary, paper targets, imported formal evidence and native extensions, with seven evidence
   dimensions, checked public exports, content-pinned citations and open follow-up issues.

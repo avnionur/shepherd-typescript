@@ -136,8 +136,21 @@ export function readReplayConfig(
     );
     const branch = readObject(
         replay.branch,
-        ["defaultSourceDisposition", "sourceDispositions"],
+        ["defaultSourceDisposition", "request", "sourceDispositions"],
         "replay.branch",
+    );
+    const request = readObject(
+        branch.request,
+        [
+            "appendIntentKind",
+            "compatibilityVersion",
+            "ownerSuffix",
+            "recordVersion",
+            "schemaId",
+            "schemaPath",
+            "schemaRef",
+        ],
+        "replay.branch.request",
     );
     const sourceDispositions = readVocabulary(
         branch.sourceDispositions,
@@ -251,7 +264,30 @@ export function readReplayConfig(
             "replay.artifacts",
             readNonEmptyString,
         ),
-        branch: { defaultSourceDisposition, sourceDispositions },
+        branch: {
+            defaultSourceDisposition,
+            sourceDispositions,
+            request: {
+                ...readRecord(
+                    request,
+                    [
+                        "appendIntentKind",
+                        "compatibilityVersion",
+                        "ownerSuffix",
+                        "schemaPath",
+                        "schemaRef",
+                    ],
+                    "replay.branch.request",
+                    readNonEmptyString,
+                    true,
+                ),
+                recordVersion: readPositiveInteger(
+                    request.recordVersion,
+                    "replay.branch.request.recordVersion",
+                ),
+                schemaId: readAbsoluteUrl(request.schemaId, "replay.branch.request.schemaId"),
+            },
+        },
         cache: { statuses: readVocabulary(cache.statuses, "replay.cache.statuses", 2) },
         changes: readVocabulary(replay.changes, "replay.changes", 3),
         checkpoint: {

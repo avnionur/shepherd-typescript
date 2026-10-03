@@ -837,6 +837,10 @@ export {
 } from "./replay/analysis.ts";
 export { replayReplaySession, rewindReplaySession } from "./replay/branch.ts";
 export {
+    inspectReplayBranchRequest,
+    type ReplayBranchRequestInspection,
+} from "./replay/branch-request.ts";
+export {
     ReplayCheckpointUnavailableError,
     ReplayCompatibilityError,
     ReplayEffectRefusedError,
