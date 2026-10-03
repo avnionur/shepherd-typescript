@@ -1,6 +1,5 @@
 import { lstat, mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
-
 import { readPublicErrorConfig } from "../../src/errors/public-errors.ts";
 import { assertSupportedProtocolCompatibility } from "../../src/protocol/config-compatibility.ts";
 import type { ProtocolConfig } from "../../src/protocol/config-types.ts";
@@ -90,6 +89,7 @@ import {
 import { renderTelemetryBatchSchema } from "./schemas/telemetry-schemas.ts";
 import { renderTraceArchiveSchema } from "./schemas/trace-archive-schema.ts";
 import { renderApplicationTreeRlRolloutSchema } from "./schemas/tree-rl-schemas.ts";
+import { renderWorldEffectSchema } from "./schemas/world-effect-schema.ts";
 
 /** Repository and execution mode for deterministic protocol artifact synchronization. */
 export type ProtocolArtifactOptions = {
@@ -423,6 +423,10 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderApplicationEvaluationSchema(config)),
             relativePath: config.applications.artifacts.evaluationSchema,
+        },
+        {
+            content: renderJson(renderWorldEffectSchema(config)),
+            relativePath: config.workspaces.worldTaskCapture.operationJournal.schemaPath,
         },
         {
             content: renderJson(renderWorldCaptureSchema(config)),
@@ -2242,6 +2246,17 @@ ${renderedNativeJailProcessStatuses}
 
 /** Configured native process-group quiescence statuses. @public */
 export const NATIVE_JAIL_QUIESCENCE_STATUSES = [${renderedNativeJailQuiescenceStatuses}] as const;
+
+/** Configured world-operation journal phases. @public */
+export const WORLD_EFFECT_PHASES = [${config.workspaces.worldTaskCapture.operationJournal.phases.map((value) => JSON.stringify(value)).join(", ")}] as const;
+
+/** Configured world-operation outcomes. @public */
+export const WORLD_EFFECT_OUTCOMES = [${config.workspaces.worldTaskCapture.operationJournal.outcomes.map((value) => JSON.stringify(value)).join(", ")}] as const;
+
+/** Configured world-operation evidence recovery classifications. @public */
+export const WORLD_EFFECT_RECOVERY = [
+${config.workspaces.worldTaskCapture.operationJournal.recovery.map((value) => `    ${JSON.stringify(value)},`).join("\n")}
+] as const;
 
 /** Configured durable retained-world output statuses. @public */
 export const RETAINED_WORLD_OUTPUT_STATUSES = [${renderedRetainedWorldOutputStatuses}] as const;

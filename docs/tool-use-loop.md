@@ -122,6 +122,13 @@ scope cites its resolution ([effect compensation](./compensation.md));
 [`tool-loop-compensation.test.ts`](../test/agent/tool-loop-compensation.test.ts) rewinds a loop
 past two compensable calls.
 
+### Inner retained-world operations
+
+A handler using the supplied retained-world capability also produces
+[per-operation world evidence](./world-effect-journal.md). One outer tool may perform multiple
+reads/writes, each with its own intent, admission and outcome. These inner records preserve
+intermediate history without replacing the outer tool-call record or repeating its physical work.
+
 ## Scripted models
 
 `createProgramConversationProvider({ id, model?, respond })` answers each turn with a caller

@@ -3,8 +3,8 @@
         "digest": "sha256:b2997b7bdea168036ad7425bf16c4e5556fbbbabd78d59f4b82217fba597b768",
         "entries": 137
     },
-    "packageVersion": "13.0.0",
-    "previousVersion": "12.0.2",
+    "packageVersion": "13.1.0",
+    "previousVersion": "13.0.0",
     "surface": {
         "commandOptions": {
             "demo write": {},
@@ -210,6 +210,7 @@
             "protocol.config.json#/workspaces/settlement/citationCutIdPrefix": "world-settlement-citation-cut:",
             "protocol.config.json#/workspaces/settlement/operationIdPrefix": "world-settlement-operation:sha256:",
             "protocol.config.json#/workspaces/settlement/requestIdPrefix": "world-settlement:sha256:",
+            "protocol.config.json#/workspaces/worldTaskCapture/operationJournal/effectIdPrefix": "world-effect:sha256:",
             "protocol.config.json#/workspaces/worldTaskCapture/outputIdPrefix": "world-output:sha256:"
         },
         "migrations": {
@@ -305,7 +306,8 @@
             "world-capture-journal-v2.schema.json": {"defs":{},"digest":"sha256:57b0f0ed1a8d6f0f82d21aca249f3fd0e15ab74069dc5df43af1772659a4ae72","oneOf":["sha256:c00780af133a5d1252d5b8fdb0efcb28e54e66fc1f43ca751840054615f247e3","sha256:5e9c8683922497de983efc362544a6c94ac2fcb1cb3256199a9023380ce81449","sha256:f9266cf05784e846f63dd5c16edafa1de858cc3f818dd50bd8ac62c156614b3a","sha256:8152020fd73084aae79b2e07f9497ff7fc4ddb9828a8380053617d5a7a46e853"],"rest":"sha256:5376bd44bf37468e3f8dc3b715b5383e6d643a544149bd6764cdc12f45c51204"},
             "world-capture-journal-v3.schema.json": {"defs":{},"digest":"sha256:e453e7c7f8b4572d94d91caa3d2b0d624babe188564c6e52fcc8e3072c44d561","oneOf":["sha256:fe77b4094a2530eba0b898154d5793266ac527acb1e88f08fc7fb0aa58d8dc78","sha256:4203e57c68c2be6d046f273ac3271e41a4145d296af3cf187aeb9d62b5b56b5b","sha256:a3746040312c32ba33aee48dbf35f4bcbb665ac9f3e719f2123cc5a000e341a8","sha256:81fa30d392adac30b93aa91382e7c54c39f8fb41499b68f629ab6a5d72d2cd07"],"rest":"sha256:c135456d08c421b5c01db00f39b46de83441d43a42ec8944cc6fa2af92d256ea"},
             "world-capture-journal-v4.schema.json": {"defs":{},"digest":"sha256:5d0857c44d90fc68578c2367d057c9e107e8841e7f85b1e5c04a7e21be23bdf9","oneOf":["sha256:475df1e419f4a867c24479fee4d9cf67326d84742b1ff87cc26f6df45efbcc67","sha256:d91a2ed712b2893c5f0f2dcbf2f35f3979057bd73fdd5cb611266c7faa3545ff","sha256:97c85dd99bd92f38d61759b29fb4d74c6831b3842c85e35db0b2388ebf1e4295","sha256:bc7e2656500ebaa548e717d97bdf0f46bd9a0b0ce5cd9ca2acb97a5b2b4d8e90"],"rest":"sha256:821dcb808d73f11e28aa976ee961871e7de5ee4ed43a166c03db060e7d207924"},
-            "world-capture-v1.schema.json": {"defs":{},"digest":"sha256:5268f8e215df29c0d92e2b453a1beabe0704ff54a2bce1b627e1df2f137bcad2","oneOf":null,"rest":"sha256:5268f8e215df29c0d92e2b453a1beabe0704ff54a2bce1b627e1df2f137bcad2"}
+            "world-capture-v1.schema.json": {"defs":{},"digest":"sha256:5268f8e215df29c0d92e2b453a1beabe0704ff54a2bce1b627e1df2f137bcad2","oneOf":null,"rest":"sha256:5268f8e215df29c0d92e2b453a1beabe0704ff54a2bce1b627e1df2f137bcad2"},
+            "world-effect-journal-v1.schema.json": {"defs":{"contentEvidence":"sha256:5c2f5846083e1c5d55f59ce252f5b2de3c11384dae4a8164c04948cce90b4ada","effectIntent":"sha256:623fc29784e4c9b6db3c944b1c5aad5baef7de3a1f2b5786614f25a79a9b89bf","effectOutcome":"sha256:fd896a29f13f583ae5b487e2770c3adc473081556a58e16d770a3082943906d6","pathEvidence":"sha256:150b3ce054c57b13bf0b0518218be2dff7f418e9050f83bb42d383cc4da28f88","semanticValue":"sha256:55ce0f1d37d788d7d563829fce21c691d42774547446e90304fe685bbcca09a9"},"digest":"sha256:0c75ad0527e99e20c4c1f863111c1a2569de6a157ae80bbc89b4bad362290b11","oneOf":["sha256:28fb2f8f4fd2cb15e41a6299c99a51dcb3cfa97e11eed0702d90d41269f6b15c","sha256:4beb8b6197e33587bc81896af600daf30c7f552c24be5eb2f3dd71477a2ed84e","sha256:9cb279f49fa638d663683ab176a547a90b7effead6040c84f10866d35dbad6a1","sha256:bc8be493642ff0ad646ded0ad286e938c55cccd244288b5d0470b8dd8ceeb8be"],"rest":"sha256:dbf66d548a5e6cc9d91ab377473f221ed915650a2196045360f39e11d765a261"}
         },
         "versions": {
             "protocol.config.json#/applications/compatibilityVersion": "shepherd.applications.v1",
@@ -425,6 +427,8 @@
             "protocol.config.json#/workspaces/worldCapture/version": 6,
             "protocol.config.json#/workspaces/worldExecution/runnerVersion": 7,
             "protocol.config.json#/workspaces/worldTaskCapture/journalVersion": 12,
+            "protocol.config.json#/workspaces/worldTaskCapture/operationJournal/compatibilityVersion": "shepherd.world-effects.v1",
+            "protocol.config.json#/workspaces/worldTaskCapture/operationJournal/version": 1,
             "protocol.config.json#/workspaces/worldTaskCapture/ordinaryJournalVersion": 9,
             "protocol.config.json#/workspaces/worldTaskCapture/version": 8,
             "public-errors.config.json#/compatibilityVersion": "shepherd.public-errors.v1",

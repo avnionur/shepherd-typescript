@@ -20,7 +20,7 @@ import {
     SUPERVISION_PROTOCOL_V1_CONTRACT,
     TASK_PROTOCOL_V1_CONTRACT,
     TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
-    WORKSPACE_PROTOCOL_V27_CONTRACT,
+    WORKSPACE_PROTOCOL_V28_CONTRACT,
 } from "./compatibility-constants.ts";
 import type { ProtocolConfig } from "./config-types.ts";
 import { sameStrings } from "./config-value-readers.ts";
@@ -96,6 +96,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         config.workspaces.settlement.citationSchemaPath,
         config.workspaces.worldTaskCapture.captureSchemaPath,
         config.workspaces.worldTaskCapture.journalSchemaPath,
+        config.workspaces.worldTaskCapture.operationJournal.schemaPath,
     ];
     if (new Set(artifactDestinations).size !== artifactDestinations.length) {
         throw new TypeError("protocol artifact destinations must be unique");
@@ -153,7 +154,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     // Git subprocess hardening is operational and never reaches recorded workspace evidence.
     const { gitInvocation: _gitInvocation, ...workspaceIdentity } = config.workspaces;
-    if (!sameJson(workspaceIdentity, WORKSPACE_PROTOCOL_V27_CONTRACT)) {
+    if (!sameJson(workspaceIdentity, WORKSPACE_PROTOCOL_V28_CONTRACT)) {
         throw new TypeError("workspace constants require a new workspace protocol");
     }
     if (!sameJson(config.applications, APPLICATIONS_PROTOCOL_V10_CONTRACT)) {

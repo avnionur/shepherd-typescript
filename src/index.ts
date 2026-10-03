@@ -758,6 +758,9 @@ export {
     TOOL_LOOP_STATUSES,
     WORLD_CHANGESET_ERROR_CODES,
     WORLD_CHANGESET_INSPECTION_LIMITS,
+    WORLD_EFFECT_OUTCOMES,
+    WORLD_EFFECT_PHASES,
+    WORLD_EFFECT_RECOVERY,
 } from "./protocol/values.generated.ts";
 export { createProviderConversation } from "./provider/conversation.ts";
 export {
@@ -1635,3 +1638,11 @@ export type {
     WorldTextPreviewOptions,
     WorldVerification,
 } from "./workspace/types.ts";
+export { inspectTaskWorldEffects } from "./workspace/world-effect-journal.ts";
+export type {
+    WorldEffectAuthority,
+    WorldEffectJournalEvidence,
+    WorldEffectJournalInspection,
+    WorldEffectOperationInspection,
+    WorldEffectTextEvidence,
+} from "./workspace/world-effect-types.ts";

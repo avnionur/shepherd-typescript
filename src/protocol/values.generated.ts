@@ -350,6 +350,21 @@ export const NATIVE_JAIL_PROCESS_STATUSES = [
 /** Configured native process-group quiescence statuses. @public */
 export const NATIVE_JAIL_QUIESCENCE_STATUSES = ["proven", "uncertain"] as const;
 
+/** Configured world-operation journal phases. @public */
+export const WORLD_EFFECT_PHASES = ["opened", "intent", "admitted", "outcome"] as const;
+
+/** Configured world-operation outcomes. @public */
+export const WORLD_EFFECT_OUTCOMES = ["succeeded", "refused", "failed", "cancelled"] as const;
+
+/** Configured world-operation evidence recovery classifications. @public */
+export const WORLD_EFFECT_RECOVERY = [
+    "absent",
+    "recording",
+    "not_materialized",
+    "uncertain",
+    "settled",
+] as const;
+
 /** Configured durable retained-world output statuses. @public */
 export const RETAINED_WORLD_OUTPUT_STATUSES = ["retained"] as const;
 

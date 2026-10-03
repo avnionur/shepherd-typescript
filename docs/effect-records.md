@@ -51,6 +51,10 @@ This module defines records and correlation only. The separate
 module materializes world changes, appends records, enforces intent-before-outcome ordering across
 storage, or runs observers and interceptors.
 
+The [retained-world operation journal](./world-effect-journal.md) composes these same typed
+intent/outcome records with invocation-fenced admission, resource authority and automatic
+filesystem-capability logging. It is a separate runtime boundary from the pure constructors here.
+
 ## Reversibility tiers
 
 The tier governs how the substrate undoes an effect it abandons. `reversible` effects are undone by

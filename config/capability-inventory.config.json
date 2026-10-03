@@ -90,12 +90,16 @@
                 {
                     "entry": "./workspace",
                     "symbol": "prepareRetainedWorldSettlement"
+                },
+                {
+                    "entry": "./workspace",
+                    "symbol": "inspectTaskWorldEffects"
                 }
             ],
             "dimensions": {
                 "api": "Supported: retained capture, inspect, select/apply/discard/release and authenticated repository grants.",
-                "composition": "Adapted: disjoint bindings can be created, but each retained task exposes one repository world. Built-in world operations do not each have an individual durable effect record. CLI task inspection does not expose grant evidence.",
-                "recovery": "Capture and settlement have durable recovery; this does not imply automatic safe tool-effect replay.",
+                "composition": "Adapted: each retained task exposes one repository world. Supplied readText/writeText capabilities journal individual intents, admissions and outcomes even when the final changeset is empty. CLI task inspection does not expose grant evidence.",
+                "recovery": "Capture and settlement have durable recovery; operation inspection survives reopen/import and distinguishes unentered work from uncertain admission without replaying an arbitrary runner.",
                 "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
                 "performance": "No performance result claimed by this row.",
                 "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
@@ -108,7 +112,7 @@
                 },
                 {
                     "path": "docs/task-world-execution.md",
-                    "sha256": "237f9e1a67eff6084bde22912e5cafd5609a5d49cc80150ca016fef63b4c0eae"
+                    "sha256": "223cee27e47f5f968797564a36970c94a7b3b5ee5be8e644dbcedf1e26b845c0"
                 },
                 {
                     "path": "docs/retained-world-settlement.md",
@@ -133,10 +137,21 @@
                 {
                     "path": "test/workspace/retained-world-release.test.ts",
                     "sha256": "1b67ec55a1f0a14b8612a7e870cb607ab4ac482bf712676be8408f394696bb18"
+                },
+                {
+                    "path": "docs/world-effect-journal.md",
+                    "sha256": "d96ba974f6d95746edb5924d9f12fd76dfa221ab2ed223ea7759fa4987951886"
+                },
+                {
+                    "path": "test/workspace/world-effect-journal.test.ts",
+                    "sha256": "39798ba3ac47e067fca6874f30a7e5c11991648560d7edc97fbbd09bbb5517c1"
+                },
+                {
+                    "path": "test/workspace/world-effect-crash.test.ts",
+                    "sha256": "94a6287a3da5fb7d788dc6dbe8e7e52ab8d1300fb3659e5135248a0f2cbfd24e"
                 }
             ],
             "issues": [
-                "https://github.com/avnionur/shepherd-typescript/issues/238",
                 "https://github.com/avnionur/shepherd-typescript/issues/239",
                 "https://github.com/avnionur/shepherd-typescript/issues/247"
             ]
@@ -309,12 +324,16 @@
                 {
                     "entry": "./supervision",
                     "symbol": "dispatchSupervisedEffect"
+                },
+                {
+                    "entry": "./workspace",
+                    "symbol": "inspectTaskWorldEffects"
                 }
             ],
             "dimensions": {
                 "api": "Supported: typed intent/outcome records, handler stacks, trace subscriptions and supervised dispatch.",
-                "composition": "Adapted: in-process handler stacks alone are not durable dispatch. Direct retained-world operations still need per-operation effect integration.",
-                "recovery": "Subscriptions retain acknowledgements; supervised dispatch fences ownership. Neither proves all built-in world operations are journaled.",
+                "composition": "Adapted: in-process handler stacks alone are not durable dispatch. Supplied retained-world readText/writeText operations automatically retain individual effects, distinct from enclosing tool-loop effects.",
+                "recovery": "Subscriptions retain acknowledgements; supervised dispatch fences ownership. Retained capability journals preserve exact authority and reject uncertain publication; direct filesystem calls and native syscalls are outside this operation journal.",
                 "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
                 "performance": "No performance result claimed by this row.",
                 "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
@@ -332,9 +351,21 @@
                 {
                     "path": "docs/supervised-effects.md",
                     "sha256": "c1393572b74536b26bc9a9effb907328c97c247b86f9839241d3fe4ac7850358"
+                },
+                {
+                    "path": "docs/world-effect-journal.md",
+                    "sha256": "d96ba974f6d95746edb5924d9f12fd76dfa221ab2ed223ea7759fa4987951886"
+                },
+                {
+                    "path": "test/workspace/world-effect-journal.test.ts",
+                    "sha256": "39798ba3ac47e067fca6874f30a7e5c11991648560d7edc97fbbd09bbb5517c1"
+                },
+                {
+                    "path": "test/workspace/world-effect-crash.test.ts",
+                    "sha256": "94a6287a3da5fb7d788dc6dbe8e7e52ab8d1300fb3659e5135248a0f2cbfd24e"
                 }
             ],
-            "issues": ["https://github.com/avnionur/shepherd-typescript/issues/238"]
+            "issues": []
         },
         {
             "id": "compensation",

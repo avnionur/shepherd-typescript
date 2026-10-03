@@ -1,0 +1,668 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/world-effect-journal-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Do not edit directly.",
+    "title": "Shepherd World Effect Journal v1",
+    "oneOf": [
+        {
+            "type": "object",
+            "required": [
+                "authority",
+                "capture_id",
+                "compatibility_version",
+                "phase",
+                "run_id",
+                "world_effect_version"
+            ],
+            "properties": {
+                "capture_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "x-shepherd-max-utf8-bytes": 256
+                },
+                "compatibility_version": {
+                    "const": "shepherd.world-effects.v1"
+                },
+                "run_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "world_effect_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "opened"
+                },
+                "authority": {
+                    "type": "object",
+                    "required": [
+                        "authority",
+                        "base_revision_id",
+                        "binding_id",
+                        "claim_id",
+                        "content_policy",
+                        "custody_id",
+                        "enforcement",
+                        "fencing_token",
+                        "grant_plan_id",
+                        "resource_id"
+                    ],
+                    "properties": {
+                        "authority": {
+                            "type": "array",
+                            "items": {
+                                "enum": [
+                                    "read",
+                                    "write"
+                                ]
+                            },
+                            "uniqueItems": true,
+                            "maxItems": 2
+                        },
+                        "base_revision_id": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "binding_id": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "claim_id": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "content_policy": {
+                            "const": "digest_only"
+                        },
+                        "custody_id": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "enforcement": {
+                            "enum": [
+                                "advisory",
+                                "native-syscall-deny"
+                            ]
+                        },
+                        "fencing_token": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                        },
+                        "grant_plan_id": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        },
+                        "resource_id": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "capture_id",
+                "compatibility_version",
+                "effect",
+                "index",
+                "phase",
+                "run_id",
+                "world_effect_version"
+            ],
+            "properties": {
+                "capture_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "x-shepherd-max-utf8-bytes": 256
+                },
+                "compatibility_version": {
+                    "const": "shepherd.world-effects.v1"
+                },
+                "run_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "world_effect_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "intent"
+                },
+                "index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                },
+                "effect": {
+                    "$ref": "#/$defs/effectIntent"
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "capture_id",
+                "compatibility_version",
+                "effect_id",
+                "index",
+                "phase",
+                "run_id",
+                "world_effect_version"
+            ],
+            "properties": {
+                "capture_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "x-shepherd-max-utf8-bytes": 256
+                },
+                "compatibility_version": {
+                    "const": "shepherd.world-effects.v1"
+                },
+                "run_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "world_effect_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "admitted"
+                },
+                "index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                },
+                "effect_id": {
+                    "type": "string",
+                    "pattern": "^world-effect:sha256:[0-9a-f]{64}$"
+                }
+            },
+            "additionalProperties": false
+        },
+        {
+            "type": "object",
+            "required": [
+                "capture_id",
+                "compatibility_version",
+                "effect",
+                "index",
+                "phase",
+                "run_id",
+                "world_effect_version"
+            ],
+            "properties": {
+                "capture_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "x-shepherd-max-utf8-bytes": 256
+                },
+                "compatibility_version": {
+                    "const": "shepherd.world-effects.v1"
+                },
+                "run_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "world_effect_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "outcome"
+                },
+                "index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                },
+                "effect": {
+                    "$ref": "#/$defs/effectOutcome"
+                }
+            },
+            "additionalProperties": false
+        }
+    ],
+    "$defs": {
+        "semanticValue": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/semanticValue"
+                    }
+                }
+            ]
+        },
+        "effectIntent": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$comment": "Generated from protocol.config.json. Do not edit directly.",
+            "title": "Shepherd Effect Intent v1",
+            "description": "Typed action record emitted before an effect may materialize.",
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_version",
+                "kind",
+                "payload",
+                "phase",
+                "reversibility"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "pattern": "^world-effect:sha256:[0-9a-f]{64}$"
+                },
+                "intent_version": {
+                    "const": 1
+                },
+                "kind": {
+                    "enum": [
+                        "retained_world.read_text",
+                        "retained_world.write_text"
+                    ]
+                },
+                "payload": {
+                    "type": "object",
+                    "required": [
+                        "authority_record_id",
+                        "content",
+                        "path",
+                        "required_atom"
+                    ],
+                    "properties": {
+                        "authority_record_id": {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        "content": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "$ref": "#/$defs/contentEvidence"
+                                }
+                            ]
+                        },
+                        "path": {
+                            "$ref": "#/$defs/pathEvidence"
+                        },
+                        "required_atom": {
+                            "enum": [
+                                "read",
+                                "write"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "phase": {
+                    "const": "intent"
+                },
+                "reversibility": {
+                    "const": "reversible"
+                }
+            },
+            "additionalProperties": false
+        },
+        "effectOutcome": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$comment": "Generated from protocol.config.json. Do not edit directly.",
+            "title": "Shepherd Effect Outcome v1",
+            "description": "Typed world response bound to one complete canonical effect intent.",
+            "type": "object",
+            "required": [
+                "effect_id",
+                "intent_ref",
+                "kind",
+                "outcome_version",
+                "phase",
+                "result"
+            ],
+            "properties": {
+                "effect_id": {
+                    "type": "string",
+                    "pattern": "^world-effect:sha256:[0-9a-f]{64}$"
+                },
+                "intent_ref": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "kind": {
+                    "enum": [
+                        "retained_world.read_text",
+                        "retained_world.write_text"
+                    ]
+                },
+                "outcome_version": {
+                    "const": 1
+                },
+                "phase": {
+                    "const": "outcome"
+                },
+                "result": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "ok",
+                                "value"
+                            ],
+                            "properties": {
+                                "ok": {
+                                    "const": true
+                                },
+                                "value": {
+                                    "type": "object",
+                                    "required": [
+                                        "result",
+                                        "status"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "const": "succeeded"
+                                        },
+                                        "result": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "null"
+                                                },
+                                                {
+                                                    "$ref": "#/$defs/contentEvidence"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "error",
+                                "ok"
+                            ],
+                            "properties": {
+                                "ok": {
+                                    "const": false
+                                },
+                                "error": {
+                                    "type": "object",
+                                    "required": [
+                                        "status"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "enum": [
+                                                "refused",
+                                                "failed",
+                                                "cancelled"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "contentEvidence": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "byte_length",
+                        "digest",
+                        "valid_text",
+                        "within_bound"
+                    ],
+                    "properties": {
+                        "byte_length": {
+                            "type": "null"
+                        },
+                        "digest": {
+                            "type": "null"
+                        },
+                        "valid_text": {
+                            "const": false
+                        },
+                        "within_bound": {
+                            "const": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "byte_length",
+                        "digest",
+                        "valid_text",
+                        "within_bound"
+                    ],
+                    "properties": {
+                        "byte_length": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 16777216
+                        },
+                        "digest": {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        "valid_text": {
+                            "const": true
+                        },
+                        "within_bound": {
+                            "const": true
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "byte_length",
+                        "digest",
+                        "valid_text",
+                        "within_bound"
+                    ],
+                    "properties": {
+                        "byte_length": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 16777216
+                        },
+                        "digest": {
+                            "type": "null"
+                        },
+                        "valid_text": {
+                            "const": false
+                        },
+                        "within_bound": {
+                            "const": true
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "byte_length",
+                        "digest",
+                        "valid_text",
+                        "within_bound"
+                    ],
+                    "properties": {
+                        "byte_length": {
+                            "type": "integer",
+                            "minimum": 16777217,
+                            "maximum": 9007199254740991
+                        },
+                        "digest": {
+                            "type": "null"
+                        },
+                        "valid_text": {
+                            "type": "boolean"
+                        },
+                        "within_bound": {
+                            "const": false
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "pathEvidence": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "byte_length",
+                        "digest",
+                        "valid_text",
+                        "within_bound"
+                    ],
+                    "properties": {
+                        "byte_length": {
+                            "type": "null"
+                        },
+                        "digest": {
+                            "type": "null"
+                        },
+                        "valid_text": {
+                            "const": false
+                        },
+                        "within_bound": {
+                            "const": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "byte_length",
+                        "digest",
+                        "valid_text",
+                        "within_bound"
+                    ],
+                    "properties": {
+                        "byte_length": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4096
+                        },
+                        "digest": {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        "valid_text": {
+                            "const": true
+                        },
+                        "within_bound": {
+                            "const": true
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "byte_length",
+                        "digest",
+                        "valid_text",
+                        "within_bound"
+                    ],
+                    "properties": {
+                        "byte_length": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4096
+                        },
+                        "digest": {
+                            "type": "null"
+                        },
+                        "valid_text": {
+                            "const": false
+                        },
+                        "within_bound": {
+                            "const": true
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "byte_length",
+                        "digest",
+                        "valid_text",
+                        "within_bound"
+                    ],
+                    "properties": {
+                        "byte_length": {
+                            "type": "integer",
+                            "minimum": 4097,
+                            "maximum": 9007199254740991
+                        },
+                        "digest": {
+                            "type": "null"
+                        },
+                        "valid_text": {
+                            "type": "boolean"
+                        },
+                        "within_bound": {
+                            "const": false
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        }
+    }
+}

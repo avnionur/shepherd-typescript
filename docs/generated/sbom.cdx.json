@@ -1289,7 +1289,7 @@
                 "pkg:npm/typescript@7.0.2",
                 "pkg:npm/yaml@2.9.1"
             ],
-            "ref": "pkg:npm/%40avnionur/shepherd-typescript@13.0.0"
+            "ref": "pkg:npm/%40avnionur/shepherd-typescript@13.1.0"
         },
         {
             "dependsOn": [
@@ -1580,12 +1580,12 @@
     ],
     "metadata": {
         "component": {
-            "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@13.0.0",
+            "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@13.1.0",
             "group": "@avnionur",
             "name": "shepherd-typescript",
-            "purl": "pkg:npm/%40avnionur/shepherd-typescript@13.0.0",
+            "purl": "pkg:npm/%40avnionur/shepherd-typescript@13.1.0",
             "type": "application",
-            "version": "13.0.0",
+            "version": "13.1.0",
             "licenses": [
                 {
                     "license": {
@@ -1615,16 +1615,16 @@
         "tools": {
             "components": [
                 {
-                    "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@13.0.0#sbom-generator",
+                    "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@13.1.0#sbom-generator",
                     "name": "shepherd-typescript lockfile SBOM generator",
-                    "purl": "pkg:npm/%40avnionur/shepherd-typescript@13.0.0",
+                    "purl": "pkg:npm/%40avnionur/shepherd-typescript@13.1.0",
                     "type": "application",
-                    "version": "13.0.0"
+                    "version": "13.1.0"
                 }
             ]
         }
     },
-    "serialNumber": "urn:uuid:ab6bd8f5-f228-8300-a843-26d097787683",
+    "serialNumber": "urn:uuid:3d0bf626-bfb2-89a7-a7f5-33c0fed95f3c",
     "specVersion": "1.5",
     "version": 1
 }

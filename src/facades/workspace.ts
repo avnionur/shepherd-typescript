@@ -1,4 +1,10 @@
 /** Stable Node-only ESM subpath for workspace authority, retained-world operations, and the scope world adapter. */
+
+export {
+    WORLD_EFFECT_OUTCOMES,
+    WORLD_EFFECT_PHASES,
+    WORLD_EFFECT_RECOVERY,
+} from "../protocol/values.generated.ts";
 export {
     RetainedWorldSettlementConflictError,
     RetainedWorldSettlementInvalidError,
@@ -289,3 +295,11 @@ export type {
     WorldTextPreviewOptions,
     WorldVerification,
 } from "../workspace/types.ts";
+export { inspectTaskWorldEffects } from "../workspace/world-effect-journal.ts";
+export type {
+    WorldEffectAuthority,
+    WorldEffectJournalEvidence,
+    WorldEffectJournalInspection,
+    WorldEffectOperationInspection,
+    WorldEffectTextEvidence,
+} from "../workspace/world-effect-types.ts";

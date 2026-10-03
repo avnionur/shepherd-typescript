@@ -23,8 +23,9 @@ export type RetainedWorldCapability = {
      * Reads one existing regular UTF-8 file beneath isolated custody.
      *
      * @param relativePath - Canonical binding-relative path.
-     * @returns Exact UTF-8 text.
-     * @throws {TypeError} If the path or current fence is invalid.
+     * @returns Exact UTF-8 text after retaining its correlated operation outcome.
+     * @throws {TypeError} If the path or current fence is invalid, or execution is cancelled.
+     * @throws {TraceStoreError} If fenced operation evidence cannot be retained.
      */
     readonly readText: (relativePath: string) => Promise<string>;
     /**
@@ -32,8 +33,9 @@ export type RetainedWorldCapability = {
      *
      * @param relativePath - Canonical binding-relative path.
      * @param text - UTF-8 text within the configured operation bound.
-     * @returns Completion after the fenced write closes.
-     * @throws {TypeError} If the path, text, parent, file, or current fence is invalid.
+     * @returns Completion after the fenced write closes and its correlated outcome is retained.
+     * @throws {TypeError} If path, text, parent, file or fence is invalid, or execution is cancelled.
+     * @throws {TraceStoreError} If operation evidence cannot be retained; further I/O is refused.
      */
     readonly writeText: (relativePath: string, text: string) => Promise<void>;
 };
