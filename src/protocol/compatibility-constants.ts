@@ -3980,3 +3980,30 @@ export const OBSERVABILITY_PROTOCOL_V1_CONTRACT = deepFreeze({
             "https://avnionur.github.io/shepherd-typescript/schemas/telemetry-batch-v1.schema.json",
     },
 } as const);
+
+/** Workspace v28 adds invocation-fenced evidence for built-in world capability operations. */
+export const WORKSPACE_PROTOCOL_V28_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V27_CONTRACT,
+    worldTaskCapture: {
+        ...WORKSPACE_PROTOCOL_V27_CONTRACT.worldTaskCapture,
+        operationJournal: {
+            appendIntentKind: "retained_world_operation_journal",
+            compatibilityVersion: "shepherd.world-effects.v1",
+            contentPolicy: "digest_only",
+            effectIdPrefix: "world-effect:sha256:",
+            identityKind: "retained_world_operation",
+            kinds: {
+                readText: "retained_world.read_text",
+                writeText: "retained_world.write_text",
+            },
+            maxPathEvidenceBytes: 4096,
+            outcomes: ["succeeded", "refused", "failed", "cancelled"],
+            phases: ["opened", "intent", "admitted", "outcome"],
+            recovery: ["absent", "recording", "not_materialized", "uncertain", "settled"],
+            schemaId:
+                "https://avnionur.github.io/shepherd-typescript/schemas/world-effect-journal-v1.schema.json",
+            schemaPath: "spec/schemas/world-effect-journal-v1.schema.json",
+            version: 1,
+        },
+    },
+} as const);

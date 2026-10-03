@@ -12,6 +12,7 @@ import {
     readPositiveInteger,
     readUniqueStrings,
 } from "./config-value-readers.ts";
+import { readWorldEffectConfig } from "./config-world-effects.ts";
 
 function readGitInvocationConfig(value: unknown): ProtocolConfig["workspaces"]["gitInvocation"] {
     const path = "workspaces.gitInvocation";
@@ -1093,6 +1094,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             "maxTextBytes",
             "outputIdPrefix",
             "ordinaryJournalVersion",
+            "operationJournal",
             "statuses",
             "version",
         ],
@@ -2563,6 +2565,7 @@ export function readWorkspaceConfig(value: unknown): ProtocolConfig["workspaces"
             ),
         },
         worldTaskCapture: {
+            operationJournal: readWorldEffectConfig(worldTaskCapture.operationJournal),
             captureSchemaId: readNonEmptyString(
                 worldTaskCapture.captureSchemaId,
                 "workspaces.worldTaskCapture.captureSchemaId",

@@ -43,6 +43,13 @@ claim is checked before each operation and again after opening the file. A capab
 callback settlement is stale. Advisory enforcement is an in-process package contract, not a process jail or
 syscall boundary.
 
+From workspace protocol v28, each supplied `readText`/`writeText` call has its own
+[operation journal](./world-effect-journal.md): intent before admission, a correlated outcome,
+exact resource/fence evidence and bounded digest-only content. `inspectTaskWorldEffects` exposes
+intermediate writes, reads, refusals, failures and cancellation even when the final changeset is
+empty. Storage uncertainty blocks further capability I/O and capture settlement. These records
+are distinct from the capture lifecycle and from enclosing tool-loop effects.
+
 Before runner admission, the runtime appends configured `prepared` and `forked` journal evidence
 that binds the capture identity, runner, exact base, binding, observed user basis, and isolated
 custody. Claim-guarded `executing` and `captured` transitions then bind the start fence and verified

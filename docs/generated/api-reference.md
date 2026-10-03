@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 13.0.0
+Package: `@avnionur/shepherd-typescript` 13.1.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 1438.
+Exported symbols: 1447.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -16148,7 +16148,7 @@ Throws:
 
 - {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
 owner path reserved for supervised dispatches, context channels, replay sessions, child run
-handles, applications, or effect compensations.
+handles, applications, or effect compensations, or uses the invocation-owned world-operation schema.
 
 Throws:
 
@@ -23494,6 +23494,58 @@ export declare const WORLD_CHANGESET_INSPECTION_LIMITS: {
 };
 ```
 
+### `WORLD_EFFECT_OUTCOMES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured world-operation outcomes.
+
+Signature:
+
+```ts
+export declare const WORLD_EFFECT_OUTCOMES: readonly [
+    "succeeded",
+    "refused",
+    "failed",
+    "cancelled"
+];
+```
+
+### `WORLD_EFFECT_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured world-operation journal phases.
+
+Signature:
+
+```ts
+export declare const WORLD_EFFECT_PHASES: readonly [
+    "opened",
+    "intent",
+    "admitted",
+    "outcome"
+];
+```
+
+### `WORLD_EFFECT_RECOVERY`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured world-operation evidence recovery classifications.
+
+Signature:
+
+```ts
+export declare const WORLD_EFFECT_RECOVERY: readonly [
+    "absent",
+    "recording",
+    "not_materialized",
+    "uncertain",
+    "settled"
+];
+```
+
 ### `WitnessAnchor`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -24326,6 +24378,99 @@ export type WorldDerivedMove = {
     readonly kind: (typeof WORLD_DERIVED_MOVE_KINDS)[number];
     readonly source_path: string;
     readonly target_path: string;
+};
+```
+
+### `WorldEffectAuthority`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact invocation and resource authority governing a world-operation stream.
+
+Signature:
+
+```ts
+export type WorldEffectAuthority = {
+    readonly authority: readonly string[];
+    readonly base_revision_id: string;
+    readonly binding_id: string;
+    readonly claim_id: string;
+    readonly content_policy: string;
+    readonly custody_id: string;
+    readonly enforcement: string;
+    readonly fencing_token: number;
+    readonly grant_plan_id: string | null;
+    readonly resource_id: string | null;
+};
+```
+
+### `WorldEffectJournalEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Pure record-derived world-operation stream, independent of current process liveness.
+
+Signature:
+
+```ts
+export type WorldEffectJournalEvidence = {
+    readonly authority: WorldEffectAuthority | null;
+    readonly authority_record_id: RecordId | null;
+    readonly capture_id: string | null;
+    readonly operations: readonly WorldEffectOperationInspection[];
+    readonly run_id: string;
+    readonly status: (typeof WORLD_EFFECT_RECOVERY)[number];
+};
+```
+
+### `WorldEffectJournalInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+World-operation evidence paired with the enclosing durable run's recovery classification.
+
+Signature:
+
+```ts
+export type WorldEffectJournalInspection = WorldEffectJournalEvidence & {
+    readonly recovery_status: DurableTaskExecutionRecovery["status"];
+};
+```
+
+### `WorldEffectOperationInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained evidence of one built-in world capability invocation.
+
+Signature:
+
+```ts
+export type WorldEffectOperationInspection = {
+    readonly admission_record_id: RecordId | null;
+    readonly index: number;
+    readonly intent: EffectIntent;
+    readonly intent_record_id: RecordId;
+    readonly outcome: EffectOutcome | null;
+    readonly outcome_record_id: RecordId | null;
+    readonly status: (typeof WORLD_EFFECT_RECOVERY)[number];
+};
+```
+
+### `WorldEffectTextEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Bounded, plaintext-free evidence of one supplied or returned text value.
+
+Signature:
+
+```ts
+export type WorldEffectTextEvidence = {
+    readonly byte_length: number | null;
+    readonly digest: string | null;
+    readonly valid_text: boolean;
+    readonly within_bound: boolean;
 };
 ```
 
@@ -30022,6 +30167,40 @@ Example:
 const journal = inspectTaskWorldCaptureJournal(store, "run:review:1");
 journal.transitions.map((transition) => transition.phase);
 ```
+
+### `inspectTaskWorldEffects`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Inspects every built-in world operation in the run's retained terminal prefix.
+Includes writes later overwritten or restored, refused operations, and interrupted admissions.
+No filesystem, provider, recovery or append operation is performed.
+
+Signature:
+
+```ts
+export declare function inspectTaskWorldEffects(store: SQLiteTraceStore, runId: string): WorldEffectJournalInspection;
+```
+
+Parameter:
+
+- store - Open trace store, including read-only or imported stores.
+
+Parameter:
+
+- runId - Exact enclosing durable run identity.
+
+Returns:
+
+- Immutable operation evidence and independent run recovery classification.
+
+Throws:
+
+- {TypeError} If the run identity is malformed.
+
+Throws:
+
+- {TraceStoreError} If the store is closed, evidence is inconsistent or inspection races a writer.
 
 ### `inspectTraceRetention`
 
@@ -60597,7 +60776,7 @@ Throws:
 
 - {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
 owner path reserved for supervised dispatches, context channels, replay sessions, child run
-handles, applications, or effect compensations.
+handles, applications, or effect compensations, or uses the invocation-owned world-operation schema.
 
 Throws:
 
@@ -62353,7 +62532,7 @@ import * as api from "@avnionur/shepherd-typescript/workspace";
 void api;
 ```
 
-Exported symbols: 235.
+Exported symbols: 244.
 
 ### `AppliedRetainedWorldSettlement`
 
@@ -64867,6 +65046,58 @@ export type TaskWorldCaptureResult = DurableTaskExecutionResult & {
 };
 ```
 
+### `WORLD_EFFECT_OUTCOMES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured world-operation outcomes.
+
+Signature:
+
+```ts
+export declare const WORLD_EFFECT_OUTCOMES: readonly [
+    "succeeded",
+    "refused",
+    "failed",
+    "cancelled"
+];
+```
+
+### `WORLD_EFFECT_PHASES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured world-operation journal phases.
+
+Signature:
+
+```ts
+export declare const WORLD_EFFECT_PHASES: readonly [
+    "opened",
+    "intent",
+    "admitted",
+    "outcome"
+];
+```
+
+### `WORLD_EFFECT_RECOVERY`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured world-operation evidence recovery classifications.
+
+Signature:
+
+```ts
+export declare const WORLD_EFFECT_RECOVERY: readonly [
+    "absent",
+    "recording",
+    "not_materialized",
+    "uncertain",
+    "settled"
+];
+```
+
 ### `WorkspaceAdoption`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -65680,6 +65911,99 @@ export type WorldDerivedMove = {
     readonly kind: (typeof WORLD_DERIVED_MOVE_KINDS)[number];
     readonly source_path: string;
     readonly target_path: string;
+};
+```
+
+### `WorldEffectAuthority`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact invocation and resource authority governing a world-operation stream.
+
+Signature:
+
+```ts
+export type WorldEffectAuthority = {
+    readonly authority: readonly string[];
+    readonly base_revision_id: string;
+    readonly binding_id: string;
+    readonly claim_id: string;
+    readonly content_policy: string;
+    readonly custody_id: string;
+    readonly enforcement: string;
+    readonly fencing_token: number;
+    readonly grant_plan_id: string | null;
+    readonly resource_id: string | null;
+};
+```
+
+### `WorldEffectJournalEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Pure record-derived world-operation stream, independent of current process liveness.
+
+Signature:
+
+```ts
+export type WorldEffectJournalEvidence = {
+    readonly authority: WorldEffectAuthority | null;
+    readonly authority_record_id: RecordId | null;
+    readonly capture_id: string | null;
+    readonly operations: readonly WorldEffectOperationInspection[];
+    readonly run_id: string;
+    readonly status: (typeof WORLD_EFFECT_RECOVERY)[number];
+};
+```
+
+### `WorldEffectJournalInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+World-operation evidence paired with the enclosing durable run's recovery classification.
+
+Signature:
+
+```ts
+export type WorldEffectJournalInspection = WorldEffectJournalEvidence & {
+    readonly recovery_status: DurableTaskExecutionRecovery["status"];
+};
+```
+
+### `WorldEffectOperationInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained evidence of one built-in world capability invocation.
+
+Signature:
+
+```ts
+export type WorldEffectOperationInspection = {
+    readonly admission_record_id: RecordId | null;
+    readonly index: number;
+    readonly intent: EffectIntent;
+    readonly intent_record_id: RecordId;
+    readonly outcome: EffectOutcome | null;
+    readonly outcome_record_id: RecordId | null;
+    readonly status: (typeof WORLD_EFFECT_RECOVERY)[number];
+};
+```
+
+### `WorldEffectTextEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Bounded, plaintext-free evidence of one supplied or returned text value.
+
+Signature:
+
+```ts
+export type WorldEffectTextEvidence = {
+    readonly byte_length: number | null;
+    readonly digest: string | null;
+    readonly valid_text: boolean;
+    readonly within_bound: boolean;
 };
 ```
 
@@ -67336,6 +67660,40 @@ Example:
 const journal = inspectTaskWorldCaptureJournal(store, "run:review:1");
 journal.transitions.map((transition) => transition.phase);
 ```
+
+### `inspectTaskWorldEffects`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Inspects every built-in world operation in the run's retained terminal prefix.
+Includes writes later overwritten or restored, refused operations, and interrupted admissions.
+No filesystem, provider, recovery or append operation is performed.
+
+Signature:
+
+```ts
+export declare function inspectTaskWorldEffects(store: SQLiteTraceStore, runId: string): WorldEffectJournalInspection;
+```
+
+Parameter:
+
+- store - Open trace store, including read-only or imported stores.
+
+Parameter:
+
+- runId - Exact enclosing durable run identity.
+
+Returns:
+
+- Immutable operation evidence and independent run recovery classification.
+
+Throws:
+
+- {TypeError} If the run identity is malformed.
+
+Throws:
+
+- {TraceStoreError} If the store is closed, evidence is inconsistent or inspection races a writer.
 
 ### `inspectWorkspacePathProtection`
 

@@ -16,6 +16,7 @@ import {
     retentionProtocolConfig,
     runProtocolConfig,
     scopeProtocolConfig,
+    workspaceProtocolConfig,
 } from "../protocol/config.ts";
 import { assertNonEmptyString, assertRecordId } from "../record/guards.ts";
 import { createConfiguredRootWitness } from "../record/root-witness.ts";
@@ -347,7 +348,7 @@ export class SQLiteTraceStore implements Disposable {
      * matches a configured detector; nothing is written and the intent remains reusable.
      * @throws {TraceStoreError} If witnesses are missing, the store is closed, or a group targets an
      * owner path reserved for supervised dispatches, context channels, replay sessions, child run
-     * handles, applications, or effect compensations.
+     * handles, applications, or effect compensations, or uses the invocation-owned world-operation schema.
      * @throws {CanonicalNestingLimitError} If a record body nests deeper than
      * `kernel.canonicalization.maxNestingDepth`; nothing is written.
      * @throws {TypeError} If the request is malformed.
@@ -358,6 +359,19 @@ export class SQLiteTraceStore implements Disposable {
     append(request: StoreAppendRequest): AppendReceipt {
         this.#assertOpen();
         const batch = normalizeAppendBatchDraft(normalizeStoreAppendRequest(request).batch);
+        if (
+            batch.groups.some((group) =>
+                group.records.some(
+                    (record) =>
+                        record.schema_ref ===
+                        workspaceProtocolConfig.worldTaskCapture.operationJournal.schemaId,
+                ),
+            )
+        ) {
+            throw new TraceStoreError(
+                "world operation journal records require invocation authority",
+            );
+        }
         assertUnreservedSupervisionOwners(batch);
         assertUnreservedReplayOwners(batch);
         assertUnreservedDelegationOwners(batch);

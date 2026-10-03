@@ -45,6 +45,7 @@ import type { PreparedTaskExecution } from "../run/execution-preparation.ts";
 import { prepareTaskExecution } from "../run/execution-preparation.ts";
 import type { TaskExecutionResult } from "../run/execution-types.ts";
 import { assertRunText } from "../run/validation-values.ts";
+import { TraceStoreError } from "../store/errors.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { TaskSchema } from "../task/schema.ts";
 import { assertWorkspaceBinding, isGitRepositoryBinding } from "./bindings.ts";
@@ -97,6 +98,7 @@ import {
     inspectTaskWorldCaptureJournal,
 } from "./task-world-journal.ts";
 import type { GitRepositoryBinding, WorldCustody, WorldRevision } from "./types.ts";
+import { createWorldEffectJournal, type WorldEffectJournal } from "./world-effect-journal.ts";
 
 const [RETAINED_STATUS] = RETAINED_WORLD_OUTPUT_STATUSES;
 const [, , , TERMINAL_PENDING_CUT_RECOVERY_STATUS, COMMITTED_RECOVERY_STATUS] =
@@ -741,19 +743,42 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
                     throw new TypeError("retained-world capability fence is stale");
                 }
             };
+            const grant = activeRepositoryGrant(fields);
+            const signal = prepared.definition.signal ?? new AbortController().signal;
+            const operationJournal = createWorldEffectJournal({
+                assertFence,
+                authority: {
+                    authority: grant?.authority ?? workspaceProtocolConfig.repositoryGrants.atoms,
+                    base_revision_id: custody.base_revision_id,
+                    binding_id: custody.binding_id,
+                    claim_id: authority.claimId,
+                    content_policy:
+                        workspaceProtocolConfig.worldTaskCapture.operationJournal.contentPolicy,
+                    custody_id: custody.custody_id,
+                    enforcement: fields.runner.enforcement,
+                    fencing_token: authority.fencingToken,
+                    grant_plan_id: repositoryGrantPlan(fields)?.plan_id ?? null,
+                    resource_id: grant?.resource_id ?? null,
+                },
+                captureId: fields.captureId,
+                executingRecordId,
+                runId: prepared.definition.runId,
+                signal,
+                store: fields.store,
+            });
             const world = createCapability(
                 custody,
                 authority.fencingToken,
                 fields.runner.enforcement,
-                activeRepositoryGrant(fields)?.authority ??
-                    workspaceProtocolConfig.repositoryGrants.atoms,
+                grant?.authority ?? workspaceProtocolConfig.repositoryGrants.atoms,
                 repositoryGrantPlan(fields) !== null,
                 assertFence,
+                operationJournal,
             );
             const runnerContext = Object.freeze({
                 capture_fence: authority.fencingToken,
                 execution: prepared.definition,
-                signal: prepared.definition.signal ?? new AbortController().signal,
+                signal,
                 world,
             }) satisfies RetainedWorldExecutionContext<I, O>;
             let execution: TaskExecutionResult;
@@ -826,6 +851,7 @@ async function executeTaskWorld<I extends TaskSchema<unknown>, O extends TaskSch
             } finally {
                 active = false;
             }
+            operationJournal.finish();
             execution = readRunnerResult(execution, prepared, fields.store);
             if (
                 !fields.store.hasDurableExecutionInvocationAuthority(
@@ -941,6 +967,7 @@ function createCapability(
     grantedAuthority: readonly string[],
     protectGitMetadata: boolean,
     assertFence: () => void,
+    journal: WorldEffectJournal,
 ): RetainedWorldCapability {
     return Object.freeze({
         base_revision_id: custody.base_revision_id,
@@ -949,63 +976,88 @@ function createCapability(
         custody_id: custody.custody_id,
         enforcement,
         readText: async (relativePath: string) =>
-            runFileOperation(() => {
-                assertFence();
-                assertAuthority(
-                    grantedAuthority,
-                    workspaceProtocolConfig.repositoryGrants.operations
-                        .readText as RepositoryGrantAtom,
-                );
-                const filePath = resolveRegularFile(custody.path, relativePath, protectGitMetadata);
-                const descriptor = openSync(filePath, constants.O_RDONLY | constants.O_NOFOLLOW);
-                try {
-                    assertOpenedRegularFile(custody.path, filePath, descriptor);
-                    assertFence();
-                    const bytes = readFileSync(descriptor);
-                    if (bytes.byteLength > workspaceProtocolConfig.worldTaskCapture.maxTextBytes) {
-                        throw new TypeError("retained-world text exceeds configured limit");
-                    }
-                    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-                } finally {
-                    closeSync(descriptor);
-                }
-            }),
+            journal.perform(
+                workspaceProtocolConfig.worldTaskCapture.operationJournal.kinds.readText,
+                relativePath,
+                null,
+                (admit) =>
+                    runFileOperation(() => {
+                        assertFence();
+                        assertAuthority(
+                            grantedAuthority,
+                            workspaceProtocolConfig.repositoryGrants.operations
+                                .readText as RepositoryGrantAtom,
+                        );
+                        const filePath = resolveRegularFile(
+                            custody.path,
+                            relativePath,
+                            protectGitMetadata,
+                        );
+                        admit();
+                        const descriptor = openSync(
+                            filePath,
+                            constants.O_RDONLY | constants.O_NOFOLLOW,
+                        );
+                        try {
+                            assertOpenedRegularFile(custody.path, filePath, descriptor);
+                            assertFence();
+                            const bytes = readFileSync(descriptor);
+                            if (
+                                bytes.byteLength >
+                                workspaceProtocolConfig.worldTaskCapture.maxTextBytes
+                            ) {
+                                throw new TypeError("retained-world text exceeds configured limit");
+                            }
+                            return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+                        } finally {
+                            closeSync(descriptor);
+                        }
+                    }),
+            ),
         writeText: async (relativePath: string, text: string) =>
-            runFileOperation(() => {
-                assertFence();
-                assertAuthority(
-                    grantedAuthority,
-                    workspaceProtocolConfig.repositoryGrants.operations
-                        .writeText as RepositoryGrantAtom,
-                );
-                if (
-                    typeof text !== "string" ||
-                    /[\uD800-\uDFFF]/u.test(text) ||
-                    Buffer.byteLength(text) > workspaceProtocolConfig.worldTaskCapture.maxTextBytes
-                ) {
-                    throw new TypeError("retained-world text is invalid or too large");
-                }
-                const { create, filePath } = resolveWritableFile(
-                    custody.path,
-                    relativePath,
-                    protectGitMetadata,
-                );
-                const descriptor = openSync(
-                    filePath,
-                    constants.O_WRONLY |
-                        constants.O_NOFOLLOW |
-                        (create ? constants.O_CREAT | constants.O_EXCL : 0),
-                    constants.S_IRUSR | constants.S_IWUSR,
-                );
-                try {
-                    assertOpenedRegularFile(custody.path, filePath, descriptor);
-                    assertFence();
-                    ftruncateSync(descriptor, 0);
-                    writeFileSync(descriptor, text, "utf8");
-                } finally {
-                    closeSync(descriptor);
-                }
-            }),
+            journal.perform(
+                workspaceProtocolConfig.worldTaskCapture.operationJournal.kinds.writeText,
+                relativePath,
+                text,
+                (admit) =>
+                    runFileOperation(() => {
+                        assertFence();
+                        assertAuthority(
+                            grantedAuthority,
+                            workspaceProtocolConfig.repositoryGrants.operations
+                                .writeText as RepositoryGrantAtom,
+                        );
+                        if (
+                            typeof text !== "string" ||
+                            /[\uD800-\uDFFF]/u.test(text) ||
+                            Buffer.byteLength(text) >
+                                workspaceProtocolConfig.worldTaskCapture.maxTextBytes
+                        ) {
+                            throw new TypeError("retained-world text is invalid or too large");
+                        }
+                        const { create, filePath } = resolveWritableFile(
+                            custody.path,
+                            relativePath,
+                            protectGitMetadata,
+                        );
+                        admit();
+                        const descriptor = openSync(
+                            filePath,
+                            constants.O_WRONLY |
+                                constants.O_NOFOLLOW |
+                                (create ? constants.O_CREAT | constants.O_EXCL : 0),
+                            constants.S_IRUSR | constants.S_IWUSR,
+                        );
+                        try {
+                            assertOpenedRegularFile(custody.path, filePath, descriptor);
+                            assertFence();
+                            ftruncateSync(descriptor, 0);
+                            writeFileSync(descriptor, text, "utf8");
+                        } finally {
+                            closeSync(descriptor);
+                        }
+                    }),
+            ),
     });
 }
 
@@ -1013,7 +1065,7 @@ function runFileOperation<T>(operation: () => T): T {
     try {
         return operation();
     } catch (error) {
-        if (error instanceof TypeError) throw error;
+        if (error instanceof TypeError || error instanceof TraceStoreError) throw error;
         throw new TypeError("retained-world filesystem operation failed", { cause: error });
     }
 }

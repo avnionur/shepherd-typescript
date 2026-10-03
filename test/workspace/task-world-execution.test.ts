@@ -745,7 +745,12 @@ test("captureTaskWorldDurably retains isolated runner changes inside the termina
     const legacyStartedRecordId = result.ledger.started_record_id;
     assert.ok(legacyStartedRecordId);
     const legacyRecords = retainedRecords
-        .filter((record) => record.body.capture_phase === undefined)
+        // Legacy v8 has neither capture-journal transitions nor the later operation journal.
+        .filter(
+            (record) =>
+                record.body.capture_phase === undefined &&
+                record.body.world_effect_version === undefined,
+        )
         .map((record) =>
             record.envelope.record_id === result.output.capture_record_id
                 ? {

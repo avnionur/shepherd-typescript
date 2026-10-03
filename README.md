@@ -243,6 +243,10 @@ instances, and cycles are rejected.
 
 ## Documentation
 
+Built-in retained-world reads and writes now produce automatic
+[operation evidence](https://github.com/avnionur/shepherd-typescript/blob/main/docs/world-effect-journal.md),
+including overwritten writes, denials and interrupted admissions, with bounded digest-only content.
+
 Branch retries bind the complete declared request before compensation or restoration. See
 [replay request identity](https://github.com/avnionur/shepherd-typescript/blob/main/docs/replay-request-identity.md)
 for inspection, excluded operational fields and the 13.0.0 legacy-retry refusal.

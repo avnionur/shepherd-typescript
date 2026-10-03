@@ -5,6 +5,10 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 
 ## Guides
 
+- [Retained-world operation journal](./world-effect-journal.md) defines automatic capability
+  intent/admission/outcome evidence, exact resource authority, redacted content, cancellation,
+  interruption and read-only inspection through `inspectTaskWorldEffects`.
+
 - [Replay request identity](./replay-request-identity.md) defines normalized branch commands,
   reservation before physical work, read-only inspection, concurrent conflicts and legacy refusal.
 

@@ -1,3 +1,5 @@
+import type { WorldEffectProtocolConfig } from "./config-world-effects.ts";
+
 /** Hash algorithms permitted for content-addressed protocol identities. */
 export const SECURE_HASH_ALGORITHMS = ["sha256", "sha384", "sha512"] as const;
 
@@ -2874,6 +2876,8 @@ export type WorkspaceProtocolConfig = {
     };
     /** Durable retained-world task-capture protocol configuration. */
     readonly worldTaskCapture: {
+        /** Built-in capability operation evidence contract. */
+        readonly operationJournal: WorldEffectProtocolConfig;
         /** Schema identifier for one retained world-capture record. */
         readonly captureSchemaId: string;
         /** Repository-relative generated capture-schema path. */

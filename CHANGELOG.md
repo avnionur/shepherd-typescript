@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.1.0] - 2026-10-03
+
+### New Feature
+
+- Built-in retained-world `readText` and `writeText` calls automatically retain invocation-fenced
+  intent, admission and correlated outcome evidence, including refusals, failures and cancellation.
+  Overwritten writes and write-then-restore histories remain inspectable independently of final
+  changesets (#238).
+- `inspectTaskWorldEffects` exposes exact resource authority, operation order, bounded digest-only
+  path/content evidence and incomplete admissions after reopen/import. Workspace protocol v28
+  adds the separate `world-effect-journal-v1` schema and configured vocabulary.
+
+### Defect Fixes
+
+- Lost journal acknowledgements cannot be converted into synthetic filesystem-failure outcomes;
+  uncertainty blocks further capability I/O and capture settlement. Cancellation before admission
+  records a cancelled operation without performing it.
+
+### Impact
+
+Additive MINOR release. Existing capture journal formats and recovery/settlement APIs remain
+supported. Run traces gain operation records; no plaintext file content or path is copied into
+those records. Stale capabilities cannot append after settlement. Direct filesystem calls and
+native process syscalls retain their existing boundaries; uncertain runners are never replayed.
+
 ## [13.0.0] - 2026-10-03
 
 ### Breaking Changes

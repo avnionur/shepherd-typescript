@@ -39,13 +39,13 @@ Outstanding issues: [263](https://github.com/avnionur/shepherd-typescript/issues
 
 Upstream 0.3.0 workspace, output, binding and permission vocabulary.
 
-Public entry points: `./workspace#captureTaskWorldDurably`, `./workspace#createWorkspaceBindings`, `./workspace#prepareRetainedWorldSettlement`
+Public entry points: `./workspace#captureTaskWorldDurably`, `./workspace#createWorkspaceBindings`, `./workspace#prepareRetainedWorldSettlement`, `./workspace#inspectTaskWorldEffects`
 
 | Dimension | Evidence boundary |
 | --- | --- |
 | API availability | Supported: retained capture, inspect, select/apply/discard/release and authenticated repository grants. |
-| Composed behavior | Adapted: disjoint bindings can be created, but each retained task exposes one repository world. Built-in world operations do not each have an individual durable effect record. CLI task inspection does not expose grant evidence. |
-| Restart recovery | Capture and settlement have durable recovery; this does not imply automatic safe tool-effect replay. |
+| Composed behavior | Adapted: each retained task exposes one repository world. Supplied readText/writeText capabilities journal individual intents, admissions and outcomes even when the final changeset is empty. CLI task inspection does not expose grant evidence. |
+| Restart recovery | Capture and settlement have durable recovery; operation inspection survives reopen/import and distinguishes unentered work from uncertain admission without replaying an arbitrary runner. |
 | Live-provider evidence | No live-provider result claimed; ordinary tests use deterministic providers. |
 | Performance evidence | No performance result claimed by this row. |
 | Supported platforms / evidence | Node runtime support applies; filesystem/native support depends on the separately documented host and backend. |
@@ -61,8 +61,11 @@ Reviewed evidence (content pinned; existence is not a passing test result):
 - [test/workspace/retained-world-discard.test.ts](../../test/workspace/retained-world-discard.test.ts)
 - [test/workspace/retained-world-apply.test.ts](../../test/workspace/retained-world-apply.test.ts)
 - [test/workspace/retained-world-release.test.ts](../../test/workspace/retained-world-release.test.ts)
+- [docs/world-effect-journal.md](../world-effect-journal.md)
+- [test/workspace/world-effect-journal.test.ts](../../test/workspace/world-effect-journal.test.ts)
+- [test/workspace/world-effect-crash.test.ts](../../test/workspace/world-effect-crash.test.ts)
 
-Outstanding issues: [238](https://github.com/avnionur/shepherd-typescript/issues/238), [239](https://github.com/avnionur/shepherd-typescript/issues/239), [247](https://github.com/avnionur/shepherd-typescript/issues/247)
+Outstanding issues: [239](https://github.com/avnionur/shepherd-typescript/issues/239), [247](https://github.com/avnionur/shepherd-typescript/issues/247)
 
 ### CLI discovery, registration and scaffolding
 
@@ -145,13 +148,13 @@ Outstanding issues: None for this stated boundary.
 
 Paper §3.2; separate from upstream release completeness.
 
-Public entry points: `./effects#createEffectHandlerStack`, `./supervision#openTraceSubscription`, `./supervision#dispatchSupervisedEffect`
+Public entry points: `./effects#createEffectHandlerStack`, `./supervision#openTraceSubscription`, `./supervision#dispatchSupervisedEffect`, `./workspace#inspectTaskWorldEffects`
 
 | Dimension | Evidence boundary |
 | --- | --- |
 | API availability | Supported: typed intent/outcome records, handler stacks, trace subscriptions and supervised dispatch. |
-| Composed behavior | Adapted: in-process handler stacks alone are not durable dispatch. Direct retained-world operations still need per-operation effect integration. |
-| Restart recovery | Subscriptions retain acknowledgements; supervised dispatch fences ownership. Neither proves all built-in world operations are journaled. |
+| Composed behavior | Adapted: in-process handler stacks alone are not durable dispatch. Supplied retained-world readText/writeText operations automatically retain individual effects, distinct from enclosing tool-loop effects. |
+| Restart recovery | Subscriptions retain acknowledgements; supervised dispatch fences ownership. Retained capability journals preserve exact authority and reject uncertain publication; direct filesystem calls and native syscalls are outside this operation journal. |
 | Live-provider evidence | No live-provider result claimed; ordinary tests use deterministic providers. |
 | Performance evidence | No performance result claimed by this row. |
 | Supported platforms / evidence | Node runtime support applies; filesystem/native support depends on the separately documented host and backend. |
@@ -162,8 +165,11 @@ Reviewed evidence (content pinned; existence is not a passing test result):
 - [test/supervision/trace-subscription.test.ts](../../test/supervision/trace-subscription.test.ts)
 - [test/agent/tool-loop.test.ts](../../test/agent/tool-loop.test.ts)
 - [docs/supervised-effects.md](../supervised-effects.md)
+- [docs/world-effect-journal.md](../world-effect-journal.md)
+- [test/workspace/world-effect-journal.test.ts](../../test/workspace/world-effect-journal.test.ts)
+- [test/workspace/world-effect-crash.test.ts](../../test/workspace/world-effect-crash.test.ts)
 
-Outstanding issues: [238](https://github.com/avnionur/shepherd-typescript/issues/238)
+Outstanding issues: None for this stated boundary.
 
 ### Compensation of abandoned materializations
 

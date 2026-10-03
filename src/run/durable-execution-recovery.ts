@@ -27,6 +27,7 @@ import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
 import { TraceStoreError } from "../store/errors.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { OwnerRecord } from "../store/types.ts";
+import { readWorldEffectRecords } from "../workspace/world-effect-records.ts";
 import { readDurableCreation, readDurableExecutionResult } from "./durable-execution-codec.ts";
 import {
     readDurableCancellationCommand,
@@ -121,6 +122,7 @@ export function readDurableTaskExecution(
             "world capture",
         );
         const worldJournal = validateWorldCaptureJournal(executionRecords, created, started, runId);
+        readWorldEffectRecords(executionRecords, runId);
         const terminal = uniqueTerminal(executionRecords);
         if (
             terminal !== undefined &&
@@ -1013,6 +1015,7 @@ function isDurableExecutionRecord(record: OwnerRecord): boolean {
         runProtocolConfig.schemas.waitingLifecycleId,
         runProtocolConfig.execution.controlCommandSchemaId,
         workspaceProtocolConfig.worldTaskCapture.captureSchemaId,
+        workspaceProtocolConfig.worldTaskCapture.operationJournal.schemaId,
         workspaceProtocolConfig.placements.nativeJails.schemas.processId,
         ...workspaceProtocolConfig.worldTaskCapture.journalReaders.map(({ schemaId }) => schemaId),
     ].includes(record.envelope.schema_ref);
