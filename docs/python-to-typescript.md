@@ -41,7 +41,7 @@ storage, or wire identity. “Adapted” requires explicit TypeScript compositio
 | Selecting a retained output | `prepareRetainedWorldSettlement` then exact-ID `selectRetainedWorldSettlement` | Equivalent explicit-publication goal |
 | `output.release()` in pinned `world_channel.py` | Receipt-only release via the public settlement interface | Equivalent non-selection goal; the TS coding demo chooses selection instead |
 | `sp.handle` / effect concepts | `createEffectHandlerStack`, intent/outcome builders, correlation validation from `/effects` | Adapted: custom-effects example is in-process and non-durable |
-| `runtime={"provider":"claude"}` in `agent_task.py` | No shipped equivalent adapter | Unsupported; offline cassette is not a live agent |
+| `runtime={"provider":"claude"}` in `agent_task.py` | Configured HTTP adapters from `/providers`; no Claude CLI process adapter | Adapted HTTP transport; process-provider translation unsupported |
 
 The package namespace is `@avnionur/shepherd-typescript`; append the subpaths shown above.
 Use Node >=24.12.0 <27, ESM, and TypeScript NodeNext resolution. Copy shipped `.ts` examples out of
@@ -166,15 +166,29 @@ it as ambient model delivery for bodyless tasks. The TS handler stack is not a r
 runtime: it provides no trace persistence, external-effect retry, observation, or interception.
 Reversibility annotations do not implement rollback or compensation for arbitrary callbacks.
 
-## Unsupported translations and recovery
+## Supported boundaries and recovery
 
-Do not present these as shipped TS equivalents: Claude CLI or Codex process providers (the
-configured Anthropic Messages and OpenAI-compatible HTTP adapters in
-[live providers](./live-providers.md) ship from 5.1.0 but are not live-verified here), ambient
-bodyless task calls, scope algebra and nested multi-world runs, live subscriptions, supervisor
-injection/handoff, arbitrary rewind/suffix replay, process checkpoint restoration, or paper-level
-formal guarantees for production execution. The public reference/proof-envelope machinery has
-its own restricted evidence claims; it does not prove an arbitrary migrated agent correct.
+The [capability evidence inventory](https://github.com/avnionur/shepherd-typescript/blob/main/docs/generated/capability-inventory.md)
+separates API availability, composition, restart, live-provider, platform, performance, and formal
+evidence. These capabilities are implemented with explicit TypeScript contracts:
+
+| Capability | Supported / adapted boundary | Remaining unsupported constituent |
+| --- | --- | --- |
+| Scope algebra | `emitScopeRecord`, `forkScope`, `mergeScope`, `discardScope`; nested and parallel scope scheduling | A retained task still receives one repository world; scope operations are not arbitrary process snapshots |
+| Live observation | `openTraceSubscription` with durable acknowledgement and reconnect | Subscription delivery does not imply live model-provider verification |
+| Supervisor injection and handoff | `injectSupervisionContext`, delegated supervisor operations, concurrent `runRuntimeSupervisor` | Worker grants/placement/shared budgets are not fully composed; a tool turn interrupted by a crash can repeat effects |
+| Rewind and suffix replay | `rewindReplaySession` and `replayReplaySession` restore verified constituents and replay a recorded prefix | Unavailable constituents and uncheckpointed world boundaries are refused; provider conversation receipts remain process-local |
+| Providers | Anthropic Messages and OpenAI-compatible HTTP adapters with tool calls | Claude CLI/Codex process adapters, streaming, bounded retry policies and live monetary accounting remain outstanding |
+| Process checkpoints | Cooperative process checkpoint adapter and explicit transparent-backend availability probes | No general transparent process restoration guarantee |
+
+See the repository contracts for
+[scopes](https://github.com/avnionur/shepherd-typescript/blob/main/docs/scope-laws.md),
+[subscriptions](https://github.com/avnionur/shepherd-typescript/blob/main/docs/trace-subscriptions.md),
+[supervision](https://github.com/avnionur/shepherd-typescript/blob/main/docs/runtime-supervisor.md), and
+[replay](https://github.com/avnionur/shepherd-typescript/blob/main/docs/rewind-and-replay.md).
+Ambient Python bodyless calls and storage interchange remain unsupported. Ordinary production
+runs carry no paper-level formal guarantee: reference validation and imported proof-envelope
+metadata have separate, restricted evidence boundaries.
 
 Durable restart is not permission to replay external effects. Retained incomplete executions need
 the documented recovery command and evidence; a started provider operation can remain unsafe to

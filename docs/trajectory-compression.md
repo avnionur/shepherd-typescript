@@ -74,8 +74,10 @@ The caller supplies:
   every suffix replay, and every control. Without `bindings` the workflow binds no worlds or
   processes.
 - `compressor` and `verifier`: child run definitions `{ task, budget, grant, provenance?, program |
-  provider }` opened under `parent` as `supervisorId`. Task schemas admit only strings and closed
-  objects, so evidence and results cross the delegation seam as canonical JSON text: the child input
+  provider }` opened under `parent` as `supervisorId`. The compression child protocol
+  deliberately encodes evidence and results as canonical JSON text; this is not a task-schema
+  restriction. [Task schemas](./task-descriptors.md#schema-forms) also support numbers, integers,
+  booleans, null, arrays, enums/literals, unions, optional object fields, and task values. Here the child input
   is `{ [childFields.input]: text }` (`evidence`) and the output must be
   `{ [childFields.output]: text }` (`result`). A program-serviced compressor additionally receives
   the source inspection as `source`; a program-serviced verifier receives the `original` and
