@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [12.0.2] - 2026-10-03
+
+### Defect Fixes
+
+- Correct stale migration claims about scopes, subscriptions, supervisor intervention and replay,
+  and clarify that compression's text envelope is a protocol choice rather than a task-schema limit.
+- Publish an evidence inventory with independent API, composition, restart, live-provider,
+  performance, platform and formal boundaries, public export checks, content-pinned citations and
+  outstanding issue links. `pnpm verify` now rejects inventory drift, including stale claims.
+- Clarify compensation invocation limits: retained materialization keys still require idempotent
+  handlers during uncertain retries; durable attempt ownership remains tracked separately.
+
+### Impact
+
+Documentation and internal verification PATCH for #236. Public runtime APIs, protocols and storage
+formats are unchanged. Evidence-file changes require reviewing affected inventory claims before
+refreshing their pins; generation never silently refreshes evidence. No new live, platform,
+performance or formal result is claimed.
+
 ## [12.0.1] - 2026-09-25
 
 Coverage gate fix for [#232](https://github.com/avnionur/shepherd-typescript/issues/232).

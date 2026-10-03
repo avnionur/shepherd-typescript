@@ -1,0 +1,863 @@
+{
+    "artifact": "docs/generated/capability-inventory.md",
+    "introduction": [
+        "Generated from [reviewed configuration](../../config/capability-inventory.config.json). Run `pnpm generate:capabilities` after reviewing claims; `pnpm check:capabilities` rejects drift and is part of `pnpm verify`.",
+        "",
+        "Baseline: upstream [v0.3.0](https://github.com/shepherd-agents/shepherd/tree/a8196d4c453514836d06bd2fece91a03cdc37107) and [paper v3](https://arxiv.org/html/2605.10913v3), reviewed for issue #236. Release vocabulary, research targets, imported proof evidence and native extensions are distinct sections.",
+        "",
+        "The gate checks emitted public exports, complete evidence dimensions, and SHA-256 pins of cited local files. It does not run cited experiments or establish that prose is true. Evidence pins require human review when their content changes; generation never refreshes them. Test files specify executable evidence, not passing live/platform results. No aggregate coverage percentage is assigned.",
+        "",
+        "See [inventory maintenance](../capability-inventory.md) for verification commands and the review boundary."
+    ],
+    "groups": {
+        "upstream": "Upstream 0.3.0 release vocabulary",
+        "paper": "Paper targets and measured limitations",
+        "proof": "Imported formal evidence",
+        "native": "Native TypeScript extensions"
+    },
+    "dimensions": {
+        "api": "API availability",
+        "composition": "Composed behavior",
+        "recovery": "Restart recovery",
+        "live": "Live-provider evidence",
+        "performance": "Performance evidence",
+        "platforms": "Supported platforms / evidence",
+        "formal": "Formal claim boundary"
+    },
+    "rows": [
+        {
+            "id": "tasks",
+            "group": "upstream",
+            "title": "Typed tasks and explicit execution",
+            "source": "Upstream 0.3.0 task/schema vocabulary; adapted to explicit TypeScript descriptors and providers.",
+            "exports": [
+                {
+                    "entry": "./tasks",
+                    "symbol": "task"
+                },
+                {
+                    "entry": "./tasks",
+                    "symbol": "schema"
+                },
+                {
+                    "entry": "./runs",
+                    "symbol": "executeTaskDurably"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: scalar forms, arrays, literals/enums, disjoint unions, strict objects with optional fields, task values and whole-value void.",
+                "composition": "Adapted: explicit provider execution; no ambient Python decorator calls. General constraints, tuple/dictionary/recursive forms remain unsupported.",
+                "recovery": "Durable run reconstruction exists; a started uncertain provider operation is refused rather than blindly repeated.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "No performance result claimed by this row.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/task/schema-builders.test.ts",
+                    "sha256": "47d1f71cd2f935025e3c0a1c37be48a0d1f7b7bc4717c61e3f77d8dcab8329b2"
+                },
+                {
+                    "path": "test/run/durable-execution-replay.test.ts",
+                    "sha256": "30ab955aa6ea880376f9d06e6c47727b18cd301b944d7ade425f345950ab96df"
+                },
+                {
+                    "path": "docs/task-descriptors.md",
+                    "sha256": "a2d1588bbaba7ffaf5768ec7fcb5ed3e15fec0f2c70cde6f4ff8229e385e61b0"
+                },
+                {
+                    "path": "docs/python-to-typescript.md",
+                    "sha256": "16c164e6a8290d831004ccfb4cd979f66441f970affffd2e73571cc769e02bb2"
+                }
+            ],
+            "issues": ["https://github.com/avnionur/shepherd-typescript/issues/263"]
+        },
+        {
+            "id": "worlds",
+            "group": "upstream",
+            "title": "Retained outputs, bindings and grants",
+            "source": "Upstream 0.3.0 workspace, output, binding and permission vocabulary.",
+            "exports": [
+                {
+                    "entry": "./workspace",
+                    "symbol": "captureTaskWorldDurably"
+                },
+                {
+                    "entry": "./workspace",
+                    "symbol": "createWorkspaceBindings"
+                },
+                {
+                    "entry": "./workspace",
+                    "symbol": "prepareRetainedWorldSettlement"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: retained capture, inspect, select/apply/discard/release and authenticated repository grants.",
+                "composition": "Adapted: disjoint bindings can be created, but each retained task exposes one repository world. Built-in world operations do not each have an individual durable effect record. CLI task inspection does not expose grant evidence.",
+                "recovery": "Capture and settlement have durable recovery; this does not imply automatic safe tool-effect replay.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "No performance result claimed by this row.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/workspace/task-world-repository-grants.test.ts",
+                    "sha256": "d3c5b2ea560eedd5ae21633f5b3ae0a66a3ca1a33f9e2f4ca778188452fddbc0"
+                },
+                {
+                    "path": "docs/task-world-execution.md",
+                    "sha256": "237f9e1a67eff6084bde22912e5cafd5609a5d49cc80150ca016fef63b4c0eae"
+                },
+                {
+                    "path": "docs/retained-world-settlement.md",
+                    "sha256": "5a9314ef28562c87a36c0c5869fc0c212b8c5ba96abc3067937376edcf127e14"
+                },
+                {
+                    "path": "examples/multiple-bindings.ts",
+                    "sha256": "162459863d95477abde27abc6d8d432b253458166138f2b77cec4330d0368fbb"
+                },
+                {
+                    "path": "test/workspace/retained-world-select.test.ts",
+                    "sha256": "b54cab77697eec55c50ecb914ad61142ae090c1ad1df1590cbdc5dd514c94354"
+                },
+                {
+                    "path": "test/workspace/retained-world-discard.test.ts",
+                    "sha256": "3ad234f5066db02bfd849c4b07907d9ef75c65c7f90c8fcff72762e636eeb670"
+                },
+                {
+                    "path": "test/workspace/retained-world-apply.test.ts",
+                    "sha256": "e8e0dda720dc57b33af98dcd644a04cc8364354afd3261107a1e56d65a101900"
+                },
+                {
+                    "path": "test/workspace/retained-world-release.test.ts",
+                    "sha256": "1b67ec55a1f0a14b8612a7e870cb607ab4ac482bf712676be8408f394696bb18"
+                }
+            ],
+            "issues": [
+                "https://github.com/avnionur/shepherd-typescript/issues/238",
+                "https://github.com/avnionur/shepherd-typescript/issues/239",
+                "https://github.com/avnionur/shepherd-typescript/issues/247"
+            ]
+        },
+        {
+            "id": "cli",
+            "group": "upstream",
+            "title": "CLI discovery, registration and scaffolding",
+            "source": "Upstream 0.3.0 CLI reference: command presence is distinct from implemented execution.",
+            "exports": [
+                {
+                    "entry": "./cli",
+                    "symbol": "runCli"
+                },
+                {
+                    "entry": "./tasks",
+                    "symbol": "SQLiteTaskRegistry"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: configured CLI topology, stable JSON, retained inspection and replay/scope views; task registry API exists.",
+                "composition": "Partial: declarative CLI task registration and extension scaffolding are stubs; help/version/selectors/trace detail/readiness conveniences remain incomplete.",
+                "recovery": "Exact mutation commands delegate to fenced runtime operations; read selectors confer no mutation authority.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "No performance result claimed by this row.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/cli/trace-cli.test.ts",
+                    "sha256": "f38374fc58c03e1c06f1a8bc59215c859d51cf8bec33965e94d7894e7b2f556e"
+                },
+                {
+                    "path": "docs/cli.md",
+                    "sha256": "f18cf680224a284b8e944e104d45145259b093ba85e1a7c9d94977c4f78f2bd7"
+                },
+                {
+                    "path": "test/task/registry-persistence.test.ts",
+                    "sha256": "2d4af12653c60bf5f8f69c27811e4455c05118bb455cd87165e961a9451c27ef"
+                }
+            ],
+            "issues": [
+                "https://github.com/avnionur/shepherd-typescript/issues/259",
+                "https://github.com/avnionur/shepherd-typescript/issues/260",
+                "https://github.com/avnionur/shepherd-typescript/issues/261"
+            ]
+        },
+        {
+            "id": "providers",
+            "group": "upstream",
+            "title": "HTTP providers and process-provider boundary",
+            "source": "Upstream 0.3.0 provider concept: HTTP adapters are an adapted transport, not Claude CLI or Codex process adapters.",
+            "exports": [
+                {
+                    "entry": "./providers",
+                    "symbol": "createLiveProvider"
+                },
+                {
+                    "entry": "./providers",
+                    "symbol": "createProviderConversation"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: Anthropic Messages and OpenAI-compatible HTTP adapters with tool blocks and cache-token usage.",
+                "composition": "Partial: no streaming, bounded retry policy, actual monetary accounting, or governed process-provider adapter.",
+                "recovery": "Conversation checkpoints are process-local; retained trace data does not reconstruct the checkpoint receipt map after restart.",
+                "live": "Opt-in live test exists but was not run in the recorded audit; no live cache-hit or tool-loop conformance result.",
+                "performance": "No performance result claimed by this row.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/provider/live-provider.test.ts",
+                    "sha256": "34e2c641e46a89342f6fb1878490b53d67e8af81013eae759f4d759f6acf3769"
+                },
+                {
+                    "path": "test/provider/provider-conversation.test.ts",
+                    "sha256": "8c7fdb87659e952700046d7511e7468ef444c271e901d6ed9f1d2d6a02f1dbb0"
+                },
+                {
+                    "path": "test/provider/live-provider-opt-in.test.ts",
+                    "sha256": "af4b0038082867ba9472ee50d3d6c4e908e23aaf6cde01e87e98baf48d6b852b"
+                },
+                {
+                    "path": "docs/live-providers.md",
+                    "sha256": "e8df5c94bf40077a4d1b238e00eadb93fc4286e735b20a9c5a4e8ff7c538e071"
+                }
+            ],
+            "issues": [
+                "https://github.com/avnionur/shepherd-typescript/issues/242",
+                "https://github.com/avnionur/shepherd-typescript/issues/249",
+                "https://github.com/avnionur/shepherd-typescript/issues/250",
+                "https://github.com/avnionur/shepherd-typescript/issues/251",
+                "https://github.com/avnionur/shepherd-typescript/issues/252",
+                "https://github.com/avnionur/shepherd-typescript/issues/264"
+            ]
+        },
+        {
+            "id": "task-values",
+            "group": "paper",
+            "title": "Tasks as substitutable values",
+            "source": "Paper \u00a73.1: task values, substitution, revision, synthesis and nested meta-agents.",
+            "exports": [
+                {
+                    "entry": "./delegation",
+                    "symbol": "taskValueOf"
+                },
+                {
+                    "entry": "./delegation",
+                    "symbol": "openChildRun"
+                },
+                {
+                    "entry": "./delegation",
+                    "symbol": "approveChildRunTask"
+                },
+                {
+                    "entry": "./delegation",
+                    "symbol": "projectDelegationTree"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: canonical task values, explicit child-run handles and task provenance.",
+                "composition": "Adapted: revised and synthesized task values are data with approval gating; program-serviced children compose bounded nested agents. No ambient Python call semantics.",
+                "recovery": "Retained child identity, approval and completion records survive reopen/import; uncertain running children require the documented cancellation/retry path.",
+                "live": "No live synthesis or nested-agent experiment measured.",
+                "performance": "No task-substitution performance result claimed.",
+                "platforms": "Node runtime support applies; nested worlds inherit their carrier and placement limits.",
+                "formal": "Runtime authority/isolation tests; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/delegation/task-revision.test.ts",
+                    "sha256": "54b5568679a831408c2b6d0f988e212764bece5aab08e5c37ee54390d4898752"
+                },
+                {
+                    "path": "test/delegation/nested-isolation.test.ts",
+                    "sha256": "d0f29150baf8e5fe749c5dd7b701a4f80647190b50dc1b5e98b321ec6cb9b710"
+                },
+                {
+                    "path": "test/delegation/nested-open-replay.test.ts",
+                    "sha256": "b2e49c80de49c9046ab688d9d4e0a87d0d92c675a7afa55308ace2ed3360d7f4"
+                },
+                {
+                    "path": "docs/task-values.md",
+                    "sha256": "d6fcde314d12b7e92e99c6e34c5851ceb69a6e7029aa262ec4d0013a05471337"
+                },
+                {
+                    "path": "docs/task-revision.md",
+                    "sha256": "234de0b53de19db4fd5a5d623d9ad064753ad958caf299fa8fdc4a9acebceda8"
+                }
+            ],
+            "issues": []
+        },
+        {
+            "id": "effects",
+            "group": "paper",
+            "title": "Effects, observation and interception",
+            "source": "Paper \u00a73.2; separate from upstream release completeness.",
+            "exports": [
+                {
+                    "entry": "./effects",
+                    "symbol": "createEffectHandlerStack"
+                },
+                {
+                    "entry": "./supervision",
+                    "symbol": "openTraceSubscription"
+                },
+                {
+                    "entry": "./supervision",
+                    "symbol": "dispatchSupervisedEffect"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: typed intent/outcome records, handler stacks, trace subscriptions and supervised dispatch.",
+                "composition": "Adapted: in-process handler stacks alone are not durable dispatch. Direct retained-world operations still need per-operation effect integration.",
+                "recovery": "Subscriptions retain acknowledgements; supervised dispatch fences ownership. Neither proves all built-in world operations are journaled.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "No performance result claimed by this row.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/supervision/trace-subscription.test.ts",
+                    "sha256": "ee0387c7b68e0a47bb35304997197105f7e1f6b453c1d11ae549603d2b631c85"
+                },
+                {
+                    "path": "test/agent/tool-loop.test.ts",
+                    "sha256": "268431a3f028606b58a2220fb26ea09d58bfae10f23b97bb7470926f6c5301e4"
+                },
+                {
+                    "path": "docs/supervised-effects.md",
+                    "sha256": "c1393572b74536b26bc9a9effb907328c97c247b86f9839241d3fe4ac7850358"
+                }
+            ],
+            "issues": ["https://github.com/avnionur/shepherd-typescript/issues/238"]
+        },
+        {
+            "id": "compensation",
+            "group": "paper",
+            "title": "Compensation of abandoned materializations",
+            "source": "Paper \u00a73.2 reversibility boundary.",
+            "exports": [
+                {
+                    "entry": "./effects",
+                    "symbol": "createEffectCompensationRegistry"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: per-kind handlers and retained compensation intent/attempt/outcome evidence.",
+                "composition": "Branches retaining their source do not compensate; abandoning branches and scope discard compensate recorded successful compensable materializations.",
+                "recovery": "Partial: uncertain attempts can invoke the same handler key again; idempotency remains the handler obligation. No durable attempt ownership or audited reconciliation yet.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "No performance result claimed by this row.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/effect/compensation.test.ts",
+                    "sha256": "b609786cca46132c29f0e44fe2107f27b662319296ea5e9d5e0323598156538d"
+                },
+                {
+                    "path": "test/faults/compensation-kill.test.ts",
+                    "sha256": "60b22a3e20316f02c5e1578528f370fffa4c03c88e8cf29a0ee3793ebe15db95"
+                },
+                {
+                    "path": "test/replay/replay-source-disposition.test.ts",
+                    "sha256": "cb479fffea4ac5d64e7481b7c513b0b09f86270da31fa67b1339daf6164a12bc"
+                },
+                {
+                    "path": "docs/compensation.md",
+                    "sha256": "c09a978a6c79f1fd5208fd68bd215c073275f0a3c9f7e3d0b379f463655a55a3"
+                }
+            ],
+            "issues": [
+                "https://github.com/avnionur/shepherd-typescript/issues/240",
+                "https://github.com/avnionur/shepherd-typescript/issues/241"
+            ]
+        },
+        {
+            "id": "scopes",
+            "group": "paper",
+            "title": "Scope algebra and coupled checkpoints",
+            "source": "Paper \u00a73.3 and \u00a73.4.",
+            "exports": [
+                {
+                    "entry": "./scopes",
+                    "symbol": "emitScopeRecord"
+                },
+                {
+                    "entry": "./workspace",
+                    "symbol": "forkScope"
+                },
+                {
+                    "entry": "./workspace",
+                    "symbol": "mergeScope"
+                },
+                {
+                    "entry": "./workspace",
+                    "symbol": "discardScope"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: emission, isolated nested/parallel scope fork, merge and discard with authority fencing.",
+                "composition": "Adapted: coordinated multi-resource checkpoints exist; atomic/reconstructive/unavailable classification depends on every constituent. No generic OS process snapshot promise.",
+                "recovery": "Carrier custody and operation journals support documented recovery; device-layer worlds and provider conversation receipt maps are separately process-local.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "Existing scope benchmark measures full custody verification; it does not establish image-size-independent scope fork.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/scope/scope-laws.test.ts",
+                    "sha256": "28e653479eb6d1a4e9c86a6818aa746ccc6354e9d85dfc93ea960d9a5fef467e"
+                },
+                {
+                    "path": "test/replay/replay-checkpoint.test.ts",
+                    "sha256": "7b2f47318bab7037b7b37a89199b02a516f78a70b3cd06dfc546cb9e2ef52acc"
+                },
+                {
+                    "path": "docs/coupled-checkpoints.md",
+                    "sha256": "5b2eb1027dde08feb8602b2e7bdfa69aa741a4b395fa4a4bca1cbacbc6826200"
+                },
+                {
+                    "path": "docs/scope-merge-discard.md",
+                    "sha256": "f1c27d9bd6479ff2c4a55f0cb19f78191442cccfecd3f8841a0226c162c9e812"
+                }
+            ],
+            "issues": [
+                "https://github.com/avnionur/shepherd-typescript/issues/242",
+                "https://github.com/avnionur/shepherd-typescript/issues/243",
+                "https://github.com/avnionur/shepherd-typescript/issues/244"
+            ]
+        },
+        {
+            "id": "replay",
+            "group": "paper",
+            "title": "Trace history, rewind and suffix replay",
+            "source": "Paper \u00a73.4.",
+            "exports": [
+                {
+                    "entry": "./replay",
+                    "symbol": "rewindReplaySession"
+                },
+                {
+                    "entry": "./replay",
+                    "symbol": "replayReplaySession"
+                },
+                {
+                    "entry": "./replay",
+                    "symbol": "diffReplaySessions"
+                },
+                {
+                    "entry": "./replay",
+                    "symbol": "findFirstReplayRegression"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: retained replay sessions, rewind, recorded-prefix suffix replay, divergence and lineage comparison.",
+                "composition": "Adapted: restoration requires available checkpoint constituents; side effects are not automatically reversible. Completed replay identity does not yet refuse changed source disposition.",
+                "recovery": "Replay records survive reopen/import; uncertain started effects remain fenced. Provider receipt durability is separate.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "Replay-step reuse is observable; it is not measured live KV-cache reuse.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/replay/replay-branch.test.ts",
+                    "sha256": "e6a2844169ca93bdb01b8e39d91a21585324ade79672a5b003e8e0e82b7f5302"
+                },
+                {
+                    "path": "test/replay/replay-lineage.test.ts",
+                    "sha256": "70c3507342d092e032d1e6210d68d9ef6addebb19c5ac7f03a4fa241c210a8a5"
+                },
+                {
+                    "path": "test/replay/replay-crash.test.ts",
+                    "sha256": "1bea02b7a0815681791df4a7afaca4861a0258240415cd26966468ac43462822"
+                },
+                {
+                    "path": "docs/rewind-and-replay.md",
+                    "sha256": "36970ddb83161a3107219d972187cf8c9a6835de2f04f369721e7a9ed135b6b9"
+                }
+            ],
+            "issues": [
+                "https://github.com/avnionur/shepherd-typescript/issues/237",
+                "https://github.com/avnionur/shepherd-typescript/issues/242",
+                "https://github.com/avnionur/shepherd-typescript/issues/262"
+            ]
+        },
+        {
+            "id": "supervisor",
+            "group": "paper",
+            "title": "Concurrent runtime supervisor",
+            "source": "Paper \u00a75.1 and Appendix E.",
+            "exports": [
+                {
+                    "entry": "./applications",
+                    "symbol": "runRuntimeSupervisor"
+                },
+                {
+                    "entry": "./applications",
+                    "symbol": "createModelRuntimeSupervisorPolicy"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: concurrent workers, tick observations, batched inject/handoff/discard decisions and a model-backed policy interface.",
+                "composition": "Partial: worker grants, placement and shared budgets are not fully composed into the concurrent supervisor; leader handoff is a native extension.",
+                "recovery": "Retained intervention recovery is tested; a crash during a tool turn can still repeat effects.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "No real-task concurrent-supervisor or CooperBench result measured.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/applications/runtime-supervisor.test.ts",
+                    "sha256": "9ebee0b40bb80dc157e3bb4d069caf6b18351e77550c59fb7c9ad002ef92c3f4"
+                },
+                {
+                    "path": "test/applications/runtime-supervisor-crash.test.ts",
+                    "sha256": "e7d2f3071c93e999e3b8cf6fa0d4362e5569a51702b0c131dbb44bfbcdab80de"
+                },
+                {
+                    "path": "docs/runtime-supervisor.md",
+                    "sha256": "fc2ecd3479875b162d945d1a11bda9f9ddcd8f9722ab320afaa6f38d606c5aa0"
+                }
+            ],
+            "issues": [
+                "https://github.com/avnionur/shepherd-typescript/issues/245",
+                "https://github.com/avnionur/shepherd-typescript/issues/246",
+                "https://github.com/avnionur/shepherd-typescript/issues/253",
+                "https://github.com/avnionur/shepherd-typescript/issues/258"
+            ]
+        },
+        {
+            "id": "cro",
+            "group": "paper",
+            "title": "Counterfactual optimization",
+            "source": "Paper \u00a75.2 and Appendix F.1\u2013F.5.",
+            "exports": [
+                {
+                    "entry": "./applications",
+                    "symbol": "runCounterfactualOptimization"
+                },
+                {
+                    "entry": "./applications",
+                    "symbol": "createToolLoopCounterfactualProposer"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: train/dev baselines, candidate proposals, fix/guard gate, promotion and suffix replay.",
+                "composition": "Partial: candidates use caller-applied edits; bound worlds are excluded. Proposer conformance uses scripted models.",
+                "recovery": "Application append recovery is tested; stateful world isolation is not established by those tests.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "Synthetic offline measurements only; replay-step reuse does not imply live cache or monetary savings.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/applications/counterfactual-optimizer.test.ts",
+                    "sha256": "d1cb6c65953f09885afcfe97bc2854580a72fc0a829687096144f4321ef29105"
+                },
+                {
+                    "path": "test/applications/replay-applications-crash.test.ts",
+                    "sha256": "f4efcebf7b067a45c7f3cb3c2e489dbb719b8b4668a135d736eaa119d415f78c"
+                },
+                {
+                    "path": "docs/counterfactual-optimization.md",
+                    "sha256": "fe7cd2e9af17abdef6f9b9729828acee10e701f37e952f59f6222535ff524098"
+                }
+            ],
+            "issues": [
+                "https://github.com/avnionur/shepherd-typescript/issues/256",
+                "https://github.com/avnionur/shepherd-typescript/issues/258",
+                "https://github.com/avnionur/shepherd-typescript/issues/249"
+            ]
+        },
+        {
+            "id": "tree-rl",
+            "group": "paper",
+            "title": "Tree-RL rollout and training boundary",
+            "source": "Paper \u00a75.3 and Appendix F.6\u2013F.7.",
+            "exports": [
+                {
+                    "entry": "./applications",
+                    "symbol": "runTreeRlRollouts"
+                },
+                {
+                    "entry": "./applications",
+                    "symbol": "computeTreeRlAdvantages"
+                },
+                {
+                    "entry": "./applications",
+                    "symbol": "exportTreeRlBatchToTrainer"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: fork selector, branched rollouts, advantages and per-action trainer export.",
+                "composition": "Partial: branch provider interface requires static providers; seed delivery depends on the factory. No policy update or trainer ships.",
+                "recovery": "Retained rollout recovery is tested; process-local provider state is not restart-durable.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "No matched-compute learning or policy-improvement result measured.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/applications/tree-rl.test.ts",
+                    "sha256": "81ae281f85d2d87c93e922427c5c6d4b86a1eb2cef44824b797810d18d78f5cd"
+                },
+                {
+                    "path": "test/applications/tree-rl-meta-agent.test.ts",
+                    "sha256": "17fb653a62a06a42ff899e545a7057de7a417c1fa79ee11bae95d331fcab190a"
+                },
+                {
+                    "path": "test/applications/tree-rl-worlds.test.ts",
+                    "sha256": "87fbcf9fd1c37e0532cfa7c9f69a8b5fbef6cf56e01a3d9b3d7b31594c0b7614"
+                },
+                {
+                    "path": "docs/tree-rl-rollouts.md",
+                    "sha256": "a9be401d27f6412685f7e561ddd6840b94c6b39fa03f4411e7fd92d7941d4eba"
+                }
+            ],
+            "issues": [
+                "https://github.com/avnionur/shepherd-typescript/issues/254",
+                "https://github.com/avnionur/shepherd-typescript/issues/255"
+            ]
+        },
+        {
+            "id": "compression",
+            "group": "paper",
+            "title": "Trajectory compression and rescue accounting",
+            "source": "Paper Appendix D.",
+            "exports": [
+                {
+                    "entry": "./applications",
+                    "symbol": "runTrajectoryCompression"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: fork/hint proposals, verifier children, shorter suffixes, restoration and best-of-N controls.",
+                "composition": "Adapted: world-bound pruning requires a checkpoint. Child evidence uses a text envelope by protocol choice, not because task schemas only support strings.",
+                "recovery": "Retained child/session recovery and crash refusal paths are tested.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "Offline step-count measurements; no independent task-level source judge, so current compression rescue accounting cannot measure failed-source rescue.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/applications/trajectory-compression.test.ts",
+                    "sha256": "936b20005f4b063c0c4bbac06ab2d281b7972330a184500d45d2466976ad0ccc"
+                },
+                {
+                    "path": "test/applications/trajectory-compression-crash.test.ts",
+                    "sha256": "7e92f042755d16d0d02b41454ae3e11066ecd6f6e4972853d31f9a24b7c4fc84"
+                },
+                {
+                    "path": "docs/trajectory-compression.md",
+                    "sha256": "b50328a92b3b067496fefde780a76d2e260783db531f3c2f8e8614ed31637ec0"
+                }
+            ],
+            "issues": ["https://github.com/avnionur/shepherd-typescript/issues/257"]
+        },
+        {
+            "id": "performance",
+            "group": "paper",
+            "title": "Performance and sandbox realization",
+            "source": "Paper \u00a74 and Appendix C.1\u2013C.7.",
+            "exports": [
+                {
+                    "entry": "./workspace",
+                    "symbol": "openDeviceLayerWorld"
+                },
+                {
+                    "entry": "./workspace",
+                    "symbol": "checkDeviceLayerConformance"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: copy/clone/overlay carriers and separate layered device adapters, including a reference Docker adapter.",
+                "composition": "Partial: optimized device layers are not integrated into normal custody, scope fork or replay images. No remote sandbox adapter ships.",
+                "recovery": "Device-layer world identity and checkpoints are process-local; durable recovery is outstanding.",
+                "live": "No live provider cache-reuse measurement.",
+                "performance": "Recorded kernel/scope/device benchmarks are local measurements; device-layer timing does not prove end-to-end constant-time fork/replay.",
+                "platforms": "Measured macOS arm64 APFS and Linux arm64 container-in-VM lanes only. No bare-metal Linux, x86-64 or remote-host result.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "test/workspace/device-layer.test.ts",
+                    "sha256": "ce7521529a92b20a93aa9a863e37cf48b32106be5323571ffba2d9afa04e39fa"
+                },
+                {
+                    "path": "test/benchmark/scope-benchmark.test.ts",
+                    "sha256": "80e3fbff65d5704cb00acf045638b45fd4c3b57e8fbeee693684cf4737789845"
+                },
+                {
+                    "path": "docs/performance-report.md",
+                    "sha256": "a0caf220ea5753abc2bfe74a90699f7b6944e07dec4fd3241078a7a1d0d98e64"
+                },
+                {
+                    "path": "docs/device-layers.md",
+                    "sha256": "d85db6156004cf058c59914eae96adb68fee7c861bc8c8606bf9191031a5dace"
+                }
+            ],
+            "issues": [
+                "https://github.com/avnionur/shepherd-typescript/issues/243",
+                "https://github.com/avnionur/shepherd-typescript/issues/244",
+                "https://github.com/avnionur/shepherd-typescript/issues/248",
+                "https://github.com/avnionur/shepherd-typescript/issues/266"
+            ]
+        },
+        {
+            "id": "nonclaims",
+            "group": "paper",
+            "title": "Overall coverage and research directions",
+            "source": "Paper \u00a71\u20132, \u00a76 and Appendix A.1\u2013A.2.",
+            "exports": [],
+            "dimensions": {
+                "api": "No aggregate paper-coverage percentage or complete reproduction claim.",
+                "composition": "Programming-model availability does not establish experimental parity; safety and coupling limits stay explicit.",
+                "recovery": "Recovery boundaries are stated per constituent above.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "No performance result claimed by this row.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Research proposals and future work are not implemented capabilities."
+            },
+            "evidence": [
+                {
+                    "path": ".plan/research/README.md",
+                    "sha256": "b26e882698452e8a8dbe264d76e6c3d45d4801cd9c1f15975eda3137e1350ec9"
+                },
+                {
+                    "path": ".plan/phase-10-exit-audit.md",
+                    "sha256": "80eccd47b5274533816dddcd57f01de6fe7c573574f38943605468177d6168c0"
+                },
+                {
+                    "path": "docs/application-evaluation.md",
+                    "sha256": "caf8646c4fa8a874d26c0f2a0a70c1530bf7a9f07efc084d5e589a0d5dc4c4ad"
+                }
+            ],
+            "issues": [
+                "https://github.com/avnionur/shepherd-typescript/issues/235",
+                "https://github.com/avnionur/shepherd-typescript/issues/258",
+                "https://github.com/avnionur/shepherd-typescript/issues/255"
+            ]
+        },
+        {
+            "id": "formal",
+            "group": "proof",
+            "title": "Imported proof evidence and runtime envelopes",
+            "source": "Paper Appendix B; imported pinned evidence is separate from native runtime behavior.",
+            "exports": [
+                {
+                    "entry": ".",
+                    "symbol": "classifyProofEnvelope"
+                },
+                {
+                    "entry": "./runs",
+                    "symbol": "inspectDurableTaskExecution"
+                },
+                {
+                    "entry": "./replay",
+                    "symbol": "inspectReplaySession"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: executable reference classification and proof envelopes on inspections.",
+                "composition": "Eligible effect-only finished root replays can lower to Core-A; ordinary production executions remain runtime-only. Imported claims are metadata, not verified proofs.",
+                "recovery": "Trace inspection preserves claim boundaries across reopen/import; no process-state proof follows.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "No performance result claimed by this row.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Core-0/Core-A stronger reference claims depend on exact pinned artifacts. Core-0H is fail-closed without a trusted sidecar. External proof build remains unexecuted here."
+            },
+            "evidence": [
+                {
+                    "path": "test/formal/inspection-proof-envelope.test.ts",
+                    "sha256": "7c98f8f4359283706eb40b178dbea9f6a9ff0d7c578a87da9352bde027e3a687"
+                },
+                {
+                    "path": "test/formal/strong-proof-envelope.test.ts",
+                    "sha256": "fbb44ed126ef7e7659ac2b1b69eb9966ef0687b66ab7e3e741a42d365397e9f5"
+                },
+                {
+                    "path": "docs/formal-assurance.md",
+                    "sha256": "c6483da649a11a28dd8e367e78aab4290c5dcddaaf501eb8594383746fc18ce5"
+                }
+            ],
+            "issues": ["https://github.com/avnionur/shepherd-typescript/issues/265"]
+        },
+        {
+            "id": "native",
+            "group": "native",
+            "title": "TypeScript authority, settlement and operational extensions",
+            "source": "Native TypeScript contracts; not inferred upstream parity or paper proof.",
+            "exports": [
+                {
+                    "entry": "./workspace",
+                    "symbol": "prepareRetainedWorldSettlement"
+                },
+                {
+                    "entry": "./operations",
+                    "symbol": "backupTraceStore"
+                }
+            ],
+            "dimensions": {
+                "api": "Supported: explicit exact-ID settlement, canonical JSON CLI and operational backup contracts.",
+                "composition": "Native grant and jail facilities exist; an end-to-end jailed retained-agent workflow remains separate work.",
+                "recovery": "Backup/migration and settlement journals have explicit repair rules; arbitrary external effects stay uncertain.",
+                "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
+                "performance": "No performance result claimed by this row.",
+                "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
+                "formal": "Runtime behavior only; no production correctness theorem claimed."
+            },
+            "evidence": [
+                {
+                    "path": "docs/backup-restore-and-migration.md",
+                    "sha256": "52e3897a1985a19cf94f6ae970240381dfe04e71e71f7e4b4e75f2f4c0d14fce"
+                },
+                {
+                    "path": "docs/native-jail-execution.md",
+                    "sha256": "3f7450692e3b1b5772941a2ae1efb1bcb094be67d6182927df84c463db703d74"
+                },
+                {
+                    "path": "docs/retained-world-settlement.md",
+                    "sha256": "5a9314ef28562c87a36c0c5869fc0c212b8c5ba96abc3067937376edcf127e14"
+                },
+                {
+                    "path": "test/operations/backup-restore.test.ts",
+                    "sha256": "b758b2435e64bd4ac5d7b7a99ec2ede17af201e4631e0bf58a8c05901a648bb1"
+                },
+                {
+                    "path": "test/operations/migration-drills.test.ts",
+                    "sha256": "2c6ad75df62888fe470181dfed286b5f32b27ce158781505d833e45a3ead6f29"
+                },
+                {
+                    "path": "test/workspace/retained-world-select.test.ts",
+                    "sha256": "b54cab77697eec55c50ecb914ad61142ae090c1ad1df1590cbdc5dd514c94354"
+                },
+                {
+                    "path": "test/workspace/retained-world-discard.test.ts",
+                    "sha256": "3ad234f5066db02bfd849c4b07907d9ef75c65c7f90c8fcff72762e636eeb670"
+                },
+                {
+                    "path": "test/workspace/retained-world-apply.test.ts",
+                    "sha256": "e8e0dda720dc57b33af98dcd644a04cc8364354afd3261107a1e56d65a101900"
+                },
+                {
+                    "path": "test/workspace/retained-world-release.test.ts",
+                    "sha256": "1b67ec55a1f0a14b8612a7e870cb607ab4ac482bf712676be8408f394696bb18"
+                }
+            ],
+            "issues": ["https://github.com/avnionur/shepherd-typescript/issues/253"]
+        }
+    ]
+}

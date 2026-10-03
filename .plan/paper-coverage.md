@@ -4,6 +4,16 @@ Paper baseline: [Shepherd paper v3](https://arxiv.org/html/2605.10913v3)
 
 Audited: 2026-08-02; re-audited 2026-09-25 (see Known deviations)
 
+## Current evidence inventory
+
+The [mechanically checked capability inventory](../docs/generated/capability-inventory.md)
+is the current map of API availability, composition, restart, live, platform, performance, and
+formal evidence. It links public exports and content-pinned executable evidence to the open
+follow-ups under [epic #235](https://github.com/avnionur/shepherd-typescript/issues/235).
+Historical completion below retains its original scope and is not a claim that those gaps closed.
+The inventory separates upstream 0.3.0 vocabulary, paper targets, imported proof evidence, and
+native TypeScript extensions; it assigns no aggregate coverage percentage.
+
 ## Purpose
 
 This map prevents “full paper coverage” from becoming an untestable marketing claim. It connects

@@ -5,6 +5,11 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 
 ## Guides
 
+- [Capability evidence inventory](./generated/capability-inventory.md) separates upstream release
+  vocabulary, paper targets, imported formal evidence and native extensions, with seven evidence
+  dimensions, checked public exports, content-pinned citations and open follow-up issues.
+  [Maintenance](./capability-inventory.md) defines the drift gate and its limits.
+
 - [Durable scope registration and fenced local emission](./scope-registration.md) defines the
   trace-only Phase 6 slice: content-addressed root/child scopes, exact origin cuts, attenuated
   authority, single-writer fencing, idempotent emission, inspection, and import limits.
@@ -287,7 +292,7 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
   last-matching precedence, typed schema-validated payload adapters, validation-before-invocation,
   and unhandled behavior.
 - [Effect compensation](./compensation.md) defines per-kind compensation handlers, materialization
-  evidence and identity, retained intent/attempt/outcome records, reverse-order exactly-once
+  evidence and identity, retained intent/attempt/outcome records, reverse-order materialization-keyed
   compensation on scope discard and replay branches that abandon their source (`compensate`
   disposition; `retain` branches compensate nothing), and crash recovery.
 - [Typed-effect reference validation and proof envelopes](./formal-assurance.md) defines the

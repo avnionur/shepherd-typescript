@@ -1,12 +1,21 @@
 # Implementation Tracker
 
-Last updated: 2026-09-25
+Last updated: 2026-10-03
 
-Current version: `12.0.0`
+Current version: `12.0.2`
 
 Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
 ## Current position
+
+Active follow-up: [epic #235](https://github.com/avnionur/shepherd-typescript/issues/235),
+31 issues in dependency order, P1 first. #236 adds the
+[current capability evidence inventory](../docs/generated/capability-inventory.md), corrects
+migration and compression descriptions, and adds a drift gate. PATCH 12.0.2; full host verification
+passed (1,340 passed, two intentional skips, zero failures, 100% configured coverage and installed
+package checks). Version synchronization and desktop build passed; PR delivery pending. The [preservation matrix](./236-capability-preservation.md) records evidence.
+The next correctness slice is #237 (replay command identity); #238, #239, #240 and #243 are also
+unblocked P1 work. External live/platform/proof requirements stay open until verified.
 
 Phase 0 governance and repository foundations are established. Phase 1 trace-kernel work is
 complete: canonical records, envelopes, append planning, SQLite durability, content-addressed blob
@@ -1699,6 +1708,9 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
+Deliver #236, then #237 under active epic #235. The milestone account below is historical;
+its closed-scope statements do not close the 31 follow-up issues or the npm ownership decisions.
+
 Phases 6, 7, 8, 9, and 10 are complete for their documented scope; the
 [Phase 9 exit audit](./phase-9-exit-audit.md) records L3 paper programming-model parity for the
 documented scope. Phase 10 (#23, research applications) is closed by its exit audit; its
@@ -1711,14 +1723,14 @@ applications protocol v5 (#176). Conformance, process crash evidence for the opt
 Tree-RL, and the [Phase 10 exit audit](./phase-10-exit-audit.md) are delivered (#177): Phase 10 is
 complete for its documented offline scope. Phase 11 (#24, production hardening and 1.0) has
 delivered #187, #179 to #186, and the readiness audit (#29, 2.32.4): release candidate ready for
-the in-repo scope, 1.0 general availability no-go. No agent-implementable slice remains in the
+the in-repo scope, 1.0 general availability no-go. At that milestone no agent-implementable slice remained in the original
 roadmap; the close-out (#190, 2.33.1) records the local Linux lane and moves the owner-only items
 to #191; #191's in-repo slice (2.33.3) recorded the owner decisions and fixed F-032; and #199
 (2.34.0) closed the remaining items by owner decision, making 1.0 a private, unpublished source
 release with listed waivers
 ([addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340); the F-016 protocol
-decision was made and delivered by #189 in 2.33.0). No roadmap slice remains open; later work
-(publication, an external review, hosted CI) needs a new owner decision.
+decision was made and delivered by #189 in 2.33.0). That original milestone was closed; epic #235 now tracks the integration and evidence follow-ups.
+Publication, an external review, and hosted CI retain their separate owner decisions.
 
 Completed follow-ups include the JSON Schema adapter (#117), typed effect payload callbacks
 (#115), pinned Rollup Node fixtures (#109), installed ESM loading matrix (#108), and migration

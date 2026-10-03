@@ -332,16 +332,16 @@
             "scope": "excluded"
         },
         {
-            "bom-ref": "pkg:npm/%40types/node@26.6.1",
+            "bom-ref": "pkg:npm/%40types/node@26.6.2",
             "group": "@types",
             "name": "node",
-            "purl": "pkg:npm/%40types/node@26.6.1",
+            "purl": "pkg:npm/%40types/node@26.6.2",
             "type": "library",
-            "version": "26.6.1",
+            "version": "26.6.2",
             "hashes": [
                 {
                     "alg": "SHA-512",
-                    "content": "56a18904c0ad761aa405409c04bbf2c08d0d27e28bb95ce036794150d14e423a95c73a369712d4360d4349ecbcfaedaeea4b6cc1203183eb3af102f358734eb8"
+                    "content": "5f53f6d6c70cbf8cc628b62a8dd1a368a6bb08e6b444a55861964dfcd7ef2d0d497a0c4585d869646fcbca7f005f1e820d46af280775d6fe81bdfa640c1c8af2"
                 }
             ],
             "properties": [
@@ -1284,12 +1284,12 @@
                 "pkg:npm/%40biomejs/biome@2.5.14",
                 "pkg:npm/%40rollup/plugin-node-resolve@16.0.3",
                 "pkg:npm/%40rollup/wasm-node@4.63.1",
-                "pkg:npm/%40types/node@26.6.1",
+                "pkg:npm/%40types/node@26.6.2",
                 "pkg:npm/ajv@8.20.0",
                 "pkg:npm/typescript@7.0.2",
                 "pkg:npm/yaml@2.9.1"
             ],
-            "ref": "pkg:npm/%40avnionur/shepherd-typescript@12.0.1"
+            "ref": "pkg:npm/%40avnionur/shepherd-typescript@12.0.2"
         },
         {
             "dependsOn": [
@@ -1376,7 +1376,7 @@
             "dependsOn": [
                 "pkg:npm/undici-types@8.9.0"
             ],
-            "ref": "pkg:npm/%40types/node@26.6.1"
+            "ref": "pkg:npm/%40types/node@26.6.2"
         },
         {
             "dependsOn": [],
@@ -1580,12 +1580,12 @@
     ],
     "metadata": {
         "component": {
-            "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@12.0.1",
+            "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@12.0.2",
             "group": "@avnionur",
             "name": "shepherd-typescript",
-            "purl": "pkg:npm/%40avnionur/shepherd-typescript@12.0.1",
+            "purl": "pkg:npm/%40avnionur/shepherd-typescript@12.0.2",
             "type": "application",
-            "version": "12.0.1",
+            "version": "12.0.2",
             "licenses": [
                 {
                     "license": {
@@ -1601,7 +1601,7 @@
             },
             {
                 "name": "shepherd:sbom:lockfile-sha256",
-                "value": "b925a78d74166640d63c520adaee1075df9494b9dbad8c7a548d3850d00a9e21"
+                "value": "2218aa7d0ecc0aafb3a83a8320ec4c7d54f59b7b6490105fd05a50119e9be04f"
             },
             {
                 "name": "shepherd:sbom:lockfile-version",
@@ -1615,16 +1615,16 @@
         "tools": {
             "components": [
                 {
-                    "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@12.0.1#sbom-generator",
+                    "bom-ref": "pkg:npm/%40avnionur/shepherd-typescript@12.0.2#sbom-generator",
                     "name": "shepherd-typescript lockfile SBOM generator",
-                    "purl": "pkg:npm/%40avnionur/shepherd-typescript@12.0.1",
+                    "purl": "pkg:npm/%40avnionur/shepherd-typescript@12.0.2",
                     "type": "application",
-                    "version": "12.0.1"
+                    "version": "12.0.2"
                 }
             ]
         }
     },
-    "serialNumber": "urn:uuid:c855c98c-b2d4-8331-bd3c-60911f15ebcb",
+    "serialNumber": "urn:uuid:23cc6168-d4aa-8dc6-ada8-ade32d8a2720",
     "specVersion": "1.5",
     "version": 1
 }

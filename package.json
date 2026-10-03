@@ -1,6 +1,6 @@
 {
     "name": "@avnionur/shepherd-typescript",
-    "version": "12.0.1",
+    "version": "12.0.2",
     "packageManager": "pnpm@10.32.1",
     "description": "A TypeScript implementation of reversible agent execution traces.",
     "keywords": [
@@ -181,9 +181,11 @@
         "test:soak": "node scripts/soak-cli.ts",
         "typecheck": "tsc --noEmit",
         "update:compatibility-baseline": "pnpm build && node scripts/check-compatibility-cli.ts --update",
-        "verify": "pnpm check:protocol && pnpm check:evaluation && pnpm check:sbom && pnpm build && pnpm check:api-reference && pnpm check:compatibility && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:package-cli",
+        "verify": "pnpm check:protocol && pnpm check:evaluation && pnpm check:sbom && pnpm build && pnpm check:api-reference && pnpm check:capabilities && pnpm check:compatibility && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:package-cli",
         "verify:release": "pnpm verify && pnpm check:slo && pnpm release:reproducible-build && pnpm release:manifest",
-        "verify:serial": "pnpm check:protocol && pnpm check:evaluation && pnpm check:sbom && pnpm build && pnpm check:api-reference && pnpm check:compatibility && pnpm lint && pnpm typecheck && pnpm test:serial && pnpm build && pnpm test:package-cli"
+        "verify:serial": "pnpm check:protocol && pnpm check:evaluation && pnpm check:sbom && pnpm build && pnpm check:api-reference && pnpm check:capabilities && pnpm check:compatibility && pnpm lint && pnpm typecheck && pnpm test:serial && pnpm build && pnpm test:package-cli",
+        "check:capabilities": "node scripts/capability-inventory-cli.ts --check",
+        "generate:capabilities": "pnpm build && node scripts/capability-inventory-cli.ts"
     },
     "devDependencies": {
         "@biomejs/biome": "2.5.14",
