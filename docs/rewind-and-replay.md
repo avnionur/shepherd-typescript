@@ -25,7 +25,8 @@ process with the configured boundary reason. A world- or process-bound session i
 addressed by its checkpoints: with an [automatic checkpoint policy](./coupled-checkpoints.md#automatic-checkpoints)
 every selected step boundary retains one, and `{ checkpointId }` of that checkpoint rewinds or
 replays to it with every world restored byte-equivalently. Repeating a completed branch command
-returns its retained receipt without restoring anything.
+returns its retained receipt without restoring anything only after its normalized request matches
+the retained request journal. See [branch request identity](./replay-request-identity.md).
 
 ## Verification before writing
 

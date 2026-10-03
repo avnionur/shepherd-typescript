@@ -12,7 +12,7 @@ import {
     OBSERVABILITY_PROTOCOL_V1_CONTRACT,
     ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT,
     PROVIDER_PROTOCOL_V3_CONTRACT,
-    REPLAY_PROTOCOL_V3_CONTRACT,
+    REPLAY_PROTOCOL_V4_CONTRACT,
     RETENTION_PROTOCOL_V1_CONTRACT,
     RUN_PROTOCOL_V1_CONTRACT,
     SCOPE_PROTOCOL_V6_CONTRACT,
@@ -81,6 +81,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         ...Object.values(config.projections.evidenceRecords.artifacts),
         ...Object.values(config.projections.taskRunLedgers.artifacts),
         ...Object.values(config.replay.artifacts),
+        config.replay.branch.request.schemaPath,
         ...Object.values(config.retention.artifacts),
         ...Object.values(config.runs.artifacts),
         ...Object.values(config.scopes.artifacts),
@@ -141,7 +142,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (!sameJson(config.scopes, SCOPE_PROTOCOL_V6_CONTRACT)) {
         throw new TypeError("scope constants require a new scope protocol");
     }
-    if (!sameJson(config.replay, REPLAY_PROTOCOL_V3_CONTRACT)) {
+    if (!sameJson(config.replay, REPLAY_PROTOCOL_V4_CONTRACT)) {
         throw new TypeError("replay constants require a new replay protocol");
     }
     if (!sameJson(config.supervision, SUPERVISION_PROTOCOL_V1_CONTRACT)) {

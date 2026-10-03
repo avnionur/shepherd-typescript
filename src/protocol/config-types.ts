@@ -758,6 +758,23 @@ export type ReplayProtocolConfig = {
     };
     /** Disposition of the source session when a branch opens. */
     readonly branch: {
+        /** Durable normalized branch-request identity contract. */
+        readonly request: {
+            /** Append intent label reserved for normalized requests. */
+            readonly appendIntentKind: string;
+            /** Compatibility namespace of the request journal. */
+            readonly compatibilityVersion: string;
+            /** Suffix of the reserved session owner used by the request journal. */
+            readonly ownerSuffix: string;
+            /** Request record version. */
+            readonly recordVersion: number;
+            /** Generated request schema identifier. */
+            readonly schemaId: string;
+            /** Generated request schema destination. */
+            readonly schemaPath: string;
+            /** Request trace schema reference. */
+            readonly schemaRef: string;
+        };
         /** Disposition a branch uses when it declares none. */
         readonly defaultSourceDisposition: string;
         /**

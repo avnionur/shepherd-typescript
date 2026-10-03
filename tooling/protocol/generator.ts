@@ -37,6 +37,7 @@ import {
     renderOrphanRepairCommandSchema,
     renderOrphanRepairReceiptSchema,
 } from "./schemas/orphan-repair-schemas.ts";
+import { renderReplayBranchRequestSchema } from "./schemas/replay-request-schema.ts";
 import {
     renderReplayAdmissionSchema,
     renderReplayCheckpointSchema,
@@ -314,6 +315,10 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderScopeDiscardSchema(config)),
             relativePath: config.scopes.artifacts.discardSchema,
+        },
+        {
+            content: renderJson(renderReplayBranchRequestSchema(config)),
+            relativePath: config.replay.branch.request.schemaPath,
         },
         {
             content: renderJson(renderReplaySessionSchema(config)),

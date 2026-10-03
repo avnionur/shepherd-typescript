@@ -371,7 +371,7 @@
                 },
                 {
                     "path": "docs/compensation.md",
-                    "sha256": "c09a978a6c79f1fd5208fd68bd215c073275f0a3c9f7e3d0b379f463655a55a3"
+                    "sha256": "1807af571ef08be1653092c08720682b8cac15da5e2c6107857af48e1d03bb0a"
                 }
             ],
             "issues": [
@@ -422,7 +422,7 @@
                 },
                 {
                     "path": "docs/coupled-checkpoints.md",
-                    "sha256": "5b2eb1027dde08feb8602b2e7bdfa69aa741a4b395fa4a4bca1cbacbc6826200"
+                    "sha256": "0a568aa8ec17dca862adf68aa17079a65f2fcf9755a3baa4a4bb31bb29812a2b"
                 },
                 {
                     "path": "docs/scope-merge-discard.md",
@@ -456,11 +456,15 @@
                 {
                     "entry": "./replay",
                     "symbol": "findFirstReplayRegression"
+                },
+                {
+                    "entry": "./replay",
+                    "symbol": "inspectReplayBranchRequest"
                 }
             ],
             "dimensions": {
                 "api": "Supported: retained replay sessions, rewind, recorded-prefix suffix replay, divergence and lineage comparison.",
-                "composition": "Adapted: restoration requires available checkpoint constituents; side effects are not automatically reversible. Completed replay identity does not yet refuse changed source disposition.",
+                "composition": "Adapted: restoration requires available checkpoint constituents; side effects are not automatically reversible. Branch request identity is now bound before receipt replay, compensation and restoration; legacy branches without request journals refuse retries.",
                 "recovery": "Replay records survive reopen/import; uncertain started effects remain fenced. Provider receipt durability is separate.",
                 "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
                 "performance": "Replay-step reuse is observable; it is not measured live KV-cache reuse.",
@@ -482,11 +486,18 @@
                 },
                 {
                     "path": "docs/rewind-and-replay.md",
-                    "sha256": "36970ddb83161a3107219d972187cf8c9a6835de2f04f369721e7a9ed135b6b9"
+                    "sha256": "0ddaea659c6fb94885dbf8ca824383021d92b54af1000d8aa019aad756ac6a2c"
+                },
+                {
+                    "path": "test/replay/replay-request-identity.test.ts",
+                    "sha256": "50bfc4b19581be9b6da12b39ebeabf70265a9a376b6c8c6ded34dced0ce7271c"
+                },
+                {
+                    "path": "docs/replay-request-identity.md",
+                    "sha256": "73cc0f3bb0e058a0d3f9e198b79f0dc4d30be4dac4999277d75af8a1d9a331a6"
                 }
             ],
             "issues": [
-                "https://github.com/avnionur/shepherd-typescript/issues/237",
                 "https://github.com/avnionur/shepherd-typescript/issues/242",
                 "https://github.com/avnionur/shepherd-typescript/issues/262"
             ]

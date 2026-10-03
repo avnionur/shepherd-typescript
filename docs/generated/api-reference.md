@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 12.0.2
+Package: `@avnionur/shepherd-typescript` 13.0.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 1436.
+Exported symbols: 1438.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -11820,6 +11820,21 @@ export type ReplayBranchOptions = {
     readonly sourceSessionId: string;
     readonly target: ReplayTarget;
     readonly worlds?: readonly ReplayWorldBinding[];
+};
+```
+
+### `ReplayBranchRequestInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable request identity and normalized semantic data retained before branch effects.
+
+Signature:
+
+```ts
+export type ReplayBranchRequestInspection = {
+    readonly record_id: RecordId;
+    readonly request: SemanticRecord;
 };
 ```
 
@@ -29545,6 +29560,47 @@ Returns:
 
 - Frozen content-addressed classification of the current execution host.
 
+### `inspectReplayBranchRequest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Inspects the normalized request for one branch command, including attempts that failed before
+a session opened. This is read-only and works after reopening or importing a trace.
+
+Signature:
+
+```ts
+export declare function inspectReplayBranchRequest(store: SQLiteTraceStore, commandId: string): ReplayBranchRequestInspection | null;
+```
+
+Parameter:
+
+- store - Open trace store.
+
+Parameter:
+
+- commandId - Exact branch command identity.
+
+Returns:
+
+- Validated immutable request evidence, or null for an absent or legacy request.
+
+Throws:
+
+- {ReplayCompatibilityError} If the request journal version is unsupported.
+
+Throws:
+
+- {ReplayEvidenceError} If retained request evidence is inconsistent.
+
+Throws:
+
+- {TypeError} If the command identity is malformed.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or cannot read.
+
 ### `inspectReplaySession`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -31914,7 +31970,12 @@ Throws:
 
 Throws:
 
-- {ReplayCompatibilityError} If the source uses an unsupported replay version.
+- {ReplayCompatibilityError} If evidence uses an unsupported version or a legacy branch
+command has no normalized request journal.
+
+Throws:
+
+- {AppendIntentConflictError} If the command already names a different branch request.
 
 Throws:
 
@@ -32624,8 +32685,9 @@ the branch ends `rewound`. No provider or effect handler is invoked. With the so
 the source materialized at or after the target is compensated once through `compensation`, in
 reverse step order, with retained intent, attempt, and outcome records. With `retain` the source
 stays a retained alternative and no compensation handler is invoked.
-Repeating a completed branch command returns its retained receipt without restoring or
-compensating anything.
+Repeating a completed branch command returns its retained receipt only after its normalized
+request matches the retained request journal. It restores and compensates nothing. Legacy
+branch commands without this journal are refused; use inspectReplayBranchRequest for evidence.
 
 Signature:
 
@@ -32663,7 +32725,12 @@ Throws:
 
 Throws:
 
-- {ReplayCompatibilityError} If the source uses an unsupported replay version.
+- {ReplayCompatibilityError} If evidence uses an unsupported version or a legacy branch
+command has no normalized request journal.
+
+Throws:
+
+- {AppendIntentConflictError} If the command already names a different branch request.
 
 Throws:
 
@@ -48680,7 +48747,7 @@ import * as api from "@avnionur/shepherd-typescript/replay";
 void api;
 ```
 
-Exported symbols: 122.
+Exported symbols: 124.
 
 ### `AnalyzeReplayDependenciesOptions`
 
@@ -49222,6 +49289,21 @@ export type ReplayBranchOptions = {
     readonly sourceSessionId: string;
     readonly target: ReplayTarget;
     readonly worlds?: readonly ReplayWorldBinding[];
+};
+```
+
+### `ReplayBranchRequestInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable request identity and normalized semantic data retained before branch effects.
+
+Signature:
+
+```ts
+export type ReplayBranchRequestInspection = {
+    readonly record_id: RecordId;
+    readonly request: SemanticRecord;
 };
 ```
 
@@ -51274,6 +51356,47 @@ const search = await findFirstReplayRegression(store, {
 console.log(search.first_bad?.step_count, search.first_bad?.session_id);
 ```
 
+### `inspectReplayBranchRequest`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Inspects the normalized request for one branch command, including attempts that failed before
+a session opened. This is read-only and works after reopening or importing a trace.
+
+Signature:
+
+```ts
+export declare function inspectReplayBranchRequest(store: SQLiteTraceStore, commandId: string): ReplayBranchRequestInspection | null;
+```
+
+Parameter:
+
+- store - Open trace store.
+
+Parameter:
+
+- commandId - Exact branch command identity.
+
+Returns:
+
+- Validated immutable request evidence, or null for an absent or legacy request.
+
+Throws:
+
+- {ReplayCompatibilityError} If the request journal version is unsupported.
+
+Throws:
+
+- {ReplayEvidenceError} If retained request evidence is inconsistent.
+
+Throws:
+
+- {TypeError} If the command identity is malformed.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or cannot read.
+
 ### `inspectReplaySession`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -51390,7 +51513,12 @@ Throws:
 
 Throws:
 
-- {ReplayCompatibilityError} If the source uses an unsupported replay version.
+- {ReplayCompatibilityError} If evidence uses an unsupported version or a legacy branch
+command has no normalized request journal.
+
+Throws:
+
+- {AppendIntentConflictError} If the command already names a different branch request.
 
 Throws:
 
@@ -51434,8 +51562,9 @@ the branch ends `rewound`. No provider or effect handler is invoked. With the so
 the source materialized at or after the target is compensated once through `compensation`, in
 reverse step order, with retained intent, attempt, and outcome records. With `retain` the source
 stays a retained alternative and no compensation handler is invoked.
-Repeating a completed branch command returns its retained receipt without restoring or
-compensating anything.
+Repeating a completed branch command returns its retained receipt only after its normalized
+request matches the retained request journal. It restores and compensates nothing. Legacy
+branch commands without this journal are refused; use inspectReplayBranchRequest for evidence.
 
 Signature:
 
@@ -51473,7 +51602,12 @@ Throws:
 
 Throws:
 
-- {ReplayCompatibilityError} If the source uses an unsupported replay version.
+- {ReplayCompatibilityError} If evidence uses an unsupported version or a legacy branch
+command has no normalized request journal.
+
+Throws:
+
+- {AppendIntentConflictError} If the command already names a different branch request.
 
 Throws:
 

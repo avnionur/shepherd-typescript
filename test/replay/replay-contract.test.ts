@@ -17,7 +17,7 @@ import {
     runReplaySession,
     SQLiteTraceStore,
 } from "../../src/index.ts";
-import { REPLAY_PROTOCOL_V3_CONTRACT } from "../../src/protocol/compatibility-constants.ts";
+import { REPLAY_PROTOCOL_V4_CONTRACT } from "../../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
 import {
     emptyDirectory,
@@ -235,7 +235,7 @@ test("the replay facade, generated schemas, and configuration contract agree", a
         }
     }
     const parsed = parseProtocolConfig(structuredClone(validConfig));
-    assert.deepEqual(parsed.replay, REPLAY_PROTOCOL_V3_CONTRACT);
+    assert.deepEqual(parsed.replay, REPLAY_PROTOCOL_V4_CONTRACT);
     assert.equal(Object.isFrozen(parsed.replay), true);
 });
 

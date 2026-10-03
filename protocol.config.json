@@ -258,7 +258,7 @@
         "treeRl": {
             "actionSegments": ["prefix", "suffix", "flat"],
             "advantage": {
-                "epsilon": 0.000001,
+                "epsilon": 1e-6,
                 "normalization": "group_std",
                 "normalizations": ["none", "group_std"],
                 "stdEstimator": "sample",
@@ -1256,7 +1256,16 @@
         },
         "branch": {
             "defaultSourceDisposition": "compensate",
-            "sourceDispositions": ["compensate", "retain"]
+            "sourceDispositions": ["compensate", "retain"],
+            "request": {
+                "appendIntentKind": "branch-request",
+                "compatibilityVersion": "shepherd.replay.branch-request.v1",
+                "ownerSuffix": ":request",
+                "recordVersion": 1,
+                "schemaId": "https://avnionur.github.io/shepherd-typescript/schemas/replay-branch-request-v1.schema.json",
+                "schemaPath": "spec/schemas/replay-branch-request-v1.schema.json",
+                "schemaRef": "shepherd.replay.branch-request.v1"
+            }
         },
         "cache": {
             "statuses": ["hit", "not_observed"]
@@ -1604,6 +1613,14 @@
             {
                 "dataClass": "checkpoint",
                 "path": "workspaces.worldTaskCapture.captureSchemaId"
+            },
+            {
+                "dataClass": "general",
+                "path": "replay.branch.request.schemaId"
+            },
+            {
+                "dataClass": "general",
+                "path": "replay.branch.request.schemaRef"
             }
         ],
         "schemas": {

@@ -243,6 +243,10 @@ instances, and cycles are rejected.
 
 ## Documentation
 
+Branch retries bind the complete declared request before compensation or restoration. See
+[replay request identity](https://github.com/avnionur/shepherd-typescript/blob/main/docs/replay-request-identity.md)
+for inspection, excluded operational fields and the 13.0.0 legacy-retry refusal.
+
 The [documentation index](https://github.com/avnionur/shepherd-typescript/blob/main/docs/README.md) lists every guide. Starting points:
 
 - **Trace kernel:** [canonical records](https://github.com/avnionur/shepherd-typescript/blob/main/docs/canonical-records.md),

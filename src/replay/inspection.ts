@@ -18,6 +18,7 @@ import { assertScopeText, readScopeDataObject } from "../scope/validation.ts";
 import type { ReplaySessionRow } from "../store/replay-sessions.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 import type { OwnerRecord } from "../store/types.ts";
+import { inspectReplayBranchRequest } from "./branch-request.ts";
 import { ReplayCompatibilityError, ReplayEvidenceError } from "./errors.ts";
 import { classifyReplaySessionProof } from "./proof-lowering.ts";
 import {
@@ -285,11 +286,21 @@ function fold(
     assertRecord(first, config.traceSchemas.session, DECLARATION_MODE);
     const session = readReplaySessionBody(first.body);
     const origin = session.origin;
+    const request = origin === null ? null : inspectReplayBranchRequest(store, session.command_id);
+    assert(
+        request === null || canonical(request.request.session) === canonical(first.body),
+        "session differs from its normalized branch request",
+    );
     assert(
         session.session_id === sessionId &&
             sameIds(
                 first.envelope.caused_by_record_ids,
-                origin === null ? [] : [origin.source_session_record_id],
+                origin === null
+                    ? []
+                    : [
+                          origin.source_session_record_id,
+                          ...(request === null ? [] : [request.record_id]),
+                      ],
             ),
         "session record identity or causes are inconsistent",
     );

@@ -2,18 +2,26 @@
 
 Last updated: 2026-10-03
 
-Current version: `12.0.2`
+Current version: `13.0.0`
 
 Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
 ## Current position
+
+#236 shipped through PR #271 (12.0.2). #237 is in progress on
+`codex/phase-14-237-replay-request-identity`: normalized branch request reservation and inspection,
+pre-effect conflict rejection, exact retry/reopen/import evidence and explicit legacy refusal.
+MAJOR 13.0.0; full host verification passed (1,351 passed, two skips, zero failures,
+100% configured coverage and installed-package checks); version sync and desktop build passed.
+PR delivery is next. Preservation:
+[request identity](./237-replay-preservation.md). Next unblocked P1 issue after delivery: #238.
 
 Active follow-up: [epic #235](https://github.com/avnionur/shepherd-typescript/issues/235),
 31 issues in dependency order, P1 first. #236 adds the
 [current capability evidence inventory](../docs/generated/capability-inventory.md), corrects
 migration and compression descriptions, and adds a drift gate. PATCH 12.0.2; full host verification
 passed (1,340 passed, two intentional skips, zero failures, 100% configured coverage and installed
-package checks). Version synchronization and desktop build passed; PR delivery pending. The [preservation matrix](./236-capability-preservation.md) records evidence.
+package checks). Version synchronization and desktop build passed; delivered through PR #271. The [preservation matrix](./236-capability-preservation.md) records evidence.
 The next correctness slice is #237 (replay command identity); #238, #239, #240 and #243 are also
 unblocked P1 work. External live/platform/proof requirements stay open until verified.
 
@@ -1708,7 +1716,7 @@ production build, and dependency audit passed. Runtime and protocol source remai
 
 ## Next slice
 
-Deliver #236, then #237 under active epic #235. The milestone account below is historical;
+Deliver #237, then #238 under active epic #235; #236 is merged. The milestone account below is historical;
 its closed-scope statements do not close the 31 follow-up issues or the npm ownership decisions.
 
 Phases 6, 7, 8, 9, and 10 are complete for their documented scope; the
