@@ -11,8 +11,8 @@ and the reserved head-compared store append in
 [`discardScope`](../src/workspace/scope-discard.ts) and the replay branches
 [`rewindReplaySession` and `replayReplaySession`](../src/replay/branch.ts). Public entry points:
 [`./effects`](../src/facades/effects.ts) and the root entry. Configuration: `effects.compensation`
-in [`protocol.config.json`](../protocol.config.json) (effect protocol v3,
-`EFFECT_PROTOCOL_V3_CONTRACT`). Schema:
+in [`protocol.config.json`](../protocol.config.json) (effect protocol v4,
+`EFFECT_PROTOCOL_V4_CONTRACT`). Schema:
 [`effect-compensation-v1`](../spec/schemas/effect-compensation-v1.schema.json). Tests:
 [`compensation.test.ts`](../test/effect/compensation.test.ts),
 [`compensation-evidence.test.ts`](../test/effect/compensation-evidence.test.ts),
@@ -85,9 +85,11 @@ optional `compensation` registry; the `replay` tool retains its source and compe
 
 ## Records
 
-All records use the trace schema `shepherd.effect.compensation.v1`, mode `capture`, and the
+Compensation fact records use the trace schema `shepherd.effect.compensation.v1`, mode `capture`, and the
 compatibility namespace `shepherd.effect-compensation.v1`. Each record is caused by the previous
-head; the intent is caused by the materialization record.
+head; the intent is caused by the materialization record. From 13.5.0, reconciliation guards
+also occur on this path. A first intent after guards cites both its materialization and guard head;
+see [reconciliation records and migration](./effect-reconciliation.md#migration-and-older-readers).
 
 | Phase | Retained | Fields |
 | --- | --- | --- |
@@ -110,11 +112,11 @@ outcome cannot be forged through the ordinary append path to suppress a compensa
 A trigger collects its materialized effects in materialization order, drops non-compensable and
 unsuccessful ones, deduplicates them by materialization record, and refuses more than
 `limits.maxEffectsPerTrigger`. Before any write it requires a handler for every effect not already
-compensated (`EffectCompensationHandlerNotFoundError`). It then compensates in reverse order, one
+compensated or suppressed by an authorized reconciliation (`EffectCompensationHandlerNotFoundError`). It then compensates in reverse order, one
 effect at a time:
 
 1. Retain the intent if the path is empty; an identical concurrent intent replays.
-2. Skip the effect if its latest outcome is `compensated`.
+2. Skip the effect if its latest outcome is `compensated` or its operator disposition suppresses retries.
 3. In one SQLite transaction, refuse an active lease, retain the next attempt under the exact head,
    and register its sole invocation holder. Recheck the fence before entering the handler.
 4. Renew the unexpired lease while the handler awaits. Retain its outcome only under the exact
@@ -125,7 +127,7 @@ An expired or replaced handler cannot renew or publish an outcome; its cleanup c
 new holder. Handler completion without an outcome releases its own lease for stable-key retry.
 Process death leaves the lease active until expiry. Renewal failure prevents success publication;
 it cannot forcibly stop arbitrary external handler work. After every effect
-was attempted, any `failed` outcome makes the trigger fail with `EffectCompensationFailedError`,
+was attempted, any unsuppressed `failed` outcome makes the trigger fail with `EffectCompensationFailedError`,
 which names the failed compensations.
 
 Materialization order is:
@@ -222,8 +224,8 @@ outcome was retained (no further invocation).
 - Invocation exclusion covers one shared trace-store database while a lease is active. Expiry does
   not stop a suspended process or revoke external effects; stable-key idempotency remains required.
   Separate imported copies do not coordinate ownership or external resources.
-- A permanently failing compensation blocks its triggers; there is no waiver or manual-resolution
-  record in this version.
+- A permanently failing compensation blocks its triggers until an authorized operator records
+  [reconciliation](./effect-reconciliation.md). Accepted unresolved risk remains visible.
 - Effects without retained outcomes (`materialization_failed`, materialization-uncertain) and
   effects outside replay sessions and supervised dispatches are not compensated.
 - The paper's refusal-path compensation is not wired: refused replay effects never materialize and
@@ -252,4 +254,4 @@ Implementation: [`compensation-claims.ts`](../src/store/compensation-claims.ts).
 and the existing trigger/fault suites above. Tests include separate processes, three real SIGKILL
 boundaries, actual expiry in the existing fault suite, deterministic clock advancement in targeted
 recovery tests, heartbeat renewal and stale outcome/release exclusion. Fencing supplies no
-exactly-once guarantee for external handlers, and manual reconciliation remains separate #241 work.
+exactly-once guarantee for external handlers, and [operator reconciliation](./effect-reconciliation.md) preserves the factual outcome.

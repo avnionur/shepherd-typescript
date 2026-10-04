@@ -12,6 +12,8 @@ test("effects facade exposes only effect-owned runtime symbols", () => {
         "EFFECT_COMPENSATION_PHASES",
         "EFFECT_COMPENSATION_STATUSES",
         "EFFECT_COMPENSATION_TRIGGERS",
+        "EFFECT_RECONCILIATION_DISPOSITIONS",
+        "EFFECT_RECONCILIATION_SOURCE_KINDS",
         "EffectCompensationConflictError",
         "EffectCompensationEvidenceError",
         "EffectCompensationFailedError",
@@ -22,10 +24,13 @@ test("effects facade exposes only effect-owned runtime symbols", () => {
         "createEffectHandlerStack",
         "createEffectIntent",
         "createEffectOutcome",
+        "createEffectReconciliationAuthority",
         "createTypedEffectHandler",
         "deriveEffectCompensationId",
         "inspectEffectCompensation",
         "inspectEffectCompensationOwnership",
+        "inspectEffectReconciliation",
+        "reconcileEffect",
         "validateEffectCorrelation",
     ]);
     for (const excluded of [

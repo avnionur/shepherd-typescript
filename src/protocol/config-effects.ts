@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { readEffectReconciliationConfig } from "./config-reconciliation.ts";
 
 import type { ProtocolConfig } from "./config-types.ts";
 import {
@@ -137,6 +138,7 @@ function readCompensationConfig(
             "ownership",
             "phases",
             "recordVersion",
+            "reconciliation",
             "schemaId",
             "statuses",
             "traceSchema",
@@ -239,6 +241,7 @@ function readCompensationConfig(
         outcomes: readFixed("outcomes", 2),
         phases: readFixed("phases", 3),
         recordVersion: readPositiveInteger(compensation.recordVersion, `${path}.recordVersion`),
+        reconciliation: readEffectReconciliationConfig(compensation.reconciliation),
         schemaId: readAbsoluteUrl(compensation.schemaId, `${path}.schemaId`),
         statuses: readFixed("statuses", 4),
         traceSchema: readNonEmptyString(compensation.traceSchema, `${path}.traceSchema`),

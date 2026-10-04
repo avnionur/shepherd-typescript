@@ -32,7 +32,7 @@ test("schema-nine stores upgrade to subscription and dispatch bookkeeping withou
     `);
     database.close();
     using upgraded = new SQLiteTraceStore(databasePath);
-    assert.equal(upgraded.schemaVersion, 14);
+    assert.equal(upgraded.schemaVersion, 15);
     assert.equal(upgraded.exportTrace(), exported);
     const subscription = openTraceSubscription(upgraded, {
         owners: ["worker:a"],

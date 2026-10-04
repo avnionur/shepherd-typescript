@@ -170,3 +170,27 @@ Writable opens create and tighten SQLite files to the configured owner-only mode
 
 Record the timeline, root cause, fix commit, and test in the tracker and the findings register. If
 the threat model missed the boundary or threat, update it in the same change.
+
+## Runbook: compensation or materialization uncertainty
+
+1. Stop automatic recovery for the affected external resource. Preserve a verified backup and
+   exact source/compensation record IDs; inspect ownership before declaring a holder inactive.
+2. Inspect with `inspectEffectReconciliation`. Preserve its basis and the original failed,
+   uncertain or missing outcome. A pending replay admission may expose only the intent hash.
+3. Retain incident evidence in the trace: external ledger/query results, resource identifiers and
+   the operator's investigation. Avoid secrets and unnecessary external content.
+4. Authenticate the operator through the host's policy, then create its reconciliation authority.
+   Choose `retry` only for a later safe retry using stable-key idempotency; choose
+   `externally_verified_completion` only after the host verifies external evidence; choose
+   `accepted_unresolved` only with explicit residual-risk acceptance and a reason.
+5. Submit a new exact command with the inspected basis and evidence IDs. Active leases or changed
+   heads refuse publication; reinspect rather than overriding fences. On process loss, replay the
+   identical command. Policy is checked again; external completion verification is not repeated.
+6. Inspect the receipt and affected run/scope/replay risk views. Retry authorization does not clear
+   accepted risk. Resume discard/rewind only after reviewing the recorded disposition; accepted
+   unresolved does not mean the external effect was undone.
+7. Keep all audit occurrences and guards during export or restore. Use a reconciliation-aware
+   runtime (store schema 15); never strip guards or lower migration rows for downgrade.
+
+See [effect reconciliation](./effect-reconciliation.md) for API, authority/import limits, crash
+proofs and original-outcome preservation. No command provides exactly-once external effects.

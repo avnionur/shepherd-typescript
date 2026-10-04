@@ -71,7 +71,7 @@ test("store verify, backup, verify --backup, and restore round-trip through the 
 
     const verified = await invokeJson(["store", "verify"], directory);
     assert.deepEqual(Object.keys(verified), ["store_verification"]);
-    assert.equal((verified.store_verification as { schema_version: number }).schema_version, 14);
+    assert.equal((verified.store_verification as { schema_version: number }).schema_version, 15);
     assert.match((await invoke(["store", "verify"], directory)).output, /^Trace store verified\./u);
 
     const backedUp = await invokeJson(["store", "backup", "--output", "backup"], directory);
@@ -273,7 +273,7 @@ test("store maintain runs each configured mode without changing the native expor
     };
     assert.equal(report.mode, "inspect");
     assert.equal(report.quick_check.ok, true);
-    assert.equal(report.schema_version, 14);
+    assert.equal(report.schema_version, 15);
     for (const mode of ["inspect", "checkpoint", "optimize", "vacuum"]) {
         const result = await invokeJson(["store", "maintain", "--mode", mode], directory);
         assert.equal((result.maintenance as { readonly mode: string }).mode, mode);
@@ -282,7 +282,7 @@ test("store maintain runs each configured mode without changing the native expor
     assert.equal(human.exitCode, 0, human.errors);
     assert.match(
         human.output,
-        /^Maintenance: vacuum\nSchema: 14\nPages: \d+ -> \d+ \(free \d+ -> 0\)\nWAL bytes: \d+ -> 0\n$/u,
+        /^Maintenance: vacuum\nSchema: 15\nPages: \d+ -> \d+ \(free \d+ -> 0\)\nWAL bytes: \d+ -> 0\n$/u,
     );
     assert.equal(exportOf(), exported);
 });

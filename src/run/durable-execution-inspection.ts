@@ -1,3 +1,4 @@
+import { readOwnerEffectResidualRisks } from "../effect/reconciliation-inspection.ts";
 import {
     createRuntimeInspectionEnvelope,
     withPublicationControls,
@@ -76,6 +77,17 @@ type IncompleteLifecycleInspection = {
  * @public
  */
 export function inspectDurableTaskExecution(
+    store: SQLiteTraceStore,
+    runId: string,
+): DurableTaskExecutionInspection {
+    const inspection = inspectDurableTaskExecutionFacts(store, runId);
+    const residualRisks = readOwnerEffectResidualRisks(store, runId);
+    return residualRisks.length === 0
+        ? inspection
+        : Object.freeze({ ...inspection, residual_risks: residualRisks });
+}
+
+function inspectDurableTaskExecutionFacts(
     store: SQLiteTraceStore,
     runId: string,
 ): DurableTaskExecutionInspection {

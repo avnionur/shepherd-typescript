@@ -97,6 +97,7 @@ export function listOwnerIdsBySchemaBodyText(
     jsonPath: string,
     textValue: string,
     limit: number,
+    offset = 0,
 ): readonly string[] {
     const rows = database
         .prepare(
@@ -108,9 +109,9 @@ export function listOwnerIdsBySchemaBodyText(
                AND json_extract(r.body_json, ?) = ?
              GROUP BY v.owner_id
              ORDER BY CAST(MIN(r.record_id) AS BLOB), CAST(v.owner_id AS BLOB)
-             LIMIT ?`,
+             LIMIT ? OFFSET ?`,
         )
-        .all(schemaRef, jsonPath, jsonPath, textValue, limit) as { owner_id: string }[];
+        .all(schemaRef, jsonPath, jsonPath, textValue, limit, offset) as { owner_id: string }[];
     return Object.freeze(rows.map(({ owner_id: ownerId }) => ownerId));
 }
 

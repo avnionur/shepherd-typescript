@@ -6,7 +6,7 @@ import { Ajv2020, type AnySchemaObject } from "ajv/dist/2020.js";
 
 import {
     EFFECT_PROTOCOL_V1_CONTRACT,
-    EFFECT_PROTOCOL_V3_CONTRACT,
+    EFFECT_PROTOCOL_V4_CONTRACT,
 } from "../../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
 
@@ -50,7 +50,7 @@ test("published effect schemas reject malformed closed records", () => {
 test("effect protocol configuration is frozen and compatibility locked", () => {
     const parsed = parseProtocolConfig(structuredClone(validConfig));
 
-    assert.deepEqual(parsed.effects, EFFECT_PROTOCOL_V3_CONTRACT);
+    assert.deepEqual(parsed.effects, EFFECT_PROTOCOL_V4_CONTRACT);
     const { compensation: _compensation, ...v1 } = parsed.effects;
     assert.deepEqual(v1, EFFECT_PROTOCOL_V1_CONTRACT);
     assert.equal(Object.isFrozen(parsed.effects.compensation), true);

@@ -4,8 +4,12 @@ import {
     EffectCompensationEvidenceError,
 } from "../effect/compensation-errors.ts";
 import { readCompensationRecordBody } from "../effect/compensation-records.ts";
+import { readReconciliationRecord, reconciliationOwner } from "../effect/reconciliation-records.ts";
 import { effectProtocolConfig } from "../protocol/config.ts";
-import { EFFECT_COMPENSATION_PHASES } from "../protocol/values.generated.ts";
+import {
+    EFFECT_COMPENSATION_PHASES,
+    EFFECT_RECONCILIATION_DISPOSITIONS,
+} from "../protocol/values.generated.ts";
 import type { RecordId } from "../record/types.ts";
 import { runInSQLiteTransaction } from "../runtime/sqlite-transaction.ts";
 import { appendWithinTraceStoreTransaction } from "./append.ts";
@@ -16,7 +20,7 @@ import { readOwnerRecordAtOrdinal } from "./read.ts";
 import { hasAppendIntent, readScopeHead } from "./scope-registrations.ts";
 import type { AppendReceipt, StoreAppendRequest } from "./types.ts";
 
-const [, ATTEMPT_PHASE, OUTCOME_PHASE] = EFFECT_COMPENSATION_PHASES;
+const [INTENT_PHASE, ATTEMPT_PHASE, OUTCOME_PHASE] = EFFECT_COMPENSATION_PHASES;
 
 /** Exact ownership required to renew or settle one compensation invocation. @internal */
 export type CompensationFence = {
@@ -79,15 +83,17 @@ export function readCompensationClaim(
             "compensation ownership disagrees with retained attempt",
         );
     }
-    // The validated attempt occurrence above guarantees an owner head in this transaction.
-    const head = readScopeHead(database, compensationId) as NonNullable<
-        ReturnType<typeof readScopeHead>
-    >;
-    if (head.record_id !== row.attempt_record_id) {
-        const last = readCompensationRecordBody(
-            readOwnerRecordAtOrdinal(database, compensationId, head.owner_ordinal).body,
-            compensationId,
-        );
+    // Operator guards are separate facts; the latest invocation fact still owns this row.
+    const latest = database
+        .prepare(
+            `SELECT record.record_id, record.body_json FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND record.schema_ref = ? ORDER BY view.owner_ordinal DESC LIMIT 1`,
+        )
+        .get(compensationId, effectProtocolConfig.compensation.traceSchema) as {
+        record_id: string;
+        body_json: string;
+    };
+    if (latest.record_id !== row.attempt_record_id) {
+        const last = readCompensationRecordBody(JSON.parse(latest.body_json), compensationId);
         if (
             last.phase !== OUTCOME_PHASE ||
             last.attempt !== row.fencing_token ||
@@ -98,6 +104,13 @@ export function readCompensationClaim(
             );
         }
     }
+    if (
+        readScopeHead(database, compensationId)?.record_id !== latest.record_id &&
+        row.released !== 1
+    )
+        throw new EffectCompensationEvidenceError(
+            "reconciliation did not release compensation ownership",
+        );
     return Object.freeze({
         compensation_id: compensationId,
         attempt_record_id: String(row.attempt_record_id),
@@ -116,6 +129,7 @@ export function claimCompensationAttempt(
     fence: CompensationFence,
     now: number,
     request: StoreAppendRequest,
+    expectedReconciliationHead: RecordId | null = null,
 ): AppendReceipt {
     const expiry = leaseExpiry(now);
     return runInSQLiteTransaction(database, STORE_TRANSACTION_SQL, () => {
@@ -124,6 +138,29 @@ export function claimCompensationAttempt(
             (previous !== undefined && !previous.released && previous.lease_expires_at > now) ||
             readScopeHead(database, compensationId)?.record_id !== expectedHead ||
             (previous !== undefined && fence.fencingToken <= previous.fencing_token)
+        )
+            throw new EffectCompensationConflictError(compensationId);
+        const first = database
+            .prepare(
+                `SELECT record.body_json FROM ${STORE_TABLES.recordViews} AS view INNER JOIN ${STORE_TABLES.records} AS record ON record.record_id = view.record_id WHERE view.owner_id = ? AND record.schema_ref = ? ORDER BY view.owner_ordinal LIMIT 1`,
+            )
+            .get(compensationId, effectProtocolConfig.compensation.traceSchema);
+        if (first === undefined)
+            throw new EffectCompensationEvidenceError("compensation lacks its initial intent");
+        const intent = readCompensationRecordBody(
+            JSON.parse(String(first.body_json)),
+            compensationId,
+        );
+        if (intent.phase !== INTENT_PHASE)
+            throw new EffectCompensationEvidenceError("compensation lacks its initial intent");
+        const auditOwner = reconciliationOwner(intent.materialization.record_id);
+        const auditHead = readScopeHead(database, auditOwner);
+        if (
+            (auditHead?.record_id ?? null) !== expectedReconciliationHead ||
+            (auditHead !== undefined &&
+                readReconciliationRecord(
+                    readOwnerRecordAtOrdinal(database, auditOwner, auditHead.owner_ordinal).body,
+                ).disposition !== EFFECT_RECONCILIATION_DISPOSITIONS[0])
         )
             throw new EffectCompensationConflictError(compensationId);
         const body = request.batch.groups[0]?.records[0]?.body;

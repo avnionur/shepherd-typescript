@@ -4,7 +4,6 @@ import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import { effectProtocolConfig } from "../protocol/config.ts";
 import {
     EFFECT_COMPENSABLE_TIERS,
-    EFFECT_COMPENSATION_OUTCOMES,
     EFFECT_COMPENSATION_PHASES,
     EFFECT_COMPENSATION_STATUSES,
     EFFECT_COMPENSATION_TRIGGERS,
@@ -21,7 +20,7 @@ import {
 } from "../scope/validation.ts";
 import type { CompensationFence } from "../store/compensation-claims.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
-import type { OwnerRecord, StoreAppendRequest } from "../store/types.ts";
+import type { StoreAppendRequest } from "../store/types.ts";
 import {
     EffectCompensationConflictError,
     EffectCompensationEvidenceError,
@@ -29,6 +28,7 @@ import {
     EffectCompensationHandlerNotFoundError,
 } from "./compensation-errors.ts";
 import { type MaterializedEffect, MaterializedEffectResolver } from "./compensation-evidence.ts";
+import { foldCompensation } from "./compensation-inspection.ts";
 import {
     createCompensationAppendIntentId,
     createCompensationAttemptBody,
@@ -36,11 +36,9 @@ import {
     createCompensationOutcomeBody,
     deriveEffectCompensationId,
     type EffectCompensationRecordBody,
-    readCompensationRecordBody,
 } from "./compensation-records.ts";
 import type {
     CompensateEffectsOptions,
-    EffectCompensationAttemptInspection,
     EffectCompensationHandler,
     EffectCompensationInspection,
     EffectCompensationOwnershipInspection,
@@ -49,14 +47,17 @@ import type {
     EffectCompensationTrigger,
     InspectEffectCompensationOptions,
 } from "./compensation-types.ts";
+import {
+    readEffectReconciliationHistory,
+    reconciliationSuppressesRetry,
+} from "./reconciliation-inspection.ts";
 import type { EffectResult } from "./types.ts";
 import { readEffectResult } from "./validation.ts";
 
 const config = effectProtocolConfig.compensation;
 const [CAPTURE_MODE] = RECORD_MODES;
-const [INTENT_PHASE, ATTEMPT_PHASE] = EFFECT_COMPENSATION_PHASES;
-const [COMPENSATED] = EFFECT_COMPENSATION_OUTCOMES;
-const [PENDING, UNCERTAIN, FAILED_STATUS, COMPENSATED_STATUS] = EFFECT_COMPENSATION_STATUSES;
+const [, ATTEMPT_PHASE] = EFFECT_COMPENSATION_PHASES;
+const [, , FAILED_STATUS, COMPENSATED_STATUS] = EFFECT_COMPENSATION_STATUSES;
 const [, , , COMMAND_TRIGGER] = EFFECT_COMPENSATION_TRIGGERS;
 const registries = new WeakSet<object>();
 
@@ -168,6 +169,7 @@ export function inspectEffectCompensation(
         "compensationId",
     );
     const inspection = foldCompensation(
+        store,
         fields.compensationId as string,
         store.readOwner(fields.compensationId as string),
     );
@@ -176,7 +178,7 @@ export function inspectEffectCompensation(
             `compensation ${fields.compensationId as string} is not retained`,
         );
     }
-    return inspection;
+    return withReconciliation(store, inspection);
 }
 
 /**
@@ -314,9 +316,12 @@ export function planEffectCompensations(
     }
     for (const effect of unique.values()) {
         const compensationId = deriveEffectCompensationId(effect.evidence.record_id);
-        const retained = foldCompensation(compensationId, store.readOwner(compensationId));
+        const retained = foldCompensation(store, compensationId, store.readOwner(compensationId));
         if (
             retained?.status !== COMPENSATED_STATUS &&
+            !reconciliationSuppressesRetry(
+                readEffectReconciliationHistory(store, effect.evidence.record_id).at(-1),
+            ) &&
             registry?.resolve(effect.intent.kind) === undefined
         ) {
             throw new EffectCompensationHandlerNotFoundError(compensationId, effect.intent.kind);
@@ -341,15 +346,17 @@ export async function runEffectCompensations(
     const planned = planEffectCompensations(store, effects, registry);
     const compensations: EffectCompensationInspection[] = [];
     for (const effect of [...planned].reverse()) {
-        compensations.push(
-            await compensateOne(store, effect, registry as EffectCompensationRegistry, trigger),
-        );
+        compensations.push(await compensateOne(store, effect, registry, trigger));
     }
     return Object.freeze({
         compensations: Object.freeze(compensations),
         failed: Object.freeze(
             compensations
-                .filter((inspection) => inspection.status === FAILED_STATUS)
+                .filter(
+                    (inspection) =>
+                        inspection.status === FAILED_STATUS &&
+                        !reconciliationSuppressesRetry(inspection.reconciliation),
+                )
                 .map((inspection) => inspection.compensation_id),
         ),
     });
@@ -365,18 +372,19 @@ function isCompensable(effect: MaterializedEffect): boolean {
 async function compensateOne(
     store: SQLiteTraceStore,
     effect: MaterializedEffect,
-    registry: EffectCompensationRegistry,
+    registry: EffectCompensationRegistry | null,
     trigger: EffectCompensationTrigger,
 ): Promise<EffectCompensationInspection> {
     const compensationId = deriveEffectCompensationId(effect.evidence.record_id);
-    let inspection = foldCompensation(compensationId, store.readOwner(compensationId));
+    let inspection = foldCompensation(store, compensationId, store.readOwner(compensationId));
     if (inspection === undefined) {
+        const previous = store.readOwner(compensationId).at(-1)?.envelope.record_id ?? null;
         appendCompensationRecord(
             store,
             compensationId,
-            null,
-            [effect.evidence.record_id],
-            0,
+            previous,
+            [...new Set([effect.evidence.record_id, ...(previous === null ? [] : [previous])])],
+            store.readOwner(compensationId).length,
             createCompensationIntentBody(
                 compensationId,
                 effect.evidence,
@@ -385,14 +393,18 @@ async function compensateOne(
             ),
         );
         inspection = foldCompensation(
+            store,
             compensationId,
             store.readOwner(compensationId),
         ) as EffectCompensationInspection;
     }
-    if (inspection.status === COMPENSATED_STATUS) {
-        return inspection;
+    const reconciliation = readEffectReconciliationHistory(store, effect.evidence.record_id).at(-1);
+    if (inspection.status === COMPENSATED_STATUS || reconciliationSuppressesRetry(reconciliation)) {
+        return withReconciliation(store, inspection);
     }
-    const handler = registry.resolve(effect.intent.kind) as EffectCompensationHandler;
+    const handler = registry?.resolve(effect.intent.kind);
+    if (handler === undefined)
+        throw new EffectCompensationHandlerNotFoundError(compensationId, effect.intent.kind);
     const attempt = inspection.attempts.length + 1;
     const fence = Object.freeze({
         claimId: config.ownership.claimIdPrefix + randomUUID(),
@@ -406,6 +418,7 @@ async function compensateOne(
         store.readOwner(compensationId).length,
         createCompensationAttemptBody(compensationId, attempt, handler.handlerId, trigger),
         fence,
+        reconciliation?.record_id ?? null,
     );
     let heartbeatFailure: unknown;
     const heartbeat = setInterval(() => {
@@ -457,10 +470,20 @@ async function compensateOne(
             /* Expiry remains the recovery boundary. */
         }
     }
-    return foldCompensation(
-        compensationId,
-        store.readOwner(compensationId),
-    ) as EffectCompensationInspection;
+    return inspectEffectCompensation(store, { compensationId });
+}
+
+function withReconciliation(
+    store: SQLiteTraceStore,
+    inspection: EffectCompensationInspection,
+): EffectCompensationInspection {
+    const reconciliation = readEffectReconciliationHistory(
+        store,
+        inspection.materialization.record_id,
+    ).at(-1);
+    return reconciliation === undefined
+        ? inspection
+        : Object.freeze({ ...inspection, reconciliation });
 }
 
 function appendCompensationRecord(
@@ -471,6 +494,7 @@ function appendCompensationRecord(
     ordinal: number,
     body: EffectCompensationRecordBody,
     fence?: CompensationFence,
+    reconciliationHead: RecordId | null = null,
 ): RecordId {
     const request: StoreAppendRequest = {
         append_intent_id: createCompensationAppendIntentId(body, ordinal),
@@ -500,6 +524,7 @@ function appendCompensationRecord(
                       fence,
                       Date.now(),
                       request,
+                      reconciliationHead,
                   )
                 : store.appendEffectCompensationOutcome(compensationId, fence, Date.now(), request);
         return receipt.record_ids[0] as RecordId;
@@ -513,94 +538,4 @@ function appendCompensationRecord(
         throw new EffectCompensationConflictError(compensationId);
     }
     return appended.receipt.record_ids[0] as RecordId;
-}
-
-function foldCompensation(
-    compensationId: string,
-    records: readonly OwnerRecord[],
-): EffectCompensationInspection | undefined {
-    const [first, ...rest] = records;
-    if (first === undefined) {
-        return undefined;
-    }
-    const read = (record: OwnerRecord): EffectCompensationRecordBody => {
-        if (
-            record.envelope.schema_ref !== config.traceSchema ||
-            record.envelope.mode !== CAPTURE_MODE
-        ) {
-            throw new EffectCompensationEvidenceError(
-                `compensation ${compensationId} retains a foreign record`,
-            );
-        }
-        return readCompensationRecordBody(record.body, compensationId);
-    };
-    const intent = read(first);
-    if (
-        intent.phase !== INTENT_PHASE ||
-        first.envelope.caused_by_record_ids.join("\0") !== intent.materialization.record_id
-    ) {
-        throw new EffectCompensationEvidenceError(
-            `compensation ${compensationId} does not start with its intent`,
-        );
-    }
-    const attempts: {
-        attempt: number;
-        handler_id: string;
-        outcome: EffectCompensationAttemptInspection["outcome"];
-        record_id: RecordId;
-        trigger: EffectCompensationTrigger;
-    }[] = [];
-    let previous = first;
-    for (const record of rest) {
-        const body = read(record);
-        const last = attempts.at(-1);
-        if (
-            record.envelope.caused_by_record_ids.join("\0") !== previous.envelope.record_id ||
-            last?.outcome?.status === COMPENSATED ||
-            (body.phase === ATTEMPT_PHASE
-                ? body.attempt !== attempts.length + 1
-                : body.phase === INTENT_PHASE ||
-                  last === undefined ||
-                  last.outcome !== null ||
-                  body.attempt !== last.attempt)
-        ) {
-            throw new EffectCompensationEvidenceError(
-                `compensation ${compensationId} retains an out-of-order record`,
-            );
-        }
-        if (body.phase === ATTEMPT_PHASE) {
-            attempts.push({
-                attempt: body.attempt,
-                handler_id: body.handler_id,
-                outcome: null,
-                record_id: record.envelope.record_id as RecordId,
-                trigger: body.trigger,
-            });
-        } else if (body.phase !== INTENT_PHASE) {
-            (last as NonNullable<typeof last>).outcome = Object.freeze({
-                record_id: record.envelope.record_id as RecordId,
-                result: body.result,
-                status: body.status,
-            });
-        }
-        previous = record;
-    }
-    const latest = attempts.at(-1);
-    return createCanonicalSnapshot({
-        attempts: attempts.map((entry) => ({ ...entry })),
-        compensation_id: compensationId,
-        effect_intent: intent.effect_intent,
-        effect_outcome: intent.effect_outcome,
-        head_record_id: previous.envelope.record_id,
-        intent_record_id: first.envelope.record_id,
-        materialization: intent.materialization,
-        status:
-            latest === undefined
-                ? PENDING
-                : latest.outcome === null
-                  ? UNCERTAIN
-                  : latest.outcome.status === COMPENSATED
-                    ? COMPENSATED_STATUS
-                    : FAILED_STATUS,
-    }) as unknown as EffectCompensationInspection;
 }

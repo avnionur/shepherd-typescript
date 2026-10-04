@@ -4037,3 +4037,43 @@ export const EFFECT_PROTOCOL_V3_CONTRACT = deepFreeze({
         },
     },
 } as const);
+
+/** Effect protocol v4 adds explicit operator reconciliation audits without rewriting outcomes. */
+export const EFFECT_PROTOCOL_V4_CONTRACT = deepFreeze({
+    ...EFFECT_PROTOCOL_V3_CONTRACT,
+    compensation: {
+        ...EFFECT_PROTOCOL_V3_CONTRACT.compensation,
+        reconciliation: {
+            compatibilityVersion: "shepherd.effect-reconciliation.v1",
+            recordVersion: 1,
+            traceSchema: "shepherd.effect.reconciliation.v1",
+            schemaId:
+                "https://avnionur.github.io/shepherd-typescript/schemas/effect-reconciliation-v1.schema.json",
+            recordSchema: "spec/schemas/effect-reconciliation-v1.schema.json",
+            dispositions: ["retry", "externally_verified_completion", "accepted_unresolved"],
+            sourceKinds: ["replay", "supervised_dispatch"],
+            identity: {
+                targetOwnerPrefix: "effect-reconciliation:",
+                commandOwnerPrefix: "effect-reconciliation-command:",
+                commandIntentKind: "effect_reconciliation_command",
+                basisIdPrefix: "effect-reconciliation-basis:sha256:",
+            },
+            limits: {
+                maxTextBytes: 4096,
+                maxEvidenceRecords: 32,
+                maxDecisions: 64,
+                maxTargets: 1024,
+            },
+        },
+    },
+} as const);
+
+/** Store v15 requires reconciliation-aware writers even when no audit has yet been retained. */
+export const KERNEL_ABI_V0_STORE_V15_CONTRACT = deepFreeze({
+    ...KERNEL_ABI_V0_STORE_V14_CONTRACT,
+    migrations: [
+        ...KERNEL_ABI_V0_STORE_V14_CONTRACT.migrations,
+        { firstOwnerOrdinal: 0, lastOwnerOrdinal: 9_007_199_254_740_990, version: 15 },
+    ],
+    schemaVersion: 15,
+} as const);

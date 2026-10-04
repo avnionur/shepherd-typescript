@@ -5,14 +5,14 @@ import { UnsupportedStoreSchemaError } from "../../src/index.ts";
 import { validateMigrationRegistry } from "../../src/store/migrations.ts";
 
 test("migration registry versions are contiguous and match configured support", () => {
-    const versions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] as const;
+    const versions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
     assert.doesNotThrow(() => validateMigrationRegistry(versions, versions.length));
     assert.throws(
         () => validateMigrationRegistry([1, 3], versions.length),
         UnsupportedStoreSchemaError,
     );
     assert.throws(
-        () => validateMigrationRegistry([...versions, 15], versions.length),
+        () => validateMigrationRegistry([...versions, 16], versions.length),
         UnsupportedStoreSchemaError,
     );
     assert.throws(
@@ -43,6 +43,7 @@ test("migration registry versions are contiguous and match configured support", 
                 { firstOwnerOrdinal: 1, lastOwnerOrdinal: 2, version: 12 },
                 { firstOwnerOrdinal: 1, lastOwnerOrdinal: 2, version: 13 },
                 { firstOwnerOrdinal: 1, lastOwnerOrdinal: 2, version: 14 },
+                { firstOwnerOrdinal: 1, lastOwnerOrdinal: 2, version: 15 },
             ]),
         UnsupportedStoreSchemaError,
     );

@@ -7,6 +7,7 @@ import type {
     EFFECT_COMPENSATION_TRIGGERS,
 } from "../protocol/values.generated.ts";
 import type { RecordId } from "../record/types.ts";
+import type { EffectReconciliationReceipt } from "./reconciliation-types.ts";
 import type { EffectIntent, EffectOutcome, EffectResult } from "./types.ts";
 
 /** Configured materialization evidence kind. */
@@ -118,6 +119,8 @@ export type EffectCompensationAttemptInspection = {
 
 /** Record-derived view of one compensation path. */
 export type EffectCompensationInspection = {
+    /** Latest operator audit, when present; never changes the factual outcome status. */
+    readonly reconciliation?: EffectReconciliationReceipt;
     /** Attempts in retained order. */
     readonly attempts: readonly EffectCompensationAttemptInspection[];
     /** Compensation identity and owner path. */

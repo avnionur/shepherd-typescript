@@ -36,6 +36,7 @@ import {
     renderOrphanRepairCommandSchema,
     renderOrphanRepairReceiptSchema,
 } from "./schemas/orphan-repair-schemas.ts";
+import { renderEffectReconciliationSchema } from "./schemas/reconciliation-schema.ts";
 import { renderReplayBranchRequestSchema } from "./schemas/replay-request-schema.ts";
 import {
     renderReplayAdmissionSchema,
@@ -267,6 +268,10 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderEffectCompensationSchema(config)),
             relativePath: config.effects.compensation.artifacts.recordSchema,
+        },
+        {
+            content: renderJson(renderEffectReconciliationSchema(config)),
+            relativePath: config.effects.compensation.reconciliation.recordSchema,
         },
         {
             content: renderJson(renderRunArtifactSchema(config)),
@@ -2557,6 +2562,12 @@ ${renderConstStrings("EFFECT_COMPENSATION_STATUSES", config.effects.compensation
 
 /** Configured store-local compensation ownership classifications. @public */
 ${renderConstStrings("EFFECT_COMPENSATION_OWNERSHIP_STATUSES", config.effects.compensation.ownership.statuses)}
+
+/** Configured explicit operator reconciliation dispositions. @public */
+${renderConstStrings("EFFECT_RECONCILIATION_DISPOSITIONS", config.effects.compensation.reconciliation.dispositions)}
+
+/** Configured source execution kinds for reconciliation evidence. @public */
+${renderConstStrings("EFFECT_RECONCILIATION_SOURCE_KINDS", config.effects.compensation.reconciliation.sourceKinds)}
 
 /** Configured compensation triggers ordered scope discard, replay rewind, replay replay, command. @public */
 ${renderConstStrings("EFFECT_COMPENSATION_TRIGGERS", config.effects.compensation.triggers)}

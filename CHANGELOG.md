@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.5.0] - 2026-10-04
+
+### New Feature
+
+- Add host-authorized effect reconciliation: exact audited retry, externally verified completion,
+  and accepted-unresolved decisions preserve original compensation outcomes (#241).
+- Retain actor, policy, reason, evidence and exact source/compensation/audit basis with atomic
+  command replay and fencing. Accepted residual risk remains visible through affected scope,
+  run and replay inspections, including CLI views and subsequent discard/rewind.
+- Add schema-15 reader boundary and compensation-path audit guards, so older runtimes cannot
+  silently retry an operator-resolved effect after opening a store or importing an archive.
+
+### Impact
+
+MINOR additive capability. Existing v1 facts, materialization identities and handlers remain valid;
+new optional inspection metadata carries operator dispositions separately. Writable stores migrate
+forward; take a pre-upgrade backup for downgrade. Retry records perform no external work, host
+policy supplies authentication/verification, and imported stores have no cross-store fencing.
+
 ## [13.4.0] - 2026-10-04
 
 ### New Feature

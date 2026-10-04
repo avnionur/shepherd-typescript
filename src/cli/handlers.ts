@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
 import type { SemanticRecord } from "../canonical/canonical-record.ts";
 import { listOutputCitations, resolveOutputCitationSelector } from "../ledger/output-citations.ts";
 import { listRecoveryRecords, resolveRecoveryRecordSelector } from "../ledger/recovery-records.ts";
@@ -40,6 +39,7 @@ import {
     resolveOptionPath,
 } from "./arguments.ts";
 import { CliUnavailableError, CliUsageError } from "./errors.ts";
+import { renderResidualRisks } from "./reconciliation-output.ts";
 import { createStoreCliHandlers } from "./store-handlers.ts";
 import { createTraceCliHandlers } from "./trace-handlers.ts";
 import type { CliHandler, CliHandlerIo } from "./types.ts";
@@ -175,7 +175,7 @@ async function runShow(args: readonly string[], io: CliHandlerIo): Promise<void>
     using store = openStore(parsed, io);
     const entry = resolveRunLedgerSelector(store, selector);
     io.output(
-        `Run: ${entry.run_id}\nStatus: ${entry.inspection.status}\nTask: ${entry.task_artifact_lock.task_id}@${entry.task_artifact_lock.task_version}\n`,
+        `Run: ${entry.run_id}\nStatus: ${entry.inspection.status}\nTask: ${entry.task_artifact_lock.task_id}@${entry.task_artifact_lock.task_version}\n${renderResidualRisks(entry.inspection.residual_risks)}`,
         { run: entry } as unknown as SemanticRecord,
     );
 }

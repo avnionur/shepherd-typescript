@@ -295,6 +295,12 @@ const migrations: readonly Migration[] = [
             FOREIGN KEY (attempt_record_id) REFERENCES ${STORE_TABLES.records}(record_id)
         ) STRICT;`,
     },
+    {
+        // Reader boundary: older writers must not ignore operator reconciliation guards.
+        // No canonical record, ownership table or historical migration is rewritten.
+        version: 15,
+        createSql: () => "SELECT 1;",
+    },
 ];
 
 /**
