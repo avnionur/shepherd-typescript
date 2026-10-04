@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Shepherd Observatory</title>
+    <link rel="stylesheet" href="/style.css">
+    <script type="module" src="/app.js"></script>
+</head>
+<body>
+<header>
+    <a class="brand" href="/">S<span>Shepherd <b>Observatory</b></span></a>
+    <span class="live" id="mode">Connecting</span>
+    <a class="export" href="/api/export" download>Export trace ↗</a>
+</header>
+<main>
+    <aside class="chat">
+        <div class="section-title"><span>01 / CONVERSATION</span><span class="tag">CHAT</span></div>
+        <h1>See the work<br>behind the reply.</h1>
+        <p class="intro">Every turn leaves evidence. Follow it from request to retained outcome.</p>
+        <details class="model-settings" open>
+            <summary>Provider &amp; model</summary>
+            <label for="provider-select">Provider</label><select id="provider-select" disabled></select>
+            <label for="model-select">Model</label><select id="model-select" disabled></select>
+            <p id="model-note">Loading available choices…</p>
+        </details>
+        <details class="playground" open>
+            <summary>Example playground</summary>
+            <p class="intro">Run a configured case, then inspect its evidence.</p>
+            <div id="playground-items"></div>
+        </details>
+        <div id="messages" aria-live="polite"><p class="empty">Send a message to start a trace.</p></div>
+        <form id="chat-form">
+            <label for="prompt">Your message</label>
+            <textarea id="prompt" rows="3" placeholder="What would you like to explore?" required></textarea>
+            <div class="compose-actions"><span id="chat-status">Ready</span>
+                <button id="send" type="submit">Send message ↗</button><button id="stop" type="button" hidden>Stop</button>
+            </div>
+        </form>
+        <p class="privacy">Local example · prompts and replies are retained in SQLite. Pi tools are disabled in the supplied configuration.</p>
+    </aside>
+    <section class="observatory">
+        <div class="section-title"><span>02 / EXECUTION EVIDENCE</span><span id="record-count" class="tag">0 RECORDS</span></div>
+        <div class="graph-heading"><div><h2>Trace canvas</h2><p>Follow what Shepherd retains, step by step.</p></div>
+            <div class="controls"><button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+                <button type="button" id="zoom-in" aria-label="Zoom in">+</button><button type="button" id="fit">Fit</button></div>
+        </div>
+        <div class="filters">
+            <label>Run<select id="run-filter"><option value="">All runs</option></select></label>
+            <label>Search<input id="search" type="search" placeholder="Schema, event or record ID"></label>
+            <label>Source<select id="source-filter"><option value="">All evidence</option><option value="shepherd">Shepherd</option><option value="rpc-observation">RPC observations</option></select></label>
+        </div>
+        <div class="flow-controls"><label><input id="live-follow" type="checkbox" checked> Live follow</label>
+            <span id="flow-status" aria-live="polite">Waiting for new records</span><button id="play-trace" type="button" disabled>Play trace</button></div>
+        <div class="workspace">
+            <section id="canvas" aria-label="Execution graph; drag to pan, use zoom buttons">
+                <!-- biome-ignore lint/a11y/useSemanticElements: An interactive SVG graph cannot be replaced by an HTML fieldset. -->
+                <svg id="graph" role="group" aria-label="Canonical trace graph">
+                    <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8"/></marker></defs>
+                    <g id="world"></g>
+                </svg>
+                <div id="graph-empty">Your execution graph will appear here.<small>Send a chat message to retain the first run.</small></div>
+                <div class="legend"><span class="dot core"></span>Shepherd <span class="dot rpc"></span>RPC observation <span>→ Explicit cause</span></div>
+            </section>
+            <aside class="detail-panel" aria-label="Run and record details">
+                <section class="run-overview"><div class="section-title"><span>WHAT SHEPHERD IS DOING</span></div><div id="run-overview"></div></section>
+                <section class="inspector"><div class="section-title"><span>RECORD INSPECTOR</span><span id="selected-source">SELECT A NODE</span></div>
+                    <div id="record-explanation"></div><div id="inspection"><p class="empty">Select a record to inspect its exact identity, payload and canonical parents. Layout order does not imply causality.</p></div>
+                </section>
+            </aside>
+        </div>
+        <div id="metrics" class="metrics"></div>
+    </section>
+</main>
+<div id="error" role="alert" hidden></div>
+</body>
+</html>

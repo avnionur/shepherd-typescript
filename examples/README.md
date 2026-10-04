@@ -17,3 +17,7 @@ expected results, authority limits, and installed-package verification.
 `manifest.json` lists the TypeScript scenarios and independent conformance expectations.
 It also links the [migration guide](../docs/python-to-typescript.md), whose TypeScript excerpts
 are checked against the installed example source before full-example typechecking and execution.
+
+- [`pi-observatory/`](./pi-observatory/README.md): local browser chat and interactive Shepherd
+  evidence graph with offline fixture mode and configured Pi RPC integration. See the
+  [engineering guide](../docs/pi-observatory.md).

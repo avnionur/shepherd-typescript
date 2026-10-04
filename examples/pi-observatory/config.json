@@ -1,0 +1,174 @@
+{
+    "title": "Shepherd Observatory",
+    "mode": "offline",
+    "host": "127.0.0.1",
+    "port": 4317,
+    "database": "trace.sqlite",
+    "runPrefix": "example:chat:",
+    "eventOwnerSuffix": "/rpc",
+    "eventSchema": "example.pi.rpc-observation.v1",
+    "task": {
+        "name": "observatory-chat",
+        "version": "1.0.0",
+        "instruction": "Answer the latest user message. Prior messages are conversation context."
+    },
+    "provider": {
+        "id": "example-chat",
+        "kind": "program",
+        "model": null
+    },
+    "offline": {
+        "prefix": "Offline fixture reply: ",
+        "delayMilliseconds": 350,
+        "usage": {
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "cacheCreationInputTokens": 0,
+            "cacheReadInputTokens": 0,
+            "costUsd": 0
+        },
+        "model": {
+            "provider": "fixture",
+            "id": "offline-v1",
+            "name": "Offline fixture"
+        }
+    },
+    "pi": {
+        "command": "pi",
+        "args": [
+            "--mode",
+            "rpc",
+            "--no-session",
+            "--no-tools",
+            "--no-extensions",
+            "--no-skills",
+            "--no-prompt-templates",
+            "--no-context-files",
+            "--no-approve"
+        ],
+        "cwd": ".",
+        "expectedVersion": "1.0.2",
+        "versionArgs": ["--version"]
+    },
+    "limits": {
+        "maxRuns": 20,
+        "maxMessageBytes": 8192,
+        "maxRequestBytes": 16384,
+        "maxHistoryMessages": 16,
+        "maxRpcLineBytes": 1048576,
+        "maxRpcEvents": 256,
+        "maxReplyBytes": 65536,
+        "timeoutMilliseconds": 120000,
+        "shutdownMilliseconds": 1500,
+        "pollMilliseconds": 700,
+        "startupMilliseconds": 15000,
+        "maxModels": 2048
+    },
+    "budget": {
+        "maxTurns": 1,
+        "maxDurationMilliseconds": 125000
+    },
+    "playground": [
+        {
+            "id": "reply",
+            "title": "Successful turn",
+            "description": "Retain lifecycle, usage, outcome and a cut.",
+            "text": "Explain what a Shepherd trace records in two sentences.",
+            "behavior": "reply",
+            "delayMilliseconds": 350
+        },
+        {
+            "id": "failure",
+            "title": "Provider failure",
+            "description": "Observe a failed outcome without fabricated usage.",
+            "text": "Exercise the offline provider failure case.",
+            "behavior": "fail",
+            "delayMilliseconds": 350
+        },
+        {
+            "id": "cancel",
+            "title": "Cancellation",
+            "description": "Start a slow turn, then press Stop.",
+            "text": "Exercise a slow offline turn so I can stop it.",
+            "behavior": "reply",
+            "delayMilliseconds": 10000
+        },
+        {
+            "id": "followup",
+            "title": "Follow-up context",
+            "description": "Inspect the retained transcript in the next creation record.",
+            "text": "Summarize my preceding question and your reply.",
+            "behavior": "reply",
+            "delayMilliseconds": 350
+        },
+        {
+            "id": "text",
+            "title": "Literal text",
+            "description": "Verify HTML-like input renders as plain text.",
+            "text": "Show this literally: <script>alert(\"example\")</script>",
+            "behavior": "reply",
+            "delayMilliseconds": 350
+        }
+    ],
+    "display": {
+        "schemaLabelPrefix": "shepherd2.execution.",
+        "highlightMilliseconds": 3500,
+        "edgeAnimationMilliseconds": 850,
+        "playbackStepMilliseconds": 900,
+        "settingsStorageKey": "shepherd-observatory-model",
+        "overviewText": "Shepherd validates a task, retains its invocation boundary, accounts supplied usage, and commits an outcome with an immutable cut. Select a node to see the evidence behind that step.",
+        "statusDescriptions": {
+            "finished": "Shepherd validated the reply, retained supplied usage and the successful outcome, then published an immutable execution cut.",
+            "failed": "The invocation failed. Shepherd retained the failure and terminal cut; unavailable usage is not fabricated.",
+            "cancelled": "The owned invocation stopped and cleanup completed. Shepherd retained a cancelled outcome and terminal cut.",
+            "exhausted": "A configured execution budget ended the turn. Shepherd retained the exact exhausted outcome and available evidence.",
+            "created": "Task input, provider identity and budget are retained. No invocation start has been retained yet.",
+            "started": "The invocation boundary is retained. The adapter is answering; observed RPC events are separate evidence.",
+            "committed": "The terminal execution evidence and its immutable cut are retained.",
+            "absent": "No retained execution exists yet.",
+            "terminal_pending_cut": "Terminal evidence exists but the cut is incomplete. Inspect it; the UI never retries or repairs automatically."
+        },
+        "recordDescriptions": [
+            {
+                "schema": "shepherd2.execution.created.v1",
+                "title": "Task validation",
+                "description": "Retains the exact task artifact lock, validated input, provider identity and budget before invocation."
+            },
+            {
+                "schema": "shepherd2.execution.started.v1",
+                "title": "Invocation boundary",
+                "description": "Records that the fenced provider boundary was reached. A missing terminal result remains uncertain after interruption."
+            },
+            {
+                "schema": "https://avnionur.github.io/shepherd-typescript/schemas/run-usage-v1.schema.json",
+                "title": "Usage accounting",
+                "description": "Retains usage supplied by the adapter. Offline usage is synthetic fixture data; absent live usage is never estimated."
+            },
+            {
+                "schema": "https://avnionur.github.io/shepherd-typescript/schemas/run-outcome-v1.schema.json",
+                "title": "Run outcome",
+                "description": "Binds finished, failed, exhausted or cancelled status to the exact task artifact. Its parents cite the evidence used."
+            },
+            {
+                "schema": "shepherd2.execution.completed.v1",
+                "title": "Successful lifecycle",
+                "description": "Retains the successful lifecycle projection and the final run-control snapshot; it cites the successful outcome."
+            },
+            {
+                "schema": "shepherd2.execution.failed.v1",
+                "title": "Non-success lifecycle",
+                "description": "Retains the failure lifecycle projection. Inspect the outcome to distinguish failed, cancelled and exhausted."
+            },
+            {
+                "schema": "kernel.cut.owner-prefix.v1",
+                "title": "Immutable execution cut",
+                "description": "Publishes the exact retained owner prefix through the terminal lifecycle record. Later appends cannot extend this address."
+            },
+            {
+                "schema": "example.pi.rpc-observation.v1",
+                "title": "RPC observation",
+                "description": "Retains the source event type and sequence, citing the invocation record. This is an observation, not governed tool execution."
+            }
+        ]
+    }
+}
