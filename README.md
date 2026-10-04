@@ -211,7 +211,7 @@ shepherd-ts --help          # add --json for the stable shepherd.cli.json.v1 env
 More examples:
 
 - [Pi chat and node observability](./docs/pi-observatory.md): local browser chat, canonical evidence
-  graph and an optional configured Pi RPC process
+  graph, live provider/key setup, local Ollama and recoverable canvas clearing and an optional configured Pi RPC process
 
 - [Offline retained-output quickstart](https://github.com/avnionur/shepherd-typescript/blob/main/docs/quickstart.md)
 - [TypeScript examples](./docs/typescript-examples.md): retained coding edit, read-only review,

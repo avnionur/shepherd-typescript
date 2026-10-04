@@ -1,3 +1,5 @@
 config.local.json
 *.sqlite*
 *.sqlite.blobs/
+pi-state/
+sdk/node_modules/

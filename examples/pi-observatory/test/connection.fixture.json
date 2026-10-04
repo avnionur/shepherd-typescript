@@ -1,0 +1,5 @@
+{
+    "providers": ["openai", "anthropic"],
+    "dummyKey": "dummy-conformance-key-not-a-real-credential",
+    "refusedKeys": ["!echo must-not-execute", "$API_KEY", "${API_KEY}", "line\nbreak"]
+}

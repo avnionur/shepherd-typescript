@@ -12,24 +12,20 @@ import {
     SQLiteTraceStore,
 } from "@avnionur/shepherd-typescript/trace";
 import { readConfiguration } from "./config.mjs";
-import { checkPi, invokePi, readPiModels } from "./pi.mjs";
+import { createConnection } from "./connection.mjs";
+import { invokePi } from "./pi.mjs";
+import { createTraceSession } from "./trace-session.mjs";
 
 const [configurationPath, ...extra] = process.argv.slice(2);
 if (!configurationPath || extra.length)
     throw new TypeError("Usage: node server.mjs <configuration.json>");
 const config = readConfiguration(configurationPath);
-if (config.mode === "pi") await checkPi(config);
-const availableModels = config.mode === "pi" ? await readPiModels(config) : [config.offline.model];
-const configuredModels = availableModels.filter(
-    (model) =>
-        model.id === config.provider.model ||
-        `${model.provider}/${model.id}` === config.provider.model,
-);
-if (config.provider.model !== null && configuredModels.length !== 1) {
-    throw new Error("Configured provider.model is unavailable or ambiguous in the Pi catalog");
-}
-const defaultModel = config.provider.model === null ? availableModels[0] : configuredModels[0];
-const store = new SQLiteTraceStore(config.database);
+const connection = await createConnection(config);
+let settingsBusy = false;
+let settingsPromise = null;
+const traceSession = createTraceSession(config);
+let traceIdentity = traceSession.database;
+let store = new SQLiteTraceStore(traceSession.database);
 const chatTask = task({
     ...config.task,
     input: schema.object({
@@ -41,7 +37,7 @@ const chatTask = task({
     output: schema.string(),
 });
 const publicDirectory = fileURLToPath(new URL("./public/", import.meta.url));
-const runs = listRunLedger(store, { limit: config.limits.maxRuns })
+let runs = listRunLedger(store, { limit: config.limits.maxRuns })
     .filter((run) => run.run_id.startsWith(config.runPrefix))
     .map((run) => run.run_id)
     .sort();
@@ -51,6 +47,7 @@ let fatal = false;
 let serverOrigin;
 
 function snapshot() {
+    const connectionState = connection.snapshot();
     const nodes = [];
     const messages = [];
     const summaries = [];
@@ -105,19 +102,22 @@ function snapshot() {
     const known = new Set(nodes.map((node) => node.id));
     return {
         title: config.title,
+        traceIdentity: path.basename(traceIdentity),
         display: config.display,
         settings: {
-            models: availableModels,
-            defaultModel: { provider: defaultModel.provider, id: defaultModel.id },
+            models: connectionState.models,
+            defaultModel: connectionState.defaultModel,
+            setup: connectionState.setup,
+            busy: settingsBusy,
         },
-        mode: config.mode,
+        mode: connectionState.mode,
         pollMilliseconds: config.limits.pollMilliseconds,
         maxMessageBytes: config.limits.maxMessageBytes,
         playground: config.playground.map(({ id, title, description, behavior }) => ({
             id,
             title,
             description,
-            enabled: config.mode === "offline" || behavior === "reply",
+            enabled: connectionState.mode === "offline" || behavior === "reply",
         })),
         messages,
         runs: summaries,
@@ -136,6 +136,7 @@ function snapshot() {
 }
 
 async function startTurn(text, item, model) {
+    const runtime = connection.runtime();
     const runId = `${config.runPrefix + Date.now().toString().padStart(16, "0")}:${randomUUID()}`;
     const previous = snapshot()
         .messages.filter((message) => message.role !== "status")
@@ -159,7 +160,7 @@ async function startTurn(text, item, model) {
                                 schema_ref: config.eventSchema,
                                 witness_ref: ROOT_WITNESS_ID,
                                 caused_by_record_ids: [start.envelope.record_id],
-                                body: { event_type: eventType, sequence, origin: config.mode },
+                                body: { event_type: eventType, sequence, origin: runtime.mode },
                             },
                         ],
                     },
@@ -180,7 +181,7 @@ async function startTurn(text, item, model) {
                 capabilities: { streaming: false, structuredOutput: true, tools: false },
             }),
             invoke: async (_request, signal) => {
-                if (config.mode === "offline") {
+                if (runtime.mode === "offline") {
                     observe("fixture_started", 1);
                     await delay(
                         item?.delayMilliseconds ?? config.offline.delayMilliseconds,
@@ -192,7 +193,7 @@ async function startTurn(text, item, model) {
                     observe("fixture_settled", 2);
                     return { output: config.offline.prefix + text, usage: config.offline.usage };
                 }
-                return invokePi(config, messages, model, signal, observe, (piece) => {
+                return invokePi(runtime, messages, model, signal, observe, (piece) => {
                     current.partial += piece;
                     if (Buffer.byteLength(current.partial) > config.limits.maxReplyBytes)
                         throw new Error("Partial reply exceeded its bound");
@@ -272,6 +273,97 @@ const server = createServer(async (request, response) => {
                 json(response, 400, { error: "Invalid JSON" });
                 return;
             }
+            if (url.pathname === "/api/new-trace") {
+                if (
+                    request.headers.origin !== serverOrigin ||
+                    request.headers["x-settings-token"] !== connection.token
+                ) {
+                    json(response, 403, { error: "Same-origin settings token required" });
+                    return;
+                }
+                if (
+                    !body ||
+                    Array.isArray(body) ||
+                    typeof body !== "object" ||
+                    Object.keys(body).length
+                ) {
+                    json(response, 400, { error: "Empty request required" });
+                    return;
+                }
+                if (active || settingsBusy) {
+                    json(response, 409, {
+                        error: "Wait for the active operation before starting a new trace",
+                    });
+                    return;
+                }
+                const next = traceSession.fresh();
+                const freshStore = new SQLiteTraceStore(next);
+                try {
+                    traceSession.select(next);
+                } catch (error) {
+                    freshStore.close();
+                    throw error;
+                }
+                store.close();
+                store = freshStore;
+                traceIdentity = next;
+                runs = [];
+                json(response, 200, { status: "New trace started; previous database retained" });
+                return;
+            }
+            if (url.pathname === "/api/connection") {
+                if (
+                    request.headers.origin !== serverOrigin ||
+                    request.headers["x-settings-token"] !== connection.token
+                ) {
+                    json(response, 403, { error: "Same-origin settings token required" });
+                    return;
+                }
+                if (active || settingsBusy) {
+                    json(response, 409, {
+                        error: "Wait for the active operation before changing connection settings",
+                    });
+                    return;
+                }
+                if (
+                    !body ||
+                    Array.isArray(body) ||
+                    typeof body !== "object" ||
+                    Object.keys(body).some((key) => !["mode", "model", "apiKey"].includes(key)) ||
+                    !["offline", "pi", "refresh"].includes(body.mode) ||
+                    (["offline", "refresh"].includes(body.mode) &&
+                        Object.keys(body).length !== 1) ||
+                    (body.mode === "pi" &&
+                        (!body.model ||
+                            Array.isArray(body.model) ||
+                            Object.keys(body.model).length !== 2 ||
+                            typeof body.model.provider !== "string" ||
+                            typeof body.model.id !== "string"))
+                ) {
+                    json(response, 400, {
+                        error: "Choose a connection mode and exact provider/model",
+                    });
+                    return;
+                }
+                settingsBusy = true;
+                try {
+                    settingsPromise =
+                        body.mode === "refresh" ? connection.refresh() : connection.configure(body);
+                    await settingsPromise;
+                    json(response, 200, { status: "connected", mode: connection.snapshot().mode });
+                } catch (error) {
+                    json(response, 400, { error: error.message });
+                } finally {
+                    body.apiKey = undefined;
+                    settingsBusy = false;
+                    settingsPromise = null;
+                }
+                return;
+            }
+            if (settingsBusy && url.pathname === "/api/chat") {
+                json(response, 409, { error: "Connection settings are being changed" });
+                return;
+            }
             if (url.pathname === "/api/cancel") {
                 if (
                     !body ||
@@ -312,12 +404,14 @@ const server = createServer(async (request, response) => {
                 }
                 const model =
                     requested === undefined
-                        ? defaultModel
-                        : availableModels.find(
-                              (candidate) =>
-                                  candidate.provider === requested.provider &&
-                                  candidate.id === requested.id,
-                          );
+                        ? connection.snapshot().defaultModel
+                        : connection
+                              .snapshot()
+                              .models.find(
+                                  (candidate) =>
+                                      candidate.provider === requested.provider &&
+                                      candidate.id === requested.id,
+                              );
                 if (!model) {
                     json(response, 400, { error: "Selected provider/model unavailable" });
                     return;
@@ -326,7 +420,10 @@ const server = createServer(async (request, response) => {
                     const item = config.playground.find(
                         (candidate) => candidate.id === body.itemId,
                     );
-                    if (!item || (config.mode === "pi" && item.behavior !== "reply")) {
+                    if (
+                        !item ||
+                        (connection.snapshot().mode === "pi" && item.behavior !== "reply")
+                    ) {
                         json(response, 400, { error: "Playground item unavailable in this mode" });
                         return;
                     }
@@ -401,6 +498,7 @@ async function shutdown() {
         active.controller.abort();
         await active.promise;
     }
+    if (settingsPromise) await settingsPromise.catch(() => {});
     await closed;
     store.close();
 }

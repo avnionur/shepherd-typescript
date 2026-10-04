@@ -629,9 +629,12 @@ body [hidden] {
     padding-bottom: 0;
 }
 @media (max-width: 1400px) {
+    #canvas {
+        min-height: 180px;
+    }
     .workspace {
         display: grid;
-        grid-template-rows: minmax(300px, 1fr) 240px;
+        grid-template-rows: minmax(180px, 1fr) minmax(120px, 0.65fr);
         gap: 13px;
     }
     .detail-panel {
@@ -671,4 +674,38 @@ body [hidden] {
     .flow-controls {
         flex-wrap: wrap;
     }
+}
+
+#api-key {
+    width: 100%;
+    background: #1b1f25;
+    color: #e5e9ef;
+    border: 1px solid #3a414b;
+    border-radius: 5px;
+    padding: 9px;
+    margin: 6px 0;
+}
+#save-connection,
+#use-offline {
+    width: 100%;
+    margin-top: 8px;
+    font-size: 11px;
+}
+#credential-status {
+    color: #b5cabe;
+}
+#credential-storage {
+    color: #8995a3;
+}
+
+#canvas:focus-visible {
+    outline: 2px solid #a8c7b5;
+    outline-offset: 3px;
+}
+#new-trace {
+    margin-left: auto;
+    font-size: 11px;
+}
+.export {
+    margin-left: 0;
 }

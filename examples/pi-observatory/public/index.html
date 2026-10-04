@@ -11,6 +11,7 @@
 <header>
     <a class="brand" href="/">S<span>Shepherd <b>Observatory</b></span></a>
     <span class="live" id="mode">Connecting</span>
+    <button id="new-trace" type="button" title="Clear chat and canvas; retain the previous database">Clear canvas / new trace</button>
     <a class="export" href="/api/export" download>Export trace ↗</a>
 </header>
 <main>
@@ -20,8 +21,14 @@
         <p class="intro">Every turn leaves evidence. Follow it from request to retained outcome.</p>
         <details class="model-settings" open>
             <summary>Provider &amp; model</summary>
+            <label for="connection-mode">Connection</label><select id="connection-mode"><option value="offline">Offline playground</option><option value="pi">Pi · live provider</option></select>
             <label for="provider-select">Provider</label><select id="provider-select" disabled></select>
             <label for="model-select">Model</label><select id="model-select" disabled></select>
+            <div id="key-settings" hidden><label for="api-key">API key</label><input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your provider API key">
+                <button id="refresh-setup" type="button">Refresh providers</button>
+                <button id="save-connection" type="button">Save key &amp; connect</button>
+                <p id="credential-status" role="status"></p><p id="credential-storage"></p></div>
+            <button id="use-offline" type="button" hidden>Use offline playground</button>
             <p id="model-note">Loading available choices…</p>
         </details>
         <details class="playground" open>
@@ -41,7 +48,7 @@
     </aside>
     <section class="observatory">
         <div class="section-title"><span>02 / EXECUTION EVIDENCE</span><span id="record-count" class="tag">0 RECORDS</span></div>
-        <div class="graph-heading"><div><h2>Trace canvas</h2><p>Follow what Shepherd retains, step by step.</p></div>
+        <div class="graph-heading"><div><h2>Trace canvas</h2><p>Follow what Shepherd retains. Click the canvas and use arrow keys to pan.</p></div>
             <div class="controls"><button type="button" id="zoom-out" aria-label="Zoom out">−</button>
                 <button type="button" id="zoom-in" aria-label="Zoom in">+</button><button type="button" id="fit">Fit</button></div>
         </div>
@@ -53,7 +60,8 @@
         <div class="flow-controls"><label><input id="live-follow" type="checkbox" checked> Live follow</label>
             <span id="flow-status" aria-live="polite">Waiting for new records</span><button id="play-trace" type="button" disabled>Play trace</button></div>
         <div class="workspace">
-            <section id="canvas" aria-label="Execution graph; drag to pan, use zoom buttons">
+            <!-- biome-ignore lint/a11y/noNoninteractiveTabindex: The canvas supports keyboard panning and needs a focus target. -->
+            <section id="canvas" tabindex="0" aria-label="Execution graph; drag or use arrow keys to pan, use zoom buttons">
                 <!-- biome-ignore lint/a11y/useSemanticElements: An interactive SVG graph cannot be replaced by an HTML fieldset. -->
                 <svg id="graph" role="group" aria-label="Canonical trace graph">
                     <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8"/></marker></defs>
