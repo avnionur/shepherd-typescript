@@ -6,7 +6,7 @@ import { Ajv2020, type AnySchemaObject } from "ajv/dist/2020.js";
 
 import {
     EFFECT_PROTOCOL_V1_CONTRACT,
-    EFFECT_PROTOCOL_V2_CONTRACT,
+    EFFECT_PROTOCOL_V3_CONTRACT,
 } from "../../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
 
@@ -50,13 +50,28 @@ test("published effect schemas reject malformed closed records", () => {
 test("effect protocol configuration is frozen and compatibility locked", () => {
     const parsed = parseProtocolConfig(structuredClone(validConfig));
 
-    assert.deepEqual(parsed.effects, EFFECT_PROTOCOL_V2_CONTRACT);
+    assert.deepEqual(parsed.effects, EFFECT_PROTOCOL_V3_CONTRACT);
     const { compensation: _compensation, ...v1 } = parsed.effects;
     assert.deepEqual(v1, EFFECT_PROTOCOL_V1_CONTRACT);
     assert.equal(Object.isFrozen(parsed.effects.compensation), true);
     assert.equal(Object.isFrozen(parsed.effects), true);
     assert.equal(Object.isFrozen(parsed.effects.handlers), true);
     assert.equal(Object.isFrozen(parsed.effects.reversibilityTiers), true);
+
+    for (const [key, value] of [
+        ["leaseMilliseconds", 0],
+        ["renewalMilliseconds", 30_000],
+        ["statuses", ["absent"]],
+        ["claimIdPrefix", ""],
+        ["leaseMilliseconds", 40_000],
+    ] as const) {
+        const candidate = structuredClone(validConfig);
+        const compensation = (
+            candidate.effects as { compensation: { ownership: Record<string, unknown> } }
+        ).compensation;
+        compensation.ownership[key] = value;
+        assert.throws(() => parseProtocolConfig(candidate), TypeError);
+    }
 
     for (const mutate of [
         (effects: Record<string, unknown>) => {

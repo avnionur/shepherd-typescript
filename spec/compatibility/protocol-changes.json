@@ -1097,34 +1097,50 @@
     },
     {
         "artifact": "api:.#SQLiteTaskRegistry",
+        "classification": "additive",
         "from": "sha256:c0b71ee60c4406b48aebbf883ad7715f2ac0ccb908dff515e81ec12ba9934f26",
         "to": "sha256:ee8159631e40824b13dc3043998cc50f3485d7363b2471d958e95d4e3657f74c",
-        "classification": "additive",
-        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage.",
-        "version": "13.2.0"
+        "version": "13.2.0",
+        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage."
     },
     {
         "artifact": "api:.#TaskRegistration",
+        "classification": "additive",
         "from": "sha256:a0f78205f9492b9f276bb84da5a95925a940ccad49069c3328341c355be3de52",
         "to": "sha256:1dcecc56d9be0d1c071b708db1e406733c938fd7ce53f6c339e51c9fc9867cbf",
-        "classification": "additive",
-        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage.",
-        "version": "13.2.0"
+        "version": "13.2.0",
+        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage."
     },
     {
         "artifact": "api:./tasks#SQLiteTaskRegistry",
+        "classification": "additive",
         "from": "sha256:c0b71ee60c4406b48aebbf883ad7715f2ac0ccb908dff515e81ec12ba9934f26",
         "to": "sha256:ee8159631e40824b13dc3043998cc50f3485d7363b2471d958e95d4e3657f74c",
-        "classification": "additive",
-        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage.",
-        "version": "13.2.0"
+        "version": "13.2.0",
+        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage."
     },
     {
         "artifact": "api:./tasks#TaskRegistration",
+        "classification": "additive",
         "from": "sha256:a0f78205f9492b9f276bb84da5a95925a940ccad49069c3328341c355be3de52",
         "to": "sha256:1dcecc56d9be0d1c071b708db1e406733c938fd7ce53f6c339e51c9fc9867cbf",
+        "version": "13.2.0",
+        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage."
+    },
+    {
+        "artifact": "api:.#EffectCompensationRequest",
+        "from": "sha256:c72c4caa22d6257b1a32599dc062194675a73f79057062fed3f31002b3770946",
+        "to": "sha256:14f394afbf79b3f9476f03ff84a7333f8030b74f6fcb826829d3201f89721b96",
         "classification": "additive",
-        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage.",
-        "version": "13.2.0"
+        "note": "Compensation handler requests now carry fresh invocation claim IDs and monotonic attempt fences; handler input is runtime-produced and existing handlers remain valid. Store schema 14 appends ownership bookkeeping without changing semantic records.",
+        "version": "13.3.0"
+    },
+    {
+        "artifact": "api:./effects#EffectCompensationRequest",
+        "from": "sha256:c72c4caa22d6257b1a32599dc062194675a73f79057062fed3f31002b3770946",
+        "to": "sha256:14f394afbf79b3f9476f03ff84a7333f8030b74f6fcb826829d3201f89721b96",
+        "classification": "additive",
+        "note": "Compensation handler requests now carry fresh invocation claim IDs and monotonic attempt fences; handler input is runtime-produced and existing handlers remain valid. Store schema 14 appends ownership bookkeeping without changing semantic records.",
+        "version": "13.3.0"
     }
 ]

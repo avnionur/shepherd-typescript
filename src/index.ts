@@ -395,6 +395,7 @@ export {
     compensateEffects,
     createEffectCompensationRegistry,
     inspectEffectCompensation,
+    inspectEffectCompensationOwnership,
 } from "./effect/compensation.ts";
 export {
     EffectCompensationConflictError,
@@ -409,6 +410,7 @@ export type {
     EffectCompensationHandler,
     EffectCompensationInspection,
     EffectCompensationOutcomeStatus,
+    EffectCompensationOwnershipInspection,
     EffectCompensationReceipt,
     EffectCompensationRegistry,
     EffectCompensationRequest,
@@ -627,6 +629,7 @@ export {
     EFFECT_COMPENSABLE_TIERS,
     EFFECT_COMPENSATION_EVIDENCE_KINDS,
     EFFECT_COMPENSATION_OUTCOMES,
+    EFFECT_COMPENSATION_OWNERSHIP_STATUSES,
     EFFECT_COMPENSATION_PHASES,
     EFFECT_COMPENSATION_STATUSES,
     EFFECT_COMPENSATION_TRIGGERS,

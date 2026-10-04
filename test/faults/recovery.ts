@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 
 import {
     backupTraceStore,
@@ -9,6 +10,7 @@ import {
     deriveEffectCompensationId,
     deriveReplaySessionId,
     inspectEffectCompensation,
+    inspectEffectCompensationOwnership,
     inspectReplaySession,
     SQLiteTraceStore,
     TraceStoreBackupError,
@@ -205,6 +207,7 @@ async function recoverCompensation(
                   },
               ])
             : rowCompensation(world);
+    await waitForCompensationExpiry(store, compensationId);
     await compensateEffects(store, {
         commandId: compensationCommandFor(args.label, index),
         effectRecordIds: [step.record_id],
@@ -281,4 +284,15 @@ async function recoverBackup(
         assert.equal(verified.manifest.manifest_id, manifest.manifest_id);
     }
     return outcome;
+}
+
+/** Waits for an actually killed writer's durable lease to expire before retrying its stable key. */
+export async function waitForCompensationExpiry(
+    store: SQLiteTraceStore,
+    compensationId: string,
+): Promise<void> {
+    if (store.readOwner(compensationId).length === 0) return;
+    const { ownership } = inspectEffectCompensationOwnership(store, { compensationId });
+    if (ownership.status === "active")
+        await delay(Math.max(0, (ownership.lease_expires_at as number) - Date.now() + 1));
 }

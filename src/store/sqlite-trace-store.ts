@@ -50,6 +50,16 @@ import {
 import { resolveBlobDirectory } from "./blob-options.ts";
 import { collectStoredBlobOrphans } from "./blob-orphans.ts";
 import { putStoredBlob, readStoredBlob, verifyStoredBlobs } from "./blobs.ts";
+import {
+    appendCompensationOutcome,
+    appendUnclaimedCompensationRecord,
+    type CompensationClaim,
+    type CompensationFence,
+    claimCompensationAttempt,
+    readCompensationClaim,
+    releaseCompensationClaim,
+    renewCompensationClaim,
+} from "./compensation-claims.ts";
 import { DEFAULT_STORE_DATABASE_PATH, STORE_PRAGMA_SQL, STORE_TABLES } from "./constants.ts";
 import { listStoredCuts, publishStoredCut, readOptionalStoredCut, readStoredCut } from "./cuts.ts";
 import {
@@ -1397,13 +1407,64 @@ export class SQLiteTraceStore implements Disposable {
         request: StoreAppendRequest,
     ): ApplicationRecordAppend {
         this.#assertOpen();
-        return appendApplicationRecordInStore(
+        return appendUnclaimedCompensationRecord(
             this.#database,
             compensationId,
             expectedHeadRecordId,
             request,
-            null,
         );
+    }
+
+    /** Atomically admits and records one compensation attempt. @internal */
+    claimEffectCompensationAttempt(
+        compensationId: string,
+        expectedHead: RecordId,
+        fence: CompensationFence,
+        now: number,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return claimCompensationAttempt(
+            this.#database,
+            compensationId,
+            expectedHead,
+            fence,
+            now,
+            request,
+        );
+    }
+
+    /** Renews an unexpired exact compensation holder. @internal */
+    renewEffectCompensationClaim(
+        compensationId: string,
+        fence: CompensationFence,
+        now: number,
+    ): void {
+        this.#assertOpen();
+        renewCompensationClaim(this.#database, compensationId, fence, now);
+    }
+
+    /** Retains an outcome and releases its holder atomically. @internal */
+    appendEffectCompensationOutcome(
+        compensationId: string,
+        fence: CompensationFence,
+        now: number,
+        request: StoreAppendRequest,
+    ): AppendReceipt {
+        this.#assertOpen();
+        return appendCompensationOutcome(this.#database, compensationId, fence, now, request);
+    }
+
+    /** Releases only the matching compensation invocation. @internal */
+    releaseEffectCompensationClaim(compensationId: string, fence: CompensationFence): void {
+        this.#assertOpen();
+        releaseCompensationClaim(this.#database, compensationId, fence);
+    }
+
+    /** Reads validated live compensation ownership without mutation. @internal */
+    readEffectCompensationClaim(compensationId: string): CompensationClaim | undefined {
+        this.#assertOpen();
+        return readCompensationClaim(this.#database, compensationId);
     }
 
     /**

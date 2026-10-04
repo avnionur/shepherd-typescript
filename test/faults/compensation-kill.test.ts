@@ -22,7 +22,7 @@ import {
     runRowSession,
 } from "../effect/compensation-fixtures.ts";
 import { createPrng, deriveSeed } from "../support/prng.ts";
-import { addCounts, emptyCounts, recoverAfterKill } from "./recovery.ts";
+import { addCounts, emptyCounts, recoverAfterKill, waitForCompensationExpiry } from "./recovery.ts";
 import {
     COMPENSATION_SESSION_COMMAND,
     type FaultProcessArguments,
@@ -123,6 +123,7 @@ test("a kill after the handler changed the world is uncertain and recovery re-in
         deleted: 1,
         invocations: 1,
     });
+    await waitForCompensationExpiry(store, compensationId);
     // The rewind trigger reaches the same compensation and completes it without a second deletion.
     const calls: string[] = [];
     await rewindReplaySession(store, {

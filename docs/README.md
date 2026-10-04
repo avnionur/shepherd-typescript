@@ -418,3 +418,5 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 - Update the changelog and tracker with every completed slice.
 
 - [Registered repository declarations](./task-registry.md#repository-declaration-companions-1320) documents exact-version persistence and CLI inspection.
+
+- [Compensation ownership](./compensation.md#durable-ownership-inspection-1330) defines leases, fences, restart inspection and external idempotency limits.

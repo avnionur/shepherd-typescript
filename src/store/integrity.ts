@@ -4,6 +4,7 @@ import type { BlobFilesystem } from "../blob/filesystem.ts";
 import { rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { diagnoseStoredAppend } from "./append-recovery.ts";
 import { verifyStoredBlobs } from "./blobs.ts";
+import { readCompensationClaim } from "./compensation-claims.ts";
 import { STORE_READ_TRANSACTION_SQL, STORE_TABLES } from "./constants.ts";
 import { readStoredCut } from "./cuts.ts";
 import { addIntegrityIssue } from "./integrity-issues.ts";
@@ -101,6 +102,18 @@ export function scanTraceStoreIntegrity(
             verifyTraceSubscriptionRow(database, subscriptionId);
         } catch {
             addIntegrityIssue(issues, "trace_subscription_mismatch", subscriptionId);
+        }
+    }
+
+    for (const compensationId of readSortedStrings(
+        database,
+        STORE_TABLES.compensationClaims,
+        "compensation_id",
+    )) {
+        try {
+            readCompensationClaim(database, compensationId);
+        } catch {
+            addIntegrityIssue(issues, "sqlite_integrity_mismatch", compensationId);
         }
     }
 

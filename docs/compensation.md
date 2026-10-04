@@ -1,6 +1,6 @@
 # Effect compensation
 
-Status: normative from 7.0.0 (#209, paper §3.2 and Appendix A.2).
+Status: normative from 7.0.0 (#209); durable ownership added in 13.3.0 (#240). Paper §3.2 and Appendix A.2.
 
 Implementation: [`src/effect/compensation.ts`](../src/effect/compensation.ts) (registry, engine,
 inspection, `compensateEffects`), [`src/effect/compensation-records.ts`](../src/effect/compensation-records.ts)
@@ -11,8 +11,8 @@ and the reserved head-compared store append in
 [`discardScope`](../src/workspace/scope-discard.ts) and the replay branches
 [`rewindReplaySession` and `replayReplaySession`](../src/replay/branch.ts). Public entry points:
 [`./effects`](../src/facades/effects.ts) and the root entry. Configuration: `effects.compensation`
-in [`protocol.config.json`](../protocol.config.json) (effect protocol v2,
-`EFFECT_PROTOCOL_V2_CONTRACT`). Schema:
+in [`protocol.config.json`](../protocol.config.json) (effect protocol v3,
+`EFFECT_PROTOCOL_V3_CONTRACT`). Schema:
 [`effect-compensation-v1`](../spec/schemas/effect-compensation-v1.schema.json). Tests:
 [`compensation.test.ts`](../test/effect/compensation.test.ts),
 [`compensation-evidence.test.ts`](../test/effect/compensation-evidence.test.ts),
@@ -54,7 +54,9 @@ of the materialized effect, and the trigger. It returns an ordinary effect resul
 - A throw or rejection: the attempt stays uncertain and the error propagates unchanged; the next
   trigger invokes the handler again.
 
-A handler must make its world change idempotent under `idempotencyKey`. That is the contract that
+The request also supplies a fresh `claimId` and monotonic `fencingToken` (the canonical attempt
+number). Fence-aware external systems may reject old attempts; these fields do not replace the
+stable external key. A handler must make its world change idempotent under `idempotencyKey`. That is the contract that
 makes recovery safe: an attempt interrupted after the world changed but before its outcome was
 retained is invoked again under the same key.
 
@@ -113,11 +115,16 @@ effect at a time:
 
 1. Retain the intent if the path is empty; an identical concurrent intent replays.
 2. Skip the effect if its latest outcome is `compensated`.
-3. Retain the next attempt under the exact current head, then invoke the handler.
-4. Retain the outcome under the attempt record.
+3. In one SQLite transaction, refuse an active lease, retain the next attempt under the exact head,
+   and register its sole invocation holder. Recheck the fence before entering the handler.
+4. Renew the unexpired lease while the handler awaits. Retain its outcome only under the exact
+   current unexpired fence, releasing ownership in the same transaction.
 
-If another compensator appended to the same path in between, the append fails with
-`EffectCompensationConflictError` and no outcome is retained by the slower one. After every effect
+An active concurrent trigger fails with `EffectCompensationConflictError` before its handler runs.
+An expired or replaced handler cannot renew or publish an outcome; its cleanup cannot release a
+new holder. Handler completion without an outcome releases its own lease for stable-key retry.
+Process death leaves the lease active until expiry. Renewal failure prevents success publication;
+it cannot forcibly stop arbitrary external handler work. After every effect
 was attempted, any `failed` outcome makes the trigger fail with `EffectCompensationFailedError`,
 which names the failed compensations.
 
@@ -195,8 +202,8 @@ discard of another scope.
 | --- | --- | --- |
 | Before the intent | Nothing | Retains the intent and attempts |
 | After the intent | `pending` | Attempts |
-| After an attempt, before or during the handler | `uncertain` | Retains a new attempt and invokes the handler again under the same key |
-| After the handler changed the world, before the outcome | `uncertain` | Same; the idempotent handler changes nothing twice |
+| After an attempt, before or during the handler | `uncertain`; lease may still be active | Active ownership refuses; after expiry or release, a new fenced attempt invokes the same key |
+| After the handler changed the world, before the outcome | `uncertain`; lease may still be active | Same ownership rule; the idempotent handler changes nothing twice |
 | After the outcome | `compensated` or `failed` | Never re-invokes a compensated effect; attempts a failed one |
 
 The SIGKILL suite runs the `compensation` fault operation of the
@@ -212,11 +219,37 @@ outcome was retained (no further invocation).
 
 - Handlers run in-process. Idempotency is the handler's obligation; the substrate supplies the key
   and never invokes a handler after a retained `compensated` outcome.
-- Concurrent triggers on the same effect can both invoke the handler; the slower one fails with a
-  conflict and retains no outcome. There is no compensation lease.
+- Invocation exclusion covers one shared trace-store database while a lease is active. Expiry does
+  not stop a suspended process or revoke external effects; stable-key idempotency remains required.
+  Separate imported copies do not coordinate ownership or external resources.
 - A permanently failing compensation blocks its triggers; there is no waiver or manual-resolution
   record in this version.
 - Effects without retained outcomes (`materialization_failed`, materialization-uncertain) and
   effects outside replay sessions and supervised dispatches are not compensated.
 - The paper's refusal-path compensation is not wired: refused replay effects never materialize and
   need none.
+
+## Durable ownership inspection (13.3.0)
+
+`inspectEffectCompensationOwnership(store, { compensationId })` returns the existing immutable
+`compensation` projection and a separate `ownership` snapshot. The latter reports holder, fence,
+Unix-millisecond expiry and one configured status: `absent`, `active`, `expired`, or `released`.
+A record-derived `uncertain` attempt can still have an active owner; it is not permission to retry.
+An absent row in legacy/imported evidence does not prove the external world is untouched.
+The read-only projection validates the exact attempt and latest outcome; inconsistent operational
+rows also fail `verifyIntegrity`.
+
+`effects.compensation.ownership` owns the 30,000 ms lease, 10,000 ms renewal interval, claim prefix
+and status vocabulary. Intervals and prefixes are configuration, not handler-specific literals.
+Store schema 14 adds `compensation_claims`. Writable opens migrate; read-only opens require the
+current schema. The existing v1 compensation records and external materialization identities do
+not change. Native archives contain semantic records, not live leases; file backups preserve
+operational state and its expiry. There is no cross-store or cross-host lease service.
+
+Implementation: [`compensation-claims.ts`](../src/store/compensation-claims.ts). Public-seam evidence:
+[`compensation-ownership.test.ts`](../test/effect/compensation-ownership.test.ts),
+[`compensation-ownership-evidence.test.ts`](../test/effect/compensation-ownership-evidence.test.ts),
+and the existing trigger/fault suites above. Tests include separate processes, three real SIGKILL
+boundaries, actual expiry in the existing fault suite, deterministic clock advancement in targeted
+recovery tests, heartbeat renewal and stale outcome/release exclusion. Fencing supplies no
+exactly-once guarantee for external handlers, and manual reconciliation remains separate #241 work.

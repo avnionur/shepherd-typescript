@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 13.2.0
+Package: `@avnionur/shepherd-typescript` 13.3.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 1448.
+Exported symbols: 1451.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -6332,6 +6332,23 @@ export declare const EFFECT_COMPENSATION_OUTCOMES: readonly [
 ];
 ```
 
+### `EFFECT_COMPENSATION_OWNERSHIP_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured store-local compensation ownership classifications.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_OWNERSHIP_STATUSES: readonly [
+    "absent",
+    "active",
+    "expired",
+    "released"
+];
+```
+
 ### `EFFECT_COMPENSATION_PHASES`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -6437,8 +6454,9 @@ export type EffectCompensationAttemptInspection = {
 
 Classification: `runtime-and-type`. Kind: `class`.
 
-Raised when another compensator appended to the same compensation path between this
-compensator's read and its append. Retrying the trigger continues from the retained records.
+Raised when another compensator owns an active attempt, the path head changed, or this holder
+expired or was replaced. Retry only after ownership is released or expired; external handlers
+must remain idempotent under the stable materialization key.
 
 Signature:
 
@@ -6670,6 +6688,26 @@ Signature:
 export type EffectCompensationOutcomeStatus = (typeof EFFECT_COMPENSATION_OUTCOMES)[number];
 ```
 
+### `EffectCompensationOwnershipInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable evidence plus a separate live store-local ownership snapshot.
+
+Signature:
+
+```ts
+export type EffectCompensationOwnershipInspection = {
+    readonly compensation: EffectCompensationInspection;
+    readonly ownership: {
+        readonly claim_id: string | null;
+        readonly fencing_token: number | null;
+        readonly lease_expires_at: number | null;
+        readonly status: (typeof EFFECT_COMPENSATION_OWNERSHIP_STATUSES)[number];
+    };
+};
+```
+
 ### `EffectCompensationReceipt`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -6709,6 +6747,8 @@ Signature:
 
 ```ts
 export type EffectCompensationRequest = {
+    readonly claimId: string;
+    readonly fencingToken: number;
     readonly attempt: number;
     readonly compensationId: string;
     readonly idempotencyKey: string;
@@ -25884,7 +25924,7 @@ resolution. Every compensation path is keyed by its original materialization, so
 already compensated by a discard, a branch, or an earlier command is never compensated again.
 The compensation intent is retained before the first attempt, each attempt before its handler
 runs, and each outcome after it returns. A handler that throws leaves its attempt uncertain and
-the error propagates; the next trigger invokes the handler again under the same idempotency key.
+the error propagates; after ownership releases or expires, the next trigger uses the same key.
 
 Signature:
 
@@ -25922,7 +25962,7 @@ a failure result.
 Throws:
 
 - {EffectCompensationConflictError} If another compensator advanced the same path
-concurrently.
+concurrently, owns an active lease, or fences this expired/replaced holder.
 
 Throws:
 
@@ -29714,6 +29754,43 @@ const inspection = inspectEffectCompensation(store, {
 });
 console.log(inspection.status, inspection.attempts.length);
 ```
+
+### `inspectEffectCompensationOwnership`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Inspects immutable compensation evidence alongside current store-local invocation ownership.
+An imported trace has no live ownership row; absence never proves an external effect is safe to repeat.
+
+Signature:
+
+```ts
+export declare function inspectEffectCompensationOwnership(store: SQLiteTraceStore, options: InspectEffectCompensationOptions): EffectCompensationOwnershipInspection;
+```
+
+Parameter:
+
+- store - Open trace store, including read-only stores.
+
+Parameter:
+
+- options - Exact compensation identity.
+
+Returns:
+
+- Record-derived state and a separately classified live lease snapshot.
+
+Throws:
+
+- {EffectCompensationEvidenceError} If records or ownership disagree.
+
+Throws:
+
+- {TypeError} If the identity is malformed.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or inspection races a writer.
 
 ### `inspectLocalNativeJailBackend`
 
@@ -44040,7 +44117,7 @@ import * as api from "@avnionur/shepherd-typescript/effects";
 void api;
 ```
 
-Exported symbols: 45.
+Exported symbols: 48.
 
 ### `CompensateEffectsOptions`
 
@@ -44099,6 +44176,23 @@ Signature:
 export declare const EFFECT_COMPENSATION_OUTCOMES: readonly [
     "compensated",
     "failed"
+];
+```
+
+### `EFFECT_COMPENSATION_OWNERSHIP_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured store-local compensation ownership classifications.
+
+Signature:
+
+```ts
+export declare const EFFECT_COMPENSATION_OWNERSHIP_STATUSES: readonly [
+    "absent",
+    "active",
+    "expired",
+    "released"
 ];
 ```
 
@@ -44178,8 +44272,9 @@ export type EffectCompensationAttemptInspection = {
 
 Classification: `runtime-and-type`. Kind: `class`.
 
-Raised when another compensator appended to the same compensation path between this
-compensator's read and its append. Retrying the trigger continues from the retained records.
+Raised when another compensator owns an active attempt, the path head changed, or this holder
+expired or was replaced. Retry only after ownership is released or expired; external handlers
+must remain idempotent under the stable materialization key.
 
 Signature:
 
@@ -44411,6 +44506,26 @@ Signature:
 export type EffectCompensationOutcomeStatus = (typeof EFFECT_COMPENSATION_OUTCOMES)[number];
 ```
 
+### `EffectCompensationOwnershipInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable evidence plus a separate live store-local ownership snapshot.
+
+Signature:
+
+```ts
+export type EffectCompensationOwnershipInspection = {
+    readonly compensation: EffectCompensationInspection;
+    readonly ownership: {
+        readonly claim_id: string | null;
+        readonly fencing_token: number | null;
+        readonly lease_expires_at: number | null;
+        readonly status: (typeof EFFECT_COMPENSATION_OWNERSHIP_STATUSES)[number];
+    };
+};
+```
+
 ### `EffectCompensationReceipt`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -44450,6 +44565,8 @@ Signature:
 
 ```ts
 export type EffectCompensationRequest = {
+    readonly claimId: string;
+    readonly fencingToken: number;
     readonly attempt: number;
     readonly compensationId: string;
     readonly idempotencyKey: string;
@@ -44779,7 +44896,7 @@ resolution. Every compensation path is keyed by its original materialization, so
 already compensated by a discard, a branch, or an earlier command is never compensated again.
 The compensation intent is retained before the first attempt, each attempt before its handler
 runs, and each outcome after it returns. A handler that throws leaves its attempt uncertain and
-the error propagates; the next trigger invokes the handler again under the same idempotency key.
+the error propagates; after ownership releases or expires, the next trigger uses the same key.
 
 Signature:
 
@@ -44817,7 +44934,7 @@ a failure result.
 Throws:
 
 - {EffectCompensationConflictError} If another compensator advanced the same path
-concurrently.
+concurrently, owns an active lease, or fences this expired/replaced holder.
 
 Throws:
 
@@ -45095,6 +45212,43 @@ const inspection = inspectEffectCompensation(store, {
 });
 console.log(inspection.status, inspection.attempts.length);
 ```
+
+### `inspectEffectCompensationOwnership`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Inspects immutable compensation evidence alongside current store-local invocation ownership.
+An imported trace has no live ownership row; absence never proves an external effect is safe to repeat.
+
+Signature:
+
+```ts
+export declare function inspectEffectCompensationOwnership(store: SQLiteTraceStore, options: InspectEffectCompensationOptions): EffectCompensationOwnershipInspection;
+```
+
+Parameter:
+
+- store - Open trace store, including read-only stores.
+
+Parameter:
+
+- options - Exact compensation identity.
+
+Returns:
+
+- Record-derived state and a separately classified live lease snapshot.
+
+Throws:
+
+- {EffectCompensationEvidenceError} If records or ownership disagree.
+
+Throws:
+
+- {TypeError} If the identity is malformed.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or inspection races a writer.
 
 ### `validateEffectCorrelation`
 

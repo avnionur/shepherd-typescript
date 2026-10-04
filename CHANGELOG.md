@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.3.0] - 2026-10-04
+
+### New Feature
+
+- Compensation attempts now acquire durable exclusive invocation leases atomically with their
+  attempt records. Heartbeats renew live owners; outcomes require the exact unexpired fence and
+  release ownership atomically. Store schema 14 adds validated ownership bookkeeping (#240).
+- `inspectEffectCompensationOwnership` separates record-derived uncertainty from active, expired,
+  released or absent store-local ownership. Handlers receive claim and fence identifiers while
+  retaining the same materialization-based external idempotency key across all triggers.
+
+### Defect Fixes
+
+- Concurrent triggers cannot both enter a handler under an active lease. A stale holder cannot
+  renew, publish an outcome or release its replacement. Publication failures do not fabricate
+  success; process-killed attempts wait for lease expiry before retry.
+
+### Impact
+
+MINOR feature and correctness release. Existing compensation records/identities remain unchanged;
+new writable stores migrate to schema 14 and read-only opens require that schema. Fencing does not
+stop suspended external work: handlers still require stable-key idempotency. Imported trace copies
+carry semantic evidence without live ownership and provide no cross-store exclusion.
+
 ## [13.2.0] - 2026-10-04
 
 ### New Feature

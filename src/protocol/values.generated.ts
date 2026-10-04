@@ -725,6 +725,14 @@ export const EFFECT_COMPENSATION_STATUSES = [
     "compensated",
 ] as const;
 
+/** Configured store-local compensation ownership classifications. @public */
+export const EFFECT_COMPENSATION_OWNERSHIP_STATUSES = [
+    "absent",
+    "active",
+    "expired",
+    "released",
+] as const;
+
 /** Configured compensation triggers ordered scope discard, replay rewind, replay replay, command. @public */
 export const EFFECT_COMPENSATION_TRIGGERS = [
     "scope_discard",

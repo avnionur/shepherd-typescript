@@ -134,6 +134,7 @@ function readCompensationConfig(
             "identity",
             "limits",
             "outcomes",
+            "ownership",
             "phases",
             "recordVersion",
             "schemaId",
@@ -143,6 +144,22 @@ function readCompensationConfig(
         ],
         path,
     );
+    const ownership = readObject(
+        compensation.ownership,
+        ["claimIdPrefix", "leaseMilliseconds", "renewalMilliseconds", "statuses"],
+        `${path}.ownership`,
+    );
+    const leaseMilliseconds = readPositiveInteger(
+        ownership.leaseMilliseconds,
+        `${path}.ownership.leaseMilliseconds`,
+    );
+    const renewalMilliseconds = readPositiveInteger(
+        ownership.renewalMilliseconds,
+        `${path}.ownership.renewalMilliseconds`,
+    );
+    const statuses = readUniqueStrings(ownership.statuses, `${path}.ownership.statuses`);
+    if (renewalMilliseconds >= leaseMilliseconds || statuses.length !== 4)
+        throw new TypeError("compensation ownership settings are inconsistent");
     const artifacts = readObject(compensation.artifacts, ["recordSchema"], `${path}.artifacts`);
     const errors = readObject(compensation.errors, COMPENSATION_ERROR_KEYS, `${path}.errors`);
     const identity = readObject(
@@ -209,6 +226,15 @@ function readCompensationConfig(
                 limits.maxEffectsPerTrigger,
                 `${path}.limits.maxEffectsPerTrigger`,
             ),
+        },
+        ownership: {
+            claimIdPrefix: readNonEmptyString(
+                ownership.claimIdPrefix,
+                `${path}.ownership.claimIdPrefix`,
+            ),
+            leaseMilliseconds,
+            renewalMilliseconds,
+            statuses,
         },
         outcomes: readFixed("outcomes", 2),
         phases: readFixed("phases", 3),

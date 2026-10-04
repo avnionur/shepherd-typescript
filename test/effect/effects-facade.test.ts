@@ -8,6 +8,7 @@ test("effects facade exposes only effect-owned runtime symbols", () => {
         "EFFECT_COMPENSABLE_TIERS",
         "EFFECT_COMPENSATION_EVIDENCE_KINDS",
         "EFFECT_COMPENSATION_OUTCOMES",
+        "EFFECT_COMPENSATION_OWNERSHIP_STATUSES",
         "EFFECT_COMPENSATION_PHASES",
         "EFFECT_COMPENSATION_STATUSES",
         "EFFECT_COMPENSATION_TRIGGERS",
@@ -24,6 +25,7 @@ test("effects facade exposes only effect-owned runtime symbols", () => {
         "createTypedEffectHandler",
         "deriveEffectCompensationId",
         "inspectEffectCompensation",
+        "inspectEffectCompensationOwnership",
         "validateEffectCorrelation",
     ]);
     for (const excluded of [

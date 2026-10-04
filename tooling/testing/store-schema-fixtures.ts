@@ -1,9 +1,15 @@
 import { cpSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
-
+import {
+    createCompensationAttemptBody,
+    createCompensationIntentBody,
+} from "../../src/effect/compensation-records.ts";
 import {
     claimScopeWriter,
+    createEffectIntent,
+    createEffectOutcome,
+    deriveEffectCompensationId,
     ORPHAN_REPAIR_VERSIONS,
     openTraceSubscription,
     RETAINED_WORLD_SETTLEMENT_VERSION,
@@ -12,7 +18,12 @@ import {
     type ScopeResourceGrant,
     SQLiteTraceStore,
 } from "../../src/index.ts";
-import { kernelProtocolConfig, projectionProtocolConfig } from "../../src/protocol/config.ts";
+import {
+    effectProtocolConfig,
+    kernelProtocolConfig,
+    projectionProtocolConfig,
+} from "../../src/protocol/config.ts";
+import type { RecordBody } from "../../src/record/types.ts";
 import { STORE_TABLES } from "../../src/store/constants.ts";
 import { migrateTraceStore } from "../../src/store/migrations.ts";
 
@@ -29,6 +40,7 @@ export type StoreSchemaFixture = {
 /** Store feature first introduced by a schema migration, keyed by that migration's version. */
 const FEATURE_VERSIONS = Object.freeze({
     blobs: 2,
+    compensationClaims: 14,
     cuts: 3,
     durableClaims: 4,
     orphanOperations: 8,
@@ -226,5 +238,71 @@ export function populateStoreForSchema(store: SQLiteTraceStore, schemaVersion: n
             owners: [RUN_OWNER],
             subscriptionId: "subscription:migration-drill",
         }).close();
+    }
+    if (schemaVersion >= FEATURE_VERSIONS.compensationClaims) {
+        const compensationId = deriveEffectCompensationId(createdRecordId);
+        const intent = createEffectIntent({
+            effectId: "effect:migration-drill",
+            kind: "fixture",
+            payload: null,
+            reversibility: "compensable",
+        });
+        const body = createCompensationIntentBody(
+            compensationId,
+            { kind: "replay_step", record_id: createdRecordId },
+            intent,
+            createEffectOutcome(intent, { ok: true, value: null }),
+        );
+        const opened = store.appendEffectCompensationRecord(compensationId, null, {
+            append_intent_id: "migration-drill:compensation-intent",
+            batch: {
+                groups: [
+                    {
+                        owner_id: compensationId,
+                        records: [
+                            {
+                                body: body as unknown as RecordBody,
+                                caused_by_record_ids: [createdRecordId],
+                                mode: "capture",
+                                schema_ref: effectProtocolConfig.compensation.traceSchema,
+                                witness_ref: ROOT_WITNESS_ID,
+                            },
+                        ],
+                    },
+                ],
+            },
+        });
+        if (opened.status === "head_moved")
+            throw new Error("fresh migration fixture has a compensation head");
+        const head = opened.receipt.record_ids[0] as string;
+        const attempt = createCompensationAttemptBody(compensationId, 1, "fixture", {
+            kind: "command",
+            command_id: "migration-drill",
+        });
+        store.claimEffectCompensationAttempt(
+            compensationId,
+            head,
+            { claimId: "claim:migration-drill-compensation", fencingToken: 1 },
+            0,
+            {
+                append_intent_id: "migration-drill:compensation-attempt",
+                batch: {
+                    groups: [
+                        {
+                            owner_id: compensationId,
+                            records: [
+                                {
+                                    body: attempt as unknown as RecordBody,
+                                    caused_by_record_ids: [head],
+                                    mode: "capture",
+                                    schema_ref: effectProtocolConfig.compensation.traceSchema,
+                                    witness_ref: ROOT_WITNESS_ID,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+        );
     }
 }

@@ -385,12 +385,16 @@
                 {
                     "entry": "./effects",
                     "symbol": "createEffectCompensationRegistry"
+                },
+                {
+                    "entry": "./effects",
+                    "symbol": "inspectEffectCompensationOwnership"
                 }
             ],
             "dimensions": {
                 "api": "Supported: per-kind handlers and retained compensation intent/attempt/outcome evidence.",
                 "composition": "Branches retaining their source do not compensate; abandoning branches and scope discard compensate recorded successful compensable materializations.",
-                "recovery": "Partial: uncertain attempts can invoke the same handler key again; idempotency remains the handler obligation. No durable attempt ownership or audited reconciliation yet.",
+                "recovery": "Durable attempt ownership serializes active invocations; expired or replaced holders cannot publish outcomes. SIGKILL recovery retains the materialization key. External idempotency remains required; imported stores do not coordinate leases. Audited reconciliation remains outstanding.",
                 "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
                 "performance": "No performance result claimed by this row.",
                 "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
@@ -403,7 +407,7 @@
                 },
                 {
                     "path": "test/faults/compensation-kill.test.ts",
-                    "sha256": "60b22a3e20316f02c5e1578528f370fffa4c03c88e8cf29a0ee3793ebe15db95"
+                    "sha256": "9df57b0f8d25c1beba918fce7dbc644798ce102d3aa9773b120392c73c322659"
                 },
                 {
                     "path": "test/replay/replay-source-disposition.test.ts",
@@ -411,13 +415,14 @@
                 },
                 {
                     "path": "docs/compensation.md",
-                    "sha256": "1807af571ef08be1653092c08720682b8cac15da5e2c6107857af48e1d03bb0a"
+                    "sha256": "a687fa6c5e1b9b9d849a1279ec40e79cbf1f4c33ecf5da698081012c0cffe65f"
+                },
+                {
+                    "path": "test/effect/compensation-ownership.test.ts",
+                    "sha256": "a0fc4c83db0f3d087a065fa6e23bab9f0036e94865ea17ac5bb1f2924e71f181"
                 }
             ],
-            "issues": [
-                "https://github.com/avnionur/shepherd-typescript/issues/240",
-                "https://github.com/avnionur/shepherd-typescript/issues/241"
-            ]
+            "issues": ["https://github.com/avnionur/shepherd-typescript/issues/241"]
         },
         {
             "id": "scopes",
@@ -885,7 +890,7 @@
                 },
                 {
                     "path": "test/operations/backup-restore.test.ts",
-                    "sha256": "b758b2435e64bd4ac5d7b7a99ec2ede17af201e4631e0bf58a8c05901a648bb1"
+                    "sha256": "28e6a47b73d9438a66bf3632e6adc4195e43eb89725ea3fdf3d75d7fdb3d23b9"
                 },
                 {
                     "path": "test/operations/migration-drills.test.ts",

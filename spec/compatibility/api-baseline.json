@@ -328,6 +328,7 @@
             "EFFECT_COMPENSABLE_TIERS": {"digest":"sha256:024229e78f10fd0481a7f4d212e12df56e83f89398e4a44517131c3c6de23de9","kind":"variable"},
             "EFFECT_COMPENSATION_EVIDENCE_KINDS": {"digest":"sha256:3c7b0af03920e4fd3121e7503769955eac9cc2abf6f6f58347fbca214763a660","kind":"variable"},
             "EFFECT_COMPENSATION_OUTCOMES": {"digest":"sha256:449b818e2a90ccee7beb3170e77db94ead02944f2d72cbebadfc486a8e86b002","kind":"variable"},
+            "EFFECT_COMPENSATION_OWNERSHIP_STATUSES": {"digest":"sha256:d7146c5b290868a0394d21f6095fecb4a00df330423005cb6dfb09438c25d592","kind":"variable"},
             "EFFECT_COMPENSATION_PHASES": {"digest":"sha256:80d9b7597fbfb6ef7e31e6ef9bc9e10627f58431a24220fb298fa11ee37f6cad","kind":"variable"},
             "EFFECT_COMPENSATION_STATUSES": {"digest":"sha256:5475927e21090138a43d4a17cc9340bb8ee29b5c8608ea4901801a29294a69e5","kind":"variable"},
             "EFFECT_COMPENSATION_TRIGGERS": {"digest":"sha256:21c0ee1d6c2c9a10be232f31e2d67a3f343465dff0858e62379b2f011ddaed56","kind":"variable"},
@@ -341,9 +342,10 @@
             "EffectCompensationHandlerNotFoundError": {"digest":"sha256:d40525a3db717ac171bc9b65337c4bcf205a18daab2a567b83e61a3e5f9f20f9","kind":"class"},
             "EffectCompensationInspection": {"digest":"sha256:34512f3cd996d7fc021d590f24e308aa62f98b792e5b11d02cb856bd979b9790","kind":"type alias"},
             "EffectCompensationOutcomeStatus": {"digest":"sha256:d91d837dc960e6439c3b45cb0dec9439df027b625f16035461c8486442440bfc","kind":"type alias"},
+            "EffectCompensationOwnershipInspection": {"digest":"sha256:a6170fc27eb3c463d1d2e31fc1d05e9c163da8fc4e54350c5fc3ec7e54fa9db7","kind":"type alias"},
             "EffectCompensationReceipt": {"digest":"sha256:b956c2310db0ea3351ab0bb11e5d522585f809d277894683e776c78978e5c257","kind":"type alias"},
             "EffectCompensationRegistry": {"digest":"sha256:e7d2b85bfc764ac532e3f98caef89731df17c8e1730bc8fe112a14e1da5e8b57","kind":"type alias"},
-            "EffectCompensationRequest": {"digest":"sha256:c72c4caa22d6257b1a32599dc062194675a73f79057062fed3f31002b3770946","kind":"type alias"},
+            "EffectCompensationRequest": {"digest":"sha256:14f394afbf79b3f9476f03ff84a7333f8030b74f6fcb826829d3201f89721b96","kind":"type alias"},
             "EffectCompensationStatus": {"digest":"sha256:ee1f21cf6ac0268c7ad05de54a0816d464b5cd1a6457324a65908502b240126a","kind":"type alias"},
             "EffectCompensationTrigger": {"digest":"sha256:8600153658b96d7c7959c283e6cc97523d2762cda079884844d4c8c43e754657","kind":"type alias"},
             "EffectCompensationTriggerKind": {"digest":"sha256:183b8574b0a7e50c5a65a5c5a1e661cfa62c27c10cc9cc9f1259faeb31b0e350","kind":"type alias"},
@@ -1353,6 +1355,7 @@
             "inspectCounterfactualOptimization": {"digest":"sha256:5c4b393d22630e47aef0a45bb4b0cb1bfa29e33053f64ba896f0cbd5a67ad914","kind":"function"},
             "inspectDurableTaskExecution": {"digest":"sha256:7a41bb568e2e4c155ae5b666f8e1007ceb01f5f4c3556a85b5561bfe2d1abb17","kind":"function"},
             "inspectEffectCompensation": {"digest":"sha256:e019db3891e7f9b86df7a3763d2522930d619984e48211515e1e9d6f4ebb7f4c","kind":"function"},
+            "inspectEffectCompensationOwnership": {"digest":"sha256:d222cfbdd9335888d9983f3d30a8267acacab24b9fc34490290645a23109cea1","kind":"function"},
             "inspectLocalNativeJailBackend": {"digest":"sha256:472ab0c92c9e2fd0f9d6ffa9793db174d8da618e55143a2f496802a346f0c130","kind":"function"},
             "inspectLocalPlacementPlatformEvidence": {"digest":"sha256:d27f178dcdfc6286d8eb61dcb5d3c9d304bf7d59a8fceaaac599d6c07cf522fb","kind":"function"},
             "inspectReplayBranchRequest": {"digest":"sha256:5e31eab43768577039da56de304408a733725fff01ab89255d6a3d5e9cd615ee","kind":"function"},
@@ -1869,6 +1872,7 @@
             "EFFECT_COMPENSABLE_TIERS": {"digest":"sha256:024229e78f10fd0481a7f4d212e12df56e83f89398e4a44517131c3c6de23de9","kind":"variable"},
             "EFFECT_COMPENSATION_EVIDENCE_KINDS": {"digest":"sha256:3c7b0af03920e4fd3121e7503769955eac9cc2abf6f6f58347fbca214763a660","kind":"variable"},
             "EFFECT_COMPENSATION_OUTCOMES": {"digest":"sha256:449b818e2a90ccee7beb3170e77db94ead02944f2d72cbebadfc486a8e86b002","kind":"variable"},
+            "EFFECT_COMPENSATION_OWNERSHIP_STATUSES": {"digest":"sha256:d7146c5b290868a0394d21f6095fecb4a00df330423005cb6dfb09438c25d592","kind":"variable"},
             "EFFECT_COMPENSATION_PHASES": {"digest":"sha256:80d9b7597fbfb6ef7e31e6ef9bc9e10627f58431a24220fb298fa11ee37f6cad","kind":"variable"},
             "EFFECT_COMPENSATION_STATUSES": {"digest":"sha256:5475927e21090138a43d4a17cc9340bb8ee29b5c8608ea4901801a29294a69e5","kind":"variable"},
             "EFFECT_COMPENSATION_TRIGGERS": {"digest":"sha256:21c0ee1d6c2c9a10be232f31e2d67a3f343465dff0858e62379b2f011ddaed56","kind":"variable"},
@@ -1880,9 +1884,10 @@
             "EffectCompensationHandlerNotFoundError": {"digest":"sha256:d40525a3db717ac171bc9b65337c4bcf205a18daab2a567b83e61a3e5f9f20f9","kind":"class"},
             "EffectCompensationInspection": {"digest":"sha256:34512f3cd996d7fc021d590f24e308aa62f98b792e5b11d02cb856bd979b9790","kind":"type alias"},
             "EffectCompensationOutcomeStatus": {"digest":"sha256:d91d837dc960e6439c3b45cb0dec9439df027b625f16035461c8486442440bfc","kind":"type alias"},
+            "EffectCompensationOwnershipInspection": {"digest":"sha256:a6170fc27eb3c463d1d2e31fc1d05e9c163da8fc4e54350c5fc3ec7e54fa9db7","kind":"type alias"},
             "EffectCompensationReceipt": {"digest":"sha256:b956c2310db0ea3351ab0bb11e5d522585f809d277894683e776c78978e5c257","kind":"type alias"},
             "EffectCompensationRegistry": {"digest":"sha256:e7d2b85bfc764ac532e3f98caef89731df17c8e1730bc8fe112a14e1da5e8b57","kind":"type alias"},
-            "EffectCompensationRequest": {"digest":"sha256:c72c4caa22d6257b1a32599dc062194675a73f79057062fed3f31002b3770946","kind":"type alias"},
+            "EffectCompensationRequest": {"digest":"sha256:14f394afbf79b3f9476f03ff84a7333f8030b74f6fcb826829d3201f89721b96","kind":"type alias"},
             "EffectCompensationStatus": {"digest":"sha256:ee1f21cf6ac0268c7ad05de54a0816d464b5cd1a6457324a65908502b240126a","kind":"type alias"},
             "EffectCompensationTrigger": {"digest":"sha256:8600153658b96d7c7959c283e6cc97523d2762cda079884844d4c8c43e754657","kind":"type alias"},
             "EffectCompensationTriggerKind": {"digest":"sha256:183b8574b0a7e50c5a65a5c5a1e661cfa62c27c10cc9cc9f1259faeb31b0e350","kind":"type alias"},
@@ -1909,6 +1914,7 @@
             "createTypedEffectHandler": {"digest":"sha256:e0f0aafdc1e1bb190f8a5b80f1d881d9924458a884e8bae0d9770f0222f037c1","kind":"function"},
             "deriveEffectCompensationId": {"digest":"sha256:ae9d0bd9998206ad3642192b46c55e35106069c25395afe42c526a73f934a48d","kind":"function"},
             "inspectEffectCompensation": {"digest":"sha256:e019db3891e7f9b86df7a3763d2522930d619984e48211515e1e9d6f4ebb7f4c","kind":"function"},
+            "inspectEffectCompensationOwnership": {"digest":"sha256:d222cfbdd9335888d9983f3d30a8267acacab24b9fc34490290645a23109cea1","kind":"function"},
             "validateEffectCorrelation": {"digest":"sha256:56e606631b4d7a05e1e1b666e088a9d83cacc4346ed0a7605ed171a4ff558cd1","kind":"function"}
         },
         "./operations": {
@@ -2873,6 +2879,6 @@
             "selectRetainedWorldSettlement": {"digest":"sha256:2e4cadd824902afb6b200a6b858a1a52414a3ff94d5078de3a668baa696e541c","kind":"function"}
         }
     },
-    "packageVersion": "13.2.0",
-    "previousVersion": "13.1.0"
+    "packageVersion": "13.3.0",
+    "previousVersion": "13.2.0"
 }

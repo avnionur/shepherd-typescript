@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { SemanticValue } from "../canonical/canonical-record.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import { effectProtocolConfig } from "../protocol/config.ts";
@@ -18,8 +19,9 @@ import {
     readScopeArray,
     readScopeDataObject,
 } from "../scope/validation.ts";
+import type { CompensationFence } from "../store/compensation-claims.ts";
 import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
-import type { OwnerRecord } from "../store/types.ts";
+import type { OwnerRecord, StoreAppendRequest } from "../store/types.ts";
 import {
     EffectCompensationConflictError,
     EffectCompensationEvidenceError,
@@ -41,6 +43,7 @@ import type {
     EffectCompensationAttemptInspection,
     EffectCompensationHandler,
     EffectCompensationInspection,
+    EffectCompensationOwnershipInspection,
     EffectCompensationReceipt,
     EffectCompensationRegistry,
     EffectCompensationTrigger,
@@ -177,6 +180,49 @@ export function inspectEffectCompensation(
 }
 
 /**
+ * Inspects immutable compensation evidence alongside current store-local invocation ownership.
+ * An imported trace has no live ownership row; absence never proves an external effect is safe to repeat.
+ * @param store - Open trace store, including read-only stores.
+ * @param options - Exact compensation identity.
+ * @returns Record-derived state and a separately classified live lease snapshot.
+ * @throws {EffectCompensationEvidenceError} If records or ownership disagree.
+ * @throws {TypeError} If the identity is malformed.
+ * @throws {TraceStoreError} If the store is closed or inspection races a writer.
+ */
+export function inspectEffectCompensationOwnership(
+    store: SQLiteTraceStore,
+    options: InspectEffectCompensationOptions,
+): EffectCompensationOwnershipInspection {
+    const compensation = inspectEffectCompensation(store, options);
+    const claim = store.readEffectCompensationClaim(compensation.compensation_id);
+    const after = inspectEffectCompensation(store, options);
+    if (
+        compensation.head_record_id !== after.head_record_id ||
+        (claim !== undefined && claim.attempt_record_id !== compensation.attempts.at(-1)?.record_id)
+    ) {
+        throw new EffectCompensationEvidenceError(
+            "compensation ownership changed during inspection or differs from latest attempt",
+        );
+    }
+    const [absent, active, expired, released] = config.ownership.statuses;
+    return Object.freeze({
+        compensation,
+        ownership: Object.freeze({
+            claim_id: claim?.claim_id ?? null,
+            fencing_token: claim?.fencing_token ?? null,
+            lease_expires_at: claim?.lease_expires_at ?? null,
+            status: (claim === undefined
+                ? absent
+                : claim.released
+                  ? released
+                  : claim.lease_expires_at <= Date.now()
+                    ? expired
+                    : active) as EffectCompensationOwnershipInspection["ownership"]["status"],
+        }),
+    });
+}
+
+/**
  * Compensates explicitly named materialized effects in reverse order under one command.
  *
  * Each record must retain a successful materialization of a compensable effect: a live or
@@ -185,7 +231,7 @@ export function inspectEffectCompensation(
  * already compensated by a discard, a branch, or an earlier command is never compensated again.
  * The compensation intent is retained before the first attempt, each attempt before its handler
  * runs, and each outcome after it returns. A handler that throws leaves its attempt uncertain and
- * the error propagates; the next trigger invokes the handler again under the same idempotency key.
+ * the error propagates; after ownership releases or expires, the next trigger uses the same key.
  *
  * @param store - Open writable trace store.
  * @param options - Command identity, materialization records in materialization order, registry.
@@ -197,7 +243,7 @@ export function inspectEffectCompensation(
  * @throws {EffectCompensationFailedError} After every effect was attempted, if a handler returned
  *   a failure result.
  * @throws {EffectCompensationConflictError} If another compensator advanced the same path
- *   concurrently.
+ *   concurrently, owns an active lease, or fences this expired/replaced holder.
  * @throws {TypeError} If options are malformed.
  * @throws Handler failures propagate unchanged.
  *
@@ -348,6 +394,10 @@ async function compensateOne(
     }
     const handler = registry.resolve(effect.intent.kind) as EffectCompensationHandler;
     const attempt = inspection.attempts.length + 1;
+    const fence = Object.freeze({
+        claimId: config.ownership.claimIdPrefix + randomUUID(),
+        fencingToken: attempt,
+    });
     const attemptRecordId = appendCompensationRecord(
         store,
         compensationId,
@@ -355,31 +405,58 @@ async function compensateOne(
         [inspection.head_record_id],
         store.readOwner(compensationId).length,
         createCompensationAttemptBody(compensationId, attempt, handler.handlerId, trigger),
+        fence,
     );
-    const result = readEffectResult(
-        await handler.compensate(
-            Object.freeze({
-                attempt,
-                compensationId,
-                idempotencyKey: compensationId,
-                intent: inspection.effect_intent,
-                outcome: inspection.effect_outcome,
-                trigger: Object.freeze({ ...trigger }),
-            }),
-        ),
-    );
-    appendCompensationRecord(
-        store,
-        compensationId,
-        attemptRecordId,
-        [attemptRecordId],
-        store.readOwner(compensationId).length,
-        createCompensationOutcomeBody(
+    let heartbeatFailure: unknown;
+    const heartbeat = setInterval(() => {
+        try {
+            store.renewEffectCompensationClaim(compensationId, fence, Date.now());
+        } catch (error) {
+            heartbeatFailure = error;
+            clearInterval(heartbeat);
+        }
+    }, config.ownership.renewalMilliseconds);
+    heartbeat.unref();
+    try {
+        // Admission is durable before entering the handler; recheck just before invocation.
+        store.renewEffectCompensationClaim(compensationId, fence, Date.now());
+        const result = readEffectResult(
+            await handler.compensate(
+                Object.freeze({
+                    attempt,
+                    compensationId,
+                    idempotencyKey: compensationId,
+                    claimId: fence.claimId,
+                    fencingToken: fence.fencingToken,
+                    intent: inspection.effect_intent,
+                    outcome: inspection.effect_outcome,
+                    trigger: Object.freeze({ ...trigger }),
+                }),
+            ),
+        );
+        if (heartbeatFailure !== undefined) throw heartbeatFailure;
+        appendCompensationRecord(
+            store,
             compensationId,
-            attempt,
-            createCanonicalSnapshot(result) as EffectResult<SemanticValue, SemanticValue>,
-        ),
-    );
+            attemptRecordId,
+            [attemptRecordId],
+            store.readOwner(compensationId).length,
+            createCompensationOutcomeBody(
+                compensationId,
+                attempt,
+                createCanonicalSnapshot(result) as EffectResult<SemanticValue, SemanticValue>,
+            ),
+            fence,
+        );
+    } finally {
+        clearInterval(heartbeat);
+        // A release failure leaves the durable lease to expire; it must not replace a handler error.
+        try {
+            store.releaseEffectCompensationClaim(compensationId, fence);
+        } catch {
+            /* Expiry remains the recovery boundary. */
+        }
+    }
     return foldCompensation(
         compensationId,
         store.readOwner(compensationId),
@@ -393,8 +470,9 @@ function appendCompensationRecord(
     causes: readonly RecordId[],
     ordinal: number,
     body: EffectCompensationRecordBody,
+    fence?: CompensationFence,
 ): RecordId {
-    const appended = store.appendEffectCompensationRecord(compensationId, expectedHeadRecordId, {
+    const request: StoreAppendRequest = {
         append_intent_id: createCompensationAppendIntentId(body, ordinal),
         batch: {
             groups: [
@@ -412,7 +490,25 @@ function appendCompensationRecord(
                 },
             ],
         },
-    });
+    };
+    if (fence !== undefined) {
+        const receipt =
+            body.phase === ATTEMPT_PHASE
+                ? store.claimEffectCompensationAttempt(
+                      compensationId,
+                      expectedHeadRecordId as RecordId,
+                      fence,
+                      Date.now(),
+                      request,
+                  )
+                : store.appendEffectCompensationOutcome(compensationId, fence, Date.now(), request);
+        return receipt.record_ids[0] as RecordId;
+    }
+    const appended = store.appendEffectCompensationRecord(
+        compensationId,
+        expectedHeadRecordId,
+        request,
+    );
     if (appended.status === "head_moved") {
         throw new EffectCompensationConflictError(compensationId);
     }

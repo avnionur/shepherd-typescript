@@ -283,6 +283,18 @@ const migrations: readonly Migration[] = [
                 );
         `,
     },
+    {
+        version: 14,
+        createSql: () => `CREATE TABLE ${STORE_TABLES.compensationClaims} (
+            compensation_id TEXT PRIMARY KEY CHECK (compensation_id <> ''),
+            attempt_record_id TEXT NOT NULL,
+            claim_id TEXT NOT NULL CHECK (claim_id <> ''),
+            fencing_token INTEGER NOT NULL CHECK (fencing_token > 0),
+            lease_expires_at INTEGER NOT NULL CHECK (lease_expires_at >= 0),
+            released INTEGER NOT NULL CHECK (released IN (0, 1)),
+            FOREIGN KEY (attempt_record_id) REFERENCES ${STORE_TABLES.records}(record_id)
+        ) STRICT;`,
+    },
 ];
 
 /**

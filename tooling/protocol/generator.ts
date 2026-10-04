@@ -2555,6 +2555,9 @@ ${renderConstStrings("EFFECT_COMPENSATION_OUTCOMES", config.effects.compensation
 /** Configured derived compensation statuses ordered pending, uncertain, failed, compensated. @public */
 ${renderConstStrings("EFFECT_COMPENSATION_STATUSES", config.effects.compensation.statuses)}
 
+/** Configured store-local compensation ownership classifications. @public */
+${renderConstStrings("EFFECT_COMPENSATION_OWNERSHIP_STATUSES", config.effects.compensation.ownership.statuses)}
+
 /** Configured compensation triggers ordered scope discard, replay rewind, replay replay, command. @public */
 ${renderConstStrings("EFFECT_COMPENSATION_TRIGGERS", config.effects.compensation.triggers)}
 

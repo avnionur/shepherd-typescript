@@ -4013,3 +4013,27 @@ export const WORKSPACE_PROTOCOL_V28_CONTRACT = deepFreeze({
         },
     },
 } as const);
+
+/** Store v14 retains compensation invocation ownership without changing trace record bytes. */
+export const KERNEL_ABI_V0_STORE_V14_CONTRACT = deepFreeze({
+    ...KERNEL_ABI_V0_STORE_V13_CONTRACT,
+    migrations: [
+        ...KERNEL_ABI_V0_STORE_V13_CONTRACT.migrations,
+        { firstOwnerOrdinal: 0, lastOwnerOrdinal: 9_007_199_254_740_990, version: 14 },
+    ],
+    schemaVersion: 14,
+} as const);
+
+/** Effect protocol v3 adds configured exclusive compensation invocation leases. */
+export const EFFECT_PROTOCOL_V3_CONTRACT = deepFreeze({
+    ...EFFECT_PROTOCOL_V2_CONTRACT,
+    compensation: {
+        ...EFFECT_PROTOCOL_V2_CONTRACT.compensation,
+        ownership: {
+            claimIdPrefix: "compensation-claim:",
+            leaseMilliseconds: 30_000,
+            renewalMilliseconds: 10_000,
+            statuses: ["absent", "active", "expired", "released"],
+        },
+    },
+} as const);
