@@ -2,11 +2,15 @@
 
 Last updated: 2026-10-04
 
-Current version: `13.5.0`
+Current version: `13.6.0`
 
 Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
 ## Current position
+
+Owner-requested #278 extends the Pi observatory with pre-auth catalog, masked key setup and
+Pi-native private persistence, configured Ollama, arrow-key panning and recoverable canvas clearing; [preservation](./278-pi-settings-preservation.md). MINOR 13.6.0.
+Full verification passed: 1,402 tests, two intentional skips, 100% configured coverage; build/sync and24 focused example tests passed. Browser canvas/reset and real local Ollama generation passed in isolated stores.
 
 Standalone owner-requested #275: Pi chat and canonical node-observability example under
 `examples/pi-observatory/`, with [engineering guide](../docs/pi-observatory.md) and

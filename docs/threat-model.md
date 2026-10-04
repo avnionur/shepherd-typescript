@@ -232,6 +232,15 @@ privilege. Paths are repository-relative.
 | D, T | An admitted body reader continues after shutdown closes SQLite | Admission rechecked after body consumption; shutdown destroys admitted HTTP connections, waits for server close and owned invocation cleanup before closing the store | Same suite (shutdown closes an admitted unfinished request); F-033 fixed |
 | T, R | Disposable graph invents causes or read APIs change canonical evidence | Exact canonical parent IDs only; separate RPC-observation owner; canonical reads/export and no browser recovery authority | Same suite (graph parents, repeated-read archive byte identity and reopen) |
 
+Credential setup (#278) adds a masked input and an idle-only same-origin/token-protected endpoint.
+Keys pass through bounded stdin to the isolated SDK helper, then Pi-native locked private auth
+storage. Raw credentials never enter argv, browser storage, canonical records or returned catalogs;
+expression-shaped input is rejected before native resolution. Connection choices persist separately,
+and failed restored live mode falls offline. Evidence: `examples/pi-observatory/test/connection.test.mjs`
+(real SDK dummy save/reopen, permissions, expression refusal, CSRF and trace preservation).
+Optional dependencies have a separate pinned lock and script-disabled installation; no root runtime
+or build allowlist expansion. Private plaintext storage and single-user hosting remain limits.
+
 This is an unauthenticated single-user example with disposable content, not a server deployment
 profile. Local OS users can reach loopback; config/Pi executable and its inherited environment
 are trusted. Default disabled tools/extensions are not a jail. Pi descendants and abrupt host

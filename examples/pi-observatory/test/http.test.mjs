@@ -8,6 +8,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
+import { SQLiteTraceStore } from "@avnionur/shepherd-typescript/trace";
 
 const directory = fileURLToPath(new URL("../", import.meta.url));
 const template = JSON.parse(await readFile(path.join(directory, "config.json"), "utf8"));
@@ -361,4 +362,36 @@ test("explicit unavailable model fails startup rather than selecting a different
         () => launch(context, "success", undefined, { providerModel: "missing" }),
         /unavailable or ambiguous/,
     );
+});
+
+test("new trace clears state, preserves old archive and restores the fresh database after restart", async (context) => {
+    const server = await launch(context);
+    const initial = await (await fetch(server.url + "/api/state")).json();
+    const headers = { Origin: server.url, "x-settings-token": initial.settings.setup.csrf };
+    assert.equal((await post(server.url, "/api/new-trace", {})).status, 403);
+    assert.equal(
+        (await post(server.url, "/api/new-trace", { database: "bad" }, headers)).status,
+        400,
+    );
+    await post(server.url, "/api/chat", { text: "retained before rotation" });
+    assert.equal((await post(server.url, "/api/new-trace", {}, headers)).status, 409);
+    await waitForIdle(server.url);
+    const archive = await (await fetch(server.url + "/api/export")).text();
+    assert.equal((await post(server.url, "/api/new-trace", {}, headers)).status, 200);
+    const fresh = await (await fetch(server.url + "/api/state")).json();
+    assert.equal(fresh.nodes.length, 0);
+    assert.equal(fresh.messages.length, 0);
+    assert.notEqual(fresh.traceIdentity, initial.traceIdentity);
+    assert.deepEqual(fresh.settings.defaultModel, initial.settings.defaultModel);
+    await server.stop();
+    const reopened = await launch(context, undefined, server.temporary);
+    assert.equal(
+        (await (await fetch(reopened.url + "/api/state")).json()).traceIdentity,
+        fresh.traceIdentity,
+    );
+    assert.equal((await (await fetch(reopened.url + "/api/state")).json()).nodes.length, 0);
+    // Read the original immutable archive through its public store facade.
+    const original = new SQLiteTraceStore(server.configuration.database);
+    assert.equal(original.exportTrace(), archive);
+    original.close();
 });

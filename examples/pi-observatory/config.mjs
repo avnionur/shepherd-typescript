@@ -1,13 +1,53 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { schema } from "@avnionur/shepherd-typescript/tasks";
 
 /** Read a closed configuration; paths resolve against the configuration file, never the browser. */
 export function readConfiguration(filename) {
     const text = schema.string();
     const integer = schema.integer();
+    const input = JSON.parse(readFileSync(filename, "utf8"));
+    const defaults = JSON.parse(readFileSync(new URL("./config.json", import.meta.url), "utf8"));
     const value = schema
         .object({
+            connection: schema.object({
+                command: text,
+                helperScript: text,
+                cliScript: text,
+                expectedVersion: text,
+                agentDirectory: text,
+                agentDirectoryEnvironment: text,
+                selectionFile: text,
+                maxKeyBytes: integer,
+                maxOutputBytes: integer,
+                localProviders: schema.array(
+                    schema.object({
+                        id: text,
+                        name: text,
+                        discoveryUrl: text,
+                        showUrl: text,
+                        baseUrl: text,
+                        api: text,
+                        placeholderKey: text,
+                        cloudLabel: text,
+                        compat: schema.object({ maxTokensField: text }),
+                        modelDefaults: schema.object({
+                            reasoning: schema.boolean(),
+                            input: schema.array(text),
+                            cost: schema.object({
+                                input: schema.number(),
+                                output: schema.number(),
+                                cacheRead: schema.number(),
+                                cacheWrite: schema.number(),
+                            }),
+                            contextWindow: integer,
+                            maxTokens: integer,
+                        }),
+                    }),
+                ),
+            }),
+            traceSelectionFile: text,
             title: text,
             mode: schema.enum(["offline", "pi"]),
             host: text,
@@ -73,6 +113,7 @@ export function readConfiguration(filename) {
                 recordDescriptions: schema.array(
                     schema.object({ schema: text, title: text, description: text }),
                 ),
+                panStepPixels: integer,
                 highlightMilliseconds: integer,
                 edgeAnimationMilliseconds: integer,
                 playbackStepMilliseconds: integer,
@@ -89,7 +130,15 @@ export function readConfiguration(filename) {
             ),
             budget: schema.object({ maxTurns: integer, maxDurationMilliseconds: integer }),
         })
-        .parse(JSON.parse(readFileSync(filename, "utf8")));
+        .parse({
+            ...input,
+            traceSelectionFile: input.traceSelectionFile ?? defaults.traceSelectionFile,
+            display: {
+                ...input.display,
+                panStepPixels: input.display?.panStepPixels ?? defaults.display.panStepPixels,
+            },
+            connection: { ...defaults.connection, ...input.connection },
+        });
     if (value.host !== "127.0.0.1" || value.port < 0 || value.port > 65535) {
         throw new TypeError("This example requires IPv4 loopback and a valid port");
     }
@@ -97,6 +146,7 @@ export function readConfiguration(filename) {
         Object.values(value.limits).some((limit) => limit <= 0) ||
         value.limits.maxRuns > 100 ||
         [
+            value.display.panStepPixels,
             value.display.highlightMilliseconds,
             value.display.edgeAnimationMilliseconds,
             value.display.playbackStepMilliseconds,
@@ -130,10 +180,26 @@ export function readConfiguration(filename) {
     ) {
         throw new TypeError("Playground items require distinct IDs, bounded text and delay");
     }
+    if (
+        value.connection.maxKeyBytes <= 0 ||
+        value.connection.maxOutputBytes <= 0 ||
+        path.basename(value.connection.selectionFile) !== value.connection.selectionFile ||
+        path.basename(value.traceSelectionFile) !== value.traceSelectionFile
+    )
+        throw new TypeError("Invalid connection configuration");
+    const exampleDirectory = fileURLToPath(new URL("./", import.meta.url));
     const directory = path.dirname(path.resolve(filename));
     return {
         ...value,
         database: path.resolve(directory, value.database),
+        connection: {
+            ...value.connection,
+            args: [path.resolve(exampleDirectory, value.connection.helperScript)],
+            cwd: exampleDirectory,
+            rpcCommand: value.connection.command,
+            rpcArgs: [path.resolve(exampleDirectory, value.connection.cliScript)],
+            agentDirectory: path.resolve(directory, value.connection.agentDirectory),
+        },
         pi: { ...value.pi, cwd: path.resolve(directory, value.pi.cwd) },
     };
 }

@@ -169,6 +169,46 @@
                 "title": "RPC observation",
                 "description": "Retains the source event type and sequence, citing the invocation record. This is an observation, not governed tool execution."
             }
+        ],
+        "panStepPixels": 48
+    },
+    "connection": {
+        "command": "node",
+        "helperScript": "sdk/helper.mjs",
+        "cliScript": "sdk/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js",
+        "expectedVersion": "1.0.0",
+        "agentDirectory": "pi-state",
+        "agentDirectoryEnvironment": "PI_CODING_AGENT_DIR",
+        "selectionFile": "connection.json",
+        "maxKeyBytes": 8192,
+        "maxOutputBytes": 4194304,
+        "localProviders": [
+            {
+                "id": "ollama",
+                "name": "Ollama",
+                "discoveryUrl": "http://127.0.0.1:11434/api/tags",
+                "baseUrl": "http://127.0.0.1:11434/v1",
+                "api": "openai-completions",
+                "placeholderKey": "ollama",
+                "cloudLabel": " (Ollama cloud)",
+                "compat": {
+                    "maxTokensField": "max_tokens"
+                },
+                "modelDefaults": {
+                    "reasoning": false,
+                    "input": ["text"],
+                    "cost": {
+                        "input": 0,
+                        "output": 0,
+                        "cacheRead": 0,
+                        "cacheWrite": 0
+                    },
+                    "contextWindow": 4096,
+                    "maxTokens": 1024
+                },
+                "showUrl": "http://127.0.0.1:11434/api/show"
+            }
         ]
-    }
+    },
+    "traceSelectionFile": "trace-selection.json"
 }

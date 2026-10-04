@@ -66,30 +66,90 @@ Paths resolve relative to the configuration file. The exact version is checked b
 opens. An unavailable or mismatched executable, missing configured model availability, or malformed
 catalog fails startup. See [CLI flags](https://github.com/earendil-works/pi/blob/200387122ca450d6387f033949423114a270b96c/packages/coding-agent/docs/cli.md).
 
-## Provider and model settings
+## Provider, model and API-key setup (13.6.0)
 
-Pi mode queries `get_available_models` on a separate read-only RPC session at startup. Provider
-options are derived from returned provider IDs; model options use that provider's exact IDs and
-names. The browser receives only `provider`, `id`, and `name`: full Pi models can carry credential
-headers and endpoints, so they are never returned. The catalog is cached configured availability,
-not a fresh credential, network, account-entitlement or provider-readiness check.
-Primary sources: [model RPC commands](https://github.com/earendil-works/pi/blob/200387122ca450d6387f033949423114a270b96c/packages/coding-agent/docs/rpc-commands.md#model),
-[catalog and selection handler](https://github.com/earendil-works/pi/blob/200387122ca450d6387f033949423114a270b96c/packages/coding-agent/src/modes/rpc/rpc-mode.ts#L470),
-[model fields](https://github.com/earendil-works/pi/blob/200387122ca450d6387f033949423114a270b96c/packages/ai/src/types.ts#L1098).
+The previous offline-only preview exposed one fixture and required out-of-band authentication.
+Install the optional helper separately, with lifecycle scripts disabled:
 
-Select Provider and Model while idle. The choice applies to the next ordinary or playground turn,
-is remembered as two non-secret IDs in browser local storage, and is validated against the
-server's startup catalog. Reload after changing Pi's authentication/catalog configuration. The
-server chooses `provider.model` as its initial ID or provider/ID pair when present, otherwise the
-first available catalog model only when the setting is `null`. An unavailable or ambiguous explicit
-selection fails startup; use a provider/ID pair when an ID exists under multiple providers. Offline mode exposes only its configured fixture identity.
+```sh
+npm ci --prefix examples/pi-observatory/sdk --ignore-scripts
+```
 
-Each fresh Pi invocation first sends `set_model` with the exact provider and `modelId`, awaits the
-matching successful acknowledgement and verifies the returned identity, then sends the prompt.
-Concurrent asynchronous RPC command handling makes sending both requests at once incorrect.
-Selection is retained in the task input and provider descriptor (`provider/model`); it does not
-rewrite historical runs or Pi's persisted defaults. Switching models does not start a provider call
-until a chat/playground submission. Credentials remain in Pi's server-side auth/environment.
+Select **Pi · live provider**, Provider and Model, then enter a key in the masked field and press
+**Save key & connect**. Keys clear from the input after submission. Connection mode/selection
+persist on the server independently of credentials; browser local storage holds only non-secret
+provider/model preferences. **Refresh providers** retries after helper installation or a setup
+failure. Failed saved connections open offline, and explicit offline selection survives restart.
+Existing external configured RPC still works without the optional helper.
+
+The isolated helper pins Pi SDK **1.0.0**, released 2026-10-01 and eligible for the two-day gate.
+The relevant auth/model/RPC contracts are identical to researched 1.0.2, whose Oct4 release is
+not admitted by that gate. Root runtime dependencies remain unchanged; the nested lockfile owns
+all optional SDK dependencies and no lifecycle/build scripts are enabled.
+[1.0.0 source](https://github.com/earendil-works/pi/tree/a13d35a742c6ef8462812a28fbe1d8c8b7431c32),
+[comparison](https://github.com/earendil-works/pi/compare/a13d35a742c6ef8462812a28fbe1d8c8b7431c32...200387122ca450d6387f033949423114a270b96c).
+
+Pi RPC/CLI cannot write keys through stdin or discover the initial full catalog. The SDK's public
+`ModelRuntime.create({allowModelNetwork:false,refreshOnCreate:false})`, `getProviders()` and
+`getModels()` discover native/configured models before authentication. Only provider id/name,
+API-key capability, stored-entry status and model provider/id/name reach the browser; headers,
+endpoints and raw credential objects are withheld. Availability is not entitlement or live
+credential validation. Native `listCredentials()` enumerates metadata without resolving secrets.
+[Runtime API](https://github.com/earendil-works/pi/blob/a13d35a742c6ef8462812a28fbe1d8c8b7431c32/packages/coding-agent/src/core/model-runtime.ts).
+
+The helper receives bounded JSON on stdin and saves via native `login(provider,"api_key",interaction)`.
+Only a single secret prompt is supported; multi-prompt/ambient/OAuth providers use a separate
+Pi login flow. Pi owns lock/merge/permissions and preserves other providers. The configured agent
+directory is passed to both helper and bundled RPC through `PI_CODING_AGENT_DIR`, so authentication
+and catalog agree. Existing global Pi files are untouched. Native new directories/files use
+0700/0600; unsafe existing modes/symlinks are refused. This is plaintext private file storage,
+not encryption/keychain storage. The loopback app remains single-user, without tenant isolation.
+[Native storage](https://github.com/earendil-works/pi/blob/a13d35a742c6ef8462812a28fbe1d8c8b7431c32/packages/coding-agent/src/core/auth-storage.ts).
+
+Pi key values can be configuration expressions. This form treats keys as literal data and refuses
+leading `!`, dollar expressions, control/newline characters and oversized values before persistence.
+It never executes submitted key text. Settings POST requires exact Origin and a per-process token;
+setup and chat are serialized while idle. Save/activation errors do not become canonical run events.
+A committed key whose synchronization/activation fails is reported as saved but not connected.
+[Expression semantics](https://github.com/earendil-works/pi/blob/a13d35a742c6ef8462812a28fbe1d8c8b7431c32/packages/coding-agent/src/core/resolve-config-value.ts).
+
+Each fresh RPC invocation selects the exact catalog provider/model and awaits its acknowledgement
+before prompting. Switching dropdowns or saving a key makes no model-generation request.
+Selected identity remains retained in task input/provider evidence. Real credential validity,
+billing and model access require a separately authorized actual provider call.
+
+## Local Ollama and canvas controls
+
+The supplied `connection.localProviders` declaration adds **Ollama** using its loopback tags
+catalog and OpenAI-compatible `/v1` endpoint. Install the optional SDK, start Ollama with a
+completion model already installed, select Pi → Ollama → Model, and **Connect local model**.
+No API key is needed for the local server. **Refresh providers** discovers new installed models.
+The example does not download models or make generation calls during discovery or connection.
+Cloud-tagged entries are labeled; they may require Ollama cloud authentication/usage.
+
+The helper queries configured `/api/tags`, and `/api/show` when optional capabilities are absent,
+within a shared configured deadline and response/model bounds. Embedding-only models are omitted.
+It writes only the configured local provider entries in its private `models.json`, preserving
+unrelated custom providers; failed discovery removes stale owned entries. This custom catalog is
+loaded by the same native Pi runtime and RPC process. Conservative text-only context/output
+limits, compatibility flags, endpoints and placeholder auth value live in configuration; catalog
+discovery does not prove a model's reasoning, vision, actual context size, entitlement or billing.
+Primary sources: [tags](https://docs.ollama.com/api/tags), [show](https://docs.ollama.com/api/show),
+[OpenAI compatibility](https://docs.ollama.com/api/openai-compatibility).
+
+Click the canvas or Tab to it, then use **arrow keys** to pan by `display.panStepPixels`.
+Arrow panning turns off Live follow so incoming nodes cannot move the camera back.
+Typing/navigation in chat fields and settings keeps its normal behavior; node Enter/Space selection
+still works. Drag, zoom and Fit remain available.
+
+**Clear canvas / new trace** starts an empty conversation and canvas while idle. It resets graph
+selection, filters, playback and highlights; it preserves provider/model/key settings. The server
+creates an adjacent uniquely named SQLite file and atomically writes a private filename pointer
+(`traceSelectionFile`) beside the original configured database. Restart reopens that selected file.
+The previous database is never truncated or deleted. Export first for convenient archive recovery.
+To inspect an older database, stop the server and use a separate configuration pointing at that
+file with a different unused `traceSelectionFile`; retain the files and original pointer. Missing
+selected databases and unsafe pointer files fail closed. Each new trace has its own run capacity.
 
 ## Architecture and ownership
 
@@ -188,8 +248,8 @@ prefix. `public/graph.mjs` and `test/graph.test.mjs` test traversal and live-obs
 `config.json` is the complete closed schema example. `limits` controls messages/requests, transcript
 length, run capacity, RPC line/event/reply bounds, process and shutdown deadlines, and polling.
 `budget` controls Shepherd's invocation count and total duration. `task`, `provider`, run-prefix,
-observation schema/owner suffix and offline behavior are config-owned. Browser HTTP never accepts
-executable, arguments, filesystem paths, model names or credentials.
+observation schema/owner suffix and offline behavior are config-owned. Browser HTTP never accepts executable, arguments or filesystem paths. Settings accepts only
+exact discovered model IDs and a bounded key submitted to native server-side storage.
 
 | Route | Result |
 | --- | --- |
@@ -197,6 +257,8 @@ executable, arguments, filesystem paths, model names or credentials.
 | `GET /api/state` | Retained messages, run status/usage/cuts, graph nodes/parents and current preview. |
 | `POST /api/chat` | `{text}` or configured `{itemId}`, with optional exact catalog `model`; 202 plus exact run ID; 400 invalid/oversized text, 409 concurrent/capacity refusal. |
 | `POST /api/cancel` | Exact `{runId}`; 202 cancellation request, 409 stale identity. |
+| `POST /api/connection` | Same-origin token and idle-only native setup, refresh, or offline selection; no model generation. |
+| `POST /api/new-trace` | Same-origin token, empty object, idle-only adjacent database rotation; previous evidence retained. |
 | `GET /api/export` | Full native trace archive; includes retained prompts/replies. |
 
 POST requires `application/json`; oversized bodies return 413, wrong content type 415. Host and
@@ -204,7 +266,7 @@ Origin must match the bound IPv4 loopback origin; cross-site writes and DNS-rebi
 refused. This is a single-user local example, without authentication or multi-tenant isolation. Other local OS users can reach the loopback
 listener; run on a trusted single-user host with disposable content.
 Use a dedicated database and one server process. At `maxRuns`, export the evidence and configure
-a fresh database rather than deleting records. Historical run discovery is bounded and sorts its
+**Clear canvas / new trace** rather than deleting records. Historical run discovery is bounded and sorts its
 example-generated identities for conversation display; canonical graph order remains owner-local.
 
 ## Recovery and safety boundary
@@ -231,8 +293,7 @@ The full-window workspace uses the available height for the canvas and a bounded
 The panel explains each record type and reports the selected run's actual provider, task identity,
 budget, retained usage and cut. These views derive values from canonical evidence; configuration
 owns explanatory text. No chat text is injected as HTML: DOM `textContent` and SVG text nodes render provider output.
-No provider credentials are sent to the browser; diagnostic output is sanitized. Pi settings/auth
-files are outside this example's persistence contract.
+No provider credentials are sent to the browser; diagnostic output is sanitized. Configured external Pi settings/auth files remain Pi-owned; the optional helper uses the dedicated private directory described above.
 
 ## Verification and extension guide
 
@@ -269,7 +330,7 @@ HTTP/process tests. For larger graphs, replace the display layout while preservi
 explicit parent edges, external anchors and authority boundaries. For remote hosting, add explicit
 user authentication/authorization, request-level budgets, tenant storage and an actual process jail.
 
-## Recorded local evidence (2026-10-04, 13.4.0)
+## Recorded local evidence (2026-10-04, initial 13.4.0 release)
 
 Node 24.17.0 / macOS arm64: full `pnpm verify` exit 0 (1,378 passed, two intentional skips,
 zero failures, 100% configured core/tooling coverage), version synchronization and production build
@@ -279,3 +340,26 @@ responsive layout and provider/model selection against a clearly labeled RPC fix
 nested-test context failure was reproduced and fixed; the final wrapper requires tests actually run.
 The internal standards/spec reviews have no unresolved blockers. No credentialed Pi/model,
 Windows/Linux browser or independent billing evidence is claimed.
+
+The 13.6.0 native setup suite uses only isolated dummy keys. It proves pre-auth discovery,
+locked private save/reopen with sibling providers preserved, expression refusal, HTTP CSRF/identity
+admission, trace/export byte preservation, connection restart and offline recovery. Run it after
+installing the optional SDK:
+
+```sh
+node --test examples/pi-observatory/test/connection.test.mjs
+```
+
+Ordinary example conformance remains runnable without the helper. The root test wrapper also runs
+native setup conformance when the optional SDK is installed, and diagnoses its absence explicitly.
+No real credentialed generation is inferred from dummy-key tests.
+
+
+Final 13.6.0 local evidence: Node24.17.0/macOS arm64 `pnpm verify` passed (1,402 passed,
+two intentional skips, zero failures, 100% configured coverage); synchronization and production
+build passed. The focused example suite passed24 tests including native SDK and Ollama discovery.
+Browser smoke measured48px arrow panning, ordinary textarea arrow behavior, clear→zero chat/nodes,
+reset inspector, live-follow disengagement, and an external RPC fixture model retained alongside
+the installed SDK catalog. A real already-installed local `qwen2.5-coder:0.5b` turn through Pi1.0.0
+finished with `OK`, 567 input/1 output tokens and23 retained records in an isolated test database.
+No cloud-tagged generation or model download was used, and no real user credential was inspected.

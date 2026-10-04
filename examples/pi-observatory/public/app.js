@@ -3,6 +3,7 @@ import { createLiveFlowTracker, orderCausalNodes } from "./graph.mjs";
 const $ = (id) => document.getElementById(id);
 const svgNS = "http://www.w3.org/2000/svg";
 let state;
+let traceIdentity;
 let selected;
 let scale = 0.8;
 let offset = { x: 30, y: 45 };
@@ -18,6 +19,8 @@ let playbackTimer;
 let playbackQueue = [];
 let playbackPosition = 0;
 let chosenModel;
+let chosenMode;
+let savingConnection = false;
 let settingsKey = "";
 let cameraTarget;
 let followTarget;
@@ -46,49 +49,146 @@ async function post(url, body) {
     if (!response.ok) throw new Error(value.error);
     return value;
 }
+function connectionModels() {
+    if (chosenMode !== "pi") return state.settings.models;
+    const candidates = [
+        ...state.settings.setup.models,
+        ...(state.mode === "pi" ? state.settings.models : []),
+    ];
+    return [
+        ...new Map(
+            candidates.map((model) => [JSON.stringify([model.provider, model.id]), model]),
+        ).values(),
+    ];
+}
 function renderSettings() {
-    const key = JSON.stringify(state.settings);
+    chosenMode ??= state.mode;
+    const setup = state.settings.setup;
+    const models = connectionModels();
+    const providers = [
+        ...new Map([
+            ...(chosenMode === "pi"
+                ? setup.providers.map((provider) => [provider.id, provider])
+                : []),
+            ...[...new Set(models.map((model) => model.provider))].map((id) => [
+                id,
+                (chosenMode === "pi"
+                    ? setup.providers.find((provider) => provider.id === id)
+                    : undefined) ?? { id, name: id },
+            ]),
+        ]).values(),
+    ];
+    const key = JSON.stringify([chosenMode, models, providers]);
     if (key !== settingsKey) {
         settingsKey = key;
         let saved;
         try {
             saved = JSON.parse(localStorage.getItem(state.display.settingsStorageKey));
         } catch {
-            /* Storage is optional. */
+            /* Optional preference. */
         }
         chosenModel =
-            state.settings.models.find(
-                (model) => model.provider === saved?.provider && model.id === saved?.id,
+            models.find(
+                (model) => model.provider === chosenModel?.provider && model.id === chosenModel?.id,
             ) ??
-            state.settings.models.find(
+            models.find((model) => model.provider === saved?.provider && model.id === saved?.id) ??
+            models.find(
                 (model) =>
                     model.provider === state.settings.defaultModel.provider &&
                     model.id === state.settings.defaultModel.id,
-            );
+            ) ??
+            models[0];
         $("provider-select").replaceChildren(
-            ...[...new Set(state.settings.models.map((model) => model.provider))]
-                .sort()
-                .map((provider) => new Option(provider, provider)),
+            ...providers.map((provider) => {
+                const option = new Option(
+                    provider.name + (provider.available === false ? " · unavailable" : ""),
+                    provider.id,
+                );
+                option.disabled = !models.some((model) => model.provider === provider.id);
+                option.title = provider.error ?? "";
+                return option;
+            }),
         );
     }
-    $("provider-select").value = chosenModel.provider;
-    const models = state.settings.models.filter((model) => model.provider === chosenModel.provider);
-    const modelKey = JSON.stringify(models);
+    $("connection-mode").value = chosenMode;
+    const providerModels = models.filter((model) => model.provider === chosenModel?.provider);
+    $("provider-select").value = chosenModel?.provider ?? "";
+    const modelKey = JSON.stringify(providerModels);
     if ($("model-select").dataset.models !== modelKey) {
         $("model-select").replaceChildren(
-            ...models.map((model) => new Option(model.name, model.id)),
+            ...providerModels.map((model) => new Option(`${model.name} · ${model.id}`, model.id)),
         );
         $("model-select").dataset.models = modelKey;
     }
-    $("model-select").value = chosenModel.id;
-    $("provider-select").disabled = Boolean(state.active) || state.settings.models.length < 2;
-    $("model-select").disabled = Boolean(state.active) || models.length < 2;
+    $("model-select").value = chosenModel?.id ?? "";
+    const busy = Boolean(state.active) || state.settings.busy || savingConnection;
+    $("connection-mode").disabled = busy;
+    $("provider-select").disabled = busy || !models.length;
+    $("model-select").disabled = busy || !providerModels.length;
+    $("key-settings").hidden = chosenMode !== "pi";
+    $("use-offline").hidden = chosenMode !== "offline" || state.mode === "offline";
+    $("use-offline").disabled = busy;
+    const provider = providers.find((candidate) => candidate.id === chosenModel?.provider);
+    $("api-key").disabled = busy || !provider?.apiKey;
+    $("refresh-setup").disabled = busy;
+    $("save-connection").disabled = busy || !setup.available || !chosenModel;
+    $("save-connection").textContent = provider?.local
+        ? "Connect local model"
+        : "Save key & connect";
+    $("credential-status").textContent = provider?.local
+        ? `${provider.name} local server; no API key required. Cloud-tagged models may require service authentication.`
+        : provider?.stored
+          ? "A key/auth entry is stored locally. Provider validity is checked when you send a message."
+          : provider?.apiKey
+            ? "Enter a key, or connect using existing Pi authentication."
+            : "This provider needs a separate login flow. Existing Pi authentication can be used.";
+    $("credential-storage").textContent = setup.storage;
     $("model-note").textContent =
-        state.mode === "offline"
-            ? "Synthetic offline fixture; no model calls."
-            : "Pi catalog choices · next turn uses this model. Provider usage may incur cost.";
+        chosenMode === "offline"
+            ? "Synthetic offline fixture. Select Pi above to configure a real provider."
+            : !setup.available
+              ? setup.error
+              : state.mode !== "pi"
+                ? "Choose a provider/model and Save key & connect before chatting."
+                : "Pi configured · model calls may incur provider usage.";
+}
+async function configureConnection(mode) {
+    savingConnection = true;
+    renderSettings();
+    const key = $("api-key").value;
+    $("api-key").value = "";
+    try {
+        const response = await fetch("/api/connection", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-settings-token": state.settings.setup.csrf,
+            },
+            body: JSON.stringify(
+                ["offline", "refresh"].includes(mode)
+                    ? { mode }
+                    : {
+                          mode,
+                          model: { provider: chosenModel.provider, id: chosenModel.id },
+                          ...(key ? { apiKey: key } : {}),
+                      },
+            ),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+        if (mode !== "refresh") chosenMode = result.mode;
+        settingsKey = "";
+        await refresh();
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        savingConnection = false;
+        render();
+    }
 }
 async function submitChat(body) {
+    if (chosenMode !== state.mode || !chosenModel)
+        throw new Error("Connect the selected mode before sending a message.");
     return post("/api/chat", {
         ...body,
         model: { provider: chosenModel.provider, id: chosenModel.id },
@@ -330,12 +430,38 @@ function renderGraph() {
     transform();
 }
 function render() {
+    if (traceIdentity !== state.traceIdentity) {
+        traceIdentity = state.traceIdentity;
+        stopPlayback();
+        selected = undefined;
+        flowTracker = undefined;
+        activeIds = new Set();
+        followTarget = undefined;
+        cameraTarget = undefined;
+        previousGraph = "";
+        previousMessages = "";
+        $("inspection").replaceChildren();
+        $("selected-source").textContent = "SELECT A NODE";
+        $("search").value = "";
+        $("prompt").value = "";
+        $("source-filter").value = "";
+        $("run-filter").value = "";
+        offset = { x: 30, y: 45 };
+    }
+    $("new-trace").disabled =
+        Boolean(state.active) || state.settings.busy || savingConnection || state.fatal;
     document.title = state.title;
     renderSettings();
     renderRunOverview();
     $("mode").textContent = state.mode === "offline" ? "Offline fixture" : "Pi RPC";
     $("record-count").textContent = `${state.nodes.length} RECORDS`;
-    $("send").disabled = Boolean(state.active) || state.capacityReached || state.fatal;
+    $("send").disabled =
+        Boolean(state.active) ||
+        state.capacityReached ||
+        state.fatal ||
+        state.settings.busy ||
+        savingConnection ||
+        chosenMode !== state.mode;
     $("stop").hidden = !state.active;
     $("chat-status").textContent = state.fatal
         ? "Inspect / restart"
@@ -346,6 +472,9 @@ function render() {
             : "Ready";
     const playgroundKey = JSON.stringify([
         state.playground,
+        savingConnection,
+        state.settings.busy,
+        chosenMode,
         state.active?.runId,
         state.capacityReached,
         state.fatal,
@@ -363,7 +492,13 @@ function render() {
             description.textContent = item.description;
             button.append(title, description);
             button.disabled =
-                !item.enabled || Boolean(state.active) || state.capacityReached || state.fatal;
+                !item.enabled ||
+                Boolean(state.active) ||
+                state.capacityReached ||
+                state.fatal ||
+                state.settings.busy ||
+                savingConnection ||
+                chosenMode !== state.mode;
             button.addEventListener("click", async () => {
                 button.disabled = true;
                 try {
@@ -394,8 +529,8 @@ function render() {
             article.append(role, document.createTextNode(message.text));
             fragment.append(article);
         }
+        $("messages").replaceChildren(fragment);
         if (messages.length) {
-            $("messages").replaceChildren(fragment);
             $("messages").scrollTop = $("messages").scrollHeight;
         }
     }
@@ -432,7 +567,7 @@ async function refresh() {
         const response = await fetch("/api/state", { cache: "no-store" });
         if (!response.ok) throw new Error("Could not read trace evidence");
         state = await response.json();
-        $("error").hidden = true;
+
         render();
     } catch (error) {
         showError(error.message);
@@ -526,6 +661,7 @@ $("fit").addEventListener("click", () => {
 });
 $("canvas").addEventListener("pointerdown", (event) => {
     if (event.target.closest(".node")) return;
+    $("canvas").focus({ preventScroll: true });
     drag = { x: event.clientX - offset.x, y: event.clientY - offset.y };
     $("canvas").setPointerCapture(event.pointerId);
 });
@@ -541,23 +677,30 @@ $("canvas").addEventListener("pointerup", () => {
 $("canvas").addEventListener("pointercancel", () => {
     drag = null;
 });
+$("connection-mode").addEventListener("change", () => {
+    chosenMode = $("connection-mode").value;
+    $("api-key").value = "";
+    settingsKey = "";
+    render();
+});
 $("provider-select").addEventListener("change", () => {
-    chosenModel = state.settings.models.find(
-        (model) => model.provider === $("provider-select").value,
-    );
+    const models = connectionModels();
+    chosenModel = models.find((model) => model.provider === $("provider-select").value);
+    $("api-key").value = "";
     try {
         localStorage.setItem(
             state.display.settingsStorageKey,
             JSON.stringify({ provider: chosenModel.provider, id: chosenModel.id }),
         );
     } catch {
-        /* Storage is optional. */
+        /* Optional preference. */
     }
     renderSettings();
 });
 $("model-select").addEventListener("change", () => {
+    const models = connectionModels();
     const provider = chosenModel.provider;
-    chosenModel = state.settings.models.find(
+    chosenModel = models.find(
         (model) => model.provider === provider && model.id === $("model-select").value,
     );
     try {
@@ -566,8 +709,47 @@ $("model-select").addEventListener("change", () => {
             JSON.stringify({ provider: chosenModel.provider, id: chosenModel.id }),
         );
     } catch {
-        /* Storage is optional. */
+        /* Optional preference. */
     }
     renderSettings();
 });
+$("save-connection").addEventListener("click", () => configureConnection("pi"));
+$("refresh-setup").addEventListener("click", () => configureConnection("refresh"));
+$("use-offline").addEventListener("click", () => configureConnection("offline"));
 await refresh();
+
+$("new-trace").addEventListener("click", async () => {
+    $("new-trace").disabled = true;
+    try {
+        const response = await fetch("/api/new-trace", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-settings-token": state.settings.setup.csrf,
+            },
+            body: "{}",
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+        $("error").hidden = true;
+        await refresh();
+    } catch (error) {
+        showError(error.message);
+    }
+});
+
+$("canvas").addEventListener("keydown", (event) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const direction = {
+        ArrowLeft: [-1, 0],
+        ArrowRight: [1, 0],
+        ArrowUp: [0, -1],
+        ArrowDown: [0, 1],
+    }[event.key];
+    if (!direction) return;
+    event.preventDefault();
+    const distance = state.display.panStepPixels;
+    offset = { x: offset.x + direction[0] * distance, y: offset.y + direction[1] * distance };
+    $("live-follow").checked = false;
+    transform();
+});

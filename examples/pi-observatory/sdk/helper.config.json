@@ -1,0 +1,10 @@
+{
+    "maxInputBytes": 16384,
+    "maxKeyBytes": 8192,
+    "maxModels": 8192,
+    "agentDirectoryEnvironment": "PI_CODING_AGENT_DIR",
+    "loopbackHosts": ["127.0.0.1", "localhost", "[::1]"],
+    "discoveryMilliseconds": 3000,
+    "maxDiscoveryBytes": 1048576,
+    "maxLocalModels": 128
+}

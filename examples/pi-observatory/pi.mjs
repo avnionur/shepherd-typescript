@@ -6,6 +6,7 @@ export async function checkPi(config) {
     await new Promise((resolve, reject) => {
         const child = spawn(config.pi.command, config.pi.versionArgs, {
             cwd: config.pi.cwd,
+            env: { ...process.env, ...config.pi.environment },
             shell: false,
             stdio: ["ignore", "pipe", "ignore"],
         });
@@ -41,6 +42,7 @@ function runRpc(config, signal, timeoutMilliseconds, initial, handle) {
     return new Promise((resolve, reject) => {
         const child = spawn(config.pi.command, config.pi.args, {
             cwd: config.pi.cwd,
+            env: { ...process.env, ...config.pi.environment },
             shell: false,
             stdio: ["pipe", "pipe", "ignore"],
         });

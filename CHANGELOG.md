@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.6.0] - 2026-10-04
+
+### New Feature
+
+- Pi observatory now offers live/offline connection setup, provider/model discovery before login,
+  a masked API-key form, native private Pi key storage and persisted connection selection (#278).
+- Add configured Ollama discovery/custom catalogs, arrow-key canvas panning and recoverable
+  Clear canvas / new trace rotation that retains prior databases and provider settings.
+- Add an optional isolated Pi SDK 1.0.0 helper and reviewed lockfile; scripts stay disabled and the
+  two-day release-age gate is respected. No root runtime dependency is added.
+
+### Defect Fixes
+
+- Preserve configured external RPC choices without the optional helper; failed saved connections
+  recover in offline mode with refresh/reconnect controls. Reject secret configuration expressions,
+  guard settings writes with same-origin tokens and keep keys out of traces, responses and argv.
+
+### Impact
+
+Additive MINOR setup capability. Existing chat/graph/playground/RPC behavior remains available.
+Credentials use Pi-native locked owner-private plaintext files, not browser storage or an OS keychain.
+Authentication/model entitlement is checked by the provider on a model call; saving is not a live
+validation claim. Single-user loopback and unsupported OAuth/multi-prompt login limits remain explicit.
+
 ## [13.5.0] - 2026-10-04
 
 ### New Feature
