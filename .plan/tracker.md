@@ -2,11 +2,20 @@
 
 Last updated: 2026-10-04
 
-Current version: `13.1.0`
+Current version: `13.4.0`
 
 Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
 ## Current position
+
+Standalone owner-requested #275: Pi chat and canonical node-observability example under
+`examples/pi-observatory/`, with [engineering guide](../docs/pi-observatory.md) and
+[preservation matrix](./pi-example-preservation.md). Additive MINOR 13.4.0, with configured
+playground, animated live-follow/causal playback, provider/model selection and full-window canvas.
+Verified: 1,378 passed, two intentional skips, zero failures, 100% configured coverage and installed-package gates.
+Source and freshly installed example suites: 18 passed each. Version sync, desktop build, browser
+smoke and internal reviews passed. Fixtures do not claim credentialed Pi execution or governed-provider work.
+Delivery is tracked in #275; unrelated existing checkout changes remain untouched.
 
 Active follow-up: [epic #235](https://github.com/avnionur/shepherd-typescript/issues/235),
 31 issues in dependency order, P1 first. #236 shipped through PR #271 (12.0.2),

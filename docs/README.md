@@ -5,6 +5,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 
 ## Guides
 
+- [Pi chat and node observability engineering guide](./pi-observatory.md) covers the standalone
+  example, pinned primary-source research, RPC lifecycle, canonical graph semantics and verification.
+
 - [Retained-world operation journal](./world-effect-journal.md) defines automatic capability
   intent/admission/outcome evidence, exact resource authority, redacted content, cancellation,
   interruption and read-only inspection through `inspectTaskWorldEffects`.

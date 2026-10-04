@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.4.0] - 2026-10-04
+
+### New Feature
+
+- Add `examples/pi-observatory`: local browser chat, configured Pi RPC subprocess integration,
+  offline fixture mode and an interactive canonical Shepherd evidence graph with record inspection,
+  run/source/search filters, zoom/pan, animated dashed causal arrows, live-follow camera,
+  causal trace playback, provider/model catalog selectors, a window-filling canvas with
+  task/budget/usage/cut explanations, native trace export and configuration-owned one-click
+  playground cases for success, failure, cancellation, context and literal-text rendering (#275).
+- Publish the engineering guide with pinned Pi/AppGraph research, RPC settlement and cleanup,
+  graph authority, configuration, privacy, recovery and extension limits. Real HTTP/subprocess
+  fixtures exercise durable evidence, framing, cancellation, failures and read-only export.
+
+### Impact
+
+Additive MINOR example capability. Pi is optional and externally installed; no core runtime,
+public API, protocol, dependency or storage-format change. Default Pi tools/extensions are disabled.
+RPC observations are separate from governed effects; no credentialed live, jail, provider-checkpoint,
+replay or cross-platform guarantee is claimed.
+
 ## [13.3.0] - 2026-10-04
 
 ### New Feature

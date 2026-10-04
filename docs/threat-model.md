@@ -24,7 +24,8 @@ mitigation and test is a residual risk with a register finding.
 ## Scope and assumptions
 
 - Shepherd TypeScript is an in-process library and a local CLI (`shepherd-ts`). It opens no network
-  listener. Its only outbound network client is the live provider adapter (`createLiveProvider`,
+  listener. The optional [Pi observatory example](./pi-observatory.md) separately opens an
+  opt-in loopback listener (B13); it is outside the core library/CLI hosting contract. Its only outbound network client is the live provider adapter (`createLiveProvider`,
   [live providers](./live-providers.md)), which sends requests only when the caller constructs one,
   to the kind's configured HTTPS endpoint (`providers.live.kinds.*.endpoint`) or a caller-supplied
   endpoint, with a credential taken from the caller or the configured environment variable.
@@ -72,6 +73,7 @@ mitigation and test is a residual risk with a register finding.
 | B9 | Git executable (`src/workspace/git-aware-custody.ts`, `bindings.ts`, `initialization.ts`) | Repository contents and configuration, `PATH` |
 | B10 | Build and release supply chain (`pnpm-lock.yaml`, `tooling/release/`, `tooling/compatibility/`, `.github/workflows/release.yml`) | Registry packages, build host, release consumers |
 | B11 | Live provider transport and credentials (`src/provider/live-provider.ts`, `src/provider/live-dialects.ts`) | Network path, provider endpoint, HTTP status and response body |
+| B13 | Optional Pi observatory HTTP/browser/RPC example (`examples/pi-observatory/`) | HTTP input, model text, subprocess output; configuration/executable are trusted operator authority |
 | B12 | Container CLI device layer (`src/workspace/device-layer-container.ts`) | Container CLI output, world contents inside the container |
 
 ## STRIDE per boundary
@@ -219,6 +221,23 @@ privilege. Paths are repository-relative.
 | D | Unbounded CLI output or a hung CLI | Every command has `workspaces.deviceLayers.commandTimeoutMs` and output is bounded by `commandMaxBytes` | Opt-in container conformance; residual: the default lane has no container daemon, so these paths are exercised only by the opt-in run and the device-layer benchmark |
 | T | Unexpected list output is read as world files | List output must match the configured `listLinePattern`, otherwise `DeviceLayerError` | `test/workspace/device-layer.test.ts` ("container adapter templates and list output are rendered and parsed exactly") |
 | E | The container daemon grants root-equivalent host access | Out of the runtime's control: access to the daemon socket is trusted host configuration, like the OS | Accepted residual (below) |
+
+### B13 optional Pi observatory example
+
+| STRIDE | Threat | Mitigation | Test |
+| --- | --- | --- | --- |
+| S, E | Cross-site or rebinding request triggers a configured process | IPv4 loopback only; Host/Origin admission; closed `{text}`/`{itemId}` HTTP input; executable/argv/paths come only from trusted config; models come from a sanitized Pi catalog with exact browser selection; `shell:false` | `examples/pi-observatory/test/http.test.mjs` (HTTP bounds, content type and host admission; offline origin refusal) |
+| T, D | Invalid/large/hung RPC output accepted as a successful response | Exact executable version; UTF-8/LF framing, reply/line/event bounds, settlement plus measured usage, process-close evidence and bounded kill; no automatic retry | Same suite (Pi framing, failure, retry, timeout and cancellation cases) |
+| I, E | Model text executes HTML or subprocess diagnostics disclose credentials | DOM/SVG text nodes, same-origin CSP; stderr withheld and generic retained failures; model catalog whitelists provider/id/name and drops headers/endpoints; browser never receives provider environment or trusted argv | Same suite (literal-text response, refused diagnostic absence; provider/model catalog whitelist and exact selection); repeatable browser smoke in `docs/pi-observatory.md` |
+| D, T | An admitted body reader continues after shutdown closes SQLite | Admission rechecked after body consumption; shutdown destroys admitted HTTP connections, waits for server close and owned invocation cleanup before closing the store | Same suite (shutdown closes an admitted unfinished request); F-033 fixed |
+| T, R | Disposable graph invents causes or read APIs change canonical evidence | Exact canonical parent IDs only; separate RPC-observation owner; canonical reads/export and no browser recovery authority | Same suite (graph parents, repeated-read archive byte identity and reopen) |
+
+This is an unauthenticated single-user example with disposable content, not a server deployment
+profile. Local OS users can reach loopback; config/Pi executable and its inherited environment
+are trusted. Default disabled tools/extensions are not a jail. Pi descendants and abrupt host
+kills have no process-group containment guarantee. Plaintext prompts/replies and native exports
+are intentionally available to the local browser; do not use sensitive content on a shared host.
+Credentialed live and cross-platform evidence remain outside the fixture result.
 
 ## Residual risks
 
