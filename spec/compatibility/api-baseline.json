@@ -847,7 +847,7 @@
             "SCOPE_WORLD_CAPABILITIES": {"digest":"sha256:82649ef1a3aa3c97d65c941588d174bea963da432da7d4c51d151245019f9808","kind":"variable"},
             "SECRET_SCANNING_MODES": {"digest":"sha256:c1f5041abe2f39bc739bc7ea46d172407ef6beada6b30a36d06ac2158ad390e7","kind":"variable"},
             "SQLiteStorageCoordinator": {"digest":"sha256:dc03191bb45a74102fa88be89cb966ac73ecc553ac75ce835b695c6cd12b0b69","kind":"type alias"},
-            "SQLiteTaskRegistry": {"digest":"sha256:c0b71ee60c4406b48aebbf883ad7715f2ac0ccb908dff515e81ec12ba9934f26","kind":"class"},
+            "SQLiteTaskRegistry": {"digest":"sha256:ee8159631e40824b13dc3043998cc50f3485d7363b2471d958e95d4e3657f74c","kind":"class"},
             "SQLiteTaskRegistryOptions": {"digest":"sha256:60752aef493309e0f0a13c87638e4ed57901676bb39f55b61fc6de789a13efa9","kind":"type alias"},
             "SQLiteTraceStore": {"digest":"sha256:80af497e61be297717e1ca7e1aeae2a47134f7f05ce98156985eea99adf22126","kind":"class"},
             "SQLiteTraceStoreOptions": {"digest":"sha256:cef7b440105cce38df090ebaf124e8f58e1a31c622668b5c4ba823360c88cf2c","kind":"type alias"},
@@ -1024,8 +1024,9 @@
             "TaskLedgerEntry": {"digest":"sha256:57d6ac917356895118c4b00aedbcf03f8fb490fae212bf58ae2bebf4b3cbe2c8","kind":"type alias"},
             "TaskLedgerRepositoryGrantEvidence": {"digest":"sha256:fabc4b3236ab2353862f79fe9f7d21df6d496e2bb56d3747b5c3a3d10e855b3c","kind":"type alias"},
             "TaskOptionalSchema": {"digest":"sha256:cb3816623ac98c40f876910ae8d6b786828bcbdb8bda6bc2d2218c3816804e05","kind":"type alias"},
-            "TaskRegistration": {"digest":"sha256:a0f78205f9492b9f276bb84da5a95925a940ccad49069c3328341c355be3de52","kind":"type alias"},
+            "TaskRegistration": {"digest":"sha256:1dcecc56d9be0d1c071b708db1e406733c938fd7ce53f6c339e51c9fc9867cbf","kind":"type alias"},
             "TaskRegistryError": {"digest":"sha256:2b6155e63d05ca37f55d75a69330f42ed0eac3bdf752f7ffde4b0849e951c466","kind":"class"},
+            "TaskRepositoryGrantEvidence": {"digest":"sha256:81205066e7616fc834160a53d4995274bd6d4c1933e12dcbbbd458998c2fcb01","kind":"type alias"},
             "TaskSchema": {"digest":"sha256:37e008678245a20f5dcd6be1d2cb86d44252f0c562f7b6d1debd988aefb3a718","kind":"type alias"},
             "TaskSchemaFactory": {"digest":"sha256:e3c36f36abed6f788b19f15ec4f7dd2487f0ea8d3bafa8e1dffbb6741f73d853","kind":"type alias"},
             "TaskSchemaScalar": {"digest":"sha256:76c866151e09c7cd05dfbab5fc53fcd6c1091b93a92bb5e0dea6bffd0d5b65d6","kind":"type alias"},
@@ -2527,7 +2528,7 @@
             "LedgerSelectorAmbiguousError": {"digest":"sha256:793f6db6da41b2038e48cc0af7014c8bfb1451f0899a4ebf4c0f099ea42bedf0","kind":"class"},
             "LedgerSelectorNotFoundError": {"digest":"sha256:488f8febc2bdc8134388a9324c0269f14767c4811a54246b9ae98e49a5118f20","kind":"class"},
             "OptionalTaskSchemaShapeKeys": {"digest":"sha256:c773c21b2366055bb018e702ebc9504c76406a80b678e39b518a35600f222a08","kind":"type alias"},
-            "SQLiteTaskRegistry": {"digest":"sha256:c0b71ee60c4406b48aebbf883ad7715f2ac0ccb908dff515e81ec12ba9934f26","kind":"class"},
+            "SQLiteTaskRegistry": {"digest":"sha256:ee8159631e40824b13dc3043998cc50f3485d7363b2471d958e95d4e3657f74c","kind":"class"},
             "SQLiteTaskRegistryOptions": {"digest":"sha256:60752aef493309e0f0a13c87638e4ed57901676bb39f55b61fc6de789a13efa9","kind":"type alias"},
             "TaskArtifact": {"digest":"sha256:52f48d74513699857d11ce7ded9906228b4fe2201ae3a97375045898bca4d8c5","kind":"type alias"},
             "TaskArtifactLock": {"digest":"sha256:82f27e206a869e89f973be20551c0a570695444861e39033e3d35edd152083d0","kind":"type alias"},
@@ -2536,8 +2537,9 @@
             "TaskLedgerEntry": {"digest":"sha256:57d6ac917356895118c4b00aedbcf03f8fb490fae212bf58ae2bebf4b3cbe2c8","kind":"type alias"},
             "TaskLedgerRepositoryGrantEvidence": {"digest":"sha256:fabc4b3236ab2353862f79fe9f7d21df6d496e2bb56d3747b5c3a3d10e855b3c","kind":"type alias"},
             "TaskOptionalSchema": {"digest":"sha256:cb3816623ac98c40f876910ae8d6b786828bcbdb8bda6bc2d2218c3816804e05","kind":"type alias"},
-            "TaskRegistration": {"digest":"sha256:a0f78205f9492b9f276bb84da5a95925a940ccad49069c3328341c355be3de52","kind":"type alias"},
+            "TaskRegistration": {"digest":"sha256:1dcecc56d9be0d1c071b708db1e406733c938fd7ce53f6c339e51c9fc9867cbf","kind":"type alias"},
             "TaskRegistryError": {"digest":"sha256:2b6155e63d05ca37f55d75a69330f42ed0eac3bdf752f7ffde4b0849e951c466","kind":"class"},
+            "TaskRepositoryGrantEvidence": {"digest":"sha256:81205066e7616fc834160a53d4995274bd6d4c1933e12dcbbbd458998c2fcb01","kind":"type alias"},
             "TaskSchema": {"digest":"sha256:37e008678245a20f5dcd6be1d2cb86d44252f0c562f7b6d1debd988aefb3a718","kind":"type alias"},
             "TaskSchemaFactory": {"digest":"sha256:e3c36f36abed6f788b19f15ec4f7dd2487f0ea8d3bafa8e1dffbb6741f73d853","kind":"type alias"},
             "TaskSchemaScalar": {"digest":"sha256:76c866151e09c7cd05dfbab5fc53fcd6c1091b93a92bb5e0dea6bffd0d5b65d6","kind":"type alias"},
@@ -2871,6 +2873,6 @@
             "selectRetainedWorldSettlement": {"digest":"sha256:2e4cadd824902afb6b200a6b858a1a52414a3ff94d5078de3a668baa696e541c","kind":"function"}
         }
     },
-    "packageVersion": "13.1.0",
-    "previousVersion": "13.0.0"
+    "packageVersion": "13.2.0",
+    "previousVersion": "13.1.0"
 }

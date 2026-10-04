@@ -1,9 +1,11 @@
 import { DatabaseSync } from "node:sqlite";
-
+import { canonicalizeSemanticValue } from "../canonical/canonical-record.ts";
 import { taskProtocolConfig } from "../protocol/config.ts";
 import { assertSQLiteDefensiveSupport } from "../runtime/sqlite.ts";
 import { execRetryingBusy, rollbackFailedTransaction } from "../runtime/sqlite-transaction.ts";
 import { prepareOwnerOnlyDatabaseFile } from "../store/file-mode.ts";
+import type { RepositoryGrantedTask } from "../workspace/repository-grant-types.ts";
+import { assertRepositoryGrantedTaskHandle } from "../workspace/repository-grants.ts";
 import {
     decodeTaskRegistration,
     readExactTaskReference,
@@ -15,6 +17,7 @@ import {
     TASK_REGISTRY_TRANSACTION_SQL,
 } from "./registry-constants.ts";
 import { TaskRegistryError, TaskVersionConflictError } from "./registry-errors.ts";
+import { decodeRegisteredGrant } from "./registry-grants.ts";
 import {
     migrateTaskRegistry,
     readCurrentTaskRegistrySchemaVersion,
@@ -25,9 +28,11 @@ import type {
     SQLiteTaskRegistryOptions,
     TaskDescriptor,
     TaskRegistration,
+    TaskRepositoryGrantEvidence,
 } from "./types.ts";
 
 type StoredRegistrationRow = {
+    readonly repository_grant_json: string | null;
     readonly artifact_digest: string;
     readonly artifact_json: string;
     readonly artifact_lock_json: string;
@@ -107,8 +112,43 @@ export class SQLiteTaskRegistry implements Disposable {
     register(
         descriptor: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>,
     ): TaskRegistration {
+        return this.#register(descriptor);
+    }
+
+    /**
+     * Atomically registers a task and its authenticated repository declaration.
+     * Equal retries preserve the companion; conflicting or previously ungranted registrations refuse.
+     * @param granted - Package-created exact task and companion from `grantTaskRepositories`.
+     * @returns Verified registration with its immutable declaration evidence.
+     * @throws {TypeError} If the handle is forged.
+     * @throws {TaskVersionConflictError} If this task version already has different content or declarations.
+     * @throws {TaskRegistryError} If closed or retained evidence is corrupt.
+     * @throws {Error} If SQLite cannot commit the atomic registration.
+     * @example
+     * ```ts
+     * registry.registerGranted(grantTaskRepositories({ task: descriptor, grants }));
+     * ```
+     */
+    registerGranted(
+        granted: RepositoryGrantedTask<TaskSchema<unknown>, TaskSchema<unknown>>,
+    ): TaskRegistration {
         this.#assertOpen();
-        const registration = registrationFromDescriptor(descriptor);
+        assertRepositoryGrantedTaskHandle(granted);
+        return this.#register(
+            granted.task,
+            Object.freeze({ artifact: granted.artifact, artifact_lock: granted.artifactLock }),
+        );
+    }
+
+    #register(
+        descriptor: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>,
+        repositoryGrant?: TaskRepositoryGrantEvidence,
+    ): TaskRegistration {
+        this.#assertOpen();
+        const registration = Object.freeze({
+            ...registrationFromDescriptor(descriptor),
+            ...(repositoryGrant === undefined ? {} : { repositoryGrant }),
+        });
         const { artifact, artifactLock } = registration;
         this.#database.exec(TASK_REGISTRY_TRANSACTION_SQL.begin);
         try {
@@ -119,14 +159,23 @@ export class SQLiteTaskRegistry implements Disposable {
                         `task ${artifactLock.task_id}@${artifactLock.task_version} is already registered with different content`,
                     );
                 }
+                if (
+                    repositoryGrant !== undefined &&
+                    canonicalizeSemanticValue(repositoryGrant) !==
+                        canonicalizeSemanticValue(retained.repositoryGrant ?? null)
+                ) {
+                    throw new TaskVersionConflictError(
+                        "task version is already registered with different repository declarations",
+                    );
+                }
                 this.#database.exec(TASK_REGISTRY_TRANSACTION_SQL.commit);
                 return retained;
             }
             this.#database
                 .prepare(
                     `INSERT INTO ${TASK_REGISTRY_TABLES.registrations}(
-                        task_id, task_version, artifact_digest, artifact_json, artifact_lock_json
-                    ) VALUES (?, ?, ?, ?, ?)`,
+                        task_id, task_version, artifact_digest, artifact_json, artifact_lock_json, repository_grant_json
+                    ) VALUES (?, ?, ?, ?, ?, ?)`,
                 )
                 .run(
                     artifactLock.task_id,
@@ -134,6 +183,7 @@ export class SQLiteTaskRegistry implements Disposable {
                     artifactLock.artifact_digest,
                     JSON.stringify(artifact),
                     JSON.stringify(artifactLock),
+                    repositoryGrant === undefined ? null : JSON.stringify(repositoryGrant),
                 );
             this.#database.exec(TASK_REGISTRY_TRANSACTION_SQL.commit);
             return registration;
@@ -177,7 +227,7 @@ export class SQLiteTaskRegistry implements Disposable {
         const direction = descending ? "DESC" : "ASC";
         const rows = this.#database
             .prepare(
-                `SELECT task_id, task_version, artifact_digest, artifact_json, artifact_lock_json
+                `SELECT task_id, task_version, artifact_digest, artifact_json, artifact_lock_json, repository_grant_json
                  FROM ${TASK_REGISTRY_TABLES.registrations}
                  ORDER BY CAST(task_id AS BLOB) ${direction}, CAST(task_version AS BLOB) ${direction}
                  LIMIT ? OFFSET ?`,
@@ -199,7 +249,7 @@ export class SQLiteTaskRegistry implements Disposable {
         this.#assertOpen();
         const rows = this.#database
             .prepare(
-                `SELECT task_id, task_version, artifact_digest, artifact_json, artifact_lock_json
+                `SELECT task_id, task_version, artifact_digest, artifact_json, artifact_lock_json, repository_grant_json
                  FROM ${TASK_REGISTRY_TABLES.registrations}
                  WHERE substr(task_id, 1, length(?)) = ?
                  ORDER BY CAST(task_id AS BLOB), CAST(task_version AS BLOB)
@@ -225,7 +275,15 @@ export class SQLiteTaskRegistry implements Disposable {
                         "stored task registration key disagrees with its artifact lock",
                     );
                 }
-                return registration;
+                return row.repository_grant_json === null
+                    ? registration
+                    : Object.freeze({
+                          ...registration,
+                          repositoryGrant: decodeRegisteredGrant(
+                              row.repository_grant_json,
+                              registration,
+                          ),
+                      });
             }),
         );
     }
@@ -252,7 +310,7 @@ export class SQLiteTaskRegistry implements Disposable {
     #read(taskId: string, version: string): TaskRegistration | undefined {
         const row = this.#database
             .prepare(
-                `SELECT artifact_digest, artifact_json, artifact_lock_json
+                `SELECT artifact_digest, artifact_json, artifact_lock_json, repository_grant_json
                  FROM ${TASK_REGISTRY_TABLES.registrations}
                  WHERE task_id = ? AND task_version = ?`,
             )
@@ -273,7 +331,12 @@ export class SQLiteTaskRegistry implements Disposable {
                 "stored task registration key disagrees with its artifact lock",
             );
         }
-        return registration;
+        return row.repository_grant_json === null
+            ? registration
+            : Object.freeze({
+                  ...registration,
+                  repositoryGrant: decodeRegisteredGrant(row.repository_grant_json, registration),
+              });
     }
 }
 

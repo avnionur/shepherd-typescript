@@ -43,6 +43,15 @@ and [`repository-grant-plan-v1.schema.json`](../spec/schemas/repository-grant-pl
 Their conformance test is
 [`test/workspace/repository-grant-schema-contract.test.ts`](../test/workspace/repository-grant-schema-contract.test.ts).
 
+## Registered declaration inspection
+
+From 13.2.0, `SQLiteTaskRegistry.registerGranted(granted)` durably stores the authenticated
+companion with its exact registered task version. `task show` renders its profiles, instruction and
+schemas after restart; stable JSON retains `repository_grant` artifact and lock. Corrupt or
+mismatched evidence fails rather than displaying an empty surface. This declaration contains
+logical binding names, not admitted resources, ceilings or enforcement. See
+[task registry](./task-registry.md) for immutable registration, migration and executable evidence.
+
 ## Exact resource admission and attenuation
 
 `createGitRepositoryGrantPlan()` resolves every task declaration to one package-created

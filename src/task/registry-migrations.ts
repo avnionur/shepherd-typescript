@@ -19,6 +19,11 @@ const migrations = [
             ) STRICT;
         `,
     },
+    {
+        version: 2,
+        sql: `ALTER TABLE ${TASK_REGISTRY_TABLES.registrations}
+              ADD COLUMN repository_grant_json TEXT;`,
+    },
 ] as const;
 
 /**

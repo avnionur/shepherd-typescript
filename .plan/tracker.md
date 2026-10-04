@@ -13,12 +13,13 @@ Active follow-up: [epic #235](https://github.com/avnionur/shepherd-typescript/is
 with the [capability evidence inventory](../docs/generated/capability-inventory.md).
 #237 shipped through PR #272 (13.0.0), binding replay command identity to the complete request.
 
-#238 is verified on `codex/phase-14-238-world-effect-journal`: automatic retained-world operation
-history, resource/fence validation, digest-only content, cancellation and process interruption
-inspection. MINOR 13.1.0; full host verification passed (1,362 passed, two intentional skips,
-zero failures, 100% configured coverage and installed-package checks). Version synchronization
-and desktop build passed. Evidence: [preservation matrix](./238-world-effect-preservation.md).
-Next unblocked P1 slice after delivery: #239 (CLI grant inspection).
+#238 shipped through PR #273 (13.1.0); see its [preservation matrix](./238-world-effect-preservation.md).
+#239 is in progress on `codex/phase-14-239-task-grant-inspection`: durable authenticated
+repository declaration companions and read-only human/JSON CLI inspection. MINOR 13.2.0,
+registry schema 2 with writable migration. Full host verification passes: 1,367 passed, two intentional skips, zero failures,
+100% configured coverage and installed-package task inspection. Version sync, desktop build and
+independent reviews pass. [Preservation matrix](./239-task-grant-preservation.md).
+Next unblocked P1 issue after delivery: #240 (compensation ownership and fencing).
 
 Prior preservation evidence: [#236](./236-capability-preservation.md) and
 [#237](./237-replay-preservation.md). External live/platform/proof requirements stay open until verified.

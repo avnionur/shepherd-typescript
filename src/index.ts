@@ -1354,6 +1354,7 @@ export type {
     TaskDefinition,
     TaskDescriptor,
     TaskRegistration,
+    TaskRepositoryGrantEvidence,
     TaskValue,
 } from "./task/types.ts";
 export { readTaskValue, taskDescriptorOf, taskValueOf } from "./task/value.ts";

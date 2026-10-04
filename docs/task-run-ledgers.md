@@ -15,8 +15,9 @@ are unchanged.
 `listTaskLedger` returns registered task artifacts and their recomputed exact locks in canonical
 task-ID/version byte order. Callers may supply package-created repository-granted task handles as
 a third argument; matching companion artifact and lock evidence then appears in
-`repository_grant`. The registry itself stores no grant companion, so the field is `null` when no
-authenticated evidence source is supplied. `limit` and `offset` form a closed bounded pagination
+`repository_grant`. From 13.2.0, declarations stored through `registry.registerGranted` appear
+automatically after reopen; supplied companions must agree with persisted evidence. The field is
+`null` only when neither source provides a declaration. `limit` and `offset` form a closed bounded pagination
 object.
 
 `listRunLedger` returns durable owners that retain exactly one validated creation record. Each
@@ -57,7 +58,8 @@ and fails closed when matches exceed the configured maximum.
 
 Native trace export/import preserves all included run evidence and therefore reconstructs the same
 projection and selector result. Repository-grant evidence supplied only in memory to a task query
-must be supplied again after process restart; durable run-journal grant evidence survives normally.
+must be supplied again after restart; registered companions and run-journal grants survive normally.
+Declarations do not represent effective run grants. See [registry migration and validation](./task-registry.md).
 
 ## Public entry points and evidence
 

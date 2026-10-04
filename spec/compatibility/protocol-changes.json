@@ -1081,18 +1081,50 @@
     },
     {
         "artifact": "api:.#ReplayBranchOptions",
+        "classification": "additive",
         "from": "sha256:8452761603cb83ae060b5067319f5b13489f09b5ece462bff4c0fa7e71c7d861",
         "to": "sha256:228934d4dabfd0c19f5291d1dc352d5b3d8a3a1c73a9cd8a4ea5a8ebd1b0f725",
-        "classification": "additive",
-        "note": "Epic #202 review fix pass (#209): ReplayBranchOptions gains the optional sourceDisposition (replay.branch.sourceDispositions: compensate, retain); omitting it keeps the configured compensate default, so existing branch options keep their meaning (replay protocol v3).",
-        "version": "12.0.0"
+        "version": "12.0.0",
+        "note": "Epic #202 review fix pass (#209): ReplayBranchOptions gains the optional sourceDisposition (replay.branch.sourceDispositions: compensate, retain); omitting it keeps the configured compensate default, so existing branch options keep their meaning (replay protocol v3)."
     },
     {
         "artifact": "api:./replay#ReplayBranchOptions",
+        "classification": "additive",
         "from": "sha256:8452761603cb83ae060b5067319f5b13489f09b5ece462bff4c0fa7e71c7d861",
         "to": "sha256:228934d4dabfd0c19f5291d1dc352d5b3d8a3a1c73a9cd8a4ea5a8ebd1b0f725",
+        "version": "12.0.0",
+        "note": "Epic #202 review fix pass (#209): ReplayBranchOptions gains the optional sourceDisposition (replay.branch.sourceDispositions: compensate, retain); omitting it keeps the configured compensate default, so existing branch options keep their meaning (replay protocol v3)."
+    },
+    {
+        "artifact": "api:.#SQLiteTaskRegistry",
+        "from": "sha256:c0b71ee60c4406b48aebbf883ad7715f2ac0ccb908dff515e81ec12ba9934f26",
+        "to": "sha256:ee8159631e40824b13dc3043998cc50f3485d7363b2471d958e95d4e3657f74c",
         "classification": "additive",
-        "note": "Epic #202 review fix pass (#209): ReplayBranchOptions gains the optional sourceDisposition (replay.branch.sourceDispositions: compensate, retain); omitting it keeps the configured compensate default, so existing branch options keep their meaning (replay protocol v3).",
-        "version": "12.0.0"
+        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage.",
+        "version": "13.2.0"
+    },
+    {
+        "artifact": "api:.#TaskRegistration",
+        "from": "sha256:a0f78205f9492b9f276bb84da5a95925a940ccad49069c3328341c355be3de52",
+        "to": "sha256:1dcecc56d9be0d1c071b708db1e406733c938fd7ce53f6c339e51c9fc9867cbf",
+        "classification": "additive",
+        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage.",
+        "version": "13.2.0"
+    },
+    {
+        "artifact": "api:./tasks#SQLiteTaskRegistry",
+        "from": "sha256:c0b71ee60c4406b48aebbf883ad7715f2ac0ccb908dff515e81ec12ba9934f26",
+        "to": "sha256:ee8159631e40824b13dc3043998cc50f3485d7363b2471d958e95d4e3657f74c",
+        "classification": "additive",
+        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage.",
+        "version": "13.2.0"
+    },
+    {
+        "artifact": "api:./tasks#TaskRegistration",
+        "from": "sha256:a0f78205f9492b9f276bb84da5a95925a940ccad49069c3328341c355be3de52",
+        "to": "sha256:1dcecc56d9be0d1c071b708db1e406733c938fd7ce53f6c339e51c9fc9867cbf",
+        "classification": "additive",
+        "note": "New registerGranted method and optional repositoryGrant field; existing signatures and ordinary result shape unchanged. Registry migration adds nullable companion storage.",
+        "version": "13.2.0"
     }
 ]

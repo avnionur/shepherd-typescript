@@ -44,7 +44,7 @@ Public entry points: `./workspace#captureTaskWorldDurably`, `./workspace#createW
 | Dimension | Evidence boundary |
 | --- | --- |
 | API availability | Supported: retained capture, inspect, select/apply/discard/release and authenticated repository grants. |
-| Composed behavior | Adapted: each retained task exposes one repository world. Supplied readText/writeText capabilities journal individual intents, admissions and outcomes even when the final changeset is empty. CLI task inspection does not expose grant evidence. |
+| Composed behavior | Adapted: each retained task exposes one repository world. Supplied readText/writeText capabilities journal individual intents, admissions and outcomes even when the final changeset is empty. CLI task inspection retrieves validated exact-version repository declarations after registry reopen; per-run effective grants remain distinct. |
 | Restart recovery | Capture and settlement have durable recovery; operation inspection survives reopen/import and distinguishes unentered work from uncertain admission without replaying an arbitrary runner. |
 | Live-provider evidence | No live-provider result claimed; ordinary tests use deterministic providers. |
 | Performance evidence | No performance result claimed by this row. |
@@ -64,8 +64,10 @@ Reviewed evidence (content pinned; existence is not a passing test result):
 - [docs/world-effect-journal.md](../world-effect-journal.md)
 - [test/workspace/world-effect-journal.test.ts](../../test/workspace/world-effect-journal.test.ts)
 - [test/workspace/world-effect-crash.test.ts](../../test/workspace/world-effect-crash.test.ts)
+- [test/task/registry-grants.test.ts](../../test/task/registry-grants.test.ts)
+- [docs/task-registry.md](../task-registry.md)
 
-Outstanding issues: [239](https://github.com/avnionur/shepherd-typescript/issues/239), [247](https://github.com/avnionur/shepherd-typescript/issues/247)
+Outstanding issues: [247](https://github.com/avnionur/shepherd-typescript/issues/247)
 
 ### CLI discovery, registration and scaffolding
 
@@ -75,7 +77,7 @@ Public entry points: `./cli#runCli`, `./tasks#SQLiteTaskRegistry`
 
 | Dimension | Evidence boundary |
 | --- | --- |
-| API availability | Supported: configured CLI topology, stable JSON, retained inspection and replay/scope views; task registry API exists. |
+| API availability | Supported: configured CLI topology, stable JSON, retained inspection and replay/scope views; registered repository declarations appear in task inspection after restart. |
 | Composed behavior | Partial: declarative CLI task registration and extension scaffolding are stubs; help/version/selectors/trace detail/readiness conveniences remain incomplete. |
 | Restart recovery | Exact mutation commands delegate to fenced runtime operations; read selectors confer no mutation authority. |
 | Live-provider evidence | No live-provider result claimed; ordinary tests use deterministic providers. |
@@ -88,6 +90,7 @@ Reviewed evidence (content pinned; existence is not a passing test result):
 - [test/cli/trace-cli.test.ts](../../test/cli/trace-cli.test.ts)
 - [docs/cli.md](../cli.md)
 - [test/task/registry-persistence.test.ts](../../test/task/registry-persistence.test.ts)
+- [test/task/registry-grants.test.ts](../../test/task/registry-grants.test.ts)
 
 Outstanding issues: [259](https://github.com/avnionur/shepherd-typescript/issues/259), [260](https://github.com/avnionur/shepherd-typescript/issues/260), [261](https://github.com/avnionur/shepherd-typescript/issues/261)
 

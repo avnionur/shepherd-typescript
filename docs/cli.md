@@ -16,8 +16,8 @@ configuration. The package exposes only the distinct `shepherd-ts` binary; it do
 upstream executable name.
 
 Exit codes are configured as: `0` success, `1` runtime failure, `2` usage refusal, and `3`
-unavailable capability. Human errors print one bounded message without a stack. Human output is
-the unchanged `shepherd.cli.v1` contract shipped in 1.46.0.
+unavailable capability. Human errors print one bounded message without a stack. Human output uses
+`shepherd.cli.v1`; from 13.2.0 task inspection adds instruction, schemas and declared profiles.
 
 ## Stable JSON
 
@@ -86,7 +86,12 @@ Native outputs are already cited by their immutable execution cut, so equal call
 idempotent. A missing cut fails with the configured managed-recovery remedy because a raw run ID
 cannot grant the complete recovery contract.
 
-`task` supports bounded `list`, `show`, and `resolve` over an existing task registry. Dynamic
+`task` supports bounded `list`, `show`, and `resolve` over an existing task registry. From 13.2.0,
+`show` and `resolve` print instruction, schemas and registered repository declarations. JSON uses
+the existing task ledger field `repository_grant`, now retrieved from validated durable companions.
+Ungranted tasks retain `null`. Declaration profiles are distinct from per-run resources, effective
+grants, ceilings and enforcement. Old registry schemas need an explicit writable open before
+read-only inspection; see [task registry](./task-registry.md). Dynamic
 source registration is unavailable because the package does not execute caller modules merely
 because a CLI string names them.
 

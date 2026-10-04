@@ -18,7 +18,7 @@ import {
     SCOPE_PROTOCOL_V6_CONTRACT,
     STORAGE_PROTOCOL_V1_CONTRACT,
     SUPERVISION_PROTOCOL_V1_CONTRACT,
-    TASK_PROTOCOL_V1_CONTRACT,
+    TASK_PROTOCOL_V2_CONTRACT,
     TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V28_CONTRACT,
 } from "./compatibility-constants.ts";
@@ -128,7 +128,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (!sameJson(config.providers, PROVIDER_PROTOCOL_V3_CONTRACT)) {
         throw new TypeError("provider constants require a new provider protocol");
     }
-    if (!sameJson(config.tasks, TASK_PROTOCOL_V1_CONTRACT)) {
+    if (!sameJson(config.tasks, TASK_PROTOCOL_V2_CONTRACT)) {
         throw new TypeError("task descriptor constants require a new task protocol");
     }
     if (!sameJson(config.effects, EFFECT_PROTOCOL_V2_CONTRACT)) {
