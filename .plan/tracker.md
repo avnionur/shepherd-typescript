@@ -30,9 +30,13 @@ attempts, renewal, fencing and separate ownership inspection. MINOR 13.3.0; sour
 SIGKILL, heartbeat, takeover and adjacent trigger tests pass. Full host verification passed:
 1,377 passed, two intentional skips, zero failures, 100% configured coverage and installed-package
 checks. Version sync, desktop build and independent reviews passed.
-[Preservation matrix](./240-compensation-preservation.md). #241 is in progress on `codex/phase-14-241-compensation-reconciliation` (MINOR 13.5.0).
+[Preservation matrix](./240-compensation-preservation.md). #241 (MINOR 13.5.0) is implemented on `codex/phase-14-241-compensation-reconciliation`.
 Audited operator decisions, residual-risk projections and older-reader refusal are implemented;
-focused tests and independent runtime reviews pass. Full verification remains pending.
+full combined-main verification passed: 1,402 tests passed, two intentional skips, zero failures,
+100% configured coverage and installed-package checks. Final version sync, desktop build,
+actual 13.3 reader refusal and independent reviews passed. Native timeout attempts were traced to
+macOS idle sleep; the successful gate used a temporary command-scoped sleep assertion.
+Next unblocked P1 slice: #242.
 [Preservation matrix](./241-reconciliation-preservation.md).
 
 Prior preservation evidence: [#236](./236-capability-preservation.md) and

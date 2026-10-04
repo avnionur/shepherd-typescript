@@ -24,7 +24,7 @@ path, preserving existing compensation record bytes and outcome classifications.
 
 Preflight read the full issue, parent, linked contracts, compensation/ownership resolver and
 scope/replay/durable inspection paths. Focused regression and independent runtime reviews passed;
-full host verification is in progress.
+full host verification passed.
 
 ## Implementation contract
 
@@ -77,7 +77,9 @@ full host verification is in progress.
 - Standards and Spec independent runtime reviews report zero remaining actionable findings.
 - Dependency/lockfile diff: none. Store migration15 is marker-only; the populated fixture15 export
   digest matches fixture14, preserving historical records and operational table rows.
-- Full `CI=true pnpm verify` and final completion review pending.
+- Final combined-main `CI=true caffeinate -i pnpm verify`: 1,402 passed, two intentional skips,
+  zero failures, 100% lines/branches/functions, installed-package declarations, examples and CLI
+  passed. Final version synchronization and `pnpm build:desktop` passed.
 
 No new live-provider, remote-host, Linux-native, Windows or proof-backed result is claimed.
 Imported audits remain host assertions; separate stores do not share invocation ownership.
@@ -86,4 +88,18 @@ Before integration with PR #277, `CI=true pnpm verify` passed end-to-end: 1,401 
 two intentional skips, zero failures, 100% line/branch/function coverage and packaged CLI checks.
 Log: `/private/tmp/shepherd-241-verify-complete.log`. A shipped configuration type was initially
 stripped by an internal annotation; package validation exposed it, and corrected declarations now
-compile in the installed package. Final combined-main verification remains pending.
+compile in the installed package. Final combined-main verification passed.
+
+## Final delivery review
+
+- Full final log: `/private/tmp/shepherd-241-verify-awake.log` (exit 0).
+- Earlier integrated parallel and serial attempts hit native metadata `ETIMEDOUT` after macOS idle
+  sleep. Power logs matched the long stalls; both isolated serial failures then passed in seconds.
+  A temporary command-scoped `caffeinate -i` assertion kept the host awake for the successful full
+  gate. No test, timeout, threshold, permanent power setting or native check was weakened.
+- Intentional skips remain the opt-in live-provider cache experiment and the non-applicable
+  telemetry-input fuzzer (there is no telemetry decoder). Neither is evidence for this capability.
+- Standards: zero actionable findings. Spec: zero actionable findings. Capabilities: every high-risk
+  row has production-seam tests or the repeatable actual 13.3 reader drill. Final integration review
+  confirmed preservation of PR #277's Pi examples, guide, package inclusion and 13.4 changelog.
+- The root checkout's unrelated work was not modified. #242 is the next unblocked P1 issue.
