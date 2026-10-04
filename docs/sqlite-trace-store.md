@@ -113,6 +113,11 @@ Schema v13 is index-only: `records_by_schema` on `records(schema_ref, record_id)
 `trace_cuts_by_publication` on the canonical byte order of `trace_cuts`. It adds no row or column
 and changes no export; an index that already exists is kept.
 
+Schema v14 adds store-local compensation ownership linked to the canonical attempt record.
+Admission and attempt publication are atomic; renewal and outcome commit require the exact live
+fence. Integrity verifies the row against the attempt and latest outcome. Semantic archives omit
+leases; see [compensation ownership](./compensation.md#durable-ownership-inspection-1330).
+
 ## Query plans
 
 The SQL behind `readRecord`, `readOwner`, `readOwnerPrefix`, `readCut`/`resolveCut`, cut iteration

@@ -214,6 +214,29 @@
                 "trace_cuts": 1,
                 "trace_subscriptions": 1
             }
+        },
+        "14": {
+            "export_digest": "sha256:ba77ad210babae227275d39ad878b0ca4aed943200819be4a92731c646311936",
+            "table_rows": {
+                "append_intents": 6,
+                "blobs": 1,
+                "compensation_claims": 1,
+                "durable_execution_claims": 1,
+                "orphan_operation_repairs": 0,
+                "orphan_operations": 1,
+                "owner_ordinals": 4,
+                "record_parents": 4,
+                "record_views": 7,
+                "records": 8,
+                "replay_sessions": 0,
+                "retained_world_settlements": 1,
+                "scope_registrations": 1,
+                "scope_writer_claims": 1,
+                "storage_receipts": 1,
+                "supervised_dispatches": 0,
+                "trace_cuts": 1,
+                "trace_subscriptions": 1
+            }
         }
     }
 }

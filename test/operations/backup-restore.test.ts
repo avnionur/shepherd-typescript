@@ -42,7 +42,7 @@ import { materializeBlobs, resolveSQLiteBackup } from "../../src/operations/back
 import { publishStagedStore, verifyRestoredStore } from "../../src/operations/restore.ts";
 import { populateStoreForSchema } from "../../tooling/testing/store-schema-fixtures.ts";
 
-const CURRENT_SCHEMA = 13;
+const CURRENT_SCHEMA = 14;
 const manifestSchema = JSON.parse(
     readFileSync(
         new URL("../../spec/schemas/store-backup-manifest-v1.schema.json", import.meta.url),
@@ -133,7 +133,7 @@ test("backup writes an owner-only, schema-valid, verified backup and restores it
     assert.equal(manifest.store_schema_version, CURRENT_SCHEMA);
     assert.equal(manifest.blobs.location, "directory");
     assert.equal(manifest.blobs.count, 1);
-    assert.equal(manifest.record_count, 6);
+    assert.equal(manifest.record_count, 8);
     assert.equal(manifest.cut_count, 1);
     assert.deepEqual(readdirSync(backup).sort(), ["blobs", "manifest.json", "trace.sqlite"]);
     const validate = new Ajv2020({ strict: true }).compile(manifestSchema);
@@ -171,7 +171,7 @@ test("backup writes an owner-only, schema-valid, verified backup and restores it
         blob_count: 1,
         export_digest: manifest.export_digest,
         manifest_id: manifest.manifest_id,
-        record_count: 6,
+        record_count: 8,
         source_store_schema_version: CURRENT_SCHEMA,
         store_schema_version: CURRENT_SCHEMA,
     });
@@ -326,18 +326,18 @@ test("tampered backups are refused with a classified reason and never restored",
 
     copy = tampered();
     const text = readFileSync(manifestPath(copy), "utf8");
-    writeFileSync(manifestPath(copy), text.replace('"record_count":6', '"record_count":7'));
+    writeFileSync(manifestPath(copy), text.replace('"record_count":8', '"record_count":9'));
     await rejectsWith(verifyTraceStoreBackup(copy), "manifest-invalid");
 
     copy = tampered();
-    reseal(copy, (body) => ({ ...body, record_count: 7 }));
+    reseal(copy, (body) => ({ ...body, record_count: 9 }));
     await rejectsWith(verifyTraceStoreBackup(copy), "manifest-invalid");
 
     // Identity-preserving but non-canonical text (whitespace, a repeated key) is refused, so no
     // other JSON reader can see a different manifest.
     for (const edit of [
         (value: string) => value.replace("{", "{ "),
-        (value: string) => value.replace('"record_count":6', '"record_count":9,"record_count":6'),
+        (value: string) => value.replace('"record_count":8', '"record_count":9,"record_count":8'),
         (value: string) => value.trimEnd(),
         // A lone surrogate owner is refused as manifest-invalid, not as an unclassified TypeError.
         (value: string) => value.replace('"owner_id":"', '"owner_id":"\\ud800'),

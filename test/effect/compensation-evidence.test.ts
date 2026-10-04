@@ -249,51 +249,46 @@ test("inspection refuses forged, reordered, or foreign compensation paths", asyn
     }
 });
 
-test("a concurrent compensator that advances the path first makes the slower one conflict", async (context) => {
+test("a concurrent nested compensator is refused before invocation while the owner completes", async (context) => {
     const { source, step, store, world } = await fixture(context, "conflict");
-    let nested = false;
+    let calls = 0;
     const registry = createEffectCompensationRegistry([
         {
             compensate: async (request) => {
-                if (!nested) {
-                    nested = true;
-                    // Another compensator sees the uncertain attempt, re-invokes, and finishes first.
-                    await compensateEffects(store, {
+                calls += 1;
+                await assert.rejects(
+                    compensateEffects(store, {
                         commandId: "compensate:fast",
                         effectRecordIds: [step.record_id],
                         registry,
-                    });
-                }
+                    }),
+                    (error: unknown) =>
+                        error instanceof EffectCompensationConflictError &&
+                        error.compensation_id === deriveEffectCompensationId(step.record_id) &&
+                        error.code === config.errors.conflictCode,
+                );
                 return { ok: true, value: compensateRow(world, request) };
             },
             handlerId: "compensation:racing",
             kind: ROW_INSERT_KIND,
         },
     ]);
-    await assert.rejects(
-        compensateEffects(store, {
-            commandId: "compensate:slow",
-            effectRecordIds: [step.record_id],
-            registry,
-        }),
-        (error: unknown) =>
-            error instanceof EffectCompensationConflictError &&
-            error.compensation_id === deriveEffectCompensationId(step.record_id) &&
-            error.code === config.errors.conflictCode,
-    );
+    await compensateEffects(store, {
+        commandId: "compensate:slow",
+        effectRecordIds: [step.record_id],
+        registry,
+    });
     const inspection = inspectEffectCompensation(store, {
         compensationId: deriveEffectCompensationId(step.record_id),
     });
+    assert.equal(calls, 1);
     assert.equal(inspection.status, "compensated");
     assert.deepEqual(
         inspection.attempts.map((entry) => [
             entry.trigger.command_id,
             entry.outcome?.status ?? null,
         ]),
-        [
-            ["compensate:slow", null],
-            ["compensate:fast", "compensated"],
-        ],
+        [["compensate:slow", "compensated"]],
     );
     assert.equal(source.steps.length, 2);
 });

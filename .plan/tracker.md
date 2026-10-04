@@ -14,12 +14,14 @@ with the [capability evidence inventory](../docs/generated/capability-inventory.
 #237 shipped through PR #272 (13.0.0), binding replay command identity to the complete request.
 
 #238 shipped through PR #273 (13.1.0); see its [preservation matrix](./238-world-effect-preservation.md).
-#239 is in progress on `codex/phase-14-239-task-grant-inspection`: durable authenticated
-repository declaration companions and read-only human/JSON CLI inspection. MINOR 13.2.0,
-registry schema 2 with writable migration. Full host verification passes: 1,367 passed, two intentional skips, zero failures,
-100% configured coverage and installed-package task inspection. Version sync, desktop build and
-independent reviews pass. [Preservation matrix](./239-task-grant-preservation.md).
-Next unblocked P1 issue after delivery: #240 (compensation ownership and fencing).
+#239 shipped through PR #274 (13.2.0); its [preservation matrix](./239-task-grant-preservation.md)
+records full verification and installed-package declaration inspection.
+#240 is in progress on `codex/phase-14-240-compensation-ownership`: durable exclusive compensation
+attempts, renewal, fencing and separate ownership inspection. MINOR 13.3.0; source concurrency,
+SIGKILL, heartbeat, takeover and adjacent trigger tests pass. Full host verification passed:
+1,377 passed, two intentional skips, zero failures, 100% configured coverage and installed-package
+checks. Version sync, desktop build and independent reviews passed.
+[Preservation matrix](./240-compensation-preservation.md). Next dependent P1 slice: #241.
 
 Prior preservation evidence: [#236](./236-capability-preservation.md) and
 [#237](./237-replay-preservation.md). External live/platform/proof requirements stay open until verified.

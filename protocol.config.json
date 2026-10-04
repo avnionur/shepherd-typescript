@@ -960,7 +960,13 @@
             "schemaId": "https://avnionur.github.io/shepherd-typescript/schemas/effect-compensation-v1.schema.json",
             "statuses": ["pending", "uncertain", "failed", "compensated"],
             "traceSchema": "shepherd.effect.compensation.v1",
-            "triggers": ["scope_discard", "replay_rewind", "replay_replay", "command"]
+            "triggers": ["scope_discard", "replay_rewind", "replay_replay", "command"],
+            "ownership": {
+                "claimIdPrefix": "compensation-claim:",
+                "leaseMilliseconds": 30000,
+                "renewalMilliseconds": 10000,
+                "statuses": ["absent", "active", "expired", "released"]
+            }
         },
         "digestAlgorithm": "sha256",
         "digestPrefix": "sha256:",
@@ -2726,9 +2732,14 @@
                     "firstOwnerOrdinal": 0,
                     "lastOwnerOrdinal": 9007199254740990,
                     "version": 13
+                },
+                {
+                    "firstOwnerOrdinal": 0,
+                    "lastOwnerOrdinal": 9007199254740990,
+                    "version": 14
                 }
             ],
-            "schemaVersion": 13,
+            "schemaVersion": 14,
             "synchronous": "FULL",
             "transactionMode": "IMMEDIATE"
         },

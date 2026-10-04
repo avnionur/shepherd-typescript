@@ -78,8 +78,9 @@ export class EffectCompensationFailedError extends TraceStoreError {
 }
 
 /**
- * Raised when another compensator appended to the same compensation path between this
- * compensator's read and its append. Retrying the trigger continues from the retained records.
+ * Raised when another compensator owns an active attempt, the path head changed, or this holder
+ * expired or was replaced. Retry only after ownership is released or expired; external handlers
+ * must remain idempotent under the stable materialization key.
  *
  * @public
  */

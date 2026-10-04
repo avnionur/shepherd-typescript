@@ -1327,6 +1327,17 @@ export type EffectCompensationProtocolConfig = {
         /** Maximum compensable effects one trigger may compensate. */
         readonly maxEffectsPerTrigger: number;
     };
+    /** Live invocation ownership; separate from immutable record-derived outcome status. */
+    readonly ownership: {
+        /** Prefix for fresh per-invocation claim identities. */
+        readonly claimIdPrefix: string;
+        /** Unrenewed ownership expires after this interval. */
+        readonly leaseMilliseconds: number;
+        /** Heartbeat interval, strictly below the lease duration. */
+        readonly renewalMilliseconds: number;
+        /** Absent, active, expired and released private ownership states. */
+        readonly statuses: readonly string[];
+    };
     /** Outcome statuses: compensated, then failed. */
     readonly outcomes: readonly string[];
     /** Record phases: intent, attempt, then outcome. */

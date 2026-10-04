@@ -178,13 +178,13 @@ Outstanding issues: None for this stated boundary.
 
 Paper §3.2 reversibility boundary.
 
-Public entry points: `./effects#createEffectCompensationRegistry`
+Public entry points: `./effects#createEffectCompensationRegistry`, `./effects#inspectEffectCompensationOwnership`
 
 | Dimension | Evidence boundary |
 | --- | --- |
 | API availability | Supported: per-kind handlers and retained compensation intent/attempt/outcome evidence. |
 | Composed behavior | Branches retaining their source do not compensate; abandoning branches and scope discard compensate recorded successful compensable materializations. |
-| Restart recovery | Partial: uncertain attempts can invoke the same handler key again; idempotency remains the handler obligation. No durable attempt ownership or audited reconciliation yet. |
+| Restart recovery | Durable attempt ownership serializes active invocations; expired or replaced holders cannot publish outcomes. SIGKILL recovery retains the materialization key. External idempotency remains required; imported stores do not coordinate leases. Audited reconciliation remains outstanding. |
 | Live-provider evidence | No live-provider result claimed; ordinary tests use deterministic providers. |
 | Performance evidence | No performance result claimed by this row. |
 | Supported platforms / evidence | Node runtime support applies; filesystem/native support depends on the separately documented host and backend. |
@@ -196,8 +196,9 @@ Reviewed evidence (content pinned; existence is not a passing test result):
 - [test/faults/compensation-kill.test.ts](../../test/faults/compensation-kill.test.ts)
 - [test/replay/replay-source-disposition.test.ts](../../test/replay/replay-source-disposition.test.ts)
 - [docs/compensation.md](../compensation.md)
+- [test/effect/compensation-ownership.test.ts](../../test/effect/compensation-ownership.test.ts)
 
-Outstanding issues: [240](https://github.com/avnionur/shepherd-typescript/issues/240), [241](https://github.com/avnionur/shepherd-typescript/issues/241)
+Outstanding issues: [241](https://github.com/avnionur/shepherd-typescript/issues/241)
 
 ### Scope algebra and coupled checkpoints
 

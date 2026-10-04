@@ -2,6 +2,7 @@ import type { SemanticValue } from "../canonical/canonical-record.ts";
 import type {
     EFFECT_COMPENSATION_EVIDENCE_KINDS,
     EFFECT_COMPENSATION_OUTCOMES,
+    EFFECT_COMPENSATION_OWNERSHIP_STATUSES,
     EFFECT_COMPENSATION_STATUSES,
     EFFECT_COMPENSATION_TRIGGERS,
 } from "../protocol/values.generated.ts";
@@ -38,7 +39,11 @@ export type EffectCompensationTrigger = {
 
 /** Request passed to a compensation handler for one attempt. */
 export type EffectCompensationRequest = {
-    /** One-based attempt number; greater than one only after a crash or a failed attempt. */
+    /** Fresh invocation holder; distinct from the stable external idempotency key. */
+    readonly claimId: string;
+    /** Monotonic materialization attempt fence for fence-aware external handlers. */
+    readonly fencingToken: number;
+    /** One-based attempt number; retries follow a failed, released or expired attempt. */
     readonly attempt: number;
     /** Compensation identity. */
     readonly compensationId: string;
@@ -63,8 +68,8 @@ export type EffectCompensationHandler = {
      * @param request - Attempt, identity, immutable effect records, and trigger.
      * @returns `{ ok: true, value }` when the effect is compensated, or `{ ok: false, error }`
      *   when the world refused; either result is retained.
-     * @throws Any failure leaves the attempt uncertain and propagates unchanged; the next trigger
-     *   invokes the handler again under the same key.
+     * @throws Any failure leaves the attempt uncertain and propagates unchanged; after ownership
+     *   is released or expires, a later trigger invokes the same external idempotency key.
      */
     readonly compensate: (
         request: EffectCompensationRequest,
@@ -157,4 +162,21 @@ export type CompensateEffectsOptions = {
 export type EffectCompensationReceipt = {
     /** Compensations in the order they ran: reverse materialization order. */
     readonly compensations: readonly EffectCompensationInspection[];
+};
+
+/** Immutable evidence plus a separate live store-local ownership snapshot. */
+export type EffectCompensationOwnershipInspection = {
+    /** Immutable record-derived compensation status, including uncertain attempts. */
+    readonly compensation: EffectCompensationInspection;
+    /** Operational lease; imported semantic archives do not transfer a live holder. */
+    readonly ownership: {
+        /** Current or last holder; null for absent ownership. */
+        readonly claim_id: string | null;
+        /** Canonical attempt fence; null for absent ownership. */
+        readonly fencing_token: number | null;
+        /** Unix-millisecond expiry; null for absent ownership. */
+        readonly lease_expires_at: number | null;
+        /** Configured live ownership classification, independent of compensation outcome. */
+        readonly status: (typeof EFFECT_COMPENSATION_OWNERSHIP_STATUSES)[number];
+    };
 };

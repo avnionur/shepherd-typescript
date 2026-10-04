@@ -88,7 +88,7 @@ test("removed exports, commands, error codes, migrations, and narrowed schemas f
     assert.match(failure, /- error-code:RUN_CANCELLED: removed public error code/u);
     assert.match(
         failure,
-        /- migrations:protocol\.config\.json#\/kernel\/store\/migrations: migration 1 of 13 was removed, reordered, or changed; migrations may only be appended/u,
+        /- migrations:protocol\.config\.json#\/kernel\/store\/migrations: migration 1 of 14 was removed, reordered, or changed; migrations may only be appended/u,
     );
     assert.match(
         failure,
@@ -117,8 +117,8 @@ test("additive changes pass after a MINOR bump and a baseline update", async (co
     await mutateJson(root, "protocol.config.json", (config) => {
         const store = (config.kernel as { store: { migrations: unknown[]; schemaVersion: number } })
             .store;
-        store.migrations.push({ firstOwnerOrdinal: 0, lastOwnerOrdinal: 1, version: 14 });
-        store.schemaVersion = 14;
+        store.migrations.push({ firstOwnerOrdinal: 0, lastOwnerOrdinal: 1, version: 15 });
+        store.schemaVersion = 15;
         const cli = config.cli as {
             exitCodes: Record<string, number>;
             groups: { commands: { handler: string; name: string }[]; name: string }[];
@@ -150,7 +150,7 @@ test("additive changes pass after a MINOR bump and a baseline update", async (co
         "schema:cli-output-v1.schema.json: added oneOf branches or $defs members",
         "schema:fixture-v1.schema.json: added schema",
         "migrations:protocol.config.json#/kernel/store/migrations: appended 1 migration(s)",
-        "version:protocol.config.json#/kernel/store/schemaVersion: increased 13 to 14",
+        "version:protocol.config.json#/kernel/store/schemaVersion: increased 14 to 15",
         "version:protocol.config.json#/kernel/fixtureVersion: added version marker",
         "cli-exit-code:fixture: added CLI exit code",
         "cli-command:run fixture: added CLI command",
@@ -351,7 +351,7 @@ test("format and protocol version increases need a noted classification; schema 
             store: { schemaVersion: number };
         };
         kernel.interchange.formatVersion = 2;
-        kernel.store.schemaVersion = 14;
+        kernel.store.schemaVersion = 15;
     });
     await setVersion(root, "1.1.0");
     const failure = await rejection(checkCompatibility({ repositoryRoot: root }));
@@ -361,12 +361,12 @@ test("format and protocol version increases need a noted classification; schema 
     );
     assert.match(
         failure,
-        /- version:protocol\.config\.json#\/kernel\/store\/schemaVersion: increased 13 to 14, but protocol\.config\.json#\/kernel\/store\/migrations gained 0 migration\(s\); a schema version increases only with one appended migration per version/u,
+        /- version:protocol\.config\.json#\/kernel\/store\/schemaVersion: increased 14 to 15, but protocol\.config\.json#\/kernel\/store\/migrations gained 0 migration\(s\); a schema version increases only with one appended migration per version/u,
     );
 
     await mutateJson(root, "protocol.config.json", (config) => {
         const store = (config.kernel as { store: { migrations: unknown[] } }).store;
-        store.migrations.push({ firstOwnerOrdinal: 0, lastOwnerOrdinal: 1, version: 14 });
+        store.migrations.push({ firstOwnerOrdinal: 0, lastOwnerOrdinal: 1, version: 15 });
     });
     await assert.rejects(
         updateCompatibilityBaseline({ classify: "additive", repositoryRoot: root }),
@@ -388,7 +388,7 @@ test("format and protocol version increases need a noted classification; schema 
     });
     assert.ok(
         report.accepted.includes(
-            "version:protocol.config.json#/kernel/store/schemaVersion: increased 13 to 14 with 1 appended migration(s)",
+            "version:protocol.config.json#/kernel/store/schemaVersion: increased 14 to 15 with 1 appended migration(s)",
         ),
     );
     await checkCompatibility({ repositoryRoot: root });
