@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.2.0] - 2026-10-04
+
+### New Feature
+
+- `SQLiteTaskRegistry.registerGranted` atomically persists authenticated repository declaration
+  companions bound to the exact task version. Registry and ledger reads validate the full companion
+  and lock after restart; conflicting, stale or corrupt evidence refuses (#239).
+- Human `task show`/`task resolve` include instructions, input/output schemas and declared profiles.
+  Stable JSON retrieves registered companion evidence automatically, distinguishing declarations
+  from per-run resources, ceilings, effective grants and enforcement.
+
+### Impact
+
+Additive MINOR release. Registry schema 2 migrates existing registrations on writable open without
+inventing grants; read-only CLI inspection requires the current schema. Older binaries refuse the
+new schema. Existing task artifacts and JSON ledger shape remain unchanged. Changing a registered
+declaration requires a new task version; plain re-registration preserves any existing companion.
+
 ## [13.1.0] - 2026-10-03
 
 ### New Feature

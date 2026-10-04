@@ -1,4 +1,8 @@
 import type { SemanticRecord } from "../canonical/canonical-record.ts";
+import type {
+    RepositoryTaskGrantArtifact,
+    RepositoryTaskGrantArtifactLock,
+} from "../workspace/repository-grant-types.ts";
 import type { InferTaskSchema, TaskSchema } from "./schema.ts";
 
 /** Options controlling task-registry open behavior. */
@@ -64,8 +68,18 @@ export type ExactTaskReference = {
     readonly version: string;
 };
 
+/** Validated declaration companion; confers no per-run resource authority. */
+export type TaskRepositoryGrantEvidence = {
+    /** Canonical declared binding profiles bound to the exact task artifact. */
+    readonly artifact: RepositoryTaskGrantArtifact;
+    /** Recomputed content-addressed companion lock. */
+    readonly artifact_lock: RepositoryTaskGrantArtifactLock;
+};
+
 /** Durable registry result containing a canonical artifact and its verified lock. */
 export type TaskRegistration = {
+    /** Persisted authenticated declaration, absent for ordinary registrations. */
+    readonly repositoryGrant?: TaskRepositoryGrantEvidence;
     /** Canonical task artifact retained by the registry. */
     readonly artifact: TaskArtifact;
     /** Recomputed and verified exact artifact lock. */

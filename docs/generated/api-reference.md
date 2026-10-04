@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 13.1.0
+Package: `@avnionur/shepherd-typescript` 13.2.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 1447.
+Exported symbols: 1448.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -15876,6 +15876,7 @@ export declare class SQLiteTaskRegistry implements Disposable {
     constructor(databasePath?: string, options?: SQLiteTaskRegistryOptions);
     get schemaVersion(): number;
     register(descriptor: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>): TaskRegistration;
+    registerGranted(granted: RepositoryGrantedTask<TaskSchema<unknown>, TaskSchema<unknown>>): TaskRegistration;
     resolve(reference: ExactTaskReference): TaskRegistration | undefined;
     close(): void;
     [Symbol.dispose](): void;
@@ -15955,6 +15956,45 @@ Throws:
 Throws:
 
 - {Error} If SQLite cannot read or commit the registration.
+
+#### `registerGranted`
+
+Atomically registers a task and its authenticated repository declaration.
+Equal retries preserve the companion; conflicting or previously ungranted registrations refuse.
+
+```ts
+registerGranted(granted: RepositoryGrantedTask<TaskSchema<unknown>, TaskSchema<unknown>>): TaskRegistration;
+```
+
+Parameter:
+
+- granted - Package-created exact task and companion from `grantTaskRepositories`.
+
+Returns:
+
+- Verified registration with its immutable declaration evidence.
+
+Throws:
+
+- {TypeError} If the handle is forged.
+
+Throws:
+
+- {TaskVersionConflictError} If this task version already has different content or declarations.
+
+Throws:
+
+- {TaskRegistryError} If closed or retained evidence is corrupt.
+
+Throws:
+
+- {Error} If SQLite cannot commit the atomic registration.
+
+Example:
+
+- ```ts
+registry.registerGranted(grantTaskRepositories({ task: descriptor, grants }));
+```
 
 #### `resolve`
 
@@ -20683,6 +20723,7 @@ Signature:
 
 ```ts
 export type TaskRegistration = {
+    readonly repositoryGrant?: TaskRepositoryGrantEvidence;
     readonly artifact: TaskArtifact;
     readonly artifactLock: TaskArtifactLock;
 };
@@ -20708,6 +20749,21 @@ Stable configured machine-readable task-registry error code.
 
 ```ts
 readonly code: string;
+```
+
+### `TaskRepositoryGrantEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated declaration companion; confers no per-run resource authority.
+
+Signature:
+
+```ts
+export type TaskRepositoryGrantEvidence = {
+    readonly artifact: RepositoryTaskGrantArtifact;
+    readonly artifact_lock: RepositoryTaskGrantArtifactLock;
+};
 ```
 
 ### `TaskSchema`
@@ -30578,7 +30634,7 @@ Parameter:
 
 Parameter:
 
-- repositoryGrants - Optional authenticated companion grant evidence.
+- repositoryGrants - Optional authenticated companions; must agree with persisted declarations.
 
 Returns:
 
@@ -32549,7 +32605,7 @@ Parameter:
 
 Parameter:
 
-- repositoryGrants - Optional authenticated companion grant evidence.
+- repositoryGrants - Optional authenticated companions; must agree with persisted declarations.
 
 Returns:
 
@@ -58929,7 +58985,7 @@ import * as api from "@avnionur/shepherd-typescript/tasks";
 void api;
 ```
 
-Exported symbols: 39.
+Exported symbols: 40.
 
 ### `ExactTaskReference`
 
@@ -59263,6 +59319,7 @@ export declare class SQLiteTaskRegistry implements Disposable {
     constructor(databasePath?: string, options?: SQLiteTaskRegistryOptions);
     get schemaVersion(): number;
     register(descriptor: TaskDescriptor<TaskSchema<unknown>, TaskSchema<unknown>>): TaskRegistration;
+    registerGranted(granted: RepositoryGrantedTask<TaskSchema<unknown>, TaskSchema<unknown>>): TaskRegistration;
     resolve(reference: ExactTaskReference): TaskRegistration | undefined;
     close(): void;
     [Symbol.dispose](): void;
@@ -59342,6 +59399,45 @@ Throws:
 Throws:
 
 - {Error} If SQLite cannot read or commit the registration.
+
+#### `registerGranted`
+
+Atomically registers a task and its authenticated repository declaration.
+Equal retries preserve the companion; conflicting or previously ungranted registrations refuse.
+
+```ts
+registerGranted(granted: RepositoryGrantedTask<TaskSchema<unknown>, TaskSchema<unknown>>): TaskRegistration;
+```
+
+Parameter:
+
+- granted - Package-created exact task and companion from `grantTaskRepositories`.
+
+Returns:
+
+- Verified registration with its immutable declaration evidence.
+
+Throws:
+
+- {TypeError} If the handle is forged.
+
+Throws:
+
+- {TaskVersionConflictError} If this task version already has different content or declarations.
+
+Throws:
+
+- {TaskRegistryError} If closed or retained evidence is corrupt.
+
+Throws:
+
+- {Error} If SQLite cannot commit the atomic registration.
+
+Example:
+
+- ```ts
+registry.registerGranted(grantTaskRepositories({ task: descriptor, grants }));
+```
 
 #### `resolve`
 
@@ -59542,6 +59638,7 @@ Signature:
 
 ```ts
 export type TaskRegistration = {
+    readonly repositoryGrant?: TaskRepositoryGrantEvidence;
     readonly artifact: TaskArtifact;
     readonly artifactLock: TaskArtifactLock;
 };
@@ -59567,6 +59664,21 @@ Stable configured machine-readable task-registry error code.
 
 ```ts
 readonly code: string;
+```
+
+### `TaskRepositoryGrantEvidence`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Validated declaration companion; confers no per-run resource authority.
+
+Signature:
+
+```ts
+export type TaskRepositoryGrantEvidence = {
+    readonly artifact: RepositoryTaskGrantArtifact;
+    readonly artifact_lock: RepositoryTaskGrantArtifactLock;
+};
 ```
 
 ### `TaskSchema`
@@ -59772,7 +59884,7 @@ Parameter:
 
 Parameter:
 
-- repositoryGrants - Optional authenticated companion grant evidence.
+- repositoryGrants - Optional authenticated companions; must agree with persisted declarations.
 
 Returns:
 
@@ -59849,7 +59961,7 @@ Parameter:
 
 Parameter:
 
-- repositoryGrants - Optional authenticated companion grant evidence.
+- repositoryGrants - Optional authenticated companions; must agree with persisted declarations.
 
 Returns:
 

@@ -11,7 +11,7 @@ import {
     KERNEL_ABI_V0_CONTRACT,
     KERNEL_ABI_V0_STORE_V7_CONTRACT,
     PROVIDER_PROTOCOL_V3_CONTRACT,
-    TASK_PROTOCOL_V1_CONTRACT,
+    TASK_PROTOCOL_V2_CONTRACT,
     TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V2_CONTRACT,
@@ -81,12 +81,12 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(parsed.projections.taskRunLedgers), true);
     assert.equal(Object.isFrozen(TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT), true);
     assert.equal(parsed.tasks.compatibilityVersion, "shepherd.tasks.v1");
-    assert.equal(parsed.tasks.registry.schemaVersion, 1);
+    assert.equal(parsed.tasks.registry.schemaVersion, 2);
     assert.equal(parsed.tasks.registry.transactionMode, "IMMEDIATE");
     assert.equal(Object.isFrozen(parsed.tasks.registry.migrations), true);
     assert.equal(Object.isFrozen(parsed.tasks), true);
-    assert.equal(Object.isFrozen(TASK_PROTOCOL_V1_CONTRACT), true);
-    assert.deepEqual(parsed.tasks, TASK_PROTOCOL_V1_CONTRACT);
+    assert.equal(Object.isFrozen(TASK_PROTOCOL_V2_CONTRACT), true);
+    assert.deepEqual(parsed.tasks, TASK_PROTOCOL_V2_CONTRACT);
     assert.match(parsed.tasks.schemas.valueId, /task-value-v1\.schema\.json$/u);
     assert.deepEqual(parsed.providers, PROVIDER_PROTOCOL_V3_CONTRACT);
     assert.deepEqual(parsed.providers.kinds.slice(0, 2), ["static", "program"]);
@@ -1066,13 +1066,13 @@ test("protocol configuration rejects invalid or drifted task contracts", () => {
             taskRegistryConfigOf(config).migrations = [2];
         },
         (config) => {
-            taskRegistryConfigOf(config).migrations = [1, 2];
+            taskRegistryConfigOf(config).migrations = [1, 2, 3];
         },
         (config) => {
             taskRegistryConfigOf(config).schemaVersion = 0;
         },
         (config) => {
-            taskRegistryConfigOf(config).schemaVersion = 2;
+            taskRegistryConfigOf(config).schemaVersion = 3;
         },
         (config) => {
             taskRegistryConfigOf(config).synchronous = "NORMAL";

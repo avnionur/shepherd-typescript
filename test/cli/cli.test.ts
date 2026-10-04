@@ -235,7 +235,7 @@ test("CLI task and run reads resolve real registry and trace evidence", async (c
         directory,
     );
     assert.match(doctor.output, /Trace store: schema 13/u);
-    assert.match(doctor.output, /Task registry: schema 1/u);
+    assert.match(doctor.output, /Task registry: schema 2/u);
 
     const taskList = await invoke(["task", "list", "--registry", registryPath], directory);
     assert.equal(taskList.exitCode, 0);

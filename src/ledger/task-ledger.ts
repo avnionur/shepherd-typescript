@@ -1,3 +1,4 @@
+import { canonicalizeSemanticValue } from "../canonical/canonical-record.ts";
 import { projectionProtocolConfig } from "../protocol/config.ts";
 import type { TaskSchema } from "../task/schema.ts";
 import type { SQLiteTaskRegistry } from "../task/sqlite-task-registry.ts";
@@ -13,7 +14,7 @@ import type { LedgerListOptions, TaskLedgerEntry } from "./types.ts";
  *
  * @param registry - Open durable task registry.
  * @param options - Optional closed configured pagination object.
- * @param repositoryGrants - Optional authenticated companion grant evidence.
+ * @param repositoryGrants - Optional authenticated companions; must agree with persisted declarations.
  * @returns Frozen immutable task ledger entries.
  * @throws {TaskRegistryError} If the registry is closed or retained data is corrupt.
  * @throws {TypeError} If options, grants, retained entries, or canonical size are invalid.
@@ -44,7 +45,7 @@ export function listTaskLedger(
  *
  * @param registry - Open durable task registry.
  * @param selector - Exact `task-id@version`, task-ID/prefix, or `@latest`.
- * @param repositoryGrants - Optional authenticated companion grant evidence.
+ * @param repositoryGrants - Optional authenticated companions; must agree with persisted declarations.
  * @returns Exact verified immutable task ledger entry.
  * @throws {LedgerSelectorAmbiguousError} If a task-ID/prefix matches multiple versions/entries.
  * @throws {LedgerSelectorNotFoundError} If no registration matches.
@@ -111,15 +112,24 @@ function taskEntry(
         throw new TypeError("task ledger repository-grant evidence is ambiguous");
     }
     const grant = matches[0];
+    const supplied =
+        grant === undefined
+            ? null
+            : Object.freeze({ artifact: grant.artifact, artifact_lock: grant.artifactLock });
+    if (
+        registration.repositoryGrant !== undefined &&
+        supplied !== null &&
+        canonicalizeSemanticValue(registration.repositoryGrant) !==
+            canonicalizeSemanticValue(supplied)
+    ) {
+        throw new TypeError("task ledger supplied grant differs from persisted declaration");
+    }
     const entry = Object.freeze({
         artifact: registration.artifact,
         artifact_lock: registration.artifactLock,
         compatibility_version: projectionProtocolConfig.taskRunLedgers.compatibilityVersion,
         ledger_version: projectionProtocolConfig.taskRunLedgers.version,
-        repository_grant:
-            grant === undefined
-                ? null
-                : Object.freeze({ artifact: grant.artifact, artifact_lock: grant.artifactLock }),
+        repository_grant: registration.repositoryGrant ?? supplied,
     });
     assertLedgerEntryBounded(entry);
     return entry;

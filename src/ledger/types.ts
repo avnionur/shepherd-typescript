@@ -48,7 +48,7 @@ export type TaskLedgerEntry = {
     readonly compatibility_version: string;
     /** Public task/run ledger projection version. */
     readonly ledger_version: number;
-    /** Repository-grant companion when supplied by an authenticated evidence source. */
+    /** Validated registered declaration or an authenticated caller-supplied companion; not a run grant. */
     readonly repository_grant: TaskLedgerRepositoryGrantEvidence | null;
 };
 

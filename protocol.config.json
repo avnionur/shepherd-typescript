@@ -2082,8 +2082,8 @@
             "defensive": true,
             "foreignKeys": true,
             "journalMode": "WAL",
-            "migrations": [1],
-            "schemaVersion": 1,
+            "migrations": [1, 2],
+            "schemaVersion": 2,
             "synchronous": "FULL",
             "transactionMode": "IMMEDIATE"
         },

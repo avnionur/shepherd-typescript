@@ -26,6 +26,7 @@ import { testEntryLoading } from "./entry-loading.ts";
 import { testPackagedExamples } from "./packaged-examples.ts";
 import { testInstalledQuickstartFlow } from "./quickstart-flow.ts";
 import { testInstalledRuntimeBoundaries } from "./runtime-boundaries.ts";
+import { testInstalledTaskGrantCli } from "./task-grant-cli.ts";
 import {
     type ConsumerCompiler,
     consumerCompilers,
@@ -197,6 +198,7 @@ export async function testPackagedCli(runtimeBoundaries = false): Promise<void> 
         );
         const consumerRoot = path.join(installPath, "quickstart-consumer");
         mkdirSync(consumerRoot);
+        testInstalledTaskGrantCli(consumerRoot, packageManifest.name, executable);
         const facadeProbe = path.join(consumerRoot, "facade-probe.mjs");
         writeFileSync(
             facadeProbe,

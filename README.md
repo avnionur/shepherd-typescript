@@ -220,7 +220,7 @@ More examples:
 | Entry | Purpose |
 | --- | --- |
 | `.` | Complete public API |
-| `./tasks` | Task and schema builders, `compileJSONSchema` validator, task registry, task ledgers |
+| `./tasks` | Task and schema builders, `compileJSONSchema` validator, task registry with durable grant declarations, task ledgers |
 | `./effects` | Effect intent/outcome builders, correlation, ordered and typed handlers, compensation registries and inspection |
 | `./providers` | Provider contract, deterministic static provider, program conversation provider, live Anthropic and OpenAI-compatible adapters with tool calls, provider conversations |
 | `./runs` | Offline and durable execution, budgets, cancellation, recovery, pause/resume |
@@ -341,3 +341,6 @@ tracked explicitly in the [coverage map](https://github.com/avnionur/shepherd-ty
 
 Original work in this repository is available under the [MIT License](./LICENSE). See
 [NOTICE](./NOTICE) for upstream attribution and reuse boundaries.
+
+`SQLiteTaskRegistry.registerGranted` persists exact-version repository declarations for read-only
+`task show` inspection after restart. See [registration and migration](https://github.com/avnionur/shepherd-typescript/blob/main/docs/task-registry.md).

@@ -98,7 +98,7 @@
             ],
             "dimensions": {
                 "api": "Supported: retained capture, inspect, select/apply/discard/release and authenticated repository grants.",
-                "composition": "Adapted: each retained task exposes one repository world. Supplied readText/writeText capabilities journal individual intents, admissions and outcomes even when the final changeset is empty. CLI task inspection does not expose grant evidence.",
+                "composition": "Adapted: each retained task exposes one repository world. Supplied readText/writeText capabilities journal individual intents, admissions and outcomes even when the final changeset is empty. CLI task inspection retrieves validated exact-version repository declarations after registry reopen; per-run effective grants remain distinct.",
                 "recovery": "Capture and settlement have durable recovery; operation inspection survives reopen/import and distinguishes unentered work from uncertain admission without replaying an arbitrary runner.",
                 "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
                 "performance": "No performance result claimed by this row.",
@@ -149,12 +149,17 @@
                 {
                     "path": "test/workspace/world-effect-crash.test.ts",
                     "sha256": "94a6287a3da5fb7d788dc6dbe8e7e52ab8d1300fb3659e5135248a0f2cbfd24e"
+                },
+                {
+                    "path": "test/task/registry-grants.test.ts",
+                    "sha256": "0c550a650db0b81de446d90be7fc033862001e49bac602ab1ce8c6dca7e85d4d"
+                },
+                {
+                    "path": "docs/task-registry.md",
+                    "sha256": "95e0dead651a4c34c8594c008201a9165ce45d7c0f3bbae9bcac6a8da47ce0e5"
                 }
             ],
-            "issues": [
-                "https://github.com/avnionur/shepherd-typescript/issues/239",
-                "https://github.com/avnionur/shepherd-typescript/issues/247"
-            ]
+            "issues": ["https://github.com/avnionur/shepherd-typescript/issues/247"]
         },
         {
             "id": "cli",
@@ -172,7 +177,7 @@
                 }
             ],
             "dimensions": {
-                "api": "Supported: configured CLI topology, stable JSON, retained inspection and replay/scope views; task registry API exists.",
+                "api": "Supported: configured CLI topology, stable JSON, retained inspection and replay/scope views; registered repository declarations appear in task inspection after restart.",
                 "composition": "Partial: declarative CLI task registration and extension scaffolding are stubs; help/version/selectors/trace detail/readiness conveniences remain incomplete.",
                 "recovery": "Exact mutation commands delegate to fenced runtime operations; read selectors confer no mutation authority.",
                 "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
@@ -187,11 +192,15 @@
                 },
                 {
                     "path": "docs/cli.md",
-                    "sha256": "f18cf680224a284b8e944e104d45145259b093ba85e1a7c9d94977c4f78f2bd7"
+                    "sha256": "cde1df48facf9417d469adaa7ad4be8e6ab92e480bebe391e4d10139a60946de"
                 },
                 {
                     "path": "test/task/registry-persistence.test.ts",
-                    "sha256": "2d4af12653c60bf5f8f69c27811e4455c05118bb455cd87165e961a9451c27ef"
+                    "sha256": "7a70e3ef774064b975f4071e0917ae2843ebaf41cc18dc0590e73b841f6497dc"
+                },
+                {
+                    "path": "test/task/registry-grants.test.ts",
+                    "sha256": "0c550a650db0b81de446d90be7fc033862001e49bac602ab1ce8c6dca7e85d4d"
                 }
             ],
             "issues": [

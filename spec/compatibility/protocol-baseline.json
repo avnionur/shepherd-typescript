@@ -1,10 +1,10 @@
 {
     "changeLog": {
-        "digest": "sha256:b2997b7bdea168036ad7425bf16c4e5556fbbbabd78d59f4b82217fba597b768",
-        "entries": 137
+        "digest": "sha256:aa65a8e673ba5844866449b8d8ecfce2d191ab8a2498e3ca54ec2be0501757f1",
+        "entries": 141
     },
-    "packageVersion": "13.1.0",
-    "previousVersion": "13.0.0",
+    "packageVersion": "13.2.0",
+    "previousVersion": "13.1.0",
     "surface": {
         "commandOptions": {
             "demo write": {},
@@ -215,7 +215,7 @@
         },
         "migrations": {
             "protocol.config.json#/kernel/store/migrations": ["sha256:09c2b59aaf499bb3c472af09d3c0fbf42e62865d73b515c6a881763e053bb2c9","sha256:c2918aab3932d140fc03633f73b11dc68849fa8ddd67738c9bccdbb7de44a938","sha256:64e021b34ec20c81c5439b1b1f8676b8dd6039edb8b4ae0ee83c2ba84f48fc8c","sha256:a6afc34546437f5e2f53250132b846fb8a5bf82d7955895eea44f60c6d3e308e","sha256:1ca3bd1f8eff05c6c664847c469446b3a0bf3f3219dd3363f3d5ce418b23b69e","sha256:693c301a3f90533571427f4f186b128792f7cc62934dfcf620f99a20a951637f","sha256:2643bee840417e3170aef955e2cfaaca7e9d9cda1abd211884243c3f114e0125","sha256:24b1a123a6f2962297cb157329d55e08ddee09fc2f9913f1ad265cfa3e89d26d","sha256:5225383e571f4f6c40fe37ead6a9ec3b74b3c3cb818e291d093590668b012b8a","sha256:d552786e065d103199214f06ce6339300e6e0260306553ce80827c50d3dfb966","sha256:4f2e25f533c7a001eaf22f607a31612b235e5e27852c8df640d1b5cf5b5f402b","sha256:68e099e81b90fa2eac14d8fe3b74ebee707ffd7f0c34876be102b9b32bea31f4","sha256:6cfa351e12e4a3872ddcd06a7bfa786fabf139741fbe4d85db0a917a8ab53fc3"],
-            "protocol.config.json#/tasks/registry/migrations": ["sha256:6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"]
+            "protocol.config.json#/tasks/registry/migrations": ["sha256:6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b","sha256:d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35"]
         },
         "schemas": {
             "append-batch-draft-v0.schema.json": {"defs":{"appendGroup":"sha256:2ab53a0d0d29ba19251c5a72e2c1ef47c1b3c1d3e2ca9f9eb736d5f6c5e79c92","appendRecord":"sha256:10df6a70cd06b4836debd17dd3d80b3056ba614b00025965a9cde2f7d0529b4d","recordId":"sha256:6ed99335d07cf1464ffaf44ded7d8b62f9bcae658d1d25910cfe1bc583cd48ff"},"digest":"sha256:fdb214a684a7d2d83b32315e24fab12cf31f5a268d29647c4356576cc10da05b","oneOf":null,"rest":"sha256:23268c90170fe746a6bf821cf62cbb97ec6022f2eeb99ce1d0db5ba4dbcdf74c"},
@@ -376,7 +376,7 @@
             "protocol.config.json#/tasks/artifactLockVersion": 1,
             "protocol.config.json#/tasks/compatibilityVersion": "shepherd.tasks.v1",
             "protocol.config.json#/tasks/descriptorVersion": 1,
-            "protocol.config.json#/tasks/registry/schemaVersion": 1,
+            "protocol.config.json#/tasks/registry/schemaVersion": 2,
             "protocol.config.json#/workspaces/bindingVersion": 2,
             "protocol.config.json#/workspaces/carrier/descriptorVersion": 1,
             "protocol.config.json#/workspaces/carrier/manifestVersion": 1,

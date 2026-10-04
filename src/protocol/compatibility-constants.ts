@@ -1239,6 +1239,12 @@ export const TASK_PROTOCOL_V1_CONTRACT = deepFreeze({
     taskIdPrefix: "task:sha256:",
 } as const);
 
+/** Task protocol v2 adds durable declaration companions without changing task artifact bytes. */
+export const TASK_PROTOCOL_V2_CONTRACT = deepFreeze({
+    ...TASK_PROTOCOL_V1_CONTRACT,
+    registry: { ...TASK_PROTOCOL_V1_CONTRACT.registry, migrations: [1, 2], schemaVersion: 2 },
+} as const);
+
 /** Immutable task delegation, child run handle, and delegated authority contract implemented by delegation v1. */
 export const DELEGATION_PROTOCOL_V1_CONTRACT = deepFreeze({
     approvalVerdicts: ["approved", "rejected"],

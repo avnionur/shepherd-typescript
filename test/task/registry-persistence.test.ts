@@ -20,7 +20,7 @@ test("SQLiteTaskRegistry preserves exact registrations across reopening", async 
     const descriptor = task(taskDefinition());
     const first = new SQLiteTaskRegistry(databasePath);
     const registration = first.register(descriptor);
-    assert.equal(first.schemaVersion, 1);
+    assert.equal(first.schemaVersion, 2);
     first.close();
 
     using reopened = new SQLiteTaskRegistry(databasePath);
@@ -108,7 +108,7 @@ test("SQLiteTaskRegistry rejects future schemas and rolls back failed migrations
     const futurePath = path.join(directory, "future.sqlite");
     new SQLiteTaskRegistry(futurePath).close();
     const future = new DatabaseSync(futurePath);
-    future.prepare("INSERT INTO task_schema_migrations(version) VALUES (?)").run(2);
+    future.prepare("INSERT INTO task_schema_migrations(version) VALUES (?)").run(3);
     future.close();
     assert.throws(() => new SQLiteTaskRegistry(futurePath), UnsupportedTaskRegistrySchemaError);
 

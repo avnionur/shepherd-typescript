@@ -524,7 +524,7 @@ function taskShow(handler: string): CliHandler {
         using registry = openRegistry(parsed, io);
         const entry = resolveTaskLedgerSelector(registry, selector);
         io.output(
-            `Task: ${entry.artifact_lock.task_id}@${entry.artifact_lock.task_version}\nDigest: ${entry.artifact_lock.artifact_digest}\n`,
+            `Task: ${entry.artifact_lock.task_id}@${entry.artifact_lock.task_version}\nDigest: ${entry.artifact_lock.artifact_digest}\nInstruction: ${JSON.stringify(entry.artifact.instruction)}\nInput schema: ${JSON.stringify(entry.artifact.input_schema)}\nOutput schema: ${JSON.stringify(entry.artifact.output_schema)}\nRepository declarations: ${entry.repository_grant === null ? "none" : JSON.stringify(entry.repository_grant.artifact.grants)}\nAuthority: declarations only; effective grants, ceilings and enforcement belong to each run.\n`,
             { task: entry } as unknown as SemanticRecord,
         );
     };
