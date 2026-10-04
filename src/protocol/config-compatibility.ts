@@ -3,12 +3,12 @@ import {
     BACKUP_PROTOCOL_V1_CONTRACT,
     CLI_PROTOCOL_V1_CONTRACT,
     DELEGATION_PROTOCOL_V1_CONTRACT,
-    EFFECT_PROTOCOL_V3_CONTRACT,
+    EFFECT_PROTOCOL_V4_CONTRACT,
     EVIDENCE_RECORD_PROJECTION_V1_CONTRACT,
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     FORMAL_ASSURANCE_V2_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
-    KERNEL_ABI_V0_STORE_V14_CONTRACT,
+    KERNEL_ABI_V0_STORE_V15_CONTRACT,
     OBSERVABILITY_PROTOCOL_V1_CONTRACT,
     ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT,
     PROVIDER_PROTOCOL_V3_CONTRACT,
@@ -49,7 +49,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (config.kernel.store.appendIntentDigestAlgorithm !== expected.appendIntentDigestAlgorithm) {
         throw new TypeError("append intent digest requires a new store migration");
     }
-    if (!sameJson(config.kernel.store.blobs, KERNEL_ABI_V0_STORE_V14_CONTRACT.blobs)) {
+    if (!sameJson(config.kernel.store.blobs, KERNEL_ABI_V0_STORE_V15_CONTRACT.blobs)) {
         throw new TypeError("blob identity and filesystem constants require a new store migration");
     }
     if (!sameJson(config.kernel.queries, expected.queries)) {
@@ -105,8 +105,8 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         throw new TypeError("protocol artifact destinations do not match the repository contract");
     }
     if (
-        config.kernel.store.schemaVersion !== KERNEL_ABI_V0_STORE_V14_CONTRACT.schemaVersion ||
-        !sameMigrations(config.kernel.store.migrations, KERNEL_ABI_V0_STORE_V14_CONTRACT.migrations)
+        config.kernel.store.schemaVersion !== KERNEL_ABI_V0_STORE_V15_CONTRACT.schemaVersion ||
+        !sameMigrations(config.kernel.store.migrations, KERNEL_ABI_V0_STORE_V15_CONTRACT.migrations)
     ) {
         throw new TypeError("store migration constants do not match the implemented schema");
     }
@@ -131,7 +131,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (!sameJson(config.tasks, TASK_PROTOCOL_V2_CONTRACT)) {
         throw new TypeError("task descriptor constants require a new task protocol");
     }
-    if (!sameJson(config.effects, EFFECT_PROTOCOL_V3_CONTRACT)) {
+    if (!sameJson(config.effects, EFFECT_PROTOCOL_V4_CONTRACT)) {
         throw new TypeError("effect record constants require a new effect protocol");
     }
     if (!sameJson(config.formalAssurance, FORMAL_ASSURANCE_V2_CONTRACT)) {
@@ -230,7 +230,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
 
 function sameMigrations(
     actual: ProtocolConfig["kernel"]["store"]["migrations"],
-    expected: typeof KERNEL_ABI_V0_STORE_V14_CONTRACT.migrations,
+    expected: typeof KERNEL_ABI_V0_STORE_V15_CONTRACT.migrations,
 ): boolean {
     return (
         actual.length === expected.length &&

@@ -389,12 +389,24 @@
                 {
                     "entry": "./effects",
                     "symbol": "inspectEffectCompensationOwnership"
+                },
+                {
+                    "entry": "./effects",
+                    "symbol": "createEffectReconciliationAuthority"
+                },
+                {
+                    "entry": "./effects",
+                    "symbol": "inspectEffectReconciliation"
+                },
+                {
+                    "entry": "./effects",
+                    "symbol": "reconcileEffect"
                 }
             ],
             "dimensions": {
                 "api": "Supported: per-kind handlers and retained compensation intent/attempt/outcome evidence.",
                 "composition": "Branches retaining their source do not compensate; abandoning branches and scope discard compensate recorded successful compensable materializations.",
-                "recovery": "Durable attempt ownership serializes active invocations; expired or replaced holders cannot publish outcomes. SIGKILL recovery retains the materialization key. External idempotency remains required; imported stores do not coordinate leases. Audited reconciliation remains outstanding.",
+                "recovery": "Durable attempt ownership serializes active invocations; expired or replaced holders cannot publish outcomes. SIGKILL recovery retains the materialization key. External idempotency remains required; imported stores do not coordinate leases. Host-authorized retry, verified external completion and accepted-unresolved audits preserve factual outcomes and expose residual risk through run/scope/replay views. Schema15 and archive guards refuse older compensation readers.",
                 "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
                 "performance": "No performance result claimed by this row.",
                 "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
@@ -415,14 +427,34 @@
                 },
                 {
                     "path": "docs/compensation.md",
-                    "sha256": "a687fa6c5e1b9b9d849a1279ec40e79cbf1f4c33ecf5da698081012c0cffe65f"
+                    "sha256": "5defdcea40efd4e3334577a4a6fe834e9217789413bc89dd6692ae2aa6d74b3e"
                 },
                 {
                     "path": "test/effect/compensation-ownership.test.ts",
                     "sha256": "a0fc4c83db0f3d087a065fa6e23bab9f0036e94865ea17ac5bb1f2924e71f181"
+                },
+                {
+                    "path": "docs/effect-reconciliation.md",
+                    "sha256": "5c90ff6b66a79aaf6f6ece7339cf5a1c71fc5e97969f68d16883c79888a33b6f"
+                },
+                {
+                    "path": "test/effect/reconciliation.test.ts",
+                    "sha256": "176410e0bc04ab87a02bc4bc4c173fd324d156f6488281e58b41a6a453a353ff"
+                },
+                {
+                    "path": "test/effect/reconciliation-authority.test.ts",
+                    "sha256": "d5dedaf4853b0abaf8d47c4478683277629da0d61cb23c78fc63f5d18e613fdf"
+                },
+                {
+                    "path": "test/effect/reconciliation-process.test.ts",
+                    "sha256": "018d3022596610454b508e886773215219de517730ab1ee00025f125d80aa471"
+                },
+                {
+                    "path": "test/effect/reconciliation-uncertain.test.ts",
+                    "sha256": "3f0508e0b0552b144a9617114c94bc3960e9dd355ff4700940d7b7f34de39538"
                 }
             ],
-            "issues": ["https://github.com/avnionur/shepherd-typescript/issues/241"]
+            "issues": []
         },
         {
             "id": "scopes",
@@ -890,7 +922,7 @@
                 },
                 {
                     "path": "test/operations/backup-restore.test.ts",
-                    "sha256": "28e6a47b73d9438a66bf3632e6adc4195e43eb89725ea3fdf3d75d7fdb3d23b9"
+                    "sha256": "d644050786339b6f61cbbd3983817da19a192c4888e4a3f29f8a5c740c680c80"
                 },
                 {
                     "path": "test/operations/migration-drills.test.ts",

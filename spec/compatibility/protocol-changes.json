@@ -1129,18 +1129,82 @@
     },
     {
         "artifact": "api:.#EffectCompensationRequest",
+        "classification": "additive",
         "from": "sha256:c72c4caa22d6257b1a32599dc062194675a73f79057062fed3f31002b3770946",
         "to": "sha256:14f394afbf79b3f9476f03ff84a7333f8030b74f6fcb826829d3201f89721b96",
-        "classification": "additive",
-        "note": "Compensation handler requests now carry fresh invocation claim IDs and monotonic attempt fences; handler input is runtime-produced and existing handlers remain valid. Store schema 14 appends ownership bookkeeping without changing semantic records.",
-        "version": "13.3.0"
+        "version": "13.3.0",
+        "note": "Compensation handler requests now carry fresh invocation claim IDs and monotonic attempt fences; handler input is runtime-produced and existing handlers remain valid. Store schema 14 appends ownership bookkeeping without changing semantic records."
     },
     {
         "artifact": "api:./effects#EffectCompensationRequest",
+        "classification": "additive",
         "from": "sha256:c72c4caa22d6257b1a32599dc062194675a73f79057062fed3f31002b3770946",
         "to": "sha256:14f394afbf79b3f9476f03ff84a7333f8030b74f6fcb826829d3201f89721b96",
+        "version": "13.3.0",
+        "note": "Compensation handler requests now carry fresh invocation claim IDs and monotonic attempt fences; handler input is runtime-produced and existing handlers remain valid. Store schema 14 appends ownership bookkeeping without changing semantic records."
+    },
+    {
+        "artifact": "api:.#DurableTaskExecutionInspection",
+        "from": "sha256:f1856fe6f15b120e4e3b2dabb5afe15e1b5c1f995508a857a4f2b7e842953dce",
+        "to": "sha256:978738558f27f46f80ed00764fb8f4122cafe57d665b29cad87b51475563c762",
         "classification": "additive",
-        "note": "Compensation handler requests now carry fresh invocation claim IDs and monotonic attempt fences; handler input is runtime-produced and existing handlers remain valid. Store schema 14 appends ownership bookkeeping without changing semantic records.",
-        "version": "13.3.0"
+        "note": "Optional reconciliation and residual-risk fields preserve existing factual statuses and all prior inspection members.",
+        "version": "13.5.0"
+    },
+    {
+        "artifact": "api:.#EffectCompensationInspection",
+        "from": "sha256:34512f3cd996d7fc021d590f24e308aa62f98b792e5b11d02cb856bd979b9790",
+        "to": "sha256:776a6eb9a386a9274484c6f807c275be308fbf235dc98c154ac188040f500ea9",
+        "classification": "additive",
+        "note": "Optional reconciliation and residual-risk fields preserve existing factual statuses and all prior inspection members.",
+        "version": "13.5.0"
+    },
+    {
+        "artifact": "api:.#ReplaySessionInspection",
+        "from": "sha256:c742c86f02760424218ab0983275595908af675fcd0c60d862d5fd02b648186f",
+        "to": "sha256:ed93b1df78367dbe8ba26be15dce2ab61394ac71bda61a4fa69d8eec5ac65e0b",
+        "classification": "additive",
+        "note": "Optional reconciliation and residual-risk fields preserve existing factual statuses and all prior inspection members.",
+        "version": "13.5.0"
+    },
+    {
+        "artifact": "api:.#ScopeInspection",
+        "from": "sha256:9e59996a44f9e867f4140147535cf82e286e1eed7bd63e1473ef1cbf82e6f069",
+        "to": "sha256:690e87e819d1e029dc084e74d9480b33147eb681ef9ce9676bd6d59e2393e862",
+        "classification": "additive",
+        "note": "Optional reconciliation and residual-risk fields preserve existing factual statuses and all prior inspection members.",
+        "version": "13.5.0"
+    },
+    {
+        "artifact": "api:./effects#EffectCompensationInspection",
+        "from": "sha256:34512f3cd996d7fc021d590f24e308aa62f98b792e5b11d02cb856bd979b9790",
+        "to": "sha256:776a6eb9a386a9274484c6f807c275be308fbf235dc98c154ac188040f500ea9",
+        "classification": "additive",
+        "note": "Optional reconciliation and residual-risk fields preserve existing factual statuses and all prior inspection members.",
+        "version": "13.5.0"
+    },
+    {
+        "artifact": "api:./replay#ReplaySessionInspection",
+        "from": "sha256:c742c86f02760424218ab0983275595908af675fcd0c60d862d5fd02b648186f",
+        "to": "sha256:ed93b1df78367dbe8ba26be15dce2ab61394ac71bda61a4fa69d8eec5ac65e0b",
+        "classification": "additive",
+        "note": "Optional reconciliation and residual-risk fields preserve existing factual statuses and all prior inspection members.",
+        "version": "13.5.0"
+    },
+    {
+        "artifact": "api:./runs#DurableTaskExecutionInspection",
+        "from": "sha256:f1856fe6f15b120e4e3b2dabb5afe15e1b5c1f995508a857a4f2b7e842953dce",
+        "to": "sha256:978738558f27f46f80ed00764fb8f4122cafe57d665b29cad87b51475563c762",
+        "classification": "additive",
+        "note": "Optional reconciliation and residual-risk fields preserve existing factual statuses and all prior inspection members.",
+        "version": "13.5.0"
+    },
+    {
+        "artifact": "api:./scopes#ScopeInspection",
+        "from": "sha256:9e59996a44f9e867f4140147535cf82e286e1eed7bd63e1473ef1cbf82e6f069",
+        "to": "sha256:690e87e819d1e029dc084e74d9480b33147eb681ef9ce9676bd6d59e2393e862",
+        "classification": "additive",
+        "note": "Optional reconciliation and residual-risk fields preserve existing factual statuses and all prior inspection members.",
+        "version": "13.5.0"
     }
 ]

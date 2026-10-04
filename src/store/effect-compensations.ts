@@ -18,7 +18,13 @@ export function assertUnreservedCompensationOwners(batch: AppendBatchDraft): voi
 
 /** Refuses one owner path reserved for effect compensation. @internal */
 export function assertUnreservedCompensationOwner(ownerId: string): void {
-    if (ownerId.startsWith(effectProtocolConfig.compensation.identity.compensationIdPrefix)) {
+    if (
+        [
+            effectProtocolConfig.compensation.identity.compensationIdPrefix,
+            effectProtocolConfig.compensation.reconciliation.identity.targetOwnerPrefix,
+            effectProtocolConfig.compensation.reconciliation.identity.commandOwnerPrefix,
+        ].some((prefix) => ownerId.startsWith(prefix))
+    ) {
         throw new TraceStoreError(`owner path ${ownerId} is reserved for effect compensation`);
     }
 }

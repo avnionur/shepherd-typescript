@@ -37,6 +37,25 @@ export type {
 } from "../effect/handler-types.ts";
 export { createEffectHandlerStack } from "../effect/handlers.ts";
 export {
+    createEffectReconciliationAuthority,
+    inspectEffectReconciliation,
+    reconcileEffect,
+} from "../effect/reconciliation.ts";
+export type {
+    EffectReconciliationAuthority,
+    EffectReconciliationAuthorityOptions,
+    EffectReconciliationAuthorizationRequest,
+    EffectReconciliationBasis,
+    EffectReconciliationDecision,
+    EffectReconciliationDisposition,
+    EffectReconciliationInspection,
+    EffectReconciliationReceipt,
+    EffectReconciliationRecord,
+    EffectReconciliationTarget,
+    InspectEffectReconciliationOptions,
+    ReconcileEffectOptions,
+} from "../effect/reconciliation-types.ts";
+export {
     createEffectIntent,
     createEffectOutcome,
     validateEffectCorrelation,
@@ -62,4 +81,6 @@ export {
     EFFECT_COMPENSATION_PHASES,
     EFFECT_COMPENSATION_STATUSES,
     EFFECT_COMPENSATION_TRIGGERS,
+    EFFECT_RECONCILIATION_DISPOSITIONS,
+    EFFECT_RECONCILIATION_SOURCE_KINDS,
 } from "../protocol/values.generated.ts";

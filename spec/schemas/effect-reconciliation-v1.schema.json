@@ -1,0 +1,386 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/effect-reconciliation-v1.schema.json",
+    "$comment": "Generated from protocol.config.json. Runtime also validates UTF-8 byte bounds, exact source/audit heads and host policy; this schema is not proof of external completion or authorization.",
+    "title": "Shepherd Effect Reconciliation v1",
+    "oneOf": [
+        {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "actor_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "policy_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "basis_id": {
+                    "type": "string",
+                    "pattern": "^effect-reconciliation-basis:sha256:[0-9a-f]{64}$"
+                },
+                "compensation_id": {
+                    "type": "string",
+                    "pattern": "^effect-compensation:sha256:[0-9a-f]{64}$"
+                },
+                "effect_record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "target_record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "source_owner_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "source_head_record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "compensation_head_record_id": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "previous_record_id": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "source_kind": {
+                    "enum": [
+                        "replay",
+                        "supervised_dispatch"
+                    ]
+                },
+                "evidence_record_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^sha256:[0-9a-f]{64}$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "uniqueItems": true
+                },
+                "compatibility_version": {
+                    "const": "shepherd.effect-reconciliation.v1"
+                },
+                "record_version": {
+                    "const": 1
+                },
+                "disposition": {
+                    "const": "retry"
+                },
+                "completion_verified": {
+                    "const": false
+                }
+            },
+            "required": [
+                "actor_id",
+                "basis_id",
+                "command_id",
+                "compatibility_version",
+                "compensation_head_record_id",
+                "compensation_id",
+                "completion_verified",
+                "disposition",
+                "effect_record_id",
+                "evidence_record_ids",
+                "policy_id",
+                "previous_record_id",
+                "reason",
+                "record_version",
+                "source_head_record_id",
+                "source_kind",
+                "source_owner_id",
+                "target_record_id"
+            ]
+        },
+        {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "actor_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "policy_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "basis_id": {
+                    "type": "string",
+                    "pattern": "^effect-reconciliation-basis:sha256:[0-9a-f]{64}$"
+                },
+                "compensation_id": {
+                    "type": "string",
+                    "pattern": "^effect-compensation:sha256:[0-9a-f]{64}$"
+                },
+                "effect_record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "target_record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "source_owner_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "source_head_record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "compensation_head_record_id": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "previous_record_id": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "source_kind": {
+                    "enum": [
+                        "replay",
+                        "supervised_dispatch"
+                    ]
+                },
+                "evidence_record_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^sha256:[0-9a-f]{64}$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "uniqueItems": true
+                },
+                "compatibility_version": {
+                    "const": "shepherd.effect-reconciliation.v1"
+                },
+                "record_version": {
+                    "const": 1
+                },
+                "disposition": {
+                    "const": "externally_verified_completion"
+                },
+                "completion_verified": {
+                    "const": true
+                }
+            },
+            "required": [
+                "actor_id",
+                "basis_id",
+                "command_id",
+                "compatibility_version",
+                "compensation_head_record_id",
+                "compensation_id",
+                "completion_verified",
+                "disposition",
+                "effect_record_id",
+                "evidence_record_ids",
+                "policy_id",
+                "previous_record_id",
+                "reason",
+                "record_version",
+                "source_head_record_id",
+                "source_kind",
+                "source_owner_id",
+                "target_record_id"
+            ]
+        },
+        {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "actor_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "policy_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "command_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "basis_id": {
+                    "type": "string",
+                    "pattern": "^effect-reconciliation-basis:sha256:[0-9a-f]{64}$"
+                },
+                "compensation_id": {
+                    "type": "string",
+                    "pattern": "^effect-compensation:sha256:[0-9a-f]{64}$"
+                },
+                "effect_record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "target_record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "source_owner_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096,
+                    "x-shepherd-max-utf8-bytes": 4096
+                },
+                "source_head_record_id": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                "compensation_head_record_id": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "previous_record_id": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "source_kind": {
+                    "enum": [
+                        "replay",
+                        "supervised_dispatch"
+                    ]
+                },
+                "evidence_record_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^sha256:[0-9a-f]{64}$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "uniqueItems": true
+                },
+                "compatibility_version": {
+                    "const": "shepherd.effect-reconciliation.v1"
+                },
+                "record_version": {
+                    "const": 1
+                },
+                "disposition": {
+                    "const": "accepted_unresolved"
+                },
+                "completion_verified": {
+                    "const": false
+                }
+            },
+            "required": [
+                "actor_id",
+                "basis_id",
+                "command_id",
+                "compatibility_version",
+                "compensation_head_record_id",
+                "compensation_id",
+                "completion_verified",
+                "disposition",
+                "effect_record_id",
+                "evidence_record_ids",
+                "policy_id",
+                "previous_record_id",
+                "reason",
+                "record_version",
+                "source_head_record_id",
+                "source_kind",
+                "source_owner_id",
+                "target_record_id"
+            ]
+        }
+    ]
+}

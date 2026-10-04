@@ -733,6 +733,16 @@ export const EFFECT_COMPENSATION_OWNERSHIP_STATUSES = [
     "released",
 ] as const;
 
+/** Configured explicit operator reconciliation dispositions. @public */
+export const EFFECT_RECONCILIATION_DISPOSITIONS = [
+    "retry",
+    "externally_verified_completion",
+    "accepted_unresolved",
+] as const;
+
+/** Configured source execution kinds for reconciliation evidence. @public */
+export const EFFECT_RECONCILIATION_SOURCE_KINDS = ["replay", "supervised_dispatch"] as const;
+
 /** Configured compensation triggers ordered scope discard, replay rewind, replay replay, command. @public */
 export const EFFECT_COMPENSATION_TRIGGERS = [
     "scope_discard",

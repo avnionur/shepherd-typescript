@@ -5,6 +5,9 @@ work and compatibility research live separately in [`.plan`](../.plan/README.md)
 
 ## Guides
 
+- [Effect reconciliation](./effect-reconciliation.md) defines authenticated operator decisions,
+  exact evidence, immutable outcomes, residual-risk views and the schema-15 reader boundary.
+
 - [Pi chat and node observability engineering guide](./pi-observatory.md) covers the standalone
   example, pinned primary-source research, RPC lifecycle, canonical graph semantics and verification.
 

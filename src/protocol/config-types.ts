@@ -1,3 +1,4 @@
+import type { EffectReconciliationProtocolConfig } from "./config-reconciliation.ts";
 import type { WorldEffectProtocolConfig } from "./config-world-effects.ts";
 
 /** Hash algorithms permitted for content-addressed protocol identities. */
@@ -1285,6 +1286,8 @@ export type TaskProtocolConfig = {
 
 /** Configured effect compensation protocol: records, vocabularies, identity, errors, and bounds. */
 export type EffectCompensationProtocolConfig = {
+    /** Operator audit and exact reconciliation decisions. */
+    readonly reconciliation: EffectReconciliationProtocolConfig;
     /** Generated language-neutral compensation schema destination. */
     readonly artifacts: {
         /** Repository-relative compensation record schema destination. */

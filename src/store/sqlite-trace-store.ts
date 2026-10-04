@@ -3,6 +3,7 @@ import { DatabaseSync } from "node:sqlite";
 import { normalizeAppendBatchDraft } from "../append/validation.ts";
 import { BlobFilesystem } from "../blob/filesystem.ts";
 import { canonicalizeRecord } from "../canonical/canonical-record.ts";
+import type { EffectReconciliationRecord } from "../effect/reconciliation-types.ts";
 import { exportTraceArchive } from "../interchange/export.ts";
 import { importTraceArchive } from "../interchange/import.ts";
 import type { TraceImportReceipt } from "../interchange/types.ts";
@@ -88,6 +89,7 @@ import {
     assertUnreservedCompensationOwner,
     assertUnreservedCompensationOwners,
 } from "./effect-compensations.ts";
+import { appendEffectReconciliationInStore } from "./effect-reconciliations.ts";
 import { TraceStoreError, TraceStoreReadOnlyError } from "./errors.ts";
 import { prepareOwnerOnlyDatabaseFile } from "./file-mode.ts";
 import { verifyTraceStoreIntegrity } from "./integrity.ts";
@@ -1415,6 +1417,12 @@ export class SQLiteTraceStore implements Disposable {
         );
     }
 
+    /** Publishes an already-authorized audit against exact heads and inactive leases. @internal */
+    appendEffectReconciliationRecord(body: EffectReconciliationRecord, now: number): AppendReceipt {
+        this.#assertOpen();
+        return appendEffectReconciliationInStore(this.#database, body, now);
+    }
+
     /** Atomically admits and records one compensation attempt. @internal */
     claimEffectCompensationAttempt(
         compensationId: string,
@@ -1422,6 +1430,7 @@ export class SQLiteTraceStore implements Disposable {
         fence: CompensationFence,
         now: number,
         request: StoreAppendRequest,
+        expectedReconciliationHead: RecordId | null = null,
     ): AppendReceipt {
         this.#assertOpen();
         return claimCompensationAttempt(
@@ -1431,6 +1440,7 @@ export class SQLiteTraceStore implements Disposable {
             fence,
             now,
             request,
+            expectedReconciliationHead,
         );
     }
 
@@ -1805,6 +1815,7 @@ export class SQLiteTraceStore implements Disposable {
      * @param jsonPath - Trusted SQLite JSON path for one configured text field.
      * @param textValue - Exact text value required at the path.
      * @param limit - Positive trusted maximum owner count.
+     * @param offset - Trusted canonical page offset; defaults to zero.
      * @returns Frozen matching owner identities in canonical record/owner order.
      * @throws {TraceStoreError} If the store is closed.
      * @internal
@@ -1814,9 +1825,17 @@ export class SQLiteTraceStore implements Disposable {
         jsonPath: string,
         textValue: string,
         limit: number,
+        offset = 0,
     ): readonly string[] {
         this.#assertOpen();
-        return listOwnerIdsBySchemaBodyText(this.#database, schemaRef, jsonPath, textValue, limit);
+        return listOwnerIdsBySchemaBodyText(
+            this.#database,
+            schemaRef,
+            jsonPath,
+            textValue,
+            limit,
+            offset,
+        );
     }
 
     /**

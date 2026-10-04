@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 13.4.0
+Package: `@avnionur/shepherd-typescript` 13.5.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 1451.
+Exported symbols: 1468.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -5874,6 +5874,7 @@ Signature:
 
 ```ts
 export type DurableTaskExecutionInspection = {
+    readonly residual_risks?: readonly EffectReconciliationReceipt[];
     readonly artifacts: readonly DurableTaskExecutionArtifactInspection[];
     readonly causal_edges: readonly (readonly [
         RecordId,
@@ -6399,6 +6400,37 @@ export declare const EFFECT_COMPENSATION_TRIGGERS: readonly [
 ];
 ```
 
+### `EFFECT_RECONCILIATION_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured explicit operator reconciliation dispositions.
+
+Signature:
+
+```ts
+export declare const EFFECT_RECONCILIATION_DISPOSITIONS: readonly [
+    "retry",
+    "externally_verified_completion",
+    "accepted_unresolved"
+];
+```
+
+### `EFFECT_RECONCILIATION_SOURCE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured source execution kinds for reconciliation evidence.
+
+Signature:
+
+```ts
+export declare const EFFECT_RECONCILIATION_SOURCE_KINDS: readonly [
+    "replay",
+    "supervised_dispatch"
+];
+```
+
 ### `EVIDENCE_RECORD_LATEST_SELECTOR`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -6665,6 +6697,7 @@ Signature:
 
 ```ts
 export type EffectCompensationInspection = {
+    readonly reconciliation?: EffectReconciliationReceipt;
     readonly attempts: readonly EffectCompensationAttemptInspection[];
     readonly compensation_id: string;
     readonly effect_intent: EffectIntent;
@@ -6966,6 +6999,177 @@ export type EffectOutcome<K extends string = string, V extends SemanticValue = S
     readonly outcome_version: number;
     readonly phase: (typeof EFFECT_PHASES)["outcome"];
     readonly result: EffectResult<V, E>;
+};
+```
+
+### `EffectReconciliationAuthority`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Opaque package-created authority; applications must keep it outside untrusted agent inputs.
+
+Signature:
+
+```ts
+export type EffectReconciliationAuthority = {
+    readonly actorId: string;
+    readonly policyId: string;
+};
+```
+
+### `EffectReconciliationAuthorityOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Host-provided authorization and external-completion verification policy.
+
+Signature:
+
+```ts
+export type EffectReconciliationAuthorityOptions = {
+    readonly actorId: string;
+    readonly policyId: string;
+    readonly authorize: (request: EffectReconciliationAuthorizationRequest) => boolean | Promise<boolean>;
+    readonly verifyCompletion: (request: EffectReconciliationAuthorizationRequest) => boolean | Promise<boolean>;
+};
+```
+
+### `EffectReconciliationAuthorizationRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Trusted host policy receives a frozen decision and validated source evidence.
+
+Signature:
+
+```ts
+export type EffectReconciliationAuthorizationRequest = {
+    readonly decision: EffectReconciliationDecision;
+    readonly target: EffectReconciliationTarget;
+};
+```
+
+### `EffectReconciliationBasis`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact heads consumed atomically by one reconciliation decision.
+
+Signature:
+
+```ts
+export type EffectReconciliationBasis = {
+    readonly target_record_id: RecordId;
+    readonly compensation_id: string;
+    readonly source_kind: EffectReconciliationTarget["source_kind"];
+    readonly source_owner_id: string;
+    readonly source_head_record_id: RecordId;
+    readonly compensation_head_record_id: RecordId | null;
+    readonly previous_record_id: RecordId | null;
+};
+```
+
+### `EffectReconciliationDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Complete immutable request bound to operator authorization and command identity.
+
+Signature:
+
+```ts
+export type EffectReconciliationDecision = {
+    readonly actor_id: string;
+    readonly policy_id: string;
+    readonly basis_id: string;
+    readonly command_id: string;
+    readonly disposition: EffectReconciliationDisposition;
+    readonly effect_record_id: RecordId;
+    readonly evidence_record_ids: readonly RecordId[];
+    readonly reason: string;
+};
+```
+
+### `EffectReconciliationDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured operator disposition, independent of handler success.
+
+Signature:
+
+```ts
+export type EffectReconciliationDisposition = (typeof EFFECT_RECONCILIATION_DISPOSITIONS)[number];
+```
+
+### `EffectReconciliationInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only reconciliation evidence and the basis for a future operator command.
+
+Signature:
+
+```ts
+export type EffectReconciliationInspection = {
+    readonly basis_id: string;
+    readonly basis: EffectReconciliationBasis;
+    readonly target: EffectReconciliationTarget;
+    readonly compensation: EffectCompensationInspection | null;
+    readonly decisions: readonly EffectReconciliationReceipt[];
+};
+```
+
+### `EffectReconciliationReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained operator audit and exact record identity.
+
+Signature:
+
+```ts
+export type EffectReconciliationReceipt = EffectReconciliationRecord & {
+    readonly record_id: RecordId;
+};
+```
+
+### `EffectReconciliationRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable operator audit record, separate from any EffectOutcome.
+
+Signature:
+
+```ts
+export type EffectReconciliationRecord = EffectReconciliationDecision & EffectReconciliationBasis & {
+    readonly compatibility_version: string;
+    readonly record_version: number;
+    readonly completion_verified: boolean;
+};
+```
+
+### `EffectReconciliationTarget`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact source evidence an operator is reconciling.
+
+Signature:
+
+```ts
+export type EffectReconciliationTarget = {
+    readonly requested_record_id: RecordId;
+    readonly effect_record_id: RecordId;
+    readonly compensation_id: string;
+    readonly source_kind: (typeof EFFECT_RECONCILIATION_SOURCE_KINDS)[number];
+    readonly source_owner_id: string;
+    readonly source_head_record_id: RecordId;
+    readonly intent_ref: string;
+    readonly intent: EffectIntent | null;
+    readonly outcome: EffectOutcome | null;
+    readonly successful_materialization: boolean;
 };
 ```
 
@@ -7854,6 +8058,20 @@ Signature:
 ```ts
 export type InspectEffectCompensationOptions = {
     readonly compensationId: string;
+};
+```
+
+### `InspectEffectReconciliationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed exact source selector for reconciliation inspection.
+
+Signature:
+
+```ts
+export type InspectEffectReconciliationOptions = {
+    readonly effectRecordId: RecordId;
 };
 ```
 
@@ -11360,6 +11578,26 @@ export type ReadSupervisionContextOptions = {
 };
 ```
 
+### `ReconcileEffectOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact immutable command submitted with a trusted host authority.
+
+Signature:
+
+```ts
+export type ReconcileEffectOptions = {
+    readonly authority: EffectReconciliationAuthority;
+    readonly basisId: string;
+    readonly commandId: string;
+    readonly disposition: EffectReconciliationDisposition;
+    readonly effectRecordId: RecordId;
+    readonly evidenceRecordIds: readonly RecordId[];
+    readonly reason: string;
+};
+```
+
 ### `RecordBody`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -13120,6 +13358,7 @@ Signature:
 
 ```ts
 export type ReplaySessionInspection = {
+    readonly residual_risks?: readonly EffectReconciliationReceipt[];
     readonly checkpoints: readonly ReplayCheckpointInspection[];
     readonly command_id: string;
     readonly pending_admission_record_id: RecordId | null;
@@ -18213,6 +18452,7 @@ Signature:
 
 ```ts
 export type ScopeInspection = {
+    readonly residual_risks?: readonly EffectReconciliationReceipt[];
     readonly authority: ScopeAuthority;
     readonly children: readonly string[];
     readonly execution_id: string | null;
@@ -26434,6 +26674,37 @@ const outcome = createEffectOutcome(intent, {
 });
 ```
 
+### `createEffectReconciliationAuthority`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a trusted host authorization capability for exact operator decisions.
+The host authenticates the actor and supplies its real access policy; this is not an identity provider.
+
+Signature:
+
+```ts
+export declare function createEffectReconciliationAuthority(options: EffectReconciliationAuthorityOptions): EffectReconciliationAuthority;
+```
+
+Parameter:
+
+- options - Actor, policy and explicit authorization/completion-verification callbacks.
+
+Returns:
+
+- An immutable package-authenticated handle; copies are refused.
+
+Throws:
+
+- {TypeError} If options are malformed, unbounded or lack callbacks.
+
+Example:
+
+- ```ts
+const authority = createEffectReconciliationAuthority({ actorId, policyId, authorize, verifyCompletion });
+```
+
 ### `createFilesystemBlobStoreBackend`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -29792,6 +30063,43 @@ Throws:
 
 - {TraceStoreError} If the store is closed or inspection races a writer.
 
+### `inspectEffectReconciliation`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Inspects exact effect uncertainty, immutable compensation facts and operator audit history.
+No external operation or recovery is invoked. Pending replay admissions may retain only an intent digest.
+
+Signature:
+
+```ts
+export declare function inspectEffectReconciliation(store: SQLiteTraceStore, options: InspectEffectReconciliationOptions): EffectReconciliationInspection;
+```
+
+Parameter:
+
+- store - Open read-only or writable store.
+
+Parameter:
+
+- options - Exact source effect evidence identity.
+
+Returns:
+
+- Validated target, factual compensation state and current command basis.
+
+Throws:
+
+- {EffectCompensationEvidenceError} If evidence is missing, malformed or unsupported.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
 ### `inspectLocalNativeJailBackend`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -31793,6 +32101,63 @@ Example:
 
 - ```ts
 const value = readTaskValue(JSON.parse(text));
+```
+
+### `reconcileEffect`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Records an authorized exact operator disposition without fabricating a handler result or invoking external work.
+Equal commands reauthorize and replay their receipt; changed requests conflict. Completion requires a
+separate host verification. A retry audit authorizes a later existing safe retry path and never invents
+successful materialization evidence. Active invocation owners and changed heads refuse publication.
+
+Signature:
+
+```ts
+export declare function reconcileEffect(store: SQLiteTraceStore, options: ReconcileEffectOptions): Promise<EffectReconciliationReceipt>;
+```
+
+Parameter:
+
+- store - Writable trace store.
+
+Parameter:
+
+- options - Exact inspected basis, actor capability, disposition, reason and retained evidence.
+
+Returns:
+
+- Immutable audited disposition, separate from compensation outcome status.
+
+Throws:
+
+- {EffectCompensationEvidenceError} If policy refuses or evidence/verification is invalid.
+
+Throws:
+
+- {EffectCompensationConflictError} If command content, heads or active ownership conflict.
+
+Throws:
+
+- {AppendIntentConflictError} If a concurrently retained command names another request.
+
+Throws:
+
+- {TypeError} If options or authority are malformed.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or publication fails.
+
+Example:
+
+- ```ts
+const incident = inspectEffectReconciliation(store, { effectRecordId });
+const receipt = await reconcileEffect(store, {
+    authority, effectRecordId, basisId: incident.basis_id, commandId,
+    disposition: "accepted_unresolved", reason, evidenceRecordIds,
+});
 ```
 
 ### `recoverGrantedTaskWorldDurably`
@@ -44117,7 +44482,7 @@ import * as api from "@avnionur/shepherd-typescript/effects";
 void api;
 ```
 
-Exported symbols: 48.
+Exported symbols: 65.
 
 ### `CompensateEffectsOptions`
 
@@ -44243,6 +44608,37 @@ export declare const EFFECT_COMPENSATION_TRIGGERS: readonly [
     "replay_rewind",
     "replay_replay",
     "command"
+];
+```
+
+### `EFFECT_RECONCILIATION_DISPOSITIONS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured explicit operator reconciliation dispositions.
+
+Signature:
+
+```ts
+export declare const EFFECT_RECONCILIATION_DISPOSITIONS: readonly [
+    "retry",
+    "externally_verified_completion",
+    "accepted_unresolved"
+];
+```
+
+### `EFFECT_RECONCILIATION_SOURCE_KINDS`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured source execution kinds for reconciliation evidence.
+
+Signature:
+
+```ts
+export declare const EFFECT_RECONCILIATION_SOURCE_KINDS: readonly [
+    "replay",
+    "supervised_dispatch"
 ];
 ```
 
@@ -44483,6 +44879,7 @@ Signature:
 
 ```ts
 export type EffectCompensationInspection = {
+    readonly reconciliation?: EffectReconciliationReceipt;
     readonly attempts: readonly EffectCompensationAttemptInspection[];
     readonly compensation_id: string;
     readonly effect_intent: EffectIntent;
@@ -44787,6 +45184,177 @@ export type EffectOutcome<K extends string = string, V extends SemanticValue = S
 };
 ```
 
+### `EffectReconciliationAuthority`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Opaque package-created authority; applications must keep it outside untrusted agent inputs.
+
+Signature:
+
+```ts
+export type EffectReconciliationAuthority = {
+    readonly actorId: string;
+    readonly policyId: string;
+};
+```
+
+### `EffectReconciliationAuthorityOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Host-provided authorization and external-completion verification policy.
+
+Signature:
+
+```ts
+export type EffectReconciliationAuthorityOptions = {
+    readonly actorId: string;
+    readonly policyId: string;
+    readonly authorize: (request: EffectReconciliationAuthorizationRequest) => boolean | Promise<boolean>;
+    readonly verifyCompletion: (request: EffectReconciliationAuthorizationRequest) => boolean | Promise<boolean>;
+};
+```
+
+### `EffectReconciliationAuthorizationRequest`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Trusted host policy receives a frozen decision and validated source evidence.
+
+Signature:
+
+```ts
+export type EffectReconciliationAuthorizationRequest = {
+    readonly decision: EffectReconciliationDecision;
+    readonly target: EffectReconciliationTarget;
+};
+```
+
+### `EffectReconciliationBasis`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact heads consumed atomically by one reconciliation decision.
+
+Signature:
+
+```ts
+export type EffectReconciliationBasis = {
+    readonly target_record_id: RecordId;
+    readonly compensation_id: string;
+    readonly source_kind: EffectReconciliationTarget["source_kind"];
+    readonly source_owner_id: string;
+    readonly source_head_record_id: RecordId;
+    readonly compensation_head_record_id: RecordId | null;
+    readonly previous_record_id: RecordId | null;
+};
+```
+
+### `EffectReconciliationDecision`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Complete immutable request bound to operator authorization and command identity.
+
+Signature:
+
+```ts
+export type EffectReconciliationDecision = {
+    readonly actor_id: string;
+    readonly policy_id: string;
+    readonly basis_id: string;
+    readonly command_id: string;
+    readonly disposition: EffectReconciliationDisposition;
+    readonly effect_record_id: RecordId;
+    readonly evidence_record_ids: readonly RecordId[];
+    readonly reason: string;
+};
+```
+
+### `EffectReconciliationDisposition`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured operator disposition, independent of handler success.
+
+Signature:
+
+```ts
+export type EffectReconciliationDisposition = (typeof EFFECT_RECONCILIATION_DISPOSITIONS)[number];
+```
+
+### `EffectReconciliationInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only reconciliation evidence and the basis for a future operator command.
+
+Signature:
+
+```ts
+export type EffectReconciliationInspection = {
+    readonly basis_id: string;
+    readonly basis: EffectReconciliationBasis;
+    readonly target: EffectReconciliationTarget;
+    readonly compensation: EffectCompensationInspection | null;
+    readonly decisions: readonly EffectReconciliationReceipt[];
+};
+```
+
+### `EffectReconciliationReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Retained operator audit and exact record identity.
+
+Signature:
+
+```ts
+export type EffectReconciliationReceipt = EffectReconciliationRecord & {
+    readonly record_id: RecordId;
+};
+```
+
+### `EffectReconciliationRecord`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Immutable operator audit record, separate from any EffectOutcome.
+
+Signature:
+
+```ts
+export type EffectReconciliationRecord = EffectReconciliationDecision & EffectReconciliationBasis & {
+    readonly compatibility_version: string;
+    readonly record_version: number;
+    readonly completion_verified: boolean;
+};
+```
+
+### `EffectReconciliationTarget`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact source evidence an operator is reconciling.
+
+Signature:
+
+```ts
+export type EffectReconciliationTarget = {
+    readonly requested_record_id: RecordId;
+    readonly effect_record_id: RecordId;
+    readonly compensation_id: string;
+    readonly source_kind: (typeof EFFECT_RECONCILIATION_SOURCE_KINDS)[number];
+    readonly source_owner_id: string;
+    readonly source_head_record_id: RecordId;
+    readonly intent_ref: string;
+    readonly intent: EffectIntent | null;
+    readonly outcome: EffectOutcome | null;
+    readonly successful_materialization: boolean;
+};
+```
+
 ### `EffectResult`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -44840,6 +45408,20 @@ export type InspectEffectCompensationOptions = {
 };
 ```
 
+### `InspectEffectReconciliationOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Closed exact source selector for reconciliation inspection.
+
+Signature:
+
+```ts
+export type InspectEffectReconciliationOptions = {
+    readonly effectRecordId: RecordId;
+};
+```
+
 ### `MaterializedEffectEvidence`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -44865,6 +45447,26 @@ Signature:
 
 ```ts
 export type MaterializedEffectEvidenceKind = (typeof EFFECT_COMPENSATION_EVIDENCE_KINDS)[number];
+```
+
+### `ReconcileEffectOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact immutable command submitted with a trusted host authority.
+
+Signature:
+
+```ts
+export type ReconcileEffectOptions = {
+    readonly authority: EffectReconciliationAuthority;
+    readonly basisId: string;
+    readonly commandId: string;
+    readonly disposition: EffectReconciliationDisposition;
+    readonly effectRecordId: RecordId;
+    readonly evidenceRecordIds: readonly RecordId[];
+    readonly reason: string;
+};
 ```
 
 ### `TypedEffectHandlerOptions`
@@ -45102,6 +45704,37 @@ const outcome = createEffectOutcome(intent, {
 });
 ```
 
+### `createEffectReconciliationAuthority`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates a trusted host authorization capability for exact operator decisions.
+The host authenticates the actor and supplies its real access policy; this is not an identity provider.
+
+Signature:
+
+```ts
+export declare function createEffectReconciliationAuthority(options: EffectReconciliationAuthorityOptions): EffectReconciliationAuthority;
+```
+
+Parameter:
+
+- options - Actor, policy and explicit authorization/completion-verification callbacks.
+
+Returns:
+
+- An immutable package-authenticated handle; copies are refused.
+
+Throws:
+
+- {TypeError} If options are malformed, unbounded or lack callbacks.
+
+Example:
+
+- ```ts
+const authority = createEffectReconciliationAuthority({ actorId, policyId, authorize, verifyCompletion });
+```
+
 ### `createTypedEffectHandler`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -45249,6 +45882,100 @@ Throws:
 Throws:
 
 - {TraceStoreError} If the store is closed or inspection races a writer.
+
+### `inspectEffectReconciliation`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Inspects exact effect uncertainty, immutable compensation facts and operator audit history.
+No external operation or recovery is invoked. Pending replay admissions may retain only an intent digest.
+
+Signature:
+
+```ts
+export declare function inspectEffectReconciliation(store: SQLiteTraceStore, options: InspectEffectReconciliationOptions): EffectReconciliationInspection;
+```
+
+Parameter:
+
+- store - Open read-only or writable store.
+
+Parameter:
+
+- options - Exact source effect evidence identity.
+
+Returns:
+
+- Validated target, factual compensation state and current command basis.
+
+Throws:
+
+- {EffectCompensationEvidenceError} If evidence is missing, malformed or unsupported.
+
+Throws:
+
+- {TypeError} If options are malformed.
+
+Throws:
+
+- {TraceStoreError} If the store is closed.
+
+### `reconcileEffect`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Records an authorized exact operator disposition without fabricating a handler result or invoking external work.
+Equal commands reauthorize and replay their receipt; changed requests conflict. Completion requires a
+separate host verification. A retry audit authorizes a later existing safe retry path and never invents
+successful materialization evidence. Active invocation owners and changed heads refuse publication.
+
+Signature:
+
+```ts
+export declare function reconcileEffect(store: SQLiteTraceStore, options: ReconcileEffectOptions): Promise<EffectReconciliationReceipt>;
+```
+
+Parameter:
+
+- store - Writable trace store.
+
+Parameter:
+
+- options - Exact inspected basis, actor capability, disposition, reason and retained evidence.
+
+Returns:
+
+- Immutable audited disposition, separate from compensation outcome status.
+
+Throws:
+
+- {EffectCompensationEvidenceError} If policy refuses or evidence/verification is invalid.
+
+Throws:
+
+- {EffectCompensationConflictError} If command content, heads or active ownership conflict.
+
+Throws:
+
+- {AppendIntentConflictError} If a concurrently retained command names another request.
+
+Throws:
+
+- {TypeError} If options or authority are malformed.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or publication fails.
+
+Example:
+
+- ```ts
+const incident = inspectEffectReconciliation(store, { effectRecordId });
+const receipt = await reconcileEffect(store, {
+    authority, effectRecordId, basisId: incident.basis_id, commandId,
+    disposition: "accepted_unresolved", reason, evidenceRecordIds,
+});
+```
 
 ### `validateEffectCorrelation`
 
@@ -50938,6 +51665,7 @@ Signature:
 
 ```ts
 export type ReplaySessionInspection = {
+    readonly residual_risks?: readonly EffectReconciliationReceipt[];
     readonly checkpoints: readonly ReplayCheckpointInspection[];
     readonly command_id: string;
     readonly pending_admission_record_id: RecordId | null;
@@ -52684,6 +53412,7 @@ Signature:
 
 ```ts
 export type DurableTaskExecutionInspection = {
+    readonly residual_risks?: readonly EffectReconciliationReceipt[];
     readonly artifacts: readonly DurableTaskExecutionArtifactInspection[];
     readonly causal_edges: readonly (readonly [
         RecordId,
@@ -55905,6 +56634,7 @@ Signature:
 
 ```ts
 export type ScopeInspection = {
+    readonly residual_risks?: readonly EffectReconciliationReceipt[];
     readonly authority: ScopeAuthority;
     readonly children: readonly string[];
     readonly execution_id: string | null;

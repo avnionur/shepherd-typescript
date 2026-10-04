@@ -1,3 +1,4 @@
+import type { EffectReconciliationReceipt } from "../effect/reconciliation-types.ts";
 import type { ProofEnvelope } from "../formal/types.ts";
 import type {
     DURABLE_EXECUTION_RECOVERY_STATUSES,
@@ -169,6 +170,8 @@ export type DurableTaskExecutionLifecycleInspection = {
 
 /** Read-only projection of validated durable task-execution evidence. */
 export type DurableTaskExecutionInspection = {
+    /** Accepted external risk still unresolved in this owner's causal or associated execution evidence. */
+    readonly residual_risks?: readonly EffectReconciliationReceipt[];
     /** Ordered retained artifacts with their canonical record identities. */
     readonly artifacts: readonly DurableTaskExecutionArtifactInspection[];
     /** Ordered direct `[cause, effect]` record edges from canonical envelopes. */

@@ -1,10 +1,10 @@
 {
     "changeLog": {
-        "digest": "sha256:b921329828f8e1e45e5c058b673265fe882644e2fbd3eddf90f9c05f9e750fe0",
-        "entries": 143
+        "digest": "sha256:95283e086ca4f51cd57e2f0bdeff0f7b8cc2496be7cba1d03454c797c6cc31d0",
+        "entries": 151
     },
-    "packageVersion": "13.4.0",
-    "previousVersion": "13.3.0",
+    "packageVersion": "13.5.0",
+    "previousVersion": "13.4.0",
     "surface": {
         "commandOptions": {
             "demo write": {},
@@ -132,6 +132,7 @@
             "protocol.config.json#/delegation/identity/retryCutIdPrefix": "delegation-retry:sha256:",
             "protocol.config.json#/effects/compensation/identity/compensationIdPrefix": "effect-compensation:sha256:",
             "protocol.config.json#/effects/compensation/ownership/claimIdPrefix": "compensation-claim:",
+            "protocol.config.json#/effects/compensation/reconciliation/identity/basisIdPrefix": "effect-reconciliation-basis:sha256:",
             "protocol.config.json#/effects/digestAlgorithm": "sha256",
             "protocol.config.json#/effects/hexLength": "64",
             "protocol.config.json#/formalAssurance/proofEnvelope/digestAlgorithm": "sha256",
@@ -215,7 +216,7 @@
             "protocol.config.json#/workspaces/worldTaskCapture/outputIdPrefix": "world-output:sha256:"
         },
         "migrations": {
-            "protocol.config.json#/kernel/store/migrations": ["sha256:09c2b59aaf499bb3c472af09d3c0fbf42e62865d73b515c6a881763e053bb2c9","sha256:c2918aab3932d140fc03633f73b11dc68849fa8ddd67738c9bccdbb7de44a938","sha256:64e021b34ec20c81c5439b1b1f8676b8dd6039edb8b4ae0ee83c2ba84f48fc8c","sha256:a6afc34546437f5e2f53250132b846fb8a5bf82d7955895eea44f60c6d3e308e","sha256:1ca3bd1f8eff05c6c664847c469446b3a0bf3f3219dd3363f3d5ce418b23b69e","sha256:693c301a3f90533571427f4f186b128792f7cc62934dfcf620f99a20a951637f","sha256:2643bee840417e3170aef955e2cfaaca7e9d9cda1abd211884243c3f114e0125","sha256:24b1a123a6f2962297cb157329d55e08ddee09fc2f9913f1ad265cfa3e89d26d","sha256:5225383e571f4f6c40fe37ead6a9ec3b74b3c3cb818e291d093590668b012b8a","sha256:d552786e065d103199214f06ce6339300e6e0260306553ce80827c50d3dfb966","sha256:4f2e25f533c7a001eaf22f607a31612b235e5e27852c8df640d1b5cf5b5f402b","sha256:68e099e81b90fa2eac14d8fe3b74ebee707ffd7f0c34876be102b9b32bea31f4","sha256:6cfa351e12e4a3872ddcd06a7bfa786fabf139741fbe4d85db0a917a8ab53fc3","sha256:addf8e688a5853d0a883bf62255896aa50dbc28cdf93f9c58199dbffcc605251"],
+            "protocol.config.json#/kernel/store/migrations": ["sha256:09c2b59aaf499bb3c472af09d3c0fbf42e62865d73b515c6a881763e053bb2c9","sha256:c2918aab3932d140fc03633f73b11dc68849fa8ddd67738c9bccdbb7de44a938","sha256:64e021b34ec20c81c5439b1b1f8676b8dd6039edb8b4ae0ee83c2ba84f48fc8c","sha256:a6afc34546437f5e2f53250132b846fb8a5bf82d7955895eea44f60c6d3e308e","sha256:1ca3bd1f8eff05c6c664847c469446b3a0bf3f3219dd3363f3d5ce418b23b69e","sha256:693c301a3f90533571427f4f186b128792f7cc62934dfcf620f99a20a951637f","sha256:2643bee840417e3170aef955e2cfaaca7e9d9cda1abd211884243c3f114e0125","sha256:24b1a123a6f2962297cb157329d55e08ddee09fc2f9913f1ad265cfa3e89d26d","sha256:5225383e571f4f6c40fe37ead6a9ec3b74b3c3cb818e291d093590668b012b8a","sha256:d552786e065d103199214f06ce6339300e6e0260306553ce80827c50d3dfb966","sha256:4f2e25f533c7a001eaf22f607a31612b235e5e27852c8df640d1b5cf5b5f402b","sha256:68e099e81b90fa2eac14d8fe3b74ebee707ffd7f0c34876be102b9b32bea31f4","sha256:6cfa351e12e4a3872ddcd06a7bfa786fabf139741fbe4d85db0a917a8ab53fc3","sha256:addf8e688a5853d0a883bf62255896aa50dbc28cdf93f9c58199dbffcc605251","sha256:edef8cba4a2b0123a7ddd885910f20cbb6f3402c7f36439aeaf945bfbba8d029"],
             "protocol.config.json#/tasks/registry/migrations": ["sha256:6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b","sha256:d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35"]
         },
         "schemas": {
@@ -237,6 +238,7 @@
             "effect-compensation-v1.schema.json": {"defs":{"effectIntent":"sha256:9edfd965a6aaa50e322a014ec0e95bea6191cc8d389cfae82ae89aff6673cf1a","effectOutcome":"sha256:69c528bfcbb75f1435f99252f4ddb66ed9b436c85946061c35bf1f142a3a7c93","semanticValue":"sha256:55ce0f1d37d788d7d563829fce21c691d42774547446e90304fe685bbcca09a9"},"digest":"sha256:4f6737d25e63ae851268b5c0c844965d26a9d03f808f87ce4819a5aeefc8031f","oneOf":["sha256:30de7cc105efa1e256fdc628744325c9b9debb578bcca68959119c48917d3308","sha256:10a393e94e04cb8b7e9d37940481e11d91cf323d24115231bda2fd7540e3df10","sha256:0f8a1fe1025e877ea147836d4194a20a1b5f14ae06d26b411024226063d8a7bf"],"rest":"sha256:f9b5a9fde1ec2995eeb6a6f67387101684f5d936d0b4d4a4dbdb4fe9c9764c1f"},
             "effect-intent-v1.schema.json": {"defs":{"semanticValue":"sha256:55ce0f1d37d788d7d563829fce21c691d42774547446e90304fe685bbcca09a9"},"digest":"sha256:efcfe71a4488276445b334598001797613ddedfca735bd6f93f2ad4f9b0da413","oneOf":null,"rest":"sha256:12d2a39f4432e61f4171036d8e1be0a3613dca38ba72dde1f869e49aba129d30"},
             "effect-outcome-v1.schema.json": {"defs":{"semanticValue":"sha256:55ce0f1d37d788d7d563829fce21c691d42774547446e90304fe685bbcca09a9"},"digest":"sha256:27b5b2c5adbc7708c7e6d77238606d61e31cbc556e41055f1386c58cf1eee431","oneOf":null,"rest":"sha256:184f1ba4021c6968008797c8d939f61af90eb0f955137fb0e435173220cfc468"},
+            "effect-reconciliation-v1.schema.json": {"defs":{},"digest":"sha256:f47bc40e09d98bc7061c18a44ebbf257082eb40cc6badabaa8cc02b8189ffd42","oneOf":["sha256:0efbf66244f35e8c6300dff9c061ed5017c9f1a2b605af4d97f4f622df70fb21","sha256:b46029f29f182a047218f9e1bf11aaac0b617ca73385ef250c7300d1db68fff0","sha256:5b1683dee46d6514620e979beed80bcb62bc212498b34475e5c8e45a1fd9b693"],"rest":"sha256:fa8dc1e596da98c2183ff5c78c39c7f0205581f6975fd9afa68596cd4ae84880"},
             "native-jail-backend-v1.schema.json": {"defs":{},"digest":"sha256:9ae8fc4c81505c630fd80719b4134319d0fcaa6e65868b853adf0e1291b10c29","oneOf":null,"rest":"sha256:9ae8fc4c81505c630fd80719b4134319d0fcaa6e65868b853adf0e1291b10c29"},
             "native-jail-command-v1.schema.json": {"defs":{},"digest":"sha256:14ec734c79da4066661a640542cd6b17f69f58c648addadc019efbb1f56c5c51","oneOf":null,"rest":"sha256:14ec734c79da4066661a640542cd6b17f69f58c648addadc019efbb1f56c5c51"},
             "native-jail-plan-v1.schema.json": {"defs":{},"digest":"sha256:63d80691755281572db13354c33a6070f873b6913105f1f4cde86ecdd5928b5f","oneOf":null,"rest":"sha256:63d80691755281572db13354c33a6070f873b6913105f1f4cde86ecdd5928b5f"},
@@ -325,6 +327,8 @@
             "protocol.config.json#/delegation/compatibilityVersion": "shepherd.delegation.v1",
             "protocol.config.json#/delegation/recordVersion": 1,
             "protocol.config.json#/effects/compensation/compatibilityVersion": "shepherd.effect-compensation.v1",
+            "protocol.config.json#/effects/compensation/reconciliation/compatibilityVersion": "shepherd.effect-reconciliation.v1",
+            "protocol.config.json#/effects/compensation/reconciliation/recordVersion": 1,
             "protocol.config.json#/effects/compensation/recordVersion": 1,
             "protocol.config.json#/effects/intentVersion": 1,
             "protocol.config.json#/effects/outcomeVersion": 1,
@@ -339,7 +343,7 @@
             "protocol.config.json#/kernel/interchange/format": "shepherd.trace.archive",
             "protocol.config.json#/kernel/interchange/formatVersion": 1,
             "protocol.config.json#/kernel/store/blobs/receiptVersion": 1,
-            "protocol.config.json#/kernel/store/schemaVersion": 14,
+            "protocol.config.json#/kernel/store/schemaVersion": 15,
             "protocol.config.json#/observability/batch/format": "shepherd.telemetry.batch",
             "protocol.config.json#/observability/batch/formatVersion": 1,
             "protocol.config.json#/observability/compatibilityVersion": "shepherd.observability.v1",

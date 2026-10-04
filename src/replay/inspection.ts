@@ -1,4 +1,5 @@
 import { canonicalizeSemanticValue, type SemanticValue } from "../canonical/canonical-record.ts";
+import { readOwnerEffectResidualRisks } from "../effect/reconciliation-inspection.ts";
 import { kernelProtocolConfig, replayProtocolConfig } from "../protocol/config.ts";
 import {
     RECORD_MODES,
@@ -125,9 +126,13 @@ export function inspectReplaySession(
         store.readReplaySession(fields.sessionId),
         clock(),
     );
-    return lowerProof
+    const result = lowerProof
         ? Object.freeze({ ...inspection, proof: classifyReplaySessionProof(inspection, true) })
         : inspection;
+    const residualRisks = readOwnerEffectResidualRisks(store, fields.sessionId);
+    return residualRisks.length === 0
+        ? result
+        : Object.freeze({ ...result, residual_risks: residualRisks });
 }
 
 /** Folds retained session records into a validated inspection. @internal */

@@ -1,3 +1,4 @@
+import { readOwnerEffectResidualRisks } from "../effect/reconciliation-inspection.ts";
 import { kernelProtocolConfig, scopeProtocolConfig } from "../protocol/config.ts";
 import {
     SCOPE_COMMAND_KINDS,
@@ -342,7 +343,9 @@ export function inspectScope(
     ) {
         throw new ScopeEvidenceError("scope registration row disagrees with retained records");
     }
+    const residualRisks = readOwnerEffectResidualRisks(store, scopeId);
     return Object.freeze({
+        ...(residualRisks.length === 0 ? {} : { residual_risks: residualRisks }),
         authority: registration.authority,
         children: Object.freeze(children),
         execution_id: registration.execution_id,

@@ -1,4 +1,5 @@
 import type { SemanticRecord } from "../canonical/canonical-record.ts";
+import type { EffectReconciliationReceipt } from "../effect/reconciliation-types.ts";
 import type {
     SCOPE_AUTHORITY_ATOMS,
     SCOPE_CHECKPOINT_CONSTITUENT_KINDS,
@@ -594,6 +595,8 @@ export type ScopeHistoryEntry =
 
 /** Read-only validated projection of one scope reconstructed from retained records. */
 export type ScopeInspection = {
+    /** Accepted external risk still unresolved in this owner's causal or associated execution evidence. */
+    readonly residual_risks?: readonly EffectReconciliationReceipt[];
     /** Retained ceiling and effective authority. */
     readonly authority: ScopeAuthority;
     /** Child scopes registered from this scope, in retained order. */

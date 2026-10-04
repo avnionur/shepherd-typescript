@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-04
 
-Current version: `13.4.0`
+Current version: `13.5.0`
 
 Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
@@ -25,12 +25,19 @@ with the [capability evidence inventory](../docs/generated/capability-inventory.
 #238 shipped through PR #273 (13.1.0); see its [preservation matrix](./238-world-effect-preservation.md).
 #239 shipped through PR #274 (13.2.0); its [preservation matrix](./239-task-grant-preservation.md)
 records full verification and installed-package declaration inspection.
-#240 is in progress on `codex/phase-14-240-compensation-ownership`: durable exclusive compensation
+#240 shipped through PR #276 (13.3.0): durable exclusive compensation
 attempts, renewal, fencing and separate ownership inspection. MINOR 13.3.0; source concurrency,
 SIGKILL, heartbeat, takeover and adjacent trigger tests pass. Full host verification passed:
 1,377 passed, two intentional skips, zero failures, 100% configured coverage and installed-package
 checks. Version sync, desktop build and independent reviews passed.
-[Preservation matrix](./240-compensation-preservation.md). Next dependent P1 slice: #241.
+[Preservation matrix](./240-compensation-preservation.md). #241 (MINOR 13.5.0) is implemented on `codex/phase-14-241-compensation-reconciliation`.
+Audited operator decisions, residual-risk projections and older-reader refusal are implemented;
+full combined-main verification passed: 1,402 tests passed, two intentional skips, zero failures,
+100% configured coverage and installed-package checks. Final version sync, desktop build,
+actual 13.3 reader refusal and independent reviews passed. Native timeout attempts were traced to
+macOS idle sleep; the successful gate used a temporary command-scoped sleep assertion.
+Next unblocked P1 slice: #242.
+[Preservation matrix](./241-reconciliation-preservation.md).
 
 Prior preservation evidence: [#236](./236-capability-preservation.md) and
 [#237](./237-replay-preservation.md). External live/platform/proof requirements stay open until verified.

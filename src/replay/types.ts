@@ -1,6 +1,7 @@
 import type { SemanticRecord, SemanticValue } from "../canonical/canonical-record.ts";
 import type { EffectCompensationRegistry } from "../effect/compensation-types.ts";
 import type { EffectHandlerStack } from "../effect/handler-types.ts";
+import type { EffectReconciliationReceipt } from "../effect/reconciliation-types.ts";
 import type { EffectIntent, EffectOutcome } from "../effect/types.ts";
 import type { ProofEnvelope } from "../formal/types.ts";
 import type {
@@ -701,6 +702,8 @@ export type ReplayTerminalInspection = {
 
 /** Immutable record-derived view of one replay session. */
 export type ReplaySessionInspection = {
+    /** Accepted external risk still unresolved in this owner's causal or associated execution evidence. */
+    readonly residual_risks?: readonly EffectReconciliationReceipt[];
     /** Retained checkpoints in boundary order. */
     readonly checkpoints: readonly ReplayCheckpointInspection[];
     /** Session command identity. */

@@ -21,6 +21,7 @@ import {
     requireOnePositional,
 } from "./arguments.ts";
 import { CliUnavailableError, CliUsageError } from "./errors.ts";
+import { renderResidualRisks } from "./reconciliation-output.ts";
 import type { CliHandler, CliHandlerIo } from "./types.ts";
 
 const HANDLERS = cliProtocolConfig.handlerRoles;
@@ -92,7 +93,7 @@ async function replayShow(args: readonly string[], io: CliHandlerIo): Promise<vo
     const sessionId = resolveOwnerSelector(store, SESSION_SCHEMA, requireOnePositional(parsed));
     const inspection = inspectReplaySession(store, { sessionId });
     io.output(
-        `Session: ${inspection.session_id}\nMode: ${inspection.mode}\nClassification: ${inspection.classification}\nSource: ${inspection.origin?.source_session_id ?? "none"}\nSteps: ${inspection.steps.length}\nCheckpoints: ${inspection.checkpoints.length}\n`,
+        `Session: ${inspection.session_id}\nMode: ${inspection.mode}\nClassification: ${inspection.classification}\nSource: ${inspection.origin?.source_session_id ?? "none"}\nSteps: ${inspection.steps.length}\nCheckpoints: ${inspection.checkpoints.length}\n${renderResidualRisks(inspection.residual_risks)}`,
         { replay_session: inspection } as unknown as SemanticRecord,
     );
 }
@@ -167,7 +168,7 @@ async function scopeShow(args: readonly string[], io: CliHandlerIo): Promise<voi
         parent = readScope(store, parent.scope_id).parent;
     }
     io.output(
-        `Scope: ${scope.scope_id}\nKind: ${scope.kind}\nState: ${scope.state}\nLineage: ${lineage.join(" > ")}\nChildren: ${scope.children.length}\nSelected history: ${scope.selected_history.length}\n`,
+        `Scope: ${scope.scope_id}\nKind: ${scope.kind}\nState: ${scope.state}\nLineage: ${lineage.join(" > ")}\nChildren: ${scope.children.length}\nSelected history: ${scope.selected_history.length}\n${renderResidualRisks(scope.residual_risks)}`,
         { lineage, scope } as unknown as SemanticRecord,
     );
 }
