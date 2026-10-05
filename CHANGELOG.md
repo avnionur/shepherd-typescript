@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.7.2] - 2026-10-05
+
+### Improvement
+
+- Copy the published study report and both figure PDFs into the root `benchmark/` directory.
+- Add a Benchmark heading and direct PDF links near the top of `README.md`, plus a documentation
+  index link; retain the original study artifacts and their measured-runtime boundary.
+
+### Impact
+
+Documentation-only PATCH. Benchmark PDFs are easier to find and remain byte-identical to their
+published sources. No runtime API, dependency, measurement, or benchmark budget changes.
+
 ## [13.7.1] - 2026-10-05
 
 ### Improvement
