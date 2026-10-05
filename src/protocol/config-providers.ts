@@ -1,3 +1,4 @@
+import { readProviderCheckpointConfig } from "./config-provider-checkpoints.ts";
 import {
     LIVE_PROVIDER_DIALECTS,
     type LiveProviderKindConfig,
@@ -66,7 +67,7 @@ export function readProviderConfig(
     }
     const conversation = readObject(
         providers.conversation,
-        ["cacheIdentityPrefix", "receiptIdPrefix"],
+        ["cacheIdentityPrefix", "receiptIdPrefix", "checkpoint"],
         "providers.conversation",
     );
     const cacheIdentityPrefix = readNonEmptyString(
@@ -81,7 +82,11 @@ export function readProviderConfig(
         throw new TypeError("providers.conversation prefixes must be distinct");
     }
     return {
-        conversation: { cacheIdentityPrefix, receiptIdPrefix },
+        conversation: {
+            cacheIdentityPrefix,
+            receiptIdPrefix,
+            checkpoint: readProviderCheckpointConfig(conversation.checkpoint),
+        },
         kinds,
         live,
         messages: readMessagesConfig(providers.messages),

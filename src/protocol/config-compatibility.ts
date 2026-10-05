@@ -11,7 +11,7 @@ import {
     KERNEL_ABI_V0_STORE_V15_CONTRACT,
     OBSERVABILITY_PROTOCOL_V1_CONTRACT,
     ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT,
-    PROVIDER_PROTOCOL_V3_CONTRACT,
+    PROVIDER_PROTOCOL_V4_CONTRACT,
     REPLAY_PROTOCOL_V4_CONTRACT,
     RETENTION_PROTOCOL_V1_CONTRACT,
     RUN_PROTOCOL_V1_CONTRACT,
@@ -73,6 +73,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         ...Object.values(config.backup.artifacts),
         ...Object.values(config.cli.artifacts),
         ...Object.values(config.delegation.artifacts),
+        config.providers.conversation.checkpoint.schemaPath,
         ...Object.values(config.effects.artifacts),
         ...Object.values(config.effects.compensation.artifacts),
         ...Object.values(config.kernel.artifacts),
@@ -125,7 +126,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (!sameJson(config.projections.taskRunLedgers, TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT)) {
         throw new TypeError("task/run ledger projection constants require a new projection");
     }
-    if (!sameJson(config.providers, PROVIDER_PROTOCOL_V3_CONTRACT)) {
+    if (!sameJson(config.providers, PROVIDER_PROTOCOL_V4_CONTRACT)) {
         throw new TypeError("provider constants require a new provider protocol");
     }
     if (!sameJson(config.tasks, TASK_PROTOCOL_V2_CONTRACT)) {

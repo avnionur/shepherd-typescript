@@ -1,8 +1,9 @@
-import type { SemanticValue } from "../canonical/canonical-record.ts";
+import type { SemanticRecord, SemanticValue } from "../canonical/canonical-record.ts";
 import { createCanonicalSnapshot } from "../canonical/snapshot.ts";
 import { providerProtocolConfig } from "../protocol/config.ts";
 import type { LiveProviderKindConfig } from "../protocol/config-types.ts";
 import { MODEL_CONTENT_BLOCK_TYPES, MODEL_MESSAGE_ROLES } from "../protocol/values.generated.ts";
+import { registerProviderConfiguration } from "./configuration-identity.ts";
 import { LiveProviderError } from "./errors.ts";
 import { LIVE_DIALECTS, type LiveDialectSettings } from "./live-dialects.ts";
 import {
@@ -167,24 +168,35 @@ export function createLiveProvider(
             usage: Object.freeze({ ...decoded.usage }),
         });
     };
-    return Object.freeze({
-        converse,
-        descriptor: (): ProviderDescriptor => descriptor,
-        invoke: async (request: ModelRequest, signal: AbortSignal): Promise<ModelResponse> => {
-            readProviderSignal(signal).throwIfAborted();
-            const snapshot = readModelRequest(request);
-            const response = await converse(
-                {
-                    cachePrefixMessages: 1,
-                    messages: [renderModelRequestMessage(snapshot)],
-                    outputSchema: snapshot.outputSchema,
-                    system: null,
-                },
-                signal,
-            );
-            return Object.freeze({ output: response.output, usage: response.usage });
+    return registerProviderConfiguration(
+        Object.freeze({
+            converse,
+            descriptor: (): ProviderDescriptor => descriptor,
+            invoke: async (request: ModelRequest, signal: AbortSignal): Promise<ModelResponse> => {
+                readProviderSignal(signal).throwIfAborted();
+                const snapshot = readModelRequest(request);
+                const response = await converse(
+                    {
+                        cachePrefixMessages: 1,
+                        messages: [renderModelRequestMessage(snapshot)],
+                        outputSchema: snapshot.outputSchema,
+                        system: null,
+                    },
+                    signal,
+                );
+                return Object.freeze({ output: response.output, usage: response.usage });
+            },
+        }),
+        {
+            descriptor: descriptor as unknown as SemanticRecord,
+            dialect: kind.dialect,
+            endpoint: url,
+            headers: kind.headers,
+            settings: settings as unknown as SemanticRecord,
+            complete_stop_reasons: kind.completeStopReasons,
+            tool_use: kind.toolUse,
         },
-    });
+    );
 }
 
 /** Default transport posting the serialized body with the global `fetch`. */

@@ -142,7 +142,8 @@ export function toolUseBlocks(
     );
 }
 
-function readToolDefinitions(value: unknown): readonly ModelToolDefinition[] {
+/** Validates ordered tool definitions without requiring a nonempty conversation. @internal */
+export function readToolDefinitions(value: unknown): readonly ModelToolDefinition[] {
     if (!Array.isArray(value)) {
         throw new TypeError("model conversation request tools must be an array");
     }

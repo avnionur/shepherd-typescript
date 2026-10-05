@@ -10,7 +10,7 @@ import {
     FORMAL_ASSURANCE_V2_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
     KERNEL_ABI_V0_STORE_V7_CONTRACT,
-    PROVIDER_PROTOCOL_V3_CONTRACT,
+    PROVIDER_PROTOCOL_V4_CONTRACT,
     TASK_PROTOCOL_V2_CONTRACT,
     TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
     WORKSPACE_PROTOCOL_V1_CONTRACT,
@@ -88,7 +88,7 @@ test("protocol configuration validates and freezes every critical section", () =
     assert.equal(Object.isFrozen(TASK_PROTOCOL_V2_CONTRACT), true);
     assert.deepEqual(parsed.tasks, TASK_PROTOCOL_V2_CONTRACT);
     assert.match(parsed.tasks.schemas.valueId, /task-value-v1\.schema\.json$/u);
-    assert.deepEqual(parsed.providers, PROVIDER_PROTOCOL_V3_CONTRACT);
+    assert.deepEqual(parsed.providers, PROVIDER_PROTOCOL_V4_CONTRACT);
     assert.deepEqual(parsed.providers.kinds.slice(0, 2), ["static", "program"]);
     assert.equal(parsed.providers.program.kind, "program");
     assert.equal(Object.isFrozen(parsed.providers.program), true);

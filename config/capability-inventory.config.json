@@ -222,12 +222,20 @@
                 {
                     "entry": "./providers",
                     "symbol": "createProviderConversation"
+                },
+                {
+                    "entry": "./providers",
+                    "symbol": "retainProviderConversationCheckpoint"
+                },
+                {
+                    "entry": "./providers",
+                    "symbol": "readProviderConversationCheckpoint"
                 }
             ],
             "dimensions": {
                 "api": "Supported: Anthropic Messages and OpenAI-compatible HTTP adapters with tool blocks and cache-token usage.",
                 "composition": "Partial: no streaming, bounded retry policy, actual monetary accounting, or governed process-provider adapter.",
-                "recovery": "Conversation checkpoints are process-local; retained trace data does not reconstruct the checkpoint receipt map after restart.",
+                "recovery": "Opt-in retained checkpoints restore exact message/system/tool prefixes across process restart and native import, with configuration verification before compensation. Memory mode and reconstructive rebuild remain available; remote provider state is not captured.",
                 "live": "Opt-in live test exists but was not run in the recorded audit; no live cache-hit or tool-loop conformance result.",
                 "performance": "No performance result claimed by this row.",
                 "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
@@ -248,11 +256,26 @@
                 },
                 {
                     "path": "docs/live-providers.md",
-                    "sha256": "e8df5c94bf40077a4d1b238e00eadb93fc4286e735b20a9c5a4e8ff7c538e071"
+                    "sha256": "4b736258d781b88f74aade883343d4f27218860dc475afd21a2aa093fc2fd000"
+                },
+                {
+                    "path": "docs/provider-conversation-checkpoints.md",
+                    "sha256": "7ec2a532a582f59e3bdf0b9f834348e67ff0ea4a6e69c6bb80d71cd100ead14c"
+                },
+                {
+                    "path": "test/provider/provider-checkpoint-restart.test.ts",
+                    "sha256": "1930213bfe48593c9690727765bbf52f3c8b342a1ebf39e3fa677bbd201e280c"
+                },
+                {
+                    "path": "test/provider/provider-native-checkpoint.test.ts",
+                    "sha256": "16a3c07f2ac5f6838b023fff037f1f16ff3125348309b6fc9f86818f24d7308c"
+                },
+                {
+                    "path": "test/provider/provider-checkpoint-binding.test.ts",
+                    "sha256": "8a4ea502d8cf385c05287ce4702323e9ff10198ac7c6180f835916988c275b1a"
                 }
             ],
             "issues": [
-                "https://github.com/avnionur/shepherd-typescript/issues/242",
                 "https://github.com/avnionur/shepherd-typescript/issues/249",
                 "https://github.com/avnionur/shepherd-typescript/issues/250",
                 "https://github.com/avnionur/shepherd-typescript/issues/251",
@@ -264,7 +287,7 @@
             "id": "task-values",
             "group": "paper",
             "title": "Tasks as substitutable values",
-            "source": "Paper \u00a73.1: task values, substitution, revision, synthesis and nested meta-agents.",
+            "source": "Paper §3.1: task values, substitution, revision, synthesis and nested meta-agents.",
             "exports": [
                 {
                     "entry": "./delegation",
@@ -320,7 +343,7 @@
             "id": "effects",
             "group": "paper",
             "title": "Effects, observation and interception",
-            "source": "Paper \u00a73.2; separate from upstream release completeness.",
+            "source": "Paper §3.2; separate from upstream release completeness.",
             "exports": [
                 {
                     "entry": "./effects",
@@ -380,7 +403,7 @@
             "id": "compensation",
             "group": "paper",
             "title": "Compensation of abandoned materializations",
-            "source": "Paper \u00a73.2 reversibility boundary.",
+            "source": "Paper §3.2 reversibility boundary.",
             "exports": [
                 {
                     "entry": "./effects",
@@ -460,7 +483,7 @@
             "id": "scopes",
             "group": "paper",
             "title": "Scope algebra and coupled checkpoints",
-            "source": "Paper \u00a73.3 and \u00a73.4.",
+            "source": "Paper §3.3 and §3.4.",
             "exports": [
                 {
                     "entry": "./scopes",
@@ -482,7 +505,7 @@
             "dimensions": {
                 "api": "Supported: emission, isolated nested/parallel scope fork, merge and discard with authority fencing.",
                 "composition": "Adapted: coordinated multi-resource checkpoints exist; atomic/reconstructive/unavailable classification depends on every constituent. No generic OS process snapshot promise.",
-                "recovery": "Carrier custody and operation journals support documented recovery; device-layer worlds and provider conversation receipt maps are separately process-local.",
+                "recovery": "Carrier custody and operation journals support documented recovery. Opt-in provider snapshots survive restart/import; device-layer worlds remain process-local.",
                 "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
                 "performance": "Existing scope benchmark measures full custody verification; it does not establish image-size-independent scope fork.",
                 "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
@@ -499,15 +522,30 @@
                 },
                 {
                     "path": "docs/coupled-checkpoints.md",
-                    "sha256": "0a568aa8ec17dca862adf68aa17079a65f2fcf9755a3baa4a4bb31bb29812a2b"
+                    "sha256": "39af8d65682cf44768105bf7d4f6bd67b77a0d7836e50ac1527bdb54d631de84"
                 },
                 {
                     "path": "docs/scope-merge-discard.md",
                     "sha256": "f1c27d9bd6479ff2c4a55f0cb19f78191442cccfecd3f8841a0226c162c9e812"
+                },
+                {
+                    "path": "docs/provider-conversation-checkpoints.md",
+                    "sha256": "7ec2a532a582f59e3bdf0b9f834348e67ff0ea4a6e69c6bb80d71cd100ead14c"
+                },
+                {
+                    "path": "test/provider/provider-checkpoint-restart.test.ts",
+                    "sha256": "1930213bfe48593c9690727765bbf52f3c8b342a1ebf39e3fa677bbd201e280c"
+                },
+                {
+                    "path": "test/provider/provider-native-checkpoint.test.ts",
+                    "sha256": "16a3c07f2ac5f6838b023fff037f1f16ff3125348309b6fc9f86818f24d7308c"
+                },
+                {
+                    "path": "test/provider/provider-checkpoint-binding.test.ts",
+                    "sha256": "8a4ea502d8cf385c05287ce4702323e9ff10198ac7c6180f835916988c275b1a"
                 }
             ],
             "issues": [
-                "https://github.com/avnionur/shepherd-typescript/issues/242",
                 "https://github.com/avnionur/shepherd-typescript/issues/243",
                 "https://github.com/avnionur/shepherd-typescript/issues/244"
             ]
@@ -516,7 +554,7 @@
             "id": "replay",
             "group": "paper",
             "title": "Trace history, rewind and suffix replay",
-            "source": "Paper \u00a73.4.",
+            "source": "Paper §3.4.",
             "exports": [
                 {
                     "entry": "./replay",
@@ -542,7 +580,7 @@
             "dimensions": {
                 "api": "Supported: retained replay sessions, rewind, recorded-prefix suffix replay, divergence and lineage comparison.",
                 "composition": "Adapted: restoration requires available checkpoint constituents; side effects are not automatically reversible. Branch request identity is now bound before receipt replay, compensation and restoration; legacy branches without request journals refuse retries.",
-                "recovery": "Replay records survive reopen/import; uncertain started effects remain fenced. Provider receipt durability is separate.",
+                "recovery": "Replay records and opt-in provider snapshots survive reopen/import; snapshots verify exact context and provider configuration before compensation. Uncertain started effects remain fenced.",
                 "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
                 "performance": "Replay-step reuse is observable; it is not measured live KV-cache reuse.",
                 "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
@@ -572,18 +610,31 @@
                 {
                     "path": "docs/replay-request-identity.md",
                     "sha256": "73cc0f3bb0e058a0d3f9e198b79f0dc4d30be4dac4999277d75af8a1d9a331a6"
+                },
+                {
+                    "path": "docs/provider-conversation-checkpoints.md",
+                    "sha256": "7ec2a532a582f59e3bdf0b9f834348e67ff0ea4a6e69c6bb80d71cd100ead14c"
+                },
+                {
+                    "path": "test/provider/provider-checkpoint-restart.test.ts",
+                    "sha256": "1930213bfe48593c9690727765bbf52f3c8b342a1ebf39e3fa677bbd201e280c"
+                },
+                {
+                    "path": "test/provider/provider-native-checkpoint.test.ts",
+                    "sha256": "16a3c07f2ac5f6838b023fff037f1f16ff3125348309b6fc9f86818f24d7308c"
+                },
+                {
+                    "path": "test/provider/provider-checkpoint-binding.test.ts",
+                    "sha256": "8a4ea502d8cf385c05287ce4702323e9ff10198ac7c6180f835916988c275b1a"
                 }
             ],
-            "issues": [
-                "https://github.com/avnionur/shepherd-typescript/issues/242",
-                "https://github.com/avnionur/shepherd-typescript/issues/262"
-            ]
+            "issues": ["https://github.com/avnionur/shepherd-typescript/issues/262"]
         },
         {
             "id": "supervisor",
             "group": "paper",
             "title": "Concurrent runtime supervisor",
-            "source": "Paper \u00a75.1 and Appendix E.",
+            "source": "Paper §5.1 and Appendix E.",
             "exports": [
                 {
                     "entry": "./applications",
@@ -628,7 +679,7 @@
             "id": "cro",
             "group": "paper",
             "title": "Counterfactual optimization",
-            "source": "Paper \u00a75.2 and Appendix F.1\u2013F.5.",
+            "source": "Paper §5.2 and Appendix F.1–F.5.",
             "exports": [
                 {
                     "entry": "./applications",
@@ -672,7 +723,7 @@
             "id": "tree-rl",
             "group": "paper",
             "title": "Tree-RL rollout and training boundary",
-            "source": "Paper \u00a75.3 and Appendix F.6\u2013F.7.",
+            "source": "Paper §5.3 and Appendix F.6–F.7.",
             "exports": [
                 {
                     "entry": "./applications",
@@ -759,7 +810,7 @@
             "id": "performance",
             "group": "paper",
             "title": "Performance and sandbox realization",
-            "source": "Paper \u00a74 and Appendix C.1\u2013C.7.",
+            "source": "Paper §4 and Appendix C.1–C.7.",
             "exports": [
                 {
                     "entry": "./workspace",
@@ -808,7 +859,7 @@
             "id": "nonclaims",
             "group": "paper",
             "title": "Overall coverage and research directions",
-            "source": "Paper \u00a71\u20132, \u00a76 and Appendix A.1\u2013A.2.",
+            "source": "Paper §1–2, §6 and Appendix A.1–A.2.",
             "exports": [],
             "dimensions": {
                 "api": "No aggregate paper-coverage percentage or complete reproduction claim.",

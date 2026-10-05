@@ -1,8 +1,8 @@
 # Implementation Tracker
 
-Last updated: 2026-10-04
+Last updated: 2026-10-05
 
-Current version: `13.6.0`
+Current version: `13.7.0`
 
 Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
@@ -40,7 +40,10 @@ full combined-main verification passed: 1,402 tests passed, two intentional skip
 100% configured coverage and installed-package checks. Final version sync, desktop build,
 actual 13.3 reader refusal and independent reviews passed. Native timeout attempts were traced to
 macOS idle sleep; the successful gate used a temporary command-scoped sleep assertion.
-Next unblocked P1 slice: #242.
+#241 shipped through PR #279. Active P1 slice #242 adds opt-in retained provider checkpoints
+(MINOR 13.7.0), exact prefix restart/native-import evidence, configuration refusal before
+compensation and context redaction. Focused and N-1 reader probes pass. Full verification passed: 1,416 tests, two intentional skips,
+zero failures, 100% configured coverage and installed-package gates. Delivery pending. [Preservation matrix](./242-provider-checkpoint-preservation.md).
 [Preservation matrix](./241-reconciliation-preservation.md).
 
 Prior preservation evidence: [#236](./236-capability-preservation.md) and

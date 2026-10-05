@@ -19,6 +19,7 @@ import {
     REPLAY_STEP_SOURCES,
     REPLAY_TERMINAL_STATUSES,
 } from "../protocol/values.generated.ts";
+import { validateProviderConversationCheckpointEvidence } from "../provider/checkpoints.ts";
 import type { ModelProvider, ModelRequest } from "../provider/types.ts";
 import {
     readModelRequest,
@@ -966,7 +967,14 @@ async function checkpoint(engine: ReplayEngine): Promise<ReplayCheckpointInspect
         body,
         config.traceSchemas.checkpoint,
         CAPTURE_MODE,
-        (cut) => [(cut as Cut).created_by_record_id],
+        (cut) => [
+            (cut as Cut).created_by_record_id,
+            ...constituents.flatMap((entry) =>
+                typeof entry.evidence?.snapshot_record_id === "string"
+                    ? [entry.evidence.snapshot_record_id]
+                    : [],
+            ),
+        ],
         {
             append_intent_id: createReplayAppendIntentId(
                 engine.bindings.commandId,
@@ -1041,7 +1049,7 @@ async function captureProviderSession(
             await adapter.checkpoint(context),
             ["status"],
             "provider session evidence",
-            ["contextPrefixId", "reason", "receiptId"],
+            ["contextPrefixId", "reason", "receiptId", "snapshotRecordId"],
         );
         if (evidence.status === UNAVAILABLE) {
             return constituent(
@@ -1067,6 +1075,16 @@ async function captureProviderSession(
                 null,
             );
         }
+        validateProviderConversationCheckpointEvidence(engine.store, {
+            snapshotRecordId: evidence.snapshotRecordId,
+            receiptId: evidence.receiptId,
+            adapterId: adapter.adapterId,
+            contextPrefixId: context.context_prefix_id,
+            provider:
+                engine.bindings.provider === null
+                    ? null
+                    : readProviderDescriptor(engine.bindings.provider.descriptor()),
+        });
         return constituent(
             PROVIDER_SESSION_KIND,
             adapter.adapterId,
@@ -1075,6 +1093,9 @@ async function captureProviderSession(
             null,
             {
                 context_prefix_id: context.context_prefix_id,
+                ...(evidence.snapshotRecordId === undefined
+                    ? {}
+                    : { snapshot_record_id: evidence.snapshotRecordId as string }),
             },
         );
     } catch {
@@ -1364,7 +1385,8 @@ function readProviderSessionAdapter(value: unknown): ReplayProviderSessionAdapte
     if (
         typeof adapter.checkpoint !== "function" ||
         typeof adapter.restore !== "function" ||
-        (adapter.cacheIdentity !== undefined && typeof adapter.cacheIdentity !== "function")
+        (adapter.cacheIdentity !== undefined && typeof adapter.cacheIdentity !== "function") ||
+        (adapter.validateReceipt !== undefined && typeof adapter.validateReceipt !== "function")
     ) {
         throw new TypeError("providerSession must be a provider-session adapter");
     }

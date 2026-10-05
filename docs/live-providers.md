@@ -4,7 +4,7 @@ Status: normative from 5.1.0 (issue [#204](https://github.com/avnionur/shepherd-
 epic [#202](https://github.com/avnionur/shepherd-typescript/issues/202); paper §3.1, §4, Appendix
 C.6, §5, Appendix D). Configuration: `providers` in [`protocol.config.json`](../protocol.config.json),
 read by [`src/protocol/config-providers.ts`](../src/protocol/config-providers.ts) and locked by
-`PROVIDER_PROTOCOL_V3_CONTRACT` (tool use added in 6.0.0, issue
+`PROVIDER_PROTOCOL_V4_CONTRACT` (tool use added in 6.0.0, issue
 [#206](https://github.com/avnionur/shepherd-typescript/issues/206); see
 [tool-use loop](./tool-use-loop.md)). Implementation:
 [`src/provider/live-provider.ts`](../src/provider/live-provider.ts),
@@ -171,7 +171,7 @@ functions of retained data, so equal requests and outputs render to equal bytes.
 
 ## Provider conversations and rewind
 
-`createProviderConversation({ adapterId, provider, system? })` returns a `ProviderConversation`:
+`createProviderConversation({ adapterId, provider, system?, checkpointStore?, configurationId? })` returns a `ProviderConversation`:
 
 - `provider`: a `ModelProvider` whose `invoke` sends the held messages plus the rendered request
   with the whole list as the cacheable prefix, and after success appends the rendered request and
@@ -199,9 +199,10 @@ identity equals the original's, and that a simulated prefix cache reports read t
 no creation tokens on the replayed step. A conversation rebuilt from retained steps after a restart
 produces the same bytes for a step-count target.
 
-Receipts live in the conversation's process memory. After a restart, a verified receipt cannot be
-restored (the branch fails with the adapter's error); rebuild from the retained steps and replay to
-a step boundary, where the provider session is reconstructive.
+Without `checkpointStore`, receipts live in process memory; after restart use `rebuild` and a
+reconstructive step-boundary replay. Opt into [retained conversation checkpoints](./provider-conversation-checkpoints.md)
+for verified restoration across restart/native import, with explicit system-prompt retention and
+provider/configuration validation before branch work.
 
 ## Live verification
 

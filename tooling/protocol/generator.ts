@@ -36,6 +36,7 @@ import {
     renderOrphanRepairCommandSchema,
     renderOrphanRepairReceiptSchema,
 } from "./schemas/orphan-repair-schemas.ts";
+import { renderProviderCheckpointSchema } from "./schemas/provider-checkpoint-schema.ts";
 import { renderEffectReconciliationSchema } from "./schemas/reconciliation-schema.ts";
 import { renderReplayBranchRequestSchema } from "./schemas/replay-request-schema.ts";
 import {
@@ -268,6 +269,10 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderEffectCompensationSchema(config)),
             relativePath: config.effects.compensation.artifacts.recordSchema,
+        },
+        {
+            content: renderJson(renderProviderCheckpointSchema(config)),
+            relativePath: config.providers.conversation.checkpoint.schemaPath,
         },
         {
             content: renderJson(renderEffectReconciliationSchema(config)),

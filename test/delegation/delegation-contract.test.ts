@@ -21,7 +21,7 @@ import {
 } from "../../src/index.ts";
 import {
     DELEGATION_PROTOCOL_V1_CONTRACT,
-    PROVIDER_PROTOCOL_V3_CONTRACT,
+    PROVIDER_PROTOCOL_V4_CONTRACT,
     TASK_PROTOCOL_V2_CONTRACT,
 } from "../../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
@@ -128,7 +128,7 @@ test("generated schemas accept retained handle records and the configuration is 
     const parsed = parseProtocolConfig(structuredClone(validConfig));
     assert.deepEqual(parsed.delegation, DELEGATION_PROTOCOL_V1_CONTRACT);
     assert.equal(Object.isFrozen(parsed.delegation), true);
-    assert.deepEqual(parsed.providers, PROVIDER_PROTOCOL_V3_CONTRACT);
+    assert.deepEqual(parsed.providers, PROVIDER_PROTOCOL_V4_CONTRACT);
     assert.deepEqual(parsed.tasks, TASK_PROTOCOL_V2_CONTRACT);
     assert.equal(parsed.providers.program.kind, "program");
 });

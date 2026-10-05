@@ -1,5 +1,9 @@
-import { createRecordId, type SemanticRecord } from "../canonical/canonical-record.ts";
-import { providerProtocolConfig } from "../protocol/config.ts";
+import {
+    canonicalizeRecord,
+    createRecordId,
+    type SemanticRecord,
+} from "../canonical/canonical-record.ts";
+import { providerProtocolConfig, recordIdConfig } from "../protocol/config.ts";
 import { REPLAY_CHECKPOINT_EVIDENCE_STATUSES } from "../protocol/values.generated.ts";
 import {
     createReplayContextPrefixId,
@@ -13,6 +17,12 @@ import type {
     ReplayProviderSessionEvidence,
     ReplayStepInspection,
 } from "../replay/types.ts";
+import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
+import {
+    readProviderConversationCheckpoint,
+    retainProviderConversationCheckpoint,
+} from "./checkpoints.ts";
+import { readProviderConfiguration } from "./configuration-identity.ts";
 import {
     isWellFormedText,
     renderModelOutputMessage,
@@ -26,7 +36,12 @@ import type {
     ProviderConversationDefinition,
     ProviderDescriptor,
 } from "./types.ts";
-import { readModelRequest, readModelResponse, readProviderSignal } from "./validation.ts";
+import {
+    readModelRequest,
+    readModelResponse,
+    readProviderDescriptor,
+    readProviderSignal,
+} from "./validation.ts";
 
 const identity = providerProtocolConfig.conversation;
 const [VERIFIED] = REPLAY_CHECKPOINT_EVIDENCE_STATUSES;
@@ -48,11 +63,12 @@ type ConversationState = {
  * cache can serve it. The conversation mirrors the replay session's chained context prefix
  * identity, including failed exchanges, so checkpoint evidence can be verified.
  *
- * The session adapter's `checkpoint` retains the held state under a content-derived receipt in
- * this conversation's memory; `restore` resets the held state to a retained receipt. Receipts do
- * not survive the process; use `rebuild` with the retained steps after a restart.
+ * With `checkpointStore`, the session adapter retains a content-addressed snapshot of messages
+ * and system data and validates its provider/configuration binding before restoring after restart
+ * or native import. This opts into retaining the system prompt under the store's context policy.
+ * Without that option, receipts remain process-local; `rebuild` reconstructs from retained steps.
  *
- * @param definition - Adapter identity, conversational provider, and optional system prompt.
+ * @param definition - Provider, adapter identity, optional system and durable checkpoint binding.
  * @returns The conversation handle.
  * @throws {TypeError} If the definition is malformed.
  *
@@ -71,10 +87,67 @@ type ConversationState = {
 export function createProviderConversation(
     definition: ProviderConversationDefinition,
 ): ProviderConversation {
-    const { adapterId, provider, system } = readDefinition(definition);
+    const { adapterId, provider, system, checkpointStore, configurationId } =
+        readDefinition(definition);
     let state: ConversationState = Object.freeze({ contextPrefixId: null, messages: [] });
     let pending = false;
     const receipts = new Map<string, ConversationState>();
+    const descriptor =
+        checkpointStore === undefined ? null : readProviderDescriptor(provider.descriptor());
+    const factoryConfiguration = readProviderConfiguration(provider);
+    if (
+        checkpointStore !== undefined &&
+        factoryConfiguration === undefined &&
+        configurationId === undefined
+    )
+        throw new TypeError(
+            "retained conversation requires an explicit custom provider configurationId",
+        );
+    const binding =
+        descriptor === null
+            ? null
+            : Object.freeze({
+                  adapterId,
+                  provider: descriptor,
+                  configurationId:
+                      identity.checkpoint.configurationIdPrefix +
+                      createRecordId({
+                          provider: descriptor as unknown as SemanticRecord,
+                          factory: factoryConfiguration ?? null,
+                          declared: configurationId ?? null,
+                          system,
+                          format: identity.checkpoint.compatibilityVersion,
+                      }).slice(recordIdConfig.prefix.length),
+              });
+    const assertConfiguration = () => {
+        if (
+            binding !== null &&
+            canonicalizeRecord(
+                readProviderDescriptor(provider.descriptor()) as unknown as SemanticRecord,
+            ) !== canonicalizeRecord(binding.provider as unknown as SemanticRecord)
+        )
+            throw new TypeError("provider conversation configuration changed after construction");
+    };
+    const readRetained = (
+        receiptId: string,
+        context: ReplayProviderSessionCheckpointContext,
+    ): ConversationState => {
+        if (pending) throw new TypeError("provider conversation cannot restore during a turn");
+        assertConfiguration();
+        const retained = readProviderConversationCheckpoint(checkpointStore as SQLiteTraceStore, {
+            ...(binding as NonNullable<typeof binding>),
+            receiptId,
+            contextPrefixId: context.context_prefix_id,
+        });
+        if (retained.system !== system || retained.tools.length !== 0)
+            throw new TypeError(
+                "provider conversation snapshot prefix configuration is incompatible",
+            );
+        return Object.freeze({
+            contextPrefixId: retained.contextPrefixId,
+            messages: retained.messages,
+        });
+    };
     const advance = (
         request: ModelRequest,
         response: Parameters<typeof createReplayResponseId>[0],
@@ -100,9 +173,36 @@ export function createProviderConversation(
                       },
                   })
                 : null,
+        ...(checkpointStore === undefined
+            ? {}
+            : {
+                  validateReceipt: (
+                      receiptId: string,
+                      context: ReplayProviderSessionCheckpointContext,
+                  ) => {
+                      readRetained(receiptId, context);
+                  },
+              }),
         checkpoint: (
-            _context: ReplayProviderSessionCheckpointContext,
+            context: ReplayProviderSessionCheckpointContext,
         ): ReplayProviderSessionEvidence => {
+            if (checkpointStore !== undefined) {
+                assertConfiguration();
+                if (context.context_prefix_id !== state.contextPrefixId)
+                    throw new TypeError(
+                        "provider conversation checkpoint context does not match held state",
+                    );
+                const receipt = retainProviderConversationCheckpoint(checkpointStore, {
+                    ...(binding as NonNullable<typeof binding>),
+                    state: { ...state, system, tools: [] },
+                });
+                return Object.freeze({
+                    contextPrefixId: state.contextPrefixId,
+                    receiptId: receipt.receiptId,
+                    snapshotRecordId: receipt.recordId,
+                    status: VERIFIED,
+                });
+            }
             const receiptId = prefixed(identity.receiptIdPrefix, {
                 provider_conversation: {
                     context_prefix_id: state.contextPrefixId,
@@ -117,7 +217,12 @@ export function createProviderConversation(
                 status: VERIFIED,
             });
         },
-        restore: (receiptId: string, _context: ReplayProviderSessionCheckpointContext) => {
+        restore: (receiptId: string, context: ReplayProviderSessionCheckpointContext) => {
+            if (pending) throw new TypeError("provider conversation cannot restore during a turn");
+            if (checkpointStore !== undefined) {
+                state = readRetained(receiptId, context);
+                return state.contextPrefixId;
+            }
             const retained = receipts.get(receiptId);
             if (retained === undefined) {
                 throw new TypeError("provider conversation does not hold the requested receipt");
@@ -138,6 +243,7 @@ export function createProviderConversation(
             if (pending) {
                 throw new TypeError("provider conversation turns must be sequential");
             }
+            assertConfiguration();
             pending = true;
             const messages = Object.freeze([...state.messages, renderModelRequestMessage(request)]);
             let response: ModelResponse;
@@ -225,6 +331,8 @@ function prefixed(prefix: string, value: SemanticRecord): string {
 
 function readDefinition(value: unknown): {
     readonly adapterId: string;
+    readonly checkpointStore: SQLiteTraceStore | undefined;
+    readonly configurationId: string | undefined;
     readonly provider: ProviderConversationDefinition["provider"];
     readonly system: string | null;
 } {
@@ -232,7 +340,14 @@ function readDefinition(value: unknown): {
         throw new TypeError("provider conversation definition must be an object");
     }
     const definition = value as Partial<ProviderConversationDefinition>;
-    if (Object.keys(definition).some((key) => !["adapterId", "provider", "system"].includes(key))) {
+    if (
+        Object.keys(definition).some(
+            (key) =>
+                !["adapterId", "provider", "system", "checkpointStore", "configurationId"].includes(
+                    key,
+                ),
+        )
+    ) {
         throw new TypeError(
             "provider conversation definition must contain only its declared fields",
         );
@@ -252,5 +367,20 @@ function readDefinition(value: unknown): {
     if (definition.system !== undefined && !isWellFormedText(definition.system)) {
         throw new TypeError("provider conversation system must be non-empty text");
     }
-    return { adapterId: definition.adapterId, provider, system: definition.system ?? null };
+    if (definition.configurationId !== undefined && !isWellFormedText(definition.configurationId))
+        throw new TypeError("provider conversation configurationId must be nonempty text");
+    if (
+        definition.checkpointStore !== undefined &&
+        (definition.checkpointStore === null ||
+            typeof definition.checkpointStore.injectSupervisionContext !== "function" ||
+            typeof definition.checkpointStore.readRecord !== "function")
+    )
+        throw new TypeError("provider conversation checkpointStore must be a trace store");
+    return {
+        adapterId: definition.adapterId,
+        provider,
+        system: definition.system ?? null,
+        checkpointStore: definition.checkpointStore,
+        configurationId: definition.configurationId,
+    };
 }

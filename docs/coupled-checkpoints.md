@@ -137,6 +137,11 @@ for live providers: it restores a byte-identical message prefix so the provider'
 serve the replayed suffix ([live providers](./live-providers.md#provider-conversations-and-rewind)).
 Without an adapter the provider session is reconstructive, rebuilt from recorded exchanges.
 
+Stored provider snapshots additionally carry `snapshotRecordId`, are cited causally, and require a
+read-only `validateReceipt` preflight before branch publication or compensation. See
+[retained provider checkpoints](./provider-conversation-checkpoints.md) for the exact prefix,
+configuration binding, restart/import, failure and retention contracts.
+
 ## Process checkpoint backends
 
 A `ReplayProcessAdapter` declares `processId`, a configured `backend`, `probe()`,

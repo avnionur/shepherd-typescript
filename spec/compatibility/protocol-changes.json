@@ -1206,5 +1206,53 @@
         "classification": "additive",
         "note": "Optional reconciliation and residual-risk fields preserve existing factual statuses and all prior inspection members.",
         "version": "13.5.0"
+    },
+    {
+        "artifact": "api:.#ProviderConversationDefinition",
+        "from": "sha256:85650ff777e140074185a6ae52ae9804e81132744bd0e3bb9268a41eb04cd884",
+        "to": "sha256:df275e0453fc27297ddf0b47094e8c53e200f9e8ee9959b472d4195ada85f470",
+        "classification": "additive",
+        "note": "Issue242 adds optional retained checkpoint storage/configuration, read-only receipt validation and snapshot references. Existing memory-only and custom opaque receipt adapters retain their signatures and behavior; new snapshot payloads are separately versioned.",
+        "version": "13.7.0"
+    },
+    {
+        "artifact": "api:.#ReplayProviderSessionAdapter",
+        "from": "sha256:64fbc97a0176f1a5199f98f3cf0c01127c4c707bfae3e16c49ccb3cee2be163d",
+        "to": "sha256:7a2d27decb6657dbc14d46639f85b9d0d73821e01a2d54531ff727a5c3234229",
+        "classification": "additive",
+        "note": "Issue242 adds optional retained checkpoint storage/configuration, read-only receipt validation and snapshot references. Existing memory-only and custom opaque receipt adapters retain their signatures and behavior; new snapshot payloads are separately versioned.",
+        "version": "13.7.0"
+    },
+    {
+        "artifact": "api:.#ReplayProviderSessionEvidence",
+        "from": "sha256:b2cdc8ab15222d667d02105b950f268e54bf112550bab3bc44f69c3843e0e919",
+        "to": "sha256:b2d356fce8255112fa854a75d989d76194ad2eb5fc48c5d5fd82710e987a9305",
+        "classification": "additive",
+        "note": "Issue242 adds optional retained checkpoint storage/configuration, read-only receipt validation and snapshot references. Existing memory-only and custom opaque receipt adapters retain their signatures and behavior; new snapshot payloads are separately versioned.",
+        "version": "13.7.0"
+    },
+    {
+        "artifact": "api:./providers#ProviderConversationDefinition",
+        "from": "sha256:85650ff777e140074185a6ae52ae9804e81132744bd0e3bb9268a41eb04cd884",
+        "to": "sha256:df275e0453fc27297ddf0b47094e8c53e200f9e8ee9959b472d4195ada85f470",
+        "classification": "additive",
+        "note": "Issue242 adds optional retained checkpoint storage/configuration, read-only receipt validation and snapshot references. Existing memory-only and custom opaque receipt adapters retain their signatures and behavior; new snapshot payloads are separately versioned.",
+        "version": "13.7.0"
+    },
+    {
+        "artifact": "api:./replay#ReplayProviderSessionAdapter",
+        "from": "sha256:64fbc97a0176f1a5199f98f3cf0c01127c4c707bfae3e16c49ccb3cee2be163d",
+        "to": "sha256:7a2d27decb6657dbc14d46639f85b9d0d73821e01a2d54531ff727a5c3234229",
+        "classification": "additive",
+        "note": "Issue242 adds optional retained checkpoint storage/configuration, read-only receipt validation and snapshot references. Existing memory-only and custom opaque receipt adapters retain their signatures and behavior; new snapshot payloads are separately versioned.",
+        "version": "13.7.0"
+    },
+    {
+        "artifact": "api:./replay#ReplayProviderSessionEvidence",
+        "from": "sha256:b2cdc8ab15222d667d02105b950f268e54bf112550bab3bc44f69c3843e0e919",
+        "to": "sha256:b2d356fce8255112fa854a75d989d76194ad2eb5fc48c5d5fd82710e987a9305",
+        "classification": "additive",
+        "note": "Issue242 adds optional retained checkpoint storage/configuration, read-only receipt validation and snapshot references. Existing memory-only and custom opaque receipt adapters retain their signatures and behavior; new snapshot payloads are separately versioned.",
+        "version": "13.7.0"
     }
 ]

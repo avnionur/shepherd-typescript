@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.7.0] - 2026-10-05
+
+### New Feature
+
+- Add opt-in retained provider conversation checkpoints with content-addressed exact message,
+  system and tool prefixes, surviving process restart and native trace import (#242).
+- Bind snapshots to provider/configuration, adapter and replay context; verify before branch
+  publication, compensation and restoration. Public retain/read helpers support native tool loops.
+- Apply context retention/redaction and append-time secret scanning; enforce the existing 65 KiB
+  canonical payload limit without truncation. Older readers refuse new checkpoint evidence before
+  external work and continue redacting the context body.
+
+### Impact
+
+MINOR additive capability. Existing memory receipts and reconstructive rebuild remain available.
+Durable mode explicitly retains the system prompt; native backups remain sensitive. Credentials
+are excluded from live-factory binding, custom providers declare their configuration identity,
+and verified local prefixes do not claim remote model state, live cache hits or exactly-once calls.
+
 ## [13.6.0] - 2026-10-04
 
 ### New Feature

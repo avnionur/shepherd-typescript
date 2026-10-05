@@ -13,6 +13,7 @@ import {
     REPLAY_STEP_SOURCES,
     REPLAY_TERMINAL_STATUSES,
 } from "../protocol/values.generated.ts";
+import { validateProviderConversationCheckpointEvidence } from "../provider/checkpoints.ts";
 import { ROOT_WITNESS_ID } from "../record/root-witness.ts";
 import type { RecordId } from "../record/types.ts";
 import { assertScopeText, readScopeDataObject } from "../scope/validation.ts";
@@ -373,7 +374,7 @@ function fold(
         } else if (schema === config.traceSchemas.step) {
             foldStep(store, session, record, state);
         } else if (schema === config.traceSchemas.checkpoint) {
-            foldCheckpoint(session, record, state);
+            foldCheckpoint(store, session, record, state);
         } else {
             assertRecord(record, config.traceSchemas.terminal, CAPTURE_MODE);
             const terminal = readReplayTerminalBody(record.body);
@@ -690,7 +691,12 @@ function foldStep(
     }
 }
 
-function foldCheckpoint(session: ReplaySessionBody, record: OwnerRecord, state: FoldState): void {
+function foldCheckpoint(
+    store: SQLiteTraceStore,
+    session: ReplaySessionBody,
+    record: OwnerRecord,
+    state: FoldState,
+): void {
     assertRecord(record, config.traceSchemas.checkpoint, CAPTURE_MODE);
     const checkpoint = readReplayCheckpointBody(record.body);
     const cut = state.cut as OwnerRecord;
@@ -713,7 +719,14 @@ function foldCheckpoint(session: ReplaySessionBody, record: OwnerRecord, state: 
             cut.body.target_owner_id === session.session_id &&
             cut.body.through_record_id === state.cutThrough &&
             sameIds(cut.envelope.caused_by_record_ids, [state.cutThrough as RecordId]) &&
-            sameIds(record.envelope.caused_by_record_ids, [cut.envelope.record_id]) &&
+            sameIds(record.envelope.caused_by_record_ids, [
+                cut.envelope.record_id,
+                ...checkpoint.constituents.flatMap((entry) =>
+                    typeof entry.evidence?.snapshot_record_id === "string"
+                        ? [entry.evidence.snapshot_record_id]
+                        : [],
+                ),
+            ]) &&
             byKind(TRACE_CUT_KIND).length === 1 &&
             traceCut?.status === VERIFIED &&
             traceCut.receipt_id === checkpoint.trace_cut_id &&
@@ -733,7 +746,7 @@ function foldCheckpoint(session: ReplaySessionBody, record: OwnerRecord, state: 
     );
     for (const constituent of checkpoint.constituents) {
         assert(
-            constituentAllowed(session, checkpoint.context_prefix_id, frontier, constituent),
+            constituentAllowed(store, session, checkpoint.context_prefix_id, frontier, constituent),
             `checkpoint constituent ${constituent.kind} has an inadmissible status or evidence`,
         );
     }
@@ -767,6 +780,7 @@ export function sameStep(
 }
 
 function constituentAllowed(
+    store: SQLiteTraceStore,
     session: ReplaySessionBody,
     contextPrefixId: string | null,
     frontier: ReturnType<typeof readReplayFrontier>,
@@ -804,12 +818,26 @@ function constituentAllowed(
                 constituent.status === (session.provider === null ? NOT_APPLICABLE : RECONSTRUCTIVE)
             );
         }
-        return (
-            constituent.name === adapterId &&
-            (unavailable ||
-                (constituent.status === VERIFIED &&
-                    canonical(evidence) === canonical({ context_prefix_id: contextPrefixId })))
-        );
+        if (constituent.name !== adapterId) return false;
+        if (unavailable) return true;
+        const snapshot = evidence?.snapshot_record_id;
+        if (
+            constituent.status !== VERIFIED ||
+            canonical(evidence) !==
+                canonical({
+                    context_prefix_id: contextPrefixId,
+                    ...(snapshot === undefined ? {} : { snapshot_record_id: snapshot }),
+                })
+        )
+            return false;
+        validateProviderConversationCheckpointEvidence(store, {
+            snapshotRecordId: snapshot,
+            receiptId: constituent.receipt_id as string,
+            adapterId,
+            contextPrefixId,
+            provider: session.provider,
+        });
+        return true;
     }
     if (constituent.kind === IRREVERSIBLE_KIND) {
         return (

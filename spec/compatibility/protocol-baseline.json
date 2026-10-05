@@ -1,10 +1,10 @@
 {
     "changeLog": {
-        "digest": "sha256:95283e086ca4f51cd57e2f0bdeff0f7b8cc2496be7cba1d03454c797c6cc31d0",
-        "entries": 151
+        "digest": "sha256:b0c6920fb52fafe1cb5b9489d73520faf80d216824c7dcef69ca81fadabbf992",
+        "entries": 157
     },
-    "packageVersion": "13.6.0",
-    "previousVersion": "13.5.0",
+    "packageVersion": "13.7.0",
+    "previousVersion": "13.6.0",
     "surface": {
         "commandOptions": {
             "demo write": {},
@@ -150,6 +150,8 @@
             "protocol.config.json#/observability/ids/digestAlgorithm": "sha256",
             "protocol.config.json#/orphanRepair/identity/algorithm": "sha256",
             "protocol.config.json#/orphanRepair/identity/hexLength": "64",
+            "protocol.config.json#/providers/conversation/checkpoint/configurationIdPrefix": "provider-configuration:sha256:",
+            "protocol.config.json#/providers/conversation/checkpoint/receiptIdPrefix": "provider-checkpoint:sha256:",
             "protocol.config.json#/providers/conversation/receiptIdPrefix": "provider-conversation:",
             "protocol.config.json#/providers/tools/loop/effectIdPrefix": "tool-call:",
             "protocol.config.json#/providers/tools/metaAgent/commandIdPrefix": "meta-agent:",
@@ -251,6 +253,7 @@
             "output-citation-entry-v1.schema.json": {"defs":{},"digest":"sha256:601a774b58d48a6a3ce85927349fab35af92cd876f7b47388bc12777be67b03e","oneOf":null,"rest":"sha256:601a774b58d48a6a3ce85927349fab35af92cd876f7b47388bc12777be67b03e"},
             "placement-platform-evidence-v1.schema.json": {"defs":{},"digest":"sha256:e2f86760ae0b64cb2e0b4c760b7a7de614e48ac18f6ab2f1ba16643ade07e4ab","oneOf":null,"rest":"sha256:e2f86760ae0b64cb2e0b4c760b7a7de614e48ac18f6ab2f1ba16643ade07e4ab"},
             "placement-resolution-v1.schema.json": {"defs":{},"digest":"sha256:5e574f27fd77cafa20b028f5ef5eec896ff84da617a4e51f10f2cda7033d221a","oneOf":null,"rest":"sha256:5e574f27fd77cafa20b028f5ef5eec896ff84da617a4e51f10f2cda7033d221a"},
+            "provider-conversation-checkpoint-v1.schema.json": {"defs":{"value":"sha256:5f02c5ec0c73ff543100c48daccfea23d556fe4ecf03a2d2da3e58b077c278d5"},"digest":"sha256:3b259f0ca0a154dd7fe09f000307a753d193006ad1948eb44c167c9010627162","oneOf":null,"rest":"sha256:0351fc9dba3acf16cb414672cd13eb013d6abaa150a6fe61960655e055b1fb34"},
             "record-body-v0.schema.json": {"defs":{"semanticValue":"sha256:55ce0f1d37d788d7d563829fce21c691d42774547446e90304fe685bbcca09a9"},"digest":"sha256:f5b02efafe7901b34231e750dc53c6953eca84e8f22d1dc25514ac5ba6c74b70","oneOf":null,"rest":"sha256:364219479227777faa74aea25ead10c5b01a8757ac7c68d913e0014eb91939ae"},
             "record-envelope-v0.schema.json": {"defs":{"recordId":"sha256:6ed99335d07cf1464ffaf44ded7d8b62f9bcae658d1d25910cfe1bc583cd48ff"},"digest":"sha256:d3994deda23cbc4d1709d6be7ced4ce90b04cc87186ae8ecb32ca543c4fd7e81","oneOf":null,"rest":"sha256:710274428ebe03f849485aa706c63c3405fc6d3e4f1a5713c4e000a65e806071"},
             "record-view-v0.schema.json": {"defs":{},"digest":"sha256:76a0c7d80117505cff224cfd5366fe63bf1126fe4fa2969a25ccc7651e8a1b8c","oneOf":null,"rest":"sha256:76a0c7d80117505cff224cfd5366fe63bf1126fe4fa2969a25ccc7651e8a1b8c"},
@@ -354,6 +357,8 @@
             "protocol.config.json#/projections/evidenceRecords/version": 1,
             "protocol.config.json#/projections/taskRunLedgers/compatibilityVersion": "shepherd.task-run-ledgers.v1",
             "protocol.config.json#/projections/taskRunLedgers/version": 1,
+            "protocol.config.json#/providers/conversation/checkpoint/compatibilityVersion": "shepherd.provider-conversation-checkpoint.v1",
+            "protocol.config.json#/providers/conversation/checkpoint/recordVersion": 1,
             "protocol.config.json#/replay/branch/request/compatibilityVersion": "shepherd.replay.branch-request.v1",
             "protocol.config.json#/replay/branch/request/recordVersion": 1,
             "protocol.config.json#/replay/compatibilityVersion": "shepherd.replay.v1",

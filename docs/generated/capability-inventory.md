@@ -98,13 +98,13 @@ Outstanding issues: [259](https://github.com/avnionur/shepherd-typescript/issues
 
 Upstream 0.3.0 provider concept: HTTP adapters are an adapted transport, not Claude CLI or Codex process adapters.
 
-Public entry points: `./providers#createLiveProvider`, `./providers#createProviderConversation`
+Public entry points: `./providers#createLiveProvider`, `./providers#createProviderConversation`, `./providers#retainProviderConversationCheckpoint`, `./providers#readProviderConversationCheckpoint`
 
 | Dimension | Evidence boundary |
 | --- | --- |
 | API availability | Supported: Anthropic Messages and OpenAI-compatible HTTP adapters with tool blocks and cache-token usage. |
 | Composed behavior | Partial: no streaming, bounded retry policy, actual monetary accounting, or governed process-provider adapter. |
-| Restart recovery | Conversation checkpoints are process-local; retained trace data does not reconstruct the checkpoint receipt map after restart. |
+| Restart recovery | Opt-in retained checkpoints restore exact message/system/tool prefixes across process restart and native import, with configuration verification before compensation. Memory mode and reconstructive rebuild remain available; remote provider state is not captured. |
 | Live-provider evidence | Opt-in live test exists but was not run in the recorded audit; no live cache-hit or tool-loop conformance result. |
 | Performance evidence | No performance result claimed by this row. |
 | Supported platforms / evidence | Node runtime support applies; filesystem/native support depends on the separately documented host and backend. |
@@ -116,8 +116,12 @@ Reviewed evidence (content pinned; existence is not a passing test result):
 - [test/provider/provider-conversation.test.ts](../../test/provider/provider-conversation.test.ts)
 - [test/provider/live-provider-opt-in.test.ts](../../test/provider/live-provider-opt-in.test.ts)
 - [docs/live-providers.md](../live-providers.md)
+- [docs/provider-conversation-checkpoints.md](../provider-conversation-checkpoints.md)
+- [test/provider/provider-checkpoint-restart.test.ts](../../test/provider/provider-checkpoint-restart.test.ts)
+- [test/provider/provider-native-checkpoint.test.ts](../../test/provider/provider-native-checkpoint.test.ts)
+- [test/provider/provider-checkpoint-binding.test.ts](../../test/provider/provider-checkpoint-binding.test.ts)
 
-Outstanding issues: [242](https://github.com/avnionur/shepherd-typescript/issues/242), [249](https://github.com/avnionur/shepherd-typescript/issues/249), [250](https://github.com/avnionur/shepherd-typescript/issues/250), [251](https://github.com/avnionur/shepherd-typescript/issues/251), [252](https://github.com/avnionur/shepherd-typescript/issues/252), [264](https://github.com/avnionur/shepherd-typescript/issues/264)
+Outstanding issues: [249](https://github.com/avnionur/shepherd-typescript/issues/249), [250](https://github.com/avnionur/shepherd-typescript/issues/250), [251](https://github.com/avnionur/shepherd-typescript/issues/251), [252](https://github.com/avnionur/shepherd-typescript/issues/252), [264](https://github.com/avnionur/shepherd-typescript/issues/264)
 
 ## Paper targets and measured limitations
 
@@ -215,7 +219,7 @@ Public entry points: `./scopes#emitScopeRecord`, `./workspace#forkScope`, `./wor
 | --- | --- |
 | API availability | Supported: emission, isolated nested/parallel scope fork, merge and discard with authority fencing. |
 | Composed behavior | Adapted: coordinated multi-resource checkpoints exist; atomic/reconstructive/unavailable classification depends on every constituent. No generic OS process snapshot promise. |
-| Restart recovery | Carrier custody and operation journals support documented recovery; device-layer worlds and provider conversation receipt maps are separately process-local. |
+| Restart recovery | Carrier custody and operation journals support documented recovery. Opt-in provider snapshots survive restart/import; device-layer worlds remain process-local. |
 | Live-provider evidence | No live-provider result claimed; ordinary tests use deterministic providers. |
 | Performance evidence | Existing scope benchmark measures full custody verification; it does not establish image-size-independent scope fork. |
 | Supported platforms / evidence | Node runtime support applies; filesystem/native support depends on the separately documented host and backend. |
@@ -227,8 +231,12 @@ Reviewed evidence (content pinned; existence is not a passing test result):
 - [test/replay/replay-checkpoint.test.ts](../../test/replay/replay-checkpoint.test.ts)
 - [docs/coupled-checkpoints.md](../coupled-checkpoints.md)
 - [docs/scope-merge-discard.md](../scope-merge-discard.md)
+- [docs/provider-conversation-checkpoints.md](../provider-conversation-checkpoints.md)
+- [test/provider/provider-checkpoint-restart.test.ts](../../test/provider/provider-checkpoint-restart.test.ts)
+- [test/provider/provider-native-checkpoint.test.ts](../../test/provider/provider-native-checkpoint.test.ts)
+- [test/provider/provider-checkpoint-binding.test.ts](../../test/provider/provider-checkpoint-binding.test.ts)
 
-Outstanding issues: [242](https://github.com/avnionur/shepherd-typescript/issues/242), [243](https://github.com/avnionur/shepherd-typescript/issues/243), [244](https://github.com/avnionur/shepherd-typescript/issues/244)
+Outstanding issues: [243](https://github.com/avnionur/shepherd-typescript/issues/243), [244](https://github.com/avnionur/shepherd-typescript/issues/244)
 
 ### Trace history, rewind and suffix replay
 
@@ -240,7 +248,7 @@ Public entry points: `./replay#rewindReplaySession`, `./replay#replayReplaySessi
 | --- | --- |
 | API availability | Supported: retained replay sessions, rewind, recorded-prefix suffix replay, divergence and lineage comparison. |
 | Composed behavior | Adapted: restoration requires available checkpoint constituents; side effects are not automatically reversible. Branch request identity is now bound before receipt replay, compensation and restoration; legacy branches without request journals refuse retries. |
-| Restart recovery | Replay records survive reopen/import; uncertain started effects remain fenced. Provider receipt durability is separate. |
+| Restart recovery | Replay records and opt-in provider snapshots survive reopen/import; snapshots verify exact context and provider configuration before compensation. Uncertain started effects remain fenced. |
 | Live-provider evidence | No live-provider result claimed; ordinary tests use deterministic providers. |
 | Performance evidence | Replay-step reuse is observable; it is not measured live KV-cache reuse. |
 | Supported platforms / evidence | Node runtime support applies; filesystem/native support depends on the separately documented host and backend. |
@@ -254,8 +262,12 @@ Reviewed evidence (content pinned; existence is not a passing test result):
 - [docs/rewind-and-replay.md](../rewind-and-replay.md)
 - [test/replay/replay-request-identity.test.ts](../../test/replay/replay-request-identity.test.ts)
 - [docs/replay-request-identity.md](../replay-request-identity.md)
+- [docs/provider-conversation-checkpoints.md](../provider-conversation-checkpoints.md)
+- [test/provider/provider-checkpoint-restart.test.ts](../../test/provider/provider-checkpoint-restart.test.ts)
+- [test/provider/provider-native-checkpoint.test.ts](../../test/provider/provider-native-checkpoint.test.ts)
+- [test/provider/provider-checkpoint-binding.test.ts](../../test/provider/provider-checkpoint-binding.test.ts)
 
-Outstanding issues: [242](https://github.com/avnionur/shepherd-typescript/issues/242), [262](https://github.com/avnionur/shepherd-typescript/issues/262)
+Outstanding issues: [262](https://github.com/avnionur/shepherd-typescript/issues/262)
 
 ### Concurrent runtime supervisor
 

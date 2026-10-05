@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { PROVIDER_PROTOCOL_V3_CONTRACT } from "../../src/protocol/compatibility-constants.ts";
+import { PROVIDER_PROTOCOL_V4_CONTRACT } from "../../src/protocol/compatibility-constants.ts";
 import { parseProtocolConfig } from "../../src/protocol/config-validation.ts";
 
 const validConfig = JSON.parse(
@@ -12,10 +12,10 @@ const validConfig = JSON.parse(
 test("provider protocol configuration is frozen and compatibility locked", () => {
     const parsed = parseProtocolConfig(structuredClone(validConfig));
 
-    assert.deepEqual(parsed.providers, PROVIDER_PROTOCOL_V3_CONTRACT);
+    assert.deepEqual(parsed.providers, PROVIDER_PROTOCOL_V4_CONTRACT);
     assert.equal(Object.isFrozen(parsed.providers), true);
     assert.equal(Object.isFrozen(parsed.providers.static.capabilities), true);
-    assert.equal(Object.isFrozen(PROVIDER_PROTOCOL_V3_CONTRACT), true);
+    assert.equal(Object.isFrozen(PROVIDER_PROTOCOL_V4_CONTRACT), true);
 
     for (const mutate of [
         (providers: Record<string, unknown>) => {
