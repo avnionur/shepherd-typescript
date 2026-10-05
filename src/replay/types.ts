@@ -227,6 +227,8 @@ export type ReplayProviderSessionEvidence =
           readonly contextPrefixId: string | null;
           /** Stable provider-side session receipt identity. */
           readonly receiptId: string;
+          /** Canonical retained conversation snapshot; its content and causal citation are verified. */
+          readonly snapshotRecordId?: RecordId;
           /** Verified capture. */
           readonly status: "verified";
       }
@@ -239,6 +241,18 @@ export type ReplayProviderSessionEvidence =
 
 /** Adapter that captures and restores provider-side conversation state. */
 export type ReplayProviderSessionAdapter = {
+    /**
+     * Validates a receipt without restoring external state, before branch publication or compensation.
+     * @param receiptId - Exact checkpoint receipt.
+     * @param context - Expected source session boundary and context prefix.
+     * @returns Completion after read-only validation.
+     * @throws If retained data or provider configuration is missing, corrupt or incompatible.
+     */
+    readonly validateReceipt?: (
+        receiptId: string,
+        context: ReplayProviderSessionCheckpointContext,
+    ) => void | Promise<void>;
+
     /** Stable adapter identity retained in session evidence. */
     readonly adapterId: string;
     /**

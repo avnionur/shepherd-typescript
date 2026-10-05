@@ -1,0 +1,318 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/provider-conversation-checkpoint-v1.schema.json",
+    "title": "Shepherd Provider Conversation Checkpoint Payload v1",
+    "$comment": "Generated from protocol.config.json. This is the data payload of a supervision context record, preserving redaction in older exporters. Runtime additionally verifies content identity, provider/configuration binding, context identity, UTF-8 bounds and tool-name uniqueness. This is not proof of a live provider cache hit.",
+    "x-shepherd-max-canonical-bytes": 65536,
+    "type": "object",
+    "properties": {
+        "compatibility_version": {
+            "const": "shepherd.provider-conversation-checkpoint.v1"
+        },
+        "record_version": {
+            "const": 1
+        },
+        "adapter_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "x-shepherd-max-utf8-bytes": 4096
+        },
+        "configuration_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "x-shepherd-max-utf8-bytes": 4096
+        },
+        "provider": {
+            "type": "object",
+            "properties": {
+                "capabilities": {
+                    "type": "object",
+                    "properties": {
+                        "streaming": {
+                            "type": "boolean"
+                        },
+                        "structuredOutput": {
+                            "type": "boolean"
+                        },
+                        "tools": {
+                            "type": "boolean"
+                        }
+                    },
+                    "required": [
+                        "streaming",
+                        "structuredOutput",
+                        "tools"
+                    ],
+                    "additionalProperties": false
+                },
+                "id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "kind": {
+                    "enum": [
+                        "static",
+                        "program",
+                        "anthropic",
+                        "openai",
+                        "openrouter"
+                    ]
+                },
+                "model": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "capabilities",
+                "id",
+                "kind",
+                "model"
+            ],
+            "additionalProperties": false
+        },
+        "context_prefix_id": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "string",
+                    "pattern": "^replay-context:sha256:[0-9a-f]{64}$"
+                }
+            ]
+        },
+        "messages": {
+            "type": "array",
+            "maxItems": 16384,
+            "items": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "role": {
+                                "const": "user"
+                            },
+                            "content": {
+                                "type": "array",
+                                "minItems": 1,
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "const": "text"
+                                                },
+                                                "text": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                }
+                                            },
+                                            "required": [
+                                                "text",
+                                                "type"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "const": "tool_result"
+                                                },
+                                                "toolUseId": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "content": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "isError": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "content",
+                                                "isError",
+                                                "toolUseId",
+                                                "type"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "content",
+                            "role"
+                        ],
+                        "additionalProperties": false
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "role": {
+                                "const": "assistant"
+                            },
+                            "content": {
+                                "type": "array",
+                                "minItems": 1,
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "const": "text"
+                                                },
+                                                "text": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                }
+                                            },
+                                            "required": [
+                                                "text",
+                                                "type"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "const": "tool_use"
+                                                },
+                                                "id": {
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "pattern": "^[a-zA-Z0-9_-]{1,64}$"
+                                                },
+                                                "input": {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "$ref": "#/$defs/value"
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "input",
+                                                "name",
+                                                "type"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "content",
+                            "role"
+                        ],
+                        "additionalProperties": false
+                    }
+                ]
+            }
+        },
+        "system": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "minLength": 1
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "tools": {
+            "type": "array",
+            "maxItems": 256,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "pattern": "^[a-zA-Z0-9_-]{1,64}$"
+                    },
+                    "description": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "inputSchema": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/$defs/value"
+                        }
+                    }
+                },
+                "required": [
+                    "description",
+                    "inputSchema",
+                    "name"
+                ],
+                "additionalProperties": false
+            }
+        }
+    },
+    "required": [
+        "adapter_id",
+        "compatibility_version",
+        "configuration_id",
+        "context_prefix_id",
+        "messages",
+        "provider",
+        "record_version",
+        "system",
+        "tools"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+        "value": {
+            "anyOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/value"
+                    }
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/value"
+                    }
+                }
+            ]
+        }
+    }
+}

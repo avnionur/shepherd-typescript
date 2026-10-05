@@ -60,6 +60,11 @@ Each class has an export disposition (`RETENTION_EXPORT_DISPOSITIONS`):
 `body_digest` is the configured retention digest of the canonical body. It lets a holder of the
 original body confirm a match; it does not reveal the body.
 
+[Retained provider conversation checkpoints](./provider-conversation-checkpoints.md) opt into
+storing complete system/message/tool prefixes as existing supervision-context records. They are
+redacted by current and 13.5.0 exporters, including after native import. Native archives and backups
+retain the complete prefix; credentials are excluded from factory configuration identity.
+
 ## Secret detection
 
 `retention.secretClasses` holds named regular expressions; patterns live only in configuration.

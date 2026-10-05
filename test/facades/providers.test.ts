@@ -16,6 +16,8 @@ test("providers facade re-exports the root provider runtime values", () => {
         "createProgramConversationProvider",
         "createProviderConversation",
         "createStaticProvider",
+        "readProviderConversationCheckpoint",
+        "retainProviderConversationCheckpoint",
     ]);
     for (const [name, value] of Object.entries(providers)) {
         assert.equal(value, (root as Record<string, unknown>)[name], name);

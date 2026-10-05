@@ -56,7 +56,8 @@ The default path runs offline and deterministically: providers are exact-cassett
 program serviced. Configured live adapters for the Anthropic Messages API and OpenAI-compatible
 chat completions (OpenAI, OpenRouter) are opt-in and restore a byte-identical message prefix after
 rewind so the provider's prompt cache can serve replay ([live providers](https://github.com/avnionur/shepherd-typescript/blob/main/docs/live-providers.md));
-they are tested against stub transports and have not been live-verified here. All results are this
+Opt-in [retained conversation checkpoints](https://github.com/avnionur/shepherd-typescript/blob/main/docs/provider-conversation-checkpoints.md)
+preserve exact prefixes across restart and native import. The adapters are tested against stub transports and have not been live-verified here. All results are this
 repository's measurements, never upstream numbers.
 
 ## Status

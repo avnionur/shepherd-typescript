@@ -6,6 +6,7 @@ import type {
 } from "../protocol/values.generated.ts";
 import type { ReplayProviderSessionAdapter, ReplayStepInspection } from "../replay/types.ts";
 import type { RunArtifactContentDefinition } from "../run/artifact-types.ts";
+import type { SQLiteTraceStore } from "../store/sqlite-trace-store.ts";
 
 /** One side-channel artifact emitted with a provider response. */
 export type ModelArtifactDefinition = {
@@ -287,6 +288,10 @@ export type LiveProviderDefinition = {
 
 /** Definition accepted by {@link createProviderConversation}. */
 export type ProviderConversationDefinition = {
+    /** Optional durable checkpoint store; omitted keeps process-local receipts. */
+    readonly checkpointStore?: SQLiteTraceStore;
+    /** Non-secret version identity for custom provider configuration; combined with factory identity when available. */
+    readonly configurationId?: string;
     /** Stable provider-session adapter identity retained in replay evidence. */
     readonly adapterId: string;
     /** Conversational provider that receives every turn. */

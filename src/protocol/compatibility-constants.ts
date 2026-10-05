@@ -4077,3 +4077,27 @@ export const KERNEL_ABI_V0_STORE_V15_CONTRACT = deepFreeze({
     ],
     schemaVersion: 15,
 } as const);
+
+/** Provider protocol v4 adds opt-in retained conversation checkpoints. */
+export const PROVIDER_PROTOCOL_V4_CONTRACT = deepFreeze({
+    ...PROVIDER_PROTOCOL_V3_CONTRACT,
+    conversation: {
+        ...PROVIDER_PROTOCOL_V3_CONTRACT.conversation,
+        checkpoint: {
+            compatibilityVersion: "shepherd.provider-conversation-checkpoint.v1",
+            recordVersion: 1,
+            schemaId:
+                "https://avnionur.github.io/shepherd-typescript/schemas/provider-conversation-checkpoint-v1.schema.json",
+            schemaPath: "spec/schemas/provider-conversation-checkpoint-v1.schema.json",
+            receiptIdPrefix: "provider-checkpoint:sha256:",
+            appendIntentKind: "provider_conversation_checkpoint",
+            configurationIdPrefix: "provider-configuration:sha256:",
+            limits: {
+                maxIdentityBytes: 4096,
+                maxMessages: 16384,
+                maxTools: 256,
+            },
+            channelPrefix: "provider-checkpoint:",
+        },
+    },
+} as const);

@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 13.6.0
+Package: `@avnionur/shepherd-typescript` 13.7.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 1468.
+Exported symbols: 1475.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -10742,6 +10742,54 @@ export type ProviderConversation = {
 };
 ```
 
+### `ProviderConversationCheckpointBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Host-declared identity required to retain or read one provider checkpoint.
+
+Signature:
+
+```ts
+export type ProviderConversationCheckpointBinding = {
+    readonly adapterId: string;
+    readonly configurationId: string;
+    readonly provider: ProviderDescriptor;
+};
+```
+
+### `ProviderConversationCheckpointReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable snapshot identity and its canonical causal citation.
+
+Signature:
+
+```ts
+export type ProviderConversationCheckpointReceipt = {
+    readonly receiptId: string;
+    readonly recordId: RecordId;
+};
+```
+
+### `ProviderConversationCheckpointState`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact conversation prefix retained without provider credentials or transport handles.
+
+Signature:
+
+```ts
+export type ProviderConversationCheckpointState = {
+    readonly contextPrefixId: string | null;
+    readonly messages: readonly ModelMessage[];
+    readonly system: string | null;
+    readonly tools: readonly ModelToolDefinition[];
+};
+```
+
 ### `ProviderConversationDefinition`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -10752,6 +10800,8 @@ Signature:
 
 ```ts
 export type ProviderConversationDefinition = {
+    readonly checkpointStore?: SQLiteTraceStore;
+    readonly configurationId?: string;
     readonly adapterId: string;
     readonly provider: ConversationalModelProvider;
     readonly system?: string;
@@ -11561,6 +11611,21 @@ Signature:
 
 ```ts
 export declare const ROOT_WITNESS_ID: string;
+```
+
+### `ReadProviderConversationCheckpointOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact receipt plus the identity and context the caller expects to restore.
+
+Signature:
+
+```ts
+export type ReadProviderConversationCheckpointOptions = ProviderConversationCheckpointBinding & {
+    readonly receiptId: string;
+    readonly contextPrefixId: string | null;
+};
 ```
 
 ### `ReadSupervisionContextOptions`
@@ -13055,6 +13120,7 @@ Signature:
 
 ```ts
 export type ReplayProviderSessionAdapter = {
+    readonly validateReceipt?: (receiptId: string, context: ReplayProviderSessionCheckpointContext) => void | Promise<void>;
     readonly adapterId: string;
     readonly cacheIdentity?: (request: ModelRequest, contextPrefixId: string | null) => string | null;
     readonly checkpoint: (context: ReplayProviderSessionCheckpointContext) => Promise<ReplayProviderSessionEvidence> | ReplayProviderSessionEvidence;
@@ -13090,6 +13156,7 @@ Signature:
 export type ReplayProviderSessionEvidence = {
     readonly contextPrefixId: string | null;
     readonly receiptId: string;
+    readonly snapshotRecordId?: RecordId;
     readonly status: "verified";
 } | {
     readonly reason: string;
@@ -13899,6 +13966,20 @@ Signature:
 ```ts
 export type RetainApplicationManifestOptions = {
     readonly manifest: ApplicationManifest;
+};
+```
+
+### `RetainProviderConversationCheckpointOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Complete prefix and its exact provider/configuration binding.
+
+Signature:
+
+```ts
+export type RetainProviderConversationCheckpointOptions = ProviderConversationCheckpointBinding & {
+    readonly state: ProviderConversationCheckpointState;
 };
 ```
 
@@ -27492,9 +27573,10 @@ rebuilt from retained steps, sends a byte-identical message prefix and the provi
 cache can serve it. The conversation mirrors the replay session's chained context prefix
 identity, including failed exchanges, so checkpoint evidence can be verified.
 
-The session adapter's `checkpoint` retains the held state under a content-derived receipt in
-this conversation's memory; `restore` resets the held state to a retained receipt. Receipts do
-not survive the process; use `rebuild` with the retained steps after a restart.
+With `checkpointStore`, the session adapter retains a content-addressed snapshot of messages
+and system data and validates its provider/configuration binding before restoring after restart
+or native import. This opts into retaining the system prompt under the store's context policy.
+Without that option, receipts remain process-local; `rebuild` reconstructs from retained steps.
 
 Signature:
 
@@ -27504,7 +27586,7 @@ export declare function createProviderConversation(definition: ProviderConversat
 
 Parameter:
 
-- definition - Adapter identity, conversational provider, and optional system prompt.
+- definition - Provider, adapter identity, optional system and durable checkpoint binding.
 
 Returns:
 
@@ -31955,6 +32037,45 @@ Throws:
 
 - {TraceStoreError} If retained execution evidence is malformed or inconsistent.
 
+### `readProviderConversationCheckpoint`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates the retained content identity, schema, provider/configuration and exact context before
+returning immutable prefix data. It invokes no provider, performs no reconstruction and writes nothing.
+
+Signature:
+
+```ts
+export declare function readProviderConversationCheckpoint(store: SQLiteTraceStore, options: ReadProviderConversationCheckpointOptions): ProviderConversationCheckpointState;
+```
+
+Parameter:
+
+- store - Open store, including read-only or native-imported stores.
+
+Parameter:
+
+- options - Exact receipt and expected provider/configuration/context binding.
+
+Returns:
+
+- Exact ordered message, system and tool prefix data.
+
+Throws:
+
+- {TypeError} If the receipt is missing, corrupt, incompatible or outside configured bounds.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or unreadable.
+
+Example:
+
+- ```ts
+const state = readProviderConversationCheckpoint(store, { ...binding, receiptId, contextPrefixId });
+```
+
 ### `readRetentionPolicy`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -33273,6 +33394,50 @@ Throws:
 Throws:
 
 - {TypeError} If options are malformed.
+
+### `retainProviderConversationCheckpoint`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains exact conversation prefix data as one content-addressed context record.
+Equal snapshots deduplicate. Provider credentials, transport handles and server-side cache state
+are not accepted fields. The host owns the accuracy of its declared configuration identity.
+
+Signature:
+
+```ts
+export declare function retainProviderConversationCheckpoint(store: SQLiteTraceStore, options: RetainProviderConversationCheckpointOptions): ProviderConversationCheckpointReceipt;
+```
+
+Parameter:
+
+- store - Writable canonical trace store; its secret-scanning policy applies before append.
+
+Parameter:
+
+- options - Provider/configuration binding and complete message/system/tool prefix.
+
+Returns:
+
+- Stable receipt and causal record identity preserved across reopen/import.
+
+Throws:
+
+- {TypeError} If data is malformed or exceeds configured bounds.
+
+Throws:
+
+- {TraceStoreError} If the store is closed, read-only or cannot commit.
+
+Throws:
+
+- {TraceSecretDetectedError} If configured secret scanning refuses the snapshot.
+
+Example:
+
+- ```ts
+const receipt = retainProviderConversationCheckpoint(store, { ...binding, state });
+```
 
 ### `retryChildRun`
 
@@ -48638,7 +48803,7 @@ import * as api from "@avnionur/shepherd-typescript/providers";
 void api;
 ```
 
-Exported symbols: 40.
+Exported symbols: 47.
 
 ### `ConversationalModelProvider`
 
@@ -49142,6 +49307,54 @@ export type ProviderConversation = {
 };
 ```
 
+### `ProviderConversationCheckpointBinding`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Host-declared identity required to retain or read one provider checkpoint.
+
+Signature:
+
+```ts
+export type ProviderConversationCheckpointBinding = {
+    readonly adapterId: string;
+    readonly configurationId: string;
+    readonly provider: ProviderDescriptor;
+};
+```
+
+### `ProviderConversationCheckpointReceipt`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable snapshot identity and its canonical causal citation.
+
+Signature:
+
+```ts
+export type ProviderConversationCheckpointReceipt = {
+    readonly receiptId: string;
+    readonly recordId: RecordId;
+};
+```
+
+### `ProviderConversationCheckpointState`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact conversation prefix retained without provider credentials or transport handles.
+
+Signature:
+
+```ts
+export type ProviderConversationCheckpointState = {
+    readonly contextPrefixId: string | null;
+    readonly messages: readonly ModelMessage[];
+    readonly system: string | null;
+    readonly tools: readonly ModelToolDefinition[];
+};
+```
+
 ### `ProviderConversationDefinition`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -49152,6 +49365,8 @@ Signature:
 
 ```ts
 export type ProviderConversationDefinition = {
+    readonly checkpointStore?: SQLiteTraceStore;
+    readonly configurationId?: string;
     readonly adapterId: string;
     readonly provider: ConversationalModelProvider;
     readonly system?: string;
@@ -49185,6 +49400,35 @@ Signature:
 
 ```ts
 export type ProviderKind = (typeof PROVIDER_KINDS)[number];
+```
+
+### `ReadProviderConversationCheckpointOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact receipt plus the identity and context the caller expects to restore.
+
+Signature:
+
+```ts
+export type ReadProviderConversationCheckpointOptions = ProviderConversationCheckpointBinding & {
+    readonly receiptId: string;
+    readonly contextPrefixId: string | null;
+};
+```
+
+### `RetainProviderConversationCheckpointOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Complete prefix and its exact provider/configuration binding.
+
+Signature:
+
+```ts
+export type RetainProviderConversationCheckpointOptions = ProviderConversationCheckpointBinding & {
+    readonly state: ProviderConversationCheckpointState;
+};
 ```
 
 ### `StaticProviderDefinition`
@@ -49426,9 +49670,10 @@ rebuilt from retained steps, sends a byte-identical message prefix and the provi
 cache can serve it. The conversation mirrors the replay session's chained context prefix
 identity, including failed exchanges, so checkpoint evidence can be verified.
 
-The session adapter's `checkpoint` retains the held state under a content-derived receipt in
-this conversation's memory; `restore` resets the held state to a retained receipt. Receipts do
-not survive the process; use `rebuild` with the retained steps after a restart.
+With `checkpointStore`, the session adapter retains a content-addressed snapshot of messages
+and system data and validates its provider/configuration binding before restoring after restart
+or native import. This opts into retaining the system prompt under the store's context policy.
+Without that option, receipts remain process-local; `rebuild` reconstructs from retained steps.
 
 Signature:
 
@@ -49438,7 +49683,7 @@ export declare function createProviderConversation(definition: ProviderConversat
 
 Parameter:
 
-- definition - Adapter identity, conversational provider, and optional system prompt.
+- definition - Provider, adapter identity, optional system and durable checkpoint binding.
 
 Returns:
 
@@ -49491,6 +49736,89 @@ const provider = createStaticProvider({
     exchanges: [{ request, response }],
 });
 await provider.invoke(request, new AbortController().signal);
+```
+
+### `readProviderConversationCheckpoint`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Validates the retained content identity, schema, provider/configuration and exact context before
+returning immutable prefix data. It invokes no provider, performs no reconstruction and writes nothing.
+
+Signature:
+
+```ts
+export declare function readProviderConversationCheckpoint(store: SQLiteTraceStore, options: ReadProviderConversationCheckpointOptions): ProviderConversationCheckpointState;
+```
+
+Parameter:
+
+- store - Open store, including read-only or native-imported stores.
+
+Parameter:
+
+- options - Exact receipt and expected provider/configuration/context binding.
+
+Returns:
+
+- Exact ordered message, system and tool prefix data.
+
+Throws:
+
+- {TypeError} If the receipt is missing, corrupt, incompatible or outside configured bounds.
+
+Throws:
+
+- {TraceStoreError} If the store is closed or unreadable.
+
+Example:
+
+- ```ts
+const state = readProviderConversationCheckpoint(store, { ...binding, receiptId, contextPrefixId });
+```
+
+### `retainProviderConversationCheckpoint`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Retains exact conversation prefix data as one content-addressed context record.
+Equal snapshots deduplicate. Provider credentials, transport handles and server-side cache state
+are not accepted fields. The host owns the accuracy of its declared configuration identity.
+
+Signature:
+
+```ts
+export declare function retainProviderConversationCheckpoint(store: SQLiteTraceStore, options: RetainProviderConversationCheckpointOptions): ProviderConversationCheckpointReceipt;
+```
+
+Parameter:
+
+- store - Writable canonical trace store; its secret-scanning policy applies before append.
+
+Parameter:
+
+- options - Provider/configuration binding and complete message/system/tool prefix.
+
+Returns:
+
+- Stable receipt and causal record identity preserved across reopen/import.
+
+Throws:
+
+- {TypeError} If data is malformed or exceeds configured bounds.
+
+Throws:
+
+- {TraceStoreError} If the store is closed, read-only or cannot commit.
+
+Throws:
+
+- {TraceSecretDetectedError} If configured secret scanning refuses the snapshot.
+
+Example:
+
+- ```ts
+const receipt = retainProviderConversationCheckpoint(store, { ...binding, state });
 ```
 
 ## Read
@@ -51362,6 +51690,7 @@ Signature:
 
 ```ts
 export type ReplayProviderSessionAdapter = {
+    readonly validateReceipt?: (receiptId: string, context: ReplayProviderSessionCheckpointContext) => void | Promise<void>;
     readonly adapterId: string;
     readonly cacheIdentity?: (request: ModelRequest, contextPrefixId: string | null) => string | null;
     readonly checkpoint: (context: ReplayProviderSessionCheckpointContext) => Promise<ReplayProviderSessionEvidence> | ReplayProviderSessionEvidence;
@@ -51397,6 +51726,7 @@ Signature:
 export type ReplayProviderSessionEvidence = {
     readonly contextPrefixId: string | null;
     readonly receiptId: string;
+    readonly snapshotRecordId?: RecordId;
     readonly status: "verified";
 } | {
     readonly reason: string;

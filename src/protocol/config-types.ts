@@ -1,3 +1,4 @@
+import type { ProviderCheckpointProtocolConfig } from "./config-provider-checkpoints.ts";
 import type { EffectReconciliationProtocolConfig } from "./config-reconciliation.ts";
 import type { WorldEffectProtocolConfig } from "./config-world-effects.ts";
 
@@ -657,6 +658,8 @@ export type ProviderToolsConfig = {
 export type ProviderProtocolConfig = {
     /** Provider conversation identity prefixes. */
     readonly conversation: {
+        /** Retained checkpoint format and limits. */
+        readonly checkpoint: ProviderCheckpointProtocolConfig;
         /** Prefix of a provider conversation's declared cache identity. */
         readonly cacheIdentityPrefix: string;
         /** Prefix of a provider conversation checkpoint receipt. */

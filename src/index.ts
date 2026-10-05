@@ -786,6 +786,17 @@ export {
     WORLD_EFFECT_PHASES,
     WORLD_EFFECT_RECOVERY,
 } from "./protocol/values.generated.ts";
+export type {
+    ProviderConversationCheckpointBinding,
+    ProviderConversationCheckpointReceipt,
+    ProviderConversationCheckpointState,
+    ReadProviderConversationCheckpointOptions,
+    RetainProviderConversationCheckpointOptions,
+} from "./provider/checkpoint-types.ts";
+export {
+    readProviderConversationCheckpoint,
+    retainProviderConversationCheckpoint,
+} from "./provider/checkpoints.ts";
 export { createProviderConversation } from "./provider/conversation.ts";
 export {
     LiveProviderError,

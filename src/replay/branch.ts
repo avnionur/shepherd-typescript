@@ -1,5 +1,4 @@
 import { readdirSync } from "node:fs";
-
 import { canonicalizeSemanticValue, type SemanticValue } from "../canonical/canonical-record.ts";
 import {
     planEffectCompensations,
@@ -20,6 +19,8 @@ import {
     REPLAY_SOURCE_DISPOSITIONS,
     REPLAY_TERMINAL_STATUSES,
 } from "../protocol/values.generated.ts";
+import { validateProviderConversationCheckpointEvidence } from "../provider/checkpoints.ts";
+import { readProviderDescriptor } from "../provider/validation.ts";
 import type { RecordId } from "../record/types.ts";
 import { assertScopeText, readScopeDataObject } from "../scope/validation.ts";
 import { AppendIntentConflictError, TraceStoreError } from "../store/errors.ts";
@@ -310,6 +311,45 @@ async function branch(
         return Object.freeze({ inspection: retained });
     }
     const plan = planRestore(store, source, bindings, fields.target);
+    const providerCheckpoint = plan.constituents.find(
+        (entry) => entry.kind === PROVIDER_SESSION_KIND && entry.status === VERIFIED,
+    );
+    if (
+        providerCheckpoint?.evidence?.snapshot_record_id !== undefined &&
+        bindings.providerSession?.validateReceipt === undefined
+    )
+        throw new ReplayRestoreError("retained provider checkpoint requires receipt validation");
+    if (
+        providerCheckpoint !== undefined &&
+        bindings.providerSession?.validateReceipt !== undefined
+    ) {
+        try {
+            if (providerCheckpoint.evidence?.snapshot_record_id !== undefined) {
+                validateProviderConversationCheckpointEvidence(store, {
+                    snapshotRecordId: providerCheckpoint.evidence.snapshot_record_id,
+                    receiptId: providerCheckpoint.receipt_id as string,
+                    adapterId: bindings.providerSession.adapterId,
+                    contextPrefixId: plan.contextPrefixId,
+                    provider:
+                        bindings.provider === null
+                            ? source.provider
+                            : readProviderDescriptor(bindings.provider.descriptor()),
+                });
+            }
+            await bindings.providerSession.validateReceipt(
+                providerCheckpoint.receipt_id as string,
+                Object.freeze({
+                    context_prefix_id: plan.contextPrefixId,
+                    session_id: source.session_id,
+                    step_count: plan.stepCount,
+                }),
+            );
+        } catch (error) {
+            throw new ReplayRestoreError("provider session checkpoint failed validation", {
+                cause: error,
+            });
+        }
+    }
     const registry = readEffectCompensationRegistry(fields.compensation);
     if (disposition === COMPENSATE_SOURCE) {
         planEffectCompensations(
@@ -574,6 +614,13 @@ function planConstituent(
         if (bindings.providerSession === null) {
             throw new TypeError("a verified provider session requires a providerSession adapter");
         }
+        if (
+            retained.evidence?.snapshot_record_id !== undefined &&
+            bindings.providerSession.adapterId !== retained.name
+        )
+            throw new ReplayRestoreError(
+                "retained provider checkpoint requires its exact adapter identity",
+            );
         return constituent(
             PROVIDER_SESSION_KIND,
             bindings.providerSession.adapterId,
