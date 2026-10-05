@@ -1,0 +1,11 @@
+metric,unit,median_of_run_medians,run_median_min,run_median_max,largest_run_p95
+append_latency_ms,ms,0.237,0.201,0.264,0.34
+append_throughput_records_per_second,records/s,4338.863,3898.505,4431.316,4656.605
+cut_resolve_ms,ms,78.244,77.196,78.929,85.571
+slice_read_ms,ms,7.531,7.448,7.6,9.448
+subscription_pull_ms,ms,7.81,7.668,8.18,9.662
+export_ms,ms,1210.095,1184.644,1217.992,1344.787
+import_ms,ms,1941.849,1927.505,1953.478,2153.22
+verify_ms,ms,708.786,673.82,709.402,760.791
+gc_inspect_ms,ms,3.317,3.096,3.666,3.944
+cli_startup_ms,ms,97.673,90.076,100.239,117.702

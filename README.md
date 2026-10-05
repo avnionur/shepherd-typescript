@@ -57,8 +57,10 @@ program serviced. Configured live adapters for the Anthropic Messages API and Op
 chat completions (OpenAI, OpenRouter) are opt-in and restore a byte-identical message prefix after
 rewind so the provider's prompt cache can serve replay ([live providers](https://github.com/avnionur/shepherd-typescript/blob/main/docs/live-providers.md));
 Opt-in [retained conversation checkpoints](https://github.com/avnionur/shepherd-typescript/blob/main/docs/provider-conversation-checkpoints.md)
-preserve exact prefixes across restart and native import. The adapters are tested against stub transports and have not been live-verified here. All results are this
-repository's measurements, never upstream numbers.
+preserve exact prefixes across restart and native import. The adapters are tested against stub transports. The [2026-10-05 local study](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/benchmarks/2026-10-05/paper.tex)
+also exercises single invocations through the OpenAI-compatible adapter against Ollama at its measured
+12.0.3 revision; commercial services, live tool-loop policies, and cache reuse after rewind remain
+unmeasured. All results are this repository's measurements, never upstream numbers.
 
 ## Status
 
@@ -291,6 +293,11 @@ The [documentation index](https://github.com/avnionur/shepherd-typescript/blob/m
   [parity matrix](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/parity-matrix.md), [tracker](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/tracker.md)
 
 ## Development
+
+An independent [2026-10-05 empirical study](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/benchmarks/2026-10-05/paper.tex)
+records fresh runtime measurements and a local-model context-selection pilot against a matched
+direct harness. Its [reproduction guide](https://github.com/avnionur/shepherd-typescript/blob/main/.plan/benchmarks/2026-10-05/README.md)
+links the raw observations, failures, and limitations; it does not rank other frameworks.
 
 Development needs pnpm 10 (`packageManager` in `package.json`) on the same Node range.
 

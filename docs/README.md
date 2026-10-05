@@ -3,6 +3,11 @@
 This directory describes implemented behavior and the current repository structure. Future design
 work and compatibility research live separately in [`.plan`](../.plan/README.md).
 
+The [2026-10-05 empirical study](../.plan/benchmarks/2026-10-05/paper.tex) and its
+[reproduction guide](../.plan/benchmarks/2026-10-05/README.md) are research artifacts covering
+fresh local runtime measurements, a matched direct-harness control, and a local-model context
+pilot. They retain observed failures and do not replace the normative performance budgets.
+
 ## Guides
 
 - [Effect reconciliation](./effect-reconciliation.md) defines authenticated operator decisions,

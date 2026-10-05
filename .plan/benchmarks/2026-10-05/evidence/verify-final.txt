@@ -1,0 +1,1923 @@
+
+> @avnionur/shepherd-typescript@12.0.4 verify /Users/avnionur/src/github/personal/shepherd-typescript
+> pnpm check:protocol && pnpm check:evaluation && pnpm check:sbom && pnpm build && pnpm check:api-reference && pnpm check:compatibility && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:package-cli
+
+
+> @avnionur/shepherd-typescript@12.0.4 check:protocol /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/generate-protocol-artifacts-cli.ts --check
+
+
+> @avnionur/shepherd-typescript@12.0.4 check:evaluation /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/evaluate-applications-cli.ts --check
+
+
+> @avnionur/shepherd-typescript@12.0.4 check:sbom /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/generate-sbom-cli.ts --check
+
+
+> @avnionur/shepherd-typescript@12.0.4 build /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/clean-build.ts && tsc -p tsconfig.build.json && node scripts/copy-runtime-config.ts
+
+
+> @avnionur/shepherd-typescript@12.0.4 check:api-reference /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/generate-api-reference-cli.ts --check
+
+
+> @avnionur/shepherd-typescript@12.0.4 check:compatibility /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/check-compatibility-cli.ts --check
+
+compatibility baselines are current (0 changes)
+
+> @avnionur/shepherd-typescript@12.0.4 lint /Users/avnionur/src/github/personal/shepherd-typescript
+> biome check .
+
+biome.json:2:16 deserialize ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i The configuration schema version does not match the CLI version 2.5.7
+  
+    1 │ {
+  > 2 │     "$schema": "https://biomejs.dev/schemas/2.5.6/schema.json",
+      │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │     "files": {
+    4 │         "includes": [
+  
+  i   Expected:                     2.5.7
+      Found:                        2.5.6
+  
+  
+  i Run the command biome migrate to migrate the configuration file.
+  
+
+Checked 876 files in 298ms. No fixes applied.
+Found 1 info.
+
+> @avnionur/shepherd-typescript@12.0.4 typecheck /Users/avnionur/src/github/personal/shepherd-typescript
+> tsc --noEmit
+
+
+> @avnionur/shepherd-typescript@12.0.4 test /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/run-tests.ts --parallel
+
+✔ Figure 1: a meta-agent forks a worker, observes its failing edit, reverts it, and retries (3275.787625ms)
+✔ Figure 1: rewinding the meta session before its substrate calls invokes no compensation (2458.445458ms)
+✔ Figure 1: a replay of the meta session scopes its live substrate commands to the branch (3136.528167ms)
+✔ Figure 1: a replay of the meta session serves its recorded prefix byte-identically (2241.567083ms)
+✔ the configured catalog binds every operation to one tool with a JSON Schema (0.771375ms)
+✔ tools without a world adapter fork into allocated roots and report substrate refusals as results (63.526ms)
+✔ observe summarizes failed, refused, and running sessions and replay applies handler variants (582.274542ms)
+✔ the replay tool retains its source while the rewind tool compensates its suffix (443.503417ms)
+✔ loop options, tools, guidance, and effect results are validated (4.542125ms)
+✔ oversized tool results are truncated to the configured byte bound (1.0965ms)
+✔ effect boundaries map supervised and replay resolutions to dispositions (76.611042ms)
+✔ a replayed irreversible tool call without replay approval is denied inside the loop (101.382125ms)
+✔ the turn provider accepts only encoded turns and step outputs must be encoded responses (148.510459ms)
+✔ program conversation providers validate definitions and replies and serve single turns (1.442167ms)
+✔ live tool calls with non-canonical inputs or unparsable arguments are refused (1.547667ms)
+✔ meta-agent tool environments are validated and branches are observable (44.902208ms)
+✔ rewinding a replay-bound tool loop compensates its compensable tool calls in reverse order (157.522833ms)
+✔ every admissible tool call becomes a correlated intent and outcome through the handler stack (4.147ms)
+✔ the loop stops at its configured turn bound and refuses bounds beyond the maximum (5.786208ms)
+✔ an abort signal stops the loop between turns with its reason (0.73675ms)
+✔ a denied tool-call intent resolves before any outcome and the handler never runs (66.271375ms)
+✔ replaying a recorded loop serves its prefix byte-identically and runs only the suffix live (219.715125ms)
+✔ a changed guidance over the recorded prefix is a prefix mismatch (144.636375ms)
+✔ API reference is deterministic, complete, and safe for every supported package entry (6112.001083ms)
+✔ API reference check mode rejects stale, internal, and unsafe declaration inputs (990.855958ms)
+✔ planAppendBatch creates envelopes and assigns owner-local ordinals (2.451083ms)
+✔ planAppendBatch starts owners independently and continues repeated owner groups (0.29675ms)
+✔ planAppendBatch snapshots bodies before returning them (0.362417ms)
+✔ planAppendBatch rejects unknown, forward, and duplicate causal parents (0.9635ms)
+✔ planAppendBatch rejects malformed batches, groups, drafts, and references (0.46475ms)
+✔ planAppendBatch enforces closed descriptor-safe draft shapes (0.181208ms)
+✔ planAppendBatch rejects non-data group and record arrays (0.170959ms)
+✔ planAppendBatch rejects duplicate or malformed local identifiers (0.233958ms)
+✔ planAppendBatch validates known identifiers and next-owner ordinal state (1.031708ms)
+✔ applications protocol v5 appends the evaluation vocabulary to v4 and refuses drift (16.719958ms)
+✔ the evaluation API is identical through the applications facade and the root (0.111667ms)
+✔ the report is byte-identical across repeated runs and fresh stores and carries no host data (2387.480292ms)
+✔ every metric is measured from retained evidence and every configured baseline kind is run (1200.219042ms)
+✔ comparisons copy measured values and take the delta only between two numbers (924.491ms)
+✔ limitations are published verbatim and the documentation disclaims upstream results (851.109666ms)
+✔ the report conforms to the generated evaluation schema (963.527458ms)
+✔ malformed definitions and bindings are refused before any record, and a corrected rerun completes (1848.278292ms)
+✔ an evaluation interrupted inside an application converges on rerun to the fresh-store report (1925.164ms)
+✔ failed live calls, missing costs, and program-serviced baseline workers are measured as retained (875.383209ms)
+✔ an optimizer candidate whose branch failed stops the evaluation without a selection (160.402125ms)
+✔ rescues count the experiments whose baseline failed while the application passed (956.95175ms)
+✔ validateApplicationEvaluationReport refuses every inconsistent report (956.445667ms)
+✔ a Tree-RL prompt's handler stack reaches the rollouts and the report is unchanged (1702.536917ms)
+✔ protocol definitions are validated, canonical, and content-addressed (15.64475ms)
+✔ manifests cite surfaces and artifacts by digest and re-derive their identity (112.16625ms)
+✔ manifest construction, validation, retention, and inspection refuse malformed evidence (89.4505ms)
+✔ research applications conformance: four applications in one store, visible causal fork and replay evidence, and identical inspection from an imported archive (22528.256459ms)
+✔ the applications protocol section equals the locked latest (v10) contract and refuses drift (23.513125ms)
+✔ the supervision record codec refuses every inconsistent retained body (186.631291ms)
+✔ a supervisor killed after a worker's durable start recovers through cancellation and restart without duplicate records (1012.711209ms)
+✔ each policy kind is applied alone on the trace-only path with retained evidence (738.530708ms)
+✔ failed, provider-serviced, and task-value workers are observed honestly and manifest digests are stable (592.335375ms)
+✔ world adapters supply custody, changed paths, and receipts on the trace-free fake world (272.497416ms)
+✔ malformed options, workers, adapters, and decisions are refused before any worker runs (446.653667ms)
+✔ protocol definitions that do not describe a coding supervisor are refused (186.724208ms)
+✔ moved application heads and forged application evidence are refused (223.190208ms)
+✔ policy decisions and observations round-trip through the supervision record codec (160.938583ms)
+✔ an interrupted run retaining inject, handoff, restart resumes without re-executing a worker (614.874875ms)
+✔ an interrupted run retaining handoff, restart resumes without re-executing a worker (442.231792ms)
+✔ an interrupted run retaining restart, handoff, inject resumes without re-executing a worker (357.497167ms)
+✔ a refused rerun writes no record and forks no custody (199.267667ms)
+✔ a crash after an applied inject decision recovers the same decision without the policy (270.981625ms)
+✔ a crash after an applied handoff decision recovers the same decision without the policy (216.332833ms)
+✔ a crash after an applied discard_restart decision recovers the same decision without the policy (419.44075ms)
+✔ a crash after an applied accept decision recovers the same decision without the policy (209.935333ms)
+✔ a crash between a world fork and the child's durable start reuses the retained fork (15080.892958ms)
+✔ two workers editing one bound resource are supervised through inject, restart, handoff, and accept (19234.722084ms)
+✔ former-supervisor commands on a handed-off worker are refused by the delegation seam (10535.436334ms)
+✔ applications protocol v3 appends the compression vocabulary to v2 and refuses drift (12.143542ms)
+✔ the applications facade exposes trajectory compression as the root does (0.152375ms)
+✔ every retained compression record conforms to the generated schema (815.990708ms)
+✔ the compression record codecs refuse every inconsistent retained body (765.614208ms)
+✔ fork-step resolution restarts at step 0 and clamps or rejects out-of-range steps by policy (0.359ms)
+✔ inspection refuses forged, late, reordered, or inconsistent compression records (543.479583ms)
+✔ an unexplained suffix divergence rejects the candidate, stops the run, and reruns fail closed (142.703917ms)
+✔ a candidate whose branch or full replay session failed is rejected before scoring (161.644333ms)
+✔ a baseline session that did not finish or a failing baseline metric is refused before any application record (25.367083ms)
+✔ a branch whose program cannot re-issue the recorded prefix is retained as a rejected candidate (46.489041ms)
+✔ a candidate metric that throws or returns a non-finite score fails verification (201.426791ms)
+✔ malformed options, datasets, and protocols are refused before any record (32.773875ms)
+✔ a rerun under another protocol, dataset, or baselines is refused without a record (128.281792ms)
+✔ the provider-call budget refuses a branch before it opens, checks the baseline, and refuses an overrun (108.549834ms)
+✔ a crash before an outcome, the selection, or the manifest converges on rerun without replaying (495.943792ms)
+✔ a task-only child of a promoted provider edit replays its suffix under the parent's provider and full-replays the effective workflow (379.844416ms)
+✔ a handlers-only child under a promoted provider-and-program edit inherits the parent's provider and program (273.175791ms)
+✔ an edit whose step is outside a parent's example session is refused at proposal time (130.838167ms)
+✔ a session that issues more calls than projected is refused after it by its measured calls (56.018625ms)
+✔ Algorithm 1: per-example baselines, N iterations of k edits, the fix/guard gate, dev promotion into a graduate-only pool, and dev selection (964.805542ms)
+✔ request edits replay from the edited step, downstream edits from the first dependent, and full replay is measured per example (257.941541ms)
+✔ task edits replay the suffix under the replacement task factory (151.057541ms)
+✔ fractional thresholds gate and promote: the improve fraction, the minimum promotion score, and the dev epsilon (697.294083ms)
+✔ a graduate outside the promotion epsilon is never offered or admitted as a parent (300.999833ms)
+✔ selection keeps the highest dev score over a later promoted member within epsilon (297.780708ms)
+✔ the gate, promotion, similarity, and reflection contract follow the configured thresholds (1.477916ms)
+✔ refused proposals are retried with their reasons before any evaluation and retained as refusals (146.344084ms)
+✔ the near-duplicate rule requires citing the archived candidate and how the new edit differs (132.467417ms)
+✔ an iteration whose every attempt is refused is retained and fails verification on every rerun (49.853ms)
+✔ the provider-backed proposer runs a replayable tool loop over the traces and its proposal is admitted (215.597958ms)
+✔ a provider-backed attempt that reaches its turn limit is refused and retried in a new session (98.92025ms)
+✔ the provider-backed proposer reads promoted and archived candidates, reports tool failures, and parses object reflections (408.414791ms)
+✔ a proposer session that fails or answers with text that is not JSON is refused (98.428375ms)
+✔ tool-loop proposer options and proposer tool surfaces are validated (61.709459ms)
+✔ applications protocol v9 replaces the cro vocabulary for Algorithm 1 and refuses cro drift (39.941834ms)
+✔ the applications facade exposes the optimizer and the proposer as the root does (2.951084ms)
+✔ retained optimizer records and the manifest conform to the generated schemas (594.114125ms)
+✔ the optimizer record codecs refuse every inconsistent retained body (583.592ms)
+✔ inspection refuses forged, late, recomputation-inconsistent, or duplicate optimizer records (853.708583ms)
+✔ a process death inside a candidate branch is retained as an evidence failure once its lease expires (334.643958ms)
+✔ a process death inside a baseline session leaves no application record and recovers under a new command (223.609417ms)
+✔ a crash at the opened, proposal, outcome, or selection append converges on rerun (1713.993ms)
+✔ the committed evaluation artifacts are synchronized with the repository configuration (1189.777708ms)
+✔ the writer generates, re-checks on any host, and rejects mutated artifacts (9783.782458ms)
+✔ the writer refuses artifact paths outside the repository and absent artifacts (813.036375ms)
+✔ the repository verifier rejects a candidate whose result differs from the original (1.558167ms)
+✔ the page lists rescued experiments by identity (1050.3935ms)
+✔ the repository compressor proposes a null prefix identity at fork step 0 (0.500542ms)
+✔ Tree-RL rollouts over roots with compensable suffix effects retain the roots and compensate nothing (152.867542ms)
+✔ CRO candidate replays over baselines with compensable suffix effects compensate nothing (175.61575ms)
+✔ trajectory compression reruns a source with compensable suffix effects without compensating it (241.035167ms)
+✔ schema surfaces outside the supported JSON Schema subset are refused before any record (4.363208ms)
+✔ policy decisions are validated against the pinned action schema surface (121.998042ms)
+✔ observations the pinned observation schema refuses stop the run before the policy (20.146625ms)
+✔ the counterfactual handoff manifest is derived, validated, and returned (256.729ms)
+✔ a handoff manifest the pinned handoff schema refuses is a protocol mismatch (262.51475ms)
+✔ training batch lines the pinned batch schema refuses are a protocol mismatch (91.830167ms)
+✔ a process killed inside a Tree-RL rollout session is refused under its live lease and retained as a failed rollout once it expires (921.495625ms)
+✔ a process killed inside a counterfactual candidate branch is refused under its live lease and retained as a rejected candidate once it expires (613.380166ms)
+✔ runtime supervision protocols, options, and workers are validated before any record (4883.988375ms)
+✔ a protocol with a looser decision schema cannot admit malformed decisions past the record schema (14622.383792ms)
+✔ a caller abort while a discard awaits the aborted attempt never starts the replacement (3849.701417ms)
+✔ a caller abort while the replacement's fork is created aborts the new attempt at once (5291.298792ms)
+✔ a structured model output is used as the decision object (3966.151459ms)
+✔ a snapshot the protocol refuses stops the run and leaves running workers resumable (4609.016292ms)
+✔ the caller's signal stops every worker and rejects the run (2870.97775ms)
+✔ an attempt whose last retained turn was final or hit the turn bound completes on recovery (12734.490167ms)
+✔ a rerun whose world resolves other custody for a retained attempt is refused (4339.425958ms)
+✔ a supervisor killed after retaining an inject and a cross-agent handoff recovers both mid-run interventions (9891.110541ms)
+✔ a supervisor killed between two settlement discards completes the settlement on rerun (11464.155167ms)
+✔ a run interrupted by a policy error after an inject resumes its workers and delivers the guidance (8002.405417ms)
+✔ a handoff interrupted after its fork re-derives the same fork and restarts the follower (8087.752375ms)
+✔ the provider-backed policy builds one JSON-mode request per tick and parses its decisions (9292.098ms)
+✔ workers run concurrently and an inject reaches a running worker between turns without breaking its prefix (7119.443417ms)
+✔ a cross-agent handoff forks the leader's custody as the follower's new root and restarts it with guidance (11820.180166ms)
+✔ a follower's final custody lands in the parent world without the leader's discarded post-fork writes (19133.913166ms)
+✔ discard restarts from a clean fork and a handoff without a leader keeps the custody (7340.500166ms)
+✔ per-agent batched decisions are validated against the Appendix E schema and refused as a whole (33458.353125ms)
+✔ tick and provider-call budgets fail closed after aborting every running worker (9796.135292ms)
+✔ a process killed after the rewind restore and before the suffix replay converges without a second restore (815.5845ms)
+✔ a process killed after the rewind's replay restore record and before its terminal converges with one restore (688.677917ms)
+✔ proposals the grammar or the source refuses reject the candidate and prune nothing (336.471667ms)
+✔ a verifier that throws or returns a malformed verdict fails verification and prunes nothing (236.098166ms)
+✔ a restoration or control session that ended failed rejects its candidate and stops the run (179.012375ms)
+✔ a control verifier failure rejects the control and stops the run (87.91875ms)
+✔ malformed options, an over-bound best-of-N, and protocol refusals write no record (12.029375ms)
+✔ a rerun under another protocol or baselines is refused without a record (105.656416ms)
+✔ the provider-call budget refuses a session or child before it starts and keeps evidence (181.131875ms)
+✔ a source trajectory that did not finish is refused before the opened record (7.361541ms)
+✔ crashes before the settled, control, outcome, and manifest records converge without re-execution (322.477667ms)
+✔ child outputs that are not the configured canonical text field fail closed (36.09575ms)
+✔ a rerun under another supervisor is refused by the delegation seam without a record (298.755917ms)
+✔ a child left running by a dead process fails closed until cancellation settles it (194.630084ms)
+✔ a source over the provider-call budget is refused before the opened record and reused (285.092709ms)
+✔ an interrupted compressed session under an expired lease is restored as not admissible (127.109875ms)
+✔ an interrupted restoration or control session under an expired lease rejects its candidate (234.82375ms)
+✔ a session whose measured calls overrun its projection is refused right after it (214.93575ms)
+✔ compression prunes a world-bound source from a checkpoint into a restored world (2113.867791ms)
+✔ a world-bound fork point without a retained checkpoint settles no_prune as unavailable (1557.354167ms)
+✔ a process-bound fork point without a retained checkpoint names the process unavailable (176.59325ms)
+✔ an accepted fork point prunes the suffix into a shorter verified session with measured controls (449.299333ms)
+✔ seeded runs in fresh stores retain an identical manifest digest (321.3345ms)
+✔ a rejected verdict restores the original suffix and retains the reason (101.304125ms)
+✔ a fork point without a hint is not admissible and is restored without the verifier (83.94175ms)
+✔ a compressed session that ended failed is restored without the verifier and costs are unknown (79.990584ms)
+✔ a null fork point settles no_prune and leaves the source untouched (45.404333ms)
+✔ a missing fork step settles no_prune, with or without a hint (125.225458ms)
+✔ fork step 0 restarts from the initial prefix with the hint applied (85.243375ms)
+✔ out-of-range fork steps are clamped to [0, n - 1] under the configured policy and retained (286.827625ms)
+✔ an unavailable restore constituent refuses the prune and retains the reason (70.0115ms)
+✔ a fork point at a verified checkpoint rewinds atomically and replays from the checkpoint (94.409584ms)
+✔ a failed rewind rejects the candidate and prunes nothing (42.402167ms)
+✔ provider-serviced children compress, and a control rerun reporting no cost has an unknown cost (153.050333ms)
+✔ protocol, prompt, bound, budget, root, and option refusals write nothing and never block a corrected rerun (231.174542ms)
+✔ a root that did not finish or has no turn is refused before any record (25.764042ms)
+✔ selection option refusals (18.544167ms)
+✔ a rerun under another protocol, prompts, baselines, or normalization is refused without writing (176.357666ms)
+✔ failed roots and rollouts are retained, excluded from every mean, and the run completes (96.938291ms)
+✔ an unexplained suffix divergence retains the rollout as failed (75.958583ms)
+✔ provider factory refusals follow the retained roots, and a corrected rerun resumes without re-grading (108.040708ms)
+✔ a rollout identical to its root completes with no divergence (63.731584ms)
+✔ a batch whose roots and rollouts would exceed the cited-artifact bound is refused before any record (361.934209ms)
+✔ a root turn whose provider call failed reaches the selector with a null output (138.585125ms)
+✔ the meta-agent selector sends the numbered turns and reward, and its clamped proposal seeds the first branch (119.710417ms)
+✔ a malformed meta-agent proposal is a verification failure and a protocol without the selector surfaces is refused (235.271084ms)
+✔ applications protocol v8 aligns the Tree-RL vocabulary with Algorithm 2 and refuses drift (28.979334ms)
+✔ the applications facade exposes the Tree-RL adapter as the root does (1.464292ms)
+✔ fork turns clamp into [1, T - 2] and move to the nearest restorable turn (0.287625ms)
+✔ group standardization divides by the configured estimator's standard deviation (0.122375ms)
+✔ every retained Tree-RL record and batch line conforms to the generated schema (270.032458ms)
+✔ the Tree-RL record codecs refuse every inconsistent retained body (132.166959ms)
+✔ inspection refuses forged, late, reordered, or inconsistent Tree-RL records (539.6415ms)
+✔ a rollout that issues more calls than projected makes a later rollout refuse before it opens (46.266416ms)
+✔ a moved application head is refused as invalid evidence (16.115875ms)
+✔ a crash at the opened, a root, a rollout, the batch, or the manifest append converges on rerun (1114.560709ms)
+✔ a crash while rollouts run concurrently converges on the serial run's evidence (445.899708ms)
+✔ a process death inside a rollout session refuses while its lease is live and is retained as failed once it expires (196.587875ms)
+✔ inspection and export refuse an unretained application or a run without a batch (20.012209ms)
+✔ Tree-RL forks world-bound roots at checkpointed turns into restored worlds (1756.538167ms)
+✔ Tree-RL refuses world-bound roots whose turns have no restorable checkpoint (685.378042ms)
+✔ Tree-RL restores process-bound roots into each rollout's own process adapter (312.794584ms)
+✔ fork-point selection is a deterministic pure function of the retained session (60.08625ms)
+✔ Algorithm 2 advantages equal a hand-computed fixture under both normalizations (0.807833ms)
+✔ G roots are graded and forked where the selector proposes, the tool call seeds branch zero, and every action carries its advantage (161.4635ms)
+✔ group_std normalization standardizes each group and the flat GRPO baseline keeps the roots only (121.447708ms)
+✔ a batch of prompts keeps each prompt's G roots as its own inter-root group (170.671292ms)
+✔ selection, advantages, and the batch digest are identical across concurrency, runs, stores, and archive import (432.763583ms)
+✔ concurrent rollouts overlap up to the configured bound (131.065375ms)
+✔ the dependency selector proposes the admissible turn with the most dependents and no tool call (90.916917ms)
+✔ the trainer-export adapter receives the retained batch and refuses a format it does not accept (113.847833ms)
+✔ production benchmark and SLO configurations are valid and budget every metric (6.858125ms)
+✔ sample summaries report median, nearest-rank p95, and sample variance (0.257417ms)
+✔ benchmark configuration validation rejects malformed fields (22.689125ms)
+✔ SLO configuration validation rejects unknown metrics and wrong bounds (36.105166ms)
+✔ host classes match platform, architecture, and filesystem type (6.943375ms)
+✔ SLO evaluation bounds each statistic in its improving direction (0.831667ms)
+✔ the dataset builder rejects malformed shapes and supports cut-free paths (81.921375ms)
+✔ bench:kernel writes a host-class artifact that check:slo accepts (2435.028666ms)
+✔ check:slo fails a budget and skips a host without budgets (2176.417292ms)
+✔ a failing CLI startup probe fails the benchmark (495.849875ms)
+✔ production scope benchmark configuration is valid and its artifacts are current (12.533042ms)
+✔ scope metric names, result paths, and line fits (0.731834ms)
+✔ tree digests cover nested file paths and contents but not directories or links (38.049583ms)
+✔ scope benchmark configuration validation rejects malformed fields (122.932542ms)
+✔ bench:scopes measures every dimension and check:scopes compares it with budgets (43916.168958ms)
+✔ bench:scopes prints the result and check:scopes skips a host without a class (29560.34425ms)
+✔ failed blob receipt commit remains invisible and retryable (90.819625ms)
+✔ an unexpected link failure while publishing a blob propagates unchanged and stays retryable (163.141542ms)
+✔ an unexpected storage-directory failure propagates without an integrity reclassification (102.273458ms)
+✔ blob directory resolution canonicalizes trusted bases without adopting other paths (0.874958ms)
+✔ SQLiteTraceStore retains content-addressed blobs across reopen (143.65975ms)
+✔ SQLiteTraceStore reports and rejects corrupt blob bytes (82.570708ms)
+✔ a process crash after blob publication leaves no false receipt and remains retryable (692.285208ms)
+✔ createMissingDirectory reports a directory another caller already created (9.531667ms)
+✔ blob verification classifies missing, size, file-type, and receipt failures (246.031166ms)
+✔ blob verification propagates an unexpected filesystem read failure (79.03875ms)
+✔ blob orphan collection inspects before deleting unregistered objects (171.667209ms)
+✔ blob orphan collection deletes abandoned temporary files (110.507583ms)
+✔ blob orphan collection waits for an in-flight registered writer (594.911917ms)
+✔ blob orphan collection fails closed for corrupt receipts and unsafe fanout (58.530709ms)
+✔ blob orphan collection ignores foreign root entries and rejects malformed store objects (57.119041ms)
+✔ blob orphan collection rejects a root replaced after store construction (20.176417ms)
+✔ blob orphan collection validates closed options and store lifecycle (29.721917ms)
+✔ blob writes reject a fanout symlink without modifying its target (41.069584ms)
+✔ blob store construction rejects a symlinked root (22.179ms)
+✔ blob store construction rejects a symlinked root ancestor (27.970958ms)
+✔ blob store construction rejects a non-directory root (11.271459ms)
+✔ blob writes clean temporary files when the destination is not a file (88.040083ms)
+✔ SQLiteTraceStore validates blob inputs and closed options (34.528792ms)
+✔ SQLiteTraceStore closes blob setup when database opening fails (18.010333ms)
+✔ resolveBuildOutputDirectory returns the repository build directory (23.853334ms)
+✔ resolveBuildOutputDirectory accepts contained output and rejects unsafe configuration (47.129166ms)
+✔ assertSafeBuildOutputDirectory rejects symlink ancestors without touching their targets (12.846083ms)
+✔ build output cleanup and runtime configuration copying use the validated output seam (106.639208ms)
+✔ serializeJsonText is byte-identical to JSON.stringify on random plain JSON data (64.119917ms)
+✔ serializeJsonText matches JSON.stringify on omission, ordering, and scalar edge cases (0.114125ms)
+✔ serializeJsonText refuses what JSON.stringify refuses (0.297375ms)
+✔ serializeJsonText serializes nesting far beyond the native JSON.stringify stack (87.370375ms)
+✔ a body at the configured bound appends, exports, imports, and redacts (87.889791ms)
+✔ append, scan, and read of a body at the bound do not depend on the caller's stack (41.297375ms)
+✔ append refuses a body one level past the bound before any write (21.548333ms)
+✔ archive decode and import refuse a record body past the bound before any write (7.902542ms)
+✔ archive decode refuses an over-deep archived receipt with the classified error (6.38625ms)
+✔ the redacted verifier refuses an over-deep included body with the classified error (13.284916ms)
+✔ domain validators keep the classified refusal instead of rewrapping it (14.53575ms)
+✔ configured framing is at least the deepest kernel frame body location (0.066375ms)
+✔ a body at the bound fits every kernel frame under the minimum framing depth (53.062584ms)
+✔ wide bodies append and snapshot without argument-count limits (17025.225458ms)
+✔ canonicalizeRecord sorts object keys recursively (0.962541ms)
+✔ canonicalizeRecord omits undefined object properties (0.077917ms)
+✔ canonicalizeRecord preserves array order (0.055375ms)
+✔ canonicalizeRecord rejects non-data array shapes (0.303792ms)
+✔ canonicalizeRecord encodes negative zero as zero (0.040958ms)
+✔ canonicalizeRecord follows ECMAScript number and UTF-16 key serialization (0.092125ms)
+✔ canonicalizeRecord rejects lone Unicode surrogates (0.082791ms)
+✔ canonicalizeRecord preserves keys that are special on object prototypes (0.045125ms)
+✔ canonicalizeRecord does not mutate its input (0.470709ms)
+✔ canonicalizeRecord rejects values that JSON cannot represent canonically (0.446ms)
+✔ canonicalizeRecord rejects cyclic records (0.34925ms)
+✔ canonical nesting depth is bounded by configuration, independent of the call site (5563.821917ms)
+✔ canonical nesting depth counts containers, not scalars or siblings (4.25ms)
+✔ values far past the bound are refused with the classified error (1.313333ms)
+✔ kernel framing admits a body at the bound but not past the framed bound (3.905208ms)
+✔ canonical output equals JSON.stringify of the normalized value (0.138459ms)
+✔ canonical output beyond the maximum string length is reported as TypeError (265.559833ms)
+✔ createRecordId returns a stable prefixed SHA-256 digest (0.103291ms)
+✔ CLI root help exposes the configured documented command groups without side effects (0.986833ms)
+✔ CLI root help emits the stable canonical JSON success envelope (0.458791ms)
+✔ CLI group help, usage errors, fenced commands, and source process exit codes are deterministic (1010.550666ms)
+✔ CLI init and doctor use bounded public workspace and diagnostic seams (376.489583ms)
+✔ CLI task and run reads resolve real registry and trace evidence (221.81225ms)
+✔ CLI orphan repair uses exact diagnosis and globally idempotent commands (63.051ms)
+✔ CLI exact settlement commands preserve public select/apply/release/discard authority (23500.0585ms)
+✔ CLI validates options, paths, pagination, argument bounds, and I/O containers (244.555417ms)
+✔ CLI maps unexpected store failures to the configured failure exit without a stack (19.122333ms)
+✔ stable CLI JSON success and error envelopes validate against the generated closed schema (129.545334ms)
+✔ package bin metadata matches the public distinct CLI executable (1.847375ms)
+✔ store group help lists its configured commands (8.144333ms)
+✔ store verify, backup, verify --backup, and restore round-trip through the CLI (449.983792ms)
+✔ store export writes owner-only native or redacted archives that import into a fresh store (244.163667ms)
+✔ store commands refuse missing stores, bad arguments, and corrupt stores (79.443709ms)
+✔ store maintain runs each configured mode without changing the native export (121.446292ms)
+✔ store maintain refuses missing stores, bad modes, and quick_check defects (148.673375ms)
+✔ replay log, show, and diff present read-only lineage views with stable JSON (447.565959ms)
+✔ replay and scope commands refuse bad selectors and arguments with configured exit classes (214.137125ms)
+✔ scope list and show present retained scopes and their lineage read-only (174.049375ms)
+✔ the checked-in compatibility baselines match the repository surfaces (2451.033292ms)
+✔ removed exports, commands, error codes, migrations, and narrowed schemas fail precisely (802.269584ms)
+✔ additive changes pass after a MINOR bump and a baseline update (1351.10975ms)
+✔ changed declarations and values need a classified entry with a matching version bump (1627.934ms)
+✔ deprecated exports are removable only after the window and a MAJOR bump (3019.447292ms)
+✔ format and protocol version increases need a noted classification; schema versions need migrations (1522.657833ms)
+✔ identity settings and per-command CLI options are fingerprinted (933.617458ms)
+✔ baselines that predate identity and CLI-option fingerprints are upgraded without judgment (1277.064ms)
+✔ the gate refuses declarations emitted before the newest source edit (1207.810375ms)
+✔ pure evaluation covers tiers, frozen artifacts, markers, and baseline integrity (1.039584ms)
+✔ policy, change-log, baseline, and surface inputs are validated (11652.526125ms)
+✔ a provider-serviced child runs under its derived identity and settles with a completion (58.335875ms)
+✔ a program-serviced child receives its context and its output is validated (96.994625ms)
+✔ opening is idempotent per command and refuses different content under the same identity (27.431166ms)
+✔ reserved handle owner paths refuse raw appends and cut publication (44.364ms)
+✔ a retained handle command replays its receipt regardless of the current head (54.242916ms)
+✔ a handle whose retained opened record no longer matches is refused (16.493875ms)
+✔ a moved head refuses the completion without writing (34.498375ms)
+✔ a crash between the child terminal and the completion is settled without re-execution (78.978416ms)
+✔ handles are stable across reopen, read-only, and imported stores (85.6855ms)
+✔ options, tasks, parents, and handles are validated before any record (33.971125ms)
+✔ a grant or budget beyond the parent authority is refused before opening (15.833292ms)
+✔ a crash between context consumption and the child creation reuses the consumed context (102.129708ms)
+✔ task-as-value conformance: accept a task as data, run, observe, discard, revise, inject, hand off, accept, and project on an imported archive (800.997167ms)
+✔ the delegation facade exposes the complete runtime surface (0.80475ms)
+✔ generated schemas accept retained handle records and the configuration is locked (178.228583ms)
+✔ delegation and provider configuration reject malformed and inconsistent values (31.124792ms)
+✔ a child killed after its durable start is running and fail-closed until cancelled through durable control (678.924416ms)
+✔ a child killed after its terminal but before the completion settles without re-execution (482.315167ms)
+✔ record readers reject malformed and forged delegation evidence (121.585959ms)
+✔ inspection refuses forged handle, origin cut, parent chain, and completion evidence (122.232833ms)
+✔ handle opening refuses an unretained parent or a moved predecessor head before any record (41.279084ms)
+✔ delegation never amplifies resource or budget authority across random handle chains (1726.647ms)
+✔ nesting depth is bounded by configuration (258.633916ms)
+✔ an opening or retry cannot reuse a command identity retained by a handle command (76.546ms)
+✔ a model-emitted task definition executes only as an approved task value under the child run identity (125.483041ms)
+✔ a program-serviced child opens isolated grandchildren whose accepted value threads upward (652.439084ms)
+✔ reopening a grandchild with the same command replays the handle under its child parent (125.069458ms)
+✔ result projection re-validates accepted outputs and proves the caller schema (192.628417ms)
+✔ supervisor trees follow handoffs and handle trees list only direct children (190.131583ms)
+✔ delegation trees are bounded by the configured entry count (1695.552334ms)
+✔ observation delivers handle and child records over both owners and resumes durably (109.350875ms)
+✔ injections are ordered, bounded, cited, idempotent, and consumed into the composed request (215.657875ms)
+✔ a program-serviced child receives consumed context and later injections stay pending (95.671667ms)
+✔ injections are bounded by the configured count (1172.069542ms)
+✔ handoff transfers ownership and every later command must name the successor (72.505584ms)
+✔ a live child must be cancelled through durable control before it can be discarded (95.046083ms)
+✔ acceptance requires a finished child and retains the digest of the canonical output (110.215708ms)
+✔ retry opens a successor citing the discarded predecessor, its decision, and the retry cut (298.589958ms)
+✔ a head that moves between inspection and append refuses the command without writing (108.924917ms)
+✔ the parent declaration and child inputs of a retry are validated like an opening (31.673292ms)
+✔ a revised task value is approval pending until the current supervisor approves it (131.873333ms)
+✔ a rejected task value never runs but can still be discarded or handed off (40.388166ms)
+✔ revised provenance must keep the task identity and list exactly the differing fields (25.736292ms)
+✔ a revision retry retains the causal replay point and the revised identity (176.322458ms)
+✔ synthesized task values cite their producing record and are verified at inspection (66.323583ms)
+✔ context, handoff, and decision readers refuse inconsistent retained bodies (53.405334ms)
+✔ compensation record bodies are closed, versioned, and bound to their compensation (45.565083ms)
+✔ inspection refuses forged, reordered, or foreign compensation paths (98.199542ms)
+✔ a concurrent compensator that advances the path first makes the slower one conflict (53.09275ms)
+✔ explicit compensation reports failed results and triggers are bounded (54.88825ms)
+✔ registries hold exactly one compensation handler per effect kind (1.147125ms)
+✔ rewind compensates the source suffix once, in reverse materialization order, with retained records (174.288209ms)
+✔ replay compensates the source suffix before the live suffix re-materializes it (57.362209ms)
+✔ a handler that throws after changing the world leaves the attempt uncertain and a retry compensates idempotently (147.139583ms)
+✔ a failed compensation is retained, reported after every effect was attempted, and retried by the next trigger (72.095291ms)
+✔ explicit compensation resolves recorded steps to their origin and refuses non-compensable evidence (103.113667ms)
+✔ compensation paths are reserved against raw appends and cut publication (47.867083ms)
+✔ effects facade exposes only effect-owned runtime symbols (0.842917ms)
+✔ effect handler stack dispatches through the last exact matching handler (1.420333ms)
+✔ effect handler stack snapshots definitions and supports failure results (3.336125ms)
+✔ effect handler stack rejects unhandled intents and preserves handler failures (2.13425ms)
+✔ effect handler stack validates intents before invoking handlers (0.142875ms)
+✔ effect handler stack rejects malformed definitions, arrays, and results (2.255167ms)
+✔ published effect schemas accept the independent intent and outcome fixture (66.415792ms)
+✔ published effect schemas reject malformed closed records (32.021291ms)
+✔ effect protocol configuration is frozen and compatibility locked (55.67325ms)
+✔ published compensation schema accepts each record phase and rejects malformed records (25.556875ms)
+✔ effect builders create immutable versioned intent and outcome records (1.1005ms)
+✔ effect intent references change with every semantic intent field (0.361292ms)
+✔ effect outcomes preserve success and failure result types (0.208458ms)
+✔ effect correlation rejects altered or malformed outcomes (0.4065ms)
+✔ effect builders reject malformed definitions and semantic values (0.244042ms)
+✔ typed handlers validate direct calls and preserve immutable inputs and result data (1.925125ms)
+✔ typed handlers snapshot definitions and preserve callback errors and result validation (0.299292ms)
+✔ typed handler construction rejects unsafe options and unauthenticated schemas (0.168584ms)
+✔ typed effect handlers infer payloads and reject invalid data before invocation (0.656084ms)
+✔ a missing configuration asset raises the configured public error with its path (5.088417ms)
+✔ bundle formats without a module URL are refused with the same public error (0.237291ms)
+✔ present assets parse and other read or parse failures stay unclassified (4.298041ms)
+✔ exported fixed-class errors expose configured stable codes (1.025125ms)
+✔ public wrappers retain existing in-memory causes (0.085291ms)
+✔ isPublicError recognizes only data-property public codes (0.078667ms)
+✔ public error configuration is closed, unique, and immutable (0.394ms)
+✔ applications facade symbols are identical to their root exports (0.487792ms)
+✔ canonical and cli facade symbols are identical to their root exports (0.472166ms)
+✔ delegation facade symbols are identical to their root exports (1.087584ms)
+✔ operations facade symbols are identical to their root exports (0.530916ms)
+✔ operations facade exports storage interfaces, reference adapters, and kits (0.074459ms)
+✔ operations facade exports non-canonical telemetry export (0.046959ms)
+✔ operations facade exports verified backup, restore, and replication (0.043791ms)
+✔ providers facade re-exports the root provider runtime values (0.853708ms)
+✔ read facade exposes no runtime values and preserves trace data types (1.586792ms)
+✔ SIGKILL during compensation never compensates an effect twice (9128.166375ms)
+ℹ compensation: {"complete":8,"refused":0,"retryable":2}, 4 kill(s) landed inside an operation
+✔ a kill after the handler changed the world is uncertain and recovery re-invokes it idempotently (6133.620291ms)
+✔ a kill after the outcome is retained never invokes the handler again (3990.70375ms)
+✔ seeded database page flips fail typed or are detected, never silently (seed 20260919) (4727.357083ms)
+ℹ page 75/104 offset 306409 x2: detected (record_mismatch:sha256:3874fd30bdcdd2fb361ac532c4319bed05edcf738faf1d40db0f64df5e950eca)
+ℹ page 16/104 offset 61780 x2: recovered (identical)
+ℹ page 73/104 offset 297979 x6: detected (append_receipt_mismatch:intent:fault:golden:10)
+ℹ page 87/104 offset 353727 x7: detected (append_receipt_mismatch:cut:cut:fault:golden:23)
+ℹ page 57/104 offset 230059 x5: recovered (identical)
+ℹ page 30/104 offset 122679 x4: recovered (identical)
+ℹ page 42/104 offset 171229 x2: recovered (identical)
+ℹ page 76/104 offset 310658 x6: detected (record_mismatch:sha256:82f8fe7f26f2ee9543affca72b96878924d557cca6bd97f863e9d72afde9876e)
+ℹ page 7/104 offset 25309 x7: recovered (identical)
+ℹ page 51/104 offset 208695 x6: recovered (identical)
+ℹ page 42/104 offset 169025 x2: recovered (identical)
+ℹ page 65/104 offset 264888 x2: detected (record_mismatch:sha256:adec70b9f8da326de478fe9faa5ccedae6032334f53385c2061b133516ef5626)
+ℹ page 40/104 offset 159938 x8: recovered (identical)
+ℹ page 74/104 offset 302131 x7: detected (record_mismatch:sha256:6b143045636cb8d380e446d709847a1f9cce48d7360f64abc5a8279f88c7948c)
+ℹ page 35/104 offset 140757 x6: recovered (identical)
+ℹ page 54/104 offset 217504 x8: recovered (identical)
+ℹ page 87/104 offset 353108 x5: recovered (identical)
+ℹ page 38/104 offset 151875 x7: recovered (identical)
+ℹ page 54/104 offset 221119 x8: detected (sqlite_integrity_mismatch:store)
+ℹ page 87/104 offset 353397 x1: recovered (identical)
+ℹ page 69/104 offset 282097 x7: detected (record_mismatch:sha256:fcd9ca721e057ea360ee99ac7ead78cdb3218844f679c035f467d696e701986d)
+ℹ page 27/104 offset 110352 x6: recovered (identical)
+ℹ page 73/104 offset 295770 x7: detected (append_receipt_mismatch:cut:cut:fault:golden:15)
+ℹ page 103/104 offset 419587 x8: detected (sqlite_integrity_mismatch:store, orphan_record:sha256:0762cf518a23999687f7a438e4f145a499113f6dd21b7758eb3747b0b148daa2, orphan_record:sha256:12208329c482a70d9e3845c75cf38206557c5653d5ee9615da22d666e28138f2)
+ℹ page 7/104 offset 26190 x8: recovered (identical)
+ℹ page 18/104 offset 73279 x3: detected (checks threw Error(ERR_SQLITE_ERROR/11))
+ℹ page 52/104 offset 210239 x4: recovered (identical)
+ℹ page 27/104 offset 107642 x8: recovered (identical)
+ℹ page 22/104 offset 89090 x8: recovered (identical)
+ℹ page 101/104 offset 409601 x5: refused (open: Error(ERR_SQLITE_ERROR/11))
+ℹ page 72/104 offset 291613 x4: detected (append_receipt_mismatch:cut:cut:fault:golden:7)
+ℹ page 18/104 offset 71406 x8: recovered (identical)
+ℹ page 59/104 offset 239606 x3: detected (record_mismatch:sha256:a0646370801be6b794aa1479c0614e885d7936f5c9b25798c1cae2ba06171440)
+ℹ page 14/104 offset 56896 x8: detected (sqlite_integrity_mismatch:store, append_receipt_mismatch:intent:fault:golden:6, append_receipt_mismatch:intent:fault:golden:7)
+ℹ page 31/104 offset 125525 x2: recovered (identical)
+ℹ page 35/104 offset 139649 x8: recovered (identical)
+ℹ page 26/104 offset 102880 x7: refused (open: Error(ERR_SQLITE_ERROR/11))
+ℹ page 94/104 offset 381636 x5: detected (record_mismatch:sha256:e2d2596dce6ecdc5dde09835afae93ef622c4277b03152a8ca7629a1b81022a6)
+ℹ page 22/104 offset 89077 x1: recovered (identical)
+ℹ page 69/104 offset 282290 x2: detected (record_mismatch:sha256:fcd9ca721e057ea360ee99ac7ead78cdb3218844f679c035f467d696e701986d)
+ℹ page 58/104 offset 236595 x1: detected (record_mismatch:sha256:8facfc4bcc0c4ce09d7e6c0aa6b6952cdcf0829bf932934c5087a0dbe8f24262)
+ℹ page 72/104 offset 294780 x3: detected (append_receipt_mismatch:intent:fault:golden:0)
+ℹ page 51/104 offset 208782 x3: recovered (identical)
+ℹ page 71/104 offset 287564 x3: recovered (identical)
+ℹ page 51/104 offset 205884 x6: recovered (identical)
+ℹ page 51/104 offset 207260 x4: recovered (identical)
+ℹ page 84/104 offset 342617 x7: detected (checks threw Error(ERR_SQLITE_ERROR/11))
+ℹ page 17/104 offset 66521 x1: recovered (identical)
+ℹ page flips: {"detected":19,"recovered":27,"refused":2,"residual":0,"rolled-back":0}
+✔ truncated, deleted, or altered WAL and SHM files are refused, detected, recovered, or rolled back to a commit (seed 20260919) (2125.615666ms)
+ℹ WAL deleted: rolled-back (export equals commit 0 of 6)
+ℹ WAL and SHM deleted: rolled-back (export equals commit 0 of 6)
+ℹ SHM deleted: recovered (identical)
+ℹ SHM truncated to zero: recovered (identical)
+ℹ SHM overwritten with seeded bytes: recovered (identical)
+ℹ WAL header flipped: rolled-back (export equals commit 0 of 6)
+ℹ stray garbage rollback journal: recovered (identical)
+ℹ WAL truncated at 326212: rolled-back (export equals commit 5 of 6)
+ℹ WAL flipped at 280012: rolled-back (export equals commit 5 of 6)
+ℹ WAL truncated at 43151: rolled-back (export equals commit 0 of 6)
+ℹ WAL flipped at 104836: rolled-back (export equals commit 2 of 6)
+ℹ WAL truncated at 283978: rolled-back (export equals commit 5 of 6)
+ℹ WAL flipped at 34408: rolled-back (export equals commit 0 of 6)
+ℹ WAL truncated at 65330: rolled-back (export equals commit 1 of 6)
+ℹ WAL flipped at 299129: rolled-back (export equals commit 5 of 6)
+ℹ WAL truncated at 81620: rolled-back (export equals commit 1 of 6)
+ℹ WAL flipped at 223315: rolled-back (export equals commit 4 of 6)
+ℹ WAL truncated at 295465: rolled-back (export equals commit 5 of 6)
+ℹ WAL flipped at 60491: rolled-back (export equals commit 1 of 6)
+ℹ WAL/SHM: {"detected":0,"recovered":4,"refused":0,"residual":0,"rolled-back":15}
+✔ altered, truncated, renamed, or missing blobs and stray temporaries are detected or inspected (seed 20260919) (395.390042ms)
+ℹ blob truncated: detected (blob_size_mismatch:sha256:4f5f79bbe960e3b24446bf16f43e33e08219d69df7d9415ac0de97eba327efa6, blob:size_mismatch:sha256:4f5f79bbe960e3b24446bf16f43e33e08219d69df7d9415ac0de97eba327efa6)
+ℹ blob byte altered: detected (blob_digest_mismatch:sha256:4f5f79bbe960e3b24446bf16f43e33e08219d69df7d9415ac0de97eba327efa6, blob:digest_mismatch:sha256:4f5f79bbe960e3b24446bf16f43e33e08219d69df7d9415ac0de97eba327efa6)
+ℹ blob deleted: detected (blob_missing:sha256:4f5f79bbe960e3b24446bf16f43e33e08219d69df7d9415ac0de97eba327efa6, blob:missing:sha256:4f5f79bbe960e3b24446bf16f43e33e08219d69df7d9415ac0de97eba327efa6)
+ℹ blob renamed: detected (blob_missing:sha256:4f5f79bbe960e3b24446bf16f43e33e08219d69df7d9415ac0de97eba327efa6, blob:missing:sha256:4f5f79bbe960e3b24446bf16f43e33e08219d69df7d9415ac0de97eba327efa6)
+ℹ blob replaced by a directory: detected (blob_not_regular_file:sha256:4f5f79bbe960e3b24446bf16f43e33e08219d69df7d9415ac0de97eba327efa6, blob:not_regular_file:sha256:4f5f79bbe960e3b24446bf16f43e33e08219d69df7d9415ac0de97eba327efa6)
+ℹ stray temporary file in a bucket: recovered (identical; 1 orphan(s) inspected)
+ℹ stray unregistered blob: recovered (identical; 1 orphan(s) inspected)
+✔ tampered backups are refused by verification and restore (seed 20260919) (1319.374125ms)
+ℹ manifest byte flipped: refused (TraceStoreBackupError(TRACE_STORE_BACKUP_ERROR/manifest-invalid))
+ℹ manifest deleted: refused (TraceStoreBackupError(TRACE_STORE_BACKUP_ERROR/manifest-missing))
+ℹ manifest truncated: refused (TraceStoreBackupError(TRACE_STORE_BACKUP_ERROR/manifest-invalid))
+ℹ database page flipped: refused (TraceStoreBackupError(TRACE_STORE_BACKUP_ERROR/database-mismatch))
+ℹ database truncated: refused (TraceStoreBackupError(TRACE_STORE_BACKUP_ERROR/database-mismatch))
+ℹ database deleted: refused (TraceStoreBackupError(TRACE_STORE_BACKUP_ERROR/database-mismatch))
+ℹ backup blob deleted: refused (TraceStoreBackupError(TRACE_STORE_BACKUP_ERROR/blob-mismatch))
+ℹ backup blob altered: refused (TraceStoreBackupError(TRACE_STORE_BACKUP_ERROR/blob-mismatch))
+ℹ stray staging directory: recovered (verified and restored identically)
+✔ a malformed append intent batch digest is detected; a well-formed substitute fails closed on retry (78.523125ms)
+✔ a full database (max_page_count) fails typed, writes nothing, and succeeds after the limit is raised (2690.061375ms)
+ℹ max_page_count outcomes: {"append":"refused-typed","publishCut":"refused-typed","putBlob":"refused-typed","importTrace":"refused-typed"}
+✔ a writer past RLIMIT_FSIZE fails typed and the store recovers (10604.521208ms)
+ℹ RLIMIT_FSIZE 1048576 bytes (ulimit -f unit 1024 bytes) outcomes: append: Error ERR_SQLITE_ERROR/778 after 18 operation(s), {"complete":18,"refused":0,"retryable":1}; blob: Error ERR_SQLITE_ERROR/778 after 49 operation(s), {"complete":49,"refused":0,"retryable":1}; vacuum: Error ERR_SQLITE_ERROR/778 after 78 operation(s), {"complete":78,"refused":0,"retryable":1}; backup: Error ERR_SQLITE_ERROR/778 after 17 operation(s), {"complete":17,"refused":0,"retryable":1}
+✔ SIGKILL during append leaves every intent complete, retryable, or refused (1905.031208ms)
+ℹ seed 20260919: 0 import staging director(ies) left beside the targets
+ℹ append: {"complete":40,"refused":0,"retryable":3}, 3 kill(s) landed inside an operation
+✔ SIGKILL during blob leaves every intent complete, retryable, or refused (2351.449333ms)
+ℹ seed 20260919: 0 import staging director(ies) left beside the targets
+ℹ blob: {"complete":11,"refused":0,"retryable":3}, 3 kill(s) landed inside an operation
+✔ SIGKILL during cut leaves every intent complete, retryable, or refused (2424.521625ms)
+ℹ seed 20260919: 0 import staging director(ies) left beside the targets
+ℹ cut: {"complete":117,"refused":0,"retryable":1}, 3 kill(s) landed inside an operation
+✔ SIGKILL during import leaves every intent complete, retryable, or refused (2103.399584ms)
+ℹ seed 20260919: 1 import staging director(ies) left beside the targets
+ℹ import: {"complete":2,"refused":0,"retryable":3}, 3 kill(s) landed inside an operation
+✔ SIGKILL during backup leaves every intent complete, retryable, or refused (2634.960292ms)
+ℹ seed 20260919: 0 import staging director(ies) left beside the targets
+ℹ backup: {"complete":0,"refused":2,"retryable":1}, 3 kill(s) landed inside an operation
+✔ SIGKILL during vacuum leaves every intent complete, retryable, or refused (2824.104917ms)
+ℹ seed 20260919: 0 import staging director(ies) left beside the targets
+ℹ vacuum: {"complete":26,"refused":0,"retryable":3}, 3 kill(s) landed inside an operation
+✔ bounded soak: 240 mixed operations hold every invariant (14231.427792ms)
+ℹ {"appendIntents":161,"backupsVerified":2,"blobs":60,"cuts":19,"databaseBytes":2293760,"durationSeconds":14.2,"invariantChecks":5,"killCycles":3,"killOutcomes":{"complete":66,"refused":1,"retryable":2},"maintenance":{"optimize":2,"checkpoint":1,"vacuum":1,"inspect":1},"node":"v24.17.0","operations":240,"platform":"darwin-arm64","recordOccurrences":676,"seed":186186,"telemetryBatches":25,"telemetryRecords":676}
+✔ run inspections default to a runtime_only proof envelope (22.916417ms)
+✔ imported non-runtime claims surface only as claimed_proof_backed metadata (63.642917ms)
+✔ replay inspections expose runtime_only envelopes and lower eligible static sessions (210.807083ms)
+✔ lowered records are the ones accepted by the executable reference machine (8.778916ms)
+✔ branch replay sessions classify as the extension publication-control profile (32.139208ms)
+✔ publication controls merge in configured order and preserve imported claims (0.17525ms)
+✔ inspection envelope configuration is validated (25.445625ms)
+✔ typed-effect machine accepts pinned Core-0 and Core-A lifecycle vectors (1.966167ms)
+✔ typed-effect machine distinguishes valid live prefixes from completed traces (0.276166ms)
+✔ typed-effect machine rejects malformed ordering, correlation, and unsupported records (0.167541ms)
+✔ proof-envelope classifier upgrades only validated reference evidence (0.310041ms)
+✔ proof-envelope classifier keeps missing, malformed, and unsupported evidence runtime-only (0.14425ms)
+✔ live reference prefixes remain reference-validated without a proof-backed claim (0.183166ms)
+✔ typed-effect machine rejects malformed public option and record containers (0.190459ms)
+✔ typed-effect machine rejects corrupted declaration, selection, and handle evidence (0.718292ms)
+✔ typed-effect machine rejects corrupted resume, return, and capture evidence (1.276208ms)
+✔ typed-effect machine rejects corrupted Core-A selection closure evidence (0.535625ms)
+✔ typed-effect machine closes a dynamically nested path after an outer resume returns (0.155667ms)
+✔ proof-envelope classifier validates top-level data and propagates unexpected failures (0.146875ms)
+✔ deep record values keep the classified nesting refusal and classify runtime-only (9.417833ms)
+✔ completed Core-0 evidence upgrades only with exact lowering and theorem metadata (1.94425ms)
+✔ Core-A emits its configured strength while untrusted Core-0H remains reference-only (1.056959ms)
+✔ live prefixes and unsupported strong requests remain reference-validated (0.367083ms)
+✔ lowering and theorem metadata drift falls back without weakening reference evidence (4.858292ms)
+✔ strong Core-A admits only one direct abort without resume or closure suffix (2.396292ms)
+✔ Core-0H sidecars fail closed on missing, stale, duplicate, or malformed phase evidence (5.659084ms)
+✔ a caller error raised while reading proof evidence propagates instead of downgrading (0.342791ms)
+✔ fuzz decodeTraceArchive (verify, 1000 cases x 1 seed) (1301.795875ms)
+ℹ seed 20260918: 19 accepted, rejected {"TypeError":949,"TraceArchiveLimitError":30,"CanonicalNestingLimitError":2}, 1246 ms
+✔ fuzz importTrace (verify, 300 cases x 1 seed) (3270.18575ms)
+ℹ seed 20260918: 1 accepted, rejected {"TypeError":281,"TraceArchiveLimitError":17,"CanonicalNestingLimitError":1}, 3270 ms
+✔ fuzz verifyRedactedTraceArchive (verify, 1000 cases x 1 seed) (1141.190208ms)
+ℹ seed 20260918: 20 accepted, rejected {"RedactedTraceArchiveError":904,"TraceArchiveLimitError":73,"CanonicalNestingLimitError":3}, 1141 ms
+✔ fuzz parseBackupManifest (verify, 1000 cases x 1 seed) (330.7345ms)
+ℹ seed 20260918: 0 accepted, rejected {"TraceStoreBackupError":1000}, 330 ms
+✔ fuzz runCli (verify, 600 cases x 1 seed) (4578.67475ms)
+ℹ seed 20260918: 600 accepted, rejected {}, 4336 ms
+✔ every configured fuzz target has an implementation and every implementation is configured (0.797916ms)
+✔ the minimized fuzz regression corpus replays with its recorded outcomes (432.429208ms)
+✔ fuzz readPlacementPlatformEvidence (verify, 1000 cases x 1 seed) (52.165584ms)
+ℹ seed 20260918: 14 accepted, rejected {"TypeError":986}, 50 ms
+✔ fuzz readGrantedPlacementResolutionEvidence (verify, 1000 cases x 1 seed) (62.299625ms)
+ℹ seed 20260918: 6 accepted, rejected {"TypeError":994}, 62 ms
+✔ fuzz readRepositoryGrantPlanEvidence (verify, 1000 cases x 1 seed) (53.91225ms)
+ℹ seed 20260918: 37 accepted, rejected {"TypeError":963}, 54 ms
+✔ fuzz classifyOverlayMountInfo (verify, 1000 cases x 1 seed) (92.56175ms)
+ℹ seed 20260918: 1000 accepted, rejected {}, 92 ms
+✔ fuzz readNativeJailCommandEvidence (verify, 1000 cases x 1 seed) (64.431667ms)
+ℹ seed 20260918: 25 accepted, rejected {"TypeError":975}, 62 ms
+﹣ fuzz readNativeJailPlanEvidence (verify, 1000 cases x 1 seed) (34.856334ms) # native jail backend unavailable on this host: native-write-failed
+✔ fuzz readModelResponse (verify, 1000 cases x 1 seed) (195.677375ms)
+ℹ seed 20260918: 340 accepted, rejected {"TypeError":636,"CanonicalNestingLimitError":24}, 196 ms
+✔ fuzz readStaticProviderDefinition (verify, 1000 cases x 1 seed) (324.729334ms)
+ℹ seed 20260918: 319 accepted, rejected {"TypeError":655,"CanonicalNestingLimitError":26}, 325 ms
+✔ fuzz readApplicationProtocol (verify, 1000 cases x 1 seed) (678.941041ms)
+ℹ seed 20260918: 254 accepted, rejected {"ApplicationProtocolError":746}, 674 ms
+﹣ fuzz telemetryBatch (verify, 1000 cases x 1 seed) (0.120417ms) # No telemetry decoder exists: #184 only maps committed records to OTLP/JSON and hands batches to a caller sink; nothing parses telemetry input.
+✔ fuzz canonicalizeRecord (verify, 1000 cases x 1 seed) (383.119ms)
+ℹ seed 20260918: 860 accepted, rejected {"CanonicalNestingLimitError":72,"TypeError":68}, 333 ms
+✔ fuzz createRecordId (verify, 1000 cases x 1 seed) (234.704542ms)
+ℹ seed 20260918: 868 accepted, rejected {"TypeError":75,"CanonicalNestingLimitError":57}, 235 ms
+✔ fuzz validateRecordBody (verify, 1000 cases x 1 seed) (363.349167ms)
+ℹ seed 20260918: 857 accepted, rejected {"TypeError":75,"CanonicalNestingLimitError":68}, 363 ms
+✔ fuzz validateRecordEnvelope (verify, 1000 cases x 1 seed) (187.352916ms)
+ℹ seed 20260918: 35 accepted, rejected {"TypeError":922,"CanonicalNestingLimitError":43}, 187 ms
+✔ fuzz decodeAppendReceipt (verify, 1000 cases x 1 seed) (278.055833ms)
+ℹ seed 20260918: 63 accepted, rejected {"TraceStoreError":937}, 278 ms
+✔ fuzz isCanonicalWorldPath (verify, 1000 cases x 1 seed) (128.344666ms)
+ℹ seed 20260918: 1000 accepted, rejected {}, 126 ms
+✔ fuzz createVerifiedWorldChangeset (verify, 30 cases x 1 seed) (20602.201333ms)
+ℹ seed 20260918: 19 accepted, rejected {"WorldChangesetError":11}, 20316 ms
+✔ fuzz decodeSelectionPublication (verify, 1000 cases x 1 seed) (197.530083ms)
+ℹ seed 20260918: 1 accepted, rejected {"TypeError":999}, 196 ms
+✔ fuzz encodeSelectionPublicationPlan (verify, 1000 cases x 1 seed) (54.143333ms)
+ℹ seed 20260918: 35 accepted, rejected {"TypeError":965}, 54 ms
+✔ configured interchange limits refuse oversized archive text before parsing (51.227375ms)
+✔ configured interchange limits refuse collection counts and blob bytes before decoding (55.58225ms)
+✔ a well-formed archive with substituted blob bytes is refused without partial state (103.330709ms)
+✔ archived receipts must be canonical JSON (49.733ms)
+✔ the redacted verifier applies the same text and count limits (160.220208ms)
+✔ store import through the CLI refuses an oversized archive file before reading it (127.380416ms)
+✔ native trace archive v1 matches the implementation-neutral fixture (166.7985ms)
+✔ SQLiteTraceStore exports deterministic complete trace state (87.752709ms)
+✔ SQLiteTraceStore imports a complete archive without changing identity (211.595333ms)
+✔ trace identity survives export, import, and reopen across processes (1222.87775ms)
+✔ trace import rejects incompatible and inconsistent archives without partial state (302.371209ms)
+✔ trace export rejects corrupt retained state and closes its read snapshot (31.63175ms)
+✔ trace import rolls back target SQLite failures (102.209625ms)
+✔ trace import stages beside the target store, never in the OS temporary directory (123.281167ms)
+✔ trace import requires a pristine target store (44.204584ms)
+✔ trace import derives owner counters independent of archive view order (48.910667ms)
+✔ trace import checks pristineness after waiting for concurrent writers (340.5935ms)
+✔ trace revision ledger resolves immutable cut-bounded owner history (263.8385ms)
+✔ evidence record lists and selectors fail closed for empty or malformed reads (8.103792ms)
+✔ trace revisions reopen through the public API in a fresh process (506.397708ms)
+✔ the JSON-lines sink appends one owner-only OTLP request per signal and batch (61.327458ms)
+✔ the JSON-lines sink requires distinct non-empty paths (0.373209ms)
+✔ observability configuration parses, freezes, and matches generated vocabularies (19.97175ms)
+✔ observability configuration rejects malformed and inconsistent fields (21.329041ms)
+✔ observability wire constants are pinned by the observability v1 contract (11.885834ms)
+✔ a durable run exports one deterministic span and schema-valid log records passively (99.17775ms)
+✔ a throwing sink affects no run and does not advance the cursor (9.960709ms)
+✔ a restarted exporter resumes at-least-once from the acknowledged cursor (44.493875ms)
+✔ bodies follow the retention policy and secret-bearing bodies are never emitted (35.1035ms)
+✔ a terminal record without a start closes a span named by the terminal record (26.940542ms)
+✔ export calls are serialized and batches respect the record bound (7.79675ms)
+✔ an aborted subscription exports nothing (2.225792ms)
+✔ invalid clocks fail the batch without acknowledgement (2.313459ms)
+✔ exporter options are validated (3.602916ms)
+✔ trace and span identifiers are deterministic and domain-separated (1.246625ms)
+✔ an included body at the canonical nesting bound exports independent of the caller's stack (85.500542ms)
+✔ backup configuration parses, freezes, and matches generated vocabularies (15.620292ms)
+✔ backup configuration rejects unsafe modes, digests, layouts, and formats (13.207167ms)
+✔ backup wire constants are pinned by the backup v1 contract (7.649ms)
+✔ backup writes an owner-only, schema-valid, verified backup and restores it exactly (404.031ms)
+✔ in-memory stores back up, and backups of an empty store restore (150.32925ms)
+✔ an interrupted backup leaves no manifest and every verifier refuses it (201.581708ms)
+✔ backups whose blobs live in a caller backend verify and restore with that backend (439.959208ms)
+✔ tampered backups are refused with a classified reason and never restored (946.109042ms)
+✔ backup helpers fail closed at their seams (10.660084ms)
+✔ restore publication and final verification refuse races and never report success (375.211709ms)
+✔ backup, verification, and restore validate their arguments (31.877625ms)
+✔ drill fixtures exist for every historical store schema (0.937792ms)
+✔ store schema 1 upgrades to the current schema with integrity and its golden export (153.874084ms)
+✔ a backup of a store schema 1 store verifies and restores forward-migrated (305.020667ms)
+✔ store schema 2 upgrades to the current schema with integrity and its golden export (214.776875ms)
+✔ a backup of a store schema 2 store verifies and restores forward-migrated (599.170083ms)
+✔ store schema 3 upgrades to the current schema with integrity and its golden export (166.141708ms)
+✔ a backup of a store schema 3 store verifies and restores forward-migrated (338.083709ms)
+✔ store schema 4 upgrades to the current schema with integrity and its golden export (163.369125ms)
+✔ a backup of a store schema 4 store verifies and restores forward-migrated (321.262958ms)
+✔ store schema 5 upgrades to the current schema with integrity and its golden export (148.095292ms)
+✔ a backup of a store schema 5 store verifies and restores forward-migrated (235.842417ms)
+✔ store schema 6 upgrades to the current schema with integrity and its golden export (106.715875ms)
+✔ a backup of a store schema 6 store verifies and restores forward-migrated (230.990208ms)
+✔ store schema 7 upgrades to the current schema with integrity and its golden export (80.762041ms)
+✔ a backup of a store schema 7 store verifies and restores forward-migrated (290.440167ms)
+✔ store schema 8 upgrades to the current schema with integrity and its golden export (142.828584ms)
+✔ a backup of a store schema 8 store verifies and restores forward-migrated (455.111917ms)
+✔ store schema 9 upgrades to the current schema with integrity and its golden export (251.872542ms)
+✔ a backup of a store schema 9 store verifies and restores forward-migrated (543.200084ms)
+✔ store schema 10 upgrades to the current schema with integrity and its golden export (194.927791ms)
+✔ a backup of a store schema 10 store verifies and restores forward-migrated (297.557792ms)
+✔ store schema 11 upgrades to the current schema with integrity and its golden export (134.466917ms)
+✔ a backup of a store schema 11 store verifies and restores forward-migrated (237.555334ms)
+✔ store schema 12 upgrades to the current schema with integrity and its golden export (274.2515ms)
+✔ a backup of a store schema 12 store verifies and restores forward-migrated (469.532791ms)
+✔ store schema 13 upgrades to the current schema with integrity and its golden export (313.862541ms)
+✔ a backup of a store schema 13 store verifies and restores forward-migrated (280.925042ms)
+✔ downgrade drill: a newer-schema store is refused and its archive imports into a fresh store (197.6955ms)
+✔ backup, upgrade, then restore of the pre-upgrade backup returns the exact pre-upgrade trace (197.515583ms)
+✔ a verified backup replicates by compare-and-swap and fetches back to a restorable copy (658.083542ms)
+✔ backups whose blobs live in a backend replicate from that backend (518.530958ms)
+✔ replication refuses database or manifest files that change after verification (436.517625ms)
+✔ replication and fetch validate their options (0.421292ms)
+✔ every export condition set lets require() and import load the same target (0.826ms)
+✔ no export's module graph uses top-level await, so require(esm) stays viable (233.75125ms)
+✔ the require(esm) guard detects top-level await (9.30925ms)
+✔ the prepublish guard reads every target from the manifest and names missing ones (25.1035ms)
+✔ the prepublish guard accepts manifests without bin or exports (15.59025ms)
+✔ package.json publishes publicly with provenance and guards publication (0.753125ms)
+✔ schema-specific projection records fail closed (17.6615ms)
+✔ relation projections ignore records owned by another parent (8.671667ms)
+✔ published-record projections apply optional field defaults (10.192292ms)
+✔ SQLiteTraceStore projects an immutable execution at a published cut (18.781166ms)
+✔ SQLiteTraceStore projects active children and parent-published records (12.247042ms)
+✔ execution projections survive store reopen (210.765459ms)
+✔ latest relation transitions select only effective children (17.361833ms)
+✔ effective history rejects a child cut targeting another execution (9.072708ms)
+✔ execution projections enforce compatibility and fold optional values (23.545ms)
+✔ execution projections apply lifecycle defaults (11.085458ms)
+✔ protocol artifacts generate deterministically and pass check mode (813.530959ms)
+✔ protocol generation rejects ordinal drift without a new ABI (64.967ms)
+✔ protocol artifact generation rejects paths outside the repository (109.729125ms)
+✔ protocol artifact generation rejects protected and duplicate destinations (137.392084ms)
+✔ protocol artifact generation rejects parent and artifact symlinks (319.321166ms)
+✔ protocol artifact generation surfaces non-missing filesystem errors (46.460709ms)
+✔ protocol configuration validates and freezes every critical section (18.584791ms)
+✔ protocol configuration rejects invalid record identity and kernel constants (14.563667ms)
+✔ protocol configuration rejects invalid append and migration bounds (5.815167ms)
+✔ protocol configuration rejects weakened or unsafe store settings (22.206917ms)
+✔ protocol configuration rejects invalid store maintenance settings (4.0135ms)
+✔ protocol configuration rejects invalid or drifted CLI topology (28.572167ms)
+✔ protocol configuration rejects invalid or drifted orphan repair contracts (14.313291ms)
+✔ protocol configuration rejects invalid root witnesses and JSON bodies (10.207875ms)
+✔ protocol configuration rejects invalid or drifted query contracts (8.493292ms)
+✔ protocol configuration rejects invalid or drifted interchange contracts (8.101667ms)
+✔ protocol configuration validates the canonical nesting bound at load (10.053208ms)
+✔ interchange limits and Git invocation hardening are operational, not protocol identity (4.9695ms)
+✔ protocol configuration rejects malformed Git invocation hardening (4.980917ms)
+✔ protocol configuration rejects invalid or drifted projection contracts (29.158583ms)
+✔ protocol configuration rejects invalid schema, artifact, and object shapes (3.945916ms)
+✔ protocol configuration rejects invalid or drifted task contracts (45.465792ms)
+✔ protocol configuration rejects invalid or drifted delegation and provider contracts (47.154834ms)
+✔ protocol configuration rejects invalid or drifted scope contracts (89.24775ms)
+✔ protocol configuration rejects invalid or drifted formal assurance contracts (44.779875ms)
+✔ protocol configuration rejects invalid or drifted workspace contracts (162.518167ms)
+✔ published schemas are valid JSON Schema 2020-12 documents (25.747583ms)
+✔ published task value and delegation schemas compile strictly and close their bodies (48.662375ms)
+✔ published trace archive schema accepts the conformance fixture (16.763166ms)
+✔ published append and view schemas enforce their wire shapes (15.171959ms)
+✔ published schemas accept the pinned record vectors (10.927667ms)
+✔ published schemas reject invalid body and envelope shapes (10.563ms)
+✔ configured protocol values cannot drift from types, schemas, or fixtures (0.491541ms)
+﹣ live provider: replay after rewind observes prompt-cache reads on the restored prefix (0.441167ms) # set SHEPHERD_LIVE_PROVIDER_TEST=1, SHEPHERD_LIVE_PROVIDER_KIND, SHEPHERD_LIVE_PROVIDER_MODEL, and the kind's credential variable to run
+✔ provider-backed tasks and replay sessions retain no credential in any record, blob, or trace file (282.455375ms)
+✔ provider kinds resolve from configuration and every live kind is constructible (1.059125ms)
+✔ anthropic adapter sends a configured request and marks the last prefix message for caching (2.194208ms)
+✔ openai-compatible adapters cover OpenAI and OpenRouter behind the same contract (0.561208ms)
+✔ adapters honor an AbortSignal while the request is pending (3.6665ms)
+✔ credentials come only from configuration or the environment and never reach errors (2.34575ms)
+✔ definitions and conversation requests are validated (1.5815ms)
+✖ the default transport posts the serialized request with fetch (7.493ms)
+✔ runtime source contains no provider-specific literals (84.766584ms)
+✔ tool-use blocks require a portable tool name (1.51825ms)
+✔ provider protocol configuration is frozen and compatibility locked (69.845166ms)
+✔ tool-use configuration is validated before compatibility (10.412334ms)
+✔ a rewound provider conversation resends a byte-identical message prefix and hits the prompt cache (144.545ms)
+✔ failed and cancelled turns keep the conversation aligned with the replay session (82.360083ms)
+✔ provider conversation definitions, rebuild input, and cache identities are validated (0.77025ms)
+✔ static provider rejects open or malformed definitions and invocation requests (1.685875ms)
+✔ static provider owns immutable definition and response snapshots (24.818458ms)
+✔ static provider returns the configured response for an exact request (1.247458ms)
+✔ static provider fails closed without consuming a mismatched exchange (0.402958ms)
+✔ static provider preserves pre-abort reasons without consuming an exchange (0.129709ms)
+✔ live kinds declare tool capabilities and configured tool wire settings (0.467667ms)
+✔ anthropic dialect maps tools, tool_use, and tool_result blocks and decodes tool calls (3.066625ms)
+✔ openai dialect maps tools, tool_calls, and tool-role results and decodes tool calls (1.611125ms)
+✔ an openai-compatible cache marker lands on the last tool result of a results-only prefix (0.950375ms)
+✔ requests without tools keep their wire bodies free of tool fields (0.706208ms)
+✔ malformed or inconsistent tool responses are refused (3.124041ms)
+✔ request validation places tool blocks only in their roles and requires unique tool names (0.7235ms)
+✔ Markdown link targets skip code and include nested, reference, and HTML targets (1.090792ms)
+✔ repository web URLs are derived from package.json repository forms (0.445625ms)
+✔ packed Markdown links resolve inside the tarball or to absolute URLs (1.408ms)
+✔ the repository README resolves when packed with the package files (5.507417ms)
+✔ record protocol versions match the shared fixture (0.415375ms)
+✔ createRecordEnvelope matches the pinned cross-language vectors (0.764125ms)
+✔ record validators accept valid bodies and envelopes (0.211959ms)
+✔ validateRecordBody rejects non-record and non-canonical values (0.260709ms)
+✔ createRecordEnvelope rejects malformed semantic fields (0.562083ms)
+✔ createRecordEnvelope enforces the configured root witness (0.242666ms)
+✔ validateRecordEnvelope rejects invalid shapes and identities (0.650125ms)
+✔ the checked-in SBOM matches the lockfile and regenerates identically (63.713708ms)
+✔ SBOM generation classifies runtime, optional, and development components (5.59025ms)
+✔ SBOM write and check operate on the configured artifact (114.170375ms)
+✔ release-integrity configuration is validated (4.947042ms)
+✔ tarball entries are read from ustar and PAX headers (3.863208ms)
+✔ the package files allowlist is literal and anchored for every npm version (F-032) (2.83625ms)
+✔ packed tarballs are checked against the files allowlist (0.564375ms)
+✔ reproducible builds compare output trees and tarballs and report differing files (132.129167ms)
+✔ provenance statements are unsigned in-toto v1 with a SLSA v1 predicate (1.199458ms)
+✔ release evidence binds the reproducible tarball, SBOM, and provenance (50.58375ms)
+✔ the configured packer's JSON result names the tarball in the destination (86.050583ms)
+✔ the packer refuses empty commands, failed runs, and results without a tarball (220.820541ms)
+✔ an every-step policy checkpoints every boundary and each restores the world byte-equivalently (4118.826125ms)
+✔ configured policies select provider, effect, and interval boundaries only (2203.115458ms)
+✔ malformed automatic checkpoint policies are refused before anything is written (538.423541ms)
+✔ rewinding a world-bound session to an automatic checkpoint compensates the suffix once (641.932333ms)
+✔ session store transactions fence stale writers, detect moved heads, and bound lease clocks (189.3635ms)
+✔ step and dependency bounds, verdict shapes, adapters, and poisoned contexts fail closed (2940.583083ms)
+✔ step-boundary targets report unavailable processes and world images fail closed (356.59725ms)
+✔ an expired lease discovered while the program waits fences the session (5005.932917ms)
+✔ residual boundaries: frontiers at step targets, new suffix intents, adapters without arguments (204.6275ms)
+✔ rewind restores every world byte-equivalently and copies the verified prefix (754.058458ms)
+✔ rewind refuses unavailable, inconsistent, and unverifiable targets before writing (473.827ms)
+✔ replay reconstructs the prefix without invocation and diverges only in the intended suffix (1030.610792ms)
+✔ replay refuses unapproved irreversible suffix effects and detects prefix mismatches (2912.762042ms)
+✔ replay serves recorded failures and checkpoints and replays trace-only step boundaries (57.446958ms)
+✔ branches from interrupted sources and imported archives replay with verified identities (1201.468541ms)
+✔ verified provider-session and cooperative process captures restore as an atomic branch (735.43575ms)
+✔ unavailable adapters and uncapturable worlds are retained with exact reasons and refuse restoration (443.866ms)
+✔ the cooperative protocol fails closed on errors, exits, timeouts, and malformed messages (1151.384709ms)
+✔ transparent checkpointing reports platform, executable, and host-check unavailability accurately (309.181542ms)
+✔ classification orders same-kind constituents by name and treats an absent name as least (0.555167ms)
+✔ coupled replay conformance: atomic multi-resource checkpoint, imported rewind, and intended-suffix replay (2123.201208ms)
+✔ dependency and divergence analysis follow declared dependencies (583.739333ms)
+✔ the replay facade, generated schemas, and configuration contract agree (683.738083ms)
+✔ replay configuration rejects malformed and inconsistent values (10.053291ms)
+✔ replay configuration validates the branch source dispositions and their default (7.882417ms)
+✔ a session writer killed between steps is interrupted and recovers by rewinding its checkpoint (916.045417ms)
+✔ a session writer killed after an effect admission is materialization-uncertain and never re-invoked (664.906708ms)
+✔ record readers reject malformed, forged, and incompatible replay evidence (694.111667ms)
+✔ session folds reject reordered, forged, and inconsistent record sequences (701.882167ms)
+✔ reopening a session with an effect admission but no step fails as uncertain (64.168458ms)
+✔ N-way diff resolves sibling rollouts to their common source and tables captured effects (199.57775ms)
+✔ N-way diff crosses nested lineage and reports no ancestor for unrelated roots (344.306459ms)
+✔ N-way diff refuses malformed, repeated, oversized, and absent session sets (106.984792ms)
+✔ first-regression search bisects or walks a lineage deterministically and attributes revisions (325.11725ms)
+✔ first-regression search refuses malformed options and non-boolean verdicts (215.16075ms)
+✔ an effect admitted without a step in the source is gated as possibly materialized (50.324583ms)
+✔ a cooperative process that closes its input fails the request without crashing the host (3552.640583ms)
+✔ inspection binds checkpoint constituents, restores, approvals, and recorded steps to their evidence (601.065292ms)
+✔ nested replays resolve the task in force through branch ancestry (53.720542ms)
+✔ live writers classify as running, imported terminals replay receipts, and manifests refuse protected names (62.279875ms)
+✔ root sessions retain provider and effect steps with chained identities and cache evidence (487.721458ms)
+✔ provider and handler failures are retained and raised identically to the program (138.929167ms)
+✔ program results, thrown values, and malformed handler dispatches fail closed (213.18225ms)
+✔ tasks derive provider requests and context operations enforce session capabilities (178.870042ms)
+✔ caller cancellation retains a cancelled terminal without recording the interrupted step (35.549042ms)
+✔ session leases admit one writer, fence expired writers, and classify non-terminal sessions (100.659083ms)
+✔ session owner paths are reserved and live rows are checked by integrity scans (45.078959ms)
+✔ session options are validated before any record is retained (43.501833ms)
+✔ the configured default source disposition compensates the abandoned suffix (0.896208ms)
+✔ a retaining replay or rewind over a compensable suffix invokes no compensation handler (312.903125ms)
+✔ an abandoning rewind still compensates the suffix the source retained (317.87225ms)
+✔ a branch refuses an unconfigured source disposition before writing (65.914708ms)
+✔ refuse mode rejects a secret-bearing append before any write and a corrected retry succeeds (9.324791ms)
+✔ refusal messages mark truncated findings and name every class without matched text (7.969125ms)
+✔ refuse mode also guards appends made inside store-owned transactions (5.447417ms)
+✔ the default off mode leaves appends unchanged (10.603ms)
+✔ refuse mode refuses replaying a previously accepted secret-bearing intent (38.819917ms)
+✔ refuse mode rejects importing a secret-bearing archive without writing (29.217458ms)
+✔ store options reject unconfigured scanning modes (0.221875ms)
+✔ redacted export keeps identities, applies dispositions, and never carries secrets (50.326625ms)
+✔ redacted archives validate against the generated schema (68.358ms)
+✔ redacted archives are refused by every import path (42.066084ms)
+✔ redacted archive verification rejects malformed or policy-violating archives (50.354667ms)
+✔ retention configuration parses, resolves schema classes, and freezes (14.8215ms)
+✔ retention configuration rejects malformed vocabularies and wire identities (22.688708ms)
+✔ retention configuration rejects unsafe secret detectors (11.640166ms)
+✔ retention configuration requires owner-only store file modes (8.534625ms)
+✔ retention configuration gates schema-family mappings (14.96325ms)
+✔ retention configuration accepts consistent duplicate classification across families (2.042583ms)
+✔ every configured trace schema family has a data class (gate) (1.596833ms)
+✔ classification prefers configured families, then caller classes, then the default (0.531125ms)
+✔ classification rejects malformed schema identifiers and options (0.826792ms)
+✔ the retention policy summary is frozen and matches generated vocabularies (0.118583ms)
+✔ retention inspection counts classes and secrets without content and only reads (86.921792ms)
+✔ retention inspection bounds reported secret records (50.563125ms)
+✔ finding digests are keyed per process and are not a digest of the matched text (507.656291ms)
+✔ every configured secret class has a synthetic sample and is detected by path (1.444ms)
+✔ scan reports never contain matched text (0.43175ms)
+✔ secret keys are reported at their owner and never descended into (0.270167ms)
+✔ scan escapes pointer segments, deduplicates, and reads scalars and root strings (0.442416ms)
+✔ scan bounds findings by the configured limit (0.849208ms)
+✔ scan rejects values that are not canonical semantic values (0.257084ms)
+✔ createRunArtifact preserves ordered text and durable blob artifacts (37.599834ms)
+✔ createRunUsage records immutable aggregate run totals (0.183666ms)
+✔ createRunArtifact rejects malformed closed definitions and content (0.600334ms)
+✔ createRunUsage normalizes unavailable cost and rejects malformed totals (0.153791ms)
+✔ createRunControl aborts with an immutable snapshot when consumption exceeds budget (3.850625ms)
+✔ caller AbortSignal cancellation wins once and rejects later consumption (0.469667ms)
+✔ duration budget aborts cooperatively and disposal cancels active control (7.720458ms)
+✔ every configured counter allows equality and exhausts on the next increment (0.792834ms)
+✔ the first terminal transition wins across pre-abort and exhaustion races (0.189ms)
+✔ createRunControl rejects malformed options, limits, and consumption (0.779917ms)
+✔ durable creation codec validates identity, ancestry, lock, and canonical input (1.90675ms)
+✔ durable result codec rejects inconsistent terminal records (1.762417ms)
+✔ durable result codec cross-validates control, usage, start, and budget evidence (2.042167ms)
+✔ persisted control codec rejects every malformed terminal discriminant (0.207792ms)
+✔ durable cancellation command codec validates exact fenced command content (1.09125ms)
+✔ durable resume command codec binds command, suspension, descriptor, and run (0.257667ms)
+✔ durable pause command codec validates the exact fenced lifecycle request (0.437708ms)
+✔ durable recovery command codec validates identity, kind, and run binding (0.100083ms)
+✔ created cancellation atomically terminalizes and fences pre-start authority (65.462833ms)
+✔ suspended cancellation terminalizes from the exact quiescent head (132.288125ms)
+✔ waiting cancellation terminalizes from retained prerequisite evidence (66.227375ms)
+✔ waiting acknowledgement atomically releases the worker at a prerequisite boundary (209.254333ms)
+✔ durable resume replay fails closed for incomplete or malformed retained evidence (2.10525ms)
+✔ requestDurableTaskPause retains one exact command without changing lifecycle (86.999083ms)
+✔ safe-boundary cancellation publishes a command-bound terminal and fences the worker (233.61925ms)
+✔ cancellation acknowledgement rejects created and non-command terminal evidence (34.007375ms)
+✔ safe-boundary suspension publishes exact checkpoint evidence and fences the worker (296.265625ms)
+✔ checkpoint collection and suspension acknowledgement reject unavailable or malformed evidence (2.307583ms)
+✔ suspension acknowledgement rejects a running head superseded before commit (5.552208ms)
+✔ requestDurableTaskPause rejects malformed options and non-running authority (9.551833ms)
+✔ recoverTaskDurably idempotently resumes created evidence under a stable command identity (961.958084ms)
+✔ recoverTaskDurably rejects reuse of one command identity for another run (6.726583ms)
+✔ recoverTaskDurably binds command identity to the exact execution contract (4.814333ms)
+✔ recoverTaskDurably idempotently repairs a missing terminal cut without provider replay (12.633833ms)
+✔ recoverTaskDurably rejects absent and uncertain started executions (6.317834ms)
+✔ recoverTaskDurably rejects malformed command options before retaining evidence (1.933292ms)
+✔ durable recovery fails closed for unowned or wrong-schema command evidence (9.428083ms)
+✔ readDurableTaskExecution validates absent reads and propagates store failures (8.947667ms)
+✔ readDurableTaskExecution rejects inconsistent retained lifecycle evidence (125.649625ms)
+✔ readDurableTaskExecution rejects failure lifecycle disagreement (38.730416ms)
+✔ readDurableTaskExecution rejects malformed or unavailable retained artifacts (83.130084ms)
+✔ inspectDurableTaskExecution projects exact committed evidence after reopening (151.993416ms)
+✔ inspectDurableTaskExecution projects every incomplete recovery state (41.837ms)
+✔ inspectDurableTaskExecution recognizes cut-bound waiting and suspended evidence without mutation (229.242291ms)
+✔ inspectDurableTaskExecution rejects malformed quiescent evidence (215.165166ms)
+✔ readDurableTaskExecution reconstructs a committed result after reopening (160.400584ms)
+✔ executeTaskDurably returns committed evidence without invoking the provider again (10.555708ms)
+✔ created evidence requires an explicit recovery command before provider start (11.336375ms)
+✔ executeTaskDurably fails closed for started execution without terminal evidence (6.071833ms)
+✔ a missing terminal cut requires an explicit recovery command (8.511458ms)
+✔ executeTaskDurably admits only one concurrent provider invocation across store connections (157.457291ms)
+✔ ordinary admission cannot reclaim an expired claim after a stale absent read (109.203458ms)
+✔ durable invocation claims reject malformed and conflicting creation evidence (7.664667ms)
+✔ durable invocation claims reclaim expiry and fence stale or already-started writers (8.60625ms)
+✔ expired claims fence stale writers across SQLite connections (33.988458ms)
+✔ executeTaskDurably fences a claim that expires before start publication (4.419583ms)
+✔ durable start publication rolls back conflicts without consuming the claim (4.841834ms)
+✔ recoverTaskDurably rejects a live preclaim then recovers it after expiry (12.658041ms)
+✔ executeTaskDurably validates input before retaining lifecycle evidence (7.153084ms)
+✔ executeTaskDurably replays identical deterministic evidence without duplication (21.181625ms)
+✔ executeTaskDurably rejects changed evidence for an existing run before invocation (10.700042ms)
+✔ durable start refuses recovery command evidence the run does not own (7.395375ms)
+✔ executeTaskDurably retains a successful execution across store reopening (73.297917ms)
+✔ executeTaskDurably retains and reconstructs ordered provider artifacts (153.753292ms)
+✔ executeTaskDurably rejects blob artifacts absent from the durable store (37.479542ms)
+✔ executeTaskDurably retains artifacts for every post-response terminal path (48.89075ms)
+✔ executeTaskDurably does not fabricate start or usage evidence for pre-cancellation (10.782834ms)
+✔ executeTaskDurably retains started provider failures without fabricating usage (6.836709ms)
+✔ executeTaskDurably retains observed usage for output-validation failure (6.502542ms)
+✔ executeTaskDurably retains pre-invocation budget exhaustion (6.734583ms)
+✔ executeTask assigns ordered run artifacts from a provider response (40.839334ms)
+✔ executeTask completes a validated bodyless task through a provider (1.170167ms)
+✔ executeTask records invalid provider output as a failed outcome with observed usage (0.495291ms)
+✔ executeTask classifies provider invocation errors without fabricating usage (0.363042ms)
+✔ executeTask refuses an over-budget turn before consuming a provider exchange (0.468292ms)
+✔ executeTask preserves provider usage when measured tokens exhaust the budget (0.277584ms)
+✔ executeTask records caller cancellation without consuming a provider exchange (2.89775ms)
+✔ executeTask fails closed when configured cost cannot be measured (0.34125ms)
+✔ executeTask normalizes void task input and output to canonical null (0.249709ms)
+✔ executeTask validates run identity before invoking the provider (0.463709ms)
+✔ executeTask rejects malformed task input without consuming a provider exchange (0.323542ms)
+✔ executeTask preserves cancellation that occurs inside provider invocation (0.240667ms)
+✔ executeTask retains usage when an abort-ignoring provider resolves after cancellation (0.225792ms)
+✔ executeTask uses configured fallbacks for opaque provider failures (0.503708ms)
+✔ executeTask rejects forged structural task descriptors without consuming the provider (0.253417ms)
+✔ executeTask classifies malformed custom-provider responses before accounting (0.197667ms)
+✔ executeTask rejects malformed provider artifact collections before accounting (0.674833ms)
+✔ executeTask rejects open and accessor option containers before invocation (0.292ms)
+✔ executeTask snapshots and validates custom provider descriptors before invocation (0.370792ms)
+✔ executeTask snapshots validated options before awaiting the provider (0.19575ms)
+✔ published lifecycle schemas accept the independent continuation fixture (83.661541ms)
+✔ published lifecycle schemas reject malformed or reordered evidence (24.391792ms)
+✔ createRunLifecycleTransition accepts exactly the normative transition matrix (1.18875ms)
+✔ createRunOutcome creates every immutable terminal run outcome (1.296083ms)
+✔ createRunOutcome preserves terminal discriminants and optional retryability (0.109292ms)
+✔ createRunOutcome rejects malformed definitions and terminal payloads (0.531333ms)
+✔ published run artifact and usage schemas accept independent fixtures (62.953667ms)
+✔ published run artifact and usage schemas reject malformed closed records (17.504125ms)
+✔ published run-outcome schema accepts all four independent fixture variants (13.634209ms)
+✔ published run-outcome schema rejects malformed closed records (10.219375ms)
+✔ run protocol configuration is frozen and compatibility locked (155.161958ms)
+✔ run facade exposes only run-owned runtime symbols (1.407084ms)
+✔ runtime policy accepts the approved range and rejects older, other-major and prerelease versions (0.777166ms)
+✔ runtime configuration is closed, immutable and agrees with package engines (1.005084ms)
+✔ defensive behavior is proven before storage and staging even if the API exists but is ineffective (8.547791ms)
+✔ stores refuse missing SQLite defensive support before creating files or blob directories (0.431541ms)
+✔ removePathSync removes dangling symbolic links with every option combination (2.245833ms)
+✔ removePathSync removes a link to a file or directory without touching its target (2.985625ms)
+✔ removePathSync keeps rmSync semantics for files, directories, and missing paths (2.250833ms)
+✔ product code removes paths only through removePathSync (20.461833ms)
+✔ the supported keyword list is closed and every pinned repository schema compiles (1.595875ms)
+✔ documents outside the supported subset are refused at compile time (1.875125ms)
+✔ every keyword reports path-level issues with keyword and schema location (0.742041ms)
+✔ type unions, integers, and boolean schemas follow JSON Schema semantics (0.201166ms)
+✔ combinators report none, ambiguous, and every branch issue (0.27575ms)
+✔ values must be canonical JSON data and parse returns a frozen snapshot (1.432458ms)
+✔ validity agrees with an independent 2020-12 validator on pinned repository schemas (88.114ms)
+✔ discard compensates the effects its sealed scopes cite, children after parents, in reverse order (231.360834ms)
+✔ a failed discard compensation is reported after cleanup and retried by the same command (91.118792ms)
+✔ discarding a trace-only child seals it while the parent keeps its current state (75.884041ms)
+✔ discarding a world subtree seals open scopes and cleans every proven-owned custody (6248.538875ms)
+✔ logical discard completes without a carrier and a later retry resumes cleanup (1493.543542ms)
+✔ discard refuses roots, foreign parents, terminal scopes, reserved merges, and stale evidence (5272.354792ms)
+✔ discard refuses a subtree beyond the configured bound (1820.891ms)
+✔ a pending descendant cleanup blocks consuming its parent, and a sealed parent defers cleanup (5156.492125ms)
+✔ merge and discard racing across store connections admit exactly one terminal decision (3664.4655ms)
+✔ emission extends only the scope path, cites retained records, and replays exactly (45.651334ms)
+✔ emission requires a current fence, exact head, and retained citations (38.710459ms)
+✔ emission rejects forged writers, non-canonical or oversized data, and malformed options (31.899083ms)
+✔ fork journal and checkpoint codecs fail closed on malformed persisted evidence (614.931958ms)
+✔ inspection and replay fail closed on incomplete or inconsistent fork evidence (1133.197875ms)
+✔ checkpoint classification proves a quiescent verified-copy start and restorability (699.261333ms)
+✔ fork recovery converges across each trace and physical boundary (2984.916875ms)
+✔ an incomplete fork blocks writers and refuses contradictory or stale physical evidence (993.102ms)
+✔ an absent custody receipt is republished by deterministic identity and completes (1063.535834ms)
+✔ fork receipt replay fails closed when retained journal evidence is inconsistent (987.304084ms)
+✔ physical fork work requires a current parent fence and no admitted child writer (961.210875ms)
+✔ fork publishes isolated reference-copy custody with an honest checkpoint and exact replay (1183.6845ms)
+✔ sibling and nested forks stay isolated, attenuated, and bound to the parent world (3407.296041ms)
+✔ fork binds repository resources and records execution-associated unavailability (2257.804209ms)
+✔ fork refuses forged handles, malformed options, stale heads, and reused identities (434.613625ms)
+✔ inspection refuses a child scope whose origin cut is missing or disagrees (182.214333ms)
+✔ inspection refuses a merged child whose merge cut disagrees with its retained head (75.263042ms)
+✔ inspection reconstructs the same scope after reopen, read-only reopen, and import (254.371834ms)
+✔ integrity verification classifies scope registration rows against retained records (58.765334ms)
+✔ inspection fails closed on malformed or bypassed scope evidence (64.427583ms)
+✔ interrupted scope commands converge on retry without duplicate evidence (26.010875ms)
+✔ scope algebra agrees with the reference model on copy carrier seed 11 (7054.774125ms)
+✔ scope algebra agrees with the reference model on copy carrier seed 23 (5276.801833ms)
+✔ scope algebra agrees with the reference model on copy carrier seed 37 (6779.935208ms)
+✔ scope algebra agrees with the reference model on copy carrier seed 41 (3617.214042ms)
+✔ scope algebra agrees with the reference model on clone carrier seed 11 (6181.189ms)
+✔ scope algebra agrees with the reference model on clone carrier seed 23 (4280.0255ms)
+✔ scope algebra agrees with the reference model on clone carrier seed 37 (4859.030125ms)
+✔ scope algebra agrees with the reference model on clone carrier seed 41 (3025.536375ms)
+✔ merging disjoint sibling deltas commutes and matches the reference three-way result (18042.314334ms)
+✔ a disjoint world merge publishes the child delta into current parent custody once (5572.78875ms)
+✔ trace-only merges integrate selected history without a carrier and exclude common origin (325.268042ms)
+✔ overlapping world changes are refused without consuming or changing either scope (6435.266833ms)
+✔ an empty child delta merges history and republishes the unchanged parent content (5399.224584ms)
+✔ merge admission refuses missing authority, custody, ownership, carriers, and stale evidence (3145.181375ms)
+✔ a world child of a trace-only parent has no parent-managed custody to merge into (818.773792ms)
+✔ a parent without write authority on the bound resource cannot receive a world merge (1253.699583ms)
+✔ concurrent merges of one child across store connections admit exactly one winner (6207.514125ms)
+✔ recovery classification names one owner and the exact command for every live scope (11674.908667ms)
+✔ cleanup ownership resolves through sealed parents and empty cleanup stays pending (4159.340541ms)
+✔ root registration retains a trace-only first record and replays exactly (100.10675ms)
+✔ root registration binds an optional execution association to retained creation evidence (241.137125ms)
+✔ root authority attenuates by the ceiling and refuses unknown resources and atoms (51.635ms)
+✔ child registration fixes the parent origin, attenuates authority, and preserves siblings (128.297625ms)
+✔ child registration requires a current parent fence and exact head (135.98225ms)
+✔ a writer whose registration row disappeared cannot register children (30.535083ms)
+✔ scope commands reject forged handles and malformed options (55.576834ms)
+✔ the scopes facade exposes the complete runtime surface (0.380584ms)
+✔ published scope schemas accept retained records and reject malformed copies (110.61175ms)
+✔ scope protocol configuration matches v6 and preserves every earlier value (8.641666ms)
+✔ published fork schema accepts retained journal records and rejects malformed copies (643.200916ms)
+✔ published merge and discard schemas accept retained journal records and reject malformed copies (6132.877083ms)
+✔ merge and discard codecs fail closed on malformed persisted evidence (2.747084ms)
+✔ inspection refuses forged merge cuts, reservations, seals, and integrations (406.427167ms)
+✔ inspection and replay refuse forged discard decisions and cleanup (45.651667ms)
+✔ terminal completions replay inside the store and integrity checks terminal row state (72.043833ms)
+✔ merge refuses contributions beyond the configured bound (1847.801583ms)
+✔ a completion whose parent fence is lost rolls back and a prepared fork refuses other records (1028.643583ms)
+✔ merge receipt replay refuses foreign reservations and incomplete or inconsistent journals (56.111125ms)
+✔ merge recovery converges across each trace and carrier boundary (28833.113125ms)
+✔ a reserved merge blocks competing terminal decisions and mutation of both scopes (4941.072958ms)
+✔ a reserved merge refuses contradictory parent custody and resumes from a publication prefix (8854.665208ms)
+✔ discard recovery converges across decision and cleanup boundaries (2717.108083ms)
+✔ discarding an incomplete fork seals it so the fork can never complete (1581.1225ms)
+✔ a scheduled tree settles nested children once with deterministic results at any parallelism (545.937333ms)
+✔ re-running an interrupted schedule resumes from receipts without duplicating work (292.576917ms)
+✔ scheduled world forks merge disjoint siblings and discard conflicting ones (16332.322458ms)
+✔ scheduling validates options and fails closed on foreign writers (647.9865ms)
+✔ scheduler refusals inside a subtree fail the schedule after siblings settle and emits stay exact (647.985625ms)
+✔ a scheduled fork interrupted before completion resumes from its retained origin (1236.797292ms)
+✔ re-running after a lost merge response cleans protected application custody (5967.439625ms)
+✔ multiple failing sibling subtrees are reported together (26.044209ms)
+✔ vocabulary maps spawn, adopt, publish, and abandon onto exact scope evidence (9301.778958ms)
+✔ vocabulary reports in-flight commands as pending and ancestor seals as no abandonment (4058.473375ms)
+✔ scope writer claims are exclusive, monotonic, releasable, and expiry-replaceable (36.716542ms)
+✔ scope writer claims require a live open registration and closed options (67.481125ms)
+✔ multi-scope writer claims are canonical-ordered, all-or-nothing, and closed (114.435834ms)
+✔ filesystem backend shares the trace-store blob layout without changing it (53.569ms)
+✔ filesystem backend refuses mismatched bytes before writing and keeps corrupt objects (27.522166ms)
+✔ filesystem backend lists across fan-out buckets and ignores foreign entries (258.313833ms)
+✔ filesystem backend deletes durably and refuses a symlinked root (24.620625ms)
+✔ memory backend applies the configured default page size and validates list options (1.432791ms)
+✔ reference blob-store backends pass every conformance law (262.208458ms)
+✔ reference storage coordinators pass every conformance law (31.571583ms)
+✔ blob-store kit detects a backend that replaces objects and skips verification (0.582125ms)
+✔ blob-store kit detects unordered listing and an undeclared durability (0.373167ms)
+✔ coordinator kit detects ignored generations, shared leases, and ignored fences (0.513959ms)
+✔ conformance kits report factory failures, non-error throws, and close failures (0.468208ms)
+✔ SQLite coordinator persists refs and leases across handles with an owner-only file (39.322416ms)
+✔ SQLite coordinator rejects operations after close and closes idempotently (1.910583ms)
+✔ SQLite coordinator refuses newer and conflicting schemas and invalid paths (23.051792ms)
+✔ coordinators validate fences and lease expiry bounds (0.36675ms)
+✔ SQLite coordinator serializes compare-and-swap and leases across processes (470.118458ms)
+ℹ compare-and-swap conflicts retried: 69
+✔ concurrent first opens of one new SQLite database all succeed across processes (4726.450917ms)
+✔ isSQLiteBusyError matches SQLITE_BUSY and its extended codes only (7.745625ms)
+✔ execRetryingBusy retries SQLITE_BUSY until the statement succeeds (0.794542ms)
+✔ execRetryingBusy rethrows non-busy errors without retrying (0.794625ms)
+✔ execRetryingBusy stops at the busy timeout with the SQLite error (2.923416ms)
+✔ runInSQLiteTransaction commits results and rolls back failures (1.145708ms)
+✔ storage configuration parses, freezes, and matches generated vocabularies (20.307208ms)
+✔ storage configuration rejects inconsistent bounds, grammars, and migrations (23.269208ms)
+✔ storage vocabularies are pinned by the storage v1 contract (8.185375ms)
+✔ non-text owner paths and cited record identities are refused with path-level errors (4.992792ms)
+✔ SQLiteTraceStore atomically appends and reopens retained records (39.67175ms)
+✔ SQLiteTraceStore replays equal intents and rejects conflicting retries (3.708542ms)
+✔ SQLiteTraceStore continues owner ordinals and shares semantic records across owners (3.827166ms)
+✔ failed parent and witness validation leaves the append intent reusable (8.748042ms)
+✔ SQLite failure rolls back records, views, ordinals, and append intent (24.432208ms)
+✔ SQLiteTraceStore rejects corrupt persisted record views (41.068917ms)
+✔ SQLiteTraceStore rejects malformed and inconsistent stored append receipts (87.335416ms)
+✔ fork replay refuses a registration whose prepared journal intent is not retained (735.313084ms)
+✔ cut iteration preserves repeated occurrences and excludes later owner appends (17.555667ms)
+✔ cut iterators are lazy, independent, and leave the store usable after early termination (12.388458ms)
+✔ cut iterator reports invalid identifiers, unknown cuts, and closed stores on pulls (4.274375ms)
+✔ cut iteration reproduces read-only reopened and imported evidence without mutation (45.889542ms)
+✔ cut iteration reads incrementally and refuses missing, malformed, or replaced occurrences (60.708459ms)
+✔ cut iteration rejects coherently indexed endpoints outside the configured ordinal range (15.405166ms)
+✔ published cuts resolve the immutable owner prefix across append and reopen (42.507125ms)
+✔ cut publication validates targets, conflicts, options, and retained truth (24.551792ms)
+✔ a new trace store database, WAL, and SHM are owner-only under a permissive umask (26.714917ms)
+✔ opening a writable store tightens an existing loose database and its sidecars (29.891708ms)
+✔ task registry databases are created and tightened owner-only (5.512333ms)
+✔ non-file database targets are left to SQLite (9.044792ms)
+✔ symbolic links at database and sidecar paths are never followed or changed (21.14975ms)
+✔ creation and inspection failures other than an existing file or an absent sidecar are reported (29.494208ms)
+✔ SQLiteTraceStore verifies every retained store area after reopen (70.943917ms)
+✔ SQLiteTraceStore classifies graph, witness, owner, and orphan corruption (45.132125ms)
+✔ append refuses a witness_ref that names a record that is not a witness (35.862333ms)
+✔ SQLiteTraceStore composes record, cut, and blob integrity failures (95.349542ms)
+✔ SQLiteTraceStore classifies malformed parent metadata and root witness state (71.352375ms)
+✔ SQLiteTraceStore rejects a missing configured root witness (72.913292ms)
+✔ every maintenance mode leaves the native export byte-identical (534.431791ms)
+✔ maintenance reports a pending write-ahead log and truncates it (66.526166ms)
+✔ in-memory stores report no write-ahead log (3.58225ms)
+✔ maintenance is refused on read-only and closed handles (126.578333ms)
+✔ maintenance options are closed plain objects naming a configured mode (2.549916ms)
+✔ quick_check defects are reported by inspect and refuse mutating modes (86.932333ms)
+✔ a missing write-ahead log file is reported as zero bytes (33.390709ms)
+✔ migration registry versions are contiguous and match configured support (1.275792ms)
+✔ SQLiteTraceStore migrates file databases in WAL mode (45.3465ms)
+✔ read-only trace stores require current schema without migration (27.449959ms)
+✔ SQLiteTraceStore upgrades a version-one database for blob receipts (129.875209ms)
+✔ schema-five migration conservatively fences legacy invocation claims (66.750917ms)
+✔ schema-seven migration preserves prepared settlement rows with empty journal evidence (60.031709ms)
+✔ SQLiteTraceStore rejects unsupported future schemas (30.61125ms)
+✔ failed schema migration rolls back its version (27.43325ms)
+✔ SQLiteTraceStore close is idempotent and guards every operation (16.249083ms)
+✔ public diagnosis is read-only, bounded, canonical, and distinguishes repair blockers (12.869792ms)
+✔ explicit repair removes only exact proven-dead bookkeeping and retains audit records (136.68475ms)
+✔ empty repair is a globally idempotent no-op with canonical evidence (8.976542ms)
+✔ prepared interrupted repair converges after reopen and rejects conflicting command reuse (113.64225ms)
+✔ SIGKILL after durable prepare leaves no false receipt and converges on retry (491.560084ms)
+✔ receipt-marker failure rolls back deletion and receipt before retry (26.345917ms)
+✔ repair fails closed for live, provider-started, scope-owned, stale, and incomplete evidence (10.661584ms)
+✔ same and competing connections converge without conflicting success (41.301333ms)
+✔ fresh processes concurrently applying an identical command converge on one receipt (533.684542ms)
+✔ pre-run reclaim is fail-soft and preserves exact evidence for manual repair (3.147041ms)
+✔ operation inputs and command containers reject malformed, open, bounded, and unsupported evidence (5.759083ms)
+✔ fail-soft reclaim reports a prepared command conflict without throwing (2.079333ms)
+✔ fail-soft reclaim converts operational diagnosis failures into corruption evidence (16.122375ms)
+✔ command preparation propagates non-conflict store failures (15.659834ms)
+✔ configured total-operation bounds fail closed on admission and retained overflow (104.057541ms)
+✔ retained corruption and death-evidence conflict fail closed without mutation (35.297209ms)
+✔ malformed retained JSON and forged repair commit evidence fail closed (146.416834ms)
+✔ a valid public receipt forgery cannot report success without the atomic commit marker (4.244708ms)
+✔ repair commit markers fail closed when command or receipt provenance disagrees (72.414333ms)
+✔ every retained operation-column disagreement fails closed (174.27875ms)
+✔ closed stores guard every orphan repair operation (2.670875ms)
+✔ generated orphan diagnosis, command, and receipt schemas are closed and accept public evidence (42.295375ms)
+✔ hot-path statements never plan a full table scan (189.14425ms)
+✔ hot-path plans stay indexed after optimize collects planner statistics (145.814292ms)
+✔ the plan checker recognizes a full table scan (198.313875ms)
+✔ a read-only open refuses a store whose root witness record was removed (30.1365ms)
+✔ SQLiteTraceStore diagnoses retryable, committed, and corrupt append intents (38.678583ms)
+✔ SQLiteTraceStore diagnoses rows orphaned from their append intent (39.783125ms)
+✔ SQLiteTraceStore diagnoses a cut orphaned from its append intent (36.41575ms)
+✔ SQLiteTraceStore rejects a receipt whose owner view lost its record (22.837042ms)
+✔ SQLiteTraceStore propagates operational failures during append diagnosis (25.053375ms)
+✔ settlement operation and selected receipt codecs are deterministic and exact (1.754959ms)
+✔ discard receipts bind an unchanged basis and explicit cleanup state (0.186292ms)
+✔ apply operations bind the exact three-way plan and applied receipt (0.93575ms)
+✔ release operations bind the preserved custody and receipt-only basis (0.305666ms)
+✔ operation encoding refuses planning evidence that does not fit the admitted action (1.98ms)
+✔ operation decoding refuses non-object and basis-less evidence for planned actions (0.661ms)
+✔ retained-world settlement admission is consume-once and replayable after reopen (34.84775ms)
+✔ settlement journal transitions replay exactly across connections and reopen (31.862708ms)
+✔ settlement journal rejects skipped transitions and validates discard receipts (5.159166ms)
+✔ application journal binds one exact plan and applied terminal receipt (5.287333ms)
+✔ release journal preserves custody evidence without cleanup state (3.855125ms)
+✔ settlement journal reads fail closed for corrupt nullable evidence combinations (483.312625ms)
+✔ retained-world settlement reads reject malformed or inconsistent stored evidence (101.38ms)
+✔ retained-world settlement admission rejects malformed exact requests (2.825833ms)
+✔ scale tier default: integrity, reads, GC, round trip, and maintenance hold at size (44412.1515ms)
+✔ causal closure filters traversal records without synthesizing edges (17.446167ms)
+✔ slice queries validate selectors and support owner prefixes and duplicate roots (7.532667ms)
+✔ causal slices retain every owner occurrence for shared semantic records (2.626958ms)
+✔ owner-prefix slices fail closed when a retained view loses its record (46.998208ms)
+✔ slice reads reject retained records that cite non-witness evidence (19.863541ms)
+✔ shape-only causal slices hide the payload of a record with no owner view (2.630666ms)
+✔ SQLiteTraceStore rejects malformed append request containers (5.167292ms)
+✔ SQLiteTraceStore accepts null-prototype requests and empty batches (3.358625ms)
+✔ worker traces are byte-identical with zero observers and with several passive observers (244.298708ms)
+✔ allowed effects run interceptors in canonical order, materialize once, and replay (19.427042ms)
+✔ denial resolves before admission and skips later interceptors and the handler (4.908375ms)
+✔ replacement strengthens reversibility for later interceptors, approval, and the handler (23.430708ms)
+✔ replacement keeps a reversible effect open when its failure policy fails open (6.5295ms)
+✔ pauses wait for approval, rejection resolves, and expiry fails closed (60.685167ms)
+✔ timeouts and failures apply declared policy, and irreversible tiers always fail closed (56.292625ms)
+✔ abort signals cancel dispatches before admission, including while waiting (12.185167ms)
+✔ handler failures resolve without an outcome (8.323917ms)
+✔ decision leases fence stale dispatchers and a replacement resumes without re-deciding (33.904125ms)
+✔ lease renewal keeps a waiting dispatcher authoritative and detects loss (116.745458ms)
+✔ reopening with the same claim identity mints a new fence (11.864ms)
+✔ admission without resolution is uncertain and never re-invokes the handler (31.258708ms)
+✔ imported dispatches are inspectable without lease evidence and cannot be resumed (13.423916ms)
+✔ dispatch options are validated before any record is retained (2.662292ms)
+✔ integrity verification classifies dispatch rows that disagree with their records (24.597083ms)
+✔ context injections cite retained records as causal parents and are consumed by dispatches (39.965875ms)
+✔ context injection validates citations, data, and retained channel evidence (3.217125ms)
+✔ a dispatcher killed while an interceptor owns the decision lease resumes without re-deciding (438.425458ms)
+✔ a dispatcher killed after admission is classified uncertain and never materializes twice (389.345083ms)
+✔ a subscriber killed after acknowledging resumes without duplicating or losing records (481.362334ms)
+✔ dispatch folds classify every unfinished boundary (5.61325ms)
+✔ dispatch folds refuse evidence that violates the protocol (3.355625ms)
+✔ record readers refuse malformed supervision bodies (0.701292ms)
+✔ moved heads are re-validated, lease expiry is bounded, and waits end on prior aborts (29.211542ms)
+✔ the supervision facade exposes the complete runtime surface (0.956875ms)
+✔ supervision protocol configuration matches v1 (27.824333ms)
+✔ published supervision schemas accept retained records and reject malformed copies (142.804042ms)
+✔ schema-nine stores upgrade to subscription and dispatch bookkeeping without changing records (101.913292ms)
+✔ ephemeral subscriptions replay canonical owners round-robin and deliver live appends (11.394167ms)
+✔ subscriptions start at head or an explicit cursor and refuse inconsistent cursors (6.550709ms)
+✔ durable subscriptions resume strictly after the acknowledged cursor across reopen (32.769834ms)
+✔ bounded buffers apply backpressure and the fail overflow policy never drops records (26.211458ms)
+✔ abort signals end iteration, including while waiting for new records (11.625542ms)
+✔ read-only stores accept ephemeral subscriptions and refuse durable ones (33.367958ms)
+✔ subscription options and cursors are validated (4.01375ms)
+✔ integrity verification classifies corrupt durable subscription bookkeeping (33.132083ms)
+✔ parseReleaseConfig accepts ordinary YAML formatting (4.418458ms)
+✔ parseReleaseConfig rejects invalid configuration shapes (0.855792ms)
+✔ synchronizeVersions updates configured JSON manifests (42.784667ms)
+✔ synchronizeVersions rejects unsafe paths (12.291125ms)
+✔ synchronizeVersions rejects symlinks that escape the repository (4.3425ms)
+✔ synchronizeVersions validates every target before writing (5.523375ms)
+✔ task creates an immutable versioned bodyless descriptor (1.341833ms)
+✔ task descriptor and artifact lock match the independent v1 fixture (0.188542ms)
+✔ task artifact identity changes with every behavioral descriptor field (0.396875ms)
+✔ task identity is independent of schema property declaration order (0.256041ms)
+✔ task schemas reject malformed inputs, outputs, shapes, and definitions (0.899625ms)
+✔ adapted schemas reject unsupported documents without evaluating accessors (2.309959ms)
+✔ adapted schemas validate task execution and expose honest dynamic types (3.840875ms)
+✔ JSON Schema adapters preserve builder behavior, identities, and registry reopen (10.179459ms)
+✔ task-registry migration versions must match configured contiguous support (0.815541ms)
+✔ SQLiteTaskRegistry preserves exact registrations across reopening (14.013834ms)
+✔ read-only task registries require current schema without migration (8.18ms)
+✔ SQLiteTaskRegistry rejects corrupt retained artifacts through resolution (26.62425ms)
+✔ SQLiteTaskRegistry rejects future schemas and rolls back failed migrations (12.365125ms)
+✔ SQLiteTaskRegistry validates closed read-only options (0.9975ms)
+✔ SQLiteTaskRegistry rejects malformed exact references (1.813084ms)
+✔ SQLiteTaskRegistry validates descriptor artifacts and exact locks (0.861541ms)
+✔ SQLiteTaskRegistry rejects consistently locked unsupported schema documents (0.926584ms)
+✔ SQLiteTaskRegistry registers and exactly resolves a task artifact (3.459833ms)
+✔ SQLiteTaskRegistry replays equal registration and rejects version conflicts (1.695292ms)
+✔ SQLiteTaskRegistry returns undefined for an absent exact version (0.281209ms)
+✔ SQLiteTaskRegistry closes idempotently and guards public operations (0.243875ms)
+✔ new builders emit canonical JSON Schema documents (1.684625ms)
+✔ new builders parse valid values into frozen snapshots with inferred types (0.832458ms)
+✔ invalid values are refused with a path-level issue for every new form (1.430458ms)
+✔ builders refuse malformed declarations (0.598542ms)
+✔ JSON Schema adaptation round-trips every new form with identical identity (5.405792ms)
+✔ existing descriptor identities are unchanged by the widened schema language (0.566334ms)
+✔ widened schemas register, reopen, and satisfy the published descriptor schema (56.685792ms)
+✔ invalid provider output for every new form fails the run with a path-level message (9.654209ms)
+✔ descriptor rehydration preserves parsed values for every widened form (5.56375ms)
+✔ published task schemas accept the independent descriptor and lock fixture (34.34275ms)
+✔ published task schemas reject unknown fields and malformed identities (24.109584ms)
+✔ task ledger lists canonical registrations and resolves read selectors (139.55625ms)
+✔ ledger selectors and pagination reject malformed or open inputs (1104.693541ms)
+✔ run ledger composes durable evidence and resolves import-stable selectors (212.543125ms)
+✔ run ledger exposes incomplete creation and rejects duplicate creation evidence (147.659333ms)
+✔ task and run ledgers reopen in a fresh process and reject corrupt task keys (685.024125ms)
+✔ task values round-trip through the registry lock and the task builder (3.882625ms)
+✔ task values refuse extra keys, foreign schemas, unsupported grammar, and mismatched locks (1.880375ms)
+✔ schema.task types a task value and survives the JSON Schema adapter (1.148292ms)
+✔ the published task value schema accepts the fixture and rejects drift (37.709708ms)
+(node:61225) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a zero-count range filtered in another process where it executed is covered (2.309292ms)
+✔ the merge does not depend on process order (0.305416ms)
+✔ a range with zero count in every process stays uncovered (0.337ms)
+✔ uncalled and function-level-only functions count as uncovered functions (0.174417ms)
+✔ files no process loaded are reported as never executed (0.425ms)
+✔ lines outside every reported range fall back to Node's empty-line default (0.106125ms)
+✔ ignore comments follow Node's per-line rules (0.137125ms)
+✔ CRLF line endings keep Node's offsets (0.087959ms)
+✔ collectRepositoryCoverage reads coverage files for the included files (26.850333ms)
+✔ createWorkspaceBindings returns stable canonical disjoint authorities (92.687625ms)
+✔ createWorkspaceBindings rejects equal and nested roots in either order (159.770583ms)
+✔ createWorkspaceBindings fails closed for invalid names, roots, and authority escape (360.029375ms)
+✔ copy carrier snapshot, fork, capture, and changesets equal copy identities (4275.128791ms)
+✔ copy carrier isolates base revisions and rejects unsupported custody entries (1686.436375ms)
+✔ copy carrier reopens retained custody after restart and refuses mismatched carriers (2240.589834ms)
+✔ copy carrier composes with scope fork, merge, and discard across restart (6294.26275ms)
+✔ clone carrier snapshot, fork, capture, and changesets equal copy identities (4273.748459ms)
+✔ clone carrier isolates base revisions and rejects unsupported custody entries (1369.952875ms)
+✔ clone carrier reopens retained custody after restart and refuses mismatched carriers (1903.82225ms)
+✔ clone carrier composes with scope fork, merge, and discard across restart (6236.113584ms)
+✔ overlay carrier fails closed where the host cannot run it (97.070167ms)
+✔ platform inspection names every optimized backend and every required backend is conformant (0.256542ms)
+✔ carrier backend selection and retained backend evidence are closed (800.615583ms)
+hdiutil: WARNING: 'hdiutil create -size -volname ...' is deprecated. Please use 'diskutil image create from/blank -size --volumeName ...' instead.
+hdiutil: create failed - Device not configured
+✖ clone carrier fails closed on a macOS filesystem without clonefile support (1039.694625ms)
+✔ world changeset inspection authenticates retained revisions and exposes bounded canonical pages (868.323583ms)
+✔ world changeset inspection derives exact-content renames and copies outside canonical identity (811.081084ms)
+✔ world changeset inspection bounds previews and fails closed on malformed or corrupted reads (973.59825ms)
+✔ world changeset inspection rejects excessive exact-content move candidates (7236.627292ms)
+✔ world changesets reconstruct ordered file, directory, mode, symlink, and replacement changes (1520.397709ms)
+✔ world changesets reject cross-binding and corrupted revision evidence (932.325625ms)
+✔ copy device-layer adapter passes the conformance kit where available (1946.987875ms)
+✔ clone device-layer adapter passes the conformance kit where available (2336.483417ms)
+✔ overlay device-layer adapter passes the conformance kit where available (5.254ms)
+ℹ unavailable: platform-unsupported
+✔ container device-layer adapter passes the conformance kit where available (89.773708ms)
+ℹ unavailable: container-daemon-unavailable
+✔ a pluggable in-memory adapter passes the same conformance kit (59.911334ms)
+✔ the conformance kit reports every failing case without throwing (48.350916ms)
+✔ strict and fallback selection record which adapter was used (23.2195ms)
+✔ device-layer world options are exact (3.154875ms)
+✔ the depth policy must leave room for a checkpoint on the opened device (26.228208ms)
+✔ adapter failures surface as device-layer errors and poison only mutations (16.967667ms)
+✔ world paths are portable and host worlds never traverse symbolic links (98.016459ms)
+✔ clone probes refuse broken scratch directories and overlay depth follows option bytes (0.6785ms)
+✔ container adapter templates and list output are rendered and parsed exactly (0.353042ms)
+✔ git-head custody retains committed content and detects only HEAD basis movement (6255.034834ms)
+✔ git-head custody never runs repository filters or export attributes (3293.914417ms)
+✔ git-head materialization matches git archive for a repository without attributes (3193.593375ms)
+✔ git-head materialization accepts an empty tree and refuses entries that escape the world (3833.847167ms)
+✔ worktree custody binds index flags, dirty files, untracked files, and ignored exclusions (8010.997541ms)
+✔ git-aware custody handles detached and unborn HEAD and rejects conflicted worktree index (6453.38775ms)
+✔ none adoption creates no retained output custody (1255.393ms)
+✔ worktree custody retains a repository with no index file (3308.163417ms)
+✔ worktree custody preserves sparse absence and rejects unsafe repository boundaries (5734.092458ms)
+✔ worktree custody preserves sparse-index evidence and excluded-path absence (3910.615708ms)
+✔ worktree custody accepts a clean gitlink and rejects dirty submodule content (4072.332375ms)
+✔ worktree submodule check never runs repository clean filters (14796.026125ms)
+✔ worktree submodule check preserves git status dirty semantics without git status (15359.630125ms)
+✔ Git-aware receipts fail closed on corruption and support linked worktree identity (4640.057459ms)
+✔ retained custody reopens after a borrowed object source disappears (1777.110042ms)
+✔ concurrent linked-first captures converge on one repository authority (1976.796917ms)
+✔ Git-aware custody validates its public boundary and exact repository root (6815.601416ms)
+✔ Git changeset inspection presents clean Gitlink changes outside canonical world identity (31336.7115ms)
+✔ Git changeset inspection accepts authenticated git-head custody without index projections (4098.825ms)
+✔ Git subprocess arguments pin configured options before the working directory (0.8125ms)
+✔ Git subprocess environment drops inherited GIT_ variables and sets configured ones (0.736584ms)
+✔ hostile repository configuration and environment cannot steer pinned Git reads (1593.280833ms)
+✔ initializeWorkspace creates reusable control state without inventing Git history (246.187125ms)
+✔ initializeWorkspace distinguishes Git-HEAD and dirty-worktree adoption (1384.798459ms)
+✔ worktree adoption identity is order-independent and content-sensitive (237.327083ms)
+✔ initializeWorkspace supports explicit non-adoption without initializing Git (54.981333ms)
+✔ workspace control opens fail closed for conflicts, malformed metadata, and symlinks (98.755166ms)
+✔ workspace initialization validates closed inputs and required Git evidence (326.433208ms)
+✔ openWorkspace rejects drifted Git and every malformed manifest field (754.22525ms)
+﹣ native jail schemas and decoders accept exact evidence and reject malformed copies (79.383375ms) # native jail backend unavailable: native-write-failed
+✔ local native jail probing is closed, authenticated, and backed by a real denial (41.188042ms)
+﹣ supported native backends enforce writable, read-only, and alias boundaries (27.132792ms) # native jail backend unavailable: native-write-failed
+﹣ native process receipts classify cancellation, timeout, and output bounds (33.894709ms) # native jail backend unavailable: native-write-failed
+✔ native jail runner admission fails before command use without an authenticated live probe (50.488959ms)
+✔ structured native commands reject shell-like ambiguity and configured bound violations (1.46225ms)
+﹣ native jailed granted capture enforces at the public durable task-world seam (31.018541ms) # native jail backend unavailable: native-write-failed
+✔ overlay mountinfo classification is exact, last-entry-wins, and total on hostile text (0.640084ms)
+✔ placement platform evidence classifies macOS, Linux, native Windows, and WSL (2.425459ms)
+✔ local placement inspection reports the actual Node host without environment values (0.235583ms)
+✔ placement platform identity is canonical and unsupported hosts remain explicit (0.260666ms)
+✔ persisted placement evidence is closed, classified, and content-addressed (0.891416ms)
+✔ placement platform evidence rejects malformed and ambiguous probes (0.148833ms)
+✔ placement resolution records advisory requests and visible auto fallback (328.246458ms)
+✔ placement resolution fails closed for unavailable jail and forged authority (400.9135ms)
+✔ published placement schemas accept independent platform, resolution, and journal evidence (75.012417ms)
+✔ published placement schemas reject malformed or overstated placement evidence (23.540333ms)
+✔ workspace platform inspection publishes the configured fail-closed custody policy (271.195667ms)
+✔ platform fault helpers fail closed for malformed fixtures and unavailable paths (45.120833ms)
+✔ reference custody faults have stable classifications and recoverable publication state (2102.245666ms)
+✔ Git custody rejects core.symlinks=false placeholders before publication (3626.082ms)
+✔ Git custody faults preserve precise errors and publish no custody receipt (5997.187292ms)
+✔ reference custody rejects portable case collisions before publication (35.813708ms)
+✔ reference custody rejects host metadata that the portable manifest cannot preserve (635.018125ms)
+✔ Git worktree custody rejects unsupported metadata before materialization (828.46925ms)
+✔ protected workspace paths use one versioned fail-closed normalization contract (41.703208ms)
+✔ protected workspace path inspection rejects malformed or escaped authority (49.68675ms)
+✔ Git custody rejects a protected alias before managed-world materialization (809.858709ms)
+✔ reference capture rejects a protected alias before publishing custody (216.285791ms)
+✔ discard preserves its durable marker until protected cleanup can be verified (541.615834ms)
+✔ reference copy carrier snapshots, reopens, forks, verifies, and discards retained custody (3507.626417ms)
+✔ reference copy carrier is deterministic and protects the exact workspace control root (649.47125ms)
+✔ custody capture converges on repeat and rejects invalid or unsupported custody (1160.753375ms)
+✔ reference application revision rejects invalid, cross-binding, and third-state recovery (2456.285834ms)
+✔ revision verification rejects ancestry beyond the configured bound (36795.21125ms)
+✔ reference copy carrier captures empty, long, sparse, chained, and non-dereferenced loop entries (537.791333ms)
+✔ reference copy carrier rejects unsafe sources and forged bindings without publication (336.794541ms)
+✔ reference copy carrier fails closed when immutable or custody evidence is corrupted (425.702875ms)
+✔ reference copy carrier validates its closed option boundary (40.007959ms)
+✔ reference copy carrier rejects special files and unsafe carrier roots (254.882ms)
+✔ reference copy carrier rejects substituted descriptors and symlinked discard targets (643.0115ms)
+✔ reference copy carrier cleans failed fork staging publication (364.556458ms)
+✔ reference copy carrier rejects a staging parent replaced after construction (226.316958ms)
+✔ reference copy carrier cleans failed discard publication (375.889708ms)
+✔ a failed symbolic-link replacement leaves no staged link behind and retries cleanly (1174.287917ms)
+✔ reference carrier publishes and reopens an exact scheduled selection (4404.979209ms)
+✔ reference carrier recovers an exact prefix and refuses a third state (3845.70075ms)
+✔ reference carrier converges concurrent publication and rejects an empty after basis (16578.329167ms)
+✔ reference carrier stages exact selection evidence from immutable head custody (3062.049292ms)
+✔ repository bindings retain stable disjoint authorities and independent Git custody (10272.802416ms)
+✔ repository bindings fail closed for ambiguous repository authority (5803.578833ms)
+✔ Git custody rejects a structurally copied repository authority (4048.371666ms)
+✔ Git custody rejects a substituted repository identity directory (793.045625ms)
+✔ published repository grant schemas accept independent artifacts and plans (59.345042ms)
+✔ published repository grant schemas reject open and malformed evidence (12.094584ms)
+✔ repository task grants are canonical identity-bearing task artifacts (1.703459ms)
+✔ repository task grant definitions fail closed (0.619917ms)
+✔ repository grant plans bind all exact resources and intersect the whole-run ceiling (2412.231083ms)
+✔ application schemas accept exact codec evidence and reject malformed copies (32.0745ms)
+✔ application conflict inspection classifies equal, prefix, alias, and disjoint paths (35.916ms)
+✔ public apply preserves current Git dirty, untracked, ignored, and index state (20838.703792ms)
+✔ public apply preserves independent edits across structural candidate effects (4870.521208ms)
+✔ public apply on an unmoved basis publishes candidate bytes and records applied (3972.181083ms)
+✔ public apply refuses basis movement after durable planning and recovers exactly (4101.918833ms)
+✔ concurrent apply callers converge on one plan, publication, and terminal receipt (5012.336625ms)
+✔ public apply repairs interrupted settlement citation after reopen (3744.765167ms)
+✔ public apply recovers a carrier interruption after planned path writes (2897.798291ms)
+✔ public apply three-way merges disjoint candidate and current deltas (7378.121667ms)
+✔ public discard commits terminal authority before cleanup and recovers after reopen (7133.281583ms)
+✔ release receipt schema accepts exact codec evidence and rejects malformed copies (25.915291ms)
+✔ public release preserves advanced user bytes and retained custody (3100.28775ms)
+✔ public release preserves Git HEAD, index, dirty, untracked, and ignored state (8318.295417ms)
+✔ public release recovers terminal and citation interruptions after reopen (6311.337709ms)
+✔ concurrent and fresh-process release callers converge on one receipt (3189.296875ms)
+✔ release cannot replace interrupted select or apply publication (7104.068708ms)
+✔ release refuses missing custody and other settlement actions (9193.741041ms)
+✔ createRetainedWorldRunner returns one closed frozen registration handle (0.876625ms)
+✔ createRetainedWorldRunner rejects malformed and open definitions (0.324042ms)
+✔ public select publishes one exact retained world and replays after reopen (7819.072917ms)
+✔ selection custody faults never invent a terminal settlement receipt (11622.861166ms)
+✔ public select refuses movement at both pre-write basis checks (4629.504917ms)
+✔ public select repairs carrier publication left before store terminal retention (6322.721042ms)
+✔ public select repairs interrupted settlement citation publication (3508.062958ms)
+✔ the scope world adapter forks, merges, discards, and replays retained receipts (6494.172959ms)
+✔ the scope world adapter requires a parent scope holding world custody (867.121792ms)
+✔ the scope world adapter forks a source custody's current tree as a nested scope (13282.856625ms)
+✔ an interrupted nested merge converges on retry after its rebase fork and after its seal (10047.686916ms)
+✔ a nested merge whose reserved seal command names a plain discard is refused (2024.077625ms)
+✔ selection publication codecs bind an exact ordered plan and terminal receipt (3.434416ms)
+✔ selection publication codecs support an empty reconstructive plan (0.427333ms)
+✔ selection schedules order construction parents first and removed directories last (1.427792ms)
+✔ selection schedules preserve canonical order for unrelated paths and empty plans (0.265459ms)
+✔ scheduled publication codecs bind effects to exact dependency order (1.767208ms)
+✔ scheduled publication codecs reject crossed plans and schedules (2.32925ms)
+✔ selection publication plans reject altered authority and malformed changes (1.156541ms)
+✔ selection publication validation snapshots exact data and rejects invalid node variants (0.828083ms)
+✔ selection publication codecs enforce configured path, content, and record bounds (4.284875ms)
+✔ selection step prefixes cannot cross plans (0.523917ms)
+✔ published selection publication schema accepts every codec record kind (40.384292ms)
+✔ captureTaskWorldDurably retains isolated runner changes inside the terminal cut (36546.470709ms)
+✔ placed granted capture retains visible auto fallback before runner execution (19152.7255ms)
+✔ granted task-world execution enforces effective authority and exact recovery (28459.088583ms)
+✔ workspace facade exposes only workspace-owned runtime symbols (1.000042ms)
+ℹ tests 1340
+ℹ suites 0
+ℹ pass 1331
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 7
+ℹ todo 0
+ℹ duration_ms 170854.02875
+
+✖ failing tests:
+
+test at test/provider/live-provider.test.ts:506:1
+✖ the default transport posts the serialized request with fetch (7.493ms)
+  Error: listen EPERM: operation not permitted 127.0.0.1
+      at Server.setupListenHandle [as _listen2] (node:net:1987:21)
+      at listenInCluster (node:net:2066:12)
+      at node:net:2275:7
+      at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+    code: 'EPERM',
+    errno: -1,
+    syscall: 'listen',
+    address: '127.0.0.1'
+  }
+
+test at test/workspace/carrier-conformance.test.ts:219:5
+✖ clone carrier fails closed on a macOS filesystem without clonefile support (1039.694625ms)
+  Error: Command failed: hdiutil create -size 16m -fs HFS+ -volname shepherd /var/folders/0j/wb65bshn24qg0tk9bm7jgdpc0000gn/T/shepherd-carrier-hfs-8syDmo/volume.dmg
+  hdiutil: WARNING: 'hdiutil create -size -volname ...' is deprecated. Please use 'diskutil image create from/blank -size --volumeName ...' instead.
+  hdiutil: create failed - Device not configured
+  
+      at genericNodeError (node:internal/errors:985:15)
+      at wrappedFn (node:internal/errors:539:14)
+      at checkExecSyncError (node:child_process:925:11)
+      at execFileSync (node:child_process:961:15)
+      at TestContext.<anonymous> (file:///Users/avnionur/src/github/personal/shepherd-typescript/test/workspace/carrier-conformance.test.ts:224:9)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    status: 1,
+    signal: null,
+    output: [ null, <Buffer >, <Buffer 68 64 69 75 74 69 6c 3a 20 57 41 52 4e 49 4e 47 3a 20 27 68 64 69 75 74 69 6c 20 63 72 65 61 74 65 20 2d 73 69 7a 65 20 2d 76 6f 6c 6e 61 6d 65 20 2e ... 144 more bytes> ],
+    pid: 74049,
+    stdout: <Buffer >,
+    stderr: <Buffer 68 64 69 75 74 69 6c 3a 20 57 41 52 4e 49 4e 47 3a 20 27 68 64 69 75 74 69 6c 20 63 72 65 61 74 65 20 2d 73 69 7a 65 20 2d 76 6f 6c 6e 61 6d 65 20 2e ... 144 more bytes>
+  }
+# start of merged coverage report
+# file                                                | line % | branch % | funcs % | uncovered lines
+# src/agent/bindings.ts                               | 100.00 |   100.00 |  100.00 |
+# src/agent/meta-agent-tools.ts                       | 100.00 |   100.00 |  100.00 |
+# src/agent/tool-effect-scope.ts                      | 100.00 |   100.00 |  100.00 |
+# src/agent/tool-loop.ts                              | 100.00 |   100.00 |  100.00 |
+# src/append/plan.ts                                  | 100.00 |   100.00 |  100.00 |
+# src/append/validation.ts                            | 100.00 |   100.00 |  100.00 |
+# src/applications/coding-supervisor.ts               | 100.00 |   100.00 |  100.00 |
+# src/applications/compression-records.ts             | 100.00 |   100.00 |  100.00 |
+# src/applications/counterfactual-gate.ts             | 100.00 |   100.00 |  100.00 |
+# src/applications/counterfactual-optimizer.ts        | 100.00 |   100.00 |  100.00 |
+# src/applications/counterfactual-proposer.ts         | 100.00 |   100.00 |  100.00 |
+# src/applications/counterfactual-records.ts          | 100.00 |   100.00 |  100.00 |
+# src/applications/errors.ts                          | 100.00 |   100.00 |  100.00 |
+# src/applications/evaluation.ts                      | 100.00 |   100.00 |  100.00 |
+# src/applications/manifest.ts                        | 100.00 |   100.00 |  100.00 |
+# src/applications/protocol-schemas.ts                | 100.00 |   100.00 |  100.00 |
+# src/applications/records.ts                         | 100.00 |   100.00 |  100.00 |
+# src/applications/runtime-supervisor-policy.ts       | 100.00 |   100.00 |  100.00 |
+# src/applications/runtime-supervisor-records.ts      | 100.00 |   100.00 |  100.00 |
+# src/applications/runtime-supervisor-schema.ts       | 100.00 |   100.00 |  100.00 |
+# src/applications/runtime-supervisor.ts              | 100.00 |   100.00 |  100.00 |
+# src/applications/trajectory-compression.ts          | 100.00 |   100.00 |  100.00 |
+# src/applications/tree-rl-records.ts                 | 100.00 |   100.00 |  100.00 |
+# src/applications/tree-rl.ts                         | 100.00 |   100.00 |  100.00 |
+# src/blob/directory-durability.ts                    | 100.00 |   100.00 |  100.00 |
+# src/blob/filesystem.ts                              | 100.00 |   100.00 |  100.00 |
+# src/blob/identity.ts                                | 100.00 |   100.00 |  100.00 |
+# src/blob/orphans.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/canonical/canonical-record.ts                   | 100.00 |   100.00 |  100.00 |
+# src/canonical/errors.ts                             | 100.00 |   100.00 |  100.00 |
+# src/canonical/framing.ts                            | 100.00 |   100.00 |  100.00 |
+# src/canonical/json-text.ts                          | 100.00 |   100.00 |  100.00 |
+# src/canonical/snapshot.ts                           | 100.00 |   100.00 |  100.00 |
+# src/cli/arguments.ts                                | 100.00 |   100.00 |  100.00 |
+# src/cli/cli.ts                                      | 100.00 |   100.00 |  100.00 |
+# src/cli/errors.ts                                   | 100.00 |   100.00 |  100.00 |
+# src/cli/handlers.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/cli/main.ts                                     | 100.00 |   100.00 |  100.00 |
+# src/cli/store-handlers.ts                           | 100.00 |   100.00 |  100.00 |
+# src/cli/trace-handlers.ts                           | 100.00 |   100.00 |  100.00 |
+# src/delegation/authority.ts                         | 100.00 |   100.00 |  100.00 |
+# src/delegation/commands.ts                          | 100.00 |   100.00 |  100.00 |
+# src/delegation/errors.ts                            | 100.00 |   100.00 |  100.00 |
+# src/delegation/handle.ts                            | 100.00 |   100.00 |  100.00 |
+# src/delegation/inspection.ts                        | 100.00 |   100.00 |  100.00 |
+# src/delegation/observe.ts                           | 100.00 |   100.00 |  100.00 |
+# src/delegation/projection.ts                        | 100.00 |   100.00 |  100.00 |
+# src/delegation/records.ts                           | 100.00 |   100.00 |  100.00 |
+# src/effect/compensation-errors.ts                   | 100.00 |   100.00 |  100.00 |
+# src/effect/compensation-evidence.ts                 | 100.00 |   100.00 |  100.00 |
+# src/effect/compensation-records.ts                  | 100.00 |   100.00 |  100.00 |
+# src/effect/compensation.ts                          | 100.00 |   100.00 |  100.00 |
+# src/effect/handler-errors.ts                        | 100.00 |   100.00 |  100.00 |
+# src/effect/handlers.ts                              | 100.00 |   100.00 |  100.00 |
+# src/effect/records.ts                               | 100.00 |   100.00 |  100.00 |
+# src/effect/typed-handler.ts                         | 100.00 |   100.00 |  100.00 |
+# src/effect/validation.ts                            | 100.00 |   100.00 |  100.00 |
+# src/errors/configuration-asset.ts                   | 100.00 |   100.00 |  100.00 |
+# src/errors/public-errors.ts                         | 100.00 |   100.00 |  100.00 |
+# src/facades/applications.ts                         | 100.00 |   100.00 |  100.00 |
+# src/facades/canonical.ts                            | 100.00 |   100.00 |  100.00 |
+# src/facades/cli.ts                                  | 100.00 |   100.00 |  100.00 |
+# src/facades/delegation.ts                           | 100.00 |   100.00 |  100.00 |
+# src/facades/effects.ts                              | 100.00 |   100.00 |  100.00 |
+# src/facades/operations.ts                           | 100.00 |   100.00 |  100.00 |
+# src/facades/providers.ts                            | 100.00 |   100.00 |  100.00 |
+# src/facades/read.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/facades/replay.ts                               | 100.00 |   100.00 |  100.00 |
+# src/facades/runs.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/facades/scopes.ts                               | 100.00 |   100.00 |  100.00 |
+# src/facades/supervision.ts                          | 100.00 |   100.00 |  100.00 |
+# src/facades/tasks.ts                                | 100.00 |   100.00 |  100.00 |
+# src/facades/trace.ts                                | 100.00 |   100.00 |  100.00 |
+# src/facades/workspace.ts                            | 100.00 |   100.00 |  100.00 |
+# src/formal/content-ref.ts                           | 100.00 |   100.00 |  100.00 |
+# src/formal/errors.ts                                | 100.00 |   100.00 |  100.00 |
+# src/formal/inspection-envelope.ts                   | 100.00 |   100.00 |  100.00 |
+# src/formal/proof-envelope.ts                        | 100.00 |   100.00 |  100.00 |
+# src/formal/strong-evidence.ts                       | 100.00 |   100.00 |  100.00 |
+# src/formal/trace-machine.ts                         | 100.00 |   100.00 |  100.00 |
+# src/index.ts                                        | 100.00 |   100.00 |  100.00 |
+# src/interchange/decode.ts                           | 100.00 |   100.00 |  100.00 |
+# src/interchange/errors.ts                           | 100.00 |   100.00 |  100.00 |
+# src/interchange/export.ts                           | 100.00 |   100.00 |  100.00 |
+# src/interchange/import.ts                           | 100.00 |   100.00 |  100.00 |
+# src/interchange/limits.ts                           | 100.00 |   100.00 |  100.00 |
+# src/interchange/storage.ts                          | 100.00 |   100.00 |  100.00 |
+# src/ledger/bounds.ts                                | 100.00 |   100.00 |  100.00 |
+# src/ledger/output-citations.ts                      | 100.00 |   100.00 |  100.00 |
+# src/ledger/recovery-records.ts                      | 100.00 |   100.00 |  100.00 |
+# src/ledger/run-ledger.ts                            |  98.04 |   100.00 |   90.91 | 131-133
+# src/ledger/selector-errors.ts                       | 100.00 |   100.00 |  100.00 |
+# src/ledger/task-ledger.ts                           | 100.00 |   100.00 |  100.00 |
+# src/ledger/trace-revisions.ts                       | 100.00 |   100.00 |  100.00 |
+# src/observability/exporter.ts                       | 100.00 |   100.00 |  100.00 |
+# src/observability/jsonl-sink.ts                     | 100.00 |   100.00 |  100.00 |
+# src/observability/mapping.ts                        | 100.00 |   100.00 |  100.00 |
+# src/operations/backup-manifest.ts                   | 100.00 |   100.00 |  100.00 |
+# src/operations/backup-staging.ts                    | 100.00 |   100.00 |  100.00 |
+# src/operations/backup.ts                            | 100.00 |   100.00 |  100.00 |
+# src/operations/errors.ts                            | 100.00 |   100.00 |  100.00 |
+# src/operations/replication.ts                       | 100.00 |   100.00 |  100.00 |
+# src/operations/restore.ts                           | 100.00 |   100.00 |  100.00 |
+# src/projection/compatibility.ts                     | 100.00 |   100.00 |  100.00 |
+# src/projection/execution.ts                         | 100.00 |   100.00 |  100.00 |
+# src/projection/history.ts                           | 100.00 |   100.00 |  100.00 |
+# src/projection/record-values.ts                     | 100.00 |   100.00 |  100.00 |
+# src/projection/relations.ts                         | 100.00 |   100.00 |  100.00 |
+# src/protocol/compatibility-constants.ts             | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-applications.ts                 | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-backup.ts                       | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-carrier-backends.ts             | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-cli.ts                          | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-compatibility.ts                | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-delegation.ts                   | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-device-layers.ts                | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-effects.ts                      | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-formal-assurance.ts             | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-observability.ts                | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-orphan-repair.ts                | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-projections.ts                  | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-providers.ts                    | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-replay.ts                       | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-retention.ts                    | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-runs.ts                         | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-scopes.ts                       | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-sections.ts                     | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-storage.ts                      | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-supervision.ts                  | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-tasks.ts                        | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-types.ts                        | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-validation.ts                   | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-value-readers.ts                | 100.00 |   100.00 |  100.00 |
+# src/protocol/config-workspaces.ts                   | 100.00 |   100.00 |  100.00 |
+# src/protocol/config.ts                              | 100.00 |   100.00 |  100.00 |
+# src/protocol/native-jail-evidence.ts                | 100.00 |   100.00 |  100.00 |
+# src/protocol/placement-evidence.ts                  | 100.00 |   100.00 |  100.00 |
+# src/protocol/repository-grant-evidence.ts           | 100.00 |   100.00 |  100.00 |
+# src/protocol/values.generated.ts                    | 100.00 |   100.00 |  100.00 |
+# src/provider/conversation.ts                        | 100.00 |   100.00 |  100.00 |
+# src/provider/errors.ts                              | 100.00 |   100.00 |  100.00 |
+# src/provider/live-dialects.ts                       | 100.00 |   100.00 |  100.00 |
+# src/provider/live-provider.ts                       |  96.50 |   100.00 |   94.74 | 191-202
+# src/provider/messages.ts                            | 100.00 |   100.00 |  100.00 |
+# src/provider/program-provider.ts                    | 100.00 |   100.00 |  100.00 |
+# src/provider/static-provider.ts                     | 100.00 |   100.00 |  100.00 |
+# src/provider/validation.ts                          | 100.00 |   100.00 |  100.00 |
+# src/record/envelope.ts                              | 100.00 |   100.00 |  100.00 |
+# src/record/guards.ts                                | 100.00 |   100.00 |  100.00 |
+# src/record/root-witness.ts                          | 100.00 |   100.00 |  100.00 |
+# src/record/snapshot.ts                              | 100.00 |   100.00 |  100.00 |
+# src/record/types.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/record/validation.ts                            | 100.00 |   100.00 |  100.00 |
+# src/repair/errors.ts                                | 100.00 |   100.00 |  100.00 |
+# src/replay/analysis.ts                              | 100.00 |   100.00 |  100.00 |
+# src/replay/branch.ts                                | 100.00 |   100.00 |  100.00 |
+# src/replay/errors.ts                                | 100.00 |   100.00 |  100.00 |
+# src/replay/inspection.ts                            | 100.00 |   100.00 |  100.00 |
+# src/replay/lineage.ts                               | 100.00 |   100.00 |  100.00 |
+# src/replay/processes.ts                             | 100.00 |   100.00 |  100.00 |
+# src/replay/proof-lowering.ts                        | 100.00 |   100.00 |  100.00 |
+# src/replay/records.ts                               | 100.00 |   100.00 |  100.00 |
+# src/replay/session.ts                               | 100.00 |   100.00 |  100.00 |
+# src/replay/world-image.ts                           | 100.00 |   100.00 |  100.00 |
+# src/retention/errors.ts                             | 100.00 |   100.00 |  100.00 |
+# src/retention/policy.ts                             | 100.00 |   100.00 |  100.00 |
+# src/retention/redacted-archive.ts                   | 100.00 |   100.00 |  100.00 |
+# src/retention/retention-report.ts                   | 100.00 |   100.00 |  100.00 |
+# src/retention/secret-scan.ts                        | 100.00 |   100.00 |  100.00 |
+# src/run/artifact-validation.ts                      | 100.00 |   100.00 |  100.00 |
+# src/run/artifacts.ts                                | 100.00 |   100.00 |  100.00 |
+# src/run/control-errors.ts                           | 100.00 |   100.00 |  100.00 |
+# src/run/control-validation.ts                       | 100.00 |   100.00 |  100.00 |
+# src/run/control.ts                                  | 100.00 |   100.00 |  100.00 |
+# src/run/durable-execution-codec.ts                  | 100.00 |   100.00 |  100.00 |
+# src/run/durable-execution-control-codec.ts          | 100.00 |   100.00 |  100.00 |
+# src/run/durable-execution-control.ts                | 100.00 |   100.00 |  100.00 |
+# src/run/durable-execution-creation.ts               | 100.00 |   100.00 |  100.00 |
+# src/run/durable-execution-cut.ts                    | 100.00 |   100.00 |  100.00 |
+# src/run/durable-execution-errors.ts                 | 100.00 |   100.00 |  100.00 |
+# src/run/durable-execution-inspection.ts             | 100.00 |   100.00 |  100.00 |
+# src/run/durable-execution-recovery.ts               | 100.00 |    99.44 |  100.00 |
+# src/run/durable-execution.ts                        | 100.00 |   100.00 |  100.00 |
+# src/run/execution-preparation.ts                    | 100.00 |   100.00 |  100.00 |
+# src/run/execution-results.ts                        | 100.00 |   100.00 |  100.00 |
+# src/run/execution-validation.ts                     | 100.00 |   100.00 |  100.00 |
+# src/run/execution.ts                                | 100.00 |   100.00 |  100.00 |
+# src/run/lifecycle.ts                                | 100.00 |   100.00 |  100.00 |
+# src/run/outcomes.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/run/usage-validation.ts                         | 100.00 |   100.00 |  100.00 |
+# src/run/usage.ts                                    | 100.00 |   100.00 |  100.00 |
+# src/run/validation-values.ts                        | 100.00 |   100.00 |  100.00 |
+# src/run/validation.ts                               | 100.00 |   100.00 |  100.00 |
+# src/runtime/policy.ts                               | 100.00 |   100.00 |  100.00 |
+# src/runtime/remove-path.ts                          | 100.00 |   100.00 |  100.00 |
+# src/runtime/sqlite-transaction.ts                   | 100.00 |   100.00 |  100.00 |
+# src/runtime/sqlite.ts                               | 100.00 |   100.00 |  100.00 |
+# src/schema/errors.ts                                | 100.00 |   100.00 |  100.00 |
+# src/schema/json-schema-validator.ts                 | 100.00 |   100.00 |  100.00 |
+# src/scope/authority.ts                              | 100.00 |   100.00 |  100.00 |
+# src/scope/checkpoint.ts                             | 100.00 |   100.00 |  100.00 |
+# src/scope/emission.ts                               | 100.00 |   100.00 |  100.00 |
+# src/scope/errors.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/scope/inspection.ts                             | 100.00 |   100.00 |  100.00 |
+# src/scope/records.ts                                | 100.00 |   100.00 |  100.00 |
+# src/scope/recovery.ts                               | 100.00 |   100.00 |  100.00 |
+# src/scope/registration.ts                           | 100.00 |   100.00 |  100.00 |
+# src/scope/replay.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/scope/terminal-records.ts                       | 100.00 |   100.00 |  100.00 |
+# src/scope/validation.ts                             | 100.00 |   100.00 |  100.00 |
+# src/scope/vocabulary.ts                             | 100.00 |   100.00 |  100.00 |
+# src/scope/world.ts                                  | 100.00 |   100.00 |  100.00 |
+# src/scope/writer.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/storage/blob-backend.ts                         | 100.00 |   100.00 |  100.00 |
+# src/storage/conformance.ts                          | 100.00 |   100.00 |  100.00 |
+# src/storage/coordination.ts                         | 100.00 |   100.00 |  100.00 |
+# src/storage/errors.ts                               | 100.00 |   100.00 |  100.00 |
+# src/storage/filesystem-blob-backend.ts              | 100.00 |   100.00 |  100.00 |
+# src/storage/memory-blob-backend.ts                  | 100.00 |   100.00 |  100.00 |
+# src/storage/memory-coordinator.ts                   | 100.00 |   100.00 |  100.00 |
+# src/storage/sqlite-coordinator.ts                   | 100.00 |   100.00 |  100.00 |
+# src/store/append-recovery.ts                        | 100.00 |   100.00 |  100.00 |
+# src/store/append.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/store/application-records.ts                    | 100.00 |   100.00 |  100.00 |
+# src/store/blob-options.ts                           | 100.00 |   100.00 |  100.00 |
+# src/store/blob-orphans.ts                           | 100.00 |   100.00 |  100.00 |
+# src/store/blobs.ts                                  | 100.00 |   100.00 |  100.00 |
+# src/store/codec.ts                                  | 100.00 |   100.00 |  100.00 |
+# src/store/constants.ts                              | 100.00 |   100.00 |  100.00 |
+# src/store/cuts.ts                                   | 100.00 |   100.00 |  100.00 |
+# src/store/delegation-handles.ts                     | 100.00 |   100.00 |  100.00 |
+# src/store/durable-execution-claims.ts               | 100.00 |   100.00 |  100.00 |
+# src/store/durable-execution-control.ts              | 100.00 |   100.00 |  100.00 |
+# src/store/effect-compensations.ts                   | 100.00 |   100.00 |  100.00 |
+# src/store/errors.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/store/file-mode.ts                              | 100.00 |   100.00 |  100.00 |
+# src/store/integrity-issues.ts                       | 100.00 |   100.00 |  100.00 |
+# src/store/integrity-owners.ts                       | 100.00 |   100.00 |  100.00 |
+# src/store/integrity-records.ts                      | 100.00 |   100.00 |  100.00 |
+# src/store/integrity.ts                              | 100.00 |   100.00 |  100.00 |
+# src/store/maintenance.ts                            | 100.00 |   100.00 |  100.00 |
+# src/store/migrations.ts                             | 100.00 |   100.00 |  100.00 |
+# src/store/orphan-operations.ts                      | 100.00 |   100.00 |  100.00 |
+# src/store/query-validation.ts                       | 100.00 |   100.00 |  100.00 |
+# src/store/read.ts                                   | 100.00 |   100.00 |  100.00 |
+# src/store/receipt-integrity.ts                      | 100.00 |   100.00 |  100.00 |
+# src/store/replay-sessions.ts                        | 100.00 |   100.00 |  100.00 |
+# src/store/retained-world-application-codec.ts       | 100.00 |   100.00 |  100.00 |
+# src/store/retained-world-settlement-codec.ts        | 100.00 |   100.00 |  100.00 |
+# src/store/retained-world-settlements.ts             | 100.00 |   100.00 |  100.00 |
+# src/store/scope-integrity.ts                        | 100.00 |   100.00 |  100.00 |
+# src/store/scope-registrations.ts                    | 100.00 |   100.00 |  100.00 |
+# src/store/scope-terminals.ts                        | 100.00 |   100.00 |  100.00 |
+# src/store/secret-scanning.ts                        | 100.00 |   100.00 |  100.00 |
+# src/store/slices.ts                                 | 100.00 |   100.00 |  100.00 |
+# src/store/sqlite-trace-store.ts                     | 100.00 |   100.00 |  100.00 |
+# src/store/statements.ts                             | 100.00 |   100.00 |  100.00 |
+# src/store/supervised-dispatches.ts                  | 100.00 |   100.00 |  100.00 |
+# src/store/trace-subscriptions.ts                    | 100.00 |   100.00 |  100.00 |
+# src/store/validation.ts                             | 100.00 |   100.00 |  100.00 |
+# src/supervision/control.ts                          | 100.00 |   100.00 |  100.00 |
+# src/supervision/dispatch-state.ts                   | 100.00 |   100.00 |  100.00 |
+# src/supervision/dispatch.ts                         | 100.00 |   100.00 |  100.00 |
+# src/supervision/errors.ts                           | 100.00 |   100.00 |  100.00 |
+# src/supervision/records.ts                          | 100.00 |   100.00 |  100.00 |
+# src/supervision/subscription.ts                     | 100.00 |   100.00 |  100.00 |
+# src/supervision/wait.ts                             | 100.00 |   100.00 |  100.00 |
+# src/task/descriptor.ts                              | 100.00 |   100.00 |  100.00 |
+# src/task/lock.ts                                    | 100.00 |   100.00 |  100.00 |
+# src/task/registry-codec.ts                          | 100.00 |   100.00 |  100.00 |
+# src/task/registry-constants.ts                      | 100.00 |   100.00 |  100.00 |
+# src/task/registry-errors.ts                         | 100.00 |   100.00 |  100.00 |
+# src/task/registry-migrations.ts                     | 100.00 |   100.00 |  100.00 |
+# src/task/schema-document.ts                         | 100.00 |   100.00 |  100.00 |
+# src/task/schema.ts                                  | 100.00 |   100.00 |  100.00 |
+# src/task/sqlite-task-registry.ts                    | 100.00 |   100.00 |  100.00 |
+# src/task/validation.ts                              | 100.00 |   100.00 |  100.00 |
+# src/task/value-codec.ts                             | 100.00 |   100.00 |  100.00 |
+# src/task/value.ts                                   | 100.00 |   100.00 |  100.00 |
+# src/workspace/bindings.ts                           | 100.00 |   100.00 |  100.00 |
+# src/workspace/carrier-backends.ts                   | 100.00 |   100.00 |  100.00 |
+# src/workspace/changeset-inspection.ts               | 100.00 |   100.00 |  100.00 |
+# src/workspace/changesets.ts                         | 100.00 |   100.00 |  100.00 |
+# src/workspace/device-layer-conformance.ts           | 100.00 |   100.00 |  100.00 |
+# src/workspace/device-layer-container.ts             | 100.00 |   100.00 |  100.00 |
+# src/workspace/device-layer.ts                       | 100.00 |   100.00 |  100.00 |
+# src/workspace/errors.ts                             | 100.00 |   100.00 |  100.00 |
+# src/workspace/git-aware-custody.ts                  | 100.00 |   100.00 |  100.00 |
+# src/workspace/git-changeset-inspection.ts           | 100.00 |   100.00 |  100.00 |
+# src/workspace/git-command.ts                        | 100.00 |   100.00 |  100.00 |
+# src/workspace/git-repository-evidence.ts            | 100.00 |   100.00 |  100.00 |
+# src/workspace/initialization.ts                     | 100.00 |   100.00 |  100.00 |
+# src/workspace/native-jail.ts                        | 100.00 |   100.00 |  100.00 |
+# src/workspace/placement.ts                          |  98.72 |   100.00 |   95.65 | 156-160
+# src/workspace/platform-conformance.ts               | 100.00 |   100.00 |  100.00 |
+# src/workspace/protected-control-paths.ts            | 100.00 |   100.00 |  100.00 |
+# src/workspace/reference-copy-carrier.ts             | 100.00 |   100.00 |  100.00 |
+# src/workspace/repository-grants.ts                  | 100.00 |   100.00 |  100.00 |
+# src/workspace/retained-world-application.ts         | 100.00 |   100.00 |  100.00 |
+# src/workspace/retained-world-runner.ts              | 100.00 |   100.00 |  100.00 |
+# src/workspace/retained-world-settlement-citation.ts | 100.00 |   100.00 |  100.00 |
+# src/workspace/retained-world-settlement.ts          | 100.00 |   100.00 |  100.00 |
+# src/workspace/scope-discard.ts                      | 100.00 |   100.00 |  100.00 |
+# src/workspace/scope-fork.ts                         | 100.00 |   100.00 |  100.00 |
+# src/workspace/scope-merge.ts                        | 100.00 |   100.00 |  100.00 |
+# src/workspace/scope-tree.ts                         | 100.00 |   100.00 |  100.00 |
+# src/workspace/scope-world-adapter.ts                | 100.00 |   100.00 |  100.00 |
+# src/workspace/selection-publication-codec.ts        | 100.00 |   100.00 |  100.00 |
+# src/workspace/task-world-execution.ts               |  88.41 |    96.85 |   84.75 | 252-260 263-269 378-390 626-633 766-814 824-825 921-923 1079-1080 1320-1334 1416-1433 1435-1449 1454-1455 1457-1474 1479-1491 1499
+# src/workspace/task-world-journal.ts                 |  80.28 |   100.00 |   90.00 | 97-136 141-142
+# tooling/api-reference/generator.ts                  | 100.00 |   100.00 |  100.00 |
+# tooling/benchmark/kernel-benchmark.ts               | 100.00 |   100.00 |  100.00 |
+# tooling/benchmark/kernel-dataset.ts                 | 100.00 |   100.00 |  100.00 |
+# tooling/benchmark/scope-benchmark-config.ts         | 100.00 |   100.00 |  100.00 |
+# tooling/build/output.ts                             | 100.00 |   100.00 |  100.00 |
+# tooling/compatibility/api-surface.ts                | 100.00 |   100.00 |  100.00 |
+# tooling/compatibility/policy.ts                     | 100.00 |   100.00 |  100.00 |
+# tooling/compatibility/protocol-surface.ts           | 100.00 |   100.00 |  100.00 |
+# tooling/evaluation/harness.ts                       | 100.00 |   100.00 |  100.00 |
+# tooling/evaluation/writer.ts                        | 100.00 |   100.00 |  100.00 |
+# tooling/protocol/generator.ts                       | 100.00 |   100.00 |  100.00 |
+# tooling/release/integrity-config.ts                 | 100.00 |   100.00 |  100.00 |
+# tooling/release/pack.ts                             | 100.00 |   100.00 |  100.00 |
+# tooling/release/packed-files.ts                     | 100.00 |   100.00 |  100.00 |
+# tooling/release/prepublish-guard.ts                 | 100.00 |   100.00 |  100.00 |
+# tooling/release/provenance.ts                       | 100.00 |   100.00 |  100.00 |
+# tooling/release/readme-links.ts                     | 100.00 |   100.00 |  100.00 |
+# tooling/release/reproducible-build.ts               | 100.00 |   100.00 |  100.00 |
+# tooling/release/sbom.ts                             | 100.00 |   100.00 |  100.00 |
+# tooling/release/version.ts                          | 100.00 |   100.00 |  100.00 |
+# tooling/testing/coverage-merge.ts                   | 100.00 |   100.00 |  100.00 |
+# all files                                           |  99.80 |    99.95 |   99.74 |
+# uncovered functions: src/ledger/run-ledger.ts:130
+# uncovered functions: src/provider/live-provider.ts:191
+# uncovered branches: src/run/durable-execution-recovery.ts:533,662
+# uncovered functions: src/workspace/placement.ts:155
+# uncovered branches: src/workspace/task-world-execution.ts:521,625,765,920,1043,1051,1078,1085
+# uncovered functions: src/workspace/task-world-execution.ts:251,377,782,791,800,1320,1416,1435,1457
+# uncovered functions: src/workspace/task-world-journal.ts:96
+# end of merged coverage report
+# Error: 99.80% line coverage does not meet threshold of 100%.
+# Error: 99.95% branch coverage does not meet threshold of 100%.
+# Error: 99.74% function coverage does not meet threshold of 100%.
+(node:18808) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ELIFECYCLE  Test failed. See above for more details.
+ ELIFECYCLE  Command failed with exit code 1.

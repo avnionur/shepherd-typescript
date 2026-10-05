@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.7.1] - 2026-10-05
+
+### Improvement
+
+- Publish an independent [empirical benchmark study](.plan/benchmarks/2026-10-05/paper.tex)
+  with fresh kernel, scope, carrier, checkpoint, device-layer, and local-provider evidence,
+  reproducible procedures, raw samples, and a matched direct-harness control.
+- Evaluate context selection on eight synthetic evidence tasks using a local model; distinguish
+  answer correctness, cited evidence, abstention, provider tokens, and durable result retention.
+- Retain the failed carrier-storage assertion and scope latency SLO miss alongside successful
+  correctness checks; document measurement validity and unmeasured framework/platform limits.
+
+### Impact
+
+Documentation and internal research PATCH. No public API, runtime behavior, dependencies, or
+benchmark budgets change. The study evaluates runtime version 12.0.3; this release adds its report.
+
 ## [13.7.0] - 2026-10-05
 
 ### New Feature

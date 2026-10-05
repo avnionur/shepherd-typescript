@@ -1,0 +1,36 @@
+{
+    "integrity": {
+        "checked_append_intent_count": 9,
+        "checked_blob_count": 0,
+        "checked_cut_count": 0,
+        "checked_owner_count": 3,
+        "checked_record_count": 10,
+        "checked_scope_count": 0,
+        "issues": [],
+        "ok": true
+    },
+    "imported_integrity": {
+        "checked_append_intent_count": 9,
+        "checked_blob_count": 0,
+        "checked_cut_count": 0,
+        "checked_owner_count": 3,
+        "checked_record_count": 10,
+        "checked_scope_count": 0,
+        "issues": [],
+        "ok": true
+    },
+    "imported_results": [
+        {
+            "session_id": "replay-session:sha256:efd8fb5cc87acaf5c56d3aeedb1eee55ba71e3ed5f2755636f0a6f162b73a68c",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:653674172da317df4a9a96c39305de86e07a091b035e0cf33a390c3932c33e18",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:b4cf419c75bf907f4c61ae738a25e714dd8b4c7cdf5b9305b584e2d725152c3e",
+            "equal": true
+        }
+    ]
+}

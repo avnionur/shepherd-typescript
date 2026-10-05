@@ -1,0 +1,595 @@
+{
+    "kernel": [
+        {
+            "metric": "append_latency_ms",
+            "unit": "ms",
+            "median_of_run_medians": 0.237,
+            "run_median_min": 0.201,
+            "run_median_max": 0.264,
+            "largest_run_p95": 0.34
+        },
+        {
+            "metric": "append_throughput_records_per_second",
+            "unit": "records/s",
+            "median_of_run_medians": 4338.863,
+            "run_median_min": 3898.505,
+            "run_median_max": 4431.316,
+            "largest_run_p95": 4656.605
+        },
+        {
+            "metric": "cut_resolve_ms",
+            "unit": "ms",
+            "median_of_run_medians": 78.244,
+            "run_median_min": 77.196,
+            "run_median_max": 78.929,
+            "largest_run_p95": 85.571
+        },
+        {
+            "metric": "slice_read_ms",
+            "unit": "ms",
+            "median_of_run_medians": 7.531,
+            "run_median_min": 7.448,
+            "run_median_max": 7.6,
+            "largest_run_p95": 9.448
+        },
+        {
+            "metric": "subscription_pull_ms",
+            "unit": "ms",
+            "median_of_run_medians": 7.81,
+            "run_median_min": 7.668,
+            "run_median_max": 8.18,
+            "largest_run_p95": 9.662
+        },
+        {
+            "metric": "export_ms",
+            "unit": "ms",
+            "median_of_run_medians": 1210.095,
+            "run_median_min": 1184.644,
+            "run_median_max": 1217.992,
+            "largest_run_p95": 1344.787
+        },
+        {
+            "metric": "import_ms",
+            "unit": "ms",
+            "median_of_run_medians": 1941.849,
+            "run_median_min": 1927.505,
+            "run_median_max": 1953.478,
+            "largest_run_p95": 2153.22
+        },
+        {
+            "metric": "verify_ms",
+            "unit": "ms",
+            "median_of_run_medians": 708.786,
+            "run_median_min": 673.82,
+            "run_median_max": 709.402,
+            "largest_run_p95": 760.791
+        },
+        {
+            "metric": "gc_inspect_ms",
+            "unit": "ms",
+            "median_of_run_medians": 3.317,
+            "run_median_min": 3.096,
+            "run_median_max": 3.666,
+            "largest_run_p95": 3.944
+        },
+        {
+            "metric": "cli_startup_ms",
+            "unit": "ms",
+            "median_of_run_medians": 97.673,
+            "run_median_min": 90.076,
+            "run_median_max": 100.239,
+            "largest_run_p95": 117.702
+        }
+    ],
+    "agent_context": [
+        {
+            "harness": "direct",
+            "profile": "full",
+            "trials": 16,
+            "finished": 14,
+            "schema_valid": 14,
+            "correct_answer": 12,
+            "correct_evidence": 0,
+            "joint_success": 0,
+            "mean_prompt_tokens": 1403,
+            "mean_cached_prompt_tokens": 1001.625,
+            "mean_completion_tokens": 73.375,
+            "mean_request_bytes": 5844.25,
+            "median_elapsed_ms": 349.2823130000006,
+            "median_client_residual_ms": 0.4912285000009433
+        },
+        {
+            "harness": "direct",
+            "profile": "selected",
+            "trials": 16,
+            "finished": 16,
+            "schema_valid": 16,
+            "correct_answer": 16,
+            "correct_evidence": 14,
+            "joint_success": 14,
+            "mean_prompt_tokens": 233,
+            "mean_cached_prompt_tokens": 232,
+            "mean_completion_tokens": 22,
+            "mean_request_bytes": 930.25,
+            "median_elapsed_ms": 93.21325000000024,
+            "median_client_residual_ms": 0.27610399999957735
+        },
+        {
+            "harness": "direct",
+            "profile": "incomplete",
+            "trials": 16,
+            "finished": 13,
+            "schema_valid": 13,
+            "correct_answer": 0,
+            "correct_evidence": 0,
+            "joint_success": 0,
+            "mean_prompt_tokens": 1351,
+            "mean_cached_prompt_tokens": 1287,
+            "mean_completion_tokens": 41.4375,
+            "mean_request_bytes": 5658.125,
+            "median_elapsed_ms": 117.99714549999953,
+            "median_client_residual_ms": 0.47195800000008603
+        },
+        {
+            "harness": "shepherd",
+            "profile": "full",
+            "trials": 16,
+            "finished": 14,
+            "schema_valid": 14,
+            "correct_answer": 12,
+            "correct_evidence": 0,
+            "joint_success": 0,
+            "mean_prompt_tokens": 1403,
+            "mean_cached_prompt_tokens": 1402,
+            "mean_completion_tokens": 73.375,
+            "mean_request_bytes": 5844.25,
+            "median_elapsed_ms": 335.59966650000115,
+            "median_client_residual_ms": 6.824063000000933
+        },
+        {
+            "harness": "shepherd",
+            "profile": "selected",
+            "trials": 16,
+            "finished": 16,
+            "schema_valid": 16,
+            "correct_answer": 16,
+            "correct_evidence": 14,
+            "joint_success": 14,
+            "mean_prompt_tokens": 233,
+            "mean_cached_prompt_tokens": 143.9375,
+            "mean_completion_tokens": 22,
+            "mean_request_bytes": 930.25,
+            "median_elapsed_ms": 115.90327049999996,
+            "median_client_residual_ms": 4.9189795000003755
+        },
+        {
+            "harness": "shepherd",
+            "profile": "incomplete",
+            "trials": 16,
+            "finished": 13,
+            "schema_valid": 13,
+            "correct_answer": 0,
+            "correct_evidence": 0,
+            "joint_success": 0,
+            "mean_prompt_tokens": 1351,
+            "mean_cached_prompt_tokens": 1350,
+            "mean_completion_tokens": 41.4375,
+            "mean_request_bytes": 5658.125,
+            "median_elapsed_ms": 102.34633350000149,
+            "median_client_residual_ms": 8.487625499999922
+        }
+    ],
+    "cluster_bootstrap": {
+        "selected_minus_full_joint_success": 0.875,
+        "conditional_percentile_95_interval": [0.625, 1.0],
+        "task_clusters": 8,
+        "repetitions": 10000,
+        "seed": 20261005
+    },
+    "scope_correctness": {
+        "passed": 150,
+        "checks": 150
+    },
+    "scope_slo": {
+        "checks": [
+            {
+                "bound": "max",
+                "budget": 4400,
+                "metric": "fork_ms/clone/large",
+                "ok": true,
+                "statistic": "p95",
+                "value": 1331.762
+            },
+            {
+                "bound": "max",
+                "budget": 3000,
+                "metric": "fork_ms/clone/medium",
+                "ok": true,
+                "statistic": "p95",
+                "value": 1996.053
+            },
+            {
+                "bound": "max",
+                "budget": 470,
+                "metric": "fork_ms/clone/small",
+                "ok": true,
+                "statistic": "p95",
+                "value": 190.753
+            },
+            {
+                "bound": "max",
+                "budget": 3000,
+                "metric": "fork_ms/copy/large",
+                "ok": true,
+                "statistic": "p95",
+                "value": 1287.515
+            },
+            {
+                "bound": "max",
+                "budget": 2800,
+                "metric": "fork_ms/copy/medium",
+                "ok": true,
+                "statistic": "p95",
+                "value": 981.714
+            },
+            {
+                "bound": "max",
+                "budget": 640,
+                "metric": "fork_ms/copy/small",
+                "ok": true,
+                "statistic": "p95",
+                "value": 174.01
+            },
+            {
+                "bound": "max",
+                "budget": 0.59,
+                "metric": "observe_ms/observers-1/steps-200",
+                "ok": true,
+                "statistic": "p95",
+                "value": 0.184
+            },
+            {
+                "bound": "max",
+                "budget": 0.53,
+                "metric": "observe_ms/observers-4/steps-200",
+                "ok": true,
+                "statistic": "p95",
+                "value": 0.273
+            },
+            {
+                "bound": "max",
+                "budget": 4.5,
+                "metric": "record_ms/observers-0/steps-200",
+                "ok": true,
+                "statistic": "p95",
+                "value": 1.248
+            },
+            {
+                "bound": "max",
+                "budget": 3.3,
+                "metric": "record_ms/observers-1/steps-200",
+                "ok": true,
+                "statistic": "p95",
+                "value": 1.284
+            },
+            {
+                "bound": "max",
+                "budget": 4,
+                "metric": "record_ms/observers-4/steps-200",
+                "ok": true,
+                "statistic": "p95",
+                "value": 2.097
+            },
+            {
+                "bound": "max",
+                "budget": 530,
+                "metric": "revert_ms/clone/large",
+                "ok": true,
+                "statistic": "p95",
+                "value": 206.448
+            },
+            {
+                "bound": "max",
+                "budget": 250,
+                "metric": "revert_ms/clone/medium",
+                "ok": false,
+                "statistic": "p95",
+                "value": 314.139
+            },
+            {
+                "bound": "max",
+                "budget": 130,
+                "metric": "revert_ms/clone/small",
+                "ok": true,
+                "statistic": "p95",
+                "value": 51.119
+            },
+            {
+                "bound": "max",
+                "budget": 580,
+                "metric": "revert_ms/copy/large",
+                "ok": true,
+                "statistic": "p95",
+                "value": 264.182
+            },
+            {
+                "bound": "max",
+                "budget": 580,
+                "metric": "revert_ms/copy/medium",
+                "ok": true,
+                "statistic": "p95",
+                "value": 140.24
+            },
+            {
+                "bound": "max",
+                "budget": 180,
+                "metric": "revert_ms/copy/small",
+                "ok": true,
+                "statistic": "p95",
+                "value": 51.225
+            }
+        ],
+        "host_class": "macos-arm64-apfs",
+        "ok": false
+    },
+    "kernel_slo": [
+        {
+            "checks": [
+                {
+                    "bound": "max",
+                    "budget": 1.1,
+                    "metric": "append_latency_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 0.318
+                },
+                {
+                    "bound": "min",
+                    "budget": 1400,
+                    "metric": "append_throughput_records_per_second",
+                    "ok": true,
+                    "statistic": "median",
+                    "value": 4338.863
+                },
+                {
+                    "bound": "max",
+                    "budget": 240,
+                    "metric": "cli_startup_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 106.333
+                },
+                {
+                    "bound": "max",
+                    "budget": 210,
+                    "metric": "cut_resolve_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 85.571
+                },
+                {
+                    "bound": "max",
+                    "budget": 3000,
+                    "metric": "export_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 1344.787
+                },
+                {
+                    "bound": "max",
+                    "budget": 10,
+                    "metric": "gc_inspect_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 3.483
+                },
+                {
+                    "bound": "max",
+                    "budget": 5400,
+                    "metric": "import_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 1967.498
+                },
+                {
+                    "bound": "max",
+                    "budget": 30,
+                    "metric": "slice_read_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 9.15
+                },
+                {
+                    "bound": "max",
+                    "budget": 26,
+                    "metric": "subscription_pull_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 9.662
+                },
+                {
+                    "bound": "max",
+                    "budget": 1800,
+                    "metric": "verify_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 687.199
+                }
+            ],
+            "host_class": "macos-arm64-apfs",
+            "ok": true
+        },
+        {
+            "checks": [
+                {
+                    "bound": "max",
+                    "budget": 1.1,
+                    "metric": "append_latency_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 0.236
+                },
+                {
+                    "bound": "min",
+                    "budget": 1400,
+                    "metric": "append_throughput_records_per_second",
+                    "ok": true,
+                    "statistic": "median",
+                    "value": 4431.316
+                },
+                {
+                    "bound": "max",
+                    "budget": 240,
+                    "metric": "cli_startup_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 117.702
+                },
+                {
+                    "bound": "max",
+                    "budget": 210,
+                    "metric": "cut_resolve_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 79.447
+                },
+                {
+                    "bound": "max",
+                    "budget": 3000,
+                    "metric": "export_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 1207.927
+                },
+                {
+                    "bound": "max",
+                    "budget": 10,
+                    "metric": "gc_inspect_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 3.628
+                },
+                {
+                    "bound": "max",
+                    "budget": 5400,
+                    "metric": "import_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 1995.681
+                },
+                {
+                    "bound": "max",
+                    "budget": 30,
+                    "metric": "slice_read_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 9.448
+                },
+                {
+                    "bound": "max",
+                    "budget": 26,
+                    "metric": "subscription_pull_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 9.007
+                },
+                {
+                    "bound": "max",
+                    "budget": 1800,
+                    "metric": "verify_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 747.721
+                }
+            ],
+            "host_class": "macos-arm64-apfs",
+            "ok": true
+        },
+        {
+            "checks": [
+                {
+                    "bound": "max",
+                    "budget": 1.1,
+                    "metric": "append_latency_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 0.34
+                },
+                {
+                    "bound": "min",
+                    "budget": 1400,
+                    "metric": "append_throughput_records_per_second",
+                    "ok": true,
+                    "statistic": "median",
+                    "value": 3898.505
+                },
+                {
+                    "bound": "max",
+                    "budget": 240,
+                    "metric": "cli_startup_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 107.202
+                },
+                {
+                    "bound": "max",
+                    "budget": 210,
+                    "metric": "cut_resolve_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 79.504
+                },
+                {
+                    "bound": "max",
+                    "budget": 3000,
+                    "metric": "export_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 1284.381
+                },
+                {
+                    "bound": "max",
+                    "budget": 10,
+                    "metric": "gc_inspect_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 3.944
+                },
+                {
+                    "bound": "max",
+                    "budget": 5400,
+                    "metric": "import_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 2153.22
+                },
+                {
+                    "bound": "max",
+                    "budget": 30,
+                    "metric": "slice_read_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 9.004
+                },
+                {
+                    "bound": "max",
+                    "budget": 26,
+                    "metric": "subscription_pull_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 9.234
+                },
+                {
+                    "bound": "max",
+                    "budget": 1800,
+                    "metric": "verify_ms",
+                    "ok": true,
+                    "statistic": "p95",
+                    "value": 760.791
+                }
+            ],
+            "host_class": "macos-arm64-apfs",
+            "ok": true
+        }
+    ]
+}

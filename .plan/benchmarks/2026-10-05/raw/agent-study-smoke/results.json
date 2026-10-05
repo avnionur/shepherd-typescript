@@ -1,0 +1,463 @@
+[
+    {
+        "id": "task-1-17-full-direct",
+        "task": "task-1",
+        "seed": 17,
+        "profile": "full",
+        "harness": "direct",
+        "terminal": "finished",
+        "output": {
+            "answer": "channel-13",
+            "evidence": [
+                "noise-13"
+            ]
+        },
+        "usage": {
+            "cacheCreationInputTokens": 0,
+            "cacheReadInputTokens": 0,
+            "costUsd": null,
+            "inputTokens": 1401,
+            "outputTokens": 24
+        },
+        "error": null,
+        "schema_valid": true,
+        "answer_correct": false,
+        "evidence_correct": false,
+        "success": false,
+        "elapsed_ms": 1663.071792,
+        "transport_ms": 1661.686208,
+        "request_bytes": 5847,
+        "repeat_without_provider_call": null,
+        "reopened_result_equal": null,
+        "exchanges": [
+            {
+                "body": {
+                    "model": "qwen2.5-coder:0.5b",
+                    "response_format": {
+                        "json_schema": {
+                            "name": "shepherd_output",
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "answer": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "evidence": {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "required": [
+                                    "answer",
+                                    "evidence"
+                                ],
+                                "type": "object"
+                            },
+                            "strict": false
+                        },
+                        "type": "json_schema"
+                    },
+                    "messages": [
+                        {
+                            "content": "{\"input\":{\"documents\":[{\"id\":\"noise-0\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-0\",\"revision\":1,\"value\":\"channel-0\"},{\"id\":\"noise-1\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-1\",\"revision\":2,\"value\":\"channel-1\"},{\"id\":\"noise-2\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-2\",\"revision\":3,\"value\":\"channel-2\"},{\"id\":\"noise-3\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-3\",\"revision\":1,\"value\":\"channel-3\"},{\"id\":\"noise-4\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-4\",\"revision\":2,\"value\":\"channel-4\"},{\"id\":\"noise-5\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-5\",\"revision\":3,\"value\":\"channel-5\"},{\"id\":\"noise-6\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-6\",\"revision\":1,\"value\":\"channel-6\"},{\"id\":\"noise-7\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-7\",\"revision\":2,\"value\":\"channel-7\"},{\"id\":\"noise-8\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-8\",\"revision\":3,\"value\":\"channel-8\"},{\"id\":\"noise-9\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-9\",\"revision\":1,\"value\":\"channel-9\"},{\"id\":\"noise-10\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-10\",\"revision\":2,\"value\":\"channel-10\"},{\"id\":\"noise-11\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-11\",\"revision\":3,\"value\":\"channel-11\"},{\"id\":\"old-1\",\"key\":\"release_channel\",\"project\":\"project-1\",\"revision\":1,\"value\":\"obsolete\"},{\"id\":\"current-1\",\"key\":\"release_channel\",\"project\":\"project-1\",\"revision\":2,\"value\":\"stable\"},{\"id\":\"noise-12\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-12\",\"revision\":1,\"value\":\"channel-12\"},{\"id\":\"noise-13\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-13\",\"revision\":2,\"value\":\"channel-13\"},{\"id\":\"noise-14\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-14\",\"revision\":3,\"value\":\"channel-14\"},{\"id\":\"noise-15\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-15\",\"revision\":1,\"value\":\"channel-15\"},{\"id\":\"noise-16\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-16\",\"revision\":2,\"value\":\"channel-16\"},{\"id\":\"noise-17\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-17\",\"revision\":3,\"value\":\"channel-17\"},{\"id\":\"noise-18\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-18\",\"revision\":1,\"value\":\"channel-18\"},{\"id\":\"noise-19\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-19\",\"revision\":2,\"value\":\"channel-19\"},{\"id\":\"noise-20\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-20\",\"revision\":3,\"value\":\"channel-20\"},{\"id\":\"noise-21\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-21\",\"revision\":1,\"value\":\"channel-21\"},{\"id\":\"noise-22\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-22\",\"revision\":2,\"value\":\"channel-22\"},{\"id\":\"noise-23\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-23\",\"revision\":3,\"value\":\"channel-23\"}],\"question\":\"What is the current release_channel for project-1?\"},\"instruction\":\"Answer the question only from the supplied documents. For the requested project and key, use the document with the highest numeric revision. Return JSON with exactly answer and evidence fields. answer must be the exact value string, and evidence must be an array containing the id of the document used. If no document provides the requested project and key, return {\\\"answer\\\":null,\\\"evidence\\\":[]}. Do not guess or use unrelated projects.\",\"output_schema\":{\"additionalProperties\":false,\"properties\":{\"answer\":{\"type\":[\"string\",\"null\"]},\"evidence\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"answer\",\"evidence\"],\"type\":\"object\"}}",
+                            "role": "user"
+                        }
+                    ],
+                    "temperature": 0.2,
+                    "max_tokens": 128,
+                    "seed": 17
+                },
+                "response_body": "{\"id\":\"chatcmpl-613\",\"object\":\"chat.completion\",\"created\":1791190113,\"model\":\"qwen2.5-coder:0.5b\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"answer\\\": \\\"channel-13\\\",\\n  \\\"evidence\\\": [\\\"noise-13\\\"]\\n}\"},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":1401,\"prompt_tokens_details\":{\"cached_tokens\":0},\"completion_tokens\":24,\"total_tokens\":1425}}\n",
+                "status": 200,
+                "elapsed_ms": 1661.686208,
+                "body_sha256": "13e6f761d17c9e37aad02f69f1d67ed04d5fc9e8fcecbf0a803e6c8643b47d82"
+            }
+        ]
+    },
+    {
+        "id": "task-1-17-full-shepherd",
+        "task": "task-1",
+        "seed": 17,
+        "profile": "full",
+        "harness": "shepherd",
+        "terminal": "finished",
+        "output": {
+            "answer": "channel-13",
+            "evidence": [
+                "noise-13"
+            ]
+        },
+        "usage": {
+            "cacheCreationInputTokens": 0,
+            "cacheReadInputTokens": 1400,
+            "costUsd": null,
+            "inputTokens": 1,
+            "outputTokens": 24
+        },
+        "error": null,
+        "schema_valid": true,
+        "answer_correct": false,
+        "evidence_correct": false,
+        "success": false,
+        "elapsed_ms": 172.14033299999983,
+        "transport_ms": 163.03091600000016,
+        "request_bytes": 5847,
+        "repeat_without_provider_call": true,
+        "reopened_result_equal": true,
+        "exchanges": [
+            {
+                "body": {
+                    "model": "qwen2.5-coder:0.5b",
+                    "response_format": {
+                        "json_schema": {
+                            "name": "shepherd_output",
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "answer": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "evidence": {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "required": [
+                                    "answer",
+                                    "evidence"
+                                ],
+                                "type": "object"
+                            },
+                            "strict": false
+                        },
+                        "type": "json_schema"
+                    },
+                    "messages": [
+                        {
+                            "content": "{\"input\":{\"documents\":[{\"id\":\"noise-0\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-0\",\"revision\":1,\"value\":\"channel-0\"},{\"id\":\"noise-1\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-1\",\"revision\":2,\"value\":\"channel-1\"},{\"id\":\"noise-2\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-2\",\"revision\":3,\"value\":\"channel-2\"},{\"id\":\"noise-3\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-3\",\"revision\":1,\"value\":\"channel-3\"},{\"id\":\"noise-4\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-4\",\"revision\":2,\"value\":\"channel-4\"},{\"id\":\"noise-5\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-5\",\"revision\":3,\"value\":\"channel-5\"},{\"id\":\"noise-6\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-6\",\"revision\":1,\"value\":\"channel-6\"},{\"id\":\"noise-7\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-7\",\"revision\":2,\"value\":\"channel-7\"},{\"id\":\"noise-8\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-8\",\"revision\":3,\"value\":\"channel-8\"},{\"id\":\"noise-9\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-9\",\"revision\":1,\"value\":\"channel-9\"},{\"id\":\"noise-10\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-10\",\"revision\":2,\"value\":\"channel-10\"},{\"id\":\"noise-11\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-11\",\"revision\":3,\"value\":\"channel-11\"},{\"id\":\"old-1\",\"key\":\"release_channel\",\"project\":\"project-1\",\"revision\":1,\"value\":\"obsolete\"},{\"id\":\"current-1\",\"key\":\"release_channel\",\"project\":\"project-1\",\"revision\":2,\"value\":\"stable\"},{\"id\":\"noise-12\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-12\",\"revision\":1,\"value\":\"channel-12\"},{\"id\":\"noise-13\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-13\",\"revision\":2,\"value\":\"channel-13\"},{\"id\":\"noise-14\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-14\",\"revision\":3,\"value\":\"channel-14\"},{\"id\":\"noise-15\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-15\",\"revision\":1,\"value\":\"channel-15\"},{\"id\":\"noise-16\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-16\",\"revision\":2,\"value\":\"channel-16\"},{\"id\":\"noise-17\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-17\",\"revision\":3,\"value\":\"channel-17\"},{\"id\":\"noise-18\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-18\",\"revision\":1,\"value\":\"channel-18\"},{\"id\":\"noise-19\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-19\",\"revision\":2,\"value\":\"channel-19\"},{\"id\":\"noise-20\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-20\",\"revision\":3,\"value\":\"channel-20\"},{\"id\":\"noise-21\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-21\",\"revision\":1,\"value\":\"channel-21\"},{\"id\":\"noise-22\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-22\",\"revision\":2,\"value\":\"channel-22\"},{\"id\":\"noise-23\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-23\",\"revision\":3,\"value\":\"channel-23\"}],\"question\":\"What is the current release_channel for project-1?\"},\"instruction\":\"Answer the question only from the supplied documents. For the requested project and key, use the document with the highest numeric revision. Return JSON with exactly answer and evidence fields. answer must be the exact value string, and evidence must be an array containing the id of the document used. If no document provides the requested project and key, return {\\\"answer\\\":null,\\\"evidence\\\":[]}. Do not guess or use unrelated projects.\",\"output_schema\":{\"additionalProperties\":false,\"properties\":{\"answer\":{\"type\":[\"string\",\"null\"]},\"evidence\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"answer\",\"evidence\"],\"type\":\"object\"}}",
+                            "role": "user"
+                        }
+                    ],
+                    "temperature": 0.2,
+                    "max_tokens": 128,
+                    "seed": 17
+                },
+                "response_body": "{\"id\":\"chatcmpl-407\",\"object\":\"chat.completion\",\"created\":1791190113,\"model\":\"qwen2.5-coder:0.5b\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"answer\\\": \\\"channel-13\\\",\\n  \\\"evidence\\\": [\\\"noise-13\\\"]\\n}\"},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":1401,\"prompt_tokens_details\":{\"cached_tokens\":1400},\"completion_tokens\":24,\"total_tokens\":1425}}\n",
+                "status": 200,
+                "elapsed_ms": 163.03091600000016,
+                "body_sha256": "13e6f761d17c9e37aad02f69f1d67ed04d5fc9e8fcecbf0a803e6c8643b47d82"
+            }
+        ]
+    },
+    {
+        "id": "task-1-17-selected-shepherd",
+        "task": "task-1",
+        "seed": 17,
+        "profile": "selected",
+        "harness": "shepherd",
+        "terminal": "finished",
+        "output": {
+            "answer": "stable",
+            "evidence": [
+                "current-1"
+            ]
+        },
+        "usage": {
+            "cacheCreationInputTokens": 0,
+            "cacheReadInputTokens": 31,
+            "costUsd": null,
+            "inputTokens": 200,
+            "outputTokens": 20
+        },
+        "error": null,
+        "schema_valid": true,
+        "answer_correct": true,
+        "evidence_correct": true,
+        "success": true,
+        "elapsed_ms": 140.21512500000017,
+        "transport_ms": 135.09808399999974,
+        "request_bytes": 933,
+        "repeat_without_provider_call": true,
+        "reopened_result_equal": true,
+        "exchanges": [
+            {
+                "body": {
+                    "model": "qwen2.5-coder:0.5b",
+                    "response_format": {
+                        "json_schema": {
+                            "name": "shepherd_output",
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "answer": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "evidence": {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "required": [
+                                    "answer",
+                                    "evidence"
+                                ],
+                                "type": "object"
+                            },
+                            "strict": false
+                        },
+                        "type": "json_schema"
+                    },
+                    "messages": [
+                        {
+                            "content": "{\"input\":{\"documents\":[{\"id\":\"old-1\",\"key\":\"release_channel\",\"project\":\"project-1\",\"revision\":1,\"value\":\"obsolete\"},{\"id\":\"current-1\",\"key\":\"release_channel\",\"project\":\"project-1\",\"revision\":2,\"value\":\"stable\"}],\"question\":\"What is the current release_channel for project-1?\"},\"instruction\":\"Answer the question only from the supplied documents. For the requested project and key, use the document with the highest numeric revision. Return JSON with exactly answer and evidence fields. answer must be the exact value string, and evidence must be an array containing the id of the document used. If no document provides the requested project and key, return {\\\"answer\\\":null,\\\"evidence\\\":[]}. Do not guess or use unrelated projects.\",\"output_schema\":{\"additionalProperties\":false,\"properties\":{\"answer\":{\"type\":[\"string\",\"null\"]},\"evidence\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"answer\",\"evidence\"],\"type\":\"object\"}}",
+                            "role": "user"
+                        }
+                    ],
+                    "temperature": 0.2,
+                    "max_tokens": 128,
+                    "seed": 17
+                },
+                "response_body": "{\"id\":\"chatcmpl-348\",\"object\":\"chat.completion\",\"created\":1791190113,\"model\":\"qwen2.5-coder:0.5b\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"answer\\\": \\\"stable\\\",\\n  \\\"evidence\\\": [\\\"current-1\\\"]\\n}\"},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":231,\"prompt_tokens_details\":{\"cached_tokens\":31},\"completion_tokens\":20,\"total_tokens\":251}}\n",
+                "status": 200,
+                "elapsed_ms": 135.09808399999974,
+                "body_sha256": "847ba05285a5e8e36dfe64a1d333bb8ba86cb0bdebc641c13c5948ee9a8b4464"
+            }
+        ]
+    },
+    {
+        "id": "task-1-17-selected-direct",
+        "task": "task-1",
+        "seed": 17,
+        "profile": "selected",
+        "harness": "direct",
+        "terminal": "finished",
+        "output": {
+            "answer": "stable",
+            "evidence": [
+                "current-1"
+            ]
+        },
+        "usage": {
+            "cacheCreationInputTokens": 0,
+            "cacheReadInputTokens": 230,
+            "costUsd": null,
+            "inputTokens": 1,
+            "outputTokens": 20
+        },
+        "error": null,
+        "schema_valid": true,
+        "answer_correct": true,
+        "evidence_correct": true,
+        "success": true,
+        "elapsed_ms": 118.36700000000019,
+        "transport_ms": 118.0478750000002,
+        "request_bytes": 933,
+        "repeat_without_provider_call": null,
+        "reopened_result_equal": null,
+        "exchanges": [
+            {
+                "body": {
+                    "model": "qwen2.5-coder:0.5b",
+                    "response_format": {
+                        "json_schema": {
+                            "name": "shepherd_output",
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "answer": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "evidence": {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "required": [
+                                    "answer",
+                                    "evidence"
+                                ],
+                                "type": "object"
+                            },
+                            "strict": false
+                        },
+                        "type": "json_schema"
+                    },
+                    "messages": [
+                        {
+                            "content": "{\"input\":{\"documents\":[{\"id\":\"old-1\",\"key\":\"release_channel\",\"project\":\"project-1\",\"revision\":1,\"value\":\"obsolete\"},{\"id\":\"current-1\",\"key\":\"release_channel\",\"project\":\"project-1\",\"revision\":2,\"value\":\"stable\"}],\"question\":\"What is the current release_channel for project-1?\"},\"instruction\":\"Answer the question only from the supplied documents. For the requested project and key, use the document with the highest numeric revision. Return JSON with exactly answer and evidence fields. answer must be the exact value string, and evidence must be an array containing the id of the document used. If no document provides the requested project and key, return {\\\"answer\\\":null,\\\"evidence\\\":[]}. Do not guess or use unrelated projects.\",\"output_schema\":{\"additionalProperties\":false,\"properties\":{\"answer\":{\"type\":[\"string\",\"null\"]},\"evidence\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"answer\",\"evidence\"],\"type\":\"object\"}}",
+                            "role": "user"
+                        }
+                    ],
+                    "temperature": 0.2,
+                    "max_tokens": 128,
+                    "seed": 17
+                },
+                "response_body": "{\"id\":\"chatcmpl-235\",\"object\":\"chat.completion\",\"created\":1791190113,\"model\":\"qwen2.5-coder:0.5b\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"answer\\\": \\\"stable\\\",\\n  \\\"evidence\\\": [\\\"current-1\\\"]\\n}\"},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":231,\"prompt_tokens_details\":{\"cached_tokens\":230},\"completion_tokens\":20,\"total_tokens\":251}}\n",
+                "status": 200,
+                "elapsed_ms": 118.0478750000002,
+                "body_sha256": "847ba05285a5e8e36dfe64a1d333bb8ba86cb0bdebc641c13c5948ee9a8b4464"
+            }
+        ]
+    },
+    {
+        "id": "task-1-17-incomplete-direct",
+        "task": "task-1",
+        "seed": 17,
+        "profile": "incomplete",
+        "harness": "direct",
+        "terminal": null,
+        "output": null,
+        "usage": null,
+        "error": "LiveProviderError: live provider response is malformed or incomplete: incomplete stop reason length",
+        "schema_valid": false,
+        "answer_correct": false,
+        "evidence_correct": false,
+        "success": false,
+        "elapsed_ms": 766.9052500000003,
+        "transport_ms": 766.235666,
+        "request_bytes": 5659,
+        "repeat_without_provider_call": null,
+        "reopened_result_equal": null,
+        "exchanges": [
+            {
+                "body": {
+                    "model": "qwen2.5-coder:0.5b",
+                    "response_format": {
+                        "json_schema": {
+                            "name": "shepherd_output",
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "answer": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "evidence": {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "required": [
+                                    "answer",
+                                    "evidence"
+                                ],
+                                "type": "object"
+                            },
+                            "strict": false
+                        },
+                        "type": "json_schema"
+                    },
+                    "messages": [
+                        {
+                            "content": "{\"input\":{\"documents\":[{\"id\":\"noise-0\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-0\",\"revision\":1,\"value\":\"channel-0\"},{\"id\":\"noise-1\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-1\",\"revision\":2,\"value\":\"channel-1\"},{\"id\":\"noise-2\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-2\",\"revision\":3,\"value\":\"channel-2\"},{\"id\":\"noise-3\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-3\",\"revision\":1,\"value\":\"channel-3\"},{\"id\":\"noise-4\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-4\",\"revision\":2,\"value\":\"channel-4\"},{\"id\":\"noise-5\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-5\",\"revision\":3,\"value\":\"channel-5\"},{\"id\":\"noise-6\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-6\",\"revision\":1,\"value\":\"channel-6\"},{\"id\":\"noise-7\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-7\",\"revision\":2,\"value\":\"channel-7\"},{\"id\":\"noise-8\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-8\",\"revision\":3,\"value\":\"channel-8\"},{\"id\":\"noise-9\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-9\",\"revision\":1,\"value\":\"channel-9\"},{\"id\":\"noise-10\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-10\",\"revision\":2,\"value\":\"channel-10\"},{\"id\":\"noise-11\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-11\",\"revision\":3,\"value\":\"channel-11\"},{\"id\":\"noise-12\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-12\",\"revision\":1,\"value\":\"channel-12\"},{\"id\":\"noise-13\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-13\",\"revision\":2,\"value\":\"channel-13\"},{\"id\":\"noise-14\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-14\",\"revision\":3,\"value\":\"channel-14\"},{\"id\":\"noise-15\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-15\",\"revision\":1,\"value\":\"channel-15\"},{\"id\":\"noise-16\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-16\",\"revision\":2,\"value\":\"channel-16\"},{\"id\":\"noise-17\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-17\",\"revision\":3,\"value\":\"channel-17\"},{\"id\":\"noise-18\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-18\",\"revision\":1,\"value\":\"channel-18\"},{\"id\":\"noise-19\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-19\",\"revision\":2,\"value\":\"channel-19\"},{\"id\":\"noise-20\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-20\",\"revision\":3,\"value\":\"channel-20\"},{\"id\":\"noise-21\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-21\",\"revision\":1,\"value\":\"channel-21\"},{\"id\":\"noise-22\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-22\",\"revision\":2,\"value\":\"channel-22\"},{\"id\":\"noise-23\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-23\",\"revision\":3,\"value\":\"channel-23\"}],\"question\":\"What is the current release_channel for project-1?\"},\"instruction\":\"Answer the question only from the supplied documents. For the requested project and key, use the document with the highest numeric revision. Return JSON with exactly answer and evidence fields. answer must be the exact value string, and evidence must be an array containing the id of the document used. If no document provides the requested project and key, return {\\\"answer\\\":null,\\\"evidence\\\":[]}. Do not guess or use unrelated projects.\",\"output_schema\":{\"additionalProperties\":false,\"properties\":{\"answer\":{\"type\":[\"string\",\"null\"]},\"evidence\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"answer\",\"evidence\"],\"type\":\"object\"}}",
+                            "role": "user"
+                        }
+                    ],
+                    "temperature": 0.2,
+                    "max_tokens": 128,
+                    "seed": 17
+                },
+                "response_body": "{\"id\":\"chatcmpl-21\",\"object\":\"chat.completion\",\"created\":1791190114,\"model\":\"qwen2.5-coder:0.5b\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"answer\\\": \\\"channel-1\\\",\\n  \\\"evidence\\\": [\\\"noise-0\\\", \\\"noise-1\\\", \\\"noise-2\\\", \\\"noise-3\\\", \\\"noise-4\\\", \\\"noise-5\\\", \\\"noise-6\\\", \\\"noise-7\\\", \\\"noise-8\\\", \\\"noise-9\\\", \\\"noise-10\\\", \\\"noise-11\\\", \\\"noise-12\\\", \\\"noise-13\\\", \\\"noise-14\\\", \\\"noise-15\\\", \\\"noise-16\\\", \\\"noise-17\\\", \\\"noise-18\\\", \\\"noise-19\\\", \\\"noise-\"},\"finish_reason\":\"length\"}],\"usage\":{\"prompt_tokens\":1351,\"prompt_tokens_details\":{\"cached_tokens\":601},\"completion_tokens\":128,\"total_tokens\":1479}}\n",
+                "status": 200,
+                "elapsed_ms": 766.235666,
+                "body_sha256": "62109c6784f897fee72008819f8def6f13fdf868fd76f8ce0241207d7f2e8353"
+            }
+        ]
+    },
+    {
+        "id": "task-1-17-incomplete-shepherd",
+        "task": "task-1",
+        "seed": 17,
+        "profile": "incomplete",
+        "harness": "shepherd",
+        "terminal": "failed",
+        "output": null,
+        "usage": null,
+        "error": {
+            "message": "replay session step failed: 0: LiveProviderError: live provider response is malformed or incomplete: incomplete stop reason length",
+            "name": "ReplayStepFailureError"
+        },
+        "schema_valid": false,
+        "answer_correct": false,
+        "evidence_correct": false,
+        "success": false,
+        "elapsed_ms": 538.0660000000003,
+        "transport_ms": 533.0432920000003,
+        "request_bytes": 5659,
+        "repeat_without_provider_call": true,
+        "reopened_result_equal": true,
+        "exchanges": [
+            {
+                "body": {
+                    "model": "qwen2.5-coder:0.5b",
+                    "response_format": {
+                        "json_schema": {
+                            "name": "shepherd_output",
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "answer": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "evidence": {
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "required": [
+                                    "answer",
+                                    "evidence"
+                                ],
+                                "type": "object"
+                            },
+                            "strict": false
+                        },
+                        "type": "json_schema"
+                    },
+                    "messages": [
+                        {
+                            "content": "{\"input\":{\"documents\":[{\"id\":\"noise-0\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-0\",\"revision\":1,\"value\":\"channel-0\"},{\"id\":\"noise-1\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-1\",\"revision\":2,\"value\":\"channel-1\"},{\"id\":\"noise-2\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-2\",\"revision\":3,\"value\":\"channel-2\"},{\"id\":\"noise-3\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-3\",\"revision\":1,\"value\":\"channel-3\"},{\"id\":\"noise-4\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-4\",\"revision\":2,\"value\":\"channel-4\"},{\"id\":\"noise-5\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-5\",\"revision\":3,\"value\":\"channel-5\"},{\"id\":\"noise-6\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-6\",\"revision\":1,\"value\":\"channel-6\"},{\"id\":\"noise-7\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-7\",\"revision\":2,\"value\":\"channel-7\"},{\"id\":\"noise-8\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-8\",\"revision\":3,\"value\":\"channel-8\"},{\"id\":\"noise-9\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-9\",\"revision\":1,\"value\":\"channel-9\"},{\"id\":\"noise-10\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-10\",\"revision\":2,\"value\":\"channel-10\"},{\"id\":\"noise-11\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-11\",\"revision\":3,\"value\":\"channel-11\"},{\"id\":\"noise-12\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-12\",\"revision\":1,\"value\":\"channel-12\"},{\"id\":\"noise-13\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-13\",\"revision\":2,\"value\":\"channel-13\"},{\"id\":\"noise-14\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-14\",\"revision\":3,\"value\":\"channel-14\"},{\"id\":\"noise-15\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-15\",\"revision\":1,\"value\":\"channel-15\"},{\"id\":\"noise-16\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-16\",\"revision\":2,\"value\":\"channel-16\"},{\"id\":\"noise-17\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-17\",\"revision\":3,\"value\":\"channel-17\"},{\"id\":\"noise-18\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-18\",\"revision\":1,\"value\":\"channel-18\"},{\"id\":\"noise-19\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-19\",\"revision\":2,\"value\":\"channel-19\"},{\"id\":\"noise-20\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-20\",\"revision\":3,\"value\":\"channel-20\"},{\"id\":\"noise-21\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-21\",\"revision\":1,\"value\":\"channel-21\"},{\"id\":\"noise-22\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-22\",\"revision\":2,\"value\":\"channel-22\"},{\"id\":\"noise-23\",\"key\":\"release_channel\",\"note\":\"Archived evidence for an unrelated project; this record does not supply facts for other projects.\",\"project\":\"archive-23\",\"revision\":3,\"value\":\"channel-23\"}],\"question\":\"What is the current release_channel for project-1?\"},\"instruction\":\"Answer the question only from the supplied documents. For the requested project and key, use the document with the highest numeric revision. Return JSON with exactly answer and evidence fields. answer must be the exact value string, and evidence must be an array containing the id of the document used. If no document provides the requested project and key, return {\\\"answer\\\":null,\\\"evidence\\\":[]}. Do not guess or use unrelated projects.\",\"output_schema\":{\"additionalProperties\":false,\"properties\":{\"answer\":{\"type\":[\"string\",\"null\"]},\"evidence\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"answer\",\"evidence\"],\"type\":\"object\"}}",
+                            "role": "user"
+                        }
+                    ],
+                    "temperature": 0.2,
+                    "max_tokens": 128,
+                    "seed": 17
+                },
+                "response_body": "{\"id\":\"chatcmpl-96\",\"object\":\"chat.completion\",\"created\":1791190114,\"model\":\"qwen2.5-coder:0.5b\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"{\\n  \\\"answer\\\": \\\"channel-1\\\",\\n  \\\"evidence\\\": [\\\"noise-0\\\", \\\"noise-1\\\", \\\"noise-2\\\", \\\"noise-3\\\", \\\"noise-4\\\", \\\"noise-5\\\", \\\"noise-6\\\", \\\"noise-7\\\", \\\"noise-8\\\", \\\"noise-9\\\", \\\"noise-10\\\", \\\"noise-11\\\", \\\"noise-12\\\", \\\"noise-13\\\", \\\"noise-14\\\", \\\"noise-15\\\", \\\"noise-16\\\", \\\"noise-17\\\", \\\"noise-18\\\", \\\"noise-19\\\", \\\"noise-\"},\"finish_reason\":\"length\"}],\"usage\":{\"prompt_tokens\":1351,\"prompt_tokens_details\":{\"cached_tokens\":1350},\"completion_tokens\":128,\"total_tokens\":1479}}\n",
+                "status": 200,
+                "elapsed_ms": 533.0432920000003,
+                "body_sha256": "62109c6784f897fee72008819f8def6f13fdf868fd76f8ce0241207d7f2e8353"
+            }
+        ]
+    }
+]

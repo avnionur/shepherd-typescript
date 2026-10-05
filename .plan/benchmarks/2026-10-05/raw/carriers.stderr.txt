@@ -1,0 +1,15 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: copy branch storage must scale with world size: {"backend":"copy","branch_bytes":0,"changed_bytes":1048576,"upper_layer_bytes":null,"world_bytes":16777216}
+    at file:///Users/avnionur/src/github/personal/shepherd-typescript/scripts/bench-carriers.ts:158:16 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.17.0

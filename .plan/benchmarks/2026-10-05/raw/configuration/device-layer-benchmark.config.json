@@ -1,0 +1,58 @@
+{
+    "constantTime": {
+        "adapters": ["overlay"],
+        "maxRatio": 3
+    },
+    "depthSweep": {
+        "adapters": ["overlay", "container"],
+        "checkpoints": 100
+    },
+    "fileBytes": 65536,
+    "linux": {
+        "containerOutput": "/output",
+        "containerSource": "/source",
+        "containerWorkspace": "/workspace",
+        "dockerExecutable": "docker",
+        "dockerRunArguments": ["run", "--rm", "--privileged"],
+        "hostOutput": "docs/generated/benchmarks",
+        "image": "node:24-bookworm",
+        "shellArguments": ["-euo", "pipefail", "-c"],
+        "shellExecutable": "bash",
+        "steps": [
+            "node --version",
+            "apt-get update -qq",
+            "DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xfsprogs > /dev/null",
+            "mkdir -p {workspace}/repo {workspace}/tmp {workspace}/reflink",
+            "tar -C {source} --exclude=./node_modules --exclude=./dist --exclude=./.git -cf - . | tar -C {workspace}/repo -xf -",
+            "cd {workspace}/repo",
+            "echo 'device-layer conformance on tmpfs (overlay required)'",
+            "TMPDIR={workspace}/tmp {requiredVariable}=overlay node --test {testFile}",
+            "truncate -s 2g {workspace}/reflink.img",
+            "mkfs.xfs -q -m reflink=1 {workspace}/reflink.img",
+            "mount -o loop {workspace}/reflink.img {workspace}/reflink",
+            "chmod 1777 {workspace}/reflink",
+            "echo 'device-layer conformance on loopback XFS reflink=1 (clone and overlay required)'",
+            "TMPDIR={workspace}/reflink {requiredVariable}=clone,overlay node --test {testFile}",
+            "umount {workspace}/reflink",
+            "echo 'device-layer checkpoint benchmark on tmpfs'",
+            "TMPDIR={workspace}/tmp node scripts/bench-device-layers.ts",
+            "cp {workspace}/repo/{outputDirectory}/{outputPrefix}*.json {output}/"
+        ],
+        "tmpfsOptions": "rw,exec,mode=1777,size=6g",
+        "tokens": {
+            "output": "{output}",
+            "outputDirectory": "{outputDirectory}",
+            "outputPrefix": "{outputPrefix}",
+            "requiredVariable": "{requiredVariable}",
+            "source": "{source}",
+            "testFile": "{testFile}",
+            "workspace": "{workspace}"
+        }
+    },
+    "outputDirectory": "docs/generated/benchmarks",
+    "outputPrefix": "device-layer-checkpoints-",
+    "repetitions": 7,
+    "temporaryDirectoryPrefix": "shepherd-device-layer-bench-",
+    "warmups": 2,
+    "worldFileCounts": [16, 256, 2048]
+}

@@ -1,0 +1,51 @@
+{
+    "started_at": "2026-10-05T08:23:08.118Z",
+    "study_date": "2026-10-05",
+    "revision": "d7f957caacd1e57e40417d42587618f702b5e8ca",
+    "initial_status": "D .claude/scheduled_tasks.lock\n M .plan/README.md\n M .plan/tracker.md\n M CHANGELOG.md\n M package.json\n M release-config.yaml\n?? .plan/Agent-Runtime-Architecture.md\n?? .plan/benchmarks/\n?? .plan/coverage-follow-up-issues.md\n?? .plan/paper-gap-audit-2026-09-27.md\n?? .plan/upstream-docs-audit-2026-09-27.md",
+    "runtime_diff": "",
+    "configuration_sha256": {
+        "config/kernel-benchmark.config.json": "e4901a2e6c12bf449fd5b47d15217bca6d4842bb4a1872d1c1da7d3f644e7e68",
+        "config/performance-slo.config.json": "689d03040624590c90ce0bf9a7ede9b8d5132f82b63912534832a4a29ee77a35",
+        "config/scope-benchmark.config.json": "c22d3f8a376600547f4c752a50dbdd6faeb3f34bad68b3868cea5b64fccf9b27",
+        "config/carrier-benchmark.config.json": "311fdfe3adf7fdc055992403e813a5b6c8bb578d46b5ba247b653b80fb5eaac6",
+        "config/checkpoint-benchmark.config.json": "3162da131af857a5504520f1425aefe400f673bd36cd433b47f9775938a35bd3",
+        "config/device-layer-benchmark.config.json": "734613896d8fd1e9dcc5f71c9daac320e8765f805ad8e72cba17a4dafd2e9749",
+        "config/device-layer-conformance.config.json": "e84eb70e8c50eeeb51df83d68a8165ed9af2ade3bb840e066543d0a4c6d2edbf",
+        "config/research-applications.config.json": "97b518601864da77b34f835d893d4cb7b5785ac8645f63851af00ae0bf92af1a"
+    },
+    "study_configuration": {
+        "date": "2026-10-05",
+        "node": "v24.17.0",
+        "kernelRuns": 3,
+        "scopeRuns": 1,
+        "kernelConfiguration": "config/kernel-benchmark.config.json",
+        "kernelSloConfiguration": "config/performance-slo.config.json",
+        "scopeConfiguration": "config/scope-benchmark.config.json",
+        "applicationConfiguration": "config/research-applications.config.json",
+        "scripts": [
+            {
+                "id": "carriers",
+                "entry": "scripts/bench-carriers.ts"
+            },
+            {
+                "id": "checkpoints",
+                "entry": "scripts/bench-checkpoints.ts"
+            },
+            {
+                "id": "device-layers",
+                "entry": "scripts/bench-device-layers.ts"
+            }
+        ],
+        "snapshotConfigurations": [
+            "config/kernel-benchmark.config.json",
+            "config/performance-slo.config.json",
+            "config/scope-benchmark.config.json",
+            "config/carrier-benchmark.config.json",
+            "config/checkpoint-benchmark.config.json",
+            "config/device-layer-benchmark.config.json",
+            "config/device-layer-conformance.config.json",
+            "config/research-applications.config.json"
+        ]
+    }
+}

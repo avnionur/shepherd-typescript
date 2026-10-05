@@ -1,0 +1,216 @@
+{
+    "integrity": {
+        "checked_append_intent_count": 144,
+        "checked_blob_count": 0,
+        "checked_cut_count": 0,
+        "checked_owner_count": 48,
+        "checked_record_count": 145,
+        "checked_scope_count": 0,
+        "issues": [],
+        "ok": true
+    },
+    "imported_integrity": {
+        "checked_append_intent_count": 144,
+        "checked_blob_count": 0,
+        "checked_cut_count": 0,
+        "checked_owner_count": 48,
+        "checked_record_count": 145,
+        "checked_scope_count": 0,
+        "issues": [],
+        "ok": true
+    },
+    "imported_results": [
+        {
+            "session_id": "replay-session:sha256:efd8fb5cc87acaf5c56d3aeedb1eee55ba71e3ed5f2755636f0a6f162b73a68c",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:653674172da317df4a9a96c39305de86e07a091b035e0cf33a390c3932c33e18",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:b4cf419c75bf907f4c61ae738a25e714dd8b4c7cdf5b9305b584e2d725152c3e",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:5a6c33fd72751c4512bc44377eacc72fd946a23d4057e6b85c169830f56966c6",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:91c1f446f9b04026c5f05dce7b1f625f515fa4c5f2422ae058cab7ecc0b46a71",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:f01cfc0de57753ff4643d9de7b2afbb5f231052c569dce9e023827f286ad0b89",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:5ba465f2e78f409bd3bc1c5e02ec73512d62e7763955142c93b470a17d45fff4",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:5692676bf16129a899c1cb0725aef990b2f473e6b2a789034aad53131e06ed24",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:9aaf5e1e55e5ae205b4c39cc1dbccea9f8dce261d89825177448ceb007955d7e",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:206bbcb2a907f2a7714bf584eff52c57056744e778522665c5441e989f345f9e",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:03f5e60013a6445cd4ca8ab7b8f21f4f336b1c653724acd5320bdd2ced79d1c5",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:43a4de8d8d89995bf0e8a97b40417d27f509f641b9cf7b7d37e52ada0185fb60",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:39969fb9f853db67683808ec7aa6667ea54f7bf2a90aad151e6f4dee1611d734",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:3d77ea180dc50ae9c988c48f6cf9f220ff78a8d035cf2e768518606cff45f3a0",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:c97454f569af103643340fca825f7080797d475cc35a8543a546d53cd9c02e07",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:74f573005ba5843663be6971adaff42ac15c06b73332b75b1be73636b8dda6da",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:d48ca646f440ebabd2376af817a25f90f5f9e42a93393a970ba40bb9737493ba",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:8999787c11eac33ccdb31a901b2da4ad77d3b8ea390036c13d4fd95d8dce3b4f",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:85b91cdd29abaa22e645a4fde92f6a37d609ad87a71532355f066b3efddc10ba",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:de4ae641a9cb1d143f07f9bb60bceca4972a15891b68de512d4397d15f7a5386",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:c36b86734b2a04f67feae99c8a8ba70dddccd334d19ecd5b3e6399815e82ded0",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:fb9ada4c154562c877403c98ca86cdb7ed2e89e3b6639caf1021a1469e8c01a5",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:aec7447ffc625edfde22c9f740789edb8757632c26ef3b8497dde9310a8d04ff",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:ea973008c375c2f0579be905dbe6f628a1e4c149996b38b6bc71f3b3f4964f67",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:009c53974b828475eb4c385281772693c51c7282302991a3217fdb0e08437794",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:11199b618970de10f5ae527bea33d39cf0dd4656a19d0b07258ffbd11b7b92d8",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:07608247086dc6ac6cea20e473781150e8b8a044b4bd1d04ef6d75a123283fe8",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:d8395cd72d7744242a21d89257bfff13e76cb01f0dd65945b8c91307fa0c41ab",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:241cc7c5929a9b09dbe9e7e943183b5535b3ee3036f623d009c09459fc932c4b",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:a8648f822dd78cad10bf225dec06819f5f6fd2c8a8d88d888a485f38eddfb130",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:65a1e80c446f4c2ad9e2cd17c6b6e1a1c04b819749384a9c111e507f894e8562",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:0aed7acb732c854578a69c6e530c4a639f502a48f0db459b29cb0ffbb7c81a52",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:b008ed600ea3a7f383b76fe8ab00645f7b22f9715f137bf5bd153961c326a396",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:8b3a3091bef4ebbdc7c908e0fee73a1244cf16052081c24e30b839d13d766821",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:de7c6c4a023808ce76ef692abb3a7aacd766ebae1fb1747854d34c9da6ad5fd0",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:bec93e8a6c523a5a12a3fd820a7b8f1ae582a7e2b3af885a7f384db08aade293",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:37b8854f0364efd35d834bd922bf89d38f89e701353fd8e48a2043ded7ea0c8d",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:c6392929483a1d849a5aa5e821c7411d80ad7d4a01962e6226cff4e9bbf40583",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:8e40128f28ad5eea7787f4ae7e763a818749cdc0262f5c987baac26ae1e3ddbd",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:b8838460d10b2ee72285bc61ff0a61c062fa1d1ba170afddc5b1b0d310a89d25",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:62fbe86c9eaca126674a814497164595bee1bd86df1fb5b3efe44e487ded0904",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:c62e4acfd613c3fef6221a489c23dc56087ca11233f53f9fbe7f54fa2560cc29",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:fa3ea4384434b5ed104d41085f56b28491594ae32f28db4cd95403880d372943",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:26aedab52291496992409929ad89e5256b52fe64953aceb48e82591d4985fd45",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:cfdc749cf5bd002532a11f3676454db86905b9b7fa1daa917807d00651d10c43",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:f07b50c13a24ef147606b470beff8fd58dd9e74c2617b606c815ac75bf140503",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:379c650ebf956fb22b0c97ff62085e1bb1168c0af51f04596a8dd978da538e79",
+            "equal": true
+        },
+        {
+            "session_id": "replay-session:sha256:6ee742b89d4afe0987597cc816e73151aa992a590d54fbf8bba8230fc5450963",
+            "equal": true
+        }
+    ]
+}

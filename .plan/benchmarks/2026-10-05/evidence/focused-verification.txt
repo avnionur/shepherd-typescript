@@ -1,0 +1,43 @@
+✔ applications protocol v5 appends the evaluation vocabulary to v4 and refuses drift (9.446ms)
+✔ the evaluation API is identical through the applications facade and the root (0.082708ms)
+✔ the report is byte-identical across repeated runs and fresh stores and carries no host data (1319.964333ms)
+✔ every metric is measured from retained evidence and every configured baseline kind is run (610.515209ms)
+✔ comparisons copy measured values and take the delta only between two numbers (514.289417ms)
+✔ limitations are published verbatim and the documentation disclaims upstream results (513.957458ms)
+✔ the report conforms to the generated evaluation schema (580.278083ms)
+✔ malformed definitions and bindings are refused before any record, and a corrected rerun completes (1060.082541ms)
+✔ an evaluation interrupted inside an application converges on rerun to the fresh-store report (1100.493875ms)
+✔ failed live calls, missing costs, and program-serviced baseline workers are measured as retained (528.961083ms)
+✔ an optimizer candidate whose branch failed stops the evaluation without a selection (83.630375ms)
+✔ rescues count the experiments whose baseline failed while the application passed (528.592208ms)
+✔ validateApplicationEvaluationReport refuses every inconsistent report (512.9555ms)
+✔ a Tree-RL prompt's handler stack reaches the rollouts and the report is unchanged (1067.717042ms)
+✔ a process killed after the rewind restore and before the suffix replay converges without a second restore (560.072667ms)
+✔ a process killed after the rewind's replay restore record and before its terminal converges with one restore (638.802ms)
+✔ production benchmark and SLO configurations are valid and budget every metric (7.356916ms)
+✔ sample summaries report median, nearest-rank p95, and sample variance (0.300083ms)
+✔ benchmark configuration validation rejects malformed fields (10.373834ms)
+✔ SLO configuration validation rejects unknown metrics and wrong bounds (8.513875ms)
+✔ host classes match platform, architecture, and filesystem type (0.954917ms)
+✔ SLO evaluation bounds each statistic in its improving direction (0.349708ms)
+✔ the dataset builder rejects malformed shapes and supports cut-free paths (64.76725ms)
+✔ bench:kernel writes a host-class artifact that check:slo accepts (1497.12225ms)
+✔ check:slo fails a budget and skips a host without budgets (1421.392458ms)
+✔ a failing CLI startup probe fails the benchmark (302.409833ms)
+✔ production scope benchmark configuration is valid and its artifacts are current (14.0245ms)
+✔ scope metric names, result paths, and line fits (0.479417ms)
+✔ tree digests cover nested file paths and contents but not directories or links (6.91675ms)
+✔ scope benchmark configuration validation rejects malformed fields (21.890292ms)
+✔ bench:scopes measures every dimension and check:scopes compares it with budgets (17728.423791ms)
+✔ bench:scopes prints the result and check:scopes skips a host without a class (10731.743042ms)
+✔ a rewound provider conversation resends a byte-identical message prefix and hits the prompt cache (104.345625ms)
+✔ failed and cancelled turns keep the conversation aligned with the replay session (33.084458ms)
+✔ provider conversation definitions, rebuild input, and cache identities are validated (0.331459ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 28815.259

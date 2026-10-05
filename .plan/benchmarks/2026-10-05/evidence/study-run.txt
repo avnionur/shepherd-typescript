@@ -1,0 +1,16 @@
+Starting kernel-1
+Finished kernel-1: pass
+Starting kernel-2
+Finished kernel-2: pass
+Starting kernel-3
+Finished kernel-3: pass
+Starting scope-1
+Finished scope-1: pass
+Starting carriers
+Finished carriers: FAIL
+Starting checkpoints
+Finished checkpoints: pass
+Starting device-layers
+Finished device-layers: pass
+Starting offline-applications
+Finished offline-applications: FAIL

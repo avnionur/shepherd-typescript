@@ -1,0 +1,67 @@
+{
+  "configuration": {
+    "changedFileCounts": [
+      1,
+      8
+    ],
+    "fileBytes": 4096,
+    "outputDirectory": "docs/generated/benchmarks",
+    "outputPrefix": "checkpoint-storage-",
+    "steps": 32,
+    "temporaryDirectoryPrefix": "shepherd-checkpoint-bench-",
+    "worldFileCounts": [
+      16,
+      256
+    ]
+  },
+  "host": {
+    "arch": "arm64",
+    "cpu": "Apple M4 Pro",
+    "node": "v24.17.0",
+    "platform": "darwin",
+    "release": "27.0.0"
+  },
+  "measurements": [
+    {
+      "blob_bytes_per_checkpoint": 8817,
+      "changed_bytes_per_step": 4096,
+      "checkpoints": 32,
+      "database_bytes_per_checkpoint": 8576,
+      "steps": 32,
+      "total_bytes_per_checkpoint": 17393,
+      "world_bytes": 65536,
+      "world_files": 16
+    },
+    {
+      "blob_bytes_per_checkpoint": 36593,
+      "changed_bytes_per_step": 32768,
+      "checkpoints": 32,
+      "database_bytes_per_checkpoint": 11648,
+      "steps": 32,
+      "total_bytes_per_checkpoint": 48241,
+      "world_bytes": 65536,
+      "world_files": 16
+    },
+    {
+      "blob_bytes_per_checkpoint": 81537,
+      "changed_bytes_per_step": 4096,
+      "checkpoints": 32,
+      "database_bytes_per_checkpoint": 12288,
+      "steps": 32,
+      "total_bytes_per_checkpoint": 93825,
+      "world_bytes": 1048576,
+      "world_files": 256
+    },
+    {
+      "blob_bytes_per_checkpoint": 109313,
+      "changed_bytes_per_step": 32768,
+      "checkpoints": 32,
+      "database_bytes_per_checkpoint": 15616,
+      "steps": 32,
+      "total_bytes_per_checkpoint": 124929,
+      "world_bytes": 1048576,
+      "world_files": 256
+    }
+  ],
+  "method": "Each workload runs the same deterministic effect-only session twice, once without automatic checkpoints and once with an every-step policy; per-checkpoint growth is the on-disk difference (trace database after close, plus content-addressed blob files) divided by the checkpoint count."
+}

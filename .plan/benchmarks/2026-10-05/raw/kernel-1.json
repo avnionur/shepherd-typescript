@@ -1,0 +1,343 @@
+{
+    "configuration": {
+        "appendThroughputAppends": 100,
+        "cliStartup": {
+            "arguments": [
+                "--help"
+            ],
+            "entry": "dist/src/cli/main.js"
+        },
+        "dataset": {
+            "batchRecords": 200,
+            "blobBytes": 1024,
+            "blobs": 40,
+            "cutsPerOwner": 2,
+            "deepChainRecords": 2000,
+            "orphanBlobs": 20,
+            "owners": 40,
+            "recordsPerOwner": 200,
+            "temporaryFiles": 4
+        },
+        "naming": {
+            "prefix": "bench:",
+            "recordPaddingCharacters": 256,
+            "schemaRef": "example.kernel-benchmark.v1"
+        },
+        "resultDirectory": "docs/generated/benchmarks",
+        "resultFormat": "shepherd.kernel-benchmark",
+        "resultFormatVersion": 1,
+        "sampleCount": 12,
+        "temporaryDirectoryPrefix": "shepherd-kernel-bench-",
+        "warmupIterations": 2
+    },
+    "configuration_digest": "sha256:f618cf1c0eba158e75c8a189a8a37688beefd419f9fc1f01f211b64967e53bb6",
+    "environment": {
+        "arch": "arm64",
+        "cpu_count": 14,
+        "cpu_model": "Apple M4 Pro",
+        "filesystem_type": 26,
+        "node": "v24.17.0",
+        "os_release": "27.0.0",
+        "package_version": "12.0.3",
+        "platform": "darwin",
+        "sqlite_version": "3.53.0",
+        "total_memory_bytes": 51539607552
+    },
+    "format": "shepherd.kernel-benchmark",
+    "format_version": 1,
+    "host_class": "macos-arm64-apfs",
+    "metrics": {
+        "append_latency_ms": {
+            "better": "lower",
+            "description": "one single-record append committed with synchronous FULL durability",
+            "unit": "ms",
+            "samples": [
+                0.245,
+                0.318,
+                0.308,
+                0.205,
+                0.232,
+                0.242,
+                0.232,
+                0.245,
+                0.225,
+                0.244,
+                0.189,
+                0.207
+            ],
+            "summary": {
+                "count": 12,
+                "max": 0.318,
+                "mean": 0.241,
+                "median": 0.237,
+                "min": 0.189,
+                "p95": 0.318,
+                "stddev": 0.038,
+                "variance": 0.001
+            }
+        },
+        "append_throughput_records_per_second": {
+            "better": "higher",
+            "description": "sequential single-record appends per second over one sample batch",
+            "unit": "records/s",
+            "samples": [
+                3513.349,
+                4367.814,
+                4468.6,
+                4493.389,
+                3100.711,
+                4619.889,
+                4399.698,
+                3687.803,
+                4461.597,
+                3878.355,
+                4309.911,
+                3716.908
+            ],
+            "summary": {
+                "count": 12,
+                "max": 4619.889,
+                "mean": 4084.835,
+                "median": 4338.863,
+                "min": 3100.711,
+                "p95": 4619.889,
+                "stddev": 486.456,
+                "variance": 236639.485
+            }
+        },
+        "cut_resolve_ms": {
+            "better": "lower",
+            "description": "resolveCut of the deep-chain owner's last published cut",
+            "unit": "ms",
+            "samples": [
+                79.074,
+                79.94,
+                75.95,
+                77.828,
+                83.741,
+                85.571,
+                79.627,
+                78.561,
+                78.536,
+                81.851,
+                78.783,
+                78.229
+            ],
+            "summary": {
+                "count": 12,
+                "max": 85.571,
+                "mean": 79.808,
+                "median": 78.929,
+                "min": 75.95,
+                "p95": 85.571,
+                "stddev": 2.679,
+                "variance": 7.179
+            }
+        },
+        "slice_read_ms": {
+            "better": "lower",
+            "description": "readOwnerPrefix of one whole regular owner path",
+            "unit": "ms",
+            "samples": [
+                8.022,
+                7.433,
+                9.15,
+                7.542,
+                7.471,
+                7.321,
+                7.218,
+                8.245,
+                7.407,
+                7.649,
+                7.52,
+                7.953
+            ],
+            "summary": {
+                "count": 12,
+                "max": 9.15,
+                "mean": 7.744,
+                "median": 7.531,
+                "min": 7.218,
+                "p95": 9.15,
+                "stddev": 0.538,
+                "variance": 0.29
+            }
+        },
+        "subscription_pull_ms": {
+            "better": "lower",
+            "description": "ephemeral subscription pulling one whole regular owner path from origin",
+            "unit": "ms",
+            "samples": [
+                8.144,
+                7.869,
+                8.188,
+                8.41,
+                9.162,
+                8.707,
+                9.662,
+                8.172,
+                7.946,
+                7.943,
+                8.877,
+                8.022
+            ],
+            "summary": {
+                "count": 12,
+                "max": 9.662,
+                "mean": 8.425,
+                "median": 8.18,
+                "min": 7.869,
+                "p95": 9.662,
+                "stddev": 0.563,
+                "variance": 0.317
+            }
+        },
+        "export_ms": {
+            "better": "lower",
+            "description": "exportTrace of the whole dataset",
+            "unit": "ms",
+            "samples": [
+                1214.191,
+                1232.557,
+                1215.871,
+                1206.031,
+                1213.836,
+                1206.353,
+                1218.264,
+                1183.564,
+                1178.733,
+                1200.061,
+                1187.903,
+                1344.787
+            ],
+            "summary": {
+                "count": 12,
+                "max": 1344.787,
+                "mean": 1216.846,
+                "median": 1210.095,
+                "min": 1178.733,
+                "p95": 1344.787,
+                "stddev": 43.214,
+                "variance": 1867.418
+            }
+        },
+        "import_ms": {
+            "better": "lower",
+            "description": "importTrace of the dataset archive into a fresh file store",
+            "unit": "ms",
+            "samples": [
+                1967.498,
+                1966.063,
+                1889.406,
+                1930.401,
+                1910.01,
+                1964.298,
+                1953.297,
+                1953.655,
+                1919.655,
+                1879.562,
+                1954.814,
+                1914.57
+            ],
+            "summary": {
+                "count": 12,
+                "max": 1967.498,
+                "mean": 1933.602,
+                "median": 1941.849,
+                "min": 1879.562,
+                "p95": 1967.498,
+                "stddev": 30.722,
+                "variance": 943.822
+            }
+        },
+        "verify_ms": {
+            "better": "lower",
+            "description": "verifyIntegrity of the whole store",
+            "unit": "ms",
+            "samples": [
+                687.199,
+                667.291,
+                651.943,
+                673.754,
+                684.619,
+                670.259,
+                673.886,
+                676.215,
+                658.323,
+                669.908,
+                676.427,
+                681.575
+            ],
+            "summary": {
+                "count": 12,
+                "max": 687.199,
+                "mean": 672.617,
+                "median": 673.82,
+                "min": 651.943,
+                "p95": 687.199,
+                "stddev": 10.181,
+                "variance": 103.663
+            }
+        },
+        "gc_inspect_ms": {
+            "better": "lower",
+            "description": "collectBlobOrphans inspection, including registered-blob verification",
+            "unit": "ms",
+            "samples": [
+                3.042,
+                3.206,
+                3.107,
+                2.996,
+                3.277,
+                3.085,
+                3.349,
+                3.2,
+                3.024,
+                3.483,
+                2.88,
+                2.945
+            ],
+            "summary": {
+                "count": 12,
+                "max": 3.483,
+                "mean": 3.133,
+                "median": 3.096,
+                "min": 2.88,
+                "p95": 3.483,
+                "stddev": 0.176,
+                "variance": 0.031
+            }
+        },
+        "cli_startup_ms": {
+            "better": "lower",
+            "description": "wall time of one packaged CLI process printing its help",
+            "unit": "ms",
+            "samples": [
+                90.152,
+                90.033,
+                88.09,
+                86.777,
+                90.912,
+                87.58,
+                106.333,
+                87.969,
+                88.91,
+                90.767,
+                90.257,
+                90.119
+            ],
+            "summary": {
+                "count": 12,
+                "max": 106.333,
+                "mean": 90.658,
+                "median": 90.076,
+                "min": 86.777,
+                "p95": 106.333,
+                "stddev": 5.119,
+                "variance": 26.209
+            }
+        }
+    },
+    "recorded_on": "2026-10-05",
+    "warmup_iterations": 2
+}

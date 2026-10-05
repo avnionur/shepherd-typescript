@@ -1,0 +1,143 @@
+{
+    "runtime_under_study": "12.0.3",
+    "documentation_release": "13.7.1",
+    "runtime_source_or_dependency_changes": false,
+    "focused_tests": {
+        "command": "node --test test/benchmark/kernel-benchmark.test.ts test/benchmark/scope-benchmark.test.ts test/provider/provider-conversation.test.ts test/applications/application-evaluation.test.ts test/applications/trajectory-compression-crash.test.ts",
+        "passed": 35,
+        "failed": 0,
+        "skipped": 0,
+        "log": "evidence/focused-verification.txt"
+    },
+    "initial_verify_before_this_metadata_patch": {
+        "command": "pnpm verify",
+        "exit_code": 1,
+        "stopped_at": "check:sbom",
+        "reason": "Pre-existing generated SBOM stale at initial 12.0.3 working-tree metadata",
+        "log": "evidence/verify-before-metadata.txt"
+    },
+    "sandbox_verify": {
+        "command": "pnpm verify",
+        "exit_code": 1,
+        "tests": 1340,
+        "passed": 1331,
+        "failed": 2,
+        "skipped": 7,
+        "line_coverage_percent": 99.8,
+        "branch_coverage_percent": 99.95,
+        "function_coverage_percent": 99.74,
+        "log": "evidence/verify-final.txt"
+    },
+    "host_verify": {
+        "command": "pnpm verify",
+        "exit_code": 1,
+        "tests": 1340,
+        "passed": 1338,
+        "failed": 0,
+        "skipped": 2,
+        "line_coverage_percent": 100,
+        "branch_coverage_percent": 100,
+        "function_coverage_percent": 100,
+        "all_gates_before_packaged_cli": "passed",
+        "stopped_at": "test:package-cli",
+        "reason": "New reproduction guide missing when README links were checked; guide subsequently added",
+        "log": "evidence/verify-host.txt"
+    },
+    "host_packaged_cli_rerun": {
+        "command": "pnpm test:package-cli",
+        "exit_code": 0,
+        "installed_runtime": "24.17.0",
+        "quickstart_ms": 2120,
+        "retained_bytes": 261542,
+        "log": "evidence/package-final.txt"
+    },
+    "combined_constituent_gate_status": "passed across host verify attempt and targeted packaging rerun; full verify command initial failure remains recorded",
+    "optional_test_skips": [
+        "No telemetry input decoder exists",
+        "Commercial provider cache-after-rewind test not opted in"
+    ],
+    "version_sync": {
+        "command": "pnpm sync:version",
+        "exit_code": 0
+    },
+    "desktop_build": {
+        "command": "pnpm build:desktop",
+        "exit_code": 0
+    },
+    "metadata_generation": {
+        "commands": [
+            "node scripts/generate-sbom-cli.ts",
+            "node scripts/generate-api-reference-cli.ts",
+            "node scripts/check-compatibility-cli.ts --update"
+        ],
+        "exit_code": 0,
+        "impact": "Version and generated serial metadata only; API/schema digests unchanged"
+    },
+    "research_script_checks": {
+        "commands": [
+            "node --check .plan/benchmarks/2026-10-05/run-study.mjs",
+            "node --check .plan/benchmarks/2026-10-05/run-agent-study.mjs",
+            "biome check .plan/benchmarks/2026-10-05"
+        ],
+        "status": "passed"
+    },
+    "analysis": {
+        "independent_scores": "passed",
+        "paired_request_body_digests": "48/48 equal",
+        "paired_output_values": "48/48 equal",
+        "system_configuration_snapshot_hashes": "passed"
+    },
+    "system_measurement_outcomes": {
+        "kernel_slo": "30/30 passed",
+        "scope_slo": "16/17 passed; clone medium revert p95 314.139 > 250 ms",
+        "scope_recorded_restoration_checks": "150/150 passed",
+        "carrier_storage_assertion": "failed; measurement invalidity retained",
+        "checkpoint_and_available_device_suites": "passed",
+        "offline_application_retry": "passed four fixtures"
+    },
+    "native_latex": {
+        "status": "unverified",
+        "source": "paper.tex",
+        "editor_open_request": "queued",
+        "reason": "Built-in compilation request did not return diagnostics before its waiting cell was canceled; no native compilation success is claimed. No local TeX installation was attempted."
+    },
+    "shareable_pdf": {
+        "generator": "ReportLab 4.4.9",
+        "source": "manuscript.json + summary.json + captured raw tables",
+        "visual_review": "Final 14 pages rendered and reviewed; tables/figures and final bibliography inspected at full page resolution; no clipping or overlap found.",
+        "pages": 14,
+        "text_and_margin_checks": "Required statistics and bibliography metadata present; no placeholder tokens; every extracted word within reviewed page bounds."
+    },
+    "collection_corrections": [
+        "Initial study application call supplied extra artifacts field; refused before execution, corrected bind/definition invocation succeeded; original journal retained",
+        "Study import path and sandbox loopback setup failures occurred before counted model trials",
+        "Smoke: six calls, excluded from main 96-call denominator",
+        "Later runner edits only add fresh-directory/output protection, role configuration, and archive export; original raw evidence retained"
+    ],
+    "prior_user_work": "Preserved; no branch switch, commit, staging, push, reset, stash, or cleanup",
+    "package_manager": {
+        "version": "10.32.1",
+        "source": "Already-installed cached pinned binary selected on PATH for commands; later normal pnpm --version with host registry access confirmed the same version",
+        "signature_lookup": "Initial sandbox registry lookup failed; host-access lookup succeeded; no package-manager safety configuration was disabled"
+    },
+    "original_local_documentation_release": "12.0.4",
+    "publication": {
+        "base_version": "13.7.0",
+        "release_version": "13.7.1",
+        "source_revision": "edf6d14f5bb372ff26fc47ab6ca95571ac4ed62b",
+        "scope": "Historical study publication only; no benchmark numbers refreshed against newer runtime",
+        "verification_status": "passed",
+        "command": "pnpm verify",
+        "exit_code": 0,
+        "tests": 1418,
+        "passed": 1416,
+        "failed": 0,
+        "skipped": 2,
+        "line_coverage_percent": 100,
+        "branch_coverage_percent": 100,
+        "function_coverage_percent": 100,
+        "log": "evidence/publication-verify.txt",
+        "source_and_dependency_diff": "none",
+        "raw_study_hash_comparison": "36/36 captured raw files identical to measured checkout"
+    }
+}
