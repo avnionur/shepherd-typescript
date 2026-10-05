@@ -1,0 +1,7 @@
+# Rendered artifacts are binary; captured evidence must retain exact bytes.
+*.pdf binary
+*.png binary
+*.zip binary
+*.csv text eol=lf
+evidence/*.txt -text -whitespace
+raw/** -text -whitespace

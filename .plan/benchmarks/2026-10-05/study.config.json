@@ -1,0 +1,25 @@
+{
+    "date": "2026-10-05",
+    "node": "v24.17.0",
+    "kernelRuns": 3,
+    "scopeRuns": 1,
+    "kernelConfiguration": "config/kernel-benchmark.config.json",
+    "kernelSloConfiguration": "config/performance-slo.config.json",
+    "scopeConfiguration": "config/scope-benchmark.config.json",
+    "applicationConfiguration": "config/research-applications.config.json",
+    "scripts": [
+        { "id": "carriers", "entry": "scripts/bench-carriers.ts" },
+        { "id": "checkpoints", "entry": "scripts/bench-checkpoints.ts" },
+        { "id": "device-layers", "entry": "scripts/bench-device-layers.ts" }
+    ],
+    "snapshotConfigurations": [
+        "config/kernel-benchmark.config.json",
+        "config/performance-slo.config.json",
+        "config/scope-benchmark.config.json",
+        "config/carrier-benchmark.config.json",
+        "config/checkpoint-benchmark.config.json",
+        "config/device-layer-benchmark.config.json",
+        "config/device-layer-conformance.config.json",
+        "config/research-applications.config.json"
+    ]
+}

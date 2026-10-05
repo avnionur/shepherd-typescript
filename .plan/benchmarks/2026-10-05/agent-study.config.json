@@ -1,0 +1,427 @@
+{
+    "endpoint": "http://127.0.0.1:11434/v1/chat/completions",
+    "inventoryEndpoint": "http://127.0.0.1:11434/api/tags",
+    "versionEndpoint": "http://127.0.0.1:11434/api/version",
+    "providerKind": "openai",
+    "directHarness": "direct",
+    "durableHarness": "shepherd",
+    "credential": "local-no-auth",
+    "model": "qwen2.5-coder:0.5b",
+    "node": "v24.17.0",
+    "seeds": [17, 43],
+    "maxOutputTokens": 128,
+    "requestTimeoutMs": 120000,
+    "wireOverrides": {
+        "temperature": 0.2,
+        "max_tokens": 128
+    },
+    "wireRemoveFields": ["max_completion_tokens"],
+    "harnesses": ["direct", "shepherd"],
+    "profiles": [
+        {
+            "id": "full",
+            "selection": "all"
+        },
+        {
+            "id": "selected",
+            "selection": "relevant"
+        },
+        {
+            "id": "incomplete",
+            "selection": "irrelevant"
+        }
+    ],
+    "instruction": "Answer the question only from the supplied documents. For the requested project and key, use the document with the highest numeric revision. Return JSON with exactly answer and evidence fields. answer must be the exact value string, and evidence must be an array containing the id of the document used. If no document provides the requested project and key, return {\"answer\":null,\"evidence\":[]}. Do not guess or use unrelated projects.",
+    "outputSchema": {
+        "type": "object",
+        "properties": {
+            "answer": {
+                "type": ["string", "null"]
+            },
+            "evidence": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "required": ["answer", "evidence"],
+        "additionalProperties": false
+    },
+    "distractors": [
+        {
+            "id": "noise-0",
+            "project": "archive-0",
+            "revision": 1,
+            "key": "release_channel",
+            "value": "channel-0",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-1",
+            "project": "archive-1",
+            "revision": 2,
+            "key": "release_channel",
+            "value": "channel-1",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-2",
+            "project": "archive-2",
+            "revision": 3,
+            "key": "release_channel",
+            "value": "channel-2",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-3",
+            "project": "archive-3",
+            "revision": 1,
+            "key": "release_channel",
+            "value": "channel-3",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-4",
+            "project": "archive-4",
+            "revision": 2,
+            "key": "release_channel",
+            "value": "channel-4",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-5",
+            "project": "archive-5",
+            "revision": 3,
+            "key": "release_channel",
+            "value": "channel-5",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-6",
+            "project": "archive-6",
+            "revision": 1,
+            "key": "release_channel",
+            "value": "channel-6",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-7",
+            "project": "archive-7",
+            "revision": 2,
+            "key": "release_channel",
+            "value": "channel-7",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-8",
+            "project": "archive-8",
+            "revision": 3,
+            "key": "release_channel",
+            "value": "channel-8",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-9",
+            "project": "archive-9",
+            "revision": 1,
+            "key": "release_channel",
+            "value": "channel-9",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-10",
+            "project": "archive-10",
+            "revision": 2,
+            "key": "release_channel",
+            "value": "channel-10",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-11",
+            "project": "archive-11",
+            "revision": 3,
+            "key": "release_channel",
+            "value": "channel-11",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-12",
+            "project": "archive-12",
+            "revision": 1,
+            "key": "release_channel",
+            "value": "channel-12",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-13",
+            "project": "archive-13",
+            "revision": 2,
+            "key": "release_channel",
+            "value": "channel-13",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-14",
+            "project": "archive-14",
+            "revision": 3,
+            "key": "release_channel",
+            "value": "channel-14",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-15",
+            "project": "archive-15",
+            "revision": 1,
+            "key": "release_channel",
+            "value": "channel-15",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-16",
+            "project": "archive-16",
+            "revision": 2,
+            "key": "release_channel",
+            "value": "channel-16",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-17",
+            "project": "archive-17",
+            "revision": 3,
+            "key": "release_channel",
+            "value": "channel-17",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-18",
+            "project": "archive-18",
+            "revision": 1,
+            "key": "release_channel",
+            "value": "channel-18",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-19",
+            "project": "archive-19",
+            "revision": 2,
+            "key": "release_channel",
+            "value": "channel-19",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-20",
+            "project": "archive-20",
+            "revision": 3,
+            "key": "release_channel",
+            "value": "channel-20",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-21",
+            "project": "archive-21",
+            "revision": 1,
+            "key": "release_channel",
+            "value": "channel-21",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-22",
+            "project": "archive-22",
+            "revision": 2,
+            "key": "release_channel",
+            "value": "channel-22",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        },
+        {
+            "id": "noise-23",
+            "project": "archive-23",
+            "revision": 3,
+            "key": "release_channel",
+            "value": "channel-23",
+            "note": "Archived evidence for an unrelated project; this record does not supply facts for other projects."
+        }
+    ],
+    "tasks": [
+        {
+            "id": "task-1",
+            "question": "What is the current release_channel for project-1?",
+            "relevant": [
+                {
+                    "id": "old-1",
+                    "project": "project-1",
+                    "revision": 1,
+                    "key": "release_channel",
+                    "value": "obsolete"
+                },
+                {
+                    "id": "current-1",
+                    "project": "project-1",
+                    "revision": 2,
+                    "key": "release_channel",
+                    "value": "stable"
+                }
+            ],
+            "expectedAnswer": "stable",
+            "expectedEvidence": ["current-1"]
+        },
+        {
+            "id": "task-2",
+            "question": "What is the current storage_region for project-2?",
+            "relevant": [
+                {
+                    "id": "old-2",
+                    "project": "project-2",
+                    "revision": 1,
+                    "key": "storage_region",
+                    "value": "obsolete"
+                },
+                {
+                    "id": "current-2",
+                    "project": "project-2",
+                    "revision": 2,
+                    "key": "storage_region",
+                    "value": "west-2"
+                }
+            ],
+            "expectedAnswer": "west-2",
+            "expectedEvidence": ["current-2"]
+        },
+        {
+            "id": "task-3",
+            "question": "What is the current retry_limit for project-3?",
+            "relevant": [
+                {
+                    "id": "old-3",
+                    "project": "project-3",
+                    "revision": 1,
+                    "key": "retry_limit",
+                    "value": "obsolete"
+                },
+                {
+                    "id": "current-3",
+                    "project": "project-3",
+                    "revision": 2,
+                    "key": "retry_limit",
+                    "value": "7"
+                }
+            ],
+            "expectedAnswer": "7",
+            "expectedEvidence": ["current-3"]
+        },
+        {
+            "id": "task-4",
+            "question": "What is the current runtime_version for project-4?",
+            "relevant": [
+                {
+                    "id": "old-4",
+                    "project": "project-4",
+                    "revision": 1,
+                    "key": "runtime_version",
+                    "value": "obsolete"
+                },
+                {
+                    "id": "current-4",
+                    "project": "project-4",
+                    "revision": 2,
+                    "key": "runtime_version",
+                    "value": "24.17.0"
+                }
+            ],
+            "expectedAnswer": "24.17.0",
+            "expectedEvidence": ["current-4"]
+        },
+        {
+            "id": "task-5",
+            "question": "What is the current backup_interval for project-5?",
+            "relevant": [
+                {
+                    "id": "old-5",
+                    "project": "project-5",
+                    "revision": 1,
+                    "key": "backup_interval",
+                    "value": "obsolete"
+                },
+                {
+                    "id": "current-5",
+                    "project": "project-5",
+                    "revision": 2,
+                    "key": "backup_interval",
+                    "value": "30m"
+                }
+            ],
+            "expectedAnswer": "30m",
+            "expectedEvidence": ["current-5"]
+        },
+        {
+            "id": "task-6",
+            "question": "What is the current primary_owner for project-6?",
+            "relevant": [
+                {
+                    "id": "old-6",
+                    "project": "project-6",
+                    "revision": 1,
+                    "key": "primary_owner",
+                    "value": "obsolete"
+                },
+                {
+                    "id": "current-6",
+                    "project": "project-6",
+                    "revision": 2,
+                    "key": "primary_owner",
+                    "value": "team-cobalt"
+                }
+            ],
+            "expectedAnswer": "team-cobalt",
+            "expectedEvidence": ["current-6"]
+        },
+        {
+            "id": "task-7",
+            "question": "What is the current feature_gate for project-7?",
+            "relevant": [
+                {
+                    "id": "old-7",
+                    "project": "project-7",
+                    "revision": 1,
+                    "key": "feature_gate",
+                    "value": "obsolete"
+                },
+                {
+                    "id": "current-7",
+                    "project": "project-7",
+                    "revision": 2,
+                    "key": "feature_gate",
+                    "value": "enabled"
+                }
+            ],
+            "expectedAnswer": "enabled",
+            "expectedEvidence": ["current-7"]
+        },
+        {
+            "id": "task-8",
+            "question": "What is the current checksum_algorithm for project-8?",
+            "relevant": [
+                {
+                    "id": "old-8",
+                    "project": "project-8",
+                    "revision": 1,
+                    "key": "checksum_algorithm",
+                    "value": "obsolete"
+                },
+                {
+                    "id": "current-8",
+                    "project": "project-8",
+                    "revision": 2,
+                    "key": "checksum_algorithm",
+                    "value": "sha256"
+                }
+            ],
+            "expectedAnswer": "sha256",
+            "expectedEvidence": ["current-8"]
+        }
+    ],
+    "programId": "study.evidence.v1",
+    "claimId": "study",
+    "bootstrapSeed": 20261005,
+    "bootstrapRepetitions": 10000
+}

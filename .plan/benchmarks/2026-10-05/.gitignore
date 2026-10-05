@@ -1,0 +1,5 @@
+/tmp/
+/*.log
+/raw/**/*.sqlite
+/raw/**/*.sqlite-*
+/raw/**/*.sqlite.blobs/

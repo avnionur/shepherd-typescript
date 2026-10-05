@@ -1,0 +1,86 @@
+{
+  "configuration": {
+    "changedFileCounts": [
+      1,
+      4
+    ],
+    "copyMinimumGrowthRatio": 0.75,
+    "fileBytes": 1048576,
+    "flushCommand": [
+      "sync"
+    ],
+    "optimizedBoundFactor": 1.5,
+    "optimizedBoundOverheadBytes": 8388608,
+    "repetitions": 5,
+    "settleAttempts": 100,
+    "settleDelayMilliseconds": 100,
+    "temporaryDirectoryPrefix": "shepherd-carrier-bench-",
+    "worldFileCounts": [
+      16,
+      64
+    ]
+  },
+  "host": {
+    "arch": "arm64",
+    "node": "v24.17.0",
+    "platform": "darwin"
+  },
+  "measurements": [
+    {
+      "backend": "copy",
+      "branch_bytes": 0,
+      "changed_bytes": 1048576,
+      "upper_layer_bytes": null,
+      "world_bytes": 16777216
+    },
+    {
+      "backend": "copy",
+      "branch_bytes": 0,
+      "changed_bytes": 4194304,
+      "upper_layer_bytes": null,
+      "world_bytes": 16777216
+    },
+    {
+      "backend": "clone",
+      "branch_bytes": 0,
+      "changed_bytes": 1048576,
+      "upper_layer_bytes": null,
+      "world_bytes": 16777216
+    },
+    {
+      "backend": "clone",
+      "branch_bytes": 0,
+      "changed_bytes": 4194304,
+      "upper_layer_bytes": null,
+      "world_bytes": 16777216
+    },
+    {
+      "backend": "copy",
+      "branch_bytes": 81920000,
+      "changed_bytes": 1048576,
+      "upper_layer_bytes": null,
+      "world_bytes": 67108864
+    },
+    {
+      "backend": "copy",
+      "branch_bytes": 81920000,
+      "changed_bytes": 4194304,
+      "upper_layer_bytes": null,
+      "world_bytes": 67108864
+    },
+    {
+      "backend": "clone",
+      "branch_bytes": 0,
+      "changed_bytes": 1048576,
+      "upper_layer_bytes": null,
+      "world_bytes": 67108864
+    },
+    {
+      "backend": "clone",
+      "branch_bytes": 0,
+      "changed_bytes": 4194304,
+      "upper_layer_bytes": null,
+      "world_bytes": 67108864
+    }
+  ]
+}

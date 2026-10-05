@@ -1,0 +1,27 @@
+
+> @avnionur/shepherd-typescript@12.0.3 verify /Users/avnionur/src/github/personal/shepherd-typescript
+> pnpm check:protocol && pnpm check:evaluation && pnpm check:sbom && pnpm build && pnpm check:api-reference && pnpm check:compatibility && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:package-cli
+
+
+> @avnionur/shepherd-typescript@12.0.3 check:protocol /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/generate-protocol-artifacts-cli.ts --check
+
+
+> @avnionur/shepherd-typescript@12.0.3 check:evaluation /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/evaluate-applications-cli.ts --check
+
+
+> @avnionur/shepherd-typescript@12.0.3 check:sbom /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/generate-sbom-cli.ts --check
+
+file:///Users/avnionur/src/github/personal/shepherd-typescript/tooling/release/sbom.ts:381
+        throw new Error(`SBOM is stale: ${sbom.artifact}; run \`pnpm generate:sbom\``);
+              ^
+
+Error: SBOM is stale: docs/generated/sbom.cdx.json; run `pnpm generate:sbom`
+    at checkSbom (file:///Users/avnionur/src/github/personal/shepherd-typescript/tooling/release/sbom.ts:381:15)
+    at async file:///Users/avnionur/src/github/personal/shepherd-typescript/scripts/generate-sbom-cli.ts:10:5
+
+Node.js v24.17.0
+ ELIFECYCLE  Command failed with exit code 1.
+ ELIFECYCLE  Command failed with exit code 1.

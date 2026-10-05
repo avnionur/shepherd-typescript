@@ -1,0 +1,75 @@
+
+> @avnionur/shepherd-typescript@12.0.4 verify /Users/avnionur/src/github/personal/shepherd-typescript
+> pnpm check:protocol && pnpm check:evaluation && pnpm check:sbom && pnpm build && pnpm check:api-reference && pnpm check:compatibility && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:package-cli
+
+
+> @avnionur/shepherd-typescript@12.0.4 check:protocol /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/generate-protocol-artifacts-cli.ts --check
+
+
+> @avnionur/shepherd-typescript@12.0.4 check:evaluation /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/evaluate-applications-cli.ts --check
+
+
+> @avnionur/shepherd-typescript@12.0.4 check:sbom /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/generate-sbom-cli.ts --check
+
+
+> @avnionur/shepherd-typescript@12.0.4 build /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/clean-build.ts && tsc -p tsconfig.build.json && node scripts/copy-runtime-config.ts
+
+
+> @avnionur/shepherd-typescript@12.0.4 check:api-reference /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/generate-api-reference-cli.ts --check
+
+
+> @avnionur/shepherd-typescript@12.0.4 check:compatibility /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/check-compatibility-cli.ts --check
+
+compatibility baselines are current (0 changes)
+
+> @avnionur/shepherd-typescript@12.0.4 lint /Users/avnionur/src/github/personal/shepherd-typescript
+> biome check .
+
+biome.json:2:16 deserialize ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i The configuration schema version does not match the CLI version 2.5.7
+  
+    1 │ {
+  > 2 │     "$schema": "https://biomejs.dev/schemas/2.5.6/schema.json",
+      │                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │     "files": {
+    4 │         "includes": [
+  
+  i   Expected:                     2.5.7
+      Found:                        2.5.6
+  
+  
+  i Run the command biome migrate to migrate the configuration file.
+  
+
+.plan/benchmarks/2026-10-05/summary.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    182 182 │       "cluster_bootstrap": {
+    183 183 │           "selected_minus_full_joint_success": 0.875,
+    184     │ - ········"conditional_percentile_95_interval":·[
+    185     │ - ············0.625,
+    186     │ - ············1.0
+    187     │ - ········],
+        184 │ + ········"conditional_percentile_95_interval":·[0.625,·1.0],
+    188 185 │           "task_clusters": 8,
+    189 186 │           "repetitions": 10000,
+  
+
+Checked 877 files in 332ms. No fixes applied.
+Found 1 error.
+Found 1 info.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+ ELIFECYCLE  Command failed with exit code 1.
+ ELIFECYCLE  Command failed with exit code 1.

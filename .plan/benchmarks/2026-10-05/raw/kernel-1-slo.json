@@ -1,0 +1,86 @@
+{
+    "checks": [
+        {
+            "bound": "max",
+            "budget": 1.1,
+            "metric": "append_latency_ms",
+            "ok": true,
+            "statistic": "p95",
+            "value": 0.318
+        },
+        {
+            "bound": "min",
+            "budget": 1400,
+            "metric": "append_throughput_records_per_second",
+            "ok": true,
+            "statistic": "median",
+            "value": 4338.863
+        },
+        {
+            "bound": "max",
+            "budget": 240,
+            "metric": "cli_startup_ms",
+            "ok": true,
+            "statistic": "p95",
+            "value": 106.333
+        },
+        {
+            "bound": "max",
+            "budget": 210,
+            "metric": "cut_resolve_ms",
+            "ok": true,
+            "statistic": "p95",
+            "value": 85.571
+        },
+        {
+            "bound": "max",
+            "budget": 3000,
+            "metric": "export_ms",
+            "ok": true,
+            "statistic": "p95",
+            "value": 1344.787
+        },
+        {
+            "bound": "max",
+            "budget": 10,
+            "metric": "gc_inspect_ms",
+            "ok": true,
+            "statistic": "p95",
+            "value": 3.483
+        },
+        {
+            "bound": "max",
+            "budget": 5400,
+            "metric": "import_ms",
+            "ok": true,
+            "statistic": "p95",
+            "value": 1967.498
+        },
+        {
+            "bound": "max",
+            "budget": 30,
+            "metric": "slice_read_ms",
+            "ok": true,
+            "statistic": "p95",
+            "value": 9.15
+        },
+        {
+            "bound": "max",
+            "budget": 26,
+            "metric": "subscription_pull_ms",
+            "ok": true,
+            "statistic": "p95",
+            "value": 9.662
+        },
+        {
+            "bound": "max",
+            "budget": 1800,
+            "metric": "verify_ms",
+            "ok": true,
+            "statistic": "p95",
+            "value": 687.199
+        }
+    ],
+    "host_class": "macos-arm64-apfs",
+    "ok": true
+}

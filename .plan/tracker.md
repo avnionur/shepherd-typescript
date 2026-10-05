@@ -2,11 +2,22 @@
 
 Last updated: 2026-10-05
 
-Current version: `13.7.0`
+Current version: `13.7.1`
 
 Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
 ## Current position
+
+The [2026-10-05 empirical study](./benchmarks/2026-10-05/paper.tex) records fresh measurements of
+runtime 12.0.3: three kernel trials, a scope trial with 150 passed restoration checks and one
+latency SLO miss, a failed carrier-storage assertion, checkpoint and device-layer measurements,
+and 96 local-model trials against a matched direct harness across three context conditions.
+The pilot separates task completion from answer/evidence correctness, checks retained results
+across repeat/reopen/import, and makes no independent-framework ranking or general coding-quality
+claim. Its data, configuration, source notes, and verification are kept with the report. This is a
+research/documentation patch; it does not resolve active coverage follow-up issues. Publication on 13.7.0
+main passed full `pnpm verify`: 1,416 passed, zero failures, two documented skips, 100% configured
+coverage and installed-package gates. Version synchronization and desktop build passed.
 
 Owner-requested #278 extends the Pi observatory with pre-auth catalog, masked key setup and
 Pi-native private persistence, configured Ollama, arrow-key panning and recoverable canvas clearing; [preservation](./278-pi-settings-preservation.md). MINOR 13.6.0.

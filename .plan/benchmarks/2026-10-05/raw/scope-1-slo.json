@@ -1,0 +1,142 @@
+{
+    "checks": [
+        {
+            "bound": "max",
+            "budget": 4400,
+            "metric": "fork_ms/clone/large",
+            "ok": true,
+            "statistic": "p95",
+            "value": 1331.762
+        },
+        {
+            "bound": "max",
+            "budget": 3000,
+            "metric": "fork_ms/clone/medium",
+            "ok": true,
+            "statistic": "p95",
+            "value": 1996.053
+        },
+        {
+            "bound": "max",
+            "budget": 470,
+            "metric": "fork_ms/clone/small",
+            "ok": true,
+            "statistic": "p95",
+            "value": 190.753
+        },
+        {
+            "bound": "max",
+            "budget": 3000,
+            "metric": "fork_ms/copy/large",
+            "ok": true,
+            "statistic": "p95",
+            "value": 1287.515
+        },
+        {
+            "bound": "max",
+            "budget": 2800,
+            "metric": "fork_ms/copy/medium",
+            "ok": true,
+            "statistic": "p95",
+            "value": 981.714
+        },
+        {
+            "bound": "max",
+            "budget": 640,
+            "metric": "fork_ms/copy/small",
+            "ok": true,
+            "statistic": "p95",
+            "value": 174.01
+        },
+        {
+            "bound": "max",
+            "budget": 0.59,
+            "metric": "observe_ms/observers-1/steps-200",
+            "ok": true,
+            "statistic": "p95",
+            "value": 0.184
+        },
+        {
+            "bound": "max",
+            "budget": 0.53,
+            "metric": "observe_ms/observers-4/steps-200",
+            "ok": true,
+            "statistic": "p95",
+            "value": 0.273
+        },
+        {
+            "bound": "max",
+            "budget": 4.5,
+            "metric": "record_ms/observers-0/steps-200",
+            "ok": true,
+            "statistic": "p95",
+            "value": 1.248
+        },
+        {
+            "bound": "max",
+            "budget": 3.3,
+            "metric": "record_ms/observers-1/steps-200",
+            "ok": true,
+            "statistic": "p95",
+            "value": 1.284
+        },
+        {
+            "bound": "max",
+            "budget": 4,
+            "metric": "record_ms/observers-4/steps-200",
+            "ok": true,
+            "statistic": "p95",
+            "value": 2.097
+        },
+        {
+            "bound": "max",
+            "budget": 530,
+            "metric": "revert_ms/clone/large",
+            "ok": true,
+            "statistic": "p95",
+            "value": 206.448
+        },
+        {
+            "bound": "max",
+            "budget": 250,
+            "metric": "revert_ms/clone/medium",
+            "ok": false,
+            "statistic": "p95",
+            "value": 314.139
+        },
+        {
+            "bound": "max",
+            "budget": 130,
+            "metric": "revert_ms/clone/small",
+            "ok": true,
+            "statistic": "p95",
+            "value": 51.119
+        },
+        {
+            "bound": "max",
+            "budget": 580,
+            "metric": "revert_ms/copy/large",
+            "ok": true,
+            "statistic": "p95",
+            "value": 264.182
+        },
+        {
+            "bound": "max",
+            "budget": 580,
+            "metric": "revert_ms/copy/medium",
+            "ok": true,
+            "statistic": "p95",
+            "value": 140.24
+        },
+        {
+            "bound": "max",
+            "budget": 180,
+            "metric": "revert_ms/copy/small",
+            "ok": true,
+            "statistic": "p95",
+            "value": 51.225
+        }
+    ],
+    "host_class": "macos-arm64-apfs",
+    "ok": false
+}

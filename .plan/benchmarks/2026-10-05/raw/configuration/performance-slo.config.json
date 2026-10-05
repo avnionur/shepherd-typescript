@@ -1,0 +1,39 @@
+{
+    "budgetPolicy": "Each host class's budgets come from two pnpm bench:kernel runs on that class's measurement host. Each latency budget bounds p95 at three times the worse measured p95, rounded up; the append-throughput budget bounds the median at one third of the lower measured median, rounded down. The threefold headroom absorbs run-to-run noise and a loaded machine; it is not a claim about any other host. macos-arm64-apfs: set on 2026-09-18 on the reference host (Apple M4 Pro, 14 cores, 48 GiB, Darwin 27.0.0, APFS, Node 24.17.0, SQLite 3.53.0). linux-arm64-overlayfs-container: set on 2026-09-23 from two runs as the unprivileged node user in a Debian 12 (bookworm) Node 24.21.0 container (bundled SQLite 3.53.4) in OrbStack's Linux VM (kernel 7.0.14-orbstack, 14 CPUs, 16 GiB) on the same reference host, temporary directory on the container's overlayfs; rounded up (down for throughput) to two significant figures.",
+    "hostClasses": [
+        {
+            "budgets": {
+                "append_latency_ms": { "max": 1.1, "statistic": "p95" },
+                "append_throughput_records_per_second": { "min": 1400, "statistic": "median" },
+                "cli_startup_ms": { "max": 240, "statistic": "p95" },
+                "cut_resolve_ms": { "max": 210, "statistic": "p95" },
+                "export_ms": { "max": 3000, "statistic": "p95" },
+                "gc_inspect_ms": { "max": 10, "statistic": "p95" },
+                "import_ms": { "max": 5400, "statistic": "p95" },
+                "slice_read_ms": { "max": 30, "statistic": "p95" },
+                "subscription_pull_ms": { "max": 26, "statistic": "p95" },
+                "verify_ms": { "max": 1800, "statistic": "p95" }
+            },
+            "description": "macOS on Apple silicon (arm64) with the benchmark temporary directory on APFS",
+            "id": "macos-arm64-apfs",
+            "match": { "arch": "arm64", "filesystemTypes": [26], "platform": "darwin" }
+        },
+        {
+            "budgets": {
+                "append_latency_ms": { "max": 5.7, "statistic": "p95" },
+                "append_throughput_records_per_second": { "min": 270, "statistic": "median" },
+                "cli_startup_ms": { "max": 240, "statistic": "p95" },
+                "cut_resolve_ms": { "max": 300, "statistic": "p95" },
+                "export_ms": { "max": 4200, "statistic": "p95" },
+                "gc_inspect_ms": { "max": 2.9, "statistic": "p95" },
+                "import_ms": { "max": 3800, "statistic": "p95" },
+                "slice_read_ms": { "max": 35, "statistic": "p95" },
+                "subscription_pull_ms": { "max": 33, "statistic": "p95" },
+                "verify_ms": { "max": 2500, "statistic": "p95" }
+            },
+            "description": "Linux on arm64 with the benchmark temporary directory on overlayfs (filesystem type 0x794c7630), as in a container. Measured in a Linux container in OrbStack's virtual machine on the macOS arm64 reference host; any linux/arm64 host with an overlayfs temporary directory matches, but the budgets are only evidence for that measurement host",
+            "id": "linux-arm64-overlayfs-container",
+            "match": { "arch": "arm64", "filesystemTypes": [2035054128], "platform": "linux" }
+        }
+    ]
+}

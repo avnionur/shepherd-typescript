@@ -1,5 +1,5 @@
 cognia:
-    version: 13.7.0
+    version: 13.7.1
 
 versionFiles:
     - package.json

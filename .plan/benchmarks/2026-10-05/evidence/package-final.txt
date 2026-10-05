@@ -1,0 +1,12 @@
+
+> @avnionur/shepherd-typescript@12.0.4 test:package-cli /Users/avnionur/src/github/personal/shepherd-typescript
+> node scripts/test-packaged-cli.ts
+
+npm warn Unknown env config "npm-globalconfig". This will error in a future major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "verify-deps-before-run". This will error in a future major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "_jsr-registry". This will error in a future major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "overrides". This will error in a future major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown env config "_dnext-registry". This will error in a future major version of npm. See `npm help npmrc` for supported config options.
+npm warn Unknown global config "only-built-dependencies". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+Installed runtime 24.17.0: supported
+quickstart flow: 2120 ms, 261542 retained bytes

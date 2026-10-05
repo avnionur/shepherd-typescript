@@ -1,0 +1,158 @@
+{
+  "configuration": {
+    "constantTime": {
+      "adapters": [
+        "overlay"
+      ],
+      "maxRatio": 3
+    },
+    "depthSweep": {
+      "adapters": [
+        "overlay",
+        "container"
+      ],
+      "checkpoints": 100
+    },
+    "fileBytes": 65536,
+    "linux": {
+      "containerOutput": "/output",
+      "containerSource": "/source",
+      "containerWorkspace": "/workspace",
+      "dockerExecutable": "docker",
+      "dockerRunArguments": [
+        "run",
+        "--rm",
+        "--privileged"
+      ],
+      "hostOutput": "docs/generated/benchmarks",
+      "image": "node:24-bookworm",
+      "shellArguments": [
+        "-euo",
+        "pipefail",
+        "-c"
+      ],
+      "shellExecutable": "bash",
+      "steps": [
+        "node --version",
+        "apt-get update -qq",
+        "DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xfsprogs > /dev/null",
+        "mkdir -p {workspace}/repo {workspace}/tmp {workspace}/reflink",
+        "tar -C {source} --exclude=./node_modules --exclude=./dist --exclude=./.git -cf - . | tar -C {workspace}/repo -xf -",
+        "cd {workspace}/repo",
+        "echo 'device-layer conformance on tmpfs (overlay required)'",
+        "TMPDIR={workspace}/tmp {requiredVariable}=overlay node --test {testFile}",
+        "truncate -s 2g {workspace}/reflink.img",
+        "mkfs.xfs -q -m reflink=1 {workspace}/reflink.img",
+        "mount -o loop {workspace}/reflink.img {workspace}/reflink",
+        "chmod 1777 {workspace}/reflink",
+        "echo 'device-layer conformance on loopback XFS reflink=1 (clone and overlay required)'",
+        "TMPDIR={workspace}/reflink {requiredVariable}=clone,overlay node --test {testFile}",
+        "umount {workspace}/reflink",
+        "echo 'device-layer checkpoint benchmark on tmpfs'",
+        "TMPDIR={workspace}/tmp node scripts/bench-device-layers.ts",
+        "cp {workspace}/repo/{outputDirectory}/{outputPrefix}*.json {output}/"
+      ],
+      "tmpfsOptions": "rw,exec,mode=1777,size=6g",
+      "tokens": {
+        "output": "{output}",
+        "outputDirectory": "{outputDirectory}",
+        "outputPrefix": "{outputPrefix}",
+        "requiredVariable": "{requiredVariable}",
+        "source": "{source}",
+        "testFile": "{testFile}",
+        "workspace": "{workspace}"
+      }
+    },
+    "outputDirectory": "docs/generated/benchmarks",
+    "outputPrefix": "device-layer-checkpoints-",
+    "repetitions": 7,
+    "temporaryDirectoryPrefix": "shepherd-device-layer-bench-",
+    "warmups": 2,
+    "worldFileCounts": [
+      16,
+      256,
+      2048
+    ]
+  },
+  "depth_sweeps": [],
+  "host": {
+    "arch": "arm64",
+    "cpu": "Apple M4 Pro",
+    "node": "v24.17.0",
+    "platform": "darwin",
+    "release": "27.0.0"
+  },
+  "measurements": [
+    {
+      "adapter": "copy",
+      "checkpoint_median_ms": 90.16,
+      "checkpoint_p90_ms": 102.44,
+      "restore_median_ms": 104.23,
+      "world_bytes": 1048576,
+      "world_files": 16
+    },
+    {
+      "adapter": "clone",
+      "checkpoint_median_ms": 130.84,
+      "checkpoint_p90_ms": 154.98,
+      "restore_median_ms": 128.07,
+      "world_bytes": 1048576,
+      "world_files": 16
+    },
+    {
+      "adapter": "copy",
+      "checkpoint_median_ms": 1139.38,
+      "checkpoint_p90_ms": 1173.73,
+      "restore_median_ms": 1148.12,
+      "world_bytes": 16777216,
+      "world_files": 256
+    },
+    {
+      "adapter": "clone",
+      "checkpoint_median_ms": 1593.85,
+      "checkpoint_p90_ms": 1639.12,
+      "restore_median_ms": 1618.1,
+      "world_bytes": 16777216,
+      "world_files": 256
+    },
+    {
+      "adapter": "copy",
+      "checkpoint_median_ms": 9400.98,
+      "checkpoint_p90_ms": 10361.9,
+      "restore_median_ms": 9768.42,
+      "world_bytes": 134217728,
+      "world_files": 2048
+    },
+    {
+      "adapter": "clone",
+      "checkpoint_median_ms": 13484.88,
+      "checkpoint_p90_ms": 13856.82,
+      "restore_median_ms": 13299.85,
+      "world_bytes": 134217728,
+      "world_files": 2048
+    }
+  ],
+  "method": "Each world is seeded with world_files files of fileBytes random-looking bytes. Every step writes one new changed file, times checkpoint(), writes one discarded file, and times restore() of the new checkpoint (discarding the writable layer); warmup steps are dropped. The depth sweep freezes depthSweep.checkpoints consecutive checkpoints over the smallest world under the configured depth bound, recording latency by stack depth and for checkpoints that compacted.",
+  "ratios": {
+    "copy": {
+      "checkpoint_ratio_largest_to_smallest": 104.27,
+      "restore_ratio_largest_to_smallest": 93.72,
+      "world_ratio": 128
+    },
+    "clone": {
+      "checkpoint_ratio_largest_to_smallest": 103.06,
+      "restore_ratio_largest_to_smallest": 103.85,
+      "world_ratio": 128
+    }
+  },
+  "skipped": [
+    {
+      "adapter": "overlay",
+      "reason": "platform-unsupported"
+    },
+    {
+      "adapter": "container",
+      "reason": "container-daemon-unavailable"
+    }
+  ]
+}
