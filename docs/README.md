@@ -8,6 +8,9 @@ The [2026-10-05 empirical study](../.plan/benchmarks/2026-10-05/paper.tex) and i
 fresh local runtime measurements, a matched direct-harness control, and a local-model context
 pilot. They retain observed failures and do not replace the normative performance budgets.
 
+The root [Benchmark section](../README.md#benchmark) links unchanged [report](../benchmark/shepherd-empirical-study.pdf),
+[scope-latency](../benchmark/scope-latency.pdf), and [context-quality](../benchmark/context-quality.pdf) PDF copies.
+
 ## Guides
 
 - [Effect reconciliation](./effect-reconciliation.md) defines authenticated operator decisions,

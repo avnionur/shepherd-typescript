@@ -162,5 +162,16 @@ Final base: main `c58b06a` (13.7.1); additive MINOR13.8.0.
 - Native Linux bind-mount, actual13.7 reader and installed13.8 fresh-process restore probes passed as recorded above.
 - No dependency or lockfile changes. No live-provider, Windows, remote-host, overlay/container durable recovery or constant-time snapshot claim.
 
-The suite's two skips are the existing opt-in external lanes; they are not device recovery evidence.
+The two existing skips are the credentialed live-provider opt-in and telemetry fuzzing (no input decoder exists); neither is device recovery evidence.
 One private null-plan guard is excluded because frozen decoding already rejects it; malformed-plan tests exercise that boundary. All new filesystem/ownership guards are covered.
+
+## Main13.7.2 integration, 2026-10-06
+
+PR286 was opened after commit `b8fba1f`; main had advanced to `f467a94` (PR285, benchmark PDF links).
+Merged that documentation-only change, retaining its PDFs, README/index links and13.7.2 changelog.
+Compatibility previousVersion is now13.7.2; this slice remains MINOR13.8.0.
+
+Repeated complete host verification on the resolved branch passed: `CI=true caffeinate -i pnpm verify`,
+1,474 total /1,472 passed /zero failed /two documented skips,100% configured coverage, all installed
+package checks. Log: `/private/tmp/shepherd-243-verify-merged-main.log`. Runtime implementation is
+unchanged from the reviewed implementation; final version sync and desktop build also passed.

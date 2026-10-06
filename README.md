@@ -8,6 +8,14 @@ The implementation is built over a language-neutral protocol. Upstream Python be
 compatibility oracle, not a runtime dependency. This project is not affiliated with the upstream
 Shepherd authors.
 
+## Benchmark
+
+The study measures runtime **12.0.3**. The report describes its methodology, results, and limitations.
+
+- [Scientific benchmark report (PDF)](https://github.com/avnionur/shepherd-typescript/blob/main/benchmark/shepherd-empirical-study.pdf)
+- [Scope fork and revert latency (PDF)](https://github.com/avnionur/shepherd-typescript/blob/main/benchmark/scope-latency.pdf)
+- [Context engineering and task quality (PDF)](https://github.com/avnionur/shepherd-typescript/blob/main/benchmark/context-quality.pdf)
+
 [Paper](https://arxiv.org/abs/2605.10913) ·
 [Upstream project](https://shepherd-agents.ai/) ·
 [Upstream code](https://github.com/shepherd-agents/shepherd) ·
@@ -22,6 +30,7 @@ not benchmark claims for this implementation._
 
 ## Contents
 
+- [Benchmark](#benchmark)
 - [Concepts](#concepts)
 - [Status](#status)
 - [Paper coverage](#paper-coverage)
