@@ -4101,3 +4101,69 @@ export const PROVIDER_PROTOCOL_V4_CONTRACT = deepFreeze({
         },
     },
 } as const);
+
+/** Workspace protocol v29 adds an explicit durable device-layer lifecycle. */
+export const WORKSPACE_PROTOCOL_V29_CONTRACT = deepFreeze({
+    ...WORKSPACE_PROTOCOL_V28_CONTRACT,
+    deviceLayers: {
+        ...WORKSPACE_PROTOCOL_V28_CONTRACT.deviceLayers,
+        retained: {
+            compatibilityVersion: "shepherd.retained-device-layer.v1",
+            recordVersion: 1,
+            traceSchema: "shepherd.device-layer.lifecycle.v1",
+            schemaId:
+                "https://avnionur.github.io/shepherd-typescript/schemas/device-layer-lifecycle-v1.schema.json",
+            schemaPath: "spec/schemas/device-layer-lifecycle-v1.schema.json",
+            ownerIdPrefix: "retained-device:sha256:",
+            commandOwnerPrefix: "retained-device-command:",
+            configurationIdPrefix: "device-configuration:sha256:",
+            rootDirectoryPrefix: "retained-device-",
+            ownershipFilename: "ownership.json",
+            layersDirectory: "layers",
+            writableDirectoryPrefix: "writable-",
+            stagingDirectoryPrefix: "staging-",
+            markerVersion: 1,
+            payloadIdentityFilename: "payload-identity.json",
+            treeDirectory: "data",
+            directoryMode: 448,
+            fileMode: 384,
+            adapters: {
+                copy: "copy",
+                clone: "clone",
+            },
+            actions: {
+                open: "open",
+                checkpoint: "checkpoint",
+                restore: "restore",
+                cleanup: "cleanup",
+            },
+            statuses: {
+                ready: "ready",
+                pending: "pending",
+                cleaned: "cleaned",
+                unavailable: "unavailable",
+            },
+            phases: {
+                prepared: "prepared",
+                published: "published",
+                completed: "completed",
+            },
+            limits: {
+                maxEntries: 65536,
+                maxMarkerBytes: 16384,
+                maxFileBytes: 268435456,
+                maxTotalBytes: 1073741824,
+            },
+        },
+    },
+} as const);
+
+/** Store v16 binds retained device journals to local physical ownership. */
+export const KERNEL_ABI_V0_STORE_V16_CONTRACT = deepFreeze({
+    ...KERNEL_ABI_V0_STORE_V15_CONTRACT,
+    migrations: [
+        ...KERNEL_ABI_V0_STORE_V15_CONTRACT.migrations,
+        { firstOwnerOrdinal: 0, lastOwnerOrdinal: 9_007_199_254_740_990, version: 16 },
+    ],
+    schemaVersion: 16,
+} as const);

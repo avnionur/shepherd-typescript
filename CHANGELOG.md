@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.8.0] - 2026-10-05
+
+### New Feature
+
+- Add explicitly retained device-layer worlds with canonical lifecycle journals, named snapshots,
+  writable generations, read-only diagnosis and exact-head recovery (#243).
+- Support durable copy and probe-supported clone materialization; preserve the existing scratch
+  API. Prepared, published and completed phases make interrupted capture, restore, compaction
+  and owned cleanup recoverable without silently adopting replaced resources.
+- Bind local authority to the database file and wrapper/payload identities, retain durable
+  ownership receipts, and refuse foreign mounts, copied/imported authority and conflicting commands.
+  Store schema 16 adds local registrations without rewriting prior canonical records.
+
+### Impact
+
+MINOR additive capability. Retained handles keep resources after close; cleanup is explicit and
+journaled. Metadata survives in the trace, while external device files require their own retention
+policy. Overlay/container/custom recovery, Windows, cross-store adoption and ordinary scope/replay
+composition remain outside this slice. Durable capture uses verified scans, not constant-time snapshots.
+
 ## [13.7.1] - 2026-10-05
 
 ### Improvement

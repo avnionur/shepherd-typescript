@@ -1,0 +1,732 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://avnionur.github.io/shepherd-typescript/schemas/device-layer-lifecycle-v1.schema.json",
+    "title": "Shepherd Retained Device Layer Lifecycle v1",
+    "$comment": "Generated from protocol.config.json. Runtime additionally verifies the complete causal journal, exact requests and deterministic plans, immutable ownership, physical database and directory identities, payload receipts, content digests, mount boundaries and exact-head admission. Imported records do not provide local physical authority.",
+    "type": "object",
+    "properties": {
+        "compatibility_version": {
+            "const": "shepherd.retained-device-layer.v1"
+        },
+        "record_version": {
+            "const": 1
+        },
+        "device_id": {
+            "type": "string",
+            "pattern": "^retained-device:sha256:[0-9a-f]{64}$"
+        },
+        "command_id": {
+            "type": "string",
+            "minLength": 1
+        },
+        "operation": {
+            "enum": [
+                "open",
+                "checkpoint",
+                "restore",
+                "cleanup"
+            ]
+        },
+        "phase": {
+            "enum": [
+                "prepared",
+                "published",
+                "completed"
+            ]
+        },
+        "request": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "operation": {
+                            "const": "open"
+                        },
+                        "root": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "seed": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            ]
+                        },
+                        "adapter": {
+                            "enum": [
+                                "copy",
+                                "clone"
+                            ]
+                        },
+                        "depth": {
+                            "type": "object",
+                            "properties": {
+                                "maxDepth": {
+                                    "type": "integer",
+                                    "minimum": 3,
+                                    "maximum": 48
+                                },
+                                "retainNewest": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 46
+                                }
+                            },
+                            "required": [
+                                "maxDepth",
+                                "retainNewest"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "configuration_id": {
+                            "type": "string",
+                            "pattern": "^device-configuration:sha256:[0-9a-f]{64}$"
+                        }
+                    },
+                    "required": [
+                        "adapter",
+                        "configuration_id",
+                        "depth",
+                        "operation",
+                        "root",
+                        "seed"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "operation": {
+                            "const": "checkpoint"
+                        },
+                        "device_id": {
+                            "type": "string",
+                            "pattern": "^retained-device:sha256:[0-9a-f]{64}$"
+                        },
+                        "name": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+                        }
+                    },
+                    "required": [
+                        "device_id",
+                        "name",
+                        "operation"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "operation": {
+                            "const": "restore"
+                        },
+                        "device_id": {
+                            "type": "string",
+                            "pattern": "^retained-device:sha256:[0-9a-f]{64}$"
+                        },
+                        "name": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+                        }
+                    },
+                    "required": [
+                        "device_id",
+                        "name",
+                        "operation"
+                    ],
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "operation": {
+                            "const": "cleanup"
+                        },
+                        "device_id": {
+                            "type": "string",
+                            "pattern": "^retained-device:sha256:[0-9a-f]{64}$"
+                        },
+                        "name": {
+                            "type": "null"
+                        }
+                    },
+                    "required": [
+                        "device_id",
+                        "name",
+                        "operation"
+                    ],
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "state": {
+            "$ref": "#/$defs/state"
+        },
+        "plan": {
+            "type": "object",
+            "properties": {
+                "copies": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "source": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                ]
+                            },
+                            "target": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "content_id": {
+                                "type": "string",
+                                "pattern": "^sha256:[0-9a-f]{64}$"
+                            }
+                        },
+                        "required": [
+                            "content_id",
+                            "source",
+                            "target"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "next": {
+                    "$ref": "#/$defs/state"
+                },
+                "checkpoint": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+                        }
+                    ]
+                },
+                "layer": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^[0-9]{6,}$"
+                        }
+                    ]
+                },
+                "discarded": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+                    }
+                },
+                "compaction": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "into": {
+                                    "type": "string",
+                                    "pattern": "^[0-9]{6,}$"
+                                },
+                                "layers": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "uniqueItems": true,
+                                    "items": {
+                                        "type": "string",
+                                        "pattern": "^[0-9]{6,}$"
+                                    }
+                                },
+                                "retired": {
+                                    "type": "array",
+                                    "uniqueItems": true,
+                                    "items": {
+                                        "type": "string",
+                                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+                                    }
+                                }
+                            },
+                            "required": [
+                                "into",
+                                "layers",
+                                "retired"
+                            ],
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "checkpoint",
+                "compaction",
+                "copies",
+                "discarded",
+                "layer",
+                "next"
+            ],
+            "additionalProperties": false
+        },
+        "recovery": {
+            "oneOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "command_id": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "expected_head_record_id": {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                        }
+                    },
+                    "required": [
+                        "command_id",
+                        "expected_head_record_id"
+                    ],
+                    "additionalProperties": false
+                }
+            ]
+        }
+    },
+    "required": [
+        "command_id",
+        "compatibility_version",
+        "device_id",
+        "operation",
+        "phase",
+        "plan",
+        "record_version",
+        "recovery",
+        "request",
+        "state"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+        "state": {
+            "type": "object",
+            "properties": {
+                "adapter": {
+                    "enum": [
+                        "copy",
+                        "clone"
+                    ]
+                },
+                "configuration_id": {
+                    "type": "string",
+                    "pattern": "^device-configuration:sha256:[0-9a-f]{64}$"
+                },
+                "root": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "parent_identity": {
+                    "type": "object",
+                    "properties": {
+                        "device": {
+                            "type": "string",
+                            "pattern": "^[0-9]+$"
+                        },
+                        "inode": {
+                            "type": "string",
+                            "pattern": "^[0-9]+$"
+                        }
+                    },
+                    "required": [
+                        "device",
+                        "inode"
+                    ],
+                    "additionalProperties": false
+                },
+                "root_identity": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "device": {
+                                    "type": "string",
+                                    "pattern": "^[0-9]+$"
+                                },
+                                "inode": {
+                                    "type": "string",
+                                    "pattern": "^[0-9]+$"
+                                }
+                            },
+                            "required": [
+                                "device",
+                                "inode"
+                            ],
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "layers_identity": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "device": {
+                                    "type": "string",
+                                    "pattern": "^[0-9]+$"
+                                },
+                                "inode": {
+                                    "type": "string",
+                                    "pattern": "^[0-9]+$"
+                                }
+                            },
+                            "required": [
+                                "device",
+                                "inode"
+                            ],
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "ownership_key": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "depth": {
+                    "type": "object",
+                    "properties": {
+                        "maxDepth": {
+                            "type": "integer",
+                            "minimum": 3,
+                            "maximum": 48
+                        },
+                        "retainNewest": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 46
+                        }
+                    },
+                    "required": [
+                        "maxDepth",
+                        "retainNewest"
+                    ],
+                    "additionalProperties": false
+                },
+                "generation": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                },
+                "ordinal": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                },
+                "layers": {
+                    "type": "array",
+                    "maxItems": 48,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "checkpoint": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+                            },
+                            "layer": {
+                                "type": "string",
+                                "pattern": "^[0-9]{6,}$"
+                            },
+                            "tree": {
+                                "type": "object",
+                                "properties": {
+                                    "directory": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "identity": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "device": {
+                                                        "type": "string",
+                                                        "pattern": "^[0-9]+$"
+                                                    },
+                                                    "inode": {
+                                                        "type": "string",
+                                                        "pattern": "^[0-9]+$"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "device",
+                                                    "inode"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        ]
+                                    },
+                                    "payload_identity": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "device": {
+                                                        "type": "string",
+                                                        "pattern": "^[0-9]+$"
+                                                    },
+                                                    "inode": {
+                                                        "type": "string",
+                                                        "pattern": "^[0-9]+$"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "device",
+                                                    "inode"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        ]
+                                    },
+                                    "content_id": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "pattern": "^sha256:[0-9a-f]{64}$"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "content_id",
+                                    "directory",
+                                    "identity",
+                                    "payload_identity"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "checkpoint",
+                            "layer",
+                            "tree"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "retired": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+                    }
+                },
+                "writable": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "directory": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "identity": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "device": {
+                                                    "type": "string",
+                                                    "pattern": "^[0-9]+$"
+                                                },
+                                                "inode": {
+                                                    "type": "string",
+                                                    "pattern": "^[0-9]+$"
+                                                }
+                                            },
+                                            "required": [
+                                                "device",
+                                                "inode"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                "payload_identity": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "device": {
+                                                    "type": "string",
+                                                    "pattern": "^[0-9]+$"
+                                                },
+                                                "inode": {
+                                                    "type": "string",
+                                                    "pattern": "^[0-9]+$"
+                                                }
+                                            },
+                                            "required": [
+                                                "device",
+                                                "inode"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                "content_id": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "pattern": "^sha256:[0-9a-f]{64}$"
+                                        }
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "content_id",
+                                "directory",
+                                "identity",
+                                "payload_identity"
+                            ],
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "garbage": {
+                    "type": "array",
+                    "maxItems": 49,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "directory": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "identity": {
+                                "type": "object",
+                                "properties": {
+                                    "device": {
+                                        "type": "string",
+                                        "pattern": "^[0-9]+$"
+                                    },
+                                    "inode": {
+                                        "type": "string",
+                                        "pattern": "^[0-9]+$"
+                                    }
+                                },
+                                "required": [
+                                    "device",
+                                    "inode"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "payload_identity": {
+                                "type": "object",
+                                "properties": {
+                                    "device": {
+                                        "type": "string",
+                                        "pattern": "^[0-9]+$"
+                                    },
+                                    "inode": {
+                                        "type": "string",
+                                        "pattern": "^[0-9]+$"
+                                    }
+                                },
+                                "required": [
+                                    "device",
+                                    "inode"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "content_id": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "pattern": "^sha256:[0-9a-f]{64}$"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "content_id",
+                            "directory",
+                            "identity",
+                            "payload_identity"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "cleaned": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "adapter",
+                "cleaned",
+                "configuration_id",
+                "depth",
+                "garbage",
+                "generation",
+                "layers",
+                "layers_identity",
+                "ordinal",
+                "ownership_key",
+                "parent_identity",
+                "retired",
+                "root",
+                "root_identity",
+                "writable"
+            ],
+            "additionalProperties": false
+        }
+    }
+}

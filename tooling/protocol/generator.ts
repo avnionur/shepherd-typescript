@@ -20,6 +20,7 @@ import {
     renderDelegationHandoffSchema,
     renderDelegationOpenedSchema,
 } from "./schemas/delegation-schemas.ts";
+import { renderDeviceLayerLifecycleSchema } from "./schemas/device-layer-lifecycle-schema.ts";
 import {
     renderEffectCompensationSchema,
     renderEffectIntentSchema,
@@ -269,6 +270,10 @@ export async function synchronizeProtocolArtifacts(
         {
             content: renderJson(renderEffectCompensationSchema(config)),
             relativePath: config.effects.compensation.artifacts.recordSchema,
+        },
+        {
+            content: renderJson(renderDeviceLayerLifecycleSchema(config)),
+            relativePath: config.workspaces.deviceLayers.retained.schemaPath,
         },
         {
             content: renderJson(renderProviderCheckpointSchema(config)),
@@ -1832,6 +1837,11 @@ function renderProtocolValues(
     const renderedDeviceLayerAdapters = Object.values(config.workspaces.deviceLayers.adapters)
         .map((adapter) => JSON.stringify(adapter))
         .join(", ");
+    const renderedRetainedDeviceStatuses = Object.values(
+        config.workspaces.deviceLayers.retained.statuses,
+    )
+        .map((status) => JSON.stringify(status))
+        .join(", ");
     const renderedGitHeadKinds = config.workspaces.gitCustody.headKinds
         .map((kind) => JSON.stringify(kind))
         .join(", ");
@@ -2203,6 +2213,9 @@ export const BACKEND_SELECTION_MODES = [${renderedBackendSelectionModes}] as con
 
 /** Configured built-in device-layer adapter names. @public */
 export const DEVICE_LAYER_ADAPTERS = [${renderedDeviceLayerAdapters}] as const;
+
+/** Configured durable device-layer diagnosis statuses. @public */
+export const RETAINED_DEVICE_STATUSES = [${renderedRetainedDeviceStatuses}] as const;
 
 /** Configured retained-world runner enforcement classifications. @public */
 export const RETAINED_WORLD_ENFORCEMENT_KINDS = [${renderedRetainedWorldEnforcementKinds}] as const;

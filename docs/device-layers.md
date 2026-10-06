@@ -50,10 +50,11 @@ layer carries exactly one checkpoint name whose state is that layer's merged vie
   original error as `cause`. `close()` releases the device, removes its private root, and is
   idempotent; later operations fail with `DEVICE_LAYER_CLOSED`.
 
-Device-layer worlds are process-scoped scratch devices: nothing is written to the trace store or to
-workspace control storage, and a world is not reopened after a process restart. Durable identity
-stays with [carrier revisions](./optimized-carriers.md) and
-[coupled replay checkpoints](./coupled-checkpoints.md).
+The `openDeviceLayerWorld` API creates process-scoped scratch devices: nothing is written to the trace store or to
+workspace control storage, and a world is not reopened after a process restart. For explicit durable copy/clone worlds, use the separate
+[retained device-layer lifecycle](./retained-device-layers.md) introduced in 13.8.0.
+[Carrier revisions](./optimized-carriers.md) and [coupled replay checkpoints](./coupled-checkpoints.md)
+retain their own identity and recovery contracts.
 
 ## Depth bound and compaction
 
@@ -202,7 +203,7 @@ and [`device-layer-checkpoints-darwin-arm64.json`](./generated/benchmarks/device
 
 ## Non-claims
 
-- Device-layer checkpoints are not coupled replay checkpoints and are not carrier revisions: they
+- Scratch device-layer checkpoints are not coupled replay checkpoints and are not carrier revisions: they
   carry no content-addressed identity, no trace records, and no verified double scan. Replay
   `checkpoint()` world images and carrier `captureCustody` remain verified full scans whose cost
   grows with world size ([coupled checkpoints](./coupled-checkpoints.md),
@@ -212,7 +213,7 @@ and [`device-layer-checkpoints-darwin-arm64.json`](./generated/benchmarks/device
   is local Docker only. Measurements are one Mac and one container-in-VM Linux lane, not bare
   metal.
 - The overlay adapter needs root or mount permission; unprivileged or user-namespace overlay mounts
-  are not attempted. Worlds are not recovered after a crash; a crashed overlay device may leave a
+  are not attempted. Scratch worlds are not recovered after a crash; a crashed overlay device may leave a
   mount under its root.
 - Coverage: overlay device code and container CLI paths are excluded from line coverage with
   justified `node:coverage` blocks and are exercised by the Linux lane and the opt-in container run

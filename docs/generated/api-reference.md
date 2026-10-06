@@ -1,6 +1,6 @@
 # Generated API reference
 
-Package: `@avnionur/shepherd-typescript` 13.7.1
+Package: `@avnionur/shepherd-typescript` 13.8.0
 
 This file is generated deterministically from the emitted declaration targets in the
 package export map. Run `pnpm generate:api-reference` to update it or
@@ -25,7 +25,7 @@ import * as api from "@avnionur/shepherd-typescript";
 void api;
 ```
 
-Exported symbols: 1475.
+Exported symbols: 1491.
 
 ### `APPLICATION_COMPATIBILITY_VERSION`
 
@@ -11285,6 +11285,23 @@ export declare const RESOLVED_PLACEMENTS: readonly [
 ];
 ```
 
+### `RETAINED_DEVICE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured durable device-layer diagnosis statuses.
+
+Signature:
+
+```ts
+export declare const RETAINED_DEVICE_STATUSES: readonly [
+    "ready",
+    "pending",
+    "cleaned",
+    "unavailable"
+];
+```
+
 ### `RETAINED_WORLD_APPLICATION_CONFLICT_KINDS`
 
 Classification: `runtime-only`. Kind: `variable`.
@@ -13980,6 +13997,179 @@ Signature:
 ```ts
 export type RetainProviderConversationCheckpointOptions = ProviderConversationCheckpointBinding & {
     readonly state: ProviderConversationCheckpointState;
+};
+```
+
+### `RetainedDeviceLayerCheckpoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable checkpoint result and its exact completion evidence.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerCheckpoint = DeviceLayerCheckpoint & {
+    readonly recordId: RecordId;
+    readonly generation: number;
+    readonly contentId: string;
+};
+```
+
+### `RetainedDeviceLayerInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only durable lifecycle and physical availability evidence.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerInspection = {
+    readonly deviceId: string;
+    readonly headRecordId: RecordId;
+    readonly adapter: string;
+    readonly configurationId: string;
+    readonly generation: number;
+    readonly layers: readonly RetainedDeviceLayerSnapshot[];
+    readonly retiredNames: readonly string[];
+    readonly status: RetainedDeviceLayerStatus;
+    readonly reason: string | null;
+    readonly pendingCommandId: string | null;
+};
+```
+
+### `RetainedDeviceLayerNamedCommand`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact named lifecycle command.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerNamedCommand = {
+    readonly commandId: string;
+    readonly name: string;
+};
+```
+
+### `RetainedDeviceLayerRecoveryOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact physical recovery admission derived from a read-only diagnosis.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerRecoveryOptions = RetainedDeviceLayerSelector & {
+    readonly commandId: string;
+    readonly expectedHeadRecordId: RecordId;
+};
+```
+
+### `RetainedDeviceLayerRestore`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable restoration result and its exact completion evidence.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerRestore = DeviceLayerRestore & {
+    readonly recordId: RecordId;
+    readonly generation: number;
+};
+```
+
+### `RetainedDeviceLayerSelector`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact retained world selector; record identity is not authority over arbitrary host paths.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerSelector = {
+    readonly deviceId: string;
+};
+```
+
+### `RetainedDeviceLayerSnapshot`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Named retained layer with a verified manifest content identity.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerSnapshot = DeviceLayerLayer & {
+    readonly contentId: string;
+};
+```
+
+### `RetainedDeviceLayerStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured durable device diagnosis status.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerStatus = (typeof RETAINED_DEVICE_STATUSES)[number];
+```
+
+### `RetainedDeviceLayerWorld`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable local layered world. Its close method detaches this handle and retains resources;
+cleanup is an explicit journaled command. Callers must quiesce direct path writers before
+checkpoint, restore, recovery or cleanup. A stale handle refuses after another handle advances
+the journal. Imported records alone do not provide local ownership authority.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerWorld = {
+    readonly adapter: string;
+    readonly deviceId: string;
+    readonly depth: DeviceLayerDepthPolicy;
+    readonly path: string;
+    readonly layers: () => readonly RetainedDeviceLayerSnapshot[];
+    readonly readFile: (relativePath: string) => Promise<Buffer>;
+    readonly writeFile: (relativePath: string, bytes: Buffer) => Promise<void>;
+    readonly removePath: (relativePath: string) => Promise<void>;
+    readonly listFiles: () => Promise<readonly DeviceLayerFileEntry[]>;
+    readonly checkpoint: (command: RetainedDeviceLayerNamedCommand) => Promise<RetainedDeviceLayerCheckpoint>;
+    readonly restore: (command: RetainedDeviceLayerNamedCommand) => Promise<RetainedDeviceLayerRestore>;
+    readonly cleanup: (command: Readonly<{
+        commandId: string;
+    }>) => Promise<void>;
+    readonly close: () => Promise<void>;
+};
+```
+
+### `RetainedDeviceLayerWorldOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Creation request for a durable, locally owned layered world.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerWorldOptions = {
+    readonly commandId: string;
+    readonly root: string;
+    readonly adapter?: string;
+    readonly seed?: string;
+    readonly depth?: Partial<DeviceLayerDepthPolicy>;
 };
 ```
 
@@ -28575,6 +28765,35 @@ const inspection = inspectReplaySession(store, {
 });
 ```
 
+### `deriveRetainedDeviceLayerId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the stable device identity before creation, so interrupted creation remains diagnosable.
+The identity is scoped to its trace store; it does not authorize physical resource access.
+
+Signature:
+
+```ts
+export declare function deriveRetainedDeviceLayerId(commandId: string): string;
+```
+
+Parameter:
+
+- commandId - Exact creation command identity.
+
+Returns:
+
+- Content-derived device owner identity.
+
+Throws:
+
+- {TypeError} If the command identity is empty or malformed.
+
+Example:
+
+- const deviceId = deriveRetainedDeviceLayerId("create-worker-world");
+
 ### `deriveSupervisedDispatchId`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -30329,6 +30548,39 @@ const inspection = inspectReplaySession(store, { sessionId });
 console.log(inspection.classification, inspection.steps.length);
 ```
 
+### `inspectRetainedDeviceLayerWorld`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Diagnoses a retained lifecycle without changing the store or physical resources.
+Imported/copied stores expose journal facts but report physical authority unavailable.
+
+Signature:
+
+```ts
+export declare function inspectRetainedDeviceLayerWorld(store: SQLiteTraceStore, options: RetainedDeviceLayerSelector): RetainedDeviceLayerInspection;
+```
+
+Parameter:
+
+- store - Open original or imported store, including read-only handles.
+
+Parameter:
+
+- options - Exact device identity.
+
+Returns:
+
+- Frozen lifecycle, exact head, generation, named layers and an explicit refusal reason.
+
+Throws:
+
+- {TypeError} If canonical journal evidence is absent or malformed.
+
+Example:
+
+- const diagnosis = inspectRetainedDeviceLayerWorld(store, { deviceId });
+
 ### `inspectRetainedWorldApplicationConflicts`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -31434,6 +31686,49 @@ Example:
 await world.writeFile("notes.txt", Buffer.from("draft"));
 await world.checkpoint("step-1");
 
+### `openRetainedDeviceLayerWorld`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates an explicitly retained copy/clone world or reopens an exactly repeated completed creation.
+The complete source prefix and lifecycle are journaled before physical publication. The store
+must be file-backed; imported records or a copied database confer no local resource authority.
+
+Signature:
+
+```ts
+export declare function openRetainedDeviceLayerWorld(store: SQLiteTraceStore, options: RetainedDeviceLayerWorldOptions): Promise<RetainedDeviceLayerWorld>;
+```
+
+Parameter:
+
+- store - Writable local trace store owning the lifecycle journal.
+
+Parameter:
+
+- options - Exact creation command, existing parent, optional seed and supported adapter.
+
+Returns:
+
+- A durable handle whose close detaches without deleting resources.
+
+Throws:
+
+- {TypeError} For malformed, incompatible or interrupted state requiring explicit recovery.
+
+Throws:
+
+- {DeviceLayerError} If the selected durable adapter is unsupported or unavailable.
+
+Throws:
+
+- {AppendIntentConflictError} If command identity names a different request.
+
+Example:
+
+- const world = await openRetainedDeviceLayerWorld(store, { commandId: "create", root });
+await world.checkpoint({ commandId: "first", name: "first" });
+
 ### `openTraceSubscription`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -32416,6 +32711,44 @@ const result = await recoverPlacedGrantedTaskWorldDurably({
 });
 ```
 
+### `recoverRetainedDeviceLayerWorld`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Resumes one exact interrupted lifecycle after retaining an explicit recovery command.
+A moved head or command conflict refuses before filesystem work. Completed command retries
+inspect the current world without executing a later unrelated pending command.
+
+Signature:
+
+```ts
+export declare function recoverRetainedDeviceLayerWorld(store: SQLiteTraceStore, options: RetainedDeviceLayerRecoveryOptions): Promise<RetainedDeviceLayerInspection>;
+```
+
+Parameter:
+
+- store - Original writable local trace store.
+
+Parameter:
+
+- options - Device, exact diagnosed head and stable recovery command.
+
+Returns:
+
+- Current read-only diagnosis after the selected operation completes.
+
+Throws:
+
+- {TypeError} For unavailable, corrupt, imported or incompatible resources.
+
+Throws:
+
+- {AppendIntentConflictError} For moved heads or conflicting command identities.
+
+Example:
+
+- await recoverRetainedDeviceLayerWorld(store, { deviceId, commandId: "repair", expectedHeadRecordId: diagnosis.headRecordId });
+
 ### `recoverTaskDurably`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -32711,6 +33044,39 @@ Throws:
 Throws:
 
 - {TypeError} If the writer handle is forged or options are malformed.
+
+### `reopenRetainedDeviceLayerWorld`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reopens a complete locally owned world after verifying configuration, roots and frozen bytes.
+Pending operations require explicit exact-head recovery; this operation never cleans resources.
+
+Signature:
+
+```ts
+export declare function reopenRetainedDeviceLayerWorld(store: SQLiteTraceStore, options: RetainedDeviceLayerSelector): Promise<RetainedDeviceLayerWorld>;
+```
+
+Parameter:
+
+- store - Original writable local file-backed trace store.
+
+Parameter:
+
+- options - Exact retained device identity.
+
+Returns:
+
+- A new handle bound to the current journal head.
+
+Throws:
+
+- {TypeError} If state is missing, pending, cleaned, incompatible, imported or corrupt.
+
+Example:
+
+- const world = await reopenRetainedDeviceLayerWorld(store, { deviceId });
 
 ### `replayReplaySession`
 
@@ -63858,7 +64224,7 @@ import * as api from "@avnionur/shepherd-typescript/workspace";
 void api;
 ```
 
-Exported symbols: 244.
+Exported symbols: 260.
 
 ### `AppliedRetainedWorldSettlement`
 
@@ -65572,6 +65938,23 @@ export type PreparedRetainedWorldSettlement = RetainedWorldSettlementAdmission &
 };
 ```
 
+### `RETAINED_DEVICE_STATUSES`
+
+Classification: `runtime-only`. Kind: `variable`.
+
+Configured durable device-layer diagnosis statuses.
+
+Signature:
+
+```ts
+export declare const RETAINED_DEVICE_STATUSES: readonly [
+    "ready",
+    "pending",
+    "cleaned",
+    "unavailable"
+];
+```
+
 ### `RecoverGrantedTaskWorldOptions`
 
 Classification: `type-only`. Kind: `type alias`.
@@ -65816,6 +66199,179 @@ Signature:
 
 ```ts
 export type ResolvedPlacement = (typeof RESOLVED_PLACEMENTS)[number];
+```
+
+### `RetainedDeviceLayerCheckpoint`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable checkpoint result and its exact completion evidence.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerCheckpoint = DeviceLayerCheckpoint & {
+    readonly recordId: RecordId;
+    readonly generation: number;
+    readonly contentId: string;
+};
+```
+
+### `RetainedDeviceLayerInspection`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Read-only durable lifecycle and physical availability evidence.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerInspection = {
+    readonly deviceId: string;
+    readonly headRecordId: RecordId;
+    readonly adapter: string;
+    readonly configurationId: string;
+    readonly generation: number;
+    readonly layers: readonly RetainedDeviceLayerSnapshot[];
+    readonly retiredNames: readonly string[];
+    readonly status: RetainedDeviceLayerStatus;
+    readonly reason: string | null;
+    readonly pendingCommandId: string | null;
+};
+```
+
+### `RetainedDeviceLayerNamedCommand`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact named lifecycle command.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerNamedCommand = {
+    readonly commandId: string;
+    readonly name: string;
+};
+```
+
+### `RetainedDeviceLayerRecoveryOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact physical recovery admission derived from a read-only diagnosis.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerRecoveryOptions = RetainedDeviceLayerSelector & {
+    readonly commandId: string;
+    readonly expectedHeadRecordId: RecordId;
+};
+```
+
+### `RetainedDeviceLayerRestore`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable restoration result and its exact completion evidence.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerRestore = DeviceLayerRestore & {
+    readonly recordId: RecordId;
+    readonly generation: number;
+};
+```
+
+### `RetainedDeviceLayerSelector`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Exact retained world selector; record identity is not authority over arbitrary host paths.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerSelector = {
+    readonly deviceId: string;
+};
+```
+
+### `RetainedDeviceLayerSnapshot`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Named retained layer with a verified manifest content identity.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerSnapshot = DeviceLayerLayer & {
+    readonly contentId: string;
+};
+```
+
+### `RetainedDeviceLayerStatus`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Configured durable device diagnosis status.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerStatus = (typeof RETAINED_DEVICE_STATUSES)[number];
+```
+
+### `RetainedDeviceLayerWorld`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Durable local layered world. Its close method detaches this handle and retains resources;
+cleanup is an explicit journaled command. Callers must quiesce direct path writers before
+checkpoint, restore, recovery or cleanup. A stale handle refuses after another handle advances
+the journal. Imported records alone do not provide local ownership authority.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerWorld = {
+    readonly adapter: string;
+    readonly deviceId: string;
+    readonly depth: DeviceLayerDepthPolicy;
+    readonly path: string;
+    readonly layers: () => readonly RetainedDeviceLayerSnapshot[];
+    readonly readFile: (relativePath: string) => Promise<Buffer>;
+    readonly writeFile: (relativePath: string, bytes: Buffer) => Promise<void>;
+    readonly removePath: (relativePath: string) => Promise<void>;
+    readonly listFiles: () => Promise<readonly DeviceLayerFileEntry[]>;
+    readonly checkpoint: (command: RetainedDeviceLayerNamedCommand) => Promise<RetainedDeviceLayerCheckpoint>;
+    readonly restore: (command: RetainedDeviceLayerNamedCommand) => Promise<RetainedDeviceLayerRestore>;
+    readonly cleanup: (command: Readonly<{
+        commandId: string;
+    }>) => Promise<void>;
+    readonly close: () => Promise<void>;
+};
+```
+
+### `RetainedDeviceLayerWorldOptions`
+
+Classification: `type-only`. Kind: `type alias`.
+
+Creation request for a durable, locally owned layered world.
+
+Signature:
+
+```ts
+export type RetainedDeviceLayerWorldOptions = {
+    readonly commandId: string;
+    readonly root: string;
+    readonly adapter?: string;
+    readonly seed?: string;
+    readonly depth?: Partial<DeviceLayerDepthPolicy>;
+};
 ```
 
 ### `RetainedWorldApplicationConflict`
@@ -68450,6 +69006,35 @@ const inspection = await createWorldChangesetInspection({
 console.log(inspection.change("src/index.ts"));
 ```
 
+### `deriveRetainedDeviceLayerId`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Derives the stable device identity before creation, so interrupted creation remains diagnosable.
+The identity is scoped to its trace store; it does not authorize physical resource access.
+
+Signature:
+
+```ts
+export declare function deriveRetainedDeviceLayerId(commandId: string): string;
+```
+
+Parameter:
+
+- commandId - Exact creation command identity.
+
+Returns:
+
+- Content-derived device owner identity.
+
+Throws:
+
+- {TypeError} If the command identity is empty or malformed.
+
+Example:
+
+- const deviceId = deriveRetainedDeviceLayerId("create-worker-world");
+
 ### `discardRetainedWorldSettlement`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -68815,6 +69400,39 @@ export declare function inspectLocalPlacementPlatformEvidence(): PlacementPlatfo
 Returns:
 
 - Frozen content-addressed classification of the current execution host.
+
+### `inspectRetainedDeviceLayerWorld`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Diagnoses a retained lifecycle without changing the store or physical resources.
+Imported/copied stores expose journal facts but report physical authority unavailable.
+
+Signature:
+
+```ts
+export declare function inspectRetainedDeviceLayerWorld(store: SQLiteTraceStore, options: RetainedDeviceLayerSelector): RetainedDeviceLayerInspection;
+```
+
+Parameter:
+
+- store - Open original or imported store, including read-only handles.
+
+Parameter:
+
+- options - Exact device identity.
+
+Returns:
+
+- Frozen lifecycle, exact head, generation, named layers and an explicit refusal reason.
+
+Throws:
+
+- {TypeError} If canonical journal evidence is absent or malformed.
+
+Example:
+
+- const diagnosis = inspectRetainedDeviceLayerWorld(store, { deviceId });
 
 ### `inspectRetainedWorldApplicationConflicts`
 
@@ -69240,6 +69858,49 @@ Example:
 await world.writeFile("notes.txt", Buffer.from("draft"));
 await world.checkpoint("step-1");
 
+### `openRetainedDeviceLayerWorld`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Creates an explicitly retained copy/clone world or reopens an exactly repeated completed creation.
+The complete source prefix and lifecycle are journaled before physical publication. The store
+must be file-backed; imported records or a copied database confer no local resource authority.
+
+Signature:
+
+```ts
+export declare function openRetainedDeviceLayerWorld(store: SQLiteTraceStore, options: RetainedDeviceLayerWorldOptions): Promise<RetainedDeviceLayerWorld>;
+```
+
+Parameter:
+
+- store - Writable local trace store owning the lifecycle journal.
+
+Parameter:
+
+- options - Exact creation command, existing parent, optional seed and supported adapter.
+
+Returns:
+
+- A durable handle whose close detaches without deleting resources.
+
+Throws:
+
+- {TypeError} For malformed, incompatible or interrupted state requiring explicit recovery.
+
+Throws:
+
+- {DeviceLayerError} If the selected durable adapter is unsupported or unavailable.
+
+Throws:
+
+- {AppendIntentConflictError} If command identity names a different request.
+
+Example:
+
+- const world = await openRetainedDeviceLayerWorld(store, { commandId: "create", root });
+await world.checkpoint({ commandId: "first", name: "first" });
+
 ### `openWorkspace`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -69453,6 +70114,44 @@ const result = await recoverPlacedGrantedTaskWorldDurably({
 });
 ```
 
+### `recoverRetainedDeviceLayerWorld`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Resumes one exact interrupted lifecycle after retaining an explicit recovery command.
+A moved head or command conflict refuses before filesystem work. Completed command retries
+inspect the current world without executing a later unrelated pending command.
+
+Signature:
+
+```ts
+export declare function recoverRetainedDeviceLayerWorld(store: SQLiteTraceStore, options: RetainedDeviceLayerRecoveryOptions): Promise<RetainedDeviceLayerInspection>;
+```
+
+Parameter:
+
+- store - Original writable local trace store.
+
+Parameter:
+
+- options - Device, exact diagnosed head and stable recovery command.
+
+Returns:
+
+- Current read-only diagnosis after the selected operation completes.
+
+Throws:
+
+- {TypeError} For unavailable, corrupt, imported or incompatible resources.
+
+Throws:
+
+- {AppendIntentConflictError} For moved heads or conflicting command identities.
+
+Example:
+
+- await recoverRetainedDeviceLayerWorld(store, { deviceId, commandId: "repair", expectedHeadRecordId: diagnosis.headRecordId });
+
 ### `recoverTaskWorldDurably`
 
 Classification: `runtime-only`. Kind: `function`.
@@ -69532,6 +70231,39 @@ evidence is absent, malformed, forged, discarded, or inconsistent.
 Throws:
 
 - {RetainedWorldSettlementConflictError} If another action owns the admission or terminal.
+
+### `reopenRetainedDeviceLayerWorld`
+
+Classification: `runtime-only`. Kind: `function`.
+
+Reopens a complete locally owned world after verifying configuration, roots and frozen bytes.
+Pending operations require explicit exact-head recovery; this operation never cleans resources.
+
+Signature:
+
+```ts
+export declare function reopenRetainedDeviceLayerWorld(store: SQLiteTraceStore, options: RetainedDeviceLayerSelector): Promise<RetainedDeviceLayerWorld>;
+```
+
+Parameter:
+
+- store - Original writable local file-backed trace store.
+
+Parameter:
+
+- options - Exact retained device identity.
+
+Returns:
+
+- A new handle bound to the current journal head.
+
+Throws:
+
+- {TypeError} If state is missing, pending, cleaned, incompatible, imported or corrupt.
+
+Example:
+
+- const world = await reopenRetainedDeviceLayerWorld(store, { deviceId });
 
 ### `runScopeTree`
 

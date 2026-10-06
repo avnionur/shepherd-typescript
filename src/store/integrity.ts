@@ -7,6 +7,7 @@ import { verifyStoredBlobs } from "./blobs.ts";
 import { readCompensationClaim } from "./compensation-claims.ts";
 import { STORE_READ_TRANSACTION_SQL, STORE_TABLES } from "./constants.ts";
 import { readStoredCut } from "./cuts.ts";
+import { verifyDeviceLayerRegistration } from "./device-layer-journals.ts";
 import { addIntegrityIssue } from "./integrity-issues.ts";
 import { readOrphanedAppendIntentIds, verifyOwnerOrdinalIntegrity } from "./integrity-owners.ts";
 import { verifyRecordIntegrity } from "./integrity-records.ts";
@@ -114,6 +115,18 @@ export function scanTraceStoreIntegrity(
             readCompensationClaim(database, compensationId);
         } catch {
             addIntegrityIssue(issues, "sqlite_integrity_mismatch", compensationId);
+        }
+    }
+
+    for (const deviceId of readSortedStrings(
+        database,
+        STORE_TABLES.deviceLayerRegistrations,
+        "device_id",
+    )) {
+        try {
+            verifyDeviceLayerRegistration(database, deviceId);
+        } catch {
+            addIntegrityIssue(issues, "sqlite_integrity_mismatch", deviceId);
         }
     }
 

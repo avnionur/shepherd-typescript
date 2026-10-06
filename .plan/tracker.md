@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-05
 
-Current version: `13.7.1`
+Current version: `13.8.0`
 
 Current level: L4 "1.0" as a private, unpublished source release with owner waivers (#199, 2.34.0; [2.34.0 addendum](./phase-11-exit-audit.md#owner-decisions-and-10-close-out-2340)): no external review, no signing or publication, hosted CI disabled with local macOS gates and a local Docker Linux lane as the substitute, CodeQL and the advisory form waived while private, no Windows lane; Phase 11 in-repo scope complete (2.33.1 close-out addendum). L3 paper programming-model parity and research applications reached for the documented scope — Phases 4–10 complete for the documented scope (Phase 10 closed by the [exit audit](./phase-10-exit-audit.md))
 
@@ -51,10 +51,18 @@ full combined-main verification passed: 1,402 tests passed, two intentional skip
 100% configured coverage and installed-package checks. Final version sync, desktop build,
 actual 13.3 reader refusal and independent reviews passed. Native timeout attempts were traced to
 macOS idle sleep; the successful gate used a temporary command-scoped sleep assertion.
-#241 shipped through PR #279. Active P1 slice #242 adds opt-in retained provider checkpoints
+#241 shipped through PR #279. #242 shipped through PR #283 and adds opt-in retained provider checkpoints
 (MINOR 13.7.0), exact prefix restart/native-import evidence, configuration refusal before
 compensation and context redaction. Focused and N-1 reader probes pass. Full verification passed: 1,416 tests, two intentional skips,
-zero failures, 100% configured coverage and installed-package gates. Delivery pending. [Preservation matrix](./242-provider-checkpoint-preservation.md).
+zero failures, 100% configured coverage and installed-package gates. [Preservation matrix](./242-provider-checkpoint-preservation.md).
+
+P1 slice #243 (MINOR 13.8.0) adds explicitly retained copy/clone device worlds, schema-16
+local authority, causal lifecycle journals and exact interruption recovery. Fresh-process, native
+SIGKILL, replacement, import/copy refusal and Linux bind-mount protection evidence is recorded in
+[the preservation matrix](./243-device-recovery-preservation.md). Full host verification passes: 1,472 tests,
+two intentional skips, zero failures, 100% configured coverage and installed-package checks.
+Native copy/clone recovery, Linux bind-mount refusal, N-1 and installed restart drills pass.
+Next unblocked P1 issue: #245 (supervisor tool-effect recovery; prerequisite #238 closed).
 [Preservation matrix](./241-reconciliation-preservation.md).
 
 Prior preservation evidence: [#236](./236-capability-preservation.md) and

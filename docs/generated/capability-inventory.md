@@ -219,7 +219,7 @@ Public entry points: `./scopes#emitScopeRecord`, `./workspace#forkScope`, `./wor
 | --- | --- |
 | API availability | Supported: emission, isolated nested/parallel scope fork, merge and discard with authority fencing. |
 | Composed behavior | Adapted: coordinated multi-resource checkpoints exist; atomic/reconstructive/unavailable classification depends on every constituent. No generic OS process snapshot promise. |
-| Restart recovery | Carrier custody and operation journals support documented recovery. Opt-in provider snapshots survive restart/import; device-layer worlds remain process-local. |
+| Restart recovery | Carrier custody and operation journals support documented recovery. Opt-in provider snapshots survive restart/import. Separate retained copy/clone device worlds survive local restart; scope/replay composition remains outstanding. |
 | Live-provider evidence | No live-provider result claimed; ordinary tests use deterministic providers. |
 | Performance evidence | Existing scope benchmark measures full custody verification; it does not establish image-size-independent scope fork. |
 | Supported platforms / evidence | Node runtime support applies; filesystem/native support depends on the separately documented host and backend. |
@@ -235,8 +235,13 @@ Reviewed evidence (content pinned; existence is not a passing test result):
 - [test/provider/provider-checkpoint-restart.test.ts](../../test/provider/provider-checkpoint-restart.test.ts)
 - [test/provider/provider-native-checkpoint.test.ts](../../test/provider/provider-native-checkpoint.test.ts)
 - [test/provider/provider-checkpoint-binding.test.ts](../../test/provider/provider-checkpoint-binding.test.ts)
+- [docs/retained-device-layers.md](../retained-device-layers.md)
+- [test/workspace/device-layer-recovery.test.ts](../../test/workspace/device-layer-recovery.test.ts)
+- [test/workspace/device-layer-kill.test.ts](../../test/workspace/device-layer-kill.test.ts)
+- [test/workspace/device-layer-authority.test.ts](../../test/workspace/device-layer-authority.test.ts)
+- [test/workspace/device-layer-late-helper.test.ts](../../test/workspace/device-layer-late-helper.test.ts)
 
-Outstanding issues: [243](https://github.com/avnionur/shepherd-typescript/issues/243), [244](https://github.com/avnionur/shepherd-typescript/issues/244)
+Outstanding issues: [244](https://github.com/avnionur/shepherd-typescript/issues/244)
 
 ### Trace history, rewind and suffix replay
 
@@ -370,13 +375,13 @@ Outstanding issues: [257](https://github.com/avnionur/shepherd-typescript/issues
 
 Paper §4 and Appendix C.1–C.7.
 
-Public entry points: `./workspace#openDeviceLayerWorld`, `./workspace#checkDeviceLayerConformance`
+Public entry points: `./workspace#openDeviceLayerWorld`, `./workspace#checkDeviceLayerConformance`, `./workspace#openRetainedDeviceLayerWorld`, `./workspace#inspectRetainedDeviceLayerWorld`, `./workspace#recoverRetainedDeviceLayerWorld`
 
 | Dimension | Evidence boundary |
 | --- | --- |
 | API availability | Supported: copy/clone/overlay carriers and separate layered device adapters, including a reference Docker adapter. |
 | Composed behavior | Partial: optimized device layers are not integrated into normal custody, scope fork or replay images. No remote sandbox adapter ships. |
-| Restart recovery | Device-layer world identity and checkpoints are process-local; durable recovery is outstanding. |
+| Restart recovery | Opt-in retained copy/clone worlds preserve identity, named layers and writable generations across restart. Exact-head recovery verifies ownership before resuming interrupted publication or cleanup. Imports/backups carry facts without adopting source roots. Scratch and unsupported durable adapters keep their documented limits. |
 | Live-provider evidence | No live provider cache-reuse measurement. |
 | Performance evidence | Recorded kernel/scope/device benchmarks are local measurements; device-layer timing does not prove end-to-end constant-time fork/replay. |
 | Supported platforms / evidence | Measured macOS arm64 APFS and Linux arm64 container-in-VM lanes only. No bare-metal Linux, x86-64 or remote-host result. |
@@ -388,8 +393,13 @@ Reviewed evidence (content pinned; existence is not a passing test result):
 - [test/benchmark/scope-benchmark.test.ts](../../test/benchmark/scope-benchmark.test.ts)
 - [docs/performance-report.md](../performance-report.md)
 - [docs/device-layers.md](../device-layers.md)
+- [docs/retained-device-layers.md](../retained-device-layers.md)
+- [test/workspace/device-layer-recovery.test.ts](../../test/workspace/device-layer-recovery.test.ts)
+- [test/workspace/device-layer-kill.test.ts](../../test/workspace/device-layer-kill.test.ts)
+- [test/workspace/device-layer-authority.test.ts](../../test/workspace/device-layer-authority.test.ts)
+- [test/workspace/device-layer-late-helper.test.ts](../../test/workspace/device-layer-late-helper.test.ts)
 
-Outstanding issues: [243](https://github.com/avnionur/shepherd-typescript/issues/243), [244](https://github.com/avnionur/shepherd-typescript/issues/244), [248](https://github.com/avnionur/shepherd-typescript/issues/248), [266](https://github.com/avnionur/shepherd-typescript/issues/266)
+Outstanding issues: [244](https://github.com/avnionur/shepherd-typescript/issues/244), [248](https://github.com/avnionur/shepherd-typescript/issues/248), [266](https://github.com/avnionur/shepherd-typescript/issues/266)
 
 ### Overall coverage and research directions
 

@@ -234,7 +234,7 @@ test("CLI task and run reads resolve real registry and trace evidence", async (c
         ["doctor", "--store", storePath, "--registry", registryPath],
         directory,
     );
-    assert.match(doctor.output, /Trace store: schema 15/u);
+    assert.match(doctor.output, /Trace store: schema 16/u);
     assert.match(doctor.output, /Task registry: schema 2/u);
 
     const taskList = await invoke(["task", "list", "--registry", registryPath], directory);
@@ -731,14 +731,14 @@ test("CLI validates options, paths, pagination, argument bounds, and I/O contain
     const oldStorePath = path.join(directory, "old-trace.sqlite");
     new SQLiteTraceStore(oldStorePath).close();
     const oldStore = new DatabaseSync(oldStorePath);
-    oldStore.prepare("DELETE FROM schema_migrations WHERE version = 15").run();
+    oldStore.prepare("DELETE FROM schema_migrations WHERE version = 16").run();
     oldStore.close();
     assert.equal((await invoke(["run", "list", "--store", oldStorePath], directory)).exitCode, 1);
     const unchangedOldStore = new DatabaseSync(oldStorePath);
     assert.equal(
         unchangedOldStore.prepare("SELECT MAX(version) AS version FROM schema_migrations").get()
             ?.version,
-        14,
+        15,
     );
     unchangedOldStore.close();
     assert.equal(

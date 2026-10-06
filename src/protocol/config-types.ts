@@ -1,5 +1,6 @@
 import type { ProviderCheckpointProtocolConfig } from "./config-provider-checkpoints.ts";
 import type { EffectReconciliationProtocolConfig } from "./config-reconciliation.ts";
+import type { RetainedDeviceLayersConfig } from "./config-retained-device-layers.ts";
 import type { WorldEffectProtocolConfig } from "./config-world-effects.ts";
 
 /** Hash algorithms permitted for content-addressed protocol identities. */
@@ -3933,6 +3934,8 @@ export type ProtocolConfig = {
 
 /** Validated workspace protocol v27 device-layer configuration. */
 export type DeviceLayersConfig = {
+    /** Explicit durable lifecycle for supported host adapters. */
+    readonly retained: RetainedDeviceLayersConfig;
     /** Built-in adapter names by role. */
     readonly adapters: {
         readonly clone: string;

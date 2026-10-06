@@ -65,6 +65,11 @@ storing complete system/message/tool prefixes as existing supervision-context re
 redacted by current and 13.5.0 exporters, including after native import. Native archives and backups
 retain the complete prefix; credentials are excluded from factory configuration identity.
 
+[Retained device worlds](./retained-device-layers.md) keep full user file trees outside the trace
+store. Their journals retain paths and content identities; native trace export does not contain
+those external bytes. Explicit owned cleanup leaves immutable journal history, and trace secret
+scanning does not inspect external world-file contents.
+
 ## Secret detection
 
 `retention.secretClasses` holds named regular expressions; patterns live only in configuration.

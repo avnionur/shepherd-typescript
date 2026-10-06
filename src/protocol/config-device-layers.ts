@@ -1,3 +1,4 @@
+import { readRetainedDeviceLayersConfig } from "./config-retained-device-layers.ts";
 import type { DeviceLayersConfig } from "./config-types.ts";
 import {
     readArray,
@@ -67,6 +68,7 @@ export function readDeviceLayersConfig(
             "maxPathBytes",
             "overlay",
             "reasons",
+            "retained",
             "selection",
             "version",
         ],
@@ -215,6 +217,7 @@ export function readDeviceLayersConfig(
             `${context}.reasons`,
         ),
         selection,
+        retained: readRetainedDeviceLayersConfig(section.retained),
         version: readPositiveInteger(section.version, `${context}.version`),
     };
 }

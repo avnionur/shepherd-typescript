@@ -118,6 +118,12 @@ Admission and attempt publication are atomic; renewal and outcome commit require
 fence. Integrity verifies the row against the attempt and latest outcome. Semantic archives omit
 leases; see [compensation ownership](./compensation.md#durable-ownership-inspection-1330).
 
+Schema v15 establishes the reconciliation-aware reader boundary. Schema v16 adds local retained
+device registrations, bound to the canonical creation record and physical database file. Device
+lifecycle stages serialize under exact-head write transactions; generic append/cut publication
+refuses their reserved owner paths. Native archives omit these local rows. See
+[retained device worlds](./retained-device-layers.md) for filesystem recovery and cleanup limits.
+
 ## Query plans
 
 The SQL behind `readRecord`, `readOwner`, `readOwnerPrefix`, `readCut`/`resolveCut`, cut iteration

@@ -301,6 +301,15 @@ const migrations: readonly Migration[] = [
         version: 15,
         createSql: () => "SELECT 1;",
     },
+    {
+        version: 16,
+        createSql: () => `CREATE TABLE ${STORE_TABLES.deviceLayerRegistrations} (
+            device_id TEXT PRIMARY KEY CHECK (device_id <> ''),
+            creation_record_id TEXT NOT NULL UNIQUE,
+            database_identity TEXT NOT NULL,
+            FOREIGN KEY (creation_record_id) REFERENCES ${STORE_TABLES.records}(record_id)
+        ) STRICT;`,
+    },
 ];
 
 /**

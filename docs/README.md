@@ -433,3 +433,5 @@ pilot. They retain observed failures and do not replace the normative performanc
 - [Compensation ownership](./compensation.md#durable-ownership-inspection-1330) defines leases, fences, restart inspection and external idempotency limits.
 
 - [Retained provider conversation checkpoints](./provider-conversation-checkpoints.md) defines explicit prefix retention, configuration binding, verified restart/import, and redaction.
+
+- [Retained device-layer worlds](./retained-device-layers.md) defines copy/clone lifecycle journals, exact recovery, owned cleanup, and platform/backup limits.

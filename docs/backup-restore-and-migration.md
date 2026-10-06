@@ -132,6 +132,11 @@ A restore that fails before step 4 publishes nothing. A failure after publicatio
 leaves the target in place; that target must be discarded, never used. The call never reports
 success for an unverified target.
 
+Restored/copied databases preserve [retained device](./retained-device-layers.md) journal facts
+but do not inherit physical authority over the source device roots. Those external files are not
+trace-store blobs and are not included by this backup API. Preserve them separately; there is no
+automatic adoption into a restored database. Ordinary trace and blob backup behavior is unchanged.
+
 ## Replication
 
 `replicateTraceStoreBackup(directory, { backend, coordinator, refName, expectedGeneration, fence?,
