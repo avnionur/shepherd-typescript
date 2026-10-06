@@ -505,7 +505,7 @@
             "dimensions": {
                 "api": "Supported: emission, isolated nested/parallel scope fork, merge and discard with authority fencing.",
                 "composition": "Adapted: coordinated multi-resource checkpoints exist; atomic/reconstructive/unavailable classification depends on every constituent. No generic OS process snapshot promise.",
-                "recovery": "Carrier custody and operation journals support documented recovery. Opt-in provider snapshots survive restart/import; device-layer worlds remain process-local.",
+                "recovery": "Carrier custody and operation journals support documented recovery. Opt-in provider snapshots survive restart/import. Separate retained copy/clone device worlds survive local restart; scope/replay composition remains outstanding.",
                 "live": "No live-provider result claimed; ordinary tests use deterministic providers.",
                 "performance": "Existing scope benchmark measures full custody verification; it does not establish image-size-independent scope fork.",
                 "platforms": "Node runtime support applies; filesystem/native support depends on the separately documented host and backend.",
@@ -543,12 +543,29 @@
                 {
                     "path": "test/provider/provider-checkpoint-binding.test.ts",
                     "sha256": "8a4ea502d8cf385c05287ce4702323e9ff10198ac7c6180f835916988c275b1a"
+                },
+                {
+                    "path": "docs/retained-device-layers.md",
+                    "sha256": "d968cdb7b68c690c6c61340508757ba9683027aaed0a3abd63a0ea35eded324c"
+                },
+                {
+                    "path": "test/workspace/device-layer-recovery.test.ts",
+                    "sha256": "0dccb021037d65be1ac3acd0ce5bf9b1470fbf6bc85ac855f17577d78c457b44"
+                },
+                {
+                    "path": "test/workspace/device-layer-kill.test.ts",
+                    "sha256": "60ecc18f6acf69327294366be539bb44c0d387112174555133b6a1e2a768a5ef"
+                },
+                {
+                    "path": "test/workspace/device-layer-authority.test.ts",
+                    "sha256": "d747d8d071b9266cfb2db27fcc12b4c7bd7823e3ec0cbe777aedba85330ff57d"
+                },
+                {
+                    "path": "test/workspace/device-layer-late-helper.test.ts",
+                    "sha256": "403d506b751f82de908b75d98170035a61017d13efc6852d33e4616c7473022e"
                 }
             ],
-            "issues": [
-                "https://github.com/avnionur/shepherd-typescript/issues/243",
-                "https://github.com/avnionur/shepherd-typescript/issues/244"
-            ]
+            "issues": ["https://github.com/avnionur/shepherd-typescript/issues/244"]
         },
         {
             "id": "replay",
@@ -819,12 +836,24 @@
                 {
                     "entry": "./workspace",
                     "symbol": "checkDeviceLayerConformance"
+                },
+                {
+                    "entry": "./workspace",
+                    "symbol": "openRetainedDeviceLayerWorld"
+                },
+                {
+                    "entry": "./workspace",
+                    "symbol": "inspectRetainedDeviceLayerWorld"
+                },
+                {
+                    "entry": "./workspace",
+                    "symbol": "recoverRetainedDeviceLayerWorld"
                 }
             ],
             "dimensions": {
                 "api": "Supported: copy/clone/overlay carriers and separate layered device adapters, including a reference Docker adapter.",
                 "composition": "Partial: optimized device layers are not integrated into normal custody, scope fork or replay images. No remote sandbox adapter ships.",
-                "recovery": "Device-layer world identity and checkpoints are process-local; durable recovery is outstanding.",
+                "recovery": "Opt-in retained copy/clone worlds preserve identity, named layers and writable generations across restart. Exact-head recovery verifies ownership before resuming interrupted publication or cleanup. Imports/backups carry facts without adopting source roots. Scratch and unsupported durable adapters keep their documented limits.",
                 "live": "No live provider cache-reuse measurement.",
                 "performance": "Recorded kernel/scope/device benchmarks are local measurements; device-layer timing does not prove end-to-end constant-time fork/replay.",
                 "platforms": "Measured macOS arm64 APFS and Linux arm64 container-in-VM lanes only. No bare-metal Linux, x86-64 or remote-host result.",
@@ -845,11 +874,30 @@
                 },
                 {
                     "path": "docs/device-layers.md",
-                    "sha256": "d85db6156004cf058c59914eae96adb68fee7c861bc8c8606bf9191031a5dace"
+                    "sha256": "a5b589bbd8881082e3f161356ef281a400e57a07228137c75330c2d44de4656c"
+                },
+                {
+                    "path": "docs/retained-device-layers.md",
+                    "sha256": "d968cdb7b68c690c6c61340508757ba9683027aaed0a3abd63a0ea35eded324c"
+                },
+                {
+                    "path": "test/workspace/device-layer-recovery.test.ts",
+                    "sha256": "0dccb021037d65be1ac3acd0ce5bf9b1470fbf6bc85ac855f17577d78c457b44"
+                },
+                {
+                    "path": "test/workspace/device-layer-kill.test.ts",
+                    "sha256": "60ecc18f6acf69327294366be539bb44c0d387112174555133b6a1e2a768a5ef"
+                },
+                {
+                    "path": "test/workspace/device-layer-authority.test.ts",
+                    "sha256": "d747d8d071b9266cfb2db27fcc12b4c7bd7823e3ec0cbe777aedba85330ff57d"
+                },
+                {
+                    "path": "test/workspace/device-layer-late-helper.test.ts",
+                    "sha256": "403d506b751f82de908b75d98170035a61017d13efc6852d33e4616c7473022e"
                 }
             ],
             "issues": [
-                "https://github.com/avnionur/shepherd-typescript/issues/243",
                 "https://github.com/avnionur/shepherd-typescript/issues/244",
                 "https://github.com/avnionur/shepherd-typescript/issues/248",
                 "https://github.com/avnionur/shepherd-typescript/issues/266"
@@ -961,7 +1009,7 @@
             "evidence": [
                 {
                     "path": "docs/backup-restore-and-migration.md",
-                    "sha256": "52e3897a1985a19cf94f6ae970240381dfe04e71e71f7e4b4e75f2f4c0d14fce"
+                    "sha256": "de6642291e28a9d7985279c1191d49cce3632a4175f93256fc2063237ab02cda"
                 },
                 {
                     "path": "docs/native-jail-execution.md",
@@ -973,7 +1021,7 @@
                 },
                 {
                     "path": "test/operations/backup-restore.test.ts",
-                    "sha256": "d644050786339b6f61cbbd3983817da19a192c4888e4a3f29f8a5c740c680c80"
+                    "sha256": "e1d0f066a57c6c3d6a204f1479a1d5924a7d4b3a568d85f43b03e3e0e7eb5eab"
                 },
                 {
                     "path": "test/operations/migration-drills.test.ts",

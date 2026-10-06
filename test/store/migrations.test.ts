@@ -73,6 +73,7 @@ test("SQLiteTraceStore upgrades a version-one database for blob receipts", async
     new SQLiteTraceStore(databasePath).close();
     const database = new DatabaseSync(databasePath);
     database.exec(`
+        DROP TABLE device_layer_registrations;
         DROP TABLE compensation_claims;
         DROP TABLE replay_sessions;
         DROP TABLE supervised_dispatches;
@@ -126,6 +127,7 @@ test("schema-five migration conservatively fences legacy invocation claims", asy
 
     const database = new DatabaseSync(databasePath);
     database.exec(`
+        DROP TABLE device_layer_registrations;
         DROP TABLE compensation_claims;
         DROP TABLE replay_sessions;
         DROP TABLE supervised_dispatches;
@@ -184,6 +186,7 @@ test("schema-seven migration preserves prepared settlement rows with empty journ
         ) SELECT output_id, command_id, request_id, request_digest, request_json, action, state
           FROM retained_world_settlements_v7;
         DROP TABLE retained_world_settlements_v7;
+        DROP TABLE device_layer_registrations;
         DROP TABLE compensation_claims;
         DROP TABLE replay_sessions;
         DROP TABLE supervised_dispatches;

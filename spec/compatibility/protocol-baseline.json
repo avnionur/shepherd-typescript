@@ -3,8 +3,8 @@
         "digest": "sha256:b0c6920fb52fafe1cb5b9489d73520faf80d216824c7dcef69ca81fadabbf992",
         "entries": 157
     },
-    "packageVersion": "13.7.2",
-    "previousVersion": "13.7.1",
+    "packageVersion": "13.8.0",
+    "previousVersion": "13.7.2",
     "surface": {
         "commandOptions": {
             "demo write": {},
@@ -183,6 +183,8 @@
             "protocol.config.json#/workspaces/carrier/revisionIdPrefix": "world-revision:sha256:",
             "protocol.config.json#/workspaces/carrier/worldContentIdPrefix": "world-content:sha256:",
             "protocol.config.json#/workspaces/changesets/idPrefix": "world-changeset:sha256:",
+            "protocol.config.json#/workspaces/deviceLayers/retained/configurationIdPrefix": "device-configuration:sha256:",
+            "protocol.config.json#/workspaces/deviceLayers/retained/ownerIdPrefix": "retained-device:sha256:",
             "protocol.config.json#/workspaces/digestAlgorithm": "sha256",
             "protocol.config.json#/workspaces/gitCustody/basisIdPrefix": "git-basis:sha256:",
             "protocol.config.json#/workspaces/gitCustody/indexIdPrefix": "git-index:sha256:",
@@ -218,7 +220,7 @@
             "protocol.config.json#/workspaces/worldTaskCapture/outputIdPrefix": "world-output:sha256:"
         },
         "migrations": {
-            "protocol.config.json#/kernel/store/migrations": ["sha256:09c2b59aaf499bb3c472af09d3c0fbf42e62865d73b515c6a881763e053bb2c9","sha256:c2918aab3932d140fc03633f73b11dc68849fa8ddd67738c9bccdbb7de44a938","sha256:64e021b34ec20c81c5439b1b1f8676b8dd6039edb8b4ae0ee83c2ba84f48fc8c","sha256:a6afc34546437f5e2f53250132b846fb8a5bf82d7955895eea44f60c6d3e308e","sha256:1ca3bd1f8eff05c6c664847c469446b3a0bf3f3219dd3363f3d5ce418b23b69e","sha256:693c301a3f90533571427f4f186b128792f7cc62934dfcf620f99a20a951637f","sha256:2643bee840417e3170aef955e2cfaaca7e9d9cda1abd211884243c3f114e0125","sha256:24b1a123a6f2962297cb157329d55e08ddee09fc2f9913f1ad265cfa3e89d26d","sha256:5225383e571f4f6c40fe37ead6a9ec3b74b3c3cb818e291d093590668b012b8a","sha256:d552786e065d103199214f06ce6339300e6e0260306553ce80827c50d3dfb966","sha256:4f2e25f533c7a001eaf22f607a31612b235e5e27852c8df640d1b5cf5b5f402b","sha256:68e099e81b90fa2eac14d8fe3b74ebee707ffd7f0c34876be102b9b32bea31f4","sha256:6cfa351e12e4a3872ddcd06a7bfa786fabf139741fbe4d85db0a917a8ab53fc3","sha256:addf8e688a5853d0a883bf62255896aa50dbc28cdf93f9c58199dbffcc605251","sha256:edef8cba4a2b0123a7ddd885910f20cbb6f3402c7f36439aeaf945bfbba8d029"],
+            "protocol.config.json#/kernel/store/migrations": ["sha256:09c2b59aaf499bb3c472af09d3c0fbf42e62865d73b515c6a881763e053bb2c9","sha256:c2918aab3932d140fc03633f73b11dc68849fa8ddd67738c9bccdbb7de44a938","sha256:64e021b34ec20c81c5439b1b1f8676b8dd6039edb8b4ae0ee83c2ba84f48fc8c","sha256:a6afc34546437f5e2f53250132b846fb8a5bf82d7955895eea44f60c6d3e308e","sha256:1ca3bd1f8eff05c6c664847c469446b3a0bf3f3219dd3363f3d5ce418b23b69e","sha256:693c301a3f90533571427f4f186b128792f7cc62934dfcf620f99a20a951637f","sha256:2643bee840417e3170aef955e2cfaaca7e9d9cda1abd211884243c3f114e0125","sha256:24b1a123a6f2962297cb157329d55e08ddee09fc2f9913f1ad265cfa3e89d26d","sha256:5225383e571f4f6c40fe37ead6a9ec3b74b3c3cb818e291d093590668b012b8a","sha256:d552786e065d103199214f06ce6339300e6e0260306553ce80827c50d3dfb966","sha256:4f2e25f533c7a001eaf22f607a31612b235e5e27852c8df640d1b5cf5b5f402b","sha256:68e099e81b90fa2eac14d8fe3b74ebee707ffd7f0c34876be102b9b32bea31f4","sha256:6cfa351e12e4a3872ddcd06a7bfa786fabf139741fbe4d85db0a917a8ab53fc3","sha256:addf8e688a5853d0a883bf62255896aa50dbc28cdf93f9c58199dbffcc605251","sha256:edef8cba4a2b0123a7ddd885910f20cbb6f3402c7f36439aeaf945bfbba8d029","sha256:b557214e21dd4431f65867e1cbd9c49cb7bda35444317e17b6dcda320dc6fc5e"],
             "protocol.config.json#/tasks/registry/migrations": ["sha256:6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b","sha256:d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35"]
         },
         "schemas": {
@@ -237,6 +239,7 @@
             "delegation-decision-v1.schema.json": {"defs":{"budget":"sha256:5e34a09961c19dfac060eafc9e7aaf0b4d3a68cc1ad077ff5924a834ffe54f3b","grants":"sha256:250a3cfcb1c82312e8c60584730b0ce9981cabe0447cf97ccc647d972cd2b7cf","handleId":"sha256:2943fe0903a8daeb23c95e35ae16f51e523d5e5e55d758137f59c41bafb21393","recordId":"sha256:6ed99335d07cf1464ffaf44ded7d8b62f9bcae658d1d25910cfe1bc583cd48ff","semanticValue":"sha256:55ce0f1d37d788d7d563829fce21c691d42774547446e90304fe685bbcca09a9","supervisorId":"sha256:22ccdeb48f624bafdacfb712e743ec4657e45ec75873bfb84d42d95a29ada24c","taskArtifactLock":"sha256:bb4cf1b0afe666ce5395cfb452108d3b09a8be0c7653f1497fea580447ad6fe2","taskDescriptor":"sha256:ff6ac25924f516d9f4a5cbef30fb0f6629e1a1fb53a953cb89abc5e34689277e","taskSchema":"sha256:ff075a7d4ba839852cc9d92a6ebcbbcb51d5462a681cbde6291a46206e548dd9","taskValue":"sha256:7f001e0827bca91cce25053c83178677830635d43cc37cfe2886ad286564bfb2"},"digest":"sha256:156e0e860af9b186d5e1a4c549bab36a21bf9dea3e176af47281b6a5db3b0fcc","oneOf":null,"rest":"sha256:663cd3a8ba36d98ba0446e7ea6ac39b6611c847eb229388216dcf5214e878394"},
             "delegation-handoff-v1.schema.json": {"defs":{"budget":"sha256:5e34a09961c19dfac060eafc9e7aaf0b4d3a68cc1ad077ff5924a834ffe54f3b","grants":"sha256:250a3cfcb1c82312e8c60584730b0ce9981cabe0447cf97ccc647d972cd2b7cf","handleId":"sha256:2943fe0903a8daeb23c95e35ae16f51e523d5e5e55d758137f59c41bafb21393","recordId":"sha256:6ed99335d07cf1464ffaf44ded7d8b62f9bcae658d1d25910cfe1bc583cd48ff","semanticValue":"sha256:55ce0f1d37d788d7d563829fce21c691d42774547446e90304fe685bbcca09a9","supervisorId":"sha256:22ccdeb48f624bafdacfb712e743ec4657e45ec75873bfb84d42d95a29ada24c","taskArtifactLock":"sha256:bb4cf1b0afe666ce5395cfb452108d3b09a8be0c7653f1497fea580447ad6fe2","taskDescriptor":"sha256:ff6ac25924f516d9f4a5cbef30fb0f6629e1a1fb53a953cb89abc5e34689277e","taskSchema":"sha256:ff075a7d4ba839852cc9d92a6ebcbbcb51d5462a681cbde6291a46206e548dd9","taskValue":"sha256:7f001e0827bca91cce25053c83178677830635d43cc37cfe2886ad286564bfb2"},"digest":"sha256:2f8f241327be662cf7dba5f483d327792efc460ee147a4f691d05f338553ca5a","oneOf":null,"rest":"sha256:45d56c8de388d7ed14c20a763fbf8421410a4a88f37eded8d024f12253eea9bd"},
             "delegation-opened-v1.schema.json": {"defs":{"budget":"sha256:5e34a09961c19dfac060eafc9e7aaf0b4d3a68cc1ad077ff5924a834ffe54f3b","grants":"sha256:250a3cfcb1c82312e8c60584730b0ce9981cabe0447cf97ccc647d972cd2b7cf","handleId":"sha256:2943fe0903a8daeb23c95e35ae16f51e523d5e5e55d758137f59c41bafb21393","recordId":"sha256:6ed99335d07cf1464ffaf44ded7d8b62f9bcae658d1d25910cfe1bc583cd48ff","semanticValue":"sha256:55ce0f1d37d788d7d563829fce21c691d42774547446e90304fe685bbcca09a9","supervisorId":"sha256:22ccdeb48f624bafdacfb712e743ec4657e45ec75873bfb84d42d95a29ada24c","taskArtifactLock":"sha256:bb4cf1b0afe666ce5395cfb452108d3b09a8be0c7653f1497fea580447ad6fe2","taskDescriptor":"sha256:ff6ac25924f516d9f4a5cbef30fb0f6629e1a1fb53a953cb89abc5e34689277e","taskSchema":"sha256:ff075a7d4ba839852cc9d92a6ebcbbcb51d5462a681cbde6291a46206e548dd9","taskValue":"sha256:7f001e0827bca91cce25053c83178677830635d43cc37cfe2886ad286564bfb2"},"digest":"sha256:1d77ac81c3bddba6d3e475efe9b65a610236aede3aa48e127846a7ee721d468f","oneOf":null,"rest":"sha256:015d41b9f5fdaa4692a20ba241bb32e74c933d19ecd89f23171e55ab86062eee"},
+            "device-layer-lifecycle-v1.schema.json": {"defs":{"state":"sha256:cebf30d9858d69c7d0b591d7ac80c3ec5a047b889277a0813f1a2796016c69dd"},"digest":"sha256:1f08015b01e20a524b5bf2cd924f5a07a362afd2cd56f7ab0ad6a5d7152497c8","oneOf":null,"rest":"sha256:b588a8fe4b2ec308316b1a9abc7cc97472d6349c8533f7f1048c0e7c24b96b45"},
             "effect-compensation-v1.schema.json": {"defs":{"effectIntent":"sha256:9edfd965a6aaa50e322a014ec0e95bea6191cc8d389cfae82ae89aff6673cf1a","effectOutcome":"sha256:69c528bfcbb75f1435f99252f4ddb66ed9b436c85946061c35bf1f142a3a7c93","semanticValue":"sha256:55ce0f1d37d788d7d563829fce21c691d42774547446e90304fe685bbcca09a9"},"digest":"sha256:4f6737d25e63ae851268b5c0c844965d26a9d03f808f87ce4819a5aeefc8031f","oneOf":["sha256:30de7cc105efa1e256fdc628744325c9b9debb578bcca68959119c48917d3308","sha256:10a393e94e04cb8b7e9d37940481e11d91cf323d24115231bda2fd7540e3df10","sha256:0f8a1fe1025e877ea147836d4194a20a1b5f14ae06d26b411024226063d8a7bf"],"rest":"sha256:f9b5a9fde1ec2995eeb6a6f67387101684f5d936d0b4d4a4dbdb4fe9c9764c1f"},
             "effect-intent-v1.schema.json": {"defs":{"semanticValue":"sha256:55ce0f1d37d788d7d563829fce21c691d42774547446e90304fe685bbcca09a9"},"digest":"sha256:efcfe71a4488276445b334598001797613ddedfca735bd6f93f2ad4f9b0da413","oneOf":null,"rest":"sha256:12d2a39f4432e61f4171036d8e1be0a3613dca38ba72dde1f869e49aba129d30"},
             "effect-outcome-v1.schema.json": {"defs":{"semanticValue":"sha256:55ce0f1d37d788d7d563829fce21c691d42774547446e90304fe685bbcca09a9"},"digest":"sha256:27b5b2c5adbc7708c7e6d77238606d61e31cbc556e41055f1386c58cf1eee431","oneOf":null,"rest":"sha256:184f1ba4021c6968008797c8d939f61af90eb0f955137fb0e435173220cfc468"},
@@ -346,7 +349,7 @@
             "protocol.config.json#/kernel/interchange/format": "shepherd.trace.archive",
             "protocol.config.json#/kernel/interchange/formatVersion": 1,
             "protocol.config.json#/kernel/store/blobs/receiptVersion": 1,
-            "protocol.config.json#/kernel/store/schemaVersion": 15,
+            "protocol.config.json#/kernel/store/schemaVersion": 16,
             "protocol.config.json#/observability/batch/format": "shepherd.telemetry.batch",
             "protocol.config.json#/observability/batch/formatVersion": 1,
             "protocol.config.json#/observability/compatibilityVersion": "shepherd.observability.v1",
@@ -393,6 +396,9 @@
             "protocol.config.json#/workspaces/carrierBackends/version": 26,
             "protocol.config.json#/workspaces/changesetInspection/version": 11,
             "protocol.config.json#/workspaces/changesets/version": 5,
+            "protocol.config.json#/workspaces/deviceLayers/retained/compatibilityVersion": "shepherd.retained-device-layer.v1",
+            "protocol.config.json#/workspaces/deviceLayers/retained/markerVersion": 1,
+            "protocol.config.json#/workspaces/deviceLayers/retained/recordVersion": 1,
             "protocol.config.json#/workspaces/deviceLayers/version": 27,
             "protocol.config.json#/workspaces/format": "shepherd.workspace-control",
             "protocol.config.json#/workspaces/formatVersion": 1,

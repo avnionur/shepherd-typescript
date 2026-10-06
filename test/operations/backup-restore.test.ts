@@ -42,7 +42,7 @@ import { materializeBlobs, resolveSQLiteBackup } from "../../src/operations/back
 import { publishStagedStore, verifyRestoredStore } from "../../src/operations/restore.ts";
 import { populateStoreForSchema } from "../../tooling/testing/store-schema-fixtures.ts";
 
-const CURRENT_SCHEMA = 15;
+const CURRENT_SCHEMA = 16;
 const manifestSchema = JSON.parse(
     readFileSync(
         new URL("../../spec/schemas/store-backup-manifest-v1.schema.json", import.meta.url),

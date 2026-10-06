@@ -282,6 +282,9 @@ export const BACKEND_SELECTION_MODES = ["fallback", "strict"] as const;
 /** Configured built-in device-layer adapter names. @public */
 export const DEVICE_LAYER_ADAPTERS = ["clone", "container", "copy", "overlay"] as const;
 
+/** Configured durable device-layer diagnosis statuses. @public */
+export const RETAINED_DEVICE_STATUSES = ["ready", "pending", "cleaned", "unavailable"] as const;
+
 /** Configured retained-world runner enforcement classifications. @public */
 export const RETAINED_WORLD_ENFORCEMENT_KINDS = ["advisory", "native-syscall-deny"] as const;
 

@@ -1660,6 +1660,14 @@
             {
                 "dataClass": "general",
                 "path": "effects.compensation.reconciliation.traceSchema"
+            },
+            {
+                "dataClass": "checkpoint",
+                "path": "workspaces.deviceLayers.retained.traceSchema"
+            },
+            {
+                "dataClass": "checkpoint",
+                "path": "workspaces.deviceLayers.retained.schemaId"
             }
         ],
         "schemas": {
@@ -2786,9 +2794,14 @@
                     "firstOwnerOrdinal": 0,
                     "lastOwnerOrdinal": 9007199254740990,
                     "version": 15
+                },
+                {
+                    "firstOwnerOrdinal": 0,
+                    "lastOwnerOrdinal": 9007199254740990,
+                    "version": 16
                 }
             ],
-            "schemaVersion": 15,
+            "schemaVersion": 16,
             "synchronous": "FULL",
             "transactionMode": "IMMEDIATE"
         },
@@ -3226,7 +3239,54 @@
                     "strict": "strict"
                 }
             },
-            "version": 27
+            "version": 27,
+            "retained": {
+                "compatibilityVersion": "shepherd.retained-device-layer.v1",
+                "recordVersion": 1,
+                "traceSchema": "shepherd.device-layer.lifecycle.v1",
+                "schemaId": "https://avnionur.github.io/shepherd-typescript/schemas/device-layer-lifecycle-v1.schema.json",
+                "schemaPath": "spec/schemas/device-layer-lifecycle-v1.schema.json",
+                "ownerIdPrefix": "retained-device:sha256:",
+                "commandOwnerPrefix": "retained-device-command:",
+                "configurationIdPrefix": "device-configuration:sha256:",
+                "rootDirectoryPrefix": "retained-device-",
+                "ownershipFilename": "ownership.json",
+                "layersDirectory": "layers",
+                "writableDirectoryPrefix": "writable-",
+                "stagingDirectoryPrefix": "staging-",
+                "markerVersion": 1,
+                "adapters": {
+                    "copy": "copy",
+                    "clone": "clone"
+                },
+                "actions": {
+                    "open": "open",
+                    "checkpoint": "checkpoint",
+                    "restore": "restore",
+                    "cleanup": "cleanup"
+                },
+                "phases": {
+                    "prepared": "prepared",
+                    "published": "published",
+                    "completed": "completed"
+                },
+                "limits": {
+                    "maxEntries": 65536,
+                    "maxFileBytes": 268435456,
+                    "maxTotalBytes": 1073741824,
+                    "maxMarkerBytes": 16384
+                },
+                "treeDirectory": "data",
+                "directoryMode": 448,
+                "fileMode": 384,
+                "payloadIdentityFilename": "payload-identity.json",
+                "statuses": {
+                    "ready": "ready",
+                    "pending": "pending",
+                    "cleaned": "cleaned",
+                    "unavailable": "unavailable"
+                }
+            }
         },
         "digestAlgorithm": "sha256",
         "errors": {

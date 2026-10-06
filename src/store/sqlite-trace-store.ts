@@ -73,6 +73,15 @@ import {
     openDelegationHandleInStore,
 } from "./delegation-handles.ts";
 import {
+    assertUnreservedDeviceLayerOwner,
+    assertUnreservedDeviceLayerOwners,
+    type DeviceLayerJournalWork,
+    type DeviceLayerRegistration,
+    deviceLayerDatabaseIdentity,
+    readDeviceLayerRegistration,
+    runDeviceLayerJournalWork,
+} from "./device-layer-journals.ts";
+import {
     appendDurableExecutionStart,
     appendDurableExecutionTerminal,
     claimDurableExecutionInvocation,
@@ -389,7 +398,32 @@ export class SQLiteTraceStore implements Disposable {
         assertUnreservedDelegationOwners(batch);
         assertUnreservedApplicationOwners(batch);
         assertUnreservedCompensationOwners(batch);
+        assertUnreservedDeviceLayerOwners(batch);
         return appendToTraceStore(this.#database, request);
+    }
+
+    /** Reads local retained-device authority without filesystem mutation. @internal */
+    readDeviceLayerRegistration(deviceId: string): DeviceLayerRegistration | undefined {
+        this.#assertOpen();
+        return readDeviceLayerRegistration(this.#database, deviceId);
+    }
+
+    /** Reads this exact database file's identity for physical device authority. @internal */
+    deviceLayerDatabaseIdentity(): RecordId {
+        this.#assertOpen();
+        return deviceLayerDatabaseIdentity(this.#database);
+    }
+
+    /** Executes a synchronous retained-device stage under exact-head serialization. @internal */
+    runDeviceLayerJournalWork<T>(
+        deviceId: string,
+        expectedHead: RecordId | null,
+        work: () => DeviceLayerJournalWork<T>,
+    ): { readonly receipt: AppendReceipt | null; readonly value: T } {
+        this.#assertOpen();
+        if (this.#readOnly)
+            throw new TraceStoreReadOnlyError("retained device mutation requires a writable store");
+        return runDeviceLayerJournalWork(this.#database, deviceId, expectedHead, work);
     }
 
     /**
@@ -1861,6 +1895,7 @@ export class SQLiteTraceStore implements Disposable {
             assertUnreservedDelegationOwner(publisher);
             assertUnreservedApplicationOwner(publisher);
             assertUnreservedCompensationOwner(publisher);
+            assertUnreservedDeviceLayerOwner(publisher);
         }
         return publishStoredCut(this.#database, spec);
     }

@@ -1,6 +1,7 @@
 /** Stable Node-only ESM subpath for workspace authority, retained-world operations, and the scope world adapter. */
 
 export {
+    RETAINED_DEVICE_STATUSES,
     WORLD_EFFECT_OUTCOMES,
     WORLD_EFFECT_PHASES,
     WORLD_EFFECT_RECOVERY,
@@ -151,6 +152,25 @@ export {
     createGitRepositoryGrantPlan,
     grantTaskRepositories,
 } from "../workspace/repository-grants.ts";
+export {
+    inspectRetainedDeviceLayerWorld,
+    openRetainedDeviceLayerWorld,
+    recoverRetainedDeviceLayerWorld,
+    reopenRetainedDeviceLayerWorld,
+} from "../workspace/retained-device-layer.ts";
+export type {
+    RetainedDeviceLayerCheckpoint,
+    RetainedDeviceLayerInspection,
+    RetainedDeviceLayerNamedCommand,
+    RetainedDeviceLayerRecoveryOptions,
+    RetainedDeviceLayerRestore,
+    RetainedDeviceLayerSelector,
+    RetainedDeviceLayerSnapshot,
+    RetainedDeviceLayerStatus,
+    RetainedDeviceLayerWorld,
+    RetainedDeviceLayerWorldOptions,
+} from "../workspace/retained-device-layer-types.ts";
+export { deriveRetainedDeviceLayerId } from "../workspace/retained-device-records.ts";
 export { inspectRetainedWorldApplicationConflicts } from "../workspace/retained-world-application.ts";
 export type {
     InspectRetainedWorldApplicationConflictsOptions,

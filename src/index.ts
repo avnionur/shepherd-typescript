@@ -701,6 +701,7 @@ export {
     REPOSITORY_GRANT_ATOMS,
     REPOSITORY_GRANT_PROFILES,
     RESOLVED_PLACEMENTS,
+    RETAINED_DEVICE_STATUSES,
     RETAINED_WORLD_APPLICATION_CONFLICT_KINDS,
     RETAINED_WORLD_APPLICATION_REASONS,
     RETAINED_WORLD_APPLICATION_STATUSES,
@@ -1530,6 +1531,25 @@ export {
     createGitRepositoryGrantPlan,
     grantTaskRepositories,
 } from "./workspace/repository-grants.ts";
+export {
+    inspectRetainedDeviceLayerWorld,
+    openRetainedDeviceLayerWorld,
+    recoverRetainedDeviceLayerWorld,
+    reopenRetainedDeviceLayerWorld,
+} from "./workspace/retained-device-layer.ts";
+export type {
+    RetainedDeviceLayerCheckpoint,
+    RetainedDeviceLayerInspection,
+    RetainedDeviceLayerNamedCommand,
+    RetainedDeviceLayerRecoveryOptions,
+    RetainedDeviceLayerRestore,
+    RetainedDeviceLayerSelector,
+    RetainedDeviceLayerSnapshot,
+    RetainedDeviceLayerStatus,
+    RetainedDeviceLayerWorld,
+    RetainedDeviceLayerWorldOptions,
+} from "./workspace/retained-device-layer-types.ts";
+export { deriveRetainedDeviceLayerId } from "./workspace/retained-device-records.ts";
 export { inspectRetainedWorldApplicationConflicts } from "./workspace/retained-world-application.ts";
 export type {
     InspectRetainedWorldApplicationConflictsOptions,

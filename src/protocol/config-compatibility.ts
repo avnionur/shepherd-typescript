@@ -8,7 +8,7 @@ import {
     EXECUTION_HISTORY_PROJECTION_V1_CONTRACT,
     FORMAL_ASSURANCE_V2_CONTRACT,
     KERNEL_ABI_V0_CONTRACT,
-    KERNEL_ABI_V0_STORE_V15_CONTRACT,
+    KERNEL_ABI_V0_STORE_V16_CONTRACT,
     OBSERVABILITY_PROTOCOL_V1_CONTRACT,
     ORPHAN_REPAIR_PROTOCOL_V1_CONTRACT,
     PROVIDER_PROTOCOL_V4_CONTRACT,
@@ -20,7 +20,7 @@ import {
     SUPERVISION_PROTOCOL_V1_CONTRACT,
     TASK_PROTOCOL_V2_CONTRACT,
     TASK_RUN_LEDGER_PROJECTION_V1_CONTRACT,
-    WORKSPACE_PROTOCOL_V28_CONTRACT,
+    WORKSPACE_PROTOCOL_V29_CONTRACT,
 } from "./compatibility-constants.ts";
 import type { ProtocolConfig } from "./config-types.ts";
 import { sameStrings } from "./config-value-readers.ts";
@@ -49,7 +49,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     if (config.kernel.store.appendIntentDigestAlgorithm !== expected.appendIntentDigestAlgorithm) {
         throw new TypeError("append intent digest requires a new store migration");
     }
-    if (!sameJson(config.kernel.store.blobs, KERNEL_ABI_V0_STORE_V15_CONTRACT.blobs)) {
+    if (!sameJson(config.kernel.store.blobs, KERNEL_ABI_V0_STORE_V16_CONTRACT.blobs)) {
         throw new TypeError("blob identity and filesystem constants require a new store migration");
     }
     if (!sameJson(config.kernel.queries, expected.queries)) {
@@ -74,6 +74,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         ...Object.values(config.cli.artifacts),
         ...Object.values(config.delegation.artifacts),
         config.providers.conversation.checkpoint.schemaPath,
+        config.workspaces.deviceLayers.retained.schemaPath,
         ...Object.values(config.effects.artifacts),
         ...Object.values(config.effects.compensation.artifacts),
         ...Object.values(config.kernel.artifacts),
@@ -106,8 +107,8 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
         throw new TypeError("protocol artifact destinations do not match the repository contract");
     }
     if (
-        config.kernel.store.schemaVersion !== KERNEL_ABI_V0_STORE_V15_CONTRACT.schemaVersion ||
-        !sameMigrations(config.kernel.store.migrations, KERNEL_ABI_V0_STORE_V15_CONTRACT.migrations)
+        config.kernel.store.schemaVersion !== KERNEL_ABI_V0_STORE_V16_CONTRACT.schemaVersion ||
+        !sameMigrations(config.kernel.store.migrations, KERNEL_ABI_V0_STORE_V16_CONTRACT.migrations)
     ) {
         throw new TypeError("store migration constants do not match the implemented schema");
     }
@@ -155,7 +156,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
     }
     // Git subprocess hardening is operational and never reaches recorded workspace evidence.
     const { gitInvocation: _gitInvocation, ...workspaceIdentity } = config.workspaces;
-    if (!sameJson(workspaceIdentity, WORKSPACE_PROTOCOL_V28_CONTRACT)) {
+    if (!sameJson(workspaceIdentity, WORKSPACE_PROTOCOL_V29_CONTRACT)) {
         throw new TypeError("workspace constants require a new workspace protocol");
     }
     if (!sameJson(config.applications, APPLICATIONS_PROTOCOL_V10_CONTRACT)) {
@@ -231,7 +232,7 @@ export function assertSupportedProtocolCompatibility(config: ProtocolConfig): vo
 
 function sameMigrations(
     actual: ProtocolConfig["kernel"]["store"]["migrations"],
-    expected: typeof KERNEL_ABI_V0_STORE_V15_CONTRACT.migrations,
+    expected: typeof KERNEL_ABI_V0_STORE_V16_CONTRACT.migrations,
 ): boolean {
     return (
         actual.length === expected.length &&
