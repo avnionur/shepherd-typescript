@@ -189,7 +189,7 @@
         "generate:capabilities": "pnpm build && node scripts/capability-inventory-cli.ts"
     },
     "devDependencies": {
-        "@biomejs/biome": "2.5.14",
+        "@biomejs/biome": "2.6.4",
         "@rollup/plugin-node-resolve": "16.0.3",
         "@types/node": "26.6.2",
         "ajv": "8.20.0",
